@@ -11,6 +11,7 @@ from core.api.tests.factories import (
     AgencyFactory,
     BPChemicalTypeFactory,
     BlendFactory,
+    CommentTypeFactory,
     CPReportFormatColumnFactory,
     CPReportFormatRowFactory,
     CPReportFactory,
@@ -34,15 +35,15 @@ from core.api.tests.factories import (
     UsageFactory,
     UserFactory,
     BusinessPlanFactory,
-    BPRecordFactory,
-    BPRecordValueFactory,
+    BPActivityFactory,
+    BPActivityValueFactory,
     AdmRecordFactory,
     CPGenerationFactory,
     CPPricesFactory,
     CPRecordFactory,
     CPUsageFactory,
 )
-from core.models import BPRecord
+from core.models import BPActivity
 from core.models import CPEmission
 from core.models import CPReport
 from core.models.adm import AdmRecordArchive
@@ -61,13 +62,23 @@ def second_user():
 
 
 @pytest.fixture
-def agency_user():
-    return UserFactory(user_type="agency")
+def stakeholder_user():
+    return UserFactory(user_type="stakeholder")
 
 
 @pytest.fixture
-def stakeholder_user():
-    return UserFactory(user_type="stakeholder")
+def agency():
+    return AgencyFactory.create(name="Agency", code="AG")
+
+
+@pytest.fixture
+def agency_user(agency):
+    return UserFactory(user_type="agency_submitter", agency=agency)
+
+
+@pytest.fixture
+def agency_inputter_user(agency):
+    return UserFactory(user_type="agency_inputter", agency=agency)
 
 
 @pytest.fixture
@@ -274,11 +285,6 @@ def blend(excluded_usage, time_frames):
 
 
 @pytest.fixture
-def agency():
-    return AgencyFactory.create(name="Agency", code="AG")
-
-
-@pytest.fixture
 def project_type():
     return ProjectTypeFactory.create(name="Project Type", code="PT", sort_order=1)
 
@@ -402,18 +408,18 @@ def bp_chemical_type():
 
 
 @pytest.fixture
-def bp_record(business_plan, country_ro):
-    return BPRecordFactory(
+def bp_activity(business_plan, country_ro):
+    return BPActivityFactory(
         business_plan=business_plan,
         country=country_ro,
-        status=BPRecord.Status.approved,
+        status=BPActivity.Status.approved,
     )
 
 
 @pytest.fixture
-def bp_record_values(bp_record):
+def bp_activity_values(bp_activity):
     return [
-        BPRecordValueFactory(bp_record=bp_record, year=year)
+        BPActivityValueFactory(bp_activity=bp_activity, year=year)
         for year in (2020, 2021, 2022, 2023)
     ]
 
@@ -703,3 +709,8 @@ def setup_old_version_2005(
     )
 
     return cp_ar
+
+
+@pytest.fixture
+def comment_type():
+    return CommentTypeFactory(name="Sector & Subsector")

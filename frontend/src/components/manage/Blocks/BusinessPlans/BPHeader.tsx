@@ -36,7 +36,7 @@ const HeaderVersionsDropdown = () => {
             isDraft: version.status === 'draft',
             isFinal: version.status === 'final',
             label: `Version ${version.year_start} - ${version.year_end}`,
-            url: `/business-plans/${business_plan?.agency.name}/${version.year_start}/${version.year_end}`,
+            url: `/business-plans/${business_plan?.agency.name}/${version.year_start}-${version.year_end}`,
           }),
         )
       : []
@@ -108,7 +108,7 @@ const ViewHeaderActions = () => {
             <Link
               className="px-4 py-2 shadow-none"
               color="secondary"
-              href={`/business-plans/${business_plan?.agency.name}/${business_plan?.year_start}/${business_plan?.year_end}/edit/`}
+              href={`/business-plans/${business_plan?.agency.name}/${business_plan?.year_start}-${business_plan?.year_end}/edit/`}
               size="large"
               variant="contained"
               button

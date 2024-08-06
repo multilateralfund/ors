@@ -10,12 +10,7 @@ export default function ReplenishmentInvoices() {
     <>
       <title>Replenishment - Invoices</title>
       <PageWrapper className="w-full p-4" defaultSpacing={false}>
-        <ReplenishmentHeading
-          extraPeriodOptions={[{ label: 'All', value: '' }]}
-          showPeriodSelector={false}
-        >
-          Invoices
-        </ReplenishmentHeading>
+        <ReplenishmentHeading>Invoices</ReplenishmentHeading>
         <DownloadButtons />
         <InvoicesView />
       </PageWrapper>

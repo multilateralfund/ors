@@ -16,7 +16,10 @@ from rest_framework.response import Response
 from core.api.filters.country_programme import (
     CPReportFilter,
 )
-from core.api.permissions import IsUserAllowedCP, IsUserAllowedCPComment
+from core.api.permissions import (
+    IsCountryUser,
+    IsSecretariat,
+)
 from core.api.serializers import CPReportGroupSerializer
 from core.api.serializers.cp_comment import CPCommentSerializer
 from core.api.serializers.cp_report import (
@@ -48,7 +51,7 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
     API endpoint that allows country programmes to be viewed or created.
     """
 
-    permission_classes = [IsUserAllowedCP]
+    permission_classes = [IsSecretariat | IsCountryUser]
     filterset_class = CPReportFilter
     filter_backends = [
         DjangoFilterBackend,
@@ -87,6 +90,11 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        vald_perm_inst = CPReport(
+            country_id=request.data.get("country_id"), year=request.data.get("year")
+        )
+        self.check_object_permissions(request, vald_perm_inst)
 
         serializer = CPReportCreateSerializer(
             data=request.data, context={"user": request.user}
@@ -402,7 +410,7 @@ class CPReportStatusUpdateView(generics.GenericAPIView):
     API endpoint that allows updating country programme report status.
     """
 
-    permission_classes = [IsUserAllowedCP]
+    permission_classes = [IsSecretariat | IsCountryUser]
     serializer_class = CPReportSerializer
     lookup_field = "id"
 
@@ -455,7 +463,7 @@ class CPReportGroupByYearView(generics.ListAPIView):
     API endpoint that allows listing country programme reports grouped.
     """
 
-    permission_classes = [IsUserAllowedCP]
+    permission_classes = [IsSecretariat | IsCountryUser]
     serializer_class = CPReportGroupSerializer
     group_by = "year"
     group_pk = "year"
@@ -580,18 +588,12 @@ class CPReportCommentsView(generics.GenericAPIView):
     This is called with either POST or PUT on an already-existing CP Report.
     """
 
-    permission_classes = [IsUserAllowedCPComment]
+    permission_classes = [IsSecretariat | IsCountryUser]
     serializer_class = CPCommentSerializer
     lookup_field = "id"
+    queryset = CPReport.objects.all()
 
-    def get_queryset(self):
-        user = self.request.user
-        queryset = CPReport.objects.all()
-        if user.user_type == user.UserType.COUNTRY_USER:
-            queryset = queryset.filter(country=user.country)
-        return queryset
-
-    def _get_object(self, filter_kwargs):
+    def _get_report(self, filter_kwargs):
         queryset = self.filter_queryset(self.get_queryset())
         obj = get_object_or_404(queryset, **filter_kwargs)
 
@@ -622,7 +624,7 @@ class CPReportCommentsView(generics.GenericAPIView):
         ),
     )
     def _comments_update_or_create(self, request, *args, **kwargs):
-        cp_report = self._get_object(kwargs)
+        cp_report = self._get_report(kwargs)
         section = request.data.get("section")
         comment_type = request.data.get("comment_type")
         comment = request.data.get("comment", "")

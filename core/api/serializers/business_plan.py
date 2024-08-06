@@ -1,21 +1,20 @@
-import itertools
-
 from django.db import transaction
 from django.urls import reverse
 from rest_framework import serializers
 
 from core.api.serializers import CountrySerializer
 from core.api.serializers.agency import AgencySerializer
+from core.api.serializers.project import ProjectClusterSerializer
 from core.api.serializers.project import ProjectSectorSerializer
 from core.api.serializers.project import ProjectSubSectorSerializer
 from core.api.serializers.project import ProjectTypeSerializer
 from core.models import (
     Agency,
-    Blend,
     BPChemicalType,
-    BPRecord,
-    BPRecordValue,
+    BPActivity,
+    BPActivityValue,
     BusinessPlan,
+    CommentType,
     Country,
     ProjectSector,
     ProjectSubSector,
@@ -33,18 +32,18 @@ class BPChemicalTypeSerializer(serializers.ModelSerializer):
         ]
 
 
-class BPRecordValueSerializer(serializers.ModelSerializer):
-    bp_record_id = serializers.PrimaryKeyRelatedField(
+class BPActivityValueSerializer(serializers.ModelSerializer):
+    bp_activity_id = serializers.PrimaryKeyRelatedField(
         required=False,
-        queryset=BPRecord.objects.all().values_list("id", flat=True),
+        queryset=BPActivity.objects.all().values_list("id", flat=True),
         write_only=True,
     )
 
     class Meta:
-        model = BPRecordValue
+        model = BPActivityValue
         fields = [
             "id",
-            "bp_record_id",
+            "bp_activity_id",
             "year",
             "value_usd",
             "value_odp",
@@ -67,6 +66,7 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
         model = BusinessPlan
         fields = [
             "id",
+            "name",
             "status",
             "year_start",
             "year_end",
@@ -81,11 +81,11 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
         return reverse("business-plan-file-download", args=(obj.id,))
 
 
-class BPRecordExportSerializer(serializers.ModelSerializer):
+class BPActivityExportSerializer(serializers.ModelSerializer):
     agency = serializers.SerializerMethodField()
-    lvc_status = serializers.ChoiceField(choices=BPRecord.LVCStatus.choices)
+    lvc_status = serializers.ChoiceField(choices=BPActivity.LVCStatus.choices)
     project_type = serializers.SlugRelatedField("code", read_only=True)
-    status = serializers.ChoiceField(choices=BPRecord.Status.choices)
+    status = serializers.ChoiceField(choices=BPActivity.Status.choices)
     bp_chemical_type = serializers.SlugRelatedField("name", read_only=True)
     chemical_detail = serializers.SerializerMethodField()
     country = serializers.SlugRelatedField("name", read_only=True)
@@ -93,10 +93,10 @@ class BPRecordExportSerializer(serializers.ModelSerializer):
 
     sector = serializers.SlugRelatedField("name", read_only=True)
     subsector = serializers.SlugRelatedField("name", read_only=True)
-    values = BPRecordValueSerializer(many=True)
+    values = BPActivityValueSerializer(many=True)
 
     class Meta:
-        model = BPRecord
+        model = BPActivity
         fields = [
             "id",
             "business_plan_id",
@@ -126,33 +126,28 @@ class BPRecordExportSerializer(serializers.ModelSerializer):
         return obj.business_plan.agency.name
 
     def get_chemical_detail(self, obj):
-        return "/".join(
-            chem.name
-            for chem in itertools.chain(
-                obj.substances.all(),
-                obj.blends.all(),
-            )
-        )
+        return "/".join(chem.name for chem in obj.substances.all())
 
 
-class BPRecordDetailSerializer(serializers.ModelSerializer):
+class BPActivityDetailSerializer(serializers.ModelSerializer):
     country = CountrySerializer()
-    lvc_status = serializers.ChoiceField(choices=BPRecord.LVCStatus.choices)
+    lvc_status = serializers.ChoiceField(choices=BPActivity.LVCStatus.choices)
     project_type = ProjectTypeSerializer()
-    status = serializers.ChoiceField(choices=BPRecord.Status.choices)
+    status = serializers.ChoiceField(choices=BPActivity.Status.choices)
     bp_chemical_type = BPChemicalTypeSerializer()
     is_multi_year_display = serializers.SerializerMethodField()
     status_display = serializers.SerializerMethodField()
+    project_cluster = ProjectClusterSerializer()
 
     substances = serializers.SlugRelatedField("name", many=True, read_only=True)
-    blends = serializers.SlugRelatedField(slug_field="name", many=True, read_only=True)
+    comment_types = serializers.SlugRelatedField("name", many=True, read_only=True)
 
     sector = ProjectSectorSerializer()
     subsector = ProjectSubSectorSerializer()
-    values = BPRecordValueSerializer(many=True)
+    values = BPActivityValueSerializer(many=True)
 
     class Meta:
-        model = BPRecord
+        model = BPActivity
         fields = [
             "id",
             "title",
@@ -161,8 +156,8 @@ class BPRecordDetailSerializer(serializers.ModelSerializer):
             "lvc_status",
             "project_type",
             "bp_chemical_type",
+            "project_cluster",
             "substances",
-            "blends",
             "amount_polyol",
             "sector",
             "subsector",
@@ -176,6 +171,7 @@ class BPRecordDetailSerializer(serializers.ModelSerializer):
             "is_multi_year_display",
             "status_display",
             "comment_secretariat",
+            "comment_types",
         ]
 
     def get_is_multi_year_display(self, obj):
@@ -187,18 +183,35 @@ class BPRecordDetailSerializer(serializers.ModelSerializer):
         return obj.get_status_display()
 
 
-class BPRecordCreateSerializer(serializers.ModelSerializer):
+class BPActivityListSerializer(BPActivityDetailSerializer):
+    agency = serializers.SerializerMethodField()
+    project_type = serializers.SlugRelatedField("code", read_only=True)
+    bp_chemical_type = serializers.SlugRelatedField("name", read_only=True)
+    project_cluster = serializers.SlugRelatedField("code", read_only=True)
+
+    sector = serializers.SlugRelatedField("code", read_only=True)
+    subsector = serializers.SlugRelatedField("code", read_only=True)
+
+    class Meta(BPActivityDetailSerializer.Meta):
+        fields = ["agency"] + BPActivityDetailSerializer.Meta.fields
+
+    def get_agency(self, obj):
+        return obj.business_plan.agency.name
+
+
+class BPActivityCreateSerializer(serializers.ModelSerializer):
     business_plan_id = serializers.PrimaryKeyRelatedField(
+        required=False,
         queryset=BusinessPlan.objects.all().values_list("id", flat=True),
     )
     country_id = serializers.PrimaryKeyRelatedField(
         queryset=Country.objects.all().values_list("id", flat=True),
     )
-    lvc_status = serializers.ChoiceField(choices=BPRecord.LVCStatus.choices)
+    lvc_status = serializers.ChoiceField(choices=BPActivity.LVCStatus.choices)
     project_type_id = serializers.PrimaryKeyRelatedField(
         queryset=ProjectType.objects.all().values_list("id", flat=True),
     )
-    status = serializers.ChoiceField(choices=BPRecord.Status.choices)
+    status = serializers.ChoiceField(choices=BPActivity.Status.choices)
     bp_chemical_type_id = serializers.PrimaryKeyRelatedField(
         queryset=BPChemicalType.objects.all().values_list("id", flat=True),
     )
@@ -207,9 +220,10 @@ class BPRecordCreateSerializer(serializers.ModelSerializer):
         many=True,
         queryset=Substance.objects.all().values_list("id", flat=True),
     )
-    blends = serializers.PrimaryKeyRelatedField(
+    comment_types = serializers.PrimaryKeyRelatedField(
+        required=False,
         many=True,
-        queryset=Blend.objects.all().values_list("id", flat=True),
+        queryset=CommentType.objects.all().values_list("id", flat=True),
     )
 
     sector_id = serializers.PrimaryKeyRelatedField(
@@ -218,10 +232,10 @@ class BPRecordCreateSerializer(serializers.ModelSerializer):
     subsector_id = serializers.PrimaryKeyRelatedField(
         queryset=ProjectSubSector.objects.all().values_list("id", flat=True),
     )
-    values = BPRecordValueSerializer(many=True)
+    values = BPActivityValueSerializer(many=True)
 
     class Meta:
-        model = BPRecord
+        model = BPActivity
         fields = [
             "id",
             "business_plan_id",
@@ -232,7 +246,6 @@ class BPRecordCreateSerializer(serializers.ModelSerializer):
             "project_type_id",
             "bp_chemical_type_id",
             "substances",
-            "blends",
             "amount_polyol",
             "sector_id",
             "subsector_id",
@@ -243,33 +256,32 @@ class BPRecordCreateSerializer(serializers.ModelSerializer):
             "remarks",
             "remarks_additional",
             "comment_secretariat",
+            "comment_types",
             "values",
         ]
 
-    def _create_bp_record_values(self, bp_record, record_values):
-        bp_record.values.all().delete()
+    def _create_bp_activity_values(self, bp_activity, activity_values):
+        bp_activity.values.all().delete()
 
-        for record_value in record_values:
-            record_value["bp_record_id"] = bp_record.id
-        record_value_serializer = BPRecordValueSerializer(data=record_values, many=True)
-        record_value_serializer.is_valid(raise_exception=True)
-        record_value_serializer.save()
+        for activity_value in activity_values:
+            activity_value["bp_activity_id"] = bp_activity.id
+        activity_value_serializer = BPActivityValueSerializer(
+            data=activity_values, many=True
+        )
+        activity_value_serializer.is_valid(raise_exception=True)
+        activity_value_serializer.save()
 
     @transaction.atomic
     def create(self, validated_data):
-        record_values = validated_data.pop("values", [])
-        bp_record = super().create(validated_data)
-        self._create_bp_record_values(bp_record, record_values)
+        if self.context.get("ignore_comment", False):
+            validated_data.pop("comment_secretariat", "")
+            validated_data.pop("comment_types", [])
 
-        return bp_record
+        activity_values = validated_data.pop("values", [])
+        bp_activity = super().create(validated_data)
+        self._create_bp_activity_values(bp_activity, activity_values)
 
-    @transaction.atomic
-    def update(self, instance, validated_data):
-        record_values = validated_data.pop("values", [])
-        bp_record = super().update(instance, validated_data)
-        self._create_bp_record_values(bp_record, record_values)
-
-        return bp_record
+        return bp_activity
 
 
 class BusinessPlanCreateSerializer(serializers.ModelSerializer):
@@ -279,31 +291,36 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
     status = serializers.ChoiceField(
         choices=BusinessPlan.Status.choices, required=False
     )
-    records = BPRecordCreateSerializer(many=True, required=False)
+    activities = BPActivityCreateSerializer(many=True, required=False)
 
     class Meta:
         model = BusinessPlan
         fields = [
             "id",
+            "name",
             "year_start",
             "year_end",
             "agency_id",
             "status",
-            "records",
+            "activities",
         ]
 
-    def _create_bp_records(self, business_plan, records):
-        for record in records:
-            record["business_plan_id"] = business_plan.id
-        record_serializer = BPRecordCreateSerializer(data=records, many=True)
-        record_serializer.is_valid(raise_exception=True)
-        record_serializer.save()
+    def _create_bp_activities(self, business_plan, activities):
+        for activity in activities:
+            activity["business_plan_id"] = business_plan.id
+
+        ignore_comment = self.context.get("ignore_comment", False)
+        activity_serializer = BPActivityCreateSerializer(
+            data=activities, many=True, context={"ignore_comment": ignore_comment}
+        )
+        activity_serializer.is_valid(raise_exception=True)
+        activity_serializer.save()
 
     @transaction.atomic
     def create(self, validated_data):
-        records = validated_data.pop("records", [])
+        activities = validated_data.pop("activities", [])
         business_plan = super().create(validated_data)
-        self._create_bp_records(business_plan, records)
+        self._create_bp_activities(business_plan, activities)
 
         return business_plan
 

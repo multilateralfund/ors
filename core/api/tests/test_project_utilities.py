@@ -10,17 +10,18 @@ from core.api.tests.factories import (
     ProjectTypeFactory,
     RbmMeasureFactory,
 )
+from core.models.project import ProjectSector, ProjectSubSector
 
 
 pytestmark = pytest.mark.django_db
-# pylint: disable=C8008
+# pylint: disable=C8008,W0221
 
 
 class TestProjectsStatus(BaseTest):
     url = reverse("project-status-list")
 
-    def test_project_status_list_user(self, admin_user, project_status):
-        self.client.force_authenticate(user=admin_user)
+    def test_project_status_list_user(self, user, project_status):
+        self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url)
         assert response.status_code == 200
@@ -35,17 +36,22 @@ class TestProjectsStatus(BaseTest):
         ]
 
 
-@pytest.fixture(name="_setup_project_sector")
-def setup_project_sector():
-    ProjectSectorFactory.create(name="Sector", code="SEC", sort_order=0)
-    ProjectSectorFactory.create(name="Sector", code="SEC", sort_order=2)
+@pytest.fixture(name="_setup_project_sector_list")
+def setup_project_sector_list():
+    ProjectSectorFactory.create(name="Sector0", code="SEC0", sort_order=0)
+    ProjectSectorFactory.create(name="Sector2", code="SEC2", sort_order=2)
+    ProjectSectorFactory.create(
+        name="Sector4", code="SEC4", is_custom=True, sort_order=3
+    )
 
 
-class TestProjectSector(BaseTest):
-    url = reverse("project-sector-list")
+class TestProjectSectorList(BaseTest):
+    url = reverse("projectsector-list")
 
-    def test_project_sector_list_user(self, admin_user, sector, _setup_project_sector):
-        self.client.force_authenticate(user=admin_user)
+    def test_project_sector_list_user(
+        self, agency_user, sector, _setup_project_sector_list
+    ):
+        self.client.force_authenticate(user=agency_user)
 
         response = self.client.get(self.url)
         assert response.status_code == 200
@@ -58,23 +64,84 @@ class TestProjectSector(BaseTest):
         }
 
 
-@pytest.fixture(name="_setup_project_subsector")
-def setup_project_subsector(sector):
+@pytest.fixture(name="_setup_sector_create")
+def setup_sector_create(_setup_project_sector_list):
+    return {
+        "name": "Sectoru la Smecheri",
+    }
+
+
+class TestProjectSectorCreate(BaseTest):
+    url = reverse("projectsector-list")
+
+    def test_without_login(self, _setup_sector_create):
+        self.client.force_authenticate(user=None)
+        response = self.client.post(self.url, data=_setup_sector_create)
+        assert response.status_code == 403
+
+    def test_without_permission(self, country_user, _setup_sector_create):
+        self.client.force_authenticate(user=country_user)
+        response = self.client.post(self.url, data=_setup_sector_create)
+        assert response.status_code == 403
+
+    def test_create_with_code(self, agency_user, _setup_sector_create):
+        self.client.force_authenticate(user=agency_user)
+
+        data = {
+            **_setup_sector_create,
+            "code": "NOSMECH",
+        }
+        response = self.client.post(self.url, data=data)
+        assert response.status_code == 201
+        assert response.data["name"] == "Sectoru la Smecheri"
+        assert response.data["code"] == f"CUST{response.data['id']}"
+
+    def test_create_duplicate_sector(self, agency_user, sector):
+        self.client.force_authenticate(user=agency_user)
+
+        response = self.client.post(
+            self.url, data={"name": sector.name, "code": sector.code}
+        )
+        assert response.status_code == 201
+        assert response.data == {
+            "id": sector.id,
+            "name": sector.name,
+            "code": sector.code,
+            "sort_order": sector.sort_order,
+        }
+
+        sect_co = ProjectSector.objects.count()
+        assert sect_co == 1
+
+    def test_create_sector(self, user, _setup_sector_create):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.post(self.url, data=_setup_sector_create)
+        assert response.status_code == 201
+        assert response.data["name"] == "Sectoru la Smecheri"
+        assert response.data["code"] == f"CUST{response.data['id']}"
+
+
+@pytest.fixture(name="_setup_project_subsector_list")
+def setup_project_subsector_list(sector):
     ProjectSubSectorFactory.create(
-        name="Subsector", code="SUBSEC", sort_order=0, sector=sector
+        name="Subsector0", code="SUBSEC0", sort_order=0, sector=sector
     )
     ProjectSubSectorFactory.create(
-        name="Subsector", code="SUBSEC", sort_order=2, sector=sector
+        name="Subsector2", code="SUBSEC2", sort_order=2, sector=sector
+    )
+    ProjectSubSectorFactory.create(
+        name="Subsector3", code="SUBSEC3", sort_order=3, sector=sector, is_custom=True
     )
 
 
-class TestProjectSubsector(BaseTest):
-    url = reverse("project-subsector-list")
+class TestProjectSubsectorList(BaseTest):
+    url = reverse("projectsubsector-list")
 
     def test_project_subsector_list_user(
-        self, admin_user, sector, subsector, _setup_project_subsector
+        self, user, sector, subsector, _setup_project_subsector_list
     ):
-        self.client.force_authenticate(user=admin_user)
+        self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url)
         assert response.status_code == 200
@@ -88,6 +155,63 @@ class TestProjectSubsector(BaseTest):
         }
 
 
+@pytest.fixture(name="_setup_subsector_create")
+def setup_subsector_create(sector):
+    return {
+        "name": "Subsectoru la Mafioti",
+        "sector_id": sector.id,
+    }
+
+
+class TestProjectSubsectorCreate(BaseTest):
+    url = reverse("projectsubsector-list")
+
+    def test_without_login(self, _setup_subsector_create):
+        self.client.force_authenticate(user=None)
+        response = self.client.post(self.url, data=_setup_subsector_create)
+        assert response.status_code == 403
+
+    def test_without_permission(self, country_user, _setup_subsector_create):
+        self.client.force_authenticate(user=country_user)
+        response = self.client.post(self.url, data=_setup_subsector_create)
+        assert response.status_code == 403
+
+    def test_invalid_sector(self, agency_user, _setup_subsector_create):
+        self.client.force_authenticate(user=agency_user)
+
+        data = _setup_subsector_create
+        data["sector_id"] = 999
+
+        response = self.client.post(self.url, data=data)
+        assert response.status_code == 400
+
+    def test_create_with_code(self, agency_user, _setup_subsector_create, sector):
+        self.client.force_authenticate(user=agency_user)
+
+        data = {
+            **_setup_subsector_create,
+            "code": "NOSMECH",
+        }
+        response = self.client.post(self.url, data=data)
+        assert response.status_code == 201
+        assert response.data["name"] == "Subsectoru la Mafioti"
+        assert response.data["code"] == f"CUST{response.data['id']}"
+        assert response.data["sector_id"] == sector.id
+
+    def test_create_duplicate_subsector(self, agency_user, subsector, sector):
+        self.client.force_authenticate(user=agency_user)
+
+        response = self.client.post(
+            self.url, data={"name": subsector.name, "sector_id": sector.id}
+        )
+        assert response.status_code == 201
+        assert response.data["id"] == subsector.id
+        assert response.data["name"] == subsector.name
+
+        subsect_co = ProjectSubSector.objects.count()
+        assert subsect_co == 1
+
+
 @pytest.fixture(name="_setup_project_type")
 def setup_project_type():
     ProjectTypeFactory.create(name="Type", code="TYP", sort_order=0)
@@ -97,10 +221,8 @@ def setup_project_type():
 class TestProjectType(BaseTest):
     url = reverse("project-type-list")
 
-    def test_project_type_list_user(
-        self, admin_user, project_type, _setup_project_type
-    ):
-        self.client.force_authenticate(user=admin_user)
+    def test_project_type_list_user(self, user, project_type, _setup_project_type):
+        self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url)
         assert response.status_code == 200
@@ -144,8 +266,8 @@ def setup_project_meeting(country_ro, agency, project_type, project_status, subs
 class TestProjectMeeting(BaseTest):
     url = reverse("meeting-list")
 
-    def test_project_meeting_list_user(self, admin_user, _setup_project_meeting):
-        self.client.force_authenticate(user=admin_user)
+    def test_project_meeting_list_user(self, user, _setup_project_meeting):
+        self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url)
         assert response.status_code == 200
@@ -157,9 +279,9 @@ class TestProjectCluster(BaseTest):
     url = reverse("project-cluster-list")
 
     def test_project_cluster_list_user(
-        self, admin_user, project_cluster_kpp, project_cluster_kip
+        self, user, project_cluster_kpp, project_cluster_kip
     ):
-        self.client.force_authenticate(user=admin_user)
+        self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url)
         assert response.status_code == 200
@@ -181,8 +303,8 @@ def setup_rbm_measures():
 class TestRbmMeasures(BaseTest):
     url = reverse("rbm-measure-list")
 
-    def test_rbm_measures_list_user(self, admin_user, _setup_rbm_measures):
-        self.client.force_authenticate(user=admin_user)
+    def test_rbm_measures_list_user(self, user, _setup_rbm_measures):
+        self.client.force_authenticate(user=user)
 
         last_measure = _setup_rbm_measures
 

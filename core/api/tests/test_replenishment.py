@@ -28,6 +28,7 @@ from core.models import (
     ScaleOfAssessmentVersion,
     Replenishment,
     Country,
+    DisputedContribution,
 )
 
 
@@ -194,8 +195,10 @@ class TestStatusOfContributions:
         )
         AnnualContributionStatusFactory.create(country=country_2, year=year_2)
 
-        disputed_1 = DisputedContributionsFactory.create(year=year_1)
-        DisputedContributionsFactory.create(year=year_2)
+        disputed_1 = DisputedContributionsFactory.create(year=year_1, country=country_1)
+        disputed_2 = DisputedContributionsFactory.create(year=year_2, country=None)
+
+        assert disputed_2.country is None
 
         FermGainLossFactory.create(country=country_1)
         FermGainLossFactory.create(country=country_2)
@@ -304,6 +307,23 @@ class TestStatusOfContributions:
                 ).quantize(self.fifteen_decimals),
             },
             "disputed_contributions": disputed_1.amount.quantize(self.fifteen_decimals),
+            "disputed_contributions_per_country": [
+                {
+                    "id": disputed_1.id,
+                    "country": {
+                        "id": country_1.id,
+                        "name": country_1.name,
+                        "abbr": country_1.abbr,
+                        "name_alt": country_1.name_alt,
+                        "iso3": country_1.iso3,
+                        "has_cp_report": None,
+                        "is_a2": country_1.is_a2,
+                    },
+                    "year": year_1,
+                    "amount": disputed_1.amount.quantize(self.fifteen_decimals),
+                    "comment": disputed_1.comment,
+                }
+            ],
         }
 
     def test_triennial_status_of_contributions(self, user):
@@ -327,8 +347,8 @@ class TestStatusOfContributions:
             country=country_2, start_year=year_3, end_year=year_4
         )
 
-        disputed_1 = DisputedContributionsFactory.create(year=year_1)
-        DisputedContributionsFactory.create(year=year_3)
+        disputed_1 = DisputedContributionsFactory.create(year=year_1, country=None)
+        DisputedContributionsFactory.create(year=year_3, country=None)
 
         self.client.force_authenticate(user=user)
 
@@ -435,6 +455,7 @@ class TestStatusOfContributions:
                 ).quantize(self.fifteen_decimals),
             },
             "disputed_contributions": disputed_1.amount.quantize(self.fifteen_decimals),
+            "disputed_contributions_per_country": [],
         }
 
     def test_summary_status_of_contributions(self, user):
@@ -458,8 +479,8 @@ class TestStatusOfContributions:
             country=country_2, start_year=year_3, end_year=year_4
         )
 
-        disputed_1 = DisputedContributionsFactory.create(year=year_1)
-        disputed_2 = DisputedContributionsFactory.create(year=year_3)
+        disputed_1 = DisputedContributionsFactory.create(year=year_1, country=country_1)
+        disputed_2 = DisputedContributionsFactory.create(year=year_3, country=None)
 
         ferm_gain_loss_1 = FermGainLossFactory.create(country=country_1)
         ferm_gain_loss_2 = FermGainLossFactory.create(country=country_2)
@@ -602,6 +623,23 @@ class TestStatusOfContributions:
             "disputed_contributions": (disputed_1.amount + disputed_2.amount).quantize(
                 self.fifteen_decimals
             ),
+            "disputed_contributions_per_country": [
+                {
+                    "id": disputed_1.id,
+                    "country": {
+                        "id": country_1.id,
+                        "name": country_1.name,
+                        "abbr": country_1.abbr,
+                        "name_alt": country_1.name_alt,
+                        "iso3": country_1.iso3,
+                        "has_cp_report": None,
+                        "is_a2": country_1.is_a2,
+                    },
+                    "year": year_1,
+                    "amount": disputed_1.amount.quantize(self.fifteen_decimals),
+                    "comment": disputed_1.comment,
+                }
+            ],
         }
 
     def test_without_login(self):
@@ -697,6 +735,37 @@ class TestStatusOfContributions:
             )
         )
         assert response.data == {}
+
+
+class TestDisputedContributions(BaseTest):
+    url = reverse("replenishment-disputed-contributions-list")
+
+    def test_create_disputed_contributions(self, user):
+        country = CountryFactory.create(name="Country 1", iso3="XYZ")
+
+        self.client.force_authenticate(user=user)
+        self.client.post(
+            self.url,
+            {
+                "country": country.id,
+                "year": 2020,
+                "amount": "100",
+                "comment": "Comment",
+            },
+            format="json",
+        )
+
+        assert DisputedContribution.objects.count() == 1
+
+    def test_delete_disputed_contributions(self, user):
+        disputed = DisputedContributionsFactory.create()
+
+        self.client.force_authenticate(user=user)
+        self.client.delete(
+            reverse("replenishment-disputed-contributions-detail", args=[disputed.id])
+        )
+
+        assert DisputedContribution.objects.count() == 0
 
 
 class TestReplenishmentDashboard(BaseTest):

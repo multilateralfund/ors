@@ -4,7 +4,6 @@ import cx from 'classnames'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-import { getPathPeriod } from '@ors/components/manage/Blocks/Replenishment/utils'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import ReplenishmentProvider from '@ors/contexts/Replenishment/ReplenishmentProvider'
 
@@ -24,18 +23,16 @@ const SECTIONS = [
     path: '/replenishment/scale-of-assessment',
   },
   {
-    hidePeriod: true,
     label: 'Invoices',
     path: '/replenishment/invoices',
   },
   {
-    hidePeriod: true,
     label: 'Payments',
     path: '/replenishment/payments',
   },
 ]
 
-function getNavLinks(pathname, period) {
+function getNavLinks(pathname) {
   const result = []
 
   let currentSection
@@ -50,11 +47,7 @@ function getNavLinks(pathname, period) {
       <Link
         key={i}
         className={cx({ [styles.current]: isCurrent })}
-        href={
-          i > 1 && period != null && !entry.hidePeriod
-            ? `${entry.path}/${period}`
-            : entry.path
-        }
+        href={entry.path}
       >
         {entry.label}
       </Link>,
@@ -68,9 +61,8 @@ function ReplenishmentLayoutContent(props) {
   const { children } = props
 
   const pathname = usePathname()
-  const period = getPathPeriod(pathname)
 
-  const [_, navLinks] = getNavLinks(pathname, period)
+  const [_, navLinks] = getNavLinks(pathname)
 
   return (
     <>

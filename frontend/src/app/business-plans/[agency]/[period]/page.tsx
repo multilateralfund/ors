@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 
-import BPView from '@ors/components/manage/Blocks/BusinessPlans/BPView'
+import BPViewWrapper from "@ors/components/manage/Blocks/BusinessPlans/BP/BPView";
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
 export const metadata: Metadata = {
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default async function BusinessPlansDetails() {
   return (
     <PageWrapper>
-      <BPView />
+      <BPViewWrapper />
     </PageWrapper>
   )
 }

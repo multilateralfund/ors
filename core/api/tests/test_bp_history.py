@@ -10,31 +10,34 @@ pytestmark = pytest.mark.django_db
 @pytest.fixture(name="_setup_new_business_plan_create")
 def setup_new_business_plan_create(agency):
     return {
+        "name": "Test BP",
         "agency_id": agency.id,
         "year_start": 2020,
         "year_end": 2022,
-        "status": BusinessPlan.Status.draft,
+        "status": BusinessPlan.Status.agency_draft,
     }
 
 
 class TestBPHistory:
     client = APIClient()
 
-    def test_create_history(self, user, second_user, _setup_new_business_plan_create):
+    def test_create_history(
+        self, agency_user, agency_inputter_user, _setup_new_business_plan_create
+    ):
         VALIDATION_LIST = [
-            ("created by user", 1, 1, user.username),
-            ("updated by user", 0, 1, second_user.username),
+            ("created by user", 1, 1, agency_user.username),
+            ("updated by user", 0, 1, agency_inputter_user.username),
         ]
 
         # create new business plan
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=agency_user)
         url = reverse("businessplan-list")
         response = self.client.post(url, _setup_new_business_plan_create, format="json")
         assert response.status_code == 201
         business_plan_id = response.data["id"]
 
         # update business plan
-        self.client.force_authenticate(user=second_user)
+        self.client.force_authenticate(user=agency_inputter_user)
         url = reverse("businessplan-list") + f"{business_plan_id}/"
         data = _setup_new_business_plan_create
         data["records"] = []
@@ -53,11 +56,11 @@ class TestBPHistory:
             assert history[i].bp_version == version
 
         # check history in API response
-        url = reverse("bprecord-list")
+        url = reverse("businessplan-get")
         response = self.client.get(url, {"business_plan_id": new_id})
         assert response.status_code == 200
 
-        # check same history items in get records
+        # check same history items in get business plan
         history = response.data["history"]
         assert len(history) == len(VALIDATION_LIST)
 

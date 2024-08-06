@@ -17,6 +17,8 @@ from core.api.views import (
     ReplenishmentInvoiceFileDownloadView,
     ReplenishmentPaymentViewSet,
     ReplenishmentPaymentFileDownloadView,
+    DisputedContributionViewSet,
+    ReplenishmentDashboardExportView,
 )
 from core.api.views import ProjectCommentViewSet
 from core.api.views import ProjectFileView
@@ -24,7 +26,7 @@ from core.api.views.agency import AgencyListView
 from core.api.views.business_plan import (
     BPFileDownloadView,
     BPFileView,
-    BPRecordViewSet,
+    BPActivityViewSet,
 )
 from core.api.views.business_plan import BPStatusUpdateView, BusinessPlanViewSet
 from core.api.views.chemicals import (
@@ -72,15 +74,15 @@ from core.api.views.projects import (
     ProjectStatisticsView,
     ProjectSubmissionAmountViewSet,
     ProjectViewSet,
-    ProjectSectorListView,
     ProjectStatusListView,
-    ProjectSubSectorListView,
     ProjectTypeListView,
 )
 from core.api.views.rbm_measures import RBMMeasureListView
+from core.api.views.sector_subsector import ProjectSectorView, ProjectSubSectorView
 from core.api.views.settings import SettingsView
 from core.api.views.usages import UsageListView
 from core.api.views.countries import CountryListView
+from core.api.views.comment_types import CommentTypeListView
 
 router = routers.SimpleRouter()
 router.register("projects", ProjectViewSet)
@@ -88,9 +90,11 @@ router.register("project-fund", ProjectFundViewSet)
 router.register("project-ods-odp", ProjectOdsOdpViewSet)
 router.register("project-comment", ProjectCommentViewSet)
 router.register("project-rbm-measure", ProjectRbmMeasureViewSet)
+router.register("project-sector", ProjectSectorView)
+router.register("project-subsector", ProjectSubSectorView)
 router.register("submission-amount", ProjectSubmissionAmountViewSet)
 router.register("business-plan", BusinessPlanViewSet, basename="businessplan")
-router.register("business-plan-record", BPRecordViewSet, basename="bprecord")
+router.register("business-plan-activity", BPActivityViewSet, basename="bpactivity")
 router.register(
     "replenishment/countries",
     ReplenishmentCountriesViewSet,
@@ -100,6 +104,11 @@ router.register(
     "replenishment/replenishments",
     ReplenishmentViewSet,
     basename="replenishment-replenishments",
+)
+router.register(
+    "replenishment/disputed-contributions",
+    DisputedContributionViewSet,
+    basename="replenishment-disputed-contributions",
 )
 router.register(
     "replenishment/scales-of-assessment",
@@ -302,16 +311,6 @@ urlpatterns = [
         name="project-status-list",
     ),
     path(
-        "project-sectors/",
-        ProjectSectorListView.as_view(),
-        name="project-sector-list",
-    ),
-    path(
-        "project-subsectors/",
-        ProjectSubSectorListView.as_view(),
-        name="project-subsector-list",
-    ),
-    path(
         "project-types/",
         ProjectTypeListView.as_view(),
         name="project-type-list",
@@ -362,6 +361,11 @@ urlpatterns = [
         name="replenishment-dashboard",
     ),
     path(
+        "replenishment/dashboard/export/",
+        ReplenishmentDashboardExportView.as_view(),
+        name="replenishment-dashboard-export",
+    ),
+    path(
         "replenishment/status-of-contributions/summary/",
         SummaryStatusOfContributionsView.as_view(),
         name="replenishment-status-of-contributions-summary",
@@ -385,6 +389,11 @@ urlpatterns = [
         "replenishment/payment-file/<int:id>/download/",
         ReplenishmentPaymentFileDownloadView.as_view(),
         name="replenishment-payment-file-download",
+    ),
+    path(
+        "comment-types/",
+        CommentTypeListView.as_view(),
+        name="comment-type-list",
     ),
     *router.urls,
 ]

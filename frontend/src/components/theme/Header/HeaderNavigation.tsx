@@ -294,7 +294,7 @@ const DesktopHeaderNavigation = ({
           </div>
           <div
             className={cx(
-              'absolute left-0 z-10 mt-4 origin-top opacity-0 transition-all',
+              'absolute left-0 z-50 mt-4 origin-top opacity-0 transition-all',
               {
                 'collapse scale-y-0': !showMenu[item.label],
                 'scale-y-100 opacity-100': showMenu[item.label],

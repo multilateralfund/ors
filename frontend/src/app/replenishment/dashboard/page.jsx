@@ -4,6 +4,7 @@ import DownloadButtons from '@ors/app/replenishment/DownloadButtons'
 import ReplenishmentHeading from '@ors/app/replenishment/ReplenishmentHeading'
 import DashboardView from '@ors/components/manage/Blocks/Replenishment/Dashboard/DashboardView'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
+import { formatApiUrl } from '@ors/helpers'
 
 export default function ReplenishmentDashboard() {
   return (
@@ -14,7 +15,9 @@ export default function ReplenishmentDashboard() {
         defaultSpacing={false}
       >
         <ReplenishmentHeading>Dashboard</ReplenishmentHeading>
-        <DownloadButtons />
+        <DownloadButtons
+          downloadUrl={formatApiUrl('/api/replenishment/dashboard/export')}
+        />
         <DashboardView />
       </PageWrapper>
     </>

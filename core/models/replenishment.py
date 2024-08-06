@@ -39,8 +39,10 @@ class ScaleOfAssessmentVersion(models.Model):
     comment = models.TextField(blank=True, default="")
 
     def __str__(self):
-        return (f"Scale of Assessment Version {self.version} "
-                f"({self.replenishment.start_year} - {self.replenishment.end_year})")
+        return (
+            f"Scale of Assessment Version {self.version} "
+            f"({self.replenishment.start_year} - {self.replenishment.end_year})"
+        )
 
     class Meta:
         constraints = [
@@ -96,6 +98,9 @@ class ScaleOfAssessment(models.Model):
             version=self.version
         ).aggregate(models.Sum("un_scale_of_assessment"))["un_scale_of_assessment__sum"]
 
+        if un_assessment_sum is None:
+            return None
+
         return (
             self.un_scale_of_assessment / (un_assessment_sum - US_SCALE_OF_ASSESSMENT)
         ) * (Decimal("100") - un_assessment_sum) + self.un_scale_of_assessment
@@ -110,6 +115,9 @@ class ScaleOfAssessment(models.Model):
 
     @property
     def amount(self):
+        if self.adjusted_scale_of_assessment is None:
+            return None
+
         return (
             self.version.replenishment.amount
             * self.adjusted_scale_of_assessment
@@ -123,8 +131,10 @@ class ScaleOfAssessment(models.Model):
         return self.amount * self.exchange_rate
 
     def __str__(self):
-        return (f"Contribution (version {self.version.version}) {self.country.name} "
-                f"({self.version.replenishment.start_year} - {self.version.replenishment.end_year})")
+        return (
+            f"Contribution (version {self.version.version}) {self.country.name} "
+            f"({self.version.replenishment.start_year} - {self.version.replenishment.end_year})"
+        )
 
     class Meta:
         constraints = [
@@ -283,14 +293,30 @@ class TriennialContributionStatus(AbstractContributionStatus):
 
 
 class DisputedContribution(models.Model):
+    country = models.ForeignKey(
+        Country,
+        on_delete=models.PROTECT,
+        related_name="disputed_contributions",
+        null=True,
+    )
     year = models.IntegerField()
     amount = models.DecimalField(max_digits=30, decimal_places=15, default=0)
+    comment = models.TextField(blank=True, default="")
 
     def __str__(self):
         return f"Disputed Contribution {self.year} - {self.amount}"
 
     class Meta:
-        constraints = [models.UniqueConstraint(fields=["year"], name="unique_year")]
+        constraints = [
+            # Disputed contributions with country should be unique by year and country
+            models.UniqueConstraint(
+                fields=["country", "year"], name="unique_disputed_country_year"
+            ),
+            # Disputed contributions without country should be unique by year
+            models.UniqueConstraint(
+                fields=["year"], condition=models.Q(country=None), name="unique_year"
+            ),
+        ]
 
 
 class FermGainLoss(models.Model):

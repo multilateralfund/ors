@@ -123,8 +123,12 @@ function getEditableFieldNames(cs) {
 const EDITABLE = getEditableFieldNames(COLUMNS)
 
 function SaveManager(props) {
+  const { comment, currencyDateRange, data, replenishment, version, versions } =
+    props
+
+  const { refetchData: refetchReplenishment } = useContext(ReplenishmentContext)
+  const { refetchData: refetchSoA, setCurrentVersion } = useContext(SoAContext)
   const ctx = useContext(ReplenishmentContext)
-  const { comment, currencyDateRange, data, replenishment, version } = props
 
   const [isFinal, setIsFinal] = useState(false)
   const [createNewVersion, setCreateNewVersion] = useState(true)
@@ -173,17 +177,48 @@ function SaveManager(props) {
       method: 'POST',
     })
       .then(() => {
-        window.location.reload()
+        refetchReplenishment()
+        refetchSoA()
+        if (createNewVersion) {
+          setCurrentVersion(prevVersion => prevVersion + 1)
+        }
         enqueueSnackbar('Data saved successfully.', { variant: 'success' })
       })
       .catch((error) => {
         error.json().then((data) => {
-          enqueueSnackbar(
-            Object.entries(data)
-              .map(([_, value]) => value)
-              .join(' '),
-            { variant: 'error' },
-          )
+          // Iterate over each error object and format it
+          const messages = data
+            .map((errorObj, index) => {
+              // Extract the field name and the error message
+              const fieldErrors = Object.entries(errorObj).map(
+                ([field, errors]) => {
+                  // Check if errors is an array or object
+                  const errorMessage = Array.isArray(errors)
+                    ? errors
+                        .map((error) =>
+                          typeof error === 'object'
+                            ? JSON.stringify(error)
+                            : error,
+                        )
+                        .join(' ')
+                    : typeof errors === 'object'
+                      ? JSON.stringify(errors)
+                      : errors
+
+                  return `Row ${index + 1}: field ${field} - ${errorMessage}\n`
+                },
+              )
+
+              // Join all field errors for this particular row
+              return fieldErrors.join('\n')
+            })
+            .join('\n\n') // Separate different row errors with double newlines
+
+          // Display the notification with the formatted messages
+          enqueueSnackbar(messages, {
+            style: { whiteSpace: 'pre-line' },
+            variant: 'error',
+          })
         })
       })
   }
@@ -191,6 +226,10 @@ function SaveManager(props) {
   function cancelSave() {
     setSaving(false)
   }
+
+  const isNewestVersion = version?.version === versions[0]?.version
+
+  const showSave = !version?.is_final && isNewestVersion
 
   return (
     <div className="flex items-center gap-x-4 print:hidden">
@@ -240,7 +279,7 @@ function SaveManager(props) {
           </div>
         </FormDialog>
       ) : null}
-      {ctx.isTreasurer && (
+      {showSave && ctx.isTreasurer  && (
         <>
           <div className="flex items-center gap-x-2">
             <Input
@@ -418,6 +457,7 @@ function SAView(props) {
   const ctx = useContext(ReplenishmentContext)
   const ctxSoA = useContext(SoAContext)
   const version = ctxSoA.version
+  const versions = ctxSoA.versions
 
   const contributions = useMemo(
     function () {
@@ -770,6 +810,7 @@ function SAView(props) {
           data={transformForSave(tableData)}
           replenishment={replenishment}
           version={version}
+          versions={versions}
         />
       </div>
       <SATable

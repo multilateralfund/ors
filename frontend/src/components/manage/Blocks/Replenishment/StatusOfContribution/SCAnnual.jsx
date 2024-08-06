@@ -1,6 +1,8 @@
 'use client'
-import { useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 
+import ConfirmDialog from '@ors/components/manage/Blocks/Replenishment/ConfirmDialog'
+import DisputedContributionDialog from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/DisputedContributionDialog'
 import { AnnualIndicators } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/Indicators'
 import useGetSCData from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/useGetSCData'
 import {
@@ -9,9 +11,10 @@ import {
 } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
 import Table from '@ors/components/manage/Blocks/Replenishment/Table'
 import { sortTableData } from '@ors/components/manage/Blocks/Replenishment/utils'
+import { api } from '@ors/helpers'
 
 export default function SCAnnual({ year }) {
-  const { data, extraRows, rows } = useGetSCData(year)
+  const { data, extraRows, refetchSCData, rows } = useGetSCData(year)
 
   const [sortOn, setSortOn] = useState(0)
   const [sortDirection, setSortDirection] = useState(1)
@@ -22,6 +25,10 @@ export default function SCAnnual({ year }) {
     },
     [rows, sortOn, sortDirection],
   )
+
+  const countriesInTable = useMemo(() => {
+    return rows.map(({ country, country_id }) => ({ country, country_id }))
+  }, [rows])
 
   function handleSort(column) {
     setSortDirection((direction) => (column === sortOn ? -direction : 1))
@@ -61,25 +68,64 @@ export default function SCAnnual({ year }) {
     })
   }, [data])
 
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [rowToDelete, setRowToDelete] = useState(null)
+
+  function promptDeleteRow(rowId) {
+    setRowToDelete(rowId)
+    setShowDeleteModal(true)
+  }
+
+  async function handleDeleteRow(rowId) {
+    const row = extraRows[rowId]
+    await api(`api/replenishment/disputed-contributions/${row.disputed_id}`, {
+      method: 'DELETE',
+    })
+    setShowDeleteModal(false)
+    refetchSCData()
+  }
+
   return (
-    <div className="flex flex-col items-start gap-6">
-      <AnnualIndicators
-        data={indicatorsData}
-        totalPledge={totalPledge}
-        year={year}
-      />
-      <Table
-        adminButtons={false}
-        columns={SC_COLUMNS}
-        enableEdit={false}
-        enableSort={true}
-        extraRows={formatTableRows(extraRows)}
-        rowData={formatTableRows(sortedData)}
-        sortDirection={sortDirection}
-        sortOn={sortOn}
-        textPosition="center"
-        onSort={handleSort}
-      />
-    </div>
+    <>
+      {showDeleteModal ? (
+        <ConfirmDialog
+          onCancel={() => {
+            setRowToDelete(null)
+            setShowDeleteModal(false)
+          }}
+          onSubmit={() => handleDeleteRow(rowToDelete)}
+        >
+          <div className="text-lg">
+            Are you sure you want to delete Disputed Contribution for{' '}
+            {extraRows[rowToDelete].country_to_display} ?
+          </div>
+        </ConfirmDialog>
+      ) : null}
+      <div className="flex flex-col items-start gap-6">
+        <AnnualIndicators
+          data={indicatorsData}
+          totalPledge={totalPledge}
+          year={year}
+        />
+        <Table
+          adminButtons={false}
+          columns={SC_COLUMNS}
+          enableEdit={false}
+          enableSort={true}
+          extraRows={formatTableRows(extraRows)}
+          rowData={formatTableRows(sortedData)}
+          sortDirection={sortDirection}
+          sortOn={sortOn}
+          textPosition="center"
+          onDelete={promptDeleteRow}
+          onSort={handleSort}
+        />
+        <DisputedContributionDialog
+          countryOptions={countriesInTable}
+          refetchSCData={refetchSCData}
+          year={year}
+        />
+      </div>
+    </>
   )
 }

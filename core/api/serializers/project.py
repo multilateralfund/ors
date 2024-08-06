@@ -47,6 +47,8 @@ class ProjectSectorSerializer(serializers.ModelSerializer):
     ProjectSectorSerializer class
     """
 
+    name = serializers.CharField(required=True)
+
     class Meta:
         model = ProjectSector
         fields = [
@@ -62,7 +64,10 @@ class ProjectSubSectorSerializer(serializers.ModelSerializer):
     ProjectSubSectorSerializer class
     """
 
-    sector_id = serializers.IntegerField(read_only=True)
+    sector_id = serializers.PrimaryKeyRelatedField(
+        required=True, queryset=ProjectSector.objects.all().values_list("id", flat=True)
+    )
+    name = serializers.CharField(required=True)
 
     class Meta:
         model = ProjectSubSector

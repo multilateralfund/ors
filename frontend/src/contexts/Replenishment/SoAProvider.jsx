@@ -1,33 +1,33 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { api } from '@ors/helpers'
-import { formatApiUrl } from '@ors/helpers/Api/utils'
 
 import SoAContext from './SoAContext'
 
 function useApiReplenishment(startYear, versionId) {
   const [contributions, setContributions] = useState([])
   const [replenishment, setReplenishment] = useState({ amount: 0 })
+  const [fetchTrigger, setFetchTrigger] = useState(false)
+
+  const refetchData = useCallback(() => {
+    setFetchTrigger((prev) => !prev)
+  }, [])
 
   useEffect(
     function () {
-      // Avoid race conditions...use swr/react-query next time
+      // TODO: refactor to swr/react-query
+      // Bare fetches have race conditions, no caching, no deduplication
+      // Server data should live in a cache, not in a global context
+      // I think this data is better fetched after the replenishment so we don't
+      // make 2 requests (one with and one without a version)
+      // See: https://swr.vercel.app/docs/conditional-fetching#dependent
       let ignore = false
-      const urlParams = {
-        start_year: startYear,
-      }
 
-      if (versionId !== null && versionId !== undefined) {
-        urlParams.version = versionId
-      }
-
-      const path = [
-        '/api/replenishment/scales-of-assessment',
-        new URLSearchParams(urlParams),
-      ].join('?')
-
-      api(formatApiUrl(path), {
-        credentials: 'include',
+      api('/api/replenishment/scales-of-assessment', {
+        params: {
+          start_year: startYear,
+          version: versionId,
+        },
       }).then(function (jsonData) {
         if (!ignore) {
           setContributions(jsonData)
@@ -41,17 +41,17 @@ function useApiReplenishment(startYear, versionId) {
         ignore = true
       }
     },
-    [startYear, versionId],
+    [startYear, versionId, fetchTrigger],
   )
 
-  return { contributions, replenishment }
+  return { contributions, refetchData, replenishment }
 }
 
 function SoAProvider(props) {
   const { children, startYear } = props
 
   const [currentVersion, setCurrentVersion] = useState(null)
-  const { contributions, replenishment } = useApiReplenishment(
+  const { contributions, refetchData, replenishment } = useApiReplenishment(
     startYear,
     currentVersion,
   )
@@ -94,6 +94,7 @@ function SoAProvider(props) {
     <SoAContext.Provider
       value={{
         contributions,
+        refetchData,
         replenishment,
         setCurrentVersion,
         version,

@@ -151,24 +151,20 @@ function InvoicesView() {
     for (const key in entry) {
       const value = entry[key]
 
-      // Append non-file fields if they are not null, undefined
-      // Empty strings are used to delete a value
+      // Append non-file fields if they are not null, undefined, or empty string
       if (!key.startsWith('file_')) {
-        if (value !== null && value !== undefined) {
+        if (value !== null && value !== undefined && value !== '') {
           data.append(key, value)
         }
       }
-
-      // Append files with their types if they are valid
-      if (key.startsWith('file_') && value instanceof File) {
+      if (key.startsWith('file_') && entry[key] instanceof File) {
         const fileIndex = key.split('_')[1]
         const fileTypeKey = `file_type_${fileIndex}`
-        const fileType = entry[fileTypeKey]
-
-        ;(fileType ?? fileType !== '') &&
-          nr_new_files++ &&
-          (data.append(`files[${fileIndex}][file]`, value, value.name),
-          data.append(`files[${fileIndex}][type]`, fileType))
+        if (entry[fileTypeKey]) {
+          nr_new_files++
+          data.append(`files[${fileIndex}][file]`, entry[key], entry[key].name)
+          data.append(`files[${fileIndex}][type]`, entry[fileTypeKey])
+        }
       }
     }
 

@@ -20,10 +20,18 @@ class CountryAdmin(admin.ModelAdmin):
         exclude = [
             "cpreport",
             "project",
-            "bprecord",
+            "bpactivity",
             "cpreportarchive",
             "country",
             "user",
             "cpfiles",
+            "ceit_statuses",
+            "invoices",
+            "contributions",
+            "payments",
+            "annual_contributions_status",
+            "triennial_contributions_status",
+            "ferm_gain_loss",
+            "disputed_contributions",
         ]
         return get_final_display_list(Country, exclude)

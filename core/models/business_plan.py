@@ -1,9 +1,9 @@
 from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
-from core.models.agency import Agency
-from core.models.blend import Blend
 
+from core.models.agency import Agency
+from core.models.base import CommentType
 from core.models.country import Country
 from core.models.project import (
     ProjectCluster,
@@ -24,11 +24,15 @@ class BPChemicalType(models.Model):
 
 class BusinessPlan(models.Model):
     class Status(models.TextChoices):
-        draft = "Draft", "Draft"  # update => not saving versions
+        agency_draft = "Agency Draft", "Agency Draft"  # update => not saving versions
+        secretariat_draft = (
+            "Secretariat Draft",
+            "Secretariat Draft",
+        )  # update => not versions
         submitted = "Submitted", "Submitted"  # can't update
         need_changes = "Need Changes", "Need Changes"  # update => saving versions
         approved = "Approved", "Approved"  # can't update
-        rejected = "Rejected", "Rejected"  # can't update ???
+        rejected = "Rejected", "Rejected"  # can't update
 
     def upload_path(self, filename):
         return f"bp_files/{self.agency}/{self.year_start}-{self.year_end}/{filename}"
@@ -54,6 +58,7 @@ class BusinessPlan(models.Model):
         help_text="User who last updated the business plan",
     )
 
+    name = models.CharField(max_length=100, blank=True)
     year_start = models.IntegerField(
         validators=[MinValueValidator(settings.MIN_VALID_YEAR)]
     )
@@ -62,7 +67,7 @@ class BusinessPlan(models.Model):
     )
     agency = models.ForeignKey(Agency, on_delete=models.CASCADE)
     status = models.CharField(
-        max_length=32, choices=Status.choices, default=Status.draft
+        max_length=32, choices=Status.choices, default=Status.agency_draft
     )
     version = models.IntegerField(default=1)
 
@@ -76,7 +81,7 @@ class BusinessPlan(models.Model):
         return f"{self.agency_id} {self.year_start}-{self.year_end}"
 
 
-class BPRecord(models.Model):
+class BPActivity(models.Model):
     class LVCStatus(models.TextChoices):
         lvc = "LVC", "LVC"
         non_lvc = "Non-LVC", "Non-LVC"
@@ -90,7 +95,7 @@ class BPRecord(models.Model):
         undefined = "U", "Undefined"
 
     business_plan = models.ForeignKey(
-        BusinessPlan, on_delete=models.CASCADE, related_name="records"
+        BusinessPlan, on_delete=models.CASCADE, related_name="activities"
     )
     title = models.CharField(max_length=255)
     required_by_model = models.CharField(max_length=255, null=True, blank=True)
@@ -105,7 +110,6 @@ class BPRecord(models.Model):
         BPChemicalType, on_delete=models.CASCADE
     )  # cluster
     substances = models.ManyToManyField(Substance)
-    blends = models.ManyToManyField(Blend)
     amount_polyol = models.DecimalField(
         max_digits=25, decimal_places=15, null=True, blank=True
     )
@@ -128,14 +132,18 @@ class BPRecord(models.Model):
 
     # Secretariat comment
     comment_secretariat = models.TextField(blank=True)
+    comment_types = models.ManyToManyField(CommentType, blank=True)
 
     def __str__(self):
         return self.title
 
+    class Meta:
+        verbose_name_plural = "Bp activities"
 
-class BPRecordValue(models.Model):
-    bp_record = models.ForeignKey(
-        BPRecord, on_delete=models.CASCADE, related_name="values"
+
+class BPActivityValue(models.Model):
+    bp_activity = models.ForeignKey(
+        BPActivity, on_delete=models.CASCADE, related_name="values"
     )
     year = models.IntegerField(validators=[MinValueValidator(settings.MIN_VALID_YEAR)])
     value_usd = models.DecimalField(

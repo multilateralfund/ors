@@ -22,8 +22,8 @@ from core.import_data.utils import (
 from core.models.agency import Agency
 from core.models.business_plan import (
     BPChemicalType,
-    BPRecord,
-    BPRecordValue,
+    BPActivity,
+    BPActivityValue,
     BusinessPlan,
 )
 
@@ -136,13 +136,15 @@ def get_sector_subsector(sector_subsector, index_row):
 
     # check if we have a mapping for this string
     if sector_subsector in BP_SECTOR_SUBSECTOR_MAPPING:
-        sector_name = BP_SECTOR_SUBSECTOR_MAPPING[sector_subsector]['sector']
-        subsector_name = BP_SECTOR_SUBSECTOR_MAPPING[sector_subsector]['subsector']
+        sector_name = BP_SECTOR_SUBSECTOR_MAPPING[sector_subsector]["sector"]
+        subsector_name = BP_SECTOR_SUBSECTOR_MAPPING[sector_subsector]["subsector"]
     else:
         # get sector name
         sector_name_re = re.search(SECTOR_REGEX, sector_subsector)
         sector_name_str = (
-            sector_name_re.group("sector").strip() if sector_name_re else sector_subsector
+            sector_name_re.group("sector").strip()
+            if sector_name_re
+            else sector_subsector
         )
         sector_name = SECTOR_NAME_MAPPING.get(sector_name_str, sector_name_str)
 
@@ -216,7 +218,7 @@ def create_business_plan(row, index_row, year_start, year_end):
     if not all([country, project_type]):
         logger.warning(
             f"[row: {index_row}]: Missing required data (country or project_type))"
-            " => business plan record not created"
+            " => business plan activity not created"
         )
         return None
 
@@ -230,14 +232,14 @@ def create_business_plan(row, index_row, year_start, year_end):
     if not bp_chemical_type:
         logger.warning(
             f"[row: {index_row}]: Missing chemical type: {row['Chemical']} "
-            "=> business plan record not created"
+            "=> business plan activity not created"
         )
         return None
 
     sector, subsector = get_sector_subsector(row["Sector and Subsector"], index_row)
 
     # create business plan data
-    bp_record_data = {
+    bp_activity_data = {
         "business_plan": bp,
         "title": row["Title"] if row["Title"] else "Undefined",
         "required_by_model": row.get("Required by Model"),
@@ -259,17 +261,17 @@ def create_business_plan(row, index_row, year_start, year_end):
         "remarks_additional": row["Remarks (Additional)"],
     }
 
-    bp_record, _ = BPRecord.objects.update_or_create(
+    bp_activity, _ = BPActivity.objects.update_or_create(
         business_plan=bp,
-        title=bp_record_data["title"],
-        country=bp_record_data["country"],
-        defaults=bp_record_data,
+        title=bp_activity_data["title"],
+        country=bp_activity_data["country"],
+        defaults=bp_activity_data,
     )
 
-    return bp_record
+    return bp_activity
 
 
-def add_business_plan_values(bp_record, row, columns_dict):
+def add_business_plan_values(bp_activity, row, columns_dict):
     """
     Add business plan values
 
@@ -294,20 +296,20 @@ def add_business_plan_values(bp_record, row, columns_dict):
             continue
         value_data.update(
             {
-                "bp_record_id": bp_record.id,
+                "bp_activity_id": bp_activity.id,
                 "year": year,
             }
         )
-        values.append(BPRecordValue(**value_data))
+        values.append(BPActivityValue(**value_data))
 
-    BPRecordValue.objects.bulk_create(values, batch_size=1000)
+    BPActivityValue.objects.bulk_create(values, batch_size=1000)
 
 
-def add_chemicals(bp_record, row, index_row):
+def add_chemicals(bp_activity, row, index_row):
     """
     Add chemicals to business plan
 
-    @param bp_record: BPRecord object
+    @param bp_activity: BPActivity object
     @param row: row data
     @param index_row: row index
     """
@@ -316,7 +318,6 @@ def add_chemicals(bp_record, row, index_row):
 
     chemicals = row["Chemical detail"].split("/")
     substances = []
-    blends = []
     for chemical_name in chemicals:
         chemical, ch_type = get_chemical_by_name_or_components(chemical_name)
         if not chemical:
@@ -327,11 +328,8 @@ def add_chemicals(bp_record, row, index_row):
             continue
         if ch_type == "substance":
             substances.append(chemical)
-        elif ch_type == "blend":
-            blends.append(chemical)
 
-    bp_record.substances.add(*substances)
-    bp_record.blends.add(*blends)
+    bp_activity.substances.add(*substances)
 
 
 def parse_file(file_path, file_name):

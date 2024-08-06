@@ -18,18 +18,18 @@ class ReplenishmentAdmin(admin.ModelAdmin):
 class ScaleOfAssessmentAdmin(admin.ModelAdmin):
     search_fields = [
         "country__name",
-        "replenishment__start_year",
-        "replenishment__end_year",
+        "version__replenishment__start_year",
+        "version__replenishment__end_year",
         "amount",
     ]
     list_filter = [
         AutocompleteFilterFactory("country", "country"),
-        AutocompleteFilterFactory("replenishment", "replenishment"),
+        AutocompleteFilterFactory("replenishment", "version__replenishment"),
     ]
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
-        return queryset.select_related("country", "replenishment")
+        return queryset.select_related("country", "version")
 
 
 @admin.register(Invoice)

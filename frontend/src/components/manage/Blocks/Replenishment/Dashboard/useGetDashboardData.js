@@ -1,6 +1,4 @@
-import { useEffect, useState } from 'react'
-
-import { formatApiUrl } from '@ors/helpers'
+import useApi from '@ors/hooks/useApi'
 
 const OVERVIEW = {
   balance: { label: 'cash fund balance', value: null },
@@ -131,48 +129,41 @@ const updateObjectValues = (fetchedData) => {
     fetchedData.allocations.information_strategy
   PROVISIONS.bilateral_assistance.value =
     fetchedData.allocations.bilateral_assistance
-  PROVISIONS.total.value = calculateTotal(PROVISIONS)
+  PROVISIONS.total.value =
+    calculateTotal(PROVISIONS) +
+    ALLOCATIONS.total.value +
+    OVERVIEW.gain_loss.value
 }
 
 function useGetDashboardData() {
-  const [data, setData] = useState({
-    allocations: null,
-    charts: null,
-    income: null,
-    overview: null,
-    overviewIndicators: null,
-    provisions: null,
+  const { data, loading, setParams } = useApi({
+    options: {},
+    path: '/api/replenishment/dashboard',
   })
-  const [formData, setFormData] = useState(null)
-  const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    setLoading(true)
+  let formData
+  let newData
+  if (data) {
+    updateObjectValues(data)
+    formData = {
+      ...data.overview,
+      ...data.allocations,
+      ...data.income,
+    }
+    newData = {
+      allocations: ALLOCATIONS,
+      charts: data.charts,
+      income: INCOME,
+      overview: OVERVIEW,
+      overviewIndicators: OVERVIEW_INDICATORS,
+      provisions: PROVISIONS,
+    }
+  } else {
+    formData = {}
+    newData = {}
+  }
 
-    fetch(formatApiUrl('/api/replenishment/dashboard'), {
-      credentials: 'include',
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        updateObjectValues(data)
-        setFormData({ ...data.overview, ...data.allocations, ...data.income })
-        setData({
-          allocations: ALLOCATIONS,
-          charts: data.charts,
-          income: INCOME,
-          overview: OVERVIEW,
-          overviewIndicators: OVERVIEW_INDICATORS,
-          provisions: PROVISIONS,
-        })
-        setLoading(false)
-      })
-      .catch((error) => {
-        console.error('Error:', error)
-        setLoading(false)
-      })
-  }, [])
-
-  return { data, formData, loading }
+  return { formData, invalidateDataFn: setParams, loading, newData }
 }
 
 export default useGetDashboardData

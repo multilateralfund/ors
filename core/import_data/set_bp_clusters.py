@@ -10,7 +10,7 @@ from core.models.project import (
     ProjectSector,
     ProjectType,
 )
-from core.models.business_plan import BPRecord
+from core.models.business_plan import BPActivity
 
 logger = logging.getLogger(__name__)
 
@@ -22,10 +22,10 @@ MYA_SECTOR_CLUSTER_MAPPING = {
 
 def set_mya_clusters():
     """
-    Set the cluster a for the MYA bp records
+    Set the cluster a for the MYA bp activities
     """
-    bp_records = (
-        BPRecord.objects.filter(
+    bp_activities = (
+        BPActivity.objects.filter(
             is_multi_year=True,
             project_cluster__isnull=True,
             legacy_sector_and_subsector__isnull=False,
@@ -34,14 +34,14 @@ def set_mya_clusters():
         .all()
     )
     bp_clusters_set = 0
-    for bp_record in bp_records:
+    for bp_activity in bp_activities:
         cluster_name = None
 
         # check mapping fields
         bp_mapping_fields = [
-            bp_record.sector.name if bp_record.sector else None,
-            bp_record.subsector.name if bp_record.subsector else None,
-            bp_record.legacy_sector_and_subsector,
+            bp_activity.sector.name if bp_activity.sector else None,
+            bp_activity.subsector.name if bp_activity.subsector else None,
+            bp_activity.legacy_sector_and_subsector,
         ]
         bp_mapping_fields = [field for field in bp_mapping_fields if field]
         if not bp_mapping_fields:
@@ -61,48 +61,39 @@ def set_mya_clusters():
         if cluster_name:
             cluster = ProjectCluster.objects.find_by_name_or_code(cluster_name)
             if cluster:
-                bp_record.project_cluster = cluster
-                bp_record.save()
+                bp_activity.project_cluster = cluster
+                bp_activity.save()
                 bp_clusters_set += 1
             else:
                 logger.error(f"Cluster {cluster_name} not found")
 
-    logger.info(f"✔ {bp_clusters_set} clusters set for MYA BP records")
+    logger.info(f"✔ {bp_clusters_set} clusters set for MYA BP activities")
 
 
-def set_substances_cluster(record):
+def set_substances_cluster(activity):
     cluster_names = []
-    if not record.substances.exists() and not record.blends.exists():
+    if not activity.substances.exists():
         return
 
-    if (
-        record.substances.filter(name__icontains="CFC").exists()
-        or record.blends.filter(name__icontains="CFC").exists()
-    ):
+    if activity.substances.filter(name__icontains="CFC").exists():
         cluster_names.append("CFC Individual")
-    elif (
-        record.substances.filter(name__icontains="HCFC").exists()
-        or record.blends.filter(name__icontains="HCFC").exists()
-    ):
+    elif activity.substances.filter(name__icontains="HCFC").exists():
         cluster_names.append("HCFC Individual")
-    elif (
-        record.substances.filter(name__icontains="HFC").exists()
-        or record.blends.filter(name__icontains="HFC").exists()
-    ):
+    elif activity.substances.filter(name__icontains="HFC").exists():
         cluster_names.append("HFC Individual")
 
     if not cluster_names:
-        logger.error(f"No cluster found for record {record.id}")
+        logger.error(f"No cluster found for activity {activity.id}")
         return
 
     if len(cluster_names) > 1:
-        logger.error(f"Multiple clusters found for record {record.id}")
+        logger.error(f"Multiple clusters found for activity {activity.id}")
         return
 
     cluster = ProjectCluster.objects.find_by_name_or_code(cluster_names[0])
     if cluster:
-        record.project_cluster = cluster
-        record.save()
+        activity.project_cluster = cluster
+        activity.save()
     else:
         logger.error(f"Cluster {cluster_names[0]} not found")
 
@@ -117,7 +108,7 @@ def set_ind_clusters():
     gov_cluster = ProjectCluster.objects.find_by_name_or_code("GOV")
     current_proj_type = ProjectType.objects.find_by_name("INS")
     current_sector = ProjectSector.objects.find_by_name("NOU")
-    BPRecord.objects.select_related("project_type").filter(
+    BPActivity.objects.select_related("project_type").filter(
         project_cluster__isnull=True,
         legacy_project_type__isnull=False,
     ).filter(
@@ -131,7 +122,7 @@ def set_ind_clusters():
 
     # project type TRA => cluster to TRA
     current_cluster = ProjectCluster.objects.find_by_name_or_code("TRA")
-    BPRecord.objects.select_related("project_type").filter(
+    BPActivity.objects.select_related("project_type").filter(
         project_cluster__isnull=True,
         project_type__code="TRA",
     ).update(
@@ -139,32 +130,32 @@ def set_ind_clusters():
     )
 
     # check substances and set cluster
-    bp_records = (
-        BPRecord.objects.filter(
+    bp_activities = (
+        BPActivity.objects.filter(
             project_cluster__isnull=True,
         )
-        .prefetch_related("substances", "blends")
+        .prefetch_related("substances")
         .all()
     )
-    for record in bp_records:
-        set_substances_cluster(record)
+    for activity in bp_activities:
+        set_substances_cluster(activity)
 
     # project_type=DEM, sector=FUM => cluster to OOI
-    BPRecord.objects.select_related("project_type", "sector").filter(
+    BPActivity.objects.select_related("project_type", "sector").filter(
         project_cluster__isnull=True,
         project_type__code="DEM",
         sector__code="FUM",
     ).update(project_cluster=ooi_cluster)
 
     # sector=FOA or sector=REF and substance_type ="CFC" => cluster = CFCIND
-    BPRecord.objects.select_related("sector", "bp_chemical_type").filter(
+    BPActivity.objects.select_related("sector", "bp_chemical_type").filter(
         project_cluster__isnull=True,
         sector__code__in=["FOA", "REF"],
         bp_chemical_type__name="CFC",
     ).update(project_cluster=cfcind_cluster)
 
     # sector=FOA or sector=REF and substance_type ="HCFC" => cluster = HCFCIND
-    BPRecord.objects.select_related("sector", "bp_chemical_type").filter(
+    BPActivity.objects.select_related("sector", "bp_chemical_type").filter(
         project_cluster__isnull=True,
         sector__code__in=["FOA", "REF"],
         bp_chemical_type__name="HCFC",
@@ -172,21 +163,21 @@ def set_ind_clusters():
 
     # sector=FOA or sector=REF and substance_type ="HFC" => cluster = HFCIND
     hfcind_cluster = ProjectCluster.objects.find_by_name_or_code("HFCIND")
-    BPRecord.objects.select_related("sector", "bp_chemical_type").filter(
+    BPActivity.objects.select_related("sector", "bp_chemical_type").filter(
         project_cluster__isnull=True,
         sector__code__in=["FOA", "REF"],
         bp_chemical_type__name="HFC",
     ).update(project_cluster=hfcind_cluster)
 
     # project type=INV and sector in [FUM, FFI, PAG] => cluster = OOI
-    BPRecord.objects.select_related("project_type", "sector").filter(
+    BPActivity.objects.select_related("project_type", "sector").filter(
         project_cluster__isnull=True,
         project_type__code="INV",
         sector__code__in=["FUM", "FFI", "PAG"],
     ).update(project_cluster=ooi_cluster)
 
     # project type=INV and sector=SOL and subsector in [TCA, CTC] => cluster = OOI
-    BPRecord.objects.select_related("project_type", "sector", "subsector").filter(
+    BPActivity.objects.select_related("project_type", "sector", "subsector").filter(
         project_cluster__isnull=True,
         project_type__code="INV",
         sector__code="SOL",
@@ -195,21 +186,21 @@ def set_ind_clusters():
 
     # project_type=INV and sector=SOL and substance in [Carbon Tetrachloride, Methyl chloroform]
     #  => cluster = OOI
-    BPRecord.objects.select_related("project_type", "sector").filter(
+    BPActivity.objects.select_related("project_type", "sector").filter(
         project_cluster__isnull=True,
         project_type__code="INV",
         sector__code="SOL",
     ).prefetch_related("substances").all()
 
-    for record in bp_records:
-        if record.substances.filter(
+    for activity in bp_activities:
+        if activity.substances.filter(
             Q(name__iexact="Carbon Tetrachloride") | Q(name__iexact="Methyl chloroform")
         ).exists():
-            record.project_cluster = ooi_cluster
-            record.save()
+            activity.project_cluster = ooi_cluster
+            activity.save()
 
     # project type=INV and sector=SOL and subsector = 113 => cluster = CFCIND
-    BPRecord.objects.select_related("project_type", "sector", "subsector").filter(
+    BPActivity.objects.select_related("project_type", "sector", "subsector").filter(
         project_cluster__isnull=True,
         project_type__code="INV",
         sector__code="SOL",
@@ -217,46 +208,46 @@ def set_ind_clusters():
     ).update(project_cluster=cfcind_cluster)
 
     # project_type =PRP and sector in (FUM,PAG) => cluster = OOI
-    BPRecord.objects.select_related("project_type", "sector").filter(
+    BPActivity.objects.select_related("project_type", "sector").filter(
         project_cluster__isnull=True,
         project_type__code="PRP",
         sector__code__in=["FUM", "PAG"],
     ).update(project_cluster=ooi_cluster)
 
     # sector in {SOL,ARS} & chemical_type = CFC => cluster = CFCIND
-    BPRecord.objects.select_related("bp_chemical_type", "sector", "sector").filter(
+    BPActivity.objects.select_related("bp_chemical_type", "sector", "sector").filter(
         project_cluster__isnull=True,
         sector__code__in=["SOL", "ARS"],
         bp_chemical_type__name="CFC",
     ).update(project_cluster=cfcind_cluster)
 
     # sector in {SOL,ARS} & substance_type = HCFC => cluster = HCFCIND
-    BPRecord.objects.select_related("bp_chemical_type", "sector").filter(
+    BPActivity.objects.select_related("bp_chemical_type", "sector").filter(
         project_cluster__isnull=True,
         sector__code__in=["SOL", "ARS"],
         bp_chemical_type__name="HCFC",
     ).update(project_cluster=hcfcind_cluster)
 
     # sector = FUM & ods substance = "Methyl Bromide" => cluster = OOI
-    BPRecord.objects.select_related("sector").filter(
+    BPActivity.objects.select_related("sector").filter(
         project_cluster__isnull=True,
         sector__code="FUM",
     ).prefetch_related("substances").all()
 
-    for record in bp_records:
-        if record.substances.filter(name__iexact="Methyl Bromide").exists():
-            record.project_cluster = ooi_cluster
-            record.save()
+    for activity in bp_activities:
+        if activity.substances.filter(name__iexact="Methyl Bromide").exists():
+            activity.project_cluster = ooi_cluster
+            activity.save()
 
     # sector = SOL => cluster = CFCIND
-    BPRecord.objects.select_related("sector").filter(
+    BPActivity.objects.select_related("sector").filter(
         project_cluster__isnull=True,
         sector__code="SOL",
     ).update(project_cluster=cfcind_cluster)
 
     # sector = DES => cluster = Disposal
     current_cluster = ProjectCluster.objects.find_by_name_or_code("Disposal")
-    BPRecord.objects.select_related("sector").filter(
+    BPActivity.objects.select_related("sector").filter(
         project_cluster__isnull=True,
         sector__code="DES",
     ).update(project_cluster=current_cluster)
@@ -264,7 +255,7 @@ def set_ind_clusters():
     # sector in {CAP, PreCAP} => project_type = TAS & cluster = AGC
     current_cluster = ProjectCluster.objects.find_by_name_or_code("AGC")
     current_proj_type = ProjectType.objects.find_by_name("TAS")
-    BPRecord.objects.select_related("sector").filter(
+    BPActivity.objects.select_related("sector").filter(
         project_cluster__isnull=True,
         sector__code__in=["CAP", "PreCAP"],
     ).update(project_cluster=current_cluster, project_type=current_proj_type)
@@ -273,7 +264,7 @@ def set_ind_clusters():
     # => sector = Core Unit & project_type = Project Support
     current_sector = ProjectSector.objects.find_by_name("Core Unit")
     current_proj_type = ProjectType.objects.find_by_name("Project Support")
-    BPRecord.objects.select_related("project_cluster").filter(
+    BPActivity.objects.select_related("project_cluster").filter(
         project_cluster__name="AGC",
         title__icontains="Core unit",
     ).update(sector=current_sector, project_type=current_proj_type)
@@ -282,13 +273,13 @@ def set_ind_clusters():
     # => sector = CAP & project_type = TAS
     current_sector = ProjectSector.objects.find_by_name("CAP")
     current_proj_type = ProjectType.objects.find_by_name("TAS")
-    BPRecord.objects.select_related("project_cluster").filter(
+    BPActivity.objects.select_related("project_cluster").filter(
         project_cluster__name="AGC",
         title__icontains="Compliance Assistance",
     ).update(sector=current_sector, project_type=current_proj_type)
 
     # sector = FUM => cluster= OOI
-    BPRecord.objects.select_related("sector").filter(
+    BPActivity.objects.select_related("sector").filter(
         project_cluster__isnull=True,
         sector__code="FUM",
     ).update(project_cluster=ooi_cluster)
