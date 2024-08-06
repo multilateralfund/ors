@@ -153,11 +153,11 @@ function OpenActivity({ activity, period }: any) {
         </span>
         <span className="flex items-center gap-2">
           <span>Type</span>
-          <h4 className="m-0">{activity.project_type || '-'}</h4>
+          <h4 className="m-0">{activity.project_type?.code || '-'}</h4>
         </span>
         <span className="flex items-center gap-2">
           <span>Chemical Type</span>
-          <h4 className="m-0">{activity.bp_chemical_type || '-'}</h4>
+          <h4 className="m-0">{activity.bp_chemical_type?.name || '-'}</h4>
         </span>
         <span className="flex items-center gap-2">
           <span>Required by model</span>
@@ -165,11 +165,11 @@ function OpenActivity({ activity, period }: any) {
         </span>
         <span className="flex items-center gap-2">
           <span>Sector</span>
-          <h4 className="m-0">{activity.sector || '-'}</h4>
+          <h4 className="m-0">{activity.sector?.code || '-'}</h4>
         </span>
         <span className="flex items-center gap-2">
           <span>Subsector</span>
-          <h4 className="m-0">{activity.subsector || '-'}</h4>
+          <h4 className="m-0">{activity.subsector?.code || '-'}</h4>
         </span>
         <span className="flex items-center gap-2">
           <span>IND/MYA</span>
@@ -188,7 +188,7 @@ function OpenActivity({ activity, period }: any) {
         {activity.substances.length > 0
           ? activity.substances.map((substance: any, index: number) => (
               <h4 key={index} className="m-0">
-                {substance.name}
+                {substance?.name}
               </h4>
             ))
           : '-'}
@@ -229,19 +229,19 @@ function ClosedActivity({ activity, period }: any) {
         </span>
         <span className="flex items-center gap-2">
           <span>Type</span>
-          <h4 className="m-0">{activity.project_type || '-'}</h4>
+          <h4 className="m-0">{activity.project_type?.code || '-'}</h4>
         </span>
         <span className="flex items-center gap-2">
           <span>Chemical Type</span>
-          <h4 className="m-0">{activity.bp_chemical_type || '-'}</h4>
+          <h4 className="m-0">{activity.bp_chemical_type?.name || '-'}</h4>
         </span>
         <span className="flex items-center gap-2">
           <span>Sector</span>
-          <h4 className="m-0">{activity.sector || '-'}</h4>
+          <h4 className="m-0">{activity.sector?.code || '-'}</h4>
         </span>
         <span className="flex items-center gap-2">
           <span>Subsector</span>
-          <h4 className="m-0">{activity.subsector || '-'}</h4>
+          <h4 className="m-0">{activity.subsector?.code || '-'}</h4>
         </span>
       </div>
       <h4 className="m-0">{activity.title}</h4>
