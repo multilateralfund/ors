@@ -153,7 +153,7 @@ class BusinessPlanViewSet(
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        serializer = BusinessPlanCreateSerializer(
+        serializer = self.get_serializer(
             data=request.data, context={"ignore_comment": True}
         )
         if not serializer.is_valid():
@@ -235,9 +235,10 @@ class BusinessPlanViewSet(
         current_obj = self.get_object()
 
         ignore_comment = bool("agency" in user.user_type.lower())
-        serializer = BusinessPlanCreateSerializer(
+        serializer = self.get_serializer(
             data=request.data, context={"ignore_comment": ignore_comment}
         )
+
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
