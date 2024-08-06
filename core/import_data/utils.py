@@ -294,7 +294,7 @@ def get_sector_subsector_details(sector_code, subsector_name, row_index):
             subsector = subsector.first()
         else:
             subsector = ProjectSubSector.objects.find_by_name_and_sector(
-                new_subsector_name, sector
+                new_subsector_name, sector.id
             )
 
     if not subsector and not sector:

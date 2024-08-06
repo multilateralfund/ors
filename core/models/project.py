@@ -79,6 +79,17 @@ class ProjectSector(models.Model):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=10, null=True, blank=True)
     sort_order = models.FloatField(null=True, blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        related_name="created_sectors",
+        help_text="User who created the sector",
+    )
+    is_custom = models.BooleanField(
+        default=False,
+        help_text="Custom sector created by user, not from the official list.",
+    )
 
     objects = ProjectSectorManager()
 
@@ -98,11 +109,11 @@ class ProjectSubSectorManager(models.Manager):
             models.Q(name__icontains=search_str) | models.Q(code__icontains=search_str)
         ).all()
 
-    def find_by_name_and_sector(self, name, sector):
+    def find_by_name_and_sector(self, name, sector_id):
         name_str = name.strip()
         return self.filter(
             models.Q(name__iexact=name_str) | models.Q(code__iexact=name_str),
-            sector=sector,
+            sector_id=sector_id,
         ).first()
 
 
@@ -111,6 +122,17 @@ class ProjectSubSector(models.Model):
     code = models.CharField(max_length=10, null=True, blank=True)
     sector = models.ForeignKey(ProjectSector, on_delete=models.CASCADE)
     sort_order = models.FloatField(null=True, blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        related_name="created_subsectors",
+        help_text="User who created the subsector",
+    )
+    is_custom = models.BooleanField(
+        default=False,
+        help_text="Custom sector created by user, not from the official list.",
+    )
 
     objects = ProjectSubSectorManager()
 
