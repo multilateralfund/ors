@@ -12,7 +12,6 @@ class IsSecretariat(permissions.BasePermission):
         return False
 
 
-<<<<<<< HEAD
 class IsUserAllowedReplenishment(permissions.BasePermission):
     def has_permission(self, request, view):
         user = request.user
@@ -28,7 +27,10 @@ class IsUserAllowedReplenishment(permissions.BasePermission):
             ):
                 if request.method in permissions.SAFE_METHODS:
                     return True
-=======
+
+        return False
+
+
 class IsAgency(permissions.BasePermission):
     def has_permission(self, request, view):
         user = request.user
@@ -101,6 +103,5 @@ class IsCountryUser(permissions.BasePermission):
 
         if request.user.country_id == obj.country_id:
             return True
->>>>>>> main
 
         return False
