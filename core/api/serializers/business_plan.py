@@ -185,12 +185,6 @@ class BPActivityDetailSerializer(serializers.ModelSerializer):
 
 class BPActivityListSerializer(BPActivityDetailSerializer):
     agency = serializers.SerializerMethodField()
-    project_type = serializers.SlugRelatedField("code", read_only=True)
-    bp_chemical_type = serializers.SlugRelatedField("name", read_only=True)
-    project_cluster = serializers.SlugRelatedField("code", read_only=True)
-
-    sector = serializers.SlugRelatedField("code", read_only=True)
-    subsector = serializers.SlugRelatedField("code", read_only=True)
 
     class Meta(BPActivityDetailSerializer.Meta):
         fields = ["agency"] + BPActivityDetailSerializer.Meta.fields

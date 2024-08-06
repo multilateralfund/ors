@@ -1,5 +1,6 @@
 from django_filters import rest_framework as filters
 from django_filters.widgets import CSVWidget
+from django_filters.rest_framework import DjangoFilterBackend
 
 from core.models import BPActivity
 from core.models import BusinessPlan
@@ -9,6 +10,21 @@ from core.models import ProjectSector
 from core.models import ProjectSubSector
 from core.models import ProjectType
 from core.models.agency import Agency
+from core.models.business_plan import BPChemicalType
+
+
+class BPFilterBackend(DjangoFilterBackend):
+    def get_filterset_class(self, view, queryset=None):
+        if getattr(view, "action", None) == "get":
+            return BPActivityFilter
+        return BusinessPlanFilter
+
+
+class BPActivityFilterBackend(DjangoFilterBackend):
+    def get_filterset_class(self, view, queryset=None):
+        if getattr(view, "action", None) == "list":
+            return BPActivityListFilter
+        return BPActivityFilter
 
 
 class BusinessPlanFilter(filters.FilterSet):
@@ -36,37 +52,46 @@ class BPActivityFilter(filters.FilterSet):
     country_id = filters.ModelMultipleChoiceFilter(
         queryset=Country.objects.all(),
         widget=CSVWidget,
+        help_text="Filter by country. Multiple values can be separated by comma.",
     )
     sector_id = filters.ModelMultipleChoiceFilter(
         queryset=ProjectSector.objects.all(),
         widget=CSVWidget,
+        help_text="Filter by sector. Multiple values can be separated by comma.",
     )
     subsector_id = filters.ModelMultipleChoiceFilter(
         queryset=ProjectSubSector.objects.all(),
         widget=CSVWidget,
+        help_text="Filter by subsector. Multiple values can be separated by comma.",
     )
     project_type_id = filters.ModelMultipleChoiceFilter(
         queryset=ProjectType.objects.all(),
         widget=CSVWidget,
+        help_text="Filter by project type. Multiple values can be separated by comma.",
     )
     project_cluster_id = filters.ModelMultipleChoiceFilter(
         queryset=ProjectCluster.objects.all(),
         widget=CSVWidget,
+        help_text="Filter by project cluster. Multiple values can be separated by comma.",
     )
     status = filters.MultipleChoiceFilter(
         choices=BPActivity.Status.choices,
         widget=CSVWidget,
+        help_text="Filter by status. Multiple values can be separated by comma.",
+    )
+    bp_chemical_type_id = filters.MultipleChoiceFilter(
+        choices=BPChemicalType.objects.all(),
+        widget=CSVWidget,
+        help_text="Filter by BP chemical type. Multiple values can be separated by comma.",
     )
 
     class Meta:
         model = BPActivity
         fields = [
             "country_id",
-            "lvc_status",
             "project_type_id",
             "project_cluster_id",
-            "bp_chemical_type",
-            "substances",
+            "bp_chemical_type_id",
             "sector_id",
             "subsector_id",
             "status",

@@ -8,7 +8,6 @@ from django.db import transaction
 from django.db.models import Max
 from django.db.models import Min
 from django.http import HttpResponse
-from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, viewsets, filters, mixins, status
@@ -17,8 +16,10 @@ from rest_framework.response import Response
 
 from core.api.export.base import configure_sheet_print
 from core.api.export.business_plan import BusinessPlanWriter
-from core.api.filters.business_plan import BPActivityFilter, BPActivityListFilter
-from core.api.filters.business_plan import BusinessPlanFilter
+from core.api.filters.business_plan import (
+    BPActivityFilterBackend,
+    BPFilterBackend,
+)
 from core.api.permissions import IsAgency, IsSecretariat
 from core.api.serializers.bp_history import BPHistorySerializer
 from core.api.serializers.business_plan import (
@@ -41,13 +42,6 @@ from core.tasks import (
     send_mail_bp_status_update,
     send_mail_bp_update,
 )
-
-
-class BPFilterBackend(DjangoFilterBackend):
-    def get_filterset_class(self, view, queryset=None):
-        if getattr(view, "action", None) == "get":
-            return BPActivityFilter
-        return BusinessPlanFilter
 
 
 class BusinessPlanViewSet(
@@ -99,6 +93,8 @@ class BusinessPlanViewSet(
     def get_serializer_class(self):
         if self.action == "get":
             return BPActivityDetailSerializer
+        if self.action in ["create", "update"]:
+            return BusinessPlanCreateSerializer
         return BusinessPlanSerializer
 
     @action(methods=["GET"], detail=False, url_path="get-years")
@@ -157,7 +153,7 @@ class BusinessPlanViewSet(
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        serializer = BusinessPlanCreateSerializer(
+        serializer = self.get_serializer(
             data=request.data, context={"ignore_comment": True}
         )
         if not serializer.is_valid():
@@ -239,9 +235,10 @@ class BusinessPlanViewSet(
         current_obj = self.get_object()
 
         ignore_comment = bool("agency" in user.user_type.lower())
-        serializer = BusinessPlanCreateSerializer(
+        serializer = self.get_serializer(
             data=request.data, context={"ignore_comment": ignore_comment}
         )
+
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -370,17 +367,20 @@ class BPActivityViewSet(
     viewsets.GenericViewSet,
 ):
     permission_classes = [IsSecretariat | IsAgency]
-    serializer_class = BPActivityDetailSerializer
-    filterset_class = BPActivityFilter
 
     filter_backends = [
-        DjangoFilterBackend,
+        BPActivityFilterBackend,
         filters.OrderingFilter,
         filters.SearchFilter,
     ]
     search_fields = ["title"]
     ordering = ["title", "country", "id"]
     ordering_fields = ["business_plan__agency__name"] + BPACTIVITY_ORDERING_FIELDS
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return BPActivityListSerializer
+        return BPActivityDetailSerializer
 
     def get_queryset(self):
         queryset = BPActivity.objects.select_related(
@@ -447,8 +447,6 @@ class BPActivityViewSet(
 
     def list(self, request, *args, **kwargs):
         # get all activities between year_start and year_end
-        self.filterset_class = BPActivityListFilter
-        self.serializer_class = BPActivityListSerializer
 
         queryset = self.filter_queryset(self.get_queryset())
         page = self.paginate_queryset(queryset)
