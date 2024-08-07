@@ -419,8 +419,10 @@ def bp_activity(business_plan, country_ro):
 @pytest.fixture
 def bp_activity_values(bp_activity):
     return [
-        BPActivityValueFactory(bp_activity=bp_activity, year=year)
-        for year in (2020, 2021, 2022, 2023)
+        BPActivityValueFactory(bp_activity=bp_activity, year=2020),
+        BPActivityValueFactory(bp_activity=bp_activity, year=2021),
+        BPActivityValueFactory(bp_activity=bp_activity, year=2022),
+        BPActivityValueFactory(bp_activity=bp_activity, year=2022, is_after=True),
     ]
 
 

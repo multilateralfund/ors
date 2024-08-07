@@ -73,10 +73,13 @@ class BusinessPlanWriter(BaseWriter):
                 "type": "number",
                 "column_width": self.COLUMN_WIDTH * 1.5,
             },
-            {"id": "project_cluster","headerName": "Cluster"},
+            {"id": "project_cluster", "headerName": "Cluster"},
             {"id": "sector", "headerName": "Sector"},
             {"id": "subsector", "headerName": "Subsector"},
-            {"id": "legacy_sector_and_subsector", "headerName": "Legacy Sector and Subsector"},
+            {
+                "id": "legacy_sector_and_subsector",
+                "headerName": "Legacy Sector and Subsector",
+            },
             {
                 "id": "title",
                 "headerName": "Title",
@@ -112,13 +115,32 @@ class BusinessPlanWriter(BaseWriter):
                 "headerName": "Remarks (Additional)",
                 "column_width": self.COLUMN_WIDTH * 4,
             },
+            {
+                "id": "comment_secretariat",
+                "headerName": "Comment",
+                "column_width": self.COLUMN_WIDTH * 4,
+            },
+            {
+                "id": "comment_types",
+                "headerName": "Comment types",
+                "column_width": self.COLUMN_WIDTH * 4,
+                "method": self.get_comment_types,
+            },
         ]
 
         super().__init__(sheet, headers)
 
-    def get_value(self, record, header):
+    def get_value(self, activity, header):
         attr, year = header["id"].rsplit("_", 1)
-        for value in record.get("values", []):
-            if str(value["year"]) == year:
+        is_after = bool("after" in header["headerName"].lower())
+        if is_after:
+            year = int(year) - 1
+
+        for value in activity.get("values", []):
+            if value["year"] == int(year) and value["is_after"] == is_after:
                 return value[attr]
         return 0
+
+    def get_comment_types(self, activity, header):
+        comment_types = activity.get("comment_types", [])
+        return ", ".join(comment_types)
