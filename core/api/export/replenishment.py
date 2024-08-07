@@ -50,3 +50,62 @@ class DashboardWriter(WriteOnlyBase):
         )
         cell.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
         return cell
+
+
+class SummaryStatusOfContributionsWriter(WriteOnlyBase):
+
+    def __init__(self, sheet):
+        headers = [
+            {
+                "id": "country",
+                "headerName": "Party",
+                "column_width": 25,
+            },
+            {
+                "id": "agreed_contributions",
+                "headerName": "Agreed contributions",
+                "column_width": 25,
+            },
+            {
+                "id": "cash_payments",
+                "headerName": "Cash payments",
+                "column_width": 25,
+            },
+            {
+                "id": "bilateral_assistance",
+                "headerName": "Bilateral assistance",
+                "column_width": 25,
+            },
+            {
+                "id": "promissory_notes",
+                "headerName": "Promissory notes",
+                "column_width": 25,
+            },
+            {
+                "id": "outstanding_contributions",
+                "headerName": "Outstanding contributions",
+                "column_width": 25,
+            },
+            {
+                "id": "gain_loss",
+                "headerName": "Exchange (Gain)/Loss. NB:Negative amount = Gain",
+                "column_width": 25,
+            },
+        ]
+        super().__init__(sheet, headers)
+
+    def write_record_cell(self, value, read_only=False):
+        cell = super().write_record_cell(value, read_only)
+        if any(
+            bold_string == value
+            for bold_string in ["TOTAL", "SUB-TOTAL", "Disputed contributions", "CEIT"]
+        ):
+            cell.border = Border(
+                top=Side(style="thick"),
+                left=Side(style="thick"),
+                right=Side(style="thick"),
+                bottom=Side(style="thick"),
+            )
+            cell.font = Font(name=DEFAULT_FONT.name, bold=True)
+
+        return cell

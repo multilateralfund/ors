@@ -1,7 +1,12 @@
 from datetime import datetime
+
+from django.db.models import Q, F
 from rest_framework.exceptions import ValidationError
 
 from django.db import models
+
+from core.models import Country, TriennialContributionStatus, FermGainLoss, \
+    DisputedContribution
 from core.models.business_plan import BusinessPlan
 from core.models.country_programme import CPRecord, CPReport, CPReportFormatRow
 from core.models.country_programme_archive import CPRecordArchive, CPReportArchive
@@ -428,3 +433,71 @@ def get_business_plan_from_request(request):
         raise ValidationError({"error": "Business plan not found"}) from e
 
     return business_plan
+
+
+class SummaryStatusOfContributionsMixin:
+    def get_status_of_contributions_qs(self):
+        return (
+            Country.objects.filter(triennial_contributions_status__isnull=False)
+            .prefetch_related("triennial_contributions_status")
+            .select_related("ferm_gain_loss")
+            .annotate(
+                agreed_contributions=models.Sum(
+                    "triennial_contributions_status__agreed_contributions", default=0
+                ),
+                cash_payments=models.Sum(
+                    "triennial_contributions_status__cash_payments", default=0
+                ),
+                bilateral_assistance=models.Sum(
+                    "triennial_contributions_status__bilateral_assistance", default=0
+                ),
+                promissory_notes=models.Sum(
+                    "triennial_contributions_status__promissory_notes", default=0
+                ),
+                outstanding_contributions=models.Sum(
+                    "triennial_contributions_status__outstanding_contributions",
+                    default=0,
+                ),
+                gain_loss=models.F("ferm_gain_loss__amount"),
+            )
+            .order_by("name")
+        )
+
+    def get_ceit_data(self):
+        return TriennialContributionStatus.objects.filter(
+            Q(country__ceit_statuses__is_ceit=True)
+            & Q(country__ceit_statuses__start_year__lte=F("start_year"))
+            & (
+                Q(country__ceit_statuses__end_year__gte=F("end_year"))
+                | Q(country__ceit_statuses__end_year__isnull=True)
+            )
+        ).aggregate(
+            agreed_contributions=models.Sum("agreed_contributions", default=0),
+            cash_payments=models.Sum("cash_payments", default=0),
+            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+            promissory_notes=models.Sum("promissory_notes", default=0),
+            outstanding_contributions=models.Sum(
+                "outstanding_contributions", default=0
+            ),
+        )
+
+    def get_total(self):
+        return TriennialContributionStatus.objects.aggregate(
+            agreed_contributions=models.Sum("agreed_contributions", default=0),
+            cash_payments=models.Sum("cash_payments", default=0),
+            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+            promissory_notes=models.Sum("promissory_notes", default=0),
+            outstanding_contributions=models.Sum(
+                "outstanding_contributions", default=0
+            ),
+        )
+
+    def get_gain_loss(self):
+        return FermGainLoss.objects.aggregate(total=models.Sum("amount", default=0))[
+            "total"
+        ]
+
+    def get_disputed_contribution_amount(self):
+        return DisputedContribution.objects.aggregate(
+            total=models.Sum("amount", default=0)
+        )["total"]
