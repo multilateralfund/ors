@@ -92,6 +92,11 @@ def country_user(country_ro):
 
 
 @pytest.fixture
+def treasurer_user():
+    return UserFactory(username="FaraNumar", user_type="treasurer")
+
+
+@pytest.fixture
 def cp_report_1996(country_ro, user):
     return CPReportFactory.create(
         country=country_ro,

@@ -273,6 +273,7 @@ class ScaleOfAssessmentViewSet(
 
 class AnnualStatusOfContributionsView(views.APIView):
     permission_classes = [IsUserAllowedReplenishment]
+
     def get(self, request, *args, **kwargs):
         year = kwargs["year"]
 
@@ -513,7 +514,6 @@ class DisputedContributionViewSet(
         return DisputedContributionReadSerializer
 
     def get_queryset(self):
-        # TODO: add proper permission classes
         user = self.request.user
         queryset = DisputedContribution.objects.all()
         if user.user_type == user.UserType.COUNTRY_USER:
