@@ -832,10 +832,10 @@ class TestStatusOfContributions:
 class TestDisputedContributions(BaseTest):
     url = reverse("replenishment-disputed-contributions-list")
 
-    def test_create_disputed_contributions(self, user):
+    def test_create_disputed_contributions(self, treasurer_user):
         country = CountryFactory.create(name="Country 1", iso3="XYZ")
 
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=treasurer_user)
         self.client.post(
             self.url,
             {
@@ -849,10 +849,10 @@ class TestDisputedContributions(BaseTest):
 
         assert DisputedContribution.objects.count() == 1
 
-    def test_delete_disputed_contributions(self, user):
+    def test_delete_disputed_contributions(self, treasurer_user):
         disputed = DisputedContributionsFactory.create()
 
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=treasurer_user)
         self.client.delete(
             reverse("replenishment-disputed-contributions-detail", args=[disputed.id])
         )

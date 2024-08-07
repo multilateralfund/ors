@@ -52,9 +52,9 @@ class DashboardWriter(WriteOnlyBase):
         return cell
 
 
-class SummaryStatusOfContributionsWriter(WriteOnlyBase):
+class StatusOfContributionsWriter(WriteOnlyBase):
 
-    def __init__(self, sheet):
+    def __init__(self, sheet, extra_headers=None):
         headers = [
             {
                 "id": "country",
@@ -86,24 +86,17 @@ class SummaryStatusOfContributionsWriter(WriteOnlyBase):
                 "headerName": "Outstanding contributions",
                 "column_width": 25,
             },
-            {
-                "id": "gain_loss",
-                "headerName": "Exchange (Gain)/Loss. NB:Negative amount = Gain",
-                "column_width": 25,
-            },
         ]
+
+        if extra_headers:
+            headers.extend(extra_headers)
         super().__init__(sheet, headers)
 
     def write_record_cell(self, value, read_only=False):
         cell = super().write_record_cell(value, read_only)
-        if any(
-            bold_string == value
-            for bold_string in ["TOTAL", "SUB-TOTAL", "Disputed contributions", "CEIT"]
-        ):
+        if any(bold_string == value for bold_string in ["TOTAL", "SUB-TOTAL"]):
             cell.border = Border(
                 top=Side(style="thick"),
-                left=Side(style="thick"),
-                right=Side(style="thick"),
                 bottom=Side(style="thick"),
             )
             cell.font = Font(name=DEFAULT_FONT.name, bold=True)

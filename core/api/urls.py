@@ -18,7 +18,9 @@ from core.api.views import (
     ReplenishmentPaymentViewSet,
     ReplenishmentPaymentFileDownloadView,
     DisputedContributionViewSet,
-    ReplenishmentDashboardExportView, SummaryStatusOfContributionsExportView,
+    ReplenishmentDashboardExportView,
+    SummaryStatusOfContributionsExportView,
+    TriennialStatusOfContributionsExportView,
 )
 from core.api.views import ProjectCommentViewSet
 from core.api.views import ProjectFileView
@@ -374,6 +376,11 @@ urlpatterns = [
         "replenishment/status-of-contributions/summary/",
         SummaryStatusOfContributionsView.as_view(),
         name="replenishment-status-of-contributions-summary",
+    ),
+    path(
+        "replenishment/status-of-contributions/<int:start_year>/<int:end_year>/export/",
+        TriennialStatusOfContributionsExportView.as_view(),
+        name="replenishment-status-of-contributions-triennial-export",
     ),
     path(
         "replenishment/status-of-contributions/<int:start_year>/<int:end_year>/",

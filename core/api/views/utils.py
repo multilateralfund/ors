@@ -5,8 +5,12 @@ from rest_framework.exceptions import ValidationError
 
 from django.db import models
 
-from core.models import Country, TriennialContributionStatus, FermGainLoss, \
-    DisputedContribution
+from core.models import (
+    Country,
+    TriennialContributionStatus,
+    FermGainLoss,
+    DisputedContribution,
+)
 from core.models.business_plan import BusinessPlan
 from core.models.country_programme import CPRecord, CPReport, CPReportFormatRow
 from core.models.country_programme_archive import CPRecordArchive, CPReportArchive
@@ -501,3 +505,80 @@ class SummaryStatusOfContributionsMixin:
         return DisputedContribution.objects.aggregate(
             total=models.Sum("amount", default=0)
         )["total"]
+
+
+class TriennialStatusOfContributionsAggregator:
+    def __init__(self, start_year, end_year):
+        self.start_year = start_year
+        self.end_year = end_year
+
+    def get_status_of_contributions_qs(self):
+        return (
+            Country.objects.filter(
+                triennial_contributions_status__start_year=self.start_year,
+                triennial_contributions_status__end_year=self.end_year,
+            )
+            .prefetch_related("triennial_contributions_status")
+            .annotate(
+                agreed_contributions=models.Sum(
+                    "triennial_contributions_status__agreed_contributions", default=0
+                ),
+                cash_payments=models.Sum(
+                    "triennial_contributions_status__cash_payments", default=0
+                ),
+                bilateral_assistance=models.Sum(
+                    "triennial_contributions_status__bilateral_assistance", default=0
+                ),
+                promissory_notes=models.Sum(
+                    "triennial_contributions_status__promissory_notes", default=0
+                ),
+                outstanding_contributions=models.Sum(
+                    "triennial_contributions_status__outstanding_contributions",
+                    default=0,
+                ),
+            )
+            .order_by("name")
+        )
+
+    def get_ceit_countries(self):
+        return Country.objects.filter(
+            Q(ceit_statuses__is_ceit=True)
+            & Q(ceit_statuses__start_year__lte=self.start_year)
+            & (
+                Q(ceit_statuses__end_year__gte=self.end_year)
+                | Q(ceit_statuses__end_year__isnull=True)
+            ),
+        )
+
+    def get_ceit_data(self, ceit_countries_qs):
+        return TriennialContributionStatus.objects.filter(
+            start_year=self.start_year,
+            end_year=self.end_year,
+            country_id__in=ceit_countries_qs.values_list("id", flat=True),
+        ).aggregate(
+            agreed_contributions=models.Sum("agreed_contributions", default=0),
+            cash_payments=models.Sum("cash_payments", default=0),
+            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+            promissory_notes=models.Sum("promissory_notes", default=0),
+            outstanding_contributions=models.Sum(
+                "outstanding_contributions", default=0
+            ),
+        )
+
+    def get_total(self):
+        return TriennialContributionStatus.objects.filter(
+            start_year=self.start_year, end_year=self.end_year
+        ).aggregate(
+            agreed_contributions=models.Sum("agreed_contributions", default=0),
+            cash_payments=models.Sum("cash_payments", default=0),
+            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+            promissory_notes=models.Sum("promissory_notes", default=0),
+            outstanding_contributions=models.Sum(
+                "outstanding_contributions", default=0
+            ),
+        )
+
+    def get_disputed_contribution_amount(self):
+        return DisputedContribution.objects.filter(
+            year__gte=self.start_year, year__lte=self.end_year
+        ).aggregate(total=models.Sum("amount", default=0))["total"]
