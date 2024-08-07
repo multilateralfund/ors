@@ -1,15 +1,20 @@
 from datetime import datetime
 
+import openpyxl
 from django.db.models import Q, F
 from rest_framework.exceptions import ValidationError
 
 from django.db import models
 
+from core.api.export.base import configure_sheet_print
+from core.api.export.replenishment import StatusOfContributionsWriter
+from core.api.utils import workbook_response
 from core.models import (
     Country,
     TriennialContributionStatus,
     FermGainLoss,
     DisputedContribution,
+    AnnualContributionStatus,
 )
 from core.models.business_plan import BusinessPlan
 from core.models.country_programme import CPRecord, CPReport, CPReportFormatRow
@@ -582,3 +587,140 @@ class TriennialStatusOfContributionsAggregator:
         return DisputedContribution.objects.filter(
             year__gte=self.start_year, year__lte=self.end_year
         ).aggregate(total=models.Sum("amount", default=0))["total"]
+
+
+class AnnualStatusOfContributionsAggregator:
+    def __init__(self, year):
+        self.year = year
+
+    def get_status_of_contributions_qs(self):
+        return (
+            Country.objects.filter(
+                annual_contributions_status__year=self.year,
+            )
+            .prefetch_related("annual_contributions_status")
+            .annotate(
+                agreed_contributions=models.Sum(
+                    "annual_contributions_status__agreed_contributions", default=0
+                ),
+                cash_payments=models.Sum(
+                    "annual_contributions_status__cash_payments", default=0
+                ),
+                bilateral_assistance=models.Sum(
+                    "annual_contributions_status__bilateral_assistance", default=0
+                ),
+                promissory_notes=models.Sum(
+                    "annual_contributions_status__promissory_notes", default=0
+                ),
+                outstanding_contributions=models.Sum(
+                    "annual_contributions_status__outstanding_contributions", default=0
+                ),
+            )
+            .order_by("name")
+        )
+
+    def get_ceit_countries(self):
+        return Country.objects.filter(
+            Q(ceit_statuses__is_ceit=True)
+            & Q(ceit_statuses__start_year__lte=self.year)
+            & (
+                Q(ceit_statuses__end_year__gte=self.year)
+                | Q(ceit_statuses__end_year__isnull=True)
+            ),
+        )
+
+    def get_ceit_data(self, ceit_countries_qs):
+        return AnnualContributionStatus.objects.filter(
+            year=self.year,
+            country_id__in=ceit_countries_qs.values_list("id", flat=True),
+        ).aggregate(
+            agreed_contributions=models.Sum("agreed_contributions", default=0),
+            cash_payments=models.Sum("cash_payments", default=0),
+            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+            promissory_notes=models.Sum("promissory_notes", default=0),
+            outstanding_contributions=models.Sum(
+                "outstanding_contributions", default=0
+            ),
+        )
+
+    def get_total(self):
+        return AnnualContributionStatus.objects.filter(year=self.year).aggregate(
+            agreed_contributions=models.Sum("agreed_contributions", default=0),
+            cash_payments=models.Sum("cash_payments", default=0),
+            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+            promissory_notes=models.Sum("promissory_notes", default=0),
+            outstanding_contributions=models.Sum(
+                "outstanding_contributions", default=0
+            ),
+        )
+
+    def get_disputed_contribution_amount(self):
+        try:
+            return DisputedContribution.objects.filter(year=self.year).aggregate(
+                total=models.Sum("amount", default=0)
+            )["total"]
+        except DisputedContribution.DoesNotExist:
+            return 0
+
+
+def get_period_status_of_contributions_response_workbook(agg, sheet_name, file_name):
+    soc_qs = agg.get_status_of_contributions_qs()
+    data = [
+        {
+            "country": country.name,
+            "agreed_contributions": country.agreed_contributions,
+            "cash_payments": country.cash_payments,
+            "bilateral_assistance": country.bilateral_assistance,
+            "promissory_notes": country.promissory_notes,
+            "outstanding_contributions": country.outstanding_contributions,
+        }
+        for country in soc_qs
+    ]
+    total = agg.get_total()
+    disputed_contributions_amount = agg.get_disputed_contribution_amount()
+
+    ceit_data = agg.get_ceit_data(agg.get_ceit_countries())
+
+    data.extend(
+        [
+            {
+                "country": "SUB-TOTAL",
+                "agreed_contributions": total["agreed_contributions"],
+                "cash_payments": total["cash_payments"],
+                "bilateral_assistance": total["bilateral_assistance"],
+                "promissory_notes": total["promissory_notes"],
+                "outstanding_contributions": total["outstanding_contributions"],
+            },
+            {
+                "country": "Disputed contributions",
+                "agreed_contributions": disputed_contributions_amount,
+                "outstanding_contributions": disputed_contributions_amount,
+            },
+            {
+                "country": "TOTAL",
+                "agreed_contributions": total["agreed_contributions"]
+                + disputed_contributions_amount,
+                "cash_payments": total["cash_payments"],
+                "bilateral_assistance": total["bilateral_assistance"],
+                "promissory_notes": total["promissory_notes"],
+                "outstanding_contributions": total["outstanding_contributions"]
+                + disputed_contributions_amount,
+            },
+            {
+                "country": "CEIT",
+                "agreed_contributions": ceit_data["agreed_contributions"],
+                "cash_payments": ceit_data["cash_payments"],
+                "bilateral_assistance": ceit_data["bilateral_assistance"],
+                "promissory_notes": ceit_data["promissory_notes"],
+                "outstanding_contributions": ceit_data["outstanding_contributions"],
+            },
+        ]
+    )
+
+    wb = openpyxl.Workbook(write_only=True)
+    ws = wb.create_sheet(sheet_name)
+    configure_sheet_print(ws, "landscape")
+
+    StatusOfContributionsWriter(ws).write(data)
+
+    return workbook_response(file_name, wb)
