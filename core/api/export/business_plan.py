@@ -141,6 +141,6 @@ class BusinessPlanWriter(BaseWriter):
                 return value[attr]
         return 0
 
-    def get_comment_types(self, activity, header):
+    def get_comment_types(self, activity, *args):
         comment_types = activity.get("comment_types", [])
         return ", ".join(comment_types)
