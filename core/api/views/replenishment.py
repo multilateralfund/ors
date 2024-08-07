@@ -419,17 +419,18 @@ class TriennialStatusOfContributionsView(views.APIView):
             .order_by("name")
         ]
 
-        # TODO: I think this might return duplicates if a country has multiple
-        # statuses
-        data["ceit"] = TriennialContributionStatus.objects.filter(
-            Q(start_year=start_year)
-            & Q(end_year=end_year)
-            & Q(country__ceit_statuses__is_ceit=True)
-            & Q(country__ceit_statuses__start_year__lte=start_year)
+        ceit_countries_qs = Country.objects.filter(
+            Q(ceit_statuses__is_ceit=True)
+            & Q(ceit_statuses__start_year__lte=start_year)
             & (
-                Q(country__ceit_statuses__end_year__gte=end_year)
-                | Q(country__ceit_statuses__end_year__isnull=True)
-            )
+                Q(ceit_statuses__end_year__gte=end_year)
+                | Q(ceit_statuses__end_year__isnull=True)
+            ),
+        )
+        data["ceit"] = TriennialContributionStatus.objects.filter(
+            start_year=start_year,
+            end_year=end_year,
+            country_id__in=ceit_countries_qs.values_list("id", flat=True),
         ).aggregate(
             agreed_contributions=models.Sum("agreed_contributions", default=0),
             cash_payments=models.Sum("cash_payments", default=0),
@@ -437,14 +438,6 @@ class TriennialStatusOfContributionsView(views.APIView):
             promissory_notes=models.Sum("promissory_notes", default=0),
             outstanding_contributions=models.Sum(
                 "outstanding_contributions", default=0
-            ),
-        )
-        ceit_countries_qs = Country.objects.filter(
-            Q(ceit_statuses__is_ceit=True)
-            & Q(ceit_statuses__start_year__lte=start_year)
-            & (
-                Q(ceit_statuses__end_year__gte=end_year)
-                | Q(ceit_statuses__end_year__isnull=True)
             ),
         )
         data["ceit_countries"] = CountrySerializer(ceit_countries_qs, many=True).data
