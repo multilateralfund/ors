@@ -480,6 +480,7 @@ class BPActivityValueFactory(factory.django.DjangoModelFactory):
 
     bp_activity = factory.SubFactory(BPActivityFactory)
     year = factory.Faker("random_int", min=2000, max=2024)
+    is_after = False
     value_usd = factory.Faker("random_int", min=1, max=10000)
     value_odp = factory.Faker("random_int", min=1, max=10000)
     value_mt = factory.Faker("random_int", min=1, max=10000)

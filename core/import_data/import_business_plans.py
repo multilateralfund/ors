@@ -12,6 +12,7 @@ from core.import_data.mapping_names_dict import (
     SECTOR_NAME_MAPPING,
 )
 from core.import_data.utils import (
+    delete_old_data,
     get_chemical_by_name_or_components,
     get_country_by_name,
     get_decimal_from_excel_string,
@@ -70,6 +71,7 @@ def get_values_columns(df, year_start, year_end):
             usd: column name,
             odp: column name,
             mt: column name,
+            is_after: bool
         }
     }
     """
@@ -81,15 +83,15 @@ def get_values_columns(df, year_start, year_end):
             "mt": None,
         }
         for column in df.columns:
-            if (str(year) in column and "after" not in column.lower()) or (
-                str(year - 1) in column and "after" in column.lower()
-            ):
+            if str(year) in column:
                 if "$000" in column:
                     columns_dict[year]["usd"] = column
                 elif "ODP" in column:
                     columns_dict[year]["odp"] = column
                 elif "MT" in column:
                     columns_dict[year]["mt"] = column
+                if "after" in column.lower():
+                    columns_dict[year]["is_after"] = True
         if not any(columns_dict[year].values()):
             columns_dict.pop(year)
 
@@ -241,7 +243,7 @@ def create_business_plan(row, index_row, year_start, year_end):
     # create business plan data
     bp_activity_data = {
         "business_plan": bp,
-        "title": row["Title"] if row["Title"] else "Undefined",
+        "title": row["Title"] if row["Title"] else "-",
         "required_by_model": row.get("Required by Model"),
         "country": country,
         "lvc_status": row["HCFC Status"] if row["HCFC Status"] else "Undefined",
@@ -261,14 +263,7 @@ def create_business_plan(row, index_row, year_start, year_end):
         "remarks_additional": row["Remarks (Additional)"],
     }
 
-    bp_activity, _ = BPActivity.objects.update_or_create(
-        business_plan=bp,
-        title=bp_activity_data["title"],
-        country=bp_activity_data["country"],
-        defaults=bp_activity_data,
-    )
-
-    return bp_activity
+    return BPActivity.objects.create(**bp_activity_data)
 
 
 def add_business_plan_values(bp_activity, row, columns_dict):
@@ -298,6 +293,7 @@ def add_business_plan_values(bp_activity, row, columns_dict):
             {
                 "bp_activity_id": bp_activity.id,
                 "year": year,
+                "is_after": columns.get("is_after", False),
             }
         )
         values.append(BPActivityValue(**value_data))
@@ -362,6 +358,7 @@ def parse_file(file_path, file_name):
 @transaction.atomic
 def import_business_plans():
     dir_path = settings.IMPORT_DATA_DIR / "business_plans"
+    delete_old_data(BusinessPlan)
 
     for file in dir_path.glob("*.xls"):
         file_name = os.fsdecode(file)

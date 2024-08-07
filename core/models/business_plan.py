@@ -146,6 +146,7 @@ class BPActivityValue(models.Model):
         BPActivity, on_delete=models.CASCADE, related_name="values"
     )
     year = models.IntegerField(validators=[MinValueValidator(settings.MIN_VALID_YEAR)])
+    is_after = models.BooleanField(default=False)
     value_usd = models.DecimalField(
         max_digits=25, decimal_places=15, null=True, blank=True
     )
@@ -155,6 +156,14 @@ class BPActivityValue(models.Model):
     value_mt = models.DecimalField(
         max_digits=25, decimal_places=15, null=True, blank=True
     )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["bp_activity", "year", "is_after"],
+                name="unique_activity_year_is_after",
+            )
+        ]
 
 
 class BPHistory(models.Model):
