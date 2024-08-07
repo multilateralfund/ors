@@ -8,6 +8,7 @@ from django.db import transaction
 from django.db.models import Max
 from django.db.models import Min
 from django.http import HttpResponse
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, viewsets, filters, mixins, status
@@ -17,7 +18,7 @@ from rest_framework.response import Response
 from core.api.export.base import configure_sheet_print
 from core.api.export.business_plan import BusinessPlanWriter
 from core.api.filters.business_plan import (
-    BPActivityFilterBackend,
+    BPActivityListFilter,
     BPFilterBackend,
 )
 from core.api.permissions import IsAgency, IsSecretariat
@@ -367,9 +368,10 @@ class BPActivityViewSet(
     viewsets.GenericViewSet,
 ):
     permission_classes = [IsSecretariat | IsAgency]
+    filterset_class = BPActivityListFilter
 
     filter_backends = [
-        BPActivityFilterBackend,
+        DjangoFilterBackend,
         filters.OrderingFilter,
         filters.SearchFilter,
     ]
@@ -404,10 +406,8 @@ class BPActivityViewSet(
         return queryset
 
     def get_wb(self, method):
-        bp = get_business_plan_from_request(self.request)
-
-        # get activities for the business plan
-        queryset = self.filter_queryset(self.get_queryset()).filter(business_plan=bp)
+        # get all activities between year_start and year_end
+        queryset = self.filter_queryset(self.get_queryset())
 
         data = BPActivityExportSerializer(queryset, many=True).data
 
@@ -415,9 +415,7 @@ class BPActivityViewSet(
             min_year=Min("values__year"), max_year=Max("values__year")
         )
 
-        if start_year := int(
-            self.request.query_params.get("business_plan__year_start", "0")
-        ):
+        if start_year := int(self.request.query_params.get("year_start", "0")):
             # If there is no data, or only partial data. Ensure we have fields for
             # start_year, start_year + 1, start_year + 2, after start_year + 2
             limits["min_year"] = limits["min_year"] or start_year
