@@ -128,6 +128,7 @@ function SaveManager(props) {
 
   const { refetchData: refetchReplenishment } = useContext(ReplenishmentContext)
   const { refetchData: refetchSoA, setCurrentVersion } = useContext(SoAContext)
+  const ctx = useContext(ReplenishmentContext)
 
   const [isFinal, setIsFinal] = useState(false)
   const [createNewVersion, setCreateNewVersion] = useState(true)
@@ -278,7 +279,7 @@ function SaveManager(props) {
           </div>
         </FormDialog>
       ) : null}
-      {showSave && (
+      {showSave && ctx.isTreasurer  && (
         <>
           <div className="flex items-center gap-x-2">
             <Input
@@ -297,7 +298,7 @@ function SaveManager(props) {
 }
 
 function DateRangeInput(props) {
-  const { initialEnd, initialStart, onChange } = props
+  const { disabled, initialEnd, initialStart, onChange } = props
 
   const [start, setStart] = useState(initialStart)
   const [end, setEnd] = useState(initialEnd)
@@ -314,8 +315,12 @@ function DateRangeInput(props) {
 
   return (
     <div>
-      <DateInput value={start} onChange={handleChangeStart} />
-      <DateInput value={end} onChange={handleChangeEnd} />
+      <DateInput
+        disabled={disabled}
+        value={start}
+        onChange={handleChangeStart}
+      />
+      <DateInput disabled={disabled} value={end} onChange={handleChangeEnd} />
     </div>
   )
 }
@@ -741,6 +746,7 @@ function SAView(props) {
               <FormattedNumberInput
                 id="triannualBudget"
                 className="w-36"
+                disabled={!ctx.isTreasurer}
                 type="number"
                 value={replenishment?.amount}
                 onChange={handleAmountInput}
@@ -757,6 +763,7 @@ function SAView(props) {
               <FormattedNumberInput
                 id="previouslyUnusedSum"
                 className="w-36"
+                disabled={!ctx.isTreasurer}
                 type="number"
                 value={unusedAmount}
                 onChange={handleUnusedAmountInput}
@@ -790,6 +797,7 @@ function SAView(props) {
               </div>
             </label>
             <DateRangeInput
+              disabled={!ctx.isTreasurer}
               initialEnd={dateForInput(currencyDateRange.end)}
               initialStart={dateForInput(currencyDateRange.start)}
               onChange={handleChangeCurrencyDateRange}
@@ -806,9 +814,10 @@ function SAView(props) {
         />
       </div>
       <SATable
+        adminButtons={ctx.isTreasurer}
         columns={columns}
         countriesForAdd={countriesForAdd}
-        enableEdit={true}
+        enableEdit={ctx.isTreasurer}
         enableSort={true}
         extraRows={[{ country: 'Total', ...sumColumns(computedData) }]}
         rowData={formattedTableData}

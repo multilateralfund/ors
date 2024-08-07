@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { makePeriodOptions } from '@ors/components/manage/Blocks/Replenishment/utils'
 import { formatApiUrl } from '@ors/helpers/Api/utils'
+import { useStore } from '@ors/store'
 
 import ReplenishmentContext from './ReplenishmentContext'
 
@@ -17,6 +18,9 @@ function filterCountries(countries) {
 
 function ReplenishmentProvider(props) {
   const { children } = props
+  const user = useStore((state) => state.user)
+  const isTreasurer = user.data.user_type === 'treasurer'
+  const isCountryUser = user.data.user_type === 'country_user'
 
   const [periods, setPeriods] = useState([])
   const [countries, setCountries] = useState([])
@@ -60,6 +64,8 @@ function ReplenishmentProvider(props) {
     <ReplenishmentContext.Provider
       value={{
         countries,
+        isCountryUser,
+        isTreasurer,
         periodOptions,
         periods,
         refetchData,

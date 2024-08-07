@@ -54,9 +54,18 @@ class TestReplenishmentCountries(BaseTest):
         assert response.data[1]["name"] == "Country 2"
         assert response.data[1]["iso3"] == "ABC"
 
-    def test_replenishment_countries_list_country_user(self, country_user):
-        CountryFactory.create(name="Country 2", iso3="ABC")
+    def test_replenishment_countries_list_agency_user(self, agency_user):
+        country = CountryFactory.create(name="Country 2", iso3="ABC")
 
+        self.client.force_authenticate(user=agency_user)
+
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.data) == 1
+        assert response.data[0]["name"] == country.name
+        assert response.data[0]["iso3"] == country.iso3
+
+    def test_replenishment_countries_list_country_user(self, country_user):
         self.client.force_authenticate(user=country_user)
 
         response = self.client.get(self.url)
@@ -94,7 +103,22 @@ class TestReplenishments(BaseTest):
 
         response = self.client.get(self.url)
         assert response.status_code == 200
-        assert len(response.data) == 0
+        assert len(response.data) == 2
+
+    def test_replenishments_create_country_user(self, country_user):
+        ReplenishmentFactory.create(start_year=2018, end_year=2020)
+
+        self.client.force_authenticate(user=country_user)
+
+        response = self.client.post(
+            self.url,
+            {
+                "amount": 4000,
+            },
+            format="json",
+        )
+
+        assert response.status_code == 403
 
 
 class TestScalesOfAssessment(BaseTest):
@@ -174,7 +198,7 @@ class TestScalesOfAssessment(BaseTest):
 
         response = self.client.get(self.url)
         assert response.status_code == 200
-        assert len(response.data) == 0
+        assert len(response.data) == 2
 
 
 class TestStatusOfContributions:
@@ -780,7 +804,8 @@ class TestStatusOfContributions:
                 },
             )
         )
-        assert response.data == {}
+        assert "status_of_contributions" in response.data
+        assert len(response.data["status_of_contributions"]) == 2
 
         response = self.client.get(
             reverse(
@@ -791,14 +816,17 @@ class TestStatusOfContributions:
                 },
             )
         )
-        assert response.data == {}
+        assert response.status_code == 200
+        assert "disputed_contributions_per_country" in response.data
+        assert len(response.data["disputed_contributions_per_country"]) == 2
 
         response = self.client.get(
             reverse(
                 "replenishment-status-of-contributions-summary",
             )
         )
-        assert response.data == {}
+        assert "disputed_contributions_per_country" in response.data
+        assert len(response.data["disputed_contributions_per_country"]) == 2
 
 
 class TestDisputedContributions(BaseTest):
@@ -1079,7 +1107,7 @@ class TestScaleOfAssessmentWorkflow:
         response = self.client.get(self.url_scale_of_assessment)
         assert response.status_code == 403
 
-    def test_create_replenishment_while_ongoing(self, user):
+    def test_create_replenishment_while_ongoing(self, treasurer_user):
         replenishment_1 = ReplenishmentFactory.create(start_year=2021, end_year=2023)
         replenishment_2 = ReplenishmentFactory.create(start_year=2024, end_year=2026)
 
@@ -1090,7 +1118,7 @@ class TestScaleOfAssessmentWorkflow:
             replenishment=replenishment_2, version=0, is_final=False
         )
 
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=treasurer_user)
 
         response = self.client.post(
             self.url_replenishment,
@@ -1103,7 +1131,7 @@ class TestScaleOfAssessmentWorkflow:
         # Bad request, latest replenishment is still ongoing
         assert response.status_code == 400
 
-    def test_create_replenishment_simple(self, user):
+    def test_create_replenishment_simple(self, treasurer_user):
         replenishment_1 = ReplenishmentFactory.create(start_year=2021, end_year=2023)
         replenishment_2 = ReplenishmentFactory.create(start_year=2024, end_year=2026)
 
@@ -1114,7 +1142,7 @@ class TestScaleOfAssessmentWorkflow:
             replenishment=replenishment_2, version=0, is_final=True
         )
 
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=treasurer_user)
 
         response = self.client.post(
             self.url_replenishment,
@@ -1136,7 +1164,7 @@ class TestScaleOfAssessmentWorkflow:
             == 1
         )
 
-    def test_create_replenishment_with_scales_of_assessment(self, user):
+    def test_create_replenishment_with_scales_of_assessment(self, treasurer_user):
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
         country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
         country_3 = CountryFactory.create(name="Country 3", iso3="DEF")
@@ -1179,7 +1207,7 @@ class TestScaleOfAssessmentWorkflow:
             currency="USD",
         )
 
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=treasurer_user)
 
         response = self.client.post(
             self.url_replenishment,
@@ -1210,7 +1238,7 @@ class TestScaleOfAssessmentWorkflow:
         ):
             assert soa.currency == "USD"
 
-    def test_update_scales_of_assessment_bad_replenishment(self, user):
+    def test_update_scales_of_assessment_bad_replenishment(self, treasurer_user):
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
         country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
         country_3 = CountryFactory.create(name="Country 3", iso3="DEF")
@@ -1235,7 +1263,7 @@ class TestScaleOfAssessmentWorkflow:
             version=version,
         )
 
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=treasurer_user)
 
         response = self.client.post(
             self.url_scale_of_assessment,
@@ -1250,7 +1278,7 @@ class TestScaleOfAssessmentWorkflow:
 
         assert response.status_code == 400
 
-    def test_update_scales_of_assessment_already_finalized(self, user):
+    def test_update_scales_of_assessment_already_finalized(self, treasurer_user):
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
         country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
         country_3 = CountryFactory.create(name="Country 3", iso3="DEF")
@@ -1275,7 +1303,7 @@ class TestScaleOfAssessmentWorkflow:
             version=version,
         )
 
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=treasurer_user)
 
         post_data = {
             "replenishment_id": replenishment.id,
@@ -1315,7 +1343,7 @@ class TestScaleOfAssessmentWorkflow:
 
         assert response.status_code == 400
 
-    def test_update_scales_of_assessment(self, user):
+    def test_update_scales_of_assessment(self, treasurer_user):
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
         country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
         country_3 = CountryFactory.create(name="Country 3", iso3="DEF")
@@ -1340,7 +1368,7 @@ class TestScaleOfAssessmentWorkflow:
             version=version,
         )
 
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=treasurer_user)
 
         post_data = {
             "replenishment_id": replenishment.id,
@@ -1401,7 +1429,7 @@ class TestScaleOfAssessmentWorkflow:
             == post_data["data"]
         )
 
-    def test_update_scales_of_assessment_final(self, user):
+    def test_update_scales_of_assessment_final(self, treasurer_user):
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
         country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
         country_3 = CountryFactory.create(name="Country 3", iso3="DEF")
@@ -1426,7 +1454,7 @@ class TestScaleOfAssessmentWorkflow:
             version=version,
         )
 
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=treasurer_user)
 
         post_data = {
             "replenishment_id": replenishment.id,
@@ -1489,7 +1517,7 @@ class TestScaleOfAssessmentWorkflow:
             == post_data["data"]
         )
 
-    def test_update_scales_of_assessment_new_version(self, user):
+    def test_update_scales_of_assessment_new_version(self, treasurer_user):
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
         country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
         country_3 = CountryFactory.create(name="Country 3", iso3="DEF")
@@ -1514,7 +1542,7 @@ class TestScaleOfAssessmentWorkflow:
             version=version,
         )
 
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=treasurer_user)
 
         post_data = {
             "replenishment_id": replenishment.id,
@@ -1626,13 +1654,13 @@ class TestInvoices(BaseTest):
         assert response_all.status_code == 200
         assert len(response_all.data) == 2
 
-    def test_invoices_create(self, user):
+    def test_invoices_create(self, treasurer_user):
         country = CountryFactory.create(name="Country 1", iso3="XYZ")
         replenishment = ReplenishmentFactory.create(
             start_year=self.year_1, end_year=self.year_2
         )
 
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=treasurer_user)
 
         request_data = {
             "country_id": country.id,
@@ -1649,7 +1677,7 @@ class TestInvoices(BaseTest):
         response = self.client.post(self.url, data=request_data, format="json")
         assert response.status_code == 201
 
-    def test_invoices_update(self, user):
+    def test_invoices_update(self, treasurer_user):
         country = CountryFactory.create(name="Country 1", iso3="XYZ")
         replenishment = ReplenishmentFactory.create(
             start_year=self.year_1, end_year=self.year_2
@@ -1658,7 +1686,7 @@ class TestInvoices(BaseTest):
             country=country, replenishment=replenishment, number="aaa-yyy-1"
         )
 
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=treasurer_user)
 
         request_data = {
             "country_id": country.id,

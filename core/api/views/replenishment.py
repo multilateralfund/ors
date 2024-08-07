@@ -21,6 +21,7 @@ from core.api.filters.replenishments import (
     PaymentFilter,
     ScaleOfAssessmentFilter,
 )
+from core.api.permissions import IsUserAllowedReplenishment
 from core.api.serializers import (
     CountrySerializer,
     InvoiceSerializer,
@@ -75,14 +76,12 @@ class ReplenishmentViewSet(
 
     model = Replenishment
     serializer_class = ReplenishmentSerializer
+    permission_classes = [IsUserAllowedReplenishment]
 
     def get_queryset(self):
-        user = self.request.user
-        if user.user_type == user.UserType.SECRETARIAT:
-            return Replenishment.objects.prefetch_related(
-                "scales_of_assessment_versions"
-            ).order_by("-start_year")
-        return Replenishment.objects.none()
+        return Replenishment.objects.prefetch_related(
+            "scales_of_assessment_versions"
+        ).order_by("-start_year")
 
     @transaction.atomic
     def perform_create(self, serializer):
@@ -141,14 +140,12 @@ class ScaleOfAssessmentViewSet(
     model = ScaleOfAssessment
     filterset_class = ScaleOfAssessmentFilter
     serializer_class = ScaleOfAssessmentSerializer
+    permission_classes = [IsUserAllowedReplenishment]
 
     def get_queryset(self):
-        user = self.request.user
-        if user.user_type == user.UserType.SECRETARIAT:
-            return ScaleOfAssessment.objects.select_related(
-                "country", "version__replenishment"
-            ).order_by("country__name")
-        return ScaleOfAssessment.objects.none()
+        return ScaleOfAssessment.objects.select_related(
+            "country", "version__replenishment"
+        ).order_by("country__name")
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
@@ -276,13 +273,12 @@ class ScaleOfAssessmentViewSet(
 
 
 class AnnualStatusOfContributionsView(views.APIView):
+    permission_classes = [IsUserAllowedReplenishment]
 
     def get(self, request, *args, **kwargs):
         year = kwargs["year"]
-        user = request.user
 
-        if user.user_type != user.UserType.SECRETARIAT:
-            return Response({})
+        self.check_permissions(request)
 
         data = {}
         data["status_of_contributions"] = [
@@ -374,14 +370,13 @@ class AnnualStatusOfContributionsView(views.APIView):
 
 
 class TriennialStatusOfContributionsView(views.APIView):
+    permission_classes = [IsUserAllowedReplenishment]
 
     def get(self, request, *args, **kwargs):
         start_year = kwargs["start_year"]
         end_year = kwargs["end_year"]
-        user = request.user
 
-        if user.user_type != user.UserType.SECRETARIAT:
-            return Response({})
+        self.check_permissions(request)
 
         data = {}
         data["status_of_contributions"] = [
@@ -475,12 +470,10 @@ class TriennialStatusOfContributionsView(views.APIView):
 
 
 class SummaryStatusOfContributionsView(views.APIView):
+    permission_classes = [IsUserAllowedReplenishment]
 
     def get(self, request, *args, **kwargs):
-        user = request.user
-
-        if user.user_type != user.UserType.SECRETARIAT:
-            return Response({})
+        self.check_permissions(request)
 
         data = {}
         data["status_of_contributions"] = [
@@ -587,7 +580,6 @@ class DisputedContributionViewSet(
         return DisputedContributionReadSerializer
 
     def get_queryset(self):
-        # TODO: add proper permission classes
         user = self.request.user
         queryset = DisputedContribution.objects.all()
         if user.user_type == user.UserType.COUNTRY_USER:
@@ -597,12 +589,10 @@ class DisputedContributionViewSet(
 
 
 class ReplenishmentDashboardView(views.APIView):
+    permission_classes = [IsUserAllowedReplenishment]
 
     def get(self, request, *args, **kwargs):
-        user = request.user
-
-        if user.user_type != user.UserType.SECRETARIAT:
-            return Response({})
+        self.check_permissions(request)
 
         latest_closed_triennial = (
             Replenishment.objects.filter(scales_of_assessment_versions__is_final=True)
@@ -749,10 +739,7 @@ class ReplenishmentDashboardView(views.APIView):
 
     @transaction.atomic
     def put(self, request, *args, **kwargs):
-        user = request.user
-
-        if user.user_type != user.UserType.SECRETARIAT:
-            return Response({})
+        self.check_permissions(request)
 
         data = request.data
 
@@ -938,6 +925,8 @@ class ReplenishmentInvoiceViewSet(
     """
 
     model = Invoice
+
+    permission_classes = [IsUserAllowedReplenishment]
     serializer_class = InvoiceSerializer
     filterset_class = InvoiceFilter
     filter_backends = [
@@ -1033,9 +1022,14 @@ class ReplenishmentInvoiceViewSet(
 
 
 class ReplenishmentInvoiceFileDownloadView(generics.RetrieveAPIView):
-    # TODO: add proper permission_classes
-    queryset = InvoiceFile.objects.all()
+    permission_classes = [IsUserAllowedReplenishment]
     lookup_field = "id"
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = InvoiceFile.objects.all()
+        if user.user_type == user.UserType.COUNTRY_USER:
+            queryset = queryset.filter(invoice__country_id=user.country_id)
 
     def get(self, request, *args, **kwargs):
         obj = self.get_object()
@@ -1153,9 +1147,14 @@ class ReplenishmentPaymentViewSet(
 
 
 class ReplenishmentPaymentFileDownloadView(generics.RetrieveAPIView):
-    # TODO: add proper permission_classes
-    queryset = PaymentFile.objects.all()
+    permission_classes = [IsUserAllowedReplenishment]
     lookup_field = "id"
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = PaymentFile.objects.all()
+        if user.user_type == user.UserType.COUNTRY_USER:
+            queryset = queryset.filter(invoice__country_id=user.country_id)
 
     def get(self, request, *args, **kwargs):
         obj = self.get_object()

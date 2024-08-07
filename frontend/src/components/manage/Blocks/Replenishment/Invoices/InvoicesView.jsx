@@ -394,22 +394,24 @@ function InvoicesView() {
               onChange={handleSearchInput}
             />
           </div>
-          <Select
-            id="country"
-            className="placeholder-select w-52"
-            onChange={handleCountryFilter}
-            hasClear
-            required
-          >
-            <option value="" disabled hidden>
-              Country
-            </option>
-            {ctx.countries.map((c) => (
-              <option key={c.iso3} className="text-primary" value={c.id}>
-                {c.name_alt}
+          {!ctx.isCountryUser && (
+            <Select
+              id="country"
+              className="placeholder-select w-52"
+              onChange={handleCountryFilter}
+              hasClear
+              required
+            >
+              <option value="" disabled hidden>
+                Country
               </option>
-            ))}
-          </Select>
+              {ctx.countries.map((c) => (
+                <option key={c.iso3} className="text-primary" value={c.id}>
+                  {c.name_alt}
+                </option>
+              ))}
+            </Select>
+          )}
           <Select
             id="period"
             className="placeholder-select w-44"
@@ -431,11 +433,13 @@ function InvoicesView() {
             ))}
           </Select>
         </div>
-        <AddButton onClick={() => setShowAdd(true)}>Add invoice</AddButton>
+        {ctx.isTreasurer && (
+          <AddButton onClick={() => setShowAdd(true)}>Add invoice</AddButton>
+        )}
       </div>
       <Table
+        adminButtons={ctx.isTreasurer}
         columns={columns}
-        enableEdit={true}
         enableSort={true}
         rowData={memoResults}
         sortDirection={sortDirection}
@@ -471,5 +475,3 @@ function InvoicesView() {
 }
 
 export default InvoicesView
-
-// Add debounce to search input
