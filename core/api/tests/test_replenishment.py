@@ -20,6 +20,7 @@ from core.api.tests.factories import (
     PaymentFactory,
     TriennialContributionStatusFactory,
     ScaleOfAssessmentVersionFactory,
+    CountryCEITStatusFactory,
 )
 from core.models import (
     ExternalIncome,
@@ -276,6 +277,14 @@ class TestStatusOfContributions:
                     ).quantize(self.fifteen_decimals),
                 },
             ],
+            "ceit": {
+                "agreed_contributions": 0,
+                "cash_payments": 0,
+                "bilateral_assistance": 0,
+                "promissory_notes": 0,
+                "outstanding_contributions": 0,
+            },
+            "ceit_countries": [],
             "total": {
                 "agreed_contributions": (
                     contribution_1.agreed_contributions
@@ -424,6 +433,14 @@ class TestStatusOfContributions:
                     ),
                 },
             ],
+            "ceit": {
+                "agreed_contributions": 0,
+                "cash_payments": 0,
+                "bilateral_assistance": 0,
+                "promissory_notes": 0,
+                "outstanding_contributions": 0,
+            },
+            "ceit_countries": [],
             "total": {
                 "agreed_contributions": (
                     contribution_1.agreed_contributions
@@ -461,10 +478,17 @@ class TestStatusOfContributions:
     def test_summary_status_of_contributions(self, user):
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
         country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
+
         year_1 = 2020
         year_2 = 2022
         year_3 = 2023
         year_4 = 2025
+        CountryCEITStatusFactory.create(
+            country=country_1, start_year=year_1, end_year=year_2, is_ceit=True
+        )
+        CountryCEITStatusFactory.create(
+            country=country_2, start_year=year_3, end_year=None, is_ceit=True
+        )
 
         contribution_1 = TriennialContributionStatusFactory.create(
             country=country_1, start_year=year_1, end_year=year_2
@@ -567,6 +591,46 @@ class TestStatusOfContributions:
                     "gain_loss": ferm_gain_loss_2.amount.quantize(
                         self.fifteen_decimals
                     ),
+                },
+            ],
+            "ceit": {
+                "agreed_contributions": (
+                    contribution_1.agreed_contributions
+                    + contribution_4.agreed_contributions
+                ).quantize(self.fifteen_decimals),
+                "cash_payments": (
+                    contribution_1.cash_payments + contribution_4.cash_payments
+                ).quantize(self.fifteen_decimals),
+                "bilateral_assistance": (
+                    contribution_1.bilateral_assistance
+                    + contribution_4.bilateral_assistance
+                ).quantize(self.fifteen_decimals),
+                "promissory_notes": (
+                    contribution_1.promissory_notes + contribution_4.promissory_notes
+                ).quantize(self.fifteen_decimals),
+                "outstanding_contributions": (
+                    contribution_1.outstanding_contributions
+                    + contribution_4.outstanding_contributions
+                ).quantize(self.fifteen_decimals),
+            },
+            "ceit_countries": [
+                {
+                    "id": country_1.id,
+                    "name": country_1.name,
+                    "abbr": country_1.abbr,
+                    "name_alt": country_1.name_alt,
+                    "iso3": country_1.iso3,
+                    "has_cp_report": None,
+                    "is_a2": country_1.is_a2,
+                },
+                {
+                    "id": country_2.id,
+                    "name": country_2.name,
+                    "abbr": country_2.abbr,
+                    "name_alt": country_2.name_alt,
+                    "iso3": country_2.iso3,
+                    "has_cp_report": None,
+                    "is_a2": country_2.is_a2,
                 },
             ],
             "total": {

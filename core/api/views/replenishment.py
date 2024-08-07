@@ -6,9 +6,10 @@ import urllib
 from decimal import Decimal
 
 import openpyxl
-from django_filters.rest_framework import DjangoFilterBackend
 from django.db import models, transaction
+from django.db.models import Q, F
 from django.http import HttpResponse
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, mixins, status, views, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
@@ -317,6 +318,27 @@ class AnnualStatusOfContributionsView(views.APIView):
             .order_by("name")
         ]
 
+        ceit_countries_qs = Country.objects.filter(
+            Q(ceit_statuses__is_ceit=True)
+            & Q(ceit_statuses__start_year__lte=year)
+            & (
+                Q(ceit_statuses__end_year__gte=year)
+                | Q(ceit_statuses__end_year__isnull=True)
+            ),
+        )
+        data["ceit"] = AnnualContributionStatus.objects.filter(
+            year=year, country_id__in=ceit_countries_qs.values_list("id", flat=True)
+        ).aggregate(
+            agreed_contributions=models.Sum("agreed_contributions", default=0),
+            cash_payments=models.Sum("cash_payments", default=0),
+            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+            promissory_notes=models.Sum("promissory_notes", default=0),
+            outstanding_contributions=models.Sum(
+                "outstanding_contributions", default=0
+            ),
+        )
+        data["ceit_countries"] = CountrySerializer(ceit_countries_qs, many=True).data
+
         data["total"] = AnnualContributionStatus.objects.filter(year=year).aggregate(
             agreed_contributions=models.Sum("agreed_contributions", default=0),
             cash_payments=models.Sum("cash_payments", default=0),
@@ -397,6 +419,29 @@ class TriennialStatusOfContributionsView(views.APIView):
             .order_by("name")
         ]
 
+        ceit_countries_qs = Country.objects.filter(
+            Q(ceit_statuses__is_ceit=True)
+            & Q(ceit_statuses__start_year__lte=start_year)
+            & (
+                Q(ceit_statuses__end_year__gte=end_year)
+                | Q(ceit_statuses__end_year__isnull=True)
+            ),
+        )
+        data["ceit"] = TriennialContributionStatus.objects.filter(
+            start_year=start_year,
+            end_year=end_year,
+            country_id__in=ceit_countries_qs.values_list("id", flat=True),
+        ).aggregate(
+            agreed_contributions=models.Sum("agreed_contributions", default=0),
+            cash_payments=models.Sum("cash_payments", default=0),
+            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+            promissory_notes=models.Sum("promissory_notes", default=0),
+            outstanding_contributions=models.Sum(
+                "outstanding_contributions", default=0
+            ),
+        )
+        data["ceit_countries"] = CountrySerializer(ceit_countries_qs, many=True).data
+
         data["total"] = TriennialContributionStatus.objects.filter(
             start_year=start_year, end_year=end_year
         ).aggregate(
@@ -474,6 +519,27 @@ class SummaryStatusOfContributionsView(views.APIView):
             )
             .order_by("name")
         ]
+
+        # CEIT data needs to be computed per replenishment
+        data["ceit"] = TriennialContributionStatus.objects.filter(
+            Q(country__ceit_statuses__is_ceit=True)
+            & Q(country__ceit_statuses__start_year__lte=F("start_year"))
+            & (
+                Q(country__ceit_statuses__end_year__gte=F("end_year"))
+                | Q(country__ceit_statuses__end_year__isnull=True)
+            )
+        ).aggregate(
+            agreed_contributions=models.Sum("agreed_contributions", default=0),
+            cash_payments=models.Sum("cash_payments", default=0),
+            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+            promissory_notes=models.Sum("promissory_notes", default=0),
+            outstanding_contributions=models.Sum(
+                "outstanding_contributions", default=0
+            ),
+        )
+        data["ceit_countries"] = CountrySerializer(
+            Country.objects.filter(ceit_statuses__is_ceit=True).distinct(), many=True
+        ).data
 
         data["total"] = TriennialContributionStatus.objects.aggregate(
             agreed_contributions=models.Sum("agreed_contributions", default=0),

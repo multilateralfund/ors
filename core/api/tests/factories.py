@@ -21,7 +21,7 @@ from core.models.business_plan import (
 from core.models.adm import AdmChoice, AdmColumn, AdmRecord, AdmRow
 from core.models.agency import Agency
 from core.models.base import CommentType
-from core.models.country import Country
+from core.models.country import Country, CountryCEITStatus
 from core.models.country_programme import (
     CPEmission,
     CPGeneration,
@@ -524,6 +524,16 @@ class ScaleOfAssessmentFactory(factory.django.DjangoModelFactory):
     )
     average_inflation_rate = factory.Faker("pydecimal", left_digits=10, right_digits=2)
     override_qualifies_for_fixed_rate_mechanism = factory.Faker("pybool")
+
+
+class CountryCEITStatusFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = CountryCEITStatus
+
+    country = factory.SubFactory(CountryFactory)
+    start_year = factory.Faker("random_int", min=2000, max=2024)
+    end_year = factory.Faker("random_int", min=2000, max=2024)
+    is_ceit = factory.Faker("pybool")
 
 
 class AnnualContributionStatusFactory(factory.django.DjangoModelFactory):
