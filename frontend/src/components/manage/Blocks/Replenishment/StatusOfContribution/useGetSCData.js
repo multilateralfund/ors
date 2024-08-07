@@ -7,6 +7,7 @@ const BASE_URL = '/api/replenishment/status-of-contributions'
 
 function useGetSCData(start_year, end_year) {
   const [data, setData] = useState({
+    ceit: null,
     disputed_contributions: null,
     disputed_contributions_per_country: null,
     status_of_contributions: null,
@@ -41,6 +42,7 @@ function useGetSCData(start_year, end_year) {
         setRows(transformData(data.status_of_contributions))
 
         setData({
+          ceit: data.ceit,
           disputed_contributions: data.disputed_contributions,
           disputed_contributions_per_country:
             data.disputed_contributions_per_country,
@@ -87,6 +89,14 @@ function useGetSCData(start_year, end_year) {
           country: 'Total',
           outstanding_contributions:
             data.total?.outstanding_contributions_with_disputed,
+        },
+        {
+          agreed_contributions: data.ceit?.agreed_contributions,
+          bilateral_assistance: data.ceit?.bilateral_assistance,
+          cash_payments: data.ceit?.cash_payments,
+          country: 'CEIT',
+          outstanding_contributions: data.ceit?.outstanding_contributions,
+          promissory_notes: data.ceit?.promissory_notes,
         },
       ]
     },
