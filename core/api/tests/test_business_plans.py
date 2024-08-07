@@ -25,7 +25,7 @@ from core.api.tests.factories import (
 from core.models.business_plan import BPHistory, BusinessPlan
 
 pytestmark = pytest.mark.django_db
-# pylint: disable=C8008, W0221, W0613, R0913
+# pylint: disable=C8008, W0221, W0613, R0913, C0302
 
 
 @pytest.fixture(name="new_agency")
@@ -232,15 +232,24 @@ def setup_bp_activity_create(
         "values": [
             {
                 "year": 2020,
+                "is_after": False,
                 "value_usd": 100,
                 "value_odp": 100,
                 "value_mt": 100,
             },
             {
                 "year": 2021,
+                "is_after": False,
                 "value_usd": 200,
                 "value_odp": 200,
                 "value_mt": 200,
+            },
+            {
+                "year": 2021,
+                "is_after": True,
+                "value_usd": 300,
+                "value_odp": 300,
+                "value_mt": 300,
             },
         ],
     }
@@ -299,11 +308,13 @@ class TestBPCreate:
     ):
         self.client.force_authenticate(user=agency_user)
 
+        # year not in business plan interval
         data = _setup_new_business_plan_create
         activity_data = _setup_bp_activity_create
         activity_data["values"] = [
             {
                 "year": 2025,  # wrong year
+                "is_after": False,
                 "value_usd": 100,
                 "value_odp": 100,
                 "value_mt": 100,
@@ -316,6 +327,32 @@ class TestBPCreate:
         assert (
             response.data["general_error"]
             == "BP activity values year not in business plan interval"
+        )
+
+        # multiple values with `is_after=true`
+        activity_data["values"] = [
+            {
+                "year": 2020,
+                "is_after": True,
+                "value_usd": 100,
+                "value_odp": 100,
+                "value_mt": 100,
+            },
+            {
+                "year": 2021,
+                "is_after": True,
+                "value_usd": 200,
+                "value_odp": 200,
+                "value_mt": 200,
+            },
+        ]
+        data["activities"] = [activity_data]
+        response = self.client.post(self.url, data, format="json")
+
+        assert response.status_code == 400
+        assert (
+            response.data["activities"][0]["values"][0]
+            == "Multiple values with is_after=true found"
         )
 
     def test_bp_create(
@@ -424,12 +461,14 @@ class TestBPUpdate:
         self, agency_user, _setup_bp_activity_create, business_plan
     ):
         self.client.force_authenticate(user=agency_user)
-
         url = reverse("businessplan-list") + f"{business_plan.id}/"
+
+        # year not in business plan interval
         activity_data = _setup_bp_activity_create
         activity_data["values"] = [
             {
-                "year": 2025,  # wrong year
+                "year": business_plan.year_end + 1,  # wrong year
+                "is_after": False,
                 "value_usd": 100,
                 "value_odp": 100,
                 "value_mt": 100,
@@ -448,6 +487,32 @@ class TestBPUpdate:
         assert (
             response.data["general_error"]
             == "BP activity values year not in business plan interval"
+        )
+
+        # multiple values with `is_after=true`
+        activity_data["values"] = [
+            {
+                "year": business_plan.year_start,
+                "is_after": True,
+                "value_usd": 100,
+                "value_odp": 100,
+                "value_mt": 100,
+            },
+            {
+                "year": business_plan.year_end,
+                "is_after": True,
+                "value_usd": 200,
+                "value_odp": 200,
+                "value_mt": 200,
+            },
+        ]
+        data["activities"] = [activity_data]
+        response = self.client.put(url, data, format="json")
+
+        assert response.status_code == 400
+        assert (
+            response.data["activities"][0]["values"][0]
+            == "Multiple values with is_after=true found"
         )
 
     def test_bp_update_agency(
@@ -476,7 +541,8 @@ class TestBPUpdate:
         activity_data["comment_types"] = [comment_type.id]
         activity_data["values"] = [
             {
-                "year": 2022,
+                "year": business_plan.year_end,
+                "is_after": False,
                 "value_usd": 300,
                 "value_odp": 300,
                 "value_mt": 300,
@@ -505,7 +571,7 @@ class TestBPUpdate:
         assert activities[0]["remarks"] == "Merge rau"
         assert activities[0]["comment_secretariat"] == ""
         assert activities[0]["comment_types"] == []
-        assert activities[0]["values"][0]["year"] == 2022
+        assert activities[0]["values"][0]["year"] == business_plan.year_end
 
         mock_send_mail_bp_update.assert_called_once()
 
@@ -657,7 +723,11 @@ def setup_bp_activity_list(
             bp_activity.comment_types.set([comment_type])
             for i in range(business_plan.year_start, business_plan.year_end + 1):
                 BPActivityValueFactory.create(
-                    bp_activity=bp_activity, value_usd=i, value_odp=i, value_mt=i
+                    bp_activity=bp_activity,
+                    year=business_plan.year_start + i,
+                    value_usd=i,
+                    value_odp=i,
+                    value_mt=i,
                 )
 
 

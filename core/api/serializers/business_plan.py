@@ -45,6 +45,7 @@ class BPActivityValueSerializer(serializers.ModelSerializer):
             "id",
             "bp_activity_id",
             "year",
+            "is_after",
             "value_usd",
             "value_odp",
             "value_mt",
@@ -227,6 +228,19 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
         queryset=ProjectSubSector.objects.all().values_list("id", flat=True),
     )
     values = BPActivityValueSerializer(many=True)
+
+    def validate_values(self, values):
+        is_after_count = 0
+        for value in values:
+            if value.get("is_after"):
+                is_after_count += 1
+
+        if is_after_count > 1:
+            raise serializers.ValidationError(
+                "Multiple values with is_after=true found"
+            )
+
+        return values
 
     class Meta:
         model = BPActivity
