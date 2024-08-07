@@ -3,6 +3,14 @@
 from django.db import migrations, models
 
 
+def forwards_func(apps, schema_editor):
+    BusinessPlan = apps.get_model("core", "BusinessPlan")
+    db_alias = schema_editor.connection.alias
+
+    # Delete all business plans and related activities/activity values
+    BusinessPlan.objects.using(db_alias).all().delete()
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -10,6 +18,9 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunPython(
+            forwards_func, migrations.RunPython.noop
+        ),
         migrations.AddField(
             model_name="bpactivityvalue",
             name="is_after",
