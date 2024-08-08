@@ -63,21 +63,9 @@ class BusinessPlanViewSet(
 
     def get_queryset(self):
         if self.action == "get":
-            return BPActivity.objects.select_related(
-                "business_plan",
-                "business_plan__agency",
-                "country",
-                "sector",
-                "subsector",
-                "project_type",
-                "bp_chemical_type",
-                "project_cluster",
-            ).prefetch_related(
-                "substances",
-                "values",
-            )
+            return BPActivity.objects.all()
 
-        business_plans = BusinessPlan.objects.all()
+        business_plans = BusinessPlan.objects.get_latest()
 
         if self.request.method == "PUT":
             return business_plans.select_for_update()
@@ -86,9 +74,7 @@ class BusinessPlanViewSet(
         if "agency" in self.request.user.user_type.lower():
             business_plans = business_plans.filter(agency=self.request.user.agency)
 
-        return business_plans.select_related(
-            "agency", "created_by", "updated_by"
-        ).order_by("year_start", "year_end", "id")
+        return business_plans.order_by("year_start", "year_end", "id")
 
     def get_serializer_class(self):
         if self.action == "get":
@@ -101,7 +87,7 @@ class BusinessPlanViewSet(
     def get_years(self, *args, **kwargs):
         return Response(
             (
-                BusinessPlan.objects.values("year_start", "year_end")
+                BusinessPlan.objects.get_latest().values("year_start", "year_end")
                 .annotate(
                     min_year=Min("activities__values__year"),
                     max_year=Max("activities__values__year"),
@@ -273,7 +259,8 @@ class BusinessPlanViewSet(
         if not new_instance.name:
             new_instance.name = f"{new_instance.agency} {new_instance.year_start} - {new_instance.year_end}"
 
-        # set updated by user
+        # set version and updated by user
+        new_instance.version = current_obj.version + 1
         new_instance.updated_by = user
         new_instance.save()
 
@@ -289,7 +276,8 @@ class BusinessPlanViewSet(
             event_description="Updated by user",
         )
 
-        current_obj.delete()
+        current_obj.is_latest = False
+        current_obj.save()
 
         if config.SEND_MAIL:
             send_mail_bp_update.delay(new_instance.id)  # send mail to MLFS
@@ -303,7 +291,7 @@ class BPStatusUpdateView(generics.GenericAPIView):
     API endpoint that allows updating business plan status.
     """
 
-    queryset = BusinessPlan.objects.all()
+    queryset = BusinessPlan.objects.get_latest()
     serializer_class = BusinessPlanSerializer
     lookup_field = "id"
     permission_classes = [IsSecretariat | IsAgency]
@@ -383,19 +371,7 @@ class BPActivityViewSet(
         return BPActivityDetailSerializer
 
     def get_queryset(self):
-        queryset = BPActivity.objects.select_related(
-            "business_plan",
-            "business_plan__agency",
-            "country",
-            "sector",
-            "subsector",
-            "project_type",
-            "bp_chemical_type",
-            "project_cluster",
-        ).prefetch_related(
-            "substances",
-            "values",
-        )
+        queryset = BPActivity.objects.get_latest()
 
         if "agency" in self.request.user.user_type.lower():
             # filter activities by agency if user is agency
@@ -464,7 +440,7 @@ class BPFileView(generics.GenericAPIView):
     """
 
     permission_classes = [IsSecretariat | IsAgency]
-    queryset = BusinessPlan.objects.all()
+    queryset = BusinessPlan.objects.get_latest()
     serializer_class = BPFileSerializer
     lookup_field = "id"
 

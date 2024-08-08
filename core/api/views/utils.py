@@ -410,6 +410,7 @@ def get_business_plan_from_request(request):
     agency_id = request.query_params.get("agency_id")
     year_start = request.query_params.get("year_start")
     year_end = request.query_params.get("year_end")
+    version = request.query_params.get("version")
     business_plan = None
 
     try:
@@ -420,6 +421,7 @@ def get_business_plan_from_request(request):
                 agency_id=agency_id,
                 year_start=year_start,
                 year_end=year_end,
+                version=version,
             )
 
         if not business_plan:

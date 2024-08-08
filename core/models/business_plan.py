@@ -22,6 +22,16 @@ class BPChemicalType(models.Model):
         return self.name
 
 
+class BusinessPlanManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().select_related(
+            "agency", "created_by", "updated_by"
+        )
+
+    def get_latest(self):
+        return self.get_queryset().filter(is_latest=True)
+
+
 class BusinessPlan(models.Model):
     class Status(models.TextChoices):
         agency_draft = "Agency Draft", "Agency Draft"  # update => not saving versions
@@ -70,6 +80,7 @@ class BusinessPlan(models.Model):
         max_length=32, choices=Status.choices, default=Status.agency_draft
     )
     version = models.IntegerField(default=1)
+    is_latest = models.BooleanField(default=True)  # latest version
 
     # feedback file
     feedback_filename = models.CharField(max_length=100, blank=True)
@@ -77,8 +88,30 @@ class BusinessPlan(models.Model):
         storage=get_protected_storage, upload_to=upload_path, blank=True
     )
 
+    objects = BusinessPlanManager()
+
     def __str__(self):
         return f"{self.agency_id} {self.year_start}-{self.year_end}"
+
+
+class BPActivityManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().select_related(
+            "business_plan",
+            "business_plan__agency",
+            "country",
+            "sector",
+            "subsector",
+            "project_type",
+            "bp_chemical_type",
+            "project_cluster",
+        ).prefetch_related(
+            "substances",
+            "values",
+        )
+
+    def get_latest(self):
+        return self.get_queryset().filter(business_plan__is_latest=True)
 
 
 class BPActivity(models.Model):
@@ -133,6 +166,8 @@ class BPActivity(models.Model):
     # Secretariat comment
     comment_secretariat = models.TextField(blank=True)
     comment_types = models.ManyToManyField(CommentType, blank=True)
+
+    objects = BPActivityManager()
 
     def __str__(self):
         return self.title
