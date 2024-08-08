@@ -26,10 +26,18 @@ class DashboardWriter(WriteOnlyBase):
             record_row.append(self.write_record_cell(cell_c))
 
             self.sheet.append(record_row)
+        self.sheet.merge_cells("A4:C4")
+        self.sheet.merge_cells("A6:C6")
+        self.sheet.merge_cells("A5:C5")
+        for row in range(4, 7):
+            self.sheet.row_dimensions[row].height = 30
+            self.sheet.cell(row=row, column=1).alignment = Alignment(
+                horizontal="center", vertical="center", wrap_text=True
+            )
 
     def write_header_cell(self, value, comment=None):
         cell = WriteOnlyCell(self.sheet, value=value)
-        cell.font = Font(name=DEFAULT_FONT.name, bold=True)
+        cell.font = Font(name="Times New Roman", bold=True)
         cell.border = Border(
             top=Side(style="thin"),
             left=Side(style="thin"),
@@ -41,7 +49,7 @@ class DashboardWriter(WriteOnlyBase):
 
     def write_record_cell(self, value, read_only=False):
         cell = WriteOnlyCell(self.sheet, value=value)
-        cell.font = Font(name=DEFAULT_FONT.name)
+        cell.font = Font(name="Times New Roman")
         cell.border = Border(
             top=Side(style="thin"),
             left=Side(style="thin"),

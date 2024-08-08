@@ -795,6 +795,20 @@ class ReplenishmentDashboardExportView(views.APIView):
         balance = total_income - total_provisions
 
         data = [
+            EMPTY_ROW,
+            EMPTY_ROW,
+            (
+                "TRUST  FUND FOR THE  MULTILATERAL FUND FOR THE IMPLEMENTATION OF THE MONTREAL PROTOCOL",
+                None,
+                None,
+            ),
+            (
+                f"TABLE 1 : STATUS OF THE FUND FROM 1991-{datetime.now().year} (IN US DOLLARS)",
+                None,
+                None,
+            ),
+            ("As at 24/05/2024", None, None),
+            EMPTY_ROW,
             ("INCOME", None, None),
             ("Contributions received:", None, None),
             (
@@ -883,13 +897,14 @@ class ReplenishmentDashboardExportView(views.APIView):
             ("Balance", None, balance),
         ]
 
-        wb = openpyxl.Workbook(write_only=True)
+        wb = openpyxl.Workbook()
+        wb.remove(wb.active)
         sheet = wb.create_sheet("Status")
         configure_sheet_print(sheet, "landscape")
 
         DashboardWriter(sheet, []).write(data)
 
-        return workbook_response("Status", wb)
+        return workbook_response("Status of the fund", wb)
 
 
 class ReplenishmentInvoiceViewSet(
