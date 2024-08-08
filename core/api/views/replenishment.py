@@ -8,7 +8,6 @@ from decimal import Decimal
 
 import openpyxl
 from django.db import models, transaction
-from django.db.models import Q, F
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, mixins, status, views, viewsets
@@ -43,7 +42,7 @@ from core.api.views.utils import (
     SummaryStatusOfContributionsMixin,
     TriennialStatusOfContributionsAggregator,
     AnnualStatusOfContributionsAggregator,
-    get_period_status_of_contributions_response_workbook,
+    add_period_status_of_contributions_response_worksheet,
 )
 from core.models import (
     AnnualContributionStatus,
@@ -340,9 +339,10 @@ class AnnualStatusOfContributionsExportView(views.APIView):
         self.check_permissions(request)
         agg = AnnualStatusOfContributionsAggregator(year)
 
-        return get_period_status_of_contributions_response_workbook(
-            agg, f"YR{year}", f"Summary Status of Contributions {year}"
-        )
+        wb = openpyxl.Workbook(write_only=True)
+        add_period_status_of_contributions_response_worksheet(wb, agg, f"YR{year}")
+
+        return workbook_response(f"Summary Status of Contributions {year}", wb)
 
 
 class TriennialStatusOfContributionsView(views.APIView):
@@ -403,10 +403,13 @@ class TriennialStatusOfContributionsExportView(views.APIView):
         self.check_permissions(request)
         agg = TriennialStatusOfContributionsAggregator(start_year, end_year)
 
-        return get_period_status_of_contributions_response_workbook(
-            agg,
-            f"YR{start_year}_{str(end_year)[2:]}",
-            f"Summary Status of Contributions {start_year}-{end_year}",
+        wb = openpyxl.Workbook(write_only=True)
+        add_period_status_of_contributions_response_worksheet(
+            wb, agg, f"YR{start_year}_{str(end_year)[2:]}"
+        )
+
+        return workbook_response(
+            f"Summary Status of Contributions {start_year}-{end_year}", wb
         )
 
 

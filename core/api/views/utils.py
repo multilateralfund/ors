@@ -663,7 +663,7 @@ class AnnualStatusOfContributionsAggregator:
             return 0
 
 
-def get_period_status_of_contributions_response_workbook(agg, sheet_name, file_name):
+def add_period_status_of_contributions_response_worksheet(wb, agg, sheet_name):
     soc_qs = agg.get_status_of_contributions_qs()
     data = [
         {
@@ -717,10 +717,7 @@ def get_period_status_of_contributions_response_workbook(agg, sheet_name, file_n
         ]
     )
 
-    wb = openpyxl.Workbook(write_only=True)
     ws = wb.create_sheet(sheet_name)
     configure_sheet_print(ws, "landscape")
 
     StatusOfContributionsWriter(ws).write(data)
-
-    return workbook_response(file_name, wb)
