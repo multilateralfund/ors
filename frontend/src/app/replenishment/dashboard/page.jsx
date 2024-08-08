@@ -16,7 +16,8 @@ export default function ReplenishmentDashboard() {
       >
         <ReplenishmentHeading>Dashboard</ReplenishmentHeading>
         <DownloadButtons
-          downloadUrl={formatApiUrl('/api/replenishment/dashboard/export')}
+          downloadTexts={['Download']}
+          downloadUrls={[formatApiUrl('/api/replenishment/dashboard/export')]}
         />
         <DashboardView />
       </PageWrapper>
