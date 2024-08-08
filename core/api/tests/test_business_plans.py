@@ -60,13 +60,25 @@ class TestBPExport(BaseTest):
     url = reverse("bpactivity-export")
 
     def test_export_anon(self, business_plan):
-        response = self.client.get(self.url, {"business_plan_id": business_plan.id})
+        response = self.client.get(
+            self.url,
+            {
+                "year_start": business_plan.year_start,
+                "year_end": business_plan.year_end,
+            },
+        )
         assert response.status_code == 403
 
     def test_export(self, user, business_plan, bp_activity, bp_activity_values):
         self.client.force_authenticate(user=user)
 
-        response = self.client.get(self.url, {"business_plan_id": business_plan.id})
+        response = self.client.get(
+            self.url,
+            {
+                "year_start": business_plan.year_start,
+                "year_end": business_plan.year_end,
+            },
+        )
         assert response.status_code == 200
         assert (
             response.filename
@@ -99,14 +111,26 @@ class TestBPExport(BaseTest):
 class TestBPPrint(BaseTest):
     url = reverse("bpactivity-print")
 
-    def test_export_anon(self, business_plan):
-        response = self.client.get(self.url, {"business_plan_id": business_plan.id})
+    def test_print_anon(self, business_plan):
+        response = self.client.get(
+            self.url,
+            {
+                "year_start": business_plan.year_start,
+                "year_end": business_plan.year_end,
+            },
+        )
         assert response.status_code == 403
 
-    def test_export(self, user, business_plan, bp_activity, bp_activity_values):
+    def test_print(self, user, business_plan, bp_activity, bp_activity_values):
         self.client.force_authenticate(user=user)
 
-        response = self.client.get(self.url, {"business_plan_id": business_plan.id})
+        response = self.client.get(
+            self.url,
+            {
+                "year_start": business_plan.year_start,
+                "year_end": business_plan.year_end,
+            },
+        )
         assert response.status_code == 200
         assert (
             response.filename
