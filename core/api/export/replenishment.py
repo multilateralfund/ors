@@ -1,5 +1,5 @@
 from openpyxl.cell import WriteOnlyCell
-from openpyxl.styles import DEFAULT_FONT, Font, Side, Border, Alignment
+from openpyxl.styles import Font, Side, Border, Alignment
 
 from core.api.export.base import WriteOnlyBase
 

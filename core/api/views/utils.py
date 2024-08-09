@@ -1,18 +1,17 @@
+# pylint: disable=C0302
+
 from datetime import datetime
 
-import openpyxl
+from django.db import models
 from django.db.models import Q, F
 from openpyxl.utils import get_column_letter
 from rest_framework.exceptions import ValidationError
-
-from django.db import models
 
 from core.api.export.base import configure_sheet_print
 from core.api.export.replenishment import (
     StatusOfContributionsWriter,
     StatisticsStatusOfContributionsWriter,
 )
-from core.api.utils import workbook_response
 from core.models import (
     Country,
     TriennialContributionStatus,
@@ -23,6 +22,7 @@ from core.models import (
 from core.models.business_plan import BusinessPlan
 from core.models.country_programme import CPRecord, CPReport, CPReportFormatRow
 from core.models.country_programme_archive import CPRecordArchive, CPReportArchive
+
 
 BPACTIVITY_ORDERING_FIELDS = [
     "title",
@@ -938,6 +938,7 @@ def add_statistics_status_of_contributions_response_worksheet(wb, periods):
             "description": "Payments %age to pledges",
             "summary": f"={last_column_letter}14/{last_column_letter}10 * 100",
             **{
+                # pylint: disable=C0301
                 f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}14/{get_column_letter(i+2)}10 * 100"
                 for i, soc in enumerate(soc_data)
             },
@@ -988,6 +989,7 @@ def add_statistics_status_of_contributions_response_worksheet(wb, periods):
             "description": "As % to total pledges",
             "summary": f"={last_column_letter}16/{last_column_letter}10 * 100",
             **{
+                # pylint: disable=C0301
                 f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}16/{get_column_letter(i+2)}10 * 100"
                 for i, soc in enumerate(soc_data)
             },
@@ -1004,6 +1006,7 @@ def add_statistics_status_of_contributions_response_worksheet(wb, periods):
             "description": "CEITs' oustandings %age to pledges",
             "summary": f"={last_column_letter}26/{last_column_letter}10 * 100",
             **{
+                # pylint: disable=C0301
                 f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}26/{get_column_letter(i+2)}10 * 100"
                 for i, soc in enumerate(soc_data)
             },

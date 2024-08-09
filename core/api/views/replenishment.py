@@ -18,7 +18,6 @@ from core.api.export.base import configure_sheet_print
 from core.api.export.replenishment import (
     DashboardWriter,
     EMPTY_ROW,
-    StatusOfContributionsWriter,
 )
 from core.api.filters.replenishments import (
     InvoiceFilter,
@@ -490,6 +489,7 @@ class StatisticsStatusOfContributionsExportView(views.APIView):
     def get(self, request, *args, **kwargs):
         self.check_permissions(request)
 
+        current_year = datetime.now().year
         periods = (
             TriennialContributionStatus.objects.values("start_year", "end_year")
             .distinct()
@@ -499,7 +499,32 @@ class StatisticsStatusOfContributionsExportView(views.APIView):
         wb.remove(wb.active)
         add_statistics_status_of_contributions_response_worksheet(wb, periods)
 
-        current_year = datetime.now().year
+        summary_agg = SummaryStatusOfContributionsAggregator()
+        add_summary_status_of_contributions_response_worksheet(wb, summary_agg)
+
+        # Most likely too many queries, but it's readable
+        # An alternative would be to do more Python manipulations with
+        # queries that try to gather more data at once, it's probably
+        # in the same order of magnitude performance-wise
+        for period in reversed(periods):
+            triennial_agg = TriennialStatusOfContributionsAggregator(
+                period["start_year"], period["end_year"]
+            )
+            add_period_status_of_contributions_response_worksheet(
+                wb,
+                triennial_agg,
+                f"YR{period['start_year']}_{str(period['end_year'])[2:]}",
+                f"{period['start_year']}-{period['end_year']}",
+            )
+
+            for year in range(period["end_year"], period["start_year"] - 1, -1):
+                if year > current_year:
+                    continue
+
+                annual_agg = AnnualStatusOfContributionsAggregator(year)
+                add_period_status_of_contributions_response_worksheet(
+                    wb, annual_agg, f"YR{year}", year
+                )
 
         return workbook_response(f"Status Of Contributions {current_year}", wb)
 
