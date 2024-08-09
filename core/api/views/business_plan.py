@@ -88,7 +88,8 @@ class BusinessPlanViewSet(
     def get_years(self, *args, **kwargs):
         return Response(
             (
-                BusinessPlan.objects.get_latest().values("year_start", "year_end")
+                BusinessPlan.objects.get_latest()
+                .values("year_start", "year_end")
                 .annotate(
                     min_year=Min("activities__values__year"),
                     max_year=Max("activities__values__year"),
@@ -260,8 +261,7 @@ class BusinessPlanViewSet(
         if not new_instance.name:
             new_instance.name = f"{new_instance.agency} {new_instance.year_start} - {new_instance.year_end}"
 
-        # set version and updated by user
-        new_instance.version = current_obj.version + 1
+        # set updated by user
         new_instance.updated_by = user
         new_instance.save()
 
@@ -275,6 +275,7 @@ class BusinessPlanViewSet(
             business_plan=new_instance,
             updated_by=user,
             event_description="Updated by user",
+            bp_version=current_obj.version,
         )
 
         current_obj.is_latest = False
@@ -332,6 +333,14 @@ class BPStatusUpdateView(generics.GenericAPIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        # update version
+        if (
+            new_status
+            in [BusinessPlan.Status.agency_draft, BusinessPlan.Status.secretariat_draft]
+            and new_status != initial_status
+        ):
+            business_plan.version += 1
+
         # update status
         business_plan.status = new_status
         business_plan.save()
@@ -340,6 +349,7 @@ class BPStatusUpdateView(generics.GenericAPIView):
             business_plan=business_plan,
             updated_by=request.user,
             event_description=f"Status updated from {initial_status} to {new_status}",
+            bp_version=business_plan.version,
         )
 
         serializer = self.get_serializer(business_plan)

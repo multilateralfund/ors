@@ -2,6 +2,7 @@ from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
 
+from core.import_data.utils import get_import_user_id
 from core.models.agency import Agency
 from core.models.base import CommentType
 from core.models.country import Country
@@ -24,8 +25,8 @@ class BPChemicalType(models.Model):
 
 class BusinessPlanManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().select_related(
-            "agency", "created_by", "updated_by"
+        return (
+            super().get_queryset().select_related("agency", "created_by", "updated_by")
         )
 
     def get_latest(self):
@@ -53,7 +54,7 @@ class BusinessPlan(models.Model):
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
-        null=True,
+        default=get_import_user_id,
         related_name="created_business_plans",
         help_text="User who created the business plan",
     )
@@ -63,7 +64,7 @@ class BusinessPlan(models.Model):
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
-        null=True,
+        default=get_import_user_id,
         related_name="updated_business_plans",
         help_text="User who last updated the business plan",
     )
@@ -96,18 +97,23 @@ class BusinessPlan(models.Model):
 
 class BPActivityManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().select_related(
-            "business_plan",
-            "business_plan__agency",
-            "country",
-            "sector",
-            "subsector",
-            "project_type",
-            "bp_chemical_type",
-            "project_cluster",
-        ).prefetch_related(
-            "substances",
-            "values",
+        return (
+            super()
+            .get_queryset()
+            .select_related(
+                "business_plan",
+                "business_plan__agency",
+                "country",
+                "sector",
+                "subsector",
+                "project_type",
+                "bp_chemical_type",
+                "project_cluster",
+            )
+            .prefetch_related(
+                "substances",
+                "values",
+            )
         )
 
     def get_latest(self):
@@ -215,7 +221,7 @@ class BPHistory(models.Model):
         help_text="User who updated the business plan",
     )
     event_description = models.TextField(blank=True)
-    bp_version = models.FloatField(default=1)
+    bp_version = models.IntegerField(default=1)
 
     class Meta:
         ordering = ["-created_at"]

@@ -931,6 +931,7 @@ class TestBPGet:
                 "agency_id": business_plan.agency_id,
                 "year_start": business_plan.year_start,
                 "year_end": business_plan.year_end,
+                "version": business_plan.version,
             },
         )
         assert response.status_code == 200
@@ -996,28 +997,30 @@ class TestBPGet:
         )
         assert response.status_code == 400
 
-    def test_invalid_year(self, user, _setup_bp_activity_list, agency):
+    def test_invalid_year(self, user, business_plan, _setup_bp_activity_list):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(
             self.url,
             {
-                "agency_id": agency.id,
+                "agency_id": business_plan.agency_id,
                 "year_start": 99,
                 "year_end": 999,
+                "version": business_plan.version,
             },
         )
         assert response.status_code == 400
 
-    def test_invalid_agency(self, user, _setup_bp_activity_list):
+    def test_invalid_agency(self, user, business_plan, _setup_bp_activity_list):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(
             self.url,
             {
                 "agency_id": 999,
-                "year_start": 2021,
-                "year_end": 2023,
+                "year_start": business_plan.year_start,
+                "year_end": business_plan.year_end,
+                "version": business_plan.version,
             },
         )
         assert response.status_code == 400
