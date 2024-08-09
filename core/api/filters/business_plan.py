@@ -20,13 +20,6 @@ class BPFilterBackend(DjangoFilterBackend):
         return BusinessPlanFilter
 
 
-class BPActivityFilterBackend(DjangoFilterBackend):
-    def get_filterset_class(self, view, queryset=None):
-        if getattr(view, "action", None) == "list":
-            return BPActivityListFilter
-        return BPActivityFilter
-
-
 class BusinessPlanFilter(filters.FilterSet):
     status = filters.MultipleChoiceFilter(
         choices=BusinessPlan.Status.choices,
