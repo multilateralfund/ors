@@ -346,7 +346,7 @@ class AnnualStatusOfContributionsExportView(views.APIView):
             wb, agg, f"YR{year}", year
         )
 
-        return workbook_response(f"Summary Status of Contributions {year}", wb)
+        return workbook_response(f"Status of Contributions {year}", wb)
 
 
 class TriennialStatusOfContributionsView(views.APIView):
@@ -414,7 +414,7 @@ class TriennialStatusOfContributionsExportView(views.APIView):
         )
 
         return workbook_response(
-            f"Summary Status of Contributions {start_year}-{end_year}", wb
+            f"Status of Contributions {start_year}-{end_year}", wb
         )
 
 
@@ -526,7 +526,7 @@ class StatisticsStatusOfContributionsExportView(views.APIView):
                     wb, annual_agg, f"YR{year}", year
                 )
 
-        return workbook_response(f"Status Of Contributions {current_year}", wb)
+        return workbook_response(f"All Status Of Contributions {current_year}", wb)
 
 
 class DisputedContributionViewSet(

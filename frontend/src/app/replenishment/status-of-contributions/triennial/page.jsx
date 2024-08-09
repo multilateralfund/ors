@@ -10,7 +10,7 @@ import { SCViewWrapper } from '@ors/components/manage/Blocks/Replenishment/Statu
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 
-export default function ReplenishmentSoCAnnual() {
+export default function ReplenishmentSoCTriennial() {
   const ctxPeriods = useContext(ReplenishmentContext)
   const router = useRouter()
 
