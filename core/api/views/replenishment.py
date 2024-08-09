@@ -39,10 +39,11 @@ from core.api.serializers import (
 )
 from core.api.utils import workbook_response
 from core.api.views.utils import (
-    SummaryStatusOfContributionsMixin,
     TriennialStatusOfContributionsAggregator,
     AnnualStatusOfContributionsAggregator,
     add_period_status_of_contributions_response_worksheet,
+    SummaryStatusOfContributionsAggregator,
+    add_summary_status_of_contributions_resppnse_worksheet,
 )
 from core.models import (
     AnnualContributionStatus,
@@ -339,8 +340,11 @@ class AnnualStatusOfContributionsExportView(views.APIView):
         self.check_permissions(request)
         agg = AnnualStatusOfContributionsAggregator(year)
 
-        wb = openpyxl.Workbook(write_only=True)
-        add_period_status_of_contributions_response_worksheet(wb, agg, f"YR{year}")
+        wb = openpyxl.Workbook()
+        wb.remove(wb.active)
+        add_period_status_of_contributions_response_worksheet(
+            wb, agg, f"YR{year}", year
+        )
 
         return workbook_response(f"Summary Status of Contributions {year}", wb)
 
@@ -403,9 +407,10 @@ class TriennialStatusOfContributionsExportView(views.APIView):
         self.check_permissions(request)
         agg = TriennialStatusOfContributionsAggregator(start_year, end_year)
 
-        wb = openpyxl.Workbook(write_only=True)
+        wb = openpyxl.Workbook()
+        wb.remove(wb.active)
         add_period_status_of_contributions_response_worksheet(
-            wb, agg, f"YR{start_year}_{str(end_year)[2:]}"
+            wb, agg, f"YR{start_year}_{str(end_year)[2:]}", f"{start_year}-{end_year}"
         )
 
         return workbook_response(
@@ -413,16 +418,15 @@ class TriennialStatusOfContributionsExportView(views.APIView):
         )
 
 
-class SummaryStatusOfContributionsView(
-    views.APIView, SummaryStatusOfContributionsMixin
-):
+class SummaryStatusOfContributionsView(views.APIView):
     permission_classes = [IsUserAllowedReplenishment]
 
     def get(self, request, *args, **kwargs):
         self.check_permissions(request)
+        agg = SummaryStatusOfContributionsAggregator()
 
         data = {}
-        soc_qs = self.get_status_of_contributions_qs()
+        soc_qs = agg.get_status_of_contributions_qs()
         data["status_of_contributions"] = [
             {
                 "country": CountrySerializer(country).data,
@@ -436,15 +440,15 @@ class SummaryStatusOfContributionsView(
             for country in soc_qs
         ]
 
-        data["ceit"] = self.get_ceit_data()
+        data["ceit"] = agg.get_ceit_data()
         data["ceit_countries"] = CountrySerializer(
             Country.objects.filter(ceit_statuses__is_ceit=True).distinct(), many=True
         ).data
 
-        data["total"] = self.get_total()
-        data["total"]["gain_loss"] = self.get_gain_loss()
+        data["total"] = agg.get_total()
+        data["total"]["gain_loss"] = agg.get_gain_loss()
 
-        disputed_contribution_amount = self.get_disputed_contribution_amount()
+        disputed_contribution_amount = agg.get_disputed_contribution_amount()
         data["total"]["agreed_contributions_with_disputed"] = (
             data["total"]["agreed_contributions"] + disputed_contribution_amount
         )
@@ -462,87 +466,36 @@ class SummaryStatusOfContributionsView(
         return Response(data)
 
 
-class SummaryStatusOfContributionsExportView(
-    views.APIView, SummaryStatusOfContributionsMixin
-):
+class SummaryStatusOfContributionsExportView(views.APIView):
+    permission_classes = [IsUserAllowedReplenishment]
+
+    def get(self, request, *args, **kwargs):
+        self.check_permissions(request)
+        agg = SummaryStatusOfContributionsAggregator()
+
+        wb = openpyxl.Workbook()
+        wb.remove(wb.active)
+
+        add_summary_status_of_contributions_resppnse_worksheet(wb, agg)
+
+        current_year = datetime.now().year
+
+        return workbook_response(f"Summary Status of Contributions {current_year}", wb)
+
+
+class AllStatusOfContributionsExportView(views.APIView):
     permission_classes = [IsUserAllowedReplenishment]
 
     def get(self, request, *args, **kwargs):
         self.check_permissions(request)
 
-        soc_qs = self.get_status_of_contributions_qs()
-        data = [
-            {
-                "country": country.name,
-                "agreed_contributions": country.agreed_contributions,
-                "cash_payments": country.cash_payments,
-                "bilateral_assistance": country.bilateral_assistance,
-                "promissory_notes": country.promissory_notes,
-                "outstanding_contributions": country.outstanding_contributions,
-                "gain_loss": country.gain_loss,
-            }
-            for country in soc_qs
-        ]
-        total = self.get_total()
-        gain_loss = self.get_gain_loss()
-        disputed_contributions_amount = self.get_disputed_contribution_amount()
-        ceit_data = self.get_ceit_data()
-
-        data.extend(
-            [
-                {
-                    "country": "SUB-TOTAL",
-                    "agreed_contributions": total["agreed_contributions"],
-                    "cash_payments": total["cash_payments"],
-                    "bilateral_assistance": total["bilateral_assistance"],
-                    "promissory_notes": total["promissory_notes"],
-                    "outstanding_contributions": total["outstanding_contributions"],
-                    "gain_loss": gain_loss,
-                },
-                {
-                    "country": "Disputed contributions",
-                    "agreed_contributions": disputed_contributions_amount,
-                    "outstanding_contributions": disputed_contributions_amount,
-                },
-                {
-                    "country": "TOTAL",
-                    "agreed_contributions": total["agreed_contributions"]
-                    + disputed_contributions_amount,
-                    "cash_payments": total["cash_payments"],
-                    "bilateral_assistance": total["bilateral_assistance"],
-                    "promissory_notes": total["promissory_notes"],
-                    "outstanding_contributions": total["outstanding_contributions"]
-                    + disputed_contributions_amount,
-                    "gain_loss": gain_loss,
-                },
-                {
-                    "country": "CEIT",
-                    "agreed_contributions": ceit_data["agreed_contributions"],
-                    "cash_payments": ceit_data["cash_payments"],
-                    "bilateral_assistance": ceit_data["bilateral_assistance"],
-                    "promissory_notes": ceit_data["promissory_notes"],
-                    "outstanding_contributions": ceit_data["outstanding_contributions"],
-                },
-            ]
+        periods = (
+            TriennialContributionStatus.objects.values_list("start_year", "end_year")
+            .distinct()
+            .order_by("start_year")
         )
 
-        wb = openpyxl.Workbook(write_only=True)
-        current_year = datetime.now().year
-        ws = wb.create_sheet(f"YR91_{str(current_year)[2:]}")
-        configure_sheet_print(ws, "landscape")
-
-        StatusOfContributionsWriter(
-            ws,
-            extra_headers=[
-                {
-                    "id": "gain_loss",
-                    "headerName": "Exchange (Gain)/Loss. NB:Negative amount = Gain",
-                    "column_width": 25,
-                },
-            ],
-        ).write(data)
-
-        return workbook_response(f"Summary Status of Contributions {current_year}", wb)
+        return 0
 
 
 class DisputedContributionViewSet(

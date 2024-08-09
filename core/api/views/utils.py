@@ -444,7 +444,7 @@ def get_business_plan_from_request(request):
     return business_plan
 
 
-class SummaryStatusOfContributionsMixin:
+class SummaryStatusOfContributionsAggregator:
     def get_status_of_contributions_qs(self):
         return (
             Country.objects.filter(triennial_contributions_status__isnull=False)
@@ -663,7 +663,9 @@ class AnnualStatusOfContributionsAggregator:
             return 0
 
 
-def add_period_status_of_contributions_response_worksheet(wb, agg, sheet_name):
+def add_period_status_of_contributions_response_worksheet(
+    wb, agg, sheet_name, sheet_period
+):
     soc_qs = agg.get_status_of_contributions_qs()
     data = [
         {
@@ -720,4 +722,78 @@ def add_period_status_of_contributions_response_worksheet(wb, agg, sheet_name):
     ws = wb.create_sheet(sheet_name)
     configure_sheet_print(ws, "landscape")
 
-    StatusOfContributionsWriter(ws).write(data)
+    StatusOfContributionsWriter(ws, period=sheet_period).write(data)
+
+
+def add_summary_status_of_contributions_resppnse_worksheet(wb, agg):
+    soc_qs = agg.get_status_of_contributions_qs()
+    data = [
+        {
+            "country": country.name,
+            "agreed_contributions": country.agreed_contributions,
+            "cash_payments": country.cash_payments,
+            "bilateral_assistance": country.bilateral_assistance,
+            "promissory_notes": country.promissory_notes,
+            "outstanding_contributions": country.outstanding_contributions,
+            "gain_loss": country.gain_loss,
+        }
+        for country in soc_qs
+    ]
+    total = agg.get_total()
+    gain_loss = agg.get_gain_loss()
+    disputed_contributions_amount = agg.get_disputed_contribution_amount()
+    ceit_data = agg.get_ceit_data()
+
+    data.extend(
+        [
+            {
+                "country": "SUB-TOTAL",
+                "agreed_contributions": total["agreed_contributions"],
+                "cash_payments": total["cash_payments"],
+                "bilateral_assistance": total["bilateral_assistance"],
+                "promissory_notes": total["promissory_notes"],
+                "outstanding_contributions": total["outstanding_contributions"],
+                "gain_loss": gain_loss,
+            },
+            {
+                "country": "Disputed contributions",
+                "agreed_contributions": disputed_contributions_amount,
+                "outstanding_contributions": disputed_contributions_amount,
+            },
+            {
+                "country": "TOTAL",
+                "agreed_contributions": total["agreed_contributions"]
+                + disputed_contributions_amount,
+                "cash_payments": total["cash_payments"],
+                "bilateral_assistance": total["bilateral_assistance"],
+                "promissory_notes": total["promissory_notes"],
+                "outstanding_contributions": total["outstanding_contributions"]
+                + disputed_contributions_amount,
+                "gain_loss": gain_loss,
+            },
+            {
+                "country": "CEIT",
+                "agreed_contributions": ceit_data["agreed_contributions"],
+                "cash_payments": ceit_data["cash_payments"],
+                "bilateral_assistance": ceit_data["bilateral_assistance"],
+                "promissory_notes": ceit_data["promissory_notes"],
+                "outstanding_contributions": ceit_data["outstanding_contributions"],
+            },
+        ]
+    )
+
+    current_year = datetime.now().year
+    ws = wb.create_sheet(f"YR91_{str(current_year)[2:]}")
+    configure_sheet_print(ws, "landscape")
+
+    StatusOfContributionsWriter(
+        ws,
+        period=f"1991-{current_year}",
+        extra_headers=[
+            {
+                "id": "gain_loss",
+                "headerName": "Exchange (Gain)/Loss. NB:Negative amount = Gain",
+                "column_width": 25,
+            },
+        ],
+    ).write(data)

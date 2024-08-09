@@ -61,8 +61,7 @@ class DashboardWriter(WriteOnlyBase):
 
 
 class StatusOfContributionsWriter(WriteOnlyBase):
-
-    def __init__(self, sheet, extra_headers=None):
+    def __init__(self, sheet, period=None, extra_headers=None):
         headers = [
             {
                 "id": "country",
@@ -98,7 +97,43 @@ class StatusOfContributionsWriter(WriteOnlyBase):
 
         if extra_headers:
             headers.extend(extra_headers)
+        self.period = period
         super().__init__(sheet, headers)
+
+    def do_prewriting(self):
+        columns_number = len(self.headers)
+        self.sheet.merge_cells(
+            start_row=5, start_column=1, end_row=5, end_column=columns_number
+        )
+        self.sheet.merge_cells(
+            start_row=6, start_column=1, end_row=6, end_column=columns_number
+        )
+        self.sheet.merge_cells(
+            start_row=7, start_column=1, end_row=7, end_column=columns_number
+        )
+        self.sheet.merge_cells(
+            start_row=8, start_column=1, end_row=8, end_column=columns_number
+        )
+        self.sheet.cell(row=5, column=1).alignment = Alignment(
+            horizontal="center", vertical="center", wrap_text=True
+        )
+        self.sheet.cell(row=6, column=1).alignment = Alignment(
+            horizontal="center", vertical="center", wrap_text=True
+        )
+        self.sheet.cell(row=7, column=1).alignment = Alignment(
+            horizontal="center", vertical="center", wrap_text=True
+        )
+        self.sheet.cell(row=5, column=1).value = (
+            "TRUST  FUND FOR THE  MULTILATERAL FUND FOR THE IMPLEMENTATION OF THE MONTREAL PROTOCOL"
+        )
+        self.sheet.cell(row=6, column=1).value = (
+            f"Status of Contributions for {self.period} (US$)"
+        )
+        self.sheet.cell(row=7, column=1).value = "As at 24/05/2024"
+
+    def write(self, data):
+        self.do_prewriting()
+        super().write(data)
 
     def write_record_cell(self, value, read_only=False):
         cell = super().write_record_cell(value, read_only)
@@ -110,3 +145,51 @@ class StatusOfContributionsWriter(WriteOnlyBase):
             cell.font = Font(name=DEFAULT_FONT.name, bold=True)
 
         return cell
+
+
+class AllDataStatusOfContributionsWriter(WriteOnlyBase):
+    def __init__(self, sheet, headers, period=None):
+        self.headers = headers
+        self.period = period
+        super().__init__(sheet, headers)
+
+    def do_prewriting(self):
+        columns_number = len(self.headers)
+        self.sheet.merge_cells(
+            start_row=5, start_column=1, end_row=5, end_column=columns_number
+        )
+        self.sheet.merge_cells(
+            start_row=6, start_column=1, end_row=6, end_column=columns_number
+        )
+        self.sheet.merge_cells(
+            start_row=7, start_column=1, end_row=7, end_column=columns_number
+        )
+        self.sheet.merge_cells(
+            start_row=8, start_column=1, end_row=8, end_column=columns_number
+        )
+        self.sheet.cell(row=5, column=1).alignment = Alignment(
+            horizontal="center", vertical="center", wrap_text=True
+        )
+        self.sheet.cell(row=6, column=1).alignment = Alignment(
+            horizontal="center", vertical="center", wrap_text=True
+        )
+        self.sheet.cell(row=7, column=1).alignment = Alignment(
+            horizontal="center", vertical="center", wrap_text=True
+        )
+        self.sheet.cell(row=8, column=1).alignment = Alignment(
+            horizontal="center", vertical="center", wrap_text=True
+        )
+        self.sheet.cell(row=5, column=1).value = (
+            "TRUST  FUND FOR THE  MULTILATERAL FUND FOR THE IMPLEMENTATION OF THE MONTREAL PROTOCOL"
+        )
+        self.sheet.cell(row=6, column=1).value = (
+            f"{self.period} SUMMARY STATUS OF CONTRIBUTIONS AND OTHER INCOME (US$)"
+        )
+        self.sheet.cell(row=7, column=1).value = (
+            "BALANCE  AVAILABLE   FOR  NEW  ALLOCATIONS"
+        )
+        self.sheet.cell(row=8, column=1).value = "As at 24/05/2024"
+
+    def write(self, data):
+        self.do_prewriting()
+        super().write(data)
