@@ -294,6 +294,7 @@ class BusinessPlanViewSet(
             current_obj.is_latest = False
             current_obj.save()
         else:
+            new_instance.version = current_obj.version
             current_obj.delete()
 
         # set updated by user
