@@ -22,11 +22,13 @@ class TestBPHistory:
     client = APIClient()
 
     def test_create_history(
-        self, agency_user, agency_inputter_user, _setup_new_business_plan_create
+        self, user, agency_user, agency_inputter_user, _setup_new_business_plan_create
     ):
         VALIDATION_LIST = [
-            ("created by user", 1, 1, agency_user.username),
-            ("updated by user", 0, 1, agency_inputter_user.username),
+            ("created by user", 3, 1, agency_user.username),
+            ("updated by user", 2, 1, agency_inputter_user.username),
+            ("status updated", 1, 1, agency_user.username),
+            ("updated by user", 0, 2, user.username),
         ]
 
         # create new business plan
@@ -40,13 +42,25 @@ class TestBPHistory:
         self.client.force_authenticate(user=agency_inputter_user)
         url = reverse("businessplan-list") + f"{business_plan_id}/"
         data = _setup_new_business_plan_create
-        data["records"] = []
-
         response = self.client.put(url, data, format="json")
         assert response.status_code == 200
         new_id = response.data["id"]
 
-        # check 2 history objects created
+        # update status to submitted
+        self.client.force_authenticate(user=agency_user)
+        url = reverse("business-plan-status", kwargs={"id": new_id})
+        response = self.client.put(url, {"status": "Submitted"})
+        assert response.status_code == 200
+
+        # update business plan and status to secretariat draft
+        self.client.force_authenticate(user=user)
+        url = reverse("businessplan-list") + f"{new_id}/"
+        data["status"] = "Secretariat Draft"
+        response = self.client.put(url, data, format="json")
+        assert response.status_code == 200
+        new_id = response.data["id"]
+
+        # check 4 history objects created
         history = BPHistory.objects.filter(business_plan_id=new_id)
         assert history.count() == len(VALIDATION_LIST)
 

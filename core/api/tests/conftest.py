@@ -404,7 +404,23 @@ def project_ods_odp_blend(project, blend):
 
 @pytest.fixture
 def business_plan(agency):
-    return BusinessPlanFactory(year_start=2020, year_end=2022, agency=agency)
+    return BusinessPlanFactory(
+        year_start=2020,
+        year_end=2022,
+        agency=agency,
+        version=2,
+    )
+
+
+@pytest.fixture()
+def old_business_plan(agency):
+    return BusinessPlanFactory(
+        year_start=2020,
+        year_end=2022,
+        agency=agency,
+        version=1,
+        is_latest=False,
+    )
 
 
 @pytest.fixture
@@ -416,6 +432,15 @@ def bp_chemical_type():
 def bp_activity(business_plan, country_ro):
     return BPActivityFactory(
         business_plan=business_plan,
+        country=country_ro,
+        status=BPActivity.Status.approved,
+    )
+
+
+@pytest.fixture
+def old_bp_activity(old_business_plan, country_ro):
+    return BPActivityFactory(
+        business_plan=old_business_plan,
         country=country_ro,
         status=BPActivity.Status.approved,
     )

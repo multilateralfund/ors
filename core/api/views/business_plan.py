@@ -31,9 +31,10 @@ from core.api.serializers.business_plan import (
     BPActivityDetailSerializer,
     BPActivityListSerializer,
 )
-from core.api.utils import STATUS_TRANSITIONS, workbook_pdf_response
+from core.api.utils import workbook_pdf_response
 from core.api.utils import workbook_response
 from core.api.views.utils import (
+    check_status_transition,
     get_business_plan_from_request,
     BPACTIVITY_ORDERING_FIELDS,
 )
@@ -64,25 +65,12 @@ class BusinessPlanViewSet(
 
     def get_queryset(self):
         if self.action == "get":
-            return BPActivity.objects.select_related(
-                "business_plan",
-                "business_plan__agency",
-                "country",
-                "sector",
-                "subsector",
-                "project_type",
-                "bp_chemical_type",
-                "project_cluster",
-            ).prefetch_related(
-                "substances",
-                "values",
-            )
-
-        business_plans = BusinessPlan.objects.all()
+            return BPActivity.objects.all()
 
         if self.request.method == "PUT":
-            return business_plans.select_for_update()
+            return BusinessPlan.objects.get_latest().select_for_update()
 
+        business_plans = BusinessPlan.objects.all()
         # filter business plans by agency if user is agency
         if "agency" in self.request.user.user_type.lower():
             business_plans = business_plans.filter(agency=self.request.user.agency)
@@ -102,7 +90,8 @@ class BusinessPlanViewSet(
     def get_years(self, *args, **kwargs):
         return Response(
             (
-                BusinessPlan.objects.values("year_start", "year_end")
+                BusinessPlan.objects.get_latest()
+                .values("year_start", "year_end")
                 .annotate(
                     min_year=Min("activities__values__year"),
                     max_year=Max("activities__values__year"),
@@ -227,7 +216,6 @@ class BusinessPlanViewSet(
             serializer.initial_data["agency_id"] != current_obj.agency_id
             or serializer.initial_data["year_start"] != current_obj.year_start
             or serializer.initial_data["year_end"] != current_obj.year_end
-            or serializer.initial_data["status"] != current_obj.status
         )
 
     @transaction.atomic
@@ -257,8 +245,11 @@ class BusinessPlanViewSet(
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        initial_status = current_obj.status
+        new_status = serializer.initial_data["status"]
+
         # the updates can only be made on drafts
-        if current_obj.status not in [
+        if new_status not in [
             BusinessPlan.Status.agency_draft,
             BusinessPlan.Status.secretariat_draft,
         ]:
@@ -267,30 +258,42 @@ class BusinessPlanViewSet(
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        ret_code, error = check_status_transition(user, initial_status, new_status)
+        if ret_code != status.HTTP_200_OK:
+            return Response({"general_error": error}, status=ret_code)
+
         self.perform_create(serializer)
         new_instance = serializer.instance
-
-        # set name
-        if not new_instance.name:
-            new_instance.name = f"{new_instance.agency} {new_instance.year_start} - {new_instance.year_end}"
-
-        # set updated by user
-        new_instance.updated_by = user
-        new_instance.save()
 
         # inherit all history
         BPHistory.objects.filter(business_plan=current_obj).update(
             business_plan=new_instance
         )
 
+        # set name
+        if not new_instance.name:
+            new_instance.name = f"{new_instance.agency} {new_instance.year_start} - {new_instance.year_end}"
+
+        # set version
+        if new_status != initial_status:
+            new_instance.version = current_obj.version + 1
+            current_obj.is_latest = False
+            current_obj.save()
+        else:
+            new_instance.version = current_obj.version
+            current_obj.delete()
+
+        # set updated by user
+        new_instance.updated_by = user
+        new_instance.save()
+
         # create new history for update event
         BPHistory.objects.create(
             business_plan=new_instance,
             updated_by=user,
             event_description="Updated by user",
+            bp_version=new_instance.version,
         )
-
-        current_obj.delete()
 
         if config.SEND_MAIL:
             send_mail_bp_update.delay(new_instance.id)  # send mail to MLFS
@@ -304,7 +307,7 @@ class BPStatusUpdateView(generics.GenericAPIView):
     API endpoint that allows updating business plan status.
     """
 
-    queryset = BusinessPlan.objects.all()
+    queryset = BusinessPlan.objects.get_latest()
     serializer_class = BusinessPlanSerializer
     lookup_field = "id"
     permission_classes = [IsSecretariat | IsAgency]
@@ -325,24 +328,11 @@ class BPStatusUpdateView(generics.GenericAPIView):
         business_plan = self.get_object()
         initial_status = business_plan.status
         new_status = request.data.get("status")
-
-        # validate status transition
-        if (
-            initial_status not in STATUS_TRANSITIONS
-            or new_status not in STATUS_TRANSITIONS[initial_status]
-        ):
-            return Response(
-                {"general_error": "Invalid status transition"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # validate user permissions
         user = request.user
-        if user.user_type not in STATUS_TRANSITIONS[initial_status][new_status]:
-            return Response(
-                {"general_error": "User not allowed to update status"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+
+        ret_code, error = check_status_transition(user, initial_status, new_status)
+        if ret_code != status.HTTP_200_OK:
+            return Response({"general_error": error}, status=ret_code)
 
         # update status
         business_plan.status = new_status
@@ -352,6 +342,7 @@ class BPStatusUpdateView(generics.GenericAPIView):
             business_plan=business_plan,
             updated_by=request.user,
             event_description=f"Status updated from {initial_status} to {new_status}",
+            bp_version=business_plan.version,
         )
 
         serializer = self.get_serializer(business_plan)
@@ -385,19 +376,7 @@ class BPActivityViewSet(
         return BPActivityDetailSerializer
 
     def get_queryset(self):
-        queryset = BPActivity.objects.select_related(
-            "business_plan",
-            "business_plan__agency",
-            "country",
-            "sector",
-            "subsector",
-            "project_type",
-            "bp_chemical_type",
-            "project_cluster",
-        ).prefetch_related(
-            "substances",
-            "values",
-        )
+        queryset = BPActivity.objects.get_latest()
 
         if "agency" in self.request.user.user_type.lower():
             # filter activities by agency if user is agency
@@ -462,7 +441,7 @@ class BPFileView(generics.GenericAPIView):
     """
 
     permission_classes = [IsSecretariat | IsAgency]
-    queryset = BusinessPlan.objects.all()
+    queryset = BusinessPlan.objects.get_latest()
     serializer_class = BPFileSerializer
     lookup_field = "id"
 
