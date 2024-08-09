@@ -24,11 +24,6 @@ class BPChemicalType(models.Model):
 
 
 class BusinessPlanManager(models.Manager):
-    def get_queryset(self):
-        return (
-            super().get_queryset().select_related("agency", "created_by", "updated_by")
-        )
-
     def get_latest(self):
         return self.get_queryset().filter(is_latest=True)
 

@@ -416,12 +416,19 @@ def get_business_plan_from_request(request):
     try:
         if business_plan_id:
             business_plan = BusinessPlan.objects.get(id=business_plan_id)
-        elif all([agency_id, year_start, year_end]):
+        elif all([agency_id, year_start, year_end, version]):
             business_plan = BusinessPlan.objects.get(
                 agency_id=agency_id,
                 year_start=year_start,
                 year_end=year_end,
                 version=version,
+            )
+        elif all([agency_id, year_start, year_end]):
+            business_plan = BusinessPlan.objects.get(
+                agency_id=agency_id,
+                year_start=year_start,
+                year_end=year_end,
+                is_latest=True,
             )
 
         if not business_plan:

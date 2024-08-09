@@ -44,6 +44,8 @@ from core.tasks import (
     send_mail_bp_update,
 )
 
+# pylint: disable=R0911
+
 
 class BusinessPlanViewSet(
     mixins.CreateModelMixin,
@@ -66,16 +68,17 @@ class BusinessPlanViewSet(
         if self.action == "get":
             return BPActivity.objects.all()
 
-        business_plans = BusinessPlan.objects.get_latest()
-
         if self.request.method == "PUT":
-            return business_plans.select_for_update()
+            return BusinessPlan.objects.get_latest().select_for_update()
 
+        business_plans = BusinessPlan.objects.all()
         # filter business plans by agency if user is agency
         if "agency" in self.request.user.user_type.lower():
             business_plans = business_plans.filter(agency=self.request.user.agency)
 
-        return business_plans.order_by("year_start", "year_end", "id")
+        return business_plans.select_related(
+            "agency", "created_by", "updated_by"
+        ).order_by("year_start", "year_end", "id")
 
     def get_serializer_class(self):
         if self.action == "get":
@@ -214,7 +217,6 @@ class BusinessPlanViewSet(
             serializer.initial_data["agency_id"] != current_obj.agency_id
             or serializer.initial_data["year_start"] != current_obj.year_start
             or serializer.initial_data["year_end"] != current_obj.year_end
-            or serializer.initial_data["status"] != current_obj.status
         )
 
     @transaction.atomic
@@ -244,8 +246,11 @@ class BusinessPlanViewSet(
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        initial_status = current_obj.status
+        new_status = serializer.initial_data["status"]
+
         # the updates can only be made on drafts
-        if current_obj.status not in [
+        if new_status not in [
             BusinessPlan.Status.agency_draft,
             BusinessPlan.Status.secretariat_draft,
         ]:
@@ -254,32 +259,54 @@ class BusinessPlanViewSet(
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # validate status transition
+        if (
+            initial_status not in STATUS_TRANSITIONS
+            or new_status not in STATUS_TRANSITIONS[initial_status]
+        ):
+            return Response(
+                {"general_error": "Invalid status transition"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # validate user permissions
+        if user.user_type not in STATUS_TRANSITIONS[initial_status][new_status]:
+            return Response(
+                {"general_error": "User not allowed to update status"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         self.perform_create(serializer)
         new_instance = serializer.instance
-
-        # set name
-        if not new_instance.name:
-            new_instance.name = f"{new_instance.agency} {new_instance.year_start} - {new_instance.year_end}"
-
-        # set updated by user
-        new_instance.updated_by = user
-        new_instance.save()
 
         # inherit all history
         BPHistory.objects.filter(business_plan=current_obj).update(
             business_plan=new_instance
         )
 
+        # set name
+        if not new_instance.name:
+            new_instance.name = f"{new_instance.agency} {new_instance.year_start} - {new_instance.year_end}"
+
+        # set version
+        if new_status != initial_status:
+            new_instance.version = current_obj.version + 1
+            current_obj.is_latest = False
+            current_obj.save()
+        else:
+            current_obj.delete()
+
+        # set updated by user
+        new_instance.updated_by = user
+        new_instance.save()
+
         # create new history for update event
         BPHistory.objects.create(
             business_plan=new_instance,
             updated_by=user,
             event_description="Updated by user",
-            bp_version=current_obj.version,
+            bp_version=new_instance.version,
         )
-
-        current_obj.is_latest = False
-        current_obj.save()
 
         if config.SEND_MAIL:
             send_mail_bp_update.delay(new_instance.id)  # send mail to MLFS
@@ -332,14 +359,6 @@ class BPStatusUpdateView(generics.GenericAPIView):
                 {"general_error": "User not allowed to update status"},
                 status=status.HTTP_403_FORBIDDEN,
             )
-
-        # update version
-        if (
-            new_status
-            in [BusinessPlan.Status.agency_draft, BusinessPlan.Status.secretariat_draft]
-            and new_status != initial_status
-        ):
-            business_plan.version += 1
 
         # update status
         business_plan.status = new_status

@@ -47,6 +47,15 @@ class TestBPFileUpload:
         response = self.client.post(url, data, format="multipart")
         assert response.status_code == 400
 
+    def test_file_upload_old_bp(self, old_business_plan, agency_user, test_file):
+        self.client.force_authenticate(user=agency_user)
+        url = reverse("business-plan-file", kwargs={"id": old_business_plan.id})
+
+        # upload file
+        data = {"adrian.csv": test_file.open()}
+        response = self.client.post(url, data, format="multipart")
+        assert response.status_code == 404
+
     def test_file_upload(self, agency_user, business_plan, test_file):
         self.client.force_authenticate(user=agency_user)
 

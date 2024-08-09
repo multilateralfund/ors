@@ -76,6 +76,8 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
             "feedback_file_download_url",
             "updated_at",
             "updated_by",
+            "version",
+            "is_latest",
         ]
 
     def get_feedback_file_download_url(self, obj):
