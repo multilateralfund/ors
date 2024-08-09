@@ -31,9 +31,10 @@ from core.api.serializers.business_plan import (
     BPActivityDetailSerializer,
     BPActivityListSerializer,
 )
-from core.api.utils import STATUS_TRANSITIONS, workbook_pdf_response
+from core.api.utils import workbook_pdf_response
 from core.api.utils import workbook_response
 from core.api.views.utils import (
+    check_status_transition,
     get_business_plan_from_request,
     BPACTIVITY_ORDERING_FIELDS,
 )
@@ -43,8 +44,6 @@ from core.tasks import (
     send_mail_bp_status_update,
     send_mail_bp_update,
 )
-
-# pylint: disable=R0911
 
 
 class BusinessPlanViewSet(
@@ -259,22 +258,9 @@ class BusinessPlanViewSet(
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # validate status transition
-        if (
-            initial_status not in STATUS_TRANSITIONS
-            or new_status not in STATUS_TRANSITIONS[initial_status]
-        ):
-            return Response(
-                {"general_error": "Invalid status transition"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # validate user permissions
-        if user.user_type not in STATUS_TRANSITIONS[initial_status][new_status]:
-            return Response(
-                {"general_error": "User not allowed to update status"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+        ret_code, error = check_status_transition(user, initial_status, new_status)
+        if ret_code != status.HTTP_200_OK:
+            return Response({"general_error": error}, status=ret_code)
 
         self.perform_create(serializer)
         new_instance = serializer.instance
@@ -342,24 +328,11 @@ class BPStatusUpdateView(generics.GenericAPIView):
         business_plan = self.get_object()
         initial_status = business_plan.status
         new_status = request.data.get("status")
-
-        # validate status transition
-        if (
-            initial_status not in STATUS_TRANSITIONS
-            or new_status not in STATUS_TRANSITIONS[initial_status]
-        ):
-            return Response(
-                {"general_error": "Invalid status transition"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # validate user permissions
         user = request.user
-        if user.user_type not in STATUS_TRANSITIONS[initial_status][new_status]:
-            return Response(
-                {"general_error": "User not allowed to update status"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+
+        ret_code, error = check_status_transition(user, initial_status, new_status)
+        if ret_code != status.HTTP_200_OK:
+            return Response({"general_error": error}, status=ret_code)
 
         # update status
         business_plan.status = new_status

@@ -144,10 +144,6 @@ def get_import_user():
         return import_user
 
 
-def get_import_user_id():
-    return get_import_user().id
-
-
 def delete_old_data(cls, source_file=None):
     """
     Delete old data from db for a specific source file

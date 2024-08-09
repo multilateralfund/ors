@@ -2,7 +2,6 @@ from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
 
-from core.import_data.utils import get_import_user_id
 from core.models.agency import Agency
 from core.models.base import CommentType
 from core.models.country import Country
@@ -49,7 +48,7 @@ class BusinessPlan(models.Model):
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
-        default=get_import_user_id,
+        null=True,
         related_name="created_business_plans",
         help_text="User who created the business plan",
     )
@@ -59,7 +58,7 @@ class BusinessPlan(models.Model):
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
-        default=get_import_user_id,
+        null=True,
         related_name="updated_business_plans",
         help_text="User who last updated the business plan",
     )
