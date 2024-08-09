@@ -61,6 +61,8 @@ class DashboardWriter(WriteOnlyBase):
 
 
 class StatusOfContributionsWriter(WriteOnlyBase):
+    BOLD_RECORD_CELLS = ["TOTAL", "SUB-TOTAL"]
+
     def __init__(self, sheet, period=None, extra_headers=None):
         headers = [
             {
@@ -135,19 +137,26 @@ class StatusOfContributionsWriter(WriteOnlyBase):
         self.do_prewriting()
         super().write(data)
 
+    def write_header_cell(self, value, comment=None):
+        cell = super().write_header_cell(value, comment)
+        cell.font = Font(name="Times New Roman", bold=True)
+        return cell
+
     def write_record_cell(self, value, read_only=False):
         cell = super().write_record_cell(value, read_only)
-        if any(bold_string == value for bold_string in ["TOTAL", "SUB-TOTAL"]):
+        if any(bold_string == value for bold_string in self.BOLD_RECORD_CELLS):
             cell.border = Border(
                 top=Side(style="thick"),
                 bottom=Side(style="thick"),
             )
-            cell.font = Font(name=DEFAULT_FONT.name, bold=True)
+            cell.font = Font(name="Times New Roman", bold=True)
 
         return cell
 
 
-class AllDataStatusOfContributionsWriter(WriteOnlyBase):
+class StatisticsStatusOfContributionsWriter(WriteOnlyBase):
+    BOLD_RECORD_CELLS = ["Total payments"]
+
     def __init__(self, sheet, headers, period=None):
         self.headers = headers
         self.period = period
@@ -193,3 +202,15 @@ class AllDataStatusOfContributionsWriter(WriteOnlyBase):
     def write(self, data):
         self.do_prewriting()
         super().write(data)
+
+    def write_header_cell(self, value, comment=None):
+        cell = super().write_header_cell(value, comment)
+        cell.font = Font(name="Times New Roman", bold=True)
+        return cell
+
+    def write_record_cell(self, value, read_only=False):
+        cell = super().write_record_cell(value, read_only)
+        if any(bold_string == value for bold_string in self.BOLD_RECORD_CELLS):
+            cell.font = Font(name="Times New Roman", bold=True)
+
+        return cell

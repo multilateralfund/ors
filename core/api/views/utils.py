@@ -2,12 +2,16 @@ from datetime import datetime
 
 import openpyxl
 from django.db.models import Q, F
+from openpyxl.utils import get_column_letter
 from rest_framework.exceptions import ValidationError
 
 from django.db import models
 
 from core.api.export.base import configure_sheet_print
-from core.api.export.replenishment import StatusOfContributionsWriter
+from core.api.export.replenishment import (
+    StatusOfContributionsWriter,
+    StatisticsStatusOfContributionsWriter,
+)
 from core.api.utils import workbook_response
 from core.models import (
     Country,
@@ -725,7 +729,7 @@ def add_period_status_of_contributions_response_worksheet(
     StatusOfContributionsWriter(ws, period=sheet_period).write(data)
 
 
-def add_summary_status_of_contributions_resppnse_worksheet(wb, agg):
+def add_summary_status_of_contributions_response_worksheet(wb, agg):
     soc_qs = agg.get_status_of_contributions_qs()
     data = [
         {
@@ -796,4 +800,218 @@ def add_summary_status_of_contributions_resppnse_worksheet(wb, agg):
                 "column_width": 25,
             },
         ],
+    ).write(data)
+
+
+def add_statistics_status_of_contributions_response_worksheet(wb, periods):
+    current_year = datetime.now().year
+    ws = wb.create_sheet("Statistics")
+    configure_sheet_print(ws, "landscape")
+
+    headers = [
+        {
+            "id": "description",
+            "headerName": "Description",
+            "column_width": 25,
+        }
+    ]
+
+    for period in periods:
+        headers.append(
+            {
+                "id": f"{period['start_year']}-{period['end_year']}",
+                "headerName": f"{period['start_year']}-{period['end_year']}",
+                "column_width": 25,
+            }
+        )
+    headers.append(
+        {
+            "id": "summary",
+            "headerName": f"1991-{current_year}",
+            "column_width": 25,
+        }
+    )
+
+    soc_data = (
+        TriennialContributionStatus.objects.values("start_year", "end_year")
+        .annotate(
+            agreed_contributions_sum=models.Sum("agreed_contributions", default=0),
+            cash_payments_sum=models.Sum("cash_payments", default=0),
+            bilateral_assistance_sum=models.Sum("bilateral_assistance", default=0),
+            promissory_notes_sum=models.Sum("promissory_notes", default=0),
+            outstanding_contributions_sum=models.Sum(
+                "outstanding_contributions", default=0
+            ),
+            disputed_contributions=models.Subquery(
+                DisputedContribution.objects.filter(
+                    year__gte=models.OuterRef("start_year"),
+                    year__lte=models.OuterRef("end_year"),
+                )
+                # Group by replenishment start year
+                .annotate(start_year_replenishment=models.OuterRef("start_year"))
+                .values("start_year_replenishment")
+                .annotate(total=models.Sum("amount"))
+                .values("total")[:1]
+            ),
+            outstanding_ceit=models.Sum(
+                "outstanding_contributions",
+                default=0,
+                filter=Q(country__ceit_statuses__is_ceit=True)
+                & Q(country__ceit_statuses__start_year__lte=F("start_year"))
+                & (
+                    Q(country__ceit_statuses__end_year__gte=F("end_year"))
+                    | Q(country__ceit_statuses__end_year__isnull=True)
+                ),
+            ),
+        )
+        .order_by("start_year")
+    )
+
+    columns_number = len(headers)
+    last_column_letter = get_column_letter(columns_number)
+    last_period_column_letter = get_column_letter(columns_number - 1)
+
+    data = [
+        {
+            "description": "Pledged contributions",
+            "summary": f"=SUM(B10:{last_period_column_letter}10)",
+            **{
+                f"{soc['start_year']}-{soc['end_year']}": soc[
+                    "agreed_contributions_sum"
+                ]
+                for soc in soc_data
+            },
+        },
+        {
+            "description": "Cash payments/received",
+            "summary": f"=SUM(B11:{last_period_column_letter}11)",
+            **{
+                f"{soc['start_year']}-{soc['end_year']}": soc["cash_payments_sum"]
+                for soc in soc_data
+            },
+        },
+        {
+            "description": "Bilateral assistance",
+            "summary": f"=SUM(B12:{last_period_column_letter}12)",
+            **{
+                f"{soc['start_year']}-{soc['end_year']}": soc[
+                    "bilateral_assistance_sum"
+                ]
+                for soc in soc_data
+            },
+        },
+        {
+            "description": "Promissory notes",
+            "summary": f"=SUM(B13:{last_period_column_letter}13)",
+            **{
+                f"{soc['start_year']}-{soc['end_year']}": soc["promissory_notes_sum"]
+                for soc in soc_data
+            },
+        },
+        {
+            "description": "Total payments",
+            "summary": f"=SUM(B14:{last_period_column_letter}14)",
+            **{
+                f"{soc['start_year']}-{soc['end_year']}": f"=SUM({get_column_letter(i+2)}11:{get_column_letter(i+2)}13)"
+                for i, soc in enumerate(soc_data)
+            },
+        },
+        {
+            "description": "Disputed contributions",
+            "summary": f"=SUM(B15:{last_period_column_letter}15)",
+            **{
+                f"{soc['start_year']}-{soc['end_year']}": soc["disputed_contributions"]
+                for soc in soc_data
+            },
+        },
+        {
+            "description": "Outstanding pledges",
+            "summary": f"=SUM(B16:{last_period_column_letter}16)",
+            **{
+                f"{soc['start_year']}-{soc['end_year']}": soc[
+                    "outstanding_contributions_sum"
+                ]
+                for soc in soc_data
+            },
+        },
+        {
+            "description": "Payments %age to pledges",
+            "summary": f"={last_column_letter}14/{last_column_letter}10 * 100",
+            **{
+                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}14/{get_column_letter(i+2)}10 * 100"
+                for i, soc in enumerate(soc_data)
+            },
+        },
+        {},
+        {
+            "description": "Accumulated figures",
+            "summary": f"1991-{current_year}",
+            **{
+                f"{soc['start_year']}-{soc['end_year']}": f"{soc['start_year']}-{soc['end_year']}"
+                for soc in soc_data
+            },
+        },
+        {},
+        {
+            "description": "Total pledges",
+            "summary": f"={last_column_letter}10",
+            **{
+                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}10"
+                for i, soc in enumerate(soc_data)
+            },
+        },
+        {
+            "description": "Total payments",
+            "summary": f"={last_column_letter}14",
+            **{
+                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}14"
+                for i, soc in enumerate(soc_data)
+            },
+        },
+        {
+            "description": "Payments %age to pledges",
+            "summary": f"={last_column_letter}17",
+            **{
+                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}17"
+                for i, soc in enumerate(soc_data)
+            },
+        },
+        {
+            "description": "Total outstanding contributions",
+            "summary": f"={last_column_letter}16",
+            **{
+                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}16"
+                for i, soc in enumerate(soc_data)
+            },
+        },
+        {
+            "description": "As % to total pledges",
+            "summary": f"={last_column_letter}16/{last_column_letter}10 * 100",
+            **{
+                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}16/{get_column_letter(i+2)}10 * 100"
+                for i, soc in enumerate(soc_data)
+            },
+        },
+        {
+            "description": "Outstanding contributions for certain Countries with Economies in Transition (CEITs)",
+            "summary": f"=SUM(B26:{last_period_column_letter}26)",
+            **{
+                f"{soc['start_year']}-{soc['end_year']}": soc["outstanding_ceit"]
+                for soc in soc_data
+            },
+        },
+        {
+            "description": "CEITs' oustandings %age to pledges",
+            "summary": f"={last_column_letter}26/{last_column_letter}10 * 100",
+            **{
+                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}26/{get_column_letter(i+2)}10 * 100"
+                for i, soc in enumerate(soc_data)
+            },
+        },
+    ]
+
+    StatisticsStatusOfContributionsWriter(
+        ws,
+        headers,
+        f"1991-{current_year}",
     ).write(data)

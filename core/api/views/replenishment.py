@@ -43,7 +43,8 @@ from core.api.views.utils import (
     AnnualStatusOfContributionsAggregator,
     add_period_status_of_contributions_response_worksheet,
     SummaryStatusOfContributionsAggregator,
-    add_summary_status_of_contributions_resppnse_worksheet,
+    add_summary_status_of_contributions_response_worksheet,
+    add_statistics_status_of_contributions_response_worksheet,
 )
 from core.models import (
     AnnualContributionStatus,
@@ -476,26 +477,31 @@ class SummaryStatusOfContributionsExportView(views.APIView):
         wb = openpyxl.Workbook()
         wb.remove(wb.active)
 
-        add_summary_status_of_contributions_resppnse_worksheet(wb, agg)
+        add_summary_status_of_contributions_response_worksheet(wb, agg)
 
         current_year = datetime.now().year
 
         return workbook_response(f"Summary Status of Contributions {current_year}", wb)
 
 
-class AllStatusOfContributionsExportView(views.APIView):
+class StatisticsStatusOfContributionsExportView(views.APIView):
     permission_classes = [IsUserAllowedReplenishment]
 
     def get(self, request, *args, **kwargs):
         self.check_permissions(request)
 
         periods = (
-            TriennialContributionStatus.objects.values_list("start_year", "end_year")
+            TriennialContributionStatus.objects.values("start_year", "end_year")
             .distinct()
             .order_by("start_year")
         )
+        wb = openpyxl.Workbook()
+        wb.remove(wb.active)
+        add_statistics_status_of_contributions_response_worksheet(wb, periods)
 
-        return 0
+        current_year = datetime.now().year
+
+        return workbook_response(f"Status Of Contributions {current_year}", wb)
 
 
 class DisputedContributionViewSet(
