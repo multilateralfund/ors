@@ -126,6 +126,30 @@ class BusinessPlanViewSet(
         ret["activities"] = self.get_serializer(activities, many=True).data
         return Response(ret)
 
+    @swagger_auto_schema(
+        operation_description="List business plans",
+        manual_parameters=[
+            openapi.Parameter(
+                name="get_versions",
+                in_=openapi.IN_QUERY,
+                type=openapi.TYPE_BOOLEAN,
+                description="Get all versions or only latest ones",
+            ),
+        ],
+    )
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        if not request.query_params.get("get_versions"):
+            queryset = queryset.filter(is_latest=True)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         # check if the business plan already exists
@@ -421,18 +445,6 @@ class BPActivityViewSet(
     @action(methods=["GET"], detail=False)
     def print(self, *args, **kwargs):
         return self.get_wb(workbook_pdf_response)
-
-    def list(self, request, *args, **kwargs):
-        # get all activities between year_start and year_end
-
-        queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
 
 
 class BPFileView(generics.GenericAPIView):

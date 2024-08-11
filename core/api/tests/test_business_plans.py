@@ -218,6 +218,7 @@ class TestBPList(BaseTest):
                 "agency_id": business_plan.agency_id,
                 "year_start": business_plan.year_start,
                 "year_end": business_plan.year_end,
+                "get_versions": True,
             },
         )
         assert response.status_code == 200
