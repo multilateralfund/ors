@@ -301,9 +301,7 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
     agency_id = serializers.PrimaryKeyRelatedField(
         queryset=Agency.objects.all().values_list("id", flat=True),
     )
-    status = serializers.ChoiceField(
-        choices=BusinessPlan.Status.choices, required=True
-    )
+    status = serializers.ChoiceField(choices=BusinessPlan.Status.choices, required=True)
     activities = BPActivityCreateSerializer(many=True, required=False)
 
     class Meta:
