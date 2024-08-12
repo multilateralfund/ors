@@ -1,13 +1,30 @@
+# pylint: disable=C0302
+
 from datetime import datetime
 
 from django.db import models
+from django.db.models import Q, F
+from openpyxl.utils import get_column_letter
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
+from core.api.export.base import configure_sheet_print
+from core.api.export.replenishment import (
+    StatusOfContributionsWriter,
+    StatisticsStatusOfContributionsWriter,
+)
 from core.api.utils import STATUS_TRANSITIONS
+from core.models import (
+    Country,
+    TriennialContributionStatus,
+    FermGainLoss,
+    DisputedContribution,
+    AnnualContributionStatus,
+)
 from core.models.business_plan import BusinessPlan
 from core.models.country_programme import CPRecord, CPReport, CPReportFormatRow
 from core.models.country_programme_archive import CPRecordArchive, CPReportArchive
+
 
 BPACTIVITY_ORDERING_FIELDS = [
     "title",
@@ -451,3 +468,601 @@ def check_status_transition(user, initial_status, new_status):
         return status.HTTP_403_FORBIDDEN, "User not allowed to update status"
 
     return status.HTTP_200_OK, ""
+
+
+class SummaryStatusOfContributionsAggregator:
+    """
+    Aggregator for the summary status of contributions using the
+    TriennialContributionStatus data.
+    """
+
+    def get_status_of_contributions_qs(self):
+        """
+        @return: List of contributor countries annotated with the SoC data, similar
+        to the Excel sheets YR91_XX.
+        """
+        return (
+            Country.objects.filter(triennial_contributions_status__isnull=False)
+            .prefetch_related("triennial_contributions_status")
+            .select_related("ferm_gain_loss")
+            .annotate(
+                agreed_contributions=models.Sum(
+                    "triennial_contributions_status__agreed_contributions", default=0
+                ),
+                cash_payments=models.Sum(
+                    "triennial_contributions_status__cash_payments", default=0
+                ),
+                bilateral_assistance=models.Sum(
+                    "triennial_contributions_status__bilateral_assistance", default=0
+                ),
+                promissory_notes=models.Sum(
+                    "triennial_contributions_status__promissory_notes", default=0
+                ),
+                outstanding_contributions=models.Sum(
+                    "triennial_contributions_status__outstanding_contributions",
+                    default=0,
+                ),
+                gain_loss=models.F("ferm_gain_loss__amount"),
+            )
+            .order_by("name")
+        )
+
+    def get_ceit_data(self):
+        return TriennialContributionStatus.objects.filter(
+            Q(country__ceit_statuses__is_ceit=True)
+            & Q(country__ceit_statuses__start_year__lte=F("start_year"))
+            & (
+                Q(country__ceit_statuses__end_year__gte=F("end_year"))
+                | Q(country__ceit_statuses__end_year__isnull=True)
+            )
+        ).aggregate(
+            agreed_contributions=models.Sum("agreed_contributions", default=0),
+            cash_payments=models.Sum("cash_payments", default=0),
+            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+            promissory_notes=models.Sum("promissory_notes", default=0),
+            outstanding_contributions=models.Sum(
+                "outstanding_contributions", default=0
+            ),
+        )
+
+    def get_total(self):
+        return TriennialContributionStatus.objects.aggregate(
+            agreed_contributions=models.Sum("agreed_contributions", default=0),
+            cash_payments=models.Sum("cash_payments", default=0),
+            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+            promissory_notes=models.Sum("promissory_notes", default=0),
+            outstanding_contributions=models.Sum(
+                "outstanding_contributions", default=0
+            ),
+        )
+
+    def get_gain_loss(self):
+        return FermGainLoss.objects.aggregate(total=models.Sum("amount", default=0))[
+            "total"
+        ]
+
+    def get_disputed_contribution_amount(self):
+        return DisputedContribution.objects.aggregate(
+            total=models.Sum("amount", default=0)
+        )["total"]
+
+
+class TriennialStatusOfContributionsAggregator:
+    """
+    Aggregator for the triennial status of contributions using the
+    TriennialContributionStatus data.
+    """
+
+    def __init__(self, start_year, end_year):
+        self.start_year = start_year
+        self.end_year = end_year
+
+    def get_status_of_contributions_qs(self):
+        """
+        @return: List of contributor countries annotated with the SoC data, similar
+        to the Excel sheets e.g. YR1991-1993.
+        """
+        return (
+            Country.objects.filter(
+                triennial_contributions_status__start_year=self.start_year,
+                triennial_contributions_status__end_year=self.end_year,
+            )
+            .prefetch_related("triennial_contributions_status")
+            .annotate(
+                agreed_contributions=models.Sum(
+                    "triennial_contributions_status__agreed_contributions", default=0
+                ),
+                cash_payments=models.Sum(
+                    "triennial_contributions_status__cash_payments", default=0
+                ),
+                bilateral_assistance=models.Sum(
+                    "triennial_contributions_status__bilateral_assistance", default=0
+                ),
+                promissory_notes=models.Sum(
+                    "triennial_contributions_status__promissory_notes", default=0
+                ),
+                outstanding_contributions=models.Sum(
+                    "triennial_contributions_status__outstanding_contributions",
+                    default=0,
+                ),
+            )
+            .order_by("name")
+        )
+
+    def get_ceit_countries(self):
+        return Country.objects.filter(
+            Q(ceit_statuses__is_ceit=True)
+            & Q(ceit_statuses__start_year__lte=self.start_year)
+            & (
+                Q(ceit_statuses__end_year__gte=self.end_year)
+                | Q(ceit_statuses__end_year__isnull=True)
+            ),
+        )
+
+    def get_ceit_data(self, ceit_countries_qs):
+        return TriennialContributionStatus.objects.filter(
+            start_year=self.start_year,
+            end_year=self.end_year,
+            country_id__in=ceit_countries_qs.values_list("id", flat=True),
+        ).aggregate(
+            agreed_contributions=models.Sum("agreed_contributions", default=0),
+            cash_payments=models.Sum("cash_payments", default=0),
+            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+            promissory_notes=models.Sum("promissory_notes", default=0),
+            outstanding_contributions=models.Sum(
+                "outstanding_contributions", default=0
+            ),
+        )
+
+    def get_total(self):
+        return TriennialContributionStatus.objects.filter(
+            start_year=self.start_year, end_year=self.end_year
+        ).aggregate(
+            agreed_contributions=models.Sum("agreed_contributions", default=0),
+            cash_payments=models.Sum("cash_payments", default=0),
+            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+            promissory_notes=models.Sum("promissory_notes", default=0),
+            outstanding_contributions=models.Sum(
+                "outstanding_contributions", default=0
+            ),
+        )
+
+    def get_disputed_contribution_amount(self):
+        return DisputedContribution.objects.filter(
+            year__gte=self.start_year, year__lte=self.end_year
+        ).aggregate(total=models.Sum("amount", default=0))["total"]
+
+
+class AnnualStatusOfContributionsAggregator:
+    """
+    Aggregator for the annual status of contributions using the AnnualContributionStatus data.
+    """
+
+    def __init__(self, year):
+        self.year = year
+
+    def get_status_of_contributions_qs(self):
+        """
+        @return: List of contributor countries annotated with the SoC data, similar
+        to the Excel sheets e.g. YR2005.
+        """
+        return (
+            Country.objects.filter(
+                annual_contributions_status__year=self.year,
+            )
+            .prefetch_related("annual_contributions_status")
+            .annotate(
+                agreed_contributions=models.Sum(
+                    "annual_contributions_status__agreed_contributions", default=0
+                ),
+                cash_payments=models.Sum(
+                    "annual_contributions_status__cash_payments", default=0
+                ),
+                bilateral_assistance=models.Sum(
+                    "annual_contributions_status__bilateral_assistance", default=0
+                ),
+                promissory_notes=models.Sum(
+                    "annual_contributions_status__promissory_notes", default=0
+                ),
+                outstanding_contributions=models.Sum(
+                    "annual_contributions_status__outstanding_contributions", default=0
+                ),
+            )
+            .order_by("name")
+        )
+
+    def get_ceit_countries(self):
+        return Country.objects.filter(
+            Q(ceit_statuses__is_ceit=True)
+            & Q(ceit_statuses__start_year__lte=self.year)
+            & (
+                Q(ceit_statuses__end_year__gte=self.year)
+                | Q(ceit_statuses__end_year__isnull=True)
+            ),
+        )
+
+    def get_ceit_data(self, ceit_countries_qs):
+        return AnnualContributionStatus.objects.filter(
+            year=self.year,
+            country_id__in=ceit_countries_qs.values_list("id", flat=True),
+        ).aggregate(
+            agreed_contributions=models.Sum("agreed_contributions", default=0),
+            cash_payments=models.Sum("cash_payments", default=0),
+            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+            promissory_notes=models.Sum("promissory_notes", default=0),
+            outstanding_contributions=models.Sum(
+                "outstanding_contributions", default=0
+            ),
+        )
+
+    def get_total(self):
+        return AnnualContributionStatus.objects.filter(year=self.year).aggregate(
+            agreed_contributions=models.Sum("agreed_contributions", default=0),
+            cash_payments=models.Sum("cash_payments", default=0),
+            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+            promissory_notes=models.Sum("promissory_notes", default=0),
+            outstanding_contributions=models.Sum(
+                "outstanding_contributions", default=0
+            ),
+        )
+
+    def get_disputed_contribution_amount(self):
+        try:
+            return DisputedContribution.objects.filter(year=self.year).aggregate(
+                total=models.Sum("amount", default=0)
+            )["total"]
+        except DisputedContribution.DoesNotExist:
+            return 0
+
+
+def add_period_status_of_contributions_response_worksheet(
+    wb, agg, sheet_name, sheet_period
+):
+    soc_qs = agg.get_status_of_contributions_qs()
+    data = [
+        {
+            "country": country.name,
+            "agreed_contributions": country.agreed_contributions,
+            "cash_payments": country.cash_payments,
+            "bilateral_assistance": country.bilateral_assistance,
+            "promissory_notes": country.promissory_notes,
+            "outstanding_contributions": country.outstanding_contributions,
+        }
+        for country in soc_qs
+    ]
+    total = agg.get_total()
+    disputed_contributions_amount = agg.get_disputed_contribution_amount()
+
+    ceit_data = agg.get_ceit_data(agg.get_ceit_countries())
+
+    data.extend(
+        [
+            {
+                "country": "SUB-TOTAL",
+                "agreed_contributions": total["agreed_contributions"],
+                "cash_payments": total["cash_payments"],
+                "bilateral_assistance": total["bilateral_assistance"],
+                "promissory_notes": total["promissory_notes"],
+                "outstanding_contributions": total["outstanding_contributions"],
+            },
+            {
+                "country": "Disputed contributions",
+                "agreed_contributions": disputed_contributions_amount,
+                "outstanding_contributions": disputed_contributions_amount,
+            },
+            {
+                "country": "TOTAL",
+                "agreed_contributions": total["agreed_contributions"]
+                + disputed_contributions_amount,
+                "cash_payments": total["cash_payments"],
+                "bilateral_assistance": total["bilateral_assistance"],
+                "promissory_notes": total["promissory_notes"],
+                "outstanding_contributions": total["outstanding_contributions"]
+                + disputed_contributions_amount,
+            },
+            {
+                "country": "CEIT",
+                "agreed_contributions": ceit_data["agreed_contributions"],
+                "cash_payments": ceit_data["cash_payments"],
+                "bilateral_assistance": ceit_data["bilateral_assistance"],
+                "promissory_notes": ceit_data["promissory_notes"],
+                "outstanding_contributions": ceit_data["outstanding_contributions"],
+            },
+        ]
+    )
+
+    ws = wb.create_sheet(sheet_name)
+    configure_sheet_print(ws, "landscape")
+
+    StatusOfContributionsWriter(ws, period=sheet_period).write(data)
+
+
+def add_summary_status_of_contributions_response_worksheet(wb, agg):
+    soc_qs = agg.get_status_of_contributions_qs()
+    data = [
+        {
+            "country": country.name,
+            "agreed_contributions": country.agreed_contributions,
+            "cash_payments": country.cash_payments,
+            "bilateral_assistance": country.bilateral_assistance,
+            "promissory_notes": country.promissory_notes,
+            "outstanding_contributions": country.outstanding_contributions,
+            "gain_loss": country.gain_loss,
+        }
+        for country in soc_qs
+    ]
+    total = agg.get_total()
+    gain_loss = agg.get_gain_loss()
+    disputed_contributions_amount = agg.get_disputed_contribution_amount()
+    ceit_data = agg.get_ceit_data()
+
+    data.extend(
+        [
+            {
+                "country": "SUB-TOTAL",
+                "agreed_contributions": total["agreed_contributions"],
+                "cash_payments": total["cash_payments"],
+                "bilateral_assistance": total["bilateral_assistance"],
+                "promissory_notes": total["promissory_notes"],
+                "outstanding_contributions": total["outstanding_contributions"],
+                "gain_loss": gain_loss,
+            },
+            {
+                "country": "Disputed contributions",
+                "agreed_contributions": disputed_contributions_amount,
+                "outstanding_contributions": disputed_contributions_amount,
+            },
+            {
+                "country": "TOTAL",
+                "agreed_contributions": total["agreed_contributions"]
+                + disputed_contributions_amount,
+                "cash_payments": total["cash_payments"],
+                "bilateral_assistance": total["bilateral_assistance"],
+                "promissory_notes": total["promissory_notes"],
+                "outstanding_contributions": total["outstanding_contributions"]
+                + disputed_contributions_amount,
+                "gain_loss": gain_loss,
+            },
+            {
+                "country": "CEIT",
+                "agreed_contributions": ceit_data["agreed_contributions"],
+                "cash_payments": ceit_data["cash_payments"],
+                "bilateral_assistance": ceit_data["bilateral_assistance"],
+                "promissory_notes": ceit_data["promissory_notes"],
+                "outstanding_contributions": ceit_data["outstanding_contributions"],
+            },
+        ]
+    )
+
+    current_year = datetime.now().year
+    ws = wb.create_sheet(f"YR91_{str(current_year)[2:]}")
+    configure_sheet_print(ws, "landscape")
+
+    StatusOfContributionsWriter(
+        ws,
+        period=f"1991-{current_year}",
+        extra_headers=[
+            {
+                "id": "gain_loss",
+                "headerName": "Exchange (Gain)/Loss. NB:Negative amount = Gain",
+                "column_width": 25,
+            },
+        ],
+    ).write(data)
+
+
+def add_statistics_status_of_contributions_response_worksheet(wb, periods):
+    current_year = datetime.now().year
+    ws = wb.create_sheet("Statistics")
+    configure_sheet_print(ws, "landscape")
+
+    headers = [
+        {
+            "id": "description",
+            "headerName": "Description",
+            "column_width": 25,
+        }
+    ]
+
+    for period in periods:
+        headers.append(
+            {
+                "id": f"{period['start_year']}-{period['end_year']}",
+                "headerName": f"{period['start_year']}-{period['end_year']}",
+                "column_width": 25,
+            }
+        )
+    headers.append(
+        {
+            "id": "summary",
+            "headerName": f"1991-{current_year}",
+            "column_width": 25,
+        }
+    )
+
+    soc_data = (
+        TriennialContributionStatus.objects.values("start_year", "end_year")
+        .annotate(
+            agreed_contributions_sum=models.Sum("agreed_contributions", default=0),
+            cash_payments_sum=models.Sum("cash_payments", default=0),
+            bilateral_assistance_sum=models.Sum("bilateral_assistance", default=0),
+            promissory_notes_sum=models.Sum("promissory_notes", default=0),
+            outstanding_contributions_sum=models.Sum(
+                "outstanding_contributions", default=0
+            ),
+            disputed_contributions=models.Subquery(
+                DisputedContribution.objects.filter(
+                    year__gte=models.OuterRef("start_year"),
+                    year__lte=models.OuterRef("end_year"),
+                )
+                # Group by replenishment start year
+                .annotate(start_year_replenishment=models.OuterRef("start_year"))
+                .values("start_year_replenishment")
+                .annotate(total=models.Sum("amount"))
+                .values("total")[:1]
+            ),
+            outstanding_ceit=models.Sum(
+                "outstanding_contributions",
+                default=0,
+                filter=Q(country__ceit_statuses__is_ceit=True)
+                & Q(country__ceit_statuses__start_year__lte=F("start_year"))
+                & (
+                    Q(country__ceit_statuses__end_year__gte=F("end_year"))
+                    | Q(country__ceit_statuses__end_year__isnull=True)
+                ),
+            ),
+        )
+        .order_by("start_year")
+    )
+
+    columns_number = len(headers)
+    last_column_letter = get_column_letter(columns_number)
+    last_period_column_letter = get_column_letter(columns_number - 1)
+
+    data = [
+        {
+            "description": "Pledged contributions",
+            "summary": f"=SUM(B10:{last_period_column_letter}10)",
+            **{
+                f"{soc['start_year']}-{soc['end_year']}": soc[
+                    "agreed_contributions_sum"
+                ]
+                for soc in soc_data
+            },
+        },
+        {
+            "description": "Cash payments/received",
+            "summary": f"=SUM(B11:{last_period_column_letter}11)",
+            **{
+                f"{soc['start_year']}-{soc['end_year']}": soc["cash_payments_sum"]
+                for soc in soc_data
+            },
+        },
+        {
+            "description": "Bilateral assistance",
+            "summary": f"=SUM(B12:{last_period_column_letter}12)",
+            **{
+                f"{soc['start_year']}-{soc['end_year']}": soc[
+                    "bilateral_assistance_sum"
+                ]
+                for soc in soc_data
+            },
+        },
+        {
+            "description": "Promissory notes",
+            "summary": f"=SUM(B13:{last_period_column_letter}13)",
+            **{
+                f"{soc['start_year']}-{soc['end_year']}": soc["promissory_notes_sum"]
+                for soc in soc_data
+            },
+        },
+        {
+            "description": "Total payments",
+            "summary": f"=SUM(B14:{last_period_column_letter}14)",
+            **{
+                f"{soc['start_year']}-{soc['end_year']}": f"=SUM({get_column_letter(i+2)}11:{get_column_letter(i+2)}13)"
+                for i, soc in enumerate(soc_data)
+            },
+        },
+        {
+            "description": "Disputed contributions",
+            "summary": f"=SUM(B15:{last_period_column_letter}15)",
+            **{
+                f"{soc['start_year']}-{soc['end_year']}": soc["disputed_contributions"]
+                for soc in soc_data
+            },
+        },
+        {
+            "description": "Outstanding pledges",
+            "summary": f"=SUM(B16:{last_period_column_letter}16)",
+            **{
+                f"{soc['start_year']}-{soc['end_year']}": soc[
+                    "outstanding_contributions_sum"
+                ]
+                for soc in soc_data
+            },
+        },
+        {
+            "description": "Payments %age to pledges",
+            "summary": f"={last_column_letter}14/{last_column_letter}10 * 100",
+            **{
+                # pylint: disable=C0301
+                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}14/{get_column_letter(i+2)}10 * 100"
+                for i, soc in enumerate(soc_data)
+            },
+        },
+        {},
+        {
+            "description": "Accumulated figures",
+            "summary": f"1991-{current_year}",
+            **{
+                f"{soc['start_year']}-{soc['end_year']}": f"{soc['start_year']}-{soc['end_year']}"
+                for soc in soc_data
+            },
+        },
+        {},
+        {
+            "description": "Total pledges",
+            "summary": f"={last_column_letter}10",
+            **{
+                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}10"
+                for i, soc in enumerate(soc_data)
+            },
+        },
+        {
+            "description": "Total payments",
+            "summary": f"={last_column_letter}14",
+            **{
+                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}14"
+                for i, soc in enumerate(soc_data)
+            },
+        },
+        {
+            "description": "Payments %age to pledges",
+            "summary": f"={last_column_letter}17",
+            **{
+                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}17"
+                for i, soc in enumerate(soc_data)
+            },
+        },
+        {
+            "description": "Total outstanding contributions",
+            "summary": f"={last_column_letter}16",
+            **{
+                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}16"
+                for i, soc in enumerate(soc_data)
+            },
+        },
+        {
+            "description": "As % to total pledges",
+            "summary": f"={last_column_letter}16/{last_column_letter}10 * 100",
+            **{
+                # pylint: disable=C0301
+                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}16/{get_column_letter(i+2)}10 * 100"
+                for i, soc in enumerate(soc_data)
+            },
+        },
+        {
+            "description": "Outstanding contributions for certain Countries with Economies in Transition (CEITs)",
+            "summary": f"=SUM(B26:{last_period_column_letter}26)",
+            **{
+                f"{soc['start_year']}-{soc['end_year']}": soc["outstanding_ceit"]
+                for soc in soc_data
+            },
+        },
+        {
+            "description": "CEITs' oustandings %age to pledges",
+            "summary": f"={last_column_letter}26/{last_column_letter}10 * 100",
+            **{
+                # pylint: disable=C0301
+                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}26/{get_column_letter(i+2)}10 * 100"
+                for i, soc in enumerate(soc_data)
+            },
+        },
+    ]
+
+    StatisticsStatusOfContributionsWriter(
+        ws,
+        headers,
+        f"1991-{current_year}",
+    ).write(data)

@@ -19,6 +19,10 @@ from core.api.views import (
     ReplenishmentPaymentFileDownloadView,
     DisputedContributionViewSet,
     ReplenishmentDashboardExportView,
+    SummaryStatusOfContributionsExportView,
+    TriennialStatusOfContributionsExportView,
+    StatisticsStatusOfContributionsExportView,
+    AnnualStatusOfContributionsExportView,
 )
 from core.api.views import ProjectCommentViewSet
 from core.api.views import ProjectFileView
@@ -366,14 +370,34 @@ urlpatterns = [
         name="replenishment-dashboard-export",
     ),
     path(
+        "replenishment/status-of-contributions/statistics-export/",
+        StatisticsStatusOfContributionsExportView.as_view(),
+        name="replenishment-status-of-contributions-statistics-export",
+    ),
+    path(
+        "replenishment/status-of-contributions/summary/export/",
+        SummaryStatusOfContributionsExportView.as_view(),
+        name="replenishment-status-of-contributions-summary-export",
+    ),
+    path(
         "replenishment/status-of-contributions/summary/",
         SummaryStatusOfContributionsView.as_view(),
         name="replenishment-status-of-contributions-summary",
     ),
     path(
+        "replenishment/status-of-contributions/<int:start_year>/<int:end_year>/export/",
+        TriennialStatusOfContributionsExportView.as_view(),
+        name="replenishment-status-of-contributions-triennial-export",
+    ),
+    path(
         "replenishment/status-of-contributions/<int:start_year>/<int:end_year>/",
         TriennialStatusOfContributionsView.as_view(),
         name="replenishment-status-of-contributions-triennial",
+    ),
+    path(
+        "replenishment/status-of-contributions/<int:year>/export/",
+        AnnualStatusOfContributionsExportView.as_view(),
+        name="replenishment-status-of-contributions-annual-export",
     ),
     path(
         "replenishment/status-of-contributions/<int:year>/",

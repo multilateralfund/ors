@@ -3,11 +3,11 @@
 
 import json
 import urllib
+from datetime import datetime
 from decimal import Decimal
 
 import openpyxl
 from django.db import models, transaction
-from django.db.models import Q, F
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, mixins, status, views, viewsets
@@ -15,7 +15,10 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from core.api.export.base import configure_sheet_print
-from core.api.export.replenishment import DashboardWriter, EMPTY_ROW
+from core.api.export.replenishment import (
+    DashboardWriter,
+    EMPTY_ROW,
+)
 from core.api.filters.replenishments import (
     InvoiceFilter,
     PaymentFilter,
@@ -34,6 +37,14 @@ from core.api.serializers import (
     DisputedContributionReadSerializer,
 )
 from core.api.utils import workbook_response
+from core.api.views.utils import (
+    TriennialStatusOfContributionsAggregator,
+    AnnualStatusOfContributionsAggregator,
+    add_period_status_of_contributions_response_worksheet,
+    SummaryStatusOfContributionsAggregator,
+    add_summary_status_of_contributions_response_worksheet,
+    add_statistics_status_of_contributions_response_worksheet,
+)
 from core.models import (
     AnnualContributionStatus,
     Country,
@@ -279,8 +290,10 @@ class AnnualStatusOfContributionsView(views.APIView):
         year = kwargs["year"]
 
         self.check_permissions(request)
+        agg = AnnualStatusOfContributionsAggregator(year)
 
         data = {}
+        soc_qs = agg.get_status_of_contributions_qs()
         data["status_of_contributions"] = [
             {
                 "country": CountrySerializer(country).data,
@@ -290,67 +303,16 @@ class AnnualStatusOfContributionsView(views.APIView):
                 "promissory_notes": country.promissory_notes,
                 "outstanding_contributions": country.outstanding_contributions,
             }
-            for country in Country.objects.filter(
-                annual_contributions_status__year=year,
-            )
-            .prefetch_related("annual_contributions_status")
-            .annotate(
-                agreed_contributions=models.Sum(
-                    "annual_contributions_status__agreed_contributions", default=0
-                ),
-                cash_payments=models.Sum(
-                    "annual_contributions_status__cash_payments", default=0
-                ),
-                bilateral_assistance=models.Sum(
-                    "annual_contributions_status__bilateral_assistance", default=0
-                ),
-                promissory_notes=models.Sum(
-                    "annual_contributions_status__promissory_notes", default=0
-                ),
-                outstanding_contributions=models.Sum(
-                    "annual_contributions_status__outstanding_contributions", default=0
-                ),
-            )
-            .order_by("name")
+            for country in soc_qs
         ]
 
-        ceit_countries_qs = Country.objects.filter(
-            Q(ceit_statuses__is_ceit=True)
-            & Q(ceit_statuses__start_year__lte=year)
-            & (
-                Q(ceit_statuses__end_year__gte=year)
-                | Q(ceit_statuses__end_year__isnull=True)
-            ),
-        )
-        data["ceit"] = AnnualContributionStatus.objects.filter(
-            year=year, country_id__in=ceit_countries_qs.values_list("id", flat=True)
-        ).aggregate(
-            agreed_contributions=models.Sum("agreed_contributions", default=0),
-            cash_payments=models.Sum("cash_payments", default=0),
-            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
-            promissory_notes=models.Sum("promissory_notes", default=0),
-            outstanding_contributions=models.Sum(
-                "outstanding_contributions", default=0
-            ),
-        )
+        ceit_countries_qs = agg.get_ceit_countries()
+        data["ceit"] = agg.get_ceit_data(ceit_countries_qs)
         data["ceit_countries"] = CountrySerializer(ceit_countries_qs, many=True).data
 
-        data["total"] = AnnualContributionStatus.objects.filter(year=year).aggregate(
-            agreed_contributions=models.Sum("agreed_contributions", default=0),
-            cash_payments=models.Sum("cash_payments", default=0),
-            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
-            promissory_notes=models.Sum("promissory_notes", default=0),
-            outstanding_contributions=models.Sum(
-                "outstanding_contributions", default=0
-            ),
-        )
+        data["total"] = agg.get_total()
 
-        try:
-            disputed_contribution_amount = DisputedContribution.objects.filter(
-                year=year
-            ).aggregate(total=models.Sum("amount", default=0))["total"]
-        except DisputedContribution.DoesNotExist:
-            disputed_contribution_amount = 0
+        disputed_contribution_amount = agg.get_disputed_contribution_amount()
 
         data["total"]["agreed_contributions_with_disputed"] = (
             data["total"]["agreed_contributions"] + disputed_contribution_amount
@@ -369,6 +331,24 @@ class AnnualStatusOfContributionsView(views.APIView):
         return Response(data)
 
 
+class AnnualStatusOfContributionsExportView(views.APIView):
+    permission_classes = [IsUserAllowedReplenishment]
+
+    def get(self, request, *args, **kwargs):
+        year = kwargs["year"]
+
+        self.check_permissions(request)
+        agg = AnnualStatusOfContributionsAggregator(year)
+
+        wb = openpyxl.Workbook()
+        wb.remove(wb.active)
+        add_period_status_of_contributions_response_worksheet(
+            wb, agg, f"YR{year}", year
+        )
+
+        return workbook_response(f"Status of Contributions {year}", wb)
+
+
 class TriennialStatusOfContributionsView(views.APIView):
     permission_classes = [IsUserAllowedReplenishment]
 
@@ -377,8 +357,10 @@ class TriennialStatusOfContributionsView(views.APIView):
         end_year = kwargs["end_year"]
 
         self.check_permissions(request)
+        agg = TriennialStatusOfContributionsAggregator(start_year, end_year)
 
         data = {}
+        soc_qs = agg.get_status_of_contributions_qs()
         data["status_of_contributions"] = [
             {
                 "country": CountrySerializer(country).data,
@@ -388,70 +370,16 @@ class TriennialStatusOfContributionsView(views.APIView):
                 "promissory_notes": country.promissory_notes,
                 "outstanding_contributions": country.outstanding_contributions,
             }
-            for country in Country.objects.filter(
-                triennial_contributions_status__start_year=start_year,
-                triennial_contributions_status__end_year=end_year,
-            )
-            .prefetch_related("triennial_contributions_status")
-            .annotate(
-                agreed_contributions=models.Sum(
-                    "triennial_contributions_status__agreed_contributions", default=0
-                ),
-                cash_payments=models.Sum(
-                    "triennial_contributions_status__cash_payments", default=0
-                ),
-                bilateral_assistance=models.Sum(
-                    "triennial_contributions_status__bilateral_assistance", default=0
-                ),
-                promissory_notes=models.Sum(
-                    "triennial_contributions_status__promissory_notes", default=0
-                ),
-                outstanding_contributions=models.Sum(
-                    "triennial_contributions_status__outstanding_contributions",
-                    default=0,
-                ),
-            )
-            .order_by("name")
+            for country in soc_qs
         ]
 
-        ceit_countries_qs = Country.objects.filter(
-            Q(ceit_statuses__is_ceit=True)
-            & Q(ceit_statuses__start_year__lte=start_year)
-            & (
-                Q(ceit_statuses__end_year__gte=end_year)
-                | Q(ceit_statuses__end_year__isnull=True)
-            ),
-        )
-        data["ceit"] = TriennialContributionStatus.objects.filter(
-            start_year=start_year,
-            end_year=end_year,
-            country_id__in=ceit_countries_qs.values_list("id", flat=True),
-        ).aggregate(
-            agreed_contributions=models.Sum("agreed_contributions", default=0),
-            cash_payments=models.Sum("cash_payments", default=0),
-            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
-            promissory_notes=models.Sum("promissory_notes", default=0),
-            outstanding_contributions=models.Sum(
-                "outstanding_contributions", default=0
-            ),
-        )
+        ceit_countries_qs = agg.get_ceit_countries()
+        data["ceit"] = agg.get_ceit_data(ceit_countries_qs)
         data["ceit_countries"] = CountrySerializer(ceit_countries_qs, many=True).data
 
-        data["total"] = TriennialContributionStatus.objects.filter(
-            start_year=start_year, end_year=end_year
-        ).aggregate(
-            agreed_contributions=models.Sum("agreed_contributions", default=0),
-            cash_payments=models.Sum("cash_payments", default=0),
-            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
-            promissory_notes=models.Sum("promissory_notes", default=0),
-            outstanding_contributions=models.Sum(
-                "outstanding_contributions", default=0
-            ),
-        )
+        data["total"] = agg.get_total()
 
-        disputed_contribution_amount = DisputedContribution.objects.filter(
-            year__gte=start_year, year__lte=end_year
-        ).aggregate(total=models.Sum("amount", default=0))["total"]
+        disputed_contribution_amount = agg.get_disputed_contribution_amount()
         data["total"]["agreed_contributions_with_disputed"] = (
             data["total"]["agreed_contributions"] + disputed_contribution_amount
         )
@@ -469,13 +397,36 @@ class TriennialStatusOfContributionsView(views.APIView):
         return Response(data)
 
 
+class TriennialStatusOfContributionsExportView(views.APIView):
+    permission_classes = [IsUserAllowedReplenishment]
+
+    def get(self, request, *args, **kwargs):
+        start_year = kwargs["start_year"]
+        end_year = kwargs["end_year"]
+
+        self.check_permissions(request)
+        agg = TriennialStatusOfContributionsAggregator(start_year, end_year)
+
+        wb = openpyxl.Workbook()
+        wb.remove(wb.active)
+        add_period_status_of_contributions_response_worksheet(
+            wb, agg, f"YR{start_year}_{str(end_year)[2:]}", f"{start_year}-{end_year}"
+        )
+
+        return workbook_response(
+            f"Status of Contributions {start_year}-{end_year}", wb
+        )
+
+
 class SummaryStatusOfContributionsView(views.APIView):
     permission_classes = [IsUserAllowedReplenishment]
 
     def get(self, request, *args, **kwargs):
         self.check_permissions(request)
+        agg = SummaryStatusOfContributionsAggregator()
 
         data = {}
+        soc_qs = agg.get_status_of_contributions_qs()
         data["status_of_contributions"] = [
             {
                 "country": CountrySerializer(country).data,
@@ -486,70 +437,18 @@ class SummaryStatusOfContributionsView(views.APIView):
                 "outstanding_contributions": country.outstanding_contributions,
                 "gain_loss": country.gain_loss,
             }
-            for country in Country.objects.filter(
-                triennial_contributions_status__isnull=False
-            )
-            .prefetch_related("triennial_contributions_status")
-            .select_related("ferm_gain_loss")
-            .annotate(
-                agreed_contributions=models.Sum(
-                    "triennial_contributions_status__agreed_contributions", default=0
-                ),
-                cash_payments=models.Sum(
-                    "triennial_contributions_status__cash_payments", default=0
-                ),
-                bilateral_assistance=models.Sum(
-                    "triennial_contributions_status__bilateral_assistance", default=0
-                ),
-                promissory_notes=models.Sum(
-                    "triennial_contributions_status__promissory_notes", default=0
-                ),
-                outstanding_contributions=models.Sum(
-                    "triennial_contributions_status__outstanding_contributions",
-                    default=0,
-                ),
-                gain_loss=models.F("ferm_gain_loss__amount"),
-            )
-            .order_by("name")
+            for country in soc_qs
         ]
 
-        # CEIT data needs to be computed per replenishment
-        data["ceit"] = TriennialContributionStatus.objects.filter(
-            Q(country__ceit_statuses__is_ceit=True)
-            & Q(country__ceit_statuses__start_year__lte=F("start_year"))
-            & (
-                Q(country__ceit_statuses__end_year__gte=F("end_year"))
-                | Q(country__ceit_statuses__end_year__isnull=True)
-            )
-        ).aggregate(
-            agreed_contributions=models.Sum("agreed_contributions", default=0),
-            cash_payments=models.Sum("cash_payments", default=0),
-            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
-            promissory_notes=models.Sum("promissory_notes", default=0),
-            outstanding_contributions=models.Sum(
-                "outstanding_contributions", default=0
-            ),
-        )
+        data["ceit"] = agg.get_ceit_data()
         data["ceit_countries"] = CountrySerializer(
             Country.objects.filter(ceit_statuses__is_ceit=True).distinct(), many=True
         ).data
 
-        data["total"] = TriennialContributionStatus.objects.aggregate(
-            agreed_contributions=models.Sum("agreed_contributions", default=0),
-            cash_payments=models.Sum("cash_payments", default=0),
-            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
-            promissory_notes=models.Sum("promissory_notes", default=0),
-            outstanding_contributions=models.Sum(
-                "outstanding_contributions", default=0
-            ),
-        )
-        data["total"]["gain_loss"] = FermGainLoss.objects.aggregate(
-            total=models.Sum("amount", default=0)
-        )["total"]
+        data["total"] = agg.get_total()
+        data["total"]["gain_loss"] = agg.get_gain_loss()
 
-        disputed_contribution_amount = DisputedContribution.objects.aggregate(
-            total=models.Sum("amount", default=0)
-        )["total"]
+        disputed_contribution_amount = agg.get_disputed_contribution_amount()
         data["total"]["agreed_contributions_with_disputed"] = (
             data["total"]["agreed_contributions"] + disputed_contribution_amount
         )
@@ -567,12 +466,76 @@ class SummaryStatusOfContributionsView(views.APIView):
         return Response(data)
 
 
+class SummaryStatusOfContributionsExportView(views.APIView):
+    permission_classes = [IsUserAllowedReplenishment]
+
+    def get(self, request, *args, **kwargs):
+        self.check_permissions(request)
+        agg = SummaryStatusOfContributionsAggregator()
+
+        wb = openpyxl.Workbook()
+        wb.remove(wb.active)
+
+        add_summary_status_of_contributions_response_worksheet(wb, agg)
+
+        current_year = datetime.now().year
+
+        return workbook_response(f"Summary Status of Contributions {current_year}", wb)
+
+
+class StatisticsStatusOfContributionsExportView(views.APIView):
+    permission_classes = [IsUserAllowedReplenishment]
+
+    def get(self, request, *args, **kwargs):
+        self.check_permissions(request)
+
+        current_year = datetime.now().year
+        periods = (
+            TriennialContributionStatus.objects.values("start_year", "end_year")
+            .distinct()
+            .order_by("start_year")
+        )
+        wb = openpyxl.Workbook()
+        wb.remove(wb.active)
+        add_statistics_status_of_contributions_response_worksheet(wb, periods)
+
+        summary_agg = SummaryStatusOfContributionsAggregator()
+        add_summary_status_of_contributions_response_worksheet(wb, summary_agg)
+
+        # Most likely too many queries, but it's readable
+        # An alternative would be to do more Python manipulations with
+        # queries that try to gather more data at once, it's probably
+        # in the same order of magnitude performance-wise
+        for period in reversed(periods):
+            triennial_agg = TriennialStatusOfContributionsAggregator(
+                period["start_year"], period["end_year"]
+            )
+            add_period_status_of_contributions_response_worksheet(
+                wb,
+                triennial_agg,
+                f"YR{period['start_year']}_{str(period['end_year'])[2:]}",
+                f"{period['start_year']}-{period['end_year']}",
+            )
+
+            for year in range(period["end_year"], period["start_year"] - 1, -1):
+                if year > current_year:
+                    continue
+
+                annual_agg = AnnualStatusOfContributionsAggregator(year)
+                add_period_status_of_contributions_response_worksheet(
+                    wb, annual_agg, f"YR{year}", year
+                )
+
+        return workbook_response(f"All Status Of Contributions {current_year}", wb)
+
+
 class DisputedContributionViewSet(
     viewsets.GenericViewSet,
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
 ):
     model = DisputedContribution
+    permission_classes = [IsUserAllowedReplenishment]
 
     def get_serializer_class(self):
         if self.request.method in ["POST", "PUT"]:
@@ -766,6 +729,7 @@ class ReplenishmentDashboardView(views.APIView):
 
 
 class ReplenishmentDashboardExportView(views.APIView):
+    permission_classes = [IsUserAllowedReplenishment]
 
     def get(self, request, *args, **kwargs):
         income = ExternalIncome.objects.get()
@@ -815,6 +779,20 @@ class ReplenishmentDashboardExportView(views.APIView):
         balance = total_income - total_provisions
 
         data = [
+            EMPTY_ROW,
+            EMPTY_ROW,
+            (
+                "TRUST  FUND FOR THE  MULTILATERAL FUND FOR THE IMPLEMENTATION OF THE MONTREAL PROTOCOL",
+                None,
+                None,
+            ),
+            (
+                f"TABLE 1 : STATUS OF THE FUND FROM 1991-{datetime.now().year} (IN US DOLLARS)",
+                None,
+                None,
+            ),
+            ("As at 24/05/2024", None, None),
+            EMPTY_ROW,
             ("INCOME", None, None),
             ("Contributions received:", None, None),
             (
@@ -903,13 +881,14 @@ class ReplenishmentDashboardExportView(views.APIView):
             ("Balance", None, balance),
         ]
 
-        wb = openpyxl.Workbook(write_only=True)
+        wb = openpyxl.Workbook()
+        wb.remove(wb.active)
         sheet = wb.create_sheet("Status")
         configure_sheet_print(sheet, "landscape")
 
         DashboardWriter(sheet, []).write(data)
 
-        return workbook_response("Status", wb)
+        return workbook_response("Status of the fund", wb)
 
 
 class ReplenishmentInvoiceViewSet(

@@ -13,7 +13,7 @@ const PRINT_LANDSCAPE_PAGES = [
 ]
 
 export default function DownloadButtons(props) {
-  const { downloadUrl } = props
+  const { downloadTexts, downloadUrls } = props
   const pathname = usePathname()
 
   useEffect(() => {
@@ -55,7 +55,11 @@ export default function DownloadButtons(props) {
   return (
     <Portal active={domNode} domNode={domNode}>
       <div className="mb-2 flex items-center gap-x-2">
-        <DownloadLink href={downloadUrl ?? '#'}>Download</DownloadLink>
+        {downloadUrls?.map((url, i) => (
+          <DownloadLink key={i} href={url ?? '#'}>
+            {downloadTexts[i]}
+          </DownloadLink>
+        ))}
         <PrintButton
           onClick={function () {
             window.print()
