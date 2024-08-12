@@ -145,7 +145,19 @@ class BPActivityDetailSerializer(serializers.ModelSerializer):
     status_display = serializers.SerializerMethodField()
     project_cluster = ProjectClusterSerializer()
 
-    substances = serializers.SlugRelatedField("name", many=True, read_only=True)
+    substances = serializers.SlugRelatedField(
+        "id",
+        many=True,
+        read_only=True,
+        help_text="List of substances IDs",
+    )
+    substances_display = serializers.SlugRelatedField(
+        "name",
+        many=True,
+        read_only=True,
+        help_text="List of substances names",
+        source="substances",
+    )
     comment_types = serializers.SlugRelatedField("name", many=True, read_only=True)
 
     sector = ProjectSectorSerializer()
@@ -159,14 +171,21 @@ class BPActivityDetailSerializer(serializers.ModelSerializer):
             "title",
             "required_by_model",
             "country",
+            "country_id",
             "lvc_status",
             "project_type",
+            "project_type_id",
             "bp_chemical_type",
+            "bp_chemical_type_id",
             "project_cluster",
+            "project_cluster_id",
             "substances",
+            "substances_display",
             "amount_polyol",
             "sector",
+            "sector_id",
             "subsector",
+            "subsector_id",
             "legacy_sector_and_subsector",
             "status",
             "is_multi_year",

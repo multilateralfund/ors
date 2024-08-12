@@ -185,10 +185,10 @@ function OpenActivity({ activity, period }: any) {
 
       <span className="flex items-center gap-4">
         <span>Substances</span>
-        {activity.substances.length > 0
-          ? activity.substances.map((substance: any, index: number) => (
+        {activity.substances_display.length > 0
+          ? activity.substances_display.map((substance: any, index: number) => (
               <h4 key={index} className="m-0">
-                {substance?.name}
+                {substance}{' '}
               </h4>
             ))
           : '-'}

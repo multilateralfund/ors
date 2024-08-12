@@ -166,13 +166,13 @@ const allColumnDefs = (yearColumns: any[]) => [
     //     {params.data.title}
     //   </Link>
     // ),
-    field: 'substances',
+    field: 'substances_display',
     headerClass: 'ag-text-center',
     headerName: 'Substances',
     minWidth: 200,
     resizable: true,
     sortable: true,
-    valueGetter: ({ data }: any) => data.substances.join('/'),
+    valueGetter: ({ data }: any) => data.substances_display?.join(',') || '-',
   },
   {
     autoHeight: true,
