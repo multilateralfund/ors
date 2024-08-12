@@ -125,10 +125,26 @@ class ScaleOfAssessment(models.Model):
         )
 
     @property
+    def yearly_amount(self):
+        if self.amount is None:
+            return None
+        return self.amount / Decimal(
+            self.version.replenishment.end_year
+            - self.version.replenishment.start_year
+            + 1
+        )
+
+    @property
     def amount_local_currency(self):
         if self.exchange_rate is None:
             return None
         return self.amount * self.exchange_rate
+
+    @property
+    def yearly_amount_local_currency(self):
+        if self.yearly_amount is None or self.exchange_rate is None:
+            return None
+        return self.yearly_amount * self.exchange_rate
 
     def __str__(self):
         return (

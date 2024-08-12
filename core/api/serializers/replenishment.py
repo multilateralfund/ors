@@ -76,10 +76,39 @@ class ScaleOfAssessmentSerializer(serializers.ModelSerializer):
     qualifies_for_fixed_rate_mechanism = serializers.ReadOnlyField()
     amount = serializers.ReadOnlyField()
     amount_local_currency = serializers.ReadOnlyField()
+    yearly_amount = serializers.ReadOnlyField()
+    yearly_amount_local_currency = serializers.ReadOnlyField()
 
     class Meta:
         model = ScaleOfAssessment
         fields = "__all__"
+
+
+class ScaleOfAssessmentExcelExportSerializer(serializers.ModelSerializer):
+    country = serializers.CharField(source="country.name", read_only=True)
+    un_scale_of_assessment = serializers.DecimalField(
+        max_digits=30, decimal_places=15, coerce_to_string=False
+    )
+    average_inflation_rate = serializers.DecimalField(
+        max_digits=30, decimal_places=15, coerce_to_string=False
+    )
+    exchange_rate = serializers.DecimalField(
+        max_digits=30, decimal_places=15, coerce_to_string=False
+    )
+
+    class Meta:
+        model = ScaleOfAssessment
+        fields = [
+            "country",
+            "un_scale_of_assessment",
+            "adjusted_scale_of_assessment",
+            "yearly_amount",
+            "average_inflation_rate",
+            "qualifies_for_fixed_rate_mechanism",
+            "exchange_rate",
+            "currency",
+            "yearly_amount_local_currency",
+        ]
 
 
 class InvoiceFileSerializer(serializers.ModelSerializer):

@@ -217,3 +217,77 @@ class StatisticsStatusOfContributionsWriter(WriteOnlyBase):
             cell.font = Font(name="Times New Roman", bold=True)
 
         return cell
+
+
+class ScaleOfAssessmentWriter(WriteOnlyBase):
+    def __init__(
+        self,
+        sheet,
+        past_un_period=None,
+        past_period=None,
+        current_period=None,
+        ferm_year=None,
+    ):
+        headers = [
+            {
+                "id": "no",
+                "headerName": "No",
+                "column_width": 5,
+            },
+            {
+                "id": "country",
+                "headerName": "Country",
+                "column_width": 25,
+            },
+            {
+                "id": "un_scale_of_assessment",
+                "headerName": f"United Nations Scale of Assessment for the period {past_un_period}",
+                "column_width": 25,
+            },
+            {
+                "id": "adjusted_scale_of_assessment",
+                "headerName": f"Adjusted UN Scale of Assessment using {past_un_period} scale with no party contributing more than 22%",
+                "column_width": 25,
+            },
+            {
+                "id": "yearly_amount",
+                "headerName": f"Annual contributions for years {current_period} in (United States Dollar)",
+                "column_width": 25,
+            },
+            {
+                "id": "average_inflation_rate",
+                "headerName": f"Average inflation rate for the period {past_period} (percent)",
+                "column_width": 25,
+            },
+            {
+                "id": "qualifies_for_fixed_rate_mechanism",
+                "headerName": "Qualifying for fixed exchange rate mechanism",
+                "column_width": 25,
+            },
+            {
+                "id": "exchange_rate",
+                "headerName": f"Fixed exchange rate mechanism users' currencies rate of Exchange 01 Jan - 30 June {ferm_year}",
+                "column_width": 25,
+            },
+            {
+                "id": "currency",
+                "headerName": "Fixed exchange mechanism users national currencies",
+                "column_width": 25,
+            },
+            {
+                "id": "yearly_amount_local_currency",
+                "headerName": f"Fixed exchange mechanism users contribution amount in national currencies",
+                "column_width": 25,
+            },
+        ]
+        super().__init__(sheet, headers)
+
+    def write_header_cell(self, value, comment=None):
+        cell = super().write_header_cell(value, comment)
+        cell.font = Font(name="Times New Roman", bold=True)
+        return cell
+
+    def write_record_cell(self, value, read_only=False):
+        cell = super().write_record_cell(value, read_only)
+        cell.font = Font(name="Times New Roman")
+        return cell
