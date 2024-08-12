@@ -32,7 +32,7 @@ class ReplenishmentSerializer(serializers.ModelSerializer):
     scales_of_assessment_versions = serializers.SerializerMethodField()
 
     def get_scales_of_assessment_versions(self, obj):
-        qs = obj.scales_of_assessment_versions.order_by("-version")
+        qs = obj.scales_of_assessment_versions.all()
         return ScaleOfAssessmentVersionSerializer(qs, many=True).data
 
     class Meta:

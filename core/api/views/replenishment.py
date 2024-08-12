@@ -91,7 +91,10 @@ class ReplenishmentViewSet(
 
     def get_queryset(self):
         return Replenishment.objects.prefetch_related(
-            "scales_of_assessment_versions"
+            models.Prefetch(
+                "scales_of_assessment_versions",
+                queryset=ScaleOfAssessmentVersion.objects.order_by("-version"),
+            )
         ).order_by("-start_year")
 
     @transaction.atomic
@@ -154,9 +157,18 @@ class ScaleOfAssessmentViewSet(
     permission_classes = [IsUserAllowedReplenishment]
 
     def get_queryset(self):
-        return ScaleOfAssessment.objects.select_related(
-            "country", "version__replenishment"
-        ).order_by("country__name")
+        return (
+            ScaleOfAssessment.objects.select_related(
+                "country", "version__replenishment"
+            )
+            .prefetch_related(
+                models.Prefetch(
+                    "version__replenishment__scales_of_assessment_versions",
+                    queryset=ScaleOfAssessmentVersion.objects.order_by("-version"),
+                )
+            )
+            .order_by("country__name")
+        )
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
@@ -413,9 +425,7 @@ class TriennialStatusOfContributionsExportView(views.APIView):
             wb, agg, f"YR{start_year}_{str(end_year)[2:]}", f"{start_year}-{end_year}"
         )
 
-        return workbook_response(
-            f"Status of Contributions {start_year}-{end_year}", wb
-        )
+        return workbook_response(f"Status of Contributions {start_year}-{end_year}", wb)
 
 
 class SummaryStatusOfContributionsView(views.APIView):
@@ -927,7 +937,12 @@ class ReplenishmentInvoiceViewSet(
         if user.user_type == user.UserType.COUNTRY_USER:
             queryset = queryset.filter(country_id=user.country_id)
 
-        return queryset.select_related("country", "replenishment")
+        return queryset.select_related("country", "replenishment").prefetch_related(
+            models.Prefetch(
+                "replenishment__scales_of_assessment_versions",
+                queryset=ScaleOfAssessmentVersion.objects.order_by("-version"),
+            )
+        )
 
     def get_serializer_class(self):
         if self.request.method in ["POST", "PUT"]:
@@ -1052,7 +1067,12 @@ class ReplenishmentPaymentViewSet(
         if user.user_type == user.UserType.COUNTRY_USER:
             queryset = queryset.filter(country_id=user.country_id)
 
-        return queryset.select_related("country", "replenishment")
+        return queryset.select_related("country", "replenishment").prefetch_related(
+            models.Prefetch(
+                "replenishment__scales_of_assessment_versions",
+                queryset=ScaleOfAssessmentVersion.objects.order_by("-version"),
+            )
+        )
 
     def get_serializer_class(self):
         if self.request.method in ["POST", "PUT"]:
