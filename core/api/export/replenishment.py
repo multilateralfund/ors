@@ -246,7 +246,9 @@ class ScaleOfAssessmentWriter(WriteOnlyBase):
             },
             {
                 "id": "adjusted_scale_of_assessment",
-                "headerName": f"Adjusted UN Scale of Assessment using {past_un_period} scale with no party contributing more than 22%",
+                "headerName": f"Adjusted UN Scale of Assessment using"
+                              f"{past_un_period} scale with no party "
+                              f"contributing more than 22%",
                 "column_width": 25,
             },
             {
@@ -266,7 +268,9 @@ class ScaleOfAssessmentWriter(WriteOnlyBase):
             },
             {
                 "id": "exchange_rate",
-                "headerName": f"Fixed exchange rate mechanism users' currencies rate of Exchange 01 Jan - 30 June {ferm_year}",
+                "headerName": f"Fixed exchange rate mechanism users' "
+                              f"currencies rate of Exchange 01 Jan - 30 June "
+                              f"{ferm_year}",
                 "column_width": 25,
             },
             {
@@ -276,7 +280,8 @@ class ScaleOfAssessmentWriter(WriteOnlyBase):
             },
             {
                 "id": "yearly_amount_local_currency",
-                "headerName": f"Fixed exchange mechanism users contribution amount in national currencies",
+                "headerName": "Fixed exchange mechanism users contribution "
+                              "amount in national currencies",
                 "column_width": 25,
             },
         ]
