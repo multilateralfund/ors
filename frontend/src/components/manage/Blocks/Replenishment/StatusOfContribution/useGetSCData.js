@@ -1,11 +1,13 @@
-import { useEffect, useMemo, useState } from 'react'
+import {useContext, useEffect, useMemo, useState} from 'react'
 
 import { transformData } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
+import ReplenishmentContext from "@ors/contexts/Replenishment/ReplenishmentContext";
 import { formatApiUrl } from '@ors/helpers'
 
 const BASE_URL = '/api/replenishment/status-of-contributions'
 
 function useGetSCData(start_year, end_year) {
+  const ctx = useContext(ReplenishmentContext)
   const [data, setData] = useState({
     ceit: null,
     disputed_contributions: null,
@@ -66,7 +68,7 @@ function useGetSCData(start_year, end_year) {
         },
         ...(data?.disputed_contributions_per_country?.map((disputed) => ({
           agreed_contributions: disputed.amount,
-          can_delete: true,
+          can_delete: ctx.isTreasurer,
           country: (
             <div className="flex flex-col gap-1 !whitespace-normal">
               <span className="inline-block">{disputed.country.name}</span>

@@ -61,6 +61,10 @@ export default function ReplenishmentHeading(props) {
   }
 
   const isLastPeriod = period === replenishmentContext?.periodOptions[0]?.value
+  const showAddPeriod =
+    soaContext?.version?.is_final &&
+    isLastPeriod &&
+    replenishmentContext?.isTreasurer
 
   return (
     <HeaderTitle>
@@ -79,7 +83,7 @@ export default function ReplenishmentHeading(props) {
               ]}
             />
           ) : null}
-          {soaContext?.version?.is_final && isLastPeriod && (
+          {showAddPeriod && (
             <AddButton
               className="shrink-0"
               onClick={() => setShowAddNewSOA(true)}

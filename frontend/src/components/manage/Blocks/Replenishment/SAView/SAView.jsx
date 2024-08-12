@@ -180,7 +180,7 @@ function SaveManager(props) {
         refetchReplenishment()
         refetchSoA()
         if (createNewVersion) {
-          setCurrentVersion(prevVersion => prevVersion + 1)
+          setCurrentVersion((prevVersion) => prevVersion + 1)
         }
         enqueueSnackbar('Data saved successfully.', { variant: 'success' })
       })
@@ -279,7 +279,7 @@ function SaveManager(props) {
           </div>
         </FormDialog>
       ) : null}
-      {showSave && ctx.isTreasurer  && (
+      {showSave && ctx.isTreasurer && (
         <>
           <div className="flex items-center gap-x-2">
             <Input
@@ -831,31 +831,33 @@ function SAView(props) {
         onDelete={handleDelete}
         onSort={handleSort}
       />
-      {!showAdd ? (
+      {!showAdd && ctx.isTreasurer ? (
         <div className="flex items-center py-4 print:hidden">
           <AddButton onClick={showAddRow}>Add country</AddButton>
         </div>
       ) : null}
-      <div className="-mx-4 -mb-4 rounded-b-lg bg-gray-200 p-4 print:hidden">
-        <div className="flex items-center gap-x-2">
-          <h2>Comment Version {version?.version} </h2>
-          {version?.meeting_number ? (
-            <div className="rounded bg-primary px-1 font-medium uppercase text-mlfs-hlYellow">
-              Meeting {version.meeting_number}
-            </div>
-          ) : null}
-          {version?.decision_number ? (
-            <div className="rounded bg-primary px-1 font-medium uppercase text-mlfs-hlYellow">
-              Decision {version.decision_number}
-            </div>
-          ) : null}
+      {ctx.isTreasurer && (
+        <div className="-mx-4 -mb-4 rounded-b-lg bg-gray-200 p-4 print:hidden">
+          <div className="flex items-center gap-x-2">
+            <h2>Comment Version {version?.version} </h2>
+            {version?.meeting_number ? (
+              <div className="rounded bg-primary px-1 font-medium uppercase text-mlfs-hlYellow">
+                Meeting {version.meeting_number}
+              </div>
+            ) : null}
+            {version?.decision_number ? (
+              <div className="rounded bg-primary px-1 font-medium uppercase text-mlfs-hlYellow">
+                Decision {version.decision_number}
+              </div>
+            ) : null}
+          </div>
+          <textarea
+            className="h-32 w-3/4 rounded-lg border-0 bg-white p-2"
+            value={commentText}
+            onChange={handleCommentInput}
+          ></textarea>
         </div>
-        <textarea
-          className="h-32 w-3/4 rounded-lg border-0 bg-white p-2"
-          value={commentText}
-          onChange={handleCommentInput}
-        ></textarea>
-      </div>
+      )}
     </>
   )
 }

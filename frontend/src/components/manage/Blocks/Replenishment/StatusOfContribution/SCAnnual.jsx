@@ -1,5 +1,5 @@
 'use client'
-import React, { useMemo, useState } from 'react'
+import React, { useContext, useMemo, useState } from 'react'
 
 import ConfirmDialog from '@ors/components/manage/Blocks/Replenishment/ConfirmDialog'
 import DisputedContributionDialog from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/DisputedContributionDialog'
@@ -11,11 +11,13 @@ import {
 } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
 import Table from '@ors/components/manage/Blocks/Replenishment/Table'
 import { sortTableData } from '@ors/components/manage/Blocks/Replenishment/utils'
+import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { api } from '@ors/helpers'
 
 export default function SCAnnual({ year }) {
   const { data, extraRows, refetchSCData, rows } = useGetSCData(year)
 
+  const ctx = useContext(ReplenishmentContext)
   const [sortOn, setSortOn] = useState(0)
   const [sortDirection, setSortDirection] = useState(1)
 
@@ -120,11 +122,13 @@ export default function SCAnnual({ year }) {
           onDelete={promptDeleteRow}
           onSort={handleSort}
         />
-        <DisputedContributionDialog
-          countryOptions={countriesInTable}
-          refetchSCData={refetchSCData}
-          year={year}
-        />
+        {ctx.isTreasurer && (
+          <DisputedContributionDialog
+            countryOptions={countriesInTable}
+            refetchSCData={refetchSCData}
+            year={year}
+          />
+        )}
       </div>
     </>
   )

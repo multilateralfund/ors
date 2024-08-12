@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useState } from 'react'
 
 import { enqueueSnackbar } from 'notistack'
 
@@ -8,7 +8,6 @@ import {
   FieldSelect,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { AddButton } from '@ors/components/ui/Button/Button'
-import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { api } from '@ors/helpers'
 
 export default function DisputedContributionDialog({
@@ -16,7 +15,6 @@ export default function DisputedContributionDialog({
   refetchSCData,
   year,
 }) {
-  const ctx = useContext(ReplenishmentContext)
   const [showAdd, setShowAdd] = useState(false)
 
   function showAddDisputedContribution() {
