@@ -187,14 +187,12 @@ export const formatDecimalValue = (
   {
     maximumFractionDigits = 2,
     minimumFractionDigits = maximumFractionDigits || 2,
-  }: formatDecimalValueProps,
+  }: formatDecimalValueProps = {},
 ) => {
-  const formatted = value.toLocaleString(undefined, {
+  return value.toLocaleString(undefined, {
     maximumFractionDigits,
     minimumFractionDigits,
   })
-
-  return formatted
 }
 
 export function fixFloat(f: number, decimals: number = 10): number {

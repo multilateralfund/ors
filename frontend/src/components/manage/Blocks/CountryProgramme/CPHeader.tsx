@@ -284,7 +284,7 @@ const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
               variant="contained"
               button
             >
-              {isDraft ? 'Edit report' : 'Add new version'}
+              {isDraft ? 'Edit report' : 'Submit revised data'}
             </Link>
             {isDraft && (
               <Button

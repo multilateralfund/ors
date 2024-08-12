@@ -245,6 +245,15 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
                       applyTransaction(props.api, {
                         remove: [props.data],
                       })
+                      // Check if components array is empty and reset fields
+                      if (newComponents.length === 0) {
+                        setForm({
+                          ...prevForm.current,
+                          composition: '',
+                          other_names: '',
+                        })
+                        setSimilarBlends([])
+                      }
                     }}
                   />
                 ),

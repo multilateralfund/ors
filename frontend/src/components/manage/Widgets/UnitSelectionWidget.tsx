@@ -11,7 +11,7 @@ const OPTIONS: IOption[] = [
   {
     label: (
       <>
-        CO<sub>2</sub> equivalent
+        CO<sub>2</sub>-eq tonnes
       </>
     ),
     value: 'gwp',
@@ -29,7 +29,7 @@ const OPTIONS_B: IOption[] = [
   {
     label: (
       <>
-        CO<sub>2</sub> equivalent
+        CO<sub>2</sub>-eq tonnes
       </>
     ),
     value: 'gwp',
