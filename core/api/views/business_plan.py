@@ -273,9 +273,6 @@ class BusinessPlanViewSet(
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        initial_status = current_obj.status
-        new_status = serializer.initial_data["status"]
-
         # the updates can only be made on drafts
         if new_status not in [
             BusinessPlan.Status.agency_draft,
