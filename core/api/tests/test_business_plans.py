@@ -25,7 +25,7 @@ from core.api.tests.factories import (
 from core.models.business_plan import BPHistory, BusinessPlan
 
 pytestmark = pytest.mark.django_db
-# pylint: disable=C8008, W0221, W0613, R0913, C0302
+# pylint: disable=C8008, W0221, W0613, R0913, C0302, R0914
 
 
 @pytest.fixture(name="new_agency")
@@ -69,7 +69,9 @@ class TestBPExport(BaseTest):
         )
         assert response.status_code == 403
 
-    def test_export(self, user, business_plan, bp_activity, bp_activity_values):
+    def test_export(
+        self, user, business_plan, bp_activity, old_bp_activity, bp_activity_values
+    ):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(
@@ -121,7 +123,9 @@ class TestBPPrint(BaseTest):
         )
         assert response.status_code == 403
 
-    def test_print(self, user, business_plan, bp_activity, bp_activity_values):
+    def test_print(
+        self, user, business_plan, bp_activity, old_bp_activity, bp_activity_values
+    ):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(
@@ -204,6 +208,25 @@ class TestBPList(BaseTest):
         assert response.status_code == 200
         assert len(response.json()) == 2
         assert all(bp["year_end"] == 2023 for bp in response.json())
+
+    def test_list_versions(self, user, business_plan, old_business_plan):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(
+            self.url,
+            {
+                "agency_id": business_plan.agency_id,
+                "year_start": business_plan.year_start,
+                "year_end": business_plan.year_end,
+                "get_versions": True,
+            },
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 2
+        assert response.json()[0]["version"] == business_plan.version
+        assert response.json()[0]["is_latest"] == business_plan.is_latest
+        assert response.json()[1]["version"] == old_business_plan.version
+        assert response.json()[1]["is_latest"] == old_business_plan.is_latest
 
 
 @pytest.fixture(name="_setup_bp_activity_create")
@@ -515,6 +538,22 @@ class TestBPUpdate:
             == "Multiple values with is_after=true found"
         )
 
+    def test_update_old_bp(
+        self, agency_user, _setup_bp_activity_create, old_business_plan
+    ):
+        self.client.force_authenticate(user=agency_user)
+
+        url = reverse("businessplan-list") + f"{old_business_plan.id}/"
+        data = {
+            "agency_id": old_business_plan.agency_id,
+            "year_start": old_business_plan.year_start,
+            "year_end": old_business_plan.year_end,
+            "status": "Agency Draft",
+            "activities": [_setup_bp_activity_create],
+        }
+        response = self.client.put(url, data, format="json")
+        assert response.status_code == 404
+
     def test_bp_update_agency(
         self,
         agency_user,
@@ -643,6 +682,12 @@ class TestBPStatusUpdate:
         response = self.client.put(url, {"status": "Agency Draft"})
         assert response.status_code == 403
 
+    def test_update_old_bp(self, agency_user, old_business_plan):
+        self.client.force_authenticate(user=agency_user)
+        url = reverse("business-plan-status", kwargs={"id": old_business_plan.id})
+        response = self.client.put(url, {"status": "Agency Draft"})
+        assert response.status_code == 404
+
     def test_update_status(
         self, agency_user, business_plan, mock_send_mail_bp_status_update
     ):
@@ -667,6 +712,7 @@ class TestBPStatusUpdate:
 @pytest.fixture(name="_setup_bp_activity_list")
 def setup_bp_activity_list(
     business_plan,
+    old_business_plan,
     country_ro,
     sector,
     subsector,
@@ -699,7 +745,7 @@ def setup_bp_activity_list(
         project_types.append(ProjectTypeFactory.create(name=f"Type{i}"))
         clusters.append(ProjectClusterFactory.create(name=f"Cluster{i}", code=f"CL{i}"))
 
-    for bp in [business_plan, another_bp, new_bp]:
+    for bp in [business_plan, old_business_plan, another_bp, new_bp]:
         for i in range(4):
             data = {
                 "business_plan": bp,
@@ -916,7 +962,9 @@ class TestBPGet:
         response = self.client.get(self.url, {"business_plan_id": business_plan.id})
         assert response.status_code == 403
 
-    def test_activity_list(self, user, _setup_bp_activity_list, business_plan):
+    def test_activity_list(
+        self, user, _setup_bp_activity_list, business_plan, old_business_plan
+    ):
         self.client.force_authenticate(user=user)
 
         # get by id
@@ -924,7 +972,20 @@ class TestBPGet:
         assert response.status_code == 200
         assert len(response.json()["activities"]) == 4
 
-        # get by agency, start_year, end_year
+        # get by agency, start_year, end_year, version
+        response = self.client.get(
+            self.url,
+            {
+                "agency_id": business_plan.agency_id,
+                "year_start": business_plan.year_start,
+                "year_end": business_plan.year_end,
+                "version": old_business_plan.version,
+            },
+        )
+        assert response.status_code == 200
+        assert len(response.json()["activities"]) == 4
+
+        # get by agency, start_year, end_year (latest version)
         response = self.client.get(
             self.url,
             {
@@ -996,28 +1057,28 @@ class TestBPGet:
         )
         assert response.status_code == 400
 
-    def test_invalid_year(self, user, _setup_bp_activity_list, agency):
+    def test_invalid_year(self, user, business_plan, _setup_bp_activity_list):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(
             self.url,
             {
-                "agency_id": agency.id,
+                "agency_id": business_plan.agency_id,
                 "year_start": 99,
                 "year_end": 999,
             },
         )
         assert response.status_code == 400
 
-    def test_invalid_agency(self, user, _setup_bp_activity_list):
+    def test_invalid_agency(self, user, business_plan, _setup_bp_activity_list):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(
             self.url,
             {
                 "agency_id": 999,
-                "year_start": 2021,
-                "year_end": 2023,
+                "year_start": business_plan.year_start,
+                "year_end": business_plan.year_end,
             },
         )
         assert response.status_code == 400

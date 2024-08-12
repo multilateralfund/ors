@@ -439,6 +439,8 @@ class BusinessPlanFactory(factory.django.DjangoModelFactory):
     year_end = factory.Faker("random_int", min=2010, max=2019)
     agency = factory.SubFactory(AgencyFactory)
     status = BusinessPlan.Status.agency_draft
+    version = factory.Faker("random_int", min=1, max=100)
+    is_latest = True
 
 
 class BPChemicalTypeFactory(factory.django.DjangoModelFactory):
