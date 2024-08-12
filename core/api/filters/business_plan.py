@@ -38,7 +38,6 @@ class BusinessPlanFilter(filters.FilterSet):
             "agency_id",
             "year_start",
             "year_end",
-            "is_latest",
         ]
 
 
