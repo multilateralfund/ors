@@ -76,6 +76,8 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
             "feedback_file_download_url",
             "updated_at",
             "updated_by",
+            "version",
+            "is_latest",
         ]
 
     def get_feedback_file_download_url(self, obj):
@@ -299,9 +301,7 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
     agency_id = serializers.PrimaryKeyRelatedField(
         queryset=Agency.objects.all().values_list("id", flat=True),
     )
-    status = serializers.ChoiceField(
-        choices=BusinessPlan.Status.choices, required=False
-    )
+    status = serializers.ChoiceField(choices=BusinessPlan.Status.choices, required=True)
     activities = BPActivityCreateSerializer(many=True, required=False)
 
     class Meta:
