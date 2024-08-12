@@ -4,10 +4,11 @@ import { useContext, useEffect, useMemo, useState } from 'react'
 
 import { useSnackbar } from 'notistack'
 
+import DownloadButtons from '@ors/app/replenishment/DownloadButtons'
 import { AddButton, SubmitButton } from '@ors/components/ui/Button/Button'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import SoAContext from '@ors/contexts/Replenishment/SoAContext'
-import { api } from '@ors/helpers'
+import { api, formatApiUrl } from '@ors/helpers'
 
 import FormDialog from '../FormDialog'
 import { DateInput, FormattedNumberInput, Input } from '../Inputs'
@@ -864,7 +865,27 @@ function SAView(props) {
 
 function SAViewWrapper(props) {
   // Wrapper used to avoid flicker when no period is given.
-  return props.period ? <SAView {...props} /> : <div className="h-screen"></div>
+  const soaCtx = useContext(SoAContext)
+
+  const saView = props.period ? (
+    <SAView {...props} />
+  ) : (
+    <div className="h-screen"></div>
+  )
+
+  return (
+    <>
+      <DownloadButtons
+        downloadTexts={['Download']}
+        downloadUrls={[
+          formatApiUrl(
+            `/api/replenishment/scales-of-assessment/export/?start_year=${soaCtx?.replenishment?.start_year}&version=${soaCtx?.version?.version}`,
+          ),
+        ]}
+      />
+      {saView}
+    </>
+  )
 }
 
 export default SAViewWrapper
