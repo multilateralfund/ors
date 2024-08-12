@@ -471,7 +471,16 @@ def check_status_transition(user, initial_status, new_status):
 
 
 class SummaryStatusOfContributionsAggregator:
+    """
+    Aggregator for the summary status of contributions using the
+    TriennialContributionStatus data.
+    """
+
     def get_status_of_contributions_qs(self):
+        """
+        @return: List of contributor countries annotated with the SoC data, similar
+        to the Excel sheets YR91_XX.
+        """
         return (
             Country.objects.filter(triennial_contributions_status__isnull=False)
             .prefetch_related("triennial_contributions_status")
@@ -539,11 +548,20 @@ class SummaryStatusOfContributionsAggregator:
 
 
 class TriennialStatusOfContributionsAggregator:
+    """
+    Aggregator for the triennial status of contributions using the
+    TriennialContributionStatus data.
+    """
+
     def __init__(self, start_year, end_year):
         self.start_year = start_year
         self.end_year = end_year
 
     def get_status_of_contributions_qs(self):
+        """
+        @return: List of contributor countries annotated with the SoC data, similar
+        to the Excel sheets e.g. YR1991-1993.
+        """
         return (
             Country.objects.filter(
                 triennial_contributions_status__start_year=self.start_year,
@@ -616,10 +634,18 @@ class TriennialStatusOfContributionsAggregator:
 
 
 class AnnualStatusOfContributionsAggregator:
+    """
+    Aggregator for the annual status of contributions using the AnnualContributionStatus data.
+    """
+
     def __init__(self, year):
         self.year = year
 
     def get_status_of_contributions_qs(self):
+        """
+        @return: List of contributor countries annotated with the SoC data, similar
+        to the Excel sheets e.g. YR2005.
+        """
         return (
             Country.objects.filter(
                 annual_contributions_status__year=self.year,

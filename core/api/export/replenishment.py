@@ -26,6 +26,7 @@ class DashboardWriter(WriteOnlyBase):
             record_row.append(self.write_record_cell(cell_c))
 
             self.sheet.append(record_row)
+        # Merge cells for title, subtitle and date
         self.sheet.merge_cells("A4:C4")
         self.sheet.merge_cells("A6:C6")
         self.sheet.merge_cells("A5:C5")
@@ -103,6 +104,7 @@ class StatusOfContributionsWriter(WriteOnlyBase):
         super().__init__(sheet, headers)
 
     def do_prewriting(self):
+        # Merge cells for title, subtitle and date
         columns_number = len(self.headers)
         self.sheet.merge_cells(
             start_row=5, start_column=1, end_row=5, end_column=columns_number
@@ -163,6 +165,7 @@ class StatisticsStatusOfContributionsWriter(WriteOnlyBase):
         super().__init__(sheet, headers)
 
     def do_prewriting(self):
+        # Merge cells for title, subtitle and date
         columns_number = len(self.headers)
         self.sheet.merge_cells(
             start_row=5, start_column=1, end_row=5, end_column=columns_number
