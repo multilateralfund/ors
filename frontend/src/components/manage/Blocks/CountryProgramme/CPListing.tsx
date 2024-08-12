@@ -7,12 +7,13 @@ import {
   userCanSubmitReport,
 } from '@ors/types/user_types'
 
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 
 import {
   Box,
   Button,
   Skeleton,
+  Switch,
   Tab,
   Tabs,
   ToggleButton,
@@ -155,7 +156,6 @@ const CountryYearFilterPills = (props: any) => {
             onClick={() => {
               setFilters({
                 range: [minYear, maxYear],
-                year: [],
               })
               setPagination((pagination: paginationType) => ({
                 ...pagination,
@@ -175,7 +175,7 @@ const CountryYearFilterPills = (props: any) => {
 }
 
 const SubmissionItem = (props: any) => {
-  const { group, loaded, loading, reports, user_type } = props
+  const { filters, group, reports, user_type } = props
   const countries = useStore((state) => state.common.countries_for_listing.data)
   const countriesById = new Map<number, any>(
     countries.map((country: any) => [country.id, country]),
@@ -183,6 +183,8 @@ const SubmissionItem = (props: any) => {
   const [showAllReports, setShowAllReports] = useState(
     user_type === 'country_user',
   )
+  const denseLayout =
+    filters.range.length === 2 && filters.range[1] - filters.range[0] <= 2
 
   const options: Intl.DateTimeFormatOptions = {
     day: '2-digit',
@@ -194,11 +196,11 @@ const SubmissionItem = (props: any) => {
   }
 
   return (
-    <div
-      className={`transition-opacity flex w-full flex-col gap-4 duration-300 ${loading || !loaded ? 'opacity-0' : 'opacity-100'}`}
-    >
+    <div className="transition-opacity flex flex-col gap-4 duration-300">
       <Typography variant="h5">{group}</Typography>
-      <div className="grid w-full grid-flow-row auto-rows-max grid-cols-1 gap-6 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+      <div
+        className={`grid w-full grid-flow-row auto-rows-max gap-6 ${!denseLayout && 'grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3'}`}
+      >
         {reports.map((report: any, index: number) => {
           if (!showAllReports && index >= REPORTS_PER_COUNTRY) {
             return null // Hide reports beyond the limit if showAllReports is false
@@ -265,20 +267,22 @@ const SubmissionItem = (props: any) => {
 }
 
 const SubmissionSection = function SubmissionSection(
-  props: { countryApi: any } & SectionProps,
+  props: { submissionApi: any } & SectionProps,
 ) {
-  const { countryApi, filters, maxYear, minYear, setFilters, user_type } = props
+  const { filters, maxYear, minYear, setFilters, submissionApi, user_type } =
+    props
   const [pagination, setPagination] = useState({
     page: 1,
     rowsPerPage: SUBMISSIONS_PER_PAGE,
   })
+  const [displayAll, setDisplayAll] = useState(false)
 
   const orderOptions = [
     { label: 'Name, A to Z', value: 'asc' },
     { label: 'Name, Z to A', value: 'desc' },
   ]
 
-  const { count, loaded, loading, results, setParams } = countryApi
+  const { count, loaded, loading, results, setParams } = submissionApi
 
   const memoResults = useMemo(() => {
     if (!loaded) {
@@ -300,16 +304,23 @@ const SubmissionSection = function SubmissionSection(
   }
 
   return (
-    <div id="country-section" className="relative">
+    <div id="country-section">
       <Loading
-        className="bg-mui-box-background/70 !duration-300"
-        active={loading}
+        className="!fixed bg-action-disabledBackground bg-mui-box-background/70 !duration-300"
+        active={loading || !loaded}
       />
       {user_type !== 'country_user' && (
         <Portal domNode="portalSortBy">
           <SortBy options={orderOptions} onChange={handleOrderChange} />
         </Portal>
       )}
+      <Portal domNode="portalDisplayAll">
+        <DisplayAll
+          displayAll={displayAll}
+          setDisplayAll={setDisplayAll}
+          submissionApi={submissionApi}
+        />
+      </Portal>
       <CountryYearFilterPills
         filters={filters}
         maxYear={maxYear}
@@ -318,9 +329,7 @@ const SubmissionSection = function SubmissionSection(
         setPagination={setPagination}
         setParams={setParams}
       />
-      <div
-        className={`transition-opacity mb-10 flex w-full max-w-screen-xl flex-col gap-8 duration-300 ${loading || !loaded ? 'opacity-0' : 'opacity-100'}`}
-      >
+      <div className="transition-opacity mb-10 flex w-full max-w-screen-xl flex-wrap gap-8 duration-300">
         {memoResults.length === 0 && (
           <Typography className="px-3" variant="h5">
             No reports found.
@@ -346,6 +355,7 @@ const SubmissionSection = function SubmissionSection(
           return (
             <SubmissionItem
               key={countryData.id}
+              filters={filters}
               group={countryData.group}
               loaded={loaded}
               loading={loading}
@@ -355,7 +365,7 @@ const SubmissionSection = function SubmissionSection(
           )
         })}
       </div>
-      {!!pages && pages > 1 && (
+      {!!pages && pages > 1 && !displayAll && (
         <div className="flex items-center justify-center print:hidden">
           <Pagination
             count={pages}
@@ -550,8 +560,47 @@ const YearSelect = (props: {
   )
 }
 
+const DisplayAll = (props: any) => {
+  const { displayAll, setDisplayAll, submissionApi } = props
+  const { user_type } = useStore((state) => state.user.data)
+
+  const toggleDisplayAll = () => {
+    setDisplayAll(!displayAll)
+  }
+
+  useEffect(() => {
+    if (displayAll) {
+      submissionApi.setParams({ limit: null, offset: 0 })
+    } else {
+      submissionApi.setParams({ limit: SUBMISSIONS_PER_PAGE, offset: 0 })
+    }
+    // eslint-disable-next-line
+  }, [displayAll])
+
+  if (!userCanExportData[user_type as UserType]) {
+    return null
+  }
+
+  return (
+    <div className="relative flex items-center">
+      <Switch
+        id="display_all_countries"
+        checked={displayAll}
+        inputProps={{ 'aria-label': 'Switch demo' }}
+        onChange={toggleDisplayAll}
+      />
+      <label
+        className="text-pretty text-lg text-primary"
+        htmlFor="display_all_countries"
+      >
+        Display All
+      </label>
+    </div>
+  )
+}
+
 function CPFilters(props: any) {
-  const { filters, maxYear, minYear, setFilters } = props
+  const { filters, maxYear, minYear, setFilters, submissionApi } = props
 
   return (
     <Box
@@ -573,6 +622,7 @@ function CPFilters(props: any) {
           })
         }}
       />
+      <div id="portalDisplayAll" className="flex flex-1"></div>
     </Box>
   )
 }
@@ -628,7 +678,9 @@ function useLogSectionApi(filters: FiltersType) {
 }
 
 export default function CPListing() {
-  const { setActiveTab: setCpActiveTab } = useStore((state) => state.cp_current_tab)
+  const { setActiveTab: setCpActiveTab } = useStore(
+    (state) => state.cp_current_tab,
+  )
   setCpActiveTab(0)
   const settings = useStore((state) => state.common.settings.data)
   const { user_type } = useStore((state) => state.user.data)
@@ -640,7 +692,7 @@ export default function CPListing() {
   const minYear = settings.cp_reports.min_year
   const maxYear = settings.cp_reports.max_year
   const { filters, setFilters } = useStore((state) => state.filters)
-  const countryApi = useSubmissionSectionApi(filters)
+  const submissionApi = useSubmissionSectionApi(filters)
   const logApi = useLogSectionApi(filters)
 
   const handleFiltersChange = (newFilters: FiltersType) => {
@@ -658,7 +710,7 @@ export default function CPListing() {
         : {}),
     }
 
-    countryApi.setParams(newParams)
+    submissionApi.setParams(newParams)
     logApi.setParams(newParams)
   }
 
@@ -747,11 +799,11 @@ export default function CPListing() {
           </div>
           {activeTab === 0 && (
             <SubmissionSection
-              countryApi={countryApi}
               filters={filters}
               maxYear={maxYear}
               minYear={minYear}
               setFilters={handleFiltersChange}
+              submissionApi={submissionApi}
               user_type={user_type}
             />
           )}
@@ -771,6 +823,7 @@ export default function CPListing() {
           maxYear={maxYear}
           minYear={minYear}
           setFilters={handleFiltersChange}
+          submissionApi={submissionApi}
         />
       </div>
     </>
