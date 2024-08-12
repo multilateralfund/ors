@@ -52,6 +52,7 @@ class UserAdmin(admin.ModelAdmin):
         "is_active",
         "is_superuser",
         "country",
+        "agency",
         "user_type",
     ]
 
@@ -64,6 +65,7 @@ class UserAdmin(admin.ModelAdmin):
         "is_active",
         "is_superuser",
         "country",
+        "agency",
         "user_type",
         "last_login",
         "date_joined",
