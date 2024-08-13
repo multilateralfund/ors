@@ -1,6 +1,7 @@
 import { useContext, useState } from 'react'
 
 import Popover from '@mui/material/Popover/Popover'
+import cx from "classnames";
 
 import ValidationContext from '@ors/contexts/Validation/ValidationContext'
 import {
@@ -28,7 +29,7 @@ export default function CellValidationAlert({
   }
 
   return (
-    <div className={props.className}>
+    <div className={cx(props.className, 'flex items-center')}>
       <div
         className="cursor-pointer"
         onClick={handleClick}

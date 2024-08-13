@@ -225,7 +225,7 @@ export function validatePricesType(row: IRow): RowValidatorFuncResult {
     !(row.fob || row.retail_price)
   ) {
     return {
-      highlight_cells: ['fob', 'retail_price', 'remarks'],
+      highlight_cells: ['fob', 'retail_price'],
       row: row.display_name,
     }
   }
