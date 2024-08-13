@@ -584,6 +584,8 @@ class TestBPUpdate:
 
     def test_is_updated(self, agency_user, _setup_bp_activity_create, business_plan):
         self.client.force_authenticate(user=agency_user)
+        business_plan.status = BusinessPlan.Status.need_changes
+        business_plan.save()
 
         url = reverse("businessplan-list") + f"{business_plan.id}/"
         data = {
@@ -600,7 +602,19 @@ class TestBPUpdate:
         activities = response.data["activities"]
         assert activities[0]["is_updated"] is True
 
-        # update bp again without changes
+        # update status
+        BusinessPlan.objects.filter(id=new_id).update(
+            status=BusinessPlan.Status.need_changes
+        )
+
+        # get new BP by id
+        url = reverse("businessplan-get")
+        response = self.client.get(url, {"business_plan_id": new_id})
+        assert response.status_code == 200
+        data["status"] = "Agency Draft"
+        data["activities"] = response.json()["activities"]
+
+        # update bp again without changes (new version)
         url = reverse("businessplan-list") + f"{new_id}/"
         response = self.client.put(url, data, format="json")
         assert response.status_code == 200
@@ -666,7 +680,7 @@ class TestBPUpdate:
         assert activities[0]["comment_secretariat"] == ""
         assert activities[0]["comment_types"] == []
         assert activities[0]["values"][0]["year"] == business_plan.year_end
-        assert activities[0]["is_updated"] is True
+        assert activities[0]["is_updated"] is True  # need_changes->draft (new version)
 
         mock_send_mail_bp_update.assert_called_once()
 
@@ -698,7 +712,7 @@ class TestBPUpdate:
         activities = response.data["activities"]
         assert activities[0]["comment_secretariat"] == "Nu inchide telefonu"
         assert activities[0]["comment_types"] == [comment_type.id]
-        assert activities[0]["is_updated"] is True
+        assert activities[0]["is_updated"] is False  # draft->draft (same version)
 
         mock_send_mail_bp_update.assert_called_once()
 

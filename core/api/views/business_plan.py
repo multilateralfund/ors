@@ -252,21 +252,31 @@ class BusinessPlanViewSet(
         for value in activity.get("values", []):
             value.pop("id", None)
 
-    def set_is_updated_activities(self, data, data_old):
+    def set_is_updated_activities(self, new_instance, bp_old_version):
+        new_activities = []
         updated_activities = []
+        data = BPActivityCreateSerializer(new_instance.activities.all(), many=True).data
+        data_old = BPActivityCreateSerializer(
+            bp_old_version.activities.all(), many=True
+        ).data
         activities_old = {activity["initial_id"]: activity for activity in data_old}
 
         for activity in data:
             activity_old = activities_old.pop(activity["initial_id"], None)
             activity_id = activity.pop("id", None)
+
+            if not activity_old:
+                new_activities.append(activity_id)
+                continue
+
             self.delete_fields(activity)
-
-            if activity_old:
-                self.delete_fields(activity_old)
-
+            self.delete_fields(activity_old)
             if activity != activity_old:
                 updated_activities.append(activity_id)
 
+        BPActivity.objects.filter(id__in=new_activities).update(
+            is_updated=True, initial_id=F("id")
+        )
         BPActivity.objects.filter(id__in=updated_activities).update(is_updated=True)
 
     @transaction.atomic
@@ -322,12 +332,6 @@ class BusinessPlanViewSet(
             business_plan=new_instance
         )
 
-        # set is_updated
-        self.set_is_updated_activities(
-            BPActivityCreateSerializer(new_instance.activities.all(), many=True).data,
-            BPActivityCreateSerializer(current_obj.activities.all(), many=True).data,
-        )
-
         # set name
         if not new_instance.name:
             new_instance.name = f"{new_instance.agency} {new_instance.year_start} - {new_instance.year_end}"
@@ -344,6 +348,16 @@ class BusinessPlanViewSet(
         # set updated by user
         new_instance.updated_by = user
         new_instance.save()
+
+        # set is_updated
+        bp_old_version = BusinessPlan.objects.filter(
+            agency_id=new_instance.agency_id,
+            year_start=new_instance.year_start,
+            year_end=new_instance.year_end,
+            version=new_instance.version - 1,
+        ).first()
+        if bp_old_version:
+            self.set_is_updated_activities(new_instance, bp_old_version)
 
         # create new history for update event
         BPHistory.objects.create(
