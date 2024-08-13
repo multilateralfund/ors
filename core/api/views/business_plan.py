@@ -5,8 +5,7 @@ import urllib
 import openpyxl
 from constance import config
 from django.db import transaction
-from django.db.models import Max
-from django.db.models import Min
+from django.db.models import F, Max, Min
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
@@ -27,6 +26,7 @@ from core.api.serializers.business_plan import (
     BusinessPlanCreateSerializer,
     BusinessPlanSerializer,
     BPFileSerializer,
+    BPActivityCreateSerializer,
     BPActivityExportSerializer,
     BPActivityDetailSerializer,
     BPActivityListSerializer,
@@ -201,6 +201,9 @@ class BusinessPlanViewSet(
         self.perform_create(serializer)
         instance = serializer.instance
 
+        # set is_updated
+        instance.activities.update(initial_id=F("id"))
+
         # set name
         if not instance.name:
             instance.name = (
@@ -241,6 +244,30 @@ class BusinessPlanViewSet(
             or serializer.initial_data["year_start"] != current_obj.year_start
             or serializer.initial_data["year_end"] != current_obj.year_end
         )
+
+    def delete_fields(self, activity):
+        for field in ("id", "business_plan_id", "is_updated"):
+            activity.pop(field, None)
+
+        for value in activity.get("values", []):
+            value.pop("id", None)
+
+    def set_is_updated_activities(self, data, data_old):
+        updated_activities = []
+        activities_old = {activity["initial_id"]: activity for activity in data_old}
+
+        for activity in data:
+            activity_old = activities_old.pop(activity["initial_id"], None)
+            activity_id = activity.pop("id", None)
+            self.delete_fields(activity)
+
+            if activity_old:
+                self.delete_fields(activity_old)
+
+            if activity != activity_old:
+                updated_activities.append(activity_id)
+
+        BPActivity.objects.filter(id__in=updated_activities).update(is_updated=True)
 
     @transaction.atomic
     def update(self, request, *args, **kwargs):
@@ -292,6 +319,12 @@ class BusinessPlanViewSet(
         # inherit all history
         BPHistory.objects.filter(business_plan=current_obj).update(
             business_plan=new_instance
+        )
+
+        # set is_updated
+        self.set_is_updated_activities(
+            BPActivityCreateSerializer(new_instance.activities.all(), many=True).data,
+            BPActivityCreateSerializer(current_obj.activities.all(), many=True).data,
         )
 
         # set name
