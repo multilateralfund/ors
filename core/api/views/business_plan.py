@@ -273,8 +273,12 @@ class BusinessPlanViewSet(
     def update(self, request, *args, **kwargs):
         user = request.user
         current_obj = self.get_object()
+        initial_status = current_obj.status
+        new_status = request.data["status"]
 
-        ignore_comment = bool("agency" in user.user_type.lower())
+        ignore_comment = bool(
+            "agency" in user.user_type.lower() and initial_status != new_status
+        )
         serializer = self.get_serializer(
             data=request.data, context={"ignore_comment": ignore_comment}
         )
@@ -295,9 +299,6 @@ class BusinessPlanViewSet(
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
-        initial_status = current_obj.status
-        new_status = serializer.initial_data["status"]
 
         # the updates can only be made on drafts
         if new_status not in [

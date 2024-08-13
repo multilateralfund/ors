@@ -55,8 +55,6 @@ class CPFilesView(
             raise PermissionDenied("User represents other country")
 
     def get(self, request, *args, **kwargs):
-        self._check_country_user()
-
         queryset = self.filter_queryset(self.get_queryset())
         serializer = self.get_serializer(queryset, many=True)
 

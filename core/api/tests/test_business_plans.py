@@ -429,6 +429,7 @@ class TestBPCreate:
         assert activities[0]["comment_secretariat"] == ""
         assert activities[0]["comment_types"] == []
         assert activities[0]["values"][0]["year"] == 2020
+        assert activities[0]["is_updated"] is False
 
         mock_send_mail_bp_create.assert_called_once()
 
@@ -557,6 +558,30 @@ class TestBPUpdate:
         response = self.client.put(url, data, format="json")
         assert response.status_code == 404
 
+    def test_update_comment_draft_version(
+        self, agency_user, _setup_bp_activity_create, business_plan, comment_type
+    ):
+        self.client.force_authenticate(user=agency_user)
+        url = reverse("businessplan-list") + f"{business_plan.id}/"
+
+        # agency updates from draft to draft (comment is not deleted)
+        activity_data = _setup_bp_activity_create
+        activity_data["comment_secretariat"] = "Nu inchide telefonu"
+        activity_data["comment_types"] = [comment_type.id]
+        data = {
+            "agency_id": business_plan.agency_id,
+            "year_start": business_plan.year_start,
+            "year_end": business_plan.year_end,
+            "status": "Agency Draft",
+            "activities": [activity_data],
+        }
+        response = self.client.put(url, data, format="json")
+
+        assert response.status_code == 200
+        activities = response.data["activities"]
+        assert activities[0]["comment_secretariat"] == "Nu inchide telefonu"
+        assert activities[0]["comment_types"] == [comment_type.id]
+
     def test_is_updated(self, agency_user, _setup_bp_activity_create, business_plan):
         self.client.force_authenticate(user=agency_user)
 
@@ -592,6 +617,8 @@ class TestBPUpdate:
         mock_send_mail_bp_update,
     ):
         self.client.force_authenticate(user=agency_user)
+        business_plan.status = BusinessPlan.Status.need_changes
+        business_plan.save()
 
         url = reverse("businessplan-list") + f"{business_plan.id}/"
         other_business_plan = BusinessPlanFactory()
@@ -603,7 +630,7 @@ class TestBPUpdate:
         activity_data["status"] = "P"
         activity_data["is_multi_year"] = True
         activity_data["remarks"] = "Merge rau"
-        # comment data should be ignored
+        # agency updates from need_changes to draft (comment is deleted)
         activity_data["comment_secretariat"] = "Nu inchide telefonu"
         activity_data["comment_types"] = [comment_type.id]
         activity_data["values"] = [
