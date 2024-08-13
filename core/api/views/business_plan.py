@@ -201,7 +201,7 @@ class BusinessPlanViewSet(
         self.perform_create(serializer)
         instance = serializer.instance
 
-        # set is_updated
+        # set initial_id - used to set `is_updated` later
         instance.activities.update(initial_id=F("id"))
 
         # set name
@@ -262,6 +262,7 @@ class BusinessPlanViewSet(
         activities_old = {activity["initial_id"]: activity for activity in data_old}
 
         for activity in data:
+            # match new with old activities using `initial_id`
             activity_old = activities_old.pop(activity["initial_id"], None)
             activity_id = activity.pop("id", None)
 
@@ -269,6 +270,7 @@ class BusinessPlanViewSet(
                 new_activities.append(activity_id)
                 continue
 
+            # delete ids to compare only actual values
             self.delete_fields(activity)
             self.delete_fields(activity_old)
             if activity != activity_old:
@@ -349,7 +351,7 @@ class BusinessPlanViewSet(
         new_instance.updated_by = user
         new_instance.save()
 
-        # set is_updated
+        # set is_updated, compare with `latest_version - 1`
         bp_old_version = BusinessPlan.objects.filter(
             agency_id=new_instance.agency_id,
             year_start=new_instance.year_start,
