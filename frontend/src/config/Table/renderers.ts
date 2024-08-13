@@ -5,6 +5,7 @@ const renderers: {
 } = {
   category: {
     adm: 'agAdmCellRenderer',
+    checkbox: 'agCheckboxCellRenderer',
     usage: 'agUsageCellRenderer',
     usage_diff: 'agUsageDiffCellRenderer',
   },

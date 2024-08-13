@@ -154,10 +154,15 @@ export default function SectionBCreate(props: {
 
   const newNode = useRef<RowNode>()
 
-  const substances = useStore(
-    (state) =>
-      getResults<ApiSubstance>(state.cp_reports.substances.data).results,
+  const substances = useStore((state) =>
+    getResults<ApiSubstance>(state.cp_reports.substances.data).results.filter(
+      (substance) =>
+        !['annex a', 'annex b', 'annex e'].some((annex) =>
+          substance.group.toLowerCase().includes(annex),
+        ),
+    ),
   )
+
   const blends = useStore(
     (state) => getResults<ApiBlend>(state.cp_reports.blends.data).results,
   )

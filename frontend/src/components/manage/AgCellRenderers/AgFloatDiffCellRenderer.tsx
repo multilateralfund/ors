@@ -30,7 +30,7 @@ export default function AgFloatDiffCellRenderer(
 
   const aggFunc = get(aggFuncs, (props.colDef?.orsAggFunc || '') as string)
 
-  if (includes(['control', 'group', 'hashed', 'control'], props.data.rowType)) {
+  if (includes(['control', 'group', 'hashed'], props.data.rowType)) {
     return null
   }
   /* TODO: what should I do with the below check?

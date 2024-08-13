@@ -44,6 +44,26 @@ function useGridOptions(props: { model: string }) {
         orsAggFunc: 'sumTotal',
         ...sectionColDefById['current_year_price'],
       },
+      ...(includes(['V'], model)
+        ? [
+            {
+              cellRendererParams: () => {
+                return {
+                  disabled: true,
+                }
+              },
+              ...sectionColDefById['fob'],
+            },
+            {
+              cellRendererParams: () => {
+                return {
+                  disabled: true,
+                }
+              },
+              ...sectionColDefById['retail_price'],
+            },
+          ]
+        : []),
       {
         field: 'remarks',
         headerName: 'Remarks',

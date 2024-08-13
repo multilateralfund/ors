@@ -8,8 +8,8 @@ import {
   validateBlendComponents,
   validateFacilityName,
   validateHFC23,
-  validateOtherUnidentifiedManufacturing,
-  validatePrices,
+  validateOtherUnidentifiedManufacturing, validatePrices,
+  validatePricesType,
   validateSectionBOther,
   // validateSectionDFilled,
   validateSectionDTotals,
@@ -123,9 +123,15 @@ const validationSchema: ValidationSchema = {
   section_c: {
     rows: [
       {
-        id: 'validate-prices',
+        id: 'validate-prices-type',
         highlight_cells: {},
         message: 'Indicate whether the prices are FOB or retail prices.',
+        validator: validatePricesType,
+      },
+      {
+        id: 'validate-prices',
+        highlight_cells: {},
+        message: 'Price should be provided, otherwise, the substance should be removed.',
         validator: validatePrices,
       },
     ],

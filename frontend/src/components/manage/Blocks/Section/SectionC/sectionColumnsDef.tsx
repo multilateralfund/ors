@@ -30,6 +30,15 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
       return <AgCellRenderer {...props} />
     },
   },
+  fob: {
+    ...colDefById['fob'],
+    category: 'checkbox',
+    cellClass: 'ag-text-center',
+    editable: false,
+    field: 'fob',
+    headerClass: 'ag-text-center',
+    headerName: 'FOB',
+  },
   previous_year_price: {
     cellClass: 'ag-text-center',
     headerClass: 'ag-text-center',
@@ -49,6 +58,15 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
             },
           }),
     },
+  },
+  retail_price: {
+    ...colDefById['retail_price'],
+    category: 'checkbox',
+    cellClass: 'ag-text-center',
+    editable: false,
+    field: 'retail_price',
+    headerClass: 'ag-text-center',
+    headerName: 'Retail price',
   },
 })
 

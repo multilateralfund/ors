@@ -47,6 +47,22 @@ function useGridOptions(props: { model: string }) {
         orsAggFunc: 'sumTotal',
       },
       {
+        cellRendererParams: () => {
+          return {
+            disabled: true,
+          }
+        },
+        ...sectionColDefById['fob'],
+      },
+      {
+        cellRendererParams: () => {
+          return {
+            disabled: true,
+          }
+        },
+        ...sectionColDefById['retail_price'],
+      },
+      {
         ...sectionColDefById['remarks'],
         cellClass: 'ag-text-left remarks-cell',
         dataType: 'text_diff',

@@ -1,5 +1,6 @@
 import { AgAdmCellRenderer } from '@ors/components/manage/AgCellRenderers/AgAdmCellRenderer'
 import AgBooleanCellRenderer from '@ors/components/manage/AgCellRenderers/AgBooleanCellRenderer'
+import AgCheckboxRenderer from "@ors/components/manage/AgCellRenderers/AgCheckboxRenderer";
 import AgDateCellRenderer from '@ors/components/manage/AgCellRenderers/AgDateCellRenderer'
 import AgFloatCellRenderer from '@ors/components/manage/AgCellRenderers/AgFloatCellRenderer'
 import AgFloatDiffCellRenderer from '@ors/components/manage/AgCellRenderers/AgFloatDiffCellRenderer'
@@ -24,6 +25,7 @@ const components: Record<string, React.FC<any>> = {
   agAdmNumberCellEditor: CellAdmNumberWidget,
   agAdmTextCellEditor: CellAdmTextareaWidget,
   agBooleanCellRenderer: AgBooleanCellRenderer,
+  agCheckboxCellRenderer: AgCheckboxRenderer,
   agColumnHeader: AgHeaderComponent,
   agColumnHeaderGroup: AgHeaderGroupComponent,
   agDateCellEditor: CellDateWidget,

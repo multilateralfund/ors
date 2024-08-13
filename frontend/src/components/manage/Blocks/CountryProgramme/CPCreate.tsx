@@ -674,7 +674,7 @@ const CPCreate: React.FC = () => {
           )}
 
           {!!Object.keys(errors).length && (
-            <Alert className="mb-4" severity="error">
+            <Alert className="mb-12" severity="error">
               <Typography>
                 Please make sure a country is selected and all the sections are
                 valid.

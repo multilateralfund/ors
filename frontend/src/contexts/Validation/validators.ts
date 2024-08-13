@@ -218,9 +218,25 @@ export function validateFacilityName(
   }
 }
 
+export function validatePricesType(row: IRow): RowValidatorFuncResult {
+  if (validatePrices(row)) return null
+  if (
+    (row.current_year_price || row.previous_year_price) &&
+    !(row.fob || row.retail_price)
+  ) {
+    return {
+      highlight_cells: ['fob', 'retail_price', 'remarks'],
+      row: row.display_name,
+    }
+  }
+}
+
 export function validatePrices(row: IRow): RowValidatorFuncResult {
-  if ((row.current_year_price || row.previous_year_price) && !row.remarks) {
-    return { highlight_cells: ['remarks'], row: row.display_name }
+  if (!row.current_year_price || row.current_year_price === '0') {
+    return {
+      highlight_cells: ['current_year_price'],
+      row: row.display_name,
+    }
   }
 }
 

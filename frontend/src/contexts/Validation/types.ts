@@ -12,21 +12,23 @@ export interface IRow {
   chemical_name?: string
   chemical_note?: string
   composition?: string
-  current_year_price: number
+  current_year_price: number | string
   destruction?: number | string
   display_name: string
   exports: number | string
   facility?: string
   feedstock?: number | string
   feedstock_gc?: number | string
+  fob: boolean;
   group: string
   import_quotas: number
   imports: number | string
   manufacturing_blends?: string
-  previous_year_price: number
+  previous_year_price: number | string
   production: number | string
   record_usages: IUsage[]
   remarks?: string
+  retail_price: boolean;
   row_id: string
   substance_id: null | number
 }

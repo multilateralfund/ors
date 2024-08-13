@@ -298,6 +298,7 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
               headerName: 'Substance',
               minWidth: 200,
               showRowError: true,
+              singleClickEdit: true,
             },
             {
               cellEditor: 'agNumberCellEditor',
