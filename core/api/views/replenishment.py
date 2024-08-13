@@ -11,6 +11,7 @@ from django.db import models, transaction
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, mixins, status, views, viewsets
+from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
@@ -18,6 +19,7 @@ from core.api.export.base import configure_sheet_print
 from core.api.export.replenishment import (
     DashboardWriter,
     EMPTY_ROW,
+    ScaleOfAssessmentWriter,
 )
 from core.api.filters.replenishments import (
     InvoiceFilter,
@@ -35,6 +37,7 @@ from core.api.serializers import (
     ScaleOfAssessmentSerializer,
     DisputedContributionCreateSerializer,
     DisputedContributionReadSerializer,
+    ScaleOfAssessmentExcelExportSerializer,
 )
 from core.api.utils import workbook_response
 from core.api.views.utils import (
@@ -91,7 +94,10 @@ class ReplenishmentViewSet(
 
     def get_queryset(self):
         return Replenishment.objects.prefetch_related(
-            "scales_of_assessment_versions"
+            models.Prefetch(
+                "scales_of_assessment_versions",
+                queryset=ScaleOfAssessmentVersion.objects.order_by("-version"),
+            )
         ).order_by("-start_year")
 
     @transaction.atomic
@@ -154,9 +160,18 @@ class ScaleOfAssessmentViewSet(
     permission_classes = [IsUserAllowedReplenishment]
 
     def get_queryset(self):
-        return ScaleOfAssessment.objects.select_related(
-            "country", "version__replenishment"
-        ).order_by("country__name")
+        return (
+            ScaleOfAssessment.objects.select_related(
+                "country", "version__replenishment"
+            )
+            .prefetch_related(
+                models.Prefetch(
+                    "version__replenishment__scales_of_assessment_versions",
+                    queryset=ScaleOfAssessmentVersion.objects.order_by("-version"),
+                )
+            )
+            .order_by("country__name")
+        )
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
@@ -280,6 +295,48 @@ class ScaleOfAssessmentViewSet(
                 else status.HTTP_200_OK
             ),
             headers=headers,
+        )
+
+    @action(methods=["GET"], detail=False, url_path="export")
+    def export(self, request, *args, **kwargs):
+        print(request.query_params)
+        if "start_year" not in request.query_params:
+            raise ValidationError({"start_year": "This query parameter is required."})
+        if "version" not in request.query_params:
+            raise ValidationError({"version": "This query parameter is required."})
+
+        start_year = int(request.query_params["start_year"])
+        queryset = self.filter_queryset(self.get_queryset())
+        wb = openpyxl.Workbook(write_only=True)
+        ws = wb.create_sheet("Scales of Assessment")
+
+        data = [
+            {"no": i + 1, **soa}
+            for i, soa in enumerate(
+                ScaleOfAssessmentExcelExportSerializer(queryset, many=True).data
+            )
+        ]
+        data_count = len(data)
+        data.append(
+            {
+                "country": "Total",
+                "un_scale_of_assessment": f"=SUM(C2:C{data_count + 1})",
+                "adjusted_scale_of_assessment": f"=SUM(D2:D{data_count + 1})",
+                "yearly_amount": f"=SUM(E2:E{data_count + 1})",
+            }
+        )
+
+        ScaleOfAssessmentWriter(
+            ws,
+            f"{start_year - 2}-{start_year}",
+            f"{start_year - 3} - {start_year - 1}",
+            f"{start_year} - {start_year + 2}",
+            start_year - 1,
+        ).write(data)
+
+        return workbook_response(
+            f"Scales of Assessment {start_year} - {start_year + 2}",
+            wb,
         )
 
 
@@ -413,9 +470,7 @@ class TriennialStatusOfContributionsExportView(views.APIView):
             wb, agg, f"YR{start_year}_{str(end_year)[2:]}", f"{start_year}-{end_year}"
         )
 
-        return workbook_response(
-            f"Status of Contributions {start_year}-{end_year}", wb
-        )
+        return workbook_response(f"Status of Contributions {start_year}-{end_year}", wb)
 
 
 class SummaryStatusOfContributionsView(views.APIView):
@@ -927,7 +982,12 @@ class ReplenishmentInvoiceViewSet(
         if user.user_type == user.UserType.COUNTRY_USER:
             queryset = queryset.filter(country_id=user.country_id)
 
-        return queryset.select_related("country", "replenishment")
+        return queryset.select_related("country", "replenishment").prefetch_related(
+            models.Prefetch(
+                "replenishment__scales_of_assessment_versions",
+                queryset=ScaleOfAssessmentVersion.objects.order_by("-version"),
+            )
+        )
 
     def get_serializer_class(self):
         if self.request.method in ["POST", "PUT"]:
@@ -1052,7 +1112,12 @@ class ReplenishmentPaymentViewSet(
         if user.user_type == user.UserType.COUNTRY_USER:
             queryset = queryset.filter(country_id=user.country_id)
 
-        return queryset.select_related("country", "replenishment")
+        return queryset.select_related("country", "replenishment").prefetch_related(
+            models.Prefetch(
+                "replenishment__scales_of_assessment_versions",
+                queryset=ScaleOfAssessmentVersion.objects.order_by("-version"),
+            )
+        )
 
     def get_serializer_class(self):
         if self.request.method in ["POST", "PUT"]:

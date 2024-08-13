@@ -17,7 +17,6 @@ export default function ReplenishmentScaleOfAssessment(props) {
       >
         <SoAProvider startYear={period.split('-')[0]}>
           <SAHeading period={period} />
-          <DownloadButtons />
           <SAView period={period} />
         </SoAProvider>
       </PageWrapper>
