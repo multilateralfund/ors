@@ -5,8 +5,7 @@ import urllib
 import openpyxl
 from constance import config
 from django.db import transaction
-from django.db.models import Max
-from django.db.models import Min
+from django.db.models import F, Max, Min
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
@@ -27,6 +26,7 @@ from core.api.serializers.business_plan import (
     BusinessPlanCreateSerializer,
     BusinessPlanSerializer,
     BPFileSerializer,
+    BPActivityCreateSerializer,
     BPActivityExportSerializer,
     BPActivityDetailSerializer,
     BPActivityListSerializer,
@@ -201,6 +201,9 @@ class BusinessPlanViewSet(
         self.perform_create(serializer)
         instance = serializer.instance
 
+        # set initial_id - used to set `is_updated` later
+        instance.activities.update(initial_id=F("id"))
+
         # set name
         if not instance.name:
             instance.name = (
@@ -241,6 +244,42 @@ class BusinessPlanViewSet(
             or serializer.initial_data["year_start"] != current_obj.year_start
             or serializer.initial_data["year_end"] != current_obj.year_end
         )
+
+    def delete_fields(self, activity):
+        for field in ("id", "business_plan_id", "is_updated"):
+            activity.pop(field, None)
+
+        for value in activity.get("values", []):
+            value.pop("id", None)
+
+    def set_is_updated_activities(self, new_instance, bp_old_version):
+        new_activities = []
+        updated_activities = []
+        data = BPActivityCreateSerializer(new_instance.activities.all(), many=True).data
+        data_old = BPActivityCreateSerializer(
+            bp_old_version.activities.all(), many=True
+        ).data
+        activities_old = {activity["initial_id"]: activity for activity in data_old}
+
+        for activity in data:
+            # match new with old activities using `initial_id`
+            activity_old = activities_old.pop(activity["initial_id"], None)
+            activity_id = activity.pop("id", None)
+
+            if not activity_old:
+                new_activities.append(activity_id)
+                continue
+
+            # delete ids to compare only actual values
+            self.delete_fields(activity)
+            self.delete_fields(activity_old)
+            if activity != activity_old:
+                updated_activities.append(activity_id)
+
+        BPActivity.objects.filter(id__in=new_activities).update(
+            is_updated=True, initial_id=F("id")
+        )
+        BPActivity.objects.filter(id__in=updated_activities).update(is_updated=True)
 
     @transaction.atomic
     def update(self, request, *args, **kwargs):
@@ -311,6 +350,16 @@ class BusinessPlanViewSet(
         # set updated by user
         new_instance.updated_by = user
         new_instance.save()
+
+        # set is_updated, compare with `latest_version - 1`
+        bp_old_version = BusinessPlan.objects.filter(
+            agency_id=new_instance.agency_id,
+            year_start=new_instance.year_start,
+            year_end=new_instance.year_end,
+            version=new_instance.version - 1,
+        ).first()
+        if bp_old_version:
+            self.set_is_updated_activities(new_instance, bp_old_version)
 
         # create new history for update event
         BPHistory.objects.create(

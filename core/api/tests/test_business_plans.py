@@ -236,14 +236,17 @@ def setup_bp_activity_create(
     subsector,
     project_type,
     bp_chemical_type,
+    project_cluster_kpp,
     substance,
 ):
     return {
+        "initial_id": 1,
         "title": "Planu",
         "country_id": country_ro.id,
         "lvc_status": "LVC",
         "project_type_id": project_type.id,
         "bp_chemical_type_id": bp_chemical_type.id,
+        "project_cluster_id": project_cluster_kpp.id,
         "substances": [substance.id],
         "sector_id": sector.id,
         "subsector_id": subsector.id,
@@ -426,6 +429,7 @@ class TestBPCreate:
         assert activities[0]["comment_secretariat"] == ""
         assert activities[0]["comment_types"] == []
         assert activities[0]["values"][0]["year"] == 2020
+        assert activities[0]["is_updated"] is False
 
         mock_send_mail_bp_create.assert_called_once()
 
@@ -578,6 +582,45 @@ class TestBPUpdate:
         assert activities[0]["comment_secretariat"] == "Nu inchide telefonu"
         assert activities[0]["comment_types"] == [comment_type.id]
 
+    def test_is_updated(self, agency_user, _setup_bp_activity_create, business_plan):
+        self.client.force_authenticate(user=agency_user)
+        business_plan.status = BusinessPlan.Status.need_changes
+        business_plan.save()
+
+        url = reverse("businessplan-list") + f"{business_plan.id}/"
+        data = {
+            "agency_id": business_plan.agency_id,
+            "year_start": business_plan.year_start,
+            "year_end": business_plan.year_end,
+            "status": "Agency Draft",
+            "activities": [_setup_bp_activity_create],
+        }
+        # update bp activity
+        response = self.client.put(url, data, format="json")
+        assert response.status_code == 200
+        new_id = response.data["id"]
+        activities = response.data["activities"]
+        assert activities[0]["is_updated"] is True
+
+        # update status
+        BusinessPlan.objects.filter(id=new_id).update(
+            status=BusinessPlan.Status.need_changes
+        )
+
+        # get new BP by id
+        url = reverse("businessplan-get")
+        response = self.client.get(url, {"business_plan_id": new_id})
+        assert response.status_code == 200
+        data["status"] = "Agency Draft"
+        data["activities"] = response.json()["activities"]
+
+        # update bp again without changes (new version)
+        url = reverse("businessplan-list") + f"{new_id}/"
+        response = self.client.put(url, data, format="json")
+        assert response.status_code == 200
+        activities = response.data["activities"]
+        assert activities[0]["is_updated"] is False
+
     def test_bp_update_agency(
         self,
         agency_user,
@@ -637,6 +680,7 @@ class TestBPUpdate:
         assert activities[0]["comment_secretariat"] == ""
         assert activities[0]["comment_types"] == []
         assert activities[0]["values"][0]["year"] == business_plan.year_end
+        assert activities[0]["is_updated"] is True  # need_changes->draft (new version)
 
         mock_send_mail_bp_update.assert_called_once()
 
@@ -668,6 +712,7 @@ class TestBPUpdate:
         activities = response.data["activities"]
         assert activities[0]["comment_secretariat"] == "Nu inchide telefonu"
         assert activities[0]["comment_types"] == [comment_type.id]
+        assert activities[0]["is_updated"] is False  # draft->draft (same version)
 
         mock_send_mail_bp_update.assert_called_once()
 

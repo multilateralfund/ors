@@ -16,6 +16,7 @@ from core.models import (
     BusinessPlan,
     CommentType,
     Country,
+    ProjectCluster,
     ProjectSector,
     ProjectSubSector,
     ProjectType,
@@ -164,10 +165,14 @@ class BPActivityDetailSerializer(serializers.ModelSerializer):
     subsector = ProjectSubSectorSerializer()
     values = BPActivityValueSerializer(many=True)
 
+    is_updated = serializers.BooleanField(read_only=True)
+
     class Meta:
         model = BPActivity
         fields = [
             "id",
+            "initial_id",
+            "is_updated",
             "title",
             "required_by_model",
             "country",
@@ -234,6 +239,9 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
     bp_chemical_type_id = serializers.PrimaryKeyRelatedField(
         queryset=BPChemicalType.objects.all().values_list("id", flat=True),
     )
+    project_cluster_id = serializers.PrimaryKeyRelatedField(
+        queryset=ProjectCluster.objects.all().values_list("id", flat=True),
+    )
 
     substances = serializers.PrimaryKeyRelatedField(
         many=True,
@@ -253,6 +261,8 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
     )
     values = BPActivityValueSerializer(many=True)
 
+    is_updated = serializers.BooleanField(read_only=True)
+
     def validate_values(self, values):
         is_after_count = 0
         for value in values:
@@ -270,6 +280,8 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
         model = BPActivity
         fields = [
             "id",
+            "initial_id",
+            "is_updated",
             "business_plan_id",
             "title",
             "required_by_model",
@@ -277,6 +289,7 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
             "lvc_status",
             "project_type_id",
             "bp_chemical_type_id",
+            "project_cluster_id",
             "substances",
             "amount_polyol",
             "sector_id",

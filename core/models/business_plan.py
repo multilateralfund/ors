@@ -167,6 +167,9 @@ class BPActivity(models.Model):
     comment_secretariat = models.TextField(blank=True)
     comment_types = models.ManyToManyField(CommentType, blank=True)
 
+    initial_id = models.PositiveIntegerField(null=True, blank=True)
+    is_updated = models.BooleanField(default=False)  # updated from last version
+
     objects = BPActivityManager()
 
     def __str__(self):

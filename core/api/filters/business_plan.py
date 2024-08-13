@@ -90,6 +90,7 @@ class BPActivityFilter(filters.FilterSet):
             "status",
             "is_multi_year",
             "comment_types",
+            "is_updated",
         ]
 
 
