@@ -172,7 +172,7 @@ class CPRecordBaseListView(views.APIView):
 
         return self.cp_comment_seri_class(cp_report.cpcomments.all(), many=True).data
 
-    def _get_new_cp_records(self, cp_report, data_only=False):
+    def _get_new_cp_records(self, cp_report, data_only=False, full_history=False):
         section_a = get_displayed_records(cp_report, "A", self.cp_record_class)
         section_b = get_displayed_records(cp_report, "B", self.cp_record_class)
         section_c = self._get_cp_prices(cp_report)
@@ -252,11 +252,11 @@ class CPRecordBaseListView(views.APIView):
             raise ValidationError({"error": "Country programme report not found"})
         return cp_report
 
-    def get_data(self, cp_report):
+    def get_data(self, cp_report, full_history=False):
         if cp_report.year <= IMPORT_DB_OLDEST_MAX_YEAR:
             return self._get_04_cp_records(cp_report)
         if cp_report.year > IMPORT_DB_MAX_YEAR:
-            return self._get_new_cp_records(cp_report)
+            return self._get_new_cp_records(cp_report, False, full_history)
 
         return self._get_old_cp_records(cp_report)
 
@@ -283,7 +283,8 @@ class CPRecordBaseListView(views.APIView):
         ],
     )
     def get(self, *args, **kwargs):
-        return Response(self.get_data(self._get_cp_report()))
+        full_history = self.request.query_params.get("full_history", False)
+        return Response(self.get_data(self._get_cp_report(), full_history))
 
 
 class CPRecordListView(CPRecordBaseListView):
