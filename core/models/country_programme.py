@@ -201,6 +201,11 @@ class CPHistory(models.Model):
     event_description = models.TextField(blank=True)
     report_version = models.FloatField(default=1)
 
+    event_in_draft = models.BooleanField(
+        default=True,
+        help_text="Indicate whether history entry was created while in Draft",
+    )
+
     class Meta:
         ordering = ["-created_at"]
 
