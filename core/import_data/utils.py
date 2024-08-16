@@ -392,6 +392,7 @@ def get_cp_report(
         reporting_officer_name=cp.reporting_entry,
         reporting_officer_email=cp.reporting_email,
         event_description="Imported by the system",
+        event_in_draft=False,
     )
 
     return cp

@@ -128,7 +128,7 @@ class CPRecordBaseListView(views.APIView):
             "section_a": self.cp_record_seri_class(section_a, many=True).data,
         }
 
-    def _get_cp_history(self, cp_report):
+    def _get_cp_history(self, cp_report, full_history=False):
         history = []
         cp_report_final = (
             CPReport.objects.filter(
@@ -142,7 +142,8 @@ class CPRecordBaseListView(views.APIView):
             history_qs = cp_report_final.cphistory.all().select_related(
                 "country_programme_report", "updated_by"
             )
-            history_qs = history_qs.filter(event_in_draft=False)
+            if not full_history:
+                history_qs = history_qs.filter(event_in_draft=False)
             history = CPHistorySerializer(history_qs, many=True).data
 
         return history
@@ -253,11 +254,11 @@ class CPRecordBaseListView(views.APIView):
             raise ValidationError({"error": "Country programme report not found"})
         return cp_report
 
-    def get_data(self, cp_report):
+    def get_data(self, cp_report, full_history=False):
         if cp_report.year <= IMPORT_DB_OLDEST_MAX_YEAR:
             return self._get_04_cp_records(cp_report)
         if cp_report.year > IMPORT_DB_MAX_YEAR:
-            return self._get_new_cp_records(cp_report)
+            return self._get_new_cp_records(cp_report, full_history)
 
         return self._get_old_cp_records(cp_report)
 
@@ -281,10 +282,17 @@ class CPRecordBaseListView(views.APIView):
                 description="Year for the country programme report",
                 type=openapi.TYPE_INTEGER,
             ),
+            openapi.Parameter(
+                "full_history",
+                openapi.IN_QUERY,
+                description="Include full event history for the country programme report",
+                type=openapi.TYPE_BOOLEAN,
+            ),
         ],
     )
     def get(self, *args, **kwargs):
-        return Response(self.get_data(self._get_cp_report()))
+        full_history = self.request.query_params.get("full_history")
+        return Response(self.get_data(self._get_cp_report(), full_history=full_history))
 
 
 class CPRecordListView(CPRecordBaseListView):

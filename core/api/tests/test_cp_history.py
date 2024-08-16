@@ -127,7 +127,7 @@ class TestCPHistory:
 
         # check history in API response
         url = reverse("country-programme-record-list")
-        response = self.client.get(url, {"cp_report_id": new_id})
+        response = self.client.get(url, {"cp_report_id": new_id, "full_history": True})
         assert response.status_code == 200
 
         # check same history items in get records
