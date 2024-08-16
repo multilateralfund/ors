@@ -198,7 +198,7 @@ class CPRecordBaseListView(views.APIView):
         }
         if data_only is False:
             ret["cp_report"] = self.cp_report_seri_class(cp_report).data
-            ret["history"] = self._get_cp_history(cp_report)
+            ret["history"] = self._get_cp_history(cp_report, full_history)
             ret["comments"] = self._get_serialized_cp_comments(cp_report)
 
         if hasattr(cp_report, "cpreportedsections"):

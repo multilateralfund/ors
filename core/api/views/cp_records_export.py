@@ -234,7 +234,7 @@ class CPCalculatedAmountExportView(CPRecordListView):
 
         return self.get_response(f"CalculatedAmount {cp_report.name}", wb)
 
-    def get_data(self, cp_report):
+    def get_data(self, cp_report, full_history=False):
         records = (
             CPRecord.objects.filter(country_programme_report_id=cp_report.id)
             .select_related("substance__group", "blend")
