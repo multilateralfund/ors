@@ -142,6 +142,12 @@ class CPRecordBaseListView(views.APIView):
             history_qs = cp_report_final.cphistory.all().select_related(
                 "country_programme_report", "updated_by"
             )
+            history_qs = history_qs.filter(
+                event_description__in=[
+                    "Status changed from draft to final",
+                    "Status updated from draft to final",
+                ]
+            )
             history = CPHistorySerializer(history_qs, many=True).data
 
         return history
