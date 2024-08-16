@@ -1,4 +1,5 @@
 from openpyxl.utils import get_column_letter
+from dateutil.parser import parse
 
 from core.api.export.base import BaseWriter
 
@@ -99,6 +100,9 @@ class SectionWriter(BaseWriter):
                 read_only = True
             elif header.get("is_numeric", True):
                 value = float(value or 0)
+            elif header.get("type", None) == "date":
+                # DD/MM/YYYY
+                value = parse(value).strftime("%d/%m/%Y") if value else ""
             else:
                 value = value or ""
 

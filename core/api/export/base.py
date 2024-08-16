@@ -160,6 +160,9 @@ class BaseWriter:
             top=Side(style="hair"),
             bottom=Side(style="hair"),
         )
+        if align == "right":
+            # this cell will contain a number
+            cell.number_format = "###,###,##0.00#############"
         if read_only:
             cell.fill = PatternFill(
                 start_color="EEEEEE", end_color="EEEEEE", fill_type="solid"

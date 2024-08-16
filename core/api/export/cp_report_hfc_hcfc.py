@@ -28,24 +28,28 @@ class CPReportHCFCWriter(CPDataHFCHCFCWriterBase):
                 "headerName": "Total",
                 "is_sum_function": True,
                 "convert_to_odp": True,
+                "align": "right",
             },
             {
                 "id": "imports",
                 "headerName": "Import",
                 "type": "number",
                 "convert_to_odp": True,
+                "align": "right",
             },
             {
                 "id": "exports",
                 "headerName": "Export",
                 "type": "number",
                 "convert_to_odp": True,
+                "align": "right",
             },
             {
                 "id": "production",
                 "headerName": "Production",
                 "type": "number",
                 "convert_to_odp": True,
+                "align": "right",
             },
             {
                 "id": "remarks",

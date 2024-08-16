@@ -71,19 +71,16 @@ class CPReportNewExporter(CPReportBase):
                     {
                         "id": "imports",
                         "headerName": "Import",
-                        "convertable": True,
                         "align": "right",
                     },
                     {
                         "id": "exports",
                         "headerName": "Export",
-                        "convertable": True,
                         "align": "right",
                     },
                     {
                         "id": "production",
                         "headerName": "Production",
-                        "convertable": True,
                         "align": "right",
                     },
                     *(
@@ -99,12 +96,12 @@ class CPReportNewExporter(CPReportBase):
                     {
                         "id": "import_quotas",
                         "headerName": "Import Quotas",
-                        "convertable": True,
                         "align": "right",
                     },
                     {
                         "id": "banned_date",
                         "headerName": "Date ban commenced",
+                        "type": "date",
                         "is_numeric": False,
                     },
                     {
@@ -116,10 +113,6 @@ class CPReportNewExporter(CPReportBase):
                 ],
             }
         ]
-        if convert_to != "mt":
-            for header in headers[0]["children"]:
-                if header.get("convertable"):
-                    header["headerName"] += f"_{convert_to}"
         SectionWriter(sheet, headers, convert_to).write(data)
 
     def export_section_c(self, sheet, data, *args):
@@ -293,5 +286,7 @@ class CPReportNewExporter(CPReportBase):
 
         cell = sheet.cell(row_idx, col_idx, value)
         cell.alignment = Alignment(horizontal="left", vertical="top", wrap_text=True)
-        sheet.column_dimensions[get_column_letter(col_idx)].width = self.COLUMN_WIDTH * 4
+        sheet.column_dimensions[get_column_letter(col_idx)].width = (
+            self.COLUMN_WIDTH * 4
+        )
         sheet.row_dimensions[row_idx].height = self.ROW_HEIGHT * 16

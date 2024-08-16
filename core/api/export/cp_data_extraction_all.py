@@ -535,16 +535,19 @@ class MbrConsumptionWriter(BaseWriter):
             {
                 "id": "methyl_bromide_qps",
                 "headerName": "Methyl Bromide - QPS",
+                "align": "right",
                 "type": "number",
             },
             {
                 "id": "methyl_bromide_non_qps",
                 "headerName": "Methyl Bromide — Non-QPS",
+                "align": "right",
                 "type": "number",
             },
             {
                 "id": "total",
                 "headerName": "Total",
+                "align": "right",
                 "type": "number",
             },
         ]
