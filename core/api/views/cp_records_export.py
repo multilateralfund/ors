@@ -57,6 +57,13 @@ from core.models.country_programme_archive import (
 from core.utils import IMPORT_DB_MAX_YEAR
 
 
+EXCLUDE_FROM_CONSUMPTION = [
+    "CII",
+    "Other",
+    "Legacy",
+]
+
+
 class CPRecordExportView(CPRecordListView):
     def get_usages(self, cp_report):
         empty_form = EmptyFormView.get_data(cp_report.year, cp_report)
@@ -238,7 +245,7 @@ class CPCalculatedAmountExportView(CPRecordListView):
         data = {
             group: {"sectorial_total": 0, "consumption": 0}
             for group in SUBSTANCE_GROUP_ID_TO_CATEGORY.values()
-            if group not in ["Other", "Legacy"]
+            if group not in EXCLUDE_FROM_CONSUMPTION
         }
 
         # calculate the consumption and sectorial total
@@ -254,7 +261,7 @@ class CPCalculatedAmountExportView(CPRecordListView):
             else:
                 substance_category = "HFC"
 
-            if substance_category in ["Other", "Legacy"]:
+            if substance_category in EXCLUDE_FROM_CONSUMPTION:
                 continue
 
             # get the sectorial total
@@ -370,6 +377,7 @@ class CPHCFCExportView(CPHFCHCFCExportBaseView):
                     ),
                     "columnCategory": "usage",
                     "convert_to_odp": True,
+                    "align": "right",
                 }
             )
 
@@ -417,6 +425,7 @@ class CPHFCExportView(CPHFCHCFCExportBaseView):
                         "headerName": f"{us_format.usage.full_name} {q_type}",
                         "columnCategory": "usage",
                         "quantity_type": q_type,
+                        "align": "right",
                     }
                 )
 
