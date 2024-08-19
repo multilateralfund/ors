@@ -119,22 +119,20 @@ class AbstractCPRecord(AbstractWChemical):
             )
         return sum(usage.quantity for usage in self.record_usages.all())
 
-    def get_consumption_value(self, use_sectorial_total=True):
+    def get_consumption_value(self, using_consumption_value=True):
         """
         Get the consumption value for the record (imports - exports + production)
 
-        @param use_sectorial_total: if True, the sectorial total value will be used
-            only if there are no imports, exports or production values
+        @param using_consumption_value: bool
+        If True, the consumption value will be calculated using
+            the imports, exports and production values
+        Else the consumption value will be calculated using the sectorial total
 
         """
-        if any([self.imports, self.exports, self.production]):
+        if using_consumption_value:
             return (self.imports or 0) - (self.exports or 0) + (self.production or 0)
 
-        # if there are no imports, exports or production values use the sectorial total
-        if use_sectorial_total:
-            return self.get_sectorial_total()
-
-        return 0
+        return self.get_sectorial_total()
 
 
 class AbstractCPUsage(models.Model):
