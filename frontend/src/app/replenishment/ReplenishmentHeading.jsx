@@ -64,7 +64,7 @@ export default function ReplenishmentHeading(props) {
   const showAddPeriod =
     soaContext?.version?.is_final &&
     isLastPeriod &&
-    replenishmentContext?.isTreasurer
+    (replenishmentContext?.isTreasurer || replenishmentContext?.isSecretariat)
 
   return (
     <HeaderTitle>

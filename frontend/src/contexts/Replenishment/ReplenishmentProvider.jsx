@@ -20,6 +20,7 @@ function ReplenishmentProvider(props) {
   const { children } = props
   const user = useStore((state) => state.user)
   const isTreasurer = user.data.user_type === 'treasurer'
+  const isSecretariat = user.data.user_type === 'secretariat'
   const isCountryUser = user.data.user_type === 'country_user'
 
   const [periods, setPeriods] = useState([])
@@ -65,6 +66,7 @@ function ReplenishmentProvider(props) {
       value={{
         countries,
         isCountryUser,
+        isSecretariat,
         isTreasurer,
         periodOptions,
         periods,
