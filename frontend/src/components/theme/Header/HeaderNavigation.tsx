@@ -69,6 +69,8 @@ const useInternalNavSections = () => {
   const pathname = usePathname()
   const nI = makeInternalNavItem.bind(null, pathname)
   const userIsAdminOrSecretariat = ['admin', 'secretariat'].includes(user_type)
+  const userCanAccessReplenishment =
+    userIsAdminOrSecretariat || ['treasurer'].includes(user_type)
   return [
     {
       label: 'Online CP Reporting',
@@ -88,7 +90,7 @@ const useInternalNavSections = () => {
       ].filter(Boolean),
       url: '/country-programme/reports',
     },
-    ...(userIsAdminOrSecretariat
+    ...(userCanAccessReplenishment
       ? [
           {
             label: 'Replenishment',

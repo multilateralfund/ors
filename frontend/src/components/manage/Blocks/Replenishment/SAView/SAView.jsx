@@ -6,6 +6,7 @@ import { useSnackbar } from 'notistack'
 
 import DownloadButtons from '@ors/app/replenishment/DownloadButtons'
 import { AddButton, SubmitButton } from '@ors/components/ui/Button/Button'
+import Link from '@ors/components/ui/Link/Link'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import SoAContext from '@ors/contexts/Replenishment/SoAContext'
 import { api, formatApiUrl } from '@ors/helpers'
@@ -28,7 +29,7 @@ const COLUMNS = [
   {
     editable: true,
     field: 'un_soa',
-    label: 'UN scale of assessment',
+    label: 'UN scale of assessment *',
     parser: parseFloat,
     subLabel: '( [UN_SCALE_PERIOD] )',
   },
@@ -53,7 +54,7 @@ const COLUMNS = [
   {
     editable: true,
     field: 'avg_ir',
-    label: 'Average inflation rate',
+    label: 'Average inflation rate **',
     parser: parseFloat,
     subLabel: '( [PREV_PERIOD] )',
   },
@@ -95,7 +96,7 @@ const COLUMNS = [
   {
     editable: true,
     field: 'ferm_rate',
-    label: 'Currency rate of exchange used for fixed exchange',
+    label: 'Currency rate of exchange used for fixed exchange ***',
     parser: parseFloat,
     subLabel: '[DATE_RANGE]',
   },
@@ -445,9 +446,11 @@ function updateAllCurrencyNames(rows, oldValue, newValue) {
 }
 
 function updateAllCurrencyRates(rows, name, newValue) {
-  for (let i = 0; i < rows.length; i++) {
-    if (getOverrideOrDefault(rows[i], 'ferm_cur') === name) {
-      rows[i]['override_ferm_rate'] = newValue
+  if (name !== null && name !== '') {
+    for (let i = 0; i < rows.length; i++) {
+      if (getOverrideOrDefault(rows[i], 'ferm_cur') === name) {
+        rows[i]['override_ferm_rate'] = newValue
+      }
     }
   }
 }
@@ -668,7 +671,7 @@ function SAView(props) {
       } else if (existingCurrency) {
         next[r]['override_ferm_rate'] = existingCurrency.ferm_rate
         next[r][overrideKey] = value
-      } else if (prevValue === null) {
+      } else if (prevValue === null || prevValue === '') {
         next[r][overrideKey] = value
       } else {
         updateAllCurrencyNames(
@@ -682,13 +685,12 @@ function SAView(props) {
         next[r][overrideKey] = null
       } else if (prevValue === null) {
         next[r][overrideKey] = value
-      } else {
-        updateAllCurrencyRates(
-          next,
-          getOverrideOrDefault(sortedData[r], 'ferm_cur'),
-          value,
-        )
       }
+      updateAllCurrencyRates(
+        next,
+        getOverrideOrDefault(sortedData[r], 'ferm_cur'),
+        value,
+      )
     } else if (isNullValue) {
       next[r][overrideKey] = null
     } else if (next[r][n] === value) {
@@ -837,6 +839,41 @@ function SAView(props) {
           <AddButton onClick={showAddRow}>Add country</AddButton>
         </div>
       ) : null}
+      <div id="sa-footnotes">
+        <p>
+          <sup>*</sup> Data extracted from{' '}
+          <Link
+            href="https://documents.un.org"
+            rel="noopener noreferrer nofollow"
+            target="_blank"
+          >
+            UN Contribution website
+          </Link>
+          .
+        </p>
+        <p>
+          <sup>**</sup> Average inflation obtained from{' '}
+          <Link
+            href="https://www.imf.org/en/Publications/SPROLLs/world-economic-outlook-databases"
+            rel="noopener noreferrer nofollow"
+            target="_blank"
+          >
+            IMF website
+          </Link>
+          .
+        </p>
+        <p>
+          <sup>***</sup> Data extracted from{' '}
+          <Link
+            href="https://treasury.un.org/operationalrates/OpRatesExport.php"
+            rel="noopener noreferrer nofollow"
+            target="_blank"
+          >
+            UN Treasury
+          </Link>
+          .
+        </p>
+      </div>
       {ctx.isTreasurer && (
         <div className="-mx-4 -mb-4 rounded-b-lg bg-gray-200 p-4 print:hidden">
           <div className="flex items-center gap-x-2">

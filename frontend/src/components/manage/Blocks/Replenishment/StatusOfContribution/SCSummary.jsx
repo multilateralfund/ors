@@ -95,6 +95,26 @@ export default function SCSummary() {
         textPosition="center"
         onSort={handleSort}
       />
+      <div className="w-full lg:max-w-[50%]">
+        <p>
+          <sup>*</sup> The bilateral assistance recorded for Australia and
+          Canada was adjusted following approvals at the 39th meeting and taking
+          into consideration a reconciliation carried out by the Secretariat
+          through the progress reports submitted to the 40th meeting to read US
+          $1,208,219 and US $6,449,438 instead of US $1,300,088 and US
+          $6,414,880 respectively.
+        </p>
+        <p>
+          <sup>**</sup> In accordance with decisions VI/5 and XVI/39 of the
+          meeting of the Parties to the Montreal Protocol, Turkmenistan has been
+          reclassified as operating under Article 5 in 2004 and therefore its
+          contribution of US $5,764 for 2005 should be disregarded.
+        </p>
+        <p>
+          <sup>***</sup> Amount netted off from outstanding contributions and
+          are shown here for records only.
+        </p>
+      </div>
     </div>
   )
 }

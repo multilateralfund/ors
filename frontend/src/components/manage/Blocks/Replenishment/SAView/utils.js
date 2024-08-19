@@ -5,6 +5,16 @@ import { MAX_DECIMALS, MIN_DECIMALS, PRECISION } from '../constants'
 export { getCountryForIso3 } from '../utils'
 import { getDefaultFieldSorter } from '../utils'
 
+export function nullIfNaN(value) {
+  let result = value
+
+  if (typeof value === 'number' && isNaN(value)) {
+    result = null
+  }
+
+  return result
+}
+
 export function uniformDecimals(v) {
   let result = null
   if (v !== null) {
@@ -38,14 +48,12 @@ export function computeTableData(tableData, totalReplenishment) {
 
   for (let i = 0; i < tableData.length; i++) {
     if (tableData[i].iso3 === 'USA') {
-      adj_un_soa_percent -= fixFloat(
-        getOverrideOrDefault(tableData[i], 'un_soa') ?? 0,
-        PRECISION,
+      adj_un_soa_percent -= nullIfNaN(
+        fixFloat(getOverrideOrDefault(tableData[i], 'un_soa') ?? 0, PRECISION),
       )
     } else {
-      adj_un_soa += fixFloat(
-        getOverrideOrDefault(tableData[i], 'un_soa') ?? 0,
-        PRECISION,
+      adj_un_soa += nullIfNaN(
+        fixFloat(getOverrideOrDefault(tableData[i], 'un_soa') ?? 0, PRECISION),
       )
     }
   }
@@ -63,16 +71,20 @@ export function computeTableData(tableData, totalReplenishment) {
     if (tableData[i].iso3 === 'USA') {
       result[i].adj_un_soa = un_soa
     } else {
-      result[i].adj_un_soa = fixFloat(
-        (un_soa / adj_un_soa) * adj_un_soa_percent + un_soa,
-        PRECISION,
+      result[i].adj_un_soa = nullIfNaN(
+        fixFloat(
+          (un_soa / adj_un_soa) * adj_un_soa_percent + un_soa,
+          PRECISION,
+        ),
       )
     }
 
-    result[i].annual_contributions = fixFloat(
-      (getOverrideOrDefault(result[i], 'adj_un_soa') * totalReplenishment) /
-        100,
-      PRECISION,
+    result[i].annual_contributions = nullIfNaN(
+      fixFloat(
+        (getOverrideOrDefault(result[i], 'adj_un_soa') * totalReplenishment) /
+          100,
+        PRECISION,
+      ),
     )
 
     // Does it qualify for FERM?
@@ -137,6 +149,8 @@ export function formatTableData(tableData, editableColumns) {
       if (key === 'opted_for_ferm' && value == null) {
         newValue = '-'
         isEditable = false
+      } else if (key === 'un_soa' && value === null) {
+        newValue = ''
       } else {
         newValue = formattedValue(value)
       }

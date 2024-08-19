@@ -9,7 +9,6 @@ import { usePathname } from 'next/navigation'
 import PeriodSelector from '@ors/components/manage/Blocks/Replenishment/PeriodSelector'
 import DisputedContributionDialog from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/DisputedContributionDialog'
 import SCAnnual from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/SCAnnual'
-import SCNotes from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/SCNotes'
 import SCSummary from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/SCSummary'
 import SCTriennial from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/SCTriennial'
 import {
@@ -92,10 +91,12 @@ function SCView(props) {
   return (
     <section className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-4 print:flex-col print:items-start">
-        <h2 className="flex flex-wrap gap-1 shrink">
-          <span className="whitespace-normal">{title}</span>
+        <h2 className="flex shrink flex-wrap items-center gap-1">
+          <span className="whitespace-normal">
+            {title} (1991 - {new Date().getFullYear()})
+          </span>
           <span className="whitespace-normal text-2xl font-normal">
-            as of {dateOfLastUpdate} (US Dollars)
+            as of {dateOfLastUpdate} (USD)
           </span>
         </h2>
         <div className="flex items-center gap-2 print:hidden">
@@ -119,7 +120,6 @@ function SCView(props) {
         </h1>
       </div>
       <Component {...props} />
-      <SCNotes type={currentSection?.label.toLowerCase()} />
     </section>
   )
 }

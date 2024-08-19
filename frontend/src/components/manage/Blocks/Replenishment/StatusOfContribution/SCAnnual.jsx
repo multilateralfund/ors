@@ -122,6 +122,12 @@ export default function SCAnnual({ year }) {
           onDelete={promptDeleteRow}
           onSort={handleSort}
         />
+        <div className="w-full lg:max-w-[50%]">
+          <p>
+            <sup>*</sup> Additional amount on disputed contributions from the
+            United States of America.{' '}
+          </p>
+        </div>
         {ctx.isTreasurer && (
           <DisputedContributionDialog
             countryOptions={countriesInTable}
