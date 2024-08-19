@@ -127,7 +127,7 @@ class CPEmptyExportView(CPRecordExportView):
             raise ValidationError({"year": "Invalid or missing parameter"}) from e
         return CPReport(year=year, name=f"Empty Country Programme {year}")
 
-    def get_data(self, cp_report):
+    def get_data(self, cp_report, full_history=False):
         displayed_chemicals = CPReportFormatRow.objects.get_for_year(cp_report.year)
         substances_ids = [x.substance_id for x in displayed_chemicals if x.substance_id]
         blends_ids = [x.blend_id for x in displayed_chemicals if x.blend_id]
@@ -234,7 +234,7 @@ class CPCalculatedAmountExportView(CPRecordListView):
 
         return self.get_response(f"CalculatedAmount {cp_report.name}", wb)
 
-    def get_data(self, cp_report):
+    def get_data(self, cp_report, full_history=False):
         records = (
             CPRecord.objects.filter(country_programme_report_id=cp_report.id)
             .select_related("substance__group", "blend")

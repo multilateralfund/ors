@@ -392,6 +392,7 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
                     reporting_officer_name=new_instance.reporting_entry,
                     reporting_officer_email=new_instance.reporting_email,
                     event_description=event_desc,
+                    event_in_draft=(new_instance.status != CPReport.CPReportStatus.FINAL),
                 )
             )
         CPHistory.objects.bulk_create(history)
@@ -452,6 +453,7 @@ class CPReportStatusUpdateView(generics.GenericAPIView):
             reporting_officer_name=cp_report.reporting_entry,
             reporting_officer_email=cp_report.reporting_email,
             event_description=f"Status updated from {initial_value} to {cp_status}",
+            event_in_draft=(cp_status != CPReport.CPReportStatus.FINAL),
         )
         serializer = self.get_serializer(cp_report)
 
@@ -666,6 +668,7 @@ class CPReportCommentsView(generics.GenericAPIView):
             event_description=(
                 f"Comments updated by user ({CPComment.CPCommentSection(section).label})"
             ),
+            event_in_draft=(cp_report.status != CPReport.CPReportStatus.FINAL),
         )
         serializer = self.get_serializer(cp_comment)
 
