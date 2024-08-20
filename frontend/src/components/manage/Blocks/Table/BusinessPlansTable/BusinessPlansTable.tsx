@@ -181,7 +181,7 @@ export default function BusinessPlansTable() {
           rowData={results}
           tooltipShowDelay={200}
           Toolbar={() => (
-            <div className="flex items-center justify-between gap-1 mb-4">
+            <div className="bp-table-toolbar mb-4 flex flex-col justify-between gap-4 md:flex-row md:items-center">
               <ActivitiesFilters
                 bpSlice={bpSlice}
                 clusters={clusters}
@@ -190,6 +190,7 @@ export default function BusinessPlansTable() {
                 form={form}
                 handleFilterChange={handleFilterChange}
                 handleParamsChange={handleParamsChange}
+                initialFilters={initialFilters}
               />
               <TableDateSwitcher
                 changeHandler={(event, value) => setGridOptions(value)}
