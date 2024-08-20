@@ -123,6 +123,7 @@ class ReplenishmentViewSet(
             ) from exc
 
         new_replenishment = serializer.save(
+            amount=0,
             start_year=previous_replenishment.start_year + 3,
             end_year=previous_replenishment.end_year + 3,
         )
