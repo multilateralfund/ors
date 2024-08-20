@@ -85,6 +85,7 @@ export const COMMON_OPTIONS = (color = '#002A3C') => ({
       grid: {
         display: false,
       },
+      title: { display: true, text: 'Triennium' },
     },
     y: {
       beginAtZero: true,
@@ -97,6 +98,7 @@ export const COMMON_OPTIONS = (color = '#002A3C') => ({
         },
         padding: 10,
       },
+      title: { display: true, text: '(US $ million)' },
     },
   },
   tension: 0, // Adjust line curve

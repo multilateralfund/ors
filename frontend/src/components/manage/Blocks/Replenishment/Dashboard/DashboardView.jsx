@@ -395,20 +395,20 @@ function DashboardView() {
               <>
                 <div className="print:break-inside-avoid">
                   <h3 className="text-2xl uppercase">
-                    Outstanding pledges for closed triennials
+                    Outstanding pledges by triennium
                   </h3>
                   <BarChart
                     data={charts.outstanding_pledges}
-                    title="Outstanding pledges for closed triennials"
+                    title="Outstanding pledges by triennium"
                   />
                 </div>
-                <div className="print:break-inside-avoid">
-                  <h3 className="text-2xl uppercase">Pledged Contributions</h3>
-                  <FilledAreaChart
-                    data={charts.pledged_contributions}
-                    title="Pledged Contributions"
-                  />
-                </div>
+                {/* <div className="print:break-inside-avoid"> */}
+                {/*   <h3 className="text-2xl uppercase">Pledged Contributions</h3> */}
+                {/*   <FilledAreaChart */}
+                {/*     data={charts.pledged_contributions} */}
+                {/*     title="Pledged Contributions" */}
+                {/*   /> */}
+                {/* </div> */}
                 <div className="print:break-inside-avoid">
                   <h3 className="text-2xl uppercase">
                     Pledged Contributions vs. total payments
