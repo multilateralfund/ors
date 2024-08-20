@@ -227,6 +227,7 @@ class ScaleOfAssessmentWriter(WriteOnlyBase):
         past_period=None,
         current_period=None,
         ferm_year=None,
+        comment=None,
     ):
         headers = [
             {
@@ -247,8 +248,8 @@ class ScaleOfAssessmentWriter(WriteOnlyBase):
             {
                 "id": "adjusted_scale_of_assessment",
                 "headerName": f"Adjusted UN Scale of Assessment using"
-                              f"{past_un_period} scale with no party "
-                              f"contributing more than 22%",
+                f"{past_un_period} scale with no party "
+                f"contributing more than 22%",
                 "column_width": 25,
             },
             {
@@ -269,8 +270,8 @@ class ScaleOfAssessmentWriter(WriteOnlyBase):
             {
                 "id": "exchange_rate",
                 "headerName": f"Fixed exchange rate mechanism users' "
-                              f"currencies rate of Exchange 01 Jan - 30 June "
-                              f"{ferm_year}",
+                f"currencies rate of Exchange 01 Jan - 30 June "
+                f"{ferm_year}",
                 "column_width": 25,
             },
             {
@@ -281,10 +282,11 @@ class ScaleOfAssessmentWriter(WriteOnlyBase):
             {
                 "id": "yearly_amount_local_currency",
                 "headerName": "Fixed exchange mechanism users contribution "
-                              "amount in national currencies",
+                "amount in national currencies",
                 "column_width": 25,
             },
         ]
+        self.comment = comment
         super().__init__(sheet, headers)
 
     def write_header_cell(self, value, comment=None):
@@ -296,3 +298,18 @@ class ScaleOfAssessmentWriter(WriteOnlyBase):
         cell = super().write_record_cell(value, read_only)
         cell.font = Font(name="Times New Roman")
         return cell
+
+    def add_comments(self, merge_row):
+        self.sheet.append([])
+        self.sheet.merge_cells(
+            start_row=merge_row,
+            start_column=1,
+            end_row=merge_row,
+            end_column=10,
+        )
+        self.sheet.cell(row=merge_row, column=1).value = self.comment
+
+    def write(self, data):
+        super().write(data)
+        # Data, header, total, empty row
+        self.add_comments(len(data) + 3)

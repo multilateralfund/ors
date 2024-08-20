@@ -328,7 +328,8 @@ class ScaleOfAssessmentViewSet(
 
         start_year = int(request.query_params["start_year"])
         queryset = self.filter_queryset(self.get_queryset())
-        wb = openpyxl.Workbook(write_only=True)
+        wb = openpyxl.Workbook()
+        wb.remove(wb.active)
         ws = wb.create_sheet("Scales of Assessment")
 
         data = [
@@ -353,6 +354,7 @@ class ScaleOfAssessmentViewSet(
             f"{start_year - 3} - {start_year - 1}",
             f"{start_year} - {start_year + 2}",
             start_year - 1,
+            queryset.first().version.comment,
         ).write(data)
 
         return workbook_response(
