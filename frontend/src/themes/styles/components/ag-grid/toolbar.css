@@ -1,0 +1,12 @@
+.ag-toolbar .bp-table-toolbar {
+  .MuiToggleButtonGroup-root {
+    min-width: 300px;
+    align-self: flex-start;
+  }
+
+  @media (width <= 1024px) {
+    .bp-search-container {
+      flex-direction: column !important;
+    }
+  }
+}

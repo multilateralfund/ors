@@ -1,6 +1,7 @@
 /* eslint-disable */
 @import './variables.css';
 @import './header.css';
+@import './toolbar.css';
 @import './row.css';
 @import './cell.css';
 @import './diff.css';
