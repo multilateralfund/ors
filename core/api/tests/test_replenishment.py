@@ -1461,6 +1461,7 @@ class TestScaleOfAssessmentWorkflow:
             "amount": 1000,
             "meeting": "meeting",
             "decision": "decision",
+            "comment": "Comment",
             "data": [
                 {
                     "country_id": country_1.id,
@@ -1485,6 +1486,11 @@ class TestScaleOfAssessmentWorkflow:
                 },
             ],
             "final": True,
+            "decision_pdf": {
+                "filename": "decision.pdf",
+                # pylint: disable=line-too-long
+                "data": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAEElEQVR4nGJKf/ESEAAA//8D+gI7lUZ3rgAAAABJRU5ErkJggg==",
+            }
         }
         response = self.client.post(
             self.url_scale_of_assessment,

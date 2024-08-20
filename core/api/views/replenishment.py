@@ -3,10 +3,12 @@
 
 import json
 import urllib
+from base64 import b64decode
 from datetime import datetime
 from decimal import Decimal
 
 import openpyxl
+from django.core.files.base import ContentFile
 from django.db import models, transaction
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
@@ -175,6 +177,7 @@ class ScaleOfAssessmentViewSet(
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
+        # pylint: disable=too-many-locals
         input_data = request.data
 
         try:
@@ -193,6 +196,16 @@ class ScaleOfAssessmentViewSet(
         meeting_number = input_data.get("meeting") or ""
         decision_number = input_data.get("decision") or ""
         comment = input_data.get("comment") or ""
+        decision_pdf = input_data.get("decision_pdf") or {}
+
+        if final and (not meeting_number or not decision_number or not decision_pdf):
+            raise ValidationError(
+                {
+                    "non_field_errors": "Meeting number, decision number and "
+                                        "decision PDF are required for final "
+                                        "version."
+                }
+            )
 
         previous_version = replenishment.scales_of_assessment_versions.order_by(
             "-version"
@@ -205,6 +218,13 @@ class ScaleOfAssessmentViewSet(
                 }
             )
 
+        if decision_pdf.get("data") and decision_pdf.get("filename"):
+            decision_file = ContentFile(
+                b64decode(decision_pdf["data"]), name=decision_pdf["filename"]
+            )
+        else:
+            decision_file = None
+
         if should_create_new_version or final:
             # Marking as final always creates a new version that is marked as final
             version = ScaleOfAssessmentVersion.objects.create(
@@ -214,6 +234,7 @@ class ScaleOfAssessmentViewSet(
                 decision_number=decision_number,
                 version=previous_version.version + 1,
                 comment=comment,
+                decision_pdf=decision_file,
             )
         else:
             version = previous_version
@@ -221,6 +242,7 @@ class ScaleOfAssessmentViewSet(
             version.meeting_number = meeting_number
             version.is_final = final
             version.comment = comment
+            version.decision_pdf = decision_file
             version.save()
 
         # Delete all scales of assessment if updating the latest version
@@ -299,7 +321,6 @@ class ScaleOfAssessmentViewSet(
 
     @action(methods=["GET"], detail=False, url_path="export")
     def export(self, request, *args, **kwargs):
-        print(request.query_params)
         if "start_year" not in request.query_params:
             raise ValidationError({"start_year": "This query parameter is required."})
         if "version" not in request.query_params:
