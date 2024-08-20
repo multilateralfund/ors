@@ -203,8 +203,8 @@ class ScaleOfAssessmentViewSet(
             raise ValidationError(
                 {
                     "non_field_errors": "Meeting number, decision number and "
-                                        "decision PDF are required for final "
-                                        "version."
+                    "decision PDF are required for final "
+                    "version."
                 }
             )
 
@@ -524,6 +524,66 @@ class SummaryStatusOfContributionsView(views.APIView):
             Country.objects.filter(ceit_statuses__is_ceit=True).distinct(), many=True
         ).data
 
+        current_year = datetime.now().year
+        data_current_year = TriennialContributionStatus.objects.filter(
+            end_year__lt=current_year
+        ).aggregate(
+            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+            promissory_notes=models.Sum("promissory_notes", default=0),
+            cash_payments=models.Sum("cash_payments", default=0),
+            agreed_contributions=models.Sum("agreed_contributions", default=0),
+        )
+
+        if current_year % 3 == 2:
+            # Current year is the start year of a triennial period
+            current_triennial_data = AnnualContributionStatus.objects.filter(
+                year=current_year
+            ).aggregate(
+                bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+                promissory_notes=models.Sum("promissory_notes", default=0),
+                cash_payments=models.Sum("cash_payments", default=0),
+                agreed_contributions=models.Sum("agreed_contributions", default=0),
+            )
+        elif current_year % 3 == 0:
+            # Current year is in the middle of a triennial period
+            current_triennial_data = AnnualContributionStatus.objects.filter(
+                year__in=[current_year - 1, current_year]
+            ).aggregate(
+                bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+                promissory_notes=models.Sum("promissory_notes", default=0),
+                cash_payments=models.Sum("cash_payments", default=0),
+                agreed_contributions=models.Sum("agreed_contributions", default=0),
+            )
+        else:
+            # Current year is the end year of a triennial period
+            current_triennial_data = TriennialContributionStatus.objects.filter(
+                end_year=current_year
+            ).aggregate(
+                bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+                promissory_notes=models.Sum("promissory_notes", default=0),
+                cash_payments=models.Sum("cash_payments", default=0),
+                agreed_contributions=models.Sum("agreed_contributions", default=0),
+            )
+
+        data_current_year["bilateral_assistance"] += current_triennial_data[
+            "bilateral_assistance"
+        ]
+        data_current_year["promissory_notes"] += current_triennial_data[
+            "promissory_notes"
+        ]
+        data_current_year["cash_payments"] += current_triennial_data["cash_payments"]
+        data_current_year["agreed_contributions"] += current_triennial_data[
+            "agreed_contributions"
+        ]
+        data["percentage_total_paid_current_year"] = (
+            (
+                data_current_year["cash_payments"]
+                + data_current_year["bilateral_assistance"]
+                + data_current_year["promissory_notes"]
+            )
+            / data_current_year["agreed_contributions"]
+            * Decimal("100")
+        )
         data["total"] = agg.get_total()
         data["total"]["gain_loss"] = agg.get_gain_loss()
 
