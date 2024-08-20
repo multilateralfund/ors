@@ -891,10 +891,10 @@ class TestDisputedContributions(BaseTest):
 class TestReplenishmentDashboard(BaseTest):
     url = reverse("replenishment-dashboard")
     fifteen_decimals = decimal.Decimal("0.000000000000001")
-    year_1 = 2021
-    year_2 = 2023
-    year_3 = 2024
-    year_4 = 2026
+    year_1 = 2018
+    year_2 = 2020
+    year_3 = 2021
+    year_4 = 2023
 
     def test_replenishment_dashboard(self, user):
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
@@ -902,9 +902,6 @@ class TestReplenishmentDashboard(BaseTest):
 
         replenishment = ReplenishmentFactory.create(
             start_year=self.year_3, end_year=self.year_4
-        )
-        ScaleOfAssessmentVersionFactory.create(
-            replenishment=replenishment, is_final=True
         )
 
         contribution_1 = TriennialContributionStatusFactory.create(

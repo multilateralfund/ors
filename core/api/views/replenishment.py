@@ -16,6 +16,7 @@ from rest_framework import filters, generics, mixins, status, views, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
+from urllib3.util import create_urllib3_context
 
 from core.api.export.base import configure_sheet_print
 from core.api.export.replenishment import (
@@ -696,9 +697,9 @@ class ReplenishmentDashboardView(views.APIView):
     def get(self, request, *args, **kwargs):
         self.check_permissions(request)
 
+        current_year = datetime.now().year
         latest_closed_triennial = (
-            Replenishment.objects.filter(scales_of_assessment_versions__is_final=True)
-            .distinct()
+            Replenishment.objects.filter(end_year__lt=current_year)
             .order_by("-start_year")
             .first()
         )
@@ -812,7 +813,7 @@ class ReplenishmentDashboardView(views.APIView):
                         "outstanding_pledges": pledge["outstanding_pledges"],
                     }
                     for pledge in pledges
-                    if pledge["end_year"] <= latest_closed_triennial.end_year
+                    if pledge["end_year"] < current_year
                 ],
                 "pledged_contributions": [
                     {
