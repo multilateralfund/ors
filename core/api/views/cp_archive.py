@@ -49,7 +49,6 @@ class CPReportVersionsListView(generics.GenericAPIView):
         user = request.user
         country_id = request.query_params.get("country_id")
         year = request.query_params.get("year")
-        all = request.query_params.get("all", False)
         current_version = None
         if country_id and year:
             cp_reports = CPReport.objects.all()
