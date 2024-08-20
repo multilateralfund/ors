@@ -21,34 +21,32 @@ SUBSTANCE_NOTE = (
     "the substance is used while reporting."
 )
 
-CUSTOM_SUBS_GROUP_MAPPING = {
-    "HFC-245fa in imported pre-blended polyol": "Other",
-    "HFC-365mfc in imported pre-blended polyol": "Other",
-}
-
 
 def create_other_groups():
-    group_data_list = [{
-        "group_id": "uncontrolled",
-        "annex": "unknown",
-        "name": "Other",
-        "name_alt": "Other",
-        "description": "Substances not controlled under the Montreal Protocol.",
-        "description_alt": "",
-        "is_odp": False,
-        "is_gwp": False,
-        "ozone_id": None,
-    }, {
-        "group_id": "legacy",
-        "annex": "unknown",
-        "name": "Legacy",
-        "name_alt": "Other - Legacy",
-        "description": "Substances that are not in the ozone datababse.",
-        "description_alt": "",
-        "is_odp": False,
-        "is_gwp": False,
-        "ozone_id": None,
-    }]
+    group_data_list = [
+        {
+            "group_id": "uncontrolled",
+            "annex": "unknown",
+            "name": "Other",
+            "name_alt": "Other",
+            "description": "Substances not controlled under the Montreal Protocol.",
+            "description_alt": "",
+            "is_odp": False,
+            "is_gwp": False,
+            "ozone_id": None,
+        },
+        {
+            "group_id": "legacy",
+            "annex": "unknown",
+            "name": "Legacy",
+            "name_alt": "Other - Legacy",
+            "description": "Substances that are not in the ozone datababse.",
+            "description_alt": "",
+            "is_odp": False,
+            "is_gwp": False,
+            "ozone_id": None,
+        },
+    ]
     for group_data in group_data_list:
         group, _ = Group.objects.update_or_create(
             name=group_data["name"], defaults=group_data
@@ -62,6 +60,7 @@ def get_uncontrolled_group_id():
     except Group.DoesNotExist:
         create_other_groups()
         return Group.objects.get(group_id="uncontrolled").id
+
 
 def get_legacy_group_id():
     try:
@@ -79,9 +78,12 @@ def import_data(cls, file_path, exclude=None, uncontrolled_group_id=None):
     with open(file_path, "r", encoding="utf8") as f:
         list_data = json.load(f)
 
+    other_group = Group.objects.filter(name__icontains="other").first()
+
     for instance_data in list_data:
         instance = instance_data["fields"]
         instance["ozone_id"] = instance_data["pk"]
+        instance_group = None
         # remove unused fields
         for k in exclude:
             instance.pop(k)
@@ -103,7 +105,9 @@ def import_data(cls, file_path, exclude=None, uncontrolled_group_id=None):
         elif cls == Substance:
             if instance["group"]:
                 group_ozone_id = instance.pop("group")
-                instance["group_id"] = Group.objects.get(ozone_id=group_ozone_id).id
+                instance_group = Group.objects.filter(ozone_id=group_ozone_id).first()
+                instance["group_id"] = instance_group.id
+
             else:
                 instance["group_id"] = uncontrolled_group_id
         elif cls == BlendComponents:
@@ -138,6 +142,9 @@ def import_data(cls, file_path, exclude=None, uncontrolled_group_id=None):
             )
             # if the chemical is contained in pre-blended polyol, we need to create a new chemical
             if cls in [Substance, Blend] and instance["is_contained_in_polyols"]:
+                # set group for HFC
+                if cls == Substance and instance_group.group_id == "F":
+                    instance["group_id"] = other_group.id
                 instance["name"] += " in imported pre-blended polyol"
                 instance["sort_order"] += 1
                 instance.pop("ozone_id")
@@ -213,14 +220,6 @@ def set_substance_cp_notes():
     )
 
 
-def set_new_group_for_substances():
-    """
-    Set new group for substances
-    """
-    for name, group in CUSTOM_SUBS_GROUP_MAPPING.items():
-        group = Group.objects.get(name=group)
-        Substance.objects.filter(name=name).update(group_id=group.id)
-
 def import_legacy_substances():
     file_path = IMPORT_RESOURCES_DIR / "legacy_substances.json"
 
@@ -264,7 +263,6 @@ def import_legacy_substances():
             "gwp": cyclopentane.gwp,
             "max_odp": cyclopentane.max_odp,
             "min_odp": cyclopentane.min_odp,
-
         }
         Substance.objects.get_or_create(name=subst_data["name"], defaults=subst_data)
 
@@ -291,7 +289,6 @@ def import_substances():
         uncontrolled_group_id,
     )
     set_substance_cp_notes()
-    set_new_group_for_substances()
     import_legacy_substances()
 
     logger.info("✔ substances imported")
@@ -304,6 +301,7 @@ def import_substances():
     )
     logger.info("✔ substances alternative names imported")
 
+
 def add_components_to_blend(blend, components):
     if not components:
         return
@@ -313,12 +311,14 @@ def add_components_to_blend(blend, components):
             logger.error(f"Substance {comp['name']} not found for blend {blend.name}")
             continue
         BlendComponents.objects.create(
-            blend=blend, substance=substance, percentage=float(comp["percentage"])/100
+            blend=blend, substance=substance, percentage=float(comp["percentage"]) / 100
         )
+
 
 def get_next_legacy_mix_name():
     legacy_number = Blend.objects.filter(name__startswith="Legacy").count() + 1
     return f"LegacyMix-{legacy_number}"
+
 
 def import_legacy_blends():
     file_path = IMPORT_RESOURCES_DIR / "legacy_blends.json"
@@ -327,11 +327,8 @@ def import_legacy_blends():
         blend_list = json.load(f)
 
     last_sort_order = (
-            Blend.objects
-            .filter(sort_order__isnull=False)
-            .order_by("-sort_order")
-            .first()
-        ).sort_order
+        Blend.objects.filter(sort_order__isnull=False).order_by("-sort_order").first()
+    ).sort_order
 
     for blend_data in blend_list:
         # check if it is a new blend
@@ -341,10 +338,14 @@ def import_legacy_blends():
         # try to find by components
         blend_components = blend_data.pop("components")
         if blend_components:
-            components = [(comp["name"], comp["percentage"]) for comp in blend_components]
+            components = [
+                (comp["name"], comp["percentage"]) for comp in blend_components
+            ]
             if Blend.objects.find_by_components(components):
-                logger.warning(f"Blend {blend_data['name']} - "
-                               f"{blend_components} already exists")
+                logger.warning(
+                    f"Blend {blend_data['name']} - "
+                    f"{blend_components} already exists"
+                )
                 continue
 
         # create blend
@@ -358,6 +359,7 @@ def import_legacy_blends():
         add_components_to_blend(blend, blend_components)
 
     logger.info("✔ legacy blends imported")
+
 
 def import_blends():
     exclude = [
