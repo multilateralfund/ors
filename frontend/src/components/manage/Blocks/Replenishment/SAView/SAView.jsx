@@ -24,6 +24,22 @@ import {
   sumColumns,
 } from './utils'
 
+function encodeFileForUpload(file) {
+  function resolver(resolve) {
+    const r = new FileReader()
+    r.onload = function (evt) {
+      resolve({
+        contentType: file.type,
+        data: evt.target.result.split(',')[1],
+        encoding: 'base64',
+        filename: file.name,
+      })
+    }
+    r.readAsDataURL(file)
+  }
+  return new Promise(resolver)
+}
+
 const COLUMNS = [
   { field: 'country', label: 'Country' },
   {
@@ -161,7 +177,7 @@ function SaveManager(props) {
     setSaving(true)
   }
 
-  function confirmSave(formData) {
+  async function confirmSave(formData) {
     const saveData = {
       ...formData,
       amount: replenishment.amount,
@@ -169,10 +185,20 @@ function SaveManager(props) {
       data,
       replenishment_id: replenishment.id,
     }
+
     saveData['final'] = isFinal
     saveData['currency_date_range_start'] =
       currencyDateRange.start.toISOString()
     saveData['currency_date_range_end'] = currencyDateRange.end.toISOString()
+
+    if (saveData.decision_pdf && saveData.decision_pdf.size) {
+      saveData['decision_pdf'] = await encodeFileForUpload(
+        saveData.decision_pdf,
+      )
+    } else {
+      saveData['decision_pdf'] = null
+    }
+
     setSaving(false)
     api('api/replenishment/scales-of-assessment', {
       data: saveData,
@@ -242,27 +268,38 @@ function SaveManager(props) {
           onSubmit={confirmSave}
         >
           <div className="flex justify-between gap-4">
-            <p className="w-8/12 text-lg">
+            <p className="w-7/12 text-lg">
               You can specify meeting and decision numbers where this version
               was approved.
             </p>
-            <div className="flex w-4/12 gap-4">
-              <div className="flex flex-col">
-                <label htmlFor="meeting">Meeting</label>
-                <Input
-                  id="meeting"
-                  className="!m-0 max-h-12 w-16 !py-1"
-                  required={isFinal}
-                  type="text"
-                />
+            <div className="flex w-5/12 flex-col gap-4">
+              <div className="flex gap-4">
+                <div className="flex flex-col">
+                  <label htmlFor="meeting">Meeting</label>
+                  <Input
+                    id="meeting"
+                    className="!m-0 h-12 w-16 !py-1"
+                    required={isFinal}
+                    type="text"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label htmlFor="decision">Decision</label>
+                  <Input
+                    id="decision"
+                    className="!m-0 h-12 w-16 !py-1"
+                    required={isFinal}
+                    type="text"
+                  />
+                </div>
               </div>
               <div className="flex flex-col">
-                <label htmlFor="decision">Decision</label>
+                <label htmlFor="decision_pdf">Decision PDF</label>
                 <Input
-                  id="decision"
-                  className="!m-0 max-h-12 w-16 !py-1"
+                  id="decision_pdf"
+                  className="!ml-0 h-10"
                   required={isFinal}
-                  type="text"
+                  type="file"
                 />
               </div>
             </div>
