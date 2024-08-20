@@ -16,7 +16,6 @@ from rest_framework import filters, generics, mixins, status, views, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
-from urllib3.util import create_urllib3_context
 
 from core.api.export.base import configure_sheet_print
 from core.api.export.replenishment import (

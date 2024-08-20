@@ -220,6 +220,7 @@ class StatisticsStatusOfContributionsWriter(WriteOnlyBase):
 
 
 class ScaleOfAssessmentWriter(WriteOnlyBase):
+    # pylint: disable=too-many-arguments
     def __init__(
         self,
         sheet,

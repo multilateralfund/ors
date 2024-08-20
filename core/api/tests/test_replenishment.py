@@ -900,7 +900,7 @@ class TestReplenishmentDashboard(BaseTest):
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
         country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
 
-        replenishment = ReplenishmentFactory.create(
+        ReplenishmentFactory.create(
             start_year=self.year_3, end_year=self.year_4
         )
 
