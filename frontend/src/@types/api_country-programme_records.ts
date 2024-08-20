@@ -83,12 +83,12 @@ type ApiBase = {
     computed_prev_year_price: string
     current_year_price: string
     display_name: string
-    fob:boolean
     group: string
     id: number
+    is_fob: boolean
+    is_retail: boolean
     previous_year_price: string
     remarks: null | string
-    retail_price: boolean
     row_id: string
     substance_id: number
   }[]
@@ -188,13 +188,13 @@ type ApiBaseDiff = {
     computed_prev_year_price: string
     current_year_price: string
     display_name: string
-    fob:boolean
     group: string
     id: number
+    is_fob: boolean
+    is_retail: boolean
     previous_year_price: string
     remarks: null | string
     remarks_old: null | string
-    retail_price: boolean
     row_id: string
     substance_id: number
   }[]

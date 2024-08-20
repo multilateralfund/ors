@@ -222,10 +222,10 @@ export function validatePricesType(row: IRow): RowValidatorFuncResult {
   if (validatePrices(row)) return null
   if (
     (row.current_year_price || row.previous_year_price) &&
-    !(row.fob || row.retail_price)
+    !(row.is_fob || row.is_retail)
   ) {
     return {
-      highlight_cells: ['fob', 'retail_price'],
+      highlight_cells: ['is_fob', 'is_retail'],
       row: row.display_name,
     }
   }
