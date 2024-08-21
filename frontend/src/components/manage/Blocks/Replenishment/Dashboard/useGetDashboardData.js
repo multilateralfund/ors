@@ -4,7 +4,7 @@ const OVERVIEW = {
   balance: { label: 'cash fund balance', value: null },
   gain_loss: { label: 'ferm loss', value: null },
   payment_pledge_percentage: {
-    label: 'pledge contribution received for 2021-2023',
+    label: 'pledged contribution received for 2021-2023',
     percentage: true,
     value: null,
   },

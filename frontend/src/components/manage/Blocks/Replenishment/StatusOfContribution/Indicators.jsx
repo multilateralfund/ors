@@ -48,7 +48,7 @@ const TriennialIndicators = ({ data, period, totalPledge }) => {
         value={data.contributions}
       />
       <IndicatorBox
-        text={`of the total pledge received for ${period}`}
+        text={`of the total pledged received for ${period}`}
         value={totalPledge}
         isPercentage
       />
@@ -64,7 +64,7 @@ const AnnualIndicators = ({ data, totalPledge, year }) => {
         value={data.contributions}
       />
       <IndicatorBox
-        text={`of the total pledge received for ${year}`}
+        text={`of the total pledged received for ${year}`}
         value={totalPledge}
         isPercentage
       />

@@ -62,6 +62,7 @@ export default function BPListActivities(props: any) {
           form={form}
           handleFilterChange={handleFilterChange}
           handleParamsChange={handleParamsChange}
+          initialFilters={initialFilters}
           withAgency
         />
         <Activities loaded={loaded} period={period} results={results} />

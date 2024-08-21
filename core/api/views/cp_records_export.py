@@ -58,7 +58,7 @@ from core.utils import IMPORT_DB_MAX_YEAR
 
 
 EXCLUDE_FROM_CONSUMPTION = [
-    "CII",
+    "HBFC",
     "Other",
     "Legacy",
 ]
@@ -266,7 +266,7 @@ class CPCalculatedAmountExportView(CPRecordListView):
 
             # get the sectorial total
             sectorial_total = record.get_sectorial_total()
-            consumption = record.get_consumption_value(use_sectorial_total=False)
+            consumption = record.get_consumption_value()
 
             # convert data
             if substance_category == "HFC":
@@ -471,25 +471,30 @@ class CPDataExtractionAllExport(views.APIView):
 
         wb = openpyxl.Workbook()
         archive_reports = get_archive_reports_final_for_years(min_year, max_year)
+        using_consumption_value_set = self.get_consumption_set(min_year, max_year)
 
         # ODS Price
-        exporter = CPPricesExtractionWriter(wb)
+        exporter = CPPricesExtractionWriter(wb, min_year, max_year)
         data = self.get_prices(min_year, max_year, archive_reports)
         exporter.write(data)
 
         # CP Details
-        exporter = CPDetailsExtractionWriter(wb)
-        data = get_final_records_for_years(min_year, max_year)
+        exporter = CPDetailsExtractionWriter(wb, min_year, max_year)
+        data = self.get_cp_details(min_year, max_year, using_consumption_value_set)
         exporter.write(data)
 
         # CPConsumption(ODP)
-        exporter = CPConsumptionODPWriter(wb)
-        data = self._get_cp_consumption_data(min_year, max_year)
+        exporter = CPConsumptionODPWriter(wb, min_year, max_year)
+        data = self._get_cp_consumption_data(
+            min_year, max_year, using_consumption_value_set
+        )
         exporter.write(data)
 
         # HFC-Consumption(MTvsCO2)
-        exporter = CPHFCConsumptionMTCO2Writer(wb)
-        data = self._get_hfc_consumption_data(min_year, max_year)
+        exporter = CPHFCConsumptionMTCO2Writer(wb, min_year, max_year)
+        data = self._get_hfc_consumption_data(
+            min_year, max_year, using_consumption_value_set
+        )
         exporter.write(data)
 
         # HFC-23Generation
@@ -503,7 +508,7 @@ class CPDataExtractionAllExport(views.APIView):
         exporter.write(data)
 
         # MbrConsumption
-        exporter = MbrConsumptionWriter(wb)
+        exporter = MbrConsumptionWriter(wb, min_year, max_year)
         data = self.get_mbr_consumption_data(min_year, max_year, archive_reports)
         exporter.write(data)
 
@@ -511,6 +516,21 @@ class CPDataExtractionAllExport(views.APIView):
         del wb[wb.sheetnames[0]]
 
         return workbook_response("CP Data Extraction-All", wb)
+
+    def get_consumption_set(self, min_year, max_year):
+        """
+        Get the set of countries and years that are using the consumption value
+            instead of total of Use by Sector
+        """
+        records = get_final_records_for_years(min_year, max_year)
+        return {
+            (
+                record.country_programme_report.country.name,
+                record.country_programme_report.year,
+            )
+            for record in records
+            if any([record.imports, record.exports, record.production])
+        }
 
     def get_mbr_consumption_data(self, min_year, max_year, archive_reports):
         final_records = (
@@ -588,7 +608,23 @@ class CPDataExtractionAllExport(views.APIView):
             "total",
         )
 
-        return list(final_records) + list(archive_records)
+        mbr_list = list(final_records) + list(archive_records)
+        mbr_data = {}
+        for mbr in mbr_list:
+            if mbr["country_name"] not in mbr_data:
+                mbr_data[mbr["country_name"]] = {
+                    "country_name": mbr["country_name"],
+                }
+            mbr_data[mbr["country_name"]].update(
+                {
+                    f"methyl_bromide_qps_{mbr['year']}": mbr["methyl_bromide_qps"],
+                    f"methyl_bromide_non_qps_{mbr['year']}": mbr[
+                        "methyl_bromide_non_qps"
+                    ],
+                    f"total_{mbr['year']}": mbr["total"],
+                }
+            )
+        return mbr_data.values()
 
     def get_prices(self, min_year, max_year, archive_reports):
         final_prices = (
@@ -617,43 +653,106 @@ class CPDataExtractionAllExport(views.APIView):
         )
 
         if not archive_reports:
-            return list(final_prices)
+            archive_prices = []
+        else:
+            archive_prices = (
+                CPPricesArchive.objects.select_related(
+                    "blend",
+                    "substance",
+                    "country_programme_report__country",
+                )
+                .prefetch_related("blend__components")
+                .filter(
+                    models.Q(current_year_price__isnull=False)
+                    | models.Q(previous_year_price__isnull=False)
+                )
+                .filter(
+                    # get the records for the max version of the archive reports
+                    *[
+                        models.Q(
+                            country_programme_report__country_id=c,
+                            country_programme_report__year=y,
+                            country_programme_report__version=v,
+                        )
+                        for c, y, v in archive_reports
+                    ],
+                    _connector=models.Q.OR,
+                )
+                .order_by(
+                    "country_programme_report__year",
+                    "country_programme_report__country__name",
+                    "substance__sort_order",
+                    "blend__sort_order",
+                )
+                .all()
+            )
+        final_prices_dict = {}
+        all_prices = list(final_prices) + list(archive_prices)
+        for price in all_prices:
+            key = (
+                price.country_programme_report.country.name,
+                price.get_chemical_display_name(),
+            )
+            year = price.country_programme_report.year
+            if key not in final_prices_dict:
+                final_prices_dict[key] = {}
+            final_prices_dict[key].update(
+                {
+                    f"price_{year}": price.current_year_price,
+                    f"remarks_{year}": price.remarks,
+                }
+            )
 
-        archive_prices = (
-            CPPricesArchive.objects.select_related(
-                "blend",
-                "substance",
-                "country_programme_report__country",
-            )
-            .prefetch_related("blend__components")
-            .filter(
-                models.Q(current_year_price__isnull=False)
-                | models.Q(previous_year_price__isnull=False)
-            )
-            .filter(
-                # get the records for the max version of the archive reports
-                *[
-                    models.Q(
-                        country_programme_report__country_id=c,
-                        country_programme_report__year=y,
-                        country_programme_report__version=v,
-                    )
-                    for c, y, v in archive_reports
-                ],
-                _connector=models.Q.OR,
-            )
-            .order_by(
-                "country_programme_report__year",
-                "country_programme_report__country__name",
-                "substance__sort_order",
-                "blend__sort_order",
-            )
-            .all()
-        )
+        return final_prices_dict
 
-        return list(final_prices) + list(archive_prices)
+    def get_cp_details(self, min_year, max_year, using_consumption_value_set):
+        """
+        Get CP details for the given year
+        @param min_year: int
+        @param max_year: int
+        @param using_consumption_value_set: set
+        @return: dict
+        structure:
+        {
+            (country_name, chemical_name): {
+                "substance_group": group_id,
+                "substance_odp": value,
+                "substance_gwp": value,
+                "record_value_<year>": value,
+            },
+            ...
+        }
 
-    def _get_cp_consumption_data(self, min_year, max_year):
+        """
+        records = get_final_records_for_years(min_year, max_year)
+        cp_details = {}
+
+        for record in records:
+            country_name = record.country_programme_report.country.name
+            year = record.country_programme_report.year
+            chemical_name = record.get_chemical_display_name()
+
+            # set consumption value
+            # If Import, Export and Production are not provided for any substance in this report
+            # it should be the TOTAL of Use by Sector
+            cons_value = record.get_consumption_value(
+                (country_name, year) in using_consumption_value_set
+            )
+
+            key = (country_name, chemical_name)
+            if key not in cp_details:
+                cp_details[key] = {
+                    "substance_group": (
+                        record.substance.group.group_id if record.substance else "F"
+                    ),
+                    "substance_odp": record.get_chemical_odp(),
+                    "substance_gwp": record.get_chemical_gwp(),
+                }
+            cp_details[key][f"record_value_{year}"] = cons_value
+
+        return cp_details
+
+    def _get_cp_consumption_data(self, min_year, max_year, using_consumption_value_set):
         """
         Get CP consumption data for the given year
 
@@ -662,11 +761,8 @@ class CPDataExtractionAllExport(views.APIView):
         @return: dict
         structure:
         {
-            "year":{
-                "country_name": {
-                    "substance_category": consumption_value,
-                    ...
-                },
+            (country_name, substance_group): {
+                "record_value_<year>" : value
                 ...
             }
             ...
@@ -679,45 +775,43 @@ class CPDataExtractionAllExport(views.APIView):
         records = get_final_records_for_years(min_year, max_year, filters)
         country_records = {}
         for record in records:
-            country_name = record.country_programme_report.country.name
-            year = record.country_programme_report.year
-            if year not in country_records:
-                country_records[year] = {}
-            if country_name not in country_records[year]:
-                country_records[year][country_name] = {}
-
-            # get consumption value
-            if "methyl bromide" in record.substance.name.lower():
-                # for methyl bromide, only Non-QPS should be extracted
-                consumption_value = record.get_sectorial_total()
-            else:
-                consumption_value = record.get_consumption_value()
-            # convert consumption value to ODP
-            consumption_value *= record.substance.odp
-
-            # set a custom group for HCFC-141b in Imported Pre-blended Polyol
+            # set the group
             if (
                 record.substance.name.lower()
                 == "hcfc-141b in imported pre-blended polyol"
             ):
                 group = "HCFC-141b Preblended Polyol"
-                if group not in country_records[year][country_name]:
-                    country_records[year][country_name][group] = 0
-                country_records[year][country_name][group] += consumption_value
-                continue
-
-            # set the group
-            group = SUBSTANCE_GROUP_ID_TO_CATEGORY.get(record.substance.group.group_id)
+            else:
+                group = SUBSTANCE_GROUP_ID_TO_CATEGORY.get(
+                    record.substance.group.group_id
+                )
             if not group:
                 continue
-            if group not in country_records[year][country_name]:
-                country_records[year][country_name][group] = 0
 
-            country_records[year][country_name][group] += consumption_value
+            country_name = record.country_programme_report.country.name
+            year = record.country_programme_report.year
+
+            key = (country_name, group)
+            if key not in country_records:
+                country_records[key] = {}
+
+            # set consumption value
+            consumption_value = record.get_consumption_value(
+                (country_name, year) in using_consumption_value_set
+            )
+            consumption_value *= record.substance.odp
+
+            record_key = f"record_value_{year}"
+            if record_key not in country_records[key]:
+                country_records[key][record_key] = 0
+
+            country_records[key][record_key] += consumption_value
 
         return country_records
 
-    def _get_hfc_consumption_data(self, min_year, max_year):
+    def _get_hfc_consumption_data(
+        self, min_year, max_year, using_consumption_value_set
+    ):
         """
         Get HFC consumption data for the given year
 
@@ -725,13 +819,13 @@ class CPDataExtractionAllExport(views.APIView):
         @return: dict
         structure:
         {
-            "year": {
-                "country_name": {
+            (country_name, substance_name) {
                     "substance_group": value,
-                    "consumption_mt": value,
-                    "consumption_co2": value,
-                    "servicing": value,
-                    "usages_total": value,
+                    "country_lvc": value,
+                    "consumption_mt_<year>": value,
+                    "consumption_co2_<year>": value,
+                    "servicing_<year>": value,
+                    "usages_total_<year>": value,
                 },
                 ...
             }
@@ -743,40 +837,49 @@ class CPDataExtractionAllExport(views.APIView):
         )
         country_records = {}
         for record in records:
-            country_name = record.country_programme_report.country.name
+            substance_name = (
+                SUBSTANCE_GROUP_ID_TO_CATEGORY.get(record.substance.group.group_id)
+                if record.substance
+                else "HFC"
+            )
+            if substance_name in EXCLUDE_FROM_CONSUMPTION:
+                continue
+
+            country = record.country_programme_report.country
+            country_name = country.name
             year = record.country_programme_report.year
-            if year not in country_records:
-                country_records[year] = {}
-            if country_name not in country_records[year]:
-                country_records[year][country_name] = {
-                    "country_lvc": record.country_programme_report.country.is_lvc,
-                    "substance_name": (
-                        SUBSTANCE_GROUP_ID_TO_CATEGORY.get(
-                            record.substance.group.group_id
-                        )
-                        if record.substance
-                        else "HFC"
-                    ),
-                    "substance_group": record.country_programme_report.country.consumption_group,
-                    "consumption_mt": 0,
-                    "consumption_co2": 0,
-                    "servicing": 0,
-                    "usages_total": 0,
+
+            key = (country_name, substance_name)
+            if key not in country_records:
+                country_records[key] = {
+                    "country_lvc": "LVC" if country.is_lvc else "Non-LVC",
+                    "substance_group": country.consumption_group,
                 }
+            if f"consumption_mt_{year}" not in country_records[key]:
+                country_records[key].update(
+                    {
+                        f"consumption_mt_{year}": 0,
+                        f"consumption_co2_{year}": 0,
+                        f"servicing_{year}": 0,
+                        f"usages_total_{year}": 0,
+                    }
+                )
 
             # get consumption data
-            consumption_value = record.get_consumption_value() or 0
-            country_records[year][country_name]["consumption_mt"] += consumption_value
+            consumption_value = record.get_consumption_value(
+                using_consumption_value_set
+            )
+            country_records[key][f"consumption_mt_{year}"] += consumption_value
 
             # convert consumption value to CO2 equivalent
-            country_records[year][country_name]["consumption_co2"] += (
+            country_records[key][f"consumption_co2_{year}"] += (
                 consumption_value * record.get_chemical_gwp()
             )
 
             for rec_us in record.record_usages.all():
                 if "servicing" in rec_us.usage.full_name.lower():
-                    country_records[year][country_name]["servicing"] += rec_us.quantity
-                country_records[year][country_name]["usages_total"] += rec_us.quantity
+                    country_records[key][f"servicing_{year}"] += rec_us.quantity
+                country_records[key][f"usages_total_{year}"] += rec_us.quantity
 
         return country_records
 

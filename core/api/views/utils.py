@@ -90,7 +90,7 @@ def get_year_params_from_request(request):
     if not min_year:
         min_year = 1995
 
-    return min_year, max_year
+    return int(min_year), int(max_year)
 
 
 def get_archive_reports_final_for_year(year):
