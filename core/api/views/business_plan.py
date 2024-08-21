@@ -590,9 +590,8 @@ class BPActivityDiffView(generics.ListAPIView):
     ]
 
     def diff_activities(self, data, data_old):
-        values_fields = ["value_usd", "value_odp", "value_mt"]
         diff_data = []
-
+        values_fields = ["value_usd", "value_odp", "value_mt"]
         activities_old = {activity["initial_id"]: activity for activity in data_old}
 
         for activity in data:
@@ -602,11 +601,8 @@ class BPActivityDiffView(generics.ListAPIView):
             delete_fields(activity, ["id", "business_plan_id", "is_updated"])
             if activity_old:
                 delete_fields(activity_old, ["id", "business_plan_id", "is_updated"])
-                for value in activity_old.get("values", []):
+                for value in activity.get("values", []) + activity_old.get("values", []):
                     delete_fields(value, ["id"])
-
-            for value in activity.get("values", []):
-                delete_fields(value, ["id"])
 
             # And now actually compare
             if activity == activity_old:
