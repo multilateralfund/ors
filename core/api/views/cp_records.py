@@ -23,9 +23,12 @@ from core.api.serializers.cp_record import (
 )
 from core.api.serializers.cp_report import CPReportSerializer, CPReportInfoSerializer
 from core.api.views.utils import (
+    copy_fields,
+    delete_fields,
     get_cp_prices,
     get_cp_report_from_request,
     get_displayed_records,
+    rename_fields,
 )
 from core.models.adm import AdmRecord
 from core.models.country_programme import (
@@ -352,19 +355,6 @@ class CPRecordListDiffView(CPRecordListView):
         self.cp_generation_class = CPGenerationArchive
         self.cp_emission_class = CPEmissionArchive
 
-    def copy_fields(self, record, record_old, fields):
-        for field in fields:
-            record[f"{field}_old"] = record_old[field] if record_old else None
-
-    def rename_fields(self, record, fields):
-        """
-        This is used for "old" records/usages that have now been deleted.
-        """
-        for field in fields:
-            old_value = record.pop(field, None)
-            record[field] = None
-            record[f"{field}_old"] = old_value
-
     def diff_records(
         self, data, data_old, fields, row_identifier="row_id", is_section_d_e=False
     ):
@@ -381,18 +371,18 @@ class CPRecordListDiffView(CPRecordListView):
 
             # Prepare data for comparison
             if is_section_d_e:
-                record.pop("row_id", None)
+                delete_fields(record, ["row_id"])
                 if record_old:
-                    record_old.pop("row_id", None)
-            record.pop("id", None)
+                    delete_fields(record_old, ["row_id"])
+            delete_fields(record, ["id"])
             if record_old:
-                record_old.pop("id", None)
+                delete_fields(record_old, ["id"])
 
             # And now actually compare
             if record == record_old:
                 # Only display newly-added or changed records
                 continue
-            self.copy_fields(record, record_old, fields)
+            copy_fields(record, record_old, fields)
             record["change_type"] = "changed" if record_old else "new"
 
             # Also copy nested usage fields
@@ -402,14 +392,14 @@ class CPRecordListDiffView(CPRecordListView):
             usages_old = {str(usage["usage_id"]): usage for usage in old_record_usages}
             for usage in record.get("record_usages", []):
                 usage_old = usages_old.pop(str(usage["usage_id"]), None)
-                self.copy_fields(usage, usage_old, usage_fields)
+                copy_fields(usage, usage_old, usage_fields)
 
             diff_data.append(record)
 
         for record in records_old.values():
-            self.rename_fields(record, fields)
+            rename_fields(record, fields)
             for usage in record.get("record_usages", []):
-                self.rename_fields(usage, usage_fields)
+                rename_fields(usage, usage_fields)
             record["change_type"] = "deleted"
             diff_data.append(record)
 
