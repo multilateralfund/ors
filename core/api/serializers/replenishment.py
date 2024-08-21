@@ -27,7 +27,7 @@ class ReplenishmentSerializer(serializers.ModelSerializer):
     start_year = serializers.IntegerField(read_only=True)
     end_year = serializers.IntegerField(read_only=True)
     amount = serializers.DecimalField(
-        max_digits=30, decimal_places=15, coerce_to_string=False
+        max_digits=30, decimal_places=15, coerce_to_string=False, read_only=True
     )
     scales_of_assessment_versions = serializers.SerializerMethodField()
 

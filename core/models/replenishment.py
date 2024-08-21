@@ -38,6 +38,17 @@ class ScaleOfAssessmentVersion(models.Model):
     decision_number = models.CharField(max_length=32, default="")
     comment = models.TextField(blank=True, default="")
 
+    def upload_path(self, filename):
+        # pylint: disable=line-too-long
+        return f"scale_of_assessment_files/{self.replenishment.start_year}-{self.replenishment.end_year}/Version_{self.version}__{filename}"
+
+    decision_pdf = models.FileField(
+        storage=get_protected_storage,
+        upload_to=upload_path,
+        null=True,
+        blank=True,
+    )
+
     def __str__(self):
         return (
             f"Scale of Assessment Version {self.version} "
