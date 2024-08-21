@@ -1170,3 +1170,90 @@ class TestBPGet:
         assert response.status_code == 200
         assert len(response.json()["activities"]) == 4
         assert response.json()["activities"][0]["comment_types"] == [comment_type.name]
+
+
+class TestBPActivitiesDiff:
+    client = APIClient()
+
+    def test_activities_diff(
+        self,
+        agency_user,
+        _setup_new_business_plan_create,
+        _setup_bp_activity_create,
+        agency,
+    ):
+        self.client.force_authenticate(user=agency_user)
+
+        # create business plan
+        url = reverse("businessplan-list")
+        data = _setup_new_business_plan_create
+        data["activities"] = [_setup_bp_activity_create]
+
+        response = self.client.post(url, data, format="json")
+        assert response.status_code == 201
+        business_plan_id = response.data["id"]
+        initial_id = response.data["activities"][0]["initial_id"]
+
+        # update status
+        BusinessPlan.objects.filter(id=business_plan_id).update(
+            status=BusinessPlan.Status.need_changes
+        )
+
+        # update business plan (new version)
+        url = reverse("businessplan-list") + f"{business_plan_id}/"
+        activity_data = _setup_bp_activity_create
+        activity_data["initial_id"] = initial_id
+        activity_data["title"] = "Planu 2"
+        activity_data["status"] = "P"
+        activity_data["is_multi_year"] = True
+        activity_data["remarks"] = "Merge rau"
+        activity_data["values"] = [
+            {
+                "year": 2021,
+                "is_after": False,
+                "value_usd": 200,
+                "value_odp": 200,
+                "value_mt": 100,
+            },
+            {
+                "year": 2022,
+                "is_after": True,
+                "value_usd": 300,
+                "value_odp": 300,
+                "value_mt": 300,
+            },
+        ]
+        data = {
+            "agency_id": agency.id,
+            "year_start": 2020,
+            "year_end": 2023,
+            "status": "Agency Draft",
+            "activities": [activity_data],
+        }
+        response = self.client.put(url, data, format="json")
+        assert response.status_code == 200
+        new_id = response.data["id"]
+
+        # check activities diff
+        url = reverse("business-plan-activity-diff")
+        response = self.client.get(url, {"business_plan_id": new_id})
+        assert response.status_code == 200
+
+        assert response.data[0]["change_type"] == "changed"
+        assert response.data[0]["title"] == "Planu 2"
+        assert response.data[0]["title_old"] == "Planu"
+        assert response.data[0]["status"] == "P"
+        assert response.data[0]["status_old"] == "A"
+        assert response.data[0]["is_multi_year"] is True
+        assert response.data[0]["is_multi_year_old"] is False
+        assert response.data[0]["remarks"] == "Merge rau"
+        assert response.data[0]["remarks_old"] == "Merge bine, bine, bine ca aeroplanu"
+
+        values_data = response.data[0]["values"]
+        assert values_data[0]["year"] == 2021
+        assert float(values_data[0]["value_mt"]) == 100
+        assert float(values_data[0]["value_mt_old"]) == 200
+
+        assert values_data[1]["year"] == 2022
+        assert float(values_data[1]["value_usd"]) == 300
+        assert values_data[1]["value_usd_old"] is None

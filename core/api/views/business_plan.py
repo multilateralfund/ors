@@ -7,6 +7,7 @@ from constance import config
 from django.db import transaction
 from django.db.models import F, Max, Min
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -35,7 +36,10 @@ from core.api.utils import workbook_pdf_response
 from core.api.utils import workbook_response
 from core.api.views.utils import (
     check_status_transition,
+    copy_fields,
+    delete_fields,
     get_business_plan_from_request,
+    rename_fields,
     BPACTIVITY_ORDERING_FIELDS,
 )
 from core.models import BusinessPlan, BPHistory, BPActivity
@@ -245,13 +249,6 @@ class BusinessPlanViewSet(
             or serializer.initial_data["year_end"] != current_obj.year_end
         )
 
-    def delete_fields(self, activity):
-        for field in ("id", "business_plan_id", "is_updated"):
-            activity.pop(field, None)
-
-        for value in activity.get("values", []):
-            value.pop("id", None)
-
     def set_is_updated_activities(self, new_instance, bp_old_version):
         new_activities = []
         updated_activities = []
@@ -271,8 +268,11 @@ class BusinessPlanViewSet(
                 continue
 
             # delete ids to compare only actual values
-            self.delete_fields(activity)
-            self.delete_fields(activity_old)
+            delete_fields(activity, ["id", "business_plan_id", "is_updated"])
+            delete_fields(activity_old, ["id", "business_plan_id", "is_updated"])
+            for value in activity.get("values", []) + activity_old.get("values", []):
+                delete_fields(value, ["id"])
+
             if activity != activity_old:
                 updated_activities.append(activity_id)
 
@@ -572,3 +572,86 @@ class BPFileDownloadView(generics.RetrieveAPIView):
             f"attachment; filename*=UTF-8''{file_name}; filename=\"{file_name}\""
         )
         return response
+
+
+class BPActivityDiffView(generics.ListAPIView):
+    fields = [
+        "title",
+        "required_by_model",
+        "lvc_status",
+        "amount_polyol",
+        "legacy_sector_and_subsector",
+        "status",
+        "is_multi_year",
+        "reason_for_exceeding",
+        "remarks",
+        "remarks_additional",
+        "comment_secretariat",
+    ]
+
+    def diff_activities(self, data, data_old):
+        diff_data = []
+        values_fields = ["value_usd", "value_odp", "value_mt"]
+        activities_old = {activity["initial_id"]: activity for activity in data_old}
+
+        for activity in data:
+            activity_old = activities_old.pop(activity["initial_id"], None)
+
+            # Prepare data for comparison
+            delete_fields(activity, ["id", "business_plan_id", "is_updated"])
+            if activity_old:
+                delete_fields(activity_old, ["id", "business_plan_id", "is_updated"])
+                for value in activity.get("values", []) + activity_old.get("values", []):
+                    delete_fields(value, ["id"])
+
+            # And now actually compare
+            if activity == activity_old:
+                # Only display newly-added or changed activities
+                continue
+            copy_fields(activity, activity_old, self.fields)
+            activity["change_type"] = "changed" if activity_old else "new"
+
+            # Also copy nested values
+            old_activity_values = activity_old.get("values", []) if activity_old else []
+            values_old = {
+                (str(value["year"]), value["is_after"]): value
+                for value in old_activity_values
+            }
+            for value in activity.get("values", []):
+                value_old = values_old.pop(
+                    (str(value["year"]), value["is_after"]), None
+                )
+                copy_fields(value, value_old, values_fields)
+
+            diff_data.append(activity)
+
+        for activity in activities_old.values():
+            rename_fields(activity, self.fields)
+            for value in activity.get("values", []):
+                rename_fields(value, values_fields)
+            activity["change_type"] = "deleted"
+            diff_data.append(activity)
+
+        return diff_data
+
+    def list(self, request, *args, **kwargs):
+        business_plan = get_business_plan_from_request(request)
+        # We are diff-ing with the previous version by default
+        business_plan_ar = get_object_or_404(
+            BusinessPlan,
+            version=business_plan.version - 1,
+            agency_id=business_plan.agency_id,
+            year_start=business_plan.year_start,
+            year_end=business_plan.year_end,
+        )
+
+        return Response(
+            self.diff_activities(
+                BPActivityCreateSerializer(
+                    business_plan.activities.all(), many=True
+                ).data,
+                BPActivityCreateSerializer(
+                    business_plan_ar.activities.all(), many=True
+                ).data,
+            ),
+        )

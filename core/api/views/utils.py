@@ -470,6 +470,26 @@ def check_status_transition(user, initial_status, new_status):
     return status.HTTP_200_OK, ""
 
 
+def copy_fields(obj, obj_old, fields):
+    for field in fields:
+        obj[f"{field}_old"] = obj_old[field] if obj_old else None
+
+
+def rename_fields(obj, fields):
+    """
+    This is used for "old" records/activities that have now been deleted.
+    """
+    for field in fields:
+        old_value = obj.pop(field, None)
+        obj[field] = None
+        obj[f"{field}_old"] = old_value
+
+
+def delete_fields(obj, fields):
+    for field in fields:
+        obj.pop(field, None)
+
+
 class SummaryStatusOfContributionsAggregator:
     """
     Aggregator for the summary status of contributions using the

@@ -32,7 +32,11 @@ from core.api.views.business_plan import (
     BPFileView,
     BPActivityViewSet,
 )
-from core.api.views.business_plan import BPStatusUpdateView, BusinessPlanViewSet
+from core.api.views.business_plan import (
+    BPActivityDiffView,
+    BPStatusUpdateView,
+    BusinessPlanViewSet,
+)
 from core.api.views.chemicals import (
     BlendCreateView,
     BlendNextCustNameView,
@@ -358,6 +362,11 @@ urlpatterns = [
         "business-plan/<int:id>/status-update/",
         BPStatusUpdateView.as_view(),
         name="business-plan-status",
+    ),
+    path(
+        "business-plan/activities/diff/",
+        BPActivityDiffView.as_view(),
+        name="business-plan-activity-diff",
     ),
     path(
         "replenishment/dashboard/",
