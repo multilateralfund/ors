@@ -14,7 +14,7 @@ import environ
 import socket
 import os
 from pathlib import Path
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -226,6 +226,9 @@ CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
 CONSTANCE_CONFIG = {
     "CP_NR_REPORTS": (9, "Number of reports to display in the country programme page"),
     "SEND_MAIL": (True, "Send email notifications to users?", bool),
+    "DEFAULT_REPLENISHMENT_AS_OF_DATE": (
+        datetime(2024, 5, 27), "Default 'As Of Date' for replenishment"
+    ),
 }
 
 # Logging

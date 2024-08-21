@@ -156,6 +156,7 @@ function useGetDashboardData() {
       ...data.income,
     }
     newData = {
+      asOfDate: data.as_of_date,
       allocations: ALLOCATIONS,
       charts: data.charts,
       income: INCOME,

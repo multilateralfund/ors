@@ -44,7 +44,7 @@ function CashCard(props) {
 }
 
 function SectionStatus(props) {
-  const { allocations, income, onEditButtonClick, provisions, showEditButton } =
+  const { asOfDate, allocations, income, onEditButtonClick, provisions, showEditButton } =
     props
 
   return (
@@ -77,7 +77,7 @@ function SectionStatus(props) {
         )}
       </div>
       <div>
-        <p className="m-0 text-2xl">as of 27 May 2024 ( USD )</p>
+        <p className="m-0 text-2xl">{asOfDate} ( USD )</p>
       </div>
 
       <div

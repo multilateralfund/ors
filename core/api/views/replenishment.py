@@ -8,6 +8,7 @@ from datetime import datetime
 from decimal import Decimal
 
 import openpyxl
+from constance import config
 from django.core.files.base import ContentFile
 from django.db import models, transaction
 from django.http import HttpResponse
@@ -772,7 +773,14 @@ class ReplenishmentDashboardView(views.APIView):
             .order_by("start_year")
         )
 
+        try:
+            latest_payment = Payment.objects.latest("date")
+        except Payment.DoesNotExist:
+            latest_payment = None
+        as_of_date = latest_payment.date if latest_payment and latest_payment.date else config.DEFAULT_REPLENISHMENT_AS_OF_DATE
+
         data = {
+            "as_of_date": as_of_date.strftime("%d %B %Y"),
             "overview": {
                 "payment_pledge_percentage": payment_pledge_percentage_latest_closed_triennial,
                 "gain_loss": gain_loss,
