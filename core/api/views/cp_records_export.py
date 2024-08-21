@@ -58,7 +58,7 @@ from core.utils import IMPORT_DB_MAX_YEAR
 
 
 EXCLUDE_FROM_CONSUMPTION = [
-    "CII",
+    "HBFC",
     "Other",
     "Legacy",
 ]
