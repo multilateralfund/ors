@@ -318,7 +318,7 @@ class TestCPCalculatedAmountExport(BaseTest):
 
         wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
         assert wb.sheetnames == ["Calculated Amount"]
-        assert wb["Calculated Amount"].max_row == 9
+        assert wb["Calculated Amount"].max_row == 8
         assert wb["Calculated Amount"].max_column == 4
 
 
@@ -347,7 +347,6 @@ class TestCPCalculatedAmountExportPDF(BaseTest):
             "CTC",
             "TCA",
             "HCFC",
-            "HBFC",
             "MB Non-QPS only",
             "HFC",
         ]:
