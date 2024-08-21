@@ -229,6 +229,8 @@ class Payment(models.Model):
 
     comment = models.TextField(blank=True)
 
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+
     def __str__(self):
         return f"Payment {self.country.name} - {self.payment_for_year}"
 

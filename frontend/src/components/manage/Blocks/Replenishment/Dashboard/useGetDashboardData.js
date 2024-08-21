@@ -58,6 +58,10 @@ const ALLOCATIONS = {
 
 const PROVISIONS = {
   bilateral_assistance: { label: 'Bilateral cooperation', value: null },
+  gain_loss: {
+    label: 'FERM loss',
+    value: null,
+  },
   information_strategy: {
     label: 'Information Strategy costs (2003-2004)',
     sub_text: '(inc. provision for Network maintenance for 2004)',
@@ -129,6 +133,7 @@ const updateObjectValues = (fetchedData) => {
     fetchedData.allocations.information_strategy
   PROVISIONS.bilateral_assistance.value =
     fetchedData.allocations.bilateral_assistance
+  PROVISIONS.gain_loss.value = OVERVIEW.gain_loss.value
   PROVISIONS.total.value =
     calculateTotal(PROVISIONS) +
     ALLOCATIONS.total.value +
@@ -152,6 +157,7 @@ function useGetDashboardData() {
     }
     newData = {
       allocations: ALLOCATIONS,
+      asOfDate: data.as_of_date,
       charts: data.charts,
       income: INCOME,
       overview: OVERVIEW,

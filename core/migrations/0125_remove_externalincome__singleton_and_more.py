@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("core", "0123_cpprices_is_fob_cpprices_is_retail_and_more"),
+        ("core", "0124_payment_created_at"),
     ]
 
     operations = [
