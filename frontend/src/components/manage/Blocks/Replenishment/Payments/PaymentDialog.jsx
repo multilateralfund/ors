@@ -35,6 +35,24 @@ const PaymentDialog = function PaymentDialog(props) {
         required
       />
       <FieldInput
+        id="payment_for_year"
+        defaultValue={data?.payment_for_year}
+        label={columns[5].label}
+        type="text"
+        required
+      />
+      <FieldSelect
+        id="payment_type"
+        defaultValue=""
+        label={'Payment type'}
+        required
+      >
+        <option value="" disabled hidden></option>
+        <option value="current">Current year</option>
+        <option value="past">Past year</option>
+        <option value="advance">Advance payment</option>
+      </FieldSelect>
+      <FieldInput
         id="amount"
         defaultValue={data?.amount}
         label={columns[2].label}
@@ -55,13 +73,6 @@ const PaymentDialog = function PaymentDialog(props) {
         label={columns[4].label}
         step="any"
         type="number"
-      />
-      <FieldInput
-        id="payment_for_year"
-        defaultValue={data?.payment_for_year}
-        label={columns[5].label}
-        type="text"
-        required
       />
       <FieldInput
         id="ferm_gain_or_loss"
