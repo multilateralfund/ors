@@ -48,8 +48,8 @@ const colDefById: Record<string, ColDef> = {
     singleClickEdit: true,
     // initialWidth: 190,
   },
-  is_fob: {},
-  is_retail: {},
+  fob: {},
+  retail_price: {},
   remarks: {
     // initialWidth: mobile ? 200 : 250,
     tooltip: true,

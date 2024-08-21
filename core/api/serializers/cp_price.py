@@ -17,8 +17,6 @@ class CPPricesBaseSerializer(BaseCPWChemicalSerializer):
             "current_year_price",
             "computed_prev_year_price",
             "remarks",
-            "is_retail",
-            "is_fob",
         ]
 
     def get_computed_prev_year_price(self, obj):
@@ -42,9 +40,7 @@ class CPPricesBaseSerializer(BaseCPWChemicalSerializer):
             if value:
                 float(value)
         except ValueError as exc:
-            raise serializers.ValidationError(
-                "Previous year price must be a number"
-            ) from exc
+            raise serializers.ValidationError("Previous year price must be a number") from exc
 
         return value
 
@@ -54,9 +50,7 @@ class CPPricesBaseSerializer(BaseCPWChemicalSerializer):
             if value:
                 float(value)
         except ValueError as exc:
-            raise serializers.ValidationError(
-                "Current year price must be a number"
-            ) from exc
+            raise serializers.ValidationError("Current year price must be a number") from exc
 
         return value
 
@@ -89,7 +83,5 @@ class CPPricesListSerializer(serializers.ModelSerializer):
             "previous_year_price",
             "current_year_price",
             "remarks",
-            "is_retail",
-            "is_fob",
         ]
         read_only_fields = fields

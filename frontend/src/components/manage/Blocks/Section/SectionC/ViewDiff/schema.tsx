@@ -52,7 +52,7 @@ function useGridOptions(props: { model: string }) {
             disabled: true,
           }
         },
-        ...sectionColDefById['is_fob'],
+        ...sectionColDefById['fob'],
       },
       {
         cellRendererParams: () => {
@@ -60,7 +60,7 @@ function useGridOptions(props: { model: string }) {
             disabled: true,
           }
         },
-        ...sectionColDefById['is_retail'],
+        ...sectionColDefById['retail_price'],
       },
       {
         ...sectionColDefById['remarks'],

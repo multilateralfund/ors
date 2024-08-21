@@ -19,16 +19,16 @@ export interface IRow {
   facility?: string
   feedstock?: number | string
   feedstock_gc?: number | string
+  fob: boolean;
   group: string
   import_quotas: number
   imports: number | string
-  is_fob: boolean;
-  is_retail: boolean;
   manufacturing_blends?: string
   previous_year_price: number | string
   production: number | string
   record_usages: IUsage[]
   remarks?: string
+  retail_price: boolean;
   row_id: string
   substance_id: null | number
 }
