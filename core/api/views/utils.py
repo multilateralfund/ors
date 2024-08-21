@@ -20,6 +20,7 @@ from core.models import (
     FermGainLoss,
     DisputedContribution,
     AnnualContributionStatus,
+    ExternalIncome,
 )
 from core.models.business_plan import BusinessPlan
 from core.models.country_programme import CPRecord, CPReport, CPReportFormatRow
@@ -915,6 +916,13 @@ def add_statistics_status_of_contributions_response_worksheet(wb, periods):
         .order_by("start_year")
     )
 
+    external_income_data = ExternalIncome.objects.values(
+        "start_year",
+        "end_year",
+        "interest_earned",
+        "miscellaneous_income",
+    ).order_by("start_year")
+
     columns_number = len(headers)
     last_column_letter = get_column_letter(columns_number)
     last_period_column_letter = get_column_letter(columns_number - 1)
@@ -993,6 +1001,38 @@ def add_statistics_status_of_contributions_response_worksheet(wb, periods):
         },
         {},
         {
+            "description": "Interest earned",
+            "summary": f"=SUM(B19:{last_period_column_letter}19)",
+            **{
+                f"{external_income['start_year']}-{external_income['end_year']}": external_income[
+                    "interest_earned"
+                ]
+                for external_income in external_income_data
+            },
+        },
+        {},
+        {
+            "description": "Miscellaneous income",
+            "summary": f"=SUM(B21:{last_period_column_letter}21)",
+            **{
+                f"{external_income['start_year']}-{external_income['end_year']}": external_income[
+                    "miscellaneous_income"
+                ]
+                for external_income in external_income_data
+            },
+        },
+        {},
+        {
+            "description": "TOTAL INCOME",
+            "summary": f"=SUM(B23:{last_period_column_letter}23)",
+            **{
+                # pylint: disable=C0301
+                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}14+{get_column_letter(i+2)}19+{get_column_letter(i+2)}21"
+                for i, soc in enumerate(soc_data)
+            },
+        },
+        {},
+        {
             "description": "Accumulated figures",
             "summary": f"1991-{current_year}",
             **{
@@ -1000,7 +1040,6 @@ def add_statistics_status_of_contributions_response_worksheet(wb, periods):
                 for soc in soc_data
             },
         },
-        {},
         {
             "description": "Total pledges",
             "summary": f"={last_column_letter}10",
@@ -1026,25 +1065,33 @@ def add_statistics_status_of_contributions_response_worksheet(wb, periods):
             },
         },
         {
-            "description": "Total outstanding contributions",
-            "summary": f"={last_column_letter}16",
+            "description": "Total income",
+            "summary": f"={last_column_letter}23",
             **{
-                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}16"
+                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i + 2)}23"
+                for i, soc in enumerate(soc_data)
+            },
+        },
+        {
+            "description": "Total outstanding contributions",
+            "summary": f"={last_column_letter}26-{last_column_letter}27",
+            **{
+                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}26-{get_column_letter(i+2)}27"
                 for i, soc in enumerate(soc_data)
             },
         },
         {
             "description": "As % to total pledges",
-            "summary": f"={last_column_letter}16/{last_column_letter}10 * 100",
+            "summary": f"={last_column_letter}30/{last_column_letter}26 * 100",
             **{
                 # pylint: disable=C0301
-                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}16/{get_column_letter(i+2)}10 * 100"
+                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}30/{get_column_letter(i+2)}26 * 100"
                 for i, soc in enumerate(soc_data)
             },
         },
         {
             "description": "Outstanding contributions for certain Countries with Economies in Transition (CEITs)",
-            "summary": f"=SUM(B26:{last_period_column_letter}26)",
+            "summary": f"=SUM(B32:{last_period_column_letter}32)",
             **{
                 f"{soc['start_year']}-{soc['end_year']}": soc["outstanding_ceit"]
                 for soc in soc_data
@@ -1052,10 +1099,10 @@ def add_statistics_status_of_contributions_response_worksheet(wb, periods):
         },
         {
             "description": "CEITs' oustandings %age to pledges",
-            "summary": f"={last_column_letter}26/{last_column_letter}10 * 100",
+            "summary": f"={last_column_letter}32/{last_column_letter}26 * 100",
             **{
                 # pylint: disable=C0301
-                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}26/{get_column_letter(i+2)}10 * 100"
+                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}32/{get_column_letter(i+2)}26 * 100"
                 for i, soc in enumerate(soc_data)
             },
         },

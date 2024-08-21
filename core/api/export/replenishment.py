@@ -157,7 +157,13 @@ class StatusOfContributionsWriter(WriteOnlyBase):
 
 
 class StatisticsStatusOfContributionsWriter(WriteOnlyBase):
-    BOLD_RECORD_CELLS = ["Total payments"]
+    BOLD_RECORD_CELLS = [
+        "Total payments",
+        "Interest earned",
+        "Miscellaneous income",
+        "TOTAL INCOME",
+        "Accumulated figures",
+    ]
 
     def __init__(self, sheet, headers, period=None):
         self.headers = headers
