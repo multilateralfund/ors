@@ -1,9 +1,21 @@
+'use client'
+
+import { useContext, useState } from 'react'
+
+import cx from 'classnames'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 import BarChart from '@ors/components/manage/Blocks/Replenishment/Dashboard/BarChart'
 import FilledAreaChart from '@ors/components/manage/Blocks/Replenishment/Dashboard/FilledAreaChart'
 import TwoAreaCharts from '@ors/components/manage/Blocks/Replenishment/Dashboard/TwoAreaCharts'
+import PeriodSelector from '@ors/components/manage/Blocks/Replenishment/PeriodSelector'
+import {
+  scAnnualOptions,
+  scPeriodOptions,
+} from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
 import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils'
+import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 
 const overviewOrder = ['balance', 'payment_pledge_percentage', 'gain_loss']
 const overviewIndicatorsOrder = [
@@ -37,7 +49,7 @@ const DashboardIndicators = ({ data }) => {
             <span className="text-6xl font-bold print:text-4xl">
               {data[key].value}
             </span>
-            <span className="text-2xl font-medium print:text-lg">
+            <span className="text-2xl font-medium uppercase print:text-lg">
               {data[key].label}
             </span>
           </div>
@@ -46,28 +58,118 @@ const DashboardIndicators = ({ data }) => {
   )
 }
 
+const TABS = [
+  {
+    component: <div>Cummulative</div>,
+    label: 'Cummulative',
+    path: '/replenishment/dashboard/cummulative',
+    showPeriodSelector: false,
+  },
+  {
+    component: <div>Triennial</div>,
+    label: 'Triennial',
+    path: '/replenishment/dashboard/triennial',
+  },
+  {
+    component: <div>Annual</div>,
+    label: 'Annual',
+    path: '/replenishment/dashboard/annual',
+  },
+]
+
+function getTabLinks(pathname) {
+  const result = []
+
+  let currentSection
+
+  for (let i = 0; i < TABS.length; i++) {
+    const entry = TABS[i]
+    const isCurrent = pathname.startsWith(entry.path)
+    if (isCurrent) {
+      currentSection = TABS[i]
+    }
+    result.push(
+      <Link
+        key={i}
+        className={cx(
+          { 'bg-primary text-mlfs-hlYellow': isCurrent },
+          'inline-flex h-10 min-w-24 items-center justify-center border-0 px-2 py-1 text-lg font-bold uppercase leading-10 text-gray-400 no-underline hover:bg-primary hover:text-mlfs-hlYellow',
+          {
+            'rounded-l-lg border-r border-solid border-primary': i === 0,
+            'rounded-r-lg border-l border-solid border-primary':
+              i === TABS.length - 1,
+          },
+        )}
+        href={entry.path}
+      >
+        {entry.label}
+      </Link>,
+    )
+  }
+
+  return [currentSection, result]
+}
+
 function SectionDashboard(props) {
-  const { charts, overview, overviewIndicators } = props
+  const { charts, overview, overviewIndicators, period, tab } = props
+
+  const pathname = usePathname()
+  const [currentSection, navLinks] = getTabLinks(pathname)
+
+  const ctx = useContext(ReplenishmentContext)
+
+  let periodOptions = []
+  switch (tab) {
+    case 'triennial':
+      periodOptions = scPeriodOptions(ctx.periods)
+      break
+    case 'annual':
+      periodOptions = scAnnualOptions(ctx.periods)
+      break
+    default:
+      periodOptions = []
+      break
+  }
+
+  const Component = currentSection?.component ?? <div>cummulative</div>
 
   return (
     <>
-      <div className="flex items-center gap-4 print:hidden">
-        <h2 className="m-0 text-3xl">DASHBOARD</h2>{' '}
-        <span className="print:hidden"> | </span>
-        <Link
-          className="m-0 text-2xl text-primary no-underline"
-          href="./dashboard/status"
-        >
-          STATUS OF THE FUND
-        </Link>{' '}
-        <span className="print:hidden"> | </span>
-        <Link
-          className="m-0 text-2xl text-primary no-underline"
-          href="./statistics"
-        >
-          STATISTICS
-        </Link>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4 print:hidden">
+          <h2 className="m-0 text-3xl">DASHBOARD</h2>{' '}
+          <span className="print:hidden"> | </span>
+          <Link
+            className="m-0 text-2xl text-primary no-underline"
+            href="/replenishment/dashboard/status"
+          >
+            STATUS OF THE FUND
+          </Link>{' '}
+          <span className="print:hidden"> | </span>
+          <Link
+            className="m-0 text-2xl text-primary no-underline"
+            href="/replenishment/dashboard/statistics"
+          >
+            STATISTICS
+          </Link>
+        </div>
+        <div className="flex items-center gap-2 print:hidden">
+          {currentSection?.showPeriodSelector ?? true ? (
+            <PeriodSelector
+              key={currentSection.label}
+              label=""
+              period={period}
+              periodOptions={periodOptions}
+            />
+          ) : null}
+          <nav className="flex items-center rounded-lg border border-solid border-primary">
+            {navLinks}
+          </nav>
+        </div>
       </div>
+
+      <div>{Component}</div>
+
       <div
         className="mt-8"
         style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}

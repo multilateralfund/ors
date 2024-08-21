@@ -1,26 +1,9 @@
-'use client'
+import { redirect } from 'next/navigation'
 
-import DownloadButtons from '@ors/app/replenishment/DownloadButtons'
-import ReplenishmentHeading from '@ors/app/replenishment/ReplenishmentHeading'
-import DashboardView from '@ors/components/manage/Blocks/Replenishment/Dashboard/DashboardView'
-import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
-import { formatApiUrl } from '@ors/helpers'
+export const metadata = {
+  title: 'Replenishment - Dashboard',
+}
 
 export default function ReplenishmentDashboard() {
-  return (
-    <>
-      <title>Replenishment - Dashboard</title>
-      <PageWrapper
-        className="w-full rounded-b-lg bg-white p-4"
-        defaultSpacing={false}
-      >
-        <ReplenishmentHeading>Dashboard</ReplenishmentHeading>
-        <DownloadButtons
-          downloadTexts={['Download']}
-          downloadUrls={[formatApiUrl('/api/replenishment/dashboard/export')]}
-        />
-        <DashboardView section="dashboard" />
-      </PageWrapper>
-    </>
-  )
+  redirect('/replenishment/dashboard/cummulative')
 }

@@ -152,7 +152,7 @@ function EditStatusDialog(props) {
 }
 
 function DashboardView(props) {
-  const { section } = props
+  const { period, section } = props
   const { formData, invalidateDataFn, loading, newData } = useGetDashboardData()
   const ctx = useContext(ReplenishmentContext)
   const {
@@ -222,12 +222,14 @@ function DashboardView(props) {
     case 'statistics':
       Section = <SectionStatistics />
       break
-    case 'dashboard':
+    default:
       Section = (
         <SectionDashboard
           charts={charts}
           overview={overview}
           overviewIndicators={overviewIndicators}
+          period={period}
+          tab={section}
         />
       )
       break

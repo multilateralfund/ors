@@ -105,10 +105,7 @@ function SCView(props) {
               key={currentSection.label}
               label=""
               period={period}
-              periodOptions={[
-                ...(currentSection?.extraPeriodOptions ?? []),
-                ...periodOptions,
-              ]}
+              periodOptions={periodOptions}
             />
           ) : null}
           <nav className="flex items-center rounded-lg border border-solid border-primary">
