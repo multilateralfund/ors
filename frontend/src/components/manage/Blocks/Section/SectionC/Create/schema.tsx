@@ -92,10 +92,10 @@ function useGridOptions(props: {
         ...(includes(['V'], model)
           ? [
               {
-                ...sectionColDefById['fob'],
+                ...sectionColDefById['is_fob'],
               },
               {
-                ...sectionColDefById['retail_price'],
+                ...sectionColDefById['is_retail'],
               },
             ]
           : []),

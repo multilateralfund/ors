@@ -148,6 +148,9 @@ class AbstractCPPrices(AbstractWChemical):
     remarks = models.TextField(null=True, blank=True)
     source_file = models.CharField(max_length=248)
 
+    is_retail = models.BooleanField(default=False)
+    is_fob = models.BooleanField(default=False)
+
     previous_year_price = models.CharField(max_length=248, null=True, blank=True)
     current_year_price = models.CharField(max_length=248, null=True, blank=True)
 
