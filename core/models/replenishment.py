@@ -364,6 +364,12 @@ class ExternalIncome(models.Model):
     interest_earned = models.DecimalField(max_digits=30, decimal_places=15)
     miscellaneous_income = models.DecimalField(max_digits=30, decimal_places=15)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["start_year"], name="unique_start_year_external_income"),
+            models.UniqueConstraint(fields=["end_year"], name="unique_end_year_external_income"),
+        ]
+
 
 class ExternalAllocation(AbstractSingleton):
     undp = models.DecimalField(max_digits=30, decimal_places=15)
