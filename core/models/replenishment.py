@@ -358,7 +358,9 @@ class FermGainLoss(models.Model):
         return f"Ferm Gain/Loss {self.country.iso3} - {self.amount}"
 
 
-class ExternalIncome(AbstractSingleton):
+class ExternalIncome(models.Model):
+    start_year = models.IntegerField()
+    end_year = models.IntegerField()
     interest_earned = models.DecimalField(max_digits=30, decimal_places=15)
     miscellaneous_income = models.DecimalField(max_digits=30, decimal_places=15)
 
