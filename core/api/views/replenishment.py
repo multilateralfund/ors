@@ -777,7 +777,11 @@ class ReplenishmentDashboardView(views.APIView):
             latest_payment = Payment.objects.latest("date")
         except Payment.DoesNotExist:
             latest_payment = None
-        as_of_date = latest_payment.date if latest_payment and latest_payment.date else config.DEFAULT_REPLENISHMENT_AS_OF_DATE
+        as_of_date = (
+            latest_payment.date
+            if latest_payment and latest_payment.date
+            else config.DEFAULT_REPLENISHMENT_AS_OF_DATE
+        )
 
         data = {
             "as_of_date": as_of_date.strftime("%d %B %Y"),

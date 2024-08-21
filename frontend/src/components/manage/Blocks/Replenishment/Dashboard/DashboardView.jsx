@@ -156,8 +156,8 @@ function DashboardView(props) {
   const { formData, invalidateDataFn, loading, newData } = useGetDashboardData()
   const ctx = useContext(ReplenishmentContext)
   const {
-    asOfDate,
     allocations,
+    asOfDate,
     charts,
     income,
     overview,
@@ -210,8 +210,8 @@ function DashboardView(props) {
     case 'status':
       Section = (
         <SectionStatus
-          asOfDate={asOfDate}
           allocations={allocations}
+          asOfDate={asOfDate}
           income={income}
           provisions={provisions}
           showEditButton={ctx.isTreasurer}

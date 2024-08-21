@@ -44,7 +44,7 @@ function CashCard(props) {
 }
 
 function SectionStatus(props) {
-  const { asOfDate, allocations, income, onEditButtonClick, provisions, showEditButton } =
+  const { allocations, asOfDate, income, onEditButtonClick, provisions, showEditButton } =
     props
 
   return (
