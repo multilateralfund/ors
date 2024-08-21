@@ -285,7 +285,7 @@ function DashboardView() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1">
           <h2 className="m-0 text-3xl">STATUS OF THE FUND</h2>
-          <p className="m-0 text-3xl">as of 15 May 2024 ( USD )</p>
+          <p className="m-0 text-3xl">as of 27 May 2024 ( USD )</p>
         </div>
         {ctx.isTreasurer && (
           <SubmitButton

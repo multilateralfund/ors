@@ -1,9 +1,11 @@
 import cx from 'classnames'
 
+import { formatNumberValue } from '../utils'
+
 const PRINT_CLASS =
   'print:w-full print:min-w-full print:max-w-full print:border-none print:p-0 print:gap-3 print:justify-start'
 
-function IndicatorBox({ classes, isPercentage, text, value }) {
+function IndicatorBox({ classes, isPercentage, subtext, text, value }) {
   return (
     <div
       className={cx(
@@ -16,7 +18,10 @@ function IndicatorBox({ classes, isPercentage, text, value }) {
         {value}
         {isPercentage && '%'}
       </span>
-      <span className="text-2xl font-medium print:text-lg">{text}</span>
+      <div className="flex flex-col">
+        <span className="text-2xl font-medium print:text-lg">{text}</span>
+        {subtext ? <span className="font-medium">{subtext}</span> : null}
+      </div>
     </div>
   )
 }
@@ -35,6 +40,12 @@ const SummaryIndicators = ({ data }) => {
       <IndicatorBox
         text="parties have outstanding contributions"
         value={data.outstanding_contributions}
+      />
+      <IndicatorBox
+        isPercentage={true}
+        subtext="considering only the current year for the triennials that are not closed"
+        text="paid out of the total"
+        value={formatNumberValue(data.percentage_total_paid_current_year, 0, 0)}
       />
     </div>
   )
