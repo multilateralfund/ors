@@ -157,6 +157,7 @@ function DashboardView(props) {
   const ctx = useContext(ReplenishmentContext)
   const {
     allocations,
+    asOfDate,
     charts,
     income,
     overview,
@@ -210,6 +211,7 @@ function DashboardView(props) {
       Section = (
         <SectionStatus
           allocations={allocations}
+          asOfDate={asOfDate}
           income={income}
           provisions={provisions}
           showEditButton={ctx.isTreasurer}
