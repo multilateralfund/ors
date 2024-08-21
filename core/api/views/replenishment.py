@@ -3,10 +3,12 @@
 
 import json
 import urllib
+from base64 import b64decode
 from datetime import datetime
 from decimal import Decimal
 
 import openpyxl
+from django.core.files.base import ContentFile
 from django.db import models, transaction
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
@@ -121,6 +123,7 @@ class ReplenishmentViewSet(
             ) from exc
 
         new_replenishment = serializer.save(
+            amount=0,
             start_year=previous_replenishment.start_year + 3,
             end_year=previous_replenishment.end_year + 3,
         )
@@ -175,6 +178,7 @@ class ScaleOfAssessmentViewSet(
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
+        # pylint: disable=too-many-locals
         input_data = request.data
 
         try:
@@ -193,6 +197,16 @@ class ScaleOfAssessmentViewSet(
         meeting_number = input_data.get("meeting") or ""
         decision_number = input_data.get("decision") or ""
         comment = input_data.get("comment") or ""
+        decision_pdf = input_data.get("decision_pdf") or {}
+
+        if final and (not meeting_number or not decision_number or not decision_pdf):
+            raise ValidationError(
+                {
+                    "non_field_errors": "Meeting number, decision number and "
+                    "decision PDF are required for final "
+                    "version."
+                }
+            )
 
         previous_version = replenishment.scales_of_assessment_versions.order_by(
             "-version"
@@ -205,6 +219,13 @@ class ScaleOfAssessmentViewSet(
                 }
             )
 
+        if decision_pdf.get("data") and decision_pdf.get("filename"):
+            decision_file = ContentFile(
+                b64decode(decision_pdf["data"]), name=decision_pdf["filename"]
+            )
+        else:
+            decision_file = None
+
         if should_create_new_version or final:
             # Marking as final always creates a new version that is marked as final
             version = ScaleOfAssessmentVersion.objects.create(
@@ -214,6 +235,7 @@ class ScaleOfAssessmentViewSet(
                 decision_number=decision_number,
                 version=previous_version.version + 1,
                 comment=comment,
+                decision_pdf=decision_file,
             )
         else:
             version = previous_version
@@ -221,6 +243,7 @@ class ScaleOfAssessmentViewSet(
             version.meeting_number = meeting_number
             version.is_final = final
             version.comment = comment
+            version.decision_pdf = decision_file
             version.save()
 
         # Delete all scales of assessment if updating the latest version
@@ -299,7 +322,6 @@ class ScaleOfAssessmentViewSet(
 
     @action(methods=["GET"], detail=False, url_path="export")
     def export(self, request, *args, **kwargs):
-        print(request.query_params)
         if "start_year" not in request.query_params:
             raise ValidationError({"start_year": "This query parameter is required."})
         if "version" not in request.query_params:
@@ -307,7 +329,8 @@ class ScaleOfAssessmentViewSet(
 
         start_year = int(request.query_params["start_year"])
         queryset = self.filter_queryset(self.get_queryset())
-        wb = openpyxl.Workbook(write_only=True)
+        wb = openpyxl.Workbook()
+        wb.remove(wb.active)
         ws = wb.create_sheet("Scales of Assessment")
 
         data = [
@@ -332,6 +355,7 @@ class ScaleOfAssessmentViewSet(
             f"{start_year - 3} - {start_year - 1}",
             f"{start_year} - {start_year + 2}",
             start_year - 1,
+            queryset.first().version.comment,
         ).write(data)
 
         return workbook_response(
@@ -500,6 +524,66 @@ class SummaryStatusOfContributionsView(views.APIView):
             Country.objects.filter(ceit_statuses__is_ceit=True).distinct(), many=True
         ).data
 
+        current_year = datetime.now().year
+        data_current_year = TriennialContributionStatus.objects.filter(
+            end_year__lt=current_year
+        ).aggregate(
+            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+            promissory_notes=models.Sum("promissory_notes", default=0),
+            cash_payments=models.Sum("cash_payments", default=0),
+            agreed_contributions=models.Sum("agreed_contributions", default=0),
+        )
+
+        if current_year % 3 == 2:
+            # Current year is the start year of a triennial period
+            current_triennial_data = AnnualContributionStatus.objects.filter(
+                year=current_year
+            ).aggregate(
+                bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+                promissory_notes=models.Sum("promissory_notes", default=0),
+                cash_payments=models.Sum("cash_payments", default=0),
+                agreed_contributions=models.Sum("agreed_contributions", default=0),
+            )
+        elif current_year % 3 == 0:
+            # Current year is in the middle of a triennial period
+            current_triennial_data = AnnualContributionStatus.objects.filter(
+                year__in=[current_year - 1, current_year]
+            ).aggregate(
+                bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+                promissory_notes=models.Sum("promissory_notes", default=0),
+                cash_payments=models.Sum("cash_payments", default=0),
+                agreed_contributions=models.Sum("agreed_contributions", default=0),
+            )
+        else:
+            # Current year is the end year of a triennial period
+            current_triennial_data = TriennialContributionStatus.objects.filter(
+                end_year=current_year
+            ).aggregate(
+                bilateral_assistance=models.Sum("bilateral_assistance", default=0),
+                promissory_notes=models.Sum("promissory_notes", default=0),
+                cash_payments=models.Sum("cash_payments", default=0),
+                agreed_contributions=models.Sum("agreed_contributions", default=0),
+            )
+
+        data_current_year["bilateral_assistance"] += current_triennial_data[
+            "bilateral_assistance"
+        ]
+        data_current_year["promissory_notes"] += current_triennial_data[
+            "promissory_notes"
+        ]
+        data_current_year["cash_payments"] += current_triennial_data["cash_payments"]
+        data_current_year["agreed_contributions"] += current_triennial_data[
+            "agreed_contributions"
+        ]
+        data["percentage_total_paid_current_year"] = (
+            (
+                data_current_year["cash_payments"]
+                + data_current_year["bilateral_assistance"]
+                + data_current_year["promissory_notes"]
+            )
+            / data_current_year["agreed_contributions"]
+            * Decimal("100")
+        )
         data["total"] = agg.get_total()
         data["total"]["gain_loss"] = agg.get_gain_loss()
 
@@ -612,9 +696,9 @@ class ReplenishmentDashboardView(views.APIView):
     def get(self, request, *args, **kwargs):
         self.check_permissions(request)
 
+        current_year = datetime.now().year
         latest_closed_triennial = (
-            Replenishment.objects.filter(scales_of_assessment_versions__is_final=True)
-            .distinct()
+            Replenishment.objects.filter(end_year__lt=current_year)
             .order_by("-start_year")
             .first()
         )
@@ -728,7 +812,7 @@ class ReplenishmentDashboardView(views.APIView):
                         "outstanding_pledges": pledge["outstanding_pledges"],
                     }
                     for pledge in pledges
-                    if pledge["end_year"] <= latest_closed_triennial.end_year
+                    if pledge["end_year"] < current_year
                 ],
                 "pledged_contributions": [
                     {

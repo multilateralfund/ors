@@ -1,7 +1,7 @@
-import {useContext, useEffect, useMemo, useState} from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 
 import { transformData } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
-import ReplenishmentContext from "@ors/contexts/Replenishment/ReplenishmentContext";
+import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { formatApiUrl } from '@ors/helpers'
 
 const BASE_URL = '/api/replenishment/status-of-contributions'
@@ -12,6 +12,7 @@ function useGetSCData(start_year, end_year) {
     ceit: null,
     disputed_contributions: null,
     disputed_contributions_per_country: null,
+    percentage_total_paid_current_year: null,
     status_of_contributions: null,
     total: null,
   })
@@ -48,6 +49,8 @@ function useGetSCData(start_year, end_year) {
           disputed_contributions: data.disputed_contributions,
           disputed_contributions_per_country:
             data.disputed_contributions_per_country,
+          percentage_total_paid_current_year:
+            data.percentage_total_paid_current_year,
           status_of_contributions: data.status_of_contributions,
           total: data.total,
         })
@@ -102,7 +105,7 @@ function useGetSCData(start_year, end_year) {
         },
       ]
     },
-    [data],
+    [data, ctx.isTreasurer],
   )
 
   return { data, extraRows, loading, refetchSCData, rows }

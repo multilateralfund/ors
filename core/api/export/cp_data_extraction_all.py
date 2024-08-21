@@ -10,7 +10,7 @@ class BaseExtractionAllWriter(BaseWriter):
             value_headers.append(
                 {
                     "id": f"record_value_{year}",
-                    "headerName": f"Value {year}",
+                    "headerName": f"Value {year} (MT)",
                     "align": "right",
                     "type": "number",
                 },

@@ -503,10 +503,10 @@ class TestStatusOfContributions:
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
         country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
 
-        year_1 = 2020
-        year_2 = 2022
-        year_3 = 2023
-        year_4 = 2025
+        year_1 = 2018
+        year_2 = 2020
+        year_3 = 2021
+        year_4 = 2023
         CountryCEITStatusFactory.create(
             country=country_1, start_year=year_1, end_year=year_2, is_ceit=True
         )
@@ -708,6 +708,29 @@ class TestStatusOfContributions:
                     ferm_gain_loss_1.amount + ferm_gain_loss_2.amount
                 ).quantize(self.fifteen_decimals),
             },
+            "percentage_total_paid_current_year": (
+                (
+                    contribution_1.cash_payments
+                    + contribution_2.cash_payments
+                    + contribution_3.cash_payments
+                    + contribution_4.cash_payments
+                    + contribution_1.bilateral_assistance
+                    + contribution_2.bilateral_assistance
+                    + contribution_3.bilateral_assistance
+                    + contribution_4.bilateral_assistance
+                    + contribution_1.promissory_notes
+                    + contribution_2.promissory_notes
+                    + contribution_3.promissory_notes
+                    + contribution_4.promissory_notes
+                )
+                / (
+                    contribution_1.agreed_contributions
+                    + contribution_2.agreed_contributions
+                    + contribution_3.agreed_contributions
+                    + contribution_4.agreed_contributions
+                )
+                * Decimal("100")
+            ),
             "disputed_contributions": (disputed_1.amount + disputed_2.amount).quantize(
                 self.fifteen_decimals
             ),
@@ -788,6 +811,11 @@ class TestStatusOfContributions:
         AnnualContributionStatusFactory.create(country=country_2, year=year_1)
         AnnualContributionStatusFactory.create(country=country_2, year=year_2)
 
+        # Done, so the percentage of paid contributions is calculated
+        TriennialContributionStatusFactory.create(
+            country=country_1, start_year=year_1, end_year=year_2
+        )
+
         DisputedContributionsFactory.create(year=year_1)
         DisputedContributionsFactory.create(year=year_2)
 
@@ -863,20 +891,17 @@ class TestDisputedContributions(BaseTest):
 class TestReplenishmentDashboard(BaseTest):
     url = reverse("replenishment-dashboard")
     fifteen_decimals = decimal.Decimal("0.000000000000001")
-    year_1 = 2021
-    year_2 = 2023
-    year_3 = 2024
-    year_4 = 2026
+    year_1 = 2018
+    year_2 = 2020
+    year_3 = 2021
+    year_4 = 2023
 
     def test_replenishment_dashboard(self, user):
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
         country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
 
-        replenishment = ReplenishmentFactory.create(
+        ReplenishmentFactory.create(
             start_year=self.year_3, end_year=self.year_4
-        )
-        ScaleOfAssessmentVersionFactory.create(
-            replenishment=replenishment, is_final=True
         )
 
         contribution_1 = TriennialContributionStatusFactory.create(
@@ -1461,6 +1486,7 @@ class TestScaleOfAssessmentWorkflow:
             "amount": 1000,
             "meeting": "meeting",
             "decision": "decision",
+            "comment": "Comment",
             "data": [
                 {
                     "country_id": country_1.id,
@@ -1485,6 +1511,11 @@ class TestScaleOfAssessmentWorkflow:
                 },
             ],
             "final": True,
+            "decision_pdf": {
+                "filename": "decision.pdf",
+                # pylint: disable=line-too-long
+                "data": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAEElEQVR4nGJKf/ESEAAA//8D+gI7lUZ3rgAAAABJRU5ErkJggg==",
+            },
         }
         response = self.client.post(
             self.url_scale_of_assessment,

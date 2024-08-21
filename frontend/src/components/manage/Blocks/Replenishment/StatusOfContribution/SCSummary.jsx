@@ -20,7 +20,7 @@ const summary_columns = [
 ]
 
 export default function SCSummary() {
-  const { extraRows, rows } = useGetSCData()
+  const { data, extraRows, rows } = useGetSCData()
 
   const [sortOn, setSortOn] = useState(0)
   const [sortDirection, setSortDirection] = useState(1)
@@ -76,9 +76,11 @@ export default function SCSummary() {
         contributions: 0,
         contributions_advance: 0,
         outstanding_contributions: 0,
+        percentage_total_paid_current_year:
+          data.percentage_total_paid_current_year,
       },
     )
-  }, [rows])
+  }, [rows, data.percentage_total_paid_current_year])
 
   return (
     <div className="flex flex-col items-start gap-6">
