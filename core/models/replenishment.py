@@ -179,6 +179,7 @@ class Invoice(models.Model):
     replenishment = models.ForeignKey(
         Replenishment, on_delete=models.PROTECT, null=True, related_name="invoices"
     )
+    year = models.IntegerField(null=True, blank=True)
 
     amount = models.DecimalField(max_digits=30, decimal_places=15)
     currency = models.CharField(max_length=64)
@@ -187,6 +188,10 @@ class Invoice(models.Model):
     number = models.CharField(max_length=128, unique=True)
     date_of_issuance = models.DateField()
     date_sent_out = models.DateField(null=True, blank=True)
+    date_paid = models.DateField(null=True, blank=True)
+
+    date_first_reminder = models.DateField(null=True, blank=True)
+    date_second_reminder = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return f"Invoice {self.country.name} - {self.number}"
@@ -368,8 +373,12 @@ class ExternalIncome(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["start_year"], name="unique_start_year_external_income"),
-            models.UniqueConstraint(fields=["end_year"], name="unique_end_year_external_income"),
+            models.UniqueConstraint(
+                fields=["start_year"], name="unique_start_year_external_income"
+            ),
+            models.UniqueConstraint(
+                fields=["end_year"], name="unique_end_year_external_income"
+            ),
         ]
 
 

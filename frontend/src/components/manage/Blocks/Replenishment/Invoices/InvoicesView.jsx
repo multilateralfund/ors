@@ -33,7 +33,7 @@ import { IoSearchSharp } from 'react-icons/io5'
 
 const COLUMNS = [
   { field: 'country', label: 'Country' },
-  { field: 'number', label: 'Invoice number' },
+  { field: 'year', label: 'Year' },
   { field: 'date_of_issuance', label: 'Date of issuance', sortable: true },
   { field: 'amount', label: 'Amount', sortable: true },
   { field: 'currency', label: 'Currency' },
@@ -43,7 +43,8 @@ const COLUMNS = [
     subLabel: '(FERM)',
   },
   { field: 'date_sent_out', label: 'Sent on', sortable: true },
-  { field: 'reminder', label: 'Reminder sent on' },
+  { field: 'date_first_reminder', label: 'First reminder', subLabel: '(sent on)' },
+  { field: 'date_second_reminder', label: 'Second reminder', subLabel: '(sent on)' },
   { field: 'files', label: 'Files' },
 ]
 
@@ -81,15 +82,18 @@ function InvoicesView() {
         country: data.country.name,
         country_id: data.country.id,
         currency: data.currency,
+        date_first_reminder: formatDateValue(data.date_first_reminder) || '-',
         date_of_issuance: formatDateValue(data.date_of_issuance),
-        date_sent_out: formatDateValue(data.date_sent_out) || 'N/A',
-        exchange_rate: formatNumberValue(data.exchange_rate) || 'N/A',
+        date_paid: data.date_paid || '-',
+        date_second_reminder:  formatDateValue(data.date_second_reminder) || '-',
+        date_sent_out: formatDateValue(data.date_sent_out) || '-',
+        exchange_rate: formatNumberValue(data.exchange_rate) || '-',
         files: <ViewFiles files={data.invoice_files} />,
         files_data: data.invoice_files,
         iso3: data.country.iso3,
         number: data.number.toLocaleString(),
-        reminder: data.reminder_sent_on || 'N/A',
         replenishment: data.replenishment,
+        year: data.year || '-',
       })),
     ]
   }, [results, loaded, pagination.rowsPerPage])
@@ -127,7 +131,8 @@ function InvoicesView() {
       entry = { ...memoResults[editIdx] }
       entry.date_of_issuance = dateForEditField(entry.date_of_issuance)
       entry.date_sent_out = dateForEditField(entry.date_sent_out)
-      entry.reminder = dateForEditField(entry.reminder)
+      entry.date_first_reminder = dateForEditField(entry?.date_first_reminder)
+      entry.date_second_reminder = dateForEditField(entry?.date_second_reminder)
       entry.amount = entry.be_amount
       entry.exchange_rate = entry.be_exchange_rate
     }
@@ -142,7 +147,8 @@ function InvoicesView() {
     const entry = { ...formData }
     entry.date_of_issuance = dateForInput(entry.date_of_issuance)
     entry.date_sent_out = dateForInput(entry.date_sent_out) || ''
-    entry.reminder = dateForInput(entry.reminder) || ''
+    entry.date_first_reminder = dateForInput(entry.date_first_reminder) || ''
+    entry.date_second_reminder = dateForInput(entry.date_second_reminder) || ''
     entry.exchange_rate = isNaN(entry.exchange_rate) ? '' : entry.exchange_rate
 
     let nr_new_files = 0
@@ -210,6 +216,8 @@ function InvoicesView() {
     const entry = { ...formData }
     entry.date_of_issuance = dateForInput(entry.date_of_issuance)
     entry.date_sent_out = dateForInput(entry.date_sent_out)
+    entry.date_first_reminder = dateForInput(entry.date_first_reminder)
+    entry.date_second_reminder = dateForInput(entry.date_second_reminder)
     entry.reminder = dateForInput(entry.reminder)
     entry.exchange_rate = isNaN(entry.exchange_rate) ? '' : entry.exchange_rate
     entry.replenishment_id = ctx.periods.find(

@@ -100,9 +100,15 @@ const InvoiceDialog = function InvoiceDialog(props) {
         type="date"
       />
       <FieldInput
-        id="reminder"
-        defaultValue={data?.reminder}
-        label="Reminder"
+        id="date_first_reminder"
+        defaultValue={data?.date_first_reminder}
+        label="First reminder"
+        type="date"
+      />
+      <FieldInput
+        id="date_second_reminder"
+        defaultValue={data?.date_second_reminder}
+        label="Second reminder"
         type="date"
       />
       <h4>Files</h4>

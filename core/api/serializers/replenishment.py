@@ -150,12 +150,15 @@ class InvoiceSerializer(serializers.ModelSerializer):
             "id",
             "country",
             "replenishment",
+            "year",
             "amount",
             "currency",
             "exchange_rate",
             "number",
             "date_of_issuance",
             "date_sent_out",
+            "date_first_reminder",
+            "date_second_reminder",
             "invoice_files",
         ]
 
@@ -186,18 +189,23 @@ class InvoiceCreateSerializer(serializers.ModelSerializer):
     number = serializers.CharField()
 
     date_sent_out = serializers.DateField(allow_null=True, required=False)
+    date_first_reminder = serializers.DateField(allow_null=True, required=False)
+    date_second_reminder = serializers.DateField(allow_null=True, required=False)
 
     class Meta:
         model = Invoice
         fields = [
             "country_id",
             "replenishment_id",
+            "year",
             "amount",
             "currency",
             "exchange_rate",
             "number",
             "date_of_issuance",
             "date_sent_out",
+            "date_first_reminder",
+            "date_second_reminder"
         ]
 
 
