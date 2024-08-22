@@ -1,3 +1,11 @@
 .MuiTooltip-tooltip {
   @apply px-4 py-2;
 }
+
+.bp-table-tooltip.MuiTooltip-tooltip {
+  @apply mt-1 border border-solid bg-gray-MUI50 px-1.5 py-1 font-normal text-typography-primary;
+
+  font-size: 13px;
+  border-radius: 3px;
+  border: 1px solid #babfc7;
+}
