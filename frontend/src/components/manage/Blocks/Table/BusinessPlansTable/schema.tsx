@@ -1,3 +1,7 @@
+import { Tooltip } from '@mui/material'
+
+import CommentsTagList from './CommentsTagList'
+
 const defaultColumnDefs = [
   {
     autoHeight: true,
@@ -120,7 +124,31 @@ const odpColumnDefs = (yearColumns: any[]) => [
   ) || []),
 ]
 
-const commentsColumnDefs = (yearColumns: any[]) => [
+const commentsCellRenderer = (props: any) => {
+  const { commentSecretariat, commentTypes } = props.value
+
+  return (
+    <div className="p-1.5 text-left">
+      <CommentsTagList comments={commentTypes} />
+      <Tooltip
+        TransitionProps={{ timeout: 0 }}
+        classes={{ tooltip: 'bp-table-tooltip' }}
+        title={commentSecretariat}
+      >
+        {commentSecretariat}
+      </Tooltip>
+    </div>
+  )
+}
+
+const commentsValueGetter = (params: any) => {
+  return {
+    commentSecretariat: params.data.comment_secretariat,
+    commentTypes: params.data.comment_types,
+  }
+}
+
+const commentsColumnDefs = () => [
   ...defaultColumnDefs,
   {
     autoHeight: true,
@@ -147,13 +175,14 @@ const commentsColumnDefs = (yearColumns: any[]) => [
   {
     autoHeight: true,
     cellClass: 'ag-text-center ag-cell-wrap-text',
+    cellRenderer: commentsCellRenderer,
     field: 'comment_secretariat',
     headerClass: 'ag-text-center',
     headerName: 'Comment',
     minWidth: 200,
     resizable: true,
     sortable: true,
-    tooltipField: 'comment_secretariat',
+    valueGetter: commentsValueGetter,
   },
 ]
 
@@ -233,13 +262,14 @@ const allColumnDefs = (yearColumns: any[]) => [
   {
     autoHeight: true,
     cellClass: 'ag-text-center ag-cell-wrap-text',
+    cellRenderer: commentsCellRenderer,
     field: 'comment_secretariat',
     headerClass: 'ag-text-center',
     headerName: 'Comment',
     minWidth: 200,
     resizable: true,
     sortable: true,
-    tooltipField: 'comment_secretariat',
+    valueGetter: commentsValueGetter,
   },
 ]
 

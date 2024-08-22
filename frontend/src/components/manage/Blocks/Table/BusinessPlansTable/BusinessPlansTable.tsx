@@ -156,7 +156,7 @@ export default function BusinessPlansTable() {
       case 'odp':
         return odpColumnDefs(yearColumns)
       case 'comments':
-        return commentsColumnDefs(yearColumns)
+        return commentsColumnDefs()
       default:
         return allColumnDefs(yearColumns)
     }
