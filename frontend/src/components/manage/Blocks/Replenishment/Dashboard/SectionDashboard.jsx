@@ -305,9 +305,7 @@ function CummulativeTab(props) {
 function TriennialTab(props) {
   const { data, period, periodOptions } = props
 
-  const [year_start, year_end] = period
-    ? period.split('-')
-    : periodOptions[0]?.value.split('-')
+  const [year_start, year_end] = period.split('-')
 
   const { data: scData } = useGetSCData(year_start, year_end)
 
@@ -366,9 +364,7 @@ function getDefaultRange(periodOptions, period) {
 function AnnualTab(props) {
   const { data, period, periodOptions } = props
 
-  const year = getDefaultYear(periodOptions, period)
-
-  const { data: scData } = useGetSCData(year)
+  const { data: scData } = useGetSCData(period)
 
   const contrib = extractContributions(scData?.status_of_contributions ?? [])
 
@@ -524,11 +520,10 @@ function SectionDashboard(props) {
         className="mt-8"
         style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
       >
-        <Component
-          data={data}
-          period={defaultPeriod}
-          periodOptions={periodOptions}
-        />
+        {(currentSection?.showPeriodSelector && defaultPeriod) ||
+        !currentSection?.showPeriodSelector ? (
+          <Component data={data} period={defaultPeriod} />
+        ) : null}
 
         <div className="">
           <br className="m-5 leading-7" />
