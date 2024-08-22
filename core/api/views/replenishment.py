@@ -786,6 +786,13 @@ class ReplenishmentDashboardView(views.APIView):
             else config.DEFAULT_REPLENISHMENT_AS_OF_DATE
         )
 
+        external_income = ExternalIncome.objects.values(
+            "start_year",
+            "end_year",
+            "interest_earned",
+            "miscellaneous_income",
+        ).order_by("-start_year")
+
         data = {
             "as_of_date": as_of_date.strftime("%d %B %Y"),
             "overview": {
@@ -846,6 +853,7 @@ class ReplenishmentDashboardView(views.APIView):
                     for pledge in pledges
                 ],
             },
+            "external_income": external_income,
         }
 
         data["overview"]["balance"] = sum(data["income"].values()) - sum(
@@ -863,14 +871,17 @@ class ReplenishmentDashboardView(views.APIView):
         allocations = ExternalAllocation.objects.get()
 
         # TODO: serializers?
-        ExternalIncome.objects.update_or_create(
-            start_year=data["external_income_start_year"],
-            end_year=data["external_income_end_year"],
-            defaults={
-                "interest_earned": data["interest_earned"],
-                "miscellaneous_income": data["miscellaneous_income"],
-            },
-        )
+        if data.get("external_income_start_year") and data.get(
+            "external_income_end_year"
+        ):
+            ExternalIncome.objects.update_or_create(
+                start_year=data["external_income_start_year"],
+                end_year=data["external_income_end_year"],
+                defaults={
+                    "interest_earned": data["interest_earned"],
+                    "miscellaneous_income": data["miscellaneous_income"],
+                },
+            )
 
         allocations.undp = data["undp"]
         allocations.unep = data["unep"]

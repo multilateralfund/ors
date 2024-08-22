@@ -381,6 +381,11 @@ DASHBOARD_DATA_INCOME = [
         "end_year": 2023,
         "col": "L",
     },
+    {
+        "start_year": 2024,
+        "end_year": 2026,
+        "col": "M",
+    },
 ]
 DASHBOARD_INCOME_INTEREST_EARNED_ROW = 19
 DASHBOARD_INCOME_MISC_INCOME_ROW = 21
@@ -429,7 +434,7 @@ def decimal_converter(value):
     try:
         return decimal.Decimal(str(value))
     except decimal.InvalidOperation:
-        return 0
+        return decimal.Decimal(0)
 
 
 CEIT = [
@@ -746,12 +751,14 @@ def import_status_of_contributions(countries):
             header=None,
             converters={0: decimal_converter},
         ).iloc[0, 0]
-        external_incomes.append(ExternalIncome(
-            start_year=info["start_year"],
-            end_year=info["end_year"],
-            interest_earned=interest_earned,
-            miscellaneous_income=miscellaneous_income,
-        ))
+        external_incomes.append(
+            ExternalIncome(
+                start_year=info["start_year"],
+                end_year=info["end_year"],
+                interest_earned=interest_earned,
+                miscellaneous_income=miscellaneous_income,
+            )
+        )
 
     ExternalIncome.objects.bulk_create(external_incomes)
     logger.info(f"Imported External Income - {len(external_incomes)} records")
