@@ -95,3 +95,64 @@ export function formatTableRows(rows, minDigits, maxDigits) {
 
   return result
 }
+
+export function extractContributions(rows) {
+  const r = {
+    bilateral_assistance_countries: 0,
+    contributions: 0,
+    contributions_advance: 0,
+
+    outstanding_contributions: 0,
+    promissory_notes_countries: 0,
+  }
+
+  for (let i = 0; i < rows.length; i++) {
+    const bilateral_assistance = rows[i].bilateral_assistance
+    const promissory_notes = rows[i].promissory_notes
+
+    let value = rows[i].outstanding_contributions
+
+    if (value > -1 && value < 1) {
+      value = 0
+    }
+    if (value < 0) {
+      r.contributions_advance += 1
+    } else if (value === 0) {
+      r.contributions += 1
+    } else {
+      r.outstanding_contributions += 1
+    }
+
+    if (bilateral_assistance) {
+      r.bilateral_assistance_countries += 1
+    }
+    if (promissory_notes) {
+      r.promissory_notes_countries += 1
+    }
+  }
+
+  return r
+
+  return rows.reduce(
+    (acc, { bilateral_assistance, outstanding_contributions }) => {
+      let value = outstanding_contributions
+      if (value > -1 && value < 1) {
+        value = 0
+      }
+      if (value < 0) {
+        acc.contributions_advance += 1
+      } else if (value === 0) {
+        acc.contributions += 1
+      } else {
+        acc.outstanding_contributions += 1
+      }
+      if (bilateral_assistance) {
+        acc.bilateral_assistance_countries += 1
+      }
+      if (promissory_notes) {
+        acc.bilateral_assistance_countries += 1
+      }
+      return acc
+    },
+  )
+}

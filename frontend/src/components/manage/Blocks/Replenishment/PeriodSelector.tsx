@@ -12,7 +12,7 @@ function isYear(period: string) {
 }
 
 function PeriodSelector(props: any) {
-  const { label = 'Period', period, periodOptions } = props
+  const { label = 'Period', period, periodOptions, selectedPeriod } = props
 
   const pathname = usePathname()
   const router = useRouter()
@@ -28,7 +28,10 @@ function PeriodSelector(props: any) {
   for (let i = 0; i < periodOptions.length; i++) {
     options.push(periodOptions[i])
 
-    if (periodOptions[i].value === period) {
+    if (
+      periodOptions[i].value === period ||
+      periodOptions[i].value === selectedPeriod
+    ) {
       selectedIndex = i
     }
   }

@@ -254,6 +254,7 @@ function DashboardView(props) {
       Section = (
         <SectionDashboard
           charts={charts}
+          data={newData}
           overview={overview}
           overviewIndicators={overviewIndicators}
           period={period}
