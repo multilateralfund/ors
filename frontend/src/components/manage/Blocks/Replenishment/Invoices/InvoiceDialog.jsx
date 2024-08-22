@@ -7,10 +7,23 @@ import {
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceAttachments'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
+import { useStore } from '@ors/store'
 
 const InvoiceDialog = function InvoiceDialog(props) {
   const { countries, data, isEdit, title, ...dialogProps } = props
   const ctx = useContext(ReplenishmentContext)
+
+  const settings = useStore((state) => state.common.settings.data)
+
+  const yearOptions = []
+  for (
+    let i = settings.cp_reports.min_year;
+    i <= settings.cp_reports.max_year + 1;
+    i++
+  ) {
+    yearOptions.push({ id: i, label: i.toString(), value: i })
+  }
+  const reversedYearOptions = [...yearOptions].reverse()
 
   return (
     <FormDialog title={title} {...dialogProps}>
@@ -38,13 +51,6 @@ const InvoiceDialog = function InvoiceDialog(props) {
         ))}
       </FieldSelect>
       <FieldInput
-        id="year"
-        defaultValue={data?.year}
-        label="Year"
-        type="number"
-        required
-      />
-      <FieldInput
         id="number"
         defaultValue={data?.number}
         label="Invoice number"
@@ -52,22 +58,20 @@ const InvoiceDialog = function InvoiceDialog(props) {
         required
       />
       <FieldSelect
-        id="period"
-        label="Period"
-        defaultValue={
-          data &&
-          `${data?.replenishment.start_year}-${data?.replenishment.end_year}`
-        }
+        id="year"
+        label="Year"
+        defaultValue={data?.year}
+        type="number"
         required
       >
         <option value="" disabled hidden></option>
-        {ctx.periodOptions.map((period) => (
+        {reversedYearOptions.map((year) => (
           <option
-            key={period.value}
+            key={year.value}
             className="text-primary"
-            value={period.value}
+            value={year.value}
           >
-            {period.label}
+            {year.label}
           </option>
         ))}
       </FieldSelect>
