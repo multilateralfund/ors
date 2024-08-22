@@ -370,7 +370,6 @@ function InvoicesView() {
       ) : null}
       {showAdd ? (
         <AddInvoiceDialog
-          columns={COLUMNS}
           countries={ctx.countries}
           onCancel={() => setShowAdd(false)}
           onSubmit={handleAddInvoiceSubmit}
@@ -378,7 +377,6 @@ function InvoicesView() {
       ) : null}
       {editData !== null ? (
         <EditInvoiceDialog
-          columns={COLUMNS}
           countries={ctx.countries}
           data={editData}
           onCancel={() => setEditIdx(null)}

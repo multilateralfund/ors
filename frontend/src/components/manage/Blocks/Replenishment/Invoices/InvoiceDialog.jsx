@@ -9,7 +9,7 @@ import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invo
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 
 const InvoiceDialog = function InvoiceDialog(props) {
-  const { columns, countries, data, isEdit, title, ...dialogProps } = props
+  const { countries, data, isEdit, title, ...dialogProps } = props
   const ctx = useContext(ReplenishmentContext)
 
   return (
@@ -27,7 +27,7 @@ const InvoiceDialog = function InvoiceDialog(props) {
       <FieldSelect
         id="country_id"
         defaultValue={data?.country_id}
-        label={columns[0].label}
+        label="Country"
         required
       >
         <option value="" disabled hidden></option>
@@ -38,9 +38,16 @@ const InvoiceDialog = function InvoiceDialog(props) {
         ))}
       </FieldSelect>
       <FieldInput
+        id="year"
+        defaultValue={data?.year}
+        label="Year"
+        type="number"
+        required
+      />
+      <FieldInput
         id="number"
         defaultValue={data?.number}
-        label={columns[1].label}
+        label="Invoice number"
         type="text"
         required
       />
@@ -67,14 +74,14 @@ const InvoiceDialog = function InvoiceDialog(props) {
       <FieldInput
         id="date_of_issuance"
         defaultValue={data?.date_of_issuance}
-        label={columns[2].label}
+        label="Date of issuance"
         type="date"
         required
       />
       <FieldInput
         id="amount"
         defaultValue={data?.amount}
-        label={columns[3].label}
+        label="Amount"
         step="any"
         type="number"
         required
@@ -82,14 +89,14 @@ const InvoiceDialog = function InvoiceDialog(props) {
       <FieldInput
         id="currency"
         defaultValue={data?.currency}
-        label={columns[4].label}
+        label="Currency"
         type="text"
         required
       />
       <FieldInput
         id="exchange_rate"
         defaultValue={data?.exchange_rate}
-        label={columns[5].label}
+        label="Exchange rate"
         step="any"
         type="number"
       />
