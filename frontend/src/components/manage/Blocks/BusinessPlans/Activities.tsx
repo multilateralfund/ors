@@ -137,9 +137,7 @@ function OpenActivity({ activity, period }: any) {
       <div className="grid grid-cols-2 gap-y-4 md:grid-cols-3 lg:grid-cols-4">
         <span className="flex items-center gap-2">
           <span>Country</span>
-          <h4 className="m-0">
-            {activity.country?.iso3 || activity.country?.name_alt}
-          </h4>
+          <h4 className="m-0">{activity.country.name}</h4>
         </span>
         {period && (
           <span className="flex items-center gap-2">
@@ -213,9 +211,7 @@ function ClosedActivity({ activity, period }: any) {
         </div>
         <span className="flex items-center gap-2">
           <span>Country</span>
-          <h4 className="m-0">
-            {activity.country?.iso3 || activity.country?.name_alt}
-          </h4>
+          <h4 className="m-0">{activity.country.name}</h4>
         </span>
         {period && (
           <span className="flex items-center gap-2">

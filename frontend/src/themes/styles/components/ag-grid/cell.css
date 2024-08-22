@@ -19,6 +19,10 @@
       }
     }
 
+    &.ag-country-cell-text .inline {
+      min-width: 120px;
+    }
+
     .ag-cell-options {
       padding-right: 2px !important;
       margin-top: -4px;
