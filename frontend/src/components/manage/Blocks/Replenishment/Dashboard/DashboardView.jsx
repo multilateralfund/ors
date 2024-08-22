@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useContext, useState } from 'react'
+import { useContext, useState } from 'react'
 
 import cx from 'classnames'
 import { useSnackbar } from 'notistack'
@@ -84,14 +84,18 @@ function EditStatusDialog(props) {
             id="external_income_start_year"
             label="Start year of external income"
             value={formState['external_income_start_year']}
-            onChange={handleChange('external_income_start_year')}
+            onChange={handleExternalIncomeYearChange(
+              'external_income_start_year',
+            )}
             onlyNumber
           />
           <InputField
             id="external_income_end_year"
             label="End year of external income"
             value={formState['external_income_end_year']}
-            onChange={handleChange('external_income_end_year')}
+            onChange={handleExternalIncomeYearChange(
+              'external_income_end_year',
+            )}
             onlyNumber
           />
         </div>
@@ -228,7 +232,7 @@ function DashboardView(props) {
       })
   }
 
-  let Section = null
+  let Section
 
   switch (section) {
     case 'status':
