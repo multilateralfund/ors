@@ -59,8 +59,8 @@ const InvoiceDialog = function InvoiceDialog(props) {
       />
       <FieldSelect
         id="year"
-        label="Year"
         defaultValue={data?.year}
+        label="Year"
         type="number"
         required
       >
