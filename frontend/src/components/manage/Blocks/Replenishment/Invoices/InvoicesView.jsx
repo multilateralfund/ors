@@ -36,7 +36,6 @@ const COLUMNS = [
   { field: 'year', label: 'Year' },
   { field: 'date_of_issuance', label: 'Date of issuance', sortable: true },
   { field: 'amount', label: 'Amount', sortable: true },
-  { field: 'currency', label: 'Currency' },
   {
     field: 'exchange_rate',
     label: 'Exchange Rate',
@@ -76,7 +75,7 @@ function InvoicesView() {
     return [
       ...results.map((data) => ({
         id: data.id,
-        amount: formatNumberValue(data.amount),
+        amount: formatNumberValue(data.amount) + ' ' + data.currency,
         be_amount: data.amount,
         be_exchange_rate: data.exchange_rate,
         country: data.country.name,
