@@ -5,21 +5,6 @@ import CommentsTagList from './CommentsTagList'
 const defaultColumnDefs = [
   {
     autoHeight: true,
-    // cellRenderer: (params: any) => (
-    //   <Link href={`/business-plans/${params.data.id}`}>
-    //     {params.data.title}
-    //   </Link>
-    // ),
-    cellClass: 'ag-cell-wrap-text',
-    field: 'title',
-    headerName: 'Title',
-    minWidth: 200,
-    resizable: true,
-    sortable: true,
-    tooltipField: 'title',
-  },
-  {
-    autoHeight: true,
     cellClass: 'ag-text-center',
     field: 'country.iso3',
     headerClass: 'ag-text-center',
@@ -72,6 +57,21 @@ const defaultColumnDefs = [
     resizable: true,
     sortable: true,
     tooltipField: 'subsector.name',
+  },
+  {
+    autoHeight: true,
+    // cellRenderer: (params: any) => (
+    //   <Link href={`/business-plans/${params.data.id}`}>
+    //     {params.data.title}
+    //   </Link>
+    // ),
+    cellClass: 'ag-cell-wrap-text',
+    field: 'title',
+    headerName: 'Title',
+    minWidth: 200,
+    resizable: true,
+    sortable: true,
+    tooltipField: 'title',
   },
   {
     autoHeight: true,
