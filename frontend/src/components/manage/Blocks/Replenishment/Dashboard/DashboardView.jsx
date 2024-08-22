@@ -1,6 +1,6 @@
 'use client'
 
-import { useContext, useState } from 'react'
+import React, { useContext, useState } from 'react'
 
 import cx from 'classnames'
 import { useSnackbar } from 'notistack'
@@ -42,7 +42,24 @@ function EditStatusDialog(props) {
   function handleChange(name) {
     return function (evt) {
       const value = parseFloat(evt.target.value)
-      if (typeof value === 'number' && !isNaN(value)) {
+      if (
+        evt.target.value === '' ||
+        (typeof value === 'number' && !isNaN(value))
+      ) {
+        setFormState(function (prev) {
+          return { ...prev, [name]: value }
+        })
+      }
+    }
+  }
+
+  function handleExternalIncomeYearChange(name) {
+    return function (evt) {
+      const value = parseInt(evt.target.value)
+      if (
+        evt.target.value === '' ||
+        (typeof value === 'number' && !isNaN(value))
+      ) {
         setFormState(function (prev) {
           return { ...prev, [name]: value }
         })
@@ -62,6 +79,22 @@ function EditStatusDialog(props) {
     >
       <div className="flex flex-col gap-y-4">
         <h3 className="m-0 uppercase">Income</h3>
+        <div className="flex gap-x-4">
+          <InputField
+            id="external_income_start_year"
+            label="Start year of external income"
+            value={formState['external_income_start_year']}
+            onChange={handleChange('external_income_start_year')}
+            onlyNumber
+          />
+          <InputField
+            id="external_income_end_year"
+            label="End year of external income"
+            value={formState['external_income_end_year']}
+            onChange={handleChange('external_income_end_year')}
+            onlyNumber
+          />
+        </div>
         <div className="flex gap-x-4">
           <InputField
             id="interest_earned"
@@ -137,15 +170,6 @@ function EditStatusDialog(props) {
             onChange={handleChange('bilateral_assistance')}
           />
         </div>
-
-        <div className="flex gap-x-4">
-          <InputField
-            id="provision_for_ferm_fluctuations"
-            label="Provision for FERM fluctuations"
-            value={formState['provision_for_ferm_fluctuations']}
-            onChange={handleChange('provision_for_ferm_fluctuations')}
-          />
-        </div>
       </div>
     </FormDialog>
   )
@@ -185,7 +209,7 @@ function DashboardView(props) {
     const parsedData = {}
     const dataKeys = Object.keys(data)
     for (let i = 0; i < dataKeys.length; i++) {
-      parsedData[dataKeys[i]] = parseFloat(data[dataKeys[i]]) ?? 0
+      parsedData[dataKeys[i]] = parseFloat(data[dataKeys[i]]) || 0
     }
 
     api('/api/replenishment/dashboard', {

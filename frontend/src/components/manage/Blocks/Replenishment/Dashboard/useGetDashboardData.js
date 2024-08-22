@@ -153,7 +153,10 @@ function useGetDashboardData() {
     formData = {
       ...data.overview,
       ...data.allocations,
-      ...data.income,
+      external_income_end_year: data.external_income[0].end_year,
+      external_income_start_year: data.external_income[0].start_year,
+      interest_earned: data.external_income[0].interest_earned,
+      miscellaneous_income: data.external_income[0].miscellaneous_income,
     }
     newData = {
       allocations: ALLOCATIONS,
