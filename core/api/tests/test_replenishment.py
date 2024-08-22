@@ -925,6 +925,8 @@ class TestReplenishmentDashboard(BaseTest):
         ferm_gain_loss_2 = FermGainLossFactory.create(country=country_2)
 
         external_income = ExternalIncome.objects.create(
+            start_year=self.year_1,
+            end_year=self.year_2,
             interest_earned=decimal.Decimal("100"),
             miscellaneous_income=decimal.Decimal("200"),
         )

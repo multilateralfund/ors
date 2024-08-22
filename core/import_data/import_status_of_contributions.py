@@ -325,16 +325,65 @@ TRIENNIAL_STATUS_OF_CONTRIBUTIONS_SHEET_INFO = {
     },
 }
 
-DASHBOARD_DATA_INCOME = {
-    "interest_earned": {
-        "row": 13,
+DASHBOARD_DATA_INCOME = [
+    {
+        "start_year": 1991,
+        "end_year": 1993,
+        "col": "B",
+    },
+    {
+        "start_year": 1994,
+        "end_year": 1996,
         "col": "C",
     },
-    "miscellaneous_income": {
-        "row": 14,
-        "col": "C",
+    {
+        "start_year": 1997,
+        "end_year": 1999,
+        "col": "D",
     },
-}
+    {
+        "start_year": 2000,
+        "end_year": 2002,
+        "col": "E",
+    },
+    {
+        "start_year": 2003,
+        "end_year": 2005,
+        "col": "F",
+    },
+    {
+        "start_year": 2006,
+        "end_year": 2008,
+        "col": "G",
+    },
+    {
+        "start_year": 2009,
+        "end_year": 2011,
+        "col": "H",
+    },
+    {
+        "start_year": 2012,
+        "end_year": 2014,
+        "col": "I",
+    },
+    {
+        "start_year": 2015,
+        "end_year": 2017,
+        "col": "J",
+    },
+    {
+        "start_year": 2018,
+        "end_year": 2020,
+        "col": "K",
+    },
+    {
+        "start_year": 2021,
+        "end_year": 2023,
+        "col": "L",
+    },
+]
+DASHBOARD_INCOME_INTEREST_EARNED_ROW = 19
+DASHBOARD_INCOME_MISC_INCOME_ROW = 21
 
 DASHBOARD_DATA_ALLOCATIONS = {
     "undp": {
@@ -679,20 +728,33 @@ def import_status_of_contributions(countries):
     logger.info(f"Imported {len(ferm_gain_loss_objects)} Ferm Gain/Loss")
 
     # Import dashboard data
-    income_kwargs = {}
-    for attribute, info in DASHBOARD_DATA_INCOME.items():
-        value = soc_file.parse(
-            sheet_name="Status",
+    external_incomes = []
+    for info in DASHBOARD_DATA_INCOME:
+        interest_earned = soc_file.parse(
+            sheet_name="Statistics",
             usecols=info["col"],
-            skiprows=info["row"] - 1,
+            skiprows=DASHBOARD_INCOME_INTEREST_EARNED_ROW - 1,
             nrows=1,
             header=None,
             converters={0: decimal_converter},
-        )
-        income_kwargs[attribute] = value.iloc[0, 0]
+        ).iloc[0, 0]
+        miscellaneous_income = soc_file.parse(
+            sheet_name="Statistics",
+            usecols=info["col"],
+            skiprows=DASHBOARD_INCOME_MISC_INCOME_ROW - 1,
+            nrows=1,
+            header=None,
+            converters={0: decimal_converter},
+        ).iloc[0, 0]
+        external_incomes.append(ExternalIncome(
+            start_year=info["start_year"],
+            end_year=info["end_year"],
+            interest_earned=interest_earned,
+            miscellaneous_income=miscellaneous_income,
+        ))
 
-    ExternalIncome.objects.create(**income_kwargs)
-    logger.info("Imported External Income")
+    ExternalIncome.objects.bulk_create(external_incomes)
+    logger.info(f"Imported External Income - {len(external_incomes)} records")
 
     allocations_kwargs = {}
     for attribute, info in DASHBOARD_DATA_ALLOCATIONS.items():

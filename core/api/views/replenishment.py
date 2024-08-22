@@ -703,7 +703,10 @@ class ReplenishmentDashboardView(views.APIView):
             .order_by("-start_year")
             .first()
         )
-        income = ExternalIncome.objects.get()
+        income = ExternalIncome.objects.aggregate(
+            interest_earned=models.Sum("interest_earned", default=0),
+            miscellaneous_income=models.Sum("miscellaneous_income", default=0),
+        )
         allocations = ExternalAllocation.objects.get()
 
         computed_summary_data = TriennialContributionStatus.objects.aggregate(
@@ -799,9 +802,9 @@ class ReplenishmentDashboardView(views.APIView):
             "income": {
                 "cash_payments": computed_summary_data["cash_payments"],
                 "bilateral_assistance": computed_summary_data["bilateral_assistance"],
-                "interest_earned": income.interest_earned,
+                "interest_earned": income["interest_earned"],
                 "promissory_notes": computed_summary_data["promissory_notes"],
-                "miscellaneous_income": income.miscellaneous_income,
+                "miscellaneous_income": income["miscellaneous_income"],
             },
             "allocations": {
                 "undp": allocations.undp,
@@ -857,13 +860,17 @@ class ReplenishmentDashboardView(views.APIView):
 
         data = request.data
 
-        income = ExternalIncome.objects.get()
         allocations = ExternalAllocation.objects.get()
 
         # TODO: serializers?
-        income.interest_earned = data["interest_earned"]
-        income.miscellaneous_income = data["miscellaneous_income"]
-        income.save()
+        ExternalIncome.objects.update_or_create(
+            start_year=data["external_income_start_year"],
+            end_year=data["external_income_end_year"],
+            defaults={
+                "interest_earned": data["interest_earned"],
+                "miscellaneous_income": data["miscellaneous_income"],
+            },
+        )
 
         allocations.undp = data["undp"]
         allocations.unep = data["unep"]
@@ -883,7 +890,10 @@ class ReplenishmentDashboardExportView(views.APIView):
     permission_classes = [IsUserAllowedReplenishment]
 
     def get(self, request, *args, **kwargs):
-        income = ExternalIncome.objects.get()
+        income = ExternalIncome.objects.aggregate(
+            interest_earned=models.Sum("interest_earned", default=0),
+            miscellaneous_income=models.Sum("miscellaneous_income", default=0),
+        )
         allocations = ExternalAllocation.objects.get()
 
         computed_summary_data = TriennialContributionStatus.objects.aggregate(
@@ -900,8 +910,8 @@ class ReplenishmentDashboardExportView(views.APIView):
                 computed_summary_data["cash_payments"],
                 computed_summary_data["promissory_notes"],
                 computed_summary_data["bilateral_assistance"],
-                income.interest_earned,
-                income.miscellaneous_income,
+                income["interest_earned"],
+                income["miscellaneous_income"],
             ]
         )
 
@@ -964,12 +974,12 @@ class ReplenishmentDashboardExportView(views.APIView):
             (
                 "    -  Interest earned",
                 None,
-                income.interest_earned,
+                income["interest_earned"],
             ),
             (
                 "    -  Miscellaneous income",
                 None,
-                income.miscellaneous_income,
+                income["miscellaneous_income"],
             ),
             EMPTY_ROW,
             (
