@@ -7,10 +7,23 @@ import {
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceAttachments'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
+import { useStore } from '@ors/store'
 
 const InvoiceDialog = function InvoiceDialog(props) {
-  const { columns, countries, data, isEdit, title, ...dialogProps } = props
+  const { countries, data, isEdit, title, ...dialogProps } = props
   const ctx = useContext(ReplenishmentContext)
+
+  const settings = useStore((state) => state.common.settings.data)
+
+  const yearOptions = []
+  for (
+    let i = settings.cp_reports.min_year;
+    i <= settings.cp_reports.max_year + 1;
+    i++
+  ) {
+    yearOptions.push({ id: i, label: i.toString(), value: i })
+  }
+  const reversedYearOptions = [...yearOptions].reverse()
 
   return (
     <FormDialog title={title} {...dialogProps}>
@@ -27,7 +40,7 @@ const InvoiceDialog = function InvoiceDialog(props) {
       <FieldSelect
         id="country_id"
         defaultValue={data?.country_id}
-        label={columns[0].label}
+        label="Country"
         required
       >
         <option value="" disabled hidden></option>
@@ -40,41 +53,39 @@ const InvoiceDialog = function InvoiceDialog(props) {
       <FieldInput
         id="number"
         defaultValue={data?.number}
-        label={columns[1].label}
+        label="Invoice number"
         type="text"
         required
       />
       <FieldSelect
-        id="period"
-        label="Period"
-        defaultValue={
-          data &&
-          `${data?.replenishment.start_year}-${data?.replenishment.end_year}`
-        }
+        id="year"
+        defaultValue={data?.year}
+        label="Year"
+        type="number"
         required
       >
         <option value="" disabled hidden></option>
-        {ctx.periodOptions.map((period) => (
+        {reversedYearOptions.map((year) => (
           <option
-            key={period.value}
+            key={year.value}
             className="text-primary"
-            value={period.value}
+            value={year.value}
           >
-            {period.label}
+            {year.label}
           </option>
         ))}
       </FieldSelect>
       <FieldInput
         id="date_of_issuance"
         defaultValue={data?.date_of_issuance}
-        label={columns[2].label}
+        label="Date of issuance"
         type="date"
         required
       />
       <FieldInput
         id="amount"
         defaultValue={data?.amount}
-        label={columns[3].label}
+        label="Amount"
         step="any"
         type="number"
         required
@@ -82,14 +93,14 @@ const InvoiceDialog = function InvoiceDialog(props) {
       <FieldInput
         id="currency"
         defaultValue={data?.currency}
-        label={columns[4].label}
+        label="Currency"
         type="text"
         required
       />
       <FieldInput
         id="exchange_rate"
         defaultValue={data?.exchange_rate}
-        label={columns[5].label}
+        label="Exchange rate"
         step="any"
         type="number"
       />
@@ -100,9 +111,15 @@ const InvoiceDialog = function InvoiceDialog(props) {
         type="date"
       />
       <FieldInput
-        id="reminder"
-        defaultValue={data?.reminder}
-        label="Reminder"
+        id="date_first_reminder"
+        defaultValue={data?.date_first_reminder}
+        label="First reminder"
+        type="date"
+      />
+      <FieldInput
+        id="date_second_reminder"
+        defaultValue={data?.date_second_reminder}
+        label="Second reminder"
         type="date"
       />
       <h4>Files</h4>
