@@ -994,8 +994,9 @@ def add_statistics_status_of_contributions_response_worksheet(wb, periods):
             "description": "Payments %age to pledges",
             "summary": f"={last_column_letter}14/{last_column_letter}10 * 100",
             **{
-                # pylint: disable=C0301
-                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}14/{get_column_letter(i+2)}10 * 100"
+                f"{soc['start_year']}-{soc['end_year']}": (
+                    f"={get_column_letter(i+2)}14" f"/{get_column_letter(i+2)}10 * 100"
+                )
                 for i, soc in enumerate(soc_data)
             },
         },
@@ -1026,8 +1027,11 @@ def add_statistics_status_of_contributions_response_worksheet(wb, periods):
             "description": "TOTAL INCOME",
             "summary": f"=SUM(B23:{last_period_column_letter}23)",
             **{
-                # pylint: disable=C0301
-                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}14+{get_column_letter(i+2)}19+{get_column_letter(i+2)}21"
+                f"{soc['start_year']}-{soc['end_year']}": (
+                    f"={get_column_letter(i+2)}14"
+                    f"+{get_column_letter(i+2)}19"
+                    f"+{get_column_letter(i+2)}21"
+                )
                 for i, soc in enumerate(soc_data)
             },
         },
@@ -1084,8 +1088,9 @@ def add_statistics_status_of_contributions_response_worksheet(wb, periods):
             "description": "As % to total pledges",
             "summary": f"={last_column_letter}30/{last_column_letter}26 * 100",
             **{
-                # pylint: disable=C0301
-                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}30/{get_column_letter(i+2)}26 * 100"
+                f"{soc['start_year']}-{soc['end_year']}": (
+                    f"={get_column_letter(i+2)}30" f"/{get_column_letter(i+2)}26 * 100"
+                )
                 for i, soc in enumerate(soc_data)
             },
         },
@@ -1101,8 +1106,9 @@ def add_statistics_status_of_contributions_response_worksheet(wb, periods):
             "description": "CEITs' oustandings %age to pledges",
             "summary": f"={last_column_letter}32/{last_column_letter}26 * 100",
             **{
-                # pylint: disable=C0301
-                f"{soc['start_year']}-{soc['end_year']}": f"={get_column_letter(i+2)}32/{get_column_letter(i+2)}26 * 100"
+                f"{soc['start_year']}-{soc['end_year']}": (
+                    f"={get_column_letter(i+2)}32" f"/{get_column_letter(i+2)}26 * 100"
+                )
                 for i, soc in enumerate(soc_data)
             },
         },
