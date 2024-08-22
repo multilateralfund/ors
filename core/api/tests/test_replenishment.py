@@ -901,9 +901,7 @@ class TestReplenishmentDashboard(BaseTest):
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
         country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
 
-        ReplenishmentFactory.create(
-            start_year=self.year_3, end_year=self.year_4
-        )
+        ReplenishmentFactory.create(start_year=self.year_3, end_year=self.year_4)
 
         contribution_1 = TriennialContributionStatusFactory.create(
             country=country_1, start_year=self.year_1, end_year=self.year_2
@@ -946,6 +944,10 @@ class TestReplenishmentDashboard(BaseTest):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url)
+
+        response_data = response.data
+        # To list, so it's not a queryset
+        response_data["external_income"] = list(response_data["external_income"])
 
         payment_pledge_percentage = (
             (
@@ -1046,6 +1048,18 @@ class TestReplenishmentDashboard(BaseTest):
                     ferm_gain_loss_1.amount + ferm_gain_loss_2.amount
                 ).quantize(self.fifteen_decimals),
             },
+            "external_income": [
+                {
+                    "start_year": external_income.start_year,
+                    "end_year": external_income.end_year,
+                    "interest_earned": external_income.interest_earned.quantize(
+                        self.fifteen_decimals
+                    ),
+                    "miscellaneous_income": external_income.miscellaneous_income.quantize(
+                        self.fifteen_decimals
+                    ),
+                }
+            ],
             "charts": {
                 "outstanding_pledges": [
                     {
@@ -1121,7 +1135,7 @@ class TestReplenishmentDashboard(BaseTest):
             - correct_response["allocations"]["gain_loss"]
         ).quantize(self.fifteen_decimals)
 
-        assert response.data == correct_response
+        assert response_data == correct_response
 
 
 class TestScaleOfAssessmentWorkflow:
