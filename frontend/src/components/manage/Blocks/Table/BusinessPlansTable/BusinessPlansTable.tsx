@@ -55,6 +55,14 @@ export default function BusinessPlansTable() {
       ),
     [bpSlice.yearRanges.data, filters.year_start],
   )
+
+  const getYearColsValue = (
+    value: any,
+    year: number,
+    isAfterMaxYear: boolean,
+  ) =>
+    isAfterMaxYear ? value.is_after : value.year === year && !value.is_after
+
   const yearColumns = useMemo(() => {
     if (!yearRangeSelected) return []
 
@@ -64,20 +72,29 @@ export default function BusinessPlansTable() {
 
     for (
       let year = yearRangeSelected.min_year;
-      year <= yearRangeSelected.max_year;
+      year <= yearRangeSelected.max_year + 1;
       year++
     ) {
+      const isAfterMaxYear = year > yearRangeSelected.max_year
+
+      let label = year
+      if (isAfterMaxYear) {
+        label = `After ${yearRangeSelected.max_year}`
+      }
+
       valuesUSD.push({
         autoHeaderHeight: true,
         autoHeight: true,
         cellClass: 'ag-text-center',
         field: `value_usd_${year}`,
         headerClass: 'ag-text-center',
-        headerName: `${year}`,
+        headerName: `${label}`,
         minWidth: 80,
         resizable: true,
         valueGetter: (params: any) => {
-          const value = params.data.values.find((i: any) => i.year === year)
+          const value = params.data.values.find((value: any) =>
+            getYearColsValue(value, year, isAfterMaxYear),
+          )
           if (value && value.value_usd !== null) {
             return parseFloat(value.value_usd).toFixed(2)
           }
@@ -91,11 +108,13 @@ export default function BusinessPlansTable() {
         cellClass: 'ag-text-center',
         field: `value_odp_${year}`,
         headerClass: 'ag-text-center',
-        headerName: `${year}`,
+        headerName: `${label}`,
         minWidth: 80,
         resizable: true,
         valueGetter: (params: any) => {
-          const value = params.data.values.find((i: any) => i.year === year)
+          const value = params.data.values.find((value: any) =>
+            getYearColsValue(value, year, isAfterMaxYear),
+          )
           if (value && value.value_odp !== null) {
             return parseFloat(value.value_odp).toFixed(2)
           }
@@ -109,11 +128,13 @@ export default function BusinessPlansTable() {
         cellClass: 'ag-text-center',
         field: `value_mt_${year}`,
         headerClass: 'ag-text-center',
-        headerName: `${year}`,
+        headerName: `${label}`,
         minWidth: 80,
         resizable: true,
         valueGetter: (params: any) => {
-          const value = params.data.values.find((i: any) => i.year === year)
+          const value = params.data.values.find((value: any) =>
+            getYearColsValue(value, year, isAfterMaxYear),
+          )
           if (value && value.value_mt !== null) {
             return parseFloat(value.value_mt).toFixed(2)
           }
