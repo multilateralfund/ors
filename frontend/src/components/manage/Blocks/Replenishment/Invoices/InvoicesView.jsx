@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useContext, useMemo, useState } from 'react'
+import { useContext, useMemo, useState } from 'react'
 
 import Cookies from 'js-cookie'
 import { times } from 'lodash'
@@ -12,6 +12,7 @@ import {
   Select,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import InvoiceDialog from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceDialog'
+import InvoiceStatus from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceStatus'
 import useGetInvoices, {
   _PER_PAGE,
 } from '@ors/components/manage/Blocks/Replenishment/Invoices/useGetInvoices'
@@ -33,6 +34,7 @@ import { IoSearchSharp } from 'react-icons/io5'
 
 const COLUMNS = [
   { field: 'country', label: 'Country' },
+  { field: 'status', label: 'Status' },
   { field: 'year', label: 'Year' },
   { field: 'date_of_issuance', label: 'Date of issuance', sortable: true },
   { field: 'amount', label: 'Amount', sortable: true },
@@ -42,8 +44,16 @@ const COLUMNS = [
     subLabel: '(FERM)',
   },
   { field: 'date_sent_out', label: 'Sent on', sortable: true },
-  { field: 'date_first_reminder', label: 'First reminder', subLabel: '(sent on)' },
-  { field: 'date_second_reminder', label: 'Second reminder', subLabel: '(sent on)' },
+  {
+    field: 'date_first_reminder',
+    label: 'First reminder',
+    subLabel: '(sent on)',
+  },
+  {
+    field: 'date_second_reminder',
+    label: 'Second reminder',
+    subLabel: '(sent on)',
+  },
   { field: 'files', label: 'Files' },
 ]
 
@@ -72,29 +82,27 @@ function InvoicesView() {
         }
       })
     }
-    return [
-      ...results.map((data) => ({
-        id: data.id,
-        amount: formatNumberValue(data.amount) + ' ' + data.currency,
-        be_amount: data.amount,
-        be_exchange_rate: data.exchange_rate,
-        country: data.country.name,
-        country_id: data.country.id,
-        currency: data.currency,
-        date_first_reminder: formatDateValue(data.date_first_reminder) || '-',
-        date_of_issuance: formatDateValue(data.date_of_issuance),
-        date_paid: data.date_paid || '-',
-        date_second_reminder:  formatDateValue(data.date_second_reminder) || '-',
-        date_sent_out: formatDateValue(data.date_sent_out) || '-',
-        exchange_rate: formatNumberValue(data.exchange_rate) || '-',
-        files: <ViewFiles files={data.invoice_files} />,
-        files_data: data.invoice_files,
-        iso3: data.country.iso3,
-        number: data.number.toLocaleString(),
-        replenishment: data.replenishment,
-        year: data.year || '-',
-      })),
-    ]
+    return results.map((data) => ({
+      id: data.id,
+      amount: formatNumberValue(data.amount) + ' ' + data.currency,
+      be_amount: data.amount,
+      be_exchange_rate: data.exchange_rate,
+      country: data.country.name,
+      country_id: data.country.id,
+      currency: data.currency,
+      date_first_reminder: formatDateValue(data.date_first_reminder) || '-',
+      date_of_issuance: formatDateValue(data.date_of_issuance),
+      date_second_reminder: formatDateValue(data.date_second_reminder) || '-',
+      date_sent_out: formatDateValue(data.date_sent_out) || '-',
+      exchange_rate: formatNumberValue(data.exchange_rate) || '-',
+      files: <ViewFiles files={data.invoice_files} />,
+      files_data: data.invoice_files,
+      iso3: data.country.iso3,
+      number: data.number.toLocaleString(),
+      replenishment: data.replenishment,
+      status: <InvoiceStatus status={data.date_paid} />,
+      year: data.year || '-',
+    }))
   }, [results, loaded, pagination.rowsPerPage])
 
   const pages = Math.ceil(count / pagination.rowsPerPage)

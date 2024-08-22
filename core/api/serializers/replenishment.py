@@ -159,6 +159,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
             "date_sent_out",
             "date_first_reminder",
             "date_second_reminder",
+            "date_paid",
             "invoice_files",
         ]
 

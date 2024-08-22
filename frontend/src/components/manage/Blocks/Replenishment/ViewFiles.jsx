@@ -16,9 +16,9 @@ export default function ViewFiles(props) {
       ) : (
         files.map((file, index) => (
           <div key={index} className="flex items-center gap-2 bg-transparent">
-            <IoDocumentTextOutline color="#0086C9" size="16" />
+            <IoDocumentTextOutline color="#002A3C" size="16" />
             <a
-              className="text-secondary no-underline"
+              className="text-mlfs-deepTealShade no-underline"
               href={formatApiUrl(file.download_url)}
             >
               {file.filename}
