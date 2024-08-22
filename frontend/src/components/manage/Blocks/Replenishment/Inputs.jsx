@@ -102,7 +102,7 @@ export function Input(props) {
 }
 
 export function FormattedNumberInput(props) {
-  const { id, className, name, onChange, type, value, ...rest } = props
+  const { id, className, name, onChange, onlyNumber, type, value, ...rest } = props
 
   const [inputMode, setInputMode] = useState(false)
 
@@ -122,7 +122,7 @@ export function FormattedNumberInput(props) {
       <input
         id={id}
         name={name || id}
-        className={cx(CLASSESS, className, { hidden: !inputMode })}
+        className={cx(CLASSESS, className, { hidden: !inputMode && !onlyNumber })}
         ref={realInput}
         type="number"
         value={value}
@@ -133,10 +133,10 @@ export function FormattedNumberInput(props) {
       <input
         id={`${id}_mask`}
         name={`${name || id}_mask`}
-        className={cx(CLASSESS, className, { hidden: inputMode })}
+        className={cx(CLASSESS, className, { hidden: inputMode || onlyNumber })}
         readOnly={true}
         type="text"
-        value={formatDecimalValue(value ?? '', {})}
+        value={formatDecimalValue(value || 0, {})}
         onFocus={() => setInputMode(true)}
         {...rest}
       />

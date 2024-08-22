@@ -1,5 +1,7 @@
 import Link from 'next/link'
 
+import { formatApiUrl } from '@ors/helpers'
+
 function SectionStatistics() {
   return (
     <>
@@ -20,7 +22,15 @@ function SectionStatistics() {
         <span className="print:hidden"> | </span>
         <h2 className="m-0 text-3xl">STATISTICS</h2>
       </div>
-      <div>not implemented</div>
+      <div>
+        <Link
+          href={formatApiUrl(
+            '/api/replenishment/status-of-contributions/statistics-export/',
+          )}
+        >
+          Download statistics
+        </Link>
+      </div>
     </>
   )
 }
