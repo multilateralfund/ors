@@ -689,13 +689,15 @@ class StatisticsStatusOfContributionsView(views.APIView):
             miscellaneous_income=models.Sum("miscellaneous_income", default=0),
         )
         totals = {
-            "start_year": 1991,
+            "start_year": soc_data[0]["start_year"],
             "end_year": current_year,
             **summary_agg.get_total(),
             "disputed_contributions": summary_agg.get_disputed_contribution_amount(),
             "interest_earned": external_income_total["interest_earned"],
             "miscellaneous_income": external_income_total["miscellaneous_income"],
-            "oustanding_ceit": summary_agg.get_ceit_data()["outstanding_contributions"],
+            "outstanding_ceit": summary_agg.get_ceit_data()[
+                "outstanding_contributions"
+            ],
         }
 
         totals["total_payments"] = (
@@ -717,7 +719,7 @@ class StatisticsStatusOfContributionsView(views.APIView):
             * Decimal("100")
         )
         totals["percentage_outstanding_ceit"] = (
-            totals["oustanding_ceit"] / totals["agreed_contributions"] * Decimal("100")
+            totals["outstanding_ceit"] / totals["agreed_contributions"] * Decimal("100")
         )
         response.append(totals)
 
