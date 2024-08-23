@@ -183,23 +183,11 @@ function DashboardView(props) {
   const { period, section } = props
   const { formData, invalidateDataFn, loading, newData } = useGetDashboardData()
   const ctx = useContext(ReplenishmentContext)
-  const {
-    allocations,
-    asOfDate,
-    charts,
-    income,
-    overview,
-    overviewIndicators,
-    provisions,
-  } = newData
+  const { allocations, asOfDate, charts, income, provisions } = newData
 
   const [showEdit, setShowEdit] = useState(false)
 
   const { enqueueSnackbar } = useSnackbar()
-
-  if (loading) {
-    return <Loading />
-  }
 
   function handleEditClick() {
     setShowEdit(!showEdit)
@@ -255,8 +243,6 @@ function DashboardView(props) {
         <SectionDashboard
           charts={charts}
           data={newData}
-          overview={overview}
-          overviewIndicators={overviewIndicators}
           period={period}
           tab={section}
         />

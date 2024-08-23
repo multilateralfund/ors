@@ -12,7 +12,13 @@ function isYear(period: string) {
 }
 
 function PeriodSelector(props: any) {
-  const { label = 'Period', period, periodOptions, selectedPeriod } = props
+  const {
+    label = 'Period',
+    onChange,
+    period,
+    periodOptions,
+    selectedPeriod,
+  } = props
 
   const pathname = usePathname()
   const router = useRouter()
@@ -37,7 +43,12 @@ function PeriodSelector(props: any) {
   }
 
   function handleChange(option: any) {
-    router.push(`${basePath}/${option.value}`)
+    const newPath = `${basePath}/${option.value}`
+    if (onChange) {
+      onChange(newPath, { basePath, option })
+    } else {
+      router.push(newPath)
+    }
   }
 
   return (
