@@ -736,6 +736,57 @@ class AnnualStatusOfContributionsAggregator:
             return 0
 
 
+class StatisticsStatusOfContributionsAggregator:
+    """
+    Aggregator for the statistics status of contributions using the
+    TriennialContributionStatus data.
+    """
+
+    def get_soc_data(self):
+        return (
+            TriennialContributionStatus.objects.values("start_year", "end_year")
+            .annotate(
+                agreed_contributions_sum=models.Sum("agreed_contributions", default=0),
+                cash_payments_sum=models.Sum("cash_payments", default=0),
+                bilateral_assistance_sum=models.Sum("bilateral_assistance", default=0),
+                promissory_notes_sum=models.Sum("promissory_notes", default=0),
+                outstanding_contributions_sum=models.Sum(
+                    "outstanding_contributions", default=0
+                ),
+                disputed_contributions=models.Subquery(
+                    DisputedContribution.objects.filter(
+                        year__gte=models.OuterRef("start_year"),
+                        year__lte=models.OuterRef("end_year"),
+                    )
+                    # Group by replenishment start year
+                    .annotate(start_year_replenishment=models.OuterRef("start_year"))
+                    .values("start_year_replenishment")
+                    .annotate(total=models.Sum("amount"))
+                    .values("total")[:1]
+                ),
+                outstanding_ceit=models.Sum(
+                    "outstanding_contributions",
+                    default=0,
+                    filter=Q(country__ceit_statuses__is_ceit=True)
+                    & Q(country__ceit_statuses__start_year__lte=F("start_year"))
+                    & (
+                        Q(country__ceit_statuses__end_year__gte=F("end_year"))
+                        | Q(country__ceit_statuses__end_year__isnull=True)
+                    ),
+                ),
+            )
+            .order_by("start_year")
+        )
+
+    def get_external_income_data(self):
+        return ExternalIncome.objects.values(
+            "start_year",
+            "end_year",
+            "interest_earned",
+            "miscellaneous_income",
+        ).order_by("start_year")
+
+
 def add_period_status_of_contributions_response_worksheet(
     wb, agg, sheet_name, sheet_period
 ):
@@ -901,47 +952,9 @@ def add_statistics_status_of_contributions_response_worksheet(wb, periods):
         }
     )
 
-    soc_data = (
-        TriennialContributionStatus.objects.values("start_year", "end_year")
-        .annotate(
-            agreed_contributions_sum=models.Sum("agreed_contributions", default=0),
-            cash_payments_sum=models.Sum("cash_payments", default=0),
-            bilateral_assistance_sum=models.Sum("bilateral_assistance", default=0),
-            promissory_notes_sum=models.Sum("promissory_notes", default=0),
-            outstanding_contributions_sum=models.Sum(
-                "outstanding_contributions", default=0
-            ),
-            disputed_contributions=models.Subquery(
-                DisputedContribution.objects.filter(
-                    year__gte=models.OuterRef("start_year"),
-                    year__lte=models.OuterRef("end_year"),
-                )
-                # Group by replenishment start year
-                .annotate(start_year_replenishment=models.OuterRef("start_year"))
-                .values("start_year_replenishment")
-                .annotate(total=models.Sum("amount"))
-                .values("total")[:1]
-            ),
-            outstanding_ceit=models.Sum(
-                "outstanding_contributions",
-                default=0,
-                filter=Q(country__ceit_statuses__is_ceit=True)
-                & Q(country__ceit_statuses__start_year__lte=F("start_year"))
-                & (
-                    Q(country__ceit_statuses__end_year__gte=F("end_year"))
-                    | Q(country__ceit_statuses__end_year__isnull=True)
-                ),
-            ),
-        )
-        .order_by("start_year")
-    )
-
-    external_income_data = ExternalIncome.objects.values(
-        "start_year",
-        "end_year",
-        "interest_earned",
-        "miscellaneous_income",
-    ).order_by("start_year")
+    agg = StatisticsStatusOfContributionsAggregator()
+    soc_data = agg.get_soc_data()
+    external_income_data = agg.get_external_income_data()
 
     columns_number = len(headers)
     last_column_letter = get_column_letter(columns_number)
