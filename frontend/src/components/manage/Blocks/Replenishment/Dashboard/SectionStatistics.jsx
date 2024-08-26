@@ -3,13 +3,16 @@
 import cx from 'classnames'
 import Link from 'next/link'
 
+import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils'
 import { formatApiUrl } from '@ors/helpers'
 
 import useGetBpPeriods from '../../BusinessPlans/BPList/useGetBPPeriods'
 import styles from '../Table/table.module.css'
+import useGetStatisticsData from './useGetStatisticsData'
 
 const HEADERS = [
   { field: 'period', label: 'Description' },
+  { field: 'agreed_contributions', label: 'Pledged contributions' },
   { field: 'cash_payments', label: 'Cash payments/received' },
   { field: 'bilateral_assistance', label: 'Bilateral assistance' },
   { field: 'promissory_notes', label: 'Promissory notes' },
@@ -17,7 +20,7 @@ const HEADERS = [
   { field: 'disputed_contributions', label: 'Disputed contributions' },
   { field: 'outstanding_contributions', label: 'Outstanding pledges' },
   {
-    field: 'payments_percentage_to_pledges',
+    field: 'payment_pledge_percentage',
     label: 'Payments %age to pledges',
   },
   { field: '', label: '' },
@@ -27,77 +30,33 @@ const HEADERS = [
   { field: '', label: '' },
   { field: 'total_income', label: 'TOTAL INCOME' },
   { field: '', label: '' },
-  { field: 'accumulated_figures', label: 'Accumulated figures' },
-  { field: 'acc_total_pledges', label: 'Total pledges' },
-  { field: 'acc_total_payments', label: 'Total payments' },
+
+  { field: 'period', label: 'Accumulated figures' },
+  { field: 'agreed_contributions', label: 'Total pledges' },
+  { field: 'total_payments', label: 'Total payments' },
   {
-    field: 'acc_payments_percentage_to_pledges',
+    field: 'payment_pledge_percentage',
     label: 'Payments %age to pledges',
   },
   { field: 'total_income', label: 'Total income' },
   {
-    field: 'total_outstanding_contributions',
+    field: 'outstanding_contributions',
     label: 'Total outstanding contributions',
   },
-  { field: 'as_percentage_to_total_pledges', label: 'As % to total pledges' },
   {
-    field: 'ceits_outstanding_contributions',
+    field: 'outstanding_contributions_percentage',
+    label: 'As % to total pledges',
+  },
+  {
+    field: 'outstanding_ceit',
     label:
       'Outstanding contributions for certain Countries with Economies in Transition (CEITs)',
   },
   {
-    field: 'ceits_outstanding_percentage_to_pledges',
+    field: 'percentage_outstanding_ceit',
     label: "CEITs' oustandings %age to pledges",
   },
 ]
-
-const MOCK_DATA = [
-  {
-    acc_payments_percentage_to_pledges: 321.12,
-    acc_total_payments: 321.12,
-    acc_total_pledges: 321.12,
-    accumulated_figures: 321.12,
-    as_percentage_to_total_pledges: 321.12,
-    bilateral_assistance: 123,
-    cash_payments: 206611034.1,
-    ceits_outstanding_contributions: 321.12,
-    ceits_outstanding_percentage_to_pledges: 321.12,
-    disputed_contributions: 123,
-    interest_earned: 999.99,
-    miscellaneous_income: 999.99,
-    outstanding_contributions: 123,
-    payments_percentage_to_pledges: 123,
-    period: '1991-1993',
-    promissory_notes: 123,
-    total_income: 999.99,
-    total_income: 321.12,
-    total_outstanding_contributions: 321.12,
-    total_payments: 123,
-  },
-]
-
-function duplicateMockData() {
-  const periods = [
-    '1994-1996',
-    '1997-1999',
-    '2000-2002',
-    '2003-2005',
-    '2006-2008',
-    '2009-2011',
-    '2012-2014',
-    '2015-2017',
-    '2018-2020',
-    '2021-2023',
-    '2024-2026',
-    '1991-2024',
-  ]
-
-  for (let i = 0; i < periods.length; i++) {
-    MOCK_DATA[i + 1] = { ...MOCK_DATA[0], period: periods[i] }
-  }
-}
-
-duplicateMockData()
 
 function StatisticsTable(props) {
   const { data } = props
@@ -117,10 +76,11 @@ function StatisticsTable(props) {
 
     for (let j = 0; j < data.length; j++) {
       const content = data[j][HEADERS[i].field]
+      const cellValue = formatNumberValue(content, 2, 2) || content
       if (i == 0) {
-        cells.push(<th key={j}>{content}</th>)
+        cells.push(<th key={j}>{cellValue}</th>)
       } else {
-        cells.push(<td key={j}>{content}</td>)
+        cells.push(<td key={j}>{cellValue}</td>)
       }
     }
 
@@ -136,6 +96,8 @@ function StatisticsTable(props) {
 }
 
 function SectionStatistics() {
+  const { data, loading } = useGetStatisticsData()
+  console.log(data)
   return (
     <>
       <div className="flex items-center gap-4">
@@ -163,7 +125,7 @@ function SectionStatistics() {
         >
           Download statistics
         </Link>
-        <StatisticsTable data={MOCK_DATA} />
+        {data ? <StatisticsTable data={data} /> : null}
       </div>
     </>
   )
