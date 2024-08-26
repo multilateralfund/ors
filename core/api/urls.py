@@ -22,7 +22,7 @@ from core.api.views import (
     SummaryStatusOfContributionsExportView,
     TriennialStatusOfContributionsExportView,
     StatisticsStatusOfContributionsExportView,
-    AnnualStatusOfContributionsExportView,
+    AnnualStatusOfContributionsExportView, StatisticsStatusOfContributionsView,
 )
 from core.api.views import ProjectCommentViewSet
 from core.api.views import ProjectFileView
@@ -377,6 +377,11 @@ urlpatterns = [
         "replenishment/dashboard/export/",
         ReplenishmentDashboardExportView.as_view(),
         name="replenishment-dashboard-export",
+    ),
+    path(
+        "replenishment/status-of-contributions/statistics/",
+        StatisticsStatusOfContributionsView.as_view(),
+        name="replenishment-status-of-contributions-statistics",
     ),
     path(
         "replenishment/status-of-contributions/statistics-export/",

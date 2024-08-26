@@ -6,6 +6,7 @@ import urllib
 from base64 import b64decode
 from datetime import datetime
 from decimal import Decimal
+from itertools import zip_longest
 
 import openpyxl
 from constance import config
@@ -50,6 +51,7 @@ from core.api.views.utils import (
     SummaryStatusOfContributionsAggregator,
     add_summary_status_of_contributions_response_worksheet,
     add_statistics_status_of_contributions_response_worksheet,
+    StatisticsStatusOfContributionsAggregator,
 )
 from core.models import (
     AnnualContributionStatus,
@@ -621,6 +623,107 @@ class SummaryStatusOfContributionsExportView(views.APIView):
         current_year = datetime.now().year
 
         return workbook_response(f"Summary Status of Contributions {current_year}", wb)
+
+
+class StatisticsStatusOfContributionsView(views.APIView):
+    permission_classes = [IsUserAllowedReplenishment]
+
+    def get(self, request, *args, **kwargs):
+        self.check_permissions(request)
+
+        current_year = datetime.now().year
+        statistics_agg = StatisticsStatusOfContributionsAggregator()
+        soc_data = statistics_agg.get_soc_data()
+        external_income = statistics_agg.get_external_income_data()
+
+        response = []
+        # Annotating soc data with external income would make more queries
+        # (separate for interest and miscellaneous income) and would be less
+        # readable
+        for soc, income in zip_longest(soc_data, external_income):
+            total_payments = (
+                soc["cash_payments_sum"]
+                + soc["bilateral_assistance_sum"]
+                + soc["promissory_notes_sum"]
+            )
+            response.append(
+                {
+                    "start_year": soc["start_year"],
+                    "end_year": soc["end_year"],
+                    "agreed_contributions": soc["agreed_contributions_sum"],
+                    "cash_payments": soc["cash_payments_sum"],
+                    "bilateral_assistance": soc["bilateral_assistance_sum"],
+                    "promissory_notes": soc["promissory_notes_sum"],
+                    "total_payments": total_payments,
+                    "disputed_contributions": soc["disputed_contributions"],
+                    "outstanding_contributions": soc["outstanding_contributions_sum"],
+                    "payment_pledge_percentage": (
+                        total_payments
+                        / soc["agreed_contributions_sum"]
+                        * Decimal("100")
+                    ),
+                    "interest_earned": income["interest_earned"],
+                    "miscellaneous_income": income["miscellaneous_income"],
+                    "total_income": (
+                        total_payments
+                        + income["interest_earned"]
+                        + income["miscellaneous_income"]
+                    ),
+                    "percentage_outstanding_agreed": (
+                        soc["outstanding_contributions_sum"]
+                        / soc["agreed_contributions_sum"]
+                        * Decimal("100")
+                    ),
+                    "outstanding_ceit": soc["outstanding_ceit"],
+                    "percentage_outstanding_ceit": (
+                        soc["outstanding_ceit"]
+                        / soc["agreed_contributions_sum"]
+                        * Decimal("100")
+                    ),
+                }
+            )
+
+        summary_agg = SummaryStatusOfContributionsAggregator()
+        external_income_total = ExternalIncome.objects.aggregate(
+            interest_earned=models.Sum("interest_earned", default=0),
+            miscellaneous_income=models.Sum("miscellaneous_income", default=0),
+        )
+        totals = {
+            "start_year": soc_data[0]["start_year"],
+            "end_year": current_year,
+            **summary_agg.get_total(),
+            "disputed_contributions": summary_agg.get_disputed_contribution_amount(),
+            "interest_earned": external_income_total["interest_earned"],
+            "miscellaneous_income": external_income_total["miscellaneous_income"],
+            "outstanding_ceit": summary_agg.get_ceit_data()[
+                "outstanding_contributions"
+            ],
+        }
+
+        totals["total_payments"] = (
+            totals["cash_payments"]
+            + totals["bilateral_assistance"]
+            + totals["promissory_notes"]
+        )
+        totals["payment_pledge_percentage"] = (
+            totals["total_payments"] / totals["agreed_contributions"] * Decimal("100")
+        )
+        totals["total_income"] = (
+            totals["total_payments"]
+            + totals["interest_earned"]
+            + totals["miscellaneous_income"]
+        )
+        totals["percentage_outstanding_agreed"] = (
+            totals["outstanding_contributions"]
+            / totals["agreed_contributions"]
+            * Decimal("100")
+        )
+        totals["percentage_outstanding_ceit"] = (
+            totals["outstanding_ceit"] / totals["agreed_contributions"] * Decimal("100")
+        )
+        response.append(totals)
+
+        return Response(response)
 
 
 class StatisticsStatusOfContributionsExportView(views.APIView):
