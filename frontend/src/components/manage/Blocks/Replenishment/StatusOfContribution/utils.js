@@ -105,10 +105,12 @@ export function extractContributions(rows) {
     contributions_advance: 0,
     contributions_percentage: 0,
 
+    countries: rows.length,
     outstanding_contributions: 0,
-    outstanding_contributions_percentage: 0,
 
+    outstanding_contributions_percentage: 0,
     promissory_notes_countries: 0,
+
     promissory_notes_countries_percentage: 0,
   }
 

@@ -117,14 +117,7 @@ function SectionStatistics() {
         <span className="print:hidden"> | </span>
         <h2 className="m-0 text-3xl">STATISTICS</h2>
       </div>
-      <div>
-        <Link
-          href={formatApiUrl(
-            '/api/replenishment/status-of-contributions/statistics-export/',
-          )}
-        >
-          Download statistics
-        </Link>
+      <div className="mt-8">
         {data ? <StatisticsTable data={data} /> : null}
       </div>
     </>
