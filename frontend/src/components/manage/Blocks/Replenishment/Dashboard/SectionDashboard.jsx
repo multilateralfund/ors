@@ -27,7 +27,12 @@ function SummaryCard(props) {
       contents.push(
         <div key={i} className="flex flex-col uppercase">
           <div className="text-[#4D4D4D]">{elements[i].label}</div>
-          <div className="text-4xl font-bold text-primary">
+          <div
+            className={cx(
+              'text-4xl font-bold text-primary',
+              elements[i].className,
+            )}
+          >
             {elements[i].prefix || ''}
             {elements[i].value}
             {elements[i].suffix || ''}
@@ -277,8 +282,9 @@ function TabIndicatorsFerm(props) {
       label={totals.gain_loss < 0 ? 'FERM gain' : 'FERM loss'}
       elements={[
         {
+          className: totals.gain_loss < 0 ? '' : 'text-red-500',
           label: 'amount',
-          prefix: '$',
+          prefix: totals.gain_loss < 0 ? '+$' : '-$',
           value: formatNumberValue(totals.gain_loss, 2, 2),
         },
         {
