@@ -166,12 +166,12 @@ class InvoiceSerializer(serializers.ModelSerializer):
 
 class InvoiceCreateSerializer(serializers.ModelSerializer):
     country_id = serializers.PrimaryKeyRelatedField(
-        queryset=Country.objects.all().values_list("id", flat=True),
+        queryset=Country.objects.all(),
         write_only=True,
     )
 
     replenishment_id = serializers.PrimaryKeyRelatedField(
-        queryset=Replenishment.objects.all().values_list("id", flat=True),
+        queryset=Replenishment.objects.all(),
         write_only=True,
     )
 
@@ -261,12 +261,12 @@ class PaymentSerializer(serializers.ModelSerializer):
 
 class PaymentCreateSerializer(serializers.ModelSerializer):
     country_id = serializers.PrimaryKeyRelatedField(
-        queryset=Country.objects.all().values_list("id", flat=True),
+        queryset=Country.objects.all(),
         write_only=True,
     )
 
     replenishment_id = serializers.PrimaryKeyRelatedField(
-        queryset=Replenishment.objects.all().values_list("id", flat=True),
+        queryset=Replenishment.objects.all(),
         write_only=True,
         allow_null=True,
         required=False,

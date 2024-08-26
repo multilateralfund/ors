@@ -1206,7 +1206,8 @@ class ReplenishmentInvoiceViewSet(
             models.Prefetch(
                 "replenishment__scales_of_assessment_versions",
                 queryset=ScaleOfAssessmentVersion.objects.order_by("-version"),
-            )
+            ),
+            "invoice_files",
         )
 
     def get_serializer_class(self):
