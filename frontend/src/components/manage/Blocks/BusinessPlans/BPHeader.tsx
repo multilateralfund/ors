@@ -1,54 +1,59 @@
 'use client'
 
-import React, { useContext, useMemo, useState } from 'react'
+import React, { useContext, useState } from 'react'
 
 import { Button } from '@mui/material'
 import cx from 'classnames'
-import { capitalize, orderBy } from 'lodash'
 import NextLink from 'next/link'
 
 import Link from '@ors/components/ui/Link/Link'
 import BPContext from '@ors/contexts/BusinessPlans/BPContext'
 import useClickOutside from '@ors/hooks/useClickOutside'
-import { useStore } from '@ors/store'
+
+import { useGetBPVersions } from './BP/useGetBPVersions'
 
 import { IoChevronDown } from 'react-icons/io5'
 
 const HeaderVersionsDropdown = () => {
   const [showVersionsMenu, setShowVersionsMenu] = useState(false)
   const { data, loading } = useContext(BPContext) as any
-  const business_plan = data?.results?.business_plan
-  const bpSlice = useStore((state) => state.businessPlans)
+  const business_plan = data?.results?.business_plan || {}
   const toggleShowVersionsMenu = () => setShowVersionsMenu((prev) => !prev)
+
+  const bpVersions = useGetBPVersions(business_plan)
 
   const ref = useClickOutside(() => {
     setShowVersionsMenu(false)
   })
 
-  const dataReady = business_plan || !loading
+  const { loading: versionsLoading, results: versionsData = [] } = bpVersions
+  const versionsReady = business_plan || (!versionsLoading && !loading)
 
   const versions =
-    dataReady && bpSlice.yearRanges.data.length > 0
-      ? orderBy(bpSlice.yearRanges.data, 'year_start', 'desc').map(
-          (version, idx) => ({
-            id: `${version.year_start}-${version.year_end}`,
-            // formattedDate: formattedDateFromTimestamp(version.created_at),
-            isDraft: version.status === 'draft',
-            isFinal: version.status === 'final',
-            label: `Version ${version.year_start} - ${version.year_end}`,
-            url: `/business-plans/${business_plan?.agency.name}/${version.year_start}-${version.year_end}`,
-          }),
-        )
+    versionsReady && versionsData.length > 0
+      ? versionsData.map((version: any) => ({
+          id: version.id,
+          // isDraft: version.status === 'draft',
+          label: `Version ${version.version}`,
+          // isFinal: version.status === 'final',
+          status: version.status,
+          url: `/business-plans/${version?.agency.name}/${version.year_start}-${version.year_end}`,
+        }))
       : []
 
-  const tagLatest = (
-    <span className="mx-2 rounded-md bg-gray-400 p-1 text-xs text-white">
-      LATEST
-    </span>
-  )
-  const tagDraft = (
-    <span className="mx-2 rounded-md bg-warning p-1 text-xs text-white">
-      Draft
+  // const tagLatest = (
+  //   <span className="mx-2 rounded-md bg-gray-400 p-1 text-xs text-white">
+  //     LATEST
+  //   </span>
+  // )
+  // const tagDraft = (
+  //   <span className="mx-2 rounded-md bg-warning p-1 text-xs text-white">
+  //     Draft
+  //   </span>
+  // )
+  const displayStatusTag = (status: string) => (
+    <span className="mx-2 rounded-md bg-warning p-1 text-xs uppercase text-white">
+      {status}
     </span>
   )
 
@@ -56,40 +61,50 @@ const HeaderVersionsDropdown = () => {
 
   return (
     <div className="relative">
-      <div
-        className="flex cursor-pointer items-center justify-between gap-x-2"
-        ref={ref}
-        onClick={toggleShowVersionsMenu}
-      >
-        <h1 className="m-0 text-5xl leading-normal">{fullLabel}</h1>
-        <IoChevronDown className="text-5xl font-bold text-gray-700" />
-      </div>
-      <div
-        className={cx(
-          'absolute left-0 z-10 max-h-[200px] origin-top overflow-y-auto rounded-none border border-solid border-primary bg-gray-A100 opacity-0 transition-all',
-          {
-            'collapse scale-y-0': !showVersionsMenu,
-            'scale-y-100 opacity-100': showVersionsMenu,
-          },
-        )}
-      >
-        {versions.map((info, idx) => (
-          <NextLink
-            key={info.id}
-            className="flex items-center gap-x-2 rounded-none px-2 py-2 text-black no-underline hover:bg-primary hover:text-white"
-            href={info.url}
+      {versions.length > 1 ? (
+        <>
+          <div
+            className="flex cursor-pointer items-center justify-between gap-x-2"
+            ref={ref}
+            onClick={versions.length > 1 ? toggleShowVersionsMenu : undefined}
           >
-            <div className="flex w-56 items-center justify-between hover:text-white">
-              <div>{info.label}</div>
-              <div className="flex items-center">
-                {idx == 0 && (info.isFinal ? tagLatest : tagDraft)}
-                {idx == 1 && versions[0].isDraft && tagLatest}
-                {/*{info.formattedDate}*/}
-              </div>
-            </div>
-          </NextLink>
-        ))}
-      </div>
+            <h1 className="m-0 text-5xl leading-normal">{fullLabel}</h1>
+            {versions.length > 1 && (
+              <IoChevronDown className="text-5xl font-bold text-gray-700" />
+            )}
+          </div>
+          <div
+            className={cx(
+              'absolute left-0 z-10 max-h-[200px] origin-top overflow-y-auto rounded-none border border-solid border-primary bg-gray-A100 opacity-0 transition-all',
+              {
+                'collapse scale-y-0': !showVersionsMenu,
+                'scale-y-100 opacity-100': showVersionsMenu,
+              },
+            )}
+          >
+            {versions.map((version: any, idx: number) => (
+              <NextLink
+                key={version.id}
+                className="flex items-center gap-x-2 rounded-none px-2 py-2 text-black no-underline hover:bg-primary hover:text-white"
+                href={version.url}
+              >
+                <div className="flex w-56 items-center justify-between hover:text-white">
+                  <div>{version.label}</div>
+                  <div className="flex items-center">
+                    {/* {idx == 0 && (version.isFinal ? tagLatest : tagDraft)}
+                    {idx == 1 && versions[0].isDraft && tagLatest} */}
+                    {idx === 0 && displayStatusTag(version.status)}
+                  </div>
+                </div>
+              </NextLink>
+            ))}
+          </div>
+        </>
+      ) : (
+        <div className="flex cursor-pointer items-center justify-between gap-x-2">
+          <h1 className="m-0 text-5xl leading-normal">{fullLabel}</h1>
+        </div>
+      )}
     </div>
   )
 }
@@ -170,24 +185,7 @@ const ViewHeaderTag = () => {
 
   const { status } = business_plan || {}
 
-  const label = useMemo(() => {
-    switch (status) {
-      case 'Draft':
-        return 'Draft'
-      case 'Submitted':
-        return 'Submitted'
-      case 'needs_changes':
-        return 'Needs Changes'
-      case 'Approved':
-        return 'Approved'
-      case 'Rejected':
-        return 'Rejected'
-      default:
-        return ''
-    }
-  }, [status])
-
-  return <HeaderTag status={status}>{capitalize(label)}</HeaderTag>
+  return <HeaderTag status={status}>{status}</HeaderTag>
 }
 
 const BPHeader = ({
