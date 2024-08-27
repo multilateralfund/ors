@@ -19,6 +19,7 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
   }
 
   let value: any = null
+  let valueMT: null | number = null
   let valueGWP: null | number = null
   let valueODP: null | number = null
 
@@ -34,15 +35,36 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
   }
   if (aggFunc && includes(['subtotal', 'total'], props.data.rowType)) {
     value = aggFunc({ ...props })
+    valueMT = aggFunc({ ...props, unitOverride: 'mt' })
+    valueGWP = aggFunc({ ...props, unitOverride: 'gwp' })
+    valueODP = aggFunc({ ...props, unitOverride: 'odp' })
   } else if (usageId === 'total_usages') {
     value = []
+    valueMT = []
+    valueGWP = []
+    valueODP = []
     each(recordUsages, (usage: any) => {
       const quantity = getUnitAwareValue(usage, 'quantity', props.context?.unit)
+      const quantityMT = getUnitAwareValue(usage, 'quantity', 'mt')
+      const quantityGWP = getUnitAwareValue(usage, 'quantity', 'gwp')
+      const quantityODP = getUnitAwareValue(usage, 'quantity', 'odp')
       if (!isNull(quantity)) {
         value.push(quantity)
       }
+      if (!isNull(quantityMT)) {
+        valueMT.push(quantityMT)
+      }
+      if (!isNull(quantityGWP)) {
+        valueGWP.push(quantityGWP)
+      }
+      if (!isNull(quantityODP)) {
+        valueODP.push(quantityODP)
+      }
     })
     value = value.length > 0 ? sumFloats(value) : 0
+    valueMT = valueMT.length > 0 ? sumFloats(valueMT) : 0
+    valueGWP = valueGWP.length > 0 ? sumFloats(valueGWP) : 0
+    valueODP = valueODP.length > 0 ? sumFloats(valueODP) : 0
   } else if (usageId === 'total_refrigeration') {
     value = []
     each(recordUsages, (usage: any) => {
@@ -55,6 +77,7 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
   } else {
     const usage = find(recordUsages, (item) => item.usage_id === usageId)
     value = parseNumber(usage?.quantity)
+    valueMT = value
     valueGWP = usage?.quantity_gwp
     valueODP = usage?.quantity_odp
   }
@@ -67,8 +90,12 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
     value = 0
   }
 
+  if (isNull(valueMT)) {
+    valueMT = 0
+  }
+
   const { TitleContent, formattedValue } = getDecimalCellValue(
-    value,
+    valueMT,
     valueODP,
     valueGWP,
     props,
