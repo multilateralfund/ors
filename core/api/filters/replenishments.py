@@ -25,7 +25,7 @@ class InvoiceFilter(filters.FilterSet):
     country_id = filters.ModelMultipleChoiceFilter(
         field_name="country_id", queryset=Country.objects.all(), widget=CSVWidget
     )
-    year = filters.NumberFilter(field_name="year", required=True)
+    year = filters.NumberFilter(field_name="year")
 
     class Meta:
         model = Invoice

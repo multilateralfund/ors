@@ -1222,8 +1222,11 @@ class ReplenishmentInvoiceViewSet(
         that have not paid yet.
         """
 
-        # Assured int by NumberFilter
-        year = request.query_params.get("year")
+        try:
+            year = request.query_params.get("year")
+        except (TypeError, ValueError) as e:
+            raise ValidationError("Year must be an integer.")
+
         invoice_data = super().list(request, *args, **kwargs).data
         if "search" in request.query_params or "country_id" in request.query_params:
             # If filtered, we should not send the empty invoices
@@ -1240,12 +1243,15 @@ class ReplenishmentInvoiceViewSet(
             .select_related("country")
         )
         return Response(
-            [
-                *invoice_data,
-                *EmptyInvoiceSerializer(
-                    countries_without_invoices, many=True, context={"year": year}
-                ).data,
-            ],
+            sorted(
+                [
+                    *invoice_data,
+                    *EmptyInvoiceSerializer(
+                        countries_without_invoices, many=True, context={"year": year}
+                    ).data,
+                ],
+                key=lambda x: x["country"]["name"],
+            ),
             status=status.HTTP_200_OK,
         )
 
