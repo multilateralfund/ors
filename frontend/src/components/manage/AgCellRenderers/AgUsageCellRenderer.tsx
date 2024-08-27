@@ -40,9 +40,9 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
     valueODP = aggFunc({ ...props, unitOverride: 'odp' })
   } else if (usageId === 'total_usages') {
     value = []
-    valueMT = []
-    valueGWP = []
-    valueODP = []
+    const _valueMT: number[] = []
+    const _valueGWP: number[] = []
+    const _valueODP: number[] = []
     each(recordUsages, (usage: any) => {
       const quantity = getUnitAwareValue(usage, 'quantity', props.context?.unit)
       const quantityMT = getUnitAwareValue(usage, 'quantity', 'mt')
@@ -52,19 +52,19 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
         value.push(quantity)
       }
       if (!isNull(quantityMT)) {
-        valueMT.push(quantityMT)
+        _valueMT.push(quantityMT)
       }
       if (!isNull(quantityGWP)) {
-        valueGWP.push(quantityGWP)
+        _valueGWP.push(quantityGWP)
       }
       if (!isNull(quantityODP)) {
-        valueODP.push(quantityODP)
+        _valueODP.push(quantityODP)
       }
     })
     value = value.length > 0 ? sumFloats(value) : 0
-    valueMT = valueMT.length > 0 ? sumFloats(valueMT) : 0
-    valueGWP = valueGWP.length > 0 ? sumFloats(valueGWP) : 0
-    valueODP = valueODP.length > 0 ? sumFloats(valueODP) : 0
+    valueMT = _valueMT.length > 0 ? sumFloats(_valueMT) : 0
+    valueGWP = _valueGWP.length > 0 ? sumFloats(_valueGWP) : 0
+    valueODP = _valueODP.length > 0 ? sumFloats(_valueODP) : 0
   } else if (usageId === 'total_refrigeration') {
     value = []
     each(recordUsages, (usage: any) => {
