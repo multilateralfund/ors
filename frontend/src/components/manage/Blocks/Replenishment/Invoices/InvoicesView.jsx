@@ -31,10 +31,10 @@ import { formatApiUrl } from '@ors/helpers'
 import { IoSearchSharp } from 'react-icons/io5'
 
 const COLUMNS = [
-  { field: 'country', label: 'Country' },
+  { field: 'country', label: 'Country', sortable: true },
   { field: 'status', label: 'Status' },
   { field: 'year', label: 'Year' },
-  { field: 'date_of_issuance', label: 'Date of issuance' },
+  { field: 'date_of_issuance', label: 'Date of issuance', sortable: true },
   { field: 'amount', label: 'Amount' },
   {
     field: 'exchange_rate',
@@ -67,7 +67,7 @@ function InvoicesView() {
   const currentYear = new Date().getFullYear()
   const ctx = useContext(ReplenishmentContext)
 
-  const { count, loaded, results, setParams } = useGetInvoices(currentYear)
+  const { loaded, results, setParams } = useGetInvoices(currentYear)
   const memoResults = useMemo(() => {
     if (!loaded) {
       return times(10, (num) => {
@@ -125,11 +125,12 @@ function InvoicesView() {
     return result
   }, [])
 
-  const [sortOn, setSortOn] = useState(2)
-  const [sortDirection, setSortDirection] = useState(-1)
+  const [sortOn, setSortOn] = useState(0)
+  const [sortDirection, setSortDirection] = useState(1)
 
   const [editIdx, setEditIdx] = useState(null)
   const [showAdd, setShowAdd] = useState(false)
+  const [hideNoInvoice, setHideNoInvoice] = useState(true)
 
   const editData = useMemo(() => {
     let entry = null
@@ -227,7 +228,9 @@ function InvoicesView() {
     entry.reminder = dateForInput(entry.reminder)
     entry.exchange_rate = isNaN(entry.exchange_rate) ? '' : entry.exchange_rate
     entry.replenishment_id = ctx.periods.find(
-      (p) => Number(p.start_year) === Number(entry.period.split('-')[0]),
+      (p) =>
+        Number(p.start_year) <= Number(entry.year) &&
+        Number(p.end_year) >= Number(entry.year),
     )?.id
 
     let nr_new_files = 0
@@ -356,6 +359,16 @@ function InvoicesView() {
   }
   const yearOptions = scAnnualOptions(ctx.periods)
 
+  function handleStatusFilter(evt) {
+    const status = evt.target.value
+    setParams({ status })
+  }
+
+  function handleChangeHideNoInvoice(evt) {
+    setHideNoInvoice(evt.target.checked)
+    setParams({ hide_no_invoice: evt.target.checked })
+  }
+
   return (
     <>
       {isDeleteModalVisible && invoiceToDelete !== null ? (
@@ -440,9 +453,33 @@ function InvoicesView() {
               </option>
             ))}
           </Select>
+          <Select
+            id="status"
+            className="placeholder-select w-44"
+            onChange={handleStatusFilter}
+            hasClear
+          >
+            <option value="" disabled hidden>
+              Status
+            </option>
+            <option value="paid">Paid</option>
+            <option value="pending">Pending</option>
+            <option value="not_issued">Not issued</option>
+          </Select>
         </div>
         {ctx.isTreasurer && (
-          <AddButton onClick={() => setShowAdd(true)}>Add invoice</AddButton>
+          <div className="flex items-center gap-x-2">
+            <Input
+              id="hide_no_invoice"
+              checked={hideNoInvoice}
+              type="checkbox"
+              onChange={handleChangeHideNoInvoice}
+            />
+            <label htmlFor="hide_no_invoice">
+              Hide countries without invoice
+            </label>
+            <AddButton onClick={() => setShowAdd(true)}>Add invoice</AddButton>
+          </div>
         )}
       </div>
       <Table

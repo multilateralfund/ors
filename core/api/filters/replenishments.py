@@ -26,10 +26,18 @@ class InvoiceFilter(filters.FilterSet):
         field_name="country_id", queryset=Country.objects.all(), widget=CSVWidget
     )
     year = filters.NumberFilter(field_name="year")
+    status = filters.CharFilter(method="filter_status")
+
+    def filter_status(self, queryset, name, value):
+        if value == "pending":
+            return queryset.filter(date_paid__isnull=True)
+        if value == "paid":
+            return queryset.filter(date_paid__isnull=False)
+        return queryset
 
     class Meta:
         model = Invoice
-        fields = ["country_id", "year"]
+        fields = ["country_id", "year", "status"]
 
 
 class PaymentFilter(filters.FilterSet):

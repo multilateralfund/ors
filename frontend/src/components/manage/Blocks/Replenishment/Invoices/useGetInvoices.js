@@ -7,7 +7,8 @@ function useGetInvoices(year) {
   const { data, loaded, loading, setParams } = useApi({
     options: {
       params: {
-        ordering: '-date_of_issuance',
+        hide_no_invoice: true,
+        ordering: "country",
         year: year,
       },
       withStoreCache: false,
@@ -17,7 +18,6 @@ function useGetInvoices(year) {
 
   if (!data) {
     return {
-      count: 0,
       loaded,
       loading,
       results: [],
@@ -25,7 +25,7 @@ function useGetInvoices(year) {
     }
   }
 
-  return { count: data.length, loaded, loading, results: data, setParams }
+  return { loaded, loading, results: data, setParams }
 }
 
 export default useGetInvoices

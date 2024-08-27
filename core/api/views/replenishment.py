@@ -1190,10 +1190,7 @@ class ReplenishmentInvoiceViewSet(
         filters.SearchFilter,
     ]
     ordering_fields = [
-        "amount",
-        "country__name",
         "date_of_issuance",
-        "date_sent_out",
     ]
     search_fields = ["number"]
 
@@ -1227,10 +1224,23 @@ class ReplenishmentInvoiceViewSet(
         except (TypeError, ValueError) as e:
             raise ValidationError("Year must be an integer.")
 
-        invoice_data = super().list(request, *args, **kwargs).data
-        if "search" in request.query_params or "country_id" in request.query_params:
+        invoice_qs = self.filter_queryset(self.get_queryset())
+        invoice_data = InvoiceSerializer(invoice_qs, many=True).data
+        if (
+            "search" in request.query_params
+            or "country_id" in request.query_params
+            or "date_of_issuance" in request.query_params.get("ordering", "")
+            or request.query_params.get("hide_no_invoice") == "true"
+            or (
+                request.query_params.get("status", None) is not None
+                and request.query_params.get("status") != "not_issued"
+            )
+        ):
             # If filtered, we should not send the empty invoices
-            return Response(invoice_data, status=status.HTTP_200_OK)
+            return Response(
+                invoice_data,
+                status=status.HTTP_200_OK,
+            )
 
         countries_with_invoices = [invoice["country"]["id"] for invoice in invoice_data]
         countries_without_invoices = (
@@ -1241,17 +1251,30 @@ class ReplenishmentInvoiceViewSet(
             )
             .exclude(country_id__in=countries_with_invoices)
             .select_related("country")
+            .order_by("country__name")
         )
+        countries_without_invoices_data = EmptyInvoiceSerializer(
+            countries_without_invoices, many=True, context={"year": year}
+        ).data
+
+        if request.query_params.get("status") == "not_issued":
+            data = countries_without_invoices_data
+        else:
+            data = [
+                *invoice_data,
+                *countries_without_invoices_data,
+            ]
+
+        if "country" in request.query_params.get("ordering", ""):
+            sort_key = lambda x: x["country"]["name"]
+            data = sorted(
+                data,
+                key=sort_key,
+                reverse=request.query_params.get("ordering", "").startswith("-"),
+            )
+
         return Response(
-            sorted(
-                [
-                    *invoice_data,
-                    *EmptyInvoiceSerializer(
-                        countries_without_invoices, many=True, context={"year": year}
-                    ).data,
-                ],
-                key=lambda x: x["country"]["name"],
-            ),
+            data,
             status=status.HTTP_200_OK,
         )
 
