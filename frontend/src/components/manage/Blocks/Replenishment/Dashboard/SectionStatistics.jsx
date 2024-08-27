@@ -4,9 +4,7 @@ import cx from 'classnames'
 import Link from 'next/link'
 
 import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils'
-import { formatApiUrl } from '@ors/helpers'
 
-import useGetBpPeriods from '../../BusinessPlans/BPList/useGetBPPeriods'
 import styles from '../Table/table.module.css'
 import useGetStatisticsData from './useGetStatisticsData'
 
@@ -96,8 +94,7 @@ function StatisticsTable(props) {
 }
 
 function SectionStatistics() {
-  const { data, loading } = useGetStatisticsData()
-  console.log(data)
+  const { data } = useGetStatisticsData()
   return (
     <>
       <div className="flex items-center gap-4">

@@ -1,6 +1,6 @@
 'use client'
 
-import { useContext, useState } from 'react'
+import { useContext } from 'react'
 
 import cx from 'classnames'
 import Link from 'next/link'
@@ -18,6 +18,22 @@ import { extractContributions } from '@ors/components/manage/Blocks/Replenishmen
 import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 
+
+function formatNumber(value) {
+  let result = value
+
+  if (value >= 100000) {
+    result = formatNumberValue(value, 0, 0)
+  } else if (value <= 0.15 && value >= -0.15) {
+    result = 0
+  } else {
+    result = formatNumberValue(value, 2, 2)
+  }
+
+  return result
+}
+
+
 function SummaryCard(props) {
   const { elements, label, prefix, suffix, value } = props
   const contents = []
@@ -25,7 +41,7 @@ function SummaryCard(props) {
   if (elements) {
     for (let i = 0; i < elements.length; i++) {
       contents.push(
-        <div key={i} className="flex flex-col uppercase">
+        <div key={i} className="flex gap-y-2 flex-col uppercase">
           <div className="text-[#4D4D4D]">{elements[i].label}</div>
           <div
             className={cx(
@@ -61,17 +77,17 @@ function SummaryCard(props) {
 }
 
 function BigCard(props) {
-  const { elements, label, prefix, suffix } = props
+  const { elements, label } = props
 
   const contents = []
 
   if (elements) {
     for (let i = 0; i < elements.length; i++) {
       contents.push(
-        <div key={i} className="my-4 flex flex-col uppercase">
+        <div key={i} className="my-4 flex flex-col uppercase gap-y-2">
           <div className="text-[#4D4D4D]">{elements[i].label}</div>
           <div className="text-4xl font-bold text-primary">
-            {elements[i].prefix || ''}
+            <span className="font-normal">{elements[i].prefix || ''}</span>
             {elements[i].value}
             {elements[i].suffix || ''}
           </div>
@@ -103,7 +119,8 @@ function TabIndicatorsPledged(props) {
       elements={[
         {
           label: 'amount',
-          value: formatNumberValue(totals.agreed_contributions, 2, 2),
+          prefix: '$',
+          value: formatNumber(totals.agreed_contributions),
         },
         { label: 'countries', value: contrib.countries },
         {
@@ -121,21 +138,19 @@ function TabIndicatorsPayments(props) {
     <SummaryCard
       label="Cash payments"
       prefix="$"
-      value={formatNumberValue(totals.cash_payments, 2, 2)}
+      value={formatNumber(totals.cash_payments)}
       elements={[
         { label: 'countries', value: contrib.contributions },
         {
           label: 'countries percent',
           suffix: '%',
-          value: formatNumberValue(contrib.contributions_percentage, 2, 2),
+          value: formatNumber(contrib.contributions_percentage),
         },
         {
           label: 'percentage of pledged',
           suffix: '%',
-          value: formatNumberValue(
+          value: formatNumber(
             getPercent(totals.agreed_contributions, totals.cash_payments),
-            2,
-            2,
           ),
         },
       ]}
@@ -149,28 +164,24 @@ function TabIndicatorsBilateralAssistance(props) {
     <SummaryCard
       label="Bilateral assistance"
       prefix="$"
-      value={formatNumberValue(totals.bilateral_assistance, 2, 2)}
+      value={formatNumber(totals.bilateral_assistance)}
       elements={[
         { label: 'countries', value: contrib.bilateral_assistance_countries },
         {
           label: 'countries percent',
           suffix: '%',
-          value: formatNumberValue(
+          value: formatNumber(
             contrib.bilateral_assistance_countries_percentage,
-            2,
-            2,
           ),
         },
         {
           label: 'percentage of pledged',
           suffix: '%',
-          value: formatNumberValue(
+          value: formatNumber(
             getPercent(
               totals.agreed_contributions,
               totals.bilateral_assistance,
             ),
-            2,
-            2,
           ),
         },
       ]}
@@ -184,25 +195,21 @@ function TabIndicatorsPromissoryNotes(props) {
     <SummaryCard
       label="Promissory notes"
       prefix="$"
-      value={formatNumberValue(totals.promissory_notes, 2, 2)}
+      value={formatNumber(totals.promissory_notes)}
       elements={[
         { label: 'countries', value: contrib.promissory_notes_countries },
         {
           label: 'countries percent',
           suffix: '%',
-          value: formatNumberValue(
+          value: formatNumber(
             contrib.promissory_notes_countries_percentage,
-            2,
-            2,
           ),
         },
         {
           label: 'percentage of pledged',
           suffix: '%',
-          value: formatNumberValue(
+          value: formatNumber(
             getPercent(totals.agreed_contributions, totals.promissory_notes),
-            2,
-            2,
           ),
         },
       ]}
@@ -221,25 +228,21 @@ function TabIndicatorsOutstandingContributions(props) {
     <SummaryCard
       label="Outstanding contributions"
       prefix="$"
-      value={formatNumberValue(value, 2, 2)}
+      value={formatNumber(value)}
       elements={[
         { label: 'countries', value: contrib.outstanding_contributions },
         {
           label: 'countries percent',
           suffix: '%',
-          value: formatNumberValue(
+          value: formatNumber(
             contrib.outstanding_contributions_percentage,
-            2,
-            2,
           ),
         },
         {
           label: 'percentage of pledged',
           suffix: '%',
-          value: formatNumberValue(
+          value: formatNumber(
             getPercent(totals.agreed_contributions, value),
-            2,
-            2,
           ),
         },
       ]}
@@ -256,18 +259,16 @@ function TabIndicatorsDisputedContributions(props) {
         {
           label: 'amount',
           prefix: '$',
-          value: formatNumberValue(data.disputed_contributions, 2, 2),
+          value: formatNumber(data.disputed_contributions),
         },
         {
           label: 'percentage of pledged',
           suffix: '%',
-          value: formatNumberValue(
+          value: formatNumber(
             getPercent(
               data.total.agreed_contributions,
               data.disputed_contributions,
             ),
-            2,
-            2,
           ),
         },
       ]}
@@ -285,15 +286,13 @@ function TabIndicatorsFerm(props) {
           className: totals.gain_loss < 0 ? '' : 'text-red-500',
           label: 'amount',
           prefix: totals.gain_loss < 0 ? '+$' : '-$',
-          value: formatNumberValue(totals.gain_loss, 2, 2),
+          value: formatNumber(totals.gain_loss),
         },
         {
           label: 'percentage of pledged',
           suffix: '%',
-          value: formatNumberValue(
+          value: formatNumber(
             getPercent(totals.agreed_contributions, totals.gain_loss),
-            2,
-            2,
           ),
         },
       ]}
@@ -613,7 +612,7 @@ function SectionDashboard(props) {
         <div className="flex items-center gap-2 print:hidden">
           <label
             className={cx(
-              'flex cursor-pointer items-center rounded-lg border border-solid border-primary px-2 py-1',
+              'flex cursor-pointer font-bold items-center rounded-lg border border-solid border-primary px-2 py-1 text-gray-400',
               { 'bg-primary font-bold text-mlfs-hlYellow': onlyCeits },
             )}
           >
