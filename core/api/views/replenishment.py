@@ -42,6 +42,7 @@ from core.api.serializers import (
     DisputedContributionCreateSerializer,
     DisputedContributionReadSerializer,
     ScaleOfAssessmentExcelExportSerializer,
+    EmptyInvoiceSerializer,
 )
 from core.api.utils import workbook_response
 from core.api.views.utils import (
@@ -1214,6 +1215,39 @@ class ReplenishmentInvoiceViewSet(
         if self.request.method in ["POST", "PUT"]:
             return InvoiceCreateSerializer
         return InvoiceSerializer
+
+    def list(self, request, *args, **kwargs):
+        """
+        Return Scale of Assessment joined with the invoices to show countries
+        that have not paid yet.
+        """
+
+        # Assured int by NumberFilter
+        year = request.query_params.get("year")
+        invoice_data = super().list(request, *args, **kwargs).data
+        if "search" in request.query_params or "country_id" in request.query_params:
+            # If filtered, we should not send the empty invoices
+            return Response(invoice_data, status=status.HTTP_200_OK)
+
+        countries_with_invoices = [invoice["country"]["id"] for invoice in invoice_data]
+        countries_without_invoices = (
+            ScaleOfAssessment.objects.filter(
+                version__is_final=True,
+                version__replenishment__start_year__lte=year,
+                version__replenishment__end_year__gte=year,
+            )
+            .exclude(country_id__in=countries_with_invoices)
+            .select_related("country")
+        )
+        return Response(
+            [
+                *invoice_data,
+                *EmptyInvoiceSerializer(
+                    countries_without_invoices, many=True, context={"year": year}
+                ).data,
+            ],
+            status=status.HTTP_200_OK,
+        )
 
     def _parse_invoice_new_files(self, request):
         number_of_files = int(request.data.get("nr_new_files", 0))

@@ -357,8 +357,8 @@ function InvoicesView() {
 
   function handlePeriodFilter(evt) {
     const period = evt.target.value
-    const replenishment_start = period.split('-')[0]
-    setParams({ replenishment_start })
+    const year = period.split('-')[0]
+    setParams({ year })
   }
 
   return (

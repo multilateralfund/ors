@@ -25,19 +25,11 @@ class InvoiceFilter(filters.FilterSet):
     country_id = filters.ModelMultipleChoiceFilter(
         field_name="country_id", queryset=Country.objects.all(), widget=CSVWidget
     )
-    replenishment_start = filters.NumberFilter(method="filter_replenishment_start")
+    year = filters.NumberFilter(field_name="year", required=True)
 
     class Meta:
         model = Invoice
-        fields = ["country_id", "replenishment_start"]
-
-    def filter_replenishment_start(self, queryset, _name, value):
-        """
-        Filters by start year of replenishment
-        """
-        if value == "all":
-            return queryset
-        return queryset.filter(replenishment__start_year=int(value))
+        fields = ["country_id", "year"]
 
 
 class PaymentFilter(filters.FilterSet):
