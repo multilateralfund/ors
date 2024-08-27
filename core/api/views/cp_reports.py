@@ -63,7 +63,10 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
     def get_queryset(self):
         user = self.request.user
         cp_reports = CPReport.objects.filter(country__is_a2=False)
-        if user.user_type == user.UserType.COUNTRY_USER:
+        if user.user_type in (
+            user.UserType.COUNTRY_USER,
+            user.UserType.COUNTRY_SUBMITTER,
+        ):
             cp_reports = cp_reports.filter(country=user.country)
 
         if self.request.method == "PUT":
@@ -392,7 +395,9 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
                     reporting_officer_name=new_instance.reporting_entry,
                     reporting_officer_email=new_instance.reporting_email,
                     event_description=event_desc,
-                    event_in_draft=(new_instance.status != CPReport.CPReportStatus.FINAL),
+                    event_in_draft=(
+                        new_instance.status != CPReport.CPReportStatus.FINAL
+                    ),
                 )
             )
         CPHistory.objects.bulk_create(history)
@@ -418,7 +423,10 @@ class CPReportStatusUpdateView(generics.GenericAPIView):
     def get_queryset(self):
         user = self.request.user
         queryset = CPReport.objects.all()
-        if user.user_type == user.UserType.COUNTRY_USER:
+        if user.user_type in (
+            user.UserType.COUNTRY_USER,
+            user.UserType.COUNTRY_SUBMITTER,
+        ):
             queryset = queryset.filter(country=user.country)
         return queryset
 
@@ -484,7 +492,10 @@ class CPReportGroupByYearView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         queryset = CPReport.objects.filter(country__is_a2=False)
-        if user.user_type == user.UserType.COUNTRY_USER:
+        if user.user_type in (
+            user.UserType.COUNTRY_USER,
+            user.UserType.COUNTRY_SUBMITTER,
+        ):
             queryset = queryset.filter(country=user.country)
         return queryset
 
@@ -639,7 +650,10 @@ class CPReportCommentsView(generics.GenericAPIView):
             )
 
         if comment_type == CPComment.CPCommentType.COMMENT_COUNTRY:
-            if user_type != User.UserType.COUNTRY_USER:
+            if user_type not in (
+                User.UserType.COUNTRY_USER,
+                User.UserType.COUNTRY_SUBMITTER,
+            ):
                 return Response(
                     {"comment": f"Invalid value {comment}"},
                     status=status.HTTP_400_BAD_REQUEST,
