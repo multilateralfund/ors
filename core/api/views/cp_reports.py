@@ -1,5 +1,6 @@
 from constance import config
 from django.contrib.auth import get_user_model
+from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.db.models import Count
 from django.db.models import F
@@ -339,6 +340,14 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
 
     @transaction.atomic
     def put(self, request, *args, **kwargs):
+        # Only COUNTRY_SUBMITTER users can finalize versions
+        # All other user types and unsafe method permissions are checked via permission
+        # classes.
+        if request.user.user_type == User.UserType.COUNTRY_USER:
+            raise PermissionDenied(
+                "Only Secretariat and Country Submitters can submit final versions"
+            )
+
         current_obj = self.get_object()
 
         serializer = CPReportCreateSerializer(
