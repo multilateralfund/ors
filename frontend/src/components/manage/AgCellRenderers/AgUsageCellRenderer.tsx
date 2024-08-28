@@ -7,11 +7,7 @@ import aggFuncs from '@ors/config/Table/aggFuncs'
 
 import AgSkeletonCellRenderer from '@ors/components/manage/AgCellRenderers/AgSkeletonCellRenderer'
 import { getDecimalCellValue } from '@ors/components/manage/Utils/DecimalCellValue'
-import {
-  getUnitAwareValue,
-  parseNumber,
-  sumFloats,
-} from '@ors/helpers/Utils/Utils'
+import { convertValue, parseNumber, sumFloats } from '@ors/helpers/Utils/Utils'
 
 export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
   if (props.data.rowType === 'skeleton') {
@@ -44,10 +40,15 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
     const _valueGWP: number[] = []
     const _valueODP: number[] = []
     each(recordUsages, (usage: any) => {
-      const quantity = getUnitAwareValue(usage, 'quantity', props.context?.unit)
-      const quantityMT = getUnitAwareValue(usage, 'quantity', 'mt')
-      const quantityGWP = getUnitAwareValue(usage, 'quantity', 'gwp')
-      const quantityODP = getUnitAwareValue(usage, 'quantity', 'odp')
+      const convertedValue = convertValue(
+        usage.quantity,
+        props.data.gwp,
+        props.data.odp,
+      )
+      const quantity = convertedValue[props.context?.unit ?? 'mt']
+      const quantityMT = convertedValue['mt']
+      const quantityGWP = convertedValue['gwp']
+      const quantityODP = convertedValue['odp']
       if (!isNull(quantity)) {
         value.push(quantity)
       }
@@ -68,18 +69,24 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
   } else if (usageId === 'total_refrigeration') {
     value = []
     each(recordUsages, (usage: any) => {
-      const quantity = getUnitAwareValue(usage, 'quantity', props.context?.unit)
+      const quantity = convertValue(usage?.quantity, props.data.gwp, props.data.odp)[props.context?.unit]
       if (!isNull(quantity) && includes([6, 7], usage.usage_id)) {
         value.push(quantity)
       }
     })
     value = value.length > 0 ? sumFloats(value) : undefined
+    valueMT = value
   } else {
     const usage = find(recordUsages, (item) => item.usage_id === usageId)
+    const convertedValue = convertValue(
+      usage?.quantity,
+      props.data.gwp,
+      props.data.odp,
+    )
     value = parseNumber(usage?.quantity)
-    valueMT = value
-    valueGWP = usage?.quantity_gwp
-    valueODP = usage?.quantity_odp
+    valueMT = convertedValue['mt']
+    valueGWP = convertedValue['gwp']
+    valueODP = convertedValue['odp']
   }
 
   if (isUndefined(value)) {

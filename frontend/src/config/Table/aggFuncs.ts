@@ -24,6 +24,8 @@ const aggFuncs = {
         node.data,
         props.colDef.field,
         props.unitOverride || props.context?.unit,
+        node.data.gwp,
+        node.data.odp,
       )
       if (!isNull(value)) {
         values.push(value)
@@ -56,6 +58,8 @@ const aggFuncs = {
                   usage,
                   'quantity',
                   props.unitOverride || props.context?.unit,
+                  node.data.gwp,
+                  node.data.odp,
                 ) ?? 0,
             ),
           ),
@@ -71,6 +75,8 @@ const aggFuncs = {
                   usage,
                   'quantity',
                   props.unitOverride || props.context?.unit,
+                  node.data.gwp,
+                  node.data.odp,
                 ) ?? 0,
             ),
           ),
@@ -86,6 +92,8 @@ const aggFuncs = {
           usage,
           'quantity',
           props.unitOverride || props.context?.unit,
+          node.data.gwp,
+          node.data.odp,
         )
       }
       if (!isNull(value)) {

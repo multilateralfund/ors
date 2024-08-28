@@ -8,7 +8,7 @@ import aggFuncs from '@ors/config/Table/aggFuncs'
 
 import AgSkeletonCellRenderer from '@ors/components/manage/AgCellRenderers/AgSkeletonCellRenderer'
 import { getDecimalCellValue } from '@ors/components/manage/Utils/DecimalCellValue'
-import { fixFloat, parseNumber } from '@ors/helpers/Utils/Utils'
+import { convertValue, fixFloat, parseNumber } from '@ors/helpers/Utils/Utils'
 
 export default function AgFloatCellRenderer(props: CustomCellRendererProps) {
   if (props.data.rowType === 'skeleton') {
@@ -48,9 +48,10 @@ export default function AgFloatCellRenderer(props: CustomCellRendererProps) {
     valueODP = fixFloat(aggFunc({ ...props, unitOverride: 'odp' }))
   } else {
     value = parseNumber(props.value)
-    valueMT = value
-    valueGWP = props.colDef ? props.data[`${props.colDef.field}_gwp`] : null
-    valueODP = props.colDef ? props.data[`${props.colDef.field}_odp`] : null
+    const convertedValue = convertValue(props.value, props.data.gwp, props.data.odp)
+    valueMT = convertedValue['mt']
+    valueGWP = convertedValue['gwp']
+    valueODP = convertedValue['odp']
   }
 
   if (isUndefined(value)) {
