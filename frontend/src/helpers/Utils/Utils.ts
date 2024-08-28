@@ -237,8 +237,8 @@ export function getUnitAwareValue(
 ) {
   let result: null | number
 
-  if (odp && gwp) {
-    result = convertValue(obj[propName], gwp, odp)[unit || 'mt']
+  if (isNumber(odp) && isNumber(gwp)) {
+    result = convertValue(obj?.[propName], gwp, odp)[unit || 'mt']
   } else {
     const value =
       unit && unit !== 'mt' ? obj?.[`${propName}_${unit}`] : obj?.[propName]
