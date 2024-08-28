@@ -4,6 +4,7 @@ from django.db.models import Prefetch
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from functools import lru_cache
 from rest_framework import mixins, generics, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
@@ -515,3 +516,45 @@ class BlendNextCustNameView(generics.RetrieveAPIView):
     def get(self, request, *args, **kwargs):
         name = Blend.objects.get_next_cust_mx_name()
         return Response({"name": name}, status=status.HTTP_200_OK)
+
+
+@lru_cache(maxsize=128)
+def get_blend_odp_gwp(blend_id):
+    blend = Blend.objects.filter(id=blend_id).first()
+    if blend:
+        return {
+            "odp": blend.odp or 0,
+            "gwp": blend.gwp or 0,
+        }
+    return None
+
+
+@lru_cache(maxsize=128)
+def get_substance_odp_gwp(substance_id):
+    substance = Substance.objects.filter(id=substance_id).first()
+    if substance:
+        return {
+            "odp": substance.odp or 0,
+            "gwp": substance.gwp or 0,
+        }
+    return None
+
+
+class ChemicalConversionView(generics.RetrieveAPIView):
+    """
+    API endpoint that returns (ODP, GWP) pair for a given chemical.
+    """
+
+    def get(self, request, *args, **kwargs):
+        blend_id = request.query_params.get("blend_id", None)
+        substance_id = request.query_params.get("substance_id", None)
+
+        if blend_id:
+            data = get_blend_odp_gwp(blend_id)
+        elif substance_id:
+            data = get_substance_odp_gwp(substance_id)
+
+        if data:
+            return Response(data, status=status.HTTP_200_OK)
+
+        return Response(status=status.HTTP_404_NOT_FOUND)

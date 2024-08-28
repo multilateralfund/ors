@@ -22,7 +22,8 @@ from core.api.views import (
     SummaryStatusOfContributionsExportView,
     TriennialStatusOfContributionsExportView,
     StatisticsStatusOfContributionsExportView,
-    AnnualStatusOfContributionsExportView, StatisticsStatusOfContributionsView,
+    AnnualStatusOfContributionsExportView,
+    StatisticsStatusOfContributionsView,
 )
 from core.api.views import ProjectCommentViewSet
 from core.api.views import ProjectFileView
@@ -41,6 +42,7 @@ from core.api.views.chemicals import (
     BlendCreateView,
     BlendNextCustNameView,
     BlendsListView,
+    ChemicalConversionView,
     SimilarBlendsListView,
     SubstancesListView,
 )
@@ -182,6 +184,11 @@ urlpatterns = [
         "blends/next-cust-mix-name/",
         BlendNextCustNameView.as_view(),
         name="blends-next-cust-mix-name",
+    ),
+    path(
+        "chemicals/conversion/",
+        ChemicalConversionView.as_view(),
+        name="chemicals-conversion",
     ),
     path(
         "country-programme/reports/",
