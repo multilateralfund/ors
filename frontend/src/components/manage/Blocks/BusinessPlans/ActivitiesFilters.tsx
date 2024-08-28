@@ -192,6 +192,7 @@ export default function ActivitiesFilters(props: any) {
         {/* Search Input */}
         <Field
           name="search"
+          defaultValue={filters.search}
           placeholder="Search by keyword..."
           FieldProps={{
             className:
