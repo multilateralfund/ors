@@ -1,3 +1,5 @@
+import { isCountryUserType } from '@ors/types/user_types'
+
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { makePeriodOptions } from '@ors/components/manage/Blocks/Replenishment/utils'
@@ -21,7 +23,7 @@ function ReplenishmentProvider(props) {
   const user = useStore((state) => state.user)
   const isTreasurer = user.data.user_type === 'treasurer'
   const isSecretariat = user.data.user_type === 'secretariat'
-  const isCountryUser = user.data.user_type === 'country_user'
+  const isCountryUser = isCountryUserType[user.data.user_type]
 
   const [periods, setPeriods] = useState([])
   const [countries, setCountries] = useState([])

@@ -3,6 +3,7 @@ import type { SimpleSelectProps } from '@ors/components/ui/SimpleSelect/SimpleSe
 import { Country, FiltersType, StatusFilterTypes } from '@ors/types/store'
 import {
   UserType,
+  isCountryUserType,
   userCanExportData,
   userCanSubmitReport,
 } from '@ors/types/user_types'
@@ -181,7 +182,7 @@ const SubmissionItem = (props: any) => {
     countries.map((country: any) => [country.id, country]),
   )
   const [showAllReports, setShowAllReports] = useState(
-    user_type === 'country_user',
+    isCountryUserType[user_type as UserType],
   )
   const denseLayout =
     filters.range.length === 2 && filters.range[1] - filters.range[0] <= 2
@@ -250,7 +251,7 @@ const SubmissionItem = (props: any) => {
         })}
       </div>
 
-      {reports.length > REPORTS_PER_COUNTRY && user_type !== 'country_user' && (
+      {reports.length > REPORTS_PER_COUNTRY && !isCountryUserType[user_type as UserType] && (
         <div
           className="w-fit cursor-pointer font-medium"
           onClick={toggleReportsVisibility}
@@ -309,7 +310,7 @@ const SubmissionSection = function SubmissionSection(
         className="!fixed bg-action-disabledBackground bg-mui-box-background/70 !duration-300"
         active={loading || !loaded}
       />
-      {user_type !== 'country_user' && (
+      {!isCountryUserType[user_type as UserType] && (
         <Portal domNode="portalSortBy">
           <SortBy options={orderOptions} onChange={handleOrderChange} />
         </Portal>
@@ -509,7 +510,7 @@ const CountrySelect = (props: { filters: any; setFilters: any }) => {
         getOptionLabel={(option) => (option as Country).name}
         options={countries}
         popupIcon={<IoChevronDownCircle color="black" size={24} />}
-        value={user_type === 'country_user' ? country : null}
+        value={isCountryUserType[user_type as UserType] ? country : null}
         widget="autocomplete"
         Input={{
           placeholder: 'Select country...',
@@ -526,7 +527,7 @@ const CountrySelect = (props: { filters: any; setFilters: any }) => {
           }
         }}
       />
-      {user_type === 'country_user' && (
+      {isCountryUserType[user_type as UserType] && (
         <div className="absolute inset-0 top-0 z-10 -mt-1 bg-white bg-opacity-60"></div>
       )}
     </div>
@@ -553,7 +554,7 @@ const YearSelect = (props: {
         widget="yearRange"
         onChange={onChange}
       />
-      {user_type === 'country_user' && (
+      {isCountryUserType[user_type as UserType] && (
         <div className="absolute inset-0 top-0 z-10 -mt-1 bg-white bg-opacity-60"></div>
       )}
     </div>
@@ -782,7 +783,7 @@ export default function CPListing() {
                     'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',
                 }}
               />
-              {user_type !== 'country_user' && (
+              {!isCountryUserType[user_type as UserType] && (
                 <Tab
                   id="submissions-log"
                   className="rounded-b-none px-3 py-2"
@@ -807,7 +808,7 @@ export default function CPListing() {
               user_type={user_type}
             />
           )}
-          {activeTab === 1 && user_type !== 'country_user' && (
+          {activeTab === 1 && !isCountryUserType[user_type as UserType] && (
             <LogSection
               filters={filters}
               logApi={logApi}
