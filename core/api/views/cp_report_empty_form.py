@@ -109,6 +109,7 @@ class EmptyFormView(views.APIView):
             "chemical_display_name": row.get_chemical_display_name(),
             "substance_id": row.substance_id,
             "blend_id": row.blend_id,
+            "gwp": row.substance.gwp if row.substance_id else row.blend.gwp,
             "group": group_name,
             "sort_order": row.sort_order if hasattr(row, "sort_order") else None,
             "excluded_usages": row.get_excluded_usages_list(),
@@ -119,7 +120,7 @@ class EmptyFormView(views.APIView):
     def get_substance_rows(cls, year):
         cp_report_rows = (
             CPReportFormatRow.objects.get_for_year(year)
-            .select_related("substance__group", "blend")
+            .select_related("substance", "substance__group", "blend")
             .prefetch_related("substance__excluded_usages", "blend__excluded_usages")
             .order_by("section", "sort_order")
         )
