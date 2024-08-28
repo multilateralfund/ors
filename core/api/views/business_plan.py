@@ -1,5 +1,4 @@
 import os
-import math
 import urllib
 
 import openpyxl
@@ -42,7 +41,7 @@ from core.api.views.utils import (
     rename_fields,
     BPACTIVITY_ORDERING_FIELDS,
 )
-from core.models import BusinessPlan, BPHistory, BPActivity
+from core.models import Agency, BusinessPlan, BPHistory, BPActivity
 from core.tasks import (
     send_mail_bp_create,
     send_mail_bp_status_update,
@@ -459,20 +458,14 @@ class BPActivityViewSet(
         return queryset
 
     def get_wb(self, method):
+        year_start = int(self.request.query_params.get("year_start"))
+        year_end = int(self.request.query_params.get("year_end"))
+        agency_id = self.request.query_params.get("agency_id")
+
         # get all activities between year_start and year_end
         queryset = self.filter_queryset(self.get_queryset())
 
         data = BPActivityExportSerializer(queryset, many=True).data
-
-        limits = queryset.aggregate(
-            min_year=Min("values__year"), max_year=Max("values__year")
-        )
-
-        if start_year := int(self.request.query_params.get("year_start", "0")):
-            # If there is no data, or only partial data. Ensure we have fields for
-            # start_year, start_year + 1, start_year + 2, after start_year + 2
-            limits["min_year"] = limits["min_year"] or start_year
-            limits["max_year"] = max(limits["max_year"] or -math.inf, start_year + 3)
 
         wb = openpyxl.Workbook()
         sheet = wb.active
@@ -481,11 +474,16 @@ class BPActivityViewSet(
 
         BusinessPlanWriter(
             sheet,
-            min_year=limits["min_year"],
-            max_year=limits["max_year"],
+            min_year=year_start,
+            max_year=year_end + 1,
         ).write(data)
 
-        name = f"Business Plans {limits['min_year']}-{limits['max_year'] - 1}"
+        if agency_id:
+            agency = get_object_or_404(Agency, id=agency_id)
+            name = f"BusinessPlan{agency.name}-{year_start}-{year_end}"
+        else:
+            name = f"BusinessPlanActivities{year_start}-{year_end}"
+
         return method(name, wb)
 
     @action(methods=["GET"], detail=False)
@@ -601,7 +599,9 @@ class BPActivityDiffView(generics.ListAPIView):
             delete_fields(activity, ["id", "business_plan_id", "is_updated"])
             if activity_old:
                 delete_fields(activity_old, ["id", "business_plan_id", "is_updated"])
-                for value in activity.get("values", []) + activity_old.get("values", []):
+                for value in activity.get("values", []) + activity_old.get(
+                    "values", []
+                ):
                     delete_fields(value, ["id"])
 
             # And now actually compare

@@ -84,7 +84,7 @@ class TestBPExport(BaseTest):
         assert response.status_code == 200
         assert (
             response.filename
-            == f"Business Plans {business_plan.year_start}-{business_plan.year_end}.xlsx"
+            == f"BusinessPlanActivities{business_plan.year_start}-{business_plan.year_end}.xlsx"
         )
 
         wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
@@ -124,7 +124,13 @@ class TestBPPrint(BaseTest):
         assert response.status_code == 403
 
     def test_print(
-        self, user, business_plan, bp_activity, old_bp_activity, bp_activity_values
+        self,
+        user,
+        agency,
+        business_plan,
+        bp_activity,
+        old_bp_activity,
+        bp_activity_values,
     ):
         self.client.force_authenticate(user=user)
 
@@ -133,12 +139,13 @@ class TestBPPrint(BaseTest):
             {
                 "year_start": business_plan.year_start,
                 "year_end": business_plan.year_end,
+                "agency_id": agency.id,
             },
         )
         assert response.status_code == 200
         assert (
             response.filename
-            == f"Business Plans {business_plan.year_start}-{business_plan.year_end}.pdf"
+            == f"BusinessPlan{agency.name}-{business_plan.year_start}-{business_plan.year_end}.pdf"
         )
 
         text = pdf_text(io.BytesIO(response.getvalue())).replace("\n", "")
