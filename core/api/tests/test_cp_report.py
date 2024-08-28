@@ -935,7 +935,6 @@ class TestCPReportUpdate(BaseTest):
         response = self.client.put(self.url, data, format="json")
         assert response.status_code == 403
 
-
     def test_finalize_cp_report_country_submitter(
         self,
         country_submitter,
@@ -954,7 +953,6 @@ class TestCPReportUpdate(BaseTest):
 
         response = self.client.put(self.url, data, format="json")
         assert response.status_code == 200
-
 
     def test_update_cp_report_old(
         self,
