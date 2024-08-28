@@ -26,7 +26,7 @@ const BP_PER_PAGE = 20
 
 export default function BusinessPlansTable() {
   const params = useParams<BpPathParams>()
-  const { agency, period } = params
+  const { period } = params
   const form = useRef<any>()
   const commonSlice = useStore((state) => state.common)
   const bpSlice = useStore((state) => state.businessPlans)
@@ -47,7 +47,12 @@ export default function BusinessPlansTable() {
   }
 
   const [filters, setFilters] = useState({ ...initialFilters })
-  const { data, loading, setParams } = useContext(BPContext) as any
+  const {
+    data,
+    loading,
+    params: reqParams,
+    setParams,
+  } = useContext(BPContext) as any
   const activities = data?.results?.activities
   const { count, loaded, results } = getResults(activities)
 
@@ -186,21 +191,10 @@ export default function BusinessPlansTable() {
     }
   }, [gridOptions, yearColumns])
 
-  const currentAgency = useMemo(
-    () => commonSlice.agencies.data.find((item: any) => item.name === agency),
-    [agency, commonSlice.agencies],
+  const exportParams = useMemo(
+    () => filtersToQueryParams(reqParams),
+    [reqParams],
   )
-
-  const exportParams = useMemo(() => {
-    const filtersForExport = {
-      ...filters,
-      agency_id: currentAgency.id,
-      year_end: yearRangeSelected.max_year,
-      year_start: yearRangeSelected.min_year,
-    }
-
-    return filtersToQueryParams(filtersForExport)
-  }, [filters, yearRangeSelected, currentAgency])
 
   return (
     bpSlice.yearRanges.data &&

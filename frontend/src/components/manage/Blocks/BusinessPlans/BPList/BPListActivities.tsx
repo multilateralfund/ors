@@ -40,7 +40,8 @@ export default function BPListActivities(props: any) {
   }
 
   const [filters, setFilters] = useState({ ...initialFilters })
-  const { count, loaded, results, setParams } = useGetActivities(initialFilters)
+  const { count, loaded, params, results, setParams } =
+    useGetActivities(initialFilters)
   const [pagination, setPagination] = useState({
     page: 1,
     rowsPerPage: ACTIVITIES_PER_PAGE,
@@ -55,7 +56,7 @@ export default function BPListActivities(props: any) {
 
   const pages = Math.ceil(count / pagination.rowsPerPage)
 
-  const exportParams = useMemo(() => filtersToQueryParams(filters), [filters])
+  const exportParams = useMemo(() => filtersToQueryParams(params), [params])
 
   return (
     <div className="flex flex-1 flex-col justify-start gap-6 pt-6">
