@@ -1,4 +1,3 @@
-import { scAnnualOptions } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
 import React, { useContext } from 'react'
 
 import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
@@ -7,8 +6,8 @@ import {
   FieldSelect,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceAttachments'
+import { scAnnualOptions } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
-import { useStore } from '@ors/store'
 
 const InvoiceDialog = function InvoiceDialog(props) {
   const { countries, data, isEdit, title, ...dialogProps } = props
@@ -57,11 +56,7 @@ const InvoiceDialog = function InvoiceDialog(props) {
       >
         <option value="" disabled hidden></option>
         {yearOptions.map((year) => (
-          <option
-            key={year.value}
-            className="text-primary"
-            value={year.value}
-          >
+          <option key={year.value} className="text-primary" value={year.value}>
             {year.label}
           </option>
         ))}
