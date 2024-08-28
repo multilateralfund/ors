@@ -163,6 +163,21 @@ class InvoiceSerializer(serializers.ModelSerializer):
             "invoice_files",
         ]
 
+class EmptyInvoiceSerializer(serializers.ModelSerializer):
+    country = CountrySerializer(read_only=True)
+    year = serializers.SerializerMethodField()
+
+    def get_year(self, _obj):
+        return int(self.context["year"])
+
+    class Meta:
+        # An empty invoice is created from SoA
+        model = ScaleOfAssessment
+        fields = [
+            "country",
+            "year",
+        ]
+
 
 class InvoiceCreateSerializer(serializers.ModelSerializer):
     country_id = serializers.PrimaryKeyRelatedField(

@@ -41,17 +41,6 @@ const PaymentDialog = function PaymentDialog(props) {
         type="text"
         required
       />
-      <FieldSelect
-        id="payment_type"
-        defaultValue=""
-        label={'Payment type'}
-        required
-      >
-        <option value="" disabled hidden></option>
-        <option value="current">Current year</option>
-        <option value="past">Past year</option>
-        <option value="advance">Advance payment</option>
-      </FieldSelect>
       <FieldInput
         id="amount"
         defaultValue={data?.amount}

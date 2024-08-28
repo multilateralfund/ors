@@ -25,7 +25,7 @@ from core.api.export.replenishment import (
     EMPTY_ROW,
     ScaleOfAssessmentWriter,
 )
-from core.api.filters.replenishments import (
+from core.api.filters.replenishment import (
     InvoiceFilter,
     PaymentFilter,
     ScaleOfAssessmentFilter,
@@ -42,6 +42,7 @@ from core.api.serializers import (
     DisputedContributionCreateSerializer,
     DisputedContributionReadSerializer,
     ScaleOfAssessmentExcelExportSerializer,
+    EmptyInvoiceSerializer,
 )
 from core.api.utils import workbook_response
 from core.api.views.utils import (
@@ -1195,10 +1196,7 @@ class ReplenishmentInvoiceViewSet(
         filters.SearchFilter,
     ]
     ordering_fields = [
-        "amount",
-        "country__name",
         "date_of_issuance",
-        "date_sent_out",
     ]
     search_fields = ["number"]
 
@@ -1215,13 +1213,80 @@ class ReplenishmentInvoiceViewSet(
             models.Prefetch(
                 "replenishment__scales_of_assessment_versions",
                 queryset=ScaleOfAssessmentVersion.objects.order_by("-version"),
-            )
+            ),
+            "invoice_files",
         )
 
     def get_serializer_class(self):
         if self.request.method in ["POST", "PUT"]:
             return InvoiceCreateSerializer
         return InvoiceSerializer
+
+    def list(self, request, *args, **kwargs):
+        """
+        Return Scale of Assessment joined with the invoices to show countries
+        that have not paid yet.
+        """
+
+        try:
+            year = request.query_params.get("year")
+        except (TypeError, ValueError) as e:
+            raise ValidationError("Year must be an integer.") from e
+
+        invoice_qs = self.filter_queryset(self.get_queryset())
+        invoice_data = InvoiceSerializer(invoice_qs, many=True).data
+        # pylint: disable=too-many-boolean-expressions
+        if (
+            "search" in request.query_params
+            or "country_id" in request.query_params
+            or "date_of_issuance" in request.query_params.get("ordering", "")
+            or request.query_params.get("hide_no_invoice") == "true"
+            or (
+                request.query_params.get("status", None) is not None
+                and request.query_params.get("status") != "not_issued"
+            )
+            or request.user.user_type == request.user.UserType.COUNTRY_USER
+        ):
+            # If filtered, we should not send the empty invoices
+            return Response(
+                invoice_data,
+                status=status.HTTP_200_OK,
+            )
+
+        countries_with_invoices = [invoice["country"]["id"] for invoice in invoice_data]
+        countries_without_invoices = (
+            ScaleOfAssessment.objects.filter(
+                version__is_final=True,
+                version__replenishment__start_year__lte=year,
+                version__replenishment__end_year__gte=year,
+            )
+            .exclude(country_id__in=countries_with_invoices)
+            .select_related("country")
+            .order_by("country__name")
+        )
+        countries_without_invoices_data = EmptyInvoiceSerializer(
+            countries_without_invoices, many=True, context={"year": year}
+        ).data
+
+        if request.query_params.get("status") == "not_issued":
+            data = countries_without_invoices_data
+        else:
+            data = [
+                *invoice_data,
+                *countries_without_invoices_data,
+            ]
+
+        if "country" in request.query_params.get("ordering", ""):
+            data = sorted(
+                data,
+                key=lambda x: x["country"]["name"],
+                reverse=request.query_params.get("ordering", "").startswith("-"),
+            )
+
+        return Response(
+            data,
+            status=status.HTTP_200_OK,
+        )
 
     def _parse_invoice_new_files(self, request):
         number_of_files = int(request.data.get("nr_new_files", 0))
@@ -1332,11 +1397,13 @@ class ReplenishmentPaymentViewSet(
     filter_backends = [
         DjangoFilterBackend,
         filters.OrderingFilter,
+        filters.SearchFilter,
     ]
     ordering_fields = [
         "amount",
         "country__name",
     ]
+    search_fields = ["payment_for_year", "amount", "country__name"]
 
     def get_queryset(self):
         user = self.request.user

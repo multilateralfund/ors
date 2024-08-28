@@ -25,19 +25,19 @@ class InvoiceFilter(filters.FilterSet):
     country_id = filters.ModelMultipleChoiceFilter(
         field_name="country_id", queryset=Country.objects.all(), widget=CSVWidget
     )
-    replenishment_start = filters.NumberFilter(method="filter_replenishment_start")
+    year = filters.NumberFilter(field_name="year")
+    status = filters.CharFilter(method="filter_status")
+
+    def filter_status(self, queryset, _name, value):
+        if value == "pending":
+            return queryset.filter(date_paid__isnull=True)
+        if value == "paid":
+            return queryset.filter(date_paid__isnull=False)
+        return queryset
 
     class Meta:
         model = Invoice
-        fields = ["country_id", "replenishment_start"]
-
-    def filter_replenishment_start(self, queryset, _name, value):
-        """
-        Filters by start year of replenishment
-        """
-        if value == "all":
-            return queryset
-        return queryset.filter(replenishment__start_year=int(value))
+        fields = ["country_id", "year", "status"]
 
 
 class PaymentFilter(filters.FilterSet):
@@ -48,7 +48,8 @@ class PaymentFilter(filters.FilterSet):
     country_id = filters.ModelMultipleChoiceFilter(
         field_name="country_id", queryset=Country.objects.all(), widget=CSVWidget
     )
+    year = filters.CharFilter(field_name="payment_for_year", lookup_expr="icontains")
 
     class Meta:
         model = Payment
-        fields = ["country_id"]
+        fields = ["country_id", "year"]

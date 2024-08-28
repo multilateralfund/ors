@@ -48,9 +48,12 @@ function TableCell(props) {
 
   const RowButtons = () => {
     const hasDeleteButton = rowData[r]['can_delete']
-    if (hasDeleteButton) {
-      return <AdminButtons onDelete={() => onDelete(r, rowData[r])} />
+    const hasEditButton = rowData[r]['can_edit']
+
+    if (!adminButtons && !hasDeleteButton && !hasEditButton) {
+      return null
     }
+
     if (adminButtons) {
       return (
         <AdminButtons
@@ -60,7 +63,15 @@ function TableCell(props) {
       )
     }
 
-    return null
+    const adminButtonsProps = {}
+    if (hasDeleteButton) {
+      adminButtonsProps.onDelete = () => onDelete(r, rowData[r])
+    }
+    if (hasEditButton) {
+      adminButtonsProps.onEdit = () => onEdit(r)
+    }
+
+    return <AdminButtons {...adminButtonsProps} />
   }
 
   return (
@@ -94,8 +105,9 @@ function Table(props) {
   for (let j = 0; j < rowData.length; j++) {
     const row = []
     for (let i = 0; i < columns.length; i++) {
+      const grayRow = rowData[j]['gray']
       row.push(
-        <td key={i}>
+        <td key={i} className={grayRow ? 'bg-gray-300' : ''}>
           <TableCell
             adminButtons={adminButtons}
             c={i}
