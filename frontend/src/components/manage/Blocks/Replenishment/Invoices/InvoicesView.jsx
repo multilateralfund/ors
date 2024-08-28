@@ -400,7 +400,7 @@ function InvoicesView() {
         />
       ) : null}
       <div className="flex items-center justify-between gap-4 pb-4 print:hidden">
-        <div className="flex items-center">
+        <div className="flex items-center gap-x-4">
           <div className="relative">
             <IoSearchSharp
               className="absolute left-3 top-1/2 -translate-y-1/2 transform text-primary"
@@ -415,10 +415,11 @@ function InvoicesView() {
               onChange={handleSearchInput}
             />
           </div>
+          <div className="h-8 border-y-0 border-l border-r-0 border-solid border-gray-400"></div>
           {!ctx.isCountryUser && (
             <Select
               id="country"
-              className="placeholder-select w-52"
+              className="placeholder-select !ml-0 w-52"
               onChange={handleCountryFilter}
               hasClear
               required

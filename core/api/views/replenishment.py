@@ -25,7 +25,7 @@ from core.api.export.replenishment import (
     EMPTY_ROW,
     ScaleOfAssessmentWriter,
 )
-from core.api.filters.replenishments import (
+from core.api.filters.replenishment import (
     InvoiceFilter,
     PaymentFilter,
     ScaleOfAssessmentFilter,
@@ -1235,6 +1235,7 @@ class ReplenishmentInvoiceViewSet(
                 request.query_params.get("status", None) is not None
                 and request.query_params.get("status") != "not_issued"
             )
+            or request.user.user_type == request.user.UserType.COUNTRY_USER
         ):
             # If filtered, we should not send the empty invoices
             return Response(
@@ -1384,11 +1385,13 @@ class ReplenishmentPaymentViewSet(
     filter_backends = [
         DjangoFilterBackend,
         filters.OrderingFilter,
+        filters.SearchFilter,
     ]
     ordering_fields = [
         "amount",
         "country__name",
     ]
+    search_fields = ["payment_for_year", "amount", "country__name"]
 
     def get_queryset(self):
         user = self.request.user
