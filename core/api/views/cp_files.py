@@ -49,7 +49,8 @@ class CPFilesView(
         user = self.request.user
         country_id = self.request.query_params.get("country_id")
         if (
-            user.user_type == user.UserType.COUNTRY_USER
+            user.user_type
+            in (user.UserType.COUNTRY_USER, user.UserType.COUNTRY_SUBMITTER)
             and user.country_id != country_id
         ):
             raise PermissionDenied("User represents other country")

@@ -125,6 +125,24 @@ class TestCPReportComments:
         mock_send_mail_comment.assert_called()
         assert mock_send_mail_comment.call_count == 3
 
+    def test_create_comments_country_submitter(self, country_submitter, cp_report_2019):
+        url = reverse(
+            "country-programme-report-comments", kwargs={"id": cp_report_2019.id}
+        )
+
+        self.client.force_authenticate(user=country_submitter)
+        # create section A country comment
+        data = {
+            "section": self.SECTION_A,
+            "comment_type": self.COMMENT_COUNTRY,
+            "comment": "Test create country submitter",
+        }
+        response = self.client.post(url, data, format="json")
+        assert response.status_code == 201
+        assert response.data["section"] == self.SECTION_A
+        assert response.data["comment_type"] == self.COMMENT_COUNTRY
+        assert response.data["comment"] == "Test create country submitter"
+
     def test_config_mail_not_sent(self, user, cp_report_2019, mock_send_mail_comment):
         config.SEND_MAIL = False  # change config
         url = reverse(

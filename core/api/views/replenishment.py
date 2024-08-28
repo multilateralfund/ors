@@ -81,7 +81,10 @@ class ReplenishmentCountriesViewSet(viewsets.GenericViewSet, mixins.ListModelMix
     def get_queryset(self):
         user = self.request.user
         queryset = Country.objects.all()
-        if user.user_type == user.UserType.COUNTRY_USER:
+        if user.user_type in (
+            user.UserType.COUNTRY_USER,
+            user.UserType.COUNTRY_SUBMITTER,
+        ):
             queryset = queryset.filter(id=user.country_id)
         return queryset.order_by("name")
 
@@ -788,7 +791,10 @@ class DisputedContributionViewSet(
     def get_queryset(self):
         user = self.request.user
         queryset = DisputedContribution.objects.all()
-        if user.user_type == user.UserType.COUNTRY_USER:
+        if user.user_type in (
+            user.UserType.COUNTRY_USER,
+            user.UserType.COUNTRY_SUBMITTER,
+        ):
             queryset = queryset.filter(country_id=user.country_id)
 
         return queryset.select_related("country")
@@ -1199,7 +1205,10 @@ class ReplenishmentInvoiceViewSet(
     def get_queryset(self):
         user = self.request.user
         queryset = Invoice.objects.all()
-        if user.user_type == user.UserType.COUNTRY_USER:
+        if user.user_type in (
+            user.UserType.COUNTRY_USER,
+            user.UserType.COUNTRY_SUBMITTER,
+        ):
             queryset = queryset.filter(country_id=user.country_id)
 
         return queryset.select_related("country", "replenishment").prefetch_related(
@@ -1287,7 +1296,10 @@ class ReplenishmentInvoiceFileDownloadView(generics.RetrieveAPIView):
     def get_queryset(self):
         user = self.request.user
         queryset = InvoiceFile.objects.all()
-        if user.user_type == user.UserType.COUNTRY_USER:
+        if user.user_type in (
+            user.UserType.COUNTRY_USER,
+            user.UserType.COUNTRY_SUBMITTER,
+        ):
             queryset = queryset.filter(invoice__country_id=user.country_id)
 
     def get(self, request, *args, **kwargs):
@@ -1329,7 +1341,10 @@ class ReplenishmentPaymentViewSet(
     def get_queryset(self):
         user = self.request.user
         queryset = Payment.objects.all()
-        if user.user_type == user.UserType.COUNTRY_USER:
+        if user.user_type in (
+            user.UserType.COUNTRY_USER,
+            user.UserType.COUNTRY_SUBMITTER,
+        ):
             queryset = queryset.filter(country_id=user.country_id)
 
         return queryset.select_related("country", "replenishment").prefetch_related(
@@ -1417,7 +1432,10 @@ class ReplenishmentPaymentFileDownloadView(generics.RetrieveAPIView):
     def get_queryset(self):
         user = self.request.user
         queryset = PaymentFile.objects.all()
-        if user.user_type == user.UserType.COUNTRY_USER:
+        if user.user_type in (
+            user.UserType.COUNTRY_USER,
+            user.UserType.COUNTRY_SUBMITTER,
+        ):
             queryset = queryset.filter(invoice__country_id=user.country_id)
 
     def get(self, request, *args, **kwargs):

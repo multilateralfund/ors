@@ -8,6 +8,7 @@ class User(AbstractUser):
         AGENCY_INPUTTER = "agency_inputter", _("Agency inputter")
         AGENCY_SUBMITTER = "agency_submitter", _("Agency submitter")
         COUNTRY_USER = "country_user", _("Country user")
+        COUNTRY_SUBMITTER = "country_submitter", _("Country submitter")
         SECRETARIAT = "secretariat", _("Secretariat")
         STAKEHOLDER = "stakeholder", _("Stakeholder")
         TREASURER = "treasurer", _("Treasurer")
