@@ -1222,10 +1222,11 @@ class ReplenishmentInvoiceViewSet(
         try:
             year = request.query_params.get("year")
         except (TypeError, ValueError) as e:
-            raise ValidationError("Year must be an integer.")
+            raise ValidationError("Year must be an integer.") from e
 
         invoice_qs = self.filter_queryset(self.get_queryset())
         invoice_data = InvoiceSerializer(invoice_qs, many=True).data
+        # pylint: disable=too-many-boolean-expressions
         if (
             "search" in request.query_params
             or "country_id" in request.query_params
@@ -1267,10 +1268,9 @@ class ReplenishmentInvoiceViewSet(
             ]
 
         if "country" in request.query_params.get("ordering", ""):
-            sort_key = lambda x: x["country"]["name"]
             data = sorted(
                 data,
-                key=sort_key,
+                key=lambda x: x["country"]["name"],
                 reverse=request.query_params.get("ordering", "").startswith("-"),
             )
 

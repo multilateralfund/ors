@@ -28,7 +28,7 @@ class InvoiceFilter(filters.FilterSet):
     year = filters.NumberFilter(field_name="year")
     status = filters.CharFilter(method="filter_status")
 
-    def filter_status(self, queryset, name, value):
+    def filter_status(self, queryset, _name, value):
         if value == "pending":
             return queryset.filter(date_paid__isnull=True)
         if value == "paid":

@@ -167,7 +167,7 @@ class EmptyInvoiceSerializer(serializers.ModelSerializer):
     country = CountrySerializer(read_only=True)
     year = serializers.SerializerMethodField()
 
-    def get_year(self, obj):
+    def get_year(self, _obj):
         return int(self.context["year"])
 
     class Meta:
