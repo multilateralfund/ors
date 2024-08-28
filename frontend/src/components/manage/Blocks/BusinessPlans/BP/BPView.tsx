@@ -23,7 +23,7 @@ function BPView() {
         active={loading}
       />
       <BPHeaderView />
-      <div className="flex flex-wrap-reverse items-center justify-between gap-2 lg:flex-nowrap print:hidden">
+      <div className="flex items-center justify-between gap-2 lg:flex-nowrap print:hidden">
         <Tabs
           className="scrollable w-96"
           aria-label="view country programme report"
@@ -60,6 +60,7 @@ function BPView() {
             }}
           />
         </Tabs>
+        <div id="bp-table-export-button" className="mb-1.5 self-end"></div>
       </div>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary bg-white p-6">
         {activeTab === 0 && <BusinessPlansTable />}

@@ -3,6 +3,7 @@ import React, { useContext, useMemo, useRef, useState } from 'react'
 
 import { useParams } from 'next/navigation'
 
+import DownloadButtons from '@ors/app/business-plans/DownloadButtons'
 import ActivitiesFilters from '@ors/components/manage/Blocks/BusinessPlans/ActivitiesFilters'
 import { BpPathParams } from '@ors/components/manage/Blocks/BusinessPlans/types'
 import TableDateSwitcher, {
@@ -16,8 +17,10 @@ import {
 } from '@ors/components/manage/Blocks/Table/BusinessPlansTable/schema'
 import Table from '@ors/components/manage/Form/Table'
 import BPContext from '@ors/contexts/BusinessPlans/BPContext'
-import { getResults } from '@ors/helpers'
+import { formatApiUrl, getResults } from '@ors/helpers'
 import { useStore } from '@ors/store'
+
+import { filtersToQueryParams } from '../../BusinessPlans/utils'
 
 const BP_PER_PAGE = 20
 
@@ -44,7 +47,12 @@ export default function BusinessPlansTable() {
   }
 
   const [filters, setFilters] = useState({ ...initialFilters })
-  const { data, loading, setParams } = useContext(BPContext) as any
+  const {
+    data,
+    loading,
+    params: reqParams,
+    setParams,
+  } = useContext(BPContext) as any
   const activities = data?.results?.activities
   const { count, loaded, results } = getResults(activities)
 
@@ -183,98 +191,111 @@ export default function BusinessPlansTable() {
     }
   }, [gridOptions, yearColumns])
 
+  const exportParams = useMemo(
+    () => filtersToQueryParams(reqParams),
+    [reqParams],
+  )
+
   return (
     bpSlice.yearRanges.data &&
     bpSlice.yearRanges.data.length > 0 && (
-      <form ref={form}>
-        <Table
-          columnDefs={[...columnDefs]}
-          domLayout="autoHeight"
-          loaded={loaded}
-          loading={loading}
-          paginationPageSize={BP_PER_PAGE}
-          rowCount={count}
-          rowData={results}
-          tooltipShowDelay={200}
-          Toolbar={() => (
-            <div className="bp-table-toolbar mb-4 flex flex-col justify-between gap-4 md:flex-row md:items-center">
-              <ActivitiesFilters
-                bpSlice={bpSlice}
-                clusters={clusters}
-                commonSlice={commonSlice}
-                filters={filters}
-                form={form}
-                handleFilterChange={handleFilterChange}
-                handleParamsChange={handleParamsChange}
-                initialFilters={initialFilters}
-              />
-              <TableDateSwitcher
-                changeHandler={(event, value) => setGridOptions(value)}
-                value={gridOptions}
-              />
-              {/*<Dropdown*/}
-              {/*  color="primary"*/}
-              {/*  label={<IoDownloadOutline />}*/}
-              {/*  tooltip="Download"*/}
-              {/*  icon*/}
-              {/*>*/}
-              {/*  <Dropdown.Item>*/}
-              {/*    <Link*/}
-              {/*      className="flex items-center gap-x-2 text-black no-underline"*/}
-              {/*      target="_blank"*/}
-              {/*      href={*/}
-              {/*        formatApiUrl('api/business-plan-record/export/') +*/}
-              {/*        '?year_start=' +*/}
-              {/*        yearRangeSelected?.year_start.toString()*/}
-              {/*      }*/}
-              {/*      download*/}
-              {/*    >*/}
-              {/*      <AiFillFileExcel className="fill-green-700" size={24} />*/}
-              {/*      <span>XLSX</span>*/}
-              {/*    </Link>*/}
-              {/*  </Dropdown.Item>*/}
-              {/*  <Dropdown.Item>*/}
-              {/*    <Link*/}
-              {/*      className="flex items-center gap-x-2 text-black no-underline"*/}
-              {/*      target="_blank"*/}
-              {/*      href={*/}
-              {/*        formatApiUrl('api/business-plan-record/print/') +*/}
-              {/*        '?year_start=' +*/}
-              {/*        yearRangeSelected?.year_start.toString()*/}
-              {/*      }*/}
-              {/*      download*/}
-              {/*    >*/}
-              {/*      <AiFillFilePdf className="fill-red-700" size={24} />*/}
-              {/*      <span>PDF</span>*/}
-              {/*    </Link>*/}
-              {/*  </Dropdown.Item>*/}
-              {/*</Dropdown>*/}
-            </div>
-          )}
-          components={{
-            agColumnHeader: undefined,
-            agTextCellRenderer: undefined,
-          }}
-          onPaginationChanged={({ page, rowsPerPage }) => {
-            setParams({
-              limit: rowsPerPage,
-              offset: page * rowsPerPage,
-            })
-          }}
-          onSortChanged={({ api }) => {
-            const ordering = api
-              .getColumnState()
-              .filter((column) => !!column.sort)
-              .map(
-                (column) =>
-                  (column.sort === 'asc' ? '' : '-') +
-                  column.colId.replaceAll('.', '__'),
-              )
-              .join(',')
-            setParams({ offset: 0, ordering })
-          }}
+      <>
+        <DownloadButtons
+          downloadTexts={['Download']}
+          downloadUrls={[
+            formatApiUrl(`/api/business-plan-activity/export/?${exportParams}`),
+          ]}
         />
-      </form>
+        <form ref={form}>
+          <Table
+            columnDefs={[...columnDefs]}
+            domLayout="autoHeight"
+            loaded={loaded}
+            loading={loading}
+            paginationPageSize={BP_PER_PAGE}
+            rowCount={count}
+            rowData={results}
+            tooltipShowDelay={200}
+            Toolbar={() => (
+              <div className="bp-table-toolbar mb-4 flex flex-col justify-between gap-4 md:flex-row md:items-center">
+                <ActivitiesFilters
+                  bpSlice={bpSlice}
+                  clusters={clusters}
+                  commonSlice={commonSlice}
+                  filters={filters}
+                  form={form}
+                  handleFilterChange={handleFilterChange}
+                  handleParamsChange={handleParamsChange}
+                  initialFilters={initialFilters}
+                />
+                <TableDateSwitcher
+                  changeHandler={(event, value) => setGridOptions(value)}
+                  value={gridOptions}
+                />
+                {/*<Dropdown*/}
+                {/*  color="primary"*/}
+                {/*  label={<IoDownloadOutline />}*/}
+                {/*  tooltip="Download"*/}
+                {/*  icon*/}
+                {/*>*/}
+                {/*  <Dropdown.Item>*/}
+                {/*    <Link*/}
+                {/*      className="flex items-center gap-x-2 text-black no-underline"*/}
+                {/*      target="_blank"*/}
+                {/*      href={*/}
+                {/*        formatApiUrl('api/business-plan-record/export/') +*/}
+                {/*        '?year_start=' +*/}
+                {/*        yearRangeSelected?.year_start.toString()*/}
+                {/*      }*/}
+                {/*      download*/}
+                {/*    >*/}
+                {/*      <AiFillFileExcel className="fill-green-700" size={24} />*/}
+                {/*      <span>XLSX</span>*/}
+                {/*    </Link>*/}
+                {/*  </Dropdown.Item>*/}
+                {/*  <Dropdown.Item>*/}
+                {/*    <Link*/}
+                {/*      className="flex items-center gap-x-2 text-black no-underline"*/}
+                {/*      target="_blank"*/}
+                {/*      href={*/}
+                {/*        formatApiUrl('api/business-plan-record/print/') +*/}
+                {/*        '?year_start=' +*/}
+                {/*        yearRangeSelected?.year_start.toString()*/}
+                {/*      }*/}
+                {/*      download*/}
+                {/*    >*/}
+                {/*      <AiFillFilePdf className="fill-red-700" size={24} />*/}
+                {/*      <span>PDF</span>*/}
+                {/*    </Link>*/}
+                {/*  </Dropdown.Item>*/}
+                {/*</Dropdown>*/}
+              </div>
+            )}
+            components={{
+              agColumnHeader: undefined,
+              agTextCellRenderer: undefined,
+            }}
+            onPaginationChanged={({ page, rowsPerPage }) => {
+              setParams({
+                limit: rowsPerPage,
+                offset: page * rowsPerPage,
+              })
+            }}
+            onSortChanged={({ api }) => {
+              const ordering = api
+                .getColumnState()
+                .filter((column) => !!column.sort)
+                .map(
+                  (column) =>
+                    (column.sort === 'asc' ? '' : '-') +
+                    column.colId.replaceAll('.', '__'),
+                )
+                .join(',')
+              setParams({ offset: 0, ordering })
+            }}
+          />
+        </form>
+      </>
     )
   )
 }

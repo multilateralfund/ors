@@ -20,10 +20,14 @@ class UserEditAdminForm(ModelForm):
         user_type = cleaned_data["user_type"]
         country = cleaned_data["country"]
         agency = cleaned_data["agency"]
-        if user_type == User.UserType.COUNTRY_USER and not country:
+        if (
+            user_type in (User.UserType.COUNTRY_USER, User.UserType.COUNTRY_SUBMITTER)
+            and not country
+        ):
             raise ValidationError(
                 _(
-                    "Country users need to be assigned to countries. Choose a country and try again."
+                    "Country users need to be assigned to countries. "
+                    "Choose a country and try again."
                 )
             )
 
@@ -33,7 +37,8 @@ class UserEditAdminForm(ModelForm):
         ):
             raise ValidationError(
                 _(
-                    "Agency users need to be assigned to agencies. Choose an agency and try again."
+                    "Agency users need to be assigned to agencies. "
+                    "Choose an agency and try again."
                 )
             )
         return cleaned_data

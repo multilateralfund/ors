@@ -766,6 +766,25 @@ class TestCPReportUpdate(BaseTest):
         # check email not sent (DRAFT)
         mock_send_mail_report_update.assert_not_called()
 
+    def test_update_cp_report_draft_country_user(
+        self,
+        country_user,
+        _setup_new_cp_report_create,
+        cp_report_2019,
+    ):
+        self.url = reverse("country-programme-reports") + f"{cp_report_2019.id}/"
+
+        # set status draft
+        cp_report_2019.status = CPReport.CPReportStatus.DRAFT
+        cp_report_2019.save()
+
+        self.client.force_authenticate(user=country_user)
+        data = _setup_new_cp_report_create
+        data["name"] = "Alo baza baza"
+        data["section_f"]["remarks"] = "Alo Delta Force"
+        response = self.client.put(self.url, data, format="json")
+        assert response.status_code == 200
+
     def test_update_cp_report_final(
         self,
         second_user,
@@ -915,6 +934,44 @@ class TestCPReportUpdate(BaseTest):
         # check 3 emails sent (3 FINAL reports)
         mock_send_mail_report_update.assert_called()
         assert mock_send_mail_report_update.call_count == 3
+
+    def test_finalize_cp_report_country_user(
+        self,
+        country_user,
+        _setup_new_cp_report_create,
+        cp_report_2019,
+    ):
+        self.url = reverse("country-programme-reports") + f"{cp_report_2019.id}/"
+        self.client.force_authenticate(user=country_user)
+
+        # change status to final
+        cp_report_2019.status = CPReport.CPReportStatus.FINAL
+        cp_report_2019.save()
+        # update cp report (keep final status => new version)
+        data = _setup_new_cp_report_create
+        data["status"] = CPReport.CPReportStatus.FINAL
+
+        response = self.client.put(self.url, data, format="json")
+        assert response.status_code == 403
+
+    def test_finalize_cp_report_country_submitter(
+        self,
+        country_submitter,
+        _setup_new_cp_report_create,
+        cp_report_2019,
+    ):
+        self.url = reverse("country-programme-reports") + f"{cp_report_2019.id}/"
+        self.client.force_authenticate(user=country_submitter)
+
+        # change status to final
+        cp_report_2019.status = CPReport.CPReportStatus.FINAL
+        cp_report_2019.save()
+        # update cp report (keep final status => new version)
+        data = _setup_new_cp_report_create
+        data["status"] = CPReport.CPReportStatus.FINAL
+
+        response = self.client.put(self.url, data, format="json")
+        assert response.status_code == 200
 
     def test_update_cp_report_old(
         self,

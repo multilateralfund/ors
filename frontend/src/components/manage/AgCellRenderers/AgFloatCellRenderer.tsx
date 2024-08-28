@@ -16,6 +16,7 @@ export default function AgFloatCellRenderer(props: CustomCellRendererProps) {
   }
 
   let value = null
+  let valueMT: null | number = null
   let valueGWP: null | number = null
   let valueODP: null | number = null
 
@@ -42,8 +43,12 @@ export default function AgFloatCellRenderer(props: CustomCellRendererProps) {
   }
   if (aggFunc && includes(['subtotal', 'total'], props.data.rowType)) {
     value = fixFloat(aggFunc({ ...props }))
+    valueMT = aggFunc({ ...props, unitOverride: 'mt' })
+    valueGWP = fixFloat(aggFunc({ ...props, unitOverride: 'gwp' }))
+    valueODP = fixFloat(aggFunc({ ...props, unitOverride: 'odp' }))
   } else {
     value = parseNumber(props.value)
+    valueMT = value
     valueGWP = props.colDef ? props.data[`${props.colDef.field}_gwp`] : null
     valueODP = props.colDef ? props.data[`${props.colDef.field}_odp`] : null
   }
@@ -56,8 +61,12 @@ export default function AgFloatCellRenderer(props: CustomCellRendererProps) {
     value = 0
   }
 
+  if (isNull(valueMT)) {
+    valueMT = 0
+  }
+
   const { TitleContent, formattedValue } = getDecimalCellValue(
-    value,
+    valueMT,
     valueODP,
     valueGWP,
     props,

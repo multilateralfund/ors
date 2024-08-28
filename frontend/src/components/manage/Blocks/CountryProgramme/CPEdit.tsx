@@ -34,6 +34,7 @@ import Portal from '../../Utils/Portal'
 import { CPEditHeader } from './CPHeader'
 import CPRestoreEdit from './CPRestoreEdit'
 import CPSectionWrapper from './CPSectionWrapper'
+import DownloadCalculatedAmounts from './DownloadCalculatedAmounts'
 import { CPBaseForm } from './typesCPCreate'
 import { useEditLocalStorage } from './useLocalStorage'
 
@@ -50,6 +51,7 @@ const TableProps = {
     exitFullScreen,
     fullScreen,
     isActiveSection,
+    report,
     section,
   }: any) => {
     return (
@@ -84,7 +86,8 @@ const TableProps = {
           active={isActiveSection && !fullScreen}
           domNode="sectionToolbar"
         >
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-end gap-x-2">
+            <DownloadCalculatedAmounts report={report} />
             {section.allowFullScreen && !fullScreen && (
               <div
                 className="text-md cursor-pointer"

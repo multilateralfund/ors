@@ -1,6 +1,6 @@
 'use client'
 
-import { useContext, useState } from 'react'
+import { useContext } from 'react'
 
 import cx from 'classnames'
 import Link from 'next/link'
@@ -18,16 +18,91 @@ import { extractContributions } from '@ors/components/manage/Blocks/Replenishmen
 import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 
+
+function formatNumber(value) {
+  let result = value
+
+  if (value >= 100000) {
+    result = formatNumberValue(value, 0, 0)
+  } else if (value <= 0.15 && value >= -0.15) {
+    result = 0
+  } else {
+    result = formatNumberValue(value, 2, 2)
+  }
+
+  return result
+}
+
+
 function SummaryCard(props) {
-  const { label, percentage, subLabel, value } = props
+  const { elements, label, prefix, suffix, value } = props
+  const contents = []
+
+  if (elements) {
+    for (let i = 0; i < elements.length; i++) {
+      contents.push(
+        <div key={i} className="flex gap-y-2 flex-col uppercase">
+          <div className="text-[#4D4D4D]">{elements[i].label}</div>
+          <div
+            className={cx(
+              'text-4xl font-bold text-primary',
+              elements[i].className,
+            )}
+          >
+            {elements[i].prefix || ''}
+            {elements[i].value}
+            {elements[i].suffix || ''}
+          </div>
+        </div>,
+      )
+    }
+  }
+
   return (
-    <div className="flex min-h-36 flex-1 flex-col justify-between rounded-lg bg-[#F5F5F5] p-4 print:break-inside-avoid">
-      <div className="text-xl font-medium uppercase">{label}</div>
-      <div className="text-base uppercase">{subLabel}</div>
-      <div className="text-5xl font-bold leading-normal">
-        {value}
-        {percentage && '%'}
+    <div className="flex max-h-48 min-h-48 min-w-[29.33rem] max-w-[29.33rem] flex-1 flex-col justify-between rounded-lg bg-[#F5F5F5] p-4 print:break-inside-avoid">
+      <div className="flex items-center justify-between">
+        <div className="max-w-0 text-xl font-medium uppercase text-[#4D4D4D]">
+          {label}
+        </div>
+        <div className="text-5xl font-bold leading-normal text-primary">
+          <span className="font-normal">{prefix}</span>
+          {value}
+          {suffix}
+        </div>
       </div>
+      <hr className="mb-4 mt-2 block w-full border border-x-0 border-b-0 border-solid border-[#E0E0E0]" />
+      <div className="flex justify-between">{contents}</div>
+    </div>
+  )
+}
+
+function BigCard(props) {
+  const { elements, label } = props
+
+  const contents = []
+
+  if (elements) {
+    for (let i = 0; i < elements.length; i++) {
+      contents.push(
+        <div key={i} className="my-4 flex flex-col uppercase gap-y-2">
+          <div className="text-[#4D4D4D]">{elements[i].label}</div>
+          <div className="text-4xl font-bold text-primary">
+            <span className="font-normal">{elements[i].prefix || ''}</span>
+            {elements[i].value}
+            {elements[i].suffix || ''}
+          </div>
+        </div>,
+      )
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-y-4 rounded-lg border border-solid border-primary p-4">
+      <div className="max-w-0 text-xl font-medium uppercase leading-normal text-[#4D4D4D]">
+        {label}
+      </div>
+      <hr className="mt-2 block w-full border border-x-0 border-b-0 border-solid border-[#E0E0E0]" />
+      <div className="flex flex-col">{contents}</div>
     </div>
   )
 }
@@ -36,117 +111,109 @@ function getPercent(tot, x) {
   return (x * 100) / tot
 }
 
+function TabIndicatorsPledged(props) {
+  const { contrib, period, totals } = props
+  return (
+    <BigCard
+      label="Pledged contributions"
+      elements={[
+        {
+          label: 'amount',
+          prefix: '$',
+          value: formatNumber(totals.agreed_contributions),
+        },
+        { label: 'countries', value: contrib.countries },
+        {
+          label: 'period',
+          value: period || `1991-${new Date().getFullYear()}`,
+        },
+      ]}
+    />
+  )
+}
+
 function TabIndicatorsPayments(props) {
   const { contrib, totals } = props
   return (
-    <div className="flex flex-wrap items-stretch gap-4">
-      <SummaryCard
-        label="Pledged contributions"
-        value={formatNumberValue(totals.agreed_contributions, 2, 2)}
-      />
-      <SummaryCard
-        label="Cash payments"
-        subLabel="countries"
-        value={contrib.contributions}
-      />
-      <SummaryCard
-        label="Cash payments"
-        percentage={true}
-        subLabel="% countries"
-        value={formatNumberValue(contrib.contributions_percentage, 2, 2)}
-      />
-      <SummaryCard
-        label="Cash payments"
-        subLabel="amount"
-        value={formatNumberValue(totals.cash_payments, 2, 2)}
-      />
-      <SummaryCard
-        label="Cash payments"
-        percentage={true}
-        subLabel="percentage"
-        value={formatNumberValue(
-          getPercent(totals.agreed_contributions, totals.cash_payments),
-          2,
-          2,
-        )}
-      />
-    </div>
+    <SummaryCard
+      label="Cash payments"
+      prefix="$"
+      value={formatNumber(totals.cash_payments)}
+      elements={[
+        { label: 'countries', value: contrib.contributions },
+        {
+          label: 'countries percent',
+          suffix: '%',
+          value: formatNumber(contrib.contributions_percentage),
+        },
+        {
+          label: 'percentage of pledged',
+          suffix: '%',
+          value: formatNumber(
+            getPercent(totals.agreed_contributions, totals.cash_payments),
+          ),
+        },
+      ]}
+    />
   )
 }
 
 function TabIndicatorsBilateralAssistance(props) {
   const { contrib, totals } = props
   return (
-    <div className="flex flex-wrap items-stretch gap-4">
-      <SummaryCard
-        label="Bilateral assistance"
-        subLabel="countries"
-        value={contrib.bilateral_assistance_countries}
-      />
-      <SummaryCard
-        label="Bilateral assistance"
-        percentage={true}
-        subLabel="% countries"
-        value={formatNumberValue(
-          contrib.bilateral_assistance_countries_percentage,
-          2,
-          2,
-        )}
-      />
-      <SummaryCard
-        label="Bilateral assistance"
-        subLabel="amount"
-        value={formatNumberValue(totals.bilateral_assistance, 2, 2)}
-      />
-      <SummaryCard
-        label="Bilateral assistance"
-        percentage={true}
-        subLabel="percentage out of pledged"
-        value={formatNumberValue(
-          getPercent(totals.agreed_contributions, totals.bilateral_assistance),
-          2,
-          2,
-        )}
-      />
-    </div>
+    <SummaryCard
+      label="Bilateral assistance"
+      prefix="$"
+      value={formatNumber(totals.bilateral_assistance)}
+      elements={[
+        { label: 'countries', value: contrib.bilateral_assistance_countries },
+        {
+          label: 'countries percent',
+          suffix: '%',
+          value: formatNumber(
+            contrib.bilateral_assistance_countries_percentage,
+          ),
+        },
+        {
+          label: 'percentage of pledged',
+          suffix: '%',
+          value: formatNumber(
+            getPercent(
+              totals.agreed_contributions,
+              totals.bilateral_assistance,
+            ),
+          ),
+        },
+      ]}
+    />
   )
 }
 
 function TabIndicatorsPromissoryNotes(props) {
   const { contrib, totals } = props
   return (
-    <div className="flex flex-wrap items-stretch gap-4">
-      <SummaryCard
-        label="Promissory notes"
-        subLabel="countries"
-        value={contrib.promissory_notes_countries}
-      />
-      <SummaryCard
-        label="Promissory notes"
-        percentage={true}
-        subLabel="% countries"
-        value={formatNumberValue(
-          contrib.promissory_notes_countries_percentage,
-          2,
-          2,
-        )}
-      />
-      <SummaryCard
-        label="Promissory notes"
-        subLabel="amount"
-        value={formatNumberValue(totals.promissory_notes, 2, 2)}
-      />
-      <SummaryCard
-        label="Promissory notes"
-        percentage={true}
-        subLabel="percentage out of pledged"
-        value={formatNumberValue(
-          getPercent(totals.agreed_contributions, totals.promissory_notes),
-          2,
-          2,
-        )}
-      />
-    </div>
+    <SummaryCard
+      label="Promissory notes"
+      prefix="$"
+      value={formatNumber(totals.promissory_notes)}
+      elements={[
+        { label: 'countries', value: contrib.promissory_notes_countries },
+        {
+          label: 'countries percent',
+          suffix: '%',
+          value: formatNumber(
+            contrib.promissory_notes_countries_percentage,
+          ),
+        },
+        {
+          label: 'percentage of pledged',
+          suffix: '%',
+          value: formatNumber(
+            getPercent(totals.agreed_contributions, totals.promissory_notes),
+          ),
+        },
+      ]}
+    />
   )
 }
 
@@ -158,87 +225,78 @@ function TabIndicatorsOutstandingContributions(props) {
     totals.outstanding_contributions
 
   return (
-    <div className="flex flex-wrap items-stretch gap-4">
-      <SummaryCard
-        label="Outstanding contributions"
-        subLabel="countries"
-        value={contrib.outstanding_contributions}
-      />
-      <SummaryCard
-        label="Outstanding contributions"
-        percentage={true}
-        subLabel="% countries"
-        value={formatNumberValue(
-          contrib.outstanding_contributions_percentage,
-          2,
-          2,
-        )}
-      />
-      <SummaryCard
-        label="Outstanding contributions"
-        subLabel="amount"
-        value={formatNumberValue(value, 2, 2)}
-      />
-      <SummaryCard
-        label="Outstanding contributions"
-        percentage={true}
-        subLabel="percentage out of pledged"
-        value={formatNumberValue(
-          getPercent(totals.agreed_contributions, value),
-          2,
-          2,
-        )}
-      />
-    </div>
+    <SummaryCard
+      label="Outstanding contributions"
+      prefix="$"
+      value={formatNumber(value)}
+      elements={[
+        { label: 'countries', value: contrib.outstanding_contributions },
+        {
+          label: 'countries percent',
+          suffix: '%',
+          value: formatNumber(
+            contrib.outstanding_contributions_percentage,
+          ),
+        },
+        {
+          label: 'percentage of pledged',
+          suffix: '%',
+          value: formatNumber(
+            getPercent(totals.agreed_contributions, value),
+          ),
+        },
+      ]}
+    />
   )
 }
 
 function TabIndicatorsDisputedContributions(props) {
   const { data } = props
   return (
-    <div className="flex flex-wrap items-stretch gap-4">
-      <SummaryCard
-        label="Disputed contributions"
-        subLabel="amount"
-        value={formatNumberValue(data.disputed_contributions, 2, 2)}
-      />
-      <SummaryCard
-        label="Disputed contributions"
-        percentage={true}
-        subLabel="percentage out of pledged"
-        value={formatNumberValue(
-          getPercent(
-            data.total.agreed_contributions,
-            data.disputed_contributions,
+    <SummaryCard
+      label="Disputed contributions"
+      elements={[
+        {
+          label: 'amount',
+          prefix: '$',
+          value: formatNumber(data.disputed_contributions),
+        },
+        {
+          label: 'percentage of pledged',
+          suffix: '%',
+          value: formatNumber(
+            getPercent(
+              data.total.agreed_contributions,
+              data.disputed_contributions,
+            ),
           ),
-          2,
-          2,
-        )}
-      />
-    </div>
+        },
+      ]}
+    />
   )
 }
 
 function TabIndicatorsFerm(props) {
   const { totals } = props
   return (
-    <div className="flex flex-wrap items-stretch gap-4">
-      <SummaryCard
-        label={totals.gain_loss < 0 ? 'FERM gain' : 'FERM loss'}
-        subLabel="amount"
-        value={formatNumberValue(totals.gain_loss, 2, 2)}
-      />
-      <SummaryCard
-        label={totals.gain_loss < 0 ? 'FERM gain' : 'FERM loss'}
-        percentage={true}
-        subLabel="percentage out of pledged"
-        value={formatNumberValue(
-          getPercent(totals.agreed_contributions, totals.gain_loss),
-          2,
-          2,
-        )}
-      />
-    </div>
+    <SummaryCard
+      label={totals.gain_loss < 0 ? 'FERM gain' : 'FERM loss'}
+      elements={[
+        {
+          className: totals.gain_loss < 0 ? '' : 'text-red-500',
+          label: 'amount',
+          prefix: totals.gain_loss < 0 ? '+$' : '-$',
+          value: formatNumber(totals.gain_loss),
+        },
+        {
+          label: 'percentage of pledged',
+          suffix: '%',
+          value: formatNumber(
+            getPercent(totals.agreed_contributions, totals.gain_loss),
+          ),
+        },
+      ]}
+    />
   )
 }
 
@@ -268,7 +326,7 @@ function socRows(data, onlyCeits) {
 }
 
 function CummulativeTab(props) {
-  const { onlyCeits } = props
+  const { onlyCeits, period } = props
   const { data } = useGetSCData()
 
   const contrib = extractContributions(socRows(data, onlyCeits))
@@ -277,18 +335,29 @@ function CummulativeTab(props) {
 
   if (totals) {
     return (
-      <div className="flex flex-col gap-4">
-        <TabIndicatorsPayments contrib={contrib} totals={totals} />
-        <TabIndicatorsBilateralAssistance contrib={contrib} totals={totals} />
-        <TabIndicatorsPromissoryNotes contrib={contrib} totals={totals} />
-        <TabIndicatorsOutstandingContributions
-          contrib={contrib}
-          totals={totals}
-        />
-        {onlyCeits ? null : <TabIndicatorsDisputedContributions data={data} />}
-        {onlyCeits ? null : (
-          <TabIndicatorsFerm contrib={contrib} totals={totals} />
-        )}
+      <div className="flex w-full justify-between gap-4">
+        <div className="w-1/5">
+          <TabIndicatorsPledged
+            contrib={contrib}
+            period={period}
+            totals={totals}
+          />
+        </div>
+        <div className="flex w-4/5 flex-wrap gap-4">
+          <TabIndicatorsPayments contrib={contrib} totals={totals} />
+          <TabIndicatorsBilateralAssistance contrib={contrib} totals={totals} />
+          <TabIndicatorsPromissoryNotes contrib={contrib} totals={totals} />
+          <TabIndicatorsOutstandingContributions
+            contrib={contrib}
+            totals={totals}
+          />
+          {onlyCeits ? null : (
+            <TabIndicatorsDisputedContributions data={data} />
+          )}
+          {onlyCeits ? null : (
+            <TabIndicatorsFerm contrib={contrib} totals={totals} />
+          )}
+        </div>
       </div>
     )
   } else {
@@ -306,18 +375,53 @@ function TriennialTab(props) {
   const contrib = extractContributions(socRows(data, onlyCeits))
   const totals = onlyCeits ? data.ceit : data.total
 
+  const curYear = new Date().getFullYear()
+
+  const showOutstandingExplanation = curYear < parseInt(year_end, 10)
+  let outstandingExplanation = ''
+
+  if (curYear == parseInt(year_start, 10)) {
+    outstandingExplanation = `Only the year ${year_start} is considered.`
+  } else if (showOutstandingExplanation) {
+    outstandingExplanation = `Only the years ${year_start} - ${curYear} are considered`
+  }
+
   if (totals) {
     return (
-      <div className="flex flex-col gap-4">
-        <TabIndicatorsPayments contrib={contrib} totals={totals} />
-        <TabIndicatorsBilateralAssistance contrib={contrib} totals={totals} />
-        <TabIndicatorsPromissoryNotes contrib={contrib} totals={totals} />
-        <TabIndicatorsOutstandingContributions
-          contrib={contrib}
-          totals={totals}
-        />
-        {onlyCeits ? null : <TabIndicatorsDisputedContributions data={data} />}
-      </div>
+      <>
+        <div className="flex w-full justify-between gap-4">
+          <div className="w-1/5">
+            <TabIndicatorsPledged
+              contrib={contrib}
+              period={`${period}*`}
+              totals={totals}
+            />
+          </div>
+          <div className="flex w-4/5 flex-wrap gap-4">
+            <TabIndicatorsPayments contrib={contrib} totals={totals} />
+            <TabIndicatorsBilateralAssistance
+              contrib={contrib}
+              totals={totals}
+            />
+            <TabIndicatorsPromissoryNotes contrib={contrib} totals={totals} />
+            <TabIndicatorsOutstandingContributions
+              contrib={contrib}
+              totals={totals}
+            />
+            {onlyCeits ? null : (
+              <TabIndicatorsDisputedContributions data={data} />
+            )}
+          </div>
+        </div>
+
+        <div className="w-full lg:max-w-[50%]">
+          {showOutstandingExplanation ? (
+            <p>
+              <sup>*</sup> {outstandingExplanation}
+            </p>
+          ) : null}
+        </div>
+      </>
     )
   } else {
     return null
@@ -353,15 +457,26 @@ function AnnualTab(props) {
 
   if (totals) {
     return (
-      <div className="flex flex-col gap-4">
-        <TabIndicatorsPayments contrib={contrib} totals={totals} />
-        <TabIndicatorsBilateralAssistance contrib={contrib} totals={totals} />
-        <TabIndicatorsPromissoryNotes contrib={contrib} totals={totals} />
-        <TabIndicatorsOutstandingContributions
-          contrib={contrib}
-          totals={totals}
-        />
-        {onlyCeits ? null : <TabIndicatorsDisputedContributions data={data} />}
+      <div className="flex w-full justify-between gap-4">
+        <div className="w-1/5">
+          <TabIndicatorsPledged
+            contrib={contrib}
+            period={period}
+            totals={totals}
+          />
+        </div>
+        <div className="flex w-4/5 flex-wrap gap-4">
+          <TabIndicatorsPayments contrib={contrib} totals={totals} />
+          <TabIndicatorsBilateralAssistance contrib={contrib} totals={totals} />
+          <TabIndicatorsPromissoryNotes contrib={contrib} totals={totals} />
+          <TabIndicatorsOutstandingContributions
+            contrib={contrib}
+            totals={totals}
+          />
+          {onlyCeits ? null : (
+            <TabIndicatorsDisputedContributions data={data} />
+          )}
+        </div>
       </div>
     )
   } else {
@@ -497,7 +612,7 @@ function SectionDashboard(props) {
         <div className="flex items-center gap-2 print:hidden">
           <label
             className={cx(
-              'flex cursor-pointer items-center rounded-lg border border-solid border-primary px-2 py-1',
+              'flex cursor-pointer font-bold items-center rounded-lg border border-solid border-primary px-2 py-1 text-gray-400',
               { 'bg-primary font-bold text-mlfs-hlYellow': onlyCeits },
             )}
           >
@@ -526,7 +641,7 @@ function SectionDashboard(props) {
       </div>
 
       <div
-        className="mt-8"
+        className="mt-8 w-full"
         style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
       >
         {(currentSection?.showPeriodSelector && defaultPeriod) ||

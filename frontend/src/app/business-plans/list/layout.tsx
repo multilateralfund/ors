@@ -61,12 +61,17 @@ function BusinessPlansList(props: any) {
       <div className={cx('print:hidden', styles.nav)}>
         {/* @ts-ignore */}
         <nav className="shrink-0">{navLinks}</nav>
-        <PeriodSelector
-          label="Triennial"
-          period={period}
-          periodOptions={[...periodOptions]}
-        />
-        {/*<div id="replenishment-tab-buttons" className="self-end"></div>*/}
+        <div className={cx('flex flex-row', styles.moreOptions)}>
+          <PeriodSelector
+            label="Triennial"
+            period={period}
+            periodOptions={[...periodOptions]}
+          />
+          <div
+            id="bp-activities-export-button"
+            className="ml-4 mt-0.5 self-center"
+          />
+        </div>
       </div>
       <div className={styles.page}>{children}</div>
     </>

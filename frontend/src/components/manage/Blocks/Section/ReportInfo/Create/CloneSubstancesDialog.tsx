@@ -1,4 +1,4 @@
-import { UserType } from '@ors/types/user_types'
+import { UserType, isCountryUserType } from '@ors/types/user_types'
 
 import React, { useEffect, useState } from 'react'
 
@@ -137,7 +137,7 @@ const CloneSubstancesDialog: React.FC<CloneSubstancesDialogProps> = ({
   setForm,
   user_type,
 }) => {
-  const isCountryUser = user_type === 'country_user'
+  const isCountryUser = isCountryUserType[user_type as UserType]
   const [open, setOpen] = useState(false)
   const selectedCountry = form.country
 

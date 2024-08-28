@@ -117,7 +117,8 @@ function useGridOptions(props: {
         editable: (props: EditableCallbackParams<RowData>) => {
           if (
             includes(NON_EDITABLE_ROWS, props.data?.rowType) ||
-            includes(['display_name'], props.colDef.field)
+            includes(['display_name'], props.colDef.field) ||
+            includes(['previous_year_price'], props.colDef.field)
           ) {
             return false
           }
