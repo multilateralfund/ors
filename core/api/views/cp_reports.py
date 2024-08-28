@@ -100,6 +100,17 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
         )
         self.check_object_permissions(request, vald_perm_inst)
 
+        # Only COUNTRY_SUBMITTER users can finalize versions
+        # All other user types and unsafe method permissions are checked via permission
+        # classes.
+        if (
+            request.data["status"] == CPReport.CPReportStatus.FINAL
+            and request.user.user_type == User.UserType.COUNTRY_USER
+        ):
+            raise PermissionDenied(
+                "Only Secretariat and Country Submitters can submit final versions"
+            )
+
         serializer = CPReportCreateSerializer(
             data=request.data, context={"user": request.user}
         )
@@ -343,7 +354,10 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
         # Only COUNTRY_SUBMITTER users can finalize versions
         # All other user types and unsafe method permissions are checked via permission
         # classes.
-        if request.user.user_type == User.UserType.COUNTRY_USER:
+        if (
+            request.data["status"] == CPReport.CPReportStatus.FINAL
+            and request.user.user_type == User.UserType.COUNTRY_USER
+        ):
             raise PermissionDenied(
                 "Only Secretariat and Country Submitters can submit final versions"
             )
@@ -458,6 +472,16 @@ class CPReportStatusUpdateView(generics.GenericAPIView):
             return Response(
                 {"status": f"Invalid value {cp_status}"},
                 status=status.HTTP_400_BAD_REQUEST,
+            )
+        # Only COUNTRY_SUBMITTER users can finalize versions
+        # All other user types and unsafe method permissions are checked via permission
+        # classes.
+        if (
+            cp_status == CPReport.CPReportStatus.FINAL
+            and request.user.user_type == User.UserType.COUNTRY_USER
+        ):
+            raise PermissionDenied(
+                "Only Secretariat and Country Submitters can submit final versions"
             )
 
         initial_value = cp_report.status
