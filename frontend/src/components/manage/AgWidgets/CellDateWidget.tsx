@@ -91,6 +91,7 @@ export const CellDateWidget = memo(
           format="DD/MM/YYYY"
           minDate={dayjs(`${minYear}-01-01`)}
           open={open}
+          openTo="year"
           ref={refInput}
           value={value ? dayjs(value) : dayjs(`${props.context.year}-01-01`)}
           slotProps={{
