@@ -1,10 +1,10 @@
 import type { IValidationContext } from '@ors/contexts/Validation/types'
-import { UserType, userCanSubmitReport } from '@ors/types/user_types'
+import { UserType, isCountryUserType, userCanSubmitFinalReport, userCanSubmitReport } from '@ors/types/user_types'
 
 import { useContext } from 'react'
 import React, { useEffect, useMemo, useState } from 'react'
 
-import { Button } from '@mui/material'
+import { Button, Tooltip } from '@mui/material'
 import cx from 'classnames'
 import { Dictionary, capitalize, orderBy } from 'lodash'
 import NextLink from 'next/link'
@@ -289,6 +289,7 @@ const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
             {isDraft && (
               <Button
                 color="primary"
+                disabled={!userCanSubmitFinalReport[user_type as UserType]}
                 size="small"
                 variant="contained"
                 onClick={handleShowConfirmation}
@@ -416,6 +417,15 @@ const EditHeaderActions = ({
     }
   }
 
+  function getSubmitFinalTooltipTitle() {
+    if (!userCanSubmitFinalReport[user_type as UserType] && isDraft) {
+      return isCountryUserType[user_type as UserType]
+             ? "Only Country Submitter users can submit Final versions"
+             : "Only Secretariat users can submit Final versions"
+    }
+    return ""
+  }
+
   return (
     <div className="flex items-center">
       {!!report.data && (
@@ -442,15 +452,20 @@ const EditHeaderActions = ({
               Save draft
             </Button>
           )}
-          <Button
-            className="px-4 py-2 shadow-none"
-            color="secondary"
-            size="large"
-            variant="contained"
-            onClick={handleShowConfirmation}
-          >
-            {isDraft ? 'Submit final version' : 'Submit new version'}
-          </Button>
+          <Tooltip title={getSubmitFinalTooltipTitle()}>
+            <span>
+              <Button
+                className="px-4 py-2 shadow-none"
+                color="secondary"
+                disabled={!userCanSubmitFinalReport[user_type as UserType] && isDraft}
+                size="large"
+                variant="contained"
+                onClick={handleShowConfirmation}
+              >
+                {isDraft ? 'Submit final version' : 'Submit new version'}
+              </Button>
+            </span>
+          </Tooltip>
           <Link
             className="btn-close bg-gray-600 px-4 py-2 shadow-none"
             color="secondary"
