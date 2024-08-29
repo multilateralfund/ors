@@ -1,4 +1,6 @@
-import React, { useContext } from 'react'
+import React, { useState } from 'react'
+
+import { Autocomplete, TextField } from '@mui/material'
 
 import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
 import {
@@ -6,10 +8,26 @@ import {
   FieldSelect,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceAttachments'
-import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
+import useApi from '@ors/hooks/useApi'
 
 const PaymentDialog = function PaymentDialog(props) {
   const { columns, countries, data, isEdit, title, ...dialogProps } = props
+  const [invoices, setInvoices] = useState([])
+  const { data: invoicesList, loaded: invoicesLoaded } = useApi({
+    options: {
+      params: {
+        hide_no_invoice: true,
+        ...(isEdit ? { country_id: data?.country_id } : {}),
+      },
+      withStoreCache: false,
+    },
+    path: 'api/replenishment/invoices/',
+  })
+
+  const invoicesOptions = invoicesLoaded ? invoicesList.map((invoice) => ({
+    id: invoice.id,
+    label: invoice.number,
+  })) : []
 
   return (
     <FormDialog title={title} {...dialogProps}>
@@ -27,6 +45,18 @@ const PaymentDialog = function PaymentDialog(props) {
           </option>
         ))}
       </FieldSelect>
+      {invoicesLoaded && (
+        <div>
+          <Autocomplete
+            getOptionLabel={(option) => option.label}
+            options={invoicesOptions}
+            renderInput={(params) => (
+              <TextField {...params} variant="outlined" />
+            )}
+            multiple
+          />
+        </div>
+      )}
       <FieldInput
         id="date"
         defaultValue={data?.date}
