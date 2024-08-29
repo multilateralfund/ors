@@ -8,6 +8,7 @@ import Portal from '@ors/components/manage/Utils/Portal'
 import { DownloadLink, PrintButton } from '@ors/components/ui/Button/Button'
 
 const PRINT_LANDSCAPE_PAGES = [
+  '/replenishment/dashboard/statistics',
   '/replenishment/scale-of-assessment',
   '/replenishment/status-of-contributions',
 ]
