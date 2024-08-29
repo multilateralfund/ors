@@ -1,10 +1,9 @@
 import React, { useState } from 'react'
 
-import { Autocomplete, TextField } from '@mui/material'
-
 import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
 import {
   FieldInput,
+  FieldMultiSelect,
   FieldSelect,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceAttachments'
@@ -46,16 +45,33 @@ const PaymentDialog = function PaymentDialog(props) {
         ))}
       </FieldSelect>
       {invoicesLoaded && (
-        <div>
-          <Autocomplete
-            getOptionLabel={(option) => option.label}
-            options={invoicesOptions}
-            renderInput={(params) => (
-              <TextField {...params} variant="outlined" />
-            )}
-            multiple
-          />
-        </div>
+        <FieldMultiSelect
+          id="invoice_ids"
+          hasClear={true}
+          label={'Invoices'}
+          required={true}
+          onChange={(_, selected) => setInvoices(selected)}
+        >
+          <option value="A">A</option>
+          <option value="B">B</option>
+          <option value="C">C</option>
+          <option value="D">D</option>
+          <option value="E">E</option>
+          <option value="F">F</option>
+          <option value="G">G</option>
+          <option value="H">H</option>
+          <option value="I">I</option>
+          <option value="J">J</option>
+          <option value="K">K</option>
+          <option value="L">L</option>
+          <option value="M">M</option>
+          <option value="N">N</option>
+          {invoicesOptions.map((inv) => (
+            <option key={inv.id} value={inv.id}>
+              {inv.label}
+            </option>
+          ))}
+        </FieldMultiSelect>
       )}
       <FieldInput
         id="date"
