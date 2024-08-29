@@ -7,14 +7,50 @@ import type {
   ValidationSchemaKeys,
 } from './types'
 
+import {
+  getFloat,
+  sumMaybeNumbers,
+  sumNumbers,
+  sumRowColumns,
+  sumUsages,
+} from './utils'
+
+export function checkShouldValidateSectionARow(row: IRow): boolean {
+  const hasUsages =
+    sumUsages((row.record_usages as unknown as IUsage[]) || []) > 0
+  const hasSomethingElse = !!(
+    row.imports ||
+    row.exports ||
+    row.production ||
+    row.import_quotas ||
+    row.banned_date
+  )
+  return hasUsages || hasSomethingElse
+}
+
+export function checkShouldValidateSectionBRow(row: IRow): boolean {
+  const hasUsages =
+    sumUsages((row.record_usages as unknown as IUsage[]) || []) > 0
+  const hasSomethingElse = !!(
+    row.imports ||
+    row.exports ||
+    row.production ||
+    row.manufacturing_blends ||
+    row.import_quotas ||
+    row.banned_date ||
+    row.remarks
+  )
+  return hasUsages || hasSomethingElse
+}
+
 export function validateUsageTotals(row: IRow): RowValidatorFuncResult {
   const totalUsages = sumUsages(
     (row.record_usages as unknown as IUsage[]) || [],
   )
   const totalImpExp =
-    parseFloat(row.imports as string) -
-    parseFloat(row.exports as string) +
-    parseFloat(row.production as string)
+    getFloat(row.imports as string) -
+    getFloat(row.exports as string) +
+    getFloat(row.production as string)
   const isValid = totalUsages == totalImpExp
 
   if (!isValid && !row.remarks) {
@@ -160,45 +196,6 @@ export function validateUncommonSubstance(row: IRow): RowValidatorFuncResult {
   if (row.chemical_note && (hasUsage || hasSomethingElse)) {
     return { row: row.display_name }
   }
-}
-
-function sumRowColumns(row: Record<string, any>, columns: string[]) {
-  let result = 0
-
-  for (let i = 0; i < columns.length; i++) {
-    result += parseFloat(row[columns[i]]) || 0
-  }
-  return result
-}
-
-function sumNumbers(numbers: number[]): number {
-  let result = 0
-
-  for (let i = 0; i < numbers.length; i++) {
-    result += numbers[i]
-  }
-
-  return result
-}
-
-function sumMaybeNumbers(numbers: (number | string)[]): number {
-  let result = 0
-
-  for (let i = 0; i < numbers.length; i++) {
-    result += parseFloat(numbers[i] as string) || 0
-  }
-
-  return result
-}
-
-function sumUsages(usages: IUsage[]) {
-  const quantites = new Array(usages.length)
-
-  for (let i = 0; i < usages.length; i++) {
-    quantites[i] = usages[i].quantity
-  }
-
-  return sumMaybeNumbers(quantites)
 }
 
 export function validateFacilityName(

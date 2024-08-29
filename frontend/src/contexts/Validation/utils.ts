@@ -1,5 +1,6 @@
 import type {
   IGlobalValidationResult,
+  IUsage,
   ValidateSectionResult,
   ValidateSectionResultValue,
   ValidationSchemaKeys,
@@ -37,5 +38,57 @@ export function extractErrors(
     }
   }
 
+  return result
+}
+
+export function sumRowColumns(row: Record<string, any>, columns: string[]) {
+  let result = 0
+
+  for (let i = 0; i < columns.length; i++) {
+    result += parseFloat(row[columns[i]]) || 0
+  }
+  return result
+}
+
+export function sumNumbers(numbers: number[]): number {
+  let result = 0
+
+  for (let i = 0; i < numbers.length; i++) {
+    result += numbers[i]
+  }
+
+  return result
+}
+
+export function sumMaybeNumbers(numbers: (number | string)[]): number {
+  let result = 0
+
+  for (let i = 0; i < numbers.length; i++) {
+    result += parseFloat(numbers[i] as string) || 0
+  }
+
+  return result
+}
+
+export function sumUsages(usages: IUsage[]) {
+  const quantites = new Array(usages.length)
+
+  for (let i = 0; i < usages.length; i++) {
+    quantites[i] = usages[i].quantity
+  }
+
+  return sumMaybeNumbers(quantites)
+}
+
+export function getFloat(nr: null | number | string): number {
+  let result = 0
+  if (nr && typeof nr === 'string') {
+    const value = parseFloat(nr)
+    if (!isNaN(value)) {
+      result = value
+    }
+  } else if (typeof nr === 'number') {
+    result = nr
+  }
   return result
 }

@@ -21,7 +21,6 @@ function CPRestoreEdit(props) {
   }
 
   function handleLoad() {
-    console.log(storedData)
     setForm(storedData)
     setShow(false)
   }

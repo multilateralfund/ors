@@ -535,6 +535,7 @@ export default function SectionCCreate(props: {
                 grid.current.api.flashCells({
                   rowNodes: [newNode.current],
                 })
+                newNode.current = undefined
               },
               selectors: `.ag-row[row-id=${newNode.current.data.row_id}]`,
             })
