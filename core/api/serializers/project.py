@@ -362,6 +362,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
     metaproject_code = serializers.SerializerMethodField()
     metaproject_category = serializers.SerializerMethodField()
     substance_name = serializers.SerializerMethodField()
+    code_legacy = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
@@ -369,7 +370,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "code",
-            "legacy_code",
+            "code_legacy",
             "metaproject_code",
             "metaproject_category",
             "mya_code",
@@ -458,6 +459,9 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "remarks",
             "substance_name",
         ]
+
+    def get_code_legacy(self, obj):
+        return obj.legacy_code
 
     def get_approval_meeting(self, obj):
         if obj.approval_meeting:
