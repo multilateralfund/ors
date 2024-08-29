@@ -41,14 +41,14 @@
       }
     }
 
-    th {
-      background-color: var(--table-thead-bg);
-      position: relative;
-    }
-
     thead {
       position: sticky;
       top: 0;
+
+      th {
+        background-color: var(--table-thead-bg);
+        position: relative;
+      }
     }
 
     /* These :before and :after rules are needed to preserve

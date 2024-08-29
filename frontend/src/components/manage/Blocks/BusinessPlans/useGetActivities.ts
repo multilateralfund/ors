@@ -2,7 +2,7 @@ import { getResults } from '@ors/helpers'
 import useApi from '@ors/hooks/useApi'
 
 export function useGetActivities(initialFilters: any) {
-  const { data, loading, setParams } = useApi({
+  const { data, loading, params, setParams } = useApi({
     options: {
       params: { ...initialFilters },
       withStoreCache: false,
@@ -11,5 +11,5 @@ export function useGetActivities(initialFilters: any) {
   })
   const { count, loaded, results } = getResults(data)
 
-  return { count, loaded, loading, results, setParams }
+  return { count, loaded, loading, params, results, setParams }
 }

@@ -1,3 +1,5 @@
+import { UserType, isCountryUserType } from '@ors/types/user_types'
+
 import React, { ChangeEvent, useEffect } from 'react'
 
 import { TextField } from '@mui/material'
@@ -106,7 +108,7 @@ function FileInput(props: {
 const CountrySelect: React.FC = (props: any) => {
   const { countryFieldProps, isEdit, report, user_country, user_type } = props
 
-  if (user_type === 'country_user') {
+  if (isCountryUserType[user_type as UserType]) {
     return (
       <SimpleInput
         id="country"

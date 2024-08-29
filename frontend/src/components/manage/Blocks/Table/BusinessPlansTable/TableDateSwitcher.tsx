@@ -27,7 +27,7 @@ export default function TableDateSwitcher({
 }: TableDataSelectorProps) {
   return (
     <ToggleButtonGroup
-      className={cx(className)}
+      className={cx('table-date-switcher', className)}
       aria-label="Platform"
       color="primary"
       value={value}

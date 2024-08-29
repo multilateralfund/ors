@@ -21,13 +21,13 @@ export default function ActivitiesFiltersSelectedOpts(props: any) {
   const { sectors, subsectors, types } = bpSlice
 
   const initialParams = {
-    country_id: null,
-    project_cluster_id: null,
-    project_type_id: null,
+    country_id: [],
+    project_cluster_id: [],
+    project_type_id: [],
     search: '',
-    sector_id: null,
-    subsector_id: null,
-    ...(withAgency && { agency_id: null }),
+    sector_id: [],
+    subsector_id: [],
+    ...(withAgency && { agency_id: [] }),
   }
 
   const formatEntity = (currentEntity: any = []) => {

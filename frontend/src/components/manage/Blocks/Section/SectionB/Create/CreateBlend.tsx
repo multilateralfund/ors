@@ -208,23 +208,6 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
           withSeparators={true}
           columnDefs={[
             {
-              cellEditor: 'agSelectCellEditor',
-              cellEditorParams: {
-                Input: { placeholder: 'Select substance...' },
-                getOptionLabel: (option: any) => option.name,
-                groupBy: (option: any) => option.group,
-                options,
-              },
-              cellRenderer: (props: any) => {
-                return (
-                  <AgCellRenderer
-                    {...props}
-                    value={
-                      !props.data.rowType ? props.value?.name : props.value
-                    }
-                  />
-                )
-              },
               cellRendererParams: (props: any) => ({
                 options: !props.data.mandatory && !props.data.rowType && (
                   <IoTrash
@@ -258,6 +241,27 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
                   />
                 ),
               }),
+              maxWidth: 40,
+              showRowError: false,
+            },
+            {
+              cellEditor: 'agSelectCellEditor',
+              cellEditorParams: {
+                Input: { placeholder: 'Select substance...' },
+                getOptionLabel: (option: any) => option.name,
+                groupBy: (option: any) => option.group,
+                options,
+              },
+              cellRenderer: (props: any) => {
+                return (
+                  <AgCellRenderer
+                    {...props}
+                    value={
+                      !props.data.rowType ? props.value?.name : props.value
+                    }
+                  />
+                )
+              },
               field: 'substance',
               flex: 1,
               headerClass: 'ag-text-left',

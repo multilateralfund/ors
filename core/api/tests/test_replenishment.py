@@ -7,6 +7,7 @@ from decimal import Decimal
 import pytest
 from constance import config
 from django.urls import reverse
+from django.utils.datetime_safe import datetime
 from rest_framework.test import APIClient
 
 from core.api.tests.base import BaseTest
@@ -1138,6 +1139,317 @@ class TestReplenishmentDashboard(BaseTest):
         assert response_data == correct_response
 
 
+class TestReplenishmentDashboardStatistics(BaseTest):
+    url = reverse("replenishment-status-of-contributions-statistics")
+    fifteen_decimals = decimal.Decimal("0.000000000000001")
+    year_1 = 2018
+    year_2 = 2020
+    year_3 = 2021
+    year_4 = 2023
+
+    def test_replenishment_dashboard_statistics(self, user):
+        current_year = datetime.now().year
+
+        country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
+        country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
+
+        CountryCEITStatusFactory.create(
+            country=country_1,
+            start_year=self.year_1,
+            end_year=self.year_2,
+            is_ceit=True,
+        )
+        CountryCEITStatusFactory.create(
+            country=country_2,
+            start_year=self.year_3,
+            end_year=self.year_4,
+            is_ceit=True,
+        )
+
+        contribution_1 = TriennialContributionStatusFactory.create(
+            country=country_1, start_year=self.year_1, end_year=self.year_2
+        )
+        contribution_2 = TriennialContributionStatusFactory.create(
+            country=country_1, start_year=self.year_3, end_year=self.year_4
+        )
+        contribution_3 = TriennialContributionStatusFactory.create(
+            country=country_2, start_year=self.year_1, end_year=self.year_2
+        )
+        contribution_4 = TriennialContributionStatusFactory.create(
+            country=country_2, start_year=self.year_3, end_year=self.year_4
+        )
+
+        disputed_1 = DisputedContributionsFactory.create(year=self.year_1)
+
+        external_income_1 = ExternalIncome.objects.create(
+            start_year=self.year_1,
+            end_year=self.year_2,
+            interest_earned=decimal.Decimal("100"),
+            miscellaneous_income=decimal.Decimal("200"),
+        )
+        external_income_2 = ExternalIncome.objects.create(
+            start_year=self.year_3,
+            end_year=self.year_4,
+            interest_earned=decimal.Decimal("300"),
+            miscellaneous_income=decimal.Decimal("400"),
+        )
+
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url)
+
+        response_data = response.data
+
+        total_payments_1 = (
+            contribution_1.cash_payments
+            + contribution_3.cash_payments
+            + contribution_1.bilateral_assistance
+            + contribution_3.bilateral_assistance
+            + contribution_1.promissory_notes
+            + contribution_3.promissory_notes
+        )
+        total_payments_2 = (
+            contribution_2.cash_payments
+            + contribution_4.cash_payments
+            + contribution_2.bilateral_assistance
+            + contribution_4.bilateral_assistance
+            + contribution_2.promissory_notes
+            + contribution_4.promissory_notes
+        )
+        assert response_data == [
+            {
+                "start_year": self.year_1,
+                "end_year": self.year_2,
+                "agreed_contributions": (
+                    contribution_1.agreed_contributions
+                    + contribution_3.agreed_contributions
+                ).quantize(self.fifteen_decimals),
+                "cash_payments": (
+                    contribution_1.cash_payments + contribution_3.cash_payments
+                ).quantize(self.fifteen_decimals),
+                "bilateral_assistance": (
+                    contribution_1.bilateral_assistance
+                    + contribution_3.bilateral_assistance
+                ).quantize(self.fifteen_decimals),
+                "promissory_notes": (
+                    contribution_1.promissory_notes + contribution_3.promissory_notes
+                ).quantize(self.fifteen_decimals),
+                "total_payments": total_payments_1.quantize(self.fifteen_decimals),
+                "disputed_contributions": disputed_1.amount.quantize(
+                    self.fifteen_decimals
+                ),
+                "outstanding_contributions": (
+                    contribution_1.outstanding_contributions
+                    + contribution_3.outstanding_contributions
+                ).quantize(self.fifteen_decimals),
+                "payment_pledge_percentage": (
+                    total_payments_1
+                    / (
+                        contribution_1.agreed_contributions
+                        + contribution_3.agreed_contributions
+                    )
+                    * Decimal("100")
+                ),
+                "interest_earned": external_income_1.interest_earned.quantize(
+                    self.fifteen_decimals
+                ),
+                "miscellaneous_income": external_income_1.miscellaneous_income.quantize(
+                    self.fifteen_decimals
+                ),
+                "total_income": (
+                    total_payments_1
+                    + external_income_1.interest_earned
+                    + external_income_1.miscellaneous_income
+                ).quantize(self.fifteen_decimals),
+                "percentage_outstanding_agreed": (
+                    (
+                        contribution_1.outstanding_contributions
+                        + contribution_3.outstanding_contributions
+                    )
+                    / (
+                        contribution_1.agreed_contributions
+                        + contribution_3.agreed_contributions
+                    )
+                    * Decimal("100")
+                ),
+                "outstanding_ceit": contribution_1.outstanding_contributions.quantize(
+                    self.fifteen_decimals
+                ),
+                "percentage_outstanding_ceit": (
+                    contribution_1.outstanding_contributions
+                    / (
+                        contribution_1.agreed_contributions
+                        + contribution_3.agreed_contributions
+                    )
+                    * Decimal("100")
+                ),
+            },
+            {
+                "start_year": self.year_3,
+                "end_year": self.year_4,
+                "agreed_contributions": (
+                    contribution_2.agreed_contributions
+                    + contribution_4.agreed_contributions
+                ).quantize(self.fifteen_decimals),
+                "cash_payments": (
+                    contribution_2.cash_payments + contribution_4.cash_payments
+                ).quantize(self.fifteen_decimals),
+                "bilateral_assistance": (
+                    contribution_2.bilateral_assistance
+                    + contribution_4.bilateral_assistance
+                ).quantize(self.fifteen_decimals),
+                "promissory_notes": (
+                    contribution_2.promissory_notes + contribution_4.promissory_notes
+                ).quantize(self.fifteen_decimals),
+                "total_payments": total_payments_2.quantize(self.fifteen_decimals),
+                "disputed_contributions": None,
+                "outstanding_contributions": (
+                    contribution_2.outstanding_contributions
+                    + contribution_4.outstanding_contributions
+                ).quantize(self.fifteen_decimals),
+                "payment_pledge_percentage": (
+                    total_payments_2
+                    / (
+                        contribution_2.agreed_contributions
+                        + contribution_4.agreed_contributions
+                    )
+                    * Decimal("100")
+                ),
+                "interest_earned": external_income_2.interest_earned.quantize(
+                    self.fifteen_decimals
+                ),
+                "miscellaneous_income": external_income_2.miscellaneous_income.quantize(
+                    self.fifteen_decimals
+                ),
+                "total_income": (
+                    total_payments_2
+                    + external_income_2.interest_earned
+                    + external_income_2.miscellaneous_income
+                ).quantize(self.fifteen_decimals),
+                "percentage_outstanding_agreed": (
+                    (
+                        contribution_2.outstanding_contributions
+                        + contribution_4.outstanding_contributions
+                    )
+                    / (
+                        contribution_2.agreed_contributions
+                        + contribution_4.agreed_contributions
+                    )
+                    * Decimal("100")
+                ),
+                "outstanding_ceit": contribution_4.outstanding_contributions.quantize(
+                    self.fifteen_decimals
+                ),
+                "percentage_outstanding_ceit": (
+                    contribution_4.outstanding_contributions
+                    / (
+                        contribution_2.agreed_contributions
+                        + contribution_4.agreed_contributions
+                    )
+                    * Decimal("100")
+                ),
+            },
+            {
+                "start_year": self.year_1,
+                "end_year": current_year,
+                "agreed_contributions": (
+                    contribution_1.agreed_contributions
+                    + contribution_2.agreed_contributions
+                    + contribution_3.agreed_contributions
+                    + contribution_4.agreed_contributions
+                ).quantize(self.fifteen_decimals),
+                "cash_payments": (
+                    contribution_1.cash_payments
+                    + contribution_2.cash_payments
+                    + contribution_3.cash_payments
+                    + contribution_4.cash_payments
+                ).quantize(self.fifteen_decimals),
+                "bilateral_assistance": (
+                    contribution_1.bilateral_assistance
+                    + contribution_2.bilateral_assistance
+                    + contribution_3.bilateral_assistance
+                    + contribution_4.bilateral_assistance
+                ).quantize(self.fifteen_decimals),
+                "promissory_notes": (
+                    contribution_1.promissory_notes
+                    + contribution_2.promissory_notes
+                    + contribution_3.promissory_notes
+                    + contribution_4.promissory_notes
+                ).quantize(self.fifteen_decimals),
+                "total_payments": (total_payments_1 + total_payments_2).quantize(
+                    self.fifteen_decimals
+                ),
+                "disputed_contributions": disputed_1.amount.quantize(
+                    self.fifteen_decimals
+                ),
+                "outstanding_contributions": (
+                    contribution_1.outstanding_contributions
+                    + contribution_2.outstanding_contributions
+                    + contribution_3.outstanding_contributions
+                    + contribution_4.outstanding_contributions
+                ).quantize(self.fifteen_decimals),
+                "payment_pledge_percentage": (
+                    (total_payments_1 + total_payments_2)
+                    / (
+                        contribution_1.agreed_contributions
+                        + contribution_2.agreed_contributions
+                        + contribution_3.agreed_contributions
+                        + contribution_4.agreed_contributions
+                    )
+                    * Decimal("100")
+                ),
+                "interest_earned": (
+                    external_income_1.interest_earned
+                    + external_income_2.interest_earned
+                ).quantize(self.fifteen_decimals),
+                "miscellaneous_income": (
+                    external_income_1.miscellaneous_income
+                    + external_income_2.miscellaneous_income
+                ).quantize(self.fifteen_decimals),
+                "total_income": (
+                    total_payments_1
+                    + total_payments_2
+                    + external_income_1.interest_earned
+                    + external_income_2.interest_earned
+                    + external_income_1.miscellaneous_income
+                    + external_income_2.miscellaneous_income
+                ).quantize(self.fifteen_decimals),
+                "percentage_outstanding_agreed": (
+                    (
+                        contribution_1.outstanding_contributions
+                        + contribution_2.outstanding_contributions
+                        + contribution_3.outstanding_contributions
+                        + contribution_4.outstanding_contributions
+                    )
+                    / (
+                        contribution_1.agreed_contributions
+                        + contribution_2.agreed_contributions
+                        + contribution_3.agreed_contributions
+                        + contribution_4.agreed_contributions
+                    )
+                    * Decimal("100")
+                ),
+                "outstanding_ceit": (
+                    contribution_1.outstanding_contributions
+                    + contribution_4.outstanding_contributions
+                ).quantize(self.fifteen_decimals),
+                "percentage_outstanding_ceit": (
+                    (
+                        contribution_1.outstanding_contributions
+                        + contribution_4.outstanding_contributions
+                    )
+                    / (
+                        contribution_1.agreed_contributions
+                        + contribution_2.agreed_contributions
+                        + contribution_3.agreed_contributions
+                        + contribution_4.agreed_contributions
+                    )
+                    * Decimal("100")
+                ),
+            },
+        ]
+
+
 class TestScaleOfAssessmentWorkflow:
     client = APIClient()
     url_replenishment = reverse("replenishment-replenishments-list")
@@ -1666,42 +1978,58 @@ class TestInvoices(BaseTest):
     def test_invoices_list(self, user):
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
         country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
+        country_3 = CountryFactory.create(name="Country 3", iso3="DEF")
 
         replenishment_1 = ReplenishmentFactory.create(
             start_year=self.year_1, end_year=self.year_2
         )
-        replenishment_2 = ReplenishmentFactory.create(
-            start_year=self.year_3, end_year=self.year_4
+
+        version = ScaleOfAssessmentVersionFactory.create(
+            replenishment=replenishment_1, version=0, is_final=True
+        )
+        ScaleOfAssessmentFactory.create(
+            country=country_1,
+            version=version,
+        )
+        ScaleOfAssessmentFactory.create(
+            country=country_2,
+            version=version,
+        )
+        ScaleOfAssessmentFactory.create(
+            country=country_3,
+            version=version,
         )
 
         InvoiceFactory(
-            country=country_1, replenishment=replenishment_1, number="aaa-yyy-1"
+            country=country_1,
+            replenishment=replenishment_1,
+            number="aaa-yyy-1",
+            year=self.year_1,
         )
         InvoiceFactory(
-            country=country_2, replenishment=replenishment_2, number="aaa-yyy-2"
+            country=country_2,
+            replenishment=replenishment_1,
+            number="aaa-yyy-2",
+            year=self.year_2,
         )
 
         self.client.force_authenticate(user=user)
 
-        response = self.client.get(self.url)
-        assert response.status_code == 200
-        assert len(response.data) == 2
-
         response_1 = self.client.get(
-            self.url, {"replenishment_start": replenishment_1.start_year}
+            self.url, {"year": self.year_1, "ordering": "country"}
         )
         assert response_1.status_code == 200
-        assert len(response_1.data) == 1
+        assert len(response_1.data) == 3
         assert response_1.data[0]["number"] == "aaa-yyy-1"
+        assert response_1.data[1].get("number") is None
+        assert response_1.data[2].get("number") is None
 
-        response_2 = self.client.get(self.url, {"country_id": country_2.id})
+        response_2 = self.client.get(
+            self.url, {"country_id": country_2.id, "ordering": "date_of_issuance"}
+        )
         assert response_2.status_code == 200
         assert len(response_2.data) == 1
         assert response_2.data[0]["number"] == "aaa-yyy-2"
-
-        response_all = self.client.get(self.url, {"start_year": "all"})
-        assert response_all.status_code == 200
-        assert len(response_all.data) == 2
 
     def test_invoices_create(self, treasurer_user):
         country = CountryFactory.create(name="Country 1", iso3="XYZ")

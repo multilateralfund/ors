@@ -23,7 +23,9 @@ const aggFuncs = {
       value = getUnitAwareValue(
         node.data,
         props.colDef.field,
-        props.context?.unit,
+        props.unitOverride || props.context?.unit,
+        node.data.gwp,
+        node.data.odp,
       )
       if (!isNull(value)) {
         values.push(value)
@@ -52,7 +54,13 @@ const aggFuncs = {
           sumFloats(
             recordUsages.map(
               (usage: any) =>
-                getUnitAwareValue(usage, 'quantity', props.context?.unit) ?? 0,
+                getUnitAwareValue(
+                  usage,
+                  'quantity',
+                  props.unitOverride || props.context?.unit,
+                  node.data.gwp,
+                  node.data.odp,
+                ) ?? 0,
             ),
           ),
         )
@@ -63,7 +71,13 @@ const aggFuncs = {
               includes([6, 7], usage.usage_id),
             ).map(
               (usage: any) =>
-                getUnitAwareValue(usage, 'quantity', props.context?.unit) ?? 0,
+                getUnitAwareValue(
+                  usage,
+                  'quantity',
+                  props.unitOverride || props.context?.unit,
+                  node.data.gwp,
+                  node.data.odp,
+                ) ?? 0,
             ),
           ),
         )
@@ -74,7 +88,13 @@ const aggFuncs = {
             item.usage_id === usageId &&
             !includes(node.data.excluded_usages, usageId),
         )
-        value = getUnitAwareValue(usage, 'quantity', props.context?.unit)
+        value = getUnitAwareValue(
+          usage,
+          'quantity',
+          props.unitOverride || props.context?.unit,
+          node.data.gwp,
+          node.data.odp,
+        )
       }
       if (!isNull(value)) {
         values.push(value)

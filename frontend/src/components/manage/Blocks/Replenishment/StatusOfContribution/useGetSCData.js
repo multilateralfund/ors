@@ -10,6 +10,7 @@ function useGetSCData(start_year, end_year) {
   const ctx = useContext(ReplenishmentContext)
   const [data, setData] = useState({
     ceit: null,
+    ceit_countries: null,
     disputed_contributions: null,
     disputed_contributions_per_country: null,
     percentage_total_paid_current_year: null,
@@ -46,6 +47,7 @@ function useGetSCData(start_year, end_year) {
 
         setData({
           ceit: data.ceit,
+          ceit_countries: data.ceit_countries,
           disputed_contributions: data.disputed_contributions,
           disputed_contributions_per_country:
             data.disputed_contributions_per_country,

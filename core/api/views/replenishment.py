@@ -6,6 +6,7 @@ import urllib
 from base64 import b64decode
 from datetime import datetime
 from decimal import Decimal
+from itertools import zip_longest
 
 import openpyxl
 from constance import config
@@ -24,7 +25,7 @@ from core.api.export.replenishment import (
     EMPTY_ROW,
     ScaleOfAssessmentWriter,
 )
-from core.api.filters.replenishments import (
+from core.api.filters.replenishment import (
     InvoiceFilter,
     PaymentFilter,
     ScaleOfAssessmentFilter,
@@ -41,6 +42,7 @@ from core.api.serializers import (
     DisputedContributionCreateSerializer,
     DisputedContributionReadSerializer,
     ScaleOfAssessmentExcelExportSerializer,
+    EmptyInvoiceSerializer,
 )
 from core.api.utils import workbook_response
 from core.api.views.utils import (
@@ -50,6 +52,7 @@ from core.api.views.utils import (
     SummaryStatusOfContributionsAggregator,
     add_summary_status_of_contributions_response_worksheet,
     add_statistics_status_of_contributions_response_worksheet,
+    StatisticsStatusOfContributionsAggregator,
 )
 from core.models import (
     AnnualContributionStatus,
@@ -79,7 +82,10 @@ class ReplenishmentCountriesViewSet(viewsets.GenericViewSet, mixins.ListModelMix
     def get_queryset(self):
         user = self.request.user
         queryset = Country.objects.all()
-        if user.user_type == user.UserType.COUNTRY_USER:
+        if user.user_type in (
+            user.UserType.COUNTRY_USER,
+            user.UserType.COUNTRY_SUBMITTER,
+        ):
             queryset = queryset.filter(id=user.country_id)
         return queryset.order_by("name")
 
@@ -623,6 +629,107 @@ class SummaryStatusOfContributionsExportView(views.APIView):
         return workbook_response(f"Summary Status of Contributions {current_year}", wb)
 
 
+class StatisticsStatusOfContributionsView(views.APIView):
+    permission_classes = [IsUserAllowedReplenishment]
+
+    def get(self, request, *args, **kwargs):
+        self.check_permissions(request)
+
+        current_year = datetime.now().year
+        statistics_agg = StatisticsStatusOfContributionsAggregator()
+        soc_data = statistics_agg.get_soc_data()
+        external_income = statistics_agg.get_external_income_data()
+
+        response = []
+        # Annotating soc data with external income would make more queries
+        # (separate for interest and miscellaneous income) and would be less
+        # readable
+        for soc, income in zip_longest(soc_data, external_income):
+            total_payments = (
+                soc["cash_payments_sum"]
+                + soc["bilateral_assistance_sum"]
+                + soc["promissory_notes_sum"]
+            )
+            response.append(
+                {
+                    "start_year": soc["start_year"],
+                    "end_year": soc["end_year"],
+                    "agreed_contributions": soc["agreed_contributions_sum"],
+                    "cash_payments": soc["cash_payments_sum"],
+                    "bilateral_assistance": soc["bilateral_assistance_sum"],
+                    "promissory_notes": soc["promissory_notes_sum"],
+                    "total_payments": total_payments,
+                    "disputed_contributions": soc["disputed_contributions"],
+                    "outstanding_contributions": soc["outstanding_contributions_sum"],
+                    "payment_pledge_percentage": (
+                        total_payments
+                        / soc["agreed_contributions_sum"]
+                        * Decimal("100")
+                    ),
+                    "interest_earned": income["interest_earned"],
+                    "miscellaneous_income": income["miscellaneous_income"],
+                    "total_income": (
+                        total_payments
+                        + income["interest_earned"]
+                        + income["miscellaneous_income"]
+                    ),
+                    "percentage_outstanding_agreed": (
+                        soc["outstanding_contributions_sum"]
+                        / soc["agreed_contributions_sum"]
+                        * Decimal("100")
+                    ),
+                    "outstanding_ceit": soc["outstanding_ceit"],
+                    "percentage_outstanding_ceit": (
+                        soc["outstanding_ceit"]
+                        / soc["agreed_contributions_sum"]
+                        * Decimal("100")
+                    ),
+                }
+            )
+
+        summary_agg = SummaryStatusOfContributionsAggregator()
+        external_income_total = ExternalIncome.objects.aggregate(
+            interest_earned=models.Sum("interest_earned", default=0),
+            miscellaneous_income=models.Sum("miscellaneous_income", default=0),
+        )
+        totals = {
+            "start_year": soc_data[0]["start_year"],
+            "end_year": current_year,
+            **summary_agg.get_total(),
+            "disputed_contributions": summary_agg.get_disputed_contribution_amount(),
+            "interest_earned": external_income_total["interest_earned"],
+            "miscellaneous_income": external_income_total["miscellaneous_income"],
+            "outstanding_ceit": summary_agg.get_ceit_data()[
+                "outstanding_contributions"
+            ],
+        }
+
+        totals["total_payments"] = (
+            totals["cash_payments"]
+            + totals["bilateral_assistance"]
+            + totals["promissory_notes"]
+        )
+        totals["payment_pledge_percentage"] = (
+            totals["total_payments"] / totals["agreed_contributions"] * Decimal("100")
+        )
+        totals["total_income"] = (
+            totals["total_payments"]
+            + totals["interest_earned"]
+            + totals["miscellaneous_income"]
+        )
+        totals["percentage_outstanding_agreed"] = (
+            totals["outstanding_contributions"]
+            / totals["agreed_contributions"]
+            * Decimal("100")
+        )
+        totals["percentage_outstanding_ceit"] = (
+            totals["outstanding_ceit"] / totals["agreed_contributions"] * Decimal("100")
+        )
+        response.append(totals)
+
+        return Response(response)
+
+
 class StatisticsStatusOfContributionsExportView(views.APIView):
     permission_classes = [IsUserAllowedReplenishment]
 
@@ -685,7 +792,10 @@ class DisputedContributionViewSet(
     def get_queryset(self):
         user = self.request.user
         queryset = DisputedContribution.objects.all()
-        if user.user_type == user.UserType.COUNTRY_USER:
+        if user.user_type in (
+            user.UserType.COUNTRY_USER,
+            user.UserType.COUNTRY_SUBMITTER,
+        ):
             queryset = queryset.filter(country_id=user.country_id)
 
         return queryset.select_related("country")
@@ -1086,30 +1196,97 @@ class ReplenishmentInvoiceViewSet(
         filters.SearchFilter,
     ]
     ordering_fields = [
-        "amount",
-        "country__name",
         "date_of_issuance",
-        "date_sent_out",
     ]
     search_fields = ["number"]
 
     def get_queryset(self):
         user = self.request.user
         queryset = Invoice.objects.all()
-        if user.user_type == user.UserType.COUNTRY_USER:
+        if user.user_type in (
+            user.UserType.COUNTRY_USER,
+            user.UserType.COUNTRY_SUBMITTER,
+        ):
             queryset = queryset.filter(country_id=user.country_id)
 
         return queryset.select_related("country", "replenishment").prefetch_related(
             models.Prefetch(
                 "replenishment__scales_of_assessment_versions",
                 queryset=ScaleOfAssessmentVersion.objects.order_by("-version"),
-            )
+            ),
+            "invoice_files",
         )
 
     def get_serializer_class(self):
         if self.request.method in ["POST", "PUT"]:
             return InvoiceCreateSerializer
         return InvoiceSerializer
+
+    def list(self, request, *args, **kwargs):
+        """
+        Return Scale of Assessment joined with the invoices to show countries
+        that have not paid yet.
+        """
+
+        try:
+            year = request.query_params.get("year")
+        except (TypeError, ValueError) as e:
+            raise ValidationError("Year must be an integer.") from e
+
+        invoice_qs = self.filter_queryset(self.get_queryset())
+        invoice_data = InvoiceSerializer(invoice_qs, many=True).data
+        # pylint: disable=too-many-boolean-expressions
+        if (
+            "search" in request.query_params
+            or "country_id" in request.query_params
+            or "date_of_issuance" in request.query_params.get("ordering", "")
+            or request.query_params.get("hide_no_invoice") == "true"
+            or (
+                request.query_params.get("status", None) is not None
+                and request.query_params.get("status") != "not_issued"
+            )
+            or request.user.user_type == request.user.UserType.COUNTRY_USER
+        ):
+            # If filtered, we should not send the empty invoices
+            return Response(
+                invoice_data,
+                status=status.HTTP_200_OK,
+            )
+
+        countries_with_invoices = [invoice["country"]["id"] for invoice in invoice_data]
+        countries_without_invoices = (
+            ScaleOfAssessment.objects.filter(
+                version__is_final=True,
+                version__replenishment__start_year__lte=year,
+                version__replenishment__end_year__gte=year,
+            )
+            .exclude(country_id__in=countries_with_invoices)
+            .select_related("country")
+            .order_by("country__name")
+        )
+        countries_without_invoices_data = EmptyInvoiceSerializer(
+            countries_without_invoices, many=True, context={"year": year}
+        ).data
+
+        if request.query_params.get("status") == "not_issued":
+            data = countries_without_invoices_data
+        else:
+            data = [
+                *invoice_data,
+                *countries_without_invoices_data,
+            ]
+
+        if "country" in request.query_params.get("ordering", ""):
+            data = sorted(
+                data,
+                key=lambda x: x["country"]["name"],
+                reverse=request.query_params.get("ordering", "").startswith("-"),
+            )
+
+        return Response(
+            data,
+            status=status.HTTP_200_OK,
+        )
 
     def _parse_invoice_new_files(self, request):
         number_of_files = int(request.data.get("nr_new_files", 0))
@@ -1184,7 +1361,10 @@ class ReplenishmentInvoiceFileDownloadView(generics.RetrieveAPIView):
     def get_queryset(self):
         user = self.request.user
         queryset = InvoiceFile.objects.all()
-        if user.user_type == user.UserType.COUNTRY_USER:
+        if user.user_type in (
+            user.UserType.COUNTRY_USER,
+            user.UserType.COUNTRY_SUBMITTER,
+        ):
             queryset = queryset.filter(invoice__country_id=user.country_id)
 
     def get(self, request, *args, **kwargs):
@@ -1217,16 +1397,21 @@ class ReplenishmentPaymentViewSet(
     filter_backends = [
         DjangoFilterBackend,
         filters.OrderingFilter,
+        filters.SearchFilter,
     ]
     ordering_fields = [
         "amount",
         "country__name",
     ]
+    search_fields = ["payment_for_year", "amount", "country__name"]
 
     def get_queryset(self):
         user = self.request.user
         queryset = Payment.objects.all()
-        if user.user_type == user.UserType.COUNTRY_USER:
+        if user.user_type in (
+            user.UserType.COUNTRY_USER,
+            user.UserType.COUNTRY_SUBMITTER,
+        ):
             queryset = queryset.filter(country_id=user.country_id)
 
         return queryset.select_related("country", "replenishment").prefetch_related(
@@ -1314,7 +1499,10 @@ class ReplenishmentPaymentFileDownloadView(generics.RetrieveAPIView):
     def get_queryset(self):
         user = self.request.user
         queryset = PaymentFile.objects.all()
-        if user.user_type == user.UserType.COUNTRY_USER:
+        if user.user_type in (
+            user.UserType.COUNTRY_USER,
+            user.UserType.COUNTRY_SUBMITTER,
+        ):
             queryset = queryset.filter(invoice__country_id=user.country_id)
 
     def get(self, request, *args, **kwargs):

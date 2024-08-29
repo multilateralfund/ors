@@ -209,10 +209,42 @@ export function sumFloats(fs: number[]): number {
   return fixFloat(result)
 }
 
-export function getUnitAwareValue(obj: any, propName: string, unit: string) {
-  const value =
-    unit && unit !== 'mt' ? obj?.[`${propName}_${unit}`] : obj?.[propName]
-  return parseNumber(value)
+export function convertValue(
+  mtValue: number | string,
+  gwp: number,
+  odp: number,
+) {
+  const result: Record<string, null | number> = {
+    gwp: null,
+    mt: null,
+    odp: null,
+  }
+  const value = parseNumber(mtValue)
+  if (value) {
+    result.gwp = value * gwp
+    result.odp = value * odp
+    result.mt = value
+  }
+  return result
+}
+
+export function getUnitAwareValue(
+  obj: any,
+  propName: string,
+  unit: string,
+  gwp?: number,
+  odp?: number,
+) {
+  let result: null | number
+
+  if (isNumber(odp) && isNumber(gwp)) {
+    result = convertValue(obj?.[propName], gwp, odp)[unit || 'mt']
+  } else {
+    const value =
+      unit && unit !== 'mt' ? obj?.[`${propName}_${unit}`] : obj?.[propName]
+    result = parseNumber(value)
+  }
+  return result
 }
 
 function padDateNr(n: number) {

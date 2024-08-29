@@ -1,13 +1,12 @@
 'use client'
 
-import { useContext, useState } from 'react'
+import { useContext } from 'react'
 
 import cx from 'classnames'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
 import BarChart from '@ors/components/manage/Blocks/Replenishment/Dashboard/BarChart'
-import FilledAreaChart from '@ors/components/manage/Blocks/Replenishment/Dashboard/FilledAreaChart'
 import TwoAreaCharts from '@ors/components/manage/Blocks/Replenishment/Dashboard/TwoAreaCharts'
 import PeriodSelector from '@ors/components/manage/Blocks/Replenishment/PeriodSelector'
 import useGetSCData from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/useGetSCData'
@@ -19,44 +18,91 @@ import { extractContributions } from '@ors/components/manage/Blocks/Replenishmen
 import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 
-const overviewOrder = ['balance', 'payment_pledge_percentage', 'gain_loss']
-const overviewIndicatorsOrder = [
-  'advance_contributions',
-  'contributions',
-  'outstanding_contributions',
-]
+
+function formatNumber(value) {
+  let result = value
+
+  if (value >= 100000) {
+    result = formatNumberValue(value, 0, 0)
+  } else if (value <= 0.15 && value >= -0.15) {
+    result = 0
+  } else {
+    result = formatNumberValue(value, 2, 2)
+  }
+
+  return result
+}
+
 
 function SummaryCard(props) {
-  const { label, percentage, subLabel, value } = props
+  const { elements, label, prefix, suffix, value } = props
+  const contents = []
+
+  if (elements) {
+    for (let i = 0; i < elements.length; i++) {
+      contents.push(
+        <div key={i} className="flex gap-y-2 flex-col uppercase">
+          <div className="text-[#4D4D4D]">{elements[i].label}</div>
+          <div
+            className={cx(
+              'text-4xl font-bold text-primary',
+              elements[i].className,
+            )}
+          >
+            {elements[i].prefix || ''}
+            {elements[i].value}
+            {elements[i].suffix || ''}
+          </div>
+        </div>,
+      )
+    }
+  }
+
   return (
-    <div className="flex min-h-36 flex-1 flex-col justify-between rounded-lg bg-[#F5F5F5] p-4 print:break-inside-avoid">
-      <div className="text-xl font-medium uppercase">{label}</div>
-      <div className="text-base uppercase">{subLabel}</div>
-      <div className="text-5xl font-bold leading-normal">
-        {value}
-        {percentage && '%'}
+    <div className="flex max-h-48 min-h-48 min-w-[29.33rem] max-w-[29.33rem] flex-1 flex-col justify-between rounded-lg bg-[#F5F5F5] p-4 print:break-inside-avoid">
+      <div className="flex items-center justify-between">
+        <div className="max-w-0 text-xl font-medium uppercase text-[#4D4D4D]">
+          {label}
+        </div>
+        <div className="text-5xl font-bold leading-normal text-primary">
+          <span className="font-normal">{prefix}</span>
+          {value}
+          {suffix}
+        </div>
       </div>
+      <hr className="mb-4 mt-2 block w-full border border-x-0 border-b-0 border-solid border-[#E0E0E0]" />
+      <div className="flex justify-between">{contents}</div>
     </div>
   )
 }
 
-const DashboardIndicators = ({ data }) => {
-  return (
-    <div className="my-5 flex flex-wrap items-stretch gap-4 text-primary">
-      {data &&
-        overviewIndicatorsOrder.map((key) => (
-          <div
-            key={key}
-            className="flex flex-1 items-center justify-between gap-4 rounded-lg bg-[#F5F5F5] p-4 print:break-inside-avoid"
-          >
-            <span className="text-6xl font-bold print:text-4xl">
-              {data[key].value}
-            </span>
-            <span className="text-2xl font-medium uppercase print:text-lg">
-              {data[key].label}
-            </span>
+function BigCard(props) {
+  const { elements, label } = props
+
+  const contents = []
+
+  if (elements) {
+    for (let i = 0; i < elements.length; i++) {
+      contents.push(
+        <div key={i} className="my-4 flex flex-col uppercase gap-y-2">
+          <div className="text-[#4D4D4D]">{elements[i].label}</div>
+          <div className="text-4xl font-bold text-primary">
+            <span className="font-normal">{elements[i].prefix || ''}</span>
+            {elements[i].value}
+            {elements[i].suffix || ''}
           </div>
-        ))}
+        </div>,
+      )
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-y-4 rounded-lg border border-solid border-primary p-4">
+      <div className="max-w-0 text-xl font-medium uppercase leading-normal text-[#4D4D4D]">
+        {label}
+      </div>
+      <hr className="mt-2 block w-full border border-x-0 border-b-0 border-solid border-[#E0E0E0]" />
+      <div className="flex flex-col">{contents}</div>
     </div>
   )
 }
@@ -65,236 +111,253 @@ function getPercent(tot, x) {
   return (x * 100) / tot
 }
 
-function TabIndicatorsPayments(props) {
-  const { contrib, data, scData } = props
+function TabIndicatorsPledged(props) {
+  const { contrib, period, totals } = props
   return (
-    <div className="flex flex-wrap items-stretch gap-4">
-      <SummaryCard
-        label="Pledged contributions"
-        value={formatNumberValue(scData.total.agreed_contributions, 2, 2)}
-      />
-      <SummaryCard
-        label="Cash payments"
-        subLabel="countries"
-        value={contrib.contributions}
-      />
-      <SummaryCard
-        label="Cash payments"
-        subLabel="amount"
-        value={formatNumberValue(scData.total.cash_payments, 2, 2)}
-      />
-      <SummaryCard
-        label="Cash payments"
-        percentage={true}
-        subLabel="percentage"
-        value={formatNumberValue(
-          getPercent(
-            scData.total.agreed_contributions,
-            scData.total.cash_payments,
+    <BigCard
+      label="Pledged contributions"
+      elements={[
+        {
+          label: 'amount',
+          prefix: '$',
+          value: formatNumber(totals.agreed_contributions),
+        },
+        { label: 'countries', value: contrib.countries },
+        {
+          label: 'period',
+          value: period || `1991-${new Date().getFullYear()}`,
+        },
+      ]}
+    />
+  )
+}
+
+function TabIndicatorsPayments(props) {
+  const { contrib, totals } = props
+  return (
+    <SummaryCard
+      label="Cash payments"
+      prefix="$"
+      value={formatNumber(totals.cash_payments)}
+      elements={[
+        { label: 'countries', value: contrib.contributions },
+        {
+          label: 'countries percent',
+          suffix: '%',
+          value: formatNumber(contrib.contributions_percentage),
+        },
+        {
+          label: 'percentage of pledged',
+          suffix: '%',
+          value: formatNumber(
+            getPercent(totals.agreed_contributions, totals.cash_payments),
           ),
-          2,
-          2,
-        )}
-      />
-    </div>
+        },
+      ]}
+    />
   )
 }
 
 function TabIndicatorsBilateralAssistance(props) {
-  const { contrib, data, scData } = props
+  const { contrib, totals } = props
   return (
-    <div className="flex flex-wrap items-stretch gap-4">
-      <SummaryCard
-        label="Bilateral assistance"
-        subLabel="countries"
-        value={contrib.bilateral_assistance_countries}
-      />
-      <SummaryCard
-        label="Bilateral assistance"
-        subLabel="amount"
-        value={formatNumberValue(scData.total.bilateral_assistance, 2, 2)}
-      />
-      <SummaryCard
-        label="Bilateral assistance"
-        percentage={true}
-        subLabel="percentage out of pledged"
-        value={formatNumberValue(
-          getPercent(
-            scData.total.agreed_contributions,
-            scData.total.bilateral_assistance,
+    <SummaryCard
+      label="Bilateral assistance"
+      prefix="$"
+      value={formatNumber(totals.bilateral_assistance)}
+      elements={[
+        { label: 'countries', value: contrib.bilateral_assistance_countries },
+        {
+          label: 'countries percent',
+          suffix: '%',
+          value: formatNumber(
+            contrib.bilateral_assistance_countries_percentage,
           ),
-          2,
-          2,
-        )}
-      />
-    </div>
+        },
+        {
+          label: 'percentage of pledged',
+          suffix: '%',
+          value: formatNumber(
+            getPercent(
+              totals.agreed_contributions,
+              totals.bilateral_assistance,
+            ),
+          ),
+        },
+      ]}
+    />
   )
 }
 
 function TabIndicatorsPromissoryNotes(props) {
-  const { contrib, data, scData } = props
+  const { contrib, totals } = props
   return (
-    <div className="flex flex-wrap items-stretch gap-4">
-      <SummaryCard
-        label="Promissory notes"
-        subLabel="countries"
-        value={contrib.promissory_notes_countries}
-      />
-      <SummaryCard
-        label="Promissory notes"
-        subLabel="amount"
-        value={formatNumberValue(scData.total.promissory_notes, 2, 2)}
-      />
-      <SummaryCard
-        label="Promissory notes"
-        percentage={true}
-        subLabel="percentage out of pledged"
-        value={formatNumberValue(
-          getPercent(
-            scData.total.agreed_contributions,
-            scData.total.promissory_notes,
+    <SummaryCard
+      label="Promissory notes"
+      prefix="$"
+      value={formatNumber(totals.promissory_notes)}
+      elements={[
+        { label: 'countries', value: contrib.promissory_notes_countries },
+        {
+          label: 'countries percent',
+          suffix: '%',
+          value: formatNumber(
+            contrib.promissory_notes_countries_percentage,
           ),
-          2,
-          2,
-        )}
-      />
-    </div>
+        },
+        {
+          label: 'percentage of pledged',
+          suffix: '%',
+          value: formatNumber(
+            getPercent(totals.agreed_contributions, totals.promissory_notes),
+          ),
+        },
+      ]}
+    />
   )
 }
 
 function TabIndicatorsOutstandingContributions(props) {
-  const { contrib, data, scData } = props
+  const { contrib, totals } = props
+
+  const value =
+    totals?.outstanding_contributions_with_disputed ??
+    totals.outstanding_contributions
+
   return (
-    <div className="flex flex-wrap items-stretch gap-4">
-      <SummaryCard
-        label="Outstanding contributions"
-        subLabel="countries"
-        value={contrib.outstanding_contributions}
-      />
-      <SummaryCard
-        label="Outstanding contributions"
-        subLabel="amount (excl. disputed)"
-        value={formatNumberValue(scData.total.outstanding_contributions, 2, 2)}
-      />
-      <SummaryCard
-        label="Outstanding contributions"
-        percentage={true}
-        subLabel="percentage out of pledged (excl.disputed)"
-        value={formatNumberValue(
-          getPercent(
-            scData.total.agreed_contributions,
-            scData.total.outstanding_contributions,
+    <SummaryCard
+      label="Outstanding contributions"
+      prefix="$"
+      value={formatNumber(value)}
+      elements={[
+        { label: 'countries', value: contrib.outstanding_contributions },
+        {
+          label: 'countries percent',
+          suffix: '%',
+          value: formatNumber(
+            contrib.outstanding_contributions_percentage,
           ),
-          2,
-          2,
-        )}
-      />
-      <SummaryCard
-        label="Outstanding contributions"
-        subLabel="amount (incl. disputed)"
-        value={formatNumberValue(
-          scData.total.outstanding_contributions_with_disputed,
-          2,
-          2,
-        )}
-      />
-      <SummaryCard
-        label="Outstanding contributions"
-        percentage={true}
-        subLabel="percentage out of pledged (incl.disputed)"
-        value={formatNumberValue(
-          getPercent(
-            scData.total.agreed_contributions,
-            scData.total.outstanding_contributions_with_disputed,
+        },
+        {
+          label: 'percentage of pledged',
+          suffix: '%',
+          value: formatNumber(
+            getPercent(totals.agreed_contributions, value),
           ),
-          2,
-          2,
-        )}
-      />
-    </div>
+        },
+      ]}
+    />
   )
 }
 
 function TabIndicatorsDisputedContributions(props) {
-  const { contrib, data, scData } = props
+  const { data } = props
   return (
-    <div className="flex flex-wrap items-stretch gap-4">
-      <SummaryCard
-        label="Disputed contributions"
-        subLabel="amount"
-        value={formatNumberValue(scData.disputed_contributions, 2, 2)}
-      />
-      <SummaryCard
-        label="Disputed contributions"
-        percentage={true}
-        subLabel="percentage out of pledged"
-        value={formatNumberValue(
-          getPercent(
-            scData.total.agreed_contributions,
-            scData.disputed_contributions,
+    <SummaryCard
+      label="Disputed contributions"
+      elements={[
+        {
+          label: 'amount',
+          prefix: '$',
+          value: formatNumber(data.disputed_contributions),
+        },
+        {
+          label: 'percentage of pledged',
+          suffix: '%',
+          value: formatNumber(
+            getPercent(
+              data.total.agreed_contributions,
+              data.disputed_contributions,
+            ),
           ),
-          2,
-          2,
-        )}
-      />
-    </div>
+        },
+      ]}
+    />
   )
 }
 
 function TabIndicatorsFerm(props) {
-  const { contrib, data, scData } = props
+  const { totals } = props
   return (
-    <div className="flex flex-wrap items-stretch gap-4">
-      <SummaryCard
-        label={scData.total.gain_loss < 0 ? 'FERM gain' : 'FERM loss'}
-        subLabel="amount"
-        value={formatNumberValue(scData.total.gain_loss, 2, 2)}
-      />
-      <SummaryCard
-        label={scData.total.gain_loss < 0 ? 'FERM gain' : 'FERM loss'}
-        percentage={true}
-        subLabel="percentage out of pledged"
-        value={formatNumberValue(
-          getPercent(scData.total.agreed_contributions, scData.total.gain_loss),
-          2,
-          2,
-        )}
-      />
-    </div>
+    <SummaryCard
+      label={totals.gain_loss < 0 ? 'FERM gain' : 'FERM loss'}
+      elements={[
+        {
+          className: totals.gain_loss < 0 ? '' : 'text-red-500',
+          label: 'amount',
+          prefix: totals.gain_loss < 0 ? '+$' : '-$',
+          value: formatNumber(totals.gain_loss),
+        },
+        {
+          label: 'percentage of pledged',
+          suffix: '%',
+          value: formatNumber(
+            getPercent(totals.agreed_contributions, totals.gain_loss),
+          ),
+        },
+      ]}
+    />
   )
 }
 
+function socRows(data, onlyCeits) {
+  let rows = []
+
+  if (onlyCeits) {
+    const soc = data?.status_of_contributions ?? []
+
+    const ceits = data?.ceit_countries ?? []
+    const ceitIds = []
+
+    for (let i = 0; i < ceits.length; i++) {
+      ceitIds.push(ceits[i].id)
+    }
+
+    for (let i = 0; i < soc.length; i++) {
+      if (ceitIds.includes(soc[i].country.id)) {
+        rows.push(soc[i])
+      }
+    }
+  } else {
+    rows = data?.status_of_contributions ?? []
+  }
+
+  return rows
+}
+
 function CummulativeTab(props) {
-  const { data } = props
-  const { data: scData } = useGetSCData()
+  const { onlyCeits, period } = props
+  const { data } = useGetSCData()
 
-  const contrib = extractContributions(scData?.status_of_contributions ?? [])
+  const contrib = extractContributions(socRows(data, onlyCeits))
 
-  if (scData.total) {
+  const totals = onlyCeits ? data.ceit : data.total
+
+  if (totals) {
     return (
-      <div className="flex flex-col gap-4">
-        <TabIndicatorsPayments contrib={contrib} data={data} scData={scData} />
-        <TabIndicatorsBilateralAssistance
-          contrib={contrib}
-          data={data}
-          scData={scData}
-        />
-        <TabIndicatorsPromissoryNotes
-          contrib={contrib}
-          data={data}
-          scData={scData}
-        />
-        <TabIndicatorsOutstandingContributions
-          contrib={contrib}
-          data={data}
-          scData={scData}
-        />
-        <TabIndicatorsDisputedContributions
-          contrib={contrib}
-          data={data}
-          scData={scData}
-        />
-        <TabIndicatorsFerm contrib={contrib} data={data} scData={scData} />
+      <div className="flex w-full justify-between gap-4">
+        <div className="w-1/5">
+          <TabIndicatorsPledged
+            contrib={contrib}
+            period={period}
+            totals={totals}
+          />
+        </div>
+        <div className="flex w-4/5 flex-wrap gap-4">
+          <TabIndicatorsPayments contrib={contrib} totals={totals} />
+          <TabIndicatorsBilateralAssistance contrib={contrib} totals={totals} />
+          <TabIndicatorsPromissoryNotes contrib={contrib} totals={totals} />
+          <TabIndicatorsOutstandingContributions
+            contrib={contrib}
+            totals={totals}
+          />
+          {onlyCeits ? null : (
+            <TabIndicatorsDisputedContributions data={data} />
+          )}
+          {onlyCeits ? null : (
+            <TabIndicatorsFerm contrib={contrib} totals={totals} />
+          )}
+        </div>
       </div>
     )
   } else {
@@ -303,39 +366,62 @@ function CummulativeTab(props) {
 }
 
 function TriennialTab(props) {
-  const { data, period, periodOptions } = props
+  const { onlyCeits, period } = props
 
   const [year_start, year_end] = period.split('-')
 
-  const { data: scData } = useGetSCData(year_start, year_end)
+  const { data } = useGetSCData(year_start, year_end)
 
-  const contrib = extractContributions(scData?.status_of_contributions ?? [])
+  const contrib = extractContributions(socRows(data, onlyCeits))
+  const totals = onlyCeits ? data.ceit : data.total
 
-  if (scData.total) {
+  const curYear = new Date().getFullYear()
+
+  const showOutstandingExplanation = curYear < parseInt(year_end, 10)
+  let outstandingExplanation = ''
+
+  if (curYear == parseInt(year_start, 10)) {
+    outstandingExplanation = `Only the year ${year_start} is considered.`
+  } else if (showOutstandingExplanation) {
+    outstandingExplanation = `Only the years ${year_start} - ${curYear} are considered`
+  }
+
+  if (totals) {
     return (
-      <div className="flex flex-col gap-4">
-        <TabIndicatorsPayments contrib={contrib} data={data} scData={scData} />
-        <TabIndicatorsBilateralAssistance
-          contrib={contrib}
-          data={data}
-          scData={scData}
-        />
-        <TabIndicatorsPromissoryNotes
-          contrib={contrib}
-          data={data}
-          scData={scData}
-        />
-        <TabIndicatorsOutstandingContributions
-          contrib={contrib}
-          data={data}
-          scData={scData}
-        />
-        <TabIndicatorsDisputedContributions
-          contrib={contrib}
-          data={data}
-          scData={scData}
-        />
-      </div>
+      <>
+        <div className="flex w-full justify-between gap-4">
+          <div className="w-1/5">
+            <TabIndicatorsPledged
+              contrib={contrib}
+              period={`${period}*`}
+              totals={totals}
+            />
+          </div>
+          <div className="flex w-4/5 flex-wrap gap-4">
+            <TabIndicatorsPayments contrib={contrib} totals={totals} />
+            <TabIndicatorsBilateralAssistance
+              contrib={contrib}
+              totals={totals}
+            />
+            <TabIndicatorsPromissoryNotes contrib={contrib} totals={totals} />
+            <TabIndicatorsOutstandingContributions
+              contrib={contrib}
+              totals={totals}
+            />
+            {onlyCeits ? null : (
+              <TabIndicatorsDisputedContributions data={data} />
+            )}
+          </div>
+        </div>
+
+        <div className="w-full lg:max-w-[50%]">
+          {showOutstandingExplanation ? (
+            <p>
+              <sup>*</sup> {outstandingExplanation}
+            </p>
+          ) : null}
+        </div>
+      </>
     )
   } else {
     return null
@@ -362,36 +448,35 @@ function getDefaultRange(periodOptions, period) {
 }
 
 function AnnualTab(props) {
-  const { data, period, periodOptions } = props
+  const { onlyCeits, period } = props
 
-  const { data: scData } = useGetSCData(period)
+  const { data } = useGetSCData(period)
 
-  const contrib = extractContributions(scData?.status_of_contributions ?? [])
+  const contrib = extractContributions(socRows(data, onlyCeits))
+  const totals = onlyCeits ? data.ceit : data.total
 
-  if (scData.total) {
+  if (totals) {
     return (
-      <div className="flex flex-col gap-4">
-        <TabIndicatorsPayments contrib={contrib} data={data} scData={scData} />
-        <TabIndicatorsBilateralAssistance
-          contrib={contrib}
-          data={data}
-          scData={scData}
-        />
-        <TabIndicatorsPromissoryNotes
-          contrib={contrib}
-          data={data}
-          scData={scData}
-        />
-        <TabIndicatorsOutstandingContributions
-          contrib={contrib}
-          data={data}
-          scData={scData}
-        />
-        <TabIndicatorsDisputedContributions
-          contrib={contrib}
-          data={data}
-          scData={scData}
-        />
+      <div className="flex w-full justify-between gap-4">
+        <div className="w-1/5">
+          <TabIndicatorsPledged
+            contrib={contrib}
+            period={period}
+            totals={totals}
+          />
+        </div>
+        <div className="flex w-4/5 flex-wrap gap-4">
+          <TabIndicatorsPayments contrib={contrib} totals={totals} />
+          <TabIndicatorsBilateralAssistance contrib={contrib} totals={totals} />
+          <TabIndicatorsPromissoryNotes contrib={contrib} totals={totals} />
+          <TabIndicatorsOutstandingContributions
+            contrib={contrib}
+            totals={totals}
+          />
+          {onlyCeits ? null : (
+            <TabIndicatorsDisputedContributions data={data} />
+          )}
+        </div>
       </div>
     )
   } else {
@@ -420,7 +505,7 @@ const TABS = [
   },
 ]
 
-function getTabLinks(pathname) {
+function getTabLinks(pathname, searchParams) {
   const result = []
 
   let currentSection
@@ -443,7 +528,7 @@ function getTabLinks(pathname) {
               i === TABS.length - 1,
           },
         )}
-        href={entry.path}
+        href={searchParams ? `${entry.path}?${searchParams}` : entry.path}
       >
         {entry.label}
       </Link>,
@@ -454,10 +539,18 @@ function getTabLinks(pathname) {
 }
 
 function SectionDashboard(props) {
-  const { charts, data, overview, overviewIndicators, period, tab } = props
+  const { charts, period, tab } = props
+
+  const searchParams = useSearchParams()
+  const onlyCeits = searchParams.has('ceits')
 
   const pathname = usePathname()
-  const [currentSection, navLinks] = getTabLinks(pathname)
+  const [currentSection, navLinks] = getTabLinks(
+    pathname,
+    searchParams.toString(),
+  )
+
+  const router = useRouter()
 
   const ctx = useContext(ReplenishmentContext)
 
@@ -480,6 +573,22 @@ function SectionDashboard(props) {
 
   const Component = currentSection?.component ?? CummulativeTab
 
+  function handleToggleCeits() {
+    if (onlyCeits) {
+      router.push(`${pathname}`)
+    } else {
+      router.push(`${pathname}?ceits=yes`)
+    }
+  }
+
+  function handlePeriodChange(newPath) {
+    if (searchParams.size) {
+      router.push(`${newPath}?${searchParams.toString()}`)
+    } else {
+      router.push(newPath)
+    }
+  }
+
   return (
     <>
       <div className="flex items-center justify-between">
@@ -501,6 +610,20 @@ function SectionDashboard(props) {
           </Link>
         </div>
         <div className="flex items-center gap-2 print:hidden">
+          <label
+            className={cx(
+              'flex cursor-pointer font-bold items-center rounded-lg border border-solid border-primary px-2 py-1 text-gray-400',
+              { 'bg-primary font-bold text-mlfs-hlYellow': onlyCeits },
+            )}
+          >
+            <input
+              className="collapse hidden"
+              checked={onlyCeits}
+              type="checkbox"
+              onChange={handleToggleCeits}
+            />
+            <span className="text-nowrap">Only CEITs</span>
+          </label>
           {currentSection?.showPeriodSelector ? (
             <PeriodSelector
               key={currentSection.label}
@@ -508,6 +631,7 @@ function SectionDashboard(props) {
               period={period}
               periodOptions={periodOptions}
               selectedPeriod={defaultPeriod}
+              onChange={handlePeriodChange}
             />
           ) : null}
           <nav className="flex items-center rounded-lg border border-solid border-primary">
@@ -517,12 +641,12 @@ function SectionDashboard(props) {
       </div>
 
       <div
-        className="mt-8"
+        className="mt-8 w-full"
         style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
       >
         {(currentSection?.showPeriodSelector && defaultPeriod) ||
         !currentSection?.showPeriodSelector ? (
-          <Component data={data} period={defaultPeriod} />
+          <Component period={defaultPeriod} onlyCeits={onlyCeits} />
         ) : null}
 
         <div className="">
@@ -539,13 +663,6 @@ function SectionDashboard(props) {
                     title="Outstanding pledges by triennium"
                   />
                 </div>
-                {/* <div className="print:break-inside-avoid"> */}
-                {/*   <h3 className="text-2xl uppercase">Pledged Contributions</h3> */}
-                {/*   <FilledAreaChart */}
-                {/*     data={charts.pledged_contributions} */}
-                {/*     title="Pledged Contributions" */}
-                {/*   /> */}
-                {/* </div> */}
                 <div className="w-1/2 print:w-full print:break-inside-avoid">
                   <h3 className="text-2xl uppercase">
                     Pledged Contributions vs. total payments

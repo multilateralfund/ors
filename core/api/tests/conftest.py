@@ -92,6 +92,11 @@ def country_user(country_ro):
 
 
 @pytest.fixture
+def country_submitter(country_ro):
+    return UserFactory(user_type="country_submitter", country=country_ro)
+
+
+@pytest.fixture
 def treasurer_user():
     return UserFactory(username="FaraNumar", user_type="treasurer")
 

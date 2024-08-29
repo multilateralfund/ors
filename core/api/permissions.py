@@ -21,6 +21,7 @@ class IsUserAllowedReplenishment(permissions.BasePermission):
 
             if user.user_type in (
                 user.UserType.COUNTRY_USER,
+                user.UserType.COUNTRY_SUBMITTER,
                 user.UserType.AGENCY_INPUTTER,
                 user.UserType.AGENCY_SUBMITTER,
                 user.UserType.SECRETARIAT,
@@ -85,7 +86,8 @@ class IsCountryUser(permissions.BasePermission):
         user = request.user
         if user.is_authenticated:
             if (
-                user.user_type == user.UserType.COUNTRY_USER
+                user.user_type
+                in (user.UserType.COUNTRY_USER, user.UserType.COUNTRY_SUBMITTER)
                 and user.country_id is not None
             ):
                 return True

@@ -3,6 +3,12 @@
   align-items: center;
   justify-content: space-between;
 
+  @media (width <= 580px) {
+    flex-direction: column-reverse;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
   nav {
     display: flex;
     align-items: center;
@@ -24,6 +30,15 @@
         background-color: var(--color-primary);
         color: var(--color-mlfs-hlYellow);
       }
+    }
+  }
+}
+
+.moreOptions {
+  @media (width <= 580px) {
+    div:first-child {
+      width: unset;
+      justify-content: start;
     }
   }
 }
