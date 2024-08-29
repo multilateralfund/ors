@@ -90,7 +90,10 @@ export const CellDateWidget = memo(
         <DatePicker
           format="DD/MM/YYYY"
           minDate={dayjs(`${minYear}-01-01`)}
+          /* eslint-disable perfectionist/sort-jsx-props */
+          openTo="year"
           open={open}
+          /* eslint-enable perfectionist/sort-jsx-props */
           ref={refInput}
           value={value ? dayjs(value) : dayjs(`${props.context.year}-01-01`)}
           slotProps={{
