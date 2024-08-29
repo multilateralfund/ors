@@ -103,6 +103,35 @@ class BusinessPlanViewSet(
             )
         )
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "business_plan_id",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                "agency_id",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                "year_start",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                "year_end",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                "version",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+            ),
+        ],
+    )
     @action(methods=["GET"], detail=False)
     def get(self, *args, **kwargs):
         self.search_fields = ["title"]
@@ -573,7 +602,7 @@ class BPFileDownloadView(generics.RetrieveAPIView):
         return response
 
 
-class BPActivityDiffView(generics.ListAPIView):
+class BPActivityDiffView(mixins.ListModelMixin, generics.GenericAPIView):
     fields = [
         "title",
         "required_by_model",
@@ -635,7 +664,36 @@ class BPActivityDiffView(generics.ListAPIView):
 
         return diff_data
 
-    def list(self, request, *args, **kwargs):
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "business_plan_id",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                "agency_id",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                "year_start",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                "year_end",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                "version",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+            ),
+        ],
+    )
+    def get(self, request, *args, **kwargs):
         business_plan = get_business_plan_from_request(request)
         # We are diff-ing with the previous version by default
         business_plan_ar = get_object_or_404(
