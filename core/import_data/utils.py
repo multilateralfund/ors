@@ -1108,12 +1108,14 @@ def get_project_base_data(item, item_index, is_submissions=True):
 
 
 def update_or_create_project(project_data, update_status=True):
-    # try to find the project by its code
+    # try to find the project by its legacy_code
     project = None
-    if project_data.get("code"):
-        project = Project.objects.filter(code__iexact=project_data["code"]).first()
+    if project_data.get("legacy_code"):
+        project = Project.objects.filter(
+            legacy_code__iexact=project_data["legacy_code"]
+        ).first()
 
-    # some projects do not have the code set so we try to find them by other fields
+    # some projects do not have the legacy_code set so we try to find them by other fields
     if not project:
         fields_filter = models.Q(
             title=project_data["title"],

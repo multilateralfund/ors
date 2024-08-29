@@ -355,7 +355,7 @@ def project(
     project_cluster_kpp,
     meta_project,
 ):
-    generated_code = get_project_sub_code(
+    code = get_project_sub_code(
         country_ro, project_cluster_kpp, agency, project_type, sector, meeting, None
     )
     project = ProjectFactory.create(
@@ -374,7 +374,7 @@ def project(
         total_fund_transferred=123.1,
         date_approved="2019-03-14",
         serial_number=1,
-        generated_code=generated_code,
+        code=code,
     )
 
     return project
