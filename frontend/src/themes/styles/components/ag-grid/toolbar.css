@@ -1,10 +1,9 @@
-.ag-toolbar .bp-table-toolbar {
-  .MuiToggleButtonGroup-root {
+.bp-table-toolbar {
+  .table-date-switcher.MuiToggleButtonGroup-root {
     min-width: 300px;
-    align-self: flex-start;
   }
 
-  @media (width <= 1024px) {
+  @media (width <= 1200px) {
     .bp-search-container {
       flex-direction: column !important;
     }
