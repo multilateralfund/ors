@@ -23,10 +23,15 @@
       min-width: 120px;
     }
 
-    &.ag-substances-cell-content .ag-cell-value {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
+    &.ag-substances-cell-content {
+      align-items: flex-start;
+      padding-block: 6px !important;
+
+      .ag-cell-value {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
     }
 
     .ag-cell-options {
