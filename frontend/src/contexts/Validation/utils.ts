@@ -80,7 +80,7 @@ export function sumUsages(usages: IUsage[]) {
   return sumMaybeNumbers(quantites)
 }
 
-export function getFloat(nr: null | number | string): number {
+export function getFloat(nr?: null | number | string): number {
   let result = 0
   if (nr && typeof nr === 'string') {
     const value = parseFloat(nr)

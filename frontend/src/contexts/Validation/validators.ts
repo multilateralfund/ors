@@ -19,10 +19,10 @@ export function checkShouldValidateSectionARow(row: IRow): boolean {
   const hasUsages =
     sumUsages((row.record_usages as unknown as IUsage[]) || []) > 0
   const hasSomethingElse = !!(
-    row.imports ||
-    row.exports ||
-    row.production ||
-    row.import_quotas ||
+    getFloat(row.imports) ||
+    getFloat(row.exports) ||
+    getFloat(row.production) ||
+    getFloat(row.import_quotas) ||
     row.banned_date
   )
   return hasUsages || hasSomethingElse
@@ -32,11 +32,11 @@ export function checkShouldValidateSectionBRow(row: IRow): boolean {
   const hasUsages =
     sumUsages((row.record_usages as unknown as IUsage[]) || []) > 0
   const hasSomethingElse = !!(
-    row.imports ||
-    row.exports ||
-    row.production ||
-    row.manufacturing_blends ||
-    row.import_quotas ||
+    getFloat(row.imports) ||
+    getFloat(row.exports) ||
+    getFloat(row.production) ||
+    getFloat(row.manufacturing_blends) ||
+    getFloat(row.import_quotas) ||
     row.banned_date ||
     row.remarks
   )
