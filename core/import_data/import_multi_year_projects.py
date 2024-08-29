@@ -85,7 +85,7 @@ def parse_file(file_path):
         project_data = {
             "country": country,
             "agency": agency,
-            "code": project_json["Code"],
+            "legacy_code": project_json["Code"],
             "mya_code": project_json.get("MYA Code"),
             "project_type": project_type,
             "sector": sector,

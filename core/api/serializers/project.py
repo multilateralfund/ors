@@ -325,7 +325,6 @@ class ProjectListSerializer(serializers.ModelSerializer):
     ProjectSerializer class
     """
 
-    legacy_code = serializers.CharField(read_only=True)
     country = serializers.SlugRelatedField("name", read_only=True)
     agency = serializers.SlugRelatedField("name", read_only=True)
     agency_id = serializers.PrimaryKeyRelatedField(
