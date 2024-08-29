@@ -461,6 +461,8 @@ class BPActivityViewSet(
         year_start = int(self.request.query_params.get("year_start"))
         year_end = int(self.request.query_params.get("year_end"))
         agency_id = self.request.query_params.get("agency_id")
+        if agency_id:
+            agency = get_object_or_404(Agency, id=agency_id)
 
         # get all activities between year_start and year_end
         queryset = self.filter_queryset(self.get_queryset())
@@ -479,7 +481,6 @@ class BPActivityViewSet(
         ).write(data)
 
         if agency_id:
-            agency = get_object_or_404(Agency, id=agency_id)
             name = f"BusinessPlan{agency.name}-{year_start}-{year_end}"
         else:
             name = f"BusinessPlanActivities{year_start}-{year_end}"
