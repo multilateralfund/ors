@@ -20,7 +20,7 @@ interface TextState {
 type Label = keyof TextState
 
 const CPComments: React.FC = (props: any) => {
-  const { section, viewOnly } = props
+  const { form, section, viewOnly } = props
   const user = useStore((state) => state.user)
   const user_type: UserType = user.data.user_type
   const { cacheInvalidateReport, report, setReport } = useStore(
@@ -141,10 +141,9 @@ const CPComments: React.FC = (props: any) => {
     return texts[userType] === '' && initialTexts[userType] === ''
   }
 
-  const Container = viewOnly ? 'div' : 'form'
 
   return (
-    <Container className="-mx-6 -mb-6 mt-6 flex w-auto flex-wrap justify-around gap-6 rounded-b-lg bg-gray-100 px-6 pb-6">
+    <div className="-mx-6 -mb-6 mt-6 flex w-auto flex-wrap justify-around gap-6 rounded-b-lg bg-gray-100 px-6 pb-6">
       {orderedUsers.map((user) => {
         const canEditComment =
           commentsMeta[user].user_check[user_type as UserType] &&
@@ -206,7 +205,7 @@ const CPComments: React.FC = (props: any) => {
           </div>
         )
       })}
-    </Container>
+    </div>
   )
 }
 
