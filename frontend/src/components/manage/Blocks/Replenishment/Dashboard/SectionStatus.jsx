@@ -44,8 +44,15 @@ function CashCard(props) {
 }
 
 function SectionStatus(props) {
-  const { allocations, asOfDate, income, onEditButtonClick, provisions, showEditButton } =
-    props
+  const {
+    allocations,
+    asOfDate,
+    income,
+    onEditButtonClick,
+    overview,
+    provisions,
+    showEditButton,
+  } = props
 
   return (
     <>
@@ -138,6 +145,15 @@ function SectionStatus(props) {
                   }
                 />
               ))}
+            <CashCard
+              className="!bg-primary text-white uppercase"
+              label={overview?.balance.label}
+              value={
+                overview?.balance.value !== null
+                  ? formatNumberValue(overview?.balance.value, 0, 0)
+                  : 'N/A'
+              }
+            />
           </ul>
         </div>
       </div>

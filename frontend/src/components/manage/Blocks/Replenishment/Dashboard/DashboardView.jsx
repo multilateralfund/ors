@@ -182,7 +182,7 @@ function DashboardView(props) {
   const { period, section } = props
   const { formData, invalidateDataFn, loading, newData } = useGetDashboardData()
   const ctx = useContext(ReplenishmentContext)
-  const { allocations, asOfDate, charts, income, provisions } = newData
+  const { allocations, asOfDate, charts, income, overview, provisions } = newData
 
   const [showEdit, setShowEdit] = useState(false)
 
@@ -219,6 +219,8 @@ function DashboardView(props) {
       })
   }
 
+  console.log("OVERVIEW", overview)
+
   let Section
 
   switch (section) {
@@ -228,6 +230,7 @@ function DashboardView(props) {
           allocations={allocations}
           asOfDate={asOfDate}
           income={income}
+          overview={overview}
           provisions={provisions}
           showEditButton={ctx.isTreasurer}
           onEditButtonClick={handleEditClick}
