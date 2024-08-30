@@ -250,6 +250,7 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
                 Input: { placeholder: 'Select substance...' },
                 getOptionLabel: (option: any) => option.name,
                 groupBy: (option: any) => option.group,
+                openOnFocus: true,
                 options,
               },
               cellRenderer: (props: any) => {
