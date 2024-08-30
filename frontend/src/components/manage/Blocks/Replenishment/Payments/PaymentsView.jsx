@@ -140,7 +140,7 @@ function PaymentsView() {
   }
 
   async function handleEditPaymentSubmit(formData) {
-    const entry = { ...formData }
+    const entry = Object.fromEntries(formData.entries())
     entry.date = dateForInput(entry.date)
     entry.exchange_rate = isNaN(entry.exchange_rate) ? '' : entry.exchange_rate
     entry.ferm_gain_or_loss = isNaN(entry.ferm_gain_or_loss)
@@ -208,13 +208,14 @@ function PaymentsView() {
   }
 
   async function handleAddPaymentSubmit(formData) {
-    const entry = { ...formData }
+    const entry = Object.fromEntries(formData.entries())
     entry.date = dateForInput(entry.date)
     entry.exchange_rate = isNaN(entry.exchange_rate) ? '' : entry.exchange_rate
     entry.ferm_gain_or_loss = isNaN(entry.ferm_gain_or_loss)
       ? ''
       : entry.ferm_gain_or_loss
     entry.comment = entry.comment || ''
+    entry.invoice_ids = formData.getAll('invoice_ids')
 
     let nr_new_files = 0
     const data = new FormData()

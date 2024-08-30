@@ -21,10 +21,15 @@ export default function DisputedContributionDialog({
     setShowAdd(true)
   }
 
+  /**
+   * @async
+   * @param {FormData} formData
+   * @returns {*}
+   */
   async function confirmSave(formData) {
     try {
       await api('/api/replenishment/disputed-contributions/', {
-        data: formData,
+        data: Object.fromEntries(formData.entries()),
         method: 'POST',
       })
       setShowAdd(false)

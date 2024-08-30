@@ -6,6 +6,17 @@ import { CancelButton, SubmitButton } from '@ors/components/ui/Button/Button'
 
 import { IoCloseCircle } from 'react-icons/io5'
 
+/**
+ * Display a form in a dialog.
+ *
+ * @typedef {object} FormDialogProps
+ * @property {string} [title]
+ * @property {() => void} onCancel
+ * @property {(formData: FormData, evt: React.FormEvent<HTMLFormElement>) => void} onSubmit
+ *
+ * @param {React.PropsWithChildren & FormDialogProps} props
+ * @returns {React.ReactElement}
+ */
 const FormDialog = function FormDialog(props) {
   const { children, onCancel, onSubmit, title } = props
   const dialogRef = useRef(null)
@@ -24,17 +35,9 @@ const FormDialog = function FormDialog(props) {
   function submitHandler(evt) {
     evt.preventDefault()
     const formData = new FormData(evt.target)
-    const data = {}
-    for (const [k, v] of formData.entries()) {
-      if (isNaN(v)) {
-        data[k] = v
-      } else {
-        data[k] = parseFloat(v)
-      }
-    }
     dialogRef.current.close()
     evt.target.reset()
-    onSubmit(data, evt)
+    onSubmit(formData, evt)
   }
 
   const cancelHandler = useCallback(

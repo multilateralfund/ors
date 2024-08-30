@@ -3,7 +3,6 @@ import React, { useState } from 'react'
 import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
 import {
   FieldInput,
-  FieldMultiSelect,
   FieldSelect,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceAttachments'
@@ -11,7 +10,6 @@ import useApi from '@ors/hooks/useApi'
 
 const PaymentDialog = function PaymentDialog(props) {
   const { columns, countries, data, isEdit, title, ...dialogProps } = props
-  const [invoices, setInvoices] = useState([])
   const { data: invoicesList, loaded: invoicesLoaded } = useApi({
     options: {
       params: {
@@ -23,10 +21,12 @@ const PaymentDialog = function PaymentDialog(props) {
     path: 'api/replenishment/invoices/',
   })
 
-  const invoicesOptions = invoicesLoaded ? invoicesList.map((invoice) => ({
-    id: invoice.id,
-    label: invoice.number,
-  })) : []
+  const invoicesOptions = invoicesLoaded
+    ? invoicesList.map((invoice) => ({
+        id: invoice.id,
+        label: invoice.number,
+      }))
+    : []
 
   return (
     <FormDialog title={title} {...dialogProps}>
@@ -45,33 +45,19 @@ const PaymentDialog = function PaymentDialog(props) {
         ))}
       </FieldSelect>
       {invoicesLoaded && (
-        <FieldMultiSelect
+        <FieldSelect
           id="invoice_ids"
           hasClear={true}
           label={'Invoices'}
           required={true}
-          onChange={(_, selected) => setInvoices(selected)}
+          multiple
         >
-          <option value="A">A</option>
-          <option value="B">B</option>
-          <option value="C">C</option>
-          <option value="D">D</option>
-          <option value="E">E</option>
-          <option value="F">F</option>
-          <option value="G">G</option>
-          <option value="H">H</option>
-          <option value="I">I</option>
-          <option value="J">J</option>
-          <option value="K">K</option>
-          <option value="L">L</option>
-          <option value="M">M</option>
-          <option value="N">N</option>
           {invoicesOptions.map((inv) => (
             <option key={inv.id} value={inv.id}>
               {inv.label}
             </option>
           ))}
-        </FieldMultiSelect>
+        </FieldSelect>
       )}
       <FieldInput
         id="date"

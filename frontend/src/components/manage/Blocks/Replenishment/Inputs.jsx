@@ -1,11 +1,4 @@
-import React, {
-  ChangeEvent,
-  InputHTMLAttributes,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import React, { forwardRef, useEffect, useMemo, useRef, useState } from 'react'
 
 import cx from 'classnames'
 
@@ -32,6 +25,14 @@ export function Field(props) {
 }
 
 export function Select(props) {
+  if (props.multiple) {
+    return <MultiSelect {...props} />
+  } else {
+    return <SingleSelect {...props} />
+  }
+}
+
+export function SingleSelect(props) {
   const {
     id,
     children,
@@ -106,9 +107,11 @@ export function MultiSelect(props) {
     hasClear,
     name,
     onChange,
+    required,
     ...rest
   } = props
-  const selectRef = useRef<HTMLSelectElement>(null)
+  const selectRef = useRef(null)
+  const inputRef = useRef(null)
 
   const [value, setValue] = useState(defaultValue || [])
   const [options, setOptions] = useState([])
@@ -183,6 +186,13 @@ export function MultiSelect(props) {
     setShowPicker(true)
   }
 
+  function handleDone(evt) {
+    setShowPicker(false)
+    if (inputRef.current) {
+      inputRef.current.blur()
+    }
+  }
+
   useEffect(() => {
     if (selectRef.current) {
       setOptions(getOptions(selectRef.current))
@@ -223,11 +233,14 @@ export function MultiSelect(props) {
       <div className="relative flex flex-1">
         <Input
           placeholder={'Please select...'}
-          required={props.required}
+          ref={inputRef}
+          required={required}
           type="text"
           value={value.length ? `${value.length} selected` : ''}
+          onChange={() => {
+            return
+          }}
           onFocus={handleInputFocus}
-          readOnly
         ></Input>
         {withClear && (
           <button
@@ -242,7 +255,7 @@ export function MultiSelect(props) {
       </div>
       <div
         className={cx(
-          'p-2 absolute left-2 mt-1 w-full rounded-md origin-top border border-solid border-primary bg-white z-10 opacity-0 shadow-xl transition-all',
+          'absolute left-2 z-10 mt-1 w-full origin-top rounded-md border border-solid border-primary bg-white p-2 opacity-0 shadow-xl transition-all',
           className,
           {
             'collapse scale-y-0': !showPicker,
@@ -250,17 +263,17 @@ export function MultiSelect(props) {
           },
         )}
       >
-        <div className="overflow-y-auto max-h-64">
-          {virtualOptions}
-        </div>
-        <div className="flex items-center justify-center mt-2">
-          <BaseButton className="text-sm !py-1" onClick={() => setShowPicker(false)}>Done</BaseButton>
+        <div className="max-h-64 overflow-y-auto">{virtualOptions}</div>
+        <div className="mt-2 flex items-center justify-center">
+          <BaseButton className="!py-1 text-sm" onClick={handleDone}>
+            Done
+          </BaseButton>
         </div>
       </div>
       <select
         id={id}
         name={name || id}
-        className={"hidden invisible"}
+        className={'invisible hidden'}
         ref={selectRef}
         value={value}
         onChange={handleChange}
@@ -272,8 +285,7 @@ export function MultiSelect(props) {
   )
 }
 
-
-export function Input(props) {
+export const Input = forwardRef(function Input(props, ref) {
   const { id, className, name, type, ...rest } = props
   const elementType = type === 'text-area' ? 'textarea' : 'input'
 
@@ -281,10 +293,11 @@ export function Input(props) {
     id,
     className: cx(CLASSESS, className),
     name: name || id,
+    ref: ref,
     type: type !== 'text-area' ? type : undefined,
     ...rest,
   })
-}
+})
 
 export function FormattedNumberInput(props) {
   const { id, className, name, onChange, onlyNumber, type, value, ...rest } =
@@ -292,7 +305,7 @@ export function FormattedNumberInput(props) {
 
   const [inputMode, setInputMode] = useState(false)
 
-  const realInput = useRef<HTMLInputElement>(null)
+  const realInput = useRef(null)
 
   useEffect(
     function () {
@@ -337,7 +350,7 @@ export function DateInput(props) {
 
   const [inputMode, setInputMode] = useState(false)
 
-  const realInput = useRef<HTMLInputElement>(null)
+  const realInput = useRef(null)
 
   useEffect(
     function () {
@@ -396,17 +409,6 @@ export function FieldSelect(props) {
       <Select id={id} {...rest}>
         {children}
       </Select>
-    </Field>
-  )
-}
-
-export function FieldMultiSelect(props) {
-  const { id, children, label, ...rest } = props
-  return (
-    <Field id={id} label={label}>
-      <MultiSelect id={id} {...rest}>
-        {children}
-      </MultiSelect>
     </Field>
   )
 }
