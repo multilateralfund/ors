@@ -20,7 +20,7 @@ interface TextState {
 type Label = keyof TextState
 
 const CPComments: React.FC = (props: any) => {
-  const { form, section, viewOnly } = props
+  const { section, viewOnly } = props
   const user = useStore((state) => state.user)
   const user_type: UserType = user.data.user_type
   const { cacheInvalidateReport, report, setReport } = useStore(
