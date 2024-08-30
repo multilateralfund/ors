@@ -197,7 +197,7 @@ export function MultiSelect(props) {
     if (selectRef.current) {
       setOptions(getOptions(selectRef.current))
     }
-  }, [])
+  }, [children])
 
   const withClear = hasClear && value.length > 0
 

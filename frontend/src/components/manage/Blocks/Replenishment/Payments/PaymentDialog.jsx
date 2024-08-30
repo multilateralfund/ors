@@ -1,4 +1,6 @@
-import React, { useState } from 'react'
+'use client'
+
+import React from 'react'
 
 import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
 import {
@@ -44,21 +46,20 @@ const PaymentDialog = function PaymentDialog(props) {
           </option>
         ))}
       </FieldSelect>
-      {invoicesLoaded && (
-        <FieldSelect
-          id="invoice_ids"
-          hasClear={true}
-          label={'Invoices'}
-          required={true}
-          multiple
-        >
-          {invoicesOptions.map((inv) => (
-            <option key={inv.id} value={inv.id}>
-              {inv.label}
-            </option>
-          ))}
-        </FieldSelect>
-      )}
+      <FieldSelect
+        id="invoices"
+        defaultValue={data?.invoices?.map((o) => o.id.toString())}
+        hasClear={true}
+        label="Invoices"
+        required={true}
+        multiple
+      >
+        {invoicesOptions.map((inv) => (
+          <option key={inv.id} value={inv.id}>
+            {inv.label}
+          </option>
+        ))}
+      </FieldSelect>
       <FieldInput
         id="date"
         defaultValue={data?.date}
