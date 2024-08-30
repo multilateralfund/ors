@@ -53,6 +53,14 @@ class CPPricesExtractionWriter(BaseExtractionAllWriter):
                         "align": "right",
                     },
                     {
+                        "id": f"fob_{year}",
+                        "headerName": f"Fob Price {year}",
+                    },
+                    {
+                        "id": f"retail_{year}",
+                        "headerName": f"Retail Price {year}",
+                    },
+                    {
                         "id": f"remarks_{year}",
                         "headerName": f"Remarks {year} ",
                     },

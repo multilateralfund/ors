@@ -564,51 +564,51 @@ class CPDataExtractionAllExport(views.APIView):
         )
 
         if not archive_reports:
-            return list(final_records)
+            mbr_list = list(final_records)
+        else:
+            archive_records = (
+                CPRecordArchive.objects.get_for_years(min_year, max_year)
+                .filter(
+                    country_programme_report__status=CPReport.CPReportStatus.FINAL,
+                    substance__name__iexact="Methyl Bromide",
+                )
+                .filter(
+                    # get the records for the max version of the archive reports
+                    *[
+                        models.Q(
+                            country_programme_report__country_id=c,
+                            country_programme_report__year=y,
+                            country_programme_report__version=v,
+                        )
+                        for c, y, v in archive_reports
+                    ],
+                    _connector=models.Q.OR,
+                )
+                .annotate(
+                    country_name=models.F("country_programme_report__country__name"),
+                    year=models.F("country_programme_report__year"),
+                    methyl_bromide_qps=models.Sum(
+                        "record_usages__quantity",
+                        filter=models.Q(record_usages__usage__name__iexact="QPS"),
+                        default=0,
+                    ),
+                    methyl_bromide_non_qps=models.Sum(
+                        "record_usages__quantity",
+                        filter=models.Q(record_usages__usage__name__iexact="Non-QPS"),
+                        default=0,
+                    ),
+                    total=models.F("methyl_bromide_qps")
+                    + models.F("methyl_bromide_non_qps"),
+                )
+            ).values(
+                "country_name",
+                "year",
+                "methyl_bromide_qps",
+                "methyl_bromide_non_qps",
+                "total",
+            )
 
-        archive_records = (
-            CPRecordArchive.objects.get_for_years(min_year, max_year)
-            .filter(
-                country_programme_report__status=CPReport.CPReportStatus.FINAL,
-                substance__name__iexact="Methyl Bromide",
-            )
-            .filter(
-                # get the records for the max version of the archive reports
-                *[
-                    models.Q(
-                        country_programme_report__country_id=c,
-                        country_programme_report__year=y,
-                        country_programme_report__version=v,
-                    )
-                    for c, y, v in archive_reports
-                ],
-                _connector=models.Q.OR,
-            )
-            .annotate(
-                country_name=models.F("country_programme_report__country__name"),
-                year=models.F("country_programme_report__year"),
-                methyl_bromide_qps=models.Sum(
-                    "record_usages__quantity",
-                    filter=models.Q(record_usages__usage__name__iexact="QPS"),
-                    default=0,
-                ),
-                methyl_bromide_non_qps=models.Sum(
-                    "record_usages__quantity",
-                    filter=models.Q(record_usages__usage__name__iexact="Non-QPS"),
-                    default=0,
-                ),
-                total=models.F("methyl_bromide_qps")
-                + models.F("methyl_bromide_non_qps"),
-            )
-        ).values(
-            "country_name",
-            "year",
-            "methyl_bromide_qps",
-            "methyl_bromide_non_qps",
-            "total",
-        )
-
-        mbr_list = list(final_records) + list(archive_records)
+            mbr_list = list(final_records) + list(archive_records)
         mbr_data = {}
         for mbr in mbr_list:
             if mbr["country_name"] not in mbr_data:
@@ -699,6 +699,8 @@ class CPDataExtractionAllExport(views.APIView):
             final_prices_dict[key].update(
                 {
                     f"price_{year}": price.current_year_price,
+                    f"fob_{year}": "TRUE" if price.is_fob else "FALSE",
+                    f"retail_{year}": "TRUE" if price.is_retail else "FALSE",
                     f"remarks_{year}": price.remarks,
                 }
             )
@@ -842,7 +844,11 @@ class CPDataExtractionAllExport(views.APIView):
                 if record.substance
                 else "HFC"
             )
-            if substance_name in EXCLUDE_FROM_CONSUMPTION:
+            if (
+                record.substance
+                and "HFC" not in record.substance.name
+                or substance_name == "legacy"
+            ):
                 continue
 
             country = record.country_programme_report.country
@@ -867,7 +873,7 @@ class CPDataExtractionAllExport(views.APIView):
 
             # get consumption data
             consumption_value = record.get_consumption_value(
-                using_consumption_value_set
+                (country_name, year) in using_consumption_value_set
             )
             country_records[key][f"consumption_mt_{year}"] += consumption_value
 
