@@ -44,7 +44,6 @@ function useBPListApi(filters?: any) {
 
 export default function BPList(props: any) {
   const { period } = props
-  const bpSlice = useStore((state) => state.businessPlans)
   const { agencies, settings } = useStore((state) => state.common)
 
   const [pagination, setPagination] = useState({
@@ -82,7 +81,6 @@ export default function BPList(props: any) {
         handleSearch={handleSearch}
         setFilters={handleFiltersChange}
         statuses={settings.data.business_plan_statuses}
-        yearRanges={bpSlice.yearRanges.data}
       />
       <SimpleList list={results} />
       {!!pages && pages > 1 && (

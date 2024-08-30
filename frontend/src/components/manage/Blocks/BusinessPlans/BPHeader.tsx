@@ -9,36 +9,37 @@ import NextLink from 'next/link'
 
 import Link from '@ors/components/ui/Link/Link'
 import BPContext from '@ors/contexts/BusinessPlans/BPContext'
+import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
 import useClickOutside from '@ors/hooks/useClickOutside'
-import { useStore } from '@ors/store'
 
 import { IoChevronDown } from 'react-icons/io5'
 
 const HeaderVersionsDropdown = () => {
   const [showVersionsMenu, setShowVersionsMenu] = useState(false)
   const { data, loading } = useContext(BPContext) as any
+  const { yearRanges, yearRangesLoading } = useContext(
+    BPYearRangesContext,
+  ) as any
   const business_plan = data?.results?.business_plan
-  const bpSlice = useStore((state) => state.businessPlans)
   const toggleShowVersionsMenu = () => setShowVersionsMenu((prev) => !prev)
 
   const ref = useClickOutside(() => {
     setShowVersionsMenu(false)
   })
 
-  const dataReady = business_plan || !loading
+  const dataReady =
+    (business_plan && yearRanges) || (!loading && !yearRangesLoading)
 
   const versions =
-    dataReady && bpSlice.yearRanges.data.length > 0
-      ? orderBy(bpSlice.yearRanges.data, 'year_start', 'desc').map(
-          (version, idx) => ({
-            id: `${version.year_start}-${version.year_end}`,
-            // formattedDate: formattedDateFromTimestamp(version.created_at),
-            isDraft: version.status === 'draft',
-            isFinal: version.status === 'final',
-            label: `Version ${version.year_start} - ${version.year_end}`,
-            url: `/business-plans/${business_plan?.agency.name}/${version.year_start}-${version.year_end}`,
-          }),
-        )
+    dataReady && yearRanges.length > 0
+      ? orderBy(yearRanges, 'year_start', 'desc').map((version, idx) => ({
+          id: `${version.year_start}-${version.year_end}`,
+          // formattedDate: formattedDateFromTimestamp(version.created_at),
+          isDraft: version.status === 'draft',
+          isFinal: version.status === 'final',
+          label: `Version ${version.year_start} - ${version.year_end}`,
+          url: `/business-plans/${business_plan?.agency.name}/${version.year_start}-${version.year_end}`,
+        }))
       : []
 
   const tagLatest = (

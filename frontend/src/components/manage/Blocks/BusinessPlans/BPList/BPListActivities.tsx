@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useContext, useMemo, useRef, useState } from 'react'
 
 import DownloadButtons from '@ors/app/business-plans/DownloadButtons'
 import Activities from '@ors/components/manage/Blocks/BusinessPlans/Activities'
@@ -8,6 +8,7 @@ import ActivitiesFilters from '@ors/components/manage/Blocks/BusinessPlans/Activ
 import useGetBpPeriods from '@ors/components/manage/Blocks/BusinessPlans/BPList/useGetBPPeriods'
 import { useGetActivities } from '@ors/components/manage/Blocks/BusinessPlans/useGetActivities'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
+import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
 import { formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
@@ -17,10 +18,11 @@ const ACTIVITIES_PER_PAGE = 20
 
 export default function BPListActivities(props: any) {
   const { period } = props
-  const { periodOptions } = useGetBpPeriods()
+  const { yearRanges } = useContext(BPYearRangesContext) as any
+  const { periodOptions } = useGetBpPeriods(yearRanges)
 
-  const firstPeriod = periodOptions[periodOptions.length - 1].value
-  const lastPeriod = periodOptions[0].value
+  const firstPeriod = periodOptions?.[periodOptions.length - 1]?.value
+  const lastPeriod = periodOptions?.[0]?.value
   const commonSlice = useStore((state) => state.common)
   const bpSlice = useStore((state) => state.businessPlans)
   const projects = useStore((state) => state.projects)

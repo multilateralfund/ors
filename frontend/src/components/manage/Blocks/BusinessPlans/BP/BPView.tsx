@@ -8,6 +8,7 @@ import BusinessPlansTable from '@ors/components/manage/Blocks/Table/BusinessPlan
 import Loading from '@ors/components/theme/Loading/Loading'
 import BPContext from '@ors/contexts/BusinessPlans/BPContext'
 import BPProvider from '@ors/contexts/BusinessPlans/BPProvider'
+import BPYearRangesProvider from '@ors/contexts/BusinessPlans/BPYearRangesProvider'
 
 import { BPHeaderView } from '../BPHeader'
 
@@ -72,8 +73,10 @@ function BPView() {
 
 export default function BPViewWrapper() {
   return (
-    <BPProvider>
-      <BPView />
-    </BPProvider>
+    <BPYearRangesProvider>
+      <BPProvider>
+        <BPView />
+      </BPProvider>
+    </BPYearRangesProvider>
   )
 }
