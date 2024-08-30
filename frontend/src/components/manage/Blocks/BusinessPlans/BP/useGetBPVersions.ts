@@ -8,11 +8,15 @@ export function useGetBPVersions(businessPlan: any) {
   const { data, loading } = useApi({
     options: {
       params: {
+        agency_id: id,
         direction: 'desc',
+        get_versions: true,
         ordering: '-updated_at',
+        year_end: year_end,
+        year_start: year_start,
       },
     },
-    path: `api/business-plan/?agency_id=${id}&year_start=${year_start}&year_end=${year_end}&get_versions=true`,
+    path: `api/business-plan/`,
   })
 
   const { results } = getResults(data)

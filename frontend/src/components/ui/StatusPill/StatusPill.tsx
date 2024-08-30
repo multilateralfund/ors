@@ -1,6 +1,12 @@
 import cx from 'classnames'
 
-type Status = 'Approved' | 'Draft' | 'Needs Changes' | 'Rejected' | 'Submitted'
+type Status =
+  | 'Agency Draft'
+  | 'Approved'
+  | 'Need Changes'
+  | 'Rejected'
+  | 'Secretariat Draft'
+  | 'Submitted'
 
 interface StatusStyle {
   bgColor: string
@@ -9,18 +15,23 @@ interface StatusStyle {
 }
 
 const statusStyles: Record<Status, StatusStyle> = {
-  Approved: { bgColor: 'bg-secondary', textColor: 'text-white' },
-  Draft: {
+  'Agency Draft': {
     bgColor: 'bg-white',
     border: 'border-mlfs-deepTealShade',
     textColor: 'text-mlfs-deepTealShade',
   },
-  'Needs Changes': {
+  Approved: { bgColor: 'bg-secondary', textColor: 'text-white' },
+  'Need Changes': {
     bgColor: 'bg-white',
     border: 'border-mlfs-deepTealShade',
     textColor: 'text-mlfs-deepTealShade',
   },
   Rejected: { bgColor: 'bg-gray-500', textColor: 'text-white' },
+  'Secretariat Draft': {
+    bgColor: 'bg-white',
+    border: 'border-mlfs-deepTealShade',
+    textColor: 'text-mlfs-deepTealShade',
+  },
   Submitted: { bgColor: 'bg-mlfs-deepTealShade', textColor: 'text-white' },
 }
 
@@ -33,7 +44,7 @@ function StatusPill(props: { status: Status }) {
   return (
     <div
       className={cx(
-        'w-fit rounded px-2 text-center text-sm font-normal uppercase',
+        'w-fit rounded border border-solid px-2 text-center text-sm font-normal uppercase',
         bgColor,
         textColor,
         border,
