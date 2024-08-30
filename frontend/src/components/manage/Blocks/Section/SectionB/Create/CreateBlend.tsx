@@ -43,7 +43,7 @@ function SimilarBlend({ blend, onClick, substances }: any) {
 
               return (
                 <React.Fragment key={component.substance_id}>
-                  <Typography>{substance.name}</Typography>
+                  <Typography>{substance?.name}</Typography>
                   <Typography>{component.percentage}%</Typography>
                 </React.Fragment>
               )
