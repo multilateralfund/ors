@@ -1,6 +1,11 @@
+import {
+  ApiReplenishment,
+  ApiReplenishments,
+} from '@ors/types/api_replenishment_replenishments'
+import { Country } from '@ors/types/store'
 import { isCountryUserType } from '@ors/types/user_types'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { makePeriodOptions } from '@ors/components/manage/Blocks/Replenishment/utils'
 import { formatApiUrl } from '@ors/helpers/Api/utils'
@@ -8,7 +13,7 @@ import { useStore } from '@ors/store'
 
 import ReplenishmentContext from './ReplenishmentContext'
 
-function filterCountries(countries) {
+function filterCountries(countries: Country[]) {
   const result = []
   for (let i = 0; i < countries.length; i++) {
     if (countries[i].iso3) {
@@ -18,15 +23,15 @@ function filterCountries(countries) {
   return result
 }
 
-function ReplenishmentProvider(props) {
+function ReplenishmentProvider(props: { children: React.ReactNode }) {
   const { children } = props
   const user = useStore((state) => state.user)
   const isTreasurer = user.data.user_type === 'treasurer'
   const isSecretariat = user.data.user_type === 'secretariat'
   const isCountryUser = isCountryUserType[user.data.user_type]
 
-  const [periods, setPeriods] = useState([])
-  const [countries, setCountries] = useState([])
+  const [periods, setPeriods] = useState<ApiReplenishment[]>([])
+  const [countries, setCountries] = useState<Country[]>([])
   const [fetchTrigger, setFetchTrigger] = useState(false)
 
   const refetchData = useCallback(() => {
@@ -47,7 +52,7 @@ function ReplenishmentProvider(props) {
           const [respPeriods, respCountries] = responses
           return Promise.all([respPeriods.json(), respCountries.json()])
         })
-        .then(function (jsonData) {
+        .then(function (jsonData: [ApiReplenishments, Country[]]) {
           const [jsonPeriods, jsonCountries] = jsonData
           setPeriods(jsonPeriods)
           setCountries(filterCountries(jsonCountries))

@@ -110,18 +110,19 @@ interface IPROVISIONS {
 }
 
 interface IDashboardData {
-  allocations: IALLOCATIONS,
-  asOfDate: IDashboardDataApiResponse['as_of_date'],
-  charts: IDashboardDataApiResponse['charts'],
-  income: IINCOME,
-  overview: IOVERVIEW,
-  overviewIndicators: IOVERVIEW_INDICATORS,
-  provisions: IPROVISIONS,
+  allocations: IALLOCATIONS
+  asOfDate: IDashboardDataApiResponse['as_of_date']
+  charts: IDashboardDataApiResponse['charts']
+  income: IINCOME
+  overview: IOVERVIEW
+  overviewIndicators: IOVERVIEW_INDICATORS
+  provisions: IPROVISIONS
 }
 
-interface IFormData extends IDashboardDataApiResponse['overview'], IDashboardDataApiResponse['allocations'] {
+type IFormData = {
   external_income_end_year: IDashboardDataApiResponse['external_income'][0]['end_year']
   external_income_start_year: IDashboardDataApiResponse['external_income'][0]['start_year']
-  interest_earned: IDashboardDataApiResponse['external_income'][0]['interest_earned'],
-  miscellaneous_income: IDashboardDataApiResponse['external_income'][0]['miscellaneous_income'],
-}
+  interest_earned: IDashboardDataApiResponse['external_income'][0]['interest_earned']
+  miscellaneous_income: IDashboardDataApiResponse['external_income'][0]['miscellaneous_income']
+} & IDashboardDataApiResponse['allocations'] &
+  IDashboardDataApiResponse['overview']
