@@ -198,6 +198,8 @@ class InvoiceCreateSerializer(serializers.ModelSerializer):
     replenishment_id = serializers.PrimaryKeyRelatedField(
         queryset=Replenishment.objects.all().values_list("id", flat=True),
         write_only=True,
+        allow_null=True,
+        required=False,
     )
 
     amount = serializers.DecimalField(
