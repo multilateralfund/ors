@@ -89,6 +89,7 @@ function PaymentsView() {
         ferm_gain_or_loss: formatNumberValue(data.ferm_gain_or_loss) || 'N/A',
         files: <ViewFiles files={data.payment_files} />,
         files_data: data.payment_files,
+        invoices: data.invoices,
         iso3: data.country.iso3,
         payment_for_year: data.payment_for_year,
         replenishment: data.replenishment,
@@ -140,13 +141,14 @@ function PaymentsView() {
   }
 
   async function handleEditPaymentSubmit(formData) {
-    const entry = { ...formData }
+    const entry = Object.fromEntries(formData.entries())
     entry.date = dateForInput(entry.date)
     entry.exchange_rate = isNaN(entry.exchange_rate) ? '' : entry.exchange_rate
     entry.ferm_gain_or_loss = isNaN(entry.ferm_gain_or_loss)
       ? ''
       : entry.ferm_gain_or_loss
     entry.comment = entry.comment || ''
+    entry.invoices = formData.getAll('invoices')
 
     let nr_new_files = 0
     const data = new FormData()
@@ -157,7 +159,11 @@ function PaymentsView() {
       // Append non-file fields if they are not null, undefined
       // Empty strings are used to delete a value
       if (!key.startsWith('file_')) {
-        if (value !== null && value !== undefined) {
+        if (typeof value === 'object' && value.length) {
+          for (let i = 0; i < value.length; i++) {
+            data.append(key, value[i])
+          }
+        } else if (value !== null && value !== undefined) {
           data.append(key, value)
         }
       }
@@ -208,13 +214,14 @@ function PaymentsView() {
   }
 
   async function handleAddPaymentSubmit(formData) {
-    const entry = { ...formData }
+    const entry = Object.fromEntries(formData.entries())
     entry.date = dateForInput(entry.date)
     entry.exchange_rate = isNaN(entry.exchange_rate) ? '' : entry.exchange_rate
     entry.ferm_gain_or_loss = isNaN(entry.ferm_gain_or_loss)
       ? ''
       : entry.ferm_gain_or_loss
     entry.comment = entry.comment || ''
+    entry.invoices = formData.getAll('invoices')
 
     let nr_new_files = 0
     const data = new FormData()
@@ -224,7 +231,11 @@ function PaymentsView() {
 
       // Append non-file fields if they are not null, undefined, or empty string
       if (!key.startsWith('file_')) {
-        if (value !== null && value !== undefined && value !== '') {
+        if (typeof value === 'object' && value.length) {
+          for (let i = 0; i < value.length; i++) {
+            data.append(key, value[i])
+          }
+        } else if (value !== null && value !== undefined && value !== '') {
           data.append(key, value)
         }
       }

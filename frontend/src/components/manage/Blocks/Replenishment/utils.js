@@ -53,6 +53,13 @@ export function dateForEditField(value) {
   return dateForInput(date)
 }
 
+/**
+ * Format date or date string to YYYY-MM-DD.
+ *
+ * @export
+ * @param {string|Date} [input]
+ * @returns {string}
+ */
 export function dateForInput(input) {
   if (!input) {
     return null

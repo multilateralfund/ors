@@ -1228,11 +1228,7 @@ class ReplenishmentInvoiceViewSet(
         that have not paid yet.
         """
 
-        try:
-            year = request.query_params.get("year")
-        except (TypeError, ValueError) as e:
-            raise ValidationError("Year must be an integer.") from e
-
+        year = request.query_params.get("year")
         invoice_qs = self.filter_queryset(self.get_queryset())
         invoice_data = InvoiceSerializer(invoice_qs, many=True).data
         # pylint: disable=too-many-boolean-expressions
