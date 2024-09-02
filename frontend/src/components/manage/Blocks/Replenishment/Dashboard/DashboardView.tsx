@@ -40,7 +40,7 @@ function InputField(props: IInputFieldProps) {
 
 interface IEditStatusDialogProps extends React.PropsWithChildren {
   data: IFormData
-  onCancel?: () => void
+  onCancel: () => void
   onSubmit: (
     formData: Record<string, number | string>,
     evt?: React.FormEvent,
@@ -216,6 +216,9 @@ function DashboardView(props: IDashboardViewProps) {
     setShowEdit(false)
   }
 
+  /**
+   * Handle form submit. This receives an object, instead of a FormData.
+   */
   function handleEditSubmit(data: Record<string, number | string>) {
     const parsedData: Record<string, number> = {}
     const dataKeys = Object.keys(data)
