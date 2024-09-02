@@ -177,7 +177,11 @@ class Invoice(models.Model):
     )
 
     replenishment = models.ForeignKey(
-        Replenishment, on_delete=models.PROTECT, null=True, related_name="invoices"
+        Replenishment,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="invoices",
     )
     year = models.IntegerField(null=True, blank=True)
 
