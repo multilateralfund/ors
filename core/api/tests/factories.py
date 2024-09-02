@@ -370,7 +370,7 @@ class MetaProjectFactory(factory.django.DjangoModelFactory):
         model = MetaProject
 
     code = factory.Faker("pystr", max_chars=10)
-    type = "Individual investment"
+    type = MetaProject.MetaProjectType.IND
 
 
 class ProjectFactory(factory.django.DjangoModelFactory):

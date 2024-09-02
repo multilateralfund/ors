@@ -1,6 +1,17 @@
+import type {
+  IALLOCATIONS,
+  IDashboardData,
+  IDashboardDataApiResponse,
+  IFormData,
+  IINCOME,
+  IOVERVIEW,
+  IOVERVIEW_INDICATORS,
+  IPROVISIONS,
+} from './useGetDashboardDataTypes'
+
 import useApi from '@ors/hooks/useApi'
 
-const OVERVIEW = {
+const OVERVIEW: IOVERVIEW = {
   balance: { label: 'cash fund balance', value: null },
   gain_loss: { label: 'ferm loss', value: null },
   payment_pledge_percentage: {
@@ -10,7 +21,7 @@ const OVERVIEW = {
   },
 }
 
-const OVERVIEW_INDICATORS = {
+const OVERVIEW_INDICATORS: IOVERVIEW_INDICATORS = {
   advance_contributions: {
     label: 'parties have made their contributions in advance',
     value: null,
@@ -25,7 +36,7 @@ const OVERVIEW_INDICATORS = {
   },
 }
 
-const INCOME = {
+const INCOME: IINCOME = {
   bilateral_assistance: { label: 'Bilateral cooperation', value: null },
   cash_payments: {
     label: 'Cash payments including note encashment',
@@ -44,7 +55,7 @@ const INCOME = {
   total: { label: 'Total income', total: true, value: null },
 }
 
-const ALLOCATIONS = {
+const ALLOCATIONS: IALLOCATIONS = {
   total: {
     label: 'Total allocations to implementing agencies',
     total: true,
@@ -56,7 +67,7 @@ const ALLOCATIONS = {
   world_bank: { label: 'World Bank', value: null },
 }
 
-const PROVISIONS = {
+const PROVISIONS: IPROVISIONS = {
   bilateral_assistance: { label: 'Bilateral cooperation', value: null },
   gain_loss: {
     label: 'FERM loss',
@@ -88,13 +99,15 @@ const PROVISIONS = {
   treasury_fees: { label: 'Treasury fees (2003-2025)', value: null },
 }
 
-const calculateTotal = (obj) => {
+function calculateTotal(obj: IALLOCATIONS | IINCOME | IPROVISIONS) {
   return Object.keys(obj)
-    .filter((key) => key !== 'total' && obj[key].value != null)
-    .reduce((acc, key) => acc + obj[key].value, 0)
+    .filter(
+      (key) => key !== 'total' && obj[key as keyof typeof obj].value != null,
+    )
+    .reduce((acc, key) => acc + (obj[key as keyof typeof obj].value ?? 0), 0)
 }
 
-const updateObjectValues = (fetchedData) => {
+const updateObjectValues = (fetchedData: IDashboardDataApiResponse) => {
   // Update OVERVIEW object
   OVERVIEW.balance.value = fetchedData.overview.balance
   OVERVIEW.payment_pledge_percentage.value =
@@ -137,17 +150,17 @@ const updateObjectValues = (fetchedData) => {
   PROVISIONS.total.value =
     calculateTotal(PROVISIONS) +
     ALLOCATIONS.total.value +
-    OVERVIEW.gain_loss.value
+    (OVERVIEW.gain_loss.value ?? 0)
 }
 
 function useGetDashboardData() {
-  const { data, loading, setParams } = useApi({
+  const { data, loading, setParams } = useApi<IDashboardDataApiResponse>({
     options: {},
     path: '/api/replenishment/dashboard',
   })
 
-  let formData
-  let newData
+  let formData: IFormData | Record<string, never>
+  let newData: IDashboardData | Record<string, never>
   if (data) {
     updateObjectValues(data)
     formData = {

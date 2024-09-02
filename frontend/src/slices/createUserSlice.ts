@@ -1,3 +1,4 @@
+import { ApiUser } from '@ors/types/api_auth_user'
 import type { CreateSliceProps } from '@ors/types/store'
 import type { UserSlice } from '@ors/types/store'
 
@@ -19,7 +20,7 @@ function removeCookies() {
 export const createUserSlice = ({
   initialState,
 }: CreateSliceProps): UserSlice => ({
-  ...getInitialSliceData(),
+  ...getInitialSliceData<ApiUser, Record<string, any> | null | undefined>(),
   // Get user
   getUser: async () => {
     fetchSliceData({ apiSettings: { path: 'api/auth/user/' }, slice: 'user' })
@@ -71,5 +72,5 @@ export const createUserSlice = ({
       })
     }
   },
-  ...(initialState?.user || {}),
+  ...((initialState?.user || {}) as any),
 })

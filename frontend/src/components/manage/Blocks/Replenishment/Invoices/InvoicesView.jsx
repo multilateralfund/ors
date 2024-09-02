@@ -151,7 +151,7 @@ function InvoicesView() {
   }
 
   async function handleEditInvoiceSubmit(formData) {
-    const entry = { ...formData }
+    const entry = Object.fromEntries(formData.entries())
     entry.date_of_issuance = dateForInput(entry.date_of_issuance)
     entry.date_sent_out = dateForInput(entry.date_sent_out) || ''
     entry.date_first_reminder = dateForInput(entry.date_first_reminder) || ''
@@ -219,8 +219,15 @@ function InvoicesView() {
     setEditIdx(null)
   }
 
+  /**
+   * Prepare data and submit to endpoint
+   *
+   * @async
+   * @param {FormData} formData
+   * @returns {void}
+   */
   async function handleAddInvoiceSubmit(formData) {
-    const entry = { ...formData }
+    const entry = Object.fromEntries(formData.entries())
     entry.date_of_issuance = dateForInput(entry.date_of_issuance)
     entry.date_sent_out = dateForInput(entry.date_sent_out)
     entry.date_first_reminder = dateForInput(entry.date_first_reminder)

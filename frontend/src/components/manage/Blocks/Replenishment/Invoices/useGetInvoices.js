@@ -1,14 +1,11 @@
-import { getResults } from '@ors/helpers'
 import useApi from '@ors/hooks/useApi'
-
-export const _PER_PAGE = 50
 
 function useGetInvoices(year) {
   const { data, loaded, loading, setParams } = useApi({
     options: {
       params: {
         hide_no_invoice: true,
-        ordering: "country",
+        ordering: 'country',
         year: year,
       },
       withStoreCache: false,
