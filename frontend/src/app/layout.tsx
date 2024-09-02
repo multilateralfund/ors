@@ -80,6 +80,7 @@ export default async function RootLayout({
       blends,
       substances,
       // Business Plans
+      commentTypes,
       yearRanges,
     ] = await Promise.all([
       api('api/settings/', {}, false),
@@ -102,6 +103,7 @@ export default async function RootLayout({
         false,
       ),
       // api('api/usages/', {}, false),
+      api('api/comment-types/', {}, false),
       api('api/business-plan/get-years/', {}, false),
     ])
 
@@ -129,6 +131,7 @@ export default async function RootLayout({
       substances: getInitialSliceData<ApiSubstance[]>(substances),
     }
     businessPlans = {
+      commentTypes: getInitialSliceData(commentTypes),
       sectors: getInitialSliceData(sectors),
       subsectors: getInitialSliceData(subsectors),
       types: getInitialSliceData(types),
