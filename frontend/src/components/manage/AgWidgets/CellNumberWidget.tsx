@@ -111,8 +111,6 @@ export const CellNumberWidget = memo(
         }
       })
 
-      console.log(value)
-
       return (
         <input
           className="w-full border-0 outline-none"

@@ -6,6 +6,7 @@ from core.models.agency import Agency
 from core.models.country import Country
 from core.models.meeting import Meeting
 from core.models.project import (
+    MetaProject,
     Project,
     ProjectCluster,
     ProjectSector,
@@ -16,9 +17,19 @@ from core.models.project import (
 from core.models.utils import SubstancesType
 
 
+class MetaProjectFilter(filters.FilterSet):
+    """
+    Filter for meta projects
+    """
+
+    class Meta:
+        model = MetaProject
+        fields = ["code", "type"]
+
+
 class ProjectFilter(filters.FilterSet):
     """
-    Filter for country programme reports
+    Filter for projects
     """
 
     country_id = filters.ModelMultipleChoiceFilter(

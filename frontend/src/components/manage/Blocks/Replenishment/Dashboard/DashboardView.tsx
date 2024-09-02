@@ -1,6 +1,6 @@
 'use client'
 
-import { useContext, useState } from 'react'
+import { ChangeEvent, useContext, useState } from 'react'
 
 import cx from 'classnames'
 import { useSnackbar } from 'notistack'
@@ -14,8 +14,13 @@ import { api } from '@ors/helpers'
 import SectionDashboard from './SectionDashboard'
 import SectionStatistics from './SectionStatistics'
 import SectionStatus from './SectionStatus'
+import { IFormData } from './useGetDashboardDataTypes'
 
-function InputField(props) {
+interface IInputFieldProps extends React.HTMLProps<HTMLInputElement> {
+  onlyNumber?: boolean
+}
+
+function InputField(props: IInputFieldProps) {
   const { id, className, label, ...fieldProps } = props
   return (
     <div className="flex w-72 flex-col">
@@ -33,13 +38,22 @@ function InputField(props) {
   )
 }
 
-function EditStatusDialog(props) {
+interface IEditStatusDialogProps extends React.PropsWithChildren {
+  data: IFormData
+  onCancel?: () => void
+  onSubmit: (
+    formData: Record<string, number | string>,
+    evt?: React.FormEvent,
+  ) => void
+}
+
+function EditStatusDialog(props: IEditStatusDialogProps) {
   const { data, onSubmit, ...dialogProps } = props
 
-  const [formState, setFormState] = useState(data)
+  const [formState, setFormState] = useState<IFormData>(data)
 
-  function handleChange(name) {
-    return function (evt) {
+  function handleChange(name: string) {
+    return function (evt: ChangeEvent<HTMLInputElement>) {
       const value = parseFloat(evt.target.value)
       if (
         evt.target.value === '' ||
@@ -52,8 +66,8 @@ function EditStatusDialog(props) {
     }
   }
 
-  function handleExternalIncomeYearChange(name) {
-    return function (evt) {
+  function handleExternalIncomeYearChange(name: string) {
+    return function (evt: ChangeEvent<HTMLInputElement>) {
       const value = parseInt(evt.target.value)
       if (
         evt.target.value === '' ||
@@ -178,11 +192,17 @@ function EditStatusDialog(props) {
   )
 }
 
-function DashboardView(props) {
+interface IDashboardViewProps {
+  period: string
+  section: string
+}
+
+function DashboardView(props: IDashboardViewProps) {
   const { period, section } = props
-  const { formData, invalidateDataFn, loading, newData } = useGetDashboardData()
+  const { formData, invalidateDataFn, newData } = useGetDashboardData()
   const ctx = useContext(ReplenishmentContext)
-  const { allocations, asOfDate, charts, income, provisions } = newData
+  const { allocations, asOfDate, charts, income, overview, provisions } =
+    newData
 
   const [showEdit, setShowEdit] = useState(false)
 
@@ -196,16 +216,11 @@ function DashboardView(props) {
     setShowEdit(false)
   }
 
-  /**
-   * Handle form submit. This receives an object, instead of a FormData.
-   *
-   * @param {Object.<string, string>} data
-   */
-  function handleEditSubmit(data) {
-    const parsedData = {}
+  function handleEditSubmit(data: Record<string, number | string>) {
+    const parsedData: Record<string, number> = {}
     const dataKeys = Object.keys(data)
     for (let i = 0; i < dataKeys.length; i++) {
-      parsedData[dataKeys[i]] = parseFloat(data[dataKeys[i]]) || 0
+      parsedData[dataKeys[i]] = parseFloat(data[dataKeys[i]] as string) || 0
     }
 
     api('/api/replenishment/dashboard', {
@@ -233,6 +248,7 @@ function DashboardView(props) {
           allocations={allocations}
           asOfDate={asOfDate}
           income={income}
+          overview={overview}
           provisions={provisions}
           showEditButton={ctx.isTreasurer}
           onEditButtonClick={handleEditClick}
@@ -244,12 +260,7 @@ function DashboardView(props) {
       break
     default:
       Section = (
-        <SectionDashboard
-          charts={charts}
-          data={newData}
-          period={period}
-          tab={section}
-        />
+        <SectionDashboard charts={charts} period={period} tab={section} />
       )
       break
   }
@@ -258,7 +269,7 @@ function DashboardView(props) {
     <>
       {showEdit ? (
         <EditStatusDialog
-          data={formData}
+          data={formData as IFormData}
           onCancel={handleEditCancel}
           onSubmit={handleEditSubmit}
         />

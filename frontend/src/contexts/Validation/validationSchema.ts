@@ -1,6 +1,8 @@
 import type { ValidationSchema } from './types'
 
 import {
+  checkShouldValidateSectionARow,
+  checkShouldValidateSectionBRow,
   validateAnnexENonQPSDate,
   validateAnnexENonQPSRemarks,
   validateBannedImportsDate,
@@ -8,7 +10,8 @@ import {
   validateBlendComponents,
   validateFacilityName,
   validateHFC23,
-  validateOtherUnidentifiedManufacturing, validatePrices,
+  validateOtherUnidentifiedManufacturing,
+  validatePrices,
   validatePricesType,
   validateSectionBOther,
   // validateSectionDFilled,
@@ -73,6 +76,7 @@ const validationSchema: ValidationSchema = {
         validator: validateBannedImportsDate,
       },
     ],
+    shouldValidateRow: checkShouldValidateSectionARow,
   },
   section_b: {
     rows: [
@@ -119,6 +123,7 @@ const validationSchema: ValidationSchema = {
         validator: validateHFC23,
       },
     ],
+    shouldValidateRow: checkShouldValidateSectionBRow,
   },
   section_c: {
     rows: [
@@ -131,7 +136,8 @@ const validationSchema: ValidationSchema = {
       {
         id: 'validate-prices',
         highlight_cells: {},
-        message: 'Price should be provided, otherwise, the substance should be removed.',
+        message:
+          'Price should be provided, otherwise, the substance should be removed.',
         validator: validatePrices,
       },
     ],
