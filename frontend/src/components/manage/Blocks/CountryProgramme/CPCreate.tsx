@@ -464,7 +464,7 @@ const CPCreate: React.FC = () => {
 
       setForm({
         ...form,
-        country: { id: country_id, label: user_country },
+        country: { id: country_id!, label: user_country! },
       })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

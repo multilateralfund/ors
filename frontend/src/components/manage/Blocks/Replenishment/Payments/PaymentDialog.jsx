@@ -1,4 +1,6 @@
-import React, { useContext } from 'react'
+'use client'
+
+import React from 'react'
 
 import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
 import {
@@ -6,10 +8,27 @@ import {
   FieldSelect,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceAttachments'
-import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
+import useApi from '@ors/hooks/useApi'
 
 const PaymentDialog = function PaymentDialog(props) {
   const { columns, countries, data, isEdit, title, ...dialogProps } = props
+  const { data: invoicesList, loaded: invoicesLoaded } = useApi({
+    options: {
+      params: {
+        hide_no_invoice: true,
+        ...(isEdit ? { country_id: data?.country_id } : {}),
+      },
+      withStoreCache: false,
+    },
+    path: 'api/replenishment/invoices/',
+  })
+
+  const invoicesOptions = invoicesLoaded
+    ? invoicesList.map((invoice) => ({
+        id: invoice.id,
+        label: invoice.number,
+      }))
+    : []
 
   return (
     <FormDialog title={title} {...dialogProps}>
@@ -24,6 +43,20 @@ const PaymentDialog = function PaymentDialog(props) {
         {countries.map((c) => (
           <option key={c.id} value={c.id}>
             {c.name_alt}
+          </option>
+        ))}
+      </FieldSelect>
+      <FieldSelect
+        id="invoices"
+        defaultValue={data?.invoices?.map((o) => o.id.toString())}
+        hasClear={true}
+        label="Invoices"
+        required={true}
+        multiple
+      >
+        {invoicesOptions.map((inv) => (
+          <option key={inv.id} value={inv.id}>
+            {inv.label}
           </option>
         ))}
       </FieldSelect>

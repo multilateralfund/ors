@@ -22,7 +22,8 @@ from core.api.views import (
     SummaryStatusOfContributionsExportView,
     TriennialStatusOfContributionsExportView,
     StatisticsStatusOfContributionsExportView,
-    AnnualStatusOfContributionsExportView, StatisticsStatusOfContributionsView,
+    AnnualStatusOfContributionsExportView,
+    StatisticsStatusOfContributionsView,
 )
 from core.api.views import ProjectCommentViewSet
 from core.api.views import ProjectFileView
@@ -76,6 +77,7 @@ from core.api.views.cp_records_export import CPRecordExportView
 from core.api.views.cp_report_empty_form import EmptyFormView
 from core.api.views.meetings import MeetingListView
 from core.api.views.projects import (
+    MetaProjectListView,
     ProjectClusterListView,
     ProjectOdsOdpViewSet,
     ProjectRbmMeasureViewSet,
@@ -312,6 +314,11 @@ urlpatterns = [
         "countries/",
         CountryListView.as_view(),
         name="countries-list",
+    ),
+    path(
+        "meta-projects/",
+        MetaProjectListView.as_view(),
+        name="meta-project-list",
     ),
     path(
         "project-statuses/",

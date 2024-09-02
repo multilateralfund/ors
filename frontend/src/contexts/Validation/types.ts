@@ -22,8 +22,8 @@ export interface IRow {
   group: string
   import_quotas: number
   imports: number | string
-  is_fob: boolean;
-  is_retail: boolean;
+  is_fob: boolean
+  is_retail: boolean
   manufacturing_blends?: string
   previous_year_price: number | string
   production: number | string
@@ -69,6 +69,8 @@ export type GlobalValidatorFunc = (
   context: GlobalValidatorFuncContext,
 ) => GlobalValidatorFuncResult
 
+export type ShouldValidateRowFunc = (row: IRow) => boolean
+
 export interface IRowValidator {
   highlight_cells: Record<string, (row: IRow) => boolean>
   id: string
@@ -79,6 +81,7 @@ export interface IRowValidator {
 export interface IValidator {
   global?: IGlobalValidator[]
   rows?: IRowValidator[]
+  shouldValidateRow?: ShouldValidateRowFunc
 }
 
 export interface IRowValidationResult extends IInvalidRowResult {

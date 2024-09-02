@@ -1,5 +1,7 @@
 'use client'
 
+import type { IDashboardDataApiResponse } from './useGetDashboardDataTypes'
+
 import { useContext } from 'react'
 
 import cx from 'classnames'
@@ -18,9 +20,8 @@ import { extractContributions } from '@ors/components/manage/Blocks/Replenishmen
 import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 
-
-function formatNumber(value) {
-  let result = value
+function formatNumber(value: number): null | number | string {
+  let result: null | number | string = value
 
   if (value >= 100000) {
     result = formatNumberValue(value, 0, 0)
@@ -33,15 +34,14 @@ function formatNumber(value) {
   return result
 }
 
-
-function SummaryCard(props) {
+function SummaryCard(props: any) {
   const { elements, label, prefix, suffix, value } = props
   const contents = []
 
   if (elements) {
     for (let i = 0; i < elements.length; i++) {
       contents.push(
-        <div key={i} className="flex gap-y-2 flex-col uppercase">
+        <div key={i} className="flex flex-col gap-y-2 uppercase">
           <div className="text-[#4D4D4D]">{elements[i].label}</div>
           <div
             className={cx(
@@ -76,7 +76,7 @@ function SummaryCard(props) {
   )
 }
 
-function BigCard(props) {
+function BigCard(props: any) {
   const { elements, label } = props
 
   const contents = []
@@ -84,7 +84,7 @@ function BigCard(props) {
   if (elements) {
     for (let i = 0; i < elements.length; i++) {
       contents.push(
-        <div key={i} className="my-4 flex flex-col uppercase gap-y-2">
+        <div key={i} className="my-4 flex flex-col gap-y-2 uppercase">
           <div className="text-[#4D4D4D]">{elements[i].label}</div>
           <div className="text-4xl font-bold text-primary">
             <span className="font-normal">{elements[i].prefix || ''}</span>
@@ -107,11 +107,11 @@ function BigCard(props) {
   )
 }
 
-function getPercent(tot, x) {
+function getPercent(tot: number, x: number) {
   return (x * 100) / tot
 }
 
-function TabIndicatorsPledged(props) {
+function TabIndicatorsPledged(props: any) {
   const { contrib, period, totals } = props
   return (
     <BigCard
@@ -132,7 +132,7 @@ function TabIndicatorsPledged(props) {
   )
 }
 
-function TabIndicatorsPayments(props) {
+function TabIndicatorsPayments(props: any) {
   const { contrib, totals } = props
   return (
     <SummaryCard
@@ -158,7 +158,7 @@ function TabIndicatorsPayments(props) {
   )
 }
 
-function TabIndicatorsBilateralAssistance(props) {
+function TabIndicatorsBilateralAssistance(props: any) {
   const { contrib, totals } = props
   return (
     <SummaryCard
@@ -189,7 +189,7 @@ function TabIndicatorsBilateralAssistance(props) {
   )
 }
 
-function TabIndicatorsPromissoryNotes(props) {
+function TabIndicatorsPromissoryNotes(props: any) {
   const { contrib, totals } = props
   return (
     <SummaryCard
@@ -201,9 +201,7 @@ function TabIndicatorsPromissoryNotes(props) {
         {
           label: 'countries percent',
           suffix: '%',
-          value: formatNumber(
-            contrib.promissory_notes_countries_percentage,
-          ),
+          value: formatNumber(contrib.promissory_notes_countries_percentage),
         },
         {
           label: 'percentage of pledged',
@@ -217,7 +215,7 @@ function TabIndicatorsPromissoryNotes(props) {
   )
 }
 
-function TabIndicatorsOutstandingContributions(props) {
+function TabIndicatorsOutstandingContributions(props: any) {
   const { contrib, totals } = props
 
   const value =
@@ -234,23 +232,19 @@ function TabIndicatorsOutstandingContributions(props) {
         {
           label: 'countries percent',
           suffix: '%',
-          value: formatNumber(
-            contrib.outstanding_contributions_percentage,
-          ),
+          value: formatNumber(contrib.outstanding_contributions_percentage),
         },
         {
           label: 'percentage of pledged',
           suffix: '%',
-          value: formatNumber(
-            getPercent(totals.agreed_contributions, value),
-          ),
+          value: formatNumber(getPercent(totals.agreed_contributions, value)),
         },
       ]}
     />
   )
 }
 
-function TabIndicatorsDisputedContributions(props) {
+function TabIndicatorsDisputedContributions(props: any) {
   const { data } = props
   return (
     <SummaryCard
@@ -276,7 +270,7 @@ function TabIndicatorsDisputedContributions(props) {
   )
 }
 
-function TabIndicatorsFerm(props) {
+function TabIndicatorsFerm(props: any) {
   const { totals } = props
   return (
     <SummaryCard
@@ -300,7 +294,7 @@ function TabIndicatorsFerm(props) {
   )
 }
 
-function socRows(data, onlyCeits) {
+function socRows(data: Record<string, any>, onlyCeits: boolean) {
   let rows = []
 
   if (onlyCeits) {
@@ -325,7 +319,7 @@ function socRows(data, onlyCeits) {
   return rows
 }
 
-function CummulativeTab(props) {
+function CummulativeTab(props: any) {
   const { onlyCeits, period } = props
   const { data } = useGetSCData()
 
@@ -365,7 +359,7 @@ function CummulativeTab(props) {
   }
 }
 
-function TriennialTab(props) {
+function TriennialTab(props: any) {
   const { onlyCeits, period } = props
 
   const [year_start, year_end] = period.split('-')
@@ -428,7 +422,7 @@ function TriennialTab(props) {
   }
 }
 
-function getDefaultYear(periodOptions, period) {
+function getDefaultYear(periodOptions: Record<string, any>[], period: string) {
   let result = period
   if (!period) {
     let year = parseInt(periodOptions[0]?.value, 10)
@@ -443,11 +437,11 @@ function getDefaultYear(periodOptions, period) {
   return result
 }
 
-function getDefaultRange(periodOptions, period) {
+function getDefaultRange(periodOptions: Record<string, any>[], period: string) {
   return period || periodOptions[0]?.value
 }
 
-function AnnualTab(props) {
+function AnnualTab(props: any) {
   const { onlyCeits, period } = props
 
   const { data } = useGetSCData(period)
@@ -484,7 +478,14 @@ function AnnualTab(props) {
   }
 }
 
-const TABS = [
+interface ITab {
+  component: React.ElementType | null
+  label: string
+  path: string
+  showPeriodSelector: boolean
+}
+
+const TABS: ITab[] = [
   {
     component: CummulativeTab,
     label: 'Cummulative',
@@ -505,10 +506,13 @@ const TABS = [
   },
 ]
 
-function getTabLinks(pathname, searchParams) {
+function getTabLinks(
+  pathname: string,
+  searchParams: string,
+): [ITab | null, JSX.Element[]] {
   const result = []
 
-  let currentSection
+  let currentSection: ITab | null = null
 
   for (let i = 0; i < TABS.length; i++) {
     const entry = TABS[i]
@@ -538,7 +542,12 @@ function getTabLinks(pathname, searchParams) {
   return [currentSection, result]
 }
 
-function SectionDashboard(props) {
+interface SectionDashboardProps {
+  charts: IDashboardDataApiResponse['charts']
+  period: string
+  tab: string
+}
+function SectionDashboard(props: SectionDashboardProps) {
   const { charts, period, tab } = props
 
   const searchParams = useSearchParams()
@@ -552,18 +561,18 @@ function SectionDashboard(props) {
 
   const router = useRouter()
 
-  const ctx = useContext(ReplenishmentContext)
+  const ctx = useContext<any>(ReplenishmentContext)
 
-  let periodOptions = []
+  let periodOptions: { label: string; value: string }[] = []
   let defaultPeriod
 
   switch (tab) {
     case 'triennial':
-      periodOptions = scPeriodOptions(ctx.periods)
+      periodOptions = scPeriodOptions(ctx?.periods)
       defaultPeriod = getDefaultRange(periodOptions, period)
       break
     case 'annual':
-      periodOptions = scAnnualOptions(ctx.periods)
+      periodOptions = scAnnualOptions(ctx?.periods)
       defaultPeriod = getDefaultYear(periodOptions, period)
       break
     default:
@@ -581,7 +590,7 @@ function SectionDashboard(props) {
     }
   }
 
-  function handlePeriodChange(newPath) {
+  function handlePeriodChange(newPath: string) {
     if (searchParams.size) {
       router.push(`${newPath}?${searchParams.toString()}`)
     } else {
@@ -612,7 +621,7 @@ function SectionDashboard(props) {
         <div className="flex items-center gap-2 print:hidden">
           <label
             className={cx(
-              'flex cursor-pointer font-bold items-center rounded-lg border border-solid border-primary px-2 py-1 text-gray-400',
+              'flex cursor-pointer items-center rounded-lg border border-solid border-primary px-2 py-1 font-bold text-gray-400',
               { 'bg-primary font-bold text-mlfs-hlYellow': onlyCeits },
             )}
           >
@@ -659,8 +668,11 @@ function SectionDashboard(props) {
                     Outstanding pledges by triennium
                   </h3>
                   <BarChart
-                    data={charts.outstanding_pledges}
                     title="Outstanding pledges by triennium"
+                    data={charts.outstanding_pledges.map((o) => ({
+                      ...o,
+                      outstanding_pledges: o.outstanding_pledges / 10 ** 6,
+                    }))}
                   />
                 </div>
                 <div className="w-1/2 print:w-full print:break-inside-avoid">

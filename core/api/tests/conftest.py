@@ -344,6 +344,13 @@ def meta_project(country_ro, project_cluster_kpp):
 
 
 @pytest.fixture
+def meta_project_mya(country_ro, project_cluster_kip):
+    code = get_meta_project_code(country_ro, project_cluster_kip)
+
+    return MetaProjectFactory.create(code=code, type="Multi-year agreement")
+
+
+@pytest.fixture
 def project(
     country_ro,
     agency,

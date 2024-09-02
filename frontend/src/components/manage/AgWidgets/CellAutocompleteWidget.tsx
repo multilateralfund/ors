@@ -28,6 +28,7 @@ export const CellAutocompleteWidget = memo(
       props: {
         agFormatValue?: (value: any) => any
         getOptions?: (params: ICellEditorParams) => any
+        openOnFocus?: boolean
       } & AutocompleteWidgetProps &
         ICellEditorParams,
       ref,
@@ -114,6 +115,7 @@ export const CellAutocompleteWidget = memo(
           Input={props.Input}
           getOptionLabel={props.getOptionLabel}
           groupBy={props.groupBy}
+          openOnFocus={props.openOnFocus}
           options={props.options || props.getOptions?.(props) || []}
           ref={refInput}
           renderOption={props.renderOption}

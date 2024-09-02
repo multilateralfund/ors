@@ -25,13 +25,22 @@ function validateSectionRows(
   usages: UsageMapping,
   form: CPBaseForm,
 ) {
-  return rows
-    .flatMap((row) =>
-      validationSchema[section_id]?.rows?.map((rowValidator) => {
-        const { highlight_cells, validator, ...validatorProps } = rowValidator
+  const result: IRowValidationResult[] = []
+
+  const rowValidators = validationSchema[section_id]?.rows || []
+  const shouldValidateRow =
+    validationSchema[section_id]?.shouldValidateRow || (() => true)
+
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i]
+
+    for (let j = 0; j < rowValidators.length; j++) {
+      if (shouldValidateRow(row)) {
+        const { highlight_cells, validator, ...validatorProps } =
+          rowValidators[j]
         const invalidResult = validator(row, { form, usages })
         if (invalidResult) {
-          return {
+          result.push({
             ...validatorProps,
             ...invalidResult,
             highlight_cells: [
@@ -41,11 +50,13 @@ function validateSectionRows(
               ),
             ],
             row_id: row.row_id,
-          }
+          })
         }
-      }),
-    )
-    .filter((val) => val != undefined) as IRowValidationResult[]
+      }
+    }
+  }
+
+  return result
 }
 
 function validateSectionGlobal(

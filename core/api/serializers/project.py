@@ -9,6 +9,7 @@ from core.models.blend import Blend
 from core.models.country import Country
 from core.models.meeting import Meeting
 from core.models.project import (
+    MetaProject,
     Project,
     ProjectCluster,
     ProjectOdsOdp,
@@ -25,6 +26,21 @@ from core.models.project import ProjectFile
 from core.models.rbm_measures import RBMMeasure
 from core.models.substance import Substance
 from core.utils import get_project_sub_code
+
+
+class MetaProjectSerializer(serializers.ModelSerializer):
+    """
+    MetaProjectSerializer class
+    """
+
+    class Meta:
+        model = MetaProject
+        fields = [
+            "id",
+            "type",
+            "code",
+            "pcr_project_id",
+        ]
 
 
 class ProjectStatusSerializer(serializers.ModelSerializer):

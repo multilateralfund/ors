@@ -43,7 +43,7 @@ function SimilarBlend({ blend, onClick, substances }: any) {
 
               return (
                 <React.Fragment key={component.substance_id}>
-                  <Typography>{substance.name}</Typography>
+                  <Typography>{substance?.name}</Typography>
                   <Typography>{component.percentage}%</Typography>
                 </React.Fragment>
               )
@@ -250,6 +250,7 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
                 Input: { placeholder: 'Select substance...' },
                 getOptionLabel: (option: any) => option.name,
                 groupBy: (option: any) => option.group,
+                openOnFocus: true,
                 options,
               },
               cellRenderer: (props: any) => {

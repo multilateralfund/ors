@@ -179,7 +179,7 @@ function SaveManager(props) {
 
   async function confirmSave(formData) {
     const saveData = {
-      ...formData,
+      ...Object.fromEntries(formData.entries()),
       amount: replenishment.amount,
       comment,
       data,

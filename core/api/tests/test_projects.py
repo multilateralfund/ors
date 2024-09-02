@@ -18,7 +18,7 @@ from core.api.tests.factories import (
     ProjectTypeFactory,
     RbmMeasureFactory,
 )
-from core.models.project import Project, ProjectOdsOdp
+from core.models.project import MetaProject, Project, ProjectOdsOdp
 from core.models.project import ProjectFile
 from core.utils import get_project_sub_code
 
@@ -54,6 +54,28 @@ def _project_file(project, test_file):
 @pytest.fixture(name="project_file_url")
 def _project_file_url(project_file):
     return reverse("project-files", args=(project_file.id,))
+
+
+class TestMetaProjectList(BaseTest):
+    url = reverse("meta-project-list")
+
+    def test_meta_project_list(self, user, meta_project, meta_project_mya):
+        self.client.force_authenticate(user=user)
+        # get all meta projects
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.data) == 2
+        assert response.data[0]["code"] == meta_project_mya.code
+        assert response.data[1]["code"] == meta_project.code
+
+        # type filter
+        response = self.client.get(
+            self.url,
+            {"type": MetaProject.MetaProjectType.MYA},
+        )
+        assert response.status_code == 200
+        assert len(response.data) == 1
+        assert response.data[0]["code"] == meta_project_mya.code
 
 
 class TestProjectsRetrieve:
