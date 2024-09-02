@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("core", "0128_payment_invoices"),
+        ("core", "0129_alter_invoice_replenishment"),
     ]
 
     operations = [

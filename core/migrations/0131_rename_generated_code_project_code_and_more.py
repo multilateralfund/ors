@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("core", "0129_rename_code_project_legacy_code_project_bp_activity"),
+        ("core", "0130_rename_code_project_legacy_code_project_bp_activity"),
     ]
 
     operations = [
