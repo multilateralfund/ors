@@ -20,7 +20,7 @@ def import_project_comments():
         comments = json.load(f)
 
     for index, item in enumerate(comments):
-        project = get_object_by_code(Project, item["Code"], "code", index)
+        project = get_object_by_code(Project, item["Code"], "legacy_code", index)
         if not project:
             continue
         meeting = get_meeting_by_number(item["Meeting of report"], index)
