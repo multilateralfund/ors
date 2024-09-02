@@ -283,6 +283,15 @@ export default function BusinessPlansTable() {
     )
   }
 
+  const getPaginationSelectorOpts = (): number[] => {
+    const nrResultsOpts = [10, 20, 50, 100]
+    const filteredNrResultsOptions = nrResultsOpts.filter(
+      (option) => option < count,
+    )
+    return [...filteredNrResultsOptions, count]
+  }
+  const paginationPageSizeSelectorOpts = getPaginationSelectorOpts()
+
   return (
     bpSlice.yearRanges.data &&
     bpSlice.yearRanges.data.length > 0 && (
@@ -291,12 +300,16 @@ export default function BusinessPlansTable() {
           <Table
             Toolbar={displayFilters}
             columnDefs={[...columnDefs]}
-            domLayout="autoHeight"
+            domLayout="normal"
+            enablePagination={true}
             loaded={loaded}
             loading={loading}
             paginationPageSize={BP_PER_PAGE}
+            paginationPageSizeSelector={paginationPageSizeSelectorOpts}
+            rowBuffer={50}
             rowCount={count}
             rowData={results}
+            rowsVisible={20}
             tooltipShowDelay={200}
             components={{
               agColumnHeader: undefined,
