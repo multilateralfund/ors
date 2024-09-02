@@ -144,8 +144,8 @@ const commentsCellRenderer = (props: any) => {
   const { commentSecretariat, commentTypes } = props.value
 
   return (
-    <div className="p-1.5 text-left">
-      <CommentsTagList comments={commentTypes} />
+    <div className="text-left">
+      {commentTypes.length > 0 && <CommentsTagList comments={commentTypes} />}
       <Tooltip
         TransitionProps={{ timeout: 0 }}
         classes={{ tooltip: 'bp-table-tooltip' }}
@@ -248,6 +248,10 @@ const allColumnDefs = (yearColumns: any[]) => [
     minWidth: 100,
     resizable: true,
     sortable: true,
+    valueGetter: (params: any) => {
+      const polyolAmount = params.data.amount_polyol
+      return polyolAmount ? parseFloat(polyolAmount).toFixed(2) : null
+    },
   },
   ...yearColumns,
   {
