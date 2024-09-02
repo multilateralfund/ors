@@ -106,7 +106,6 @@ export interface BusinessPlanSlice {
   sectors: SliceData
   subsectors: SliceData
   types: SliceData
-  yearRanges: SliceData
 }
 
 export interface ThemeSlice {

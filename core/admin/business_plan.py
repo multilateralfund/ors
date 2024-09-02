@@ -27,7 +27,7 @@ class BPActivityAdmin(admin.ModelAdmin):
     ]
 
     def get_list_display(self, request):
-        exclude = ["substances", "bpactivityvalue", "values"]
+        exclude = ["substances", "bpactivityvalue", "values", "projects"]
         return get_final_display_list(BPActivity, exclude)
 
 

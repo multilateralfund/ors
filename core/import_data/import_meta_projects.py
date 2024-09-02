@@ -35,7 +35,9 @@ def set_correct_status():
     if not closed_status:
         logger.error("Project status CLO not found")
         return
-    Project.objects.filter(code__in=closed_projects_codes).update(status=closed_status)
+    Project.objects.filter(legacy_code__in=closed_projects_codes).update(
+        status=closed_status
+    )
 
 
 def create_metaproj_for_custproj(project_codes, meta_type, code):
@@ -47,7 +49,7 @@ def create_metaproj_for_custproj(project_codes, meta_type, code):
     meta_proj, _ = MetaProject.objects.update_or_create(
         code=metaproject_data["code"], defaults=metaproject_data
     )
-    Project.objects.filter(code__in=project_codes).update(meta_project=meta_proj)
+    Project.objects.filter(legacy_code__in=project_codes).update(meta_project=meta_proj)
 
 
 def create_custom_metaprojects():
@@ -100,7 +102,11 @@ def parse_meta_projects_file(file_path, database_name):
 
         # get project by code
         project = get_object_by_code(
-            Project, project_json["Code"], "code", project_json["Code"], with_log=False
+            Project,
+            project_json["Code"],
+            "legacy_code",
+            project_json["Code"],
+            with_log=False,
         )
 
         # skip project if already has meta project
@@ -159,7 +165,7 @@ def create_transf_meta_project():
     transf_status = ProjectStatus.objects.get(code="TRF")
     proj_type = MetaProject.MetaProjectType.IND
     projects = Project.objects.filter(
-        code__isnull=False, status=transf_status, meta_project_id=None
+        legacy_code__isnull=False, status=transf_status, meta_project_id=None
     ).all()
     for project in projects:
         # create meta project
@@ -181,7 +187,7 @@ def create_transf_meta_project():
 
         # get the completed project
         completed_project = Project.objects.filter(
-            code__isnull=False,
+            legacy_code__isnull=False,
             country=project.country,
             sector_legacy__iexact=project.sector_legacy,
             subsector_legacy__iexact=project.subsector_legacy,
@@ -193,14 +199,16 @@ def create_transf_meta_project():
 
         if completed_project.count() == 0:
             logger.warning(
-                f"Transferred project {project.code} has no completed project"
+                f"Transferred project {project.legacy_code} has no completed project"
             )
             continue
 
         if completed_project.count() > 1:
-            similar_projects = ", ".join([p.code for p in completed_project.all()])
+            similar_projects = ", ".join(
+                [p.legacy_code for p in completed_project.all()]
+            )
             logger.warning(
-                f"Transferred project {project.code} has multiple completed projects: {similar_projects}"
+                f"Transferred project {project.legacy_code} has multiple completed projects: {similar_projects}"
             )
             continue
 

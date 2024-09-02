@@ -151,7 +151,7 @@ class TestProjectsUpdate:
         assert project.title == "Into the Spell"
         assert project.submission_category == "investment project"
         assert project.coop_agencies.count() == 1
-        assert project.generated_code == get_project_sub_code(
+        assert project.code == get_project_sub_code(
             project.country,
             project.cluster,
             new_agency,
@@ -253,7 +253,7 @@ def setup_project_list(
 
     for i in range(4):
         for project_data in projects_data:
-            project_data["generated_code"] = get_project_sub_code(
+            project_data["code"] = get_project_sub_code(
                 project_data["country"],
                 project_data["cluster"],
                 project_data["agency"],
@@ -273,7 +273,7 @@ def setup_project_list(
     # project_without cluster
     proj_data = projects_data[0].copy()
     proj_data.pop("cluster")
-    proj_data["generated_code"] = get_project_sub_code(
+    proj_data["code"] = get_project_sub_code(
         proj_data["country"],
         None,
         project_data["agency"],
@@ -293,7 +293,7 @@ def setup_project_list(
     proj_data = projects_data[0].copy()
     proj_data["sector"] = None
     proj_data["subsector"] = None
-    proj_data["generated_code"] = get_project_sub_code(
+    proj_data["code"] = get_project_sub_code(
         proj_data["country"],
         proj_data["cluster"],
         project_data["agency"],
@@ -457,6 +457,14 @@ class TestProjectList(BaseTest):
         assert response.status_code == 200
         assert len(response.data) == 2
         assert response.data[0]["date_received"] == "2020-01-01"
+
+    def test_project_list_search_filter(self, user, _setup_project_list):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url, {"search": "Project 26"})
+        assert response.status_code == 200
+        assert len(response.data) == 1
+        assert response.data[0]["title"] == "Project 26"
 
 
 class TestProjectStatistics(BaseTest):
@@ -753,8 +761,8 @@ class TestProjectsExport(BaseTest):
 
         wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
         sheet = wb.active
-        assert sheet["A2"].value == project.generated_code
-        assert sheet["B2"].value == project.code
+        assert sheet["A2"].value == project.code
+        assert sheet["B2"].value == project.legacy_code
         assert sheet["C2"].value == project.meta_project.code
         assert sheet["D2"].value == project.cluster.name
         assert sheet["E2"].value == project.meta_project.type

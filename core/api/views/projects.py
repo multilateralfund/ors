@@ -131,7 +131,7 @@ class ProjectViewSet(
         "project_type__name",
         "substance_type",
     ]
-    search_fields = ["code", "generated_code", "meta_project__code", "title"]
+    search_fields = ["code", "legacy_code", "meta_project__code", "title"]
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -308,13 +308,11 @@ class ProjectStatisticsView(generics.ListAPIView):
         """
         filtered_projects = self.filter_queryset(self.get_queryset())
         valid_code_inv_subcode_count = (
-            filtered_projects.filter(generated_code__contains="-")
+            filtered_projects.filter(code__contains="-")
             .exclude(meta_project__code__contains="-")
             .count()
         )
-        valid_subcode_count = filtered_projects.exclude(
-            generated_code__contains="-"
-        ).count()
+        valid_subcode_count = filtered_projects.exclude(code__contains="-").count()
         project_count_per_sector = (
             filtered_projects.values("sector__name")
             .filter(sector__isnull=False)
