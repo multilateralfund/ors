@@ -171,6 +171,8 @@ const components: {
   },
 }
 
+export type EditSectionTypes = ComponentsEdit[keyof ComponentsEdit]
+
 const DefaultComponent = () => <div>Not implemented</div>
 
 export function getSections(

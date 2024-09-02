@@ -8,6 +8,11 @@ import { Alert, Box, Button, Modal, Typography } from '@mui/material'
 import { CellValueChangedEvent, RowNode } from 'ag-grid-community'
 import { each, find, findIndex, includes, union } from 'lodash'
 
+import { CPCommentsForEditType } from '@ors/components/manage/Blocks/CountryProgramme/CPCommentsTypes'
+import {
+  CPBaseForm,
+  PassedCPCreateTableProps,
+} from '@ors/components/manage/Blocks/CountryProgramme/typesCPCreate'
 import { NewAddSubstanceDropdowns } from '@ors/components/manage/Blocks/Section/SectionA/Create/NewAddSubstanceDropdowns'
 import { OldAddSubstanceDropdowns } from '@ors/components/manage/Blocks/Section/SectionA/Create/OldAddSubstanceDropdowns'
 import Table from '@ors/components/manage/Form/Table'
@@ -17,10 +22,6 @@ import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 import SectionA from '@ors/models/SectionA'
 import { useStore } from '@ors/store'
 
-import {
-  CPBaseForm,
-  PassedCPCreateTableProps,
-} from '../../../CountryProgramme/typesCPCreate'
 import useGridOptions from './schema'
 import { RowData } from './types'
 
@@ -103,7 +104,7 @@ function getInitialPinnedBottomRowData(model: string): RowData[] {
 }
 
 export default function SectionACreate(props: {
-  Comments: React.FC<{ section: string; viewOnly: boolean }>
+  Comments: CPCommentsForEditType
   Section: SectionA
   TableProps: PassedCPCreateTableProps
   emptyForm: EmptyFormType
@@ -343,7 +344,7 @@ export default function SectionACreate(props: {
           </Box>
         </Modal>
       )}
-      {showComments && <Comments section="section_a" viewOnly={true} />}
+      {showComments && <Comments form={form} section="section_a" setForm={setForm} />}
     </>
   )
 }

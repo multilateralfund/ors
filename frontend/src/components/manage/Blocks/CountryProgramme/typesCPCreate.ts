@@ -10,6 +10,7 @@ import SectionD from '@ors/models/SectionD'
 import SectionE from '@ors/models/SectionE'
 import SectionF from '@ors/models/SectionF'
 
+import { CPCommentState } from './CPCommentsTypes'
 import { SectionMeta } from './types'
 
 type ToolbarProps = {
@@ -69,6 +70,12 @@ export interface PassedCPCreateTableProps extends CPCreateTableProps {
 }
 
 export interface CPBaseForm {
+  comments_section_a: CPCommentState
+  comments_section_b: CPCommentState
+  comments_section_c: CPCommentState
+  comments_section_d: CPCommentState
+  comments_section_e: CPCommentState
+  comments_section_f: CPCommentState
   country: WidgetCountry | null
   files: File[]
   report_info: {
