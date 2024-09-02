@@ -7,13 +7,16 @@ import cx from 'classnames'
 import NextLink from 'next/link'
 
 import Link from '@ors/components/ui/Link/Link'
+import { Status, statusStyles } from '@ors/components/ui/StatusPill/StatusPill'
 import BPContext from '@ors/contexts/BusinessPlans/BPContext'
 import useClickOutside from '@ors/hooks/useClickOutside'
 
 import { useGetBPVersions } from './BP/useGetBPVersions'
-import { getTagClassName } from './utils'
 
 import { IoChevronDown } from 'react-icons/io5'
+
+const tagClassnames =
+  'self-baseline rounded border border-solid px-1.5 py-1 font-medium uppercase leading-none'
 
 const HeaderVersionsDropdown = () => {
   const [showVersionsMenu, setShowVersionsMenu] = useState(false)
@@ -42,16 +45,23 @@ const HeaderVersionsDropdown = () => {
         }))
       : []
 
-  const displayStatusTag = (status: string) => (
-    <span
-      className={cx(
-        'mx-2 self-baseline rounded p-1 text-xs font-medium uppercase leading-none',
-        getTagClassName(status),
-      )}
-    >
-      {status}
-    </span>
-  )
+  const displayStatusTag = (status: Status) => {
+    const { bgColor, border = '', textColor } = statusStyles[status] || {}
+
+    return (
+      <span
+        className={cx(
+          'mx-2 !p-1 text-xs',
+          tagClassnames,
+          bgColor,
+          border,
+          textColor,
+        )}
+      >
+        {status}
+      </span>
+    )
+  }
 
   const requestAnotherVersion = (version: any) => {
     const shouldRequestData =
@@ -158,20 +168,28 @@ type HeaderTagProps = {
   children: React.ReactNode
 }
 
+type BusinessPlanVersionsInterface = {
+  is_latest: boolean
+  status: Status
+  version: number
+}
+
 const HeaderTag = ({ business_plan, children }: HeaderTagProps) => {
-  const { is_latest, status, version } = business_plan || {}
+  const { is_latest, status, version }: BusinessPlanVersionsInterface =
+    business_plan || {}
+  const { bgColor, border = '', textColor } = statusStyles[status] || {}
 
   return (
     <>
-      <span className="self-baseline rounded bg-mlfs-hlYellow p-1 pt-2 font-medium uppercase leading-none">
-        {is_latest ? 'Latest' : `Version ${version}`}
-      </span>
       <span
         className={cx(
-          'self-baseline rounded p-1 font-medium uppercase leading-none',
-          getTagClassName(status),
+          'border-transparent bg-primary text-white',
+          tagClassnames,
         )}
       >
+        {is_latest ? 'Latest' : `Version ${version}`}
+      </span>
+      <span className={cx(tagClassnames, bgColor, border, textColor)}>
         {children}
       </span>
     </>
