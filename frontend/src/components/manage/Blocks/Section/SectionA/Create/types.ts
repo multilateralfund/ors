@@ -12,6 +12,4 @@ export type RowData = {
   tooltip?: boolean
 } & DeserializedDataA
 
-export interface ISectionACreateProps extends IBaseSectionProps {
-  Section: SectionA
-}
+export interface ISectionACreateProps extends IBaseSectionProps<SectionA> {}

@@ -18,6 +18,4 @@ export type PinnedBottomRowData = {
   tooltip?: boolean
 }
 
-export interface ISectionBCreateProps extends IBaseSectionProps {
-  Section: SectionB
-}
+export interface ISectionBCreateProps extends IBaseSectionProps<SectionB> {}

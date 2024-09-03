@@ -17,6 +17,4 @@ export type SubstancePrice = {
 }
 export type SubstancePrices = SubstancePrice[]
 
-export interface ISectionCCreateProps extends IBaseSectionProps {
-  Section: SectionC
-}
+export interface ISectionCCreateProps extends IBaseSectionProps<SectionC> {}

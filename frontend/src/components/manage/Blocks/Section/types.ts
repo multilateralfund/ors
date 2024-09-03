@@ -1,13 +1,16 @@
 import { EmptyFormType } from '@ors/types/api_empty-form'
 import { ReportVariant } from '@ors/types/variants'
 
+import { CPCommentsForEditType } from '../CountryProgramme/CPCommentsTypes'
 import { SectionMeta } from '../CountryProgramme/types'
 import {
   CPBaseForm,
+  CPEditForm,
   PassedCPCreateTableProps,
 } from '../CountryProgramme/typesCPCreate'
 
-export interface IBaseSectionProps {
+export interface IBaseSectionProps<T> {
+  Section: T
   TableProps: PassedCPCreateTableProps
   emptyForm: EmptyFormType
   form: CPBaseForm
@@ -16,4 +19,11 @@ export interface IBaseSectionProps {
   sectionsChecked: Record<string, boolean>
   setForm: React.Dispatch<React.SetStateAction<CPBaseForm>>
   variant: ReportVariant
+}
+
+export interface IBaseSectionEditProps<T>
+  extends Omit<IBaseSectionProps<T>, 'form' | 'setForm'> {
+  Comments: CPCommentsForEditType
+  form: CPEditForm
+  setForm: React.Dispatch<React.SetStateAction<CPEditForm>>
 }

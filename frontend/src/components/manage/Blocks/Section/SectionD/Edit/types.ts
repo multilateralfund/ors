@@ -1,11 +1,5 @@
-import { CPCommentsForEditType } from '@ors/components/manage/Blocks/CountryProgramme/CPCommentsTypes'
-import { CPEditForm } from '@ors/components/manage/Blocks/CountryProgramme/typesCPCreate'
+import SectionD from '@ors/models/SectionD'
 
-import { ISectionDCreateProps } from '../Create/types'
+import { IBaseSectionEditProps } from '../../types'
 
-export interface ISectionDEditProps
-  extends Omit<ISectionDCreateProps, 'form' | 'setForm'> {
-  Comments: CPCommentsForEditType
-  form: CPEditForm
-  setForm: React.Dispatch<React.SetStateAction<CPEditForm>>
-}
+export interface ISectionDEditProps extends IBaseSectionEditProps<SectionD> {}
