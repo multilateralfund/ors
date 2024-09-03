@@ -324,6 +324,23 @@ class TestBPCreate:
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 403
 
+    def test_wrong_sector_type_mapping(
+        self, agency_user, _setup_bp_activity_create, _setup_new_business_plan_create
+    ):
+        self.client.force_authenticate(user=agency_user)
+
+        data = _setup_new_business_plan_create
+        activity_data = _setup_bp_activity_create
+        activity_data["sector_id"] = ProjectSectorFactory(code="TAS").id
+        data["activities"] = [activity_data]
+
+        response = self.client.post(self.url, data, format="json")
+        assert response.status_code == 400
+        assert (
+            response.data["activities"][0]["non_field_errors"][0]
+            == "Invalid sector - type combination"
+        )
+
     def test_create_final_version(
         self, agency_user, _setup_bp_activity_create, _setup_new_business_plan_create
     ):
@@ -471,6 +488,29 @@ class TestBPUpdate:
         }
         response = self.client.put(url, data, format="json")
         assert response.status_code == 403
+
+    def test_wrong_sector_type_mapping(
+        self, agency_user, _setup_bp_activity_create, business_plan
+    ):
+        self.client.force_authenticate(user=agency_user)
+        url = reverse("businessplan-list") + f"{business_plan.id}/"
+
+        activity_data = _setup_bp_activity_create
+        activity_data["sector_id"] = ProjectSectorFactory(code="TAS").id
+        data = {
+            "agency_id": business_plan.agency_id,
+            "year_start": business_plan.year_start,
+            "year_end": business_plan.year_end,
+            "status": "Agency Draft",
+            "activities": [activity_data],
+        }
+
+        response = self.client.put(url, data, format="json")
+        assert response.status_code == 400
+        assert (
+            response.data["activities"][0]["non_field_errors"][0]
+            == "Invalid sector - type combination"
+        )
 
     def test_update_final_version(
         self, agency_user, _setup_bp_activity_create, business_plan
