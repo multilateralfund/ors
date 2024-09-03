@@ -1018,7 +1018,7 @@ class TestBPActivityList:
             {
                 "year_start": business_plan.year_start,
                 "year_end": business_plan.year_end,
-                "comment_types": [comment_type.id, other_comment_type.id],
+                "comment_types": f"{comment_type.id},{other_comment_type.id}",
             },
         )
         assert response.status_code == 200
@@ -1171,7 +1171,7 @@ class TestBPGet:
             self.url,
             {
                 "business_plan_id": business_plan.id,
-                "comment_types": [comment_type.id, other_comment_type.id],
+                "comment_types": f"{comment_type.id},{other_comment_type.id}",
             },
         )
         assert response.status_code == 200
