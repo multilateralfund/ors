@@ -11,7 +11,7 @@ from core.api.serializers.cp_price import CPPricesSerializer
 from core.api.serializers.cp_record import CPRecordSerializer
 from core.api.validations.cp_reports_validations import validate_cp_report
 from core.models.country import Country
-from core.models.country_programme import CPReport, CPReportSections
+from core.models.country_programme import CPComment, CPReport, CPReportSections
 from core.models.country_programme_archive import CPReportArchive
 from core.tasks import send_mail_report_create
 from core.utils import IMPORT_DB_MAX_YEAR, VALIDATION_MIN_YEAR
@@ -150,6 +150,30 @@ class CPReportGroupSerializer(serializers.Serializer):
         ]
 
 
+class CPReportNestedCommentSerializer(serializers.Serializer):
+    """
+    Serializer for nested section comments that we receive in POST/PUT requests.
+    """
+
+    comment_type = serializers.CharField()
+    comment = serializers.CharField()
+
+    class Meta:
+        fields = [
+            "comment_type",
+            "comment",
+        ]
+
+
+COMMENT_SECTIONS = {
+    "comments_section_a": CPComment.CPCommentSection.SECTION_A,
+    "comments_section_b": CPComment.CPCommentSection.SECTION_B,
+    "comments_section_c": CPComment.CPCommentSection.SECTION_C,
+    "comments_section_d": CPComment.CPCommentSection.SECTION_D,
+    "comments_section_e": CPComment.CPCommentSection.SECTION_E,
+}
+
+
 class CPReportCreateSerializer(serializers.Serializer):
     name = serializers.CharField()
     year = serializers.IntegerField()
@@ -172,6 +196,12 @@ class CPReportCreateSerializer(serializers.Serializer):
     adm_c = AdmRecordSerializer(many=True, required=False)
     adm_d = AdmRecordSerializer(many=True, required=False)
 
+    comments_section_a = CPReportNestedCommentSerializer(many=True, required=False)
+    comments_section_b = CPReportNestedCommentSerializer(many=True, required=False)
+    comments_section_c = CPReportNestedCommentSerializer(many=True, required=False)
+    comments_section_d = CPReportNestedCommentSerializer(many=True, required=False)
+    comments_section_e = CPReportNestedCommentSerializer(many=True, required=False)
+
     class Meta:
         fields = [
             "name",
@@ -188,7 +218,7 @@ class CPReportCreateSerializer(serializers.Serializer):
             "adm_b",
             "adm_c",
             "adm_d",
-        ]
+        ] + list(COMMENT_SECTIONS.keys())
 
     def to_representation(self, instance):
         return CPReportSerializer(instance).data
@@ -259,9 +289,30 @@ class CPReportCreateSerializer(serializers.Serializer):
         cp_history_serializer.is_valid(raise_exception=True)
         cp_history_serializer.save()
 
+    def _add_comments(self, cp_report, comments):
+        comments_data = []
+        for section in COMMENT_SECTIONS.keys():
+            section_data = comments[section]
+            if section_data is None:
+                continue
+            for section_item in section_data:
+                comment = {**section_item}
+                comment["section"] = COMMENT_SECTIONS[section]
+                comment["country_programme_report_id"] = cp_report.id
+                comments_data.append(comment)
+
+        cp_comment_serializer = CPCommentSerializer(data=comments_data, many=True)
+        cp_comment_serializer.is_valid(raise_exception=True)
+        cp_comment_serializer.save()
+
     @transaction.atomic
     def create(self, validated_data):
         request_user = self.context["user"]
+
+        cp_comments = {
+            comment_section: validated_data.get(comment_section, None)
+            for comment_section in COMMENT_SECTIONS.keys()
+        }
 
         cp_report_info = validated_data.get("report_info", {})
         if cp_report_info is None:
@@ -300,6 +351,7 @@ class CPReportCreateSerializer(serializers.Serializer):
             self._create_generation(cp_report, validated_data.get("section_d", []))
             self._create_emission(cp_report, validated_data.get("section_e", []))
             self._add_remarks(cp_report, validated_data.get("section_f", {}))
+            self._add_comments(cp_report, cp_comments)
         else:
             self._create_adm_records(cp_report, validated_data.get("adm_b", []), "B")
             self._create_adm_records(cp_report, validated_data.get("adm_c", []), "C")

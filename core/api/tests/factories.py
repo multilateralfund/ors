@@ -31,6 +31,7 @@ from core.models.country_programme import (
     CPReportFormatColumn,
     CPReportFormatRow,
     CPUsage,
+    CPComment,
 )
 
 from core.models.group import Group
@@ -196,6 +197,13 @@ class CPReportFactory(factory.django.DjangoModelFactory):
     name = factory.Faker("pystr", max_chars=100)
     year = factory.Faker("random_int", min=1995, max=2030)
     created_by = factory.SubFactory(UserFactory)
+
+
+class CPReportCommentFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = CPComment
+
+    country_programme_report = factory.SubFactory(CPReportFactory)
 
 
 class CPRecordFactory(factory.django.DjangoModelFactory):
