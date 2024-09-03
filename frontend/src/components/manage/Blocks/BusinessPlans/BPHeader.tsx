@@ -1,57 +1,78 @@
 'use client'
 
-import React, { useContext, useMemo, useState } from 'react'
+import React, { useContext, useState } from 'react'
 
 import { Button } from '@mui/material'
 import cx from 'classnames'
-import { capitalize, orderBy } from 'lodash'
 import NextLink from 'next/link'
 
 import Link from '@ors/components/ui/Link/Link'
+import { Status, statusStyles } from '@ors/components/ui/StatusPill/StatusPill'
 import BPContext from '@ors/contexts/BusinessPlans/BPContext'
 import useClickOutside from '@ors/hooks/useClickOutside'
-import { useStore } from '@ors/store'
+
+import { useGetBPVersions } from './BP/useGetBPVersions'
 
 import { IoChevronDown } from 'react-icons/io5'
 
+const tagClassnames =
+  'self-baseline rounded border border-solid px-1.5 py-1 font-medium uppercase leading-none'
+
 const HeaderVersionsDropdown = () => {
   const [showVersionsMenu, setShowVersionsMenu] = useState(false)
-  const { data, loading } = useContext(BPContext) as any
-  const business_plan = data?.results?.business_plan
-  const bpSlice = useStore((state) => state.businessPlans)
+  const { data, loading, params, setParams } = useContext(BPContext) as any
+
+  const business_plan = data?.results?.business_plan || {}
   const toggleShowVersionsMenu = () => setShowVersionsMenu((prev) => !prev)
+
+  const bpVersions = useGetBPVersions(business_plan)
 
   const ref = useClickOutside(() => {
     setShowVersionsMenu(false)
   })
 
-  const dataReady = business_plan || !loading
+  const { loading: versionsLoading, results: versionsData = [] } = bpVersions
+  const versionsReady = business_plan || (!versionsLoading && !loading)
 
   const versions =
-    dataReady && bpSlice.yearRanges.data.length > 0
-      ? orderBy(bpSlice.yearRanges.data, 'year_start', 'desc').map(
-          (version, idx) => ({
-            id: `${version.year_start}-${version.year_end}`,
-            // formattedDate: formattedDateFromTimestamp(version.created_at),
-            isDraft: version.status === 'draft',
-            isFinal: version.status === 'final',
-            label: `Version ${version.year_start} - ${version.year_end}`,
-            url: `/business-plans/${business_plan?.agency.name}/${version.year_start}-${version.year_end}`,
-          }),
-        )
+    versionsReady && versionsData.length > 0
+      ? versionsData.map((version: any) => ({
+          id: version.id,
+          isLatest: version.is_latest,
+          label: `Version ${version.version}`,
+          status: version.status,
+          url: `/business-plans/${version?.agency.name}/${version.year_start}-${version.year_end}`,
+          version: version.version,
+        }))
       : []
 
-  const tagLatest = (
-    <span className="mx-2 rounded-md bg-gray-400 p-1 text-xs text-white">
-      LATEST
-    </span>
-  )
-  const tagDraft = (
-    <span className="mx-2 rounded-md bg-warning p-1 text-xs text-white">
-      Draft
-    </span>
-  )
+  const displayStatusTag = (status: Status) => {
+    const { bgColor, border = '', textColor } = statusStyles[status] || {}
 
+    return (
+      <span
+        className={cx(
+          'mx-2 !p-1 text-xs',
+          tagClassnames,
+          bgColor,
+          border,
+          textColor,
+        )}
+      >
+        {status}
+      </span>
+    )
+  }
+
+  const requestAnotherVersion = (version: any) => {
+    const shouldRequestData =
+      versions.length > 1 &&
+      (params.version ? params.version !== version.version : !version.isLatest)
+
+    if (shouldRequestData) {
+      setParams({ version: version.version })
+    }
+  }
   const fullLabel = `${business_plan?.agency.name} ${business_plan?.year_start} - ${business_plan?.year_end}`
 
   return (
@@ -73,22 +94,23 @@ const HeaderVersionsDropdown = () => {
           },
         )}
       >
-        {versions.map((info, idx) => (
-          <NextLink
-            key={info.id}
-            className="flex items-center gap-x-2 rounded-none px-2 py-2 text-black no-underline hover:bg-primary hover:text-white"
-            href={info.url}
-          >
-            <div className="flex w-56 items-center justify-between hover:text-white">
-              <div>{info.label}</div>
-              <div className="flex items-center">
-                {idx == 0 && (info.isFinal ? tagLatest : tagDraft)}
-                {idx == 1 && versions[0].isDraft && tagLatest}
-                {/*{info.formattedDate}*/}
+        {versions.map((version: any, idx: number) => {
+          return (
+            <NextLink
+              key={version.id}
+              className="flex items-center gap-x-2 rounded-none px-2 py-2 text-black no-underline hover:bg-primary hover:text-white"
+              href={version.url}
+              onClick={() => requestAnotherVersion(version)}
+            >
+              <div className="flex w-56 items-center justify-between hover:text-white">
+                <div>{version.label}</div>
+                <div className="flex items-center">
+                  {idx === 0 && displayStatusTag(version.status)}
+                </div>
               </div>
-            </div>
-          </NextLink>
-        ))}
+            </NextLink>
+          )
+        })}
       </div>
     </div>
   )
@@ -143,24 +165,35 @@ const ViewHeaderActions = () => {
 }
 
 type HeaderTagProps = {
+  business_plan: any
   children: React.ReactNode
-  status: any
 }
 
-const HeaderTag = ({ children, status }: HeaderTagProps) => {
+type BusinessPlanVersionsInterface = {
+  is_latest: boolean
+  status: Status
+  version: number
+}
+
+const HeaderTag = ({ business_plan, children }: HeaderTagProps) => {
+  const { is_latest, status, version }: BusinessPlanVersionsInterface =
+    business_plan || {}
+  const { bgColor, border = '', textColor } = statusStyles[status] || {}
+
   return (
-    <span
-      className={cx(
-        'self-baseline rounded p-1 font-medium uppercase leading-none',
-        {
-          'bg-mlfs-hlYellow': status === 'Approved',
-          'bg-primary text-mlfs-hlYellow': status === 'Submitted',
-          'bg-warning': status === 'Rejected',
-        },
-      )}
-    >
-      {children}
-    </span>
+    <>
+      <span
+        className={cx(
+          'border-transparent bg-primary text-white',
+          tagClassnames,
+        )}
+      >
+        {is_latest ? 'Latest' : `Version ${version}`}
+      </span>
+      <span className={cx(tagClassnames, bgColor, border, textColor)}>
+        {children}
+      </span>
+    </>
   )
 }
 
@@ -170,24 +203,7 @@ const ViewHeaderTag = () => {
 
   const { status } = business_plan || {}
 
-  const label = useMemo(() => {
-    switch (status) {
-      case 'Draft':
-        return 'Draft'
-      case 'Submitted':
-        return 'Submitted'
-      case 'needs_changes':
-        return 'Needs Changes'
-      case 'Approved':
-        return 'Approved'
-      case 'Rejected':
-        return 'Rejected'
-      default:
-        return ''
-    }
-  }, [status])
-
-  return <HeaderTag status={status}>{capitalize(label)}</HeaderTag>
+  return <HeaderTag business_plan={business_plan}>{status}</HeaderTag>
 }
 
 const BPHeader = ({

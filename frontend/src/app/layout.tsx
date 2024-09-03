@@ -81,7 +81,6 @@ export default async function RootLayout({
       substances,
       // Business Plans
       commentTypes,
-      yearRanges,
     ] = await Promise.all([
       api('api/settings/', {}, false),
       api('api/agencies/', {}, false),
@@ -104,7 +103,6 @@ export default async function RootLayout({
       ),
       // api('api/usages/', {}, false),
       api('api/comment-types/', {}, false),
-      api('api/business-plan/get-years/', {}, false),
     ])
 
     common = {
@@ -135,7 +133,6 @@ export default async function RootLayout({
       sectors: getInitialSliceData(sectors),
       subsectors: getInitialSliceData(subsectors),
       types: getInitialSliceData(types),
-      yearRanges: getInitialSliceData(yearRanges),
     }
   } else if (currentView.layout === 'authorized_document') {
     redirect('/login')

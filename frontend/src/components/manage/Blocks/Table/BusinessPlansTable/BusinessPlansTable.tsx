@@ -21,6 +21,7 @@ import {
 import Table from '@ors/components/manage/Form/Table'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import BPContext from '@ors/contexts/BusinessPlans/BPContext'
+import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
 import { formatApiUrl, getResults } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
@@ -60,6 +61,7 @@ export default function BusinessPlansTable() {
     params: reqParams,
     setParams,
   } = useContext(BPContext) as any
+  const { yearRanges } = useContext(BPYearRangesContext) as any
 
   const count = data?.count || 0
   const activities = data?.results?.activities
@@ -72,11 +74,8 @@ export default function BusinessPlansTable() {
   const pages = Math.ceil(count / pagination.rowsPerPage)
 
   const yearRangeSelected = useMemo(
-    () =>
-      bpSlice.yearRanges.data.find(
-        (item: any) => item.year_start == filters.year_start,
-      ),
-    [bpSlice.yearRanges.data, filters.year_start],
+    () => yearRanges.find((item: any) => item.year_start == filters.year_start),
+    [yearRanges, filters.year_start],
   )
 
   const getYearColsValue = (
@@ -294,8 +293,8 @@ export default function BusinessPlansTable() {
   const paginationPageSizeSelectorOpts = getPaginationSelectorOpts()
 
   return (
-    bpSlice.yearRanges.data &&
-    bpSlice.yearRanges.data.length > 0 && (
+    yearRanges &&
+    yearRanges.length > 0 && (
       <form ref={form}>
         {displayOptions === 'table' ? (
           <Table
