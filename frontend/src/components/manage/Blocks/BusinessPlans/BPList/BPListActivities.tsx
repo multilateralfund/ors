@@ -1,22 +1,28 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useContext, useMemo, useRef, useState } from 'react'
 
+import DownloadButtons from '@ors/app/business-plans/DownloadButtons'
 import Activities from '@ors/components/manage/Blocks/BusinessPlans/Activities'
 import ActivitiesFilters from '@ors/components/manage/Blocks/BusinessPlans/ActivitiesFilters'
 import useGetBpPeriods from '@ors/components/manage/Blocks/BusinessPlans/BPList/useGetBPPeriods'
 import { useGetActivities } from '@ors/components/manage/Blocks/BusinessPlans/useGetActivities'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
+import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
+import { formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store'
+
+import { filtersToQueryParams } from '../utils'
 
 const ACTIVITIES_PER_PAGE = 20
 
 export default function BPListActivities(props: any) {
   const { period } = props
-  const { periodOptions } = useGetBpPeriods()
+  const { yearRanges } = useContext(BPYearRangesContext) as any
+  const { periodOptions } = useGetBpPeriods(yearRanges)
 
-  const firstPeriod = periodOptions[periodOptions.length - 1].value
-  const lastPeriod = periodOptions[0].value
+  const firstPeriod = periodOptions?.[periodOptions.length - 1]?.value
+  const lastPeriod = periodOptions?.[0]?.value
   const commonSlice = useStore((state) => state.common)
   const bpSlice = useStore((state) => state.businessPlans)
   const projects = useStore((state) => state.projects)
@@ -36,7 +42,8 @@ export default function BPListActivities(props: any) {
   }
 
   const [filters, setFilters] = useState({ ...initialFilters })
-  const { count, loaded, results, setParams } = useGetActivities(initialFilters)
+  const { count, loaded, params, results, setParams } =
+    useGetActivities(initialFilters)
   const [pagination, setPagination] = useState({
     page: 1,
     rowsPerPage: ACTIVITIES_PER_PAGE,
@@ -51,6 +58,8 @@ export default function BPListActivities(props: any) {
 
   const pages = Math.ceil(count / pagination.rowsPerPage)
 
+  const exportParams = useMemo(() => filtersToQueryParams(params), [params])
+
   return (
     <div className="flex flex-1 flex-col justify-start gap-6 pt-6">
       <form className="flex flex-col gap-6" ref={form}>
@@ -64,6 +73,12 @@ export default function BPListActivities(props: any) {
           handleParamsChange={handleParamsChange}
           initialFilters={initialFilters}
           withAgency
+        />
+        <DownloadButtons
+          downloadTexts={['Download']}
+          downloadUrls={[
+            formatApiUrl(`/api/business-plan-activity/export/?${exportParams}`),
+          ]}
         />
         <Activities loaded={loaded} period={period} results={results} />
       </form>

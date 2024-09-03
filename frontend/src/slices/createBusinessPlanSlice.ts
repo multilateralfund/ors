@@ -19,9 +19,5 @@ export const createBusinessPlanSlice = ({
       ...defaultSliceData,
       ...(initialState?.businessPlans?.types || {}),
     },
-    yearRanges: {
-      ...defaultSliceData,
-      ...(initialState?.businessPlans?.yearRanges || {}),
-    },
   }
 }

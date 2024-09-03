@@ -26,7 +26,7 @@ export default function LoginForm() {
     <>
       <LoadingBuffer
         className="bg-primary text-white"
-        active={user.data}
+        active={!!user.data}
         text="Stay tuned"
       />
       <Paper

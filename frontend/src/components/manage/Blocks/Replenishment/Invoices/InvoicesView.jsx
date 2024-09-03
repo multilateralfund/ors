@@ -13,9 +13,8 @@ import {
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import InvoiceDialog from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceDialog'
 import InvoiceStatus from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceStatus'
-import useGetInvoices, {
-  _PER_PAGE,
-} from '@ors/components/manage/Blocks/Replenishment/Invoices/useGetInvoices'
+import useGetInvoices from '@ors/components/manage/Blocks/Replenishment/Invoices/useGetInvoices'
+import { scAnnualOptions } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
 import Table from '@ors/components/manage/Blocks/Replenishment/Table'
 import ViewFiles from '@ors/components/manage/Blocks/Replenishment/ViewFiles'
 import {
@@ -26,24 +25,23 @@ import {
   formatNumberValue,
 } from '@ors/components/manage/Blocks/Replenishment/utils'
 import { AddButton } from '@ors/components/ui/Button/Button'
-import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { formatApiUrl } from '@ors/helpers'
 
 import { IoSearchSharp } from 'react-icons/io5'
 
 const COLUMNS = [
-  { field: 'country', label: 'Country' },
+  { field: 'country', label: 'Country', sortable: true },
   { field: 'status', label: 'Status' },
   { field: 'year', label: 'Year' },
   { field: 'date_of_issuance', label: 'Date of issuance', sortable: true },
-  { field: 'amount', label: 'Amount', sortable: true },
+  { field: 'amount', label: 'Amount' },
   {
     field: 'exchange_rate',
     label: 'Exchange Rate',
     subLabel: '(FERM)',
   },
-  { field: 'date_sent_out', label: 'Sent on', sortable: true },
+  { field: 'date_sent_out', label: 'Sent on' },
   {
     field: 'date_first_reminder',
     label: 'First reminder',
@@ -66,16 +64,13 @@ const EditInvoiceDialog = function EditInvoiceDialog(props) {
 }
 
 function InvoicesView() {
+  const currentYear = new Date().getFullYear()
   const ctx = useContext(ReplenishmentContext)
 
-  const { count, loaded, results, setParams } = useGetInvoices()
-  const [pagination, setPagination] = useState({
-    page: 1,
-    rowsPerPage: _PER_PAGE,
-  })
+  const { loaded, results, setParams } = useGetInvoices(currentYear)
   const memoResults = useMemo(() => {
     if (!loaded) {
-      return times(pagination.rowsPerPage, (num) => {
+      return times(10, (num) => {
         return {
           id: num + 1,
           isSkeleton: true,
@@ -84,9 +79,14 @@ function InvoicesView() {
     }
     return results.map((data) => ({
       id: data.id,
-      amount: formatNumberValue(data.amount) + ' ' + data.currency,
+      amount:
+        data.amount && data.currency
+          ? formatNumberValue(data.amount) + ' ' + data.currency
+          : '-',
       be_amount: data.amount,
       be_exchange_rate: data.exchange_rate,
+      can_delete: ctx.isTreasurer && data.id,
+      can_edit: ctx.isTreasurer && data.id,
       country: data.country.name,
       country_id: data.country.id,
       currency: data.currency,
@@ -97,15 +97,14 @@ function InvoicesView() {
       exchange_rate: formatNumberValue(data.exchange_rate) || '-',
       files: <ViewFiles files={data.invoice_files} />,
       files_data: data.invoice_files,
+      gray: !data.id,
       iso3: data.country.iso3,
-      number: data.number.toLocaleString(),
+      number: data.number?.toLocaleString(),
       replenishment: data.replenishment,
-      status: <InvoiceStatus status={data.date_paid} />,
+      status: <InvoiceStatus row={data} />,
       year: data.year || '-',
     }))
-  }, [results, loaded, pagination.rowsPerPage])
-
-  const pages = Math.ceil(count / pagination.rowsPerPage)
+  }, [loaded, results, ctx.isTreasurer])
 
   const columns = useMemo(function () {
     const result = []
@@ -126,11 +125,12 @@ function InvoicesView() {
     return result
   }, [])
 
-  const [sortOn, setSortOn] = useState(2)
-  const [sortDirection, setSortDirection] = useState(-1)
+  const [sortOn, setSortOn] = useState(0)
+  const [sortDirection, setSortDirection] = useState(1)
 
   const [editIdx, setEditIdx] = useState(null)
   const [showAdd, setShowAdd] = useState(false)
+  const [hideNoInvoice, setHideNoInvoice] = useState(true)
 
   const editData = useMemo(() => {
     let entry = null
@@ -151,7 +151,7 @@ function InvoicesView() {
   }
 
   async function handleEditInvoiceSubmit(formData) {
-    const entry = { ...formData }
+    const entry = Object.fromEntries(formData.entries())
     entry.date_of_issuance = dateForInput(entry.date_of_issuance)
     entry.date_sent_out = dateForInput(entry.date_sent_out) || ''
     entry.date_first_reminder = dateForInput(entry.date_first_reminder) || ''
@@ -196,7 +196,7 @@ function InvoicesView() {
       )
       enqueueSnackbar('Invoice updated successfully.', { variant: 'success' })
       setParams({
-        offset: ((pagination.page || 1) - 1) * pagination.rowsPerPage,
+        cache_bust: crypto.randomUUID(),
       })
       setShowAdd(false)
     } catch (error) {
@@ -219,8 +219,15 @@ function InvoicesView() {
     setEditIdx(null)
   }
 
+  /**
+   * Prepare data and submit to endpoint
+   *
+   * @async
+   * @param {FormData} formData
+   * @returns {void}
+   */
   async function handleAddInvoiceSubmit(formData) {
-    const entry = { ...formData }
+    const entry = Object.fromEntries(formData.entries())
     entry.date_of_issuance = dateForInput(entry.date_of_issuance)
     entry.date_sent_out = dateForInput(entry.date_sent_out)
     entry.date_first_reminder = dateForInput(entry.date_first_reminder)
@@ -228,7 +235,9 @@ function InvoicesView() {
     entry.reminder = dateForInput(entry.reminder)
     entry.exchange_rate = isNaN(entry.exchange_rate) ? '' : entry.exchange_rate
     entry.replenishment_id = ctx.periods.find(
-      (p) => Number(p.start_year) === Number(entry.period.split('-')[0]),
+      (p) =>
+        Number(p.start_year) <= Number(entry.year) &&
+        Number(p.end_year) >= Number(entry.year),
     )?.id
 
     let nr_new_files = 0
@@ -270,9 +279,8 @@ function InvoicesView() {
 
       enqueueSnackbar('Invoice updated successfully.', { variant: 'success' })
       setParams({
-        offset: 0,
+        cache_bust: crypto.randomUUID(),
       })
-      setPagination({ ...pagination, page: 1 })
       setShowAdd(false)
     } catch (error) {
       setShowAdd(false)
@@ -315,7 +323,7 @@ function InvoicesView() {
       )
       enqueueSnackbar('Invoice deleted.', { variant: 'success' })
       setParams({
-        offset: ((pagination.page || 1) - 1) * pagination.rowsPerPage,
+        cache_bust: crypto.randomUUID(),
       })
     } catch (error) {
       if (error.status === 400) {
@@ -343,9 +351,7 @@ function InvoicesView() {
     const newDirection = column === sortOn ? -sortDirection : 1
     setSortDirection(newDirection)
     setSortOn(column)
-    setPagination({ ...pagination, page: 1 })
     setParams({
-      offset: 0,
       ordering: newDirection < 0 ? `-${property}` : property,
     })
   }
@@ -355,10 +361,19 @@ function InvoicesView() {
     setParams({ country_id })
   }
 
-  function handlePeriodFilter(evt) {
-    const period = evt.target.value
-    const replenishment_start = period.split('-')[0]
-    setParams({ replenishment_start })
+  function handleYearFilter(evt) {
+    setParams({ year: evt.target.value })
+  }
+  const yearOptions = scAnnualOptions(ctx.periods)
+
+  function handleStatusFilter(evt) {
+    const status = evt.target.value
+    setParams({ status })
+  }
+
+  function handleChangeHideNoInvoice(evt) {
+    setHideNoInvoice(evt.target.checked)
+    setParams({ hide_no_invoice: evt.target.checked })
   }
 
   return (
@@ -392,7 +407,7 @@ function InvoicesView() {
         />
       ) : null}
       <div className="flex items-center justify-between gap-4 pb-4 print:hidden">
-        <div className="flex items-center">
+        <div className="flex items-center gap-x-4">
           <div className="relative">
             <IoSearchSharp
               className="absolute left-3 top-1/2 -translate-y-1/2 transform text-primary"
@@ -407,10 +422,11 @@ function InvoicesView() {
               onChange={handleSearchInput}
             />
           </div>
+          <div className="h-8 border-y-0 border-l border-r-0 border-solid border-gray-400"></div>
           {!ctx.isCountryUser && (
             <Select
               id="country"
-              className="placeholder-select w-52"
+              className="placeholder-select !ml-0 w-52"
               onChange={handleCountryFilter}
               hasClear
               required
@@ -426,32 +442,56 @@ function InvoicesView() {
             </Select>
           )}
           <Select
-            id="period"
+            id="year"
             className="placeholder-select w-44"
-            onChange={handlePeriodFilter}
-            hasClear
+            defaultValue={currentYear}
+            onChange={handleYearFilter}
             required
           >
             <option value="" disabled hidden>
-              Period
+              Year
             </option>
-            {ctx.periodOptions.map((period) => (
+            {yearOptions.map((year) => (
               <option
-                key={period.value}
+                key={year.value}
                 className="text-primary"
-                value={period.value}
+                value={year.value}
               >
-                {period.label}
+                {year.label}
               </option>
             ))}
           </Select>
+          <Select
+            id="status"
+            className="placeholder-select w-44"
+            onChange={handleStatusFilter}
+            hasClear
+          >
+            <option value="" disabled hidden>
+              Status
+            </option>
+            <option value="paid">Paid</option>
+            <option value="pending">Pending</option>
+            <option value="not_issued">Not issued</option>
+          </Select>
         </div>
         {ctx.isTreasurer && (
-          <AddButton onClick={() => setShowAdd(true)}>Add invoice</AddButton>
+          <div className="flex items-center gap-x-2">
+            <Input
+              id="hide_no_invoice"
+              checked={hideNoInvoice}
+              type="checkbox"
+              onChange={handleChangeHideNoInvoice}
+            />
+            <label htmlFor="hide_no_invoice">
+              Hide countries without invoice
+            </label>
+            <AddButton onClick={() => setShowAdd(true)}>Add invoice</AddButton>
+          </div>
         )}
       </div>
       <Table
-        adminButtons={ctx.isTreasurer}
+        adminButtons={false}
         columns={columns}
         enableSort={true}
         rowData={memoResults}
@@ -467,22 +507,6 @@ function InvoicesView() {
         onEdit={showEditInvoiceDialog}
         onSort={handleSort}
       />
-      {!!pages && pages > 1 && (
-        <div className="mt-6 flex items-center justify-start print:hidden">
-          <Pagination
-            count={pages}
-            page={pagination.page}
-            siblingCount={1}
-            onPaginationChanged={(page) => {
-              setPagination({ ...pagination, page: page || 1 })
-              setParams({
-                limit: pagination.rowsPerPage,
-                offset: ((page || 1) - 1) * pagination.rowsPerPage,
-              })
-            }}
-          />
-        </div>
-      )}
     </>
   )
 }

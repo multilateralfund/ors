@@ -1,22 +1,28 @@
-import { getResults } from '@ors/helpers'
 import useApi from '@ors/hooks/useApi'
 
-export const _PER_PAGE = 50
-
-function useGetInvoices() {
-  const { data, loading, setParams } = useApi({
+function useGetInvoices(year) {
+  const { data, loaded, loading, setParams } = useApi({
     options: {
       params: {
-        limit: _PER_PAGE,
-        offset: 0,
-        ordering: '-date_of_issuance',
+        hide_no_invoice: true,
+        ordering: 'country',
+        year: year,
       },
       withStoreCache: false,
     },
     path: 'api/replenishment/invoices/',
   })
-  const { count, loaded, results } = getResults(data)
-  return { count, data, loaded, loading, results, setParams }
+
+  if (!data) {
+    return {
+      loaded,
+      loading,
+      results: [],
+      setParams,
+    }
+  }
+
+  return { loaded, loading, results: data, setParams }
 }
 
 export default useGetInvoices

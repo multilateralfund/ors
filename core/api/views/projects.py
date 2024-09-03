@@ -16,7 +16,7 @@ from rest_framework import status
 from core.api.export.base import configure_sheet_print
 from core.api.export.projects import ProjectWriter
 
-from core.api.filters.project import ProjectFilter
+from core.api.filters.project import MetaProjectFilter, ProjectFilter
 from core.api.serializers.meeting import MeetingSerializer
 from core.api.serializers.project import (
     ProjectClusterSerializer,
@@ -28,6 +28,7 @@ from core.api.serializers.project import (
     SubmissionAmountCreateSerializer,
 )
 from core.api.serializers.project import (
+    MetaProjectSerializer,
     ProjectDetailsSerializer,
     ProjectListSerializer,
     ProjectStatusSerializer,
@@ -36,6 +37,7 @@ from core.api.serializers.project import (
 from core.api.utils import workbook_pdf_response, workbook_response
 from core.models.meeting import Meeting
 from core.models.project import (
+    MetaProject,
     Project,
     ProjectCluster,
     ProjectOdsOdp,
@@ -46,6 +48,16 @@ from core.models.project import (
 )
 from core.models.project import ProjectComment
 from core.models.project import ProjectStatus, ProjectFund
+
+
+class MetaProjectListView(generics.ListAPIView):
+    """
+    List meta projects
+    """
+
+    queryset = MetaProject.objects.order_by("code", "type")
+    filterset_class = MetaProjectFilter
+    serializer_class = MetaProjectSerializer
 
 
 class ProjectStatusListView(generics.ListAPIView):
@@ -76,7 +88,6 @@ class ProjectClusterListView(generics.ListAPIView):
     serializer_class = ProjectClusterSerializer
 
 
-# view for country programme reports
 # pylint: disable-next=R0901
 class ProjectViewSet(
     mixins.CreateModelMixin,
@@ -120,7 +131,7 @@ class ProjectViewSet(
         "project_type__name",
         "substance_type",
     ]
-    search_fields = ["code", "generated_code", "meta_project__code", "title"]
+    search_fields = ["code", "legacy_code", "meta_project__code", "title"]
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -297,13 +308,11 @@ class ProjectStatisticsView(generics.ListAPIView):
         """
         filtered_projects = self.filter_queryset(self.get_queryset())
         valid_code_inv_subcode_count = (
-            filtered_projects.filter(generated_code__contains="-")
+            filtered_projects.filter(code__contains="-")
             .exclude(meta_project__code__contains="-")
             .count()
         )
-        valid_subcode_count = filtered_projects.exclude(
-            generated_code__contains="-"
-        ).count()
+        valid_subcode_count = filtered_projects.exclude(code__contains="-").count()
         project_count_per_sector = (
             filtered_projects.values("sector__name")
             .filter(sector__isnull=False)

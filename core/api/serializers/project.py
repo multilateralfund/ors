@@ -9,6 +9,7 @@ from core.models.blend import Blend
 from core.models.country import Country
 from core.models.meeting import Meeting
 from core.models.project import (
+    MetaProject,
     Project,
     ProjectCluster,
     ProjectOdsOdp,
@@ -25,6 +26,21 @@ from core.models.project import ProjectFile
 from core.models.rbm_measures import RBMMeasure
 from core.models.substance import Substance
 from core.utils import get_project_sub_code
+
+
+class MetaProjectSerializer(serializers.ModelSerializer):
+    """
+    MetaProjectSerializer class
+    """
+
+    class Meta:
+        model = MetaProject
+        fields = [
+            "id",
+            "type",
+            "code",
+            "pcr_project_id",
+        ]
 
 
 class ProjectStatusSerializer(serializers.ModelSerializer):
@@ -325,7 +341,6 @@ class ProjectListSerializer(serializers.ModelSerializer):
     ProjectSerializer class
     """
 
-    code = serializers.CharField(read_only=True)
     country = serializers.SlugRelatedField("name", read_only=True)
     agency = serializers.SlugRelatedField("name", read_only=True)
     agency_id = serializers.PrimaryKeyRelatedField(
@@ -362,7 +377,6 @@ class ProjectListSerializer(serializers.ModelSerializer):
     metaproject_code = serializers.SerializerMethodField()
     metaproject_category = serializers.SerializerMethodField()
     substance_name = serializers.SerializerMethodField()
-    code = serializers.SerializerMethodField()
     code_legacy = serializers.SerializerMethodField()
 
     class Meta:
@@ -370,8 +384,8 @@ class ProjectListSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "title",
-            "code",  # generated_code
-            "code_legacy",  # code
+            "code",
+            "code_legacy",
             "metaproject_code",
             "metaproject_category",
             "mya_code",
@@ -461,11 +475,8 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "substance_name",
         ]
 
-    def get_code(self, obj):
-        return obj.generated_code
-
     def get_code_legacy(self, obj):
-        return obj.code
+        return obj.legacy_code
 
     def get_approval_meeting(self, obj):
         if obj.approval_meeting:
@@ -608,7 +619,7 @@ class ProjectDetailsSerializer(ProjectListSerializer):
         )
         project = Project.objects.create(**validated_data)
         # set subcode
-        project.generated_code = get_project_sub_code(
+        project.code = get_project_sub_code(
             project.country,
             project.cluster,
             project.agency,
@@ -653,7 +664,7 @@ class ProjectDetailsSerializer(ProjectListSerializer):
                 instance.coop_agencies.add(coop_agency)
 
         # set new subcode
-        instance.generated_code = get_project_sub_code(
+        instance.code = get_project_sub_code(
             instance.country,
             instance.cluster,
             instance.agency,

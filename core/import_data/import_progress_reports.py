@@ -7,17 +7,12 @@ from django.conf import settings
 from django.db import models
 
 from core.import_data.utils import delete_old_data
-from core.import_data.utils import get_country_by_name
 from core.import_data.utils import get_object_by_code
-from core.import_data.utils import get_object_by_name
 from core.import_data.utils import parse_date
 from core.import_data.utils import parse_noop
-from core.models import Agency
 from core.models import Project
 from core.models.project import ProjectProgressReport
-from core.models.project import ProjectSector
 from core.models.project import ProjectStatus
-from core.models.project import ProjectType
 
 logger = logging.getLogger(__name__)
 
@@ -106,25 +101,6 @@ def country_ids():
     return {country["CTR"]: country["COUNTRY"] for country in country_list}
 
 
-def check_project_consistency(project, item, index):
-    country = get_country_by_name(country_ids().get(item["country"]), index)
-    project_sector = get_object_by_code(ProjectSector, item["sector"], "code", index)
-    project_type = get_object_by_code(ProjectType, item["type"], "code", index)
-    agency = get_object_by_name(Agency, item["agency"], index, "agency")
-
-    for name, current_value, value in (
-        ("country", project.country, country),
-        ("sector", project.sector, project_sector),
-        ("type", project.project_type, project_type),
-        ("agency", project.agency, agency),
-    ):
-        if current_value != value and value is not None:
-            logger.warning(
-                f"[row: {index}]: Inconsistent project attribute {name!r} found for code={project.code}: "
-                f"{current_value} != {value}"
-            )
-
-
 def import_progress_reports():
     logger.info("⏳ importing progress reports")
     file_path = settings.IMPORT_DATA_DIR / "progress_report" / "tbProgress.csv"
@@ -138,7 +114,7 @@ def import_progress_reports():
     with file_path.open("r") as csvfile:
         reader = csv.DictReader(csvfile)
         for index, item in enumerate(reader):
-            project = get_object_by_code(Project, item["code"], "code", index)
+            project = get_object_by_code(Project, item["code"], "legacy_code", index)
             project_status = get_object_by_code(
                 ProjectStatus, item["status"], "code", index
             )
@@ -148,8 +124,6 @@ def import_progress_reports():
 
             if not all([project, project_status, latest_status]):
                 continue
-
-            check_project_consistency(project, item, index)
 
             data = {
                 "source_file": file_path,

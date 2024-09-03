@@ -164,6 +164,31 @@ class InvoiceSerializer(serializers.ModelSerializer):
         ]
 
 
+class InvoiceForPaymentChoicesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Invoice
+        fields = [
+            "id",
+            "number",
+        ]
+
+
+class EmptyInvoiceSerializer(serializers.ModelSerializer):
+    country = CountrySerializer(read_only=True)
+    year = serializers.SerializerMethodField()
+
+    def get_year(self, _obj):
+        return int(self.context["year"])
+
+    class Meta:
+        # An empty invoice is created from SoA
+        model = ScaleOfAssessment
+        fields = [
+            "country",
+            "year",
+        ]
+
+
 class InvoiceCreateSerializer(serializers.ModelSerializer):
     country_id = serializers.PrimaryKeyRelatedField(
         queryset=Country.objects.all().values_list("id", flat=True),
@@ -173,6 +198,8 @@ class InvoiceCreateSerializer(serializers.ModelSerializer):
     replenishment_id = serializers.PrimaryKeyRelatedField(
         queryset=Replenishment.objects.all().values_list("id", flat=True),
         write_only=True,
+        allow_null=True,
+        required=False,
     )
 
     amount = serializers.DecimalField(
@@ -206,7 +233,7 @@ class InvoiceCreateSerializer(serializers.ModelSerializer):
             "date_of_issuance",
             "date_sent_out",
             "date_first_reminder",
-            "date_second_reminder"
+            "date_second_reminder",
         ]
 
 
@@ -241,6 +268,7 @@ class PaymentSerializer(serializers.ModelSerializer):
     )
 
     payment_files = PaymentFileSerializer(many=True, read_only=True)
+    invoices = InvoiceForPaymentChoicesSerializer(many=True, read_only=True)
 
     class Meta:
         model = Payment
@@ -256,6 +284,7 @@ class PaymentSerializer(serializers.ModelSerializer):
             "ferm_gain_or_loss",
             "comment",
             "payment_files",
+            "invoices",
         ]
 
 
@@ -269,6 +298,12 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
         queryset=Replenishment.objects.all().values_list("id", flat=True),
         write_only=True,
         allow_null=True,
+        required=False,
+    )
+    invoices = serializers.PrimaryKeyRelatedField(
+        queryset=Invoice.objects.all().values_list("id", flat=True),
+        many=True,
+        write_only=True,
         required=False,
     )
 
@@ -302,6 +337,7 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
             "exchange_rate",
             "ferm_gain_or_loss",
             "comment",
+            "invoices",
         ]
 
 

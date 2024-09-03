@@ -530,13 +530,15 @@ export default function SectionCCreate(props: {
         }}
         onRowDataUpdated={() => {
           if (newNode.current) {
+            const rowNode = newNode.current
             scrollToElement({
               callback: () => {
                 grid.current.api.flashCells({
-                  rowNodes: [newNode.current],
+                  rowNodes: [rowNode],
                 })
+                newNode.current = undefined
               },
-              selectors: `.ag-row[row-id=${newNode.current.data.row_id}]`,
+              selectors: `.ag-row[row-id=${rowNode.data.row_id}]`,
             })
           }
         }}

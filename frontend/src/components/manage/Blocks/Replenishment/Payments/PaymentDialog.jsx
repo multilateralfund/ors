@@ -1,4 +1,6 @@
-import React, { useContext } from 'react'
+'use client'
+
+import React from 'react'
 
 import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
 import {
@@ -6,10 +8,27 @@ import {
   FieldSelect,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceAttachments'
-import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
+import useApi from '@ors/hooks/useApi'
 
 const PaymentDialog = function PaymentDialog(props) {
   const { columns, countries, data, isEdit, title, ...dialogProps } = props
+  const { data: invoicesList, loaded: invoicesLoaded } = useApi({
+    options: {
+      params: {
+        hide_no_invoice: true,
+        ...(isEdit ? { country_id: data?.country_id } : {}),
+      },
+      withStoreCache: false,
+    },
+    path: 'api/replenishment/invoices/',
+  })
+
+  const invoicesOptions = invoicesLoaded
+    ? invoicesList.map((invoice) => ({
+        id: invoice.id,
+        label: invoice.number,
+      }))
+    : []
 
   return (
     <FormDialog title={title} {...dialogProps}>
@@ -27,6 +46,20 @@ const PaymentDialog = function PaymentDialog(props) {
           </option>
         ))}
       </FieldSelect>
+      <FieldSelect
+        id="invoices"
+        defaultValue={data?.invoices?.map((o) => o.id.toString())}
+        hasClear={true}
+        label="Invoices"
+        required={true}
+        multiple
+      >
+        {invoicesOptions.map((inv) => (
+          <option key={inv.id} value={inv.id}>
+            {inv.label}
+          </option>
+        ))}
+      </FieldSelect>
       <FieldInput
         id="date"
         defaultValue={data?.date}
@@ -41,17 +74,6 @@ const PaymentDialog = function PaymentDialog(props) {
         type="text"
         required
       />
-      <FieldSelect
-        id="payment_type"
-        defaultValue=""
-        label={'Payment type'}
-        required
-      >
-        <option value="" disabled hidden></option>
-        <option value="current">Current year</option>
-        <option value="past">Past year</option>
-        <option value="advance">Advance payment</option>
-      </FieldSelect>
       <FieldInput
         id="amount"
         defaultValue={data?.amount}

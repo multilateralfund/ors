@@ -19,7 +19,7 @@ function BPProvider(props) {
     return commonSlice.agencies.data.find((item) => item.name === agency)
   }, [agency, commonSlice.agencies.data])
 
-  const { data, loaded, loading, setParams } = useApi({
+  const { data, loaded, loading, params, setParams } = useApi({
     options: {
       params: {
         agency_id: currentAgency?.id,
@@ -40,6 +40,7 @@ function BPProvider(props) {
         data,
         loaded,
         loading,
+        params,
         setParams,
       }}
     >

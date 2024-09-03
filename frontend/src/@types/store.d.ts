@@ -1,6 +1,7 @@
 import type { CPReport, CPReportDiff } from './api_country-programme_records'
 import type { EmptyFormType } from './api_empty-form'
 import type { ApiSubstance } from './api_substances'
+import { ApiUser } from '@ors/types/api_auth_user'
 import { ApiBlend } from '@ors/types/api_blends'
 import type { DataType, SliceData } from '@ors/types/primitives'
 import type { PartialDeep } from 'type-fest'
@@ -105,7 +106,6 @@ export interface BusinessPlanSlice {
   sectors: SliceData
   subsectors: SliceData
   types: SliceData
-  yearRanges: SliceData
 }
 
 export interface ThemeSlice {
@@ -114,8 +114,8 @@ export interface ThemeSlice {
 }
 
 export interface UserSlice
-  extends SliceData<DataType, Record<string, any> | null | undefined> {
-  getUser: () => void
+  extends SliceData<ApiUser, Record<string, any> | null | undefined> {
+  getUser: () => Promise<void>
   login: (username: string, password: string) => void
   logout: () => Promise<void>
 }

@@ -79,8 +79,6 @@ export default async function RootLayout({
       // Country programme data
       blends,
       substances,
-      // Business Plans
-      yearRanges,
     ] = await Promise.all([
       api('api/settings/', {}, false),
       api('api/agencies/', {}, false),
@@ -102,7 +100,6 @@ export default async function RootLayout({
         false,
       ),
       // api('api/usages/', {}, false),
-      api('api/business-plan/get-years/', {}, false),
     ])
 
     common = {
@@ -132,7 +129,6 @@ export default async function RootLayout({
       sectors: getInitialSliceData(sectors),
       subsectors: getInitialSliceData(subsectors),
       types: getInitialSliceData(types),
-      yearRanges: getInitialSliceData(yearRanges),
     }
   } else if (currentView.layout === 'authorized_document') {
     redirect('/login')

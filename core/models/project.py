@@ -18,7 +18,7 @@ class MetaProject(models.Model):
         MYA = "Multi-year agreement", "Multi-year agreement"
         IND = "Individual", "Individual"
 
-    type = models.CharField(max_length=255)
+    type = models.CharField(max_length=255, choices=MetaProjectType.choices)
     code = models.CharField(max_length=255, null=True, blank=True)
     pcr_project_id = models.CharField(max_length=255, null=True, blank=True)
 
@@ -198,14 +198,21 @@ class Project(models.Model):
         NONEE = "Non-Energey Efficiency", "Non-Energey Efficiency"
 
     meta_project = models.ForeignKey(MetaProject, on_delete=models.CASCADE, null=True)
+    bp_activity = models.ForeignKey(
+        "BPActivity",
+        on_delete=models.PROTECT,
+        related_name="projects",
+        null=True,
+        blank=True,
+    )
 
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
     agency = models.ForeignKey(Agency, on_delete=models.CASCADE)
     national_agency = models.CharField(max_length=255, null=True, blank=True)
     coop_agencies = models.ManyToManyField(Agency, related_name="coop_projects")
 
-    code = models.CharField(max_length=128, unique=True, null=True, blank=True)
-    generated_code = models.CharField(max_length=128, null=True, blank=True)
+    legacy_code = models.CharField(max_length=128, unique=True, null=True, blank=True)
+    code = models.CharField(max_length=128, null=True, blank=True)
     serial_number_legacy = models.IntegerField(null=True, blank=True)  # number
     serial_number = models.IntegerField(null=True, blank=True)
     additional_funding = models.BooleanField(default=False)

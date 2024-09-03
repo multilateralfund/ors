@@ -1978,42 +1978,58 @@ class TestInvoices(BaseTest):
     def test_invoices_list(self, user):
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
         country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
+        country_3 = CountryFactory.create(name="Country 3", iso3="DEF")
 
         replenishment_1 = ReplenishmentFactory.create(
             start_year=self.year_1, end_year=self.year_2
         )
-        replenishment_2 = ReplenishmentFactory.create(
-            start_year=self.year_3, end_year=self.year_4
+
+        version = ScaleOfAssessmentVersionFactory.create(
+            replenishment=replenishment_1, version=0, is_final=True
+        )
+        ScaleOfAssessmentFactory.create(
+            country=country_1,
+            version=version,
+        )
+        ScaleOfAssessmentFactory.create(
+            country=country_2,
+            version=version,
+        )
+        ScaleOfAssessmentFactory.create(
+            country=country_3,
+            version=version,
         )
 
         InvoiceFactory(
-            country=country_1, replenishment=replenishment_1, number="aaa-yyy-1"
+            country=country_1,
+            replenishment=replenishment_1,
+            number="aaa-yyy-1",
+            year=self.year_1,
         )
         InvoiceFactory(
-            country=country_2, replenishment=replenishment_2, number="aaa-yyy-2"
+            country=country_2,
+            replenishment=replenishment_1,
+            number="aaa-yyy-2",
+            year=self.year_2,
         )
 
         self.client.force_authenticate(user=user)
 
-        response = self.client.get(self.url)
-        assert response.status_code == 200
-        assert len(response.data) == 2
-
         response_1 = self.client.get(
-            self.url, {"replenishment_start": replenishment_1.start_year}
+            self.url, {"year": self.year_1, "ordering": "country"}
         )
         assert response_1.status_code == 200
-        assert len(response_1.data) == 1
+        assert len(response_1.data) == 3
         assert response_1.data[0]["number"] == "aaa-yyy-1"
+        assert response_1.data[1].get("number") is None
+        assert response_1.data[2].get("number") is None
 
-        response_2 = self.client.get(self.url, {"country_id": country_2.id})
+        response_2 = self.client.get(
+            self.url, {"country_id": country_2.id, "ordering": "date_of_issuance"}
+        )
         assert response_2.status_code == 200
         assert len(response_2.data) == 1
         assert response_2.data[0]["number"] == "aaa-yyy-2"
-
-        response_all = self.client.get(self.url, {"start_year": "all"})
-        assert response_all.status_code == 200
-        assert len(response_all.data) == 2
 
     def test_invoices_create(self, treasurer_user):
         country = CountryFactory.create(name="Country 1", iso3="XYZ")

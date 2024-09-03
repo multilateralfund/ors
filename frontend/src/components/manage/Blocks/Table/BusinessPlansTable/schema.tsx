@@ -1,4 +1,6 @@
-import { Tooltip } from '@mui/material'
+import { Tooltip, Typography } from '@mui/material'
+
+import { truncateText } from '@ors/components/manage/Utils/diffUtils'
 
 import CommentsTagList from './CommentsTagList'
 
@@ -39,6 +41,17 @@ const defaultColumnDefs = [
   {
     autoHeight: true,
     cellClass: 'ag-text-center ag-cell-wrap-text',
+    field: 'bp_chemical_type.name',
+    headerClass: 'ag-text-center',
+    headerName: 'Chemical type',
+    minWidth: 100,
+    resizable: true,
+    sortable: true,
+    tooltipField: 'bp_chemical_type.name',
+  },
+  {
+    autoHeight: true,
+    cellClass: 'ag-text-center ag-cell-wrap-text',
     field: 'sector.code',
     headerClass: 'ag-text-center',
     headerName: 'Sector',
@@ -73,21 +86,23 @@ const defaultColumnDefs = [
     sortable: true,
     tooltipField: 'title',
   },
-  {
-    autoHeight: true,
-    cellClass: 'ag-text-center ag-cell-wrap-text',
-    field: 'required_by_model',
-    headerClass: 'ag-text-center',
-    headerName: 'Required by model',
-    minWidth: 150,
-    resizable: true,
-    sortable: true,
-    tooltipField: 'required_by_model',
-  },
 ]
+
+const reqByModel = {
+  autoHeight: true,
+  cellClass: 'ag-text-center ag-cell-wrap-text',
+  field: 'required_by_model',
+  headerClass: 'ag-text-center',
+  headerName: 'Required by model',
+  minWidth: 150,
+  resizable: true,
+  sortable: true,
+  tooltipField: 'required_by_model',
+}
 
 const valuesColumnDefs = (yearColumns: any[]) => [
   ...defaultColumnDefs,
+  reqByModel,
   yearColumns.find(
     (column: { headerName: string }) => column.headerName === 'Value ($000)',
   ) || [],
@@ -118,6 +133,7 @@ const valuesColumnDefs = (yearColumns: any[]) => [
 
 const odpColumnDefs = (yearColumns: any[]) => [
   ...defaultColumnDefs,
+  reqByModel,
   ...(yearColumns.filter(
     (column: { headerName: string }) =>
       column.headerName === 'ODP' || column.headerName === 'MT for HFC',
@@ -128,14 +144,14 @@ const commentsCellRenderer = (props: any) => {
   const { commentSecretariat, commentTypes } = props.value
 
   return (
-    <div className="p-1.5 text-left">
-      <CommentsTagList comments={commentTypes} />
+    <div className="text-left">
+      {commentTypes.length > 0 && <CommentsTagList comments={commentTypes} />}
       <Tooltip
         TransitionProps={{ timeout: 0 }}
         classes={{ tooltip: 'bp-table-tooltip' }}
         title={commentSecretariat}
       >
-        {commentSecretariat}
+        {commentSecretariat && truncateText(commentSecretariat, 50)}
       </Tooltip>
     </div>
   )
@@ -148,8 +164,31 @@ const commentsValueGetter = (params: any) => {
   }
 }
 
+const substancesCellRenderer = (props: any) => {
+  const substance = props.value
+
+  return (
+    <Tooltip
+      TransitionProps={{ timeout: 0 }}
+      title={substance}
+      classes={{
+        tooltip: 'bp-table-tooltip',
+      }}
+    >
+      <Typography
+        className="inline-flex cursor-default items-center gap-2 rounded bg-gray-100 px-1 text-xs font-normal"
+        component="p"
+        variant="h6"
+      >
+        {substance}
+      </Typography>
+    </Tooltip>
+  )
+}
+
 const commentsColumnDefs = () => [
   ...defaultColumnDefs,
+  reqByModel,
   {
     autoHeight: true,
     cellClass: 'ag-text-center ag-cell-wrap-text',
@@ -190,19 +229,16 @@ const allColumnDefs = (yearColumns: any[]) => [
   ...defaultColumnDefs,
   {
     autoHeight: true,
-    // cellRenderer: (params: any) => (
-    //   <Link href={`/business-plans/${params.data.id}`}>
-    //     {params.data.title}
-    //   </Link>
-    // ),
+    cellClass: 'ag-substances-cell-content',
+    cellRenderer: substancesCellRenderer,
     field: 'substances_display',
     headerClass: 'ag-text-center',
     headerName: 'Substances',
     minWidth: 200,
     resizable: true,
     sortable: true,
-    valueGetter: ({ data }: any) => data.substances_display?.join(',') || '-',
   },
+  reqByModel,
   {
     autoHeight: true,
     cellClass: 'ag-text-center',
@@ -212,6 +248,10 @@ const allColumnDefs = (yearColumns: any[]) => [
     minWidth: 100,
     resizable: true,
     sortable: true,
+    valueGetter: (params: any) => {
+      const polyolAmount = params.data.amount_polyol
+      return polyolAmount ? parseFloat(polyolAmount).toFixed(2) : null
+    },
   },
   ...yearColumns,
   {

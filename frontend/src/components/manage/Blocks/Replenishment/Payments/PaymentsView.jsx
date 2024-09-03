@@ -7,11 +7,15 @@ import { times } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 
 import ConfirmDialog from '@ors/components/manage/Blocks/Replenishment/ConfirmDialog'
-import { Select } from '@ors/components/manage/Blocks/Replenishment/Inputs'
+import {
+  Input,
+  Select,
+} from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import PaymentDialog from '@ors/components/manage/Blocks/Replenishment/Payments/PaymentDialog'
 import useGetPayments, {
   _PER_PAGE,
 } from '@ors/components/manage/Blocks/Replenishment/Payments/useGetPayments'
+import { scAnnualOptions } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
 import Table from '@ors/components/manage/Blocks/Replenishment/Table'
 import ViewFiles from '@ors/components/manage/Blocks/Replenishment/ViewFiles'
 import {
@@ -25,6 +29,8 @@ import { AddButton } from '@ors/components/ui/Button/Button'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { formatApiUrl } from '@ors/helpers'
+
+import { IoSearchSharp } from 'react-icons/io5'
 
 const COLUMNS = [
   { field: 'country', label: 'Country' },
@@ -83,6 +89,7 @@ function PaymentsView() {
         ferm_gain_or_loss: formatNumberValue(data.ferm_gain_or_loss) || 'N/A',
         files: <ViewFiles files={data.payment_files} />,
         files_data: data.payment_files,
+        invoices: data.invoices,
         iso3: data.country.iso3,
         payment_for_year: data.payment_for_year,
         replenishment: data.replenishment,
@@ -111,7 +118,7 @@ function PaymentsView() {
     return result
   }, [])
 
-  const [sortOn, setSortOn] = useState(2)
+  const [sortOn, setSortOn] = useState(1)
   const [sortDirection, setSortDirection] = useState(-1)
 
   const [editIdx, setEditIdx] = useState(null)
@@ -134,13 +141,14 @@ function PaymentsView() {
   }
 
   async function handleEditPaymentSubmit(formData) {
-    const entry = { ...formData }
+    const entry = Object.fromEntries(formData.entries())
     entry.date = dateForInput(entry.date)
     entry.exchange_rate = isNaN(entry.exchange_rate) ? '' : entry.exchange_rate
     entry.ferm_gain_or_loss = isNaN(entry.ferm_gain_or_loss)
       ? ''
       : entry.ferm_gain_or_loss
     entry.comment = entry.comment || ''
+    entry.invoices = formData.getAll('invoices')
 
     let nr_new_files = 0
     const data = new FormData()
@@ -151,7 +159,11 @@ function PaymentsView() {
       // Append non-file fields if they are not null, undefined
       // Empty strings are used to delete a value
       if (!key.startsWith('file_')) {
-        if (value !== null && value !== undefined) {
+        if (typeof value === 'object' && value.length) {
+          for (let i = 0; i < value.length; i++) {
+            data.append(key, value[i])
+          }
+        } else if (value !== null && value !== undefined) {
           data.append(key, value)
         }
       }
@@ -202,13 +214,14 @@ function PaymentsView() {
   }
 
   async function handleAddPaymentSubmit(formData) {
-    const entry = { ...formData }
+    const entry = Object.fromEntries(formData.entries())
     entry.date = dateForInput(entry.date)
     entry.exchange_rate = isNaN(entry.exchange_rate) ? '' : entry.exchange_rate
     entry.ferm_gain_or_loss = isNaN(entry.ferm_gain_or_loss)
       ? ''
       : entry.ferm_gain_or_loss
     entry.comment = entry.comment || ''
+    entry.invoices = formData.getAll('invoices')
 
     let nr_new_files = 0
     const data = new FormData()
@@ -218,7 +231,11 @@ function PaymentsView() {
 
       // Append non-file fields if they are not null, undefined, or empty string
       if (!key.startsWith('file_')) {
-        if (value !== null && value !== undefined && value !== '') {
+        if (typeof value === 'object' && value.length) {
+          for (let i = 0; i < value.length; i++) {
+            data.append(key, value[i])
+          }
+        } else if (value !== null && value !== undefined && value !== '') {
           data.append(key, value)
         }
       }
@@ -328,6 +345,15 @@ function PaymentsView() {
     setParams({ country_id })
   }
 
+  function handleSearchInput(evt) {
+    setParams({ search: evt.target.value })
+  }
+
+  function handleYearFilter(evt) {
+    setParams({ year: evt.target.value })
+  }
+  const yearOptions = scAnnualOptions(ctx.periods)
+
   return (
     <>
       {isDeleteModalVisible && paymentToDelete !== null ? (
@@ -361,7 +387,22 @@ function PaymentsView() {
         />
       ) : null}
       <div className="flex items-center justify-between gap-4 pb-4 print:hidden">
-        <div className="flex items-center">
+        <div className="flex items-center gap-x-4">
+          <div className="relative">
+            <IoSearchSharp
+              className="absolute left-3 top-1/2 -translate-y-1/2 transform text-primary"
+              size={20}
+            />
+            <Input
+              id="search"
+              className="!ml-0 w-full rounded border py-2 pl-10 pr-3"
+              defaultValue=""
+              placeholder="Search payment..."
+              type="text"
+              onChange={handleSearchInput}
+            />
+          </div>
+          <div className="h-8 border-y-0 border-l border-r-0 border-solid border-gray-400"></div>
           {!ctx.isCountryUser && (
             <Select
               id="country"
@@ -380,6 +421,25 @@ function PaymentsView() {
               ))}
             </Select>
           )}
+          <Select
+            id="year"
+            className="placeholder-select w-44"
+            onChange={handleYearFilter}
+            hasClear
+          >
+            <option value="" disabled hidden>
+              Year
+            </option>
+            {yearOptions.map((year) => (
+              <option
+                key={year.value}
+                className="text-primary"
+                value={year.value}
+              >
+                {year.label}
+              </option>
+            ))}
+          </Select>
         </div>
         {ctx.isTreasurer && (
           <AddButton onClick={() => setShowAdd(true)}>Add payment</AddButton>

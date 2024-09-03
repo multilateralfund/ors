@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useContext } from 'react'
 
 import cx from 'classnames'
 import Link from 'next/link'
@@ -12,6 +12,8 @@ import { getPathPeriod } from '@ors/components/manage/Blocks/Replenishment/utils
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import CustomLink from '@ors/components/ui/Link/Link'
+import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
+import BPYearRangesProvider from '@ors/contexts/BusinessPlans/BPYearRangesProvider'
 
 import styles from './styles.module.css'
 
@@ -48,7 +50,8 @@ function getNavLinks(pathname: string, period: null | string) {
 }
 
 function BusinessPlansList(props: any) {
-  const { periodOptions } = useGetBpPeriods()
+  const { yearRanges } = useContext(BPYearRangesContext) as any
+  const { periodOptions } = useGetBpPeriods(yearRanges)
   const { children } = props
 
   const pathname = usePathname()
@@ -61,12 +64,17 @@ function BusinessPlansList(props: any) {
       <div className={cx('print:hidden', styles.nav)}>
         {/* @ts-ignore */}
         <nav className="shrink-0">{navLinks}</nav>
-        <PeriodSelector
-          label="Triennial"
-          period={period}
-          periodOptions={[...periodOptions]}
-        />
-        {/*<div id="replenishment-tab-buttons" className="self-end"></div>*/}
+        <div className={cx('flex flex-row', styles.moreOptions)}>
+          <PeriodSelector
+            label="Triennial"
+            period={period}
+            periodOptions={[...periodOptions]}
+          />
+          <div
+            id="bp-activities-export-button"
+            className="ml-4 mt-0.5 self-center"
+          />
+        </div>
       </div>
       <div className={styles.page}>{children}</div>
     </>
@@ -93,8 +101,10 @@ function BPListHeader() {
 export default function BusinessPlansListLayout({ children }: any) {
   return (
     <PageWrapper className="max-w-screen-xl print:p-0">
-      <BPListHeader />
-      <BusinessPlansList>{children}</BusinessPlansList>
+      <BPYearRangesProvider>
+        <BPListHeader />
+        <BusinessPlansList>{children}</BusinessPlansList>
+      </BPYearRangesProvider>
     </PageWrapper>
   )
 }

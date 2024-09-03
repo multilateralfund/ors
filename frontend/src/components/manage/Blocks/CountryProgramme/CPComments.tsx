@@ -1,5 +1,5 @@
 import { CommentData } from '@ors/types/store'
-import { UserType } from '@ors/types/user_types'
+import { UserType, userCanCommentCountry, userCanCommentSecretariat } from '@ors/types/user_types'
 
 import React, { useEffect, useState } from 'react'
 
@@ -77,9 +77,9 @@ const CPComments: React.FC = (props: any) => {
 
       const data: CommentData = {
         comment:
-          userType === 'country' ? comments.country : comments.secretariat,
+          userCanCommentCountry[userType as UserType] ? comments.country : comments.secretariat,
         comment_type:
-          userType === 'country' ? 'comment_country' : 'comment_secretariat',
+          userCanCommentCountry[userType as UserType] ? 'comment_country' : 'comment_secretariat',
         section: section,
       }
 
@@ -129,11 +129,11 @@ const CPComments: React.FC = (props: any) => {
   const commentsMeta = {
     country: {
       label: 'Country',
-      user_type: 'country_user',
+      user_check: userCanCommentCountry,
     },
     mlfs: {
       label: 'MLFS',
-      user_type: 'secretariat',
+      user_check: userCanCommentSecretariat,
     },
   }
 
@@ -141,13 +141,12 @@ const CPComments: React.FC = (props: any) => {
     return texts[userType] === '' && initialTexts[userType] === ''
   }
 
-  const Container = viewOnly ? 'div' : 'form'
 
   return (
-    <Container className="-mx-6 -mb-6 mt-6 flex w-auto flex-wrap justify-around gap-6 rounded-b-lg bg-gray-100 px-6 pb-6">
+    <div className="-mx-6 -mb-6 mt-6 flex w-auto flex-wrap justify-around gap-6 rounded-b-lg bg-gray-100 px-6 pb-6">
       {orderedUsers.map((user) => {
         const canEditComment =
-          user_type === commentsMeta[user].user_type &&
+          commentsMeta[user].user_check[user_type as UserType] &&
           latestVersion &&
           viewOnly === false &&
           report.data?.status !== 'draft'
@@ -198,7 +197,7 @@ const CPComments: React.FC = (props: any) => {
                 </div>
               )}
             </div>
-            {error && user_type === commentsMeta[user].user_type && (
+            {error && commentsMeta[user].user_check[user_type as UserType] && (
               <Alert severity="error">
                 <Typography>Something went wrong. Please try again.</Typography>
               </Alert>
@@ -206,7 +205,7 @@ const CPComments: React.FC = (props: any) => {
           </div>
         )
       })}
-    </Container>
+    </div>
   )
 }
 

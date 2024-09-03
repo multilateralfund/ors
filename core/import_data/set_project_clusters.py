@@ -58,11 +58,11 @@ def set_custom_clusters(file_path):
                 logger.error(f"Type not found: {row['TypeCode']}")
                 return
             update_data["project_type"] = current_type
-        Project.objects.filter(code=row["ProjectCode"]).update(**update_data)
+        Project.objects.filter(legacy_code=row["ProjectCode"]).update(**update_data)
 
     # legacy_code = TLS/PHA/59/PRP/02 => substance_type = CFC
     Project.objects.select_related("sector").filter(
-        code="TLS/PHA/59/PRP/02",
+        legacy_code="TLS/PHA/59/PRP/02",
     ).update(substance_type="CFC")
 
 
@@ -73,7 +73,11 @@ def parse_clusters_file(file_path, database_name):
     for project_json in json_data:
         # get project by code
         project = get_object_by_code(
-            Project, project_json["Code"], "code", project_json["Code"], with_log=False
+            Project,
+            project_json["Code"],
+            "legacy_code",
+            project_json["Code"],
+            with_log=False,
         )
         # skip project if not created (invalid data)
         if not project:
@@ -114,7 +118,7 @@ def set_substance_cluster(project):
 
     if len(cluster_names) > 1:
         logger.warning(
-            f"Project {project.code} has multiple substance types: {cluster_names}"
+            f"Project {project.legacy_code} has multiple substance types: {cluster_names}"
         )
         return
 

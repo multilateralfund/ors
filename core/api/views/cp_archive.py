@@ -52,7 +52,10 @@ class CPReportVersionsListView(generics.GenericAPIView):
         current_version = None
         if country_id and year:
             cp_reports = CPReport.objects.all()
-            if user.user_type == user.UserType.COUNTRY_USER:
+            if user.user_type in (
+                user.UserType.COUNTRY_USER,
+                user.UserType.COUNTRY_SUBMITTER,
+            ):
                 cp_reports = cp_reports.filter(country=user.country)
             current_version = cp_reports.filter(
                 country_id=country_id, year=year

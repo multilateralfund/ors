@@ -18,7 +18,10 @@ class CountryListView(mixins.ListModelMixin, generics.GenericAPIView):
         queryset = Country.objects.with_has_cp_report().filter(
             is_a2=False,
         )
-        if user.user_type == user.UserType.COUNTRY_USER:
+        if user.user_type in (
+            user.UserType.COUNTRY_USER,
+            user.UserType.COUNTRY_SUBMITTER,
+        ):
             queryset = queryset.filter(id=user.country_id)
         return queryset.order_by("name")
 

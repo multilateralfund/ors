@@ -31,9 +31,7 @@ function getDecimalCellValue(
 
   let TitleContent = null
 
-  if (props.context?.section.component.name.endsWith('Create')) {
-    TitleContent = <span>{value}</span>
-  } else if (value === 0) {
+  if (value === 0) {
     TitleContent = <span>0</span>
   } else {
     switch (props.context?.section?.id) {

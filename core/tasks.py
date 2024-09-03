@@ -24,7 +24,8 @@ def send_mail_comment_submit(cp_comment_id):
         recipients = User.objects.filter(user_type=User.UserType.SECRETARIAT)
     else:
         recipients = User.objects.filter(
-            user_type=User.UserType.COUNTRY_USER, country=cp_report.country
+            user_type__in=[User.UserType.COUNTRY_USER, User.UserType.COUNTRY_SUBMITTER],
+            country=cp_report.country,
         )
 
     send_mail(

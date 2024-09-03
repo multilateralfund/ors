@@ -1,6 +1,7 @@
 'use client'
 
 import { Country } from '@ors/types/store'
+import { UserType, isCountryUserType } from '@ors/types/user_types'
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 
@@ -457,13 +458,13 @@ const CPCreate: React.FC = () => {
   useEffect(() => {
     const user_type = user.data.user_type
 
-    if (user_type === 'country_user') {
+    if (isCountryUserType[user_type as UserType]) {
       const country_id = user.data.country_id
       const user_country = user.data.country
 
       setForm({
         ...form,
-        country: { id: country_id, label: user_country },
+        country: { id: country_id!, label: user_country! },
       })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
