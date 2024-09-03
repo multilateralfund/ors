@@ -419,6 +419,8 @@ function Table(props: TableProps) {
     }
   }, [])
 
+  console.log('TABLE RERENDER')
+
   return (
     <>
       <FadeInOut

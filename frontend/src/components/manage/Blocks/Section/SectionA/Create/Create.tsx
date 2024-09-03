@@ -136,9 +136,12 @@ export default function SectionACreate(props: {
     getInitialPinnedBottomRowData(variant.model),
   )
   const [addSubstanceModal, setAddSubstanceModal] = useState(false)
-  const rowData = getRowData(form.section_a, variant.model).toSorted(
-    (a, b) => a.group?.localeCompare(b.group || 'zzz') || 0,
-  )
+  const rowData = useMemo(() => {
+    console.log('recompute rowData')
+    return getRowData(form.section_a, variant.model).toSorted(
+      (a, b) => a.group?.localeCompare(b.group || 'zzz') || 0,
+    )
+  }, [form.section_a, variant.model])
 
   const substancesInForm = useMemo(() => {
     return form.section_a.map((substance) => substance.row_id)
@@ -344,7 +347,9 @@ export default function SectionACreate(props: {
           </Box>
         </Modal>
       )}
-      {showComments && <Comments form={form} section="section_a" setForm={setForm} />}
+      {showComments && (
+        <Comments form={form} section="section_a" setForm={setForm} />
+      )}
     </>
   )
 }

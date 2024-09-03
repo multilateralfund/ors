@@ -1,4 +1,4 @@
-import type { CPBaseForm } from '@ors/components/manage/Blocks/CountryProgramme/typesCPCreate'
+import type { CPValidationForm } from '@ors/components/manage/Blocks/CountryProgramme/typesCPCreate'
 import type { ApiUsage } from '@ors/types/api_usages'
 
 export interface IUsage {
@@ -53,7 +53,7 @@ export type RowValidatorFuncResult = IInvalidRowResult | null | undefined
 export type GlobalValidatorFuncResult = IInvalidGlobalResult | null | undefined
 
 export type RowValidatorFuncContext = {
-  form: CPBaseForm
+  form: CPValidationForm
   usages: UsageMapping
 }
 
@@ -129,7 +129,7 @@ export interface IValidationContext {
 
 export interface IValidationProvider {
   children: React.ReactNode
-  form: CPBaseForm
+  form: CPValidationForm
   model?: string
   silent?: boolean
 }

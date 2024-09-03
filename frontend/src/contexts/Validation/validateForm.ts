@@ -8,7 +8,7 @@ import type {
 } from './types'
 import { ApiUsage } from '@ors/types/api_usages'
 
-import { CPBaseForm } from '@ors/components/manage/Blocks/CountryProgramme/typesCPCreate'
+import { CPValidationForm } from '@ors/components/manage/Blocks/CountryProgramme/typesCPCreate'
 
 import validationSchema from './validationSchema'
 
@@ -23,7 +23,7 @@ function validateSectionRows(
   rows: IRow[],
   section_id: ValidationSchemaKeys,
   usages: UsageMapping,
-  form: CPBaseForm,
+  form: CPValidationForm,
 ) {
   const result: IRowValidationResult[] = []
 
@@ -62,7 +62,7 @@ function validateSectionRows(
 function validateSectionGlobal(
   section_id: ValidationSchemaKeys,
   usages: UsageMapping,
-  form: CPBaseForm,
+  form: CPValidationForm,
 ): IGlobalValidationResult[] {
   const sectionValidators = validationSchema?.[section_id]?.global || []
 
@@ -80,7 +80,7 @@ function validateSectionGlobal(
 }
 
 function validateSection(
-  form: CPBaseForm,
+  form: CPValidationForm,
   section_id: ValidationSchemaKeys,
   usages: UsageMapping,
 ): ValidateSectionResult {
@@ -112,7 +112,7 @@ function validateSection(
 }
 
 export default function validateForm(
-  form: CPBaseForm,
+  form: CPValidationForm,
   usageApiData: ApiUsage[],
 ) {
   const validationSchemaKeys = Object.keys(

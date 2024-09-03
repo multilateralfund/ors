@@ -3,7 +3,13 @@
 import { Country } from '@ors/types/store'
 import { UserType, isCountryUserType } from '@ors/types/user_types'
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, {
+  ChangeEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 
 import { Alert, Button, Tabs, Tooltip, Typography } from '@mui/material'
 import cx from 'classnames'
@@ -290,15 +296,17 @@ const CPCreate: React.FC = () => {
     [form, all_countries],
   )
 
-  function handleSetForm(value: any) {
-    if (typeof value === 'function') {
-      localStorage.update(value(form))
-    } else {
-      localStorage.update(value)
-    }
-    setForm(value)
-    setWarnOnClose(true)
-  }
+  const handleSetForm = useCallback(
+    (value: ((form: CPBaseForm) => CPBaseForm) | CPBaseForm) => {
+      setForm((prevForm) => {
+        const nextForm = typeof value === 'function' ? value(prevForm) : value
+        localStorage.update(nextForm)
+        return nextForm
+      })
+      setWarnOnClose(true)
+    },
+    [localStorage],
+  )
 
   const variant = useMemo(() => {
     return filter(variants, (variant) => {
@@ -332,9 +340,8 @@ const CPCreate: React.FC = () => {
     },
     disabled: existingReports.loading,
     name: 'country_id',
-    onChange: (_event: any, value: WidgetCountry) => {
-      const country = value as WidgetCountry
-      handleSetForm({ ...form, country })
+    onChange: (_: ChangeEvent, value: WidgetCountry) => {
+      handleSetForm({ ...form, country: value })
     },
     options: countries,
     value: form.country,

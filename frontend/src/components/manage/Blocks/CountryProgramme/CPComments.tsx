@@ -15,6 +15,7 @@ import TextareaAutosize from '@mui/material/TextareaAutosize'
 import Typography from '@mui/material/Typography'
 
 import SectionOverlay from '@ors/components/ui/SectionOverlay/SectionOverlay'
+import { debounce } from '@ors/helpers'
 import api from '@ors/helpers/Api/_api'
 import { useStore } from '@ors/store'
 
@@ -232,20 +233,18 @@ function CPCommentsForEdit(props: CPCommentsForEditProps) {
   const [error, setError] = useState(null)
   const [texts, setTexts] = useState(initialTexts)
 
-
-  // useEffect(() => {
-  //   setForm((prev) => ({
-  //     ...prev,
-  //     [sectionKey]: texts,
-  //   }))
-  // }, [texts, sectionKey])
-
-  // const texts = useMemo(
-  //   function () {
-  //     return (form?.[sectionKey] as CPCommentState) ?? initialTexts
-  //   },
-  //   [form, initialTexts, sectionKey],
-  // )
+  useEffect(() => {
+    debounce(
+      () => {
+        setForm((prev) => ({
+          ...prev,
+          [sectionKey]: texts,
+        }))
+      },
+      300,
+      `updateForm:${sectionKey}`,
+    )
+  }, [sectionKey, setForm, texts])
 
   useEffect(() => {
     if (report?.data?.comments) {
@@ -268,25 +267,11 @@ function CPCommentsForEdit(props: CPCommentsForEditProps) {
   }, [section, report])
 
   const handleTextChange = (label: Label, value: string) => {
-    setTexts((prev) => ({...prev, [label]: value}))
-    // setForm((prev) => ({
-    //   ...prev,
-    //   [sectionKey]: {
-    //     ...(prev[sectionKey] as CPCommentState),
-    //     [label]: value,
-    //   },
-    // }))
+    setTexts((prev) => ({ ...prev, [label]: value }))
   }
   const handleCancel = (label: Label) => {
     setError(null)
-    setTexts((prev) => ({...prev, [label]: initialTexts[label]}))
-    // setForm((prev) => ({
-    //   ...prev,
-    //   [sectionKey]: {
-    //     ...(prev[sectionKey] as CPCommentState),
-    //     [label]: initialTexts[label],
-    //   },
-    // }))
+    setTexts((prev) => ({ ...prev, [label]: initialTexts[label] }))
   }
 
   const orderedUsers: Label[] = ['country', 'mlfs']
@@ -333,7 +318,7 @@ function CPCommentsForEdit(props: CPCommentsForEditProps) {
                     variant="contained"
                     onClick={() => handleCancel(user)}
                   >
-                    Cancel
+                    Reset
                   </Button>
                 </div>
               )}

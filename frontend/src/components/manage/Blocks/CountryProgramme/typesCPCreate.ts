@@ -70,12 +70,6 @@ export interface PassedCPCreateTableProps extends CPCreateTableProps {
 }
 
 export interface CPBaseForm {
-  comments_section_a: CPCommentState
-  comments_section_b: CPCommentState
-  comments_section_c: CPCommentState
-  comments_section_d: CPCommentState
-  comments_section_e: CPCommentState
-  comments_section_f: CPCommentState
   country: WidgetCountry | null
   files: File[]
   report_info: {
@@ -95,4 +89,32 @@ export interface CPBaseForm {
   section_e: SectionE['data']
   section_f: SectionF['data']
   year: number
+}
+
+export interface CPEditForm extends CPBaseForm {
+  comments_section_a: CPCommentState
+  comments_section_b: CPCommentState
+  comments_section_c: CPCommentState
+  comments_section_d: CPCommentState
+  comments_section_e: CPCommentState
+  comments_section_f: CPCommentState
+}
+
+export interface CPValidationForm {
+  report_info: {
+    reported_section_a: boolean
+    reported_section_b: boolean
+    reported_section_c: boolean
+    reported_section_d: boolean
+    reported_section_e: boolean
+    reported_section_f: boolean
+    reporting_email: string
+    reporting_entry: string
+  }
+  section_a: SectionA['data']
+  section_b: SectionB['data']
+  section_c: SectionC['data']
+  section_d: SectionD['data']
+  section_e: SectionE['data']
+  section_f: SectionF['data']
 }

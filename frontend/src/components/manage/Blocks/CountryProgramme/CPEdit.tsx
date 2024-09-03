@@ -9,7 +9,7 @@ import { findIndex, includes, map, pickBy, reduce, values } from 'lodash'
 
 import { defaultColDefEdit } from '@ors/config/Table/columnsDef'
 
-import {CPCommentsForEdit} from '@ors/components/manage/Blocks/CountryProgramme/CPComments'
+import { CPCommentsForEdit } from '@ors/components/manage/Blocks/CountryProgramme/CPComments'
 import SectionReportedSelect from '@ors/components/manage/Blocks/Section/SectionReportedSelect'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Error from '@ors/components/theme/Views/Error'
@@ -35,10 +35,22 @@ import { CPEditHeader } from './CPHeader'
 import CPRestoreEdit from './CPRestoreEdit'
 import CPSectionWrapper from './CPSectionWrapper'
 import DownloadCalculatedAmounts from './DownloadCalculatedAmounts'
-import { CPBaseForm } from './typesCPCreate'
+import { CPBaseForm, CPValidationForm } from './typesCPCreate'
 import { useEditLocalStorage } from './useLocalStorage'
 
 import { IoClose, IoExpand } from 'react-icons/io5'
+
+function getValidationForm(form: CPBaseForm): CPValidationForm {
+  return {
+    report_info: form.report_info,
+    section_a: form.section_a,
+    section_b: form.section_b,
+    section_c: form.section_c,
+    section_d: form.section_d,
+    section_e: form.section_e,
+    section_f: form.section_f,
+  }
+}
 
 function defaults(arr: Array<any>, value: any) {
   if (arr?.length > 0) return arr
@@ -239,17 +251,19 @@ function CPEdit() {
   const { activeTab, setActiveTab } = useStore((state) => state.cp_current_tab)
   const [renderedSections, setRenderedSections] = useState<number[]>([])
 
-  function handleSetForm(value: typeof form) {
-    if (typeof value === 'function') {
-      localStorage.update(value(form))
-    } else {
-      localStorage.update(value)
-    }
-    setForm(value)
-    setWarnOnClose(true)
-  }
-
   const localStorage = useEditLocalStorage(report)
+
+  const handleSetForm = useCallback(
+    (value: typeof form) => {
+      setForm((prevForm) => {
+        const nextForm = typeof value === 'function' ? value(prevForm) : value
+        localStorage.update(nextForm)
+        return nextForm
+      })
+      setWarnOnClose(true)
+    },
+    [localStorage],
+  )
 
   const sections = useMemo(
     () => (variant ? getSections(variant, 'edit') : []),
@@ -351,9 +365,10 @@ function CPEdit() {
   }, [renderedSections.length, activeTab])
 
   const showComments = variant?.model === 'V'
+  const validatableForm = getValidationForm(form as CPBaseForm)
 
   return (
-    <ValidationProvider form={form as CPBaseForm} model={variant?.model}>
+    <ValidationProvider form={validatableForm} model={variant?.model}>
       <Loading
         className="!fixed bg-action-disabledBackground"
         active={
