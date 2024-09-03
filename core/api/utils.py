@@ -43,6 +43,11 @@ SUBSTANCE_GROUP_ID_TO_CATEGORY = {
 
 SUBMISSION_STATUSE_CODES = ["NEWSUB", "UNK"]
 
+PROJECT_SECTOR_TYPE_MAPPING = {
+    # sector code: available project types
+    "PMU": ["TAS"],
+    "TAS": ["TAS"],
+}
 
 STATUS_TRANSITIONS = {
     BusinessPlan.Status.agency_draft: {

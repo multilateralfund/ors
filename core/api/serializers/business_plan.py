@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from rest_framework import serializers
 
@@ -8,6 +9,7 @@ from core.api.serializers.project import ProjectClusterSerializer
 from core.api.serializers.project import ProjectSectorSerializer
 from core.api.serializers.project import ProjectSubSectorSerializer
 from core.api.serializers.project import ProjectTypeSerializer
+from core.api.utils import PROJECT_SECTOR_TYPE_MAPPING
 from core.models import (
     Agency,
     BPChemicalType,
@@ -232,9 +234,7 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
         queryset=Country.objects.all().values_list("id", flat=True),
     )
     lvc_status = serializers.ChoiceField(choices=BPActivity.LVCStatus.choices)
-    project_type_id = serializers.PrimaryKeyRelatedField(
-        queryset=ProjectType.objects.all().values_list("id", flat=True),
-    )
+    project_type_id = serializers.IntegerField()
     status = serializers.ChoiceField(choices=BPActivity.Status.choices)
     bp_chemical_type_id = serializers.PrimaryKeyRelatedField(
         queryset=BPChemicalType.objects.all().values_list("id", flat=True),
@@ -253,15 +253,24 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
         queryset=CommentType.objects.all().values_list("id", flat=True),
     )
 
-    sector_id = serializers.PrimaryKeyRelatedField(
-        queryset=ProjectSector.objects.all().values_list("id", flat=True),
-    )
+    sector_id = serializers.IntegerField()
     subsector_id = serializers.PrimaryKeyRelatedField(
         queryset=ProjectSubSector.objects.all().values_list("id", flat=True),
     )
     values = BPActivityValueSerializer(many=True)
 
     is_updated = serializers.BooleanField(read_only=True)
+
+    def validate(self, attrs):
+        # check only once if project sector and type exist
+        sector = get_object_or_404(ProjectSector, id=attrs.get("sector_id"))
+        project_type = get_object_or_404(ProjectType, id=attrs.get("project_type_id"))
+
+        if sector.code in PROJECT_SECTOR_TYPE_MAPPING:
+            if project_type.code not in PROJECT_SECTOR_TYPE_MAPPING[sector.code]:
+                raise serializers.ValidationError("Invalid sector - type combination")
+
+        return super().validate(attrs)
 
     def validate_values(self, values):
         is_after_count = 0
