@@ -1,4 +1,5 @@
 import type {
+  CPValidationForm,
   IGlobalValidationResult,
   IRow,
   IRowValidationResult,
@@ -7,8 +8,6 @@ import type {
   ValidationSchemaKeys,
 } from './types'
 import { ApiUsage } from '@ors/types/api_usages'
-
-import { CPValidationForm } from '@ors/components/manage/Blocks/CountryProgramme/typesCPCreate'
 
 import validationSchema from './validationSchema'
 

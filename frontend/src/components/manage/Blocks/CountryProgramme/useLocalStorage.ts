@@ -1,4 +1,4 @@
-import type { CPBaseForm } from './typesCPCreate'
+import type { CPBaseForm, CPEditForm } from './typesCPCreate'
 import type { CPReportsSlice } from '@ors/types/store'
 
 import { useCallback, useMemo } from 'react'
@@ -6,7 +6,7 @@ import { useCallback, useMemo } from 'react'
 import storage from '@ors/storage'
 
 export interface ILSDataEdit {
-  form: CPBaseForm
+  form: CPEditForm
   report_id?: number
 }
 
@@ -28,7 +28,7 @@ export function useEditLocalStorage(report: CPReportsSlice['report']) {
   }, [key, report.data])
 
   const update = useCallback(
-    (form: CPBaseForm) => {
+    (form: CPEditForm) => {
       const data: ILSDataEdit = {
         form: form,
         report_id: report.data?.id,

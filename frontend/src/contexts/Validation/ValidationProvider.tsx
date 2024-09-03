@@ -50,8 +50,6 @@ const ValidationProvider = (props: IValidationProvider) => {
     setOpenDrawer(newOpen)
   }
 
-  console.log('REVALIDATE')
-
   return (
     <ValidationContext.Provider
       value={{

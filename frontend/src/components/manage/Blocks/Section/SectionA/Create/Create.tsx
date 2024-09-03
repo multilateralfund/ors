@@ -8,11 +8,6 @@ import { Alert, Box, Button, Modal, Typography } from '@mui/material'
 import { CellValueChangedEvent, RowNode } from 'ag-grid-community'
 import { each, find, findIndex, includes, union } from 'lodash'
 
-import { CPCommentsForEditType } from '@ors/components/manage/Blocks/CountryProgramme/CPCommentsTypes'
-import {
-  CPBaseForm,
-  PassedCPCreateTableProps,
-} from '@ors/components/manage/Blocks/CountryProgramme/typesCPCreate'
 import { NewAddSubstanceDropdowns } from '@ors/components/manage/Blocks/Section/SectionA/Create/NewAddSubstanceDropdowns'
 import { OldAddSubstanceDropdowns } from '@ors/components/manage/Blocks/Section/SectionA/Create/OldAddSubstanceDropdowns'
 import Table from '@ors/components/manage/Form/Table'
@@ -23,7 +18,7 @@ import SectionA from '@ors/models/SectionA'
 import { useStore } from '@ors/store'
 
 import useGridOptions from './schema'
-import { RowData } from './types'
+import { ISectionACreateProps, RowData } from './types'
 
 import { IoAddCircle, IoInformationCircleOutline } from 'react-icons/io5'
 
@@ -103,28 +98,8 @@ function getInitialPinnedBottomRowData(model: string): RowData[] {
   return pinnedBottomRowData
 }
 
-export default function SectionACreate(props: {
-  Comments: CPCommentsForEditType
-  Section: SectionA
-  TableProps: PassedCPCreateTableProps
-  emptyForm: EmptyFormType
-  form: CPBaseForm
-  onSectionCheckChange: (section: string, isChecked: boolean) => void
-  sectionsChecked: Record<string, boolean>
-  setForm: React.Dispatch<React.SetStateAction<CPBaseForm>>
-  showComments: boolean
-  variant: ReportVariant
-}) {
-  const {
-    Comments,
-    Section,
-    TableProps,
-    emptyForm,
-    form,
-    setForm,
-    showComments,
-    variant,
-  } = props
+export default function SectionACreate(props: ISectionACreateProps) {
+  const { Section, TableProps, emptyForm, form, setForm, variant } = props
   const newNode = useRef<RowNode>()
   const substances = useStore(
     (state) =>
@@ -137,7 +112,6 @@ export default function SectionACreate(props: {
   )
   const [addSubstanceModal, setAddSubstanceModal] = useState(false)
   const rowData = useMemo(() => {
-    console.log('recompute rowData')
     return getRowData(form.section_a, variant.model).toSorted(
       (a, b) => a.group?.localeCompare(b.group || 'zzz') || 0,
     )
@@ -346,9 +320,6 @@ export default function SectionACreate(props: {
             </Typography>
           </Box>
         </Modal>
-      )}
-      {showComments && (
-        <Comments form={form} section="section_a" setForm={setForm} />
       )}
     </>
   )

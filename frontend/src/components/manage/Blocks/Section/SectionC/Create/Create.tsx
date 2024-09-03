@@ -1,9 +1,8 @@
 import { ApiBlend } from '@ors/types/api_blends'
-import { EmptyFormSubstance, EmptyFormType } from '@ors/types/api_empty-form'
+import { EmptyFormSubstance } from '@ors/types/api_empty-form'
 import { ApiSubstance } from '@ors/types/api_substances'
-import { ReportVariant } from '@ors/types/variants'
 
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   Alert,
@@ -28,14 +27,15 @@ import useApi from '@ors/hooks/useApi'
 import SectionC from '@ors/models/SectionC'
 import { useStore } from '@ors/store'
 
-import {
-  CPBaseForm,
-  PassedCPCreateTableProps,
-} from '../../../CountryProgramme/typesCPCreate'
 import AddSubstance from './AddSubstance'
 import CreateSubstance from './CreateSubstance'
 import useGridOptions from './schema'
-import { RowData, SubstancePrice, SubstancePrices } from './types'
+import {
+  ISectionCCreateProps,
+  RowData,
+  SubstancePrice,
+  SubstancePrices,
+} from './types'
 
 import { IoAddCircle, IoInformationCircleOutline } from 'react-icons/io5'
 
@@ -205,28 +205,8 @@ function autoCompleteRenderOption(props: any, option: any, state: any) {
   )
 }
 
-export default function SectionCCreate(props: {
-  Comments: React.FC<{ section: string; viewOnly: boolean }>
-  Section: SectionC
-  TableProps: PassedCPCreateTableProps
-  emptyForm: EmptyFormType
-  form: CPBaseForm
-  onSectionCheckChange: (section: string, isChecked: boolean) => void
-  sectionsChecked: Record<string, boolean>
-  setForm: React.Dispatch<React.SetStateAction<CPBaseForm>>
-  showComments: boolean
-  variant: ReportVariant
-}) {
-  const {
-    Comments,
-    Section,
-    TableProps,
-    emptyForm,
-    form,
-    setForm,
-    showComments,
-    variant,
-  } = props
+export default function SectionCCreate(props: ISectionCCreateProps) {
+  const { Section, TableProps, emptyForm, form, setForm, variant } = props
   const newNode = useRef<RowNode>()
 
   const substances = useStore(
@@ -638,7 +618,6 @@ export default function SectionCCreate(props: {
           </Box>
         </Modal>
       )}
-      {showComments && <Comments section="section_c" viewOnly={true} />}
     </>
   )
 }

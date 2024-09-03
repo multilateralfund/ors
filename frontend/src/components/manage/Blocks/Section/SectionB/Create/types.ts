@@ -1,4 +1,6 @@
-import { DeserializedDataB } from '@ors/models/SectionB'
+import SectionB, { DeserializedDataB } from '@ors/models/SectionB'
+
+import { IBaseSectionProps } from '../../types'
 
 export type RowData = {
   count?: number
@@ -14,4 +16,8 @@ export type PinnedBottomRowData = {
   row_id?: string
   rowType: string
   tooltip?: boolean
+}
+
+export interface ISectionBCreateProps extends IBaseSectionProps {
+  Section: SectionB
 }

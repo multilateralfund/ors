@@ -10,11 +10,12 @@ import Footnote from '@ors/components/ui/Footnote/Footnote'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 
 import useGridOptions from './schema'
+import { ISectionECreateProps } from './types'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
-export default function SectionECreate(props: any) {
-  const { Comments, TableProps, form, setForm, showComments } = props
+export default function SectionECreate(props: ISectionECreateProps) {
+  const { TableProps, form, setForm } = props
   const newNode = useRef<RowNode>()
   const grid = useRef<any>()
   const newFacilityIndex = useRef(last<any>(form.section_e)?.id + 1 || 1)
@@ -82,7 +83,11 @@ export default function SectionECreate(props: any) {
 
   return (
     <>
-      <Alert className="bg-mlfs-bannerColor" icon={<IoInformationCircleOutline size={24} />} severity="info">
+      <Alert
+        className="bg-mlfs-bannerColor"
+        icon={<IoInformationCircleOutline size={24} />}
+        severity="info"
+      >
         <Footnote id="" index="">
           Facility name must be provided if data in Section D is provided
         </Footnote>
@@ -127,7 +132,6 @@ export default function SectionECreate(props: any) {
           }
         }}
       />
-      {showComments && <Comments section="section_e" viewOnly={true} />}
     </>
   )
 }

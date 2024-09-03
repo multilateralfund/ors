@@ -20,7 +20,7 @@ import { defaultSliceData } from '@ors/helpers/Store/Store'
 import useClickOutside from '@ors/hooks/useClickOutside'
 import { useStore } from '@ors/store'
 
-import { getSections } from '.'
+import { ViewSectionTypes, getSections } from '.'
 import Portal from '../../Utils/Portal'
 import { CPArchiveHeader, CPViewHeader } from './CPHeader'
 import CPSectionWrapper from './CPSectionWrapper'
@@ -326,7 +326,8 @@ function CPView(props: { archive?: boolean }) {
               // @ts-ignore
               report.data?.report_info?.[`reported_${section.id}`]
             if (!includes(renderedSections, index)) return null
-            const Section = section.component
+            const Section: ViewSectionTypes =
+              section.component as ViewSectionTypes
             return (
               <div
                 id={section.panelId}

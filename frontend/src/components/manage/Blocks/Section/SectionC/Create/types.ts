@@ -1,4 +1,6 @@
-import { DeserializedDataC } from '@ors/models/SectionC'
+import SectionC, { DeserializedDataC } from '@ors/models/SectionC'
+
+import { IBaseSectionProps } from '../../types'
 
 export type RowData = {
   count?: number
@@ -14,3 +16,7 @@ export type SubstancePrice = {
   substance_id: null | number
 }
 export type SubstancePrices = SubstancePrice[]
+
+export interface ISectionCCreateProps extends IBaseSectionProps {
+  Section: SectionC
+}

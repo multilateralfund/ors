@@ -35,22 +35,10 @@ import { CPEditHeader } from './CPHeader'
 import CPRestoreEdit from './CPRestoreEdit'
 import CPSectionWrapper from './CPSectionWrapper'
 import DownloadCalculatedAmounts from './DownloadCalculatedAmounts'
-import { CPBaseForm, CPValidationForm } from './typesCPCreate'
+import { CPEditForm } from './typesCPCreate'
 import { useEditLocalStorage } from './useLocalStorage'
 
 import { IoClose, IoExpand } from 'react-icons/io5'
-
-function getValidationForm(form: CPBaseForm): CPValidationForm {
-  return {
-    report_info: form.report_info,
-    section_a: form.section_a,
-    section_b: form.section_b,
-    section_c: form.section_c,
-    section_d: form.section_d,
-    section_e: form.section_e,
-    section_f: form.section_f,
-  }
-}
 
 function defaults(arr: Array<any>, value: any) {
   if (arr?.length > 0) return arr
@@ -211,7 +199,7 @@ function CPEdit() {
   const variant = useMemo(() => report.variant, [report])
 
   const [errors, setErrors] = useState<Record<string, any>>({})
-  const [form, setForm] = useState<Record<string, any>>({
+  const [form, setForm] = useState<CPEditForm>({
     adm_b: report.data?.adm_b,
     adm_c: report.data?.adm_c,
     adm_d: report.data?.adm_d,
@@ -254,7 +242,7 @@ function CPEdit() {
   const localStorage = useEditLocalStorage(report)
 
   const handleSetForm = useCallback(
-    (value: typeof form) => {
+    (value: ((form: CPEditForm) => CPEditForm) | CPEditForm) => {
       setForm((prevForm) => {
         const nextForm = typeof value === 'function' ? value(prevForm) : value
         localStorage.update(nextForm)
@@ -334,7 +322,7 @@ function CPEdit() {
       [section]: isChecked,
     }))
 
-    handleSetForm((prevState: typeof form) => ({
+    handleSetForm((prevState) => ({
       ...prevState,
       report_info: {
         ...prevState.report_info,
@@ -365,10 +353,9 @@ function CPEdit() {
   }, [renderedSections.length, activeTab])
 
   const showComments = variant?.model === 'V'
-  const validatableForm = getValidationForm(form as CPBaseForm)
 
   return (
-    <ValidationProvider form={validatableForm} model={variant?.model}>
+    <ValidationProvider form={form} model={variant?.model}>
       <Loading
         className="!fixed bg-action-disabledBackground"
         active={

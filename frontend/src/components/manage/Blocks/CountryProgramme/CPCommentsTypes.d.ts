@@ -1,4 +1,4 @@
-import type { CPBaseForm } from '@ors/components/manage/Blocks/CountryProgramme/typesCPCreate'
+import type { CPEditForm } from '@ors/components/manage/Blocks/CountryProgramme/typesCPCreate'
 
 export type CPCommentState = {
   country: string
@@ -13,9 +13,9 @@ export type CPCommentsProps = {
 export type CPCommentsType = React.FC<CPCommentsProps>
 
 export type CPCommentsForEditProps = {
-  form: CPBaseForm
+  form: CPEditForm
   section: string
-  setForm: React.Dispatch<React.SetStateAction<CPBaseForm>>
+  setForm: React.Dispatch<React.SetStateAction<CPEditForm>>
 }
 
 export type CPCommentsForEditType = React.FC<CPCommentsForEditProps>

@@ -11,21 +11,27 @@ import AdmDView from '@ors/components/manage/Blocks/Section/AdmD/View/View'
 import ReportInfoCreate from '@ors/components/manage/Blocks/Section/ReportInfo/Create/Create'
 import ReportInfoView from '@ors/components/manage/Blocks/Section/ReportInfo/View/View'
 import SectionACreate from '@ors/components/manage/Blocks/Section/SectionA/Create/Create'
+import SectionAEdit from '@ors/components/manage/Blocks/Section/SectionA/Edit/Edit'
 import SectionAView from '@ors/components/manage/Blocks/Section/SectionA/View/View'
 import SectionAViewDiff from '@ors/components/manage/Blocks/Section/SectionA/ViewDiff/View'
 import SectionBCreate from '@ors/components/manage/Blocks/Section/SectionB/Create/Create'
+import SectionBEdit from '@ors/components/manage/Blocks/Section/SectionB/Edit/Edit'
 import SectionBView from '@ors/components/manage/Blocks/Section/SectionB/View/View'
 import SectionBViewDiff from '@ors/components/manage/Blocks/Section/SectionB/ViewDiff/View'
 import SectionCCreate from '@ors/components/manage/Blocks/Section/SectionC/Create/Create'
+import SectionCEdit from '@ors/components/manage/Blocks/Section/SectionC/Edit/Edit'
 import SectionCView from '@ors/components/manage/Blocks/Section/SectionC/View/View'
 import SectionCViewDiff from '@ors/components/manage/Blocks/Section/SectionC/ViewDiff/View'
 import SectionDCreate from '@ors/components/manage/Blocks/Section/SectionD/Create/Create'
+import SectionDEdit from '@ors/components/manage/Blocks/Section/SectionD/Edit/Edit'
 import SectionDView from '@ors/components/manage/Blocks/Section/SectionD/View/View'
 import SectionDViewDiff from '@ors/components/manage/Blocks/Section/SectionD/ViewDiff/View'
 import SectionECreate from '@ors/components/manage/Blocks/Section/SectionE/Create/Create'
+import SectionEEdit from '@ors/components/manage/Blocks/Section/SectionE/Edit/Edit'
 import SectionEView from '@ors/components/manage/Blocks/Section/SectionE/View/View'
 import SectionEViewDiff from '@ors/components/manage/Blocks/Section/SectionE/ViewDiff/View'
 import SectionFCreate from '@ors/components/manage/Blocks/Section/SectionF/Create'
+import SectionFEdit from '@ors/components/manage/Blocks/Section/SectionF/Edit'
 import SectionFView from '@ors/components/manage/Blocks/Section/SectionF/View'
 import SectionFViewDiff from '@ors/components/manage/Blocks/Section/SectionF/ViewDiff'
 
@@ -71,9 +77,6 @@ const constants: ConstantsType = {
 }
 
 export type ComponentsCreate = {
-  adm_b?: DefaultComponentType
-  adm_c?: DefaultComponentType
-  adm_d?: DefaultComponentType
   report_info: typeof ReportInfoCreate
   section_a: typeof SectionACreate
   section_b: typeof SectionBCreate
@@ -101,12 +104,12 @@ type ComponentsEdit = {
   adm_c: typeof AdmCCreate
   adm_d: typeof AdmDCreate
   report_info: typeof ReportInfoCreate
-  section_a: typeof SectionACreate
-  section_b: typeof SectionBCreate
-  section_c: typeof SectionCCreate
-  section_d: typeof SectionDCreate
-  section_e: typeof SectionECreate
-  section_f: typeof SectionFCreate
+  section_a: typeof SectionAEdit
+  section_b: typeof SectionBEdit
+  section_c: typeof SectionCEdit
+  section_d: typeof SectionDEdit
+  section_e: typeof SectionEEdit
+  section_f: typeof SectionFEdit
 }
 
 type ComponentsDiff = {
@@ -150,12 +153,12 @@ const components: {
     adm_c: AdmCCreate,
     adm_d: AdmDCreate,
     report_info: ReportInfoCreate,
-    section_a: SectionACreate,
-    section_b: SectionBCreate,
-    section_c: SectionCCreate,
-    section_d: SectionDCreate,
-    section_e: SectionECreate,
-    section_f: SectionFCreate,
+    section_a: SectionAEdit,
+    section_b: SectionBEdit,
+    section_c: SectionCEdit,
+    section_d: SectionDEdit,
+    section_e: SectionEEdit,
+    section_f: SectionFEdit,
   },
   view: {
     adm_b: AdmBView,
@@ -172,6 +175,8 @@ const components: {
 }
 
 export type EditSectionTypes = ComponentsEdit[keyof ComponentsEdit]
+export type CreateSectionTypes = ComponentsCreate[keyof ComponentsCreate]
+export type ViewSectionTypes = ComponentsView[keyof ComponentsView]
 
 const DefaultComponent = () => <div>Not implemented</div>
 
@@ -221,7 +226,8 @@ export function getSections(
       {
         id: 'adm_b',
         allowFullScreen: true,
-        component: components[mode].adm_b || DefaultComponent,
+        component:
+          (mode !== 'create' && components[mode].adm_b) || DefaultComponent,
         label: 'Adm B',
         panelId: 'adm-B-panel',
         title: 'B. Regulatory, administrative and supportive actions',
@@ -238,7 +244,8 @@ export function getSections(
       {
         id: 'adm_c',
         allowFullScreen: true,
-        component: components[mode].adm_c || DefaultComponent,
+        component:
+          (mode !== 'create' && components[mode].adm_c) || DefaultComponent,
         label: 'Adm C',
         panelId: 'adm-C-panel',
         title: 'C. Quantitative assessment of the phase-out programme',
@@ -255,7 +262,8 @@ export function getSections(
       },
       {
         id: 'adm_d',
-        component: components[mode].adm_d || DefaultComponent,
+        component:
+          (mode !== 'create' && components[mode].adm_d) || DefaultComponent,
         label: 'Adm D-E',
         panelId: 'adm-D-panel',
         title:

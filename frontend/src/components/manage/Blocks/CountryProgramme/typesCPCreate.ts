@@ -1,4 +1,5 @@
 import type { TableProps } from '@ors/components/manage/Form/Table'
+import { CPReport } from '@ors/types/api_country-programme_records'
 import { ReportVariant } from '@ors/types/variants'
 
 import React from 'react'
@@ -79,8 +80,8 @@ export interface CPBaseForm {
     reported_section_d: boolean
     reported_section_e: boolean
     reported_section_f: boolean
-    reporting_email: string
-    reporting_entry: string
+    reporting_email: null | string
+    reporting_entry: null | string
   }
   section_a: SectionA['data']
   section_b: SectionB['data']
@@ -91,30 +92,14 @@ export interface CPBaseForm {
   year: number
 }
 
-export interface CPEditForm extends CPBaseForm {
-  comments_section_a: CPCommentState
-  comments_section_b: CPCommentState
-  comments_section_c: CPCommentState
-  comments_section_d: CPCommentState
-  comments_section_e: CPCommentState
-  comments_section_f: CPCommentState
-}
-
-export interface CPValidationForm {
-  report_info: {
-    reported_section_a: boolean
-    reported_section_b: boolean
-    reported_section_c: boolean
-    reported_section_d: boolean
-    reported_section_e: boolean
-    reported_section_f: boolean
-    reporting_email: string
-    reporting_entry: string
-  }
-  section_a: SectionA['data']
-  section_b: SectionB['data']
-  section_c: SectionC['data']
-  section_d: SectionD['data']
-  section_e: SectionE['data']
-  section_f: SectionF['data']
+export interface CPEditForm extends Omit<CPBaseForm, 'country' | 'year'> {
+  adm_b: CPReport['adm_b']
+  adm_c: CPReport['adm_c']
+  adm_d: CPReport['adm_d']
+  comments_section_a?: CPCommentState
+  comments_section_b?: CPCommentState
+  comments_section_c?: CPCommentState
+  comments_section_d?: CPCommentState
+  comments_section_e?: CPCommentState
+  comments_section_f?: CPCommentState
 }

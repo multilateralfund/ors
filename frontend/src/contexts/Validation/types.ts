@@ -1,4 +1,4 @@
-import type { CPValidationForm } from '@ors/components/manage/Blocks/CountryProgramme/typesCPCreate'
+import type { CPBaseForm } from '@ors/components/manage/Blocks/CountryProgramme/typesCPCreate'
 import type { ApiUsage } from '@ors/types/api_usages'
 
 export interface IUsage {
@@ -133,3 +133,15 @@ export interface IValidationProvider {
   model?: string
   silent?: boolean
 }
+
+export interface CPValidationForm
+  extends Pick<
+    CPBaseForm,
+    | 'report_info'
+    | 'section_a'
+    | 'section_b'
+    | 'section_c'
+    | 'section_d'
+    | 'section_e'
+    | 'section_f'
+  > {}

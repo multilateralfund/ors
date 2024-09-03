@@ -43,7 +43,7 @@ import SectionF from '@ors/models/SectionF'
 import { variants } from '@ors/slices/createCPReportsSlice'
 import { useStore } from '@ors/store'
 
-import { getSections } from '.'
+import { CreateSectionTypes, getSections } from '.'
 import Portal from '../../Utils/Portal'
 import { CPCreateHeader } from './CPHeader'
 import CPRestoreCreate from './CPRestoreCreate'
@@ -694,12 +694,12 @@ const CPCreate: React.FC = () => {
             const sectionName: string = `reported_${section.id}`
             const isSectionChecked: boolean =
               section.id === 'report_info' ||
-              // @ts-ignore
-              sectionsChecked[sectionName] ||
+              sectionsChecked[sectionName as keyof typeof sectionsChecked] ||
               false
             const showSectionSelect =
               variant?.model === 'V' && section.id !== 'report_info'
-            const Section = section.component
+            const Section: CreateSectionTypes =
+              section.component as CreateSectionTypes
             return (
               <div
                 id={section.panelId}
@@ -721,7 +721,7 @@ const CPCreate: React.FC = () => {
                 <div className="relative flex flex-col gap-6">
                   <FootnotesProvider>
                     <Section
-                      Section={get(Sections, section.id)}
+                      Section={Sections[section.id as keyof typeof Sections]}
                       Sections={Sections}
                       countryFieldProps={countryFieldProps}
                       emptyForm={report.emptyForm.data || {}}

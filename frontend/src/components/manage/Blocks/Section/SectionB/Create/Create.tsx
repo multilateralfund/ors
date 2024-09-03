@@ -34,7 +34,7 @@ import {
 } from '../../../CountryProgramme/typesCPCreate'
 import { CreateBlend } from './CreateBlend'
 import useGridOptions from './schema'
-import { PinnedBottomRowData, RowData } from './types'
+import { ISectionBCreateProps, PinnedBottomRowData, RowData } from './types'
 
 import { IoAddCircle, IoInformationCircleOutline } from 'react-icons/io5'
 
@@ -120,37 +120,9 @@ function getInitialPinnedBottomRowData(model: string): PinnedBottomRowData[] {
   return pinnedBottomRowData
 }
 
-export default function SectionBCreate(props: {
-  Comments: React.FC<{ section: string; viewOnly: boolean }>
-  Section: SectionB
-  TableProps: PassedCPCreateTableProps
-  emptyForm: EmptyFormType
-  form: CPBaseForm
-  onSectionCheckChange: (section: string, isChecked: boolean) => void
-  section: {
-    allowFullScreen: boolean
-    component: React.FC
-    id: string
-    label: string
-    panelId: string
-    title: string
-  }
-  sectionsChecked: Record<string, boolean>
-  setForm: React.Dispatch<React.SetStateAction<CPBaseForm>>
-  showComments: boolean
-  variant: ReportVariant
-}) {
+export default function SectionBCreate(props: ISectionBCreateProps) {
   const { enqueueSnackbar } = useSnackbar()
-  const {
-    Comments,
-    Section,
-    TableProps,
-    emptyForm,
-    form,
-    setForm,
-    showComments,
-    variant,
-  } = props
+  const { Section, TableProps, emptyForm, form, setForm, variant } = props
 
   const newNode = useRef<RowNode>()
 
@@ -547,7 +519,6 @@ export default function SectionBCreate(props: {
           </Box>
         </Dialog>
       )}
-      {showComments && <Comments section="section_b" viewOnly={true} />}
     </>
   )
 }
