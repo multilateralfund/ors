@@ -301,6 +301,7 @@ function CPEdit() {
       (_, key) => {
         return (
           key === 'files' ||
+          key.startsWith('comments_') ||
           findIndex(sections, (section) => key === section.id) > -1
         )
       },

@@ -5,7 +5,7 @@ import SectionFCreate from './Create'
 import { ISectionFEditProps } from './types'
 
 function SectionFEdit(props: ISectionFEditProps) {
-  const { Comments, form, setForm, ...rest } = props
+  const { Comments, form, setForm, showComments, ...rest } = props
   return (
     <>
       <SectionFCreate
@@ -13,7 +13,9 @@ function SectionFEdit(props: ISectionFEditProps) {
         setForm={setForm as unknown as Dispatch<SetStateAction<CPBaseForm>>}
         {...rest}
       />
-      <Comments form={form} section="section_f" setForm={setForm} />
+      {showComments ? (
+        <Comments form={form} section="section_f" setForm={setForm} />
+      ) : null}
     </>
   )
 }

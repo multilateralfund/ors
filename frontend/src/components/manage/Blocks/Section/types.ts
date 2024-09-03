@@ -26,4 +26,5 @@ export interface IBaseSectionEditProps<T>
   Comments: CPCommentsForEditType
   form: CPEditForm
   setForm: React.Dispatch<React.SetStateAction<CPEditForm>>
+  showComments: boolean
 }
