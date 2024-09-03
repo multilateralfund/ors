@@ -155,13 +155,13 @@ class CPReportNestedCommentSerializer(serializers.Serializer):
     Serializer for nested section comments that we receive in POST/PUT requests.
     """
 
-    comment_type = serializers.CharField()
-    comment = serializers.CharField()
+    country = serializers.CharField(required=False, allow_null=True)
+    mlfs = serializers.CharField(required=False, allow_null=True)
 
     class Meta:
         fields = [
-            "comment_type",
-            "comment",
+            "country",
+            "mlfs",
         ]
 
 
@@ -196,11 +196,11 @@ class CPReportCreateSerializer(serializers.Serializer):
     adm_c = AdmRecordSerializer(many=True, required=False)
     adm_d = AdmRecordSerializer(many=True, required=False)
 
-    comments_section_a = CPReportNestedCommentSerializer(many=True, required=False)
-    comments_section_b = CPReportNestedCommentSerializer(many=True, required=False)
-    comments_section_c = CPReportNestedCommentSerializer(many=True, required=False)
-    comments_section_d = CPReportNestedCommentSerializer(many=True, required=False)
-    comments_section_e = CPReportNestedCommentSerializer(many=True, required=False)
+    comments_section_a = CPReportNestedCommentSerializer(many=False, required=False)
+    comments_section_b = CPReportNestedCommentSerializer(many=False, required=False)
+    comments_section_c = CPReportNestedCommentSerializer(many=False, required=False)
+    comments_section_d = CPReportNestedCommentSerializer(many=False, required=False)
+    comments_section_e = CPReportNestedCommentSerializer(many=False, required=False)
 
     class Meta:
         fields = [
@@ -295,8 +295,16 @@ class CPReportCreateSerializer(serializers.Serializer):
             section_data = comments[section]
             if section_data is None:
                 continue
-            for section_item in section_data:
-                comment = {**section_item}
+            for key, comment_type in [
+                ("country", CPComment.CPCommentType.COMMENT_COUNTRY),
+                ("mlfs", CPComment.CPCommentType.COMMENT_SECRETARIAT),
+            ]:
+                comment = {}
+                text = section_data.get(key)
+                if not text:
+                    continue
+                comment["comment"] = text
+                comment["comment_type"] = comment_type
                 comment["section"] = COMMENT_SECTIONS[section]
                 comment["country_programme_report_id"] = cp_report.id
                 comments_data.append(comment)

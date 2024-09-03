@@ -526,12 +526,10 @@ class TestCPReportCreate(BaseTest):
     ):
         data = _setup_new_cp_report_create
         added_comment = "Test create country comment"
-        data["comments_section_a"] = [
-            {
-                "comment_type": self.COMMENT_COUNTRY,
-                "comment": added_comment,
-            }
-        ]
+        data["comments_section_a"] = {
+            "mlfs": None,
+            "country": added_comment,
+        }
         self.client.force_authenticate(user=user)
         response = self.client.post(
             self.url, _setup_new_cp_report_create, format="json"
@@ -846,12 +844,10 @@ class TestCPReportUpdate(BaseTest):
         self.client.force_authenticate(user=country_user)
         data = _setup_new_cp_report_create
         updated_comment = "Test update country comment"
-        data["comments_section_a"] = [
-            {
-                "comment_type": self.COMMENT_COUNTRY,
-                "comment": updated_comment,
-            }
-        ]
+        data["comments_section_a"] = {
+            "mlfs": None,
+            "country": updated_comment,
+        }
         response = self.client.put(self.url, data, format="json")
         assert response.status_code == 200
 
