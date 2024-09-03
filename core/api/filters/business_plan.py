@@ -10,6 +10,7 @@ from core.models import ProjectSector
 from core.models import ProjectSubSector
 from core.models import ProjectType
 from core.models.agency import Agency
+from core.models.base import CommentType
 from core.models.business_plan import BPChemicalType
 
 
@@ -76,6 +77,11 @@ class BPActivityFilter(filters.FilterSet):
         choices=BPChemicalType.objects.all(),
         widget=CSVWidget,
         help_text="Filter by BP chemical type. Multiple values can be separated by comma.",
+    )
+    comment_types = filters.ModelMultipleChoiceFilter(
+        queryset=CommentType.objects.all(),
+        widget=CSVWidget,
+        help_text="Filter by comment type. Multiple values can be separated by comma.",
     )
 
     class Meta:
