@@ -1,7 +1,8 @@
 import { Typography } from '@mui/material'
 
 import Link from '@ors/components/ui/Link/Link'
-import StatusPill from '@ors/components/ui/StatusPill/StatusPill'
+
+import { StatusPill } from '../StatusPill/StatusPill'
 
 function ListItem(props: any) {
   const { item } = props
@@ -17,17 +18,17 @@ function ListItem(props: any) {
       style={{ boxShadow: '0px 10px 20px 0px rgba(0, 0, 0, 0.2)' }}
     >
       <Link
-        className="flex items-center justify-between flex-wrap gap-1 text-2xl font-semibold text-typography"
+        className="flex flex-wrap items-center justify-between gap-1 text-2xl font-semibold text-typography"
         href={`/business-plans/${item.agency.name}/${item.year_start}-${item.year_end}`}
         underline="none"
       >
         <div className="flex items-center gap-2">
-          <span>
+          <span className="font-bold">
             {item.agency.name} {item.year_start} - {item.year_end}
           </span>
           <StatusPill status={item.status} />
         </div>
-        <span className="font-normal tracking-tight text-lg">
+        <span className="text-lg font-normal tracking-tight">
           Modified on {randomDate} by {mockUser}
         </span>
       </Link>

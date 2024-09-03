@@ -1,6 +1,12 @@
 import cx from 'classnames'
 
-type Status = 'Approved' | 'Draft' | 'Needs Changes' | 'Rejected' | 'Submitted'
+export type Status =
+  | 'Agency Draft'
+  | 'Approved'
+  | 'Need Changes'
+  | 'Rejected'
+  | 'Secretariat Draft'
+  | 'Submitted'
 
 interface StatusStyle {
   bgColor: string
@@ -8,23 +14,36 @@ interface StatusStyle {
   textColor: string
 }
 
-const statusStyles: Record<Status, StatusStyle> = {
+export const statusStyles: Record<Status, StatusStyle> = {
+  'Agency Draft': {
+    bgColor: 'bg-white',
+    border: 'border-mlfs-deepTealShade',
+    textColor: 'text-mlfs-deepTealShade',
+  },
   Approved: { bgColor: 'bg-secondary', textColor: 'text-white' },
-  Draft: {
+  'Need Changes': {
+    bgColor: 'bg-mlfs-hlYellow',
+    border: 'border-transparent',
+    textColor: 'text-primary',
+  },
+  Rejected: {
+    bgColor: 'bg-gray-500',
+    border: 'border-transparent',
+    textColor: 'text-white',
+  },
+  'Secretariat Draft': {
     bgColor: 'bg-white',
     border: 'border-mlfs-deepTealShade',
     textColor: 'text-mlfs-deepTealShade',
   },
-  'Needs Changes': {
-    bgColor: 'bg-white',
-    border: 'border-mlfs-deepTealShade',
-    textColor: 'text-mlfs-deepTealShade',
+  Submitted: {
+    bgColor: 'bg-primary',
+    border: 'border-transparent',
+    textColor: 'text-mlfs-hlYellow',
   },
-  Rejected: { bgColor: 'bg-gray-500', textColor: 'text-white' },
-  Submitted: { bgColor: 'bg-mlfs-deepTealShade', textColor: 'text-white' },
 }
 
-function StatusPill(props: { status: Status }) {
+export function StatusPill(props: { status: Status }) {
   const { status } = props
 
   // Get the styles for the current status
@@ -33,7 +52,7 @@ function StatusPill(props: { status: Status }) {
   return (
     <div
       className={cx(
-        'w-fit rounded px-2 text-center text-sm font-normal uppercase',
+        'w-fit rounded border border-solid px-1.5 text-center text-sm font-normal uppercase',
         bgColor,
         textColor,
         border,
@@ -43,5 +62,3 @@ function StatusPill(props: { status: Status }) {
     </div>
   )
 }
-
-export default StatusPill
