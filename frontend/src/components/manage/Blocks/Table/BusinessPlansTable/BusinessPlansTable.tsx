@@ -42,6 +42,7 @@ export default function BusinessPlansTable() {
   const clusters = projects.clusters.data || []
 
   const initialFilters = {
+    comment_types: [],
     country_id: [],
     is_multi_year: true,
     project_cluster_id: [],
@@ -308,7 +309,7 @@ export default function BusinessPlansTable() {
             rowBuffer={50}
             rowCount={count}
             rowData={results}
-            rowsVisible={20}
+            rowsVisible={25}
             tooltipShowDelay={200}
             components={{
               agColumnHeader: undefined,

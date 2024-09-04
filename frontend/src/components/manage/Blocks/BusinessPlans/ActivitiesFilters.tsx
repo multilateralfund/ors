@@ -169,6 +169,28 @@ export default function ActivitiesFilters(props: any) {
           }}
           multiple
         />
+        <Field
+          FieldProps={{ className: 'mb-0 w-full md:w-40 BPList' }}
+          Input={{ placeholder: 'Comment type' }}
+          getOptionLabel={(option: any) => option?.name}
+          options={getFilterOptions(bpSlice.commentTypes.data, 'comment_types')}
+          value={[]}
+          widget="autocomplete"
+          isOptionEqualToValue={(option: any, value: any) =>
+            option.id === value
+          }
+          onChange={(_: any, value: any) => {
+            const commentTypes = filters.comment_types || []
+            const newValue = union(commentTypes, value)
+
+            handleFilterChange({ comment_types: newValue })
+            handleParamsChange({
+              comment_types: newValue.map((item: any) => item.id).join(','),
+              offset: 0,
+            })
+          }}
+          multiple
+        />
         <FormControlLabel
           className="BPList !m-0"
           label="Multi-Year"
