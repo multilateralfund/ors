@@ -53,7 +53,7 @@ export type RowValidatorFuncResult = IInvalidRowResult | null | undefined
 export type GlobalValidatorFuncResult = IInvalidGlobalResult | null | undefined
 
 export type RowValidatorFuncContext = {
-  form: CPBaseForm
+  form: CPValidationForm
   usages: UsageMapping
 }
 
@@ -129,7 +129,19 @@ export interface IValidationContext {
 
 export interface IValidationProvider {
   children: React.ReactNode
-  form: CPBaseForm
+  form: CPValidationForm
   model?: string
   silent?: boolean
 }
+
+export interface CPValidationForm
+  extends Pick<
+    CPBaseForm,
+    | 'report_info'
+    | 'section_a'
+    | 'section_b'
+    | 'section_c'
+    | 'section_d'
+    | 'section_e'
+    | 'section_f'
+  > {}

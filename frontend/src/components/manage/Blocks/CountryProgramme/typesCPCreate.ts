@@ -1,4 +1,5 @@
 import type { TableProps } from '@ors/components/manage/Form/Table'
+import { CPReport } from '@ors/types/api_country-programme_records'
 import { ReportVariant } from '@ors/types/variants'
 
 import React from 'react'
@@ -10,6 +11,7 @@ import SectionD from '@ors/models/SectionD'
 import SectionE from '@ors/models/SectionE'
 import SectionF from '@ors/models/SectionF'
 
+import { CPCommentState } from './CPCommentsTypes'
 import { SectionMeta } from './types'
 
 type ToolbarProps = {
@@ -78,8 +80,8 @@ export interface CPBaseForm {
     reported_section_d: boolean
     reported_section_e: boolean
     reported_section_f: boolean
-    reporting_email: string
-    reporting_entry: string
+    reporting_email: null | string
+    reporting_entry: null | string
   }
   section_a: SectionA['data']
   section_b: SectionB['data']
@@ -88,4 +90,16 @@ export interface CPBaseForm {
   section_e: SectionE['data']
   section_f: SectionF['data']
   year: number
+}
+
+export interface CPEditForm extends Omit<CPBaseForm, 'country' | 'year'> {
+  adm_b: CPReport['adm_b']
+  adm_c: CPReport['adm_c']
+  adm_d: CPReport['adm_d']
+  comments_section_a?: CPCommentState
+  comments_section_b?: CPCommentState
+  comments_section_c?: CPCommentState
+  comments_section_d?: CPCommentState
+  comments_section_e?: CPCommentState
+  comments_section_f?: CPCommentState
 }

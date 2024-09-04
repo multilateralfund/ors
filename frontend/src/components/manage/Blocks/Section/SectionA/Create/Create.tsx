@@ -17,12 +17,8 @@ import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 import SectionA from '@ors/models/SectionA'
 import { useStore } from '@ors/store'
 
-import {
-  CPBaseForm,
-  PassedCPCreateTableProps,
-} from '../../../CountryProgramme/typesCPCreate'
 import useGridOptions from './schema'
-import { RowData } from './types'
+import { ISectionACreateProps, RowData } from './types'
 
 import { IoAddCircle, IoInformationCircleOutline } from 'react-icons/io5'
 
@@ -102,28 +98,8 @@ function getInitialPinnedBottomRowData(model: string): RowData[] {
   return pinnedBottomRowData
 }
 
-export default function SectionACreate(props: {
-  Comments: React.FC<{ section: string; viewOnly: boolean }>
-  Section: SectionA
-  TableProps: PassedCPCreateTableProps
-  emptyForm: EmptyFormType
-  form: CPBaseForm
-  onSectionCheckChange: (section: string, isChecked: boolean) => void
-  sectionsChecked: Record<string, boolean>
-  setForm: React.Dispatch<React.SetStateAction<CPBaseForm>>
-  showComments: boolean
-  variant: ReportVariant
-}) {
-  const {
-    Comments,
-    Section,
-    TableProps,
-    emptyForm,
-    form,
-    setForm,
-    showComments,
-    variant,
-  } = props
+export default function SectionACreate(props: ISectionACreateProps) {
+  const { Section, TableProps, emptyForm, form, setForm, variant } = props
   const newNode = useRef<RowNode>()
   const substances = useStore(
     (state) =>
@@ -135,9 +111,11 @@ export default function SectionACreate(props: {
     getInitialPinnedBottomRowData(variant.model),
   )
   const [addSubstanceModal, setAddSubstanceModal] = useState(false)
-  const rowData = getRowData(form.section_a, variant.model).toSorted(
-    (a, b) => a.group?.localeCompare(b.group || 'zzz') || 0,
-  )
+  const rowData = useMemo(() => {
+    return getRowData(form.section_a, variant.model).toSorted(
+      (a, b) => a.group?.localeCompare(b.group || 'zzz') || 0,
+    )
+  }, [form.section_a, variant.model])
 
   const substancesInForm = useMemo(() => {
     return form.section_a.map((substance) => substance.row_id)
@@ -343,7 +321,6 @@ export default function SectionACreate(props: {
           </Box>
         </Modal>
       )}
-      {showComments && <Comments section="section_a" viewOnly={true} />}
     </>
   )
 }

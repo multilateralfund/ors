@@ -5,7 +5,7 @@ import type {
 } from './types'
 import { ApiUsage } from '@ors/types/api_usages'
 
-import { useState } from 'react'
+import { memo, useState } from 'react'
 
 import ValidationDrawer from '@ors/components/ui/ValidationDrawer/ValidationDrawer'
 import useApi from '@ors/hooks/useApi'
@@ -69,4 +69,4 @@ const ValidationProvider = (props: IValidationProvider) => {
   )
 }
 
-export default ValidationProvider
+export default memo(ValidationProvider)

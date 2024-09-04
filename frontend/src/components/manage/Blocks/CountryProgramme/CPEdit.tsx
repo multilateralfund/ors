@@ -5,11 +5,11 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Tabs, Typography } from '@mui/material'
 import cx from 'classnames'
 import { produce } from 'immer'
-import { findIndex, get, includes, map, pickBy, reduce, values } from 'lodash'
+import { findIndex, includes, map, pickBy, reduce, values } from 'lodash'
 
 import { defaultColDefEdit } from '@ors/config/Table/columnsDef'
 
-import CPComments from '@ors/components/manage/Blocks/CountryProgramme/CPComments'
+import { CPCommentsForEdit } from '@ors/components/manage/Blocks/CountryProgramme/CPComments'
 import SectionReportedSelect from '@ors/components/manage/Blocks/Section/SectionReportedSelect'
 import Loading from '@ors/components/theme/Loading/Loading'
 import Error from '@ors/components/theme/Views/Error'
@@ -29,13 +29,13 @@ import SectionE from '@ors/models/SectionE'
 import SectionF from '@ors/models/SectionF'
 import { useStore } from '@ors/store'
 
-import { getSections } from '.'
+import { EditSectionTypes, getSections } from '.'
 import Portal from '../../Utils/Portal'
 import { CPEditHeader } from './CPHeader'
 import CPRestoreEdit from './CPRestoreEdit'
 import CPSectionWrapper from './CPSectionWrapper'
 import DownloadCalculatedAmounts from './DownloadCalculatedAmounts'
-import { CPBaseForm } from './typesCPCreate'
+import { CPEditForm } from './typesCPCreate'
 import { useEditLocalStorage } from './useLocalStorage'
 
 import { IoClose, IoExpand } from 'react-icons/io5'
@@ -199,7 +199,7 @@ function CPEdit() {
   const variant = useMemo(() => report.variant, [report])
 
   const [errors, setErrors] = useState<Record<string, any>>({})
-  const [form, setForm] = useState<Record<string, any>>({
+  const [form, setForm] = useState<CPEditForm>({
     adm_b: report.data?.adm_b,
     adm_c: report.data?.adm_c,
     adm_d: report.data?.adm_d,
@@ -239,17 +239,19 @@ function CPEdit() {
   const { activeTab, setActiveTab } = useStore((state) => state.cp_current_tab)
   const [renderedSections, setRenderedSections] = useState<number[]>([])
 
-  function handleSetForm(value: any) {
-    if (typeof value === 'function') {
-      localStorage.update(value(form))
-    } else {
-      localStorage.update(value)
-    }
-    setForm(value)
-    setWarnOnClose(true)
-  }
-
   const localStorage = useEditLocalStorage(report)
+
+  const handleSetForm = useCallback(
+    (value: ((form: CPEditForm) => CPEditForm) | CPEditForm) => {
+      setForm((prevForm) => {
+        const nextForm = typeof value === 'function' ? value(prevForm) : value
+        localStorage.update(nextForm)
+        return nextForm
+      })
+      setWarnOnClose(true)
+    },
+    [localStorage],
+  )
 
   const sections = useMemo(
     () => (variant ? getSections(variant, 'edit') : []),
@@ -296,9 +298,10 @@ function CPEdit() {
         section_e: Sections.section_e.getSubmitFormData(form.section_e),
         section_f: Sections.section_f.getSubmitFormData(form.section_f),
       },
-      (value, key) => {
+      (_, key) => {
         return (
           key === 'files' ||
+          key.startsWith('comments_') ||
           findIndex(sections, (section) => key === section.id) > -1
         )
       },
@@ -315,12 +318,12 @@ function CPEdit() {
     reported_section_f: report.data?.report_info?.reported_section_f ?? true,
   })
   const onSectionCheckChange = (section: string, isChecked: boolean) => {
-    setSectionsChecked((prevState: any) => ({
+    setSectionsChecked((prevState) => ({
       ...prevState,
       [section]: isChecked,
     }))
 
-    handleSetForm((prevState: any) => ({
+    handleSetForm((prevState) => ({
       ...prevState,
       report_info: {
         ...prevState.report_info,
@@ -353,7 +356,7 @@ function CPEdit() {
   const showComments = variant?.model === 'V'
 
   return (
-    <ValidationProvider form={form as CPBaseForm} model={variant?.model}>
+    <ValidationProvider form={form} model={variant?.model}>
       <Loading
         className="!fixed bg-action-disabledBackground"
         active={
@@ -403,12 +406,12 @@ function CPEdit() {
               const sectionName = `reported_${section.id}`
               const isSectionChecked: boolean =
                 section.id === 'report_info' ||
-                // @ts-ignore
-                sectionsChecked[sectionName] ||
+                sectionsChecked[sectionName as keyof typeof sectionsChecked] ||
                 false
               const showSectionSelect =
                 variant?.model === 'V' && section.id !== 'report_info'
-              const Section: React.FC<any> = section.component
+              const Section: EditSectionTypes =
+                section.component as EditSectionTypes
               return (
                 <div
                   id={section.panelId}
@@ -429,8 +432,8 @@ function CPEdit() {
                   <div className="relative flex flex-col gap-6">
                     <FootnotesProvider>
                       <Section
-                        Comments={CPComments}
-                        Section={get(Sections, section.id)}
+                        Comments={CPCommentsForEdit}
+                        Section={Sections[section.id as keyof typeof Sections]}
                         emptyForm={report.emptyForm.data || {}}
                         errors={errors}
                         form={form}

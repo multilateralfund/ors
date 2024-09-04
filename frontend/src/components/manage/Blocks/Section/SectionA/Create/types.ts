@@ -1,4 +1,6 @@
-import { DeserializedDataA } from '@ors/models/SectionA'
+import SectionA, { DeserializedDataA } from '@ors/models/SectionA'
+
+import { IBaseSectionProps } from '../../types'
 
 export type RowData = {
   change_type?: string
@@ -9,3 +11,5 @@ export type RowData = {
   rowType: string
   tooltip?: boolean
 } & DeserializedDataA
+
+export interface ISectionACreateProps extends IBaseSectionProps<SectionA> {}

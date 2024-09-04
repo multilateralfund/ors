@@ -10,6 +10,7 @@ from core.api.tests.factories import (
     CPReportFormatRowFactory,
     CountryFactory,
     CPReportFactory,
+    CPReportCommentFactory,
     GroupFactory,
     SubstanceFactory,
     TimeFrameFactory,
@@ -22,6 +23,7 @@ from core.models import CPUsage
 from core.models import CPUsageArchive
 from core.models.adm import AdmRecord
 from core.models.country_programme import (
+    CPComment,
     CPEmission,
     CPGeneration,
     CPPrices,
@@ -427,6 +429,12 @@ def setup_old_cp_report_create(country_ro, _setup_section_a_c, adm_rows, adm_col
 
 class TestCPReportCreate(BaseTest):
     url = reverse("country-programme-reports")
+    records_url = reverse("country-programme-record-list")
+
+    SECTION_A = "section_a"
+    SECTION_B = "section_b"
+    COMMENT_COUNTRY = "comment_country"
+    COMMENT_SECRETARIAT = "comment_secretariat"
 
     def test_without_login(self, _setup_new_cp_report_create):
         self.client.force_authenticate(user=None)
@@ -512,6 +520,31 @@ class TestCPReportCreate(BaseTest):
 
         # check email not sent (DRAFT)
         mock_send_mail_report_create.assert_not_called()
+
+    def test_create_new_cp_report_with_comments(
+        self, user, _setup_new_cp_report_create
+    ):
+        data = _setup_new_cp_report_create
+        added_comment = "Test create country comment"
+        data["comments_section_a"] = {
+            "mlfs": None,
+            "country": added_comment,
+        }
+        self.client.force_authenticate(user=user)
+        response = self.client.post(
+            self.url, _setup_new_cp_report_create, format="json"
+        )
+        assert response.status_code == 201
+        report_id = response.data["id"]
+
+        response = self.client.get(self.records_url, {"cp_report_id": report_id})
+        assert response.status_code == 200
+        assert len(response.data["cp_report"]["comments"]) == 1
+        assert response.data["cp_report"]["comments"][0]["comment"] == added_comment
+        assert (
+            response.data["cp_report"]["comments"][0]["comment_type"]
+            == "comment_country"
+        )
 
     def test_create_old_cp_report(
         self, user, _setup_old_cp_report_create, mock_send_mail_report_create
@@ -685,6 +718,11 @@ class TestCPReportCreate(BaseTest):
 
 
 class TestCPReportUpdate(BaseTest):
+    SECTION_A = "section_a"
+    SECTION_B = "section_b"
+    COMMENT_COUNTRY = "comment_country"
+    COMMENT_SECRETARIAT = "comment_secretariat"
+
     def test_without_login(self, cp_report_2019):
         self.url = reverse("country-programme-reports") + f"{cp_report_2019.id}/"
         self.client.force_authenticate(user=None)
@@ -784,6 +822,37 @@ class TestCPReportUpdate(BaseTest):
         data["section_f"]["remarks"] = "Alo Delta Force"
         response = self.client.put(self.url, data, format="json")
         assert response.status_code == 200
+
+    def test_update_cp_report_comments_draft_country_user(
+        self,
+        country_user,
+        _setup_new_cp_report_create,
+        cp_report_2019,
+    ):
+        self.url = reverse("country-programme-reports") + f"{cp_report_2019.id}/"
+
+        # set status draft
+        cp_report_2019.status = CPReport.CPReportStatus.DRAFT
+        CPReportCommentFactory.create(
+            country_programme_report=cp_report_2019,
+            section=self.SECTION_A,
+            comment_type=self.COMMENT_COUNTRY,
+            comment="Test initial comment",
+        )
+        cp_report_2019.save()
+
+        self.client.force_authenticate(user=country_user)
+        data = _setup_new_cp_report_create
+        updated_comment = "Test update country comment"
+        data["comments_section_a"] = {
+            "mlfs": None,
+            "country": updated_comment,
+        }
+        response = self.client.put(self.url, data, format="json")
+        assert response.status_code == 200
+
+        comment = CPComment.objects.first()
+        assert comment.comment == updated_comment
 
     def test_update_cp_report_final(
         self,

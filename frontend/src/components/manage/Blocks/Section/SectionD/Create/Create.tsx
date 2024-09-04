@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
 import { Alert } from '@mui/material'
 import { findIndex } from 'lodash'
@@ -8,18 +8,23 @@ import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import Footnote from '@ors/components/ui/Footnote/Footnote'
 
 import useGridOptions from './schema'
+import { ISectionDCreateProps } from './types'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
-export default function SectionDCreate(props: any) {
-  const { Comments, TableProps, form, setForm, showComments } = props
+export default function SectionDCreate(props: ISectionDCreateProps) {
+  const { TableProps, form, setForm } = props
   const grid = useRef<any>()
   const gridOptions = useGridOptions()
   const [initialRowData] = useState(form.section_d)
 
   return (
     <>
-      <Alert className="bg-mlfs-bannerColor" icon={<IoInformationCircleOutline size={24} />} severity="info">
+      <Alert
+        className="bg-mlfs-bannerColor"
+        icon={<IoInformationCircleOutline size={24} />}
+        severity="info"
+      >
         <Footnote id="" index="">
           Data in Section D should be provided (if applicable) even if breakdown
           in Section E by enterprises are not reported as reporting under
@@ -51,7 +56,6 @@ export default function SectionDCreate(props: any) {
           }
         }}
       />
-      {showComments && <Comments section="section_d" viewOnly={true} />}
     </>
   )
 }

@@ -1,11 +1,13 @@
-import React from 'react'
+import React, { ChangeEvent } from 'react'
 
 import { Box, Typography } from '@mui/material'
 
 import Field from '@ors/components/manage/Form/Field'
 
-export default function SectionFCreate(props: any) {
-  const { Comments, form, section, setForm, showComments } = props
+import { ISectionFCreateProps } from './types'
+
+export default function SectionFCreate(props: ISectionFCreateProps) {
+  const { form, section, setForm } = props
 
   return (
     <>
@@ -17,12 +19,11 @@ export default function SectionFCreate(props: any) {
           FieldProps={{ className: 'mb-0' }}
           type="textarea"
           value={form.section_f.remarks}
-          onChange={(event: any) => {
+          onChange={(event: ChangeEvent<HTMLTextAreaElement>) => {
             setForm({ ...form, section_f: { remarks: event.target.value } })
           }}
         />
       </Box>
-      {showComments && <Comments section="section_f" viewOnly={true} />}
     </>
   )
 }

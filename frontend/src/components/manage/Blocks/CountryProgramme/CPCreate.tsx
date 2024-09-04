@@ -3,7 +3,13 @@
 import { Country } from '@ors/types/store'
 import { UserType, isCountryUserType } from '@ors/types/user_types'
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, {
+  ChangeEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 
 import { Alert, Button, Tabs, Tooltip, Typography } from '@mui/material'
 import cx from 'classnames'
@@ -37,7 +43,7 @@ import SectionF from '@ors/models/SectionF'
 import { variants } from '@ors/slices/createCPReportsSlice'
 import { useStore } from '@ors/store'
 
-import { getSections } from '.'
+import { CreateSectionTypes, getSections } from '.'
 import Portal from '../../Utils/Portal'
 import { CPCreateHeader } from './CPHeader'
 import CPRestoreCreate from './CPRestoreCreate'
@@ -290,15 +296,17 @@ const CPCreate: React.FC = () => {
     [form, all_countries],
   )
 
-  function handleSetForm(value: any) {
-    if (typeof value === 'function') {
-      localStorage.update(value(form))
-    } else {
-      localStorage.update(value)
-    }
-    setForm(value)
-    setWarnOnClose(true)
-  }
+  const handleSetForm = useCallback(
+    (value: ((form: CPBaseForm) => CPBaseForm) | CPBaseForm) => {
+      setForm((prevForm) => {
+        const nextForm = typeof value === 'function' ? value(prevForm) : value
+        localStorage.update(nextForm)
+        return nextForm
+      })
+      setWarnOnClose(true)
+    },
+    [localStorage],
+  )
 
   const variant = useMemo(() => {
     return filter(variants, (variant) => {
@@ -332,9 +340,8 @@ const CPCreate: React.FC = () => {
     },
     disabled: existingReports.loading,
     name: 'country_id',
-    onChange: (_event: any, value: WidgetCountry) => {
-      const country = value as WidgetCountry
-      handleSetForm({ ...form, country })
+    onChange: (_: ChangeEvent, value: WidgetCountry) => {
+      handleSetForm({ ...form, country: value })
     },
     options: countries,
     value: form.country,
@@ -687,12 +694,12 @@ const CPCreate: React.FC = () => {
             const sectionName: string = `reported_${section.id}`
             const isSectionChecked: boolean =
               section.id === 'report_info' ||
-              // @ts-ignore
-              sectionsChecked[sectionName] ||
+              sectionsChecked[sectionName as keyof typeof sectionsChecked] ||
               false
             const showSectionSelect =
               variant?.model === 'V' && section.id !== 'report_info'
-            const Section = section.component
+            const Section: CreateSectionTypes =
+              section.component as CreateSectionTypes
             return (
               <div
                 id={section.panelId}
@@ -714,7 +721,7 @@ const CPCreate: React.FC = () => {
                 <div className="relative flex flex-col gap-6">
                   <FootnotesProvider>
                     <Section
-                      Section={get(Sections, section.id)}
+                      Section={Sections[section.id as keyof typeof Sections]}
                       Sections={Sections}
                       countryFieldProps={countryFieldProps}
                       emptyForm={report.emptyForm.data || {}}
