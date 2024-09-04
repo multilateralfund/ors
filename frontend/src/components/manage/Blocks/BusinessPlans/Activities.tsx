@@ -262,7 +262,8 @@ function OpenActivity({ activity, gridOptions, period }: any) {
             </span>
             <span className="flex w-1/2 flex-col gap-2.5 pl-1.5">
               <span>Comments</span>
-              {activity.comment_secretariat || activity.comment_types ? (
+              {activity.comment_secretariat ||
+              activity.comment_types.length > 0 ? (
                 <div className="break-words rounded-lg bg-gray-100 p-4">
                   <div className="mb-1 flex flex-wrap gap-1">
                     {activity.comment_types.map(
