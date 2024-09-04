@@ -155,8 +155,8 @@ class CPReportNestedCommentSerializer(serializers.Serializer):
     Serializer for nested section comments that we receive in POST/PUT requests.
     """
 
-    country = serializers.CharField(required=False, allow_null=True)
-    mlfs = serializers.CharField(required=False, allow_null=True)
+    country = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    mlfs = serializers.CharField(required=False, allow_null=True, allow_blank=True)
 
     class Meta:
         fields = [
@@ -171,6 +171,7 @@ COMMENT_SECTIONS = {
     "comments_section_c": CPComment.CPCommentSection.SECTION_C,
     "comments_section_d": CPComment.CPCommentSection.SECTION_D,
     "comments_section_e": CPComment.CPCommentSection.SECTION_E,
+    "comments_section_f": CPComment.CPCommentSection.SECTION_F,
 }
 
 
@@ -201,6 +202,7 @@ class CPReportCreateSerializer(serializers.Serializer):
     comments_section_c = CPReportNestedCommentSerializer(many=False, required=False)
     comments_section_d = CPReportNestedCommentSerializer(many=False, required=False)
     comments_section_e = CPReportNestedCommentSerializer(many=False, required=False)
+    comments_section_f = CPReportNestedCommentSerializer(many=False, required=False)
 
     class Meta:
         fields = [
