@@ -10,6 +10,8 @@ import { union } from 'lodash'
 
 import Field from '@ors/components/manage/Form/Field'
 import { KEY_ENTER } from '@ors/constants'
+import { debounce } from '@ors/helpers'
+import useFocusOnCtrlF from '@ors/hooks/useFocusOnCtrlF'
 
 import ActivitiesFiltersSelectedOpts from './BPList/ActivitiesFiltersSelectedOpts'
 
@@ -27,6 +29,8 @@ export default function ActivitiesFilters(props: any) {
     initialFilters,
     withAgency = false,
   } = props
+
+  const searchRef = useFocusOnCtrlF()
 
   const getFilterOptions = (options: any = [], filterIdentifier: string) => {
     const selectedOptions = filters[filterIdentifier]
@@ -215,6 +219,7 @@ export default function ActivitiesFilters(props: any) {
         <Field
           name="search"
           defaultValue={filters.search}
+          inputRef={searchRef}
           placeholder="Search by keyword..."
           FieldProps={{
             className:
@@ -243,14 +248,21 @@ export default function ActivitiesFilters(props: any) {
             ),
           }}
           onKeyDown={(event: any) => {
-            const search = form.current.search.value
-            if (event.key === KEY_ENTER) {
-              handleParamsChange({
-                offset: 0,
-                search,
-              })
-              handleFilterChange({ search })
-            }
+            debounce(
+              () => {
+                const search = form.current.search.value
+                handleParamsChange({
+                  offset: 0,
+                  search,
+                })
+                handleFilterChange({ search })
+                if (searchRef.current) {
+                  searchRef.current.select()
+                }
+              },
+              1000,
+              'BPFilterSearch',
+            )
           }}
         />
         <ActivitiesFiltersSelectedOpts
