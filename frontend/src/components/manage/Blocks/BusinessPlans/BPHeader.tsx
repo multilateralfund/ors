@@ -12,6 +12,7 @@ import BPContext from '@ors/contexts/BusinessPlans/BPContext'
 import useClickOutside from '@ors/hooks/useClickOutside'
 
 import { useGetBPVersions } from './BP/useGetBPVersions'
+import { RedirectToBpList } from './RedirectToBpList'
 
 import { IoChevronDown } from 'react-icons/io5'
 
@@ -147,16 +148,6 @@ const ViewHeaderActions = () => {
                 Submit final version
               </Button>
             )}
-            <Link
-              className="btn-close bg-gray-600 px-4 py-2 shadow-none"
-              color="secondary"
-              href={`/business-plans`}
-              size="large"
-              variant="contained"
-              button
-            >
-              View Business Plans
-            </Link>
           </div>
         </div>
       )}
@@ -216,11 +207,16 @@ const BPHeader = ({
   titlePrefix?: React.JSX.Element
 }) => {
   const contextBP = useContext(BPContext) as any
+  const { data } = contextBP
+  const business_plan = data?.results?.business_plan || {}
+
+  const currentYearRange =
+    business_plan?.year_start + '-' + business_plan?.year_end
 
   return (
-    !!contextBP.data && (
+    !!data && (
       <div>
-        <div className="mb-2 font-[500] uppercase">Business Plans</div>
+        <RedirectToBpList {...{ currentYearRange }} />
         <div className="mb-4 flex min-h-[40px] flex-wrap items-center justify-between gap-x-8 gap-y-2">
           <div className="flex flex-wrap items-center gap-x-2">
             <div className="flex items-center gap-x-2">
