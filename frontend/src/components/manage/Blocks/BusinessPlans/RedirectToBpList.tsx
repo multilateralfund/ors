@@ -12,11 +12,13 @@ export const RedirectToBpList = ({
   const bpListUrl = `/business-plans/list/plans/${currentYearRange}`
 
   return (
-    <NextLink className="text-black no-underline" href={bpListUrl}>
-      <div className="mb-2 flex items-center gap-2 text-lg uppercase">
-        <IoReturnUpBack size={18} />
-        Business Plans
-      </div>
-    </NextLink>
+    <div className="w-fit">
+      <NextLink className=" text-black no-underline" href={bpListUrl}>
+        <div className="mb-2 flex items-center gap-2 text-lg uppercase">
+          <IoReturnUpBack size={18} />
+          Business Plans
+        </div>
+      </NextLink>
+    </div>
   )
 }

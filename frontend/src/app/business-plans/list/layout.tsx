@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useContext } from 'react'
+import React, { useContext, useEffect } from 'react'
 
 import cx from 'classnames'
 import Link from 'next/link'
@@ -14,6 +14,7 @@ import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import CustomLink from '@ors/components/ui/Link/Link'
 import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
 import BPYearRangesProvider from '@ors/contexts/BusinessPlans/BPYearRangesProvider'
+import { useStore } from '@ors/store'
 
 import styles from './styles.module.css'
 
@@ -56,6 +57,12 @@ function BusinessPlansList(props: any) {
 
   const pathname = usePathname()
   const period = getPathPeriod(pathname)
+
+  const { setBPFilters } = useStore((state) => state.bpFilters)
+
+  useEffect(() => {
+    setBPFilters({ range: period })
+  }, [period, setBPFilters])
 
   const [_, navLinks] = getNavLinks(pathname, period)
 

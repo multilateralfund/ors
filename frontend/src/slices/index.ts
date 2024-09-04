@@ -1,5 +1,6 @@
 import type { CreateSliceProps } from '@ors/types/store'
 
+import { createBPFiltersSlice } from '@ors/slices/createBPFiltersSlice'
 import { createBusinessPlanSlice } from '@ors/slices/createBusinessPlanSlice'
 import { createCPCurrentTabSlice } from '@ors/slices/createCPCurrentTabSlice'
 import { createCPReportsSlice } from '@ors/slices/createCPReportsSlice'
@@ -13,6 +14,7 @@ import { createUserSlice } from '@ors/slices/createUserSlice'
 
 export default function createSlices(props: CreateSliceProps) {
   return {
+    bpFilters: { ...createBPFiltersSlice(props) },
     businessPlans: { ...createBusinessPlanSlice(props) },
     cache: { ...createCacheSlice(props) },
     common: { ...createCommonSlice(props) },

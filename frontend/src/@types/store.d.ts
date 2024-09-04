@@ -29,6 +29,10 @@ export type FiltersType = {
   status: StatusFilterTypes
 }
 
+export type BPFiltersType = {
+  range: string
+}
+
 type Report = {
   country?: Country
   emptyForm: SliceData<EmptyFormType, Record<string, any> | null>
@@ -134,6 +138,11 @@ export interface FiltersSlice {
   setFilters: (newFilters: Partial<FiltersType>) => void
 }
 
+export interface BPFiltersSlice {
+  bpFilters: BPFiltersType
+  setBPFilters: (newFilters: Partial<BPFiltersType>) => void
+}
+
 export interface CommentData {
   comment: string
   comment_type: string
@@ -152,6 +161,7 @@ export interface HistoryListItem {
 
 // Store state
 export type StoreState = {
+  bpFilters: BPFiltersSlice
   businessPlans: BusinessPlanSlice
   cache: CacheSlice
   common: CommonSlice
