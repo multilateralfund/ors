@@ -293,8 +293,8 @@ class CPReportCreateSerializer(serializers.Serializer):
 
     def _add_comments(self, cp_report, comments):
         comments_data = []
-        for section in COMMENT_SECTIONS.keys():
-            section_data = comments[section]
+        for section_name, section in COMMENT_SECTIONS.items():
+            section_data = comments[section_name]
             if section_data is None:
                 continue
             for key, comment_type in [
@@ -307,7 +307,7 @@ class CPReportCreateSerializer(serializers.Serializer):
                     continue
                 comment["comment"] = text
                 comment["comment_type"] = comment_type
-                comment["section"] = COMMENT_SECTIONS[section]
+                comment["section"] = section
                 comment["country_programme_report_id"] = cp_report.id
                 comments_data.append(comment)
 
@@ -321,7 +321,7 @@ class CPReportCreateSerializer(serializers.Serializer):
 
         cp_comments = {
             comment_section: validated_data.get(comment_section, None)
-            for comment_section in COMMENT_SECTIONS.keys()
+            for comment_section in COMMENT_SECTIONS
         }
 
         cp_report_info = validated_data.get("report_info", {})
