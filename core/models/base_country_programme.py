@@ -129,6 +129,11 @@ class AbstractCPRecord(AbstractWChemical):
         Else the consumption value will be calculated using the sectorial total
 
         """
+
+        # For Methyl Bromide the consumption value will only contain the non-Qps values
+        if self.substance and "methyl bromide" in self.substance.name.lower():
+            return self.get_sectorial_total()
+
         if using_consumption_value:
             return (self.imports or 0) - (self.exports or 0) + (self.production or 0)
 

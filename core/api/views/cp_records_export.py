@@ -550,7 +550,6 @@ class CPDataExtractionAllExport(views.APIView):
             )
             for record in records
             if any([record.imports, record.exports, record.production])
-            and (record.blend or "methyl bromide" not in record.substance.name.lower())
         }
 
     def get_mbr_consumption_data(self, min_year, max_year, archive_reports):
@@ -880,7 +879,7 @@ class CPDataExtractionAllExport(views.APIView):
 
             if (
                 record.substance
-                and "in pre-blended polyol" in record.substance.name.lower()
+                and "pre-blended polyol" in record.substance.name.lower()
             ):
                 substance_name = "HFCs in Preblended Polyol"
 
