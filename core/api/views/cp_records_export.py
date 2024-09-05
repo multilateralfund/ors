@@ -776,8 +776,8 @@ class CPDataExtractionAllExport(views.APIView):
                     "substance_odp": record.get_chemical_odp(),
                     "substance_gwp": record.get_chemical_gwp(),
                 }
-                for year in existent_reports.get(country_name, []):
-                    cp_details[key][f"record_value_{year}"] = 0
+                for data_year in existent_reports.get(country_name, []):
+                    cp_details[key][f"record_value_{data_year}"] = 0
 
             cp_details[key][f"record_value_{year}"] = cons_value
 
@@ -827,8 +827,8 @@ class CPDataExtractionAllExport(views.APIView):
             key = (country_name, group)
             if key not in country_records:
                 country_records[key] = {}
-                for year in existent_reports.get(country_name, []):
-                    country_records[key][f"record_value_{year}"] = 0
+                for data_year in existent_reports.get(country_name, []):
+                    country_records[key][f"record_value_{data_year}"] = 0
 
             # set consumption value
             consumption_value = record.get_consumption_value(
@@ -894,11 +894,11 @@ class CPDataExtractionAllExport(views.APIView):
                     "country_lvc": "LVC" if country.is_lvc else "Non-LVC",
                     "substance_group": country.consumption_group,
                 }
-                for year in existent_reports.get(country_name, []):
-                    country_records[key][f"consumption_mt_{year}"] = 0
-                    country_records[key][f"consumption_co2_{year}"] = 0
-                    country_records[key][f"servicing_{year}"] = 0
-                    country_records[key][f"usages_total_{year}"] = 0
+                for data_year in existent_reports.get(country_name, []):
+                    country_records[key][f"consumption_mt_{data_year}"] = 0
+                    country_records[key][f"consumption_co2_{data_year}"] = 0
+                    country_records[key][f"servicing_{data_year}"] = 0
+                    country_records[key][f"usages_total_{data_year}"] = 0
 
             # get consumption data
             consumption_value = record.get_consumption_value(
