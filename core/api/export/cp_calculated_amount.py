@@ -29,6 +29,7 @@ class CPCalculatedAmountWriter(BaseWriter):
                 "headerName": f"{year} - Calculated Consumption = Import-Export+Production",
                 "type": "number",
                 "align": "right",
+                "column_width": self.COLUMN_WIDTH * 2,
             },
         ]
         sheet = wb.create_sheet("Calculated Amount")

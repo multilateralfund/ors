@@ -53,6 +53,14 @@ class CPPricesExtractionWriter(BaseExtractionAllWriter):
                         "align": "right",
                     },
                     {
+                        "id": f"fob_{year}",
+                        "headerName": f"Fob Price {year}",
+                    },
+                    {
+                        "id": f"retail_{year}",
+                        "headerName": f"Retail Price {year}",
+                    },
+                    {
                         "id": f"remarks_{year}",
                         "headerName": f"Remarks {year} ",
                     },
@@ -252,6 +260,7 @@ class HFC23GenerationWriter(BaseWriter):
                 "headerName": "Captured for feedstock uses within your country",
                 "align": "right",
                 "type": "number",
+                "column_width": self.COLUMN_WIDTH * 2,
             },
             {
                 "id": "destruction",
@@ -329,6 +338,7 @@ class HFC23EmissionWriter(BaseWriter):
                 "headerName": "Amount generated and captured - For all uses",
                 "align": "right",
                 "type": "number",
+                "column_width": self.COLUMN_WIDTH * 2,
             },
             {
                 "id": "feedstock_gc",
@@ -338,24 +348,28 @@ class HFC23EmissionWriter(BaseWriter):
                 ),
                 "align": "right",
                 "type": "number",
+                "column_width": self.COLUMN_WIDTH * 2,
             },
             {
                 "id": "destruction",
                 "headerName": "Amount generated and captured - For destruction",
                 "align": "right",
                 "type": "number",
+                "column_width": self.COLUMN_WIDTH * 2,
             },
             {
                 "id": "feedstock_wpc",
                 "headerName": "Amount used for feedstock without prior capture",
                 "align": "right",
                 "type": "number",
+                "column_width": self.COLUMN_WIDTH * 2,
             },
             {
                 "id": "destruction_wpc",
                 "headerName": "Amount destroyed without prior capture",
                 "align": "right",
                 "type": "number",
+                "column_width": self.COLUMN_WIDTH * 2,
             },
             {
                 "id": "generated_emissions",

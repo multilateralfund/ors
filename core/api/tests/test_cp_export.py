@@ -288,8 +288,8 @@ class TestCPExtractionALLExport(BaseTest):
         assert wb["MbrConsumption"].max_row == 1
 
         # check number of columns
-        # country, substance, price, remarks, notes
-        assert wb["ODSPrice"].max_column == 5
+        # country, substance, price,fob, retail_proce, remarks, notes
+        assert wb["ODSPrice"].max_column == 7
         # country, annex_group, substance, odp_value, gwp_value, 2019, notes
         assert wb["CP-Details"].max_column == 7
         # country, substance, value, notes
