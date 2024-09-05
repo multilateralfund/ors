@@ -2,6 +2,7 @@ import os
 import openpyxl
 
 from django.conf import settings
+from django.core.exceptions import PermissionDenied
 from django.db import models
 from django.shortcuts import get_object_or_404
 from django.views.static import serve
@@ -217,6 +218,9 @@ class ProjectViewSet(
         return self.get_wb(workbook_pdf_response)
 
     def create(self, request, *args, **kwargs):
+        if "country" in request.user.user_type.lower():
+            raise PermissionDenied("Country users not allowed")
+
         vald_perm_inst = Project(
             agency_id=request.data.get("agency_id"),
             country_id=request.data.get("country_id"),
@@ -224,6 +228,12 @@ class ProjectViewSet(
         self.check_object_permissions(request, vald_perm_inst)
 
         return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        if "country" in request.user.user_type.lower():
+            raise PermissionDenied("Country users not allowed")
+
+        return super().update(request, *args, **kwargs)
 
 
 class ProjectFileView(APIView):
@@ -259,7 +269,7 @@ class ProjectOdsOdpViewSet(
     API endpoint that allows project ods odp CreateUpdateDdelete
     """
 
-    permission_classes = [IsSecretariat | IsAgency | IsCountryUser]
+    permission_classes = [IsSecretariat | IsAgency]
     queryset = ProjectOdsOdp.objects.select_related("ods_substance", "ods_blend").all()
     serializer_class = ProjectOdsOdpCreateSerializer
 
@@ -274,7 +284,7 @@ class ProjectFundViewSet(
     API endpoint that allows project fund CreateUpdateDdelete
     """
 
-    permission_classes = [IsSecretariat | IsAgency | IsCountryUser]
+    permission_classes = [IsSecretariat | IsAgency]
     queryset = ProjectFund.objects.select_related("meeting").all()
     serializer_class = ProjectFundCreateSerializer
 
@@ -289,7 +299,7 @@ class ProjectCommentViewSet(
     API endpoint that allows comment CreateUpdateDdelete
     """
 
-    permission_classes = [IsSecretariat | IsAgency | IsCountryUser]
+    permission_classes = [IsSecretariat | IsAgency]
     queryset = ProjectComment.objects.select_related("meeting_of_report").all()
     serializer_class = ProjectCommentCreateSerializer
 
@@ -304,7 +314,7 @@ class ProjectRbmMeasureViewSet(
     API endpoint that allows project rbm measure CreateUpdateDdelete
     """
 
-    permission_classes = [IsSecretariat | IsAgency | IsCountryUser]
+    permission_classes = [IsSecretariat | IsAgency]
     queryset = ProjectRBMMeasure.objects.select_related("measure").all()
     serializer_class = ProjectRbmMeasureCreateSerializer
 
@@ -319,7 +329,7 @@ class ProjectSubmissionAmountViewSet(
     API endpoint that allows project submission amount CreateUpdateDdelete
     """
 
-    permission_classes = [IsSecretariat | IsAgency | IsCountryUser]
+    permission_classes = [IsSecretariat | IsAgency]
     queryset = SubmissionAmount.objects.all()
     serializer_class = SubmissionAmountCreateSerializer
 

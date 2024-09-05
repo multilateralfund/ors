@@ -162,10 +162,10 @@ class TestProjectsUpdate:
         response = self.client.patch(project_url, {"title": "Into the Spell"})
         assert response.status_code == 404
 
-    def test_without_permission_wrong_country(self, other_country_user, project_url):
-        self.client.force_authenticate(user=other_country_user)
+    def test_without_permission_country_user(self, country_user, project_url):
+        self.client.force_authenticate(user=country_user)
         response = self.client.patch(project_url, {"title": "Into the Spell"})
-        assert response.status_code == 404
+        assert response.status_code == 403
 
     def test_project_patch(self, user, project_url, project, agency):
         self.client.force_authenticate(user=user)
@@ -671,10 +671,8 @@ class TestCreateProjects(BaseTest):
         response = self.client.post(self.url, _setup_project_create, format="json")
         assert response.status_code == 403
 
-    def test_without_permission_wrong_country(
-        self, other_country_user, _setup_project_create
-    ):
-        self.client.force_authenticate(user=other_country_user)
+    def test_without_permission_country_user(self, country_user, _setup_project_create):
+        self.client.force_authenticate(user=country_user)
         response = self.client.post(self.url, _setup_project_create, format="json")
         assert response.status_code == 403
 
