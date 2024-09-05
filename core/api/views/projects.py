@@ -17,6 +17,7 @@ from core.api.export.base import configure_sheet_print
 from core.api.export.projects import ProjectWriter
 
 from core.api.filters.project import MetaProjectFilter, ProjectFilter
+from core.api.permissions import IsAgency, IsCountryUser, IsSecretariat
 from core.api.serializers.meeting import MeetingSerializer
 from core.api.serializers.project import (
     ProjectClusterSerializer,
@@ -55,6 +56,7 @@ class MetaProjectListView(generics.ListAPIView):
     List meta projects
     """
 
+    permission_classes = [IsSecretariat | IsAgency | IsCountryUser]
     queryset = MetaProject.objects.order_by("code", "type")
     filterset_class = MetaProjectFilter
     serializer_class = MetaProjectSerializer
@@ -65,6 +67,7 @@ class ProjectStatusListView(generics.ListAPIView):
     List project status
     """
 
+    permission_classes = [IsSecretariat | IsAgency | IsCountryUser]
     queryset = ProjectStatus.objects.all()
     serializer_class = ProjectStatusSerializer
 
@@ -74,16 +77,19 @@ class ProjectTypeListView(generics.ListAPIView):
     List project type
     """
 
+    permission_classes = [IsSecretariat | IsAgency | IsCountryUser]
     queryset = ProjectType.objects.order_by("sort_order").all()
     serializer_class = ProjectTypeSerializer
 
 
 class ProjectMeetingListView(generics.ListAPIView):
+    permission_classes = [IsSecretariat | IsAgency | IsCountryUser]
     queryset = Meeting.objects.order_by("number").all()
     serializer_class = MeetingSerializer
 
 
 class ProjectClusterListView(generics.ListAPIView):
+    permission_classes = [IsSecretariat | IsAgency | IsCountryUser]
     queryset = ProjectCluster.objects.order_by("sort_order").all()
     serializer_class = ProjectClusterSerializer
 
@@ -100,22 +106,7 @@ class ProjectViewSet(
     API endpoint that allows projects to be viewed.
     """
 
-    queryset = Project.objects.select_related(
-        "country",
-        "agency",
-        "subsector__sector",
-        "project_type",
-        "status",
-        "cluster",
-        "approval_meeting",
-        "meeting_transf",
-        "meta_project",
-    ).prefetch_related(
-        "coop_agencies__agency",
-        "submission_amounts",
-        "rbm_measures__measure",
-        "ods_odp",
-    )
+    permission_classes = [IsSecretariat | IsAgency | IsCountryUser]
     filterset_class = ProjectFilter
     filter_backends = [
         DjangoFilterBackend,
@@ -132,6 +123,35 @@ class ProjectViewSet(
         "substance_type",
     ]
     search_fields = ["code", "legacy_code", "meta_project__code", "title"]
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Project.objects.select_related(
+            "country",
+            "agency",
+            "subsector__sector",
+            "project_type",
+            "status",
+            "cluster",
+            "approval_meeting",
+            "meeting_transf",
+            "meta_project",
+        ).prefetch_related(
+            "coop_agencies__agency",
+            "submission_amounts",
+            "rbm_measures__measure",
+            "ods_odp",
+        )
+
+        if "agency" in user.user_type.lower():
+            # filter projects by agency if user is agency
+            queryset = queryset.filter(agency=user.agency)
+
+        if "country" in user.user_type.lower():
+            # filter projects by country if user is country
+            queryset = queryset.filter(country=user.country)
+
+        return queryset
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -196,6 +216,15 @@ class ProjectViewSet(
     def print(self, *args, **kwargs):
         return self.get_wb(workbook_pdf_response)
 
+    def create(self, request, *args, **kwargs):
+        vald_perm_inst = Project(
+            agency_id=request.data.get("agency_id"),
+            country_id=request.data.get("country_id"),
+        )
+        self.check_object_permissions(request, vald_perm_inst)
+
+        return super().create(request, *args, **kwargs)
+
 
 class ProjectFileView(APIView):
     """
@@ -230,6 +259,7 @@ class ProjectOdsOdpViewSet(
     API endpoint that allows project ods odp CreateUpdateDdelete
     """
 
+    permission_classes = [IsSecretariat | IsAgency | IsCountryUser]
     queryset = ProjectOdsOdp.objects.select_related("ods_substance", "ods_blend").all()
     serializer_class = ProjectOdsOdpCreateSerializer
 
@@ -244,6 +274,7 @@ class ProjectFundViewSet(
     API endpoint that allows project fund CreateUpdateDdelete
     """
 
+    permission_classes = [IsSecretariat | IsAgency | IsCountryUser]
     queryset = ProjectFund.objects.select_related("meeting").all()
     serializer_class = ProjectFundCreateSerializer
 
@@ -258,6 +289,7 @@ class ProjectCommentViewSet(
     API endpoint that allows comment CreateUpdateDdelete
     """
 
+    permission_classes = [IsSecretariat | IsAgency | IsCountryUser]
     queryset = ProjectComment.objects.select_related("meeting_of_report").all()
     serializer_class = ProjectCommentCreateSerializer
 
@@ -272,6 +304,7 @@ class ProjectRbmMeasureViewSet(
     API endpoint that allows project rbm measure CreateUpdateDdelete
     """
 
+    permission_classes = [IsSecretariat | IsAgency | IsCountryUser]
     queryset = ProjectRBMMeasure.objects.select_related("measure").all()
     serializer_class = ProjectRbmMeasureCreateSerializer
 
@@ -286,6 +319,7 @@ class ProjectSubmissionAmountViewSet(
     API endpoint that allows project submission amount CreateUpdateDdelete
     """
 
+    permission_classes = [IsSecretariat | IsAgency | IsCountryUser]
     queryset = SubmissionAmount.objects.all()
     serializer_class = SubmissionAmountCreateSerializer
 
@@ -295,12 +329,28 @@ class ProjectStatisticsView(generics.ListAPIView):
     API endpoint that allows project statistics to be viewed.
     """
 
+    permission_classes = [IsSecretariat | IsAgency | IsCountryUser]
     filterset_class = ProjectFilter
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
     ]
-    queryset = Project.objects.select_related("meta_project", "sector", "cluster").all()
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Project.objects.select_related(
+            "meta_project", "sector", "cluster"
+        ).all()
+
+        if "agency" in user.user_type.lower():
+            # filter projects by agency if user is agency
+            queryset = queryset.filter(agency=user.agency)
+
+        if "country" in user.user_type.lower():
+            # filter projects by country if user is country
+            queryset = queryset.filter(country=user.country)
+
+        return queryset
 
     def get(self, request, *args, **kwargs):
         """

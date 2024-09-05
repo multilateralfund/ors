@@ -17,6 +17,7 @@ from core.api.tests.factories import (
     ProjectSubSectorFactory,
     ProjectTypeFactory,
     RbmMeasureFactory,
+    UserFactory,
 )
 from core.models.project import MetaProject, Project, ProjectOdsOdp
 from core.models.project import ProjectFile
@@ -24,6 +25,18 @@ from core.utils import get_project_sub_code
 
 pytestmark = pytest.mark.django_db
 # pylint: disable=C8008,W0221,R0913,R0914
+
+
+@pytest.fixture(name="other_agency_user")
+def _other_agency_user():
+    other_agency = AgencyFactory.create(name="Agency2", code="AG2")
+    return UserFactory.create(agency=other_agency, user_type="agency_submitter")
+
+
+@pytest.fixture(name="other_country_user")
+def _other_country_user():
+    other_country = CountryFactory.create(name="New Country")
+    return UserFactory.create(country=other_country, user_type="country_user")
 
 
 @pytest.fixture(name="project_url")
@@ -85,6 +98,16 @@ class TestProjectsRetrieve:
         response = self.client.get(project_url)
         assert response.status_code == 403
 
+    def test_without_permission_wrong_agency(self, other_agency_user, project_url):
+        self.client.force_authenticate(user=other_agency_user)
+        response = self.client.get(project_url)
+        assert response.status_code == 404
+
+    def test_without_permission_wrong_country(self, other_country_user, project_url):
+        self.client.force_authenticate(user=other_country_user)
+        response = self.client.get(project_url)
+        assert response.status_code == 404
+
     def test_project_get(self, user, project_url, project):
         self.client.force_authenticate(user=user)
         response = self.client.get(project_url)
@@ -133,6 +156,16 @@ class TestProjectsUpdate:
     def test_project_patch_anon(self, project_url):
         response = self.client.patch(project_url, {"title": "Into the Spell"})
         assert response.status_code == 403
+
+    def test_without_permission_wrong_agency(self, other_agency_user, project_url):
+        self.client.force_authenticate(user=other_agency_user)
+        response = self.client.patch(project_url, {"title": "Into the Spell"})
+        assert response.status_code == 404
+
+    def test_without_permission_wrong_country(self, other_country_user, project_url):
+        self.client.force_authenticate(user=other_country_user)
+        response = self.client.patch(project_url, {"title": "Into the Spell"})
+        assert response.status_code == 404
 
     def test_project_patch(self, user, project_url, project, agency):
         self.client.force_authenticate(user=user)
@@ -323,6 +356,26 @@ class TestProjectList(BaseTest):
         response = self.client.get(self.url)
         assert response.status_code == 200
         assert len(response.data) == 10
+
+    def test_project_list_agency_user(self, agency_user, _setup_project_list):
+        self.client.force_authenticate(user=agency_user)
+
+        # get project list for user agency
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.data) == 6
+        for project in response.data:
+            assert project["agency"] == agency_user.agency.name
+
+    def test_project_list_country_user(self, country_user, _setup_project_list):
+        self.client.force_authenticate(user=country_user)
+
+        # get project list for user country
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.data) == 6
+        for project in response.data:
+            assert project["country"] == country_user.country.name
 
     def test_project_list_w_submission(self, user, _setup_project_list):
         self.client.force_authenticate(user=user)
@@ -609,6 +662,20 @@ class TestCreateProjects(BaseTest):
         self.client.force_authenticate(user=None)
 
         response = self.client.post(self.url, data, format="json")
+        assert response.status_code == 403
+
+    def test_without_permission_wrong_agency(
+        self, other_agency_user, _setup_project_create
+    ):
+        self.client.force_authenticate(user=other_agency_user)
+        response = self.client.post(self.url, _setup_project_create, format="json")
+        assert response.status_code == 403
+
+    def test_without_permission_wrong_country(
+        self, other_country_user, _setup_project_create
+    ):
+        self.client.force_authenticate(user=other_country_user)
+        response = self.client.post(self.url, _setup_project_create, format="json")
         assert response.status_code == 403
 
     def test_create_project(
