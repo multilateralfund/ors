@@ -8,7 +8,11 @@ import aggFuncs from '@ors/config/Table/aggFuncs'
 
 import AgSkeletonCellRenderer from '@ors/components/manage/AgCellRenderers/AgSkeletonCellRenderer'
 import { getDecimalCellValue } from '@ors/components/manage/Utils/DecimalCellValue'
-import { convertValue, fixFloat, parseNumber } from '@ors/helpers/Utils/Utils'
+import {
+  fixFloat,
+  getUnitAwareValue,
+  parseNumber,
+} from '@ors/helpers/Utils/Utils'
 
 export default function AgFloatCellRenderer(props: CustomCellRendererProps) {
   if (props.data.rowType === 'skeleton') {
@@ -48,10 +52,33 @@ export default function AgFloatCellRenderer(props: CustomCellRendererProps) {
     valueODP = fixFloat(aggFunc({ ...props, unitOverride: 'odp' }))
   } else {
     value = parseNumber(props.value)
-    const convertedValue = convertValue(props.value, props.data.gwp, props.data.odp)
-    valueMT = convertedValue['mt']
-    valueGWP = convertedValue['gwp']
-    valueODP = convertedValue['odp']
+    valueMT = props.colDef?.field
+      ? getUnitAwareValue(
+          props.data,
+          props.colDef.field,
+          'mt',
+          props.data.gwp,
+          props.data.odp,
+        )
+      : null
+    valueGWP = props.colDef?.field
+      ? getUnitAwareValue(
+          props.data,
+          props.colDef.field,
+          'gwp',
+          props.data.gwp,
+          props.data.odp,
+        )
+      : null
+    valueODP = props.colDef?.field
+      ? getUnitAwareValue(
+          props.data,
+          props.colDef.field,
+          'odp',
+          props.data.gwp,
+          props.data.odp,
+        )
+      : null
   }
 
   if (isUndefined(value)) {

@@ -1,7 +1,11 @@
+import { CPReport } from '@ors/types/api_country-programme_records'
 import { EmptyFormType } from '@ors/types/api_empty-form'
 import { ReportVariant } from '@ors/types/variants'
 
-import { CPCommentsForEditType } from '../CountryProgramme/CPCommentsTypes'
+import {
+  CPCommentsForEditType,
+  CPCommentsType,
+} from '../CountryProgramme/CPCommentsTypes'
 import { SectionMeta } from '../CountryProgramme/types'
 import {
   CPBaseForm,
@@ -26,5 +30,12 @@ export interface IBaseSectionEditProps<T>
   Comments: CPCommentsForEditType
   form: CPEditForm
   setForm: React.Dispatch<React.SetStateAction<CPEditForm>>
+  showComments: boolean
+}
+
+export interface IBaseSectionViewProps<T>
+  extends Omit<IBaseSectionProps<T>, 'form' | 'setForm'> {
+  Comments: CPCommentsType
+  report: CPReport
   showComments: boolean
 }

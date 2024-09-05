@@ -14,6 +14,8 @@ export type EmptyFormSubstance = {
   chemical_note: null | string
   excluded_usages: number[]
   group: string
+  gwp: number
+  odp: number
   sort_order: number
   substance_id: null | number
 }

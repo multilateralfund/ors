@@ -51,13 +51,7 @@ type ApiBase = {
     production: null | string
     production_gwp: number
     production_odp: number
-    record_usages: {
-      quantity: string
-      quantity_gwp: string
-      quantity_odp: string
-      usage: string
-      usage_id: number
-    }[]
+    record_usages: CPReportUsage[]
     remarks: null | string
     row_id: string
     substance_id: number
@@ -232,3 +226,10 @@ type ApiBaseDiff = {
 export type ApiCPReport = { cp_report: cp_report } & ApiBase
 export type CPReport = ApiBase & cp_report
 export type CPReportDiff = ApiBaseDiff
+export type CPReportUsage = {
+  quantity: string
+  quantity_gwp: number
+  quantity_odp: number
+  usage: string
+  usage_id: number
+}

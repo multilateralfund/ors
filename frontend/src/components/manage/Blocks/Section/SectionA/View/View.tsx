@@ -11,8 +11,9 @@ import components from '@ors/config/Table/components'
 
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
-import { DeserializedDataA } from '@ors/models/SectionA'
+import SectionA, { DeserializedDataA } from '@ors/models/SectionA'
 
+import { IBaseSectionViewProps } from '../../types'
 import TableDataSelector, { useTableDataSelector } from '../TableDataSelector'
 import useGridOptions from './schema'
 
@@ -80,7 +81,7 @@ function getPinnedRowData(rowData: any) {
     : []
 }
 
-export default function SectionAView(props: any) {
+export default function SectionAView(props: IBaseSectionViewProps<SectionA>) {
   const { Comments, TableProps, emptyForm, report, showComments, variant } =
     props
   const { gridOptionsAll, gridOptionsBySector, gridOptionsBySubstanceTrade } =

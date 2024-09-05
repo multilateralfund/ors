@@ -1,4 +1,6 @@
 'use client'
+import type { CPReportUsage } from '@ors/types/api_country-programme_records'
+
 import { Tooltip, Typography } from '@mui/material'
 import { CustomCellRendererProps } from 'ag-grid-react'
 import { each, find, get, includes, isNull, isUndefined } from 'lodash'
@@ -7,7 +9,11 @@ import aggFuncs from '@ors/config/Table/aggFuncs'
 
 import AgSkeletonCellRenderer from '@ors/components/manage/AgCellRenderers/AgSkeletonCellRenderer'
 import { getDecimalCellValue } from '@ors/components/manage/Utils/DecimalCellValue'
-import { convertValue, parseNumber, sumFloats } from '@ors/helpers/Utils/Utils'
+import {
+  getUnitAwareValue,
+  parseNumber,
+  sumFloats,
+} from '@ors/helpers/Utils/Utils'
 
 export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
   if (props.data.rowType === 'skeleton') {
@@ -39,16 +45,35 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
     const _valueMT: number[] = []
     const _valueGWP: number[] = []
     const _valueODP: number[] = []
-    each(recordUsages, (usage: any) => {
-      const convertedValue = convertValue(
-        usage.quantity,
+    each(recordUsages, (usage: CPReportUsage) => {
+      const quantity = getUnitAwareValue(
+        usage,
+        'quantity',
+        props.context?.unit ?? 'mt',
         props.data.gwp,
         props.data.odp,
       )
-      const quantity = convertedValue[props.context?.unit ?? 'mt']
-      const quantityMT = convertedValue['mt']
-      const quantityGWP = convertedValue['gwp']
-      const quantityODP = convertedValue['odp']
+      const quantityMT = getUnitAwareValue(
+        usage,
+        'quantity',
+        'mt',
+        props.data.gwp,
+        props.data.odp,
+      )
+      const quantityGWP = getUnitAwareValue(
+        usage,
+        'quantity',
+        'gwp',
+        props.data.gwp,
+        props.data.odp,
+      )
+      const quantityODP = getUnitAwareValue(
+        usage,
+        'quantity',
+        'odp',
+        props.data.gwp,
+        props.data.odp,
+      )
       if (!isNull(quantity)) {
         value.push(quantity)
       }
@@ -68,8 +93,14 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
     valueODP = _valueODP.length > 0 ? sumFloats(_valueODP) : 0
   } else if (usageId === 'total_refrigeration') {
     value = []
-    each(recordUsages, (usage: any) => {
-      const quantity = convertValue(usage?.quantity, props.data.gwp, props.data.odp)[props.context?.unit]
+    each(recordUsages, (usage: CPReportUsage) => {
+      const quantity = getUnitAwareValue(
+        usage,
+        'quantity',
+        props.context?.unit,
+        props.data.gwp,
+        props.data.odp,
+      )
       if (!isNull(quantity) && includes([6, 7], usage.usage_id)) {
         value.push(quantity)
       }
@@ -78,15 +109,28 @@ export default function AgUsageCellRenderer(props: CustomCellRendererProps) {
     valueMT = value
   } else {
     const usage = find(recordUsages, (item) => item.usage_id === usageId)
-    const convertedValue = convertValue(
-      usage?.quantity,
+    value = parseNumber(usage?.quantity)
+    valueMT = getUnitAwareValue(
+      usage,
+      'quantity',
+      'mt',
       props.data.gwp,
       props.data.odp,
     )
-    value = parseNumber(usage?.quantity)
-    valueMT = convertedValue['mt']
-    valueGWP = convertedValue['gwp']
-    valueODP = convertedValue['odp']
+    valueGWP = getUnitAwareValue(
+      usage,
+      'quantity',
+      'gwp',
+      props.data.gwp,
+      props.data.odp,
+    )
+    valueODP = getUnitAwareValue(
+      usage,
+      'quantity',
+      'odp',
+      props.data.gwp,
+      props.data.odp,
+    )
   }
 
   if (isUndefined(value)) {

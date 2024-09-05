@@ -343,7 +343,7 @@ function CPView(props: { archive?: boolean }) {
                   <Section
                     Comments={CPComments}
                     emptyForm={report.emptyForm.data || {}}
-                    report={report.data}
+                    report={report.data!}
                     section={section}
                     showComments={showComments}
                     variant={variant}
