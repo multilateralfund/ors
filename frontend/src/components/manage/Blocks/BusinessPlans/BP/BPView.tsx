@@ -10,7 +10,7 @@ import BPContext from '@ors/contexts/BusinessPlans/BPContext'
 import BPProvider from '@ors/contexts/BusinessPlans/BPProvider'
 import BPYearRangesProvider from '@ors/contexts/BusinessPlans/BPYearRangesProvider'
 
-import { BPHeaderView } from '../BPHeader'
+import BPHeaderView from '../BPHeaderView'
 
 function BPView() {
   // TODO: Switch from BPContext to useApi()

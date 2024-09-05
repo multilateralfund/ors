@@ -232,8 +232,4 @@ const BPHeader = ({
   )
 }
 
-const BPHeaderView = () => {
-  return <BPHeader />
-}
-
-export { BPHeaderView }
+export default BPHeader
