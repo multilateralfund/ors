@@ -58,7 +58,10 @@ def get_cp_report_from_request(request, cp_report_class):
     try:
         user = request.user
         cp_report_qs = cp_report_class.objects.all()
-        if user.user_type in (user.UserType.COUNTRY_USER, user.UserType.COUNTRY_SUBMITTER):
+        if user.user_type in (
+            user.UserType.COUNTRY_USER,
+            user.UserType.COUNTRY_SUBMITTER,
+        ):
             cp_report_qs = cp_report_qs.filter(country=user.country)
 
         if cp_report_id:
@@ -333,7 +336,9 @@ def get_displayed_items(
                 )
                 if x.substance
                 else (
-                    "zzzaaa",
+                    (
+                        "zzzbbb" if x.blend.is_related_preblended_polyol else "zzzaaa"
+                    ),  # preblended polyols needs to be displayed last
                     getattr(x, "sort_order", float("inf")),
                     x.blend.sort_order or float("inf"),
                     x.blend.name,

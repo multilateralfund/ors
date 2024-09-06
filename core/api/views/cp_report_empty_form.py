@@ -122,7 +122,11 @@ class EmptyFormView(views.APIView):
         cp_report_rows = (
             CPReportFormatRow.objects.get_for_year(year)
             .select_related("substance", "substance__group", "blend")
-            .prefetch_related("substance__excluded_usages", "blend__excluded_usages")
+            .prefetch_related(
+                "substance__excluded_usages",
+                "blend__excluded_usages",
+                "blend__components",
+            )
             .order_by("section", "sort_order")
         )
         substance_rows = {
