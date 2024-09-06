@@ -165,6 +165,16 @@ class Blend(models.Model):
         # return the composition string
         return "; ".join([f"{c[0]}-{c[1]}%" for c in components])
 
+    def is_related_preblended_polyol(self):
+        """
+        Check if thethere is component that is in pre-blended polyol
+        @return: True if there is a component that is in pre-blended polyol
+        """
+        for component in self.components.all():
+            if "pre-blended polyol" in component.component_name.lower():
+                return True
+        return False
+
     def get_display_name(self):
         """
         get the display name of the blend

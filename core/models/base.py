@@ -41,6 +41,8 @@ class AbstractWChemical(models.Model):
     def get_group_name(self):
         # pylint: disable=E1101
         if self.blend:
+            if self.blend.is_related_preblended_polyol():
+                return "Other"
             return "Blends (Mixture of Controlled Substances)"
         if self.substance:
             return self.substance.group.name_alt
