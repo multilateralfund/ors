@@ -35,7 +35,9 @@ import { CPEditHeader } from './CPHeader'
 import CPRestoreEdit from './CPRestoreEdit'
 import CPSectionWrapper from './CPSectionWrapper'
 import DownloadCalculatedAmounts from './DownloadCalculatedAmounts'
+import DownloadReport from './DownloadReport'
 import { CPEditForm } from './typesCPCreate'
+import { ITableProps } from './typesCPView'
 import { useEditLocalStorage } from './useLocalStorage'
 
 import { IoClose, IoExpand } from 'react-icons/io5'
@@ -45,15 +47,18 @@ function defaults(arr: Array<any>, value: any) {
   return [value]
 }
 
-const TableProps = {
+const TableProps: ITableProps = {
   Toolbar: ({
+    archive,
     enterFullScreen,
     exitFullScreen,
     fullScreen,
+    gridContext,
     isActiveSection,
     report,
     section,
   }: any) => {
+    const convertData = (gridContext?.unit || 'mt') === 'mt' ? 0 : 1
     return (
       <div
         className={cx('mb-4 flex', {
@@ -88,6 +93,12 @@ const TableProps = {
         >
           <div className="flex items-center justify-end gap-x-2">
             <DownloadCalculatedAmounts report={report} />
+            <DownloadReport
+              archive={archive}
+              convertData={convertData}
+              report={report}
+            />
+
             {section.allowFullScreen && !fullScreen && (
               <div
                 className="text-md cursor-pointer"
@@ -383,7 +394,7 @@ function CPEdit() {
               className: 'h-0',
               style: { transitionDuration: '150ms' },
             }}
-            onChange={(event: React.SyntheticEvent, index: number) => {
+            onChange={(_: React.SyntheticEvent, index: number) => {
               setActiveTab(index)
             }}
             allowScrollButtonsMobile
