@@ -39,7 +39,8 @@ const OVERVIEW_INDICATORS: IOVERVIEW_INDICATORS = {
 const INCOME: IINCOME = {
   bilateral_assistance: { label: 'Bilateral cooperation', value: null },
   cash_payments: {
-    label: 'Cash payments including note encashment',
+    info_text: 'Including note encashments',
+    label: 'Cash payments',
     value: null,
   },
   interest_earned: {
@@ -74,21 +75,21 @@ const PROVISIONS: IPROVISIONS = {
     value: null,
   },
   information_strategy: {
-    label: 'Information Strategy costs (2003-2004)',
+    label: 'Information Strategy (2003-2004)',
     sub_text: '(inc. provision for Network maintenance for 2004)',
     value: null,
   },
   monitoring_fees: {
-    label: 'Monitoring and evaluation costs (1999-2023)',
+    label: 'Monitoring and evaluation (1999-2023)',
     value: null,
   },
   staff_contracts: {
-    label: 'Secretariat and Executive Committee costs (1991-2025)',
+    label: 'Secretariat and Executive Committee (1991-2025)',
     sub_text: '(inc. provision for staff contracts into 2025)',
     value: null,
   },
   technical_audit: {
-    label: 'Technical Audit costs (1998-2010)',
+    label: 'Technical Audit (1998-2010)',
     value: null,
   },
   total: {

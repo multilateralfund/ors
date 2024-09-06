@@ -54,7 +54,9 @@ interface IDashboardDataApiResponse {
 }
 
 interface IEntry {
+  info_text?: string
   label: string
+  sub_text?: string
   value: null | number
 }
 
@@ -83,8 +85,7 @@ interface IINCOME {
   cash_payments: IEntry
   interest_earned: {
     label: React.ReactNode
-    value: null | number
-  }
+  } & Omit<IEntry, 'label'>
   miscellaneous_income: IEntry
   promissory_notes: IEntry
   total: ITotalEntry
