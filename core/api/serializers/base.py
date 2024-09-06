@@ -102,9 +102,13 @@ class BaseCPWChemicalSerializer(BaseCPRowSerializer):
 
     def get_group(self, obj):
         if obj.blend:
+            if obj.blend.is_related_preblended_polyol():
+                return "Other"
             return "Blends (Mixture of Controlled Substances)"
+
         if obj.substance and obj.substance.group:
             return obj.substance.group.name_alt
+
         return None
 
     def get_display_name(self, obj):
