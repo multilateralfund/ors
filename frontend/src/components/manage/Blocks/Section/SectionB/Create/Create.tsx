@@ -1,9 +1,8 @@
 import { ApiBlend, ApiCreatedBlend } from '@ors/types/api_blends'
-import { EmptyFormType } from '@ors/types/api_empty-form'
 import { ApiSubstance } from '@ors/types/api_substances'
 import { ReportVariant } from '@ors/types/variants'
 
-import React, { useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
 import {
   Alert,
@@ -28,10 +27,6 @@ import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 import SectionB from '@ors/models/SectionB'
 import { useStore } from '@ors/store'
 
-import {
-  CPBaseForm,
-  PassedCPCreateTableProps,
-} from '../../../CountryProgramme/typesCPCreate'
 import { CreateBlend } from './CreateBlend'
 import useGridOptions from './schema'
 import { ISectionBCreateProps, PinnedBottomRowData, RowData } from './types'

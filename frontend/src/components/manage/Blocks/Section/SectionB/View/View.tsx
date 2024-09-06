@@ -20,8 +20,8 @@ import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
-function getGroupName(substance: any, model: string) {
-  if (substance.blend_id) {
+function getGroupName(substance: CPReport["section_b"][0], model: string) {
+  if (substance.blend_id && substance.group.startsWith('Blends')) {
     return includes(['IV', 'V'], model)
       ? 'Blends'
       : 'Blends (Mixture of Controlled Substances)'

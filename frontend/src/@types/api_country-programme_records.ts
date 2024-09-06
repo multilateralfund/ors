@@ -39,7 +39,7 @@ type ApiBase = {
     exports: null | string
     exports_gwp: number
     exports_odp: number
-    group: 'Annex A, Group I'
+    group: string
     id: 0
     import_quotas: null | string
     import_quotas_gwp: number
@@ -132,7 +132,7 @@ type ApiBaseDiff = {
     exports_odp: number
     exports_odp_old: number
     exports_old: null | string
-    group: 'Annex A, Group I'
+    group: string
     id: 0
     import_quotas: null | string
     import_quotas_gwp: number
