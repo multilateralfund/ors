@@ -40,10 +40,10 @@ function getDecimalCellValue(
           valueODP != null ? (
             <div className="flex flex-col gap-1">
               <span>
-                Metric tonnes: {formatDecimalValue(value, defaultDecimals)}
+                Metric tonnes: {formatDecimalValue(value, {...defaultDecimals, maximumFractionDigits: 2, minimumFractionDigits: 2})}
               </span>
               <span>
-                ODP tonnes: {formatDecimalValue(valueODP, defaultDecimals)}
+                ODP tonnes: {formatDecimalValue(valueODP, {...defaultDecimals, maximumFractionDigits: 2, minimumFractionDigits: 2})}
               </span>
             </div>
           ) : (
@@ -55,7 +55,7 @@ function getDecimalCellValue(
           valueGWP != null ? (
             <div className="flex flex-col gap-1">
               <span>
-                Metric tonnes: {formatDecimalValue(value, defaultDecimals)}
+                Metric tonnes: {formatDecimalValue(value, {...defaultDecimals, maximumFractionDigits: 2, minimumFractionDigits: 2})}
               </span>
               <span>
                 CO<sup>2</sup>-eq tonnes:{' '}

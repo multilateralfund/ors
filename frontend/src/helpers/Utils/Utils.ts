@@ -209,12 +209,20 @@ export function sumFloats(fs: number[]): number {
   return fixFloat(result)
 }
 
+type ConvertedValue = {
+    gwp: null | number
+    mt: null | number
+    odp: null | number
+}
+
+type Unit = keyof ConvertedValue
+
 export function convertValue(
   mtValue: number | string,
   gwp: number,
   odp: number,
 ) {
-  const result: Record<string, null | number> = {
+  const result: ConvertedValue = {
     gwp: null,
     mt: null,
     odp: null,
@@ -229,9 +237,9 @@ export function convertValue(
 }
 
 export function getUnitAwareValue(
-  obj: any,
+  obj: Record<string, any>,
   propName: string,
-  unit: string,
+  unit: Unit,
   gwp?: number,
   odp?: number,
 ) {
