@@ -217,9 +217,9 @@ class BlendsListView(ChemicalBaseListView):
 
         blend_list.sort(
             key=lambda x: (
-                ("aaa", x.sort_order)
+                ("aaa", float("inf") if x.sort_order is None else x.sort_order)
                 if not x.is_related_preblended_polyol
-                else ("zzz", x.sort_order)
+                else ("zzz", float("inf") if x.sort_order is None else x.sort_order)
             )
         )
 
