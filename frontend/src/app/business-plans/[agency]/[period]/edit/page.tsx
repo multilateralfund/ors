@@ -1,6 +1,6 @@
 import { Metadata } from 'next'
 
-import BPEdit from '@ors/components/manage/Blocks/BusinessPlans/BPEdit'
+import BPEdit from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/BPEdit'
 import { BpPathParams } from '@ors/components/manage/Blocks/BusinessPlans/types'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 

@@ -2,10 +2,10 @@
 
 import { useContext, useMemo, useRef, useState } from 'react'
 
-import DownloadButtons from '@ors/app/business-plans/DownloadButtons'
 import Activities from '@ors/components/manage/Blocks/BusinessPlans/Activities'
 import ActivitiesFilters from '@ors/components/manage/Blocks/BusinessPlans/ActivitiesFilters'
 import useGetBpPeriods from '@ors/components/manage/Blocks/BusinessPlans/BPList/useGetBPPeriods'
+import DownloadButtons from '@ors/components/manage/Blocks/BusinessPlans/DownloadButtons'
 import { useGetActivities } from '@ors/components/manage/Blocks/BusinessPlans/useGetActivities'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'

@@ -4,8 +4,8 @@ import React, { useContext, useMemo, useRef, useState } from 'react'
 import { reduce } from 'lodash'
 import { useParams } from 'next/navigation'
 
-import DownloadButtons from '@ors/app/business-plans/DownloadButtons'
 import ActivitiesFilters from '@ors/components/manage/Blocks/BusinessPlans/ActivitiesFilters'
+import DownloadButtons from '@ors/components/manage/Blocks/BusinessPlans/DownloadButtons'
 import {
   BpPathParams,
   ViewSelectorValuesType,
