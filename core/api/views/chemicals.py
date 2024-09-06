@@ -208,7 +208,24 @@ class BlendsListView(ChemicalBaseListView):
         ],
     )
     def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
+        # check if pagination is needed
+        if request.query_params.get("limit", None):
+            return super().get(request, *args, **kwargs)
+
+        # we need to corectly sort the blends
+        blend_list = list(self.filter_queryset(self.get_queryset()).all())
+
+        blend_list.sort(
+            key=lambda x: (
+                ("aaa", x.sort_order)
+                if not x.is_related_preblended_polyol
+                else ("zzz", x.sort_order)
+            )
+        )
+
+        return Response(
+            self.get_serializer(blend_list, many=True).data, status=status.HTTP_200_OK
+        )
 
 
 class SimilarBlendsListView(ChemicalBaseListView):
