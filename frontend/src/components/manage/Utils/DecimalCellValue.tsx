@@ -1,4 +1,4 @@
-import { fixFloat, formatDecimalValue } from '@ors/helpers/Utils/Utils'
+import { formatDecimalValue } from '@ors/helpers/Utils/Utils'
 
 function getDecimalCellValue(
   value: number,
@@ -40,10 +40,18 @@ function getDecimalCellValue(
           valueODP != null ? (
             <div className="flex flex-col gap-1">
               <span>
-                Metric tonnes: {formatDecimalValue(value, {...defaultDecimals, maximumFractionDigits: 2, minimumFractionDigits: 2})}
+                Metric tonnes:{' '}
+                {formatDecimalValue(value, {
+                  maximumFractionDigits: 2,
+                  minimumFractionDigits: 2,
+                })}
               </span>
               <span>
-                ODP tonnes: {formatDecimalValue(valueODP, {...defaultDecimals, maximumFractionDigits: 2, minimumFractionDigits: 2})}
+                ODP tonnes:{' '}
+                {formatDecimalValue(valueODP, {
+                  maximumFractionDigits: 2,
+                  minimumFractionDigits: 2,
+                })}
               </span>
             </div>
           ) : (
@@ -55,11 +63,18 @@ function getDecimalCellValue(
           valueGWP != null ? (
             <div className="flex flex-col gap-1">
               <span>
-                Metric tonnes: {formatDecimalValue(value, {...defaultDecimals, maximumFractionDigits: 2, minimumFractionDigits: 2})}
+                Metric tonnes:{' '}
+                {formatDecimalValue(value, {
+                  maximumFractionDigits: 2,
+                  minimumFractionDigits: 2,
+                })}
               </span>
               <span>
                 CO<sup>2</sup>-eq tonnes:{' '}
-                {formatDecimalValue(valueGWP, defaultDecimals)}
+                {formatDecimalValue(valueGWP, {
+                  maximumFractionDigits: 0,
+                  minimumFractionDigits: 0,
+                })}
               </span>
             </div>
           ) : (
