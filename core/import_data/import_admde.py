@@ -6,7 +6,6 @@ from django.conf import settings
 from core.import_data.mapping_names_dict import DB_YEAR_MAPPING, ADM_DE_MAPPING
 from core.import_data.utils import (
     DB_DIR_LIST,
-    delete_old_data,
     get_country_and_year_dict,
     get_cp_report_for_db_import,
     get_or_create_adm_row,
@@ -201,7 +200,6 @@ def parse_db_files(dir_path, db_name):
     logger.info(f"✔ {opt_file} parsed, AdmChoices imported")
 
     file_name = dir_path / "AdmDEArticleEntries.json"
-    delete_old_data(AdmRecord, file_name)
     create_adm_records(file_name, dir_path, article_dict, opt_dict)
 
 
@@ -210,10 +208,6 @@ def import_admde_items():
     """
     Import admDE records.
     """
-    # delete all admRows and admRecords
-    AdmRow.objects.filter(
-        source_file__contains="AdmDEArticles.json", section=SECTION
-    ).delete()
 
     db_dir_path = settings.IMPORT_DATA_DIR / "databases"
     for database_name in DB_DIR_LIST:

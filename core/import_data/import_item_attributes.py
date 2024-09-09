@@ -4,13 +4,14 @@ from dateutil import parser
 
 from django.db import transaction
 from django.conf import settings
-from core.import_data.mapping_names_dict import CHEMICAL_NAME_MAPPING, USAGE_NAME_MAPPING
+from core.import_data.mapping_names_dict import (
+    CHEMICAL_NAME_MAPPING,
+    USAGE_NAME_MAPPING,
+)
 from core.import_data.utils import (
     DB_DIR_LIST,
     check_empty_row,
     create_cp_record,
-    delete_archive_reports_data,
-    delete_old_data,
     get_chemical_by_name_or_components,
     get_country_dict_from_db_file,
     get_cp_report_for_db_import,
@@ -59,10 +60,10 @@ def get_chemical_dict(file_name):
 
     for chemical_json in json_data:
         # get chemical by name
-        chemical_name = CHEMICAL_NAME_MAPPING.get(chemical_json["Name"], chemical_json["Name"])
-        chemical, chemical_type = get_chemical_by_name_or_components(
-            chemical_name
+        chemical_name = CHEMICAL_NAME_MAPPING.get(
+            chemical_json["Name"], chemical_json["Name"]
         )
+        chemical, chemical_type = get_chemical_by_name_or_components(chemical_name)
         if not chemical:
             # if ItemCategoryId is not None, it means the item is for sure chemical
             # so we need to log it
@@ -242,7 +243,6 @@ def parse_db_files(db_dir_path):
     logger.info("✔ users file parsed")
 
     item_attributes_file = f"{db_dir_path}/ItemAttributes.json"
-    delete_old_data(CPRecord, item_attributes_file)
     parse_record_data(
         item_attributes_file, country_dict, year_dict, chemical_dict, users_dict
     )
@@ -255,7 +255,6 @@ def import_records_from_databases():
     Import records from databases
     """
     db_dir_path = settings.IMPORT_DATA_DIR / "databases"
-    delete_archive_reports_data(2000, 2018)
     for dir_name in DB_DIR_LIST:
         logger.info(f"⏳ importing records from {dir_name}")
         parse_db_files(db_dir_path / dir_name)

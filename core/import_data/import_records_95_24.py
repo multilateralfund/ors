@@ -8,8 +8,6 @@ from core.import_data.utils import (
     check_empty_row,
     check_headers,
     create_cp_record,
-    delete_archive_reports_data,
-    delete_old_data,
     get_cp_report,
     get_country_by_name,
     get_chemical,
@@ -149,7 +147,5 @@ def parse_file(file_path):
 def import_records_95_04():
     logger.info("⏳ importing records section from 1995 to 2004")
     file_path = settings.IMPORT_DATA_DIR / "records" / "CPDataSubmitted_94_04.xlsx"
-    delete_old_data(CPRecord, source_file=file_path)
-    delete_archive_reports_data(1995, 2004)
     parse_file(file_path)
     logger.info("✔ records section from 1995 to 2004 imported")

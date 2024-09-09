@@ -5,7 +5,7 @@ import pandas as pd
 from django.conf import settings
 from django.db import transaction
 from core.import_data.mapping_names_dict import CP_FORMAT_FILE_DATA_MAPPING
-from core.import_data.utils import IMPORT_RESOURCES_DIR, delete_old_data, get_chemical
+from core.import_data.utils import IMPORT_RESOURCES_DIR, get_chemical
 from core.models.adm import AdmColumn, AdmEmptyImmutableCell, AdmRow
 from core.models.country_programme import CPReportFormatColumn, CPReportFormatRow
 
@@ -114,7 +114,6 @@ def set_chemicals_displayed_status(df, time_frame, section):
 
 
 def import_cp_format_row(dir_path):
-    delete_old_data(CPReportFormatRow)
 
     for file, file_data in CP_FORMAT_FILE_DATA_MAPPING.items():
         file_path = dir_path / file
@@ -142,8 +141,6 @@ def import_cp_format_row(dir_path):
 
 
 def import_usages_format(file_path):
-    # delete old data
-    delete_old_data(CPReportFormatColumn)
 
     df = pd.read_excel(file_path).replace({np.nan: None})
 
@@ -179,7 +176,6 @@ def set_adm_immutable_cells():
     """
     Set adm rows as cells
     """
-    delete_old_data(AdmEmptyImmutableCell)
 
     for section, columns in ADM_ENABLE_CELLS.items():
         for column, row_indexes in columns.items():
