@@ -15,7 +15,7 @@ from core.import_data.utils import (
     get_usages_from_sheet,
 )
 
-from core.models.country_programme import CPRecord, CPUsage
+from core.models.country_programme import CPUsage
 
 # pylint: disable=R0914
 logger = logging.getLogger(__name__)

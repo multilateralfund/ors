@@ -18,7 +18,7 @@ from core.import_data.utils import (
     get_year_dict_from_db_file,
 )
 
-from core.models import CPRecord, Usage
+from core.models import Usage
 from core.models.country_programme import CPUsage
 
 logger = logging.getLogger(__name__)
