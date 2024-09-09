@@ -7,7 +7,6 @@ from django.conf import settings
 from core.import_data.mapping_names_dict import DB_YEAR_MAPPING
 from core.import_data.utils import (
     DB_DIR_LIST,
-    delete_old_data,
     get_adm_column,
     get_country_and_year_dict,
     get_cp_report_for_db_import,
@@ -467,7 +466,6 @@ def parse_db_files(dir_path, database_name):
     logger.info("✔ adm rows imported")
 
     admb_entries_file = dir_path / "AdmB_Entries.json"
-    delete_old_data(AdmRecord, admb_entries_file)
     file_data = {
         "admb_entries_file": admb_entries_file,
         "database_name": database_name,
@@ -487,9 +485,6 @@ def import_admb_items():
     """
     Import records from databases
     """
-    # delete all admRows and admRecords
-    AdmRow.objects.filter(source_file__contains="Adm_B.json", section=SECTION).delete()
-
     db_dir_path = settings.IMPORT_DATA_DIR / "databases"
     for database_name in DB_DIR_LIST:
         logger.info(f"⏳ importing admB records from {database_name}")

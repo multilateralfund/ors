@@ -7,7 +7,6 @@ from core.import_data.mapping_names_dict import CHEMICAL_NAME_MAPPING, DB_YEAR_M
 
 from core.import_data.utils import (
     DB_DIR_LIST,
-    delete_old_data,
     get_adm_column,
     get_chemical_by_name_or_components,
     get_country_and_year_dict,
@@ -162,7 +161,9 @@ def get_itmes_dict(file_name, articles_dict):
             # This Item is Chemical
             chemical_name = item_json["Label"].replace("(Optional)", "").strip()
             chemical_name = CHEMICAL_NAME_MAPPING.get(chemical_name, chemical_name)
-            chemical, chemical_type = get_chemical_by_name_or_components(chemical_name, item_json['ItemId'])
+            chemical, chemical_type = get_chemical_by_name_or_components(
+                chemical_name, item_json["ItemId"]
+            )
             if not chemical:
                 continue
 
@@ -363,8 +364,6 @@ def parse_db_files(dir_path, db_name):
         return
     logger.info("✔ columns file parsed")
 
-    delete_old_data(AdmRecord, admc_file)
-    delete_old_data(CPPrices, admc_file)
     file_data = {
         "file_name": admc_file,
         "dir_path": dir_path,
@@ -382,10 +381,6 @@ def import_admc_items():
     """
     Import records from databases
     """
-    # delete all admRows and admRecords
-    AdmRow.objects.filter(
-        source_file__contains="AdmCLayout.json", section=SECTION
-    ).delete()
 
     db_dir_path = settings.IMPORT_DATA_DIR / "databases"
     for database_name in DB_DIR_LIST:
