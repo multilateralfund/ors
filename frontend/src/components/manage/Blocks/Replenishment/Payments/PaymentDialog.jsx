@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import { React, useEffect, useState } from 'react'
 
 import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
 import {
@@ -8,27 +8,42 @@ import {
   FieldSelect,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceAttachments'
-import useApi from '@ors/hooks/useApi'
+import { formatApiUrl } from '@ors/helpers'
+
+const BASE_URL = 'api/replenishment/invoices/'
+
 
 const PaymentDialog = function PaymentDialog(props) {
   const { columns, countries, data, isEdit, title, ...dialogProps } = props
-  const { data: invoicesList, loaded: invoicesLoaded } = useApi({
-    options: {
-      params: {
-        hide_no_invoice: true,
-        ...(isEdit ? { country_id: data?.country_id } : {}),
-      },
-      withStoreCache: false,
-    },
-    path: 'api/replenishment/invoices/',
-  })
+  const [ selectedCountry, setSelectedCountry ] = useState(null)
+  const [ invoicesOptions, setInvoicesOptions ] = useState([])
+  const [ invoicesLoading, setInvoicesLoading ] = useState(false)
 
-  const invoicesOptions = invoicesLoaded
-    ? invoicesList.map((invoice) => ({
-        id: invoice.id,
-        label: invoice.number,
-      }))
-    : []
+  useEffect(() => {
+    setInvoicesLoading(true)
+
+    const countryQuery = selectedCountry ? `&country_id=${selectedCountry}` : ''
+    const url = `${formatApiUrl(BASE_URL)}?hide_no_invoice=true${countryQuery}`
+
+    fetch(url, {
+      credentials: 'include',
+    })
+      .then((response) => response.json())
+      .then((invoicesList) => {
+        const invoices = invoicesList.map((invoice) => ({
+          id: invoice.id,
+          label: `${invoice.number} - ${invoice?.country?.name} (${invoice?.date_of_issuance})`,
+        }))
+
+        setInvoicesOptions(invoices)
+        setInvoicesLoading(false)
+      })
+      .catch((error) => {
+        console.error('Error: ', error)
+        setInvoicesOptions([])
+        setInvoicesLoading(false)
+      })
+  }, [selectedCountry])
 
   return (
     <FormDialog title={title} {...dialogProps}>
@@ -37,6 +52,9 @@ const PaymentDialog = function PaymentDialog(props) {
         id="country_id"
         defaultValue={data?.country_id}
         label={columns[0].label}
+        onChange={(event) => {
+          setSelectedCountry(event.target.value)
+        }}
         required
       >
         <option value="" disabled hidden></option>

@@ -32,6 +32,7 @@ function ReplenishmentProvider(props: { children: React.ReactNode }) {
 
   const [periods, setPeriods] = useState<ApiReplenishment[]>([])
   const [countries, setCountries] = useState<Country[]>([])
+  const [countriesSOA, setCountriesSOA] = useState<Country[]>([])
   const [fetchTrigger, setFetchTrigger] = useState(false)
 
   const refetchData = useCallback(() => {
@@ -47,15 +48,19 @@ function ReplenishmentProvider(props: { children: React.ReactNode }) {
         fetch(formatApiUrl('/api/replenishment/countries'), {
           credentials: 'include',
         }),
+        fetch(formatApiUrl('/api/replenishment/countries-soa'), {
+          credentials: 'include',
+        }),
       ])
         .then(function (responses) {
-          const [respPeriods, respCountries] = responses
-          return Promise.all([respPeriods.json(), respCountries.json()])
+          const [respPeriods, respCountries, respCountriesSOA] = responses
+          return Promise.all([respPeriods.json(), respCountries.json(), respCountriesSOA.json()])
         })
-        .then(function (jsonData: [ApiReplenishments, Country[]]) {
-          const [jsonPeriods, jsonCountries] = jsonData
+        .then(function (jsonData: [ApiReplenishments, Country[], Country[]]) {
+          const [jsonPeriods, jsonCountries, jsonCountriesSOA] = jsonData
           setPeriods(jsonPeriods)
           setCountries(filterCountries(jsonCountries))
+          setCountriesSOA(filterCountries(jsonCountriesSOA))
         })
     },
     [fetchTrigger],
@@ -72,6 +77,7 @@ function ReplenishmentProvider(props: { children: React.ReactNode }) {
     <ReplenishmentContext.Provider
       value={{
         countries,
+        countriesSOA,
         isCountryUser,
         isSecretariat,
         isTreasurer,

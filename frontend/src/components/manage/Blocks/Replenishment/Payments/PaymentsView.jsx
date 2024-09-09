@@ -372,7 +372,7 @@ function PaymentsView() {
       {showAdd ? (
         <AddPaymentDialogue
           columns={COLUMNS}
-          countries={ctx.countries}
+          countries={ctx.countriesSOA}
           onCancel={() => setShowAdd(false)}
           onSubmit={handleAddPaymentSubmit}
         />
@@ -380,7 +380,7 @@ function PaymentsView() {
       {editData !== null ? (
         <EditPaymentDialogue
           columns={COLUMNS}
-          countries={ctx.countries}
+          countries={ctx.countriesSOA}
           data={editData}
           onCancel={() => setEditIdx(null)}
           onSubmit={handleEditPaymentSubmit}

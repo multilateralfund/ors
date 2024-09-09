@@ -90,6 +90,23 @@ class ReplenishmentCountriesViewSet(viewsets.GenericViewSet, mixins.ListModelMix
         return queryset.order_by("name")
 
 
+class ReplenishmentCountriesSOAViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+    """
+    Viewset that returns all SOA countries.
+
+    There is no need for special security here.
+    """
+    serializer_class = CountrySerializer
+
+    def get_queryset(self):
+        # `contributions` is the related name for the SoA -> Country FK
+        countries_qs = Country.objects.annotate(
+            contributions_count=models.Count(models.F("contributions"))
+        ).filter(contributions_count__gt=0)
+
+        return countries_qs.order_by("name")
+
+
 class ReplenishmentViewSet(
     viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin
 ):

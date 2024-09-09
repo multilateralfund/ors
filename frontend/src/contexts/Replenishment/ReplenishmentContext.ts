@@ -4,6 +4,7 @@ import { createContext } from 'react'
 
 interface ReplenishmentContextType {
   countries: any[]
+  countriesSOA: any[]
   isCountryUser: boolean
   isSecretariat: boolean
   isTreasurer: boolean

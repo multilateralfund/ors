@@ -7,6 +7,7 @@ from drf_yasg import openapi
 from core.api.views import (
     ProjectFundViewSet,
     ReplenishmentCountriesViewSet,
+    ReplenishmentCountriesSOAViewSet,
     ReplenishmentViewSet,
     AnnualStatusOfContributionsView,
     ScaleOfAssessmentViewSet,
@@ -109,6 +110,11 @@ router.register(
     "replenishment/countries",
     ReplenishmentCountriesViewSet,
     basename="replenishment-countries",
+)
+router.register(
+    "replenishment/countries-soa",
+    ReplenishmentCountriesSOAViewSet,
+    basename="replenishment-countries-soa",
 )
 router.register(
     "replenishment/replenishments",
