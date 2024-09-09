@@ -8,7 +8,6 @@ import {
   FieldSelect,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceAttachments'
-
 import { formatApiUrl } from '@ors/helpers'
 
 const BASE_URL = 'api/replenishment/invoices/'
@@ -53,10 +52,10 @@ const PaymentDialog = function PaymentDialog(props) {
         id="country_id"
         defaultValue={data?.country_id}
         label={columns[0].label}
-        required
         onChange={(event) => {
           setSelectedCountry(event.target.value)
         }}
+        required
       >
         <option value="" disabled hidden></option>
         {countries.map((c) => (
