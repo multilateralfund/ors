@@ -7,7 +7,11 @@ import { useSnackbar } from 'notistack'
 
 import useGetDashboardData from '@ors/components/manage/Blocks/Replenishment/Dashboard/useGetDashboardData'
 import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
-import { FormattedNumberInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
+import {
+  FormattedNumberInput,
+  IFieldProps,
+  IFormattedNumberInputProps,
+} from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { api } from '@ors/helpers'
 
@@ -16,11 +20,7 @@ import SectionStatistics from './SectionStatistics'
 import SectionStatus from './SectionStatus'
 import { IFormData } from './useGetDashboardDataTypes'
 
-interface IInputFieldProps extends React.HTMLProps<HTMLInputElement> {
-  onlyNumber?: boolean
-}
-
-function InputField(props: IInputFieldProps) {
+function InputField(props: IFieldProps & IFormattedNumberInputProps) {
   const { id, className, label, ...fieldProps } = props
   return (
     <div className="flex w-72 flex-col">

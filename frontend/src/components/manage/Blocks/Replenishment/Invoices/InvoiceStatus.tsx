@@ -1,4 +1,6 @@
-function InvoiceStatus({ row }) {
+import { ApiReplenishmentInvoice } from '@ors/types/api_replenishment_invoices'
+
+function InvoiceStatus({ row }: { row: ApiReplenishmentInvoice }) {
   if (row.date_paid) {
     return <span className="rounded bg-mlfs-hlYellow p-1.5">PAID</span>
   } else if (row.id) {

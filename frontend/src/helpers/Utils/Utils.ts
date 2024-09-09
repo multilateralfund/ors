@@ -210,9 +210,9 @@ export function sumFloats(fs: number[]): number {
 }
 
 type ConvertedValue = {
-    gwp: null | number
-    mt: null | number
-    odp: null | number
+  gwp: null | number
+  mt: null | number
+  odp: null | number
 }
 
 type Unit = keyof ConvertedValue
@@ -262,4 +262,17 @@ function padDateNr(n: number) {
 export const formattedDateFromTimestamp = (timestring: string) => {
   const date = new Date(timestring)
   return `${padDateNr(date.getDate())}.${padDateNr(date.getMonth() + 1)}.${date.getFullYear()}`
+}
+
+export function getFloat(nr?: null | number | string): number {
+  let result = 0
+  if (nr && typeof nr === 'string') {
+    const value = parseFloat(nr)
+    if (!isNaN(value)) {
+      result = value
+    }
+  } else if (typeof nr === 'number') {
+    result = nr
+  }
+  return result
 }

@@ -7,13 +7,9 @@ import type {
   ValidationSchemaKeys,
 } from './types'
 
-import {
-  getFloat,
-  sumMaybeNumbers,
-  sumNumbers,
-  sumRowColumns,
-  sumUsages,
-} from './utils'
+import { getFloat } from '@ors/helpers/Utils/Utils'
+
+import { sumMaybeNumbers, sumNumbers, sumRowColumns, sumUsages } from './utils'
 
 export function checkShouldValidateSectionARow(row: IRow): boolean {
   const hasUsages =

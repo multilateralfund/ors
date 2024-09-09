@@ -1,9 +1,18 @@
-import React, { forwardRef, useEffect, useMemo, useRef, useState } from 'react'
+import React, {
+  ChangeEvent,
+  InputHTMLAttributes,
+  SelectHTMLAttributes,
+  forwardRef,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 import cx from 'classnames'
 
 import { BaseButton } from '@ors/components/ui/Button/Button'
-import { formatDecimalValue } from '@ors/helpers/Utils/Utils'
+import { formatDecimalValue, getFloat } from '@ors/helpers/Utils/Utils'
 import useClickOutside from '@ors/hooks/useClickOutside'
 
 import { IoClose } from 'react-icons/io5'
@@ -11,7 +20,12 @@ import { IoClose } from 'react-icons/io5'
 const CLASSESS =
   'ml-4 rounded-lg border border-solid border-primary bg-white px-4 py-2 grow disabled:bg-gray-200 disabled:border-0'
 
-export function Field(props) {
+export interface IFieldProps extends React.PropsWithChildren {
+  id: string
+  label: string
+}
+
+export function Field(props: IFieldProps) {
   const { id, children, label } = props
 
   return (
@@ -24,7 +38,9 @@ export function Field(props) {
   )
 }
 
-export function Select(props) {
+export function Select(
+  props: { multiple?: boolean } & IMultiSelectProps & ISingleSelectProps,
+) {
   if (props.multiple) {
     return <MultiSelect {...props} />
   } else {
@@ -32,7 +48,15 @@ export function Select(props) {
   }
 }
 
-export function SingleSelect(props) {
+export interface ISingleSelectProps
+  extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'onChange'> {
+  defaultValue?: string[]
+  hasClear?: boolean
+  onChange?: (evt: ChangeEvent<HTMLSelectElement>) => void
+  onClear?: () => void
+}
+
+export function SingleSelect(props: ISingleSelectProps) {
   const {
     id,
     children,
@@ -41,9 +65,10 @@ export function SingleSelect(props) {
     hasClear,
     name,
     onChange,
+    onClear,
     ...rest
   } = props
-  const selectRef = useRef(null)
+  const selectRef = useRef<HTMLSelectElement>(null)
   const [value, setValue] = useState(defaultValue || '')
 
   const handleClear = () => {
@@ -51,12 +76,12 @@ export function SingleSelect(props) {
       selectRef.current.value = ''
     }
     setValue('')
-    if (onChange) {
-      onChange({ target: { name: name || id, value: '' } })
+    if (onClear) {
+      onClear()
     }
   }
 
-  function handleChange(event) {
+  function handleChange(event: ChangeEvent<HTMLSelectElement>) {
     setValue(event.target.value)
     if (onChange) {
       onChange(event)
@@ -98,7 +123,17 @@ export function SingleSelect(props) {
   )
 }
 
-export function MultiSelect(props) {
+export interface IMultiSelectProps
+  extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'onChange'> {
+  defaultValue?: string[]
+  hasClear?: boolean
+  onChange?: (
+    evt: ChangeEvent<HTMLSelectElement> | undefined,
+    newValue: string[],
+  ) => void
+}
+
+export function MultiSelect(props: IMultiSelectProps) {
   const {
     id,
     children,
@@ -110,11 +145,11 @@ export function MultiSelect(props) {
     required,
     ...rest
   } = props
-  const selectRef = useRef(null)
-  const inputRef = useRef(null)
+  const selectRef = useRef<HTMLSelectElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const [value, setValue] = useState(defaultValue || [])
-  const [options, setOptions] = useState([])
+  const [options, setOptions] = useState<{ label: string; value: string }[]>([])
 
   const [showPicker, setShowPicker] = useState(false)
 
@@ -134,7 +169,7 @@ export function MultiSelect(props) {
     }
   }
 
-  function getSelectedOptionsValue(el) {
+  function getSelectedOptionsValue(el: HTMLSelectElement) {
     const result = []
 
     for (let i = 0; i < el.selectedOptions.length; i++) {
@@ -144,7 +179,7 @@ export function MultiSelect(props) {
     return result
   }
 
-  function getOptions(el) {
+  function getOptions(el: HTMLSelectElement) {
     const result = []
 
     for (let i = 0; i < el.options.length; i++) {
@@ -157,7 +192,7 @@ export function MultiSelect(props) {
     return result
   }
 
-  function handleChange(evt) {
+  function handleChange(evt: ChangeEvent<HTMLSelectElement>) {
     const newValue = getSelectedOptionsValue(evt.target)
     setValue(newValue)
     if (onChange) {
@@ -165,7 +200,7 @@ export function MultiSelect(props) {
     }
   }
 
-  function handleToggleSelectedOption(evt) {
+  function handleToggleSelectedOption(evt: ChangeEvent<HTMLInputElement>) {
     const value = evt.target.value
     setValue(function (prev) {
       let newValue = []
@@ -182,11 +217,11 @@ export function MultiSelect(props) {
     })
   }
 
-  function handleInputFocus(evt) {
+  function handleInputFocus() {
     setShowPicker(true)
   }
 
-  function handleDone(evt) {
+  function handleDone() {
     setShowPicker(false)
     if (inputRef.current) {
       inputRef.current.blur()
@@ -285,7 +320,10 @@ export function MultiSelect(props) {
   )
 }
 
-export const Input = forwardRef(function Input(props, ref) {
+export const Input = forwardRef<
+  HTMLInputElement,
+  React.InputHTMLAttributes<HTMLInputElement>
+>(function Input(props, ref) {
   const { id, className, name, type, ...rest } = props
   const elementType = type === 'text-area' ? 'textarea' : 'input'
 
@@ -299,13 +337,18 @@ export const Input = forwardRef(function Input(props, ref) {
   })
 })
 
-export function FormattedNumberInput(props) {
-  const { id, className, name, onChange, onlyNumber, type, value, ...rest } =
-    props
+export interface IFormattedNumberInputProps
+  extends InputHTMLAttributes<HTMLInputElement> {
+  onlyNumber?: boolean
+  value: number | string
+}
+
+export function FormattedNumberInput(props: IFormattedNumberInputProps) {
+  const { id, className, name, onChange, onlyNumber, value, ...rest } = props
 
   const [inputMode, setInputMode] = useState(false)
 
-  const realInput = useRef(null)
+  const realInput = useRef<HTMLInputElement>(null)
 
   useEffect(
     function () {
@@ -337,7 +380,7 @@ export function FormattedNumberInput(props) {
         className={cx(CLASSESS, className, { hidden: inputMode || onlyNumber })}
         readOnly={true}
         type="text"
-        value={formatDecimalValue(value || 0, {})}
+        value={formatDecimalValue(getFloat(value), {})}
         onFocus={() => setInputMode(true)}
         {...rest}
       />
@@ -345,12 +388,16 @@ export function FormattedNumberInput(props) {
   )
 }
 
-export function DateInput(props) {
+export interface IDateInputProps extends InputHTMLAttributes<HTMLInputElement> {
+  value: string
+}
+
+export function DateInput(props: IDateInputProps) {
   const { id, className, name, onChange, type, value, ...rest } = props
 
   const [inputMode, setInputMode] = useState(false)
 
-  const realInput = useRef(null)
+  const realInput = useRef<HTMLInputElement>(null)
 
   useEffect(
     function () {
@@ -402,7 +449,7 @@ export function DateInput(props) {
   )
 }
 
-export function FieldSelect(props) {
+export function FieldSelect(props: IFieldProps) {
   const { id, children, label, ...rest } = props
   return (
     <Field id={id} label={label}>
@@ -413,7 +460,7 @@ export function FieldSelect(props) {
   )
 }
 
-export function FieldInput(props) {
+export function FieldInput(props: IFieldProps) {
   const { id, children, label, ...rest } = props
   return (
     <Field id={id} label={label}>

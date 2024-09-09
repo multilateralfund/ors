@@ -1,3 +1,5 @@
+import { ApiReplenishmentFile } from '@ors/types/api_replenishment_invoices'
+
 import React, { useEffect, useState } from 'react'
 
 import cx from 'classnames'
@@ -11,11 +13,25 @@ import { formatApiUrl } from '@ors/helpers'
 
 import { IoDocumentTextOutline, IoTrash } from 'react-icons/io5'
 
-function InvoiceAttachments(props) {
+interface InvoiceAttachment {
+  download_url?: string
+  file_type?: string
+  filename?: string
+  id: number
+}
+
+interface InvoiceAttachmentsProps {
+  oldFiles: ApiReplenishmentFile[]
+  withFileType?: boolean
+}
+
+function InvoiceAttachments(props: InvoiceAttachmentsProps) {
   const { withFileType = true } = props
-  const [files, setFiles] = useState([])
-  const [oldFiles, setOldFiles] = useState(props.oldFiles || [])
-  const [deletedFiles, setDeletedFiles] = useState([])
+  const [files, setFiles] = useState<InvoiceAttachment[]>([])
+  const [oldFiles, setOldFiles] = useState<ApiReplenishmentFile[]>(
+    props.oldFiles || [],
+  )
+  const [deletedFiles, setDeletedFiles] = useState<number[]>([])
 
   useEffect(() => {
     if (props.oldFiles) {
@@ -30,11 +46,11 @@ function InvoiceAttachments(props) {
     })
   }
 
-  function handleDeleteFile(index) {
+  function handleDeleteFile(index: number) {
     setFiles((prev) => prev.filter((_, i) => i !== index))
   }
 
-  function handleDeleteOldFiles(index) {
+  function handleDeleteOldFiles(index: number) {
     // this files will have an id
     // we need to add that id to a list of files to be deleted to be sent to the backend
     setOldFiles((prev) => prev.filter((_, i) => i !== index))

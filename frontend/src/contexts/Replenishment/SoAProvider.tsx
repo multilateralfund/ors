@@ -1,12 +1,16 @@
+import { ApiReplenishment } from '@ors/types/api_replenishment_replenishments'
+import { ApiReplenishmentSoA } from '@ors/types/api_replenishment_scales_of_assessment'
+
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { api } from '@ors/helpers'
 
 import SoAContext from './SoAContext'
+import { ISoAProvider } from './types'
 
-function useApiReplenishment(startYear, versionId) {
-  const [contributions, setContributions] = useState([])
-  const [replenishment, setReplenishment] = useState({ amount: 0 })
+function useApiReplenishment(startYear: string, versionId: null | number) {
+  const [contributions, setContributions] = useState<ApiReplenishmentSoA>([])
+  const [replenishment, setReplenishment] = useState<ApiReplenishment>()
   const [fetchTrigger, setFetchTrigger] = useState(false)
 
   const refetchData = useCallback(() => {
@@ -23,13 +27,13 @@ function useApiReplenishment(startYear, versionId) {
       // See: https://swr.vercel.app/docs/conditional-fetching#dependent
       let ignore = false
 
-      api('/api/replenishment/scales-of-assessment', {
+      api<ApiReplenishmentSoA>('/api/replenishment/scales-of-assessment', {
         params: {
           start_year: startYear,
           version: versionId,
         },
       }).then(function (jsonData) {
-        if (!ignore) {
+        if (!ignore && jsonData) {
           setContributions(jsonData)
           if (jsonData.length > 0) {
             setReplenishment(jsonData[0].replenishment)
@@ -47,10 +51,10 @@ function useApiReplenishment(startYear, versionId) {
   return { contributions, refetchData, replenishment }
 }
 
-function SoAProvider(props) {
+function SoAProvider(props: ISoAProvider) {
   const { children, startYear } = props
 
-  const [currentVersion, setCurrentVersion] = useState(null)
+  const [currentVersion, setCurrentVersion] = useState<null | number>(null)
   const { contributions, refetchData, replenishment } = useApiReplenishment(
     startYear,
     currentVersion,
@@ -58,7 +62,9 @@ function SoAProvider(props) {
 
   const versions = useMemo(
     function () {
-      return replenishment.scales_of_assessment_versions || []
+      return replenishment
+        ? replenishment.scales_of_assessment_versions || []
+        : []
     },
     [replenishment],
   )
