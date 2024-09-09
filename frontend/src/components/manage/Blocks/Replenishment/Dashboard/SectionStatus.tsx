@@ -77,8 +77,10 @@ function MiniCashCard(props: IMiniCashCardProps) {
     <div className={cx('flex flex-col', className)}>
       <div className="uppercase text-[#4D4D4D]">
         <div className="flex items-center">
-          {label}
-          {info_text ? <IoInformationCircleOutline title={info_text} /> : null}
+          <span className="whitespace-break-spaces">
+            {label}
+            {info_text ? <IoInformationCircleOutline className="inline" title={info_text} /> : null}
+          </span>
         </div>
       </div>
       <div className="text-3xl font-bold text-primary">{value}</div>

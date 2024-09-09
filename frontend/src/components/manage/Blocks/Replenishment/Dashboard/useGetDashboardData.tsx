@@ -39,7 +39,7 @@ const OVERVIEW_INDICATORS: IOVERVIEW_INDICATORS = {
 const INCOME: IINCOME = {
   bilateral_assistance: { label: 'Bilateral cooperation', value: null },
   cash_payments: {
-    info_text: 'Including note encashments',
+    info_text: 'Including note encashments.',
     label: 'Cash payments',
     value: null,
   },
@@ -75,21 +75,23 @@ const PROVISIONS: IPROVISIONS = {
     value: null,
   },
   information_strategy: {
-    label: 'Information Strategy (2003-2004)',
+    info_text: 'Including provision for Network maintenance for 2004',
+    label: 'Information Strategy\n (2003-2004)',
     sub_text: '(inc. provision for Network maintenance for 2004)',
     value: null,
   },
   monitoring_fees: {
-    label: 'Monitoring and evaluation (1999-2023)',
+    label: 'Monitoring and evaluation\n (1999-2023)',
     value: null,
   },
   staff_contracts: {
+    info_text: 'Including provision for staff contracts into 2025.',
     label: 'Secretariat and Executive Committee (1991-2025)',
     sub_text: '(inc. provision for staff contracts into 2025)',
     value: null,
   },
   technical_audit: {
-    label: 'Technical Audit (1998-2010)',
+    label: 'Technical Audit\n (1998-2010)',
     value: null,
   },
   total: {
@@ -97,7 +99,7 @@ const PROVISIONS: IPROVISIONS = {
     total: true,
     value: null,
   },
-  treasury_fees: { label: 'Treasury fees (2003-2025)', value: null },
+  treasury_fees: { label: 'Treasury fees\n (2003-2025)', value: null },
 }
 
 function calculateTotal(obj: IALLOCATIONS | IINCOME | IPROVISIONS) {
