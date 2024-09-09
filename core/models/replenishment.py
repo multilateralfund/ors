@@ -228,7 +228,7 @@ class Payment(models.Model):
     replenishment = models.ForeignKey(
         Replenishment, on_delete=models.PROTECT, related_name="payments", null=True
     )
-    invoices = models.ManyToManyField(Invoice, related_name="payments")
+    invoices = models.ManyToManyField(Invoice, related_name="payments", blank=True)
 
     date = models.DateField()
     payment_for_year = models.CharField(max_length=64)
