@@ -1,10 +1,12 @@
+import { ApiReplenishmentPayments } from '@ors/types/api_replenishment_payments'
+
 import { getResults } from '@ors/helpers'
 import useApi from '@ors/hooks/useApi'
 
 export const _PER_PAGE = 50
 
 function useGetPayments() {
-  const { data, loading, setParams } = useApi({
+  const { data, loading, setParams } = useApi<ApiReplenishmentPayments>({
     options: {
       params: {
         limit: _PER_PAGE,

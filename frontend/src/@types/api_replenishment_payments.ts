@@ -1,0 +1,29 @@
+// Response from /api/replenishment/payments
+
+import { ApiReplenishmentInvoice } from './api_replenishment_invoices'
+import { ApiReplenishment } from './api_replenishment_replenishments'
+import { Country } from './store'
+
+export type ApiReplenishmentPayment = {
+  amount: number
+  comment: string
+  country: Country
+  currency: string
+  date: string
+  exchange_rate: number
+  ferm_gain_or_loss: number
+  id: number
+  invoices: Pick<ApiReplenishmentInvoice, 'id' | 'number'>[]
+  payment_files: ApiReplenishmentFile[]
+  payment_for_year: string
+  replenishment: ApiReplenishment | null
+}
+
+export type ApiReplenishmentFile = {
+  download_url: string
+  file_type: string
+  filename: string
+  id: number
+}
+
+export type ApiReplenishmentPayments = ApiReplenishmentPayment[]

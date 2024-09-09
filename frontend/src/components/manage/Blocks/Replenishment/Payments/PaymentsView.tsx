@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useContext, useMemo, useState } from 'react'
+import React, { ChangeEvent, useContext, useMemo, useState } from 'react'
 
 import Cookies from 'js-cookie'
 import { times } from 'lodash'
@@ -30,9 +30,16 @@ import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { formatApiUrl } from '@ors/helpers'
 
+import {
+  IPaymentDialogProps,
+  ParsedPayment,
+  PaymentColumn,
+  PaymentForSubmit,
+} from './types'
+
 import { IoSearchSharp } from 'react-icons/io5'
 
-const COLUMNS = [
+const COLUMNS: PaymentColumn[] = [
   { field: 'country', label: 'Country' },
   { field: 'date', label: 'Date', sortable: true },
   { field: 'amount', label: 'Amount', sortable: true },
@@ -47,11 +54,15 @@ const COLUMNS = [
   { field: 'comment', label: 'Comments' },
 ]
 
-const AddPaymentDialogue = function AddPaymentDialogue(props) {
+const AddPaymentDialogue = function AddPaymentDialogue(
+  props: Omit<IPaymentDialogProps, 'title'>,
+) {
   return <PaymentDialog title="Add payment" {...props} />
 }
 
-const EditPaymentDialogue = function EditPaymentDialogue(props) {
+const EditPaymentDialogue = function EditPaymentDialogue(
+  props: Omit<IPaymentDialogProps, 'isEdit' | 'title'>,
+) {
   return <PaymentDialog title="Edit payment" isEdit {...props} />
 }
 
@@ -64,42 +75,43 @@ function PaymentsView() {
     page: 1,
     rowsPerPage: _PER_PAGE,
   })
-  const memoResults = useMemo(() => {
-    if (!loaded) {
-      return times(pagination.rowsPerPage, (num) => {
-        return {
-          id: num + 1,
-          isSkeleton: true,
-        }
-      })
-    }
-    return [
-      ...results.map((data) => ({
-        id: data.id,
-        amount: formatNumberValue(data.amount),
-        be_amount: data.amount,
-        be_exchange_rate: data.exchange_rate,
-        be_ferm: data.ferm_gain_or_loss,
-        comment: data.comment,
-        country: data.country.name,
-        country_id: data.country.id,
-        currency: data.currency,
-        date: formatDateValue(data.date),
-        exchange_rate: formatNumberValue(data.exchange_rate) || 'N/A',
-        ferm_gain_or_loss: formatNumberValue(data.ferm_gain_or_loss) || 'N/A',
-        files: <ViewFiles files={data.payment_files} />,
-        files_data: data.payment_files,
-        invoices: data.invoices,
-        iso3: data.country.iso3,
-        payment_for_year: data.payment_for_year,
-        replenishment: data.replenishment,
-      })),
-    ]
-  }, [results, loaded, pagination.rowsPerPage])
+  const memoResults: ({ id: number; isSkeleton: true } | ParsedPayment)[] =
+    useMemo(() => {
+      if (!loaded) {
+        return times(pagination.rowsPerPage, (num) => {
+          return {
+            id: num + 1,
+            isSkeleton: true,
+          }
+        })
+      }
+      return [
+        ...results.map((data) => ({
+          id: data.id,
+          amount: formatNumberValue(data.amount),
+          be_amount: data.amount,
+          be_exchange_rate: data.exchange_rate,
+          be_ferm: data.ferm_gain_or_loss,
+          comment: data.comment,
+          country: data.country.name,
+          country_id: data.country.id,
+          currency: data.currency,
+          date: formatDateValue(data.date),
+          exchange_rate: formatNumberValue(data.exchange_rate) || 'N/A',
+          ferm_gain_or_loss: formatNumberValue(data.ferm_gain_or_loss) || 'N/A',
+          files: <ViewFiles files={data.payment_files} />,
+          files_data: data.payment_files,
+          invoices: data.invoices,
+          iso3: data.country.iso3,
+          payment_for_year: data.payment_for_year,
+          replenishment: data.replenishment,
+        })),
+      ]
+    }, [results, loaded, pagination.rowsPerPage])
 
   const pages = Math.ceil(count / pagination.rowsPerPage)
 
-  const columns = useMemo(function () {
+  const columns: PaymentColumn<JSX.Element>[] = useMemo(function () {
     const result = []
     for (let i = 0; i < COLUMNS.length; i++) {
       const Label = (
@@ -121,13 +133,13 @@ function PaymentsView() {
   const [sortOn, setSortOn] = useState(1)
   const [sortDirection, setSortDirection] = useState(-1)
 
-  const [editIdx, setEditIdx] = useState(null)
+  const [editIdx, setEditIdx] = useState<null | number>(null)
   const [showAdd, setShowAdd] = useState(false)
 
   const editData = useMemo(() => {
     let entry = null
     if (editIdx !== null) {
-      entry = { ...memoResults[editIdx] }
+      entry = { ...memoResults[editIdx] } as ParsedPayment
       entry.date = dateForEditField(entry.date)
       entry.amount = entry.be_amount
       entry.exchange_rate = entry.be_exchange_rate
@@ -136,19 +148,21 @@ function PaymentsView() {
     return entry
   }, [editIdx, memoResults])
 
-  function showEditPaymentDialogue(idx) {
+  function showEditPaymentDialogue(idx: number) {
     setEditIdx(idx)
   }
 
-  async function handleEditPaymentSubmit(formData) {
-    const entry = Object.fromEntries(formData.entries())
+  async function handleEditPaymentSubmit(formData: FormData) {
+    const entry = Object.fromEntries(formData.entries()) as PaymentForSubmit
     entry.date = dateForInput(entry.date)
-    entry.exchange_rate = isNaN(entry.exchange_rate) ? '' : entry.exchange_rate
-    entry.ferm_gain_or_loss = isNaN(entry.ferm_gain_or_loss)
+    entry.exchange_rate = isNaN(entry.exchange_rate as number)
+      ? ''
+      : entry.exchange_rate
+    entry.ferm_gain_or_loss = isNaN(entry.ferm_gain_or_loss as number)
       ? ''
       : entry.ferm_gain_or_loss
     entry.comment = entry.comment || ''
-    entry.invoices = formData.getAll('invoices')
+    entry.invoices = formData.getAll('invoices') as string[]
 
     let nr_new_files = 0
     const data = new FormData()
@@ -159,12 +173,21 @@ function PaymentsView() {
       // Append non-file fields if they are not null, undefined
       // Empty strings are used to delete a value
       if (!key.startsWith('file_')) {
-        if (typeof value === 'object' && value.length) {
-          for (let i = 0; i < value.length; i++) {
-            data.append(key, value[i])
+        const valueIsNotAFile = value as unknown as
+          | null
+          | string
+          | string[]
+          | undefined
+        if (
+          valueIsNotAFile !== null &&
+          typeof valueIsNotAFile === 'object' &&
+          valueIsNotAFile.length
+        ) {
+          for (let i = 0; i < valueIsNotAFile.length; i++) {
+            data.append(key, valueIsNotAFile[i])
           }
-        } else if (value !== null && value !== undefined) {
-          data.append(key, value)
+        } else if (valueIsNotAFile !== null && valueIsNotAFile !== undefined) {
+          data.append(key, valueIsNotAFile as string)
         }
       }
       if (key.startsWith('file_') && entry[key] instanceof File) {
@@ -174,7 +197,7 @@ function PaymentsView() {
       }
     }
 
-    data.append('nr_new_files', nr_new_files)
+    data.append('nr_new_files', nr_new_files.toString())
 
     try {
       const csrftoken = Cookies.get('csrftoken')
@@ -206,22 +229,24 @@ function PaymentsView() {
         enqueueSnackbar(<>An error occurred. Please try again.</>, {
           variant: 'error',
         })
-        setError({})
+        setError(null)
       }
     }
 
     setEditIdx(null)
   }
 
-  async function handleAddPaymentSubmit(formData) {
-    const entry = Object.fromEntries(formData.entries())
+  async function handleAddPaymentSubmit(formData: FormData) {
+    const entry = Object.fromEntries(formData.entries()) as PaymentForSubmit
     entry.date = dateForInput(entry.date)
-    entry.exchange_rate = isNaN(entry.exchange_rate) ? '' : entry.exchange_rate
-    entry.ferm_gain_or_loss = isNaN(entry.ferm_gain_or_loss)
+    entry.exchange_rate = isNaN(entry.exchange_rate as number)
+      ? ''
+      : entry.exchange_rate
+    entry.ferm_gain_or_loss = isNaN(entry.ferm_gain_or_loss as number)
       ? ''
       : entry.ferm_gain_or_loss
     entry.comment = entry.comment || ''
-    entry.invoices = formData.getAll('invoices')
+    entry.invoices = formData.getAll('invoices') as string[]
 
     let nr_new_files = 0
     const data = new FormData()
@@ -231,12 +256,25 @@ function PaymentsView() {
 
       // Append non-file fields if they are not null, undefined, or empty string
       if (!key.startsWith('file_')) {
-        if (typeof value === 'object' && value.length) {
-          for (let i = 0; i < value.length; i++) {
-            data.append(key, value[i])
+        const valueIsNotAFile = value as unknown as
+          | null
+          | string
+          | string[]
+          | undefined
+        if (
+          valueIsNotAFile !== null &&
+          typeof valueIsNotAFile === 'object' &&
+          valueIsNotAFile.length
+        ) {
+          for (let i = 0; i < valueIsNotAFile.length; i++) {
+            data.append(key, valueIsNotAFile[i])
           }
-        } else if (value !== null && value !== undefined && value !== '') {
-          data.append(key, value)
+        } else if (
+          valueIsNotAFile !== null &&
+          valueIsNotAFile !== undefined &&
+          valueIsNotAFile !== ''
+        ) {
+          data.append(key, valueIsNotAFile as string)
         }
       }
       if (key.startsWith('file_') && entry[key] instanceof File) {
@@ -246,7 +284,7 @@ function PaymentsView() {
       }
     }
 
-    data.append('nr_new_files', nr_new_files)
+    data.append('nr_new_files', nr_new_files.toString())
 
     try {
       const csrftoken = Cookies.get('csrftoken')
@@ -279,20 +317,20 @@ function PaymentsView() {
         enqueueSnackbar(<>An error occurred. Please try again.</>, {
           variant: 'error',
         })
-        setError({})
+        setError(null)
       }
     }
   }
 
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false)
-  const [paymentToDelete, setPaymentToDelete] = useState(null)
+  const [paymentToDelete, setPaymentToDelete] = useState<null | number>(null)
 
-  function promptDeletePayment(rowId) {
+  function promptDeletePayment(rowId: number) {
     setPaymentToDelete(rowId)
     setIsDeleteModalVisible(true)
   }
 
-  async function handleDeletePayment(rowId) {
+  async function handleDeletePayment(rowId: number) {
     setPaymentToDelete(null)
     const entry = { ...memoResults[rowId] }
 
@@ -323,12 +361,12 @@ function PaymentsView() {
         enqueueSnackbar(<>An error occurred. Please try again.</>, {
           variant: 'error',
         })
-        setError({})
+        setError(null)
       }
     }
   }
 
-  function handleSort(column) {
+  function handleSort(column: number) {
     const property = COLUMNS[column].field
     const newDirection = column === sortOn ? -sortDirection : 1
     setSortDirection(newDirection)
@@ -340,16 +378,16 @@ function PaymentsView() {
     })
   }
 
-  function handleCountryFilter(evt) {
+  function handleCountryFilter(evt: ChangeEvent<HTMLSelectElement>) {
     const country_id = evt.target.value
     setParams({ country_id })
   }
 
-  function handleSearchInput(evt) {
+  function handleSearchInput(evt: ChangeEvent<HTMLInputElement>) {
     setParams({ search: evt.target.value })
   }
 
-  function handleYearFilter(evt) {
+  function handleYearFilter(evt: ChangeEvent<HTMLSelectElement>) {
     setParams({ year: evt.target.value })
   }
   const yearOptions = scAnnualOptions(ctx.periods)
@@ -452,7 +490,7 @@ function PaymentsView() {
         rowData={memoResults}
         sortDirection={sortDirection}
         sortOn={sortOn}
-        sortableColumns={COLUMNS.reduce((acc, col, idx) => {
+        sortableColumns={COLUMNS.reduce<number[]>((acc, col, idx) => {
           if (col.sortable) {
             acc.push(idx)
           }

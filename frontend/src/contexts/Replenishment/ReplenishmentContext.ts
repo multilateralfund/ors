@@ -1,10 +1,11 @@
 import { ApiReplenishments } from '@ors/types/api_replenishment_replenishments'
+import { Country } from '@ors/types/store'
 
 import { createContext } from 'react'
 
 interface ReplenishmentContextType {
-  countries: any[]
-  countriesSOA: any[]
+  countries: Country[]
+  countriesSOA: Country[]
   isCountryUser: boolean
   isSecretariat: boolean
   isTreasurer: boolean

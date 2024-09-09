@@ -38,25 +38,15 @@ export function Field(props: IFieldProps) {
   )
 }
 
-export function Select(
-  props: { multiple?: boolean } & IMultiSelectProps & ISingleSelectProps,
-) {
-  if (props.multiple) {
-    return <MultiSelect {...props} />
-  } else {
-    return <SingleSelect {...props} />
-  }
-}
-
 export interface ISingleSelectProps
   extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'onChange'> {
-  defaultValue?: string[]
+  defaultValue?: string
   hasClear?: boolean
   onChange?: (evt: ChangeEvent<HTMLSelectElement>) => void
   onClear?: () => void
 }
 
-export function SingleSelect(props: ISingleSelectProps) {
+export function Select(props: ISingleSelectProps) {
   const {
     id,
     children,
@@ -309,6 +299,7 @@ export function MultiSelect(props: IMultiSelectProps) {
         id={id}
         name={name || id}
         className={'invisible hidden'}
+        multiple={true}
         ref={selectRef}
         value={value}
         onChange={handleChange}
@@ -449,7 +440,7 @@ export function DateInput(props: IDateInputProps) {
   )
 }
 
-export function FieldSelect(props: IFieldProps) {
+export function FieldSelect(props: IFieldProps & ISingleSelectProps) {
   const { id, children, label, ...rest } = props
   return (
     <Field id={id} label={label}>
@@ -460,7 +451,20 @@ export function FieldSelect(props: IFieldProps) {
   )
 }
 
-export function FieldInput(props: IFieldProps) {
+export function FieldMultiSelect(props: IFieldProps & IMultiSelectProps) {
+  const { id, children, label, ...rest } = props
+  return (
+    <Field id={id} label={label}>
+      <MultiSelect id={id} {...rest}>
+        {children}
+      </MultiSelect>
+    </Field>
+  )
+}
+
+export function FieldInput(
+  props: IFieldProps & React.InputHTMLAttributes<HTMLInputElement>,
+) {
   const { id, children, label, ...rest } = props
   return (
     <Field id={id} label={label}>

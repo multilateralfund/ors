@@ -1,6 +1,6 @@
 'use client'
 
-import { useContext, useMemo, useState } from 'react'
+import { ChangeEvent, useContext, useMemo, useState } from 'react'
 
 import Cookies from 'js-cookie'
 import { times } from 'lodash'
@@ -28,9 +28,12 @@ import { AddButton } from '@ors/components/ui/Button/Button'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { formatApiUrl } from '@ors/helpers'
 
+import { IInvoiceDialogProps } from './types'
+import { InvoiceColumn, InvoiceForSubmit, ParsedInvoice } from './types'
+
 import { IoSearchSharp } from 'react-icons/io5'
 
-const COLUMNS = [
+const COLUMNS: InvoiceColumn[] = [
   { field: 'country', label: 'Country', sortable: true },
   { field: 'status', label: 'Status' },
   { field: 'year', label: 'Year' },
@@ -55,11 +58,15 @@ const COLUMNS = [
   { field: 'files', label: 'Files' },
 ]
 
-const AddInvoiceDialog = function AddInvoiceDialog(props) {
+const AddInvoiceDialog = function AddInvoiceDialog(
+  props: Omit<IInvoiceDialogProps, 'title'>,
+) {
   return <InvoiceDialog title="Add invoice" {...props} />
 }
 
-const EditInvoiceDialog = function EditInvoiceDialog(props) {
+const EditInvoiceDialog = function EditInvoiceDialog(
+  props: Omit<IInvoiceDialogProps, 'isEdit' | 'title'>,
+) {
   return <InvoiceDialog title="Edit invoice" isEdit {...props} />
 }
 
@@ -68,45 +75,46 @@ function InvoicesView() {
   const ctx = useContext(ReplenishmentContext)
 
   const { loaded, results, setParams } = useGetInvoices(currentYear)
-  const memoResults = useMemo(() => {
-    if (!loaded) {
-      return times(10, (num) => {
-        return {
-          id: num + 1,
-          isSkeleton: true,
-        }
-      })
-    }
-    return results.map((data) => ({
-      id: data.id,
-      amount:
-        data.amount && data.currency
-          ? formatNumberValue(data.amount) + ' ' + data.currency
-          : '-',
-      be_amount: data.amount,
-      be_exchange_rate: data.exchange_rate,
-      can_delete: ctx.isTreasurer && data.id,
-      can_edit: ctx.isTreasurer && data.id,
-      country: data.country.name,
-      country_id: data.country.id,
-      currency: data.currency,
-      date_first_reminder: formatDateValue(data.date_first_reminder) || '-',
-      date_of_issuance: formatDateValue(data.date_of_issuance),
-      date_second_reminder: formatDateValue(data.date_second_reminder) || '-',
-      date_sent_out: formatDateValue(data.date_sent_out) || '-',
-      exchange_rate: formatNumberValue(data.exchange_rate) || '-',
-      files: <ViewFiles files={data.invoice_files} />,
-      files_data: data.invoice_files,
-      gray: !data.id,
-      iso3: data.country.iso3,
-      number: data.number?.toLocaleString(),
-      replenishment: data.replenishment,
-      status: <InvoiceStatus row={data} />,
-      year: data.year || '-',
-    }))
-  }, [loaded, results, ctx.isTreasurer])
+  const memoResults: ({ id: number; isSkeleton: true } | ParsedInvoice)[] =
+    useMemo(() => {
+      if (!loaded) {
+        return times(10, (num) => {
+          return {
+            id: num + 1,
+            isSkeleton: true,
+          }
+        })
+      }
+      return results.map((data) => ({
+        id: data.id,
+        amount:
+          data.amount && data.currency
+            ? formatNumberValue(data.amount) + ' ' + data.currency
+            : '-',
+        be_amount: data.amount,
+        be_exchange_rate: data.exchange_rate,
+        can_delete: !!(ctx.isTreasurer && data.id),
+        can_edit: !!(ctx.isTreasurer && data.id),
+        country: data.country.name,
+        country_id: data.country.id,
+        currency: data.currency,
+        date_first_reminder: formatDateValue(data.date_first_reminder) || '-',
+        date_of_issuance: formatDateValue(data.date_of_issuance),
+        date_second_reminder: formatDateValue(data.date_second_reminder) || '-',
+        date_sent_out: formatDateValue(data.date_sent_out) || '-',
+        exchange_rate: formatNumberValue(data.exchange_rate) || '-',
+        files: <ViewFiles files={data.invoice_files} />,
+        files_data: data.invoice_files,
+        gray: !data.id,
+        iso3: data.country.iso3,
+        number: data.number?.toLocaleString(),
+        replenishment: data.replenishment,
+        status: <InvoiceStatus row={data} />,
+        year: data.year || '-',
+      }))
+    }, [loaded, results, ctx.isTreasurer])
 
-  const columns = useMemo(function () {
+  const columns: InvoiceColumn[] = useMemo(function () {
     const result = []
     for (let i = 0; i < COLUMNS.length; i++) {
       const Label = (
@@ -128,14 +136,14 @@ function InvoicesView() {
   const [sortOn, setSortOn] = useState(0)
   const [sortDirection, setSortDirection] = useState(1)
 
-  const [editIdx, setEditIdx] = useState(null)
-  const [showAdd, setShowAdd] = useState(false)
+  const [editIdx, setEditIdx] = useState<null | number>(null)
+  const [showAdd, setShowAdd] = useState<boolean>(false)
   const [hideNoInvoice, setHideNoInvoice] = useState(true)
 
   const editData = useMemo(() => {
     let entry = null
     if (editIdx !== null) {
-      entry = { ...memoResults[editIdx] }
+      entry = { ...memoResults[editIdx] } as ParsedInvoice
       entry.date_of_issuance = dateForEditField(entry.date_of_issuance)
       entry.date_sent_out = dateForEditField(entry.date_sent_out)
       entry.date_first_reminder = dateForEditField(entry?.date_first_reminder)
@@ -146,17 +154,19 @@ function InvoicesView() {
     return entry
   }, [editIdx, memoResults])
 
-  function showEditInvoiceDialog(idx) {
+  function showEditInvoiceDialog(idx: number) {
     setEditIdx(idx)
   }
 
-  async function handleEditInvoiceSubmit(formData) {
-    const entry = Object.fromEntries(formData.entries())
+  async function handleEditInvoiceSubmit(formData: FormData) {
+    const entry = Object.fromEntries(formData.entries()) as InvoiceForSubmit
     entry.date_of_issuance = dateForInput(entry.date_of_issuance)
     entry.date_sent_out = dateForInput(entry.date_sent_out) || ''
     entry.date_first_reminder = dateForInput(entry.date_first_reminder) || ''
     entry.date_second_reminder = dateForInput(entry.date_second_reminder) || ''
-    entry.exchange_rate = isNaN(entry.exchange_rate) ? '' : entry.exchange_rate
+    entry.exchange_rate = isNaN(entry.exchange_rate as number)
+      ? ''
+      : entry.exchange_rate
 
     let nr_new_files = 0
     const data = new FormData()
@@ -166,8 +176,13 @@ function InvoicesView() {
 
       // Append non-file fields if they are not null, undefined, or empty string
       if (!key.startsWith('file_')) {
-        if (value !== null && value !== undefined && value !== '') {
-          data.append(key, value)
+        const valueIsNotAFile = value as unknown as null | string | undefined
+        if (
+          valueIsNotAFile !== null &&
+          valueIsNotAFile !== undefined &&
+          valueIsNotAFile !== ''
+        ) {
+          data.append(key, valueIsNotAFile)
         }
       }
       if (key.startsWith('file_') && entry[key] instanceof File) {
@@ -181,7 +196,7 @@ function InvoicesView() {
       }
     }
 
-    data.append('nr_new_files', nr_new_files)
+    data.append('nr_new_files', nr_new_files.toString())
 
     try {
       const csrftoken = Cookies.get('csrftoken')
@@ -219,21 +234,16 @@ function InvoicesView() {
     setEditIdx(null)
   }
 
-  /**
-   * Prepare data and submit to endpoint
-   *
-   * @async
-   * @param {FormData} formData
-   * @returns {void}
-   */
-  async function handleAddInvoiceSubmit(formData) {
-    const entry = Object.fromEntries(formData.entries())
+  async function handleAddInvoiceSubmit(formData: FormData) {
+    const entry = Object.fromEntries(formData.entries()) as InvoiceForSubmit
     entry.date_of_issuance = dateForInput(entry.date_of_issuance)
     entry.date_sent_out = dateForInput(entry.date_sent_out)
     entry.date_first_reminder = dateForInput(entry.date_first_reminder)
     entry.date_second_reminder = dateForInput(entry.date_second_reminder)
     entry.reminder = dateForInput(entry.reminder)
-    entry.exchange_rate = isNaN(entry.exchange_rate) ? '' : entry.exchange_rate
+    entry.exchange_rate = isNaN(entry.exchange_rate as number)
+      ? ''
+      : entry.exchange_rate
     entry.replenishment_id = ctx.periods.find(
       (p) =>
         Number(p.start_year) <= Number(entry.year) &&
@@ -244,12 +254,17 @@ function InvoicesView() {
     const data = new FormData()
 
     for (const key in entry) {
-      const value = entry[key]
+      const value = entry[key as keyof InvoiceForSubmit]
 
       // Append non-file fields if they are not null, undefined, or empty string
       if (!key.startsWith('file_')) {
-        if (value !== null && value !== undefined && value !== '') {
-          data.append(key, value)
+        const valueIsNotAFile = value as unknown as null | string | undefined
+        if (
+          valueIsNotAFile !== null &&
+          valueIsNotAFile !== undefined &&
+          valueIsNotAFile !== ''
+        ) {
+          data.append(key, valueIsNotAFile)
         }
       }
       if (key.startsWith('file_') && entry[key] instanceof File) {
@@ -263,7 +278,7 @@ function InvoicesView() {
       }
     }
 
-    data.append('nr_new_files', nr_new_files)
+    data.append('nr_new_files', nr_new_files.toString())
 
     try {
       const csrftoken = Cookies.get('csrftoken')
@@ -301,14 +316,14 @@ function InvoicesView() {
   }
 
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false)
-  const [invoiceToDelete, setInvoiceToDelete] = useState(null)
+  const [invoiceToDelete, setInvoiceToDelete] = useState<null | number>(null)
 
-  function promptDeletePayment(rowId) {
+  function promptDeletePayment(rowId: number) {
     setInvoiceToDelete(rowId)
     setIsDeleteModalVisible(true)
   }
 
-  async function handleDeleteInvoice(rowId) {
+  async function handleDeleteInvoice(rowId: number) {
     setInvoiceToDelete(null)
     const entry = { ...memoResults[rowId] }
 
@@ -342,11 +357,11 @@ function InvoicesView() {
     }
   }
 
-  function handleSearchInput(evt) {
+  function handleSearchInput(evt: ChangeEvent<HTMLInputElement>) {
     setParams({ search: evt.target.value })
   }
 
-  function handleSort(column) {
+  function handleSort(column: number) {
     const property = COLUMNS[column].field
     const newDirection = column === sortOn ? -sortDirection : 1
     setSortDirection(newDirection)
@@ -356,22 +371,22 @@ function InvoicesView() {
     })
   }
 
-  function handleCountryFilter(evt) {
+  function handleCountryFilter(evt: ChangeEvent<HTMLSelectElement>) {
     const country_id = evt.target.value
     setParams({ country_id })
   }
 
-  function handleYearFilter(evt) {
+  function handleYearFilter(evt: ChangeEvent<HTMLSelectElement>) {
     setParams({ year: evt.target.value })
   }
   const yearOptions = scAnnualOptions(ctx.periods)
 
-  function handleStatusFilter(evt) {
+  function handleStatusFilter(evt: ChangeEvent<HTMLSelectElement>) {
     const status = evt.target.value
     setParams({ status })
   }
 
-  function handleChangeHideNoInvoice(evt) {
+  function handleChangeHideNoInvoice(evt: ChangeEvent<HTMLInputElement>) {
     setHideNoInvoice(evt.target.checked)
     setParams({ hide_no_invoice: evt.target.checked })
   }
@@ -444,7 +459,7 @@ function InvoicesView() {
           <Select
             id="year"
             className="placeholder-select w-44"
-            defaultValue={currentYear}
+            defaultValue={currentYear.toString()}
             onChange={handleYearFilter}
             required
           >
@@ -497,7 +512,7 @@ function InvoicesView() {
         rowData={memoResults}
         sortDirection={sortDirection}
         sortOn={sortOn}
-        sortableColumns={COLUMNS.reduce((acc, col, idx) => {
+        sortableColumns={COLUMNS.reduce<number[]>((acc, col, idx) => {
           if (col.sortable) {
             acc.push(idx)
           }

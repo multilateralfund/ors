@@ -1,30 +1,21 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { FormEvent, KeyboardEvent, useCallback, useEffect, useRef } from 'react'
 
 import cx from 'classnames'
 
 import { CancelButton, SubmitButton } from '@ors/components/ui/Button/Button'
 
+import { IFormDialogProps } from './types'
+
 import { IoCloseCircle } from 'react-icons/io5'
 
-/**
- * Display a form in a dialog.
- *
- * @typedef {object} FormDialogProps
- * @property {string} [title]
- * @property {() => void} onCancel
- * @property {(formData: FormData, evt: React.FormEvent<HTMLFormElement>) => void} onSubmit
- *
- * @param {React.PropsWithChildren & FormDialogProps} props
- * @returns {React.ReactElement}
- */
-const FormDialog = function FormDialog(props) {
+const FormDialog = function FormDialog(props: IFormDialogProps) {
   const { children, onCancel, onSubmit, title } = props
-  const dialogRef = useRef(null)
-  const contentRef = useRef(null)
-  const formRef = useRef(null)
+  const dialogRef = useRef<HTMLDialogElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
+  const formRef = useRef<HTMLFormElement>(null)
 
   useEffect(() => {
-    dialogRef.current.showModal()
+    dialogRef.current?.showModal()
     const bodyOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
@@ -32,33 +23,33 @@ const FormDialog = function FormDialog(props) {
     }
   }, [])
 
-  function submitHandler(evt) {
+  function submitHandler(evt: FormEvent<HTMLFormElement>) {
     evt.preventDefault()
-    const formData = new FormData(evt.target)
-    dialogRef.current.close()
-    evt.target.reset()
+    const formData = new FormData(evt.currentTarget)
+    dialogRef.current?.close()
+    evt.currentTarget.reset()
     onSubmit(formData, evt)
   }
 
-  const cancelHandler = useCallback(
-    (evt) => {
-      formRef.current.reset()
-      dialogRef.current.close()
-      onCancel()
-    },
-    [onCancel],
-  )
+  const cancelHandler = useCallback(() => {
+    formRef.current?.reset()
+    dialogRef.current?.close()
+    onCancel()
+  }, [onCancel])
 
-  function handleKeyDown(evt) {
+  function handleKeyDown(evt: KeyboardEvent<HTMLDialogElement>) {
     if (evt.key === 'Escape') {
       evt.preventDefault()
-      cancelHandler(evt)
+      cancelHandler()
     }
   }
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (contentRef.current && !contentRef.current.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        contentRef.current &&
+        !contentRef.current.contains(event.target as Node)
+      ) {
         cancelHandler()
       }
     }

@@ -9,7 +9,9 @@ import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invo
 import { scAnnualOptions } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 
-const InvoiceDialog = function InvoiceDialog(props) {
+import { IInvoiceDialogProps } from './types'
+
+const InvoiceDialog = function InvoiceDialog(props: IInvoiceDialogProps) {
   const { countries, data, isEdit, title, ...dialogProps } = props
   const ctx = useContext(ReplenishmentContext)
 
@@ -47,13 +49,7 @@ const InvoiceDialog = function InvoiceDialog(props) {
         type="text"
         required
       />
-      <FieldSelect
-        id="year"
-        defaultValue={data?.year}
-        label="Year"
-        type="number"
-        required
-      >
+      <FieldSelect id="year" defaultValue={data?.year} label="Year" required>
         <option value="" disabled hidden></option>
         {yearOptions.map((year) => (
           <option key={year.value} className="text-primary" value={year.value}>
