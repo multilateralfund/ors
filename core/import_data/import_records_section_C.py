@@ -6,7 +6,6 @@ from django.conf import settings
 
 from core.import_data.utils import (
     check_headers,
-    delete_old_data,
     get_cp_report,
     get_country_by_name,
     get_chemical,
@@ -44,7 +43,8 @@ REPORT_COLUMNS = [
 
 
 logger = logging.getLogger(__name__)
-FILE_NAME = "SectionCDE.xlsx"
+# FILE_NAME = "SectionCDE.xlsx"
+FILE_NAME = "SectionCDE-Missing2022.xlsx"
 
 
 def create_cp_price(
@@ -98,6 +98,9 @@ def parse_sheet(df):
 
         previous_year_prices_obj = None
         for report_details in REPORT_COLUMNS:
+            # check if there are data for this year
+            if row.get(report_details["year"]) is None:
+                continue
             # get previous year price
             previous_year_price = row[report_details["previous"]]
             decimal_price = get_decimal_from_excel_string(previous_year_price)
@@ -214,8 +217,6 @@ def import_records():
     file_path = settings.IMPORT_DATA_DIR / "records" / FILE_NAME
 
     logger.info(f"⏳ parsing file: {FILE_NAME}")
-    # before we import anything, we should delete all prices from previous imports
-    delete_old_data(CPPrices, FILE_NAME)
 
     parse_file(file_path)
     logger.info(f"✔ section C records from {FILE_NAME} imported")

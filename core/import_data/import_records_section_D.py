@@ -6,7 +6,6 @@ from django.conf import settings
 
 from core.import_data.utils import (
     check_headers,
-    delete_old_data,
     get_cp_report,
 )
 from core.models import CPGeneration
@@ -66,8 +65,6 @@ def import_records():
     file_path = settings.IMPORT_DATA_DIR / "records" / FILE_NAME
 
     logger.info(f"⏳ parsing file: {FILE_NAME}")
-    # before we import anything, we should delete all prices from previous imports
-    delete_old_data(CPGeneration, FILE_NAME)
 
     parse_file(file_path)
     logger.info(f"✔ section D records from {FILE_NAME} imported")

@@ -9,8 +9,6 @@ from core.import_data.utils import (
     check_empty_row,
     check_headers,
     create_cp_record,
-    delete_archive_reports_data,
-    delete_old_data,
     get_cp_report,
     get_country_by_name,
     get_chemical,
@@ -19,9 +17,6 @@ from core.import_data.utils import (
     get_usages_from_sheet,
 )
 
-from core.models import (
-    CPRecord,
-)
 from core.models.country_programme import CPUsage
 
 logger = logging.getLogger(__name__)
@@ -56,16 +51,24 @@ RECORD_COLUMNS_MAPPING = {
     "import quotas": "import_quotas",
 }
 
-SECTION = "B"
-
 FILE_LIST = [
+    # {
+    #     "file_name": "SectionA.xlsx",
+    #     "convert_to_mt": True,
+    #     "section": "A",
+    # },
+    # {
+    #     "file_name": "SectionB.xlsx",
+    #     "convert_to_mt": False,
+    #     "section": "B",
+    # },
     {
-        "file_name": "SectionA.xlsx",
+        "file_name": "SectionA-Missing2022.xlsx",
         "convert_to_mt": True,
         "section": "A",
     },
     {
-        "file_name": "SectionB.xlsx",
+        "file_name": "SectionB-Missing2022.xlsx",
         "convert_to_mt": False,
         "section": "B",
     },
@@ -230,12 +233,10 @@ def parse_file(file_path, file_details):
 
 @transaction.atomic
 def import_records():
-    delete_archive_reports_data(2019, 2022)
     for file in FILE_LIST:
         file_path = settings.IMPORT_DATA_DIR / "records" / file["file_name"]
 
         logger.info(f"⏳ parsing file: {file['file_name']}")
-        delete_old_data(CPRecord, file["file_name"])
         parse_file(file_path, file)
 
         logger.info(f"✔ records from {file['file_name']} imported")
