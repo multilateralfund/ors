@@ -1,7 +1,5 @@
-import {
-  ApiReplenishmentFile,
-  ApiReplenishmentInvoice,
-} from '@ors/types/api_replenishment_invoices'
+import { ApiReplenishmentFile } from '@ors/types/api_replenishment'
+import { ApiReplenishmentInvoice } from '@ors/types/api_replenishment_invoices'
 import { ApiReplenishment } from '@ors/types/api_replenishment_replenishments'
 import { Country } from '@ors/types/store'
 
@@ -22,7 +20,7 @@ export interface IPaymentDialogProps extends IFormDialogProps {
 }
 
 export type PaymentForSubmit = {
-  date: string
+  date: null | string
   exchange_rate: number | string
   ferm_gain_or_loss: number | string
   invoices: string[]

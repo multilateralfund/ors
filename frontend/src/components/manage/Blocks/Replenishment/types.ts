@@ -6,3 +6,9 @@ export interface IFormDialogProps extends PropsWithChildren {
   onSubmit: (formData: FormData, evt: React.FormEvent<HTMLFormElement>) => void
   title: string
 }
+export interface ConfirmDialogProps extends PropsWithChildren {
+  className?: string
+  onCancel: () => void
+  onSubmit: () => void
+  title?: string
+}

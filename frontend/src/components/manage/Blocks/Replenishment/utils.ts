@@ -1,8 +1,10 @@
+import { ApiReplenishment } from '@ors/types/api_replenishment_replenishments'
+
 import { MAX_DECIMALS, MIN_DECIMALS } from './constants'
 
 const RE_PERIOD = new RegExp(/\d{4}-\d{4}/)
 
-export function makePeriodOptions(periods) {
+export function makePeriodOptions(periods: ApiReplenishment[]) {
   const result = []
   for (let i = 0; i < periods.length; i++) {
     const labelComponents = [periods[i].start_year, periods[i].end_year]
@@ -12,18 +14,18 @@ export function makePeriodOptions(periods) {
   return result
 }
 
-export function getPathPeriod(path) {
+export function getPathPeriod(path: string) {
   let result = null
   const candidate = path.split('/').at(-1)
 
-  if (candidate.match(RE_PERIOD)) {
+  if (candidate && candidate.match(RE_PERIOD)) {
     result = candidate
   }
 
   return result
 }
 
-export function formatDateValue(value) {
+export function formatDateValue(value?: null | string) {
   if (!value) {
     return null
   }
@@ -34,18 +36,22 @@ export function formatDateValue(value) {
   })
 }
 
-export function formatNumberValue(value, minDigits, maxDigits) {
-  if (isNaN(value) || (!value && value !== 0)) {
+export function formatNumberValue(
+  value: number | string,
+  minDigits?: number,
+  maxDigits?: number,
+) {
+  if ((typeof value === 'number' && isNaN(value)) || (!value && value !== 0)) {
     return null
   }
-  const formatted = parseFloat(value).toLocaleString('en-US', {
+  const formatted = parseFloat(value as string).toLocaleString('en-US', {
     maximumFractionDigits: maxDigits ?? MAX_DECIMALS,
     minimumFractionDigits: minDigits ?? MIN_DECIMALS,
   })
   return formatted === '-0' ? '0' : formatted
 }
 
-export function dateForEditField(value) {
+export function dateForEditField(value?: null | string) {
   if (!value) {
     return null
   }
@@ -53,39 +59,37 @@ export function dateForEditField(value) {
   return dateForInput(date)
 }
 
-/**
- * Format date or date string to YYYY-MM-DD.
- *
- * @export
- * @param {string|Date} [input]
- * @returns {string}
- */
-export function dateForInput(input) {
+export function dateForInput(input?: Date | null | string) {
   if (!input) {
     return null
   }
 
   const date = typeof input === 'string' ? new Date(input) : input
 
-  let day = date.getDate()
-  let month = date.getMonth() + 1
+  let day: number | string = date.getDate()
+  let month: number | string = date.getMonth() + 1
+
   day = day < 10 ? `0${day}` : day
   month = month < 10 ? `0${month}` : month
+
   return `${date.getFullYear()}-${month}-${day}`
 }
 
-export function dateFromInput(value) {
+export function dateFromInput(value: string) {
   const [year, month, day] = value.split('-')
   return new Date(
     Date.UTC(parseInt(year, 10), parseInt(month, 10) - 1, parseInt(day, 10)),
   )
 }
 
-export function numberForEditField(value) {
+export function numberForEditField(value: string) {
   return parseFloat(value.replaceAll(',', ''))
 }
 
-export function filterTableData(tableData, searchValue) {
+export function filterTableData(
+  tableData: Record<string, number | string>[],
+  searchValue: string,
+) {
   const result = []
   const searchFor = searchValue.toLowerCase()
   for (let i = 0; i < tableData.length; i++) {
@@ -95,7 +99,7 @@ export function filterTableData(tableData, searchValue) {
       let value = ''
 
       if (typeof rowValues[j] === 'string') {
-        value = rowValues[j]
+        value = rowValues[j] as string
       } else if (rowValues[j]) {
         value = rowValues[j].toString()
       }
@@ -109,19 +113,19 @@ export function filterTableData(tableData, searchValue) {
   return result
 }
 
-export function getDefaultFieldSorter(field, direction) {
-  return function (a, b) {
+export function getDefaultFieldSorter(field: string, direction: -1 | 1) {
+  return function (a: Record<string, any>, b: Record<string, any>) {
     const a_val = a[field]
     const b_val = b[field]
 
     // Check if the values are dates
-    const isDate = (val) => !isNaN(Date.parse(val))
+    const isDate = (val: string) => !isNaN(Date.parse(val))
 
     if (isDate(a_val) && isDate(b_val)) {
       // Convert strings to Date objects if they are dates
       const dateA = new Date(a_val)
       const dateB = new Date(b_val)
-      return (dateA - dateB) * direction
+      return (dateA.getTime() - dateB.getTime()) * direction
     }
 
     // Handle strings
@@ -143,25 +147,22 @@ export function getDefaultFieldSorter(field, direction) {
   }
 }
 
-export function sortTableData(tableData, field, direction) {
+export function sortTableData(
+  tableData: Record<string, any>[],
+  field: string,
+  direction: -1 | 1,
+) {
   const result = [...tableData]
   const defaultSorter = getDefaultFieldSorter(field, direction)
   result.sort(defaultSorter)
   return result
 }
 
-export function getCountryForIso3(iso3, countries) {
-  let result = null
-  for (let i = 0; i < countries.length; i++) {
-    if (countries[i].iso3 === iso3) {
-      result = countries[i]
-      break
-    }
-  }
-  return result
-}
-
-export async function fetchWithHandling(url, options = {}, csrftoken) {
+export async function fetchWithHandling(
+  url: string,
+  options: Record<string, any> = {},
+  csrftoken?: string,
+) {
   const response = await fetch(url, {
     ...options,
     credentials: 'include',
@@ -174,7 +175,7 @@ export async function fetchWithHandling(url, options = {}, csrftoken) {
   if (!response.ok) {
     const errorData = await response.json() // Get the error details
     const error = new Error('Request failed with status ' + response.status)
-    error.data = errorData
+    error.message = errorData
     throw error
   }
 }

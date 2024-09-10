@@ -2,10 +2,11 @@ import cx from 'classnames'
 
 import HeaderCells from './HeaderCells'
 import styles from './table.module.css'
+import { AdminButtonsProps, TableCellProps, TableProps } from './types'
 
 import { IoPencil, IoTrash } from 'react-icons/io5'
 
-function AdminButtons(props) {
+function AdminButtons(props: AdminButtonsProps) {
   const { onDelete, onEdit } = props
   return (
     <div className={styles.adminButtons}>
@@ -31,7 +32,7 @@ function AdminButtons(props) {
   )
 }
 
-function TableCell(props) {
+function TableCell(props: TableCellProps) {
   const {
     adminButtons = true,
     c,
@@ -63,7 +64,7 @@ function TableCell(props) {
       )
     }
 
-    const adminButtonsProps = {}
+    const adminButtonsProps: AdminButtonsProps = {}
     if (hasDeleteButton) {
       adminButtonsProps.onDelete = () => onDelete(r, rowData[r])
     }
@@ -84,11 +85,10 @@ function TableCell(props) {
   )
 }
 
-function Table(props) {
+function Table(props: TableProps) {
   const {
     adminButtons,
     columns,
-    enableEdit,
     enableSort,
     extraRows,
     onDelete,
@@ -112,7 +112,6 @@ function Table(props) {
             adminButtons={adminButtons}
             c={i}
             columns={columns}
-            enableEdit={enableEdit}
             r={j}
             rowData={rowData}
             textPosition={textPosition}

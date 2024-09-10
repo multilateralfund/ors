@@ -28,6 +28,7 @@ import { AddButton } from '@ors/components/ui/Button/Button'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { formatApiUrl } from '@ors/helpers'
 
+import { SortDirection } from '../Table/types'
 import { IInvoiceDialogProps } from './types'
 import { InvoiceColumn, InvoiceForSubmit, ParsedInvoice } from './types'
 
@@ -134,7 +135,7 @@ function InvoicesView() {
   }, [])
 
   const [sortOn, setSortOn] = useState(0)
-  const [sortDirection, setSortDirection] = useState(1)
+  const [sortDirection, setSortDirection] = useState<SortDirection>(1)
 
   const [editIdx, setEditIdx] = useState<null | number>(null)
   const [showAdd, setShowAdd] = useState<boolean>(false)
@@ -363,7 +364,9 @@ function InvoicesView() {
 
   function handleSort(column: number) {
     const property = COLUMNS[column].field
-    const newDirection = column === sortOn ? -sortDirection : 1
+    const newDirection = (
+      column === sortOn ? -sortDirection : 1
+    ) as SortDirection
     setSortDirection(newDirection)
     setSortOn(column)
     setParams({

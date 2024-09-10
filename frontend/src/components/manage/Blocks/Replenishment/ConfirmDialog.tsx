@@ -1,18 +1,20 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { KeyboardEventHandler, useCallback, useEffect, useRef } from 'react'
 
 import cx from 'classnames'
 
 import { CancelButton, SubmitButton } from '@ors/components/ui/Button/Button'
 
+import { ConfirmDialogProps } from './types'
+
 import { IoCloseCircle } from 'react-icons/io5'
 
-const ConfirmDialog = function ConfirmDialog(props) {
+const ConfirmDialog = function ConfirmDialog(props: ConfirmDialogProps) {
   const { children, onCancel, onSubmit, title } = props
-  const dialogRef = useRef(null)
-  const contentRef = useRef(null)
+  const dialogRef = useRef<HTMLDialogElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    dialogRef.current.showModal()
+    dialogRef.current?.showModal()
     const bodyOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
@@ -20,32 +22,32 @@ const ConfirmDialog = function ConfirmDialog(props) {
     }
   }, [])
 
-  function submitHandler(evt) {
-    dialogRef.current.close()
+  function submitHandler() {
+    dialogRef.current?.close()
     onSubmit()
   }
 
-  const cancelHandler = useCallback(
-    (evt) => {
-      dialogRef.current.close()
-      onCancel()
-    },
-    [onCancel],
-  )
+  const cancelHandler = useCallback(() => {
+    dialogRef.current?.close()
+    onCancel()
+  }, [onCancel])
 
-  const handleKeyDown = useCallback(
+  const handleKeyDown: KeyboardEventHandler<HTMLDialogElement> = useCallback(
     (evt) => {
       if (evt.key === 'Escape') {
         evt.preventDefault()
-        cancelHandler(evt)
+        cancelHandler()
       }
     },
     [cancelHandler],
   )
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (contentRef.current && !contentRef.current.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        contentRef.current &&
+        !contentRef.current.contains(event.target as Node)
+      ) {
         cancelHandler()
       }
     }

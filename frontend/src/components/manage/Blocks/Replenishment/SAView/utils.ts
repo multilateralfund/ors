@@ -1,12 +1,10 @@
 import { fixFloat } from '@ors/helpers/Utils/Utils'
 
 import { MAX_DECIMALS, MIN_DECIMALS, PRECISION } from '../constants'
-
-export { getCountryForIso3 } from '../utils'
 import { getDefaultFieldSorter } from '../utils'
 
-export function nullIfNaN(value) {
-  let result = value
+export function nullIfNaN(value: number) {
+  let result: null | number = value
 
   if (typeof value === 'number' && isNaN(value)) {
     result = null
@@ -15,7 +13,7 @@ export function nullIfNaN(value) {
   return result
 }
 
-export function uniformDecimals(v) {
+export function uniformDecimals(v: null | number) {
   let result = null
   if (v !== null) {
     result = fixFloat(v, MAX_DECIMALS)
@@ -23,7 +21,7 @@ export function uniformDecimals(v) {
   return result
 }
 
-export function clearNew(d) {
+export function clearNew(d: Record<string, any>) {
   const r = []
   for (let i = 0; i < d.length; i++) {
     r.push(d[i])
@@ -32,7 +30,10 @@ export function clearNew(d) {
   return r
 }
 
-export function getOverrideOrDefault(record, name) {
+export function getOverrideOrDefault(
+  record: Record<string, any>,
+  name: string,
+) {
   let result = record[`override_${name}`]
   if (result === undefined) {
     result = record[name]
@@ -40,7 +41,10 @@ export function getOverrideOrDefault(record, name) {
   return result
 }
 
-export function computeTableData(tableData, totalReplenishment) {
+export function computeTableData(
+  tableData: Record<string, any>[],
+  totalReplenishment: number,
+) {
   const result = new Array(tableData.length)
 
   let adj_un_soa = 0
@@ -48,13 +52,21 @@ export function computeTableData(tableData, totalReplenishment) {
 
   for (let i = 0; i < tableData.length; i++) {
     if (tableData[i].iso3 === 'USA') {
-      adj_un_soa_percent -= nullIfNaN(
-        fixFloat(getOverrideOrDefault(tableData[i], 'un_soa') ?? 0, PRECISION),
-      )
+      adj_un_soa_percent -=
+        nullIfNaN(
+          fixFloat(
+            getOverrideOrDefault(tableData[i], 'un_soa') ?? 0,
+            PRECISION,
+          ),
+        ) ?? 0
     } else {
-      adj_un_soa += nullIfNaN(
-        fixFloat(getOverrideOrDefault(tableData[i], 'un_soa') ?? 0, PRECISION),
-      )
+      adj_un_soa +=
+        nullIfNaN(
+          fixFloat(
+            getOverrideOrDefault(tableData[i], 'un_soa') ?? 0,
+            PRECISION,
+          ),
+        ) ?? 0
     }
   }
 
@@ -111,7 +123,7 @@ export function computeTableData(tableData, totalReplenishment) {
   return result
 }
 
-function formattedValue(value) {
+function formattedValue(value: boolean | null | number | string) {
   let newValue = value
 
   if (value === null) {
@@ -130,7 +142,10 @@ function formattedValue(value) {
   return newValue
 }
 
-export function formatTableData(tableData, editableColumns) {
+export function formatTableData(
+  tableData: Record<string, any>[],
+  editableColumns: string[],
+) {
   const result = new Array(tableData.length)
 
   for (let i = 0; i < tableData.length; i++) {
@@ -171,8 +186,12 @@ export function formatTableData(tableData, editableColumns) {
   return result
 }
 
-export function sumColumns(tableData) {
-  const result = { adj_un_soa: 0, annual_contributions: 0, un_soa: 0 }
+export function sumColumns(tableData: Record<string, any>) {
+  const result: Record<string, number | string> = {
+    adj_un_soa: 0,
+    annual_contributions: 0,
+    un_soa: 0,
+  }
 
   for (let i = 0; i < tableData.length; i++) {
     if (!tableData[i].hasOwnProperty('override_adj_un_soa')) {
@@ -206,8 +225,8 @@ export function sumColumns(tableData) {
   return result
 }
 
-function currencyNameFieldSorter(field, direction) {
-  return function (a, b) {
+function currencyNameFieldSorter(field: string, direction: -1 | 1) {
+  return function (a: Record<string, any>, b: Record<string, any>) {
     const infinityValue = direction > 0 ? 'Z' : 'A'
     const a_val = getOverrideOrDefault(a, field) ?? infinityValue
     const b_val = getOverrideOrDefault(b, field) ?? infinityValue
@@ -223,8 +242,8 @@ function currencyNameFieldSorter(field, direction) {
   }
 }
 
-function currencyRateFieldSorter(field, direction) {
-  return function (a, b) {
+function currencyRateFieldSorter(field: string, direction: -1 | 1) {
+  return function (a: Record<string, any>, b: Record<string, any>) {
     const infinityValue = direction > 0 ? -Infinity : Infinity
     const a_val = getOverrideOrDefault(a, field) ?? infinityValue
     const b_val = getOverrideOrDefault(b, field) ?? infinityValue
@@ -236,7 +255,11 @@ function currencyRateFieldSorter(field, direction) {
   }
 }
 
-export function sortSATableData(tableData, field, direction) {
+export function sortSATableData(
+  tableData: Record<string, any>[],
+  field: string,
+  direction: -1 | 1,
+) {
   const result = [...tableData]
 
   let sorter

@@ -1,4 +1,13 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import {
+  ButtonHTMLAttributes,
+  ChangeEventHandler,
+  DetailedHTMLProps,
+  FormEventHandler,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 
 import cx from 'classnames'
 
@@ -7,14 +16,21 @@ import { CancelButton, SubmitButton } from '@ors/components/ui/Button/Button'
 import ConfirmDialog from '../ConfirmDialog'
 import HeaderCells from '../Table/HeaderCells'
 import styles from '../Table/table.module.css'
+import { ConfirmDialogProps } from '../types'
+import {
+  AddRowProps,
+  SATableAdminButtonsProps,
+  SATableCellProps,
+  SATableProps,
+} from './types'
 
-import { IoAlertCircle, IoArrowUndo, IoPencil, IoTrash } from 'react-icons/io5'
+import { IoAlertCircle, IoArrowUndo, IoTrash } from 'react-icons/io5'
 
-function ConfirmEditDialog(props) {
+function ConfirmEditDialog(props: Omit<ConfirmDialogProps, 'title'>) {
   return <ConfirmDialog title="Change this system computed value?" {...props} />
 }
 
-function AdminButtons(props) {
+function AdminButtons(props: SATableAdminButtonsProps) {
   const { onDelete } = props
   return (
     <div className={styles.adminButtons}>
@@ -29,7 +45,7 @@ function AdminButtons(props) {
   )
 }
 
-function RevertButton(props) {
+function RevertButton(props: ButtonHTMLAttributes<HTMLButtonElement>) {
   const { className, onClick, ...rest } = props
   return (
     <button
@@ -110,7 +126,7 @@ function EditField(props) {
   return Field
 }
 
-function TableCell(props) {
+function TableCell(props: SATableCellProps) {
   const {
     c,
     columns,
@@ -251,10 +267,10 @@ function TableCell(props) {
   )
 }
 
-function AddRow(props) {
+function AddRow(props: AddRowProps) {
   const { columns, countries, onCancel, onSubmit } = props
 
-  const [countryIdx, setCountryIdx] = useState('')
+  const [countryIdx, setCountryIdx] = useState<'' | number>('')
 
   const countryOptions = []
 
@@ -266,12 +282,14 @@ function AddRow(props) {
     )
   }
 
-  function handleSubmit(evt) {
+  const handleSubmit: FormEventHandler<HTMLFormElement> = (evt) => {
     evt.preventDefault()
-    onSubmit(countries[countryIdx])
+    onSubmit(countries[countryIdx as number])
   }
 
-  function handleChangeCountryIdx(evt) {
+  const handleChangeCountryIdx: ChangeEventHandler<HTMLSelectElement> = (
+    evt,
+  ) => {
     setCountryIdx(parseInt(evt.target.value, 10))
   }
 
@@ -293,7 +311,7 @@ function AddRow(props) {
   )
 }
 
-function SATable(props) {
+function SATable(props: SATableProps) {
   const {
     columns,
     countriesForAdd,

@@ -1,8 +1,10 @@
 import cx from 'classnames'
 
+import { TableHeaderCellsProps } from './types'
+
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5'
 
-export default function HeaderCells(props) {
+export default function HeaderCells(props: TableHeaderCellsProps) {
   const {
     columns,
     enableSort,
@@ -33,7 +35,7 @@ export default function HeaderCells(props) {
         })}
         onClick={() => {
           if (isSortable) {
-            onSort(i);
+            onSort(i)
           }
         }}
       >

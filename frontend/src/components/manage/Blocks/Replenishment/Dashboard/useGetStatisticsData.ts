@@ -1,7 +1,14 @@
+import { ApiReplenishmentSoCStatistic } from '@ors/types/api_replenishment_soc_statistics'
+
 import useApi from '@ors/hooks/useApi'
 
+export interface SoCStatistic extends ApiReplenishmentSoCStatistic {
+  outstanding_contributions_percentage: number
+  period: string
+}
+
 function useGetStatisticsData() {
-  const { data, loading, setParams } = useApi({
+  const { data, loading, setParams } = useApi<SoCStatistic[]>({
     options: {},
     path: '/api/replenishment/status-of-contributions/statistics/',
   })

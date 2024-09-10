@@ -1,8 +1,10 @@
+import { ApiReplenishmentFile } from '@ors/types/api_replenishment'
+
 import { formatApiUrl } from '@ors/helpers'
 
 import { IoDocumentTextOutline } from 'react-icons/io5'
 
-export default function ViewFiles(props) {
+export default function ViewFiles(props: { files: ApiReplenishmentFile[] }) {
   const { files } = props
 
   if (!files) {
