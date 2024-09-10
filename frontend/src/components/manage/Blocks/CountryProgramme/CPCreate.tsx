@@ -155,7 +155,6 @@ const TableProps: CPCreateTableProps = {
   },
   defaultColDef: defaultColDefEdit,
   domLayout: 'autoHeight',
-  enableCellChangeFlash: true,
   enableFullScreen: true,
   enablePagination: false,
   getRowId: (props) => {

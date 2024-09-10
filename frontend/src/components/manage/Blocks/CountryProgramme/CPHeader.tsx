@@ -1,5 +1,10 @@
 import type { IValidationContext } from '@ors/contexts/Validation/types'
-import { UserType, isCountryUserType, userCanSubmitFinalReport, userCanSubmitReport } from '@ors/types/user_types'
+import {
+  UserType,
+  isCountryUserType,
+  userCanSubmitFinalReport,
+  userCanSubmitReport,
+} from '@ors/types/user_types'
 
 import { useContext } from 'react'
 import React, { useEffect, useMemo, useState } from 'react'
@@ -134,6 +139,7 @@ const HeaderVersionsDropdown = () => {
             key={info.id}
             className="flex items-center gap-x-2 rounded-none px-2 py-2 text-black no-underline hover:bg-primary hover:text-white"
             href={info.url}
+            prefetch={false}
           >
             <div className="flex w-56 items-center justify-between hover:text-white">
               <div>{info.label}</div>
@@ -420,10 +426,10 @@ const EditHeaderActions = ({
   function getSubmitFinalTooltipTitle() {
     if (!userCanSubmitFinalReport[user_type as UserType] && isDraft) {
       return isCountryUserType[user_type as UserType]
-             ? "Only Country Submitter users can submit Final versions"
-             : "Only Secretariat users can submit Final versions"
+        ? 'Only Country Submitter users can submit Final versions'
+        : 'Only Secretariat users can submit Final versions'
     }
-    return ""
+    return ''
   }
 
   return (
@@ -457,9 +463,11 @@ const EditHeaderActions = ({
               <Button
                 className="px-4 py-2 shadow-none"
                 color="secondary"
-                disabled={!userCanSubmitFinalReport[user_type as UserType] && isDraft}
                 size="large"
                 variant="contained"
+                disabled={
+                  !userCanSubmitFinalReport[user_type as UserType] && isDraft
+                }
                 onClick={handleShowConfirmation}
               >
                 {isDraft ? 'Submit final version' : 'Submit new version'}

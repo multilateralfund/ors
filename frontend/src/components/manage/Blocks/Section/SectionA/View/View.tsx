@@ -57,7 +57,7 @@ function getRowData(
   each(groups, (group: string) => {
     rowData = union(
       rowData,
-      [{ display_name: group, group, rowType: 'group' }],
+      [{ display_name: group, group, row_id: group, rowType: 'group' }],
       dataByGroup[group],
       group === 'Annex C, Group I' && !includes(['V'], model)
         ? [
@@ -69,7 +69,14 @@ function getRowData(
             },
           ]
         : [],
-      [{ display_name: 'Sub-total', group, rowType: 'subtotal' }],
+      [
+        {
+          display_name: 'Sub-total',
+          group,
+          row_id: `subtotal_${group}`,
+          rowType: 'subtotal',
+        },
+      ],
     )
   })
   return rowData

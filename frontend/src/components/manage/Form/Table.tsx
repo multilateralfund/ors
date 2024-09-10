@@ -2,6 +2,7 @@
 import { ThemeSlice } from '@ors/types/store'
 
 import React, {
+  useCallback,
   useContext,
   useEffect,
   useId,
@@ -12,7 +13,7 @@ import React, {
 
 import styled from '@emotion/styled'
 import { TablePagination, Typography } from '@mui/material'
-import { ColDef, RowClassRules, RowNode } from 'ag-grid-community'
+import { ColDef, IRowNode, RowClassRules } from 'ag-grid-community'
 import { AgGridReact, AgGridReactProps } from 'ag-grid-react'
 import cx from 'classnames'
 import {
@@ -41,7 +42,6 @@ import { KEY_BACKSPACE } from '@ors/constants'
 import ValidationContext from '@ors/contexts/Validation/ValidationContext'
 import {
   ValidateSectionResult,
-  ValidateSectionResultValue,
   ValidationSchemaKeys,
 } from '@ors/contexts/Validation/types'
 import { debounce, getError } from '@ors/helpers/Utils/Utils'
@@ -181,7 +181,7 @@ function Table(props: TableProps) {
     withSkeleton = false,
   } = props
   const uniqueId = useId()
-  const grid = useRef<any>({})
+  const grid = useRef<AgGridReact | null>(null)
   const tableEl = useRef<HTMLDivElement>(null)
   const scrollMutationObserver = useRef<any>(null)
   const headerIntersectionObserver = useRef<IntersectionObserver | null>(null)
@@ -197,9 +197,12 @@ function Table(props: TableProps) {
   const [fullScreen, setFullScreen] = useState(false)
 
   const validation = useContext(ValidationContext)
-  const validationErrors =
-    validation?.errors[gridContext?.section.id as ValidationSchemaKeys]?.rows ||
-    ({} as Record<ValidationSchemaKeys, ValidateSectionResult>)
+  const validationErrors = useMemo(
+    () =>
+      validation?.errors[gridContext?.section.id as ValidationSchemaKeys]
+        ?.rows || ({} as Record<ValidationSchemaKeys, ValidateSectionResult>),
+    [gridContext?.section.id, validation?.errors],
+  )
 
   // defaultColDef sets props common to all Columns
   const [defaultColDef] = useState<ColDef>(() => ({
@@ -268,52 +271,55 @@ function Table(props: TableProps) {
     [fadeInOut],
   )
 
-  function handleErrors() {
-    const rowNodes: Array<any> = []
+  const handleErrors = useCallback(() => {
+    const rowNodes: IRowNode<Record<string, any>>[] = []
     const hasErrors = !isEmpty(errors)
 
-    grid.current.api.forEachNode((rowNode: RowNode) => {
-      if (rowNode.data.rowType) {
-        return
-      }
-      const data = { ...rowNode.data }
-      const error =
-        hasErrors && isObject(errors) ? get(errors, data.row_id) : null
+    if (grid.current) {
+      const gridApi = grid.current.api
+      gridApi?.forEachNode((rowNode) => {
+        if (rowNode.data?.rowType) {
+          return
+        }
+        const data = { ...rowNode.data }
+        const error =
+          hasErrors && isObject(errors) ? get(errors, data.row_id) : null
 
-      const rowValidationErrors = validationErrors[data.row_id]
+        const rowValidationErrors = validationErrors[data.row_id]
 
-      if (rowValidationErrors) {
-        data.validationErrors = rowValidationErrors
-        rowNodes.push({ ...rowNode, data })
-      } else if (data.validationErrors) {
-        delete data.validationErrors
-        rowNodes.push({ ...rowNode, data })
-      }
+        if (rowValidationErrors) {
+          data.validationErrors = rowValidationErrors
+          rowNodes.push({ ...rowNode, data })
+        } else if (data.validationErrors) {
+          delete data.validationErrors
+          rowNodes.push({ ...rowNode, data })
+        }
 
-      if (!hasErrors && data.error) {
-        delete data.error
-        rowNodes.push({ ...rowNode, data })
-      }
-      if (hasErrors && error) {
-        data.error = error
-        rowNodes.push({ ...rowNode, data })
-      }
-      if (hasErrors && !error && !!data.error) {
-        delete data.error
-        rowNodes.push({ ...rowNode, data })
-      }
-    })
-    if (rowNodes.length > 0) {
-      grid.current.api.applyTransaction({
-        update: rowNodes.map((rowNode) => rowNode.data),
+        if (!hasErrors && data.error) {
+          delete data.error
+          rowNodes.push({ ...rowNode, data })
+        }
+        if (hasErrors && error) {
+          data.error = error
+          rowNodes.push({ ...rowNode, data })
+        }
+        if (hasErrors && !error && !!data.error) {
+          delete data.error
+          rowNodes.push({ ...rowNode, data })
+        }
       })
-      grid.current.api.refreshCells({
-        force: true,
-        rowNodes,
-        suppressFlash: true,
-      })
+      if (rowNodes.length > 0) {
+        gridApi?.applyTransaction({
+          update: rowNodes.map((rowNode) => rowNode.data),
+        })
+        gridApi?.refreshCells({
+          force: true,
+          rowNodes,
+          suppressFlash: true,
+        })
+      }
     }
-  }
+  }, [errors, validationErrors])
 
   function updatePagination(newPagination: any, triggerEvent = false) {
     const currentPagination = {
@@ -326,60 +332,67 @@ function Table(props: TableProps) {
     setPagination(currentPagination)
   }
 
-  function updateTableHeight() {
-    const agTableRoot = tableEl.current
-    if (domLayout !== 'normal' || !agTableRoot) return
-    const agTable = agTableRoot.querySelector<HTMLElement>('.ag-table')
-    const agHeader = agTableRoot?.querySelector<HTMLElement>('.ag-header')
-    const agHorizontalScroll = agTableRoot?.querySelector<HTMLElement>(
-      '.ag-body-horizontal-scroll',
-    )
-    if (!agTable) return
-    const offsetHeight =
-      (agHeader?.offsetHeight || 0) +
-      2 * (agHorizontalScroll?.offsetHeight || 0)
-    const rows = grid.current.api.getDisplayedRowCount()
-    if (rows && rows <= rowsVisible) {
-      agTable.style.height = `${
-        rows * rowHeight + offsetHeight + headerDepth + 1
-      }px`
+  const updateTableHeight = useCallback(() => {
+    if (grid.current) {
+      const gridApi = grid.current.api
+      const agTableRoot = tableEl.current
+      if (domLayout !== 'normal' || !agTableRoot) return
+      const agTable = agTableRoot.querySelector<HTMLElement>('.ag-table')
+      const agHeader = agTableRoot?.querySelector<HTMLElement>('.ag-header')
+      const agHorizontalScroll = agTableRoot?.querySelector<HTMLElement>(
+        '.ag-body-horizontal-scroll',
+      )
+      if (!agTable) return
+      const offsetHeight =
+        (agHeader?.offsetHeight || 0) +
+        2 * (agHorizontalScroll?.offsetHeight || 0)
+      const rows = gridApi?.getDisplayedRowCount()
+      if (rows && rows <= rowsVisible) {
+        agTable.style.height = `${
+          rows * rowHeight + offsetHeight + headerDepth + 1
+        }px`
+      }
+      if (rows && rows > rowsVisible) {
+        agTable.style.height = `${
+          rowsVisible * rowHeight + offsetHeight + headerDepth + 1
+        }px`
+      }
+      if (!rows) {
+        agTable.style.height = 'auto'
+        gridApi?.setGridOption('domLayout', 'autoHeight')
+      } else if (domLayout !== gridApi?.getGridOption('domLayout')) {
+        gridApi?.setGridOption('domLayout', domLayout)
+      }
     }
-    if (rows && rows > rowsVisible) {
-      agTable.style.height = `${
-        rowsVisible * rowHeight + offsetHeight + headerDepth + 1
-      }px`
-    }
-    if (!rows) {
-      agTable.style.height = 'auto'
-      grid.current.api.setGridOption('domLayout', 'autoHeight')
-    } else if (domLayout !== grid.current.api.getGridOption('domLayout')) {
-      grid.current.api.setGridOption('domLayout', domLayout)
-    }
-  }
+  }, [domLayout, headerDepth, rowHeight, rowsVisible, grid])
 
   function enterFullScreen() {
-    if (!grid.current.api) return
-    setFullScreen(true)
-    grid.current.api.setGridOption('domLayout', 'normal')
+    if (grid.current) {
+      setFullScreen(true)
+      grid.current.api?.setGridOption('domLayout', 'normal')
+    }
   }
 
   function exitFullScreen() {
-    if (!grid.current.api) return
-    setFullScreen(false)
-    grid.current.api.setGridOption('domLayout', domLayout)
+    if (grid.current) {
+      setFullScreen(false)
+      grid.current.api?.setGridOption('domLayout', domLayout)
+    }
   }
 
   useEffect(() => {
-    if (!grid.current?.api) return
-    grid.current.api.setGridOption('rowData', props.rowData)
+    if (grid.current) {
+      grid.current.api?.setGridOption('rowData', props.rowData)
+    }
   }, [props.rowData])
 
   useEffect(() => {
-    if (!grid.current?.api) return
-    if (loading) {
-      grid.current.api.showLoadingOverlay()
-    } else if (!loading && props.rowData?.length) {
-      grid.current.api.hideOverlay()
+    if (grid.current) {
+      if (loading) {
+        grid.current.api?.showLoadingOverlay()
+      } else if (!loading && props.rowData?.length) {
+        grid.current.api?.hideOverlay()
+      }
     }
   }, [loading, props.rowData])
 
@@ -387,15 +400,17 @@ function Table(props: TableProps) {
     /**
      * Update rowData if grid is ready
      */
-    if (!grid.current?.api) return
-    grid.current.api.setGridOption('pinnedBottomRowData', pinnedBottomRowData)
+    if (grid.current) {
+      grid.current.api?.setGridOption(
+        'pinnedBottomRowData',
+        pinnedBottomRowData,
+      )
+    }
   }, [pinnedBottomRowData])
 
   useEffect(() => {
-    if (!grid.current.api) return
     handleErrors()
-    /* eslint-disable-next-line */
-  }, [errors, validationErrors])
+  }, [errors, handleErrors, validationErrors])
 
   useEffect(() => {
     return () => {

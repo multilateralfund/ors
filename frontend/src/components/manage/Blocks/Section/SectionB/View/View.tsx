@@ -20,7 +20,7 @@ import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
-function getGroupName(substance: CPReport["section_b"][0], model: string) {
+function getGroupName(substance: CPReport['section_b'][0], model: string) {
   if (substance.blend_id && substance.group.startsWith('Blends')) {
     return includes(['IV', 'V'], model)
       ? 'Blends'
@@ -66,7 +66,7 @@ function getRowData(
   each(groups, (group: string) => {
     rowData = union(
       rowData,
-      [{ display_name: group, group, rowType: 'group' }],
+      [{ display_name: group, group, row_id: group, rowType: 'group' }],
       group.startsWith('Annex F') && includes(variant?.model, 'IV')
         ? [
             {
@@ -88,7 +88,14 @@ function getRowData(
             },
           ]
         : [],
-      [{ display_name: 'Sub-total', group, rowType: 'subtotal' }],
+      [
+        {
+          display_name: 'Sub-total',
+          group,
+          row_id: `subtotal_${group}`,
+          rowType: 'subtotal',
+        },
+      ],
     )
   })
   return rowData

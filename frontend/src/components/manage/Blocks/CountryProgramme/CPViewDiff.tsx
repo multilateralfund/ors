@@ -124,7 +124,6 @@ const TableProps: ITableProps = {
   },
   className: 'diff-table',
   domLayout: 'autoHeight',
-  enableCellChangeFlash: true,
   enableFullScreen: true,
   enablePagination: false,
   noRowsOverlayComponentParams: { label: 'No differences to display' },

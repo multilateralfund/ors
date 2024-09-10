@@ -12,8 +12,15 @@ function getRowData(report: any, rows: any) {
   return map(rows, (row) => ({
     values: dataByRowId[row.id]?.[0]?.values || [],
     ...row,
-    ...(row.type === 'title' ? { rowType: 'group' } : {}),
-    ...(row.type === 'subtitle' ? { rowType: 'hashed' } : {}),
+    ...(row.type === 'title'
+      ? { row_id: `group_title_${row.index}`, rowType: 'group' }
+      : {}),
+    ...(row.type === 'subtitle'
+      ? { row_id: `group_subtitle_${row.index}`, rowType: 'hashed' }
+      : {}),
+    ...(row.type === 'question'
+      ? { row_id: `group_question_${row.index}` }
+      : {}),
   }))
 }
 

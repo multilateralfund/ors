@@ -130,9 +130,11 @@ const TableProps: ITableProps = {
     )
   },
   domLayout: 'autoHeight',
-  enableCellChangeFlash: true,
   enableFullScreen: true,
   enablePagination: false,
+  getRowId: (props: any) => {
+    return props.data.row_id
+  },
   noRowsOverlayComponentParams: { label: 'No data reported' },
   rowsVisible: 30,
   suppressCellFocus: false,

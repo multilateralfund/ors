@@ -5,7 +5,7 @@ import type {
 } from './types'
 import { ApiUsage } from '@ors/types/api_usages'
 
-import { memo, useState } from 'react'
+import { memo, useCallback, useMemo, useState } from 'react'
 
 import ValidationDrawer from '@ors/components/ui/ValidationDrawer/ValidationDrawer'
 import useApi from '@ors/hooks/useApi'
@@ -41,24 +41,33 @@ const ValidationProvider = (props: IValidationProvider) => {
 
   const enableValidation = ['V'].includes(model || '')
 
-  const errors =
-    enableValidation && usagesApi.loaded && usagesApi.data
-      ? validateForm(form, usagesApi.data)
-      : ({} as Record<ValidationSchemaKeys, ValidateSectionResult>)
+  const errors = useMemo(
+    () =>
+      enableValidation && usagesApi.loaded && usagesApi.data
+        ? validateForm(form, usagesApi.data)
+        : ({} as Record<ValidationSchemaKeys, ValidateSectionResult>),
+    [enableValidation, form, usagesApi.data, usagesApi.loaded],
+  )
 
-  const toggleDrawer = (newOpen: boolean) => () => {
-    setOpenDrawer(newOpen)
-  }
+  const toggleDrawer = useCallback(
+    (newOpen: boolean) => () => {
+      setOpenDrawer(newOpen)
+    },
+    [],
+  )
+
+  const retVal = useMemo(
+    () => ({
+      errors: errors,
+      hasErrors: hasErrors(errors),
+      setOpenDrawer,
+      silent,
+    }),
+    [errors, silent],
+  )
 
   return (
-    <ValidationContext.Provider
-      value={{
-        errors: errors,
-        hasErrors: hasErrors(errors),
-        setOpenDrawer,
-        silent,
-      }}
-    >
+    <ValidationContext.Provider value={retVal}>
       <ValidationDrawer
         errors={errors}
         isOpen={openDrawer}

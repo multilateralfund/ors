@@ -645,7 +645,6 @@ export default function PSListing() {
           columnDefs={gridOptions.columnDefs}
           defaultColDef={gridOptions.defaultColDef}
           domLayout="normal"
-          enableCellChangeFlash={true}
           enablePagination={true}
           getRowId={(params: any) => params.data.id}
           gridRef={grid}

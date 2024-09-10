@@ -126,7 +126,6 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
       }
       return true
     },
-    enableCellChangeFlash: true,
     headerClass: 'ag-text-center',
     minWidth: 120,
     wrapText: true,

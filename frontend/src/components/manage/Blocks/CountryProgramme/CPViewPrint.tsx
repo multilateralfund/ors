@@ -23,7 +23,6 @@ const TableProps = {
     )
   },
   domLayout: 'print',
-  enableCellChangeFlash: true,
   enablePagination: false,
   noRowsOverlayComponentParams: { label: 'No data reported' },
   suppressCellFocus: false,

@@ -17,6 +17,7 @@ const defaultColDef: ColDef = {
       maximumFractionDigits: 2,
     }
   },
+  enableCellChangeFlash: true,
   flex: 1,
   headerComponentParams: {
     className: 'font-bold',
@@ -36,6 +37,7 @@ const defaultColDefEdit: ColDef = {
     }
     return true
   },
+  enableCellChangeFlash: true,
 }
 
 export default defaultColDef

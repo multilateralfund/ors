@@ -48,7 +48,7 @@ function getRowData(
   each(groups, (group: string) => {
     rowData = union(
       rowData,
-      [{ display_name: group, group, rowType: 'group' }],
+      [{ display_name: group, group, row_id: group, rowType: 'group' }],
       dataByGroup[group],
       ['IV'].includes(model) && group === 'Alternatives'
         ? [

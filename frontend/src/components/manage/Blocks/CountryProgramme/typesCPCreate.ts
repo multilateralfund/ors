@@ -35,7 +35,6 @@ type FormError = Record<string, string>
 export type FormErrors = Record<string, FormError>
 export interface CPCreateTableProps extends TableProps {
   Toolbar: React.FC<ToolbarProps>
-  enableCellChangeFlash: boolean
   enableFullScreen: boolean
   enablePagination: boolean
   // getRowId: (props: any) => string
