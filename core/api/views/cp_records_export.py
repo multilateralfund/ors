@@ -720,8 +720,8 @@ class CPDataExtractionAllExport(views.APIView):
             final_prices_dict[key].update(
                 {
                     f"price_{year}": price.current_year_price,
-                    f"fob_{year}": "TRUE" if price.is_fob else "FALSE",
-                    f"retail_{year}": "TRUE" if price.is_retail else "FALSE",
+                    f"fob_{year}": "Yes" if price.is_fob else "No",
+                    f"retail_{year}": "Yes" if price.is_retail else "No",
                     f"remarks_{year}": price.remarks,
                 }
             )

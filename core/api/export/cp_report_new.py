@@ -32,7 +32,7 @@ class CPReportNewExporter(CPReportBase):
         )
 
     def export_section_b(self, sheet, data, usages, convert_to="mt"):
-        convertion = "METRIC TONNES" if convert_to == "mt" else "CO2 EQUIVALENT"
+        convertion = "METRIC TONNES" if convert_to == "mt" else "CO2-eq tonnes"
         self._export_usage_section(
             sheet,
             data,
@@ -140,6 +140,18 @@ class CPReportNewExporter(CPReportBase):
                             "headerName": "Current prices",
                             "column_width": self.COLUMN_WIDTH * 2,
                             "align": "right",
+                        },
+                        {
+                            "id": "is_retail",
+                            "headerName": "Is Retail price?",
+                            "type": "boolean",
+                            "is_numeric": False,
+                        },
+                        {
+                            "id": "is_fob",
+                            "headerName": "Is FOB price?",
+                            "type": "boolean",
+                            "is_numeric": False,
                         },
                         {
                             "id": "remarks",

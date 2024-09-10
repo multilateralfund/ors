@@ -98,6 +98,8 @@ class SectionWriter(BaseWriter):
             elif header_id in excluded:
                 value = ""
                 read_only = True
+            elif header.get("type", None) == "boolean":
+                value = "Yes" if value else "No"
             elif header.get("is_numeric", True):
                 value = float(value or 0)
             elif header.get("type", None) == "date":
