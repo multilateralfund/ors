@@ -10,7 +10,13 @@ import {
 import Table from '@ors/components/manage/Blocks/Replenishment/Table'
 import { sortTableData } from '@ors/components/manage/Blocks/Replenishment/utils'
 
-function fiddleColumns(columns, showOutstandingExplanation) {
+import { SortDirection } from '../Table/types'
+import { TriennialContributions } from './types'
+
+function fiddleColumns(
+  columns: typeof SC_COLUMNS,
+  showOutstandingExplanation: boolean,
+) {
   const result = new Array(columns.length)
   for (let i = 0; i < result.length; i++) {
     result[i] = { ...columns[i] }
@@ -23,12 +29,12 @@ function fiddleColumns(columns, showOutstandingExplanation) {
   return result
 }
 
-export default function SCTriennial({ period }) {
+export default function SCTriennial({ period }: { period: string }) {
   const [year_start, year_end] = period.split('-')
   const { data, extraRows, rows } = useGetSCData(year_start, year_end)
 
   const [sortOn, setSortOn] = useState(0)
-  const [sortDirection, setSortDirection] = useState(1)
+  const [sortDirection, setSortDirection] = useState<SortDirection>(1)
 
   const curYear = new Date().getFullYear()
 
@@ -48,12 +54,14 @@ export default function SCTriennial({ period }) {
     [rows, sortOn, sortDirection],
   )
 
-  function handleSort(column) {
-    setSortDirection((direction) => (column === sortOn ? -direction : 1))
+  function handleSort(column: number) {
+    setSortDirection(
+      (direction) => (column === sortOn ? -direction : 1) as SortDirection,
+    )
     setSortOn(column)
   }
 
-  const indicatorsData = useMemo(() => {
+  const indicatorsData: TriennialContributions = useMemo(() => {
     return rows.reduce(
       (acc, { outstanding_contributions }) => {
         let value = outstanding_contributions
@@ -98,7 +106,6 @@ export default function SCTriennial({ period }) {
       <Table
         adminButtons={false}
         columns={tableColumns}
-        enableEdit={false}
         enableSort={true}
         extraRows={formatTableRows(extraRows)}
         rowData={formatTableRows(sortedData)}

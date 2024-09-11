@@ -1,8 +1,11 @@
-import Chart from 'chart.js/auto'
+import { MutableRefObject } from 'react'
+
+import Chart, { ChartConfiguration } from 'chart.js/auto'
+import { ChartJSOrUndefined } from 'react-chartjs-2/dist/types'
 
 export const backgroundColorPlugin = {
   id: 'customCanvasBackgroundColor',
-  beforeDraw: (chart) => {
+  beforeDraw: (chart: any) => {
     const { ctx } = chart
     ctx.save()
     ctx.fillStyle = '#FFFFFF' // Set canvas background color to white
@@ -11,7 +14,7 @@ export const backgroundColorPlugin = {
   },
 }
 
-export const downloadChartAsImage = async (chartRef, title) => {
+export const downloadChartAsImage = async (chartRef: MutableRefObject<ChartJSOrUndefined<any> | null>, title: string) => {
   const chartInstance = chartRef.current
   if (!chartInstance) {
     console.error('Chart instance is not available.')
@@ -23,7 +26,7 @@ export const downloadChartAsImage = async (chartRef, title) => {
     data: JSON.parse(JSON.stringify(chartInstance.config.data)),
     options: JSON.parse(JSON.stringify(chartInstance.config.options)),
     plugins: [backgroundColorPlugin],
-    type: chartInstance.config.type,
+    type: (chartInstance.config as ChartConfiguration).type,
   }
 
   // Adjust chart configuration for download dimensions
@@ -46,7 +49,7 @@ export const downloadChartAsImage = async (chartRef, title) => {
   // Otherwise the canvas will be empty
   document.body.appendChild(newCanvas)
 
-  const newContext = newCanvas.getContext('2d')
+  const newContext = newCanvas.getContext('2d')!
 
   // Create a new chart instance with the adjusted configuration
   const tempChart = new Chart(newContext, newChartConfig)
@@ -93,7 +96,7 @@ export const COMMON_OPTIONS = (color = '#002A3C') => ({
         display: false,
       },
       ticks: {
-        callback: function (value) {
+        callback: function (value: any) {
           return value.toLocaleString()
         },
         padding: 10,

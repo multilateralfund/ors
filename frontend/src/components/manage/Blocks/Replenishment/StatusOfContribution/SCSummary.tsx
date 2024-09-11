@@ -10,7 +10,16 @@ import {
 import Table from '@ors/components/manage/Blocks/Replenishment/Table'
 import { sortTableData } from '@ors/components/manage/Blocks/Replenishment/utils'
 
-const summary_columns = [
+import { SortDirection } from '../Table/types'
+import { SummaryContributions } from './types'
+
+interface SCColumn {
+  field: string
+  label: string
+  subLabel?: string
+}
+
+const summary_columns: SCColumn[] = [
   ...SC_COLUMNS,
   {
     field: 'gain_loss',
@@ -23,7 +32,7 @@ export default function SCSummary() {
   const { data, extraRows, rows } = useGetSCData()
 
   const [sortOn, setSortOn] = useState(0)
-  const [sortDirection, setSortDirection] = useState(1)
+  const [sortDirection, setSortDirection] = useState<SortDirection>(1)
 
   const columns = useMemo(function () {
     const result = []
@@ -51,12 +60,14 @@ export default function SCSummary() {
     [rows, sortOn, sortDirection],
   )
 
-  function handleSort(column) {
-    setSortDirection((direction) => (column === sortOn ? -direction : 1))
+  function handleSort(column: number) {
+    setSortDirection(
+      (direction) => (column === sortOn ? -direction : 1) as SortDirection,
+    )
     setSortOn(column)
   }
 
-  const indicatorsData = useMemo(() => {
+  const indicatorsData: SummaryContributions = useMemo(() => {
     return rows.reduce(
       (acc, { outstanding_contributions }) => {
         let value = outstanding_contributions
@@ -88,7 +99,6 @@ export default function SCSummary() {
       <Table
         adminButtons={false}
         columns={columns}
-        enableEdit={false}
         enableSort={true}
         extraRows={formatTableRows(extraRows)}
         rowData={formatTableRows(sortedData)}

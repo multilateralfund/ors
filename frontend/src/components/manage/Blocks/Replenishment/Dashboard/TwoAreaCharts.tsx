@@ -4,6 +4,7 @@ import { Line } from 'react-chartjs-2'
 import {
   CategoryScale,
   Chart as ChartJS,
+  ChartOptions,
   Filler,
   Legend,
   LineElement,
@@ -12,12 +13,15 @@ import {
   Title,
   Tooltip,
 } from 'chart.js'
+import { ChartJSOrUndefined } from 'react-chartjs-2/dist/types'
 
 import {
   COMMON_OPTIONS,
   backgroundColorPlugin,
   downloadChartAsImage,
 } from '@ors/components/manage/Blocks/Replenishment/Dashboard/chartUtils'
+
+import { IDashboardDataApiResponse } from './useGetDashboardDataTypes'
 
 import { IoDownloadOutline } from 'react-icons/io5'
 
@@ -32,8 +36,8 @@ ChartJS.register(
   Filler,
 )
 
-const TwoAreaCharts = ({ data, title }) => {
-  const chartRef = useRef(null)
+const TwoAreaCharts = ({ data, title }: { data: IDashboardDataApiResponse['charts']; title: string}) => {
+  const chartRef = useRef<ChartJSOrUndefined<any>>(null)
   const [showToolbar, setShowToolbar] = useState(false)
   const { payments, pledged_contributions } = data
 
@@ -52,7 +56,9 @@ const TwoAreaCharts = ({ data, title }) => {
           backgroundColor: 'rgba(0, 149, 213, 0.2)',
           borderColor: '#002A3C',
           borderWidth: 2,
-          data: pledged_contributions.map((item) => item.agreed_pledges / 10 ** 6),
+          data: pledged_contributions.map(
+            (item) => item.agreed_pledges / 10 ** 6,
+          ),
           fill: 'origin',
           label: 'Pledged Contributions',
         },
@@ -80,14 +86,14 @@ const TwoAreaCharts = ({ data, title }) => {
     >
       <Line
         data={chartData}
-        options={options}
+        options={options as ChartOptions<'line'>}
         plugins={[backgroundColorPlugin]}
         ref={chartRef}
       />
       {showToolbar && (
         <button
           className="absolute -top-2 right-2 flex cursor-pointer items-center border-none bg-transparent text-primary no-underline"
-          onClick={() => downloadChartAsImage(chartRef, title, title)}
+          onClick={() => downloadChartAsImage(chartRef, title)}
         >
           <IoDownloadOutline size={18} />
         </button>

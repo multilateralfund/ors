@@ -14,12 +14,14 @@ import { sortTableData } from '@ors/components/manage/Blocks/Replenishment/utils
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { api } from '@ors/helpers'
 
-export default function SCAnnual({ year }) {
+import { SortDirection } from '../Table/types'
+
+export default function SCAnnual({ year }: { year: string }) {
   const { data, extraRows, refetchSCData, rows } = useGetSCData(year)
 
   const ctx = useContext(ReplenishmentContext)
   const [sortOn, setSortOn] = useState(0)
-  const [sortDirection, setSortDirection] = useState(1)
+  const [sortDirection, setSortDirection] = useState<SortDirection>(1)
 
   const sortedData = useMemo(
     function () {
@@ -32,8 +34,10 @@ export default function SCAnnual({ year }) {
     return rows.map(({ country, country_id }) => ({ country, country_id }))
   }, [rows])
 
-  function handleSort(column) {
-    setSortDirection((direction) => (column === sortOn ? -direction : 1))
+  function handleSort(column: number) {
+    setSortDirection(
+      (direction) => (column === sortOn ? -direction : 1) as SortDirection,
+    )
     setSortOn(column)
   }
 
@@ -71,14 +75,14 @@ export default function SCAnnual({ year }) {
   }, [data])
 
   const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const [rowToDelete, setRowToDelete] = useState(null)
+  const [rowToDelete, setRowToDelete] = useState<null | number>(null)
 
-  function promptDeleteRow(rowId) {
+  function promptDeleteRow(rowId: number) {
     setRowToDelete(rowId)
     setShowDeleteModal(true)
   }
 
-  async function handleDeleteRow(rowId) {
+  async function handleDeleteRow(rowId: number) {
     const row = extraRows[rowId]
     await api(`api/replenishment/disputed-contributions/${row.disputed_id}`, {
       method: 'DELETE',
@@ -95,11 +99,11 @@ export default function SCAnnual({ year }) {
             setRowToDelete(null)
             setShowDeleteModal(false)
           }}
-          onSubmit={() => handleDeleteRow(rowToDelete)}
+          onSubmit={() => handleDeleteRow(rowToDelete!)}
         >
           <div className="text-lg">
             Are you sure you want to delete Disputed Contribution for{' '}
-            {extraRows[rowToDelete].country_to_display} ?
+            {extraRows[rowToDelete!].country_to_display} ?
           </div>
         </ConfirmDialog>
       ) : null}
@@ -112,7 +116,6 @@ export default function SCAnnual({ year }) {
         <Table
           adminButtons={false}
           columns={SC_COLUMNS}
-          enableEdit={false}
           enableSort={true}
           extraRows={formatTableRows(extraRows)}
           rowData={formatTableRows(sortedData)}

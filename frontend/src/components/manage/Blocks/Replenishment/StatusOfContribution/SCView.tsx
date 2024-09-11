@@ -7,7 +7,6 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 import PeriodSelector from '@ors/components/manage/Blocks/Replenishment/PeriodSelector'
-import DisputedContributionDialog from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/DisputedContributionDialog'
 import SCAnnual from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/SCAnnual'
 import SCSummary from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/SCSummary'
 import SCTriennial from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/SCTriennial'
@@ -17,7 +16,16 @@ import {
 } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 
-const TABS = [
+import { SCViewProps } from './types'
+
+interface Tab {
+  component: React.FC<any>
+  label: string
+  path: string
+  showPeriodSelector?: boolean
+}
+
+const TABS: Tab[] = [
   {
     component: SCSummary,
     label: 'Summary',
@@ -36,10 +44,10 @@ const TABS = [
   },
 ]
 
-function getTabLinks(pathname) {
+function getTabLinks(pathname: string): [Tab | undefined, JSX.Element[]] {
   const result = []
 
-  let currentSection
+  let currentSection: Tab | undefined
 
   for (let i = 0; i < TABS.length; i++) {
     const entry = TABS[i]
@@ -69,7 +77,7 @@ function getTabLinks(pathname) {
   return [currentSection, result]
 }
 
-function SCView(props) {
+function SCView(props: SCViewProps) {
   const pathname = usePathname()
   const period = props.year || props.period
 
@@ -102,7 +110,7 @@ function SCView(props) {
         <div className="flex items-center gap-2 print:hidden">
           {currentSection?.showPeriodSelector ?? true ? (
             <PeriodSelector
-              key={currentSection.label}
+              key={currentSection?.label}
               label=""
               period={period}
               periodOptions={periodOptions}
@@ -113,7 +121,7 @@ function SCView(props) {
           </nav>
         </div>
         <h1 className="my-0 hidden text-5xl leading-normal print:inline-block">
-          {currentSection.label}
+          {currentSection?.label}
         </h1>
       </div>
       <Component {...props} />
@@ -121,7 +129,7 @@ function SCView(props) {
   )
 }
 
-function SCViewWrapper(props) {
+function SCViewWrapper(props: SCViewProps) {
   // Wrapper used to avoid flicker when no period is given.
   return props.period ? <SCView {...props} /> : <div className="h-screen"></div>
 }

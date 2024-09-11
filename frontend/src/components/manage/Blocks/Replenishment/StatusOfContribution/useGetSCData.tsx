@@ -1,14 +1,20 @@
+import { ApiReplenishmentSoC } from '@ors/types/api_replenishment_status_of_contributions'
+
 import { useContext, useEffect, useMemo, useState } from 'react'
 
 import { transformData } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { formatApiUrl } from '@ors/helpers'
 
+import { SoCExtraRow, SoCRow } from './types'
+
 const BASE_URL = '/api/replenishment/status-of-contributions'
 
-function useGetSCData(start_year, end_year) {
+type Nullable<T> = { [K in keyof T]: T[K] | null }
+
+function useGetSCData(start_year?: string, end_year?: string) {
   const ctx = useContext(ReplenishmentContext)
-  const [data, setData] = useState({
+  const [data, setData] = useState<Nullable<ApiReplenishmentSoC>>({
     ceit: null,
     ceit_countries: null,
     disputed_contributions: null,
@@ -18,7 +24,7 @@ function useGetSCData(start_year, end_year) {
     total: null,
   })
   const [loading, setLoading] = useState(false)
-  const [rows, setRows] = useState([])
+  const [rows, setRows] = useState<SoCRow[]>([])
   const [refetchTrigger, setRefetchTrigger] = useState(false)
 
   const refetchSCData = () => {
@@ -42,19 +48,19 @@ function useGetSCData(start_year, end_year) {
       credentials: 'include',
     })
       .then((response) => response.json())
-      .then((data) => {
-        setRows(transformData(data.status_of_contributions))
+      .then((respData: ApiReplenishmentSoC) => {
+        setRows(transformData(respData.status_of_contributions))
 
         setData({
-          ceit: data.ceit,
-          ceit_countries: data.ceit_countries,
-          disputed_contributions: data.disputed_contributions,
+          ceit: respData.ceit,
+          ceit_countries: respData.ceit_countries,
+          disputed_contributions: respData.disputed_contributions,
           disputed_contributions_per_country:
-            data.disputed_contributions_per_country,
+            respData.disputed_contributions_per_country,
           percentage_total_paid_current_year:
-            data.percentage_total_paid_current_year,
-          status_of_contributions: data.status_of_contributions,
-          total: data.total,
+            respData.percentage_total_paid_current_year,
+          status_of_contributions: respData.status_of_contributions,
+          total: respData.total,
         })
         setLoading(false)
       })
@@ -64,14 +70,10 @@ function useGetSCData(start_year, end_year) {
       })
   }, [start_year, end_year, refetchTrigger])
 
-  const extraRows = useMemo(
+  const extraRows: SoCExtraRow[] = useMemo(
     function () {
-      return [
-        {
-          country: 'Total',
-          ...data.total,
-        },
-        ...(data?.disputed_contributions_per_country?.map((disputed) => ({
+      const disputedPerCountry =
+        data?.disputed_contributions_per_country?.map((disputed) => ({
           agreed_contributions: disputed.amount,
           can_delete: ctx.isTreasurer,
           country: (
@@ -85,7 +87,14 @@ function useGetSCData(start_year, end_year) {
           country_to_display: disputed.country.name,
           disputed_id: disputed.id,
           outstanding_contributions: disputed.amount,
-        })) || []),
+        })) || []
+
+      return [
+        {
+          country: 'Total',
+          ...data.total,
+        },
+        ...disputedPerCountry,
         {
           agreed_contributions: data.disputed_contributions,
           country: 'Disputed Contributions',

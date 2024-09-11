@@ -1,6 +1,10 @@
+import { ApiReplenishment } from '@ors/types/api_replenishment_replenishments'
+import { ApiReplenishmentSoCStatus } from '@ors/types/api_replenishment_status_of_contributions'
+
 import { makePeriodOptions } from '@ors/components/manage/Blocks/Replenishment/utils'
 
 import { MAX_DECIMALS, MIN_DECIMALS } from '../constants'
+import { Contributions, SoCRow } from './types'
 
 export const SC_COLUMNS = [
   { field: 'country', label: 'Country' },
@@ -13,7 +17,7 @@ export const SC_COLUMNS = [
 
 const FIRST_YEAR = 1991
 
-export const scAnnualOptions = (periods) => {
+export const scAnnualOptions = (periods: ApiReplenishment[]) => {
   const options = []
 
   const latestYear =
@@ -25,9 +29,9 @@ export const scAnnualOptions = (periods) => {
   return options
 }
 
-export function scPeriodOptions(periods) {
+export function scPeriodOptions(periods: ApiReplenishment[]) {
   const options = []
-  let startYear
+  let startYear: number
   periods.forEach((period) => {
     startYear = period.start_year
     options.push({
@@ -36,16 +40,16 @@ export function scPeriodOptions(periods) {
     })
   })
 
-  while (startYear > FIRST_YEAR) {
-    options.push({ end_year: startYear - 1, start_year: startYear - 3 })
-    startYear -= 3
+  while (startYear! > FIRST_YEAR) {
+    options.push({ end_year: startYear! - 1, start_year: startYear! - 3 })
+    startYear! -= 3
   }
 
   return makePeriodOptions(options)
 }
 
-export function transformData(data) {
-  const rows = []
+export function transformData(data: ApiReplenishmentSoCStatus[]) {
+  const rows: SoCRow[] = []
 
   for (let i = 0; i < data.length; i++) {
     rows.push({
@@ -63,7 +67,11 @@ export function transformData(data) {
   return rows
 }
 
-export function formatTableRows(rows, minDigits, maxDigits) {
+export function formatTableRows(
+  rows: Record<string, any>,
+  minDigits?: number,
+  maxDigits?: number,
+) {
   const result = new Array(rows.length)
 
   for (let i = 0; i < rows.length; i++) {
@@ -96,8 +104,8 @@ export function formatTableRows(rows, minDigits, maxDigits) {
   return result
 }
 
-export function extractContributions(rows) {
-  const r = {
+export function extractContributions(rows: Record<string, number>[]) {
+  const r: Contributions = {
     bilateral_assistance_countries: 0,
     bilateral_assistance_countries_percentage: 0,
 
@@ -149,27 +157,4 @@ export function extractContributions(rows) {
     (r.outstanding_contributions * 100) / rows.length
 
   return r
-
-  return rows.reduce(
-    (acc, { bilateral_assistance, outstanding_contributions }) => {
-      let value = outstanding_contributions
-      if (value > -1 && value < 1) {
-        value = 0
-      }
-      if (value < 0) {
-        acc.contributions_advance += 1
-      } else if (value === 0) {
-        acc.contributions += 1
-      } else {
-        acc.outstanding_contributions += 1
-      }
-      if (bilateral_assistance) {
-        acc.bilateral_assistance_countries += 1
-      }
-      if (promissory_notes) {
-        acc.bilateral_assistance_countries += 1
-      }
-      return acc
-    },
-  )
 }

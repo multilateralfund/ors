@@ -4,6 +4,7 @@ import { Line } from 'react-chartjs-2'
 import {
   CategoryScale,
   Chart as ChartJS,
+  ChartOptions,
   Filler,
   Legend,
   LineElement,
@@ -19,6 +20,8 @@ import {
   downloadChartAsImage,
 } from '@ors/components/manage/Blocks/Replenishment/Dashboard/chartUtils'
 
+import { IDashboardDataApiResponse } from './useGetDashboardDataTypes'
+
 import { IoDownloadOutline } from 'react-icons/io5'
 
 ChartJS.register(
@@ -32,9 +35,16 @@ ChartJS.register(
   Filler,
 )
 
-const FilledAreaChart = ({ data, title }) => {
+const FilledAreaChart = ({
+  data,
+  title,
+}: {
+  data: IDashboardDataApiResponse['charts']
+  title: string
+}) => {
   const chartRef = useRef(null)
   const [showToolbar, setShowToolbar] = useState(false)
+  const { pledged_contributions } = data
 
   const chartData = useMemo(() => {
     return {
@@ -43,14 +53,16 @@ const FilledAreaChart = ({ data, title }) => {
           backgroundColor: 'rgba(0, 149, 213, 0.2)',
           borderColor: '#002A3C',
           borderWidth: 2,
-          data: data.map((item) => item.agreed_pledges),
+          data: pledged_contributions.map((item) => item.agreed_pledges),
           fill: 'origin',
           label: 'Pledged Contributions',
         },
       ],
-      labels: data.map((item) => `${item.start_year}-${item.end_year}`),
+      labels: pledged_contributions.map(
+        (item) => `${item.start_year}-${item.end_year}`,
+      ),
     }
-  }, [data])
+  }, [pledged_contributions])
 
   const options = {
     interaction: {
@@ -69,13 +81,13 @@ const FilledAreaChart = ({ data, title }) => {
     >
       <Line
         data={chartData}
-        options={options}
+        options={options as ChartOptions<'line'>}
         plugins={[backgroundColorPlugin]}
         ref={chartRef}
       />
       {showToolbar && (
         <button
-          className="absolute right-2 -top-2 flex cursor-pointer items-center border-none bg-transparent text-primary no-underline"
+          className="absolute -top-2 right-2 flex cursor-pointer items-center border-none bg-transparent text-primary no-underline"
           onClick={() => downloadChartAsImage(chartRef, title)}
         >
           <IoDownloadOutline size={18} />

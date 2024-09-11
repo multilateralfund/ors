@@ -1,10 +1,8 @@
-import { ApiReplenishment } from '@ors/types/api_replenishment_replenishments'
-
 import { MAX_DECIMALS, MIN_DECIMALS } from './constants'
 
 const RE_PERIOD = new RegExp(/\d{4}-\d{4}/)
 
-export function makePeriodOptions(periods: ApiReplenishment[]) {
+export function makePeriodOptions(periods: {end_year: number; start_year: number}[]) {
   const result = []
   for (let i = 0; i < periods.length; i++) {
     const labelComponents = [periods[i].start_year, periods[i].end_year]

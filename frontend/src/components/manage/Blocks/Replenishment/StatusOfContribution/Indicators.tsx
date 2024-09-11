@@ -1,11 +1,26 @@
 import cx from 'classnames'
 
 import { formatNumberValue } from '../utils'
+import {
+  AnnualContributions,
+  Contributions,
+  SummaryContributions,
+  TriennialContributions,
+} from './types'
 
 const PRINT_CLASS =
   'print:w-full print:min-w-full print:max-w-full print:border-none print:p-0 print:gap-3 print:justify-start'
 
-function IndicatorBox({ classes, isPercentage, subtext, text, value }) {
+interface IndicatorBoxProps {
+  classes?: string
+  isPercentage?: boolean
+  subtext?: string
+  text: string
+  value?: null | number | string
+}
+
+function IndicatorBox(props: IndicatorBoxProps) {
+  const { classes, isPercentage, subtext, text, value } = props
   return (
     <div
       className={cx(
@@ -26,7 +41,7 @@ function IndicatorBox({ classes, isPercentage, subtext, text, value }) {
   )
 }
 
-const SummaryIndicators = ({ data }) => {
+const SummaryIndicators = ({ data }: { data: SummaryContributions }) => {
   return (
     <div className="flex flex-wrap items-stretch justify-start gap-4 border-primary text-primary">
       <IndicatorBox
@@ -45,13 +60,25 @@ const SummaryIndicators = ({ data }) => {
         isPercentage={true}
         subtext="considering only the current year for the triennials that are not closed"
         text="paid out of the total"
-        value={formatNumberValue(data.percentage_total_paid_current_year, 0, 0)}
+        value={
+          data.percentage_total_paid_current_year
+            ? formatNumberValue(data.percentage_total_paid_current_year, 0, 0)
+            : null
+        }
       />
     </div>
   )
 }
 
-const TriennialIndicators = ({ data, period, totalPledge }) => {
+const TriennialIndicators = ({
+  data,
+  period,
+  totalPledge,
+}: {
+  data: TriennialContributions
+  period: string
+  totalPledge: string
+}) => {
   return (
     <div className="flex flex-wrap items-stretch justify-start gap-4 border-primary text-primary">
       <IndicatorBox
@@ -67,7 +94,15 @@ const TriennialIndicators = ({ data, period, totalPledge }) => {
   )
 }
 
-const AnnualIndicators = ({ data, totalPledge, year }) => {
+const AnnualIndicators = ({
+  data,
+  totalPledge,
+  year,
+}: {
+  data: AnnualContributions
+  totalPledge: string
+  year: string
+}) => {
   return (
     <div className="flex flex-wrap items-stretch justify-start gap-4 border-primary text-primary">
       <IndicatorBox

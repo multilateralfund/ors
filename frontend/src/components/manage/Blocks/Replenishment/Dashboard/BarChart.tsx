@@ -17,11 +17,19 @@ import {
   downloadChartAsImage,
 } from '@ors/components/manage/Blocks/Replenishment/Dashboard/chartUtils'
 
+import { IDashboardDataApiResponse } from './useGetDashboardDataTypes'
+
 import { IoDownloadOutline } from 'react-icons/io5'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
-const BarChart = ({ data, title }) => {
+const BarChart = ({
+  data,
+  title,
+}: {
+  data: IDashboardDataApiResponse['charts']['outstanding_pledges']
+  title: string
+}) => {
   const chartRef = useRef(null)
   const [showToolbar, setShowToolbar] = useState(false)
 
@@ -59,7 +67,7 @@ const BarChart = ({ data, title }) => {
       />
       {showToolbar && (
         <button
-          className="absolute right-2 -top-2 flex cursor-pointer items-center border-none bg-transparent text-primary no-underline"
+          className="absolute -top-2 right-2 flex cursor-pointer items-center border-none bg-transparent text-primary no-underline"
           onClick={() => downloadChartAsImage(chartRef, title)}
         >
           <IoDownloadOutline size={18} />

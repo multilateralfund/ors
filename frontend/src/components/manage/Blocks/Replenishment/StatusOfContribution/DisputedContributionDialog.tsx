@@ -10,23 +10,17 @@ import {
 import { AddButton } from '@ors/components/ui/Button/Button'
 import { api } from '@ors/helpers'
 
-export default function DisputedContributionDialog({
-  countryOptions,
-  refetchSCData,
-  year,
-}) {
+import { DisputedContributionDialogProps } from './types'
+
+export default function DisputedContributionDialog(props: DisputedContributionDialogProps) {
+  const {countryOptions, refetchSCData, year} = props
   const [showAdd, setShowAdd] = useState(false)
 
   function showAddDisputedContribution() {
     setShowAdd(true)
   }
 
-  /**
-   * @async
-   * @param {FormData} formData
-   * @returns {*}
-   */
-  async function confirmSave(formData) {
+  async function confirmSave(formData: FormData) {
     try {
       await api('/api/replenishment/disputed-contributions/', {
         data: Object.fromEntries(formData.entries()),
@@ -35,7 +29,7 @@ export default function DisputedContributionDialog({
       setShowAdd(false)
       refetchSCData()
     } catch (error) {
-      error.json().then((data) => {
+      error.json().then((data: Record<string, string[]>) => {
         enqueueSnackbar(
           Object.entries(data)
             .map(([_, value]) =>
