@@ -24,7 +24,22 @@ class Command(BaseCommand):
                 if str(column.usage_id) in usages:
                     row.append(usages[str(column.usage_id)])
                 else:
-                    row.append("")
+                    row.append(0)
+
+            row += [
+                cp_record.imports or 0,
+                cp_record.exports or 0,
+                cp_record.production or 0,
+                cp_record.manufacturing_blends or 0,
+                cp_record.import_quotas or 0,
+                cp_record.export_quotas or 0,
+                (
+                    cp_record.banned_date.strftime("%d/%m/%Y")
+                    if cp_record.banned_date
+                    else ""
+                ),
+                cp_record.remarks,
+            ]
             ws.append(row)
 
     def export_section_c(self, ws, cp_report):
@@ -132,25 +147,44 @@ class Command(BaseCommand):
         ws9.title = "ADM D"
 
         report_fields = ["Country", "Year"]
+        record_fields = [
+            "Import",
+            "Export",
+            "Production",
+            "Manufacturing of blends",
+            "Import quotas",
+            "Export quotas",
+            "Date ban commenced",
+            "Remarks",
+        ]
 
         # Section A
-        section_a_columns = CPReportFormatColumn.objects.filter(section="A").distinct(
-            "usage_id"
+        section_a_columns = (
+            CPReportFormatColumn.objects.select_related("usage")
+            .filter(section="A")
+            .exclude(usage__full_name="Methyl bromide")
+            .distinct("usage_id")
         )
         ws1.append(
             report_fields
             + ["Substance"]
-            + [column.header_name for column in section_a_columns]
+            + [column.usage.full_name for column in section_a_columns]
+            + record_fields
         )
 
         # Section B
-        section_b_columns = CPReportFormatColumn.objects.filter(section="B").distinct(
-            "usage_id"
+        section_b_columns = (
+            CPReportFormatColumn.objects.select_related("usage")
+            .filter(section="B")
+            .exclude(usage__full_name="Refrigeration")
+            .exclude(usage__full_name="Refrigeration Manufacturing")
+            .distinct("usage_id")
         )
         ws2.append(
             report_fields
             + ["Substance"]
-            + [column.header_name for column in section_b_columns]
+            + [column.usage.full_name for column in section_b_columns]
+            + record_fields
         )
 
         # Section C
