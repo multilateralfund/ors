@@ -58,18 +58,18 @@ function TableCell(props: TableCellProps) {
     if (adminButtons) {
       return (
         <AdminButtons
-          onDelete={() => onDelete(r, rowData[r])}
-          onEdit={() => onEdit(r)}
+          onDelete={() => onDelete!(r, rowData[r])}
+          onEdit={() => onEdit!(r)}
         />
       )
     }
 
     const adminButtonsProps: AdminButtonsProps = {}
     if (hasDeleteButton) {
-      adminButtonsProps.onDelete = () => onDelete(r, rowData[r])
+      adminButtonsProps.onDelete = () => onDelete!(r, rowData[r])
     }
     if (hasEditButton) {
-      adminButtonsProps.onEdit = () => onEdit(r)
+      adminButtonsProps.onEdit = () => onEdit!(r)
     }
 
     return <AdminButtons {...adminButtonsProps} />

@@ -3,6 +3,7 @@ import {
   ChangeEventHandler,
   DetailedHTMLProps,
   FormEventHandler,
+  KeyboardEventHandler,
   useEffect,
   useMemo,
   useRef,
@@ -19,9 +20,11 @@ import styles from '../Table/table.module.css'
 import { ConfirmDialogProps } from '../types'
 import {
   AddRowProps,
+  EditFieldProps,
   SATableAdminButtonsProps,
   SATableCellProps,
   SATableProps,
+  ViewFieldProps,
 } from './types'
 
 import { IoAlertCircle, IoArrowUndo, IoTrash } from 'react-icons/io5'
@@ -63,7 +66,7 @@ function RevertButton(props: ButtonHTMLAttributes<HTMLButtonElement>) {
   )
 }
 
-function ViewField(props) {
+function ViewField(props: ViewFieldProps) {
   const { cell, onRevert } = props
   if (cell?.isEditable) {
     return (
@@ -85,19 +88,19 @@ function ViewField(props) {
   }
 }
 
-function EditField(props) {
+function EditField(props: EditFieldProps) {
   const { column, value, ...rest } = props
 
-  const inputRef = useRef(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const selectRef = useRef<HTMLSelectElement>(null)
 
   const fieldValue = column.editParser ? column.editParser(value) : value
 
   useEffect(function () {
-    if (inputRef.current) {
-      inputRef.current.focus()
-      if (inputRef.current.nodeName === 'INPUT') {
-        inputRef.current.select()
-      }
+    if (selectRef.current) {
+      selectRef.current.focus()
+    } else if (inputRef.current) {
+      inputRef.current.select()
     }
   }, [])
 
@@ -106,15 +109,16 @@ function EditField(props) {
   switch (column.editWidget) {
     case 'select':
       const options = []
-      for (let i = 0; i < column.editOptions.length; i++) {
+      const editOptions = column.editOptions ?? []
+      for (let i = 0; i < editOptions.length; i++) {
         options.push(
-          <option key={i} value={column.editOptions[i].value}>
-            {column.editOptions[i].label}
+          <option key={i} value={editOptions[i].value}>
+            {editOptions[i].label}
           </option>,
         )
       }
       Field = (
-        <select ref={inputRef} value={fieldValue} {...rest}>
+        <select ref={selectRef} value={fieldValue} {...rest}>
           {options}
         </select>
       )
@@ -158,7 +162,7 @@ function TableCell(props: SATableCellProps) {
   const invalidMessage = useMemo(
     function () {
       const parsedValue = column.parser ? column.parser(value) : value
-      return column.validator ? column.validator(value) : ''
+      return column.validator ? column.validator(parsedValue) : ''
     },
     [value, column],
   )
@@ -171,15 +175,15 @@ function TableCell(props: SATableCellProps) {
     }
   }
 
-  function handleKeyDown(evt) {
+  const handleKeyDown: KeyboardEventHandler = (evt) => {
     if (evt.key === 'Escape') {
       cancelNewValue()
     } else if (evt.key === 'Enter') {
       evt.preventDefault()
-      saveNewValue(evt)
+      saveNewValue()
     } else if (evt.key === 'Tab') {
       evt.preventDefault()
-      saveNewValue(evt)
+      saveNewValue()
     }
   }
 
@@ -188,13 +192,13 @@ function TableCell(props: SATableCellProps) {
     setEditing(false)
   }
 
-  function saveNewValue(evt) {
+  function saveNewValue() {
     if (value !== initialValue) {
       if (!invalidMessage) {
         if (confirmationText) {
           setShowConfirmEdit(true)
         } else {
-          onCellEdit(r, c, fname, value)
+          onCellEdit!(r, c, fname, value)
           setEditing(false)
         }
       }
@@ -204,7 +208,7 @@ function TableCell(props: SATableCellProps) {
   }
 
   function handleConfirmEdit() {
-    onCellEdit(r, c, fname, value)
+    onCellEdit!(r, c, fname, value)
     setEditing(false)
     setShowConfirmEdit(false)
   }
@@ -214,12 +218,14 @@ function TableCell(props: SATableCellProps) {
     cancelNewValue()
   }
 
-  function handleChangeValue(evt) {
+  const handleChangeValue: ChangeEventHandler<
+    HTMLInputElement | HTMLSelectElement
+  > = (evt) => {
     setValue(evt.target.value)
   }
 
   function handleRevert() {
-    onCellRevert(r, fname)
+    onCellRevert!(r, fname)
   }
 
   return (
@@ -261,7 +267,7 @@ function TableCell(props: SATableCellProps) {
         )}
       </div>
       {c === 0 && enableEdit && !editing ? (
-        <AdminButtons onDelete={() => onDelete(r)} />
+        <AdminButtons onDelete={() => onDelete!(r)} />
       ) : null}
     </div>
   )
