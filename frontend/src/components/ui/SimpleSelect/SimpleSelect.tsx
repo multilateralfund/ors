@@ -10,21 +10,18 @@ interface ISimpleSelectOption {
   label: string
 }
 
-export interface SimpleSelectProps {
+export interface SimpleSelectProps<T> {
   className?: string
   initialIndex?: number
   label: string
-  onChange: (option: ISimpleSelectOption, index: number) => void
-  options: ISimpleSelectOption[]
+  onChange: (option: T, index: number) => void
+  options: T[]
 }
 
-const SimpleSelect = ({
-  className,
-  initialIndex = 0,
-  label,
-  onChange,
-  options,
-}: SimpleSelectProps) => {
+const SimpleSelect = <T = ISimpleSelectOption,>(
+  props: SimpleSelectProps<T>,
+) => {
+  const { className, initialIndex = 0, label, onChange, options } = props
   const [selectedIndex, setSelectedIndex] = useState(initialIndex)
   const [showMenu, setShowMenu] = useState(false)
 

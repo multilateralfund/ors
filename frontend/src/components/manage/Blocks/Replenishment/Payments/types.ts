@@ -3,7 +3,7 @@ import { ApiReplenishmentInvoice } from '@ors/types/api_replenishment_invoices'
 import { ApiReplenishment } from '@ors/types/api_replenishment_replenishments'
 import { Country } from '@ors/types/store'
 
-import { IFormDialogProps } from '../types'
+import { FormDialogProps } from '../types'
 
 export type PaymentColumn<LabelType = string> = {
   field: string
@@ -12,7 +12,7 @@ export type PaymentColumn<LabelType = string> = {
   subLabel?: string
 }
 
-export interface IPaymentDialogProps extends IFormDialogProps {
+export interface IPaymentDialogProps extends FormDialogProps {
   columns: PaymentColumn[]
   countries: Country[]
   data?: ParsedPayment

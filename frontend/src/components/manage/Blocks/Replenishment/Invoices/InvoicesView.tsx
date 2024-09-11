@@ -29,7 +29,7 @@ import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentConte
 import { formatApiUrl } from '@ors/helpers'
 
 import { SortDirection } from '../Table/types'
-import { IInvoiceDialogProps } from './types'
+import { InvoiceDialogProps } from './types'
 import { InvoiceColumn, InvoiceForSubmit, ParsedInvoice } from './types'
 
 import { IoSearchSharp } from 'react-icons/io5'
@@ -60,13 +60,13 @@ const COLUMNS: InvoiceColumn[] = [
 ]
 
 const AddInvoiceDialog = function AddInvoiceDialog(
-  props: Omit<IInvoiceDialogProps, 'title'>,
+  props: Omit<InvoiceDialogProps, 'title'>,
 ) {
   return <InvoiceDialog title="Add invoice" {...props} />
 }
 
 const EditInvoiceDialog = function EditInvoiceDialog(
-  props: Omit<IInvoiceDialogProps, 'isEdit' | 'title'>,
+  props: Omit<InvoiceDialogProps, 'isEdit' | 'title'>,
 ) {
   return <InvoiceDialog title="Edit invoice" isEdit {...props} />
 }

@@ -83,7 +83,7 @@ export interface SATableProps
 }
 
 export interface SAViewProps {
-  period: string
+  period?: string
 }
 
 export interface FileForUpload {

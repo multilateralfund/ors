@@ -7,14 +7,16 @@ import { usePathname } from 'next/navigation'
 import Portal from '@ors/components/manage/Utils/Portal'
 import { DownloadLink, PrintButton } from '@ors/components/ui/Button/Button'
 
+import { DownloadButtonsProps } from './types'
+
 const PRINT_LANDSCAPE_PAGES = [
   '/replenishment/dashboard/statistics',
   '/replenishment/scale-of-assessment',
   '/replenishment/status-of-contributions',
 ]
 
-export default function DownloadButtons(props) {
-  const { downloadTexts, downloadUrls } = props
+export default function DownloadButtons(props: DownloadButtonsProps) {
+  const { downloadTexts = [], downloadUrls = [] } = props
   const pathname = usePathname()
 
   useEffect(() => {
@@ -44,7 +46,7 @@ export default function DownloadButtons(props) {
     }
   }, [pathname])
 
-  const [domNode, setDomNode] = useState(null)
+  const [domNode, setDomNode] = useState<HTMLElement | undefined>(undefined)
 
   useEffect(function () {
     const elTarget = document.getElementById('replenishment-tab-buttons')
@@ -54,7 +56,7 @@ export default function DownloadButtons(props) {
   }, [])
 
   return (
-    <Portal active={domNode} domNode={domNode}>
+    <Portal active={!!domNode} domNode={domNode}>
       <div className="mb-2 flex items-center gap-x-2">
         {downloadUrls?.map((url, i) => (
           <DownloadLink key={i} href={url ?? '#'}>

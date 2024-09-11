@@ -2,12 +2,12 @@
 
 import React, { useContext, useState } from 'react'
 
-import { usePathname } from 'next/navigation'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { enqueueSnackbar } from 'notistack'
 
 import ConfirmDialog from '@ors/components/manage/Blocks/Replenishment/ConfirmDialog'
 import PeriodSelector from '@ors/components/manage/Blocks/Replenishment/PeriodSelector'
+import { PeriodSelectorOption } from '@ors/components/manage/Blocks/Replenishment/types'
 import { getPathPeriod } from '@ors/components/manage/Blocks/Replenishment/utils'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import { AddButton } from '@ors/components/ui/Button/Button'
@@ -16,7 +16,9 @@ import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentConte
 import soAContext from '@ors/contexts/Replenishment/SoAContext'
 import { api } from '@ors/helpers'
 
-export default function ReplenishmentHeading(props) {
+import { ReplenishmentHeadingProps } from './types'
+
+export default function ReplenishmentHeading(props: ReplenishmentHeadingProps) {
   const { extraPeriodOptions, showPeriodSelector } = props
   const router = useRouter()
   const [showAddNewSOA, setShowAddNewSOA] = useState(false)
@@ -26,7 +28,7 @@ export default function ReplenishmentHeading(props) {
   const replenishmentContext = useContext(ReplenishmentContext)
   const soaContext = useContext(soAContext)
 
-  const createNextPeriod = (options) => {
+  const createNextPeriod = (options: PeriodSelectorOption[]) => {
     if (!options) return
 
     const endYears = options.map((option) => {
@@ -49,7 +51,7 @@ export default function ReplenishmentHeading(props) {
       replenishmentContext.refetchData()
       router.push(`/replenishment/scale-of-assessment/${newPeriod}`)
     } catch (error) {
-      error.json().then((data) => {
+      error.json().then((data: Record<string, string[]>) => {
         enqueueSnackbar(
           Object.entries(data)
             .map(([_, value]) => value)

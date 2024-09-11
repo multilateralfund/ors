@@ -6,7 +6,9 @@ import SAHeading from '@ors/components/manage/Blocks/Replenishment/SAView/SAHead
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import SoAProvider from '@ors/contexts/Replenishment/SoAProvider'
 
-export default function ReplenishmentScaleOfAssessment(props) {
+export default function ReplenishmentScaleOfAssessment(props: {
+  params: { period: string }
+}) {
   const { period } = props.params
   return (
     <>
@@ -16,7 +18,7 @@ export default function ReplenishmentScaleOfAssessment(props) {
         defaultSpacing={false}
       >
         <SoAProvider startYear={period.split('-')[0]}>
-          <SAHeading period={period} />
+          <SAHeading />
           <SAView period={period} />
         </SoAProvider>
       </PageWrapper>

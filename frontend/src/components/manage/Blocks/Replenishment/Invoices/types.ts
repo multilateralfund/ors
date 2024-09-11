@@ -2,7 +2,7 @@ import type { ApiReplenishmentFile } from '@ors/types/api_replenishment'
 import { ApiReplenishment } from '@ors/types/api_replenishment_replenishments'
 import { Country } from '@ors/types/store'
 
-import { IFormDialogProps } from '../types'
+import { FormDialogProps } from '../types'
 
 export type ParsedInvoice = {
   amount: number | string
@@ -47,7 +47,7 @@ export type InvoiceColumn = {
   subLabel?: string
 }
 
-export interface IInvoiceDialogProps extends IFormDialogProps {
+export interface InvoiceDialogProps extends FormDialogProps {
   countries: Country[]
   data?: any
   isEdit?: boolean

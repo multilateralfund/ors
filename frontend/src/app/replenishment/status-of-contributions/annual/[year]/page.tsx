@@ -6,11 +6,10 @@ import { SCView } from '@ors/components/manage/Blocks/Replenishment/StatusOfCont
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import { formatApiUrl } from '@ors/helpers'
 
-export default function ReplenishmentSoCTriennial(props) {
-  const { period } = props.params
-
-  const periodYears = period.split('-')
-
+export default function ReplenishmentSoCAnnual(props: {
+  params: { year: string }
+}) {
+  const { year } = props.params
   return (
     <>
       <title>Replenishment - Status of contributions</title>
@@ -23,11 +22,11 @@ export default function ReplenishmentSoCTriennial(props) {
               '/api/replenishment/status-of-contributions/statistics-export/',
             ),
             formatApiUrl(
-              `/api/replenishment/status-of-contributions/${periodYears[0]}/${periodYears[1]}/export`,
+              `/api/replenishment/status-of-contributions/${year}/export`,
             ),
           ]}
         />
-        <SCView period={period} />
+        <SCView year={year} />
       </PageWrapper>
     </>
   )

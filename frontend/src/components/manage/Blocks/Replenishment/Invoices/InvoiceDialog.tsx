@@ -9,9 +9,9 @@ import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invo
 import { scAnnualOptions } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 
-import { IInvoiceDialogProps } from './types'
+import { InvoiceDialogProps } from './types'
 
-const InvoiceDialog = function InvoiceDialog(props: IInvoiceDialogProps) {
+const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
   const { countries, data, isEdit, title, ...dialogProps } = props
   const ctx = useContext(ReplenishmentContext)
 

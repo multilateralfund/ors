@@ -15,9 +15,10 @@ export default function ReplenishmentSoCAnnual() {
   const router = useRouter()
 
   if (ctxPeriods.periodOptions.length > 0) {
-
     // TODO: better algorithm
-    router.replace(`/replenishment/status-of-contributions/annual/${ctxPeriods.periodOptions[0].value.split('-')[0]}`)
+    router.replace(
+      `/replenishment/status-of-contributions/annual/${ctxPeriods.periodOptions[0].value.split('-')[0]}`,
+    )
   }
   return (
     <>
