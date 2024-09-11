@@ -207,6 +207,7 @@ class CPHistory(models.Model):
     )
 
     class Meta:
+        verbose_name_plural = "CP history"
         ordering = ["-created_at"]
 
 

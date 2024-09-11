@@ -3,6 +3,7 @@ from django.contrib import admin
 
 from core.admin.utils import get_final_display_list
 from core.models.country_programme import (
+    CPHistory,
     CPRecord,
     CPReport,
     CPReportFormatColumn,
@@ -201,3 +202,22 @@ class CPReportFormatRowAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         exclude = []
         return get_final_display_list(CPReportFormatRow, exclude)
+
+
+@admin.register(CPHistory)
+class CPHistoryAdmin(admin.ModelAdmin):
+    search_fields = ["country_programme_report__name"]
+    list_filter = [
+        AutocompleteFilterFactory("country", "country_programme_report__country"),
+        "country_programme_report__year",
+    ]
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related(
+            "country_programme_report__country", "updated_by"
+        )
+
+    def get_list_display(self, request):
+        exclude = []
+        return get_final_display_list(CPHistory, exclude)
