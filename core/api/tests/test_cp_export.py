@@ -58,7 +58,7 @@ class TestCPExportXLSX(BaseTest):
         ]
         assert wb["Section A"]["A1"].value == "Country: Romania Year: 2019"
         assert "ODP" in wb["Section A"]["A2"].value
-        assert "CO2" in wb["Section B"]["A2"].value
+        assert "CO2-eq tonnes" in wb["Section B"]["A2"].value
 
     def test_get_cp_export_old(self, user, cp_report_2005, _setup_old_cp_report):
         self.client.force_authenticate(user=user)

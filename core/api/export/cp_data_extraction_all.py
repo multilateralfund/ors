@@ -184,7 +184,7 @@ class CPHFCConsumptionMTCO2Writer(BaseExtractionAllWriter):
                     },
                     {
                         "id": f"consumption_co2_{year}",
-                        "headerName": f"Consumption value (MT CO2-eq) {year}",
+                        "headerName": f"Consumption value (MT CO2-eq tonnes) {year}",
                         "align": "right",
                         "type": "number",
                         "column_width": self.COLUMN_WIDTH * 2,

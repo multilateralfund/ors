@@ -91,7 +91,7 @@ class CPReportHFCWriter(CPDataHFCHCFCWriterBase):
 
     def __init__(self, wb, usages_mt, usages_co2, year):
         usages_headers = []
-        for q_type, usages in [("(MT)", usages_mt), ("(CO2)", usages_co2)]:
+        for q_type, usages in [("(MT)", usages_mt), ("(CO2-eq tonnes)", usages_co2)]:
             usages_headers.extend(
                 [
                     *usages,
@@ -184,7 +184,7 @@ class CPReportHFCWriter(CPDataHFCHCFCWriterBase):
         # convert value to co2 equivalent if needed
         if quantity_type:
             value = value or 0
-            if quantity_type == "(CO2)":
+            if quantity_type == "(CO2-eq tonnes)":
                 value *= gwp
 
         return value

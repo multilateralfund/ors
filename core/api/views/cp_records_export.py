@@ -288,7 +288,7 @@ class CPCalculatedAmountExportView(CPRecordListView):
             if group == "HFC":
                 values["consumption"] = round(values["consumption"], 0)
                 values["sectorial_total"] = round(values["sectorial_total"], 0)
-                values["unit"] = "CO2-eq"
+                values["unit"] = "CO2-eq tonnes"
             else:
                 values["consumption"] = round(values["consumption"], 2)
                 values["sectorial_total"] = round(values["sectorial_total"], 2)
@@ -416,9 +416,9 @@ class CPHFCExportView(CPHFCHCFCExportBaseView):
         )
         usages = {
             "(MT)": [],
-            "(CO2)": [],
+            "(CO2-eq tonnes)": [],
         }
-        for q_type in ["(MT)", "(CO2)"]:
+        for q_type in ["(MT)", "(CO2-eq tonnes)"]:
             for us_format in cp_report_formats:
                 usages[q_type].append(
                     {
@@ -430,7 +430,7 @@ class CPHFCExportView(CPHFCHCFCExportBaseView):
                     }
                 )
 
-        return usages["(MT)"], usages["(CO2)"]
+        return usages["(MT)"], usages["(CO2-eq tonnes)"]
 
     def get(self, *args, **kwargs):
         min_year, max_year = get_year_params_from_request(self.request)
