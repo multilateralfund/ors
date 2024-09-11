@@ -6,12 +6,13 @@ import useApi from '@ors/hooks/useApi'
 import { useStore } from '@ors/store'
 
 import BPContext from './BPContext'
+import { BPProviderProps } from './types'
 
 const BP_PER_PAGE = 20
 
-function BPProvider(props) {
+function BPProvider(props: BPProviderProps) {
   const { children } = props
-  const pathParams = useParams()
+  const pathParams = useParams<{ agency: string; period: string }>()
   const { agency, period } = pathParams
   const commonSlice = useStore((state) => state.common)
 

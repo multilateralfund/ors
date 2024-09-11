@@ -1,6 +1,8 @@
+import { ButtonHTMLAttributes } from 'react'
+
 import cx from 'classnames'
 
-import Link from '@ors/components/ui/Link/Link'
+import Link, { LinkProps } from '@ors/components/ui/Link/Link'
 
 import {
   IoAddCircle,
@@ -9,7 +11,8 @@ import {
   IoRemoveCircle,
 } from 'react-icons/io5'
 
-function BaseButton(props) {
+interface BaseButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {}
+function BaseButton(props: BaseButtonProps) {
   const { children, className, onClick, ...rest } = props
   return (
     <button
@@ -26,7 +29,7 @@ function BaseButton(props) {
   )
 }
 
-function CancelButton(props) {
+function CancelButton(props: BaseButtonProps) {
   const { className, ...rest } = props
   return (
     <BaseButton
@@ -40,7 +43,7 @@ function CancelButton(props) {
   )
 }
 
-function SubmitButton(props) {
+function SubmitButton(props: BaseButtonProps) {
   const { className, ...rest } = props
   return (
     <BaseButton
@@ -54,7 +57,11 @@ function SubmitButton(props) {
   )
 }
 
-function AddButton(props) {
+interface AddButtonProps extends BaseButtonProps {
+  iconSize?: number
+}
+
+function AddButton(props: AddButtonProps) {
   const { children, className, iconSize, ...rest } = props
   return (
     <BaseButton
@@ -70,7 +77,11 @@ function AddButton(props) {
   )
 }
 
-function PrintButton(props) {
+interface PrintButtonProps extends BaseButtonProps {
+  iconSize?: number
+}
+
+function PrintButton(props: PrintButtonProps) {
   const { children, className, iconSize, ...rest } = props
   return (
     <button
@@ -87,7 +98,11 @@ function PrintButton(props) {
   )
 }
 
-function DownloadLink(props) {
+interface DownloadLinkProps extends LinkProps {
+  iconSize?: number
+}
+
+function DownloadLink(props: DownloadLinkProps) {
   const { children, className, iconSize, ...rest } = props
   return (
     <Link
@@ -106,7 +121,11 @@ function DownloadLink(props) {
   )
 }
 
-function DeleteButton(props) {
+interface DeleteButtonProps extends BaseButtonProps {
+  iconSize?: number
+}
+
+function DeleteButton(props: DeleteButtonProps) {
   const { children, className, iconSize, ...rest } = props
   return (
     <BaseButton

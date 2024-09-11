@@ -1,6 +1,12 @@
+import { PropsWithChildren } from 'react'
+
 import cx from 'classnames'
 
-export function PageHeading(props) {
+interface PageHeadingProps extends PropsWithChildren {
+  className?: string
+}
+
+export function PageHeading(props: PageHeadingProps) {
   const { children, className } = props
   return (
     <h1

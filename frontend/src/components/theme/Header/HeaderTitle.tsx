@@ -1,12 +1,16 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { PropsWithChildren, useEffect, useState } from 'react'
 
 import cx from 'classnames'
 
 import Portal from '@ors/components/manage/Utils/Portal'
 
-function Title({ children, visible }) {
+interface TitleProps extends PropsWithChildren {
+  visible?: boolean
+}
+
+function Title({ children, visible }: TitleProps ) {
   return (
     <div>
       <div
@@ -21,8 +25,8 @@ function Title({ children, visible }) {
   )
 }
 
-export default function HeaderTitle({ children }) {
-  const [domNode, setDomNode] = useState(null)
+export default function HeaderTitle({ children }: PropsWithChildren) {
+  const [domNode, setDomNode] = useState<Element | null>(null)
 
   useEffect(function () {
     const elTarget = document.getElementById('header-title')
@@ -32,7 +36,7 @@ export default function HeaderTitle({ children }) {
   }, [])
 
   return (
-    <Portal active={domNode} domNode={domNode}>
+    <Portal active={!!domNode} domNode={domNode!}>
       <Title visible={true}>{children}</Title>
     </Portal>
   )

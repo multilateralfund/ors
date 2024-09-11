@@ -8,6 +8,7 @@ import type { PartialDeep } from 'type-fest'
 
 import { StoreApi } from 'zustand'
 
+import { ApiAgency } from './api_agencies'
 import { ReportVariant } from './variants'
 
 type StoreProviderProps = {
@@ -126,7 +127,7 @@ export interface UserSlice
 }
 
 export interface CommonSlice {
-  agencies: SliceData
+  agencies: SliceData<ApiAgency[]>
   countries: SliceData<Country[]>
   countries_for_create: SliceData<Country[]>
   countries_for_listing: SliceData<Country[]>
