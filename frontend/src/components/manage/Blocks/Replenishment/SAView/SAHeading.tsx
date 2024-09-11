@@ -1,5 +1,7 @@
 'use client'
 
+import { ApiReplenishmentSoAVersion } from '@ors/types/api_replenishment_scales_of_assessment'
+
 import { useContext, useState } from 'react'
 
 import cx from 'classnames'
@@ -8,9 +10,11 @@ import ReplenishmentHeading from '@ors/app/replenishment/ReplenishmentHeading'
 import SoAContext from '@ors/contexts/Replenishment/SoAContext'
 import useClickOutside from '@ors/hooks/useClickOutside'
 
+import { SAHeadingProps } from './types'
+
 import { IoChevronDown } from 'react-icons/io5'
 
-function SAHeading(props) {
+function SAHeading(_props: SAHeadingProps) {
   const [showVersionsMenu, setShowVersionsMenu] = useState(false)
   const { setCurrentVersion, version, versions } = useContext(SoAContext)
 
@@ -22,7 +26,7 @@ function SAHeading(props) {
     setShowVersionsMenu(false)
   })
 
-  function handleClickVersion(v) {
+  function handleClickVersion(v: ApiReplenishmentSoAVersion) {
     return function () {
       setCurrentVersion(v.version)
       setShowVersionsMenu(false)

@@ -2,6 +2,7 @@ import { fixFloat } from '@ors/helpers/Utils/Utils'
 
 import { MAX_DECIMALS, MIN_DECIMALS, PRECISION } from '../constants'
 import { getDefaultFieldSorter } from '../utils'
+import { SAContribution, SATableRow } from './types'
 
 export function nullIfNaN(value: number) {
   let result: null | number = value
@@ -31,10 +32,10 @@ export function clearNew(d: Record<string, any>) {
 }
 
 export function getOverrideOrDefault(
-  record: Record<string, any>,
-  name: string,
+  record: SAContribution,
+  name: keyof SAContribution,
 ) {
-  let result = record[`override_${name}`]
+  let result = record[`override_${name}` as keyof SAContribution]
   if (result === undefined) {
     result = record[name]
   }
@@ -42,7 +43,7 @@ export function getOverrideOrDefault(
 }
 
 export function computeTableData(
-  tableData: Record<string, any>[],
+  tableData: SAContribution[],
   totalReplenishment: number,
 ) {
   const result = new Array(tableData.length)
@@ -55,7 +56,7 @@ export function computeTableData(
       adj_un_soa_percent -=
         nullIfNaN(
           fixFloat(
-            getOverrideOrDefault(tableData[i], 'un_soa') ?? 0,
+            (getOverrideOrDefault(tableData[i], 'un_soa') as number) ?? 0,
             PRECISION,
           ),
         ) ?? 0
@@ -63,7 +64,7 @@ export function computeTableData(
       adj_un_soa +=
         nullIfNaN(
           fixFloat(
-            getOverrideOrDefault(tableData[i], 'un_soa') ?? 0,
+            (getOverrideOrDefault(tableData[i], 'un_soa') as number) ?? 0,
             PRECISION,
           ),
         ) ?? 0
@@ -76,7 +77,7 @@ export function computeTableData(
     result[i] = { ...tableData[i] }
 
     const un_soa = fixFloat(
-      getOverrideOrDefault(tableData[i], 'un_soa') ?? 0,
+      (getOverrideOrDefault(tableData[i], 'un_soa') as number) ?? 0,
       PRECISION,
     )
 
@@ -93,7 +94,8 @@ export function computeTableData(
 
     result[i].annual_contributions = nullIfNaN(
       fixFloat(
-        (getOverrideOrDefault(result[i], 'adj_un_soa') * totalReplenishment) /
+        ((getOverrideOrDefault(result[i], 'adj_un_soa') as number) *
+          totalReplenishment) /
           100,
         PRECISION,
       ),
@@ -101,14 +103,16 @@ export function computeTableData(
 
     // Does it qualify for FERM?
     result[i].qual_ferm =
-      (getOverrideOrDefault(result[i], 'avg_ir') ?? 100) < 10 ? true : false
+      ((getOverrideOrDefault(result[i], 'avg_ir') as number) ?? 100) < 10
+        ? true
+        : false
     result[i].qual_ferm = result[i].qual_ferm || result[i].ferm_cur === 'Euro'
 
     // Calculate contribution in national currency for those qualifying for FERM
     result[i].ferm_cur_amount =
       getOverrideOrDefault(result[i], 'qual_ferm') &&
       getOverrideOrDefault(result[i], 'ferm_rate') !== null
-        ? getOverrideOrDefault(result[i], 'ferm_rate') *
+        ? (getOverrideOrDefault(result[i], 'ferm_rate') as number) *
           result[i].annual_contributions
         : null
 
@@ -143,17 +147,17 @@ function formattedValue(value: boolean | null | number | string) {
 }
 
 export function formatTableData(
-  tableData: Record<string, any>[],
+  tableData: SAContribution[],
   editableColumns: string[],
 ) {
-  const result = new Array(tableData.length)
+  const result: Record<string, any>[] = new Array(tableData.length)
 
   for (let i = 0; i < tableData.length; i++) {
     result[i] = {}
     const keys = Object.keys(tableData[i])
     for (let j = 0; j < keys.length; j++) {
-      const key = keys[j]
-      const overrideKey = `override_${key}`
+      const key = keys[j] as keyof SAContribution
+      const overrideKey = `override_${key}` as keyof SAContribution
       const hasOverride = tableData[i].hasOwnProperty(overrideKey)
       const value = hasOverride ? tableData[i][overrideKey] : tableData[i][key]
 
@@ -167,7 +171,7 @@ export function formatTableData(
       } else if (key === 'un_soa' && value === null) {
         newValue = ''
       } else {
-        newValue = formattedValue(value)
+        newValue = value !== undefined ? formattedValue(value) : value
       }
 
       if (key === 'adj_un_soa' && tableData[i].iso3 == 'USA') {
@@ -183,7 +187,7 @@ export function formatTableData(
     }
   }
 
-  return result
+  return result as SATableRow[]
 }
 
 export function sumColumns(tableData: Record<string, any>) {
@@ -195,13 +199,19 @@ export function sumColumns(tableData: Record<string, any>) {
 
   for (let i = 0; i < tableData.length; i++) {
     if (!tableData[i].hasOwnProperty('override_adj_un_soa')) {
-      result.un_soa += getOverrideOrDefault(tableData[i], 'un_soa')
+      ;(result.un_soa as number) += getOverrideOrDefault(
+        tableData[i],
+        'un_soa',
+      ) as number
     }
-    result.adj_un_soa += getOverrideOrDefault(tableData[i], 'adj_un_soa')
-    result.annual_contributions += getOverrideOrDefault(
+    ;(result.adj_un_soa as number) += getOverrideOrDefault(
+      tableData[i],
+      'adj_un_soa',
+    ) as number
+    ;(result.annual_contributions as number) += getOverrideOrDefault(
       tableData[i],
       'annual_contributions',
-    )
+    ) as number
   }
 
   result.un_soa =
@@ -225,25 +235,23 @@ export function sumColumns(tableData: Record<string, any>) {
   return result
 }
 
-function currencyNameFieldSorter(field: string, direction: -1 | 1) {
-  return function (a: Record<string, any>, b: Record<string, any>) {
+function currencyNameFieldSorter(
+  field: keyof SAContribution,
+  direction: -1 | 1,
+) {
+  return function (a: SAContribution, b: SAContribution) {
     const infinityValue = direction > 0 ? 'Z' : 'A'
-    const a_val = getOverrideOrDefault(a, field) ?? infinityValue
-    const b_val = getOverrideOrDefault(b, field) ?? infinityValue
-    if (typeof a_val === 'string') {
-      return a_val.localeCompare(b_val) * direction
-    } else {
-      if (a_val < b_val) {
-        return direction
-      } else {
-        return -direction
-      }
-    }
+    const a_val = (getOverrideOrDefault(a, field) as string) ?? infinityValue
+    const b_val = (getOverrideOrDefault(b, field) as string) ?? infinityValue
+    return a_val.localeCompare(b_val) * direction
   }
 }
 
-function currencyRateFieldSorter(field: string, direction: -1 | 1) {
-  return function (a: Record<string, any>, b: Record<string, any>) {
+function currencyRateFieldSorter(
+  field: keyof SAContribution,
+  direction: -1 | 1,
+) {
+  return function (a: SAContribution, b: SAContribution) {
     const infinityValue = direction > 0 ? -Infinity : Infinity
     const a_val = getOverrideOrDefault(a, field) ?? infinityValue
     const b_val = getOverrideOrDefault(b, field) ?? infinityValue
@@ -256,7 +264,7 @@ function currencyRateFieldSorter(field: string, direction: -1 | 1) {
 }
 
 export function sortSATableData(
-  tableData: Record<string, any>[],
+  tableData: SAContribution[],
   field: string,
   direction: -1 | 1,
 ) {

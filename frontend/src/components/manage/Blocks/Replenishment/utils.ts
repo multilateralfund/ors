@@ -59,6 +59,7 @@ export function dateForEditField(value?: null | string) {
   return dateForInput(date)
 }
 
+export function dateForInput(input: Date): string
 export function dateForInput(input?: Date | null | string) {
   if (!input) {
     return null

@@ -1,6 +1,16 @@
 'use client'
 
-import { useContext, useEffect, useMemo, useState } from 'react'
+import { ApiReplenishment } from '@ors/types/api_replenishment_replenishments'
+import { ApiReplenishmentSoA } from '@ors/types/api_replenishment_scales_of_assessment'
+import { Country } from '@ors/types/store'
+
+import {
+  ChangeEventHandler,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 
 import { useSnackbar } from 'notistack'
 
@@ -13,8 +23,21 @@ import { api, formatApiUrl } from '@ors/helpers'
 
 import FormDialog from '../FormDialog'
 import { DateInput, FormattedNumberInput, Input } from '../Inputs'
+import { SortDirection } from '../Table/types'
 import { dateForInput, dateFromInput } from '../utils'
 import SATable from './SATable'
+import {
+  SAContribution,
+  SAContributionForSave,
+  SaveData,
+  SaveManagerProps,
+} from './types'
+import {
+  DateRangeInputProps,
+  FileForUpload,
+  SATableColumn,
+  SAViewProps,
+} from './types'
 import {
   clearNew,
   computeTableData,
@@ -24,23 +47,26 @@ import {
   sumColumns,
 } from './utils'
 
-function encodeFileForUpload(file) {
-  function resolver(resolve) {
+function encodeFileForUpload(file: File) {
+  function resolver(resolve: (value: FileForUpload) => void) {
     const r = new FileReader()
     r.onload = function (evt) {
-      resolve({
-        contentType: file.type,
-        data: evt.target.result.split(',')[1],
-        encoding: 'base64',
-        filename: file.name,
-      })
+      const read = evt.target?.result
+      if (read) {
+        resolve({
+          contentType: file.type,
+          data: (read as string).split(',')[1],
+          encoding: 'base64',
+          filename: file.name,
+        })
+      }
     }
     r.readAsDataURL(file)
   }
-  return new Promise(resolver)
+  return new Promise<FileForUpload>(resolver)
 }
 
-const COLUMNS = [
+const COLUMNS: SATableColumn[] = [
   { field: 'country', label: 'Country' },
   {
     editable: true,
@@ -128,7 +154,7 @@ const COLUMNS = [
   },
 ]
 
-function getEditableFieldNames(cs) {
+function getEditableFieldNames(cs: SATableColumn[]) {
   const r = []
   for (let i = 0; i < cs.length; i++) {
     if (cs[i].editable === true) {
@@ -140,7 +166,7 @@ function getEditableFieldNames(cs) {
 
 const EDITABLE = getEditableFieldNames(COLUMNS)
 
-function SaveManager(props) {
+function SaveManager(props: SaveManagerProps) {
   const { comment, currencyDateRange, data, replenishment, version, versions } =
     props
 
@@ -177,8 +203,8 @@ function SaveManager(props) {
     setSaving(true)
   }
 
-  async function confirmSave(formData) {
-    const saveData = {
+  async function confirmSave(formData: FormData) {
+    const saveData: SaveData = {
       ...Object.fromEntries(formData.entries()),
       amount: replenishment.amount,
       comment,
@@ -191,9 +217,9 @@ function SaveManager(props) {
       currencyDateRange.start.toISOString()
     saveData['currency_date_range_end'] = currencyDateRange.end.toISOString()
 
-    if (saveData.decision_pdf && saveData.decision_pdf.size) {
+    if (saveData.decision_pdf && (saveData.decision_pdf as File).size) {
       saveData['decision_pdf'] = await encodeFileForUpload(
-        saveData.decision_pdf,
+        saveData.decision_pdf as File,
       )
     } else {
       saveData['decision_pdf'] = null
@@ -208,12 +234,12 @@ function SaveManager(props) {
         refetchReplenishment()
         refetchSoA()
         if (createNewVersion) {
-          setCurrentVersion((prevVersion) => prevVersion + 1)
+          setCurrentVersion((prevVersion) => (prevVersion ?? 0) + 1)
         }
         enqueueSnackbar('Data saved successfully.', { variant: 'success' })
       })
       .catch((error) => {
-        error.json().then((data) => {
+        error.json().then((data: Record<string, string>[]) => {
           // Iterate over each error object and format it
           const messages = data
             .map((errorObj, index) => {
@@ -336,18 +362,18 @@ function SaveManager(props) {
   )
 }
 
-function DateRangeInput(props) {
+function DateRangeInput(props: DateRangeInputProps) {
   const { disabled, initialEnd, initialStart, onChange } = props
 
   const [start, setStart] = useState(initialStart)
   const [end, setEnd] = useState(initialEnd)
 
-  function handleChangeStart(evt) {
+  const handleChangeStart: ChangeEventHandler<HTMLInputElement> = (evt) => {
     onChange(evt.target.value, end)
     setStart(evt.target.value)
   }
 
-  function handleChangeEnd(evt) {
+  const handleChangeEnd: ChangeEventHandler<HTMLInputElement> = (evt) => {
     onChange(start, evt.target.value)
     setEnd(evt.target.value)
   }
@@ -364,8 +390,8 @@ function DateRangeInput(props) {
   )
 }
 
-function tranformContributions(cs) {
-  const r = []
+function tranformContributions(cs: ApiReplenishmentSoA) {
+  const r: SAContribution[] = []
 
   for (let i = 0; i < cs.length; i++) {
     const cur = cs[i].currency
@@ -390,8 +416,8 @@ function tranformContributions(cs) {
   return r
 }
 
-function transformForSave(d) {
-  const r = []
+function transformForSave(d: SAContribution[]) {
+  const r: SAContributionForSave[] = []
 
   const mapping = [
     ['average_inflation_rate', 'avg_ir'],
@@ -401,14 +427,14 @@ function transformForSave(d) {
   ]
 
   for (let i = 0; i < d.length; i++) {
-    const n = {
+    const n: Record<string, any> = {
       country_id: d[i].country_id,
     }
 
     for (let j = 0; j < mapping.length; j++) {
-      const serverKey = mapping[j][0]
-      const dataKey = mapping[j][1]
-      const overrideKey = `override_${dataKey}`
+      const serverKey = mapping[j][0] as keyof SAContributionForSave
+      const dataKey = mapping[j][1] as keyof SAContribution
+      const overrideKey = `override_${dataKey}` as keyof SAContribution
       if (d[i].hasOwnProperty(overrideKey)) {
         n[serverKey] = d[i][overrideKey]
       } else {
@@ -416,7 +442,7 @@ function transformForSave(d) {
       }
     }
 
-    if (!isNaN(d[i].override_adj_un_soa)) {
+    if (!isNaN(d[i].override_adj_un_soa as number)) {
       n.override_adjusted_scale_of_assessment = d[i].override_adj_un_soa
     }
 
@@ -428,13 +454,13 @@ function transformForSave(d) {
       n.opted_for_ferm = true
     }
 
-    r.push(n)
+    r.push(n as SAContributionForSave)
   }
 
   return r
 }
 
-function getExistingCurrency(rows, value) {
+function getExistingCurrency(rows: SAContribution[], value: any) {
   let r = null
   for (let i = 0; i < rows.length; i++) {
     if (getOverrideOrDefault(rows[i], 'ferm_cur') === value) {
@@ -445,19 +471,22 @@ function getExistingCurrency(rows, value) {
   return r
 }
 
-function getInitialCurrencyDateRange(year) {
+function getInitialCurrencyDateRange(year: number) {
   const start = new Date(Date.UTC(year, 0, 1))
   const end = new Date(Date.UTC(year, 6, 0))
   return { end, start }
 }
 
-function formatCurrencyDateRangeForHeader(dateRange) {
+function formatCurrencyDateRangeForHeader(dateRange: {
+  end: Date
+  start: Date
+}) {
   const { end, start } = dateRange
   const intl = new Intl.DateTimeFormat('en-US', { month: 'short' })
   return `${start.getUTCDate()} ${intl.format(start)} - ${end.getUTCDate()} ${intl.format(end)} ${start.getUTCFullYear()}`
 }
 
-function revertAllCurrencyNames(rows, value) {
+function revertAllCurrencyNames(rows: SAContribution[], value: any) {
   for (let i = 0; i < rows.length; i++) {
     if (getOverrideOrDefault(rows[i], 'ferm_cur') === value) {
       delete rows[i]['override_ferm_cur']
@@ -466,7 +495,7 @@ function revertAllCurrencyNames(rows, value) {
   }
 }
 
-function revertAllCurrencyRates(rows, name) {
+function revertAllCurrencyRates(rows: SAContribution[], name: string) {
   for (let i = 0; i < rows.length; i++) {
     if (getOverrideOrDefault(rows[i], 'ferm_cur') === name) {
       delete rows[i]['override_ferm_rate']
@@ -474,7 +503,11 @@ function revertAllCurrencyRates(rows, name) {
   }
 }
 
-function updateAllCurrencyNames(rows, oldValue, newValue) {
+function updateAllCurrencyNames(
+  rows: SAContribution[],
+  oldValue: string,
+  newValue: string,
+) {
   for (let i = 0; i < rows.length; i++) {
     if (getOverrideOrDefault(rows[i], 'ferm_cur') === oldValue) {
       rows[i]['override_ferm_cur'] = newValue
@@ -482,7 +515,11 @@ function updateAllCurrencyNames(rows, oldValue, newValue) {
   }
 }
 
-function updateAllCurrencyRates(rows, name, newValue) {
+function updateAllCurrencyRates(
+  rows: SAContribution[],
+  name: string,
+  newValue: number,
+) {
   if (name !== null && name !== '') {
     for (let i = 0; i < rows.length; i++) {
       if (getOverrideOrDefault(rows[i], 'ferm_cur') === name) {
@@ -492,7 +529,7 @@ function updateAllCurrencyRates(rows, name, newValue) {
   }
 }
 
-function SAView(props) {
+function SAView(props: SAViewProps) {
   const { period } = props
 
   const ctx = useContext(ReplenishmentContext)
@@ -547,7 +584,9 @@ function SAView(props) {
   useEffect(
     function () {
       handleNewTableData(contributions)
-      setReplenishment(ctxSoA.replenishment)
+      if (ctxSoA.replenishment) {
+        setReplenishment(ctxSoA.replenishment)
+      }
     },
     [contributions, ctxSoA.replenishment],
   )
@@ -556,16 +595,18 @@ function SAView(props) {
   const [shouldCompute, setShouldCompute] = useState(false)
 
   const [sortOn, setSortOn] = useState(0)
-  const [sortDirection, setSortDirection] = useState(1)
+  const [sortDirection, setSortDirection] = useState<SortDirection>(1)
 
   const [showAdd, setShowAdd] = useState(false)
 
-  const [replenishment, setReplenishment] = useState({ amount: 0 })
-  const [unusedAmount, setUnusedAmount] = useState('')
+  const [replenishment, setReplenishment] = useState<
+    { amount: 0 } | ApiReplenishment
+  >({ amount: 0 })
+  const [unusedAmount, setUnusedAmount] = useState<'' | number>('')
 
-  const [commentText, setCommentText] = useState('')
+  const [commentText, setCommentText] = useState<string>('')
 
-  function handleNewTableData(newData) {
+  function handleNewTableData(newData: SAContribution[]) {
     setTableData(newData)
   }
 
@@ -586,7 +627,10 @@ function SAView(props) {
   const computedData = useMemo(
     () =>
       shouldCompute
-        ? computeTableData(tableData, replenishment.amount - unusedAmount || 0)
+        ? computeTableData(
+            tableData,
+            replenishment.amount - (unusedAmount || 0),
+          )
         : tableData,
     /* eslint-disable-next-line */
     [tableData, replenishment, unusedAmount, shouldCompute],
@@ -631,8 +675,8 @@ function SAView(props) {
     setShowAdd(true)
   }
 
-  function handleAddSubmit(country) {
-    const entry = {
+  function handleAddSubmit(country: Country) {
+    const entry: SAContribution = {
       avg_ir: null,
       country: country.name_alt,
       country_id: country.id,
@@ -649,10 +693,10 @@ function SAView(props) {
     setShouldCompute(true)
   }
 
-  function handleDelete(idx) {
+  function handleDelete(idx: number) {
     const confirmed = confirm('Are you sure you want to delete this entry?')
     if (confirmed) {
-      const next = []
+      const next: SAContribution[] = []
       for (let i = 0; i < sortedData.length; i++) {
         if (i !== idx) {
           next.push(sortedData[i])
@@ -663,18 +707,23 @@ function SAView(props) {
     }
   }
 
-  function handleAmountInput(evt) {
+  const handleAmountInput: ChangeEventHandler<HTMLInputElement> = (evt) => {
     const value = parseFloat(evt.target.value)
     if (typeof value === 'number' && !isNaN(value)) {
-      setReplenishment((oldReplenishment) => ({
-        ...oldReplenishment,
-        amount: value,
-      }))
+      setReplenishment(
+        (oldReplenishment) =>
+          ({
+            ...oldReplenishment,
+            amount: value,
+          }) as ApiReplenishment,
+      )
       setShouldCompute(true)
     }
   }
 
-  function handleUnusedAmountInput(evt) {
+  const handleUnusedAmountInput: ChangeEventHandler<HTMLInputElement> = (
+    evt,
+  ) => {
     const value = parseFloat(evt.target.value)
     if (typeof value === 'number' && !isNaN(value)) {
       setUnusedAmount(value)
@@ -684,16 +733,23 @@ function SAView(props) {
     }
   }
 
-  function handleSort(column) {
-    setSortDirection((direction) => (column === sortOn ? -direction : 1))
+  function handleSort(column: number) {
+    setSortDirection(
+      (direction) => (column === sortOn ? -direction : 1) as SortDirection,
+    )
     setSortOn(column)
   }
 
-  function handleCellEdit(r, c, n, v) {
+  function handleCellEdit(
+    r: number,
+    c: number,
+    n: keyof SAContribution,
+    v: any,
+  ) {
     const parser = columns[c].parser
-    const overrideKey = `override_${n}`
+    const overrideKey = `override_${n}` as keyof SAContribution
     const prevValue = getOverrideOrDefault(sortedData[r], n)
-    const next = [...sortedData]
+    const next: Record<string, any>[] = [...sortedData]
     const value = parser ? parser(v) : v
     const isNullValue =
       value === '' ||
@@ -712,8 +768,8 @@ function SAView(props) {
         next[r][overrideKey] = value
       } else {
         updateAllCurrencyNames(
-          next,
-          getOverrideOrDefault(sortedData[r], n),
+          next as SAContribution[],
+          getOverrideOrDefault(sortedData[r], n) as string,
           value,
         )
       }
@@ -724,8 +780,8 @@ function SAView(props) {
         next[r][overrideKey] = value
       }
       updateAllCurrencyRates(
-        next,
-        getOverrideOrDefault(sortedData[r], 'ferm_cur'),
+        next as SAContribution[],
+        getOverrideOrDefault(sortedData[r], 'ferm_cur') as string,
         value,
       )
     } else if (isNullValue) {
@@ -735,12 +791,12 @@ function SAView(props) {
     } else {
       next[r][overrideKey] = value
     }
-    setTableData(next)
+    setTableData(next as SAContribution[])
     setShouldCompute(true)
   }
 
-  function handleCellRevert(r, n) {
-    const overrideKey = `override_${n}`
+  function handleCellRevert(r: number, n: keyof SAContribution) {
+    const overrideKey = `override_${n}` as keyof SAContribution
     const next = [...sortedData]
 
     if (n === 'ferm_cur') {
@@ -751,7 +807,7 @@ function SAView(props) {
     } else if (n === 'ferm_rate') {
       revertAllCurrencyRates(
         next,
-        getOverrideOrDefault(sortedData[r], 'ferm_cur'),
+        getOverrideOrDefault(sortedData[r], 'ferm_cur') as string,
       )
     } else {
       delete next[r][overrideKey]
@@ -760,11 +816,11 @@ function SAView(props) {
     setShouldCompute(true)
   }
 
-  function handleCommentInput(evt) {
+  const handleCommentInput: ChangeEventHandler<HTMLTextAreaElement> = (evt) => {
     setCommentText(evt.target.value)
   }
 
-  function handleChangeCurrencyDateRange(start, end) {
+  function handleChangeCurrencyDateRange(start: string, end: string) {
     setCurrencyDateRange({
       end: dateFromInput(end),
       start: dateFromInput(start),
@@ -821,7 +877,9 @@ function SAView(props) {
                 id="totalAmount"
                 className="w-36"
                 type="number"
-                value={(replenishment?.amount - unusedAmount || 0) / 3}
+                value={
+                  (replenishment?.amount - (unusedAmount as number) || 0) / 3
+                }
                 disabled
                 readOnly
               />
@@ -848,7 +906,7 @@ function SAView(props) {
           comment={commentText}
           currencyDateRange={currencyDateRange}
           data={transformForSave(tableData)}
-          replenishment={replenishment}
+          replenishment={replenishment as ApiReplenishment}
           version={version}
           versions={versions}
         />
@@ -937,7 +995,7 @@ function SAView(props) {
   )
 }
 
-function SAViewWrapper(props) {
+function SAViewWrapper(props: SAViewProps) {
   // Wrapper used to avoid flicker when no period is given.
   const soaCtx = useContext(SoAContext)
 

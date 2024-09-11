@@ -1,7 +1,6 @@
 import {
   ButtonHTMLAttributes,
   ChangeEventHandler,
-  DetailedHTMLProps,
   FormEventHandler,
   KeyboardEventHandler,
   useEffect,
@@ -170,7 +169,7 @@ function TableCell(props: SATableCellProps) {
   const [showConfirmEdit, setShowConfirmEdit] = useState(false)
 
   function handleStartEdit() {
-    if (enableEdit && cell.isEditable === true) {
+    if (enableEdit && cell?.isEditable === true) {
       setEditing(true)
     }
   }
