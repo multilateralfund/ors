@@ -6,7 +6,7 @@ import { Button } from '@mui/material'
 import cx from 'classnames'
 import NextLink from 'next/link'
 
-import Link from '@ors/components/ui/Link/Link'
+import CustomLink from '@ors/components/ui/Link/Link'
 import { Status, statusStyles } from '@ors/components/ui/StatusPill/StatusPill'
 import BPContext from '@ors/contexts/BusinessPlans/BPContext'
 import useClickOutside from '@ors/hooks/useClickOutside'
@@ -128,16 +128,14 @@ const ViewHeaderActions = () => {
       {!!business_plan && (
         <div className="container flex w-full justify-between gap-x-4 px-0">
           <div className="flex justify-between gap-x-4">
-            <Link
-              className="px-4 py-2 shadow-none"
-              color="secondary"
+            <CustomLink
+              className="px-4 py-2 text-lg shadow-none hover:text-white"
               href={`/business-plans/${business_plan?.agency.name}/${business_plan?.year_start}-${business_plan?.year_end}/edit/`}
-              size="large"
               variant="contained"
               button
             >
-              {isDraft ? 'Edit report' : 'Add new version'}
-            </Link>
+              Make changes
+            </CustomLink>
             {isDraft && (
               <Button
                 color="primary"
