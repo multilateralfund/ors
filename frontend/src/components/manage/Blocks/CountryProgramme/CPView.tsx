@@ -237,6 +237,7 @@ function CPView(props: { archive?: boolean }) {
           }}
           onChange={(event, newValue) => {
             setActiveTab(newValue)
+            setUnit('mt')
           }}
           allowScrollButtonsMobile
         >
