@@ -9,3 +9,8 @@ export type SectionMeta = {
 }
 
 export type DefaultComponentType = () => JSX.Element
+
+export type DispatchWithLocalStorage<A> = (
+  value: A,
+  updateLocalStorage: boolean,
+) => void

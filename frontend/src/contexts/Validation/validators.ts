@@ -11,20 +11,19 @@ import { getFloat } from '@ors/helpers/Utils/Utils'
 
 import { sumMaybeNumbers, sumNumbers, sumRowColumns, sumUsages } from './utils'
 
-export function checkShouldValidateSectionARow(row: IRow): boolean {
+function rowHasDataSectionA(row: IRow): boolean {
   const hasUsages =
     sumUsages((row.record_usages as unknown as IUsage[]) || []) > 0
   const hasSomethingElse = !!(
     getFloat(row.imports) ||
     getFloat(row.exports) ||
     getFloat(row.production) ||
-    getFloat(row.import_quotas) ||
-    row.banned_date
+    getFloat(row.import_quotas)
   )
   return hasUsages || hasSomethingElse
 }
 
-export function checkShouldValidateSectionBRow(row: IRow): boolean {
+function rowHasDataSectionB(row: IRow): boolean {
   const hasUsages =
     sumUsages((row.record_usages as unknown as IUsage[]) || []) > 0
   const hasSomethingElse = !!(
@@ -32,11 +31,17 @@ export function checkShouldValidateSectionBRow(row: IRow): boolean {
     getFloat(row.exports) ||
     getFloat(row.production) ||
     getFloat(row.manufacturing_blends) ||
-    getFloat(row.import_quotas) ||
-    row.banned_date ||
-    row.remarks
+    getFloat(row.import_quotas)
   )
   return hasUsages || hasSomethingElse
+}
+
+export function checkShouldValidateSectionARow(row: IRow): boolean {
+  return rowHasDataSectionA(row)
+}
+
+export function checkShouldValidateSectionBRow(row: IRow): boolean {
+  return rowHasDataSectionB(row)
 }
 
 export function validateUsageTotals(row: IRow): RowValidatorFuncResult {

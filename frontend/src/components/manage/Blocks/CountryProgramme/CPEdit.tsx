@@ -252,10 +252,15 @@ function CPEdit() {
   const localStorage = useEditLocalStorage(report)
 
   const handleSetForm = useCallback(
-    (value: ((form: CPEditForm) => CPEditForm) | CPEditForm) => {
+    (
+      value: ((form: CPEditForm) => CPEditForm) | CPEditForm,
+      updateLocalStorage: boolean = true,
+    ) => {
       setForm((prevForm) => {
         const nextForm = typeof value === 'function' ? value(prevForm) : value
-        localStorage.update(nextForm)
+        if (updateLocalStorage) {
+          localStorage.update(nextForm)
+        }
         return nextForm
       })
       setWarnOnClose(true)

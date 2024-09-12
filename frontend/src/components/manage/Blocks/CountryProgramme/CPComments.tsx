@@ -233,18 +233,28 @@ function CPCommentsForEdit(props: CPCommentsForEditProps) {
   const [error, setError] = useState(null)
   const [texts, setTexts] = useState(initialTexts)
 
+  const [loaded, setLoaded] = useState(false)
+
   useEffect(() => {
     debounce(
       () => {
-        setForm((prev) => ({
-          ...prev,
-          [sectionKey]: texts,
-        }))
+        const isChanged =
+          texts.country !== initialTexts.country ||
+          texts.mlfs !== initialTexts.mlfs
+        if (isChanged) {
+          setForm(
+            (prev) => ({
+              ...prev,
+              [sectionKey]: texts,
+            }),
+            loaded,
+          )
+        }
       },
       300,
       `updateForm:${sectionKey}`,
     )
-  }, [sectionKey, setForm, texts])
+  }, [sectionKey, setForm, initialTexts, loaded, texts])
 
   useEffect(() => {
     if (report?.data?.comments) {
@@ -267,10 +277,12 @@ function CPCommentsForEdit(props: CPCommentsForEditProps) {
   }, [section, report])
 
   const handleTextChange = (label: Label, value: string) => {
+    setLoaded(true)
     setTexts((prev) => ({ ...prev, [label]: value }))
   }
   const handleCancel = (label: Label) => {
     setError(null)
+    setLoaded(true)
     setTexts((prev) => ({ ...prev, [label]: initialTexts[label] }))
   }
 

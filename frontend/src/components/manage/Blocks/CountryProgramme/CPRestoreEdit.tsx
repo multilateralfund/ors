@@ -24,6 +24,7 @@ function CPRestoreEdit(props: CPRestoreEditProps) {
   const [show, setShow] = useState(!!storedData)
 
   function handleCancel() {
+    localStorage.clear()
     setShow(false)
   }
 

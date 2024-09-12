@@ -11,6 +11,7 @@ export interface ILSDataEdit {
 }
 
 export interface EditLocalStorageType {
+  clear: () => void
   load: () => CPEditForm | undefined
   update: (form: CPEditForm) => void
 }
@@ -45,12 +46,17 @@ export function useEditLocalStorage(
     [key, report.data?.id],
   )
 
+  const clear = useCallback(() => {
+    storage.clearLocalStorage(key)
+  }, [key])
+
   return useMemo(
     () => ({
+      clear,
       load,
       update,
     }),
-    [load, update],
+    [clear, load, update],
   )
 }
 

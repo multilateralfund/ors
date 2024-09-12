@@ -1,5 +1,7 @@
 import type { CPEditForm } from '@ors/components/manage/Blocks/CountryProgramme/typesCPCreate'
 
+import { DispatchWithLocalStorage } from './types'
+
 export type CPCommentState = {
   country: string
   mlfs: string
@@ -15,7 +17,7 @@ export type CPCommentsType = React.FC<CPCommentsProps>
 export type CPCommentsForEditProps = {
   form: CPEditForm
   section: string
-  setForm: React.Dispatch<React.SetStateAction<CPEditForm>>
+  setForm: DispatchWithLocalStorage<React.SetStateAction<CPEditForm>>
 }
 
 export type CPCommentsForEditType = React.FC<CPCommentsForEditProps>

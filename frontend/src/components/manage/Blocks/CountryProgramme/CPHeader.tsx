@@ -7,7 +7,7 @@ import {
 } from '@ors/types/user_types'
 
 import { useContext } from 'react'
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 
 import { Button, Tooltip } from '@mui/material'
 import cx from 'classnames'
@@ -26,6 +26,7 @@ import useClickOutside from '@ors/hooks/useClickOutside'
 import { useStore } from '@ors/store'
 
 import ConfirmSubmission from './ConfirmSubmission'
+import { useEditLocalStorage } from './useLocalStorage'
 
 import { IoChevronDown } from 'react-icons/io5'
 
@@ -237,6 +238,8 @@ const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
 
   const isDraft = report.data?.status === 'draft'
 
+  const localStorage = useEditLocalStorage(report)
+
   function handleShowConfirmation() {
     setShowConfirm(true)
   }
@@ -257,6 +260,7 @@ const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
           method: 'PUT',
         },
       )
+      localStorage.clear()
       enqueueSnackbar(
         <>
           Submit submission for {response.country} {response.year}.
@@ -348,6 +352,8 @@ const EditHeaderActions = ({
 
   const [showConfirm, setShowConfirm] = useState(false)
 
+  const localStorage = useEditLocalStorage(report)
+
   function handleShowConfirmation() {
     setShowConfirm(true)
   }
@@ -397,6 +403,7 @@ const EditHeaderActions = ({
         )
         cacheInvalidateReport(response.country_id, response.year)
         await fetchBundle(response.country_id, response.year, false)
+        localStorage.clear()
         status === 'final' &&
           router.push(
             `/country-programme/${report.country?.iso3}/${response.year}`,
