@@ -288,7 +288,7 @@ class Command(BaseCommand):
                 "Ods display name",
                 "Odp",
                 "Ods replacement",
-                "CO2 mt",
+                "CO₂ mt",
                 "Ods type",
                 "Sort order",
             ],

@@ -32,7 +32,7 @@ class CPReportNewExporter(CPReportBase):
         )
 
     def export_section_b(self, sheet, data, usages, convert_to="mt"):
-        convertion = "METRIC TONNES" if convert_to == "mt" else "CO2-eq tonnes"
+        convertion = "METRIC TONNES" if convert_to == "mt" else "CO₂-eq tonnes"
         self._export_usage_section(
             sheet,
             data,

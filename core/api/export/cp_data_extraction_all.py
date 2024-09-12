@@ -97,6 +97,13 @@ class CPPricesExtractionWriter(BaseExtractionAllWriter):
                     value = float(value)
                 except (TypeError, ValueError):
                     pass
+            elif "fob" in header_id or "retail" in header_id:
+                value = record.get(header_id, None)
+                year = int(header_id.rsplit("_", 1)[1])
+                is_fob = record.get(f"fob_{year}", "No")
+                is_retail = record.get(f"retail_{year}", "No")
+                if year < 2023 and is_fob == "No" and is_retail == "No":
+                    value = ""
             else:
                 value = record.get(header_id, None)
 
@@ -184,7 +191,7 @@ class CPHFCConsumptionMTCO2Writer(BaseExtractionAllWriter):
                     },
                     {
                         "id": f"consumption_co2_{year}",
-                        "headerName": f"Consumption value (MT CO2-eq tonnes) {year}",
+                        "headerName": f"Consumption value (MT CO₂-eq tonnes) {year}",
                         "align": "right",
                         "type": "number",
                         "column_width": self.COLUMN_WIDTH * 2,
@@ -228,7 +235,7 @@ class CPHFCConsumptionMTCO2Writer(BaseExtractionAllWriter):
                 "headerName": "Notes",
             },
         ]
-        sheet = wb.create_sheet("HFC-Consumption(MTvsCO2Equi)")
+        sheet = wb.create_sheet("HFC-Consumption(MTvsCO₂Equi)")
         super().__init__(sheet, headers)
 
 
