@@ -20,7 +20,7 @@ from core.api.filters.business_plan import (
     BPActivityListFilter,
     BPFilterBackend,
 )
-from core.api.permissions import IsAgency, IsSecretariat
+from core.api.permissions import IsAgency, IsSecretariat, IsViewer
 from core.api.serializers.bp_history import BPHistorySerializer
 from core.api.serializers.business_plan import (
     BusinessPlanCreateSerializer,
@@ -56,7 +56,7 @@ class BusinessPlanViewSet(
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
 ):
-    permission_classes = [IsSecretariat | IsAgency]
+    permission_classes = [IsSecretariat | IsAgency | IsViewer]
     filter_backends = [
         BPFilterBackend,
         filters.OrderingFilter,
@@ -460,7 +460,7 @@ class BPActivityViewSet(
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
-    permission_classes = [IsSecretariat | IsAgency]
+    permission_classes = [IsSecretariat | IsAgency | IsViewer]
     filterset_class = BPActivityListFilter
 
     filter_backends = [
@@ -530,7 +530,7 @@ class BPFileView(generics.GenericAPIView):
     API endpoint that allows uploading business plan file.
     """
 
-    permission_classes = [IsSecretariat | IsAgency]
+    permission_classes = [IsSecretariat | IsAgency | IsViewer]
     queryset = BusinessPlan.objects.get_latest()
     serializer_class = BPFileSerializer
     lookup_field = "id"
@@ -586,7 +586,7 @@ class BPFileView(generics.GenericAPIView):
 
 
 class BPFileDownloadView(generics.RetrieveAPIView):
-    permission_classes = [IsSecretariat | IsAgency]
+    permission_classes = [IsSecretariat | IsAgency | IsViewer]
     queryset = BusinessPlan.objects.all()
     lookup_field = "id"
 
@@ -603,6 +603,8 @@ class BPFileDownloadView(generics.RetrieveAPIView):
 
 
 class BPActivityDiffView(mixins.ListModelMixin, generics.GenericAPIView):
+    permission_classes = [IsSecretariat | IsAgency | IsViewer]
+
     fields = [
         "title",
         "required_by_model",
