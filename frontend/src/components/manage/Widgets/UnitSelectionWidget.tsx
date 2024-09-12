@@ -75,7 +75,7 @@ function UnitSelectionWidget(props: UnitSelectionWidgetProps) {
     onChange(options[index], index)
   }
 
-  const ref = useClickOutside(() => {
+  const ref = useClickOutside<HTMLDivElement>(() => {
     setShowMenu(false)
   })
 

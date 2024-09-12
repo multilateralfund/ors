@@ -19,7 +19,7 @@ function DownloadReport(props: IDownloadReportProps) {
 
   const toggleShowMenu = () => setShowMenu((prev) => !prev)
 
-  const ref = useClickOutside(() => {
+  const ref = useClickOutside<HTMLDivElement>(() => {
     setShowMenu(false)
   })
 

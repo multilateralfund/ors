@@ -30,6 +30,7 @@ import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { formatApiUrl } from '@ors/helpers'
 
+import { SortDirection } from '../Table/types'
 import {
   IPaymentDialogProps,
   ParsedPayment,
@@ -131,7 +132,7 @@ function PaymentsView() {
   }, [])
 
   const [sortOn, setSortOn] = useState(1)
-  const [sortDirection, setSortDirection] = useState(-1)
+  const [sortDirection, setSortDirection] = useState<SortDirection>(-1)
 
   const [editIdx, setEditIdx] = useState<null | number>(null)
   const [showAdd, setShowAdd] = useState(false)
@@ -368,7 +369,9 @@ function PaymentsView() {
 
   function handleSort(column: number) {
     const property = COLUMNS[column].field
-    const newDirection = column === sortOn ? -sortDirection : 1
+    const newDirection = (
+      column === sortOn ? -sortDirection : 1
+    ) as SortDirection
     setSortDirection(newDirection)
     setSortOn(column)
     setPagination({ ...pagination, page: 1 })

@@ -1,5 +1,6 @@
 // Response from /api/replenishment/payments
 
+import { ApiReplenishmentFile } from './api_replenishment'
 import { ApiReplenishmentInvoice } from './api_replenishment_invoices'
 import { ApiReplenishment } from './api_replenishment_replenishments'
 import { Country } from './store'
@@ -17,13 +18,6 @@ export type ApiReplenishmentPayment = {
   payment_files: ApiReplenishmentFile[]
   payment_for_year: string
   replenishment: ApiReplenishment | null
-}
-
-export type ApiReplenishmentFile = {
-  download_url: string
-  file_type: string
-  filename: string
-  id: number
 }
 
 export type ApiReplenishmentPayments = ApiReplenishmentPayment[]

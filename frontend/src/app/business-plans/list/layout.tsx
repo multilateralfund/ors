@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useContext, useEffect } from 'react'
+import React, { PropsWithChildren, useContext, useEffect } from 'react'
 
 import cx from 'classnames'
 import Link from 'next/link'
@@ -50,7 +50,7 @@ function getNavLinks(pathname: string, period: null | string) {
   return [currentSection, result]
 }
 
-function BusinessPlansList(props: any) {
+function BusinessPlansList(props: PropsWithChildren) {
   const { yearRanges } = useContext(BPYearRangesContext) as any
   const { periodOptions } = useGetBpPeriods(yearRanges)
   const { children } = props
@@ -61,7 +61,9 @@ function BusinessPlansList(props: any) {
   const { setBPFilters } = useStore((state) => state.bpFilters)
 
   useEffect(() => {
-    setBPFilters({ range: period })
+    if (period) {
+      setBPFilters({ range: period })
+    }
   }, [period, setBPFilters])
 
   const [_, navLinks] = getNavLinks(pathname, period)

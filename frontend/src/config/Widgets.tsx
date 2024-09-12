@@ -22,6 +22,7 @@ export type WidgetProps<T> = {
       widget?: null
     } & TextWidgetProps)
   | ({ type: 'email' } & TextWidgetProps)
+  | ({ type: 'number' } & TextWidgetProps)
   | ({ type: 'password' } & PasswordWidgetProps)
   | ({ type: 'text' } & TextWidgetProps)
   | ({ type: 'textarea' } & TextareaWidgetProps)
@@ -37,6 +38,7 @@ export const defaultWidget = TextWidget
 export const widgetsMapping = {
   type: {
     email: defaultWidget,
+    number: defaultWidget,
     password: PasswordWidget,
     text: defaultWidget,
     textarea: TextareaWidget,

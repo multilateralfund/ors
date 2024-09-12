@@ -1,4 +1,4 @@
-import { ApiReplenishmentFile } from '@ors/types/api_replenishment_invoices'
+import { ApiReplenishmentFile } from '@ors/types/api_replenishment'
 
 import React, { useEffect, useState } from 'react'
 

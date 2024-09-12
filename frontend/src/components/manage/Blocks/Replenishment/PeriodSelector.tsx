@@ -5,13 +5,17 @@ import { usePathname, useRouter } from 'next/navigation'
 import SimpleSelect from '@ors/components/ui/SimpleSelect/SimpleSelect'
 
 import styles from './periodSelector.module.css'
+import { PeriodSelectorOption, PeriodSelectorProps } from './types'
 import { getPathPeriod } from './utils'
 
-function isYear(period: string) {
-  return /^\d{4}$/.test(period)
+function isYear(period?: null | string) {
+  if (period) {
+    return /^\d{4}$/.test(period)
+  }
+  return false
 }
 
-function PeriodSelector(props: any) {
+function PeriodSelector(props: PeriodSelectorProps) {
   const {
     label = 'Period',
     onChange,
@@ -28,7 +32,7 @@ function PeriodSelector(props: any) {
       ? pathname.split('/').slice(0, -1).join('/')
       : pathname
 
-  const options = []
+  const options: PeriodSelectorOption[] = []
   let selectedIndex = 0
 
   for (let i = 0; i < periodOptions.length; i++) {
@@ -42,7 +46,7 @@ function PeriodSelector(props: any) {
     }
   }
 
-  function handleChange(option: any) {
+  function handleChange(option: PeriodSelectorOption) {
     const newPath = `${basePath}/${option.value}`
     if (onChange) {
       onChange(newPath, { basePath, option })

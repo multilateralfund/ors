@@ -422,7 +422,7 @@ function TriennialTab(props: any) {
   }
 }
 
-function getDefaultYear(periodOptions: Record<string, any>[], period: string) {
+function getDefaultYear(periodOptions: Record<string, any>[], period?: string) {
   let result = period
   if (!period) {
     let year = parseInt(periodOptions[0]?.value, 10)
@@ -437,7 +437,7 @@ function getDefaultYear(periodOptions: Record<string, any>[], period: string) {
   return result
 }
 
-function getDefaultRange(periodOptions: Record<string, any>[], period: string) {
+function getDefaultRange(periodOptions: Record<string, any>[], period?: string) {
   return period || periodOptions[0]?.value
 }
 
@@ -544,8 +544,8 @@ function getTabLinks(
 
 interface SectionDashboardProps {
   charts: IDashboardDataApiResponse['charts']
-  period: string
-  tab: string
+  period?: string
+  tab?: string
 }
 function SectionDashboard(props: SectionDashboardProps) {
   const { charts, period, tab } = props

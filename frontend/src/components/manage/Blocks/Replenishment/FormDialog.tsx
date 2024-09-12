@@ -4,11 +4,11 @@ import cx from 'classnames'
 
 import { CancelButton, SubmitButton } from '@ors/components/ui/Button/Button'
 
-import { IFormDialogProps } from './types'
+import { FormDialogProps } from './types'
 
 import { IoCloseCircle } from 'react-icons/io5'
 
-const FormDialog = function FormDialog(props: IFormDialogProps) {
+const FormDialog = function FormDialog(props: FormDialogProps) {
   const { children, onCancel, onSubmit, title } = props
   const dialogRef = useRef<HTMLDialogElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)

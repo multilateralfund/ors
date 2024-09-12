@@ -28,7 +28,8 @@ import { AddButton } from '@ors/components/ui/Button/Button'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { formatApiUrl } from '@ors/helpers'
 
-import { IInvoiceDialogProps } from './types'
+import { SortDirection } from '../Table/types'
+import { InvoiceDialogProps } from './types'
 import { InvoiceColumn, InvoiceForSubmit, ParsedInvoice } from './types'
 
 import { IoSearchSharp } from 'react-icons/io5'
@@ -59,13 +60,13 @@ const COLUMNS: InvoiceColumn[] = [
 ]
 
 const AddInvoiceDialog = function AddInvoiceDialog(
-  props: Omit<IInvoiceDialogProps, 'title'>,
+  props: Omit<InvoiceDialogProps, 'title'>,
 ) {
   return <InvoiceDialog title="Add invoice" {...props} />
 }
 
 const EditInvoiceDialog = function EditInvoiceDialog(
-  props: Omit<IInvoiceDialogProps, 'isEdit' | 'title'>,
+  props: Omit<InvoiceDialogProps, 'isEdit' | 'title'>,
 ) {
   return <InvoiceDialog title="Edit invoice" isEdit {...props} />
 }
@@ -134,7 +135,7 @@ function InvoicesView() {
   }, [])
 
   const [sortOn, setSortOn] = useState(0)
-  const [sortDirection, setSortDirection] = useState(1)
+  const [sortDirection, setSortDirection] = useState<SortDirection>(1)
 
   const [editIdx, setEditIdx] = useState<null | number>(null)
   const [showAdd, setShowAdd] = useState<boolean>(false)
@@ -363,7 +364,9 @@ function InvoicesView() {
 
   function handleSort(column: number) {
     const property = COLUMNS[column].field
-    const newDirection = column === sortOn ? -sortDirection : 1
+    const newDirection = (
+      column === sortOn ? -sortDirection : 1
+    ) as SortDirection
     setSortDirection(newDirection)
     setSortOn(column)
     setParams({

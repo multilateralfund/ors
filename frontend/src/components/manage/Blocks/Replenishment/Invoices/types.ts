@@ -1,8 +1,8 @@
-import type { ApiReplenishmentFile } from '@ors/types/api_replenishment_invoices'
+import type { ApiReplenishmentFile } from '@ors/types/api_replenishment'
 import { ApiReplenishment } from '@ors/types/api_replenishment_replenishments'
 import { Country } from '@ors/types/store'
 
-import { IFormDialogProps } from '../types'
+import { FormDialogProps } from '../types'
 
 export type ParsedInvoice = {
   amount: number | string
@@ -30,12 +30,12 @@ export type ParsedInvoice = {
 }
 
 export type InvoiceForSubmit = {
-  date_first_reminder: string
-  date_of_issuance: string
-  date_second_reminder: string
-  date_sent_out: string
+  date_first_reminder: null | string
+  date_of_issuance: null | string
+  date_second_reminder: null | string
+  date_sent_out: null | string
   exchange_rate: number | string
-  reminder: string
+  reminder: null | string
   replenishment_id?: number
   year: string
 } & { [key: string]: File }
@@ -47,7 +47,7 @@ export type InvoiceColumn = {
   subLabel?: string
 }
 
-export interface IInvoiceDialogProps extends IFormDialogProps {
+export interface InvoiceDialogProps extends FormDialogProps {
   countries: Country[]
   data?: any
   isEdit?: boolean
