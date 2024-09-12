@@ -9,17 +9,12 @@ def update_draft_history_for_final_versions(apps, schema_editor):
     the resulting history entry was created with event_in_draft == True.
     This data migration corrects that for already-created versions.
     """
-    CPReport = apps.get_model("core", "CPReport")
     CPHistory = apps.get_model("core", "CPHistory")
 
-    # Only updating the 2023 FINAL reports as these are being edited at the time of
-    # executing this migration and older reports do not have histories.
+    # Only updating histories for FINAL reports.
     distinct_report_versions = (
         CPHistory.objects.select_related("cp_reports")
-        .filter(
-            country_programme_report__year=2023,
-            country_programme_report__status="final",
-        )
+        .filter(country_programme_report__status="final")
         .order_by("country_programme_report", "report_version")
         .distinct("country_programme_report", "report_version")
         .values_list("country_programme_report_id", "report_version")
