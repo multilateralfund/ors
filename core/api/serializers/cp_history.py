@@ -33,5 +33,6 @@ class CPHistorySerializer(serializers.ModelSerializer):
             "reporting_officer_name",
             "reporting_officer_email",
             "event_description",
+            "event_in_draft",
             "report_version",
         ]
