@@ -14,7 +14,8 @@ import {
   ToggleButtonGroup,
   Typography,
 } from '@mui/material'
-import { RowNode } from 'ag-grid-community'
+import { IRowNode } from 'ag-grid-community'
+import { AgGridReact } from 'ag-grid-react'
 import cx from 'classnames'
 import { each, find, findIndex, includes, sortBy, union } from 'lodash'
 
@@ -192,7 +193,7 @@ function autoCompleteFilterOptions(options: any, state: any) {
   return r
 }
 
-function autoCompleteRenderOption(props: any, option: any, state: any) {
+function autoCompleteRenderOption(props: any, option: any) {
   const { key, className, ...optionProps } = props
   const altName = option.alt_names.join(', ')
   return (
@@ -207,7 +208,7 @@ function autoCompleteRenderOption(props: any, option: any, state: any) {
 
 export default function SectionCCreate(props: ISectionCCreateProps) {
   const { Section, TableProps, emptyForm, form, setForm, variant } = props
-  const newNode = useRef<RowNode>()
+  const newNode = useRef<IRowNode>()
 
   const substances = useStore(
     (state) =>
@@ -250,7 +251,7 @@ export default function SectionCCreate(props: ISectionCCreateProps) {
     path: `/api/country-programme/prices/?year=${form.year - 1}&country_id=${form.country?.id}`,
   })
 
-  const grid = useRef<any>()
+  const grid = useRef<AgGridReact>()
   const initialRowData = useMemo(
     () =>
       getRowData(
@@ -377,13 +378,16 @@ export default function SectionCCreate(props: ISectionCCreateProps) {
         (substance: any) => substance.row_id == removedSubstance.row_id,
       )
       if (index > -1) {
-        const groupNode = grid.current.api.getRowNode(removedSubstance.group)
-        newData.splice(index, 1)
-        setForm((form: any) => ({ ...form, section_c: newData }))
-        applyTransaction(grid.current.api, {
-          remove: [props.data],
-          update: [{ ...groupNode.data, count: groupNode.data.count - 1 }],
-        })
+        const gridApi = grid.current?.api
+        const groupNode = gridApi?.getRowNode(removedSubstance.group)
+        if (gridApi && groupNode) {
+          newData.splice(index, 1)
+          setForm((form: any) => ({ ...form, section_c: newData }))
+          applyTransaction(gridApi, {
+            remove: [props.data],
+            update: [{ ...groupNode.data, count: groupNode.data.count - 1 }],
+          })
+        }
       }
     },
     openAddChemicalModal: () => setAddChemicalModal(true),
@@ -400,7 +404,7 @@ export default function SectionCCreate(props: ISectionCCreateProps) {
     // eslint-disable-next-line
   }, [form.country])
 
-  const onAddChemical = (event: any, newChemical: any) => {
+  const onAddChemical = (_: any, newChemical: any) => {
     if (document.activeElement) {
       // @ts-ignore
       document.activeElement.focus()
@@ -412,15 +416,17 @@ export default function SectionCCreate(props: ISectionCCreateProps) {
     if (!added) {
       const group = getChemicalGroup(newChemical)
       const newChemicalWithGroup = { ...newChemical, group }
-      const groupNode = grid.current.api.getRowNode(group)
+      const gridApi = grid.current?.api
+      const groupNode = gridApi?.getRowNode(group)
       const createGroup = !groupNode
 
       setForm((form: any) => ({
         ...form,
         section_c: [...form.section_c, newChemicalWithGroup],
       }))
-      if (createGroup) {
-        applyTransaction(grid.current.api, {
+
+      if (gridApi && createGroup) {
+        applyTransaction(gridApi, {
           add: [
             {
               count: 1,
@@ -437,10 +443,10 @@ export default function SectionCCreate(props: ISectionCCreateProps) {
               rowType: 'subtotal',
             },
           ],
-          addIndex: grid.current.api.getLastDisplayedRow() + 1,
+          addIndex: gridApi.getLastDisplayedRowIndex() + 1,
         })
-      } else {
-        applyTransaction(grid.current.api, {
+      } else if (gridApi && groupNode) {
+        applyTransaction(gridApi, {
           add: [newChemicalWithGroup],
           addIndex: groupNode.rowIndex + groupNode.data.count + 1,
           update: [
@@ -451,9 +457,7 @@ export default function SectionCCreate(props: ISectionCCreateProps) {
           ],
         })
       }
-      const substanceNode = grid.current.api.getRowNode(
-        newChemicalWithGroup.row_id,
-      )
+      const substanceNode = gridApi?.getRowNode(newChemicalWithGroup.row_id)
       newNode.current = substanceNode
     }
 
@@ -513,7 +517,7 @@ export default function SectionCCreate(props: ISectionCCreateProps) {
             const rowNode = newNode.current
             scrollToElement({
               callback: () => {
-                grid.current.api.flashCells({
+                grid.current?.api.flashCells({
                   rowNodes: [rowNode],
                 })
                 newNode.current = undefined

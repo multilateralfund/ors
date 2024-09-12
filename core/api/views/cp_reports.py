@@ -256,6 +256,9 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
         # archive cp_report
         cp_report_ar = self._get_archive_data(CPReportArchive, instance)
         cp_report_ar.save()
+        # Make sure archived versions keep the `created_at` of the original instance
+        cp_report_ar.created_at = instance.created_at
+        cp_report_ar.save(update_fields=["created_at"])
 
         # archive cp_records and cp_usages
         cp_usages = []

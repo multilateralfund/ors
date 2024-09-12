@@ -369,3 +369,10 @@ export function validateHFC23(row: IRow): RowValidatorFuncResult {
     }
   }
 }
+
+export function validateExportImport(row: IRow): RowValidatorFuncResult {
+  const isInvalid = getFloat(row.exports) > getFloat(row.imports)
+  if (isInvalid && !row.remarks) {
+    return { row: row.display_name }
+  }
+}

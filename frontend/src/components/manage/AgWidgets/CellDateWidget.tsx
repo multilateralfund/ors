@@ -95,7 +95,7 @@ export const CellDateWidget = memo(
           open={open}
           /* eslint-enable perfectionist/sort-jsx-props */
           ref={refInput}
-          value={value ? dayjs(value) : dayjs(`${props.context.year}-01-01`)}
+          value={value ? dayjs(value) : value}
           slotProps={{
             popper: {
               className: 'ag-custom-component-popup',
@@ -114,9 +114,11 @@ export const CellDateWidget = memo(
             borderRadius: 0,
             width: '100%',
           }}
-          onChange={(value) => {
-            setValue(value)
-            setOpen(false)
+          onChange={(newValue) => {
+            setValue(newValue)
+            if (value && newValue) {
+              setOpen(false)
+            }
           }}
           autoFocus
         />

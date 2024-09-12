@@ -286,6 +286,7 @@ class CPReportCreateSerializer(serializers.Serializer):
         history_data["reporting_officer_name"] = cp_report.reporting_entry
         history_data["reporting_officer_email"] = cp_report.reporting_email
         history_data["event_description"] = "Created by user"
+        history_data["event_in_draft"] = cp_report.status == cp_report.CPReportStatus.DRAFT
 
         cp_history_serializer = CPHistorySerializer(data=history_data)
         cp_history_serializer.is_valid(raise_exception=True)
