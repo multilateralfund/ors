@@ -1,5 +1,7 @@
 'use client'
 
+import { PropsWithChildren } from 'react'
+
 import cx from 'classnames'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -9,7 +11,12 @@ import ReplenishmentProvider from '@ors/contexts/Replenishment/ReplenishmentProv
 
 import styles from './styles.module.css'
 
-const SECTIONS = [
+interface Tab {
+  label: string
+  path: string
+}
+
+const SECTIONS: Tab[] = [
   {
     label: 'Dashboard',
     path: '/replenishment/dashboard',
@@ -32,10 +39,10 @@ const SECTIONS = [
   },
 ]
 
-function getNavLinks(pathname) {
-  const result = []
+function getNavLinks(pathname: string): [Tab | undefined, JSX.Element[]] {
+  const result: JSX.Element[] = []
 
-  let currentSection
+  let currentSection: Tab | undefined
 
   for (let i = 0; i < SECTIONS.length; i++) {
     const entry = SECTIONS[i]
@@ -57,7 +64,7 @@ function getNavLinks(pathname) {
   return [currentSection, result]
 }
 
-function ReplenishmentLayoutContent(props) {
+function ReplenishmentLayoutContent(props: PropsWithChildren) {
   const { children } = props
 
   const pathname = usePathname()
@@ -75,7 +82,7 @@ function ReplenishmentLayoutContent(props) {
   )
 }
 
-export default function ReplenishmentLayout({ children }) {
+export default function ReplenishmentLayout({ children }: PropsWithChildren) {
   return (
     <PageWrapper className="max-w-screen-2xl print:p-0">
       <ReplenishmentProvider>

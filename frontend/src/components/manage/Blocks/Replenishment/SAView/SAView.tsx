@@ -29,6 +29,7 @@ import SATable from './SATable'
 import {
   SAContribution,
   SAContributionForSave,
+  SAViewWrapperProps,
   SaveData,
   SaveManagerProps,
 } from './types'
@@ -995,12 +996,14 @@ function SAView(props: SAViewProps) {
   )
 }
 
-function SAViewWrapper(props: SAViewProps) {
+function SAViewWrapper(props: SAViewWrapperProps) {
   // Wrapper used to avoid flicker when no period is given.
+  const { period, ...rest } = props
+
   const soaCtx = useContext(SoAContext)
 
-  const saView = props.period ? (
-    <SAView {...props} />
+  const saView = period ? (
+    <SAView period={period} {...rest} />
   ) : (
     <div className="h-screen"></div>
   )

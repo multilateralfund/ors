@@ -1,5 +1,7 @@
 'use client'
 
+import { ApiBP } from '@ors/types/api_bp_get'
+
 import React, { useContext, useState } from 'react'
 
 import { Button } from '@mui/material'
@@ -21,9 +23,9 @@ const tagClassnames =
 
 const HeaderVersionsDropdown = () => {
   const [showVersionsMenu, setShowVersionsMenu] = useState(false)
-  const { data, loading, params, setParams } = useContext(BPContext) as any
+  const { data, loading, params, setParams } = useContext(BPContext)
 
-  const business_plan = data?.results?.business_plan || {}
+  const business_plan = data?.results?.business_plan || {} as ApiBP
   const toggleShowVersionsMenu = () => setShowVersionsMenu((prev) => !prev)
 
   const bpVersions = useGetBPVersions(business_plan)

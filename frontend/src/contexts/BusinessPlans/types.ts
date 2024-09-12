@@ -1,7 +1,9 @@
+import { ApiBPGet } from '@ors/types/api_bp_get'
+
 import { PropsWithChildren } from 'react'
 
 export interface BPContextType {
-  data: any
+  data: ApiBPGet | null | undefined
   loaded: boolean
   loading: boolean
   params: Record<string, any>

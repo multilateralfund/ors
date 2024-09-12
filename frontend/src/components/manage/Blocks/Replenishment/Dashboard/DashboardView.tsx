@@ -193,8 +193,8 @@ function EditStatusDialog(props: IEditStatusDialogProps) {
 }
 
 interface IDashboardViewProps {
-  period: string
-  section: string
+  period?: string
+  section?: string
 }
 
 function DashboardView(props: IDashboardViewProps) {

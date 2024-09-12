@@ -35,7 +35,7 @@ export function formatDateValue(value?: null | string) {
 }
 
 export function formatNumberValue(
-  value: number | string,
+  value: null | number | string,
   minDigits?: number,
   maxDigits?: number,
 ) {
@@ -58,7 +58,8 @@ export function dateForEditField(value?: null | string) {
 }
 
 export function dateForInput(input: Date): string
-export function dateForInput(input?: Date | null | string) {
+export function dateForInput(input: null | string): null | string
+export function dateForInput(input?: Date | null | string): null | string {
   if (!input) {
     return null
   }

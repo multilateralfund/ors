@@ -6,7 +6,9 @@ import DashboardView from '@ors/components/manage/Blocks/Replenishment/Dashboard
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import { formatApiUrl } from '@ors/helpers'
 
-export default function ReplenishmentDashboard(props) {
+export default function ReplenishmentDashboard(props: {
+  params: { section: string }
+}) {
   const { section } = props.params
   return (
     <>

@@ -83,6 +83,9 @@ export interface SATableProps
 }
 
 export interface SAViewProps {
+  period: string
+}
+export interface SAViewWrapperProps {
   period?: string
 }
 

@@ -10,7 +10,7 @@ interface ISimpleSelectOption {
   label: string
 }
 
-export interface SimpleSelectProps<T> {
+export interface SimpleSelectProps<T extends ISimpleSelectOption = ISimpleSelectOption> {
   className?: string
   initialIndex?: number
   label: string
@@ -18,7 +18,7 @@ export interface SimpleSelectProps<T> {
   options: T[]
 }
 
-const SimpleSelect = <T = ISimpleSelectOption,>(
+const SimpleSelect = <T extends ISimpleSelectOption = ISimpleSelectOption>(
   props: SimpleSelectProps<T>,
 ) => {
   const { className, initialIndex = 0, label, onChange, options } = props

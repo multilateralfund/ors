@@ -1,3 +1,5 @@
+import { ApiBPGet } from '@ors/types/api_bp_get'
+
 import { useMemo } from 'react'
 
 import { useParams } from 'next/navigation'
@@ -20,7 +22,7 @@ function BPProvider(props: BPProviderProps) {
     return commonSlice.agencies.data.find((item) => item.name === agency)
   }, [agency, commonSlice.agencies.data])
 
-  const { data, loaded, loading, params, setParams } = useApi({
+  const { data, loaded, loading, params, setParams } = useApi<ApiBPGet>({
     options: {
       params: {
         agency_id: currentAgency?.id,
