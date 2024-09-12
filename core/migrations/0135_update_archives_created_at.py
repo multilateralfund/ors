@@ -33,7 +33,7 @@ def update_archives_created_at(apps, schema_editor):
         if abs(archive.created_at - latest_version_history.created_at) > timedelta(
             seconds=1
         ):
-            CPReportArchive.objects.filter(id=archive.id).update(created_at=latest_version_history.created_at)
+            CPReportArchive.objects.filter(pk=archive.id).update(created_at=latest_version_history.created_at)
 
 
 class Migration(migrations.Migration):
