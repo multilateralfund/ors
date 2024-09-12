@@ -84,8 +84,8 @@ def _another_country_user():
 class TestCPReportList(BaseTest):
     url = reverse("country-programme-reports")
 
-    def test_get_cp_report_list(self, user, _setup_cp_report_list):
-        self.client.force_authenticate(user=user)
+    def test_get_cp_report_list(self, viewer_user, _setup_cp_report_list):
+        self.client.force_authenticate(user=viewer_user)
 
         # get cp reports list
         response = self.client.get(self.url)
@@ -180,8 +180,8 @@ class TestCPReportList(BaseTest):
 class TestCPReportListGroupByYear(BaseTest):
     url = reverse("country-programme-reports-by-year")
 
-    def test_get_cp_report_list(self, user, _setup_cp_report_list):
-        self.client.force_authenticate(user=user)
+    def test_get_cp_report_list(self, viewer_user, _setup_cp_report_list):
+        self.client.force_authenticate(user=viewer_user)
 
         response = self.client.get(self.url)
         assert response.status_code == 200
@@ -221,8 +221,8 @@ class TestCPReportListGroupByYear(BaseTest):
 class TestCPReportListGroupByCountry(BaseTest):
     url = reverse("country-programme-reports-by-country")
 
-    def test_get_cp_report_list(self, user, _setup_cp_report_list):
-        self.client.force_authenticate(user=user)
+    def test_get_cp_report_list(self, viewer_user, _setup_cp_report_list):
+        self.client.force_authenticate(user=viewer_user)
 
         response = self.client.get(self.url)
         assert response.status_code == 200
@@ -264,6 +264,11 @@ class TestCPReportListGroupByCountry(BaseTest):
 class TestCPReportStatusUpdate(BaseTest):
     def test_without_login(self, status_update_url):
         self.client.force_authenticate(user=None)
+        response = self.client.put(status_update_url, {"status": "draft"})
+        assert response.status_code == 403
+
+    def test_as_viewer(self, viewer_user, status_update_url):
+        self.client.force_authenticate(user=viewer_user)
         response = self.client.put(status_update_url, {"status": "draft"})
         assert response.status_code == 403
 
@@ -438,6 +443,13 @@ class TestCPReportCreate(BaseTest):
 
     def test_without_login(self, _setup_new_cp_report_create):
         self.client.force_authenticate(user=None)
+        response = self.client.post(
+            self.url, _setup_new_cp_report_create, format="json"
+        )
+        assert response.status_code == 403
+
+    def test_as_viewer(self, viewer_user, _setup_new_cp_report_create):
+        self.client.force_authenticate(user=viewer_user)
         response = self.client.post(
             self.url, _setup_new_cp_report_create, format="json"
         )
@@ -726,6 +738,14 @@ class TestCPReportUpdate(BaseTest):
     def test_without_login(self, cp_report_2019):
         self.url = reverse("country-programme-reports") + f"{cp_report_2019.id}/"
         self.client.force_authenticate(user=None)
+        response = self.client.put(
+            self.url, {"id": cp_report_2019.id, "name": "Romania2019"}, format="json"
+        )
+        assert response.status_code == 403
+
+    def test_as_viewer(self, viewer_user, cp_report_2019):
+        self.url = reverse("country-programme-reports") + f"{cp_report_2019.id}/"
+        self.client.force_authenticate(user=viewer_user)
         response = self.client.put(
             self.url, {"id": cp_report_2019.id, "name": "Romania2019"}, format="json"
         )
@@ -1227,8 +1247,10 @@ def setup_get_empty_form(usage, substance, blend):
 class TestGetEmptyForm(BaseTest):
     url = reverse("empty-form")
 
-    def test_without_cp_report_id(self, user, _setup_get_empty_form, _cp_report_format):
-        self.client.force_authenticate(user=user)
+    def test_without_cp_report_id(
+        self, viewer_user, _setup_get_empty_form, _cp_report_format
+    ):
+        self.client.force_authenticate(user=viewer_user)
         response = self.client.get(self.url)
         assert response.status_code == 200
         assert len(response.data["usage_columns"]["section_a"]) == 1

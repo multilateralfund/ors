@@ -20,6 +20,7 @@ from core.api.filters.country_programme import (
 from core.api.permissions import (
     IsCountryUser,
     IsSecretariat,
+    IsViewer,
 )
 from core.api.serializers import CPReportGroupSerializer
 from core.api.serializers.cp_comment import CPCommentSerializer
@@ -52,7 +53,7 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
     API endpoint that allows country programmes to be viewed or created.
     """
 
-    permission_classes = [IsSecretariat | IsCountryUser]
+    permission_classes = [IsSecretariat | IsCountryUser | IsViewer]
     filterset_class = CPReportFilter
     filter_backends = [
         DjangoFilterBackend,
@@ -507,7 +508,7 @@ class CPReportGroupByYearView(generics.ListAPIView):
     API endpoint that allows listing country programme reports grouped.
     """
 
-    permission_classes = [IsSecretariat | IsCountryUser]
+    permission_classes = [IsSecretariat | IsCountryUser | IsViewer]
     serializer_class = CPReportGroupSerializer
     group_by = "year"
     group_pk = "year"

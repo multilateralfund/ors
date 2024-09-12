@@ -10,6 +10,7 @@ class User(AbstractUser):
         COUNTRY_USER = "country_user", _("Country user")
         COUNTRY_SUBMITTER = "country_submitter", _("Country submitter")
         SECRETARIAT = "secretariat", _("Secretariat")
+        VIEWER = "viewer", _("Viewer")
         STAKEHOLDER = "stakeholder", _("Stakeholder")
         TREASURER = "treasurer", _("Treasurer")
 

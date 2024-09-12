@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from core.api.serializers.adm import (
     AdmRecordSerializer,
 )
-from core.api.permissions import IsCountryUser, IsSecretariat
+from core.api.permissions import IsCountryUser, IsSecretariat, IsViewer
 from core.api.serializers.cp_comment import CPCommentSerializer
 from core.api.serializers.cp_emission import CPEmissionSerializer
 from core.api.serializers.cp_generation import CPGenerationSerializer
@@ -56,7 +56,7 @@ class CPRecordBaseListView(views.APIView):
     @param year: int - query filter for year (exact)
     """
 
-    permission_classes = [IsSecretariat | IsCountryUser]
+    permission_classes = [IsSecretariat | IsCountryUser | IsViewer]
 
     cp_report_class = None
     cp_record_class = None

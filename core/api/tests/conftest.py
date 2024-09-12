@@ -62,6 +62,13 @@ def second_user():
 
 
 @pytest.fixture
+def viewer_user():
+    return UserFactory(
+        username="GuraCasca", email="doarmauit@numersi.ro", user_type="viewer"
+    )
+
+
+@pytest.fixture
 def stakeholder_user():
     return UserFactory(user_type="stakeholder")
 
