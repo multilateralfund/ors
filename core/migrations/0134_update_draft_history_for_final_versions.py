@@ -18,7 +18,7 @@ def update_draft_history_for_final_versions(apps, schema_editor):
         CPHistory.objects.select_related("cp_reports")
         .filter(
             country_programme_report__year=2023,
-            country_programme_report__status=CPReport.CPReportStatus.FINAL,
+            country_programme_report__status="final",
         )
         .order_by("country_programme_report", "report_version")
         .distinct("country_programme_report", "report_version")
