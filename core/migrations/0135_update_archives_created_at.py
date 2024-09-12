@@ -29,13 +29,11 @@ def update_archives_created_at(apps, schema_editor):
         except:
             # Pretty hard to use DoesNotExist without fully initialized models
             continue
-
         # If difference between created_at's is large enough, update archive
         if abs(archive.created_at - latest_version_history.created_at) > timedelta(
             seconds=1
         ):
-            archive.created_at = latest_version_history.created_at
-            archive.save(update_fields=["created_at"])
+            CPReportArchive.objects.filter(id=archive.id).update(created_at=latest_version_history.created_at)
 
 
 class Migration(migrations.Migration):
