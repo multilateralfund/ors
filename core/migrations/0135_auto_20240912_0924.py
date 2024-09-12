@@ -20,6 +20,7 @@ def update_archives_created_at(apps, schema_editor):
 
     for archive in CPReportArchive.objects.all():
         try:
+            # Get the history for this archive's version
             latest_version_history = CPHistory.objects.filter(
                 country_programme_report__country_id=archive.country_id,
                 country_programme_report__year=archive.year,
@@ -28,7 +29,11 @@ def update_archives_created_at(apps, schema_editor):
         except:
             # Pretty hard to use DoesNotExist without fully initialized models
             continue
-        if archive.created_at - latest_version_history.created_at > timedelta(seconds=1):
+
+        # If difference between created_at's is large enough, update archive
+        if abs(archive.created_at - latest_version_history.created_at) > timedelta(
+            seconds=1
+        ):
             archive.created_at = latest_version_history.created_at
             archive.save(update_fields=["created_at"])
 
@@ -40,7 +45,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(
-            update_archives_created_at, migrations.RunPython.noop
-        ),
+        migrations.RunPython(update_archives_created_at, migrations.RunPython.noop),
     ]
