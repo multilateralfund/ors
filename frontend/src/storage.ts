@@ -1,5 +1,8 @@
 /* base */
-export function updateStorage(type, key, data) {
+
+export type StorageType = 'localStorage' | 'sessionStorage'
+
+export function updateStorage(type: StorageType, key: string, data: any) {
   try {
     window[type].setItem(key, JSON.stringify(data))
   } catch {
@@ -7,13 +10,13 @@ export function updateStorage(type, key, data) {
   }
 }
 
-export function clearStorage(type, key) {
+export function clearStorage(type: StorageType, key: string) {
   window[type].removeItem(key)
 }
 
-export function loadStorage(type, key) {
+export function loadStorage(type: StorageType, key: string) {
   try {
-    return JSON.parse(window[type].getItem(key))
+    return JSON.parse(window[type].getItem(key) || '{}')
   } catch {
     console.error('Could not load storage data', type, key)
   }
@@ -21,29 +24,29 @@ export function loadStorage(type, key) {
 
 /* local storage */
 
-export function loadLocalStorage(key) {
+export function loadLocalStorage(key: string) {
   return loadStorage('localStorage', key)
 }
 
-export function updateLocalStorage(key, data) {
+export function updateLocalStorage(key: string, data: any) {
   return updateStorage('localStorage', key, data)
 }
 
-export function clearLocalStorage(key) {
+export function clearLocalStorage(key: string) {
   return clearStorage('localStorage', key)
 }
 
 /* session storage */
 
-export function loadSessionStorage(key) {
+export function loadSessionStorage(key: string) {
   return loadStorage('sessionStorage', key)
 }
 
-export function updateSessionStorage(key, data) {
+export function updateSessionStorage(key: string, data: any) {
   return updateStorage('sessionStorage', key, data)
 }
 
-export function clearSessionStorage(key) {
+export function clearSessionStorage(key: string) {
   return clearStorage('sessionStorage', key)
 }
 

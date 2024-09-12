@@ -83,7 +83,7 @@ const HeaderVersionsDropdown = () => {
 
   const toggleShowVersionsMenu = () => setShowVersionsMenu((prev) => !prev)
 
-  const ref = useClickOutside(() => {
+  const ref = useClickOutside<HTMLDivElement>(() => {
     setShowVersionsMenu(false)
   })
 

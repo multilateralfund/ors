@@ -143,7 +143,7 @@ export function MultiSelect(props: IMultiSelectProps) {
 
   const [showPicker, setShowPicker] = useState(false)
 
-  const ref = useClickOutside(function () {
+  const ref = useClickOutside<HTMLDivElement>(function () {
     if (showPicker) {
       setShowPicker(false)
     }

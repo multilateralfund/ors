@@ -1,11 +1,15 @@
-import { useState } from 'react'
+import { ApiSubstance } from '@ors/types/api_substances'
+
+import { ChangeEvent, FormEventHandler, useState } from 'react'
 
 import { Button, Divider } from '@mui/material'
 
 import Field from '@ors/components/manage/Form/Field'
 import api from '@ors/helpers/Api/_api'
 
-function CreateSubstance(props) {
+import { CreateSubstanceProps } from './types'
+
+function CreateSubstance(props: CreateSubstanceProps) {
   const { onCancel, onSubmit } = props
 
   const initialState = {
@@ -17,22 +21,24 @@ function CreateSubstance(props) {
   }
   const [form, setForm] = useState(initialState)
 
-  function handleChangeFieldValue(name) {
-    return function (evt) {
+  function handleChangeFieldValue(name: string) {
+    return function (evt: ChangeEvent<HTMLInputElement>) {
       setForm(function (prev) {
         return { ...prev, [name]: evt.target.value }
       })
     }
   }
 
-  async function handleSubmit(evt) {
+  const handleSubmit: FormEventHandler<HTMLFormElement> = async (evt) => {
     evt.preventDefault()
-    const resp = await api('/api/substances', {
+    const resp = await api<ApiSubstance>('/api/substances', {
       data: form,
       method: 'POST',
     })
-    setForm(initialState)
-    onSubmit(resp)
+    if (resp) {
+      setForm(initialState)
+      onSubmit(resp)
+    }
   }
 
   return (

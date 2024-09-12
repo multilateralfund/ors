@@ -2,7 +2,9 @@ import { Autocomplete, Button, Divider, Typography } from '@mui/material'
 
 import TextWidget from '@ors/components/manage/Widgets/TextWidget'
 
-function AddSubstance(props) {
+import { AddSubstanceProps } from './types'
+
+function AddSubstance(props: AddSubstanceProps) {
   const {
     autoCompleteFilterOptions,
     autoCompleteRenderOption,

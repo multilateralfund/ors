@@ -1,5 +1,3 @@
-import React, { useEffect, useState } from 'react'
-
 import {
   Button,
   Dialog,
@@ -11,7 +9,13 @@ import {
 
 import Link from '@ors/components/ui/Link/Link'
 
-function SubmissionExistsDialog(props) {
+interface SubmissionExistsDialogProps {
+  existingReportTitle: string
+  href: string
+  onCancel: () => void
+}
+
+function SubmissionExistsDialog(props: SubmissionExistsDialogProps) {
   const { existingReportTitle, href, onCancel } = props
 
   return (

@@ -35,7 +35,7 @@ const SimpleSelect = <T extends ISimpleSelectOption = ISimpleSelectOption>(
     onChange(options[index], index)
   }
 
-  const ref = useClickOutside(function () {
+  const ref = useClickOutside<HTMLOutputElement>(function () {
     setShowMenu(false)
   })
 

@@ -22,7 +22,7 @@ function SAHeading(_props: SAHeadingProps) {
     setShowVersionsMenu((prev) => !prev)
   }
 
-  const ref = useClickOutside(function () {
+  const ref = useClickOutside<HTMLDivElement>(function () {
     setShowVersionsMenu(false)
   })
 

@@ -10,7 +10,14 @@ export interface ILSDataEdit {
   report_id?: number
 }
 
-export function useEditLocalStorage(report: CPReportsSlice['report']) {
+export interface EditLocalStorageType {
+  load: () => CPEditForm | undefined
+  update: (form: CPEditForm) => void
+}
+
+export function useEditLocalStorage(
+  report: CPReportsSlice['report'],
+): EditLocalStorageType {
   const key = useMemo(
     () => `CP_RECOVERY_${report.country?.iso3}_${report.data?.year}_EDIT`,
     [report.country?.iso3, report.data?.year],
@@ -47,7 +54,13 @@ export function useEditLocalStorage(report: CPReportsSlice['report']) {
   )
 }
 
-export function useCreateLocalStorage() {
+export interface CreateLocalStorageType {
+  clear: () => void
+  load: () => CPBaseForm
+  update: (form: CPBaseForm) => void
+}
+
+export function useCreateLocalStorage(): CreateLocalStorageType {
   const key = 'CP_RECOVERY_CREATE'
 
   const load = useCallback((): CPBaseForm => {

@@ -1,5 +1,7 @@
 'use client'
 
+import { Report } from '@ors/types/store'
+
 import { useState } from 'react'
 
 import { Tooltip } from '@mui/material'
@@ -11,14 +13,14 @@ import useClickOutside from '@ors/hooks/useClickOutside'
 
 import { AiFillFileExcel, AiFillFilePdf } from 'react-icons/ai'
 
-function DownloadCalculatedAmounts(props) {
+function DownloadCalculatedAmounts(props: { report: Report }) {
   const { report } = props
 
   const [showMenu, setShowMenu] = useState(false)
 
   const toggleShowMenu = () => setShowMenu((prev) => !prev)
 
-  const ref = useClickOutside(() => {
+  const ref = useClickOutside<HTMLDivElement>(() => {
     setShowMenu(false)
   })
 

@@ -9,19 +9,27 @@ import {
   DialogTitle,
 } from '@mui/material'
 
-function CPRestoreEdit(props) {
-  const { localStorage, setForm } = props
+import { CreateLocalStorageType } from './useLocalStorage'
+
+interface CPRestoreCreateProps {
+  localStorage: CreateLocalStorageType
+  onRestore: (storedData: any) => void
+}
+
+function CPRestoreCreate(props: CPRestoreCreateProps) {
+  const { localStorage, onRestore } = props
 
   const storedData = localStorage.load()
 
   const [show, setShow] = useState(!!storedData)
 
   function handleCancel() {
+    localStorage.clear()
     setShow(false)
   }
 
   function handleLoad() {
-    setForm(storedData)
+    onRestore(storedData)
     setShow(false)
   }
 
@@ -38,8 +46,9 @@ function CPRestoreEdit(props) {
           id="alert-dialog-description"
           className="text-pretty"
         >
-          Unsaved data exists for the current report, would you like to recover
-          it?
+          Recovery data exists for {storedData?.country?.label} -{' '}
+          {storedData?.year}, would like to load it and continue where you left
+          off?
         </DialogContentText>
       </DialogContent>
       <DialogActions>
@@ -50,4 +59,4 @@ function CPRestoreEdit(props) {
   )
 }
 
-export default CPRestoreEdit
+export default CPRestoreCreate

@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
 
-function useVisibilityChange(enable) {
+function useVisibilityChange(enable: boolean) {
   useEffect(() => {
-    function handleBeforeUnload(evt) {
+    function handleBeforeUnload(evt: BeforeUnloadEvent) {
       if (enable) {
         evt.preventDefault()
       }

@@ -30,7 +30,7 @@ const HeaderVersionsDropdown = () => {
 
   const bpVersions = useGetBPVersions(business_plan)
 
-  const ref = useClickOutside(() => {
+  const ref = useClickOutside<HTMLDivElement>(() => {
     setShowVersionsMenu(false)
   })
 
