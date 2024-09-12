@@ -16,7 +16,7 @@ def update_archives_created_at(apps, schema_editor):
     Logically assumes that report archives can only be in FINAL mode.
     """
     CPReportArchive = apps.get_model("core", "CPReportArchive")
-    CPHistory = apps.get_models("core", "CPHistory")
+    CPHistory = apps.get_model("core", "CPHistory")
 
     for archive in CPReportArchive.objects.all():
         try:
