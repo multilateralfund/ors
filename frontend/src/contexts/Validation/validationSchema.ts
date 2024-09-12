@@ -8,6 +8,7 @@ import {
   validateBannedImportsDate,
   validateBannedImportsRemarks,
   validateBlendComponents,
+  validateExportImport,
   validateFacilityName,
   validateHFC23,
   validateOtherUnidentifiedManufacturing,
@@ -75,6 +76,15 @@ const validationSchema: ValidationSchema = {
         message: 'The date of the ban should be provided.',
         validator: validateBannedImportsDate,
       },
+      {
+        id: 'validate-export-import',
+        highlight_cells: {
+          remarks: (row) => !row.remarks,
+        },
+        message:
+          'When export is greater than import, explanation should be provided in the “Remarks” column.',
+        validator: validateExportImport,
+      },
     ],
     shouldValidateRow: checkShouldValidateSectionARow,
   },
@@ -121,6 +131,15 @@ const validationSchema: ValidationSchema = {
         message:
           'For HFC-23 (use) - Data should be provided only for use and supply (i.e., import, production and export).',
         validator: validateHFC23,
+      },
+      {
+        id: 'validate-export-import',
+        highlight_cells: {
+          remarks: (row) => !row.remarks,
+        },
+        message:
+          'When export is greater than import, explanation should be provided in the “Remarks” column.',
+        validator: validateExportImport,
       },
     ],
     shouldValidateRow: checkShouldValidateSectionBRow,

@@ -16,6 +16,7 @@ const withBundleAnalyzer = createBundleAnalyzer({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  productionBrowserSourceMaps: true,
   pageExtensions: ['md', 'mdx', 'ts', 'tsx'],
   experimental: {
     instrumentationHook: true,
@@ -33,7 +34,7 @@ const nextConfig = {
     if (!dev) {
       config.module.rules.unshift({
         exclude: /node_modules/,
-        test: /\.(?:js|jsx|ts|tsx)$/,
+        test: /\.(?:ts|tsx)$/,
         use: {
           loader: 'babel-loader',
           options: {

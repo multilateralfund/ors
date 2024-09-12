@@ -15,7 +15,8 @@ import {
   ToggleButtonGroup,
   Typography,
 } from '@mui/material'
-import { CellValueChangedEvent, RowNode } from 'ag-grid-community'
+import { CellValueChangedEvent, IRowNode } from 'ag-grid-community'
+import { AgGridReact } from 'ag-grid-react'
 import { each, find, findIndex, includes, sortBy, union, uniqBy } from 'lodash'
 import { useSnackbar } from 'notistack'
 
@@ -119,7 +120,7 @@ export default function SectionBCreate(props: ISectionBCreateProps) {
   const { enqueueSnackbar } = useSnackbar()
   const { Section, TableProps, emptyForm, form, setForm, variant } = props
 
-  const newNode = useRef<RowNode>()
+  const newNode = useRef<IRowNode>()
 
   const substances = useStore((state) =>
     getResults<ApiSubstance>(state.cp_reports.substances.data).results.filter(
@@ -134,7 +135,7 @@ export default function SectionBCreate(props: ISectionBCreateProps) {
     (state) => getResults<ApiBlend>(state.cp_reports.blends.data).results,
   )
 
-  const grid = useRef<any>()
+  const grid = useRef<AgGridReact>()
   const rowData = getRowData(form.section_b, variant).toSorted(
     (a, b) => a.group?.localeCompare(b.group || 'zzz') || 0,
   )
@@ -230,13 +231,16 @@ export default function SectionBCreate(props: ISectionBCreateProps) {
         (substance: any) => substance.row_id == removedSubstance.row_id,
       )
       if (index > -1) {
-        const groupNode = grid.current.api.getRowNode(removedSubstance.group)
-        newData.splice(index, 1)
-        setForm((form: any) => ({ ...form, section_b: newData }))
-        applyTransaction(grid.current.api, {
-          remove: [props.data],
-          update: [{ ...groupNode.data, count: groupNode.data.count - 1 }],
-        })
+        const gridApi = grid.current?.api
+        const groupNode = gridApi?.getRowNode(removedSubstance.group)
+        if (gridApi && groupNode) {
+          newData.splice(index, 1)
+          setForm((form: any) => ({ ...form, section_b: newData }))
+          applyTransaction(gridApi, {
+            remove: [props.data],
+            update: [{ ...groupNode.data, count: groupNode.data.count - 1 }],
+          })
+        }
       }
     },
     openAddChemicalModal: () => setAddChemicalModal(true),
@@ -250,17 +254,20 @@ export default function SectionBCreate(props: ISectionBCreateProps) {
         usages,
         (item: any) => item.usage_id === event.colDef.id,
       )
-      if (usageIndex > -1) {
-        usages[usageIndex].quantity = null
-        applyTransaction(grid.current.api, {
-          update: [{ ...event.data, record_usages: usages }],
-        })
+      const gridApi = grid.current?.api
+      if (gridApi) {
+        if (usageIndex > -1) {
+          usages[usageIndex].quantity = null
+          applyTransaction(gridApi, {
+            update: [{ ...event.data, record_usages: usages }],
+          })
+        }
       }
     }
     return usages
   }
 
-  const onAddChemical = (event: any, newChemical: any) => {
+  const onAddChemical = (_: any, newChemical: any) => {
     if (document.activeElement) {
       // @ts-ignore
       document.activeElement.focus()
@@ -286,19 +293,22 @@ export default function SectionBCreate(props: ISectionBCreateProps) {
     )
 
     if (added) {
-      const blendNode = grid.current.api.getRowNode(serializedBlend.row_id)
-      enqueueSnackbar(
-        `Blend ${serializedBlend.name} already exists in the form.`,
-        { variant: 'info' },
-      )
-      scrollToElement({
-        callback: () => {
-          grid.current.api.flashCells({
-            rowNodes: [blendNode],
-          })
-        },
-        selectors: `.ag-row[row-id=${serializedBlend.row_id}]`,
-      })
+      const gridApi = grid.current?.api
+      const blendNode = gridApi?.getRowNode(serializedBlend.row_id)
+      if (blendNode) {
+        enqueueSnackbar(
+          `Blend ${serializedBlend.name} already exists in the form.`,
+          { variant: 'info' },
+        )
+        scrollToElement({
+          callback: () => {
+            grid.current?.api.flashCells({
+              rowNodes: [blendNode],
+            })
+          },
+          selectors: `.ag-row[row-id=${serializedBlend.row_id}]`,
+        })
+      }
     } else {
       setForm((form: any) => ({
         ...form,
@@ -366,10 +376,11 @@ export default function SectionBCreate(props: ISectionBCreateProps) {
         }}
         onRowDataUpdated={() => {
           if (newNode.current) {
+            const rowNode = newNode.current
             scrollToElement({
               callback: () => {
-                grid.current.api.flashCells({
-                  rowNodes: [newNode.current],
+                grid.current?.api.flashCells({
+                  rowNodes: [rowNode],
                 })
                 newNode.current = undefined
               },
