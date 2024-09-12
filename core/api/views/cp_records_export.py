@@ -255,8 +255,11 @@ class CPCalculatedAmountExportView(CPRecordListView):
         for record in records:
             # set the substance category
             if record.substance:
-                if "HFC" in record.substance.name:
-                    if "pre-blended polyol" in record.substance.name:
+                substance_name = record.substance.name
+                if "HCFC" in substance_name and "pre-blended polyol" in substance_name:
+                    substance_category = "HCFC pre-blended polyol"
+                elif "HFC" in substance_name:
+                    if "pre-blended polyol" in substance_name:
                         substance_category = "HFC pre-blended polyol"
                     else:
                         substance_category = "HFC"
