@@ -96,7 +96,7 @@ from core.api.views.countries import CountryListView
 from core.api.views.comment_types import CommentTypeListView
 
 router = routers.SimpleRouter()
-router.register("projects", ProjectViewSet)
+router.register("projects", ProjectViewSet, basename="project")
 router.register("project-fund", ProjectFundViewSet)
 router.register("project-ods-odp", ProjectOdsOdpViewSet)
 router.register("project-comment", ProjectCommentViewSet)
