@@ -97,13 +97,6 @@ class CPPricesExtractionWriter(BaseExtractionAllWriter):
                     value = float(value)
                 except (TypeError, ValueError):
                     pass
-            elif "fob" in header_id or "retail" in header_id:
-                value = record.get(header_id, None)
-                year = int(header_id.rsplit("_", 1)[1])
-                is_fob = record.get(f"fob_{year}", "No")
-                is_retail = record.get(f"retail_{year}", "No")
-                if year < 2023 and is_fob == "No" and is_retail == "No":
-                    value = ""
             else:
                 value = record.get(header_id, None)
 

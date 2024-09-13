@@ -728,11 +728,19 @@ class CPDataExtractionAllExport(views.APIView):
             year = price.country_programme_report.year
             if key not in final_prices_dict:
                 final_prices_dict[key] = {}
+
+            if not price.is_fob and not price.is_retail and year < 2023:
+                is_fob = ""
+                is_retail = ""
+            else:
+                is_fob = "Yes" if price.is_fob else "No"
+                is_retail = "Yes" if price.is_retail else "No"
+
             final_prices_dict[key].update(
                 {
                     f"price_{year}": price.current_year_price,
-                    f"fob_{year}": "Yes" if price.is_fob else "No",
-                    f"retail_{year}": "Yes" if price.is_retail else "No",
+                    f"fob_{year}": is_fob,
+                    f"retail_{year}": is_retail,
                     f"remarks_{year}": price.remarks,
                 }
             )
