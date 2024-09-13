@@ -184,7 +184,7 @@ class CPHFCConsumptionMTCO2Writer(BaseExtractionAllWriter):
                     },
                     {
                         "id": f"consumption_co2_{year}",
-                        "headerName": f"Consumption value (MT CO2-eq tonnes) {year}",
+                        "headerName": f"Consumption value (MT CO₂-eq tonnes) {year}",
                         "align": "right",
                         "type": "number",
                         "column_width": self.COLUMN_WIDTH * 2,
@@ -228,7 +228,7 @@ class CPHFCConsumptionMTCO2Writer(BaseExtractionAllWriter):
                 "headerName": "Notes",
             },
         ]
-        sheet = wb.create_sheet("HFC-Consumption(MTvsCO2Equi)")
+        sheet = wb.create_sheet("HFC-Consumption(MTvsCO₂Equi)")
         super().__init__(sheet, headers)
 
 

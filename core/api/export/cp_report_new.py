@@ -32,7 +32,7 @@ class CPReportNewExporter(CPReportBase):
         )
 
     def export_section_b(self, sheet, data, usages, convert_to="mt"):
-        convertion = "METRIC TONNES" if convert_to == "mt" else "CO2-eq tonnes"
+        convertion = "METRIC TONNES" if convert_to == "mt" else "CO₂-eq tonnes"
         self._export_usage_section(
             sheet,
             data,
@@ -144,14 +144,14 @@ class CPReportNewExporter(CPReportBase):
                         {
                             "id": "is_retail",
                             "headerName": "Is Retail price?",
-                            "type": "boolean",
                             "is_numeric": False,
+                            "method": self.get_fob_retail_value,
                         },
                         {
                             "id": "is_fob",
                             "headerName": "Is FOB price?",
-                            "type": "boolean",
                             "is_numeric": False,
+                            "method": self.get_fob_retail_value,
                         },
                         {
                             "id": "remarks",
@@ -302,3 +302,9 @@ class CPReportNewExporter(CPReportBase):
             self.COLUMN_WIDTH * 4
         )
         sheet.row_dimensions[row_idx].height = self.ROW_HEIGHT * 16
+
+    def get_fob_retail_value(self, cp_price, header):
+        year = cp_price.country_programme_report.year
+        if not cp_price["is_fob"] and not cp_price["is_retail"] and year < 2023:
+            return ""
+        return "Yes" if cp_price[header["id"]] else "No"

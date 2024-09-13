@@ -242,25 +242,36 @@ class CPCalculatedAmountExportView(CPRecordListView):
             .prefetch_related("record_usages")
             .all()
         )
-        # set all consumprtion to 0
+        # set all consumption to 0
         data = {
             group: {"sectorial_total": 0, "consumption": 0}
             for group in SUBSTANCE_GROUP_ID_TO_CATEGORY.values()
             if group not in EXCLUDE_FROM_CONSUMPTION
         }
+        data["HFC pre-blended polyol"] = {"sectorial_total": 0, "consumption": 0}
+        data["HCFC pre-blended polyol"] = {"sectorial_total": 0, "consumption": 0}
 
         # calculate the consumption and sectorial total
         for record in records:
             # set the substance category
             if record.substance:
-                if "HFC" in record.substance.name:
-                    substance_category = "HFC"
+                substance_name = record.substance.name
+                if "HCFC" in substance_name and "pre-blended polyol" in substance_name:
+                    substance_category = "HCFC pre-blended polyol"
+                elif "HFC" in substance_name:
+                    if "pre-blended polyol" in substance_name:
+                        substance_category = "HFC pre-blended polyol"
+                    else:
+                        substance_category = "HFC"
                 else:
                     substance_category = SUBSTANCE_GROUP_ID_TO_CATEGORY.get(
                         record.substance.group.group_id
                     )
             else:
-                substance_category = "HFC"
+                if record.blend.is_related_preblended_polyol:
+                    substance_category = "HFC pre-blended polyol"
+                else:
+                    substance_category = "HFC"
 
             if substance_category in EXCLUDE_FROM_CONSUMPTION:
                 continue
@@ -271,7 +282,7 @@ class CPCalculatedAmountExportView(CPRecordListView):
 
             # convert data
             if substance_category == "HFC":
-                # convert consumption value to CO2 equivalent
+                # convert consumption value to CO₂ equivalent
                 consumption *= record.get_chemical_gwp() or 0
                 sectorial_total *= record.get_chemical_gwp() or 0
             else:
@@ -282,13 +293,13 @@ class CPCalculatedAmountExportView(CPRecordListView):
             data[substance_category]["sectorial_total"] += sectorial_total
             data[substance_category]["consumption"] += consumption
 
-        # set the correct decimals number (for odp 2 decimals, for CO2 0 decimals)
+        # set the correct decimals number (for odp 2 decimals, for CO₂ 0 decimals)
         response_data = []
         for group, values in data.items():
             if group == "HFC":
                 values["consumption"] = round(values["consumption"], 0)
                 values["sectorial_total"] = round(values["sectorial_total"], 0)
-                values["unit"] = "CO2-eq tonnes"
+                values["unit"] = "CO₂-eq tonnes"
             else:
                 values["consumption"] = round(values["consumption"], 2)
                 values["sectorial_total"] = round(values["sectorial_total"], 2)
@@ -416,9 +427,9 @@ class CPHFCExportView(CPHFCHCFCExportBaseView):
         )
         usages = {
             "(MT)": [],
-            "(CO2-eq tonnes)": [],
+            "(CO₂-eq tonnes)": [],
         }
-        for q_type in ["(MT)", "(CO2-eq tonnes)"]:
+        for q_type in ["(MT)", "(CO₂-eq tonnes)"]:
             for us_format in cp_report_formats:
                 usages[q_type].append(
                     {
@@ -430,7 +441,7 @@ class CPHFCExportView(CPHFCHCFCExportBaseView):
                     }
                 )
 
-        return usages["(MT)"], usages["(CO2-eq tonnes)"]
+        return usages["(MT)"], usages["(CO₂-eq tonnes)"]
 
     def get(self, *args, **kwargs):
         min_year, max_year = get_year_params_from_request(self.request)
@@ -494,7 +505,7 @@ class CPDataExtractionAllExport(views.APIView):
         )
         exporter.write(data)
 
-        # HFC-Consumption(MTvsCO2)
+        # HFC-Consumption(MTvsCO₂)
         exporter = CPHFCConsumptionMTCO2Writer(wb, min_year, max_year)
         data = self._get_hfc_consumption_data(
             min_year, max_year, using_consumption_value_set, existent_reports
@@ -717,11 +728,19 @@ class CPDataExtractionAllExport(views.APIView):
             year = price.country_programme_report.year
             if key not in final_prices_dict:
                 final_prices_dict[key] = {}
+
+            if not price.is_fob and not price.is_retail and year < 2023:
+                is_fob = ""
+                is_retail = ""
+            else:
+                is_fob = "Yes" if price.is_fob else "No"
+                is_retail = "Yes" if price.is_retail else "No"
+
             final_prices_dict[key].update(
                 {
                     f"price_{year}": price.current_year_price,
-                    f"fob_{year}": "Yes" if price.is_fob else "No",
-                    f"retail_{year}": "Yes" if price.is_retail else "No",
+                    f"fob_{year}": is_fob,
+                    f"retail_{year}": is_retail,
                     f"remarks_{year}": price.remarks,
                 }
             )
@@ -905,7 +924,7 @@ class CPDataExtractionAllExport(views.APIView):
             )
             country_records[key][f"consumption_mt_{year}"] += consumption_value
 
-            # convert consumption value to CO2 equivalent
+            # convert consumption value to CO₂ equivalent
             country_records[key][f"consumption_co2_{year}"] += (
                 consumption_value * record.get_chemical_gwp()
             )

@@ -4,7 +4,7 @@ from core.api.export.base import BaseWriter
 
 
 class CPCalculatedAmountWriter(BaseWriter):
-    ROW_HEIGHT = 50
+    ROW_HEIGHT = 25
     COLUMN_WIDTH = 17
     header_row_start_idx = 1
 
@@ -29,7 +29,7 @@ class CPCalculatedAmountWriter(BaseWriter):
                 "headerName": f"{year} - Calculated Consumption = Import-Export+Production",
                 "type": "number",
                 "align": "right",
-                "column_width": self.COLUMN_WIDTH * 2,
+                "column_width": self.COLUMN_WIDTH,
             },
         ]
         sheet = wb.create_sheet("Calculated Amount")
@@ -37,5 +37,10 @@ class CPCalculatedAmountWriter(BaseWriter):
 
     def _write_header_cell(self, row, column, value, comment=None):
         cell = super()._write_header_cell(row, column, value, comment)
-        cell.font = Font(name=DEFAULT_FONT.name, bold=True, size=10)
+        cell.font = Font(name=DEFAULT_FONT.name, bold=True, size=7)
+        return cell
+
+    def _write_record_cell(self, row, column, value, read_only=False, align="left"):
+        cell = super()._write_record_cell(row, column, value, read_only, align)
+        cell.font = Font(size=7)
         return cell

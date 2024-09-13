@@ -58,7 +58,7 @@ class TestCPExportXLSX(BaseTest):
         ]
         assert wb["Section A"]["A1"].value == "Country: Romania Year: 2019"
         assert "ODP" in wb["Section A"]["A2"].value
-        assert "CO2-eq tonnes" in wb["Section B"]["A2"].value
+        assert "CO₂-eq tonnes" in wb["Section B"]["A2"].value
 
     def test_get_cp_export_old(self, user, cp_report_2005, _setup_old_cp_report):
         self.client.force_authenticate(user=user)
@@ -253,7 +253,7 @@ class TestCPHFCExtractionExport(BaseTest):
         # check number of columns
         # country, status, chemical, gwp, year,
         # usage(mt), total(mt), import(mt), export(mt), production(mt),
-        # usage(co2), total(co2), import(co2), export(co2), production(co2), notes
+        # usage(CO₂), total(CO₂), import(CO₂), export(CO₂), production(CO₂), notes
         assert wb["2019"].max_column == 16
         assert wb["2020"].max_column == 16
 
@@ -273,7 +273,7 @@ class TestCPExtractionALLExport(BaseTest):
             "ODSPrice",
             "CP-Details",
             "CPConsumption(ODP)",
-            "HFC-Consumption(MTvsCO2Equi)",
+            "HFC-Consumption(MTvsCO₂Equi)",
             "HFC-23Generation",
             "HFC-23Emission",
             "MbrConsumption",
@@ -282,7 +282,7 @@ class TestCPExtractionALLExport(BaseTest):
         assert wb["ODSPrice"].max_row == 8
         assert wb["CP-Details"].max_row == 8
         assert wb["CPConsumption(ODP)"].max_row == 2
-        assert wb["HFC-Consumption(MTvsCO2Equi)"].max_row == 2
+        assert wb["HFC-Consumption(MTvsCO₂Equi)"].max_row == 2
         assert wb["HFC-23Generation"].max_row == 2
         assert wb["HFC-23Emission"].max_row == 3
         assert wb["MbrConsumption"].max_row == 1
@@ -295,8 +295,8 @@ class TestCPExtractionALLExport(BaseTest):
         # country, substance, value, notes
         assert wb["CPConsumption(ODP)"].max_column == 4
         # country, status, chemical, group,
-        # 2019 MT, 2019 CO2, 2019 Servicing, 2019 Usage Total, notes
-        assert wb["HFC-Consumption(MTvsCO2Equi)"].max_column == 9
+        # 2019 MT, 2019 CO₂, 2019 Servicing, 2019 Usage Total, notes
+        assert wb["HFC-Consumption(MTvsCO₂Equi)"].max_column == 9
         # country, year, substance, all_uses, feedstock, destruction, notes
         assert wb["HFC-23Generation"].max_column == 7
         # country, year, facility, total, all_uses, feedstock_gc, destruction
@@ -318,7 +318,7 @@ class TestCPCalculatedAmountExport(BaseTest):
 
         wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
         assert wb.sheetnames == ["Calculated Amount"]
-        assert wb["Calculated Amount"].max_row == 8
+        assert wb["Calculated Amount"].max_row == 10
         assert wb["Calculated Amount"].max_column == 4
 
 
