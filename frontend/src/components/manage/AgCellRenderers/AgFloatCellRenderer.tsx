@@ -90,7 +90,7 @@ export default function AgFloatCellRenderer(props: CustomCellRendererProps) {
   }
 
   if (isNull(valueMT)) {
-    valueMT = 0
+    valueMT = value
   }
 
   const { TitleContent, formattedValue } = getDecimalCellValue(

@@ -10,7 +10,8 @@ import NextLink, { LinkProps as NextLinkProps } from 'next/link'
 
 export type LinkProps = { button?: false; href: string } & MuiLinkProps &
   NextLinkProps
-export type ButtonProps = { button: true; href: string } & MuiButtonProps
+export type ButtonProps = { button: true; href: string } & MuiButtonProps &
+  NextLinkProps
 
 function Link({
   button,

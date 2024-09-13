@@ -314,7 +314,7 @@ export default function CPViewWrapper(props: { iso3: string; year: number }) {
   const countries = useStore((state) => state.common.countries_for_listing.data)
   const country = countries.filter((country) => country.iso3 === iso3)[0]
 
-  const { fetchBundle, fetchReportDiff, report, setReport } = useStore(
+  const { fetchBundle, report, setReport } = useStore(
     (state) => state.cp_reports,
   )
 
@@ -338,12 +338,6 @@ export default function CPViewWrapper(props: { iso3: string; year: number }) {
   useEffect(() => {
     fetchBundle(country.id, year, true)
   }, [country, year, fetchBundle])
-
-  useEffect(() => {
-    if (report.data?.version) {
-      fetchReportDiff(country.id, year, report.data.version)
-    }
-  }, [country.id, fetchReportDiff, report.data?.version, year])
 
   if (report.error) {
     return (

@@ -31,6 +31,10 @@ const nextConfig = {
 
     config.plugins.unshift(new webpack.DefinePlugin(globals))
 
+    if (isServer) {
+      config.devtool = 'source-map'
+    }
+
     if (!dev) {
       config.module.rules.unshift({
         exclude: /node_modules/,

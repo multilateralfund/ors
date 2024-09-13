@@ -1,6 +1,8 @@
+import { AdmColumn } from '@ors/types/api_empty-form'
+
 import { useCallback, useMemo } from 'react'
 
-import { GridOptions } from 'ag-grid-community'
+import { ColDef, GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
@@ -10,10 +12,10 @@ import {
   defaultColDef,
 } from '@ors/config/Table/columnsDef'
 
-function useGridOptions(props: { adm_columns: any; model: string }) {
+function useGridOptions(props: { adm_columns: AdmColumn[] }) {
   const { adm_columns } = props
 
-  const mapAdmColumn = useCallback((column: any) => {
+  const mapAdmColumn = useCallback((column: AdmColumn): ColDef => {
     return {
       id: column.id,
       category: 'adm',
