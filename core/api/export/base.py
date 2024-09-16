@@ -155,6 +155,10 @@ class BaseWriter:
         )
         if comment:
             cell.comment = Comment(comment, "")
+        # Hack to avoid clipped header in exported PDF.
+        # TODO: find a way (?) to improve this in the future.
+        if value == "Other unidentified manufacturing":
+            self.sheet.row_dimensions[row].height = self.ROW_HEIGHT * 4 / 3
         return cell
 
     def _write_record_cell(
