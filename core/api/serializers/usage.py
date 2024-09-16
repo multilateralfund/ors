@@ -17,6 +17,7 @@ class UsageSerializer(serializers.ModelSerializer):
     columnCategory = serializers.SerializerMethodField()
     dataType = serializers.SerializerMethodField()
     align = serializers.SerializerMethodField()  # we need this for exports
+    is_numeric = serializers.SerializerMethodField()  # we need this for exports
 
     class Meta:
         model = Usage
@@ -29,6 +30,7 @@ class UsageSerializer(serializers.ModelSerializer):
             "columnCategory",
             "dataType",
             "align",
+            "is_numeric",
         ]
 
     def get_headerName(self, obj):
@@ -47,3 +49,6 @@ class UsageSerializer(serializers.ModelSerializer):
 
     def get_align(self, _obj):
         return "right"
+
+    def get_is_numeric(self, _obj):
+        return True
