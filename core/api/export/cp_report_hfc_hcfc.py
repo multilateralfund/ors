@@ -13,6 +13,7 @@ class CPReportHCFCWriter(CPDataHFCHCFCWriterBase):
             {
                 "id": "chemical_name",
                 "headerName": "Substance",
+                "can_be_clipped": True,
             },
             {
                 "id": "country_category",

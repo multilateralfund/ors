@@ -332,6 +332,7 @@ class CPDataHFCHCFCWriterBase(BaseWriter):
     - get_value_for_header method should return the value for the given header
     - __init__ method should call super().__init__ and set the headers
     """
+    OVERSIZED_CELL_THRESHOLD = 12
 
     def write_data(self, data):
         row_idx = self.header_row_end_idx + 1
@@ -370,6 +371,7 @@ class CPDataHFCHCFCWriterBase(BaseWriter):
                 header["column"],
                 value,
                 align=header.get("align", "left"),
+                can_be_clipped=header.get("can_be_clipped", False),
             )
 
 
