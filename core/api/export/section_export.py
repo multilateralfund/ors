@@ -5,6 +5,7 @@ from core.api.export.base import BaseWriter
 
 
 class SectionWriter(BaseWriter):
+    OVERSIZED_CELL_THRESHOLD = 50
 
     def __init__(self, sheet, headers, convert_to="mt"):
         self.convert_to = convert_to
@@ -85,6 +86,7 @@ class SectionWriter(BaseWriter):
             for item in record.get("record_usages", [])
         }
         for header_id, header in self.headers.items():
+            is_oversized = False
             if header.get("columnCategory") == "usage":
                 value = by_usage_id.get(header_id)
             else:
@@ -109,12 +111,20 @@ class SectionWriter(BaseWriter):
             else:
                 value = value or ""
 
+            if (
+                header.get("headerName") == "Substance"
+                and not header.get("is_numeric", True)
+                and len(value) > self.OVERSIZED_CELL_THRESHOLD
+            ):
+                is_oversized = True
+
             self._write_record_cell(
                 row_idx,
                 header["column"],
                 value,
                 read_only=read_only,
                 align=header.get("align", "left"),
+                is_oversized=is_oversized,
             )
 
     def _write_total_row(self, row_idx, group_ranges):

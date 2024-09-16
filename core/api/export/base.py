@@ -98,7 +98,10 @@ class BaseWriter:
             )
 
         for row in range(self.header_row_start_idx, self.sheet.max_row + 1):
-            self.sheet.row_dimensions[row].height = self.ROW_HEIGHT
+            # For "oversized" cell contents, the height can be set in the previous step,
+            # so we need to avoid overwriting it.
+            if not self.sheet.row_dimensions[row].height:
+                self.sheet.row_dimensions[row].height = self.ROW_HEIGHT
 
     def _compute_header_positions(self, items, column=1, row=3):
         """
@@ -151,7 +154,9 @@ class BaseWriter:
             cell.comment = Comment(comment, "")
         return cell
 
-    def _write_record_cell(self, row, column, value, read_only=False, align="left"):
+    def _write_record_cell(
+        self, row, column, value, read_only=False, align="left", is_oversized=False
+    ):
         cell = self.sheet.cell(row, column, value)
         cell.alignment = Alignment(horizontal=align, vertical="center", wrap_text=True)
         cell.border = Border(
@@ -160,6 +165,8 @@ class BaseWriter:
             top=Side(style="hair"),
             bottom=Side(style="hair"),
         )
+        if is_oversized:
+            self.sheet.row_dimensions[row].height = self.ROW_HEIGHT * 3 / 2
         if align == "right":
             # this cell will contain a number
             cell.number_format = "###,###,##0.00#############"
