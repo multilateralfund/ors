@@ -1,4 +1,4 @@
-import type { RowData } from './types'
+import type { SectionARowData } from '../types'
 
 import { useMemo } from 'react'
 
@@ -36,7 +36,7 @@ function useGridOptions(props: {
       columnDefs: [
         {
           ...sectionColDefById['display_name'],
-          cellRenderer: (props: CustomCellRendererProps<RowData>) => {
+          cellRenderer: (props: CustomCellRendererProps<SectionARowData>) => {
             if (
               props.data?.rowType === 'control' &&
               props.data?.row_id === 'control'
@@ -81,7 +81,9 @@ function useGridOptions(props: {
 
             return <AgCellRenderer {...props} />
           },
-          cellRendererParams: (props: ICellRendererParams<RowData>) => ({
+          cellRendererParams: (
+            props: ICellRendererParams<SectionARowData>,
+          ) => ({
             ...sectionColDefById['display_name'].cellRendererParams(props),
             options: !props.data?.mandatory && !props.data?.rowType && (
               <IoTrash
@@ -197,7 +199,7 @@ function useGridOptions(props: {
       ],
       defaultColDef: {
         autoHeight: true,
-        cellClass: (props: CellClassParams<RowData>) => {
+        cellClass: (props: CellClassParams<SectionARowData>) => {
           return cx({
             'ag-cell-hashed theme-dark:bg-gray-900/40': includes(
               props.data?.excluded_usages || [],
@@ -207,7 +209,7 @@ function useGridOptions(props: {
             'ag-text-center': !includes(['display_name'], props.colDef.field),
           })
         },
-        editable: (props: EditableCallbackParams<RowData>) => {
+        editable: (props: EditableCallbackParams<SectionARowData>) => {
           if (
             includes(NON_EDITABLE_ROWS, props.data?.rowType) ||
             includes(['display_name'], props.colDef.field) ||

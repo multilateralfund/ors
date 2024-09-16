@@ -2,6 +2,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 
 import { Tab, Tabs, Tooltip, Typography } from '@mui/material'
+import { GetRowIdParams } from 'ag-grid-community'
 import cx from 'classnames'
 import { produce } from 'immer'
 import { includes } from 'lodash'
@@ -23,6 +24,7 @@ import { CPArchiveHeader, CPViewHeader } from './CPHeader'
 import CPSectionWrapper from './CPSectionWrapper'
 import DownloadCalculatedAmounts from './DownloadCalculatedAmounts'
 import DownloadReport from './DownloadReport'
+import { CPContext, CPRowData } from './types'
 import { CPBaseForm } from './typesCPCreate'
 import { ITableProps } from './typesCPView'
 
@@ -132,7 +134,7 @@ const TableProps: ITableProps = {
   domLayout: 'autoHeight',
   enableFullScreen: true,
   enablePagination: false,
-  getRowId: (props: any) => {
+  getRowId: (props: GetRowIdParams<CPRowData, CPContext>) => {
     return props.data.row_id
   },
   noRowsOverlayComponentParams: { label: 'No data reported' },

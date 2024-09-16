@@ -1,3 +1,4 @@
+import type { SectionARowData } from '../types'
 import { CPReport } from '@ors/types/api_country-programme_records'
 import { ReportVariant } from '@ors/types/variants'
 
@@ -11,7 +12,7 @@ import components from '@ors/config/Table/components'
 
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
-import SectionA, { DeserializedDataA } from '@ors/models/SectionA'
+import SectionA from '@ors/models/SectionA'
 
 import { IBaseSectionViewProps } from '../../types'
 import TableDataSelector, { useTableDataSelector } from '../TableDataSelector'
@@ -19,25 +20,14 @@ import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
-export type RowData = {
-  count?: number
-  display_name?: string
-  field?: string
-  group?: string
-  id?: number
-  row_id: string
-  rowType: string
-  tooltip?: boolean
-} & DeserializedDataA
-
 function getRowData(
   report: CPReport,
   showOnlyReported: boolean,
   model: ReportVariant['model'],
-): RowData[] {
-  let rowData: RowData[] = []
+): SectionARowData[] {
+  let rowData: SectionARowData[] = []
   const dataByGroup: Record<string, any[]> = {}
-  const groups: Array<string> = []
+  const groups: string[] = []
 
   let data = report.section_a
   if (showOnlyReported) {

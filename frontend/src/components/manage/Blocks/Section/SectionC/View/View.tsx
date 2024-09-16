@@ -9,27 +9,21 @@ import { each, includes, union } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
-import SectionC, { DeserializedDataC } from '@ors/models/SectionC'
+import SectionC from '@ors/models/SectionC'
 
+import { SectionCRowData } from '../types'
 import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
-export type RowData = {
-  count?: number
-  id?: number
-  rowType?: string
-  tooltip?: boolean
-} & DeserializedDataC
-
 function getRowData(
-  report: any,
+  report: CPReport,
   model: string,
   showOnlyReported: boolean,
-): RowData[] {
-  let rowData: Array<any> = []
+): SectionCRowData[] {
+  let rowData: SectionCRowData[] = []
   const dataByGroup: Record<string, any> = {}
-  const groups: Array<string> = []
+  const groups: string[] = []
 
   let data = report.section_c
   if (showOnlyReported) {

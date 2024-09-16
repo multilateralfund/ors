@@ -39,3 +39,9 @@ export interface IBaseSectionViewProps<T>
   report: CPReport
   showComments: boolean
 }
+
+export type PinnedBottomRowData = {
+  display_name: 'TOTAL'
+  rowType: 'total'
+  tooltip: true
+}

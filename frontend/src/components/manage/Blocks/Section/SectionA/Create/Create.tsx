@@ -1,4 +1,3 @@
-import { EmptyFormType } from '@ors/types/api_empty-form'
 import { ApiSubstance } from '@ors/types/api_substances'
 import { ReportVariant } from '@ors/types/variants'
 
@@ -17,16 +16,16 @@ import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 import SectionA from '@ors/models/SectionA'
 import { useStore } from '@ors/store'
 
+import { ISectionACreateProps, SectionARowData } from '../types'
 import useGridOptions from './schema'
-import { ISectionACreateProps, RowData } from './types'
 
 import { IoAddCircle, IoInformationCircleOutline } from 'react-icons/io5'
 
 function getRowData(
   data: SectionA['data'],
   model: ReportVariant['model'],
-): RowData[] {
-  let rowData: RowData[] = []
+): SectionARowData[] {
+  let rowData: SectionARowData[] = []
   const dataByGroup: Record<string, any[]> = {}
   const groups: Array<string> = []
   each(data, (item) => {
@@ -75,8 +74,8 @@ function getRowData(
   return rowData
 }
 
-function getInitialPinnedBottomRowData(model: string): RowData[] {
-  const pinnedBottomRowData: RowData[] = [
+function getInitialPinnedBottomRowData(model: string): SectionARowData[] {
+  const pinnedBottomRowData: SectionARowData[] = [
     {
       display_name: 'TOTAL',
       mandatory: false,
@@ -107,7 +106,7 @@ export default function SectionACreate(props: ISectionACreateProps) {
   )
 
   const grid = useRef<any>()
-  const [pinnedBottomRowData] = useState<RowData[]>(
+  const [pinnedBottomRowData] = useState<SectionARowData[]>(
     getInitialPinnedBottomRowData(variant.model),
   )
   const [addSubstanceModal, setAddSubstanceModal] = useState(false)

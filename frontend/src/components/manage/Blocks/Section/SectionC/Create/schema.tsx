@@ -1,4 +1,4 @@
-import type { RowData } from './types'
+import type { SectionCRowData } from '../types'
 
 import { useMemo } from 'react'
 
@@ -33,7 +33,7 @@ function useGridOptions(props: {
     () => ({
       columnDefs: [
         {
-          cellRenderer: (props: CustomCellRendererProps<RowData>) => {
+          cellRenderer: (props: CustomCellRendererProps<SectionCRowData>) => {
             if (props.data?.rowType === 'control') {
               return (
                 <Button
@@ -47,7 +47,9 @@ function useGridOptions(props: {
             }
             return <AgCellRenderer {...props} />
           },
-          cellRendererParams: (props: ICellRendererParams<RowData>) => ({
+          cellRendererParams: (
+            props: ICellRendererParams<SectionCRowData>,
+          ) => ({
             ...sectionColDefById['display_name'],
             className: cx({
               'font-bold': includes(
@@ -108,13 +110,13 @@ function useGridOptions(props: {
       ],
       defaultColDef: {
         autoHeight: true,
-        cellClass: (props: CellClassParams<RowData>) => {
+        cellClass: (props: CellClassParams<SectionCRowData>) => {
           return cx({
             'ag-flex-cell': props.data?.rowType === 'control',
             'ag-text-right': !includes(['display_name'], props.colDef.field),
           })
         },
-        editable: (props: EditableCallbackParams<RowData>) => {
+        editable: (props: EditableCallbackParams<SectionCRowData>) => {
           if (
             includes(NON_EDITABLE_ROWS, props.data?.rowType) ||
             includes(['display_name'], props.colDef.field) ||

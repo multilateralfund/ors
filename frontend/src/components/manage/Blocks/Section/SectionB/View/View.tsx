@@ -1,4 +1,6 @@
 import type { ITableProps } from '../../../CountryProgramme/typesCPView'
+import type { PinnedBottomRowData } from '../../types'
+import type { SectionBRowData } from '../types'
 import { CPReport } from '@ors/types/api_country-programme_records'
 import { EmptyFormType } from '@ors/types/api_empty-form'
 import { ReportVariant } from '@ors/types/variants'
@@ -11,7 +13,6 @@ import { each, includes, union } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
-import { DeserializedDataB } from '@ors/models/SectionB'
 
 import TableDataSelector, {
   useTableDataSelector,
@@ -29,24 +30,14 @@ function getGroupName(substance: CPReport['section_b'][0], model: string) {
   return substance.group || 'Other'
 }
 
-export type RowData = {
-  count?: number
-  display_name?: string
-  group?: string
-  id?: number
-  row_id: string
-  rowType: string
-  tooltip?: boolean
-} & DeserializedDataB
-
 function getRowData(
   report: CPReport,
   variant: ReportVariant,
   showOnlyReported: boolean,
-): RowData[] {
-  let rowData: Array<any> = []
+): SectionBRowData[] {
+  let rowData: SectionBRowData[] = []
   const dataByGroup: Record<string, any> = {}
-  const groups: Array<string> = []
+  const groups: string[] = []
 
   let data = report.section_b
   if (showOnlyReported) {
@@ -101,7 +92,7 @@ function getRowData(
   return rowData
 }
 
-function getPinnedRowData(rowData: any) {
+function getPinnedRowData(rowData: SectionBRowData[]): PinnedBottomRowData[] {
   return rowData.length > 0
     ? [{ display_name: 'TOTAL', rowType: 'total', tooltip: true }]
     : []

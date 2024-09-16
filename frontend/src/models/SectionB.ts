@@ -9,7 +9,7 @@ export type SectionBFormFields = {
   import_quotas?: number
   imports?: number
   production?: number
-  record_usages?: Array<number>
+  record_usages?: number[]
   remarks?: string
 }
 

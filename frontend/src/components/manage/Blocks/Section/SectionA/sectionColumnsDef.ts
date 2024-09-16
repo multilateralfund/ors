@@ -4,7 +4,7 @@ import { includes, startsWith } from 'lodash'
 
 import { colDefById } from '@ors/config/Table/columnsDef'
 
-import { RowData } from './Create/types'
+import { SectionARowData } from './types'
 
 const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
   ...colDefById,
@@ -25,7 +25,7 @@ const sectionColDefByIdFunc = (model: string): Record<string, ColDef> => ({
   },
   display_name: {
     ...colDefById['display_name'],
-    cellRendererParams: (props: ICellRendererParams<RowData>) => {
+    cellRendererParams: (props: ICellRendererParams<SectionARowData>) => {
       return {
         className: cx({
           'font-bold': includes(

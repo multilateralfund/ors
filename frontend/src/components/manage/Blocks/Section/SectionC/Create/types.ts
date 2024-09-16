@@ -1,15 +1,5 @@
 import { ApiSubstance } from '@ors/types/api_substances'
 
-import SectionC, { DeserializedDataC } from '@ors/models/SectionC'
-
-import { IBaseSectionProps } from '../../types'
-
-export type RowData = {
-  count?: number
-  rowType?: string
-  tooltip?: boolean
-} & DeserializedDataC
-
 export type SubstancePrice = {
   blend_id: null | number
   current_year_price: string
@@ -18,8 +8,6 @@ export type SubstancePrice = {
   substance_id: null | number
 }
 export type SubstancePrices = SubstancePrice[]
-
-export interface ISectionCCreateProps extends IBaseSectionProps<SectionC> {}
 
 export interface CreateSubstanceProps {
   onCancel: () => void

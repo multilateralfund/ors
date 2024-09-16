@@ -1,3 +1,5 @@
+import type { ISectionCCreateProps, SectionCRowData } from '../types'
+import type { SubstancePrice, SubstancePrices } from './types'
 import { ApiBlend } from '@ors/types/api_blends'
 import { EmptyFormSubstance } from '@ors/types/api_empty-form'
 import { ApiSubstance } from '@ors/types/api_substances'
@@ -31,12 +33,6 @@ import { useStore } from '@ors/store'
 import AddSubstance from './AddSubstance'
 import CreateSubstance from './CreateSubstance'
 import useGridOptions from './schema'
-import {
-  ISectionCCreateProps,
-  RowData,
-  SubstancePrice,
-  SubstancePrices,
-} from './types'
 
 import { IoAddCircle, IoInformationCircleOutline } from 'react-icons/io5'
 
@@ -54,9 +50,9 @@ function getRowData(
   substanceRows: EmptyFormSubstance[],
   substancePrices: SubstancePrices,
   model: string,
-): RowData[] {
-  let rowData: RowData[] = []
-  const dataByGroup: Record<string, RowData[]> = {}
+): SectionCRowData[] {
+  let rowData: SectionCRowData[] = []
+  const dataByGroup: Record<string, SectionCRowData[]> = {}
   const groups: string[] = []
   const substanceOrder = substanceRows.reduce(
     (acc: Record<string, number>, val) => {
