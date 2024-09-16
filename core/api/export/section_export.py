@@ -117,6 +117,7 @@ class SectionWriter(BaseWriter):
                 value,
                 read_only=read_only,
                 align=header.get("align", "left"),
+                can_be_clipped=header.get("can_be_clipped", False),
             )
 
     def _write_total_row(self, row_idx, group_ranges):

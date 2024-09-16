@@ -9,10 +9,13 @@ from openpyxl.styles import Font
 from openpyxl.styles import DEFAULT_FONT
 from openpyxl.utils import get_column_letter
 
+# pylint: disable=R0913
+
 
 class BaseWriter:
     ROW_HEIGHT = 30
     COLUMN_WIDTH = 15
+    OVERSIZED_CELL_THRESHOLD = 25
     header_row_start_idx = 2
 
     def __init__(self, sheet, headers):
@@ -98,7 +101,10 @@ class BaseWriter:
             )
 
         for row in range(self.header_row_start_idx, self.sheet.max_row + 1):
-            self.sheet.row_dimensions[row].height = self.ROW_HEIGHT
+            # For "oversized" cell contents, the height can be set in the previous step,
+            # so we need to avoid overwriting it.
+            if not self.sheet.row_dimensions[row].height:
+                self.sheet.row_dimensions[row].height = self.ROW_HEIGHT
 
     def _compute_header_positions(self, items, column=1, row=3):
         """
@@ -151,7 +157,9 @@ class BaseWriter:
             cell.comment = Comment(comment, "")
         return cell
 
-    def _write_record_cell(self, row, column, value, read_only=False, align="left"):
+    def _write_record_cell(
+        self, row, column, value, read_only=False, align="left", can_be_clipped=False
+    ):
         cell = self.sheet.cell(row, column, value)
         cell.alignment = Alignment(horizontal=align, vertical="center", wrap_text=True)
         cell.border = Border(
@@ -160,6 +168,16 @@ class BaseWriter:
             top=Side(style="hair"),
             bottom=Side(style="hair"),
         )
+        if can_be_clipped:
+            # We assume that only string values can be clipped.
+            # Adding 2 chars to the length just in case.
+            needed_rows = (len(value) + 2) / self.OVERSIZED_CELL_THRESHOLD
+            # Assuming (naively) that 50 characters fit into "normal" 2-row cells.
+            if needed_rows > 2:
+                # Add 1/2 * ROW_HEIGHT for each extra needed row
+                self.sheet.row_dimensions[row].height = (
+                    self.ROW_HEIGHT * needed_rows / 2
+                )
         if align == "right":
             # this cell will contain a number
             cell.number_format = "###,###,##0.00#############"
@@ -310,6 +328,7 @@ class CPDataHFCHCFCWriterBase(BaseWriter):
     - get_value_for_header method should return the value for the given header
     - __init__ method should call super().__init__ and set the headers
     """
+    OVERSIZED_CELL_THRESHOLD = 12
 
     def write_data(self, data):
         row_idx = self.header_row_end_idx + 1
@@ -348,6 +367,7 @@ class CPDataHFCHCFCWriterBase(BaseWriter):
                 header["column"],
                 value,
                 align=header.get("align", "left"),
+                can_be_clipped=header.get("can_be_clipped", False),
             )
 
 

@@ -24,6 +24,7 @@ class CPReportOldExporter(CPReportBase):
                             "id": "display_name",
                             "headerName": "Substance",
                             "is_numeric": False,
+                            "can_be_clipped": True,
                             "column_width": self.COLUMN_WIDTH * 2,
                         },
                         {
@@ -58,6 +59,7 @@ class CPReportOldExporter(CPReportBase):
                             "id": "remarks",
                             "headerName": "Remarks",
                             "is_numeric": False,
+                            "can_be_clipped": True,
                             "column_width": self.COLUMN_WIDTH * 2,
                         },
                     ],
@@ -94,6 +96,7 @@ class CPReportOldExporter(CPReportBase):
                         {
                             "id": "remarks",
                             "headerName": "Remarks",
+                            "can_be_clipped": True,
                             "column_width": self.COLUMN_WIDTH * 2,
                         },
                     ],
@@ -120,6 +123,7 @@ class CPReportOldExporter(CPReportBase):
                         {
                             "id": "remarks",
                             "headerName": "Remarks",
+                            "can_be_clipped": True,
                             "column_width": self.COLUMN_WIDTH * 2,
                         },
                     ],
@@ -140,6 +144,7 @@ class CPReportOldExporter(CPReportBase):
                             "id": "display_name",
                             "headerName": "Substance",
                             "is_numeric": False,
+                            "can_be_clipped": True,
                             "column_width": self.COLUMN_WIDTH * 2,
                         },
                         {
@@ -156,6 +161,7 @@ class CPReportOldExporter(CPReportBase):
                             "id": "remarks",
                             "headerName": "Remarks",
                             "is_numeric": False,
+                            "can_be_clipped": True,
                             "column_width": self.COLUMN_WIDTH * 2,
                         },
                     ],
