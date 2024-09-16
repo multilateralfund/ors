@@ -1,8 +1,11 @@
 import { Box, Typography } from '@mui/material'
 
 import Field from '@ors/components/manage/Form/Field'
+import SectionF from '@ors/models/SectionF'
 
-export default function SectionFView(props: any) {
+import { SectionFViewProps } from './types'
+
+export default function SectionFView(props: SectionFViewProps) {
   const { Comments, report, section, showComments } = props
 
   return (
@@ -15,7 +18,7 @@ export default function SectionFView(props: any) {
           FieldProps={{ className: 'mb-0' }}
           readOnly={true}
           type="textarea"
-          value={report.section_f.remarks}
+          value={report.section_f.remarks || ''}
         />
       </Box>
       {showComments && <Comments section="section_f" viewOnly={false} />}

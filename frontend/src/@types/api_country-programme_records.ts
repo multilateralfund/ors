@@ -107,7 +107,7 @@ type ApiBase = {
     remarks: null | string
     row_id: string
     total: string
-  }
+  }[]
   section_f: {
     remarks: null | string
   }

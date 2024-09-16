@@ -1,5 +1,4 @@
 import type { ITableProps } from '../../../CountryProgramme/typesCPView'
-import type { PinnedBottomRowData } from '../../types'
 import type { SectionBRowData } from '../types'
 import { CPReport } from '@ors/types/api_country-programme_records'
 import { EmptyFormType } from '@ors/types/api_empty-form'
@@ -17,6 +16,7 @@ import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import TableDataSelector, {
   useTableDataSelector,
 } from '../../SectionA/TableDataSelector'
+import { SectionBViewProps } from '../types'
 import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
@@ -92,20 +92,20 @@ function getRowData(
   return rowData
 }
 
-function getPinnedRowData(rowData: SectionBRowData[]): PinnedBottomRowData[] {
+function getPinnedRowData(rowData: SectionBRowData[]): SectionBRowData[] {
   return rowData.length > 0
-    ? [{ display_name: 'TOTAL', rowType: 'total', tooltip: true }]
+    ? [
+        {
+          display_name: 'TOTAL',
+          row_id: 'bottom_total',
+          rowType: 'total',
+          tooltip: true,
+        },
+      ]
     : []
 }
 
-export default function SectionBView(props: {
-  Comments: React.FC<{ section: string; viewOnly: boolean }>
-  TableProps: ITableProps
-  emptyForm: EmptyFormType
-  report: CPReport
-  showComments: boolean
-  variant: ReportVariant
-}) {
+export default function SectionBView(props: SectionBViewProps) {
   const { Comments, TableProps, emptyForm, report, showComments, variant } =
     props
   const { gridOptionsAll, gridOptionsBySector, gridOptionsBySubstanceTrade } =

@@ -1,14 +1,14 @@
 import Section, { Field } from './Section'
 
 export type SectionEFormFields = {
-  all_uses?: number
-  destruction?: number
-  destruction_wpc?: number
-  facility?: string
-  feedstock_gc?: number
-  generated_emissions?: number
-  remarks?: string
-  total?: number
+  all_uses?: null | number | string
+  destruction?: null | number | string
+  destruction_wpc?: null | number | string
+  facility?: null | string | string
+  feedstock_gc?: null | number | string
+  generated_emissions?: null | number | string
+  remarks?: null | string
+  total?: null | number | string
 }
 
 export type DeserializedDataE = SectionEFormFields

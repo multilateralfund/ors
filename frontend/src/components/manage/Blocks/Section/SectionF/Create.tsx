@@ -4,9 +4,9 @@ import { Box, Typography } from '@mui/material'
 
 import Field from '@ors/components/manage/Form/Field'
 
-import { ISectionFCreateProps } from './types'
+import { SectionFCreateProps } from './types'
 
-export default function SectionFCreate(props: ISectionFCreateProps) {
+export default function SectionFCreate(props: SectionFCreateProps) {
   const { form, section, setForm } = props
 
   return (

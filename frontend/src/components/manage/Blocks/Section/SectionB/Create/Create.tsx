@@ -28,9 +28,10 @@ import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 import SectionB from '@ors/models/SectionB'
 import { useStore } from '@ors/store'
 
+import { PinnedBottomRowData } from '../../types'
+import { SectionBCreateProps, SectionBRowData } from '../types'
 import { CreateBlend } from './CreateBlend'
 import useGridOptions from './schema'
-import { ISectionBCreateProps, PinnedBottomRowData, RowData } from './types'
 
 import { IoAddCircle, IoInformationCircleOutline } from 'react-icons/io5'
 
@@ -43,10 +44,13 @@ function getGroupName(substance: any, model: string) {
   return substance.group || 'Other'
 }
 
-function getRowData(data: SectionB['data'], variant: ReportVariant): RowData[] {
-  let rowData: RowData[] = []
+function getRowData(
+  data: SectionB['data'],
+  variant: ReportVariant,
+): SectionBRowData[] {
+  let rowData: SectionBRowData[] = []
   const dataByGroup: Record<string, any[]> = {}
-  const groups: Array<string> = []
+  const groups: string[] = []
   each(data, (item) => {
     const group = getGroupName(item, variant.model)
     if (!dataByGroup[group]) {
@@ -105,18 +109,28 @@ function getRowData(data: SectionB['data'], variant: ReportVariant): RowData[] {
 
 function getInitialPinnedBottomRowData(model: string): PinnedBottomRowData[] {
   let pinnedBottomRowData: PinnedBottomRowData[] = [
-    { display_name: 'TOTAL', rowType: 'total', tooltip: true },
+    {
+      display_name: 'TOTAL',
+      row_id: 'bottom_total',
+      rowType: 'total',
+      tooltip: true,
+    },
   ]
   if (!includes(['V'], model)) {
     pinnedBottomRowData = pinnedBottomRowData.concat([
-      { row_id: 'control-add_chemical', rowType: 'control' },
+      {
+        display_name: '',
+        row_id: 'control-add_chemical',
+        rowType: 'control',
+        tooltip: false,
+      },
     ])
   }
 
   return pinnedBottomRowData
 }
 
-export default function SectionBCreate(props: ISectionBCreateProps) {
+export default function SectionBCreate(props: SectionBCreateProps) {
   const { enqueueSnackbar } = useSnackbar()
   const { Section, TableProps, emptyForm, form, setForm, variant } = props
 

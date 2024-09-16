@@ -2,4 +2,4 @@ import SectionB from '@ors/models/SectionB'
 
 import { IBaseSectionEditProps } from '../../types'
 
-export interface ISectionBEditProps extends IBaseSectionEditProps<SectionB> {}
+export interface SectionBEditProps extends IBaseSectionEditProps<SectionB> {}

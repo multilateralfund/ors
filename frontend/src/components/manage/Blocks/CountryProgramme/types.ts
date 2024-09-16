@@ -5,13 +5,11 @@ export type CPRowData = {
   count?: number
   display_name?: string
   field?: string
-  group?: string
   id?: number
-  mandatory?: boolean
   row_id: string
   rowType?: string
   tooltip?: boolean
-} & Omit<DeserializedSubstance, 'mandatory'>
+}
 
 export interface CPContext {
   is_diff?: boolean

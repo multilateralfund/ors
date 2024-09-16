@@ -1,4 +1,4 @@
-import type { RowData } from './types'
+import type { SectionBRowData } from '../types'
 import { EmptyFormUsageColumn } from '@ors/types/api_empty-form'
 
 import { useMemo } from 'react'
@@ -66,7 +66,7 @@ function useGridOptions(props: {
             }
             return sectionColDefById['display_name'].cellRenderer(props)
           },
-          cellRendererParams: (props: ICellRendererParams<RowData>) => {
+          cellRendererParams: (props: ICellRendererParams<SectionBRowData>) => {
             return {
               ...sectionColDefById['display_name'].cellRendererParams(props),
               options: !props.data?.mandatory && !props.data?.rowType && (
@@ -168,7 +168,7 @@ function useGridOptions(props: {
       ],
       defaultColDef: {
         autoHeight: true,
-        cellClass: (props: CellClassParams<RowData>) => {
+        cellClass: (props: CellClassParams<SectionBRowData>) => {
           return cx({
             'ag-cell-hashed theme-dark:bg-gray-900/40':
               includes(props.data?.excluded_usages || [], props.colDef.id) ||
@@ -182,7 +182,7 @@ function useGridOptions(props: {
             'ag-text-center': !includes(['display_name'], props.colDef.field),
           })
         },
-        editable: (props: EditableCallbackParams<RowData>) => {
+        editable: (props: EditableCallbackParams<SectionBRowData>) => {
           if (
             includes(NON_EDITABLE_ROWS, props.data?.rowType) ||
             includes(['display_name'], props.colDef.field) ||

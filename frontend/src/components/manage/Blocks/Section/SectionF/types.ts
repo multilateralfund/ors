@@ -1,7 +1,14 @@
 import SectionF from '@ors/models/SectionF'
 
-import { IBaseSectionEditProps, IBaseSectionProps } from '../types'
+import {
+  IBaseSectionCreateProps,
+  IBaseSectionEditProps,
+  IBaseSectionViewProps,
+} from '../types'
 
-export interface ISectionFCreateProps extends IBaseSectionProps<SectionF> {}
+export interface SectionFViewProps extends IBaseSectionViewProps<SectionF> {}
 
-export interface ISectionFEditProps extends IBaseSectionEditProps<SectionF> {}
+export interface SectionFCreateProps
+  extends IBaseSectionCreateProps<SectionF> {}
+
+export interface SectionFEditProps extends IBaseSectionEditProps<SectionF> {}

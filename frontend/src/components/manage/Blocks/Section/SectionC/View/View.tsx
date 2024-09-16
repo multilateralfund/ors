@@ -9,8 +9,8 @@ import { each, includes, union } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
-import SectionC from '@ors/models/SectionC'
 
+import { SectionCViewProps } from '../types'
 import { SectionCRowData } from '../types'
 import useGridOptions from './schema'
 
@@ -60,20 +60,7 @@ function getRowData(
   return rowData
 }
 
-export default function SectionCView(props: {
-  Comments: React.FC<{ section: string; viewOnly: boolean }>
-  TableProps: {
-    context: {
-      section: SectionC['data']
-      variant: ReportVariant
-    }
-    report: CPReport
-    section: SectionC['data']
-  } & ITableProps
-  report: CPReport
-  showComments: boolean
-  variant: ReportVariant
-}) {
+export default function SectionCView(props: SectionCViewProps) {
   const { Comments, TableProps, report, showComments, variant } = props
   const gridOptions = useGridOptions({
     model: variant.model,

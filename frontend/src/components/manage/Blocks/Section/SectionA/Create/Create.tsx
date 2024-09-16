@@ -16,7 +16,7 @@ import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 import SectionA from '@ors/models/SectionA'
 import { useStore } from '@ors/store'
 
-import { ISectionACreateProps, SectionARowData } from '../types'
+import { SectionACreateProps, SectionARowData } from '../types'
 import useGridOptions from './schema'
 
 import { IoAddCircle, IoInformationCircleOutline } from 'react-icons/io5'
@@ -97,7 +97,7 @@ function getInitialPinnedBottomRowData(model: string): SectionARowData[] {
   return pinnedBottomRowData
 }
 
-export default function SectionACreate(props: ISectionACreateProps) {
+export default function SectionACreate(props: SectionACreateProps) {
   const { Section, TableProps, emptyForm, form, setForm, variant } = props
   const newNode = useRef<RowNode>()
   const substances = useStore(

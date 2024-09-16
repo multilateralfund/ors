@@ -1,6 +1,7 @@
-import { CPReport } from '@ors/types/api_country-programme_records'
-import { EmptyFormType } from '@ors/types/api_empty-form'
-import { ReportVariant } from '@ors/types/variants'
+import type { CPRowData } from '@ors/components/manage/Blocks/CountryProgramme/types'
+import type { CPReport } from '@ors/types/api_country-programme_records'
+import type { EmptyFormType } from '@ors/types/api_empty-form'
+import type { ReportVariant } from '@ors/types/variants'
 
 import {
   CPCommentsForEditType,
@@ -17,31 +18,37 @@ export interface IBaseSectionProps<T> {
   Section: T
   TableProps: PassedCPCreateTableProps
   emptyForm: EmptyFormType
-  form: CPBaseForm
   onSectionCheckChange: (section: string, isChecked: boolean) => void
   section: SectionMeta
   sectionsChecked: Record<string, boolean>
-  setForm: React.Dispatch<React.SetStateAction<CPBaseForm>>
   variant: ReportVariant
 }
 
-export interface IBaseSectionEditProps<T>
-  extends Omit<IBaseSectionProps<T>, 'form' | 'setForm'> {
+export interface IBaseSectionCreateProps<T> extends IBaseSectionProps<T> {
+  form: CPBaseForm
+  setForm: React.Dispatch<React.SetStateAction<CPBaseForm>>
+}
+
+export interface IBaseSectionEditProps<T> extends IBaseSectionProps<T> {
   Comments: CPCommentsForEditType
   form: CPEditForm
   setForm: React.Dispatch<React.SetStateAction<CPEditForm>>
   showComments: boolean
 }
 
-export interface IBaseSectionViewProps<T>
-  extends Omit<IBaseSectionProps<T>, 'form' | 'setForm'> {
+export interface IBaseSectionViewProps<T> extends IBaseSectionProps<T> {
   Comments: CPCommentsType
   report: CPReport
   showComments: boolean
 }
 
 export type PinnedBottomRowData = {
-  display_name: 'TOTAL'
-  rowType: 'total'
-  tooltip: true
+  display_name: string
+  row_id: string
+  rowType: string
+  tooltip: boolean
+}
+
+export interface SubstanceRow extends CPRowData {
+  mandatory?: boolean
 }

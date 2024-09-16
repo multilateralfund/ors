@@ -2,9 +2,9 @@ import { Dispatch, SetStateAction } from 'react'
 
 import { CPBaseForm } from '../../../CountryProgramme/typesCPCreate'
 import SectionCCreate from '../Create/Create'
-import { ISectionCEditProps } from './types'
+import { SectionCEditProps } from './types'
 
-function SectionCEdit(props: ISectionCEditProps) {
+function SectionCEdit(props: SectionCEditProps) {
   const { Comments, form, setForm, showComments, ...rest } = props
   return (
     <>

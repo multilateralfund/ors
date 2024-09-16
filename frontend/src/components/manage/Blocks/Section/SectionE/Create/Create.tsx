@@ -9,12 +9,12 @@ import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import Footnote from '@ors/components/ui/Footnote/Footnote'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 
+import { SectionECreateProps } from '../types'
 import useGridOptions from './schema'
-import { ISectionECreateProps } from './types'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
-export default function SectionECreate(props: ISectionECreateProps) {
+export default function SectionECreate(props: SectionECreateProps) {
   const { TableProps, form, setForm } = props
   const newNode = useRef<RowNode>()
   const grid = useRef<any>()

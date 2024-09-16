@@ -1,20 +1,21 @@
 import { useRef, useState } from 'react'
 
 import { Alert } from '@mui/material'
+import { AgGridReact } from 'ag-grid-react'
 import { findIndex } from 'lodash'
 
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import Footnote from '@ors/components/ui/Footnote/Footnote'
 
+import { SectionDCreateProps } from '../types'
 import useGridOptions from './schema'
-import { ISectionDCreateProps } from './types'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
-export default function SectionDCreate(props: ISectionDCreateProps) {
+export default function SectionDCreate(props: SectionDCreateProps) {
   const { TableProps, form, setForm } = props
-  const grid = useRef<any>()
+  const grid = useRef<AgGridReact>()
   const gridOptions = useGridOptions()
   const [initialRowData] = useState(form.section_d)
 

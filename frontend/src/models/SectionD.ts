@@ -1,12 +1,12 @@
 import Section, { DeserializedSubstance, Field } from './Section'
 
 export type SectionDFormFields = {
-  all_uses?: number
-  destruction?: number
-  feedstock?: number
+  all_uses?: null | number | string
+  destruction?: null | number | string
+  feedstock?: null | number | string
 }
 
-export type DeserializedDataD = DeserializedSubstance & SectionDFormFields
+export type DeserializedDataD = SectionDFormFields
 
 export default class SectionD extends Section<
   DeserializedDataD,

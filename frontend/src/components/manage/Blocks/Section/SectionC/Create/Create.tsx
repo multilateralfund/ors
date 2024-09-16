@@ -1,4 +1,4 @@
-import type { ISectionCCreateProps, SectionCRowData } from '../types'
+import type { SectionCCreateProps, SectionCRowData } from '../types'
 import type { SubstancePrice, SubstancePrices } from './types'
 import { ApiBlend } from '@ors/types/api_blends'
 import { EmptyFormSubstance } from '@ors/types/api_empty-form'
@@ -202,7 +202,7 @@ function autoCompleteRenderOption(props: any, option: any) {
   )
 }
 
-export default function SectionCCreate(props: ISectionCCreateProps) {
+export default function SectionCCreate(props: SectionCCreateProps) {
   const { Section, TableProps, emptyForm, form, setForm, variant } = props
   const newNode = useRef<IRowNode>()
 

@@ -12,10 +12,9 @@ import components from '@ors/config/Table/components'
 
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
-import SectionA from '@ors/models/SectionA'
 
-import { IBaseSectionViewProps } from '../../types'
 import TableDataSelector, { useTableDataSelector } from '../TableDataSelector'
+import { SectionAViewProps } from '../types'
 import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
@@ -72,13 +71,20 @@ function getRowData(
   return rowData
 }
 
-function getPinnedRowData(rowData: any) {
+function getPinnedRowData(rowData: SectionARowData[]): SectionARowData[] {
   return rowData.length > 0
-    ? [{ display_name: 'TOTAL', rowType: 'total', tooltip: true }]
+    ? [
+        {
+          display_name: 'TOTAL',
+          row_id: 'bottom_total',
+          rowType: 'total',
+          tooltip: true,
+        },
+      ]
     : []
 }
 
-export default function SectionAView(props: IBaseSectionViewProps<SectionA>) {
+export default function SectionAView(props: SectionAViewProps) {
   const { Comments, TableProps, emptyForm, report, showComments, variant } =
     props
   const { gridOptionsAll, gridOptionsBySector, gridOptionsBySubstanceTrade } =
