@@ -9,6 +9,8 @@ from openpyxl.styles import Font
 from openpyxl.styles import DEFAULT_FONT
 from openpyxl.utils import get_column_letter
 
+# pylint: disable=R0913
+
 
 class BaseWriter:
     ROW_HEIGHT = 30
