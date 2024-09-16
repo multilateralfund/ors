@@ -31,7 +31,7 @@ const nextConfig = {
 
     config.plugins.unshift(new webpack.DefinePlugin(globals))
 
-    if (isServer) {
+    if (isServer && !dev) {
       config.devtool = 'source-map'
     }
 

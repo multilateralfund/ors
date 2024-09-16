@@ -179,7 +179,7 @@ export function validateOtherUnidentifiedManufacturing(
   const valueOther = anyRow[`usage_${usageOther}`] || 0
 
   if (valueOther && (valueAC || valueRefrigeration)) {
-    return { highlight_cells: [`usage_${usageOther}`], row: row.display_name }
+    return { row: row.display_name }
   }
 }
 
