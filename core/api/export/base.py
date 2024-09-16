@@ -13,6 +13,7 @@ from openpyxl.utils import get_column_letter
 class BaseWriter:
     ROW_HEIGHT = 30
     COLUMN_WIDTH = 15
+    OVERSIZED_CELL_THRESHOLD = 25
     header_row_start_idx = 2
 
     def __init__(self, sheet, headers):
@@ -155,7 +156,7 @@ class BaseWriter:
         return cell
 
     def _write_record_cell(
-        self, row, column, value, read_only=False, align="left", is_oversized=False
+        self, row, column, value, read_only=False, align="left", can_be_clipped=False
     ):
         cell = self.sheet.cell(row, column, value)
         cell.alignment = Alignment(horizontal=align, vertical="center", wrap_text=True)
@@ -165,8 +166,16 @@ class BaseWriter:
             top=Side(style="hair"),
             bottom=Side(style="hair"),
         )
-        if is_oversized:
-            self.sheet.row_dimensions[row].height = self.ROW_HEIGHT * 3 / 2
+        if can_be_clipped:
+            # We assume that only string values can be clipped.
+            # Adding 2 chars to the length just in case.
+            needed_rows = (len(value) + 2) / self.OVERSIZED_CELL_THRESHOLD
+            # Assuming (naively) that 50 characters fit into "normal" 2-row cells.
+            if needed_rows > 2:
+                # Add 1/2 * ROW_HEIGHT for each extra needed row
+                self.sheet.row_dimensions[row].height = (
+                    self.ROW_HEIGHT * needed_rows / 2
+                )
         if align == "right":
             # this cell will contain a number
             cell.number_format = "###,###,##0.00#############"
