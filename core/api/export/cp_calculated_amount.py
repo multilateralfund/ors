@@ -2,6 +2,8 @@ from openpyxl.styles import DEFAULT_FONT, Font
 
 from core.api.export.base import BaseWriter
 
+# pylint: disable=R0913
+
 
 class CPCalculatedAmountWriter(BaseWriter):
     ROW_HEIGHT = 25
