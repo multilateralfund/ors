@@ -268,6 +268,7 @@ class CPCalculatedAmountExportView(CPRecordListView):
                         record.substance.group.group_id
                     )
             else:
+                # if the record is a blend
                 if record.blend.is_related_preblended_polyol:
                     substance_category = "HFC pre-blended polyol"
                 else:
@@ -281,7 +282,7 @@ class CPCalculatedAmountExportView(CPRecordListView):
             consumption = record.get_consumption_value()
 
             # convert data
-            if substance_category == "HFC":
+            if "HFC" in substance_category:
                 # convert consumption value to CO₂ equivalent
                 consumption *= record.get_chemical_gwp() or 0
                 sectorial_total *= record.get_chemical_gwp() or 0
@@ -295,8 +296,8 @@ class CPCalculatedAmountExportView(CPRecordListView):
 
         # set the correct decimals number (for odp 2 decimals, for CO₂ 0 decimals)
         response_data = []
-        for group, values in data.items():
-            if group == "HFC":
+        for substance_category, values in data.items():
+            if "HFC" in substance_category:
                 values["consumption"] = round(values["consumption"], 0)
                 values["sectorial_total"] = round(values["sectorial_total"], 0)
                 values["unit"] = "CO₂-eq tonnes"
@@ -305,7 +306,9 @@ class CPCalculatedAmountExportView(CPRecordListView):
                 values["sectorial_total"] = round(values["sectorial_total"], 2)
                 values["unit"] = "ODP tonnes"
 
-            substance_name = group if group != "MBR" else "MB Non-QPS only"
+            substance_name = (
+                substance_category if substance_category != "MBR" else "MB Non-QPS only"
+            )
             response_data.append(
                 {
                     "substance_name": substance_name,
