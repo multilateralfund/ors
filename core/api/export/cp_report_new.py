@@ -71,16 +71,19 @@ class CPReportNewExporter(CPReportBase):
                     {
                         "id": "imports",
                         "headerName": "Import",
+                        "is_numeric": True,
                         "align": "right",
                     },
                     {
                         "id": "exports",
                         "headerName": "Export",
+                        "is_numeric": True,
                         "align": "right",
                     },
                     {
                         "id": "production",
                         "headerName": "Production",
+                        "is_numeric": True,
                         "align": "right",
                     },
                     *(
@@ -88,6 +91,7 @@ class CPReportNewExporter(CPReportBase):
                             {
                                 "id": "manufacturing_blends",
                                 "headerName": "Manufacturing of Blends",
+                                "is_numeric": True,
                             }
                         ]
                         if manufacturing_blends
@@ -96,6 +100,7 @@ class CPReportNewExporter(CPReportBase):
                     {
                         "id": "import_quotas",
                         "headerName": "Import Quotas",
+                        "is_numeric": True,
                         "align": "right",
                     },
                     {
@@ -133,12 +138,14 @@ class CPReportNewExporter(CPReportBase):
                             "id": "previous_year_price",
                             "headerName": "Previous year price",
                             "column_width": self.COLUMN_WIDTH * 2,
+                            "is_numeric": True,
                             "align": "right",
                         },
                         {
                             "id": "current_year_price",
                             "headerName": "Current prices",
                             "column_width": self.COLUMN_WIDTH * 2,
+                            "is_numeric": True,
                             "align": "right",
                         },
                         {
@@ -182,18 +189,21 @@ class CPReportNewExporter(CPReportBase):
                             "id": "all_uses",
                             "headerName": "Captured for all uses",
                             "column_width": self.COLUMN_WIDTH * 2,
+                            "is_numeric": True,
                             "align": "right",
                         },
                         {
                             "id": "feedstock",
                             "headerName": "Captured for feedstock uses within your country",
                             "column_width": self.COLUMN_WIDTH * 2,
+                            "is_numeric": True,
                             "align": "right",
                         },
                         {
                             "id": "destruction",
                             "headerName": "Captured for destruction",
                             "column_width": self.COLUMN_WIDTH * 2,
+                            "is_numeric": True,
                             "align": "right",
                         },
                     ],
@@ -218,6 +228,7 @@ class CPReportNewExporter(CPReportBase):
                         {
                             "id": "total",
                             "headerName": "Total amount generated",
+                            "is_numeric": True,
                             "align": "right",
                         },
                         {
@@ -228,18 +239,21 @@ class CPReportNewExporter(CPReportBase):
                                     "id": "all_uses",
                                     "headerName": "For all uses",
                                     "column_width": self.COLUMN_WIDTH * 2,
+                                    "is_numeric": True,
                                     "align": "right",
                                 },
                                 {
                                     "id": "feedstock_gc",
                                     "headerName": "For feedstock use in your country",
                                     "column_width": self.COLUMN_WIDTH * 2,
+                                    "is_numeric": True,
                                     "align": "right",
                                 },
                                 {
                                     "id": "destruction",
                                     "headerName": "For destruction",
                                     "column_width": self.COLUMN_WIDTH * 2,
+                                    "is_numeric": True,
                                     "align": "right",
                                 },
                             ],
@@ -248,18 +262,21 @@ class CPReportNewExporter(CPReportBase):
                             "id": "feedstock_wpc",
                             "headerName": "Amount used for feedstock without prior capture",
                             "column_width": self.COLUMN_WIDTH * 2,
+                            "is_numeric": True,
                             "align": "right",
                         },
                         {
                             "id": " destruction_wpc",
                             "headerName": "Amount destroyed without prior capture",
                             "column_width": self.COLUMN_WIDTH * 2,
+                            "is_numeric": True,
                             "align": "right",
                         },
                         {
                             "id": "generated_emissions",
                             "headerName": "Amount of generated emission",
                             "column_width": self.COLUMN_WIDTH * 2,
+                            "is_numeric": True,
                             "align": "right",
                         },
                         {
