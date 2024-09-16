@@ -85,7 +85,6 @@ class SectionWriter(BaseWriter):
             for item in record.get("record_usages", [])
         }
         for header_id, header in self.headers.items():
-            is_oversized = False
             if header.get("columnCategory") == "usage":
                 value = by_usage_id.get(header_id)
             else:
