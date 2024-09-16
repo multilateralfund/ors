@@ -106,6 +106,8 @@ class SectionWriter(BaseWriter):
             elif header.get("type", None) == "date":
                 # DD/MM/YYYY
                 value = parse(value).strftime("%d/%m/%Y") if value else ""
+            elif method := header.get("method"):
+                value = method(record, header)
             else:
                 value = value or ""
 

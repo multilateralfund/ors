@@ -190,20 +190,14 @@ class CPReportBase:
             )
             title_cell.font = Font(bold=True, size=20)
 
-            if section not in "section_a,section_b" or not convert_data:
-                getattr(self, f"export_{section}")(
-                    sheet,
-                    data.get(section, []),
-                    usages.get(section, []),
-                )
-            else:
-                convert_to = "odp" if section == "section_a" else "gwp"
-                getattr(self, f"export_{section}")(
-                    sheet,
-                    data.get(section, []),
-                    usages.get(section, []),
-                    convert_to=convert_to,
-                )
+            args = {}
+            args["usages"] = usages.get(section, [])
+            if section in "section_a,section_b" and convert_data:
+                args["convert_to"] = "odp" if section == "section_a" else "gwp"
+            elif section == "section_c":
+                args["year"] = cp_report["year"]
+
+            getattr(self, f"export_{section}")(sheet, data.get(section, []), **args)
 
         # Remove the default sheet before saving
         del wb[wb.sheetnames[0]]

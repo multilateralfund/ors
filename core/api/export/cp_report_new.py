@@ -120,7 +120,7 @@ class CPReportNewExporter(CPReportBase):
         ]
         SectionWriter(sheet, headers, convert_to).write(data)
 
-    def export_section_c(self, sheet, data, *args):
+    def export_section_c(self, sheet, data, year, **args):
         SectionWriter(
             sheet,
             [
@@ -151,12 +151,14 @@ class CPReportNewExporter(CPReportBase):
                         {
                             "id": "is_retail",
                             "headerName": "Is Retail price?",
+                            "year": year,
                             "is_numeric": False,
                             "method": self.get_fob_retail_value,
                         },
                         {
                             "id": "is_fob",
                             "headerName": "Is FOB price?",
+                            "year": year,
                             "is_numeric": False,
                             "method": self.get_fob_retail_value,
                         },
@@ -171,7 +173,7 @@ class CPReportNewExporter(CPReportBase):
             ],
         ).write(data)
 
-    def export_section_d(self, sheet, data, *args):
+    def export_section_d(self, sheet, data, **args):
         SectionWriter(
             sheet,
             [
@@ -211,7 +213,7 @@ class CPReportNewExporter(CPReportBase):
             ],
         ).write(data)
 
-    def export_section_e(self, sheet, data, *args):
+    def export_section_e(self, sheet, data, **args):
         SectionWriter(
             sheet,
             [
@@ -290,7 +292,7 @@ class CPReportNewExporter(CPReportBase):
             ],
         ).write(data)
 
-    def export_section_f(self, sheet, data, *args):
+    def export_section_f(self, sheet, data, **args):
         writer = SectionWriter(
             sheet,
             [
@@ -321,7 +323,7 @@ class CPReportNewExporter(CPReportBase):
         sheet.row_dimensions[row_idx].height = self.ROW_HEIGHT * 16
 
     def get_fob_retail_value(self, cp_price, header):
-        year = cp_price.country_programme_report.year
-        if not cp_price["is_fob"] and not cp_price["is_retail"] and year < 2023:
+        year = header["year"]
+        if not cp_price.get("is_fob") and not cp_price.get("is_retail") and year < 2023:
             return ""
         return "Yes" if cp_price[header["id"]] else "No"
