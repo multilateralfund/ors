@@ -40,7 +40,11 @@ class CPCalculatedAmountWriter(BaseWriter):
         cell.font = Font(name=DEFAULT_FONT.name, bold=True, size=7)
         return cell
 
-    def _write_record_cell(self, row, column, value, read_only=False, align="left"):
-        cell = super()._write_record_cell(row, column, value, read_only, align)
+    def _write_record_cell(
+        self, row, column, value, read_only=False, align="left", can_be_clipped=False
+    ):
+        cell = super()._write_record_cell(
+            row, column, value, read_only, align, can_be_clipped
+        )
         cell.font = Font(size=7)
         return cell
