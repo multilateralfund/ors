@@ -128,7 +128,7 @@ class CPReportOldExporter(CPReportBase):
             usages["rows"],
         ).write(data)
 
-    def export_section_c(self, sheet, data, *args):
+    def export_section_c(self, sheet, data, **args):
         SectionWriter(
             sheet,
             [
