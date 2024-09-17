@@ -26,21 +26,6 @@ SECTION_GROUP_MAPPING_12_18 = [
     "Annex E, Group I",
 ]
 
-SUBSTANCE_GROUP_ID_TO_CATEGORY = {
-    "AI": "CFC",
-    "AII": "Halon",
-    "BI": "CFC",
-    "BII": "CTC",
-    "BIII": "TCA",
-    "CI": "HCFC",
-    "CII": "HBFC",
-    "CIII": "Halon",
-    "EI": "MBR",
-    "F": "HFC",
-    "uncontrolled": "Other",
-    "legacy": "Legacy",
-}
-
 SUBMISSION_STATUSE_CODES = ["NEWSUB", "UNK"]
 
 PROJECT_SECTOR_TYPE_MAPPING = {

@@ -27,11 +27,12 @@ from core.api.export.cp_reports_list import CPReportListWriter
 from core.api.permissions import IsSecretariat
 from core.api.serializers import BlendSerializer
 from core.api.serializers import SubstanceSerializer
-from core.api.utils import SUBSTANCE_GROUP_ID_TO_CATEGORY, workbook_pdf_response
+from core.api.utils import workbook_pdf_response
 from core.api.utils import workbook_response
 from core.api.views.cp_records import CPRecordListView
 from core.api.views.cp_report_empty_form import EmptyFormView
 from core.api.views.utils import (
+    SUBSTANCE_GROUP_ID_TO_CATEGORY,
     get_archive_reports_final_for_years,
     get_final_records_for_years,
     get_year_params_from_request,
@@ -63,6 +64,36 @@ EXCLUDE_FROM_CONSUMPTION = [
     "Other",
     "Legacy",
 ]
+
+
+def get_record_chemical_category(record, set_hfc_preblended=True):
+    """
+    Returns the category of the chemical.
+    If the chemical is a blend it will return hfc".
+
+    @param set_hfc_preblended: If True, it will return "HFCs in Preblended Polyol"
+        for pre-blended polyols.
+    """
+
+    if record.substance:
+        substance_group = SUBSTANCE_GROUP_ID_TO_CATEGORY.get(
+            record.substance.group.group_id
+        )
+        if not set_hfc_preblended:
+            return substance_group
+
+        # check if the substance is a pre-blended polyol
+        substance_name = record.substance.name.lower()
+        if "hfc" in substance_name and "pre-blended polyol" in substance_name:
+            return "HFCs in Preblended Polyol"
+
+        return substance_group
+
+    if set_hfc_preblended and record.blend.is_related_preblended_polyol:
+        return "HFCs in Preblended Polyol"
+
+    # blends are considered as "HFC"
+    return "HFC"
 
 
 class CPRecordExportView(CPRecordListView):
@@ -248,31 +279,18 @@ class CPCalculatedAmountExportView(CPRecordListView):
             for group in SUBSTANCE_GROUP_ID_TO_CATEGORY.values()
             if group not in EXCLUDE_FROM_CONSUMPTION
         }
-        data["HFC pre-blended polyol"] = {"sectorial_total": 0, "consumption": 0}
-        data["HCFC pre-blended polyol"] = {"sectorial_total": 0, "consumption": 0}
+        data["HFCs in Preblended Polyol"] = {"sectorial_total": 0, "consumption": 0}
+        data["HCFCs in Preblended Polyol"] = {"sectorial_total": 0, "consumption": 0}
 
         # calculate the consumption and sectorial total
         for record in records:
             # set the substance category
-            if record.substance:
-                substance_name = record.substance.name
-                if "HCFC" in substance_name and "pre-blended polyol" in substance_name:
-                    substance_category = "HCFC pre-blended polyol"
-                elif "HFC" in substance_name:
-                    if "pre-blended polyol" in substance_name:
-                        substance_category = "HFC pre-blended polyol"
-                    else:
-                        substance_category = "HFC"
-                else:
-                    substance_category = SUBSTANCE_GROUP_ID_TO_CATEGORY.get(
-                        record.substance.group.group_id
-                    )
-            else:
-                # if the record is a blend
-                if record.blend.is_related_preblended_polyol:
-                    substance_category = "HFC pre-blended polyol"
-                else:
-                    substance_category = "HFC"
+            substance_category = get_record_chemical_category(record)
+
+            # set the substance category for HCFC pre-blended polyol
+            substance_name = record.substance.name if record.substance else ""
+            if "HCFC" in substance_name and "pre-blended polyol" in substance_name:
+                substance_category = "HCFCs in Preblended Polyol"
 
             if substance_category in EXCLUDE_FROM_CONSUMPTION:
                 continue
@@ -298,8 +316,8 @@ class CPCalculatedAmountExportView(CPRecordListView):
         response_data = []
         for substance_category, values in data.items():
             if "HFC" in substance_category:
-                values["consumption"] = round(values["consumption"], 0)
-                values["sectorial_total"] = round(values["sectorial_total"], 0)
+                values["consumption"] = round(values["consumption"], 2)
+                values["sectorial_total"] = round(values["sectorial_total"], 2)
                 values["unit"] = "CO₂-eq tonnes"
             else:
                 values["consumption"] = round(values["consumption"], 2)
@@ -889,21 +907,11 @@ class CPDataExtractionAllExport(views.APIView):
         )
         country_records = {}
         for record in records:
-            substance_name = (
-                SUBSTANCE_GROUP_ID_TO_CATEGORY.get(record.substance.group.group_id)
-                if record.substance
-                else "HFC"
-            )
+            substance_name = get_record_chemical_category(record)
             if substance_name == "legacy" or (
                 record.substance and "HFC" not in record.substance.name
             ):
                 continue
-
-            if (
-                record.substance
-                and "pre-blended polyol" in record.substance.name.lower()
-            ):
-                substance_name = "HFCs in Preblended Polyol"
 
             country = record.country_programme_report.country
             country_name = country.name
