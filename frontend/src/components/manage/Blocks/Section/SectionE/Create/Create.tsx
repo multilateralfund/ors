@@ -1,25 +1,41 @@
+import type { EditContext as SimpleTableEditContext } from '@ors/components/manage/Form/types'
+
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 
 import { Alert } from '@mui/material'
 import { RowNode } from 'ag-grid-community'
 import { findIndex, last } from 'lodash'
 
+import SimpleTable from '@ors/components/manage/Form/SimpleTable'
 import Table from '@ors/components/manage/Form/Table'
 import Footnotes from '@ors/components/theme/Footnotes/Footnotes'
 import Footnote from '@ors/components/ui/Footnote/Footnote'
 import { applyTransaction, scrollToElement } from '@ors/helpers/Utils/Utils'
 
-import { SectionECreateProps } from '../types'
+import { SectionECreateProps, SectionERowData } from '../types'
 import useGridOptions from './schema'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
+
+function handleTableEdit(value: any, ctx: SimpleTableEditContext, rowData: SectionERowData[]): SectionERowData[] {
+  const newData: SectionERowData[] = new Array(rowData.length)
+  for (let i = 0; i < newData.length; i++) {
+    const oldRow = rowData[i]
+    if (oldRow.row_id === rowData[ctx.iRow].row_id) {
+        newData[i] = { ...rowData[ctx.iRow], [ctx.colDef.field]: value }
+    } else {
+      newData[i] = oldRow
+    }
+  }
+  return newData
+}
 
 export default function SectionECreate(props: SectionECreateProps) {
   const { TableProps, form, setForm } = props
   const newNode = useRef<RowNode>()
   const grid = useRef<any>()
   const newFacilityIndex = useRef(last<any>(form.section_e)?.id + 1 || 1)
-  const [initialRowData] = useState(form.section_e)
+  const rowData = form.section_e as SectionERowData[]
 
   const pinnedBottomRowData = useMemo(() => {
     return form.section_e.length > 0
@@ -51,13 +67,13 @@ export default function SectionECreate(props: SectionECreateProps) {
       ...form,
       section_e: [...form.section_e, newFacility],
     }))
-    applyTransaction(grid.current.api, {
-      add: [newFacility],
-      addIndex: prevNode ? prevNode.rowIndex + 1 : 0,
-    })
-    const facilityNode = grid.current.api.getRowNode(newFacility.row_id)
-    newNode.current = facilityNode
-    newFacilityIndex.current = newFacilityIndex.current + 1
+    // applyTransaction(grid.current.api, {
+    //   add: [newFacility],
+    //   addIndex: prevNode ? prevNode.rowIndex + 1 : 0,
+    // })
+    // const facilityNode = grid.current.api.getRowNode(newFacility.row_id)
+    // newNode.current = facilityNode
+    // newFacilityIndex.current = newFacilityIndex.current + 1
   }, [setForm])
 
   const removeFacility = useCallback(
@@ -93,43 +109,18 @@ export default function SectionECreate(props: SectionECreateProps) {
         </Footnote>
         <Footnotes />
       </Alert>
-      <Table
+      <SimpleTable
         {...TableProps}
         columnDefs={gridOptions.columnDefs}
-        gridRef={grid}
-        headerDepth={2}
-        pinnedBottomRowData={pinnedBottomRowData}
-        rowData={initialRowData}
+        editable={true}
+        rowData={[...rowData, ...pinnedBottomRowData]}
         defaultColDef={{
           ...TableProps.defaultColDef,
           ...gridOptions.defaultColDef,
         }}
-        onCellValueChanged={(event) => {
-          const newData = [...form.section_e]
-          const index = findIndex(
-            newData,
-            (row: any) => row.row_id == event.data.row_id,
-          )
-          if (index > -1) {
-            // Should not be posible for index to be -1
-            newData.splice(index, 1, {
-              ...event.data,
-            })
-            setForm({ ...form, section_e: newData })
-          }
-        }}
-        onRowDataUpdated={() => {
-          if (newNode.current) {
-            scrollToElement({
-              callback: () => {
-                grid.current.api.flashCells({
-                  rowNodes: [newNode.current],
-                })
-                newNode.current = undefined
-              },
-              selectors: `.ag-row[row-id=${newNode.current.data.row_id}]`,
-            })
-          }
+        onEdit={(value: any, ctx: SimpleTableEditContext) => {
+          const newData = handleTableEdit(value, ctx, rowData)
+          setForm({ ...form, section_e: newData })
         }}
       />
     </>

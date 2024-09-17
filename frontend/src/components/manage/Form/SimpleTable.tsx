@@ -23,17 +23,17 @@ import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRendere
 import AgHeaderComponent from '@ors/components/manage/AgComponents/AgHeaderComponent'
 
 const ROW_CLASS_RULES: RowClassRule[] = [
-  ['ag-row-control', (props: any) => props.data.rowType === 'control'],
-  ['ag-row-error', (props: any) => !!props.data.error],
-  ['ag-row-group', (props: any) => props.data.rowType === 'group'],
-  ['ag-row-hashed', (props: any) => props.data.rowType === 'hashed'],
+  ['ag-row-control', (props) => props.data.rowType === 'control'],
+  ['ag-row-error', (props) => !!props.data.error],
+  ['ag-row-group', (props) => props.data.rowType === 'group'],
+  ['ag-row-hashed', (props) => props.data.rowType === 'hashed'],
   [
     'ag-row-sub-total border-b-3 border-primary border-solid border-x-0 border-t-0',
-    (props: any) => props.data.rowType === 'subtotal',
+    (props) => props.data.rowType === 'subtotal',
   ],
   [
     'ag-row-total border-t-3 border-primary border-solid border-x-0 border-b-0',
-    (props: any) => props.data.rowType === 'total',
+    (props) => props.data.rowType === 'total',
   ],
 ]
 
@@ -205,6 +205,15 @@ const TableCell = React.memo(function TableCell(props: TableCellProps) {
   const CellRenderer = isEditCell
     ? components[colDef['cellEditor']]
     : AgCellRenderer
+    const rendered = (!!colDef?.cellRenderer && !isEditCell)
+      ? colDef.cellRenderer(cellProps)
+      : (<CellRenderer
+          ref={cellRef}
+          value={cellProps.data[colDef.field]}
+          {...cellProps}
+          {...cellRendererParams}
+          stopEditing={handleStopEditing}
+        />)
 
   return (
     <td
@@ -220,13 +229,7 @@ const TableCell = React.memo(function TableCell(props: TableCellProps) {
       <div
         className={`flex ${cellClass?.indexOf('text-center') !== -1 ? 'justify-center' : ''}`}
       >
-        <CellRenderer
-          ref={cellRef}
-          value={cellProps.data[colDef.field]}
-          {...cellProps}
-          {...cellRendererParams}
-          stopEditing={handleStopEditing}
-        />
+        {rendered}
       </div>
     </td>
   )

@@ -40,13 +40,14 @@ export interface TableCellProps {
   iCol: number
   iRow: number
   onStartEdit: (iRow: number, iCol: number) => void
-  onStopEdit: (value: null | number | string, context: EditContext) => void
+  onStopEdit: SimpleTableOnEditCallback
 }
 
 export interface SimpleColDef {
   cellClass: ((cellProps: CellProps) => string) | string
   cellEditor: string
-  cellRendererParams: (cellProps: CellProps) => any
+  cellRenderer?: (cellProps: CellProps) => JSX.Element
+  cellRendererParams?: (cellProps: CellProps) => any
   children: SimpleColDef[]
   editable?: ((cellProps: CellProps) => boolean) | boolean
   field: string
@@ -68,6 +69,8 @@ export interface SimpleTableProps {
   context: CPContext
   defaultColDef: Record<string, any>[] | any
   editable: boolean
-  onEdit: (value: null | number | string, context: EditContext) => void
+  onEdit: SimpleTableOnEditCallback
   rowData: SimpleRow[]
 }
+
+export type SimpleTableOnEditCallback = (value: null | number | string, context: EditContext) => void
