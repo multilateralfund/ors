@@ -1,3 +1,17 @@
+import type {
+  CellApi,
+  CellProps,
+  Col,
+  EditContext,
+  HeaderProps,
+  RowClassRule,
+  SimpleColDef,
+  SimpleRow,
+  SimpleTableProps,
+  TableCellProps,
+} from './types'
+import type { CPContext } from '@ors/components/manage/Blocks/CountryProgramme/types'
+
 import React, { useMemo, useRef, useState } from 'react'
 
 import cx from 'classnames'
@@ -8,22 +22,26 @@ import components from '@ors/config/Table/components'
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import AgHeaderComponent from '@ors/components/manage/AgComponents/AgHeaderComponent'
 
-const ROW_CLASS_RULES = [
-  ['ag-row-control', (props) => props.data.rowType === 'control'],
-  ['ag-row-error', (props) => !!props.data.error],
-  ['ag-row-group', (props) => props.data.rowType === 'group'],
-  ['ag-row-hashed', (props) => props.data.rowType === 'hashed'],
+const ROW_CLASS_RULES: RowClassRule[] = [
+  ['ag-row-control', (props: any) => props.data.rowType === 'control'],
+  ['ag-row-error', (props: any) => !!props.data.error],
+  ['ag-row-group', (props: any) => props.data.rowType === 'group'],
+  ['ag-row-hashed', (props: any) => props.data.rowType === 'hashed'],
   [
     'ag-row-sub-total border-b-3 border-primary border-solid border-x-0 border-t-0',
-    (props) => props.data.rowType === 'subtotal',
+    (props: any) => props.data.rowType === 'subtotal',
   ],
   [
     'ag-row-total border-t-3 border-primary border-solid border-x-0 border-b-0',
-    (props) => props.data.rowType === 'total',
+    (props: any) => props.data.rowType === 'total',
   ],
 ]
 
-function countHeader(columnDefs, iRow = 0, rows = []) {
+function countHeader(
+  columnDefs: SimpleColDef[],
+  iRow = 0,
+  rows: any[] = [],
+): any {
   let tCol = 0
   const colDefs = []
 
@@ -48,7 +66,7 @@ function countHeader(columnDefs, iRow = 0, rows = []) {
   return { colDefs, depth: iRow, rows, tCol }
 }
 
-function getHeaderComponentParams(colDef, cellProps) {
+function getHeaderComponentParams(colDef: SimpleColDef, cellProps: CellProps) {
   let result = null
 
   if (
@@ -63,7 +81,7 @@ function getHeaderComponentParams(colDef, cellProps) {
   return result
 }
 
-const Header = React.memo(function Header(props) {
+const Header = React.memo(function Header(props: HeaderProps) {
   const { context, rows } = props
 
   const result = []
@@ -76,7 +94,7 @@ const Header = React.memo(function Header(props) {
       const headerParams = {
         colDef: colDef.colDef,
         displayName: colDef.label,
-        ...getHeaderComponentParams(colDef.colDef, { context }),
+        ...getHeaderComponentParams(colDef.colDef, { context } as CellProps),
       }
       const Col = (
         <th
@@ -96,19 +114,19 @@ const Header = React.memo(function Header(props) {
   return result
 })
 
-function getCellClass(colDef, cellProps) {
+function getCellClass(colDef: SimpleColDef, cellProps: CellProps) {
   let result = null
 
   if (colDef.cellClass && typeof colDef.cellClass === 'string') {
     result = colDef.cellClass
-  } else if (colDef.cellClass) {
+  } else if (typeof colDef.cellClass === 'function') {
     result = colDef.cellClass(cellProps)
   }
 
   return result
 }
 
-function getCellRendererParams(colDef, cellProps) {
+function getCellRendererParams(colDef: SimpleColDef, cellProps: CellProps) {
   let result = null
 
   if (colDef.cellRendererParams) {
@@ -118,18 +136,18 @@ function getCellRendererParams(colDef, cellProps) {
   return result
 }
 
-function getRowClass(data) {
+function getRowClass(data: SimpleRow): string {
   const result = []
   for (let i = 0; i < ROW_CLASS_RULES.length; i++) {
-    if (ROW_CLASS_RULES[i][1]({ data })) {
-      result.push(ROW_CLASS_RULES[i][0])
+    if (ROW_CLASS_RULES[i]?.[1]({ data })) {
+      result.push(ROW_CLASS_RULES[i]?.[0])
     }
   }
   return result.join(' ')
 }
 
-function apiForEachNodeSetup(rowData) {
-  function iterator(callback) {
+function apiForEachNodeSetup(rowData: any[]) {
+  function iterator(callback: (p: { data: any }) => void) {
     for (let i = 0; i < rowData.length; i++) {
       callback({ data: rowData[i] })
     }
@@ -137,8 +155,8 @@ function apiForEachNodeSetup(rowData) {
   return iterator
 }
 
-function apiGetRowNodeSetup(rowData) {
-  function iterator(row_id) {
+function apiGetRowNodeSetup(rowData: any[]) {
+  function iterator(row_id: number) {
     let result = null
     for (let i = 0; i < rowData.length; i++) {
       if (rowData[i].row_id === row_id) {
@@ -151,7 +169,7 @@ function apiGetRowNodeSetup(rowData) {
   return iterator
 }
 
-function getCellEditable(colDef, cellProps) {
+function getCellEditable(colDef: SimpleColDef, cellProps: CellProps) {
   let result = null
 
   if (colDef.editable && typeof colDef.editable === 'function') {
@@ -163,10 +181,10 @@ function getCellEditable(colDef, cellProps) {
   return result
 }
 
-const TableCell = React.memo(function TableCell(props) {
+const TableCell = React.memo(function TableCell(props: TableCellProps) {
   const { cellProps, colDef, edit, iCol, iRow, onStartEdit, onStopEdit } = props
 
-  const cellRef = useRef(null)
+  const cellRef = useRef<any>(null)
 
   const isEditableCell = getCellEditable(colDef, cellProps)
   const isEditCell = isEditableCell && edit
@@ -192,15 +210,15 @@ const TableCell = React.memo(function TableCell(props) {
     <td
       className={cx(
         'border border-x border-solid border-gray-200 outline-2 outline-secondary first:border-l-0 last:border-r-0 focus:outline',
-        { 'outline p-0': isEditCell },
+        { 'p-0 outline': isEditCell },
         cellClass,
       )}
-      tabIndex="0"
+      tabIndex={0}
       onDoubleClick={handleStartEditing}
       onKeyDown={handleStartEditing}
     >
       <div
-        className={`flex ${cellClass.indexOf('text-center') !== -1 ? 'justify-center' : ''}`}
+        className={`flex ${cellClass?.indexOf('text-center') !== -1 ? 'justify-center' : ''}`}
       >
         <CellRenderer
           ref={cellRef}
@@ -215,14 +233,14 @@ const TableCell = React.memo(function TableCell(props) {
 })
 
 function makeRows(
-  rowData,
-  counts,
-  combinedColDef,
-  context,
-  editableTable,
-  editCell,
-  onStartEdit,
-  onStopEdit,
+  rowData: any[],
+  counts: any,
+  combinedColDef: SimpleColDef,
+  context: CPContext,
+  editableTable: boolean,
+  editCell: [number, number] | null,
+  onStartEdit: (iRow: number, iCol: number) => void,
+  onStopEdit: SimpleTableProps['onEdit'],
 ) {
   const rows = []
 
@@ -231,12 +249,12 @@ function makeRows(
     const row = []
     const data = rowData[i]
     for (let j = 0; j < counts.colDefs.length; j++) {
-      const colDef = { ...combinedColDef, ...counts.colDefs[j] }
-      const column = {
+      const colDef: SimpleColDef = { ...combinedColDef, ...counts.colDefs[j] }
+      const column: Col = {
         colId: colDef.field ?? colDef.id,
         getColId: () => colDef.field ?? colDef.id,
       }
-      const cellProps = {
+      const cellProps: CellProps = {
         api: {
           applyTransaction: () => null,
           flashCells: () => null,
@@ -272,7 +290,7 @@ function makeRows(
   return rows
 }
 
-function SimpleTable(props) {
+function SimpleTable(props: any) {
   const {
     Toolbar,
     columnDefs,
@@ -281,20 +299,23 @@ function SimpleTable(props) {
     editable,
     onEdit,
     rowData,
-  } = props
+  } = props as SimpleTableProps
 
   const [fullScreen, setFullScreen] = useState(false)
-  const [editingCell, setEditingCell] = useState(null)
+  const [editingCell, setEditingCell] = useState<[number, number] | null>(null)
 
-  const combinedColDef = useMemo(() => ({ ...globalColDef, ...defaultColDef }), [defaultColDef])
+  const combinedColDef = useMemo(
+    () => ({ ...globalColDef, ...defaultColDef }),
+    [defaultColDef],
+  )
 
   const counts = useMemo(() => countHeader(columnDefs), [columnDefs])
 
-  function handleStartEdit(row, col) {
+  function handleStartEdit(row: number, col: number) {
     setEditingCell([row, col])
   }
 
-  function handleStopEdit(value, ctx) {
+  function handleStopEdit(value: null | number | string, ctx: EditContext) {
     setEditingCell(null)
     onEdit(value, ctx)
   }
