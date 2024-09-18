@@ -25,7 +25,7 @@ const HeaderVersionsDropdown = () => {
   const [showVersionsMenu, setShowVersionsMenu] = useState(false)
   const { data, loading, params, setParams } = useContext(BPContext)
 
-  const business_plan = data?.results?.business_plan || {} as ApiBP
+  const business_plan = data?.results?.business_plan || ({} as ApiBP)
   const toggleShowVersionsMenu = () => setShowVersionsMenu((prev) => !prev)
 
   const bpVersions = useGetBPVersions(business_plan)
@@ -120,7 +120,7 @@ const HeaderVersionsDropdown = () => {
 }
 
 const ViewHeaderActions = () => {
-  const { data } = useContext(BPContext) as any
+  const { data, isViewer } = useContext(BPContext) as any
   const business_plan = data?.results?.business_plan
 
   const isDraft = business_plan?.status === 'draft'
@@ -130,16 +130,18 @@ const ViewHeaderActions = () => {
       {!!business_plan && (
         <div className="container flex w-full justify-between gap-x-4 px-0">
           <div className="flex justify-between gap-x-4">
-            <Link
-              className="px-4 py-2 shadow-none"
-              color="secondary"
-              href={`/business-plans/${business_plan?.agency.name}/${business_plan?.year_start}-${business_plan?.year_end}/edit/`}
-              size="large"
-              variant="contained"
-              button
-            >
-              {isDraft ? 'Edit report' : 'Add new version'}
-            </Link>
+            {!isViewer && (
+              <Link
+                className="px-4 py-2 shadow-none"
+                color="secondary"
+                href={`/business-plans/${business_plan?.agency.name}/${business_plan?.year_start}-${business_plan?.year_end}/edit/`}
+                size="large"
+                variant="contained"
+                button
+              >
+                {isDraft ? 'Edit report' : 'Add new version'}
+              </Link>
+            )}
             {isDraft && (
               <Button
                 color="primary"

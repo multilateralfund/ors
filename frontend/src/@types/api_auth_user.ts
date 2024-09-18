@@ -9,6 +9,7 @@ export type ApiUserType =
   | 'secretariat'
   | 'stakeholder'
   | 'treasurer'
+  | 'viewer'
 
 export type ApiUser = {
   country?: null | string
