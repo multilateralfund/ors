@@ -72,8 +72,8 @@ def _project_file_url(project_file):
 class TestMetaProjectList(BaseTest):
     url = reverse("meta-project-list")
 
-    def test_meta_project_list(self, user, meta_project, meta_project_mya):
-        self.client.force_authenticate(user=user)
+    def test_meta_project_list(self, viewer_user, meta_project, meta_project_mya):
+        self.client.force_authenticate(user=viewer_user)
         # get all meta projects
         response = self.client.get(self.url)
         assert response.status_code == 200
@@ -108,16 +108,16 @@ class TestProjectsRetrieve:
         response = self.client.get(project_url)
         assert response.status_code == 404
 
-    def test_project_get(self, user, project_url, project):
-        self.client.force_authenticate(user=user)
+    def test_project_get(self, viewer_user, project_url, project):
+        self.client.force_authenticate(user=viewer_user)
         response = self.client.get(project_url)
         assert response.status_code == 200
         assert response.data["id"] == project.id
         assert response.data["substance_category"] == "Production"
         assert response.data["latest_file"] is None
 
-    def test_project_files_get(self, user, project_url, project_file):
-        self.client.force_authenticate(user=user)
+    def test_project_files_get(self, viewer_user, project_url, project_file):
+        self.client.force_authenticate(user=viewer_user)
         response = self.client.get(project_url)
         assert response.status_code == 200
         assert response.data["latest_file"]["id"] == project_file.id
@@ -154,6 +154,11 @@ class TestProjectsUpdate:
     client = APIClient()
 
     def test_project_patch_anon(self, project_url):
+        response = self.client.patch(project_url, {"title": "Into the Spell"})
+        assert response.status_code == 403
+
+    def test_as_viewer(self, viewer_user, project_url):
+        self.client.force_authenticate(user=viewer_user)
         response = self.client.patch(project_url, {"title": "Into the Spell"})
         assert response.status_code == 403
 
@@ -223,6 +228,11 @@ class TestProjectUpload:
     client = APIClient()
 
     def test_upload_file_anon(self, project_upload_url):
+        response = self.client.post(project_upload_url, {})
+        assert response.status_code == 403
+
+    def test_as_viewer(self, viewer_user, project_upload_url):
+        self.client.force_authenticate(user=viewer_user)
         response = self.client.post(project_upload_url, {})
         assert response.status_code == 403
 
@@ -349,8 +359,8 @@ def setup_project_list(
 class TestProjectList(BaseTest):
     url = reverse("project-list")
 
-    def test_project_list(self, user, _setup_project_list):
-        self.client.force_authenticate(user=user)
+    def test_project_list(self, viewer_user, _setup_project_list):
+        self.client.force_authenticate(user=viewer_user)
 
         # get project list
         response = self.client.get(self.url)
@@ -523,8 +533,8 @@ class TestProjectList(BaseTest):
 class TestProjectStatistics(BaseTest):
     url = reverse("project-statistics")
 
-    def test_project_statistics(self, user, _setup_project_list):
-        self.client.force_authenticate(user=user)
+    def test_project_statistics(self, viewer_user, _setup_project_list):
+        self.client.force_authenticate(user=viewer_user)
 
         # get project list
         response = self.client.get(self.url)
@@ -660,6 +670,13 @@ class TestCreateProjects(BaseTest):
     def test_without_login(self, _setup_project_create):
         data = _setup_project_create
         self.client.force_authenticate(user=None)
+
+        response = self.client.post(self.url, data, format="json")
+        assert response.status_code == 403
+
+    def test_as_viewer(self, viewer_user, _setup_project_create):
+        data = _setup_project_create
+        self.client.force_authenticate(user=viewer_user)
 
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 403

@@ -26,6 +26,11 @@ class BaseProjectUtilityCreate(BaseTest):
         response = self.client.post(self.url, self.new_utility_data, format="json")
         assert response.status_code == 403
 
+    def test_as_viewer(self, viewer_user):
+        self.client.force_authenticate(user=viewer_user)
+        response = self.client.post(self.url, self.new_utility_data, format="json")
+        assert response.status_code == 403
+
     def test_project_utility_create(self, user, project):
         self.client.force_authenticate(user=user)
         response = self.client.post(self.url, self.new_utility_data, format="json")
@@ -50,6 +55,11 @@ class BaseProjectUtilityDelete(BaseTest):
         raise NotImplementedError
 
     def test_delete_anon(self):
+        response = self.client.delete(self.url)
+        assert response.status_code == 403
+
+    def test_as_viewer(self, viewer_user):
+        self.client.force_authenticate(user=viewer_user)
         response = self.client.delete(self.url)
         assert response.status_code == 403
 

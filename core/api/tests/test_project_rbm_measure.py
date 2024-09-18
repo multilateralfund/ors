@@ -45,6 +45,12 @@ class TestSubmissionAmountUpdate:
         response = self.client.patch(proj_rbm_measure_url, {"value": 41})
         assert response.status_code == 403
 
+    def test_as_viewer(self, viewer_user, proj_rbm_measure_url):
+        self.client.force_authenticate(user=viewer_user)
+
+        response = self.client.patch(proj_rbm_measure_url, {"value": 41})
+        assert response.status_code == 403
+
     def test_update(self, user, proj_rbm_measure_url, project_rbm_measure):
         self.client.force_authenticate(user=user)
 

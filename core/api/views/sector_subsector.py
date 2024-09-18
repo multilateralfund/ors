@@ -1,7 +1,7 @@
 from rest_framework import mixins, viewsets, status
 from rest_framework.response import Response
 
-from core.api.permissions import IsAgency, IsSecretariat
+from core.api.permissions import IsAgency, IsSecretariat, IsViewer
 from core.api.serializers.project import (
     ProjectSectorSerializer,
     ProjectSubSectorSerializer,
@@ -21,7 +21,7 @@ class SectorSubsectorBaseView(
     Base class for project
     """
 
-    permission_classes = [IsSecretariat | IsAgency]
+    permission_classes = [IsSecretariat | IsAgency | IsViewer]
 
     def get_queryset(self):
         # filter by is_custom for list view
