@@ -14,6 +14,9 @@ const BP_PER_PAGE = 20
 
 function BPProvider(props: BPProviderProps) {
   const { children } = props
+  const user = useStore((state) => state.user)
+  const isViewer = user.data.user_type === 'viewer'
+
   const pathParams = useParams<{ agency: string; period: string }>()
   const { agency, period } = pathParams
   const commonSlice = useStore((state) => state.common)
@@ -41,6 +44,7 @@ function BPProvider(props: BPProviderProps) {
     <BPContext.Provider
       value={{
         data,
+        isViewer,
         loaded,
         loading,
         params,

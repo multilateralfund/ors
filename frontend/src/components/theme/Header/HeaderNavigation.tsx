@@ -68,6 +68,7 @@ const useInternalNavSections = () => {
   const { user_type } = useStore((state) => state.user?.data)
   const pathname = usePathname()
   const nI = makeInternalNavItem.bind(null, pathname)
+  const userIsViewer = user_type === 'viewer'
   const userIsAdminOrSecretariat = ['admin', 'secretariat'].includes(user_type)
   const userCanAccessReplenishment =
     userIsAdminOrSecretariat || ['treasurer'].includes(user_type)
@@ -111,13 +112,13 @@ const useInternalNavSections = () => {
           },
         ]
       : []),
-    ...(userIsAdminOrSecretariat
+    ...(userIsAdminOrSecretariat || userIsViewer
       ? [{ label: 'Business plans', url: '/business-plans' }]
       : []),
-    ...(userIsAdminOrSecretariat
+    ...(userIsAdminOrSecretariat || userIsViewer
       ? [{ label: 'Project submissions', url: '/project-submissions' }]
       : []),
-    ...(userIsAdminOrSecretariat
+    ...(userIsAdminOrSecretariat || userIsViewer
       ? [{ label: 'Projects', url: '/projects' }]
       : []),
     // @ts-ignore
