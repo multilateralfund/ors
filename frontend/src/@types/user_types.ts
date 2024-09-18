@@ -11,6 +11,7 @@ export const userCanViewReports: Record<UserType, boolean> = {
   secretariat: true,
   stakeholder: false,
   treasurer: false,
+  viewer: true,
 }
 
 export const userCanSubmitReport: Record<UserType, boolean> = {
@@ -22,6 +23,7 @@ export const userCanSubmitReport: Record<UserType, boolean> = {
   secretariat: true,
   stakeholder: false,
   treasurer: false,
+  viewer: false,
 }
 
 export const userCanSubmitFinalReport: Record<UserType, boolean> = {
@@ -33,6 +35,7 @@ export const userCanSubmitFinalReport: Record<UserType, boolean> = {
   secretariat: true,
   stakeholder: false,
   treasurer: false,
+  viewer: false,
 }
 
 export const userCanExportData: Record<UserType, boolean> = {
@@ -44,6 +47,7 @@ export const userCanExportData: Record<UserType, boolean> = {
   secretariat: true,
   stakeholder: false,
   treasurer: false,
+  viewer: false,
 }
 
 export const userCanCommentCountry: Record<UserType, boolean> = {
@@ -55,6 +59,7 @@ export const userCanCommentCountry: Record<UserType, boolean> = {
   secretariat: false,
   stakeholder: false,
   treasurer: false,
+  viewer: false,
 }
 
 export const userCanCommentSecretariat: Record<UserType, boolean> = {
@@ -66,6 +71,7 @@ export const userCanCommentSecretariat: Record<UserType, boolean> = {
   secretariat: true,
   stakeholder: false,
   treasurer: false,
+  viewer: false,
 }
 
 export const isCountryUserType: Record<UserType, boolean> = {
@@ -77,4 +83,5 @@ export const isCountryUserType: Record<UserType, boolean> = {
   secretariat: false,
   stakeholder: false,
   treasurer: false,
+  viewer: false,
 }
