@@ -18,6 +18,27 @@ import { RedirectToBpList } from './RedirectToBpList'
 
 import { IoChevronDown } from 'react-icons/io5'
 
+const BPDiffButton = ({ business_plan }: { business_plan: ApiBP }) => {
+  const { agency, version, year_end, year_start } = business_plan
+  const { name: agency_name } = agency || {}
+
+  if (version <= 1) return null
+
+  return (
+    <Link
+      className="px-5"
+      color="secondary"
+      prefetch={false}
+      size="large"
+      variant="contained"
+      href={`/business-plans/${agency_name}/${year_start}-${year_end}/diff/${version}
+       `}
+      button
+    >
+      See differences
+    </Link>
+  )
+}
 const tagClassnames =
   'self-baseline rounded border border-solid px-1.5 py-1 font-medium uppercase leading-none'
 
@@ -228,6 +249,7 @@ const BPHeader = ({
               <HeaderVersionsDropdown />
               {tag}
             </div>
+            <BPDiffButton {...{ business_plan }} />
           </div>
           <div className="ml-auto">{actions}</div>
         </div>
