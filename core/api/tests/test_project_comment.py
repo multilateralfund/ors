@@ -53,6 +53,12 @@ class TestProjectCommentUpdate:
         response = self.client.patch(project_comment_detail_url)
         assert response.status_code == 403
 
+    def test_as_viewer(self, viewer_user, project_comment_detail_url):
+        self.client.force_authenticate(user=viewer_user)
+
+        response = self.client.patch(project_comment_detail_url)
+        assert response.status_code == 403
+
     def test_update(self, user, project_comment_detail_url, project_comment):
         self.client.force_authenticate(user=user)
 

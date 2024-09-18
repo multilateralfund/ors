@@ -49,6 +49,12 @@ class TestSubmissionAmountUpdate:
         response = self.client.patch(_sub_amount_url)
         assert response.status_code == 403
 
+    def test_as_viewer(self, viewer_user, _sub_amount_url):
+        self.client.force_authenticate(user=viewer_user)
+
+        response = self.client.patch(_sub_amount_url)
+        assert response.status_code == 403
+
     def test_update(self, user, _sub_amount_url, _sub_amount):
         self.client.force_authenticate(user=user)
 

@@ -20,8 +20,8 @@ pytestmark = pytest.mark.django_db
 class TestProjectsStatus(BaseTest):
     url = reverse("project-status-list")
 
-    def test_project_status_list_user(self, user, project_status):
-        self.client.force_authenticate(user=user)
+    def test_project_status_list_user(self, viewer_user, project_status):
+        self.client.force_authenticate(user=viewer_user)
 
         response = self.client.get(self.url)
         assert response.status_code == 200
@@ -49,9 +49,9 @@ class TestProjectSectorList(BaseTest):
     url = reverse("projectsector-list")
 
     def test_project_sector_list_user(
-        self, agency_user, sector, _setup_project_sector_list
+        self, viewer_user, sector, _setup_project_sector_list
     ):
-        self.client.force_authenticate(user=agency_user)
+        self.client.force_authenticate(user=viewer_user)
 
         response = self.client.get(self.url)
         assert response.status_code == 200
@@ -81,6 +81,11 @@ class TestProjectSectorCreate(BaseTest):
 
     def test_without_permission(self, country_user, _setup_sector_create):
         self.client.force_authenticate(user=country_user)
+        response = self.client.post(self.url, data=_setup_sector_create)
+        assert response.status_code == 403
+
+    def test_create_as_viewer(self, viewer_user, _setup_sector_create):
+        self.client.force_authenticate(user=viewer_user)
         response = self.client.post(self.url, data=_setup_sector_create)
         assert response.status_code == 403
 
@@ -139,9 +144,9 @@ class TestProjectSubsectorList(BaseTest):
     url = reverse("projectsubsector-list")
 
     def test_project_subsector_list_user(
-        self, user, sector, subsector, _setup_project_subsector_list
+        self, viewer_user, sector, subsector, _setup_project_subsector_list
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=viewer_user)
 
         response = self.client.get(self.url)
         assert response.status_code == 200
@@ -173,6 +178,11 @@ class TestProjectSubsectorCreate(BaseTest):
 
     def test_without_permission(self, country_user, _setup_subsector_create):
         self.client.force_authenticate(user=country_user)
+        response = self.client.post(self.url, data=_setup_subsector_create)
+        assert response.status_code == 403
+
+    def test_create_as_viewer(self, viewer_user, _setup_subsector_create):
+        self.client.force_authenticate(user=viewer_user)
         response = self.client.post(self.url, data=_setup_subsector_create)
         assert response.status_code == 403
 
@@ -221,8 +231,10 @@ def setup_project_type():
 class TestProjectType(BaseTest):
     url = reverse("project-type-list")
 
-    def test_project_type_list_user(self, user, project_type, _setup_project_type):
-        self.client.force_authenticate(user=user)
+    def test_project_type_list_user(
+        self, viewer_user, project_type, _setup_project_type
+    ):
+        self.client.force_authenticate(user=viewer_user)
 
         response = self.client.get(self.url)
         assert response.status_code == 200
@@ -266,8 +278,8 @@ def setup_project_meeting(country_ro, agency, project_type, project_status, subs
 class TestProjectMeeting(BaseTest):
     url = reverse("meeting-list")
 
-    def test_project_meeting_list_user(self, user, _setup_project_meeting):
-        self.client.force_authenticate(user=user)
+    def test_project_meeting_list_user(self, viewer_user, _setup_project_meeting):
+        self.client.force_authenticate(user=viewer_user)
 
         response = self.client.get(self.url)
         assert response.status_code == 200
@@ -279,9 +291,9 @@ class TestProjectCluster(BaseTest):
     url = reverse("project-cluster-list")
 
     def test_project_cluster_list_user(
-        self, user, project_cluster_kpp, project_cluster_kip
+        self, viewer_user, project_cluster_kpp, project_cluster_kip
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=viewer_user)
 
         response = self.client.get(self.url)
         assert response.status_code == 200
@@ -303,8 +315,8 @@ def setup_rbm_measures():
 class TestRbmMeasures(BaseTest):
     url = reverse("rbm-measure-list")
 
-    def test_rbm_measures_list_user(self, user, _setup_rbm_measures):
-        self.client.force_authenticate(user=user)
+    def test_rbm_measures_list_user(self, viewer_user, _setup_rbm_measures):
+        self.client.force_authenticate(user=viewer_user)
 
         last_measure = _setup_rbm_measures
 

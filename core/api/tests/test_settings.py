@@ -12,8 +12,8 @@ pytestmark = pytest.mark.django_db
 class TestSettings(BaseTest):
     url = reverse("settings")
 
-    def test_get_settings(self, user):
-        self.client.force_authenticate(user=user)
+    def test_get_settings(self, viewer_user):
+        self.client.force_authenticate(user=viewer_user)
 
         response = self.client.get(self.url)
         assert response.status_code == 200

@@ -58,6 +58,12 @@ class TestFundUpdate:
         response = self.client.patch(project_fund_url)
         assert response.status_code == 403
 
+    def test_as_viewer(self, viewer_user, project_fund_url):
+        self.client.force_authenticate(user=viewer_user)
+
+        response = self.client.patch(project_fund_url)
+        assert response.status_code == 403
+
     def test_update(self, user, project_fund_url, project_fund):
         self.client.force_authenticate(user=user)
 

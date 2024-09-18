@@ -105,6 +105,12 @@ class TestProjectsOdsOdpUpdate:
         response = self.client.patch(ods_subst_url, {"odp": 2.5})
         assert response.status_code == 403
 
+    def test_as_viewer(self, viewer_user, ods_subst_url):
+        self.client.force_authenticate(user=viewer_user)
+
+        response = self.client.patch(ods_subst_url, {"odp": 2.5})
+        assert response.status_code == 403
+
     def test_patch(self, user, ods_subst_url, project_ods_odp_subst, _setup_patch):
         self.client.force_authenticate(user=user)
 

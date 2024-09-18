@@ -18,7 +18,7 @@ from core.api.export.base import configure_sheet_print
 from core.api.export.projects import ProjectWriter
 
 from core.api.filters.project import MetaProjectFilter, ProjectFilter
-from core.api.permissions import IsAgency, IsCountryUser, IsSecretariat
+from core.api.permissions import IsAgency, IsCountryUser, IsSecretariat, IsViewer
 from core.api.serializers.meeting import MeetingSerializer
 from core.api.serializers.project import (
     ProjectClusterSerializer,
@@ -57,7 +57,7 @@ class MetaProjectListView(generics.ListAPIView):
     List meta projects
     """
 
-    permission_classes = [IsSecretariat | IsAgency | IsCountryUser]
+    permission_classes = [IsSecretariat | IsAgency | IsCountryUser | IsViewer]
     queryset = MetaProject.objects.order_by("code", "type")
     filterset_class = MetaProjectFilter
     serializer_class = MetaProjectSerializer
@@ -68,7 +68,7 @@ class ProjectStatusListView(generics.ListAPIView):
     List project status
     """
 
-    permission_classes = [IsSecretariat | IsAgency | IsCountryUser]
+    permission_classes = [IsSecretariat | IsAgency | IsCountryUser | IsViewer]
     queryset = ProjectStatus.objects.all()
     serializer_class = ProjectStatusSerializer
 
@@ -78,19 +78,19 @@ class ProjectTypeListView(generics.ListAPIView):
     List project type
     """
 
-    permission_classes = [IsSecretariat | IsAgency | IsCountryUser]
+    permission_classes = [IsSecretariat | IsAgency | IsCountryUser | IsViewer]
     queryset = ProjectType.objects.order_by("sort_order").all()
     serializer_class = ProjectTypeSerializer
 
 
 class ProjectMeetingListView(generics.ListAPIView):
-    permission_classes = [IsSecretariat | IsAgency | IsCountryUser]
+    permission_classes = [IsSecretariat | IsAgency | IsCountryUser | IsViewer]
     queryset = Meeting.objects.order_by("number").all()
     serializer_class = MeetingSerializer
 
 
 class ProjectClusterListView(generics.ListAPIView):
-    permission_classes = [IsSecretariat | IsAgency | IsCountryUser]
+    permission_classes = [IsSecretariat | IsAgency | IsCountryUser | IsViewer]
     queryset = ProjectCluster.objects.order_by("sort_order").all()
     serializer_class = ProjectClusterSerializer
 
@@ -107,7 +107,7 @@ class ProjectViewSet(
     API endpoint that allows projects to be viewed.
     """
 
-    permission_classes = [IsSecretariat | IsAgency | IsCountryUser]
+    permission_classes = [IsSecretariat | IsAgency | IsCountryUser | IsViewer]
     filterset_class = ProjectFilter
     filter_backends = [
         DjangoFilterBackend,
@@ -339,7 +339,7 @@ class ProjectStatisticsView(generics.ListAPIView):
     API endpoint that allows project statistics to be viewed.
     """
 
-    permission_classes = [IsSecretariat | IsAgency | IsCountryUser]
+    permission_classes = [IsSecretariat | IsAgency | IsCountryUser | IsViewer]
     filterset_class = ProjectFilter
     filter_backends = [
         DjangoFilterBackend,
