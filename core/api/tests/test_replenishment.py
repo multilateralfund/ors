@@ -76,6 +76,16 @@ class TestReplenishmentCountries(BaseTest):
         assert response.data[0]["name"] == country_user.country.name
         assert response.data[0]["iso3"] == country_user.country.iso3
 
+    def test_replenishment_countries_list_viewer_user(self, viewer_user):
+        CountryFactory.create(name="Country 1", iso3="XYZ")
+        CountryFactory.create(name="Country 2", iso3="ABC")
+
+        self.client.force_authenticate(user=viewer_user)
+
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.data) == 2
+
 
 class TestReplenishments(BaseTest):
     url = reverse("replenishment-replenishments-list")
@@ -107,10 +117,35 @@ class TestReplenishments(BaseTest):
         assert response.status_code == 200
         assert len(response.data) == 2
 
+    def test_replenishments_list_viewer_user(self, viewer_user):
+        ReplenishmentFactory.create(start_year=2018, end_year=2020)
+        ReplenishmentFactory.create(start_year=2021, end_year=2023)
+
+        self.client.force_authenticate(user=viewer_user)
+
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.data) == 2
+
     def test_replenishments_create_country_user(self, country_user):
         ReplenishmentFactory.create(start_year=2018, end_year=2020)
 
         self.client.force_authenticate(user=country_user)
+
+        response = self.client.post(
+            self.url,
+            {
+                "amount": 4000,
+            },
+            format="json",
+        )
+
+        assert response.status_code == 403
+
+    def test_replenishments_create_viewer_user(self, viewer_user):
+        ReplenishmentFactory.create(start_year=2018, end_year=2020)
+
+        self.client.force_authenticate(user=viewer_user)
 
         response = self.client.post(
             self.url,
@@ -2107,10 +2142,10 @@ class TestPayments(BaseTest):
         assert response.status_code == 200
         assert len(response.data) == 2
 
-    def test_payments_create(self, user):
+    def test_payments_create(self, treasurer_user):
         country = CountryFactory.create(name="Country 1", iso3="XYZ")
 
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=treasurer_user)
 
         request_data = {
             "country_id": country.id,
@@ -2126,3 +2161,23 @@ class TestPayments(BaseTest):
 
         response = self.client.post(self.url, data=request_data, format="json")
         assert response.status_code == 201
+
+    def test_payments_create_viewer(self, viewer_user):
+        country = CountryFactory.create(name="Country 1", iso3="XYZ")
+
+        self.client.force_authenticate(user=viewer_user)
+
+        request_data = {
+            "country_id": country.id,
+            "replenishment_id": None,
+            "date": "2019-03-14",
+            "payment_for_year": "deferred",
+            "amount": 100.0,
+            "currency": "EUR",
+            "exchange_rate": 0.7,
+            "ferm_gain_or_loss": None,
+            "files": [],
+        }
+
+        response = self.client.post(self.url, data=request_data, format="json")
+        assert response.status_code == 403

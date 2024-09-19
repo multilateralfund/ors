@@ -96,6 +96,7 @@ class ReplenishmentCountriesSOAViewSet(viewsets.GenericViewSet, mixins.ListModel
 
     There is no need for special security here.
     """
+
     serializer_class = CountrySerializer
 
     def get_queryset(self):
@@ -1405,6 +1406,8 @@ class ReplenishmentPaymentViewSet(
     """
 
     model = Payment
+
+    permission_classes = [IsUserAllowedReplenishment]
     serializer_class = PaymentSerializer
     filterset_class = PaymentFilter
     filter_backends = [
