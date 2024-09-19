@@ -41,6 +41,7 @@ class IsUserAllowedReplenishment(permissions.BasePermission):
                 user.UserType.AGENCY_SUBMITTER,
                 user.UserType.SECRETARIAT,
                 user.UserType.STAKEHOLDER,
+                user.UserType.VIEWER,
             ):
                 if request.method in permissions.SAFE_METHODS:
                     return True
