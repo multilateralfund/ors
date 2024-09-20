@@ -1,14 +1,15 @@
 import { getResults } from '@ors/helpers'
 import useApi from '@ors/hooks/useApi'
 
-export function useGetBPVersions(businessPlan: any) {
-  const { agency, year_end, year_start } = businessPlan
-  const { id } = agency || {}
+import { BPGetVersionsInterface } from '../types'
+
+export function useGetBPVersions(props: BPGetVersionsInterface) {
+  const { agency_id, year_end, year_start } = props
 
   const { data, loading } = useApi({
     options: {
       params: {
-        agency_id: id,
+        agency_id: agency_id,
         direction: 'desc',
         get_versions: true,
         ordering: '-updated_at',
@@ -19,7 +20,7 @@ export function useGetBPVersions(businessPlan: any) {
     path: `api/business-plan/`,
   })
 
-  const { results } = getResults(data)
+  const { loaded, results } = getResults(data)
 
-  return { loading, results }
+  return { loaded, loading, results }
 }

@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 
 import { useParams } from 'next/navigation'
 
+import { getAgencyByName } from '@ors/components/manage/Blocks/BusinessPlans/utils'
 import useApi from '@ors/hooks/useApi'
 import { useStore } from '@ors/store'
 
@@ -21,9 +22,10 @@ function BPProvider(props: BPProviderProps) {
   const { agency, period } = pathParams
   const commonSlice = useStore((state) => state.common)
 
-  const currentAgency = useMemo(() => {
-    return commonSlice.agencies.data.find((item) => item.name === agency)
-  }, [agency, commonSlice.agencies.data])
+  const currentAgency = useMemo(
+    () => getAgencyByName(commonSlice, agency),
+    [agency, commonSlice],
+  )
 
   const { data, loaded, loading, params, setParams } = useApi<ApiBPGet>({
     options: {

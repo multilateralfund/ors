@@ -9,4 +9,30 @@ export type BpDiffPathParams = {
   version: string
 }
 
+export type BPDataInterface = {
+  loaded: boolean
+  loading: boolean
+  results: Array<any>
+}
+
+export type BPGetVersionsInterface = {
+  agency_id: number
+  year_end: number
+  year_start: number
+}
+
+export type BPGetDiffInterface = {
+  agency_id: number
+  version: string
+  year_end: number
+  year_start: number
+}
+
+export type BPDiffHeaderInterface = {
+  agency_id: number
+  pathParams: BpDiffPathParams
+  year_end: number
+  year_start: number
+}
+
 export type ViewSelectorValuesType = 'list' | 'table'

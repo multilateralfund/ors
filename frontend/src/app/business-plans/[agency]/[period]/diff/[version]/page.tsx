@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 
-import BPDiffViewWrapper from '@ors/components/manage/Blocks/BusinessPlans/BPDiff/BPViewDiff'
+import BPDiffView from '@ors/components/manage/Blocks/BusinessPlans/BPDiff/BPDiffView'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
 export const metadata: Metadata = {
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default async function BusinessPlansDiff() {
   return (
     <PageWrapper>
-      <BPDiffViewWrapper />
+      <BPDiffView />
     </PageWrapper>
   )
 }

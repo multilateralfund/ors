@@ -15,14 +15,22 @@ import useClickOutside from '@ors/hooks/useClickOutside'
 
 import { useGetBPVersions } from './BP/useGetBPVersions'
 import { RedirectToBpList } from './RedirectToBpList'
+import { BPDataInterface } from './types'
 
 import { IoChevronDown } from 'react-icons/io5'
 
-const BPDiffButton = ({ business_plan }: { business_plan: ApiBP }) => {
+const BPDiffButton = ({
+  bpVersions,
+  business_plan,
+}: {
+  bpVersions: BPDataInterface
+  business_plan: ApiBP
+}) => {
   const { agency, version, year_end, year_start } = business_plan
   const { name: agency_name } = agency || {}
 
-  if (version <= 1) return null
+  const { results = [] } = bpVersions
+  if (results.length <= 1) return null
 
   return (
     <Link
@@ -42,14 +50,16 @@ const BPDiffButton = ({ business_plan }: { business_plan: ApiBP }) => {
 const tagClassnames =
   'self-baseline rounded border border-solid px-1.5 py-1 font-medium uppercase leading-none'
 
-const HeaderVersionsDropdown = () => {
+const HeaderVersionsDropdown = ({
+  bpVersions,
+}: {
+  bpVersions: BPDataInterface
+}) => {
   const [showVersionsMenu, setShowVersionsMenu] = useState(false)
   const { data, loading, params, setParams } = useContext(BPContext)
 
   const business_plan = data?.results?.business_plan || ({} as ApiBP)
   const toggleShowVersionsMenu = () => setShowVersionsMenu((prev) => !prev)
-
-  const bpVersions = useGetBPVersions(business_plan)
 
   const ref = useClickOutside<HTMLDivElement>(() => {
     setShowVersionsMenu(false)
@@ -223,6 +233,36 @@ const ViewHeaderTag = () => {
 }
 
 const BPHeader = ({
+  business_plan,
+  tag,
+  titlePrefix,
+}: {
+  business_plan: ApiBP
+  tag?: React.JSX.Element
+  titlePrefix?: React.JSX.Element
+}) => {
+  const { agency, year_end, year_start } = business_plan
+  const { id: agency_id } = agency || {}
+
+  const bpVersions = useGetBPVersions({
+    agency_id,
+    year_end,
+    year_start,
+  })
+
+  return (
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
+      <div className="flex flex-wrap items-center gap-x-2">
+        {titlePrefix}
+        <HeaderVersionsDropdown {...{ bpVersions }} />
+        {tag}
+      </div>
+      <BPDiffButton {...{ bpVersions, business_plan }} />
+    </div>
+  )
+}
+
+const BPHeaderView = ({
   actions = <ViewHeaderActions />,
   tag = <ViewHeaderTag />,
   titlePrefix,
@@ -233,7 +273,7 @@ const BPHeader = ({
 }) => {
   const contextBP = useContext(BPContext) as any
   const { data } = contextBP
-  const business_plan = data?.results?.business_plan || {}
+  const business_plan = data?.results?.business_plan || ({} as ApiBP)
 
   const currentYearRange =
     business_plan?.year_start + '-' + business_plan?.year_end
@@ -243,14 +283,7 @@ const BPHeader = ({
       <div>
         <RedirectToBpList {...{ currentYearRange }} />
         <div className="mb-4 flex min-h-[40px] flex-wrap items-center justify-between gap-x-8 gap-y-2">
-          <div className="flex flex-wrap items-center gap-x-2">
-            <div className="flex items-center gap-x-2">
-              {titlePrefix}
-              <HeaderVersionsDropdown />
-              {tag}
-            </div>
-            <BPDiffButton {...{ business_plan }} />
-          </div>
+          <BPHeader {...{ business_plan, tag, titlePrefix }} />
           <div className="ml-auto">{actions}</div>
         </div>
       </div>
@@ -258,8 +291,4 @@ const BPHeader = ({
   )
 }
 
-const BPHeaderView = () => {
-  return <BPHeader />
-}
-
-export { BPHeaderView }
+export default BPHeaderView
