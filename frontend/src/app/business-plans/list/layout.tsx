@@ -1,5 +1,7 @@
 'use client'
 
+import { UserType, userCanEditBusinessPlan } from '@ors/types/user_types'
+
 import React, { PropsWithChildren, useContext, useEffect } from 'react'
 
 import cx from 'classnames'
@@ -12,8 +14,6 @@ import { getPathPeriod } from '@ors/components/manage/Blocks/Replenishment/utils
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import CustomLink from '@ors/components/ui/Link/Link'
-import BPContext from '@ors/contexts/BusinessPlans/BPContext'
-import BPProvider from '@ors/contexts/BusinessPlans/BPProvider'
 import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
 import BPYearRangesProvider from '@ors/contexts/BusinessPlans/BPYearRangesProvider'
 import { useStore } from '@ors/store'
@@ -93,12 +93,12 @@ function BusinessPlansList(props: PropsWithChildren) {
 }
 
 function BPListHeader() {
-  const { isViewer } = useContext(BPContext) as any
+  const { user_type } = useStore((state) => state.user?.data)
 
   return (
     <div className="mb-8 flex items-center justify-between">
       <PageHeading>Business Plans</PageHeading>
-      {!isViewer && (
+      {userCanEditBusinessPlan[user_type as UserType] && (
         <CustomLink
           className="px-4 py-2 text-lg uppercase"
           color="secondary"
@@ -117,10 +117,8 @@ export default function BusinessPlansListLayout({ children }: any) {
   return (
     <PageWrapper className="max-w-screen-xl print:p-0">
       <BPYearRangesProvider>
-        <BPProvider>
-          <BPListHeader />
-          <BusinessPlansList>{children}</BusinessPlansList>
-        </BPProvider>
+        <BPListHeader />
+        <BusinessPlansList>{children}</BusinessPlansList>
       </BPYearRangesProvider>
     </PageWrapper>
   )
