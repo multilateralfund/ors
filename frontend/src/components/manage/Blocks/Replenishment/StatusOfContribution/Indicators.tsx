@@ -58,8 +58,7 @@ const SummaryIndicators = ({ data }: { data: SummaryContributions }) => {
       />
       <IndicatorBox
         isPercentage={true}
-        subtext="considering only the current year for the triennials that are not closed"
-        text="paid out of the total"
+        text="paid out of the total pledged"
         value={
           data.percentage_total_paid_current_year
             ? formatNumberValue(data.percentage_total_paid_current_year, 0, 0)

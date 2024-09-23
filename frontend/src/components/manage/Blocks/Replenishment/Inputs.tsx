@@ -329,7 +329,7 @@ export const Input = forwardRef<
 })
 
 export interface IFormattedNumberInputProps
-  extends InputHTMLAttributes<HTMLInputElement> {
+  extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
   onlyNumber?: boolean
   value: number | string
 }
@@ -430,9 +430,9 @@ export function DateInput(props: IDateInputProps) {
         id={`${id}_mask`}
         name={`${name || id}_mask`}
         className={cx(CLASSESS, className, { hidden: inputMode })}
-        readOnly={true}
         type="text"
         value={maskDate}
+        onChange={() => false}
         onFocus={() => setInputMode(true)}
         {...rest}
       />
@@ -469,6 +469,26 @@ export function FieldInput(
   return (
     <Field id={id} label={label}>
       <Input id={id} {...rest} />
+    </Field>
+  )
+}
+
+export function FieldDateInput(props: IDateInputProps & IFieldProps) {
+  const { id, label, ...rest } = props
+  return (
+    <Field id={id} label={label}>
+      <DateInput id={id} {...rest} />
+    </Field>
+  )
+}
+
+export function FieldFormattedNumberInput(
+  props: IFieldProps & IFormattedNumberInputProps,
+) {
+  const { id, label, ...rest } = props
+  return (
+    <Field id={id} label={label}>
+      <FormattedNumberInput id={id} {...rest} />
     </Field>
   )
 }

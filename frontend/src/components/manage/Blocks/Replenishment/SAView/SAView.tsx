@@ -844,7 +844,6 @@ function SAView(props: SAViewProps) {
                 id="triannualBudget"
                 className="w-36"
                 disabled={!ctx.isTreasurer}
-                type="number"
                 value={replenishment?.amount}
                 onChange={handleAmountInput}
               />
@@ -861,7 +860,6 @@ function SAView(props: SAViewProps) {
                 id="previouslyUnusedSum"
                 className="w-36"
                 disabled={!ctx.isTreasurer}
-                type="number"
                 value={unusedAmount}
                 onChange={handleUnusedAmountInput}
               />
@@ -877,7 +875,6 @@ function SAView(props: SAViewProps) {
               <FormattedNumberInput
                 id="totalAmount"
                 className="w-36"
-                type="number"
                 value={
                   (replenishment?.amount - (unusedAmount as number) || 0) / 3
                 }

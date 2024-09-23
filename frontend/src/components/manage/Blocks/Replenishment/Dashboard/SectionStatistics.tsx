@@ -13,6 +13,7 @@ interface HeaderDefinition {
   headerClass?: string
   label: string
   rowClass?: string
+  skipFormatting?: boolean
 }
 
 const EMPTY_ROW: HeaderDefinition = {
@@ -22,7 +23,7 @@ const EMPTY_ROW: HeaderDefinition = {
 }
 
 const HEADERS: HeaderDefinition[] = [
-  { field: 'period', label: 'Description' },
+  { field: 'period', label: 'Description', skipFormatting: true },
   { field: 'agreed_contributions', label: 'Pledged contributions' },
   { field: 'cash_payments', label: 'Cash payments/received' },
   { field: 'bilateral_assistance', label: 'Bilateral assistance' },
@@ -59,6 +60,7 @@ const HEADERS: HeaderDefinition[] = [
     headerClass: 'font-bold',
     label: 'Accumulated figures',
     rowClass: 'font-bold',
+    skipFormatting: true,
   },
   { field: 'agreed_contributions', label: 'Total pledges' },
   {
@@ -117,7 +119,9 @@ function StatisticsTable(props: { data: SoCStatistic[] }) {
     for (let j = 0; j < data.length; j++) {
       const content = data[j][HEADERS[i].field]
       const cellValue =
-        content !== null ? formatNumberValue(content, 2, 2) || content : content
+        content !== null && !HEADERS[i]?.skipFormatting
+          ? formatNumberValue(content, 2, 2) || content
+          : content
       if (i == 0) {
         cells.push(<th key={j}>{cellValue}</th>)
       } else {
@@ -140,7 +144,12 @@ function StatisticsTable(props: { data: SoCStatistic[] }) {
   )
 }
 
-function SectionStatistics() {
+interface ISectionStatisticsProps {
+  asOfDate: string
+}
+
+function SectionStatistics(props: ISectionStatisticsProps) {
+  const { asOfDate } = props
   const { data } = useGetStatisticsData()
   return (
     <>
@@ -160,6 +169,9 @@ function SectionStatistics() {
         </Link>{' '}
         <span> | </span>
         <h2 className="m-0 text-3xl">STATISTICS</h2>
+      </div>
+      <div className="pt-4">
+        <p className="m-0 text-2xl">{asOfDate} ( USD )</p>
       </div>
       <div className="mt-8 print:mt-0">
         {data ? <StatisticsTable data={data} /> : null}

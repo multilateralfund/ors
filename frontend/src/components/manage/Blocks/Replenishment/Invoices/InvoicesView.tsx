@@ -37,6 +37,7 @@ import { IoSearchSharp } from 'react-icons/io5'
 const COLUMNS: InvoiceColumn[] = [
   { field: 'country', label: 'Country', sortable: true },
   { field: 'status', label: 'Status' },
+  { field: 'number', label: 'Number' },
   { field: 'year', label: 'Year' },
   { field: 'date_of_issuance', label: 'Date of issuance', sortable: true },
   { field: 'amount', label: 'Amount' },
@@ -99,11 +100,11 @@ function InvoicesView() {
         country: data.country.name,
         country_id: data.country.id,
         currency: data.currency,
-        date_first_reminder: formatDateValue(data.date_first_reminder) || '-',
+        date_first_reminder: formatDateValue(data.date_first_reminder),
         date_of_issuance: formatDateValue(data.date_of_issuance),
-        date_second_reminder: formatDateValue(data.date_second_reminder) || '-',
-        date_sent_out: formatDateValue(data.date_sent_out) || '-',
-        exchange_rate: formatNumberValue(data.exchange_rate) || '-',
+        date_second_reminder: formatDateValue(data.date_second_reminder),
+        date_sent_out: formatDateValue(data.date_sent_out),
+        exchange_rate: formatNumberValue(data.exchange_rate),
         files: <ViewFiles files={data.invoice_files} />,
         files_data: data.invoice_files,
         gray: !data.id,
@@ -114,6 +115,23 @@ function InvoicesView() {
         year: data.year || '-',
       }))
     }, [loaded, results, ctx.isTreasurer])
+
+  const formattedTableRows = useMemo(() => {
+    if (!loaded) {
+      return memoResults
+    }
+
+    const result: ParsedInvoice[] = []
+    for (let i = 0; i < memoResults.length; i++) {
+      result.push({ ...(memoResults[i] as ParsedInvoice) })
+      result[i].date_first_reminder = result[i].date_first_reminder || '-'
+      result[i].date_of_issuance = result[i].date_of_issuance
+      result[i].date_second_reminder = result[i].date_second_reminder || '-'
+      result[i].date_sent_out = result[i].date_sent_out || '-'
+      result[i].exchange_rate = result[i].exchange_rate || '-'
+    }
+    return result
+  }, [loaded, memoResults])
 
   const columns: InvoiceColumn[] = useMemo(function () {
     const result = []
@@ -512,7 +530,7 @@ function InvoicesView() {
         adminButtons={false}
         columns={columns}
         enableSort={true}
-        rowData={memoResults}
+        rowData={formattedTableRows}
         sortDirection={sortDirection}
         sortOn={sortOn}
         sortableColumns={COLUMNS.reduce<number[]>((acc, col, idx) => {

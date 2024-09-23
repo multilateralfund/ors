@@ -7,6 +7,7 @@ import React, { useEffect, useState } from 'react'
 import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
 import {
   Field,
+  FieldDateInput,
   FieldInput,
   FieldMultiSelect,
   FieldSelect,
@@ -19,12 +20,15 @@ import { IPaymentDialogProps } from './types'
 const BASE_URL = 'api/replenishment/invoices/'
 
 const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
-  const { columns, countries, data, isEdit, title, ...dialogProps } = props
+  const { columns, countries, data, isEdit, onSubmit, title, ...dialogProps } =
+    props
   const [selectedCountry, setSelectedCountry] = useState<null | string>(null)
   const [invoicesOptions, setInvoicesOptions] = useState<
     { id: number; label: string }[]
   >([])
   const [invoicesLoading, setInvoicesLoading] = useState(false)
+
+  const [date, setDate] = useState(data?.date ?? '')
 
   useEffect(() => {
     setInvoicesLoading(true)
@@ -52,8 +56,14 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
       })
   }, [selectedCountry])
 
+  const handleFormSubmit: IPaymentDialogProps['onSubmit'] = (formData, evt) => {
+    formData.set('date', date)
+    formData.delete('date_mask')
+    onSubmit(formData, evt)
+  }
+
   return (
-    <FormDialog title={title} {...dialogProps}>
+    <FormDialog title={title} onSubmit={handleFormSubmit} {...dialogProps}>
       {isEdit && <input name="id" defaultValue={data?.id} type="hidden" />}
       <FieldSelect
         id="country_id"
@@ -92,11 +102,11 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
           ))}
         </FieldMultiSelect>
       )}
-      <FieldInput
+      <FieldDateInput
         id="date"
-        defaultValue={data?.date?.toString()}
         label={columns[1].label}
-        type="date"
+        value={date}
+        onChange={(evt) => setDate(evt.target.value)}
         required
       />
       <FieldInput

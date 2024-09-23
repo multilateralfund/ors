@@ -437,7 +437,10 @@ function getDefaultYear(periodOptions: Record<string, any>[], period?: string) {
   return result
 }
 
-function getDefaultRange(periodOptions: Record<string, any>[], period?: string) {
+function getDefaultRange(
+  periodOptions: Record<string, any>[],
+  period?: string,
+) {
   return period || periodOptions[0]?.value
 }
 
@@ -621,7 +624,7 @@ function SectionDashboard(props: SectionDashboardProps) {
         <div className="flex items-center gap-2 print:hidden">
           <label
             className={cx(
-              'flex cursor-pointer items-center rounded-lg border border-solid border-primary px-2 py-1 font-bold text-gray-400',
+              'flex h-10 cursor-pointer items-center rounded-lg border border-solid border-primary px-2 py-1 text-lg font-bold text-gray-400',
               { 'bg-primary font-bold text-mlfs-hlYellow': onlyCeits },
             )}
           >
@@ -658,36 +661,38 @@ function SectionDashboard(props: SectionDashboardProps) {
           <Component period={defaultPeriod} onlyCeits={onlyCeits} />
         ) : null}
 
-        <div className="">
-          <br className="m-5 leading-7" />
-          <div className="flex w-full print:flex-col">
-            {charts && (
-              <>
-                <div className="w-1/2 print:w-full print:break-inside-avoid">
-                  <h3 className="text-2xl uppercase">
-                    Outstanding pledges by triennium
-                  </h3>
-                  <BarChart
-                    title="Outstanding pledges by triennium"
-                    data={charts.outstanding_pledges.map((o) => ({
-                      ...o,
-                      outstanding_pledges: o.outstanding_pledges / 10 ** 6,
-                    }))}
-                  />
-                </div>
-                <div className="w-1/2 print:w-full print:break-inside-avoid">
-                  <h3 className="text-2xl uppercase">
-                    Pledged Contributions vs. total payments
-                  </h3>
-                  <TwoAreaCharts
-                    data={charts}
-                    title="Pledged Contributions vs total payments"
-                  />
-                </div>
-              </>
-            )}
+        {charts && !onlyCeits ? (
+          <div className="">
+            <br className="m-5 leading-7" />
+            <div className="flex w-full print:flex-col">
+              {charts && (
+                <>
+                  <div className="w-1/2 print:w-full print:break-inside-avoid">
+                    <h3 className="text-2xl uppercase">
+                      Outstanding pledges by triennium
+                    </h3>
+                    <BarChart
+                      title="Outstanding pledges by triennium"
+                      data={charts.outstanding_pledges.map((o) => ({
+                        ...o,
+                        outstanding_pledges: o.outstanding_pledges / 10 ** 6,
+                      }))}
+                    />
+                  </div>
+                  <div className="w-1/2 print:w-full print:break-inside-avoid">
+                    <h3 className="text-2xl uppercase">
+                      Pledged Contributions vs. total payments
+                    </h3>
+                    <TwoAreaCharts
+                      data={charts}
+                      title="Pledged Contributions vs total payments"
+                    />
+                  </div>
+                </>
+              )}
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
     </>
   )

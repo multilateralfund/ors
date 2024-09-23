@@ -50,6 +50,7 @@ const COLUMNS: PaymentColumn[] = [
     label: 'Exchange Rate',
   },
   { field: 'payment_for_year', label: 'Year(s)' },
+  { field: 'invoice_numbers', label: 'Invoice(s)' },
   { field: 'ferm_gain_or_loss', label: 'FERM Gain/Loss' },
   { field: 'files', label: 'Files' },
   { field: 'comment', label: 'Comments' },
@@ -102,6 +103,9 @@ function PaymentsView() {
           ferm_gain_or_loss: formatNumberValue(data.ferm_gain_or_loss) || 'N/A',
           files: <ViewFiles files={data.payment_files} />,
           files_data: data.payment_files,
+          invoice_numbers: data.invoices
+            .map((inv: any) => inv.number)
+            .join(', '),
           invoices: data.invoices,
           iso3: data.country.iso3,
           payment_for_year: data.payment_for_year,

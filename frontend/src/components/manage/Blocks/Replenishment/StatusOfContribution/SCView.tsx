@@ -91,8 +91,8 @@ function SCView(props: SCViewProps) {
 
   const dateOfLastUpdate = '27 May 2024'
   const title = period
-    ? `Status of Contribution for ${period}`
-    : 'Status of Contribution'
+    ? `Status of contributions for ${period}`
+    : 'Status of contributions'
 
   const Component = currentSection?.component ?? SCSummary
 
