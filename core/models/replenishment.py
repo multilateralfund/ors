@@ -2,6 +2,7 @@ from decimal import Decimal
 
 from django.db import models
 
+from core.models.agency import Agency
 from core.models.base import AbstractSingleton
 from core.models.country import Country
 from core.models.utils import get_protected_storage
@@ -382,18 +383,25 @@ class FermGainLoss(models.Model):
 class ExternalIncome(models.Model):
     start_year = models.IntegerField()
     end_year = models.IntegerField()
-    interest_earned = models.DecimalField(max_digits=30, decimal_places=15)
-    miscellaneous_income = models.DecimalField(max_digits=30, decimal_places=15)
+    interest_earned = models.DecimalField(
+        max_digits=30, decimal_places=15, default=Decimal(0)
+    )
+    miscellaneous_income = models.DecimalField(
+        max_digits=30, decimal_places=15, default=Decimal(0)
+    )
+    agency_name = models.CharField(max_length=255, blank=True)
 
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["start_year"], name="unique_start_year_external_income"
-            ),
-            models.UniqueConstraint(
-                fields=["end_year"], name="unique_end_year_external_income"
-            ),
-        ]
+    def __str__(self):
+        agency_str = f" for agency {self.agency}" if self.agency else ""
+        year_str = (
+            f"{self.start_year} - {self.end_year}"
+            if self.start_year != self.end_year
+            else f"{self.start_year}"
+        )
+        return (
+            f"External Income{agency_str} ({year_str}): interest {self.interest_earned}; "
+            f"miscellaneous {self.miscellaneous_income}"
+        )
 
 
 class ExternalAllocation(AbstractSingleton):
