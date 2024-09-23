@@ -360,15 +360,23 @@ class DisputedContribution(models.Model):
 
 
 class FermGainLoss(models.Model):
-    country = models.OneToOneField(
+    country = models.ForeignKey(
         Country,
         on_delete=models.PROTECT,
         related_name="ferm_gain_loss",
     )
     amount = models.DecimalField(max_digits=30, decimal_places=15, default=0)
+    year = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
         return f"Ferm Gain/Loss {self.country.iso3} - {self.amount}"
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["country", "year"], name="unique_ferm_country_year"
+            )
+        ]
 
 
 class ExternalIncome(models.Model):
