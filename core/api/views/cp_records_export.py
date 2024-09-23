@@ -71,7 +71,7 @@ def get_record_chemical_category(record, set_hfc_preblended=True):
     Returns the category of the chemical.
     If the chemical is a blend it will return hfc".
 
-    @param set_hfc_preblended: If True, it will return "HFCs in Preblended Polyol"
+    @param set_hfc_preblended: If True, it will return "HFCs in imported pre-blended polyol"
         for pre-blended polyols.
     """
 
@@ -85,12 +85,12 @@ def get_record_chemical_category(record, set_hfc_preblended=True):
         # check if the substance is a pre-blended polyol
         substance_name = record.substance.name.lower()
         if "hfc" in substance_name and "pre-blended polyol" in substance_name:
-            return "HFCs in Preblended Polyol"
+            return "HFCs in imported pre-blended polyol"
 
         return substance_group
 
     if set_hfc_preblended and record.blend.is_related_preblended_polyol:
-        return "HFCs in Preblended Polyol"
+        return "HFCs in imported pre-blended polyol"
 
     # blends are considered as "HFC"
     return "HFC"
@@ -279,8 +279,15 @@ class CPCalculatedAmountExportView(CPRecordListView):
             for group in SUBSTANCE_GROUP_ID_TO_CATEGORY.values()
             if group not in EXCLUDE_FROM_CONSUMPTION
         }
-        data["HFCs in Preblended Polyol"] = {"sectorial_total": 0, "consumption": 0}
-        data["HCFCs in Preblended Polyol"] = {"sectorial_total": 0, "consumption": 0}
+        data["HFCs in imported pre-blended polyol"] = {
+            "sectorial_total": 0,
+            "consumption": 0,
+        }
+        data["HCFCs in imported pre-blended polyol"] = {
+            "sectorial_total": 0,
+            "consumption": 0,
+        }
+        data = dict(sorted(data.items()))  # sort by key
 
         # calculate the consumption and sectorial total
         for record in records:
@@ -290,7 +297,7 @@ class CPCalculatedAmountExportView(CPRecordListView):
             # set the substance category for HCFC pre-blended polyol
             substance_name = record.substance.name if record.substance else ""
             if "HCFC" in substance_name and "pre-blended polyol" in substance_name:
-                substance_category = "HCFCs in Preblended Polyol"
+                substance_category = "HCFCs in imported pre-blended polyol"
 
             if substance_category in EXCLUDE_FROM_CONSUMPTION:
                 continue
@@ -750,7 +757,7 @@ class CPDataExtractionAllExport(views.APIView):
             if key not in final_prices_dict:
                 final_prices_dict[key] = {}
 
-            if not price.is_fob and not price.is_retail and year < 2023:
+            if not price.is_fob and not price.is_retail and year < 2024:
                 is_fob = ""
                 is_retail = ""
             else:
@@ -852,7 +859,7 @@ class CPDataExtractionAllExport(views.APIView):
                 record.substance.name.lower()
                 == "hcfc-141b in imported pre-blended polyol"
             ):
-                group = "HCFC-141b Preblended Polyol"
+                group = "HCFC-141b in imported pre-blended polyol"
             else:
                 group = SUBSTANCE_GROUP_ID_TO_CATEGORY.get(
                     record.substance.group.group_id
