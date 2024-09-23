@@ -33,11 +33,13 @@ INCOME_AGENCY_COLUMN = 0
 INCOME_YEAR_COLUMN = 1
 INCOME_AMOUNT_COLUMN = 6
 
+DISPUTED_COUNTRY_COLUMN = 0
+DISPUTED_YEAR_COLUMN = 1
+DISPUTED_AMOUNT_COLUMN = 2
+
 
 def migrate_old_income_data():
-    is_inital_data = (
-        ExternalIncome.objects.filter(agency_name="").count() == 0
-    )
+    is_inital_data = ExternalIncome.objects.filter(agency_name="").count() == 0
     logger.info(f"Is initial data: {is_inital_data}")
     if is_inital_data:
         # We need to *always* keep the initial objects containing miscellaneous_income,
@@ -47,7 +49,9 @@ def migrate_old_income_data():
 
         # For years 1991-2014 we need to keep both miscellaneous and interest data.
         # For 2015- we need to set the interest earned to zero, but keep miscellaneous.
-        ExternalIncome.objects.filter(start_year__gte=2015).update(interest_earned=Decimal(0))
+        ExternalIncome.objects.filter(start_year__gte=2015).update(
+            interest_earned=Decimal(0)
+        )
     else:
         # This is the updated data containing agency links.
         # We still need to keep the old data, but (hopefully) no more need to update it.
@@ -73,11 +77,7 @@ def parse_ferm_sheet(ferm_df, countries):
         amount = get_decimal_from_excel_string(row.iloc[FERM_AMOUNT_COLUMN].strip())
 
         ferm_gains_losses.append(
-            FermGainLoss(
-                country=country,
-                year=year,
-                amount=amount
-            )
+            FermGainLoss(country=country, year=year, amount=amount)
         )
 
     FermGainLoss.objects.bulk_create(ferm_gains_losses)
@@ -97,7 +97,7 @@ def parse_interest(interest_df, countries):
         if index == 0:
             continue
 
-        # Only importing the granular data in this iteration
+        # Only importing the granular data in this iteration; need to stop here
         if row.iloc[INCOME_AGENCY_COLUMN] == "TOTAL INTEREST BY TRIENNIUM/YEAR":
             break
 
@@ -127,10 +127,45 @@ def parse_interest(interest_df, countries):
         f"Imported {len(external_incomes)} ExternalIncome objects "
         f"from the consolidated data file."
     )
-   
+
 
 def parse_disputed_contributions(disputed_df, countries):
-    pass
+    disputed_contributions = []
+
+    for index, row in disputed_df.iterrows():
+        # Skipping first row
+        if index == 0:
+            continue
+
+        # There are two last rows; one empty, one with total. Not processing those.
+        if row.iloc[DISPUTED_COUNTRY_COLUMN] is None:
+            continue
+        country_name = row.iloc[DISPUTED_COUNTRY_COLUMN].replace("\n", " ").strip()
+        country = countries.get(COUNTRY_MAPPING.get(country_name, country_name))
+
+        year = row.iloc[DISPUTED_YEAR_COLUMN].strip()
+        if "Subtotal" in year:
+            # Skipping 91-96 subtotal row
+            continue
+        # This part of the data is simply not granular; assigning it to 1996
+        if year == "1991-96":
+            year = 1996
+
+        amount = get_decimal_from_excel_string(row.iloc[DISPUTED_AMOUNT_COLUMN].strip())
+
+        disputed_contributions.append(
+            DisputedContribution(
+                country=country,
+                year=year,
+                amount=amount,
+            )
+        )
+
+    DisputedContribution.objects.bulk_create(disputed_contributions)
+    logger.info(
+        f"Imported {len(disputed_contributions)} DisputedContribution objects "
+        f"from the consolidated data file."
+    )
 
 
 # Mapping of sheet_name -> parser_method
@@ -147,14 +182,15 @@ def import_ferm_interest_disputed(countries):
     Import consolidated gain/loss, interest and disputed contributions data
     from the 19 September 2024 file from Owen.
     """
-    # Deleting existing data as it's not granular
+    # Deleting existing data as it's not granular.
     delete_old_data(FermGainLoss)
 
-    # Partially keeping old ExternalIncome data as it contains useful 
-    # "miscellaneous_income" data
+    # Partially keeping old ExternalIncome data as it contains useful
+    # "miscellaneous_income" data.
     migrate_old_income_data()
 
-    # delete_old_data(DisputedContribution)
+    # We have more granular per-country data in the consolidated file.
+    delete_old_data(DisputedContribution)
 
     file_path = IMPORT_RESOURCES_DIR / "Consolidated_Financial_Data.xlsx"
     all_sheets = pd.read_excel(file_path, sheet_name=None, na_values="NDR", dtype=str)
