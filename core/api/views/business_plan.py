@@ -607,11 +607,17 @@ class BPActivityDiffView(mixins.ListModelMixin, generics.GenericAPIView):
 
     fields = [
         "country",
+        "country_id",
         "project_cluster",
+        "project_cluster_id",
         "project_type",
+        "project_type_id",
         "bp_chemical_type",
+        "bp_chemical_type_id",
         "sector",
+        "sector_id",
         "subsector",
+        "subsector_id",
         "substances",
         "substances_display",
         "title",
