@@ -605,38 +605,7 @@ class BPFileDownloadView(generics.RetrieveAPIView):
 class BPActivityDiffView(mixins.ListModelMixin, generics.GenericAPIView):
     permission_classes = [IsSecretariat | IsAgency | IsViewer]
 
-    fields = [
-        "country",
-        "country_id",
-        "project_cluster",
-        "project_cluster_id",
-        "project_type",
-        "project_type_id",
-        "bp_chemical_type",
-        "bp_chemical_type_id",
-        "sector",
-        "sector_id",
-        "subsector",
-        "subsector_id",
-        "substances",
-        "substances_display",
-        "title",
-        "required_by_model",
-        "lvc_status",
-        "amount_polyol",
-        "legacy_sector_and_subsector",
-        "status",
-        "status_display",
-        "is_multi_year",
-        "is_multi_year_display",
-        "reason_for_exceeding",
-        "remarks",
-        "remarks_additional",
-        "comment_secretariat",
-        "comment_types",
-    ]
-
-    def diff_activities(self, data, data_old):
+    def diff_activities(self, data, data_old, fields):
         diff_data = []
         values_fields = ["value_usd", "value_odp", "value_mt"]
         activities_old = {activity["initial_id"]: activity for activity in data_old}
@@ -645,9 +614,9 @@ class BPActivityDiffView(mixins.ListModelMixin, generics.GenericAPIView):
             activity_old = activities_old.pop(activity["initial_id"], None)
 
             # Prepare data for comparison
-            delete_fields(activity, ["id", "business_plan_id", "is_updated"])
+            delete_fields(activity, ["id", "is_updated"])
             if activity_old:
-                delete_fields(activity_old, ["id", "business_plan_id", "is_updated"])
+                delete_fields(activity_old, ["id", "is_updated"])
                 for value in activity.get("values", []) + activity_old.get(
                     "values", []
                 ):
@@ -657,7 +626,7 @@ class BPActivityDiffView(mixins.ListModelMixin, generics.GenericAPIView):
             if activity == activity_old:
                 # Only display newly-added or changed activities
                 continue
-            copy_fields(activity, activity_old, self.fields)
+            copy_fields(activity, activity_old, fields)
             activity["change_type"] = "changed" if activity_old else "new"
 
             # Also copy nested values
@@ -675,7 +644,7 @@ class BPActivityDiffView(mixins.ListModelMixin, generics.GenericAPIView):
             diff_data.append(activity)
 
         for activity in activities_old.values():
-            rename_fields(activity, self.fields)
+            rename_fields(activity, fields)
             for value in activity.get("values", []):
                 rename_fields(value, values_fields)
             activity["change_type"] = "deleted"
@@ -723,6 +692,10 @@ class BPActivityDiffView(mixins.ListModelMixin, generics.GenericAPIView):
             year_end=business_plan.year_end,
         )
 
+        fields = BPActivityDetailSerializer.Meta.fields.copy()
+        for field in ("id", "initial_id", "is_updated", "values"):
+            fields.remove(field)
+
         return Response(
             self.diff_activities(
                 BPActivityDetailSerializer(
@@ -731,5 +704,6 @@ class BPActivityDiffView(mixins.ListModelMixin, generics.GenericAPIView):
                 BPActivityDetailSerializer(
                     business_plan_ar.activities.all(), many=True
                 ).data,
+                fields,
             ),
         )
