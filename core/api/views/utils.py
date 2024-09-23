@@ -524,8 +524,7 @@ class SummaryStatusOfContributionsAggregator:
         """
         return (
             Country.objects.filter(triennial_contributions_status__isnull=False)
-            .prefetch_related("triennial_contributions_status")
-            .select_related("ferm_gain_loss")
+            .prefetch_related("triennial_contributions_status", "ferm_gain_loss")
             .annotate(
                 agreed_contributions=models.Sum(
                     "triennial_contributions_status__agreed_contributions", default=0
