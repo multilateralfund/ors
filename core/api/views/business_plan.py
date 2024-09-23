@@ -606,17 +606,34 @@ class BPActivityDiffView(mixins.ListModelMixin, generics.GenericAPIView):
     permission_classes = [IsSecretariat | IsAgency | IsViewer]
 
     fields = [
+        "country",
+        "country_id",
+        "project_cluster",
+        "project_cluster_id",
+        "project_type",
+        "project_type_id",
+        "bp_chemical_type",
+        "bp_chemical_type_id",
+        "sector",
+        "sector_id",
+        "subsector",
+        "subsector_id",
+        "substances",
+        "substances_display",
         "title",
         "required_by_model",
         "lvc_status",
         "amount_polyol",
         "legacy_sector_and_subsector",
         "status",
+        "status_display",
         "is_multi_year",
+        "is_multi_year_display",
         "reason_for_exceeding",
         "remarks",
         "remarks_additional",
         "comment_secretariat",
+        "comment_types",
     ]
 
     def diff_activities(self, data, data_old):
@@ -708,10 +725,10 @@ class BPActivityDiffView(mixins.ListModelMixin, generics.GenericAPIView):
 
         return Response(
             self.diff_activities(
-                BPActivityCreateSerializer(
+                BPActivityDetailSerializer(
                     business_plan.activities.all(), many=True
                 ).data,
-                BPActivityCreateSerializer(
+                BPActivityDetailSerializer(
                     business_plan_ar.activities.all(), many=True
                 ).data,
             ),

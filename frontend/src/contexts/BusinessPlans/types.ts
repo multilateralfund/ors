@@ -4,7 +4,6 @@ import { PropsWithChildren } from 'react'
 
 export interface BPContextType {
   data: ApiBPGet | null | undefined
-  isViewer: boolean
   loaded: boolean
   loading: boolean
   params: Record<string, any>
