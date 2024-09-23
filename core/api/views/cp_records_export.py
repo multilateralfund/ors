@@ -24,7 +24,7 @@ from core.api.export.cp_report_hfc_hcfc import CPReportHFCWriter, CPReportHCFCWr
 from core.api.export.cp_report_new import CPReportNewExporter
 from core.api.export.cp_report_old import CPReportOldExporter
 from core.api.export.cp_reports_list import CPReportListWriter
-from core.api.permissions import IsSecretariat
+from core.api.permissions import IsSecretariat, IsViewer
 from core.api.serializers import BlendSerializer
 from core.api.serializers import SubstanceSerializer
 from core.api.utils import workbook_pdf_response
@@ -206,7 +206,7 @@ class CPEmptyExportView(CPRecordExportView):
 
 
 class CPReportListExportView(views.APIView):
-    permission_classes = [IsSecretariat]
+    permission_classes = [IsSecretariat | IsViewer]
 
     @swagger_auto_schema(
         manual_parameters=[
@@ -352,7 +352,7 @@ class CPHFCHCFCExportBaseView(views.APIView):
     - get method should return a response with the data for the given year
     """
 
-    permission_classes = [IsSecretariat]
+    permission_classes = [IsSecretariat | IsViewer]
 
     def get_usages(self, year):
         raise NotImplementedError
@@ -481,7 +481,7 @@ class CPHFCExportView(CPHFCHCFCExportBaseView):
 
 
 class CPDataExtractionAllExport(views.APIView):
-    permission_classes = [IsSecretariat]
+    permission_classes = [IsSecretariat | IsViewer]
 
     @swagger_auto_schema(
         manual_parameters=[
