@@ -31,6 +31,8 @@ export interface CellProps {
   column: Col
   context: CPContext
   data: SimpleRow
+  getValue: () => any
+  value: any
 }
 
 export interface TableCellProps {
@@ -73,4 +75,7 @@ export interface SimpleTableProps {
   rowData: SimpleRow[]
 }
 
-export type SimpleTableOnEditCallback = (value: null | number | string, context: EditContext) => void
+export type SimpleTableOnEditCallback = (
+  value: null | number | string,
+  context: EditContext,
+) => void

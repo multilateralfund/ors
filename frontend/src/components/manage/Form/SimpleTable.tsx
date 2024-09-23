@@ -205,15 +205,18 @@ const TableCell = React.memo(function TableCell(props: TableCellProps) {
   const CellRenderer = isEditCell
     ? components[colDef['cellEditor']]
     : AgCellRenderer
-    const rendered = (!!colDef?.cellRenderer && !isEditCell)
-      ? colDef.cellRenderer(cellProps)
-      : (<CellRenderer
-          ref={cellRef}
-          value={cellProps.data[colDef.field]}
-          {...cellProps}
-          {...cellRendererParams}
-          stopEditing={handleStopEditing}
-        />)
+
+  const rendered =
+    !!colDef?.cellRenderer && !isEditCell ? (
+      colDef.cellRenderer({ ...cellProps, ...cellRendererParams })
+    ) : (
+      <CellRenderer
+        ref={cellRef}
+        {...cellProps}
+        {...cellRendererParams}
+        stopEditing={handleStopEditing}
+      />
+    )
 
   return (
     <td
@@ -268,6 +271,12 @@ function makeRows(
         column,
         context,
         data,
+        getValue: function () {
+          return this.value
+        },
+        get value() {
+          return this.data[this.colDef.field]
+        },
       }
       const edit =
         editableTable && editCell && editCell[0] == i && editCell[1] == j
