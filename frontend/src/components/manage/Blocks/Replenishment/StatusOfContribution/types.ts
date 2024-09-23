@@ -48,9 +48,15 @@ export interface SummaryContributions {
 
 export interface AnnualContributions {
   contributions: number
+  contributions_advance: number
+  outstanding_contributions: number
+  percentage_total_paid_current_year?: null | number
 }
 export interface TriennialContributions {
   contributions: number
+  contributions_advance: number
+  outstanding_contributions: number
+  percentage_total_paid_current_year?: null | number
 }
 
 export interface SCViewProps {
@@ -59,7 +65,7 @@ export interface SCViewProps {
 }
 
 export interface DisputedContributionDialogProps {
-  countryOptions: {country: string; country_id: number}[]
+  countryOptions: { country: string; country_id: number }[]
   refetchSCData: () => void
   year: string
 }

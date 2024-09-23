@@ -81,8 +81,16 @@ const TriennialIndicators = ({
   return (
     <div className="flex flex-wrap items-stretch justify-start gap-4 border-primary text-primary">
       <IndicatorBox
+        text="Parties have made their contributions in advance"
+        value={data.contributions_advance}
+      />
+      <IndicatorBox
         text={`parties have made their contributions for ${period}`}
         value={data.contributions}
+      />
+      <IndicatorBox
+        text="parties have outstanding contributions"
+        value={data.outstanding_contributions}
       />
       <IndicatorBox
         text={`of the total pledged received for ${period}`}
@@ -105,8 +113,16 @@ const AnnualIndicators = ({
   return (
     <div className="flex flex-wrap items-stretch justify-start gap-4 border-primary text-primary">
       <IndicatorBox
+        text="Parties have made their contributions in advance"
+        value={data.contributions_advance}
+      />
+      <IndicatorBox
         text={`parties have made their contributions for ${year}`}
         value={data.contributions}
+      />
+      <IndicatorBox
+        text="parties have outstanding contributions"
+        value={data.outstanding_contributions}
       />
       <IndicatorBox
         text={`of the total pledged received for ${year}`}
