@@ -2,7 +2,6 @@ from decimal import Decimal
 
 from django.db import models
 
-from core.models.agency import Agency
 from core.models.base import AbstractSingleton
 from core.models.country import Country
 from core.models.utils import get_protected_storage
@@ -392,7 +391,7 @@ class ExternalIncome(models.Model):
     agency_name = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
-        agency_str = f" for agency {self.agency}" if self.agency else ""
+        agency_str = f" for agency {self.agency_name}" if self.agency_name else ""
         year_str = (
             f"{self.start_year} - {self.end_year}"
             if self.start_year != self.end_year

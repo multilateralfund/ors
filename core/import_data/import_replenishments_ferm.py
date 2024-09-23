@@ -5,7 +5,7 @@ import pandas as pd
 from django.db import transaction
 from numpy import nan
 
-from core.models import Agency, DisputedContribution, ExternalIncome, FermGainLoss
+from core.models import DisputedContribution, ExternalIncome, FermGainLoss
 from core.import_data.utils import (
     IMPORT_RESOURCES_DIR,
     delete_old_data,
