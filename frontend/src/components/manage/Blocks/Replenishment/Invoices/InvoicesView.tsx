@@ -311,7 +311,7 @@ function InvoicesView() {
         csrftoken,
       )
 
-      enqueueSnackbar('Invoice updated successfully.', { variant: 'success' })
+      enqueueSnackbar('Invoice added successfully.', { variant: 'success' })
       setParams({
         cache_bust: crypto.randomUUID(),
       })
@@ -429,14 +429,14 @@ function InvoicesView() {
       ) : null}
       {showAdd ? (
         <AddInvoiceDialog
-          countries={ctx.countries}
+          countries={ctx.countriesSOA}
           onCancel={() => setShowAdd(false)}
           onSubmit={handleAddInvoiceSubmit}
         />
       ) : null}
       {editData !== null ? (
         <EditInvoiceDialog
-          countries={ctx.countries}
+          countries={ctx.countriesSOA}
           data={editData}
           onCancel={() => setEditIdx(null)}
           onSubmit={handleEditInvoiceSubmit}
