@@ -1,5 +1,4 @@
 import logging
-from decimal import Decimal
 
 import pandas as pd
 from django.db import transaction
@@ -94,9 +93,7 @@ def parse_interest(interest_df, countries):
 
         external_incomes.append(
             ExternalIncomeAnnual(
-                interest_earned=amount,
-                agency_name=current_agency_name,
-                year=year
+                interest_earned=amount, agency_name=current_agency_name, year=year
             )
         )
 

@@ -798,6 +798,10 @@ class StatisticsStatusOfContributionsAggregator:
         )
 
     def get_external_income_data(self):
+        """
+        This returns the triennal data for ExternalIncome
+        (incomplete annual data also exists).
+        """
         return ExternalIncome.objects.values(
             "start_year",
             "end_year",
