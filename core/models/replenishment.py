@@ -380,8 +380,39 @@ class FermGainLoss(models.Model):
 
 
 class ExternalIncome(models.Model):
+    """
+    External income triennial-based data
+    """
+
     start_year = models.IntegerField()
     end_year = models.IntegerField()
+    interest_earned = models.DecimalField(
+        max_digits=30, decimal_places=15, default=Decimal(0)
+    )
+    miscellaneous_income = models.DecimalField(
+        max_digits=30, decimal_places=15, default=Decimal(0)
+    )
+
+    def __str__(self):
+        year_str = (
+            f"{self.start_year} - {self.end_year}"
+            if self.start_year != self.end_year
+            else f"{self.start_year}"
+        )
+        return (
+            f"Triennial External Income ({year_str}): interest {self.interest_earned}; "
+            f"miscellaneous {self.miscellaneous_income}"
+        )
+
+
+class ExternalIncomeAnnual(models.Model):
+    """
+    External income annual-based data.
+
+    For now we only have interest data on an annual basis.
+    """
+
+    year = models.IntegerField()
     interest_earned = models.DecimalField(
         max_digits=30, decimal_places=15, default=Decimal(0)
     )
@@ -392,13 +423,8 @@ class ExternalIncome(models.Model):
 
     def __str__(self):
         agency_str = f" for agency {self.agency_name}" if self.agency_name else ""
-        year_str = (
-            f"{self.start_year} - {self.end_year}"
-            if self.start_year != self.end_year
-            else f"{self.start_year}"
-        )
         return (
-            f"External Income{agency_str} ({year_str}): interest {self.interest_earned}; "
+            f"External Income{agency_str} ({self.year}): interest {self.interest_earned}; "
             f"miscellaneous {self.miscellaneous_income}"
         )
 

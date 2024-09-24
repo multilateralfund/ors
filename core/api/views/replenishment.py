@@ -661,7 +661,7 @@ class StatisticsStatusOfContributionsView(views.APIView):
         response = []
         # Annotating soc data with external income would make more queries
         # (separate for interest and miscellaneous income) and would be less
-        # readable
+        # readable.
         for soc, income in zip_longest(soc_data, external_income):
             total_payments = (
                 soc["cash_payments_sum"]

@@ -5,7 +5,7 @@ import pandas as pd
 from django.db import transaction
 from numpy import nan
 
-from core.models import DisputedContribution, ExternalIncome, FermGainLoss
+from core.models import DisputedContribution, ExternalIncomeAnnual, FermGainLoss
 from core.import_data.utils import (
     IMPORT_RESOURCES_DIR,
     delete_old_data,
@@ -36,27 +36,6 @@ INCOME_AMOUNT_COLUMN = 6
 DISPUTED_COUNTRY_COLUMN = 0
 DISPUTED_YEAR_COLUMN = 1
 DISPUTED_AMOUNT_COLUMN = 2
-
-
-def migrate_old_income_data():
-    is_inital_data = ExternalIncome.objects.filter(agency_name="").count() == 0
-    logger.info(f"Is initial data: {is_inital_data}")
-    if is_inital_data:
-        # We need to *always* keep the initial objects containing miscellaneous_income,
-        # at least until that is added to the consolidated financial data file. This is
-        # now completely absent from the consolidated data file.
-        # But we also need to avoid data duplication (2015-onwards) for interest_earned.
-
-        # For years 1991-2014 we need to keep both miscellaneous and interest data.
-        # For 2015- we need to set the interest earned to zero, but keep miscellaneous.
-        ExternalIncome.objects.filter(start_year__gte=2015).update(
-            interest_earned=Decimal(0)
-        )
-    else:
-        # This is the updated data containing agency links.
-        # We still need to keep the old data, but (hopefully) no more need to update it.
-        # However, we delete all the newly-imported data that has set agencies.
-        ExternalIncome.objects.exclude(agency_name="").delete()
 
 
 def parse_ferm_sheet(ferm_df, countries):
@@ -114,17 +93,16 @@ def parse_interest(interest_df, countries):
         amount = get_decimal_from_excel_string(row.iloc[INCOME_AMOUNT_COLUMN].strip())
 
         external_incomes.append(
-            ExternalIncome(
+            ExternalIncomeAnnual(
                 interest_earned=amount,
                 agency_name=current_agency_name,
-                start_year=year,
-                end_year=year,
+                year=year
             )
         )
 
-    ExternalIncome.objects.bulk_create(external_incomes)
+    ExternalIncomeAnnual.objects.bulk_create(external_incomes)
     logger.info(
-        f"Imported {len(external_incomes)} ExternalIncome objects "
+        f"Imported {len(external_incomes)} ExternalIncomeAnnual objects "
         f"from the consolidated data file."
     )
 
@@ -185,9 +163,8 @@ def import_ferm_interest_disputed(countries):
     # Deleting existing data as it's not granular.
     delete_old_data(FermGainLoss)
 
-    # Partially keeping old ExternalIncome data as it contains useful
-    # "miscellaneous_income" data.
-    migrate_old_income_data()
+    # This file only contains external income annual data; so only delete that one.
+    delete_old_data(ExternalIncomeAnnual)
 
     # We have more granular per-country data in the consolidated file.
     delete_old_data(DisputedContribution)
