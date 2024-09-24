@@ -360,32 +360,73 @@ class DisputedContribution(models.Model):
 
 
 class FermGainLoss(models.Model):
-    country = models.OneToOneField(
+    country = models.ForeignKey(
         Country,
         on_delete=models.PROTECT,
         related_name="ferm_gain_loss",
     )
     amount = models.DecimalField(max_digits=30, decimal_places=15, default=0)
+    year = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
         return f"Ferm Gain/Loss {self.country.iso3} - {self.amount}"
 
-
-class ExternalIncome(models.Model):
-    start_year = models.IntegerField()
-    end_year = models.IntegerField()
-    interest_earned = models.DecimalField(max_digits=30, decimal_places=15)
-    miscellaneous_income = models.DecimalField(max_digits=30, decimal_places=15)
-
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["start_year"], name="unique_start_year_external_income"
-            ),
-            models.UniqueConstraint(
-                fields=["end_year"], name="unique_end_year_external_income"
-            ),
+                fields=["country", "year"], name="unique_ferm_country_year"
+            )
         ]
+
+
+class ExternalIncome(models.Model):
+    """
+    External income triennial-based data
+    """
+
+    start_year = models.IntegerField()
+    end_year = models.IntegerField()
+    interest_earned = models.DecimalField(
+        max_digits=30, decimal_places=15, default=Decimal(0)
+    )
+    miscellaneous_income = models.DecimalField(
+        max_digits=30, decimal_places=15, default=Decimal(0)
+    )
+
+    def __str__(self):
+        year_str = (
+            f"{self.start_year} - {self.end_year}"
+            if self.start_year != self.end_year
+            else f"{self.start_year}"
+        )
+        return (
+            f"Triennial External Income ({year_str}): interest {self.interest_earned}; "
+            f"miscellaneous {self.miscellaneous_income}"
+        )
+
+
+class ExternalIncomeAnnual(models.Model):
+    """
+    External income annual-based data.
+
+    For now we only have interest data on an annual basis.
+    """
+
+    year = models.IntegerField()
+    interest_earned = models.DecimalField(
+        max_digits=30, decimal_places=15, default=Decimal(0)
+    )
+    miscellaneous_income = models.DecimalField(
+        max_digits=30, decimal_places=15, default=Decimal(0)
+    )
+    agency_name = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        agency_str = f" for agency {self.agency_name}" if self.agency_name else ""
+        return (
+            f"External Income{agency_str} ({self.year}): interest {self.interest_earned}; "
+            f"miscellaneous {self.miscellaneous_income}"
+        )
 
 
 class ExternalAllocation(AbstractSingleton):

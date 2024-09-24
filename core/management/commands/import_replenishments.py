@@ -1,6 +1,7 @@
 from django.core.management import BaseCommand
 
 from core.import_data.import_replenishments import import_replenishments
+from core.import_data.import_replenishments_ferm import import_ferm_interest_disputed
 from core.import_data.import_status_of_contributions import (
     import_status_of_contributions,
 )
@@ -25,6 +26,7 @@ class Command(BaseCommand):
                 "all",
                 "replenishments",
                 "status_of_contributions",
+                "ferm_interest_disputed",
             ],
         )
 
@@ -41,3 +43,6 @@ class Command(BaseCommand):
 
         if resource in ("all", "status_of_contributions"):
             import_status_of_contributions(countries)
+
+        if resource in ("all", "ferm_interest_disputed"):
+            import_ferm_interest_disputed(countries)
