@@ -1,7 +1,7 @@
 import { ApiSubstance } from '@ors/types/api_substances'
 import { ReportVariant } from '@ors/types/variants'
 
-import React, { useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { Alert, Box, Button, Modal, Typography } from '@mui/material'
 import { CellValueChangedEvent, RowNode } from 'ag-grid-community'
@@ -95,6 +95,63 @@ function getInitialPinnedBottomRowData(model: string): SectionARowData[] {
     })
   }
   return pinnedBottomRowData
+}
+
+function findParentRow(
+  el: HTMLElement,
+  data: {
+    col_id?: null | string
+    row_id?: null | string
+    row_index?: null | string
+  } = {},
+) {
+  if (el.getAttribute('col-id')) {
+    data.col_id = el.getAttribute('col-id')
+  } else if (el.getAttribute('row-id')) {
+    data.row_id = el.getAttribute('row-id')
+    data.row_index = el.getAttribute('row-index')
+    return data
+  } else if (el.tagName === 'BODY') {
+    return null
+  }
+  return findParentRow(el.parentElement as HTMLElement, data)
+}
+
+function parsePastedText(text: string) {
+  let result: any
+
+  if (text.endsWith('\n')) {
+    result = text.split('\n')
+    for (let i = 0; i < result.length; i++) {
+      result[i] = result[i].split('\t')
+    }
+    // This shoud always be true for XLS paste
+    // (an extra "\n" is introduced when selecting multiple cells).
+    if (result[result.length - 1][0] === '') {
+      result.pop()
+    }
+  } else {
+    result = [[text]]
+  }
+  return result
+}
+
+function parsePastedHTML(html: string) {
+  const result: any = []
+
+  const el = document.createElement('body')
+  el.innerHTML = html
+
+  const elTable = el.querySelector('table') as HTMLTableElement
+
+  for (let i = 0; i < elTable.rows.length; i++) {
+    result.push([])
+    for (let j = 0; j < elTable.rows[i].cells.length; j++) {
+      result[i].push(elTable.rows[i].cells[j].textContent)
+    }
+  }
+
+  return result
 }
 
 export default function SectionACreate(props: SectionACreateProps) {
@@ -233,6 +290,70 @@ export default function SectionACreate(props: SectionACreateProps) {
       }))
     }
   }
+
+  const pasteListener = useCallback(
+    (event: ClipboardEvent) => {
+      event.preventDefault()
+
+      const paste = event.clipboardData!
+
+      const pastedTable =
+        paste.types.indexOf('text/html') != -1
+          ? parsePastedHTML(paste.getData('text/html'))
+          : parsePastedText(paste.getData('text'))
+
+      const pasteLocation = findParentRow(event.target as HTMLElement)
+
+      const numColumns = pastedTable[0].length
+      const pasteColumns: string[] = []
+
+      const colDefs: any[] = gridOptions?.columnDefs as any[]
+
+      for (let i = 0; i < colDefs.length; i++) {
+        console.log('xxxx: ', colDefs[i])
+        if (colDefs[i].field === pasteLocation?.col_id) {
+          for (let j = 0; j < numColumns; j++) {
+            pasteColumns.push(colDefs[i + j].field)
+          }
+          break
+        }
+      }
+
+      setForm((prev) => {
+        const next = { ...prev, section_a: prev.section_a.concat([]) }
+
+        const numRows = pastedTable.length
+        const pasteRows: number[] = []
+
+        for (let i = 0; i < next.section_a.length; i++) {
+          if (next.section_a[i].row_id === pasteLocation?.row_id) {
+            for (let j = 0; j < numRows; j++) {
+              if (i + j < next.section_a.length) {
+                pasteRows.push(i + j)
+              }
+            }
+            break
+          }
+        }
+
+        for (let i = 0; i < pasteRows.length; i++) {
+          for (let j = 0; j < pasteColumns.length; j++) {
+            next.section_a[pasteRows[i]][pasteColumns[j]] = pastedTable[i][j]
+          }
+        }
+
+        return next
+      })
+    },
+    [setForm, gridOptions.columnDefs],
+  )
+
+  useEffect(() => {
+    document.addEventListener('paste', pasteListener)
+    return () => {
+      document.removeEventListener('paste', pasteListener)
+    }
+  }, [pasteListener])
 
   return (
     <>
