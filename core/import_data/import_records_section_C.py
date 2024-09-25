@@ -16,6 +16,8 @@ from core.import_data.utils import (
 )
 from core.models import CPPrices
 
+# pylint: disable=R0915
+
 REQUIRED_COLUMNS = [
     "Country",
     "Controlled Substances",

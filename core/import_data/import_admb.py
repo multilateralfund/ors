@@ -15,6 +15,8 @@ from core.import_data.utils import (
     is_imported_today,
 )
 
+# pylint: disable=R0914
+
 from core.models.adm import AdmColumn, AdmRecord, AdmRow
 
 logger = logging.getLogger(__name__)
