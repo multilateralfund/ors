@@ -134,7 +134,7 @@ class BusinessPlanViewSet(
     )
     @action(methods=["GET"], detail=False)
     def get(self, *args, **kwargs):
-        self.search_fields = ["title"]
+        self.search_fields = ["title", "comment_secretariat"]
         self.ordering = ["title", "country", "id"]
         self.ordering_fields = BPACTIVITY_ORDERING_FIELDS
 
@@ -468,7 +468,7 @@ class BPActivityViewSet(
         filters.OrderingFilter,
         filters.SearchFilter,
     ]
-    search_fields = ["title"]
+    search_fields = ["title", "comment_secretariat"]
     ordering = ["title", "country", "id"]
     ordering_fields = ["business_plan__agency__name"] + BPACTIVITY_ORDERING_FIELDS
 
