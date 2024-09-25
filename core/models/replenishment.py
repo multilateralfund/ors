@@ -94,6 +94,9 @@ class ScaleOfAssessment(models.Model):
     override_qualifies_for_fixed_rate_mechanism = models.BooleanField(
         default=False, null=True
     )
+    # This might show an incorrect None values for older data, but its purpose
+    # is to actually help when populating data from 2021-onwards
+    opted_for_ferm = models.BooleanField(null=True)
 
     @property
     def adjusted_scale_of_assessment(self):
