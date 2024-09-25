@@ -1,10 +1,18 @@
-import { Tooltip, Typography } from '@mui/material'
+import {
+  cellValueGetter,
+  commentsCellRenderer,
+  commentsDiffCellRenderer,
+  commentsDiffValueGetter,
+  commentsValueGetter,
+  numberCellGetter,
+  numberCellRenderer,
+  objectCellValueGetter,
+  substancesCellRenderer,
+  substancesDiffCellRenderer,
+  textCellRenderer,
+} from './schemaHelpers'
 
-import { truncateText } from '@ors/components/manage/Utils/diffUtils'
-
-import CommentsTagList from './CommentsTagList'
-
-const defaultColumnDefs = [
+const getDefaultColumnDefs = (isDiff?: boolean) => [
   {
     autoHeight: true,
     cellClass: 'ag-text-center ag-cell-wrap-text ag-country-cell-text',
@@ -14,7 +22,11 @@ const defaultColumnDefs = [
     minWidth: 150,
     resizable: true,
     sortable: true,
-    tooltipField: 'country.name',
+    ...(!isDiff && { tooltipField: 'country.name' }),
+    ...(isDiff && {
+      cellRenderer: textCellRenderer,
+      valueGetter: (params: any) => objectCellValueGetter(params, 'country'),
+    }),
   },
   {
     autoHeight: true,
@@ -25,7 +37,12 @@ const defaultColumnDefs = [
     minWidth: 70,
     resizable: true,
     sortable: true,
-    tooltipField: 'project_cluster.name',
+    ...(!isDiff && { tooltipField: 'project_cluster.name' }),
+    ...(isDiff && {
+      cellRenderer: textCellRenderer,
+      valueGetter: (params: any) =>
+        objectCellValueGetter(params, 'project_cluster'),
+    }),
   },
   {
     autoHeight: true,
@@ -36,7 +53,12 @@ const defaultColumnDefs = [
     minWidth: 70,
     resizable: true,
     sortable: true,
-    tooltipField: 'project_type.name',
+    ...(!isDiff && { tooltipField: 'project_type.name' }),
+    ...(isDiff && {
+      cellRenderer: textCellRenderer,
+      valueGetter: (params: any) =>
+        objectCellValueGetter(params, 'project_type'),
+    }),
   },
   {
     autoHeight: true,
@@ -47,7 +69,12 @@ const defaultColumnDefs = [
     minWidth: 100,
     resizable: true,
     sortable: true,
-    tooltipField: 'bp_chemical_type.name',
+    ...(!isDiff && { tooltipField: 'bp_chemical_type.name' }),
+    ...(isDiff && {
+      cellRenderer: textCellRenderer,
+      valueGetter: (params: any) =>
+        objectCellValueGetter(params, 'bp_chemical_type'),
+    }),
   },
   {
     autoHeight: true,
@@ -58,7 +85,11 @@ const defaultColumnDefs = [
     minWidth: 70,
     resizable: true,
     sortable: true,
-    tooltipField: 'sector.name',
+    ...(!isDiff && { tooltipField: 'sector.name' }),
+    ...(isDiff && {
+      cellRenderer: textCellRenderer,
+      valueGetter: (params: any) => objectCellValueGetter(params, 'sector'),
+    }),
   },
   {
     autoHeight: true,
@@ -69,7 +100,11 @@ const defaultColumnDefs = [
     minWidth: 100,
     resizable: true,
     sortable: true,
-    tooltipField: 'subsector.name',
+    ...(!isDiff && { tooltipField: 'subsector.name' }),
+    ...(isDiff && {
+      cellRenderer: textCellRenderer,
+      valueGetter: (params: any) => objectCellValueGetter(params, 'subsector'),
+    }),
   },
   {
     autoHeight: true,
@@ -84,25 +119,36 @@ const defaultColumnDefs = [
     minWidth: 200,
     resizable: true,
     sortable: true,
-    tooltipField: 'title',
+    ...(!isDiff && { tooltipField: 'title' }),
+    ...(isDiff && {
+      cellRenderer: textCellRenderer,
+      valueGetter: (params: any) => cellValueGetter(params, 'title'),
+    }),
   },
 ]
 
-const reqByModel = {
-  autoHeight: true,
-  cellClass: 'ag-text-center ag-cell-wrap-text',
-  field: 'required_by_model',
-  headerClass: 'ag-text-center',
-  headerName: 'Required by model',
-  minWidth: 150,
-  resizable: true,
-  sortable: true,
-  tooltipField: 'required_by_model',
+const getReqByModelColumn = (isDiff?: boolean) => {
+  return {
+    autoHeight: true,
+    cellClass: 'ag-text-center ag-cell-wrap-text',
+    field: 'required_by_model',
+    headerClass: 'ag-text-center',
+    headerName: 'Required by model',
+    minWidth: 150,
+    resizable: true,
+    sortable: true,
+    ...(!isDiff && { tooltipField: 'required_by_model' }),
+    ...(isDiff && {
+      cellRenderer: textCellRenderer,
+      valueGetter: (params: any) =>
+        cellValueGetter(params, 'required_by_model'),
+    }),
+  }
 }
 
-const valuesColumnDefs = (yearColumns: any[]) => [
-  ...defaultColumnDefs,
-  reqByModel,
+const valuesColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
+  ...getDefaultColumnDefs(isDiff),
+  getReqByModelColumn(isDiff),
   yearColumns.find(
     (column: { headerName: string }) => column.headerName === 'Value ($000)',
   ) || [],
@@ -115,7 +161,11 @@ const valuesColumnDefs = (yearColumns: any[]) => [
     minWidth: 100,
     resizable: true,
     sortable: true,
-    tooltipField: 'status_display',
+    ...(!isDiff && { tooltipField: 'status_display' }),
+    ...(isDiff && {
+      cellRenderer: textCellRenderer,
+      valueGetter: (params: any) => cellValueGetter(params, 'status'),
+    }),
   },
   {
     autoHeight: true,
@@ -126,69 +176,29 @@ const valuesColumnDefs = (yearColumns: any[]) => [
     minWidth: 100,
     resizable: true,
     sortable: true,
-    tooltipField: 'is_multi_year_display',
-    valueGetter: ({ data }: any) => (data.is_multi_year ? 'MYA' : 'IND'),
+    ...(!isDiff && {
+      tooltipField: 'is_multi_year_display',
+      valueGetter: ({ data }: any) => (data.is_multi_year ? 'MYA' : 'IND'),
+    }),
+    ...(isDiff && {
+      cellRenderer: textCellRenderer,
+      valueGetter: (params: any) => cellValueGetter(params, 'is_multi_year'),
+    }),
   },
 ]
 
-const odpColumnDefs = (yearColumns: any[]) => [
-  ...defaultColumnDefs,
-  reqByModel,
+const odpColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
+  ...getDefaultColumnDefs(isDiff),
+  getReqByModelColumn(isDiff),
   ...(yearColumns.filter(
     (column: { headerName: string }) =>
       column.headerName === 'ODP' || column.headerName === 'MT for HFC',
   ) || []),
 ]
 
-const commentsCellRenderer = (props: any) => {
-  const { commentSecretariat, commentTypes } = props.value
-
-  return (
-    <div className="text-left">
-      {commentTypes.length > 0 && <CommentsTagList comments={commentTypes} />}
-      <Tooltip
-        TransitionProps={{ timeout: 0 }}
-        classes={{ tooltip: 'bp-table-tooltip' }}
-        title={commentSecretariat}
-      >
-        {commentSecretariat && truncateText(commentSecretariat, 50)}
-      </Tooltip>
-    </div>
-  )
-}
-
-const commentsValueGetter = (params: any) => {
-  return {
-    commentSecretariat: params.data.comment_secretariat,
-    commentTypes: params.data.comment_types,
-  }
-}
-
-const substancesCellRenderer = (props: any) => {
-  const substance = props.value
-
-  return (
-    <Tooltip
-      TransitionProps={{ timeout: 0 }}
-      title={substance}
-      classes={{
-        tooltip: 'bp-table-tooltip',
-      }}
-    >
-      <Typography
-        className="inline-flex cursor-default items-center gap-2 rounded bg-gray-100 px-1 text-xs font-normal"
-        component="p"
-        variant="h6"
-      >
-        {substance}
-      </Typography>
-    </Tooltip>
-  )
-}
-
-const commentsColumnDefs = () => [
-  ...defaultColumnDefs,
-  reqByModel,
+const commentsColumnDefs = (isDiff?: boolean) => [
+  ...getDefaultColumnDefs(isDiff),
+  getReqByModelColumn(isDiff),
   {
     autoHeight: true,
     cellClass: 'ag-text-center ag-cell-wrap-text',
@@ -198,7 +208,12 @@ const commentsColumnDefs = () => [
     minWidth: 200,
     resizable: true,
     sortable: true,
-    tooltipField: 'reason_for_exceeding',
+    ...(!isDiff && { tooltipField: 'reason_for_exceeding' }),
+    ...(isDiff && {
+      cellRenderer: textCellRenderer,
+      valueGetter: (params: any) =>
+        cellValueGetter(params, 'reason_for_exceeding'),
+    }),
   },
   {
     autoHeight: true,
@@ -209,49 +224,62 @@ const commentsColumnDefs = () => [
     minWidth: 200,
     resizable: true,
     sortable: true,
-    tooltipField: 'remarks',
+    ...(!isDiff && { tooltipField: 'remarks' }),
+    ...(isDiff && {
+      cellRenderer: textCellRenderer,
+      valueGetter: (params: any) => cellValueGetter(params, 'remarks'),
+    }),
   },
   {
     autoHeight: true,
     cellClass: 'ag-text-center ag-cell-wrap-text',
-    cellRenderer: commentsCellRenderer,
     field: 'comment_secretariat',
     headerClass: 'ag-text-center',
     headerName: 'Comment',
     minWidth: 200,
     resizable: true,
     sortable: true,
-    valueGetter: commentsValueGetter,
+    ...(!isDiff && {
+      cellRenderer: commentsCellRenderer,
+      valueGetter: commentsDiffValueGetter,
+    }),
+    ...(isDiff && {
+      cellRenderer: commentsDiffCellRenderer,
+      valueGetter: (params: any) => commentsDiffValueGetter(params),
+    }),
   },
 ]
 
-const allColumnDefs = (yearColumns: any[]) => [
-  ...defaultColumnDefs,
+const allColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
+  ...getDefaultColumnDefs(isDiff),
   {
     autoHeight: true,
     cellClass: 'ag-substances-cell-content',
-    cellRenderer: substancesCellRenderer,
     field: 'substances_display',
     headerClass: 'ag-text-center',
     headerName: 'Substances',
     minWidth: 200,
     resizable: true,
     sortable: true,
+    ...(!isDiff && { cellRenderer: substancesCellRenderer }),
+    ...(isDiff && {
+      cellRenderer: substancesDiffCellRenderer,
+      valueGetter: (params: any) =>
+        cellValueGetter(params, 'substances_display'),
+    }),
   },
-  reqByModel,
+  getReqByModelColumn(isDiff),
   {
     autoHeight: true,
     cellClass: 'ag-text-center',
+    cellRenderer: numberCellRenderer,
     field: 'amount_polyol',
     headerClass: 'ag-text-center',
     headerName: 'Polyol Amount',
     minWidth: 100,
     resizable: true,
     sortable: true,
-    valueGetter: (params: any) => {
-      const polyolAmount = params.data.amount_polyol
-      return polyolAmount ? parseFloat(polyolAmount).toFixed(2) : null
-    },
+    valueGetter: (params: any) => numberCellGetter(params, 'amount_polyol'),
   },
   ...yearColumns,
   {
@@ -263,7 +291,11 @@ const allColumnDefs = (yearColumns: any[]) => [
     minWidth: 100,
     resizable: true,
     sortable: true,
-    tooltipField: 'status_display',
+    ...(!isDiff && { tooltipField: 'status_display' }),
+    ...(isDiff && {
+      cellRenderer: textCellRenderer,
+      valueGetter: (params: any) => cellValueGetter(params, 'status'),
+    }),
   },
   {
     autoHeight: true,
@@ -274,8 +306,14 @@ const allColumnDefs = (yearColumns: any[]) => [
     minWidth: 100,
     resizable: true,
     sortable: true,
-    tooltipField: 'is_multi_year_display',
-    valueGetter: ({ data }: any) => (data.is_multi_year ? 'MYA' : 'IND'),
+    ...(!isDiff && {
+      tooltipField: 'is_multi_year_display',
+      valueGetter: ({ data }: any) => (data.is_multi_year ? 'MYA' : 'IND'),
+    }),
+    ...(isDiff && {
+      cellRenderer: textCellRenderer,
+      valueGetter: (params: any) => cellValueGetter(params, 'is_multi_year'),
+    }),
   },
   {
     autoHeight: true,
@@ -286,7 +324,12 @@ const allColumnDefs = (yearColumns: any[]) => [
     minWidth: 200,
     resizable: true,
     sortable: true,
-    tooltipField: 'reason_for_exceeding',
+    ...(!isDiff && { tooltipField: 'reason_for_exceeding' }),
+    ...(isDiff && {
+      cellRenderer: textCellRenderer,
+      valueGetter: (params: any) =>
+        cellValueGetter(params, 'reason_for_exceeding'),
+    }),
   },
   {
     autoHeight: true,
@@ -297,26 +340,31 @@ const allColumnDefs = (yearColumns: any[]) => [
     minWidth: 200,
     resizable: true,
     sortable: true,
-    tooltipField: 'remarks',
+    ...(!isDiff && { tooltipField: 'remarks' }),
+    ...(isDiff && {
+      cellRenderer: textCellRenderer,
+      valueGetter: (params: any) => cellValueGetter(params, 'remarks'),
+    }),
   },
   {
     autoHeight: true,
     cellClass: 'ag-text-center ag-cell-wrap-text',
-    cellRenderer: commentsCellRenderer,
     field: 'comment_secretariat',
     headerClass: 'ag-text-center',
     headerName: 'Comment',
     minWidth: 200,
     resizable: true,
     sortable: true,
-    valueGetter: commentsValueGetter,
+    ...(isDiff
+      ? {
+          cellRenderer: commentsDiffCellRenderer,
+          valueGetter: (params: any) => commentsDiffValueGetter(params),
+        }
+      : {
+          cellRenderer: commentsCellRenderer,
+          valueGetter: commentsValueGetter,
+        }),
   },
 ]
 
-export {
-  allColumnDefs,
-  commentsColumnDefs,
-  defaultColumnDefs,
-  odpColumnDefs,
-  valuesColumnDefs,
-}
+export { allColumnDefs, commentsColumnDefs, odpColumnDefs, valuesColumnDefs }

@@ -5,8 +5,24 @@ import { Popover, Tooltip, Typography } from '@mui/material'
 
 import { truncateText } from '@ors/components/manage/Utils/diffUtils'
 
-const Comment = ({ comment }: { comment: string }) => {
-  return (
+const Comment = ({
+  comment,
+  withoutTooltip,
+}: {
+  comment: string
+  withoutTooltip: boolean
+}) => {
+  const commentSecretariat = (
+    <Typography
+      className="inline-flex cursor-default items-center gap-2 rounded bg-gray-100 px-1 text-xs font-normal text-gray-A700"
+      component="p"
+      variant="h6"
+    >
+      {truncateText(comment, 30)}
+    </Typography>
+  )
+
+  return !withoutTooltip ? (
     <Tooltip
       TransitionProps={{ timeout: 0 }}
       title={comment}
@@ -14,18 +30,20 @@ const Comment = ({ comment }: { comment: string }) => {
         tooltip: 'bp-table-tooltip',
       }}
     >
-      <Typography
-        className="inline-flex cursor-default items-center gap-2 rounded bg-gray-100 px-1 text-xs font-normal text-gray-A700"
-        component="p"
-        variant="h6"
-      >
-        {truncateText(comment, 30)}
-      </Typography>
+      {commentSecretariat}
     </Tooltip>
+  ) : (
+    commentSecretariat
   )
 }
 
-const CommentsTagList = ({ comments = [] }) => {
+const CommentsTagList = ({
+  comments = [],
+  withoutTooltip = false,
+}: {
+  comments: Array<string>
+  withoutTooltip?: boolean
+}) => {
   const [anchorEl, setAnchorEl] = useState(null)
 
   const extraTagsIndicatorRef = useRef(null)
@@ -77,7 +95,10 @@ const CommentsTagList = ({ comments = [] }) => {
             {comments
               .slice(displayedComments.length, comments.length)
               .map((comment: string, index: number) => (
-                <Comment {...{ comment }} key={`remaining-comment-${index}`} />
+                <Comment
+                  {...{ comment, withoutTooltip }}
+                  key={`remaining-comment-${index}`}
+                />
               ))}
           </div>
         </Popover>
@@ -91,7 +112,7 @@ const CommentsTagList = ({ comments = [] }) => {
         <div className="!flex flex-wrap gap-0.5">
           {comments.map((comment: string, index: number) => (
             <TruncateMarkup.Atom key={`atom-${index}`}>
-              <Comment {...{ comment }} />
+              <Comment {...{ comment, withoutTooltip }} />
             </TruncateMarkup.Atom>
           ))}
         </div>

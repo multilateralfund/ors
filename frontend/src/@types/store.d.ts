@@ -98,6 +98,13 @@ export interface CPCurrentTabSlice {
   setDiffActiveTab: (nr: number) => void
 }
 
+export interface BPDiffVersionsSlice {
+  currentVersion: number
+  previousVersion: number
+  setCurrentVersion: (version: number) => void
+  setPreviousVersion: (version: number) => void
+}
+
 export interface ProjectsSlice {
   clusters: SliceData
   meetings: SliceData
@@ -163,6 +170,7 @@ export interface HistoryListItem {
 
 // Store state
 export type StoreState = {
+  bp_diff_versions: BPDiffVersionsSlice
   bpFilters: BPFiltersSlice
   businessPlans: BusinessPlanSlice
   cache: CacheSlice

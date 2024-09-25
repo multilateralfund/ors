@@ -12,8 +12,11 @@ import { createSettingsSlice } from '@ors/slices/createSettingsSlice'
 import { createThemeSlice } from '@ors/slices/createThemeSlice'
 import { createUserSlice } from '@ors/slices/createUserSlice'
 
+import { createBPDiffVersionsSlice } from './createBPDiffVersionsSlice'
+
 export default function createSlices(props: CreateSliceProps) {
   return {
+    bp_diff_versions: { ...createBPDiffVersionsSlice(props) },
     bpFilters: { ...createBPFiltersSlice(props) },
     businessPlans: { ...createBusinessPlanSlice(props) },
     cache: { ...createCacheSlice(props) },

@@ -2,6 +2,8 @@ import React, { useMemo } from 'react'
 
 import cx from 'classnames'
 
+import { useStore } from '@ors/store'
+
 import { useGetBPVersions } from '../BP/useGetBPVersions'
 import { RedirectToBpList } from '../RedirectToBpList'
 import { BPDiffHeaderInterface } from '../types'
@@ -30,6 +32,10 @@ const BPDiffHeader = (props: BPDiffHeaderInterface) => {
   const { agency_id, pathParams, year_end, year_start } = props
   const { agency, period, version } = pathParams
 
+  const { setCurrentVersion, setPreviousVersion } = useStore(
+    (state) => state.bp_diff_versions,
+  )
+
   const bpVersions = useGetBPVersions({
     ...{ agency_id, year_end, year_start },
   })
@@ -41,16 +47,20 @@ const BPDiffHeader = (props: BPDiffHeaderInterface) => {
   )
 
   const currentVersion = useMemo(
-    () => currentVersionObject?.version || null,
+    () => currentVersionObject?.version || 0,
     [currentVersionObject],
   )
+
+  setCurrentVersion(currentVersion)
 
   const previousVersion = useMemo(() => {
     const currentVersionIndex = results.indexOf(currentVersionObject)
     const previousVersionObject = results[currentVersionIndex + 1]
 
-    return previousVersionObject?.version || null
+    return previousVersionObject?.version || 0
   }, [currentVersionObject, results])
+
+  setPreviousVersion(previousVersion)
 
   return (
     <div>
