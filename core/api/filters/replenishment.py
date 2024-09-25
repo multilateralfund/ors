@@ -40,6 +40,7 @@ class InvoiceFilter(filters.FilterSet):
         return queryset
 
     def filter_reminders_sent(self, queryset, _name, value):
+        # pylint: disable-next=R1705
         if value == 0:
             return queryset.filter(
                 date_first_reminder__isnull=True, date_second_reminder__isnull=True
