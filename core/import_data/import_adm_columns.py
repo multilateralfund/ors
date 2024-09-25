@@ -36,7 +36,7 @@ def parse_columns_file(file_path):
             "time_frame": time_frame,
             **column_data,
         }
-        column = AdmColumn.objects.update_or_create(
+        column = AdmColumn.objects.get_or_create(
             name=column_data["name"],
             section=column_data["section"],
             time_frame=time_frame,

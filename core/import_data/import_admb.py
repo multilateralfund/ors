@@ -10,8 +10,12 @@ from core.import_data.utils import (
     get_adm_column,
     get_country_and_year_dict,
     get_cp_report_for_db_import,
+    get_import_user,
     get_or_create_adm_row,
+    is_imported_today,
 )
+
+# pylint: disable=R0914
 
 from core.models.adm import AdmColumn, AdmRecord, AdmRow
 
@@ -348,6 +352,7 @@ def import_adm_records(
     columns_dict = get_columns_dict(file_data["database_name"])
     if not columns_dict:
         return
+    system_user = get_import_user()
 
     with open(file_data["admb_entries_file"], "r", encoding="utf8") as f:
         admb_entries_json = json.load(f)
@@ -359,6 +364,10 @@ def import_adm_records(
             year_dict, country_dict, admb_entry, admb_entry["AdmbEntriesId"]
         )
         if not cp_report:
+            continue
+
+        # We cannot update reports imported before today or created by a different user
+        if not is_imported_today(cp_report, system_user):
             continue
 
         # get or create adm row

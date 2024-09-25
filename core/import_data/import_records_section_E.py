@@ -7,6 +7,8 @@ from django.conf import settings
 from core.import_data.utils import (
     check_headers,
     get_cp_report,
+    get_import_user,
+    is_imported_today,
 )
 from core.models import CPEmission
 
@@ -41,6 +43,8 @@ def parse_sheet(df):
         logger.error("Couldn't parse this sheet")
         return
 
+    system_user = get_import_user()
+
     cp_report = None
     records_list = []
 
@@ -57,6 +61,10 @@ def parse_sheet(df):
 
             if not cp_report:
                 continue
+
+        # We cannot update reports imported before today or created by a different user
+        if not is_imported_today(cp_report, system_user):
+            continue
 
         record_data = {
             "country_programme_report_id": cp_report.id,

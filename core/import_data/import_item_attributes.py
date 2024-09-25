@@ -15,7 +15,9 @@ from core.import_data.utils import (
     get_chemical_by_name_or_components,
     get_country_dict_from_db_file,
     get_cp_report_for_db_import,
+    get_import_user,
     get_year_dict_from_db_file,
+    is_imported_today,
 )
 
 from core.models import Usage
@@ -155,6 +157,8 @@ def parse_record_data(
 
     current_usages_dict = {}
     cp_usages = []
+    system_user = get_import_user()
+
     for item in json_data:
         # check if chemical exists in dictionary
         if item["ItemId"] not in chemical_dict:
@@ -174,6 +178,10 @@ def parse_record_data(
             year_dict, country_dict, item, item["ItemAttirbutesId"], cp_rep_data
         )
         if not cp_rep:
+            continue
+
+        # We cannot update reports imported before today or created by a different user
+        if not is_imported_today(cp_rep, system_user):
             continue
 
         # get chemical

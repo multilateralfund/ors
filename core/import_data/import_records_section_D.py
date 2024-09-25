@@ -7,6 +7,8 @@ from django.conf import settings
 from core.import_data.utils import (
     check_headers,
     get_cp_report,
+    get_import_user,
+    is_imported_today,
 )
 from core.models import CPGeneration
 
@@ -36,9 +38,15 @@ def parse_sheet(df):
         logger.error("Couldn't parse this sheet")
         return
 
+    system_user = get_import_user()
+
     records_list = []
     for index_row, row in df.iterrows():
         cp_report = get_cp_report(int(row["Year"]), row["Country"], None, index_row)
+
+        # We cannot update reports imported before today or created by a different user
+        if not is_imported_today(cp_report, system_user):
+            continue
 
         if cp_report:
             record_data = {

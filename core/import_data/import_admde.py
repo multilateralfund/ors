@@ -8,7 +8,9 @@ from core.import_data.utils import (
     DB_DIR_LIST,
     get_country_and_year_dict,
     get_cp_report_for_db_import,
+    get_import_user,
     get_or_create_adm_row,
+    is_imported_today,
 )
 
 from core.models.adm import AdmRecord, AdmChoice, AdmRow
@@ -152,21 +154,26 @@ def create_adm_records(file_name, dir_path, article_dict, opt_dict):
         json_data = json.load(f)
 
     adm_records = []
+    system_user = get_import_user()
     for entry_json in json_data:
         # skip empty rows
         if not any([entry_json["Explanation"], entry_json["OptionValue"]]):
             continue
 
-        cp = get_cp_report_for_db_import(
+        cp_report = get_cp_report_for_db_import(
             year_dict, country_dict, entry_json, entry_json["AdmDEArtEntriesId"]
         )
 
-        if not cp:
+        if not cp_report:
+            continue
+
+        # We cannot update reports imported before today or created by a different user
+        if not is_imported_today(cp_report, system_user):
             continue
 
         # create AdmRecord object
         record_data = {
-            "country_programme_report": cp,
+            "country_programme_report": cp_report,
             "row": article_dict[entry_json["AdmDEArticlesId"]],
             "value_text": entry_json["Explanation"],
             "source_file": file_name,

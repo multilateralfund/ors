@@ -2,6 +2,7 @@ import decimal
 import json
 import logging
 import re
+from datetime import datetime
 
 from dateutil.parser import parse, ParserError
 from django.conf import settings
@@ -157,6 +158,22 @@ def delete_old_data(cls, source_file=None):
         return
     cls.objects.all().delete()
     logger.info(f"✔ old {cls.__name__} deleted")
+
+
+def is_imported_today(cp_report, system_user=None):
+    """
+    Check if the cp report is imported today by the system user
+    @param cp_report = CPReport object
+    @param system_user = User object
+    @return boolean
+    """
+    if cp_report.created_by != system_user:
+        return False
+    if cp_report.created_at.date() != datetime.now().date():
+        return False
+    if cp_report.version != 1:
+        return False
+    return True
 
 
 def delete_archive_reports_data(min_year, max_year):
