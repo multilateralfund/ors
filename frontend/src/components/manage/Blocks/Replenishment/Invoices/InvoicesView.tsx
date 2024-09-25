@@ -10,6 +10,7 @@ import ConfirmDialog from '@ors/components/manage/Blocks/Replenishment/ConfirmDi
 import {
   Input,
   Select,
+  YearRangeInput,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import InvoiceDialog from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceDialog'
 import InvoiceStatus from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceStatus'
@@ -76,7 +77,7 @@ function InvoicesView() {
   const currentYear = new Date().getFullYear()
   const ctx = useContext(ReplenishmentContext)
 
-  const { loaded, results, setParams } = useGetInvoices(currentYear)
+  const { loaded, params, results, setParams } = useGetInvoices(currentYear)
   const memoResults: ({ id: number; isSkeleton: true } | ParsedInvoice)[] =
     useMemo(() => {
       if (!loaded) {
@@ -397,14 +398,35 @@ function InvoicesView() {
     setParams({ country_id })
   }
 
-  function handleYearFilter(evt: ChangeEvent<HTMLSelectElement>) {
-    setParams({ year: evt.target.value })
+  function handleYearRangeFilter(value: number[]) {
+    setParams({ year_max: value[1], year_min: value[0] })
   }
+
   const yearOptions = scAnnualOptions(ctx.periods)
+  const yearRange = {
+    max: parseInt(yearOptions[0].value, 10),
+    min: parseInt(yearOptions[yearOptions.length - 1].value, 10),
+    get value() {
+      if (params?.year_min && params?.year_max) {
+        return [params.year_min, params.year_max]
+      }
+      return []
+    },
+  }
 
   function handleStatusFilter(evt: ChangeEvent<HTMLSelectElement>) {
     const status = evt.target.value
     setParams({ status })
+  }
+
+  function handleRemindersFilter(evt: ChangeEvent<HTMLSelectElement>) {
+    const reminders_sent = evt.target.value
+    setParams({ reminders_sent })
+  }
+
+  function handleFERMFilter(evt: ChangeEvent<HTMLSelectElement>) {
+    const opted_for_ferm = evt.target.value
+    setParams({ opted_for_ferm })
   }
 
   function handleChangeHideNoInvoice(evt: ChangeEvent<HTMLInputElement>) {
@@ -464,6 +486,7 @@ function InvoicesView() {
               id="country"
               className="placeholder-select !ml-0 w-52"
               onChange={handleCountryFilter}
+              onClear={() => setParams({ country_id: '' })}
               hasClear
               required
             >
@@ -477,30 +500,17 @@ function InvoicesView() {
               ))}
             </Select>
           )}
-          <Select
-            id="year"
-            className="placeholder-select w-44"
-            defaultValue={currentYear.toString()}
-            onChange={handleYearFilter}
-            required
-          >
-            <option value="" disabled hidden>
-              Year
-            </option>
-            {yearOptions.map((year) => (
-              <option
-                key={year.value}
-                className="text-primary"
-                value={year.value}
-              >
-                {year.label}
-              </option>
-            ))}
-          </Select>
+          <YearRangeInput
+            max={yearRange.max}
+            min={yearRange.min}
+            value={yearRange.value}
+            onChange={handleYearRangeFilter}
+          />
           <Select
             id="status"
-            className="placeholder-select w-44"
+            className="placeholder-select ml-0 w-44"
             onChange={handleStatusFilter}
+            onClear={() => setParams({ status: '' })}
             hasClear
           >
             <option value="" disabled hidden>
@@ -509,6 +519,33 @@ function InvoicesView() {
             <option value="paid">Paid</option>
             <option value="pending">Pending</option>
             <option value="not_issued">Not issued</option>
+          </Select>
+          <Select
+            id="reminders_sent"
+            className="placeholder-select ml-0 w-44"
+            onChange={handleRemindersFilter}
+            onClear={() => setParams({ reminders_sent: '' })}
+            hasClear
+          >
+            <option value="" disabled hidden>
+              Reminders sent
+            </option>
+            <option value="0">None</option>
+            <option value="1">One</option>
+            <option value="2">Two</option>
+          </Select>
+          <Select
+            id="opted_for_ferm"
+            className="placeholder-select ml-0 w-44"
+            onChange={handleFERMFilter}
+            onClear={() => setParams({ opted_for_ferm: '' })}
+            hasClear
+          >
+            <option value="" disabled hidden>
+              Opted for FERM
+            </option>
+            <option value="1">Yes</option>
+            <option value="0">No</option>
           </Select>
         </div>
         {ctx.isTreasurer && (

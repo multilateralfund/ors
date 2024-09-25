@@ -13,7 +13,7 @@ export type PaymentColumn<LabelType = string> = {
 }
 
 export interface IPaymentDialogProps extends FormDialogProps {
-  columns: PaymentColumn[]
+  columns: Record<string, PaymentColumn>
   countries: Country[]
   data?: ParsedPayment
   isEdit?: boolean

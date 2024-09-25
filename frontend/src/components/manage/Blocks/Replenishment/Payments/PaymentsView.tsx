@@ -56,6 +56,14 @@ const COLUMNS: PaymentColumn[] = [
   { field: 'comment', label: 'Comments' },
 ]
 
+const COLUMNS_AS_NAMES: Record<string, PaymentColumn> = (function () {
+  const result: Record<string, PaymentColumn> = {}
+  for (let i = 0; i < COLUMNS.length; i++) {
+    result[COLUMNS[i].field] = COLUMNS[i]
+  }
+  return result
+})()
+
 const AddPaymentDialogue = function AddPaymentDialogue(
   props: Omit<IPaymentDialogProps, 'title'>,
 ) {
@@ -416,7 +424,7 @@ function PaymentsView() {
       ) : null}
       {showAdd ? (
         <AddPaymentDialogue
-          columns={COLUMNS}
+          columns={COLUMNS_AS_NAMES}
           countries={ctx.countriesSOA}
           onCancel={() => setShowAdd(false)}
           onSubmit={handleAddPaymentSubmit}
@@ -424,7 +432,7 @@ function PaymentsView() {
       ) : null}
       {editData !== null ? (
         <EditPaymentDialogue
-          columns={COLUMNS}
+          columns={COLUMNS_AS_NAMES}
           countries={ctx.countriesSOA}
           data={editData}
           onCancel={() => setEditIdx(null)}

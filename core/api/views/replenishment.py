@@ -1216,7 +1216,19 @@ class ReplenishmentInvoiceViewSet(
     ordering_fields = [
         "date_of_issuance",
     ]
-    search_fields = ["number"]
+    search_fields = [
+        "number",
+        "country__name",
+        "year",
+        "amount",
+        "currency",
+        "exchange_rate",
+        "date_of_issuance",
+        "date_sent_out",
+        "date_paid",
+        "date_first_reminder",
+        "date_second_reminder",
+    ]
 
     def get_queryset(self):
         user = self.request.user
@@ -1421,7 +1433,17 @@ class ReplenishmentPaymentViewSet(
         "amount",
         "country__name",
     ]
-    search_fields = ["payment_for_year", "amount", "country__name"]
+    search_fields = [
+        "payment_for_year",
+        "amount",
+        "country__name",
+        "comment",
+        "invoices__number",
+        "date",
+        "currency",
+        "exchange_rate",
+        "ferm_gain_or_loss",
+    ]
 
     def get_queryset(self):
         user = self.request.user

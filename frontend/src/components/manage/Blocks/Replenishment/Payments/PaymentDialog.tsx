@@ -68,7 +68,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
       <FieldSelect
         id="country_id"
         defaultValue={data?.country_id.toString()}
-        label={columns[0].label}
+        label={columns.country.label}
         onChange={(event) => {
           setSelectedCountry(event.target.value)
         }}
@@ -82,7 +82,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
         ))}
       </FieldSelect>
       {!invoicesLoading && invoicesOptions.length === 0 ? (
-        <Field id="no_invoices" label="Invoices">
+        <Field id="no_invoices" label={columns.invoice_numbers.label}>
           <span id="no_invoices" className="ml-4">
             No invoices found for this country
           </span>
@@ -92,7 +92,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
           id="invoices"
           defaultValue={data?.invoices?.map((o) => o.id.toString())}
           hasClear={true}
-          label="Invoices"
+          label={columns.invoice_numbers.label}
           required={true}
         >
           {invoicesOptions.map((inv) => (
@@ -104,7 +104,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
       )}
       <FieldDateInput
         id="date"
-        label={columns[1].label}
+        label={columns.date.label}
         value={date}
         onChange={(evt) => setDate(evt.target.value)}
         required
@@ -112,14 +112,14 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
       <FieldInput
         id="payment_for_year"
         defaultValue={data?.payment_for_year}
-        label={columns[5].label}
+        label={columns.payment_for_year.label}
         type="text"
         required
       />
       <FieldInput
         id="amount"
         defaultValue={data?.amount?.toString()}
-        label={columns[2].label}
+        label={columns.amount.label}
         step="any"
         type="number"
         required
@@ -127,28 +127,28 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
       <FieldInput
         id="currency"
         defaultValue={data?.currency}
-        label={columns[3].label}
+        label={columns.currency.label}
         type="text"
         required
       />
       <FieldInput
         id="exchange_rate"
         defaultValue={data?.exchange_rate?.toString()}
-        label={columns[4].label}
+        label={columns.exchange_rate.label}
         step="any"
         type="number"
       />
       <FieldInput
         id="ferm_gain_or_loss"
         defaultValue={data?.ferm_gain_or_loss}
-        label={columns[6].label}
+        label={columns.ferm_gain_or_loss.label}
         step="any"
         type="number"
       />
       <FieldInput
         id="comment"
         defaultValue={data?.comment || ''}
-        label={columns[8].label}
+        label={columns.comment.label}
         type="text-area"
       />
       <h5>Files</h5>

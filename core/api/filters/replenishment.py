@@ -26,7 +26,7 @@ class InvoiceFilter(filters.FilterSet):
     country_id = filters.ModelMultipleChoiceFilter(
         field_name="country_id", queryset=Country.objects.all(), widget=CSVWidget
     )
-    year = filters.NumberFilter(field_name="year")
+    year = filters.RangeFilter(field_name="year")
     status = filters.CharFilter(method="filter_status")
 
     reminders_sent = filters.NumberFilter(method="filter_reminders_sent")
