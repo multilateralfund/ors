@@ -1,6 +1,6 @@
 from django_filters import rest_framework as filters
 from django_filters.widgets import CSVWidget
-from django.db.models import Exists, OuterRef, Subquery
+from django.db.models import OuterRef, Subquery
 
 from core.models import Country, Invoice, Payment, ScaleOfAssessment
 
@@ -52,8 +52,8 @@ class InvoiceFilter(filters.FilterSet):
             return queryset.filter(
                 date_first_reminder__isnull=False, date_second_reminder__isnull=False
             )
-        else:
-            return queryset
+
+        return queryset
 
     def filter_opted_for_ferm(self, queryset, _name, value):
         # `queryset` is of Invoice

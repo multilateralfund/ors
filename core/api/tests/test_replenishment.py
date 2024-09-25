@@ -2155,7 +2155,7 @@ class TestInvoices(BaseTest):
             self.url, {"year": self.year_2, "opted_for_ferm": True}
         )
         assert len(response_ferm_2.data) == 1
-        assert response_ferm_2.data[0].get("number") == None
+        assert response_ferm_2.data[0].get("number") is None
 
     def test_invoices_create(self, treasurer_user):
         country = CountryFactory.create(name="Country 1", iso3="XYZ")
