@@ -51,7 +51,7 @@ const COLUMNS: PaymentColumn[] = [
   },
   { field: 'payment_for_year', label: 'Year(s)' },
   { field: 'invoice_numbers', label: 'Invoice(s)' },
-  { field: 'ferm_gain_or_loss', label: 'FERM Gain/Loss' },
+  { field: 'ferm_gain_or_loss', label: 'Exchange (Gain)/Loss' },
   { field: 'files', label: 'Files' },
   { field: 'comment', label: 'Comments' },
 ]
