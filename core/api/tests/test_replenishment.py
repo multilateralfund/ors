@@ -2066,7 +2066,7 @@ class TestInvoices(BaseTest):
         assert len(response_2.data) == 1
         assert response_2.data[0]["number"] == "aaa-yyy-2"
 
-    def test_invoices_filter_reminders(self, treasurer_user):
+    def test_invoices_filters(self, treasurer_user):
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
         country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
 
@@ -2082,9 +2082,15 @@ class TestInvoices(BaseTest):
         version_2 = ScaleOfAssessmentVersionFactory.create(
             replenishment=replenishment_2, version=0, is_final=True
         )
-        ScaleOfAssessmentFactory.create(country=country_1, version=version_1)
-        ScaleOfAssessmentFactory.create(country=country_1, version=version_2)
-        ScaleOfAssessmentFactory.create(country=country_2, version=version_2)
+        ScaleOfAssessmentFactory.create(
+            country=country_1, version=version_1, opted_for_ferm=True
+        )
+        ScaleOfAssessmentFactory.create(
+            country=country_1, version=version_2, opted_for_ferm=False
+        )
+        ScaleOfAssessmentFactory.create(
+            country=country_2, version=version_2, opted_for_ferm=False
+        )
 
         InvoiceFactory(
             country=country_1,
@@ -2139,6 +2145,17 @@ class TestInvoices(BaseTest):
         # to the response. Normally the data should only have one item.
         assert len(response_3.data) == 2
         assert response_3.data[0]["number"] == "aaa-yyy-3"
+
+        response_ferm_1 = self.client.get(
+            self.url, {"year": self.year_1, "opted_for_ferm": True}
+        )
+        assert len(response_ferm_1.data) == 2
+
+        response_ferm_2 = self.client.get(
+            self.url, {"year": self.year_2, "opted_for_ferm": True}
+        )
+        assert len(response_ferm_2.data) == 1
+        assert response_ferm_2.data[0].get("number") == None
 
     def test_invoices_create(self, treasurer_user):
         country = CountryFactory.create(name="Country 1", iso3="XYZ")

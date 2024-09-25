@@ -1,5 +1,6 @@
 from django_filters import rest_framework as filters
 from django_filters.widgets import CSVWidget
+from django.db.models import Exists, OuterRef, Subquery
 
 from core.models import Country, Invoice, Payment, ScaleOfAssessment
 
@@ -29,6 +30,7 @@ class InvoiceFilter(filters.FilterSet):
     status = filters.CharFilter(method="filter_status")
 
     reminders_sent = filters.NumberFilter(method="filter_reminders_sent")
+    opted_for_ferm = filters.BooleanFilter(method="filter_opted_for_ferm")
 
     def filter_status(self, queryset, _name, value):
         if value == "pending":
@@ -52,6 +54,20 @@ class InvoiceFilter(filters.FilterSet):
             )
         else:
             return queryset
+
+    def filter_opted_for_ferm(self, queryset, _name, value):
+        # `queryset` is of Invoice
+        ret = queryset.annotate(
+            opted_for_ferm=Subquery(
+                ScaleOfAssessment.objects.filter(
+                    country=OuterRef("country"),
+                    version__replenishment__start_year__lte=OuterRef("year"),
+                    version__replenishment__end_year__gte=OuterRef("year"),
+                ).values("opted_for_ferm")[:1]
+            )
+        ).filter(opted_for_ferm=value)
+
+        return ret
 
     class Meta:
         model = Invoice
