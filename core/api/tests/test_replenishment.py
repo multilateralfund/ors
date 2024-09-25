@@ -2066,6 +2066,80 @@ class TestInvoices(BaseTest):
         assert len(response_2.data) == 1
         assert response_2.data[0]["number"] == "aaa-yyy-2"
 
+    def test_invoices_filter_reminders(self, treasurer_user):
+        country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
+        country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
+
+        replenishment_1 = ReplenishmentFactory.create(
+            start_year=self.year_1, end_year=self.year_2
+        )
+        replenishment_2 = ReplenishmentFactory.create(
+            start_year=self.year_3, end_year=self.year_4
+        )
+        version_1 = ScaleOfAssessmentVersionFactory.create(
+            replenishment=replenishment_1, version=0, is_final=True
+        )
+        version_2 = ScaleOfAssessmentVersionFactory.create(
+            replenishment=replenishment_2, version=0, is_final=True
+        )
+        ScaleOfAssessmentFactory.create(country=country_1, version=version_1)
+        ScaleOfAssessmentFactory.create(country=country_1, version=version_2)
+        ScaleOfAssessmentFactory.create(country=country_2, version=version_2)
+
+        InvoiceFactory(
+            country=country_1,
+            replenishment=replenishment_1,
+            number="aaa-yyy-1",
+            year=self.year_1,
+        )
+        InvoiceFactory(
+            country=country_1,
+            replenishment=replenishment_2,
+            number="aaa-yyy-2",
+            year=self.year_1,
+            date_first_reminder=datetime.now().date(),
+        )
+        InvoiceFactory(
+            country=country_2,
+            replenishment=replenishment_2,
+            number="aaa-yyy-3",
+            year=self.year_3,
+            date_first_reminder=datetime.now().date(),
+            date_second_reminder=datetime.now().date(),
+        )
+        InvoiceFactory(
+            country=country_2,
+            replenishment=replenishment_2,
+            number="aaa-yyy-4",
+            year=self.year_3,
+            date_first_reminder=datetime.now().date(),
+        )
+
+        self.client.force_authenticate(user=treasurer_user)
+
+        response_1 = self.client.get(
+            self.url, {"year": self.year_1, "reminders_sent": 0}
+        )
+        assert response_1.status_code == 200
+        assert len(response_1.data) == 1
+        assert response_1.data[0]["number"] == "aaa-yyy-1"
+
+        response_2 = self.client.get(
+            self.url, {"year": self.year_1, "reminders_sent": 1}
+        )
+        assert response_2.status_code == 200
+        assert len(response_2.data) == 1
+        assert response_2.data[0]["number"] == "aaa-yyy-2"
+
+        response_3 = self.client.get(
+            self.url, {"year": self.year_3, "reminders_sent": 2}
+        )
+        assert response_3.status_code == 200
+        # Just because we also append the other country (but with no invoice!)
+        # to the response. Normally the data should only have one item.
+        assert len(response_3.data) == 2
+        assert response_3.data[0]["number"] == "aaa-yyy-3"
+
     def test_invoices_create(self, treasurer_user):
         country = CountryFactory.create(name="Country 1", iso3="XYZ")
         replenishment = ReplenishmentFactory.create(

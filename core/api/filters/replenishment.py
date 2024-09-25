@@ -28,7 +28,7 @@ class InvoiceFilter(filters.FilterSet):
     year = filters.NumberFilter(field_name="year")
     status = filters.CharFilter(method="filter_status")
 
-    reminders_sent = filter.NumberFilter(method="filter_reminders_sent")
+    reminders_sent = filters.NumberFilter(method="filter_reminders_sent")
 
     def filter_status(self, queryset, _name, value):
         if value == "pending":
