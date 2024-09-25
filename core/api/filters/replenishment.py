@@ -28,6 +28,8 @@ class InvoiceFilter(filters.FilterSet):
     year = filters.NumberFilter(field_name="year")
     status = filters.CharFilter(method="filter_status")
 
+    reminders_sent = filter.NumberFilter(method="filter_reminders_sent")
+
     def filter_status(self, queryset, _name, value):
         if value == "pending":
             return queryset.filter(date_paid__isnull=True)
@@ -35,9 +37,25 @@ class InvoiceFilter(filters.FilterSet):
             return queryset.filter(date_paid__isnull=False)
         return queryset
 
+    def filter_reminders_sent(self, queryset, _name, value):
+        if value == 0:
+            return queryset.filter(
+                date_first_reminder__isnull=True, date_second_reminder__isnull=True
+            )
+        elif value == 1:
+            return queryset.filter(
+                date_first_reminder__isnull=False, date_second_reminder__isnull=True
+            )
+        elif value == 2:
+            return queryset.filter(
+                date_first_reminder__isnull=False, date_second_reminder__isnull=False
+            )
+        else:
+            return queryset
+
     class Meta:
         model = Invoice
-        fields = ["country_id", "year", "status"]
+        fields = ["country_id", "year", "status", "reminders_sent"]
 
 
 class PaymentFilter(filters.FilterSet):
