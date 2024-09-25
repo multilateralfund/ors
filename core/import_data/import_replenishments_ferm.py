@@ -1,10 +1,17 @@
 import logging
+from decimal import Decimal
 
 import pandas as pd
 from django.db import transaction
 from numpy import nan
 
-from core.models import DisputedContribution, ExternalIncomeAnnual, FermGainLoss
+from core.models import (
+    DisputedContribution,
+    ExternalIncomeAnnual,
+    FermGainLoss,
+    ScaleOfAssessment,
+    ScaleOfAssessmentVersion,
+)
 from core.import_data.utils import (
     IMPORT_RESOURCES_DIR,
     delete_old_data,
@@ -38,7 +45,13 @@ DISPUTED_AMOUNT_COLUMN = 2
 
 
 def parse_ferm_sheet(ferm_df, countries):
+    # Fetch the needed SoA versions to avoid lots of extra queries
+    final_soa_versions_mapping = {
+        version.replenishment.start_year: version
+        for version in ScaleOfAssessmentVersion.objects.filter(is_final=True)
+    }
     ferm_gains_losses = []
+    scales_of_assessment = []
     for index, row in ferm_df.iterrows():
         # Skipping first row
         if index == 0:
@@ -50,7 +63,7 @@ def parse_ferm_sheet(ferm_df, countries):
         country_name = row.iloc[FERM_COUNTRY_COLUMN].replace("\n", " ").strip()
         country = countries.get(COUNTRY_MAPPING.get(country_name, country_name))
 
-        year = row.iloc[FERM_YEAR_COLUMN].strip()
+        year = int(row.iloc[FERM_YEAR_COLUMN].strip())
 
         amount = get_decimal_from_excel_string(row.iloc[FERM_AMOUNT_COLUMN].strip())
 
@@ -58,10 +71,34 @@ def parse_ferm_sheet(ferm_df, countries):
             FermGainLoss(country=country, year=year, amount=amount)
         )
 
+        # Also update the scales of assessments `opted_for_ferm` field if available
+        # Assumes option is triennial (which also seems to be suggested by the data)
+        if year in final_soa_versions_mapping:
+            assessment = ScaleOfAssessment.objects.filter(
+                version=final_soa_versions_mapping[year],
+                country=country,
+            ).first()
+            if not assessment:
+                continue
+            if amount and amount != Decimal(0):
+                assessment.opted_for_ferm = True
+            elif assessment.qualifies_for_fixed_rate_mechanism:
+                assessment.opted_for_ferm = False
+            else:
+                # not applicable
+                assessment.opted_for_ferm = None
+            scales_of_assessment.append(assessment)
+
     FermGainLoss.objects.bulk_create(ferm_gains_losses)
     logger.info(
         f"Imported {len(ferm_gains_losses)} FermGainLoss objects "
         f"from the consolidated data file."
+    )
+
+    ScaleOfAssessment.objects.bulk_update(scales_of_assessment, ["opted_for_ferm"])
+    logger.info(
+        f"Updated {len(scales_of_assessment)} objects with "
+        f"`opted for FERM` information"
     )
 
 

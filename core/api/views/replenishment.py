@@ -1381,6 +1381,8 @@ class ReplenishmentInvoiceFileDownloadView(generics.RetrieveAPIView):
         ):
             queryset = queryset.filter(invoice__country_id=user.country_id)
 
+        return queryset
+
     def get(self, request, *args, **kwargs):
         obj = self.get_object()
         response = HttpResponse(
@@ -1520,6 +1522,8 @@ class ReplenishmentPaymentFileDownloadView(generics.RetrieveAPIView):
             user.UserType.COUNTRY_SUBMITTER,
         ):
             queryset = queryset.filter(invoice__country_id=user.country_id)
+
+        return queryset
 
     def get(self, request, *args, **kwargs):
         obj = self.get_object()

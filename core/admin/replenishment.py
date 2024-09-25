@@ -20,6 +20,7 @@ class ScaleOfAssessmentAdmin(admin.ModelAdmin):
         "country__name",
         "version__replenishment__start_year",
         "version__replenishment__end_year",
+        "opted_for_ferm",
         "amount",
     ]
     list_filter = [
