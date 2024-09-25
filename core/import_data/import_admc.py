@@ -11,7 +11,9 @@ from core.import_data.utils import (
     get_chemical_by_name_or_components,
     get_country_and_year_dict,
     get_cp_report_for_db_import,
+    get_import_user,
     get_or_create_adm_row,
+    is_imported_today,
 )
 from core.models.adm import AdmRecord, AdmRow
 from core.models.country_programme import CPPrices, CPRecord
@@ -189,8 +191,8 @@ def get_itmes_dict(file_name, articles_dict):
 
 def udate_cp_record(cp, admc_entry, items_dict, source_file):
     """
-    Update cp record for admC entry
-    @param cp = CPReport object
+    Update cp_report record for admC entry
+    @param cp_report = CPReport object
     @param admc_entry = dict (admC entry)
     @param items_dict = dict (admC items dict)
     @param items_file = str (file path for items file) used for source_file field
@@ -238,8 +240,8 @@ def udate_cp_record(cp, admc_entry, items_dict, source_file):
 
 def create_cp_price(cp, admc_entry, items_dict, source_file):
     """
-    Create cp price for admC entry
-    @param cp = CPReport object
+    Create cp_report price for admC entry
+    @param cp_report = CPReport object
     @param admc_entry = dict (admC entry)
     @param items_dict = dict (admC items dict)
     @param items_file = str (file path for items file) used for source_file field
@@ -263,7 +265,7 @@ def create_cp_price(cp, admc_entry, items_dict, source_file):
 def create_adm_record(cp, file_data, admc_entry, items_dict, column_dict):
     """
     Create adm record for admC entry
-    @param cp = CPReport object
+    @param cp_report = CPReport object
     @param file_data = dict (file data)
     @param admc_entry = dict (admC entry)
     @param items_dict = dict (admC items dict)
@@ -313,29 +315,38 @@ def import_admc_entries(file_data, items_dict, column_dict):
 
     admc_records = []
     prices = []
+    system_user = get_import_user()
     for admc_entry in json_data:
         if admc_entry["ItemId"] not in items_dict:
             # chemical not found
             continue
 
-        cp = get_cp_report_for_db_import(
+        cp_report = get_cp_report_for_db_import(
             year_dict, country_dict, admc_entry, admc_entry["Adm_CId"]
         )
 
-        if not cp:
+        if not cp_report:
+            continue
+
+        # We cannot update reports imported before today or created by a different user
+        if not is_imported_today(cp_report, system_user):
             continue
 
         # update cp_record
         if items_dict[admc_entry["ItemId"]]["type"] == "text":
             admc_records.extend(
-                create_adm_record(cp, file_data, admc_entry, items_dict, column_dict)
+                create_adm_record(
+                    cp_report, file_data, admc_entry, items_dict, column_dict
+                )
             )
             continue
 
-        udate_cp_record(cp, admc_entry, items_dict, file_data["file_name"])
+        udate_cp_record(cp_report, admc_entry, items_dict, file_data["file_name"])
         if admc_entry["AvgODSPrice"]:
             prices.append(
-                create_cp_price(cp, admc_entry, items_dict, file_data["file_name"])
+                create_cp_price(
+                    cp_report, admc_entry, items_dict, file_data["file_name"]
+                )
             )
 
     AdmRecord.objects.bulk_create(admc_records, batch_size=1000)

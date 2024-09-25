@@ -12,7 +12,9 @@ from core.import_data.utils import (
     get_country_by_name,
     get_chemical,
     get_decimal_from_excel_string,
+    get_import_user,
     get_usages_from_sheet,
+    is_imported_today,
 )
 
 from core.models.country_programme import CPUsage
@@ -52,6 +54,7 @@ def parse_sheet(df, year, file_name):
     }
     current_cp = None
     cp_usages = []
+    system_user = get_import_user()
     for index_row, row in df.iterrows():
         if row["substance"].strip().lower() == "total":
             continue
@@ -73,6 +76,10 @@ def parse_sheet(df, year, file_name):
 
         if not current_country["obj"]:
             # we didn't found a country in db:
+            continue
+
+        # We cannot update reports imported before today or created by a different user
+        if not is_imported_today(current_cp, system_user):
             continue
 
         # get chemical
