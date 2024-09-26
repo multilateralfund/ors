@@ -94,7 +94,7 @@ function InvoiceAttachments(props: InvoiceAttachmentsProps) {
           {files.length > 0 ? 'Add another file' : 'Add file'}
         </AddButton>
       </div>
-      <div>
+      <div className="flex flex-col gap-y-1">
         {files.map((o, i) => {
           return (
             <div

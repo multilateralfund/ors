@@ -2,6 +2,7 @@
 
 import React, { ChangeEvent, useContext, useMemo, useState } from 'react'
 
+import cx from 'classnames'
 import Cookies from 'js-cookie'
 import { times } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
@@ -29,9 +30,11 @@ import { AddButton } from '@ors/components/ui/Button/Button'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { formatApiUrl } from '@ors/helpers'
+import { getFloat } from '@ors/helpers/Utils/Utils'
 
 import { SortDirection } from '../Table/types'
 import {
+  FormattedPayment,
   IPaymentDialogProps,
   ParsedPayment,
   PaymentColumn,
@@ -121,6 +124,27 @@ function PaymentsView() {
         })),
       ]
     }, [results, loaded, pagination.rowsPerPage])
+
+  const formattedTableRows = useMemo(() => {
+    if (!loaded) {
+      return memoResults
+    }
+
+    const result: FormattedPayment[] = []
+    for (let i = 0; i < memoResults.length; i++) {
+      result.push({ ...(memoResults[i] as ParsedPayment) })
+      result[i].ferm_gain_or_loss = (
+        <span
+          className={cx({
+            'text-red-400': getFloat(result[i].ferm_gain_or_loss as string) > 0,
+          })}
+        >
+          {result[i].ferm_gain_or_loss}
+        </span>
+      )
+    }
+    return result
+  }, [loaded, memoResults])
 
   const pages = Math.ceil(count / pagination.rowsPerPage)
 
@@ -502,7 +526,7 @@ function PaymentsView() {
         adminButtons={ctx.isTreasurer}
         columns={columns}
         enableSort={true}
-        rowData={memoResults}
+        rowData={formattedTableRows}
         sortDirection={sortDirection}
         sortOn={sortOn}
         sortableColumns={COLUMNS.reduce<number[]>((acc, col, idx) => {

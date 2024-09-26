@@ -48,3 +48,7 @@ export type ParsedPayment = {
   payment_for_year: string
   replenishment: ApiReplenishment | null
 }
+
+export type FormattedPayment = {
+  ferm_gain_or_loss: JSX.Element | number | string
+} & Omit<ParsedPayment, 'ferm_gain_or_loss'>
