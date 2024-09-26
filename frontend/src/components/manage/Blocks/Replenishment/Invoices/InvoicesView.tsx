@@ -77,7 +77,7 @@ function InvoicesView() {
   const currentYear = new Date().getFullYear()
   const ctx = useContext(ReplenishmentContext)
 
-  const { loaded, params, results, setParams } = useGetInvoices(currentYear)
+  const { loaded, params, results, setParams } = useGetInvoices(currentYear, currentYear)
   const memoResults: ({ id: number; isSkeleton: true } | ParsedInvoice)[] =
     useMemo(() => {
       if (!loaded) {

@@ -2051,7 +2051,8 @@ class TestInvoices(BaseTest):
         self.client.force_authenticate(user=user)
 
         response_1 = self.client.get(
-            self.url, {"year": self.year_1, "year_min": self.year_1, "year_max": self.year_1, "ordering": "country"}
+            self.url,
+            {"year_min": self.year_1, "year_max": self.year_1, "ordering": "country"},
         )
         assert response_1.status_code == 200
         assert len(response_1.data) == 3
@@ -2060,7 +2061,13 @@ class TestInvoices(BaseTest):
         assert response_1.data[2].get("number") is None
 
         response_2 = self.client.get(
-            self.url, {"country_id": country_2.id, "ordering": "date_of_issuance"}
+            self.url,
+            {
+                "year_min": self.year_1,
+                "year_max": self.year_2,
+                "country_id": country_2.id,
+                "ordering": "date_of_issuance",
+            },
         )
         assert response_2.status_code == 200
         assert len(response_2.data) == 1
@@ -2123,23 +2130,25 @@ class TestInvoices(BaseTest):
 
         self.client.force_authenticate(user=treasurer_user)
 
-
         response_1 = self.client.get(
-            self.url, {"year": self.year_1, "year_min": self.year_1, "year_max": self.year_1, "reminders_sent": 0}
+            self.url,
+            {"year_min": self.year_1, "year_max": self.year_1, "reminders_sent": 0},
         )
         assert response_1.status_code == 200
         assert len(response_1.data) == 1
         assert response_1.data[0]["number"] == "aaa-yyy-1"
 
         response_2 = self.client.get(
-            self.url, {"year": self.year_1, "year_min": self.year_1, "year_max": self.year_1, "reminders_sent": 1}
+            self.url,
+            {"year_min": self.year_1, "year_max": self.year_1, "reminders_sent": 1},
         )
         assert response_2.status_code == 200
         assert len(response_2.data) == 1
         assert response_2.data[0]["number"] == "aaa-yyy-2"
 
         response_3 = self.client.get(
-            self.url, {"year": self.year_3, "year_min": self.year_3, "year_max": self.year_3, "reminders_sent": 2}
+            self.url,
+            {"year_min": self.year_3, "year_max": self.year_3, "reminders_sent": 2},
         )
         assert response_3.status_code == 200
         # Just because we also append the other country (but with no invoice!)
@@ -2148,12 +2157,14 @@ class TestInvoices(BaseTest):
         assert response_3.data[0]["number"] == "aaa-yyy-3"
 
         response_ferm_1 = self.client.get(
-            self.url, {"year": self.year_1, "year_min": self.year_1, "year_max": self.year_1, "opted_for_ferm": True}
+            self.url,
+            {"year_min": self.year_1, "year_max": self.year_1, "opted_for_ferm": True},
         )
         assert len(response_ferm_1.data) == 2
 
         response_ferm_2 = self.client.get(
-            self.url, {"year": self.year_2, "year_min": self.year_2, "year_max": self.year_2, "opted_for_ferm": True}
+            self.url,
+            {"year_min": self.year_2, "year_max": self.year_2, "opted_for_ferm": True},
         )
         assert len(response_ferm_2.data) == 1
         assert response_ferm_2.data[0].get("number") is None
