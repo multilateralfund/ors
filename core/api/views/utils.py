@@ -542,7 +542,12 @@ class SummaryStatusOfContributionsAggregator:
                     "triennial_contributions_status__outstanding_contributions",
                     default=0,
                 ),
-                gain_loss=models.F("ferm_gain_loss__amount"),
+                gain_loss=models.Subquery(
+                    FermGainLoss.objects.filter(country=models.OuterRef("pk"))
+                    .values("country__pk")
+                    .annotate(total=models.Sum("amount", default=0))
+                    .values("total")[:1]
+                ),
             )
             .order_by("name")
         )
