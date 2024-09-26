@@ -25,12 +25,9 @@
 
     &.ag-substances-cell-content {
       align-items: flex-start;
-      padding-block: 6px !important;
 
       .ag-cell-value {
         display: flex;
-        flex-wrap: wrap;
-        gap: 4px;
       }
     }
 

@@ -1,3 +1,31 @@
+.bp-diff-table {
+  .ag-cell {
+    @apply items-stretch;
+
+    padding: 0 !important;
+
+    .ag-cell-wrapper {
+      @apply items-stretch;
+    }
+
+    .ag-cell-value {
+      @apply flex items-stretch;
+    }
+
+    .diff-cell .number-cell-val {
+      @apply w-full overflow-hidden overflow-ellipsis text-sm leading-none;
+    }
+
+    .diff-cell-new {
+      @apply bg-mlfs-purple text-white;
+    }
+  }
+}
+
+.diff-cell {
+  @apply w-0 flex-auto content-center overflow-hidden overflow-ellipsis whitespace-nowrap p-0.5 !text-sm;
+}
+
 .ag-table .diff-table {
   .ag-cell {
     @apply items-stretch;
@@ -63,29 +91,5 @@
 
   .diff-cell-new .diff-old-value {
     @apply text-gray-300;
-  }
-}
-
-.bp-diff-table {
-  .ag-cell:has(.diff-cell-new) {
-    @apply items-stretch;
-
-    padding: 0 !important;
-
-    .ag-cell-wrapper {
-      @apply items-stretch;
-    }
-
-    .ag-cell-value {
-      @apply flex items-stretch;
-    }
-
-    .diff-cell-new {
-      @apply w-full bg-mlfs-purple text-white;
-    }
-
-    .diff-cell-new .diff-old-value {
-      @apply text-gray-300;
-    }
   }
 }

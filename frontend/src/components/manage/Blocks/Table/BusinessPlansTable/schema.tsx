@@ -115,6 +115,7 @@ const getDefaultColumnDefs = (isDiff?: boolean) => [
     // ),
     cellClass: 'ag-cell-wrap-text',
     field: 'title',
+    headerClass: 'ag-text-center',
     headerName: 'Title',
     minWidth: 200,
     resizable: true,
@@ -201,7 +202,7 @@ const commentsColumnDefs = (isDiff?: boolean) => [
   getReqByModelColumn(isDiff),
   {
     autoHeight: true,
-    cellClass: 'ag-text-center ag-cell-wrap-text',
+    cellClass: 'ag-cell-wrap-text',
     field: 'reason_for_exceeding',
     headerClass: 'ag-text-center',
     headerName: 'Reason for Exceeding',
@@ -217,7 +218,7 @@ const commentsColumnDefs = (isDiff?: boolean) => [
   },
   {
     autoHeight: true,
-    cellClass: 'ag-text-center ag-cell-wrap-text',
+    cellClass: 'ag-cell-wrap-text',
     field: 'remarks',
     headerClass: 'ag-text-center',
     headerName: 'Remarks',
@@ -254,11 +255,11 @@ const allColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
   ...getDefaultColumnDefs(isDiff),
   {
     autoHeight: true,
-    cellClass: 'ag-substances-cell-content',
+    cellClass: !isDiff && 'ag-substances-cell-content',
     field: 'substances_display',
     headerClass: 'ag-text-center',
     headerName: 'Substances',
-    minWidth: 200,
+    minWidth: 230,
     resizable: true,
     sortable: true,
     ...(!isDiff && { cellRenderer: substancesCellRenderer }),
@@ -272,14 +273,24 @@ const allColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
   {
     autoHeight: true,
     cellClass: 'ag-text-center',
-    cellRenderer: numberCellRenderer,
     field: 'amount_polyol',
     headerClass: 'ag-text-center',
     headerName: 'Polyol Amount',
     minWidth: 100,
     resizable: true,
     sortable: true,
-    valueGetter: (params: any) => numberCellGetter(params, 'amount_polyol'),
+    ...(isDiff
+      ? {
+          cellRenderer: numberCellRenderer,
+          valueGetter: (params: any) =>
+            numberCellGetter(params, 'amount_polyol'),
+        }
+      : {
+          valueGetter: (params: any) => {
+            const polyolAmount = params.data.amount_polyol
+            return polyolAmount ? parseFloat(polyolAmount).toFixed(2) : null
+          },
+        }),
   },
   ...yearColumns,
   {
@@ -317,7 +328,7 @@ const allColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
   },
   {
     autoHeight: true,
-    cellClass: 'ag-text-center ag-cell-wrap-text',
+    cellClass: 'ag-cell-wrap-text',
     field: 'reason_for_exceeding',
     headerClass: 'ag-text-center',
     headerName: 'Reason for Exceeding',
@@ -333,7 +344,7 @@ const allColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
   },
   {
     autoHeight: true,
-    cellClass: 'ag-text-center ag-cell-wrap-text',
+    cellClass: 'ag-cell-wrap-text',
     field: 'remarks',
     headerClass: 'ag-text-center',
     headerName: 'Remarks',

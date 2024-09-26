@@ -7,7 +7,15 @@ import BPDiffTooltipHeader from '../../BusinessPlans/BPDiff/BPDiffTooltipHeader'
 import CommentsTagList from './CommentsTagList'
 
 const formatSimpleVals = (value: any, colIdentifier: string) => {
-  return colIdentifier === 'is_multi_year' ? (value ? 'MYA' : 'IND') : value
+  if (colIdentifier === 'is_multi_year') {
+    return value ? 'MYA' : 'IND'
+  }
+
+  if (colIdentifier === 'substances_display') {
+    return value ?? []
+  }
+
+  return value ?? ''
 }
 
 const formatObjectVals = (value: any, colIdentifier: string) => {
@@ -40,7 +48,9 @@ export const textCellRenderer = (props: any) => {
   const { extraTooltipData, new_value, old_value } = props.value
 
   return isEqual(new_value, old_value) ? (
-    new_value
+    <Typography className="diff-cell" component="span">
+      {new_value}
+    </Typography>
   ) : (
     <Tooltip
       enterDelay={300}
@@ -49,8 +59,8 @@ export const textCellRenderer = (props: any) => {
         <BPDiffTooltipHeader {...{ extraTooltipData, new_value, old_value }} />
       }
     >
-      <Typography className="diff-cell-new flex" component="span">
-        <span className="font-semibold">{new_value || '-'}</span>
+      <Typography className="diff-cell diff-cell-new" component="span">
+        {new_value || '-'}
       </Typography>
     </Tooltip>
   )
@@ -70,80 +80,76 @@ export const numberCellRenderer = (props: any) => {
   const { new_value, old_value } = props.value
 
   return new_value === old_value ? (
-    new_value
+    <Typography className="diff-cell" component="span">
+      <span className="number-cell-val">{new_value}</span>
+    </Typography>
   ) : (
     <Tooltip
       enterDelay={300}
       placement={'top'}
       title={<BPDiffTooltipHeader {...{ new_value, old_value }} />}
     >
-      <Typography className="diff-cell-new flex flex-col" component="span">
-        <span className="font-semibold">
+      <div className="diff-cell diff-cell-new flex flex-col items-center justify-center gap-1">
+        <Typography className="number-cell-val font-semibold" component="span">
           {new_value === '' ? '-' : new_value}
-        </span>
-        <span className="diff-old-value col-start-2 row-start-2">
+        </Typography>
+        <Typography className="number-cell-val text-gray-300" component="span">
           {old_value === '' ? '-' : old_value}
-        </span>
-      </Typography>
+        </Typography>
+      </div>
     </Tooltip>
   )
 }
 
-const displaySubstanceCellValue = (substance: string, index: number) => (
-  <Tooltip
-    key={index}
-    TransitionProps={{ timeout: 0 }}
-    title={substance}
-    classes={{
-      tooltip: 'bp-table-tooltip',
-    }}
-  >
-    <Typography
-      className="inline-flex cursor-default items-center gap-2 rounded bg-gray-100 px-1 text-xs font-normal"
-      component="p"
-      variant="h6"
-    >
-      {substance}
-    </Typography>
-  </Tooltip>
+const displaySubstanceCellValue = (substances: Array<string>) => (
+  <Typography className="diff-cell content-normal" component="span">
+    {substances?.map((substance: string, index: number) => (
+      <Typography
+        key={index}
+        className="mx-[1px] inline-flex cursor-default items-center gap-2 rounded bg-gray-100 px-1 text-xs font-normal"
+        component="p"
+        variant="h6"
+      >
+        {substance}
+      </Typography>
+    ))}
+  </Typography>
 )
 
 export const substancesCellRenderer = (props: any) => {
   const substances = props.value || []
 
-  return substances.map((substance: string, index: number) =>
-    displaySubstanceCellValue(substance, index),
-  )
+  return displaySubstanceCellValue(substances)
 }
 
 export const substancesDiffCellRenderer = (props: any) => {
   const { new_value, old_value } = props.value
 
   return isEqual(new_value, old_value) ? (
-    new_value?.map((substance: string, index: number) =>
-      displaySubstanceCellValue(substance, index),
-    )
+    displaySubstanceCellValue(new_value)
   ) : (
     <Tooltip
       enterDelay={300}
       placement={'top'}
       title={<BPDiffTooltipHeader {...{ new_value, old_value }} />}
     >
-      <Typography className="diff-cell-new" component="span">
-        <div className="flex flex-wrap gap-1">
-          {new_value?.length > 0
-            ? new_value.map((substance: string, index: number) => (
-                <Typography
-                  key={index}
-                  className="rounded bg-gray-100 px-1 text-xs font-semibold text-primary"
-                  component="p"
-                  variant="h6"
-                >
-                  {substance}
-                </Typography>
-              ))
-            : '-'}
-        </div>
+      <Typography
+        className="diff-cell-new diff-cell content-normal"
+        component="span"
+      >
+        {new_value?.length > 0
+          ? new_value.map((substance: string, index: number) => (
+              <Typography
+                key={index}
+                className="mx-[1px] inline-flex items-center gap-2 rounded bg-gray-100 px-1
+                text-xs font-normal text-primary"
+                component="p"
+                variant="h6"
+              >
+                {substance}
+              </Typography>
+            ))
+          : '-'}
       </Typography>
     </Tooltip>
   )
@@ -169,14 +175,14 @@ const displayCommentsCellValue = (
   commentSecretariat: string,
   commentTypes: Array<string> = [],
 ) => (
-  <div className="text-left">
+  <div className="p-0.5 text-left">
     {commentTypes.length > 0 && <CommentsTagList comments={commentTypes} />}
     <Tooltip
       TransitionProps={{ timeout: 0 }}
       classes={{ tooltip: 'bp-table-tooltip' }}
       title={commentSecretariat}
     >
-      {(commentSecretariat as any) && truncateText(commentSecretariat, 50)}
+      {(commentSecretariat as any) && truncateText(commentSecretariat, 45)}
     </Tooltip>
   </div>
 )
@@ -204,21 +210,21 @@ export const commentsDiffCellRenderer = (props: any) => {
       placement={'top'}
       title={<BPDiffTooltipHeader {...{ new_value, old_value }} />}
     >
-      <Typography className="diff-cell-new" component="span">
-        <div className="text-left">
-          {new_comment_types?.length > 0 && (
-            <CommentsTagList
-              comments={new_comment_types}
-              withoutTooltip={true}
-            />
-          )}
-          {new_comment && truncateText(new_comment, 50)}
-        </div>
-      </Typography>
-
-      {/* <span className="whitespace-nowrap font-semibold">
-          {new_value || '-'}
-        </span> */}
+      <div className="diff-cell diff-cell-new text-left !leading-4">
+        {new_comment || new_comment_types?.length > 0 ? (
+          <>
+            {new_comment_types?.length > 0 && (
+              <CommentsTagList
+                comments={new_comment_types}
+                withoutTooltip={true}
+              />
+            )}
+            {new_comment && truncateText(new_comment, 45)}
+          </>
+        ) : (
+          <>-</>
+        )}
+      </div>
     </Tooltip>
   )
 }
@@ -239,12 +245,12 @@ export const commentsDiffValueGetter = (params: any) => {
 
   return {
     new_value: {
-      comment: new_comment,
-      comment_types: new_comment_types,
+      comment: new_comment ?? '',
+      comment_types: new_comment_types ?? [],
     },
     old_value: {
-      comment: old_comment,
-      comment_types: old_comment_types,
+      comment: old_comment ?? '',
+      comment_types: old_comment_types ?? [],
     },
   }
 }

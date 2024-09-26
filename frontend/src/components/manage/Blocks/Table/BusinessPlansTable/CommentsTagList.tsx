@@ -14,7 +14,7 @@ const Comment = ({
 }) => {
   const commentSecretariat = (
     <Typography
-      className="inline-flex cursor-default items-center gap-2 rounded bg-gray-100 px-1 text-xs font-normal text-gray-A700"
+      className="inline-flex max-h-4 cursor-default items-center gap-2 rounded bg-gray-100 px-1 text-xs font-normal text-gray-A700"
       component="p"
       variant="h6"
     >
@@ -63,7 +63,7 @@ const CommentsTagList = ({
     const displayedComments = node.props.children
 
     return (
-      <div>
+      <div className="max-h-4">
         <span aria-describedby={id} onMouseOver={handleExtraTagsListOpen}>
           ...
         </span>
@@ -109,7 +109,7 @@ const CommentsTagList = ({
   return (
     <div className="flex flex-row">
       <TruncateMarkup ellipsis={commentsLeftEllipsis} lineHeight="16px">
-        <div className="!flex flex-wrap gap-0.5">
+        <div className="!flex w-full flex-wrap gap-0.5">
           {comments.map((comment: string, index: number) => (
             <TruncateMarkup.Atom key={`atom-${index}`}>
               <Comment {...{ comment, withoutTooltip }} />
