@@ -511,15 +511,14 @@ export function FieldFormattedNumberInput(
 }
 
 interface IYearRangeLabelProps {
-  onClear: () => void
   value?: number[]
 }
 
 function YearRangeLabel(props: IYearRangeLabelProps) {
-  const { onClear, value } = props
+  const { value } = props
   return value && value.length ? (
     <div className="text-primary">
-      Year range: {value[0]} - {value[1]} <ClearButton onClick={onClear} />
+      Year range: {value[0]} - {value[1]}
     </div>
   ) : (
     <div className="text-gray-400">Select a range of years</div>
@@ -548,12 +547,7 @@ export function YearRangeInput(
     <YearRangeWidget
       {...props}
       Button={YearRangeButton}
-      label={
-        <YearRangeLabel
-          value={props.value}
-          onClear={() => props.onChange?.([])}
-        />
-      }
+      label={<YearRangeLabel value={props.value} />}
     />
   )
 }

@@ -1258,7 +1258,13 @@ class ReplenishmentInvoiceViewSet(
         that have not paid yet.
         """
 
-        year = request.query_params.get("year")
+        year_min = request.query_params.get("year_min")
+        year_max = request.query_params.get("year_max")
+        if year_min is None or year_max is None:
+            raise ValueError("year_min and year_max parameters are mandatory")
+        year_min = int(year_min)
+        year_max = int(year_max)
+
         invoice_qs = self.filter_queryset(self.get_queryset())
         invoice_data = InvoiceSerializer(invoice_qs, many=True).data
         # pylint: disable=too-many-boolean-expressions
@@ -1279,20 +1285,28 @@ class ReplenishmentInvoiceViewSet(
                 status=status.HTTP_200_OK,
             )
 
-        countries_with_invoices = [invoice["country"]["id"] for invoice in invoice_data]
-        countries_without_invoices = (
-            ScaleOfAssessment.objects.filter(
-                version__is_final=True,
-                version__replenishment__start_year__lte=year,
-                version__replenishment__end_year__gte=year,
+        countries_without_invoices_data = []
+        for year in range(year_min, year_max + 1):
+            countries_with_invoices = [
+                invoice["country"]["id"]
+                for invoice in invoice_data
+                if invoice["year"] == year
+            ]
+            countries_without_invoices = (
+                ScaleOfAssessment.objects.filter(
+                    version__is_final=True,
+                    version__replenishment__start_year__lte=year,
+                    version__replenishment__end_year__gte=year,
+                )
+                .exclude(country_id__in=countries_with_invoices)
+                .select_related("country")
+                .order_by("country__name")
             )
-            .exclude(country_id__in=countries_with_invoices)
-            .select_related("country")
-            .order_by("country__name")
-        )
-        countries_without_invoices_data = EmptyInvoiceSerializer(
-            countries_without_invoices, many=True, context={"year": year}
-        ).data
+            countries_without_invoices_data.extend(
+                EmptyInvoiceSerializer(
+                    countries_without_invoices, many=True, context={"year": year}
+                ).data
+            )
 
         if request.query_params.get("status") == "not_issued":
             data = countries_without_invoices_data
