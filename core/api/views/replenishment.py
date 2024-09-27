@@ -1260,10 +1260,14 @@ class ReplenishmentInvoiceViewSet(
 
         year_min = request.query_params.get("year_min")
         year_max = request.query_params.get("year_max")
-        if year_min is None or year_max is None:
-            raise ValueError("year_min and year_max parameters are mandatory")
-        year_min = int(year_min)
-        year_max = int(year_max)
+        if (
+            year_min is None
+            or year_max is None
+            and request.query_params.get("status") == "not_issued"
+        ):
+            raise ValueError(
+                "year_min and year_max parameters are mandatory to see not issued invoices"
+            )
 
         invoice_qs = self.filter_queryset(self.get_queryset())
         invoice_data = InvoiceSerializer(invoice_qs, many=True).data
@@ -1285,6 +1289,9 @@ class ReplenishmentInvoiceViewSet(
                 status=status.HTTP_200_OK,
             )
 
+        # Once we got here we certainly have year_min and year_max set
+        year_min = int(year_min)
+        year_max = int(year_max)
         countries_without_invoices_data = []
         for year in range(year_min, year_max + 1):
             countries_with_invoices = [
