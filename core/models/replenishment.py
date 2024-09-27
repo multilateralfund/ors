@@ -187,6 +187,7 @@ class Invoice(models.Model):
         related_name="invoices",
     )
     year = models.IntegerField(null=True, blank=True)
+    is_arrears = models.BooleanField(default=False)
 
     amount = models.DecimalField(max_digits=30, decimal_places=15)
     currency = models.CharField(max_length=64)
