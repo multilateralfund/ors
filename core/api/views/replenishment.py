@@ -1028,7 +1028,7 @@ class ReplenishmentDashboardView(views.APIView):
 class ReplenishmentDashboardExportView(views.APIView):
     permission_classes = [IsUserAllowedReplenishment]
 
-    def get(self, request, *args, **kwargs):
+    def get_status(self):
         income = ExternalIncome.objects.aggregate(
             interest_earned=models.Sum("interest_earned", default=0),
             miscellaneous_income=models.Sum("miscellaneous_income", default=0),
@@ -1180,13 +1180,24 @@ class ReplenishmentDashboardExportView(views.APIView):
             EMPTY_ROW,
             ("Balance", None, balance),
         ]
+        return data
 
+    def get(self, request, *args, **kwargs):
         wb = openpyxl.Workbook()
         wb.remove(wb.active)
+
+        status_data = self.get_status()
         sheet = wb.create_sheet("Status")
         configure_sheet_print(sheet, "landscape")
 
-        DashboardWriter(sheet, []).write(data)
+        DashboardWriter(sheet, []).write(status_data)
+
+        periods = (
+            TriennialContributionStatus.objects.values("start_year", "end_year")
+            .distinct()
+            .order_by("start_year")
+        )
+        add_statistics_status_of_contributions_response_worksheet(wb, periods)
 
         return workbook_response("Status of the fund", wb)
 
