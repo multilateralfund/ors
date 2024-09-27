@@ -408,6 +408,7 @@ class AnnualStatusOfContributionsView(views.APIView):
                 "bilateral_assistance": country.bilateral_assistance,
                 "promissory_notes": country.promissory_notes,
                 "outstanding_contributions": country.outstanding_contributions,
+                "gain_loss": country.gain_loss,
             }
             for country in soc_qs
         ]
@@ -475,6 +476,7 @@ class TriennialStatusOfContributionsView(views.APIView):
                 "bilateral_assistance": country.bilateral_assistance,
                 "promissory_notes": country.promissory_notes,
                 "outstanding_contributions": country.outstanding_contributions,
+                "gain_loss": country.gain_loss,
             }
             for country in soc_qs
         ]

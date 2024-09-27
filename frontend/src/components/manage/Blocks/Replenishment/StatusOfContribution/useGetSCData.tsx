@@ -111,6 +111,7 @@ function useGetSCData(start_year?: string, end_year?: string) {
           bilateral_assistance: data.ceit?.bilateral_assistance,
           cash_payments: data.ceit?.cash_payments,
           country: 'CEIT',
+          gain_loss: data.ceit?.gain_loss,
           outstanding_contributions: data.ceit?.outstanding_contributions,
           promissory_notes: data.ceit?.promissory_notes,
         },

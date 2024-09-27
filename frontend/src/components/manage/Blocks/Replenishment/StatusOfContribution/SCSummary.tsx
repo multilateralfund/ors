@@ -13,20 +13,6 @@ import { sortTableData } from '@ors/components/manage/Blocks/Replenishment/utils
 import { SortDirection } from '../Table/types'
 import { SummaryContributions } from './types'
 
-interface SCColumn {
-  field: string
-  label: string
-  subLabel?: string
-}
-
-const summary_columns: SCColumn[] = [
-  ...SC_COLUMNS,
-  {
-    field: 'gain_loss',
-    label: 'Exchange (Gain)/Loss',
-    subLabel: '(negative amount = Gain)',
-  },
-]
 
 export default function SCSummary() {
   const { data, extraRows, rows } = useGetSCData()
@@ -36,17 +22,17 @@ export default function SCSummary() {
 
   const columns = useMemo(function () {
     const result = []
-    for (let i = 0; i < summary_columns.length; i++) {
+    for (let i = 0; i < SC_COLUMNS.length; i++) {
       const Label = (
         <div className="flex flex-col">
-          <span>{summary_columns[i].label}</span>
+          <span>{SC_COLUMNS[i].label}</span>
           <span className="whitespace-nowrap text-sm font-normal">
-            {summary_columns[i].subLabel}
+            {SC_COLUMNS[i].subLabel}
           </span>
         </div>
       )
       result.push({
-        ...summary_columns[i],
+        ...SC_COLUMNS[i],
         label: Label,
       })
     }
@@ -55,7 +41,7 @@ export default function SCSummary() {
 
   const sortedData = useMemo(
     function () {
-      return sortTableData(rows, summary_columns[sortOn].field, sortDirection)
+      return sortTableData(rows, SC_COLUMNS[sortOn].field, sortDirection)
     },
     [rows, sortOn, sortDirection],
   )

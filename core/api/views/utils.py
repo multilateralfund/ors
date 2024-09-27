@@ -553,7 +553,7 @@ class SummaryStatusOfContributionsAggregator:
         )
 
     def get_ceit_data(self):
-        return TriennialContributionStatus.objects.filter(
+        ret = TriennialContributionStatus.objects.filter(
             Q(country__ceit_statuses__is_ceit=True)
             & Q(country__ceit_statuses__start_year__lte=F("start_year"))
             & (
@@ -569,6 +569,16 @@ class SummaryStatusOfContributionsAggregator:
                 "outstanding_contributions", default=0
             ),
         )
+        ret["gain_loss"] = FermGainLoss.objects.filter(
+            Q(country__ceit_statuses__is_ceit=True)
+            & Q(country__ceit_statuses__start_year__lte=F("year"))
+            & (
+                Q(country__ceit_statuses__end_year__gte=F("year"))
+                | Q(country__ceit_statuses__end_year__isnull=True)
+            )
+        ).aggregate(total=models.Sum("amount", default=0))["total"]
+
+        return ret
 
     def get_total(self):
         return TriennialContributionStatus.objects.aggregate(
@@ -612,7 +622,7 @@ class TriennialStatusOfContributionsAggregator:
                 triennial_contributions_status__start_year=self.start_year,
                 triennial_contributions_status__end_year=self.end_year,
             )
-            .prefetch_related("triennial_contributions_status")
+            .prefetch_related("triennial_contributions_status", "ferm_gain_loss")
             .annotate(
                 agreed_contributions=models.Sum(
                     "triennial_contributions_status__agreed_contributions", default=0
@@ -630,6 +640,16 @@ class TriennialStatusOfContributionsAggregator:
                     "triennial_contributions_status__outstanding_contributions",
                     default=0,
                 ),
+                gain_loss=models.Subquery(
+                    FermGainLoss.objects.filter(
+                        country=models.OuterRef("pk"),
+                        year__gte=self.start_year,
+                        year__lte=self.end_year,
+                    )
+                    .values("country__pk")
+                    .annotate(total=models.Sum("amount", default=0))
+                    .values("total")[:1]
+                ),
             )
             .order_by("name")
         )
@@ -645,7 +665,7 @@ class TriennialStatusOfContributionsAggregator:
         )
 
     def get_ceit_data(self, ceit_countries_qs):
-        return TriennialContributionStatus.objects.filter(
+        ret = TriennialContributionStatus.objects.filter(
             start_year=self.start_year,
             end_year=self.end_year,
             country_id__in=ceit_countries_qs.values_list("id", flat=True),
@@ -658,9 +678,16 @@ class TriennialStatusOfContributionsAggregator:
                 "outstanding_contributions", default=0
             ),
         )
+        # Add gain/loss for CEIT countries
+        ret["gain_loss"] = FermGainLoss.objects.filter(
+            year__gte=self.start_year,
+            year__lte=self.end_year,
+            country_id__in=ceit_countries_qs.values_list("id", flat=True),
+        ).aggregate(total=models.Sum("amount", default=0))["total"]
+        return ret
 
     def get_total(self):
-        return TriennialContributionStatus.objects.filter(
+        ret = TriennialContributionStatus.objects.filter(
             start_year=self.start_year, end_year=self.end_year
         ).aggregate(
             agreed_contributions=models.Sum("agreed_contributions", default=0),
@@ -671,6 +698,12 @@ class TriennialStatusOfContributionsAggregator:
                 "outstanding_contributions", default=0
             ),
         )
+        # Adding gain/loss totals
+        ret["gain_loss"] = FermGainLoss.objects.filter(
+            year__gte=self.start_year, year__lte=self.end_year
+        ).aggregate(total=models.Sum("amount", default=0))["total"]
+
+        return ret
 
     def get_disputed_contribution_amount(self):
         return DisputedContribution.objects.filter(
@@ -712,6 +745,15 @@ class AnnualStatusOfContributionsAggregator:
                 outstanding_contributions=models.Sum(
                     "annual_contributions_status__outstanding_contributions", default=0
                 ),
+                gain_loss=models.Subquery(
+                    FermGainLoss.objects.filter(
+                        country=models.OuterRef("pk"),
+                        year=self.year,
+                    )
+                    .values("country__pk")
+                    .annotate(total=models.Sum("amount", default=0))
+                    .values("total")[:1]
+                ),
             )
             .order_by("name")
         )
@@ -727,9 +769,10 @@ class AnnualStatusOfContributionsAggregator:
         )
 
     def get_ceit_data(self, ceit_countries_qs):
-        return AnnualContributionStatus.objects.filter(
+        ceit_country_ids = ceit_countries_qs.values_list("id", flat=True)
+        ret = AnnualContributionStatus.objects.filter(
             year=self.year,
-            country_id__in=ceit_countries_qs.values_list("id", flat=True),
+            country_id__in=ceit_country_ids,
         ).aggregate(
             agreed_contributions=models.Sum("agreed_contributions", default=0),
             cash_payments=models.Sum("cash_payments", default=0),
@@ -739,9 +782,14 @@ class AnnualStatusOfContributionsAggregator:
                 "outstanding_contributions", default=0
             ),
         )
+        ret["gain_loss"] = FermGainLoss.objects.filter(
+            year=self.year, country_id__in=ceit_country_ids
+        ).aggregate(total=models.Sum("amount", default=0))["total"]
+
+        return ret
 
     def get_total(self):
-        return AnnualContributionStatus.objects.filter(year=self.year).aggregate(
+        ret = AnnualContributionStatus.objects.filter(year=self.year).aggregate(
             agreed_contributions=models.Sum("agreed_contributions", default=0),
             cash_payments=models.Sum("cash_payments", default=0),
             bilateral_assistance=models.Sum("bilateral_assistance", default=0),
@@ -750,6 +798,11 @@ class AnnualStatusOfContributionsAggregator:
                 "outstanding_contributions", default=0
             ),
         )
+        ret["gain_loss"] = FermGainLoss.objects.filter(year=self.year).aggregate(
+            total=models.Sum("amount", default=0)
+        )["total"]
+
+        return ret
 
     def get_disputed_contribution_amount(self):
         try:
@@ -930,6 +983,7 @@ def add_summary_status_of_contributions_response_worksheet(wb, agg):
                 "bilateral_assistance": ceit_data["bilateral_assistance"],
                 "promissory_notes": ceit_data["promissory_notes"],
                 "outstanding_contributions": ceit_data["outstanding_contributions"],
+                "gain_loss": ceit_data["gain_loss"],
             },
         ]
     )
