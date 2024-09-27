@@ -22,11 +22,13 @@ const getDefaultColumnDefs = (isDiff?: boolean) => [
     minWidth: 150,
     resizable: true,
     sortable: true,
-    ...(!isDiff && { tooltipField: 'country.name' }),
-    ...(isDiff && {
-      cellRenderer: textCellRenderer,
-      valueGetter: (params: any) => objectCellValueGetter(params, 'country'),
-    }),
+    ...(isDiff
+      ? {
+          cellRenderer: textCellRenderer,
+          valueGetter: (params: any) =>
+            objectCellValueGetter(params, 'country'),
+        }
+      : { tooltipField: 'country.name' }),
   },
   {
     autoHeight: true,
@@ -37,12 +39,13 @@ const getDefaultColumnDefs = (isDiff?: boolean) => [
     minWidth: 70,
     resizable: true,
     sortable: true,
-    ...(!isDiff && { tooltipField: 'project_cluster.name' }),
-    ...(isDiff && {
-      cellRenderer: textCellRenderer,
-      valueGetter: (params: any) =>
-        objectCellValueGetter(params, 'project_cluster'),
-    }),
+    ...(isDiff
+      ? {
+          cellRenderer: textCellRenderer,
+          valueGetter: (params: any) =>
+            objectCellValueGetter(params, 'project_cluster'),
+        }
+      : { tooltipField: 'project_cluster.name' }),
   },
   {
     autoHeight: true,
@@ -53,12 +56,13 @@ const getDefaultColumnDefs = (isDiff?: boolean) => [
     minWidth: 70,
     resizable: true,
     sortable: true,
-    ...(!isDiff && { tooltipField: 'project_type.name' }),
-    ...(isDiff && {
-      cellRenderer: textCellRenderer,
-      valueGetter: (params: any) =>
-        objectCellValueGetter(params, 'project_type'),
-    }),
+    ...(isDiff
+      ? {
+          cellRenderer: textCellRenderer,
+          valueGetter: (params: any) =>
+            objectCellValueGetter(params, 'project_type'),
+        }
+      : { tooltipField: 'project_type.name' }),
   },
   {
     autoHeight: true,
@@ -69,12 +73,13 @@ const getDefaultColumnDefs = (isDiff?: boolean) => [
     minWidth: 100,
     resizable: true,
     sortable: true,
-    ...(!isDiff && { tooltipField: 'bp_chemical_type.name' }),
-    ...(isDiff && {
-      cellRenderer: textCellRenderer,
-      valueGetter: (params: any) =>
-        objectCellValueGetter(params, 'bp_chemical_type'),
-    }),
+    ...(isDiff
+      ? {
+          cellRenderer: textCellRenderer,
+          valueGetter: (params: any) =>
+            objectCellValueGetter(params, 'bp_chemical_type'),
+        }
+      : { tooltipField: 'bp_chemical_type.name' }),
   },
   {
     autoHeight: true,
@@ -85,11 +90,12 @@ const getDefaultColumnDefs = (isDiff?: boolean) => [
     minWidth: 70,
     resizable: true,
     sortable: true,
-    ...(!isDiff && { tooltipField: 'sector.name' }),
-    ...(isDiff && {
-      cellRenderer: textCellRenderer,
-      valueGetter: (params: any) => objectCellValueGetter(params, 'sector'),
-    }),
+    ...(isDiff
+      ? {
+          cellRenderer: textCellRenderer,
+          valueGetter: (params: any) => objectCellValueGetter(params, 'sector'),
+        }
+      : { tooltipField: 'sector.name' }),
   },
   {
     autoHeight: true,
@@ -100,11 +106,13 @@ const getDefaultColumnDefs = (isDiff?: boolean) => [
     minWidth: 100,
     resizable: true,
     sortable: true,
-    ...(!isDiff && { tooltipField: 'subsector.name' }),
-    ...(isDiff && {
-      cellRenderer: textCellRenderer,
-      valueGetter: (params: any) => objectCellValueGetter(params, 'subsector'),
-    }),
+    ...(isDiff
+      ? {
+          cellRenderer: textCellRenderer,
+          valueGetter: (params: any) =>
+            objectCellValueGetter(params, 'subsector'),
+        }
+      : { tooltipField: 'subsector.name' }),
   },
   {
     autoHeight: true,
@@ -120,11 +128,12 @@ const getDefaultColumnDefs = (isDiff?: boolean) => [
     minWidth: 200,
     resizable: true,
     sortable: true,
-    ...(!isDiff && { tooltipField: 'title' }),
-    ...(isDiff && {
-      cellRenderer: textCellRenderer,
-      valueGetter: (params: any) => cellValueGetter(params, 'title'),
-    }),
+    ...(isDiff
+      ? {
+          cellRenderer: textCellRenderer,
+          valueGetter: (params: any) => cellValueGetter(params, 'title'),
+        }
+      : { tooltipField: 'title' }),
   },
 ]
 
@@ -138,12 +147,13 @@ const getReqByModelColumn = (isDiff?: boolean) => {
     minWidth: 150,
     resizable: true,
     sortable: true,
-    ...(!isDiff && { tooltipField: 'required_by_model' }),
-    ...(isDiff && {
-      cellRenderer: textCellRenderer,
-      valueGetter: (params: any) =>
-        cellValueGetter(params, 'required_by_model'),
-    }),
+    ...(isDiff
+      ? {
+          cellRenderer: textCellRenderer,
+          valueGetter: (params: any) =>
+            cellValueGetter(params, 'required_by_model'),
+        }
+      : { tooltipField: 'required_by_model' }),
   }
 }
 
@@ -162,11 +172,12 @@ const valuesColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
     minWidth: 100,
     resizable: true,
     sortable: true,
-    ...(!isDiff && { tooltipField: 'status_display' }),
-    ...(isDiff && {
-      cellRenderer: textCellRenderer,
-      valueGetter: (params: any) => cellValueGetter(params, 'status'),
-    }),
+    ...(isDiff
+      ? {
+          cellRenderer: textCellRenderer,
+          valueGetter: (params: any) => cellValueGetter(params, 'status'),
+        }
+      : { tooltipField: 'status_display' }),
   },
   {
     autoHeight: true,
@@ -177,14 +188,16 @@ const valuesColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
     minWidth: 100,
     resizable: true,
     sortable: true,
-    ...(!isDiff && {
-      tooltipField: 'is_multi_year_display',
-      valueGetter: ({ data }: any) => (data.is_multi_year ? 'MYA' : 'IND'),
-    }),
-    ...(isDiff && {
-      cellRenderer: textCellRenderer,
-      valueGetter: (params: any) => cellValueGetter(params, 'is_multi_year'),
-    }),
+    ...(isDiff
+      ? {
+          cellRenderer: textCellRenderer,
+          valueGetter: (params: any) =>
+            cellValueGetter(params, 'is_multi_year'),
+        }
+      : {
+          tooltipField: 'is_multi_year_display',
+          valueGetter: ({ data }: any) => (data.is_multi_year ? 'MYA' : 'IND'),
+        }),
   },
 ]
 
@@ -209,12 +222,13 @@ const commentsColumnDefs = (isDiff?: boolean) => [
     minWidth: 200,
     resizable: true,
     sortable: true,
-    ...(!isDiff && { tooltipField: 'reason_for_exceeding' }),
-    ...(isDiff && {
-      cellRenderer: textCellRenderer,
-      valueGetter: (params: any) =>
-        cellValueGetter(params, 'reason_for_exceeding'),
-    }),
+    ...(isDiff
+      ? {
+          cellRenderer: textCellRenderer,
+          valueGetter: (params: any) =>
+            cellValueGetter(params, 'reason_for_exceeding'),
+        }
+      : { tooltipField: 'reason_for_exceeding' }),
   },
   {
     autoHeight: true,
@@ -225,11 +239,12 @@ const commentsColumnDefs = (isDiff?: boolean) => [
     minWidth: 200,
     resizable: true,
     sortable: true,
-    ...(!isDiff && { tooltipField: 'remarks' }),
-    ...(isDiff && {
-      cellRenderer: textCellRenderer,
-      valueGetter: (params: any) => cellValueGetter(params, 'remarks'),
-    }),
+    ...(isDiff
+      ? {
+          cellRenderer: textCellRenderer,
+          valueGetter: (params: any) => cellValueGetter(params, 'remarks'),
+        }
+      : { tooltipField: 'remarks' }),
   },
   {
     autoHeight: true,
@@ -240,14 +255,15 @@ const commentsColumnDefs = (isDiff?: boolean) => [
     minWidth: 200,
     resizable: true,
     sortable: true,
-    ...(!isDiff && {
-      cellRenderer: commentsCellRenderer,
-      valueGetter: commentsDiffValueGetter,
-    }),
-    ...(isDiff && {
-      cellRenderer: commentsDiffCellRenderer,
-      valueGetter: (params: any) => commentsDiffValueGetter(params),
-    }),
+    ...(isDiff
+      ? {
+          cellRenderer: commentsDiffCellRenderer,
+          valueGetter: (params: any) => commentsDiffValueGetter(params),
+        }
+      : {
+          cellRenderer: commentsCellRenderer,
+          valueGetter: commentsDiffValueGetter,
+        }),
   },
 ]
 
@@ -262,12 +278,13 @@ const allColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
     minWidth: 230,
     resizable: true,
     sortable: true,
-    ...(!isDiff && { cellRenderer: substancesCellRenderer }),
-    ...(isDiff && {
-      cellRenderer: substancesDiffCellRenderer,
-      valueGetter: (params: any) =>
-        cellValueGetter(params, 'substances_display'),
-    }),
+    ...(isDiff
+      ? {
+          cellRenderer: substancesDiffCellRenderer,
+          valueGetter: (params: any) =>
+            cellValueGetter(params, 'substances_display'),
+        }
+      : { cellRenderer: substancesCellRenderer }),
   },
   getReqByModelColumn(isDiff),
   {
@@ -302,11 +319,12 @@ const allColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
     minWidth: 100,
     resizable: true,
     sortable: true,
-    ...(!isDiff && { tooltipField: 'status_display' }),
-    ...(isDiff && {
-      cellRenderer: textCellRenderer,
-      valueGetter: (params: any) => cellValueGetter(params, 'status'),
-    }),
+    ...(isDiff
+      ? {
+          cellRenderer: textCellRenderer,
+          valueGetter: (params: any) => cellValueGetter(params, 'status'),
+        }
+      : { tooltipField: 'status_display' }),
   },
   {
     autoHeight: true,
@@ -317,14 +335,16 @@ const allColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
     minWidth: 100,
     resizable: true,
     sortable: true,
-    ...(!isDiff && {
-      tooltipField: 'is_multi_year_display',
-      valueGetter: ({ data }: any) => (data.is_multi_year ? 'MYA' : 'IND'),
-    }),
-    ...(isDiff && {
-      cellRenderer: textCellRenderer,
-      valueGetter: (params: any) => cellValueGetter(params, 'is_multi_year'),
-    }),
+    ...(isDiff
+      ? {
+          cellRenderer: textCellRenderer,
+          valueGetter: (params: any) =>
+            cellValueGetter(params, 'is_multi_year'),
+        }
+      : {
+          tooltipField: 'is_multi_year_display',
+          valueGetter: ({ data }: any) => (data.is_multi_year ? 'MYA' : 'IND'),
+        }),
   },
   {
     autoHeight: true,
@@ -335,12 +355,13 @@ const allColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
     minWidth: 200,
     resizable: true,
     sortable: true,
-    ...(!isDiff && { tooltipField: 'reason_for_exceeding' }),
-    ...(isDiff && {
-      cellRenderer: textCellRenderer,
-      valueGetter: (params: any) =>
-        cellValueGetter(params, 'reason_for_exceeding'),
-    }),
+    ...(isDiff
+      ? {
+          cellRenderer: textCellRenderer,
+          valueGetter: (params: any) =>
+            cellValueGetter(params, 'reason_for_exceeding'),
+        }
+      : { tooltipField: 'reason_for_exceeding' }),
   },
   {
     autoHeight: true,
@@ -351,11 +372,12 @@ const allColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
     minWidth: 200,
     resizable: true,
     sortable: true,
-    ...(!isDiff && { tooltipField: 'remarks' }),
-    ...(isDiff && {
-      cellRenderer: textCellRenderer,
-      valueGetter: (params: any) => cellValueGetter(params, 'remarks'),
-    }),
+    ...(isDiff
+      ? {
+          cellRenderer: textCellRenderer,
+          valueGetter: (params: any) => cellValueGetter(params, 'remarks'),
+        }
+      : { tooltipField: 'remarks' }),
   },
   {
     autoHeight: true,

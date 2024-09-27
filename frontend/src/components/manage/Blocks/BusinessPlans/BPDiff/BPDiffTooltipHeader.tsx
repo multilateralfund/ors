@@ -1,4 +1,5 @@
 import { Divider, Tooltip, Typography } from '@mui/material'
+import cx from 'classnames'
 
 import { truncateText } from '@ors/components/manage/Utils/diffUtils'
 import { useStore } from '@ors/store'
@@ -25,7 +26,7 @@ const BPDiffTooltipHeader = (props: any) => {
   const formatted_old_value = formatValues(old_value) || '-'
 
   const getCellValue = (value: any) => (
-    <span className="overflow-auto">{value}</span>
+    <span className="overflow-auto pr-1">{value}</span>
   )
 
   const commentsTooltip = (value: {
@@ -35,7 +36,7 @@ const BPDiffTooltipHeader = (props: any) => {
     const { comment, comment_types } = value || {}
 
     return comment || comment_types?.length > 0 ? (
-      <div className="overflow-auto">
+      <div className="overflow-auto pr-1">
         <div className="flex flex-wrap gap-1">
           {comment_types?.map((commType: string, index: number) => (
             <Tooltip
@@ -67,12 +68,21 @@ const BPDiffTooltipHeader = (props: any) => {
     <div className="spacing-11 flex flex-col gap-1">
       {[formatted_new_value, formatted_old_value].map((value, index) => (
         <div key={index}>
-          <div className="flex max-h-40 gap-1">
-            <span className="min-w-15 whitespace-nowrap">
+          <div
+            className={cx('flex max-h-40 gap-1', {
+              'mb-1.5': index === 0,
+              'mt-1.5 text-gray-300': index === 1,
+            })}
+          >
+            <span
+              className="whitespace-nowrap uppercase"
+              style={{ minWidth: 8 + currentVersion.toString().length + 'ch' }}
+            >
               {index === 0
-                ? currentVersion && `Version ${currentVersion} -`
-                : previousVersion && `Version ${previousVersion} - `}
+                ? currentVersion && `Version ${currentVersion}`
+                : previousVersion && `Version ${previousVersion}`}
             </span>
+            <span className="min-w-1">-</span>
             {typeof value === 'object' && !Array.isArray(value) ? (
               commentsTooltip(value)
             ) : extraTooltipData ? (

@@ -32,7 +32,14 @@ const BPDiffButton = ({
   const { name: agency_name } = agency || {}
 
   const { results = [] } = bpVersions
-  if (results.length <= 1) return null
+
+  const currentVersionObject = results.find(
+    (result) => result.version === business_plan.version,
+  )
+  const currentVersionIndex = results.indexOf(currentVersionObject)
+  const previousVersion = results[currentVersionIndex + 1]
+
+  if (results.length <= 1 || !previousVersion) return null
 
   return (
     <Link
