@@ -1260,13 +1260,12 @@ class ReplenishmentInvoiceViewSet(
 
         year_min = request.query_params.get("year_min")
         year_max = request.query_params.get("year_max")
-        if (
-            year_min is None
-            or year_max is None
-            and request.query_params.get("status") == "not_issued"
-        ):
+        if (year_min is None or year_max is None) and request.query_params.get(
+            "hide_no_invoice"
+        ) != "true":
             raise ValueError(
-                "year_min and year_max parameters are mandatory to see not issued invoices"
+                "year_min and year_max parameters are mandatory "
+                "when querying for not issued invoices"
             )
 
         invoice_qs = self.filter_queryset(self.get_queryset())
