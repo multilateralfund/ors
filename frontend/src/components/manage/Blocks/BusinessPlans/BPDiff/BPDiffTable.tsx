@@ -161,8 +161,8 @@ export default function BPDiffTable({
     (state) => state.bp_diff_versions,
   )
 
-  const noResultsMessage = `There are no differences between versions ${currentVersion} and
-   ${previousVersion}`
+  const noResultsMessage = `There are no differences between versions ${currentVersion || '-'} and
+   ${previousVersion || '-'}`
 
   const displayFilters = () => {
     return (

@@ -45,7 +45,8 @@ const BPDiffView = () => {
 
   const previousVersion = useMemo(() => {
     const currentVersionIndex = results.indexOf(currentVersionObject)
-    const previousVersionObject = results[currentVersionIndex + 1]
+    const previousVersionObject =
+      currentVersionIndex >= 0 ? results[currentVersionIndex + 1] : {}
 
     return previousVersionObject?.version || 0
   }, [currentVersionObject, results])
