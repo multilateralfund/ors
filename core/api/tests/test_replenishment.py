@@ -310,6 +310,7 @@ class TestStatusOfContributions:
                     "outstanding_contributions": (
                         contribution_1.outstanding_contributions
                     ).quantize(self.fifteen_decimals),
+                    "gain_loss": None,
                 },
                 {
                     "country": {
@@ -336,6 +337,7 @@ class TestStatusOfContributions:
                     "outstanding_contributions": (
                         contribution_3.outstanding_contributions
                     ).quantize(self.fifteen_decimals),
+                    "gain_loss": None,
                 },
             ],
             "ceit": {
@@ -375,6 +377,7 @@ class TestStatusOfContributions:
                     + contribution_3.outstanding_contributions
                     + disputed_1.amount
                 ).quantize(self.fifteen_decimals),
+                "gain_loss": Decimal("0"),
             },
             "disputed_contributions": disputed_1.amount.quantize(self.fifteen_decimals),
             "disputed_contributions_per_country": [
@@ -466,6 +469,7 @@ class TestStatusOfContributions:
                     "outstanding_contributions": contribution_1.outstanding_contributions.quantize(
                         self.fifteen_decimals
                     ),
+                    "gain_loss": None,
                 },
                 {
                     "country": {
@@ -492,6 +496,7 @@ class TestStatusOfContributions:
                     "outstanding_contributions": contribution_3.outstanding_contributions.quantize(
                         self.fifteen_decimals
                     ),
+                    "gain_loss": None,
                 },
             ],
             "ceit": {
@@ -531,6 +536,7 @@ class TestStatusOfContributions:
                     + contribution_3.outstanding_contributions
                     + disputed_1.amount
                 ).quantize(self.fifteen_decimals),
+                "gain_loss": Decimal("0"),
             },
             "disputed_contributions": disputed_1.amount.quantize(self.fifteen_decimals),
             "disputed_contributions_per_country": [],

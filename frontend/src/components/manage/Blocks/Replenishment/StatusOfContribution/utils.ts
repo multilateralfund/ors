@@ -13,6 +13,7 @@ export const SC_COLUMNS = [
   { field: 'bilateral_assistance', label: 'Bilateral Assistance' },
   { field: 'promissory_notes', label: 'Promissory Notes' },
   { field: 'outstanding_contributions', label: 'Outstanding Contribution' },
+  { field: 'gain_loss', label: 'Exchange (Gain)/Loss', subLabel: '(negative amount = Gain)' },
 ]
 
 const FIRST_YEAR = 1991
