@@ -27,6 +27,7 @@ class InvoiceFilter(filters.FilterSet):
         field_name="country_id", queryset=Country.objects.all(), widget=CSVWidget
     )
     year = filters.RangeFilter(field_name="year")
+    is_arrears = filters.BooleanFilter(field_name="is_arrears")
     status = filters.CharFilter(method="filter_status")
 
     reminders_sent = filters.NumberFilter(method="filter_reminders_sent")
