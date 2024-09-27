@@ -346,6 +346,7 @@ class TestStatusOfContributions:
                 "bilateral_assistance": 0,
                 "promissory_notes": 0,
                 "outstanding_contributions": 0,
+                "gain_loss": 0,
             },
             "ceit_countries": [],
             "total": {
@@ -505,6 +506,7 @@ class TestStatusOfContributions:
                 "bilateral_assistance": 0,
                 "promissory_notes": 0,
                 "outstanding_contributions": 0,
+                "gain_loss": 0,
             },
             "ceit_countries": [],
             "total": {
@@ -679,6 +681,7 @@ class TestStatusOfContributions:
                     contribution_1.outstanding_contributions
                     + contribution_4.outstanding_contributions
                 ).quantize(self.fifteen_decimals),
+                "gain_loss": Decimal(0),
             },
             "ceit_countries": [
                 {
