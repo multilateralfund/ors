@@ -1231,14 +1231,7 @@ class ReplenishmentInvoiceViewSet(
         "number",
         "country__name",
         "year",
-        "amount",
         "currency",
-        "exchange_rate",
-        "date_of_issuance",
-        "date_sent_out",
-        "date_paid",
-        "date_first_reminder",
-        "date_second_reminder",
     ]
 
     def get_queryset(self):
