@@ -344,7 +344,7 @@ export const Input = forwardRef<
 export interface IFormattedNumberInputProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
   onlyNumber?: boolean
-  value: number | string
+  value?: number | string
 }
 
 export function FormattedNumberInput(props: IFormattedNumberInputProps) {

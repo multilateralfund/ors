@@ -13,12 +13,7 @@ export type ApiReplenishmentSoAEntry = {
   currency: string
   exchange_rate: number
   id: number
-
-  /**
-   * XXX: Backend doesn't yet contain this property!
-   */
-  opted_for_ferm?: undefined
-
+  opted_for_ferm: boolean | null
   override_adjusted_scale_of_assessment: number
   override_qualifies_for_fixed_rate_mechanism: boolean
   qualifies_for_fixed_rate_mechanism: boolean

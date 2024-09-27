@@ -10,12 +10,16 @@ class ScaleOfAssessmentFilter(filters.FilterSet):
     FilterSet for Scale of Assessment
     """
 
+    country_id = filters.ModelMultipleChoiceFilter(
+        field_name="country_id", queryset=Country.objects.all(), widget=CSVWidget
+    )
     start_year = filters.NumberFilter(field_name="version__replenishment__start_year")
     version = filters.NumberFilter(field_name="version__version")
+    is_final = filters.BooleanFilter(field_name="version__is_final")
 
     class Meta:
         model = ScaleOfAssessment
-        fields = ["start_year", "version"]
+        fields = ["country_id", "start_year", "version", "is_final"]
 
 
 class InvoiceFilter(filters.FilterSet):
