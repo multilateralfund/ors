@@ -1,9 +1,14 @@
+import { ApiReplenishmentSoAEntry } from '@ors/types/api_replenishment_scales_of_assessment'
+
 import React, {
   ChangeEventHandler,
   useCallback,
   useContext,
+  useEffect,
   useState,
 } from 'react'
+
+import cx from 'classnames'
 
 import {
   DialogTabButtons,
@@ -20,6 +25,7 @@ import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invo
 import { scAnnualOptions } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
 import useGetCountryReplenishmentInfo from '@ors/components/manage/Blocks/Replenishment/useGetCountryReplenishmentInfo'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
+import { getFloat } from '@ors/helpers/Utils/Utils'
 
 import { InvoiceDialogProps } from './types'
 
@@ -33,6 +39,11 @@ interface TabContentProps {
 
 interface TabContentDetailsProps extends TabContentProps {
   countries: InvoiceDialogProps['countries']
+}
+
+interface TabContentAmountProps extends TabContentProps {
+  countryInfo: ApiReplenishmentSoAEntry | null
+  setFields: React.Dispatch<React.SetStateAction<InvoiceDialogFields>>
 }
 
 function TabContentDetails(props: TabContentDetailsProps) {
@@ -105,46 +116,69 @@ function TabContentDetails(props: TabContentDetailsProps) {
     </>
   )
 }
-function TabContentAmount(props: TabContentProps) {
-  const { data, fields, updateField } = props
 
-  const ctx = useContext(ReplenishmentContext)
+function TabContentAmount(props: TabContentAmountProps) {
+  const { countryInfo, data, fields, setFields, updateField } = props
 
-  const start_year = fields.year || ctx.periods?.[0].start_year || ''
+  const isFERM = countryInfo?.opted_for_ferm || false
 
-  const [countryInfo] = useGetCountryReplenishmentInfo(
-    start_year,
-    fields.country_id,
-  )
+  const handleChangeAmount: ChangeEventHandler<HTMLInputElement> = (evt) => {
+    const amount = evt.target.value
+    const nrAmount = getFloat(amount)
+    setFields((prev) => ({
+      ...prev,
+      amount,
+      amount_local_currency: (
+        nrAmount * (countryInfo?.exchange_rate || 1)
+      ).toString(),
+    }))
+  }
 
   return (
     <>
-      <FieldInput
-        id="currency"
-        defaultValue={countryInfo?.currency}
-        label="Currency"
-        type="text"
-        readOnly
-      />
-      <FieldFormattedNumberInput
-        id="currency"
-        label={`"${countryInfo?.currency}" amount`}
-        value={countryInfo?.amount_local_currency}
-        readOnly
-      />
-      <FieldFormattedNumberInput
-        id="exchange_rate"
-        label="Exchange rate"
-        step="any"
-        value={countryInfo?.exchange_rate}
-        readOnly
-      />
-      <FieldFormattedNumberInput
-        id="amount"
-        label="USD amount"
-        value={countryInfo?.amount}
-        readOnly
-      />
+      <div className="relative">
+        <div className={cx({ 'blur-sm': !fields.country_id })}>
+          <FieldInput
+            id="currency"
+            disabled={!isFERM}
+            label="Currency"
+            readOnly={!isFERM}
+            type="text"
+            value={fields.currency}
+            onChange={updateField('currency')}
+          />
+          <FieldFormattedNumberInput
+            id="amount_local_currency"
+            disabled={!isFERM}
+            label={`"${fields.currency}" amount`}
+            readOnly={!isFERM}
+            value={fields.amount_local_currency}
+            onChange={updateField('amount_local_currency')}
+          />
+          <FieldFormattedNumberInput
+            id="exchange_rate"
+            disabled={!isFERM}
+            label="Exchange rate"
+            readOnly={!isFERM}
+            step="any"
+            value={fields.exchange_rate}
+            onChange={updateField('exchange_rate')}
+          />
+          <FieldFormattedNumberInput
+            id="amount"
+            label="USD amount"
+            value={fields.amount}
+            onChange={isFERM ? handleChangeAmount : updateField('amount')}
+          />
+        </div>
+        {!fields.country_id && (
+          <div className="absolute left-0 top-0 flex h-full w-full scale-110 items-center justify-center rounded-lg bg-gray-100 opacity-85">
+            <span className="text-lg drop-shadow">
+              {'Please select a country in the "Details" tab.'}
+            </span>
+          </div>
+        )}
+      </div>
       <h4>Upload</h4>
       <InvoiceAttachments oldFiles={data?.files_data} />
     </>
@@ -153,7 +187,9 @@ function TabContentAmount(props: TabContentProps) {
 
 interface InvoiceDialogFields {
   amount: string
+  amount_local_currency: string
   country_id: string
+  currency: string
   date_first_reminder: string
   date_of_issuance: string
   date_second_reminder: string
@@ -167,9 +203,13 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
 
   const [tab, setTab] = useState(0)
 
+  const ctx = useContext(ReplenishmentContext)
+
   const [fields, setFields] = useState<InvoiceDialogFields>({
     amount: data?.amount ?? '',
+    amount_local_currency: data?.amount_local_currency || '',
     country_id: data?.country_id ?? '',
+    currency: data?.currency ?? '',
     date_first_reminder: data?.date_first_reminder ?? '',
     date_of_issuance: data?.date_of_issuance ?? '',
     date_second_reminder: data?.date_second_reminder ?? '',
@@ -188,20 +228,46 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
     [setFields],
   )
 
+  const start_year = fields.year || ctx.periods?.[0].start_year || ''
+
+  const [countryInfo] = useGetCountryReplenishmentInfo(
+    start_year,
+    fields.country_id,
+  )
+
+  useEffect(
+    function () {
+      if (!isEdit) {
+        setFields((prev) => {
+          const updated = {
+            amount: (countryInfo?.amount || '').toString() || '',
+            amount_local_currency:
+              (countryInfo?.amount_local_currency || '').toString() || '',
+            currency: (countryInfo?.currency || '').toString() || '',
+            exchange_rate: (countryInfo?.exchange_rate || '').toString() || '',
+          }
+
+          return {
+            ...prev,
+            ...updated,
+          }
+        })
+      }
+    },
+    [countryInfo, isEdit],
+  )
+
   const handleFormSubmit: InvoiceDialogProps['onSubmit'] = (formData, evt) => {
-    formData.set('date_of_issuance', fields.date_of_issuance)
-    formData.set('date_first_reminder', fields.date_first_reminder)
-    formData.set('date_second_reminder', fields.date_second_reminder)
-    formData.set('date_sent_out', fields.date_sent_out)
+    for (const key of formData.keys()) {
+      if (key.endsWith('_mask')) {
+        formData.delete(key)
+      }
+    }
 
-    formData.delete('date_of_issuance_mask')
-    formData.delete('date_first_reminder_mask')
-    formData.delete('date_second_reminder_mask')
-    formData.delete('date_sent_out_mask')
-
-    formData.delete('amount_mask')
-    formData.delete('exchange_rate_mask')
-    formData.delete('currency_mask')
+    const fieldsKeys = Object.keys(fields) as (keyof InvoiceDialogFields)[]
+    for (let i = 0; i < fieldsKeys.length; i++) {
+      formData.set(fieldsKeys[i], fields[fieldsKeys[i]])
+    }
 
     onSubmit(formData, evt)
   }
@@ -233,8 +299,10 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
       </DialogTabContent>
       <DialogTabContent isCurrent={tab == 1}>
         <TabContentAmount
+          countryInfo={countryInfo}
           data={data}
           fields={fields}
+          setFields={setFields}
           updateField={updateField}
         />
       </DialogTabContent>
