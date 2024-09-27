@@ -21,7 +21,7 @@ const getDefaultColumnDefs = (isDiff?: boolean) => [
     headerName: 'Country',
     minWidth: 150,
     resizable: true,
-    sortable: true,
+    sortable: !isDiff,
     ...(isDiff
       ? {
           cellRenderer: textCellRenderer,
@@ -38,7 +38,7 @@ const getDefaultColumnDefs = (isDiff?: boolean) => [
     headerName: 'Cluster',
     minWidth: 70,
     resizable: true,
-    sortable: true,
+    sortable: !isDiff,
     ...(isDiff
       ? {
           cellRenderer: textCellRenderer,
@@ -55,7 +55,7 @@ const getDefaultColumnDefs = (isDiff?: boolean) => [
     headerName: 'Type',
     minWidth: 70,
     resizable: true,
-    sortable: true,
+    sortable: !isDiff,
     ...(isDiff
       ? {
           cellRenderer: textCellRenderer,
@@ -72,7 +72,7 @@ const getDefaultColumnDefs = (isDiff?: boolean) => [
     headerName: 'Chemical type',
     minWidth: 100,
     resizable: true,
-    sortable: true,
+    sortable: !isDiff,
     ...(isDiff
       ? {
           cellRenderer: textCellRenderer,
@@ -89,7 +89,7 @@ const getDefaultColumnDefs = (isDiff?: boolean) => [
     headerName: 'Sector',
     minWidth: 70,
     resizable: true,
-    sortable: true,
+    sortable: !isDiff,
     ...(isDiff
       ? {
           cellRenderer: textCellRenderer,
@@ -105,7 +105,7 @@ const getDefaultColumnDefs = (isDiff?: boolean) => [
     headerName: 'Subsector',
     minWidth: 100,
     resizable: true,
-    sortable: true,
+    sortable: !isDiff,
     ...(isDiff
       ? {
           cellRenderer: textCellRenderer,
@@ -127,7 +127,7 @@ const getDefaultColumnDefs = (isDiff?: boolean) => [
     headerName: 'Title',
     minWidth: 200,
     resizable: true,
-    sortable: true,
+    sortable: !isDiff,
     ...(isDiff
       ? {
           cellRenderer: textCellRenderer,
@@ -146,7 +146,7 @@ const getReqByModelColumn = (isDiff?: boolean) => {
     headerName: 'Required by model',
     minWidth: 150,
     resizable: true,
-    sortable: true,
+    sortable: !isDiff,
     ...(isDiff
       ? {
           cellRenderer: textCellRenderer,
@@ -171,7 +171,7 @@ const valuesColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
     headerName: 'Status',
     minWidth: 100,
     resizable: true,
-    sortable: true,
+    sortable: !isDiff,
     ...(isDiff
       ? {
           cellRenderer: textCellRenderer,
@@ -187,7 +187,7 @@ const valuesColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
     headerName: 'IND/MYA',
     minWidth: 100,
     resizable: true,
-    sortable: true,
+    sortable: !isDiff,
     ...(isDiff
       ? {
           cellRenderer: textCellRenderer,
@@ -221,7 +221,7 @@ const commentsColumnDefs = (isDiff?: boolean) => [
     headerName: 'Reason for Exceeding',
     minWidth: 200,
     resizable: true,
-    sortable: true,
+    sortable: !isDiff,
     ...(isDiff
       ? {
           cellRenderer: textCellRenderer,
@@ -238,7 +238,7 @@ const commentsColumnDefs = (isDiff?: boolean) => [
     headerName: 'Remarks',
     minWidth: 200,
     resizable: true,
-    sortable: true,
+    sortable: !isDiff,
     ...(isDiff
       ? {
           cellRenderer: textCellRenderer,
@@ -254,7 +254,7 @@ const commentsColumnDefs = (isDiff?: boolean) => [
     headerName: 'Comment',
     minWidth: 200,
     resizable: true,
-    sortable: true,
+    sortable: !isDiff,
     ...(isDiff
       ? {
           cellRenderer: commentsDiffCellRenderer,
@@ -277,7 +277,7 @@ const allColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
     headerName: 'Substances',
     minWidth: 230,
     resizable: true,
-    sortable: true,
+    sortable: !isDiff,
     ...(isDiff
       ? {
           cellRenderer: substancesDiffCellRenderer,
@@ -295,7 +295,7 @@ const allColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
     headerName: 'Polyol Amount',
     minWidth: 100,
     resizable: true,
-    sortable: true,
+    sortable: !isDiff,
     ...(isDiff
       ? {
           cellRenderer: numberCellRenderer,
@@ -318,7 +318,7 @@ const allColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
     headerName: 'Status',
     minWidth: 100,
     resizable: true,
-    sortable: true,
+    sortable: !isDiff,
     ...(isDiff
       ? {
           cellRenderer: textCellRenderer,
@@ -334,7 +334,7 @@ const allColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
     headerName: 'IND/MYA',
     minWidth: 100,
     resizable: true,
-    sortable: true,
+    sortable: !isDiff,
     ...(isDiff
       ? {
           cellRenderer: textCellRenderer,
@@ -354,7 +354,7 @@ const allColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
     headerName: 'Reason for Exceeding',
     minWidth: 200,
     resizable: true,
-    sortable: true,
+    sortable: !isDiff,
     ...(isDiff
       ? {
           cellRenderer: textCellRenderer,
@@ -371,7 +371,7 @@ const allColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
     headerName: 'Remarks',
     minWidth: 200,
     resizable: true,
-    sortable: true,
+    sortable: !isDiff,
     ...(isDiff
       ? {
           cellRenderer: textCellRenderer,
@@ -387,7 +387,7 @@ const allColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
     headerName: 'Comment',
     minWidth: 200,
     resizable: true,
-    sortable: true,
+    sortable: !isDiff,
     ...(isDiff
       ? {
           cellRenderer: commentsDiffCellRenderer,

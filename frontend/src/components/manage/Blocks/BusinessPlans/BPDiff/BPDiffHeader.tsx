@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo } from 'react'
 
 import cx from 'classnames'
 
@@ -51,8 +51,6 @@ const BPDiffHeader = (props: BPDiffHeaderInterface) => {
     [currentVersionObject],
   )
 
-  setCurrentVersion(currentVersion)
-
   const previousVersion = useMemo(() => {
     const currentVersionIndex = results.indexOf(currentVersionObject)
     const previousVersionObject = results[currentVersionIndex + 1]
@@ -60,7 +58,10 @@ const BPDiffHeader = (props: BPDiffHeaderInterface) => {
     return previousVersionObject?.version || 0
   }, [currentVersionObject, results])
 
-  setPreviousVersion(previousVersion)
+  useEffect(() => {
+    setCurrentVersion(currentVersion)
+    setPreviousVersion(previousVersion)
+  }, [currentVersion, previousVersion, setCurrentVersion, setPreviousVersion])
 
   return (
     <div>

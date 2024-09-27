@@ -2,6 +2,7 @@
 
 import { useParams } from 'next/navigation'
 
+import Loading from '@ors/components/theme/Loading/Loading'
 import BPYearRangesProvider from '@ors/contexts/BusinessPlans/BPYearRangesProvider'
 import { useStore } from '@ors/store'
 
@@ -21,11 +22,15 @@ const BPDiffView = () => {
   const { id: agency_id } = getAgencyByName(commonSlice, agency)
 
   const diffData = useGetBPDiff({ agency_id, version, year_end, year_start })
-  const { results } = diffData
+  const { loading, results } = diffData
 
   return (
     !!results && (
       <>
+        <Loading
+          className="!fixed bg-action-disabledBackground"
+          active={loading}
+        />
         <BPDiffHeader {...{ agency_id, pathParams, year_end, year_start }} />
         <BPYearRangesProvider>
           <BPDiffTable {...{ diffData }} />

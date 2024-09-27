@@ -86,7 +86,7 @@ export const textCellRenderer = (props: any) => {
           className={cx(
             'diff-tag-container diff-cell',
             { 'diff-cell-deleted': change_type === 'deleted' },
-            { 'diff-cell-new': change_type === 'new' },
+            { 'diff-cell-new': change_type !== 'deleted' },
           )}
         >
           <DiffPill {...{ change_type }} />
@@ -99,7 +99,7 @@ export const textCellRenderer = (props: any) => {
           className={cx(
             'diff-cell',
             { 'diff-cell-deleted': change_type === 'deleted' },
-            { 'diff-cell-new': change_type === 'new' },
+            { 'diff-cell-new': change_type !== 'deleted' },
           )}
           component="span"
         >
@@ -140,7 +140,7 @@ export const numberCellRenderer = (props: any) => {
         className={cx(
           'diff-cell flex flex-col items-center justify-center gap-1',
           { 'diff-cell-deleted': change_type === 'deleted' },
-          { 'diff-cell-new': change_type === 'new' },
+          { 'diff-cell-new': change_type !== 'deleted' },
         )}
       >
         <Typography className="number-cell-val" component="span">
@@ -150,7 +150,7 @@ export const numberCellRenderer = (props: any) => {
           className={cx(
             'number-cell-val',
             { 'text-gray-400': change_type === 'deleted' },
-            { 'text-gray-300': change_type === 'new' },
+            { 'text-gray-300': change_type !== 'deleted' },
           )}
           component="span"
         >
@@ -179,9 +179,12 @@ const displaySubstanceCellValue = (substances: Array<string>) => (
   <Tooltip
     TransitionProps={{ timeout: 0 }}
     classes={{ tooltip: 'bp-table-tooltip' }}
-    title={substances?.map((substance: string, index: number) =>
-      substanceTag(substance, index),
-    )}
+    title={
+      substances?.length > 0 &&
+      substances.map((substance: string, index: number) =>
+        substanceTag(substance, index),
+      )
+    }
     followCursor
   >
     <Typography className="diff-cell content-normal" component="span">
@@ -214,7 +217,7 @@ export const substancesDiffCellRenderer = (props: any) => {
         className={cx(
           'diff-cell content-normal',
           { 'diff-cell-deleted': change_type === 'deleted' },
-          { 'diff-cell-new': change_type === 'new' },
+          { 'diff-cell-new': change_type !== 'deleted' },
         )}
         component="span"
       >
@@ -293,7 +296,7 @@ export const commentsDiffCellRenderer = (props: any) => {
         className={cx(
           'diff-cell text-left !leading-4',
           { 'diff-cell-deleted': change_type === 'deleted' },
-          { 'diff-cell-new': change_type === 'new' },
+          { 'diff-cell-new': change_type !== 'deleted' },
         )}
       >
         {new_comment || new_comment_types?.length > 0 ? (

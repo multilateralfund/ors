@@ -12,7 +12,6 @@ import TableDateSwitcher, {
   TableDataSelectorValuesType,
 } from '@ors/components/manage/Blocks/Table/BusinessPlansTable/TableDateSwitcher'
 import Table from '@ors/components/manage/Form/Table'
-import BPContext from '@ors/contexts/BusinessPlans/BPContext'
 import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
 import { debounce } from '@ors/helpers/Utils/Utils'
 import { useStore } from '@ors/store'
@@ -25,8 +24,6 @@ import {
 } from '../../Table/BusinessPlansTable/schema'
 import { numberCellRenderer } from '../../Table/BusinessPlansTable/schemaHelpers'
 
-const BP_PER_PAGE = 20
-
 export default function BPDiffTable({
   diffData,
 }: {
@@ -38,12 +35,10 @@ export default function BPDiffTable({
   const { period } = params
   const year_start = period.split('-')[0]
 
-  // const { setParams } = useContext(BPContext) as any
   const { yearRanges } = useContext(BPYearRangesContext) as any
 
   const { loaded, loading, results: results } = diffData || {}
 
-  const count = results?.length || 0
   const yearRangeSelected = useMemo(
     () => yearRanges.find((item: any) => item.year_start == year_start),
     [yearRanges, year_start],
@@ -182,15 +177,6 @@ export default function BPDiffTable({
     )
   }
 
-  const getPaginationSelectorOpts = (): number[] => {
-    const nrResultsOpts = [10, 20, 50, 100]
-    const filteredNrResultsOptions = nrResultsOpts.filter(
-      (option) => option < count,
-    )
-    return [...filteredNrResultsOptions, count]
-  }
-  const paginationPageSizeSelectorOpts = getPaginationSelectorOpts()
-
   const grid = useRef<any>()
 
   const autoSizeColumns = () => {
@@ -216,17 +202,11 @@ export default function BPDiffTable({
           Toolbar={displayFilters}
           columnDefs={[...columnDefs]}
           domLayout="normal"
-          enablePagination={true}
           gridRef={grid}
           loaded={loaded}
           loading={loading}
           noRowsOverlayComponentParams={{ label: noResultsMessage }}
-          paginationPageSize={BP_PER_PAGE}
-          paginationPageSizeSelector={paginationPageSizeSelectorOpts}
-          rowBuffer={50}
-          rowCount={count}
           rowData={results}
-          rowsVisible={20}
           tooltipShowDelay={200}
           components={{
             agColumnHeader: undefined,
@@ -235,27 +215,8 @@ export default function BPDiffTable({
           onFirstDataRendered={() => {
             debounce(autoSizeColumns, 0)
           }}
-          onPaginationChanged={({ page, rowsPerPage }) => {
-            // setParams({
-            //   limit: rowsPerPage,
-            //   offset: page * rowsPerPage,
-            // })
-            debounce(autoSizeColumns, 0)
-          }}
           onRowDataUpdated={() => {
             debounce(autoSizeColumns, 0)
-          }}
-          onSortChanged={({ api }) => {
-            const ordering = api
-              .getColumnState()
-              .filter((column) => !!column.sort)
-              .map(
-                (column) =>
-                  (column.sort === 'asc' ? '' : '-') +
-                  column.colId.replaceAll('.', '__'),
-              )
-              .join(',')
-            // setParams({ offset: 0, ordering })
           }}
         />
       </form>

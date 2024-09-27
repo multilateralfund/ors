@@ -15,6 +15,7 @@ export function useGetBPDiff(props: BPGetDiffInterface) {
           year_end,
           year_start,
         },
+        withStoreCache: false,
       },
     },
     path: `api/business-plan/activities/diff/`,
