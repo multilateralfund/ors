@@ -28,11 +28,4 @@ export type BPGetDiffInterface = {
   year_start: number
 }
 
-export type BPDiffHeaderInterface = {
-  agency_id: number
-  pathParams: BpDiffPathParams
-  year_end: number
-  year_start: number
-}
-
 export type ViewSelectorValuesType = 'list' | 'table'

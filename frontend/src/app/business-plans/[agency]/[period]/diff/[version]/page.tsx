@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   title: 'Business Plan Diff',
 }
 
-export default async function BusinessPlansDiff() {
+export default async function BPDiff() {
   return (
     <PageWrapper>
       <BPDiffView />

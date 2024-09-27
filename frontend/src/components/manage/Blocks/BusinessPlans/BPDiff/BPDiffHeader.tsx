@@ -1,12 +1,9 @@
-import React, { useEffect, useMemo } from 'react'
-
 import cx from 'classnames'
 
 import { useStore } from '@ors/store'
 
-import { useGetBPVersions } from '../BP/useGetBPVersions'
 import { RedirectToBpList } from '../RedirectToBpList'
-import { BPDiffHeaderInterface } from '../types'
+import { BpDiffPathParams } from '../types'
 
 const VersionTag = ({
   isCurrentVersion,
@@ -28,40 +25,12 @@ const VersionTag = ({
   )
 }
 
-const BPDiffHeader = (props: BPDiffHeaderInterface) => {
-  const { agency_id, pathParams, year_end, year_start } = props
-  const { agency, period, version } = pathParams
+const BPDiffHeader = ({ pathParams }: { pathParams: BpDiffPathParams }) => {
+  const { agency, period } = pathParams
 
-  const { setCurrentVersion, setPreviousVersion } = useStore(
+  const { currentVersion, previousVersion } = useStore(
     (state) => state.bp_diff_versions,
   )
-
-  const bpVersions = useGetBPVersions({
-    ...{ agency_id, year_end, year_start },
-  })
-
-  const { results = [] } = bpVersions
-
-  const currentVersionObject = results.find(
-    (vers) => vers.version === parseInt(version),
-  )
-
-  const currentVersion = useMemo(
-    () => currentVersionObject?.version || 0,
-    [currentVersionObject],
-  )
-
-  const previousVersion = useMemo(() => {
-    const currentVersionIndex = results.indexOf(currentVersionObject)
-    const previousVersionObject = results[currentVersionIndex + 1]
-
-    return previousVersionObject?.version || 0
-  }, [currentVersionObject, results])
-
-  useEffect(() => {
-    setCurrentVersion(currentVersion)
-    setPreviousVersion(previousVersion)
-  }, [currentVersion, previousVersion, setCurrentVersion, setPreviousVersion])
 
   return (
     <div>
