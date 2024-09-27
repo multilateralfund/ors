@@ -20,7 +20,7 @@ import SectionStatistics from './SectionStatistics'
 import SectionStatus from './SectionStatus'
 import { IFormData } from './useGetDashboardDataTypes'
 
-function InputField(props: IFieldProps & IFormattedNumberInputProps) {
+function InputNumberField(props: IFieldProps & IFormattedNumberInputProps) {
   const { id, className, label, ...fieldProps } = props
   return (
     <div className="flex w-72 flex-col">
@@ -93,7 +93,7 @@ function EditStatusDialog(props: IEditStatusDialogProps) {
       <div className="flex flex-col gap-y-4">
         <h3 className="m-0 uppercase">Income</h3>
         <div className="flex gap-x-4">
-          <InputField
+          <InputNumberField
             id="external_income_start_year"
             label="Start year of external income"
             value={formState['external_income_start_year']}
@@ -102,7 +102,7 @@ function EditStatusDialog(props: IEditStatusDialogProps) {
             )}
             onlyNumber
           />
-          <InputField
+          <InputNumberField
             id="external_income_end_year"
             label="End year of external income"
             value={formState['external_income_end_year']}
@@ -113,13 +113,13 @@ function EditStatusDialog(props: IEditStatusDialogProps) {
           />
         </div>
         <div className="flex gap-x-4">
-          <InputField
+          <InputNumberField
             id="interest_earned"
             label="Interest earned"
             value={formState['interest_earned']}
             onChange={handleChange('interest_earned')}
           />
-          <InputField
+          <InputNumberField
             id="miscellaneous_income"
             label="Miscellaneous income"
             value={formState['miscellaneous_income']}
@@ -128,13 +128,13 @@ function EditStatusDialog(props: IEditStatusDialogProps) {
         </div>
         <h3 className="m-0 my-4 uppercase">Allocations and provisions</h3>
         <div className="flex gap-x-4">
-          <InputField
+          <InputNumberField
             id="undp"
             label="UNDP"
             value={formState['undp']}
             onChange={handleChange('undp')}
           />
-          <InputField
+          <InputNumberField
             id="unep"
             label="UNEP"
             value={formState['unep']}
@@ -142,13 +142,13 @@ function EditStatusDialog(props: IEditStatusDialogProps) {
           />
         </div>
         <div className="flex gap-x-4">
-          <InputField
+          <InputNumberField
             id="unido"
             label="UNIDO"
             value={formState['unido']}
             onChange={handleChange('unido')}
           />
-          <InputField
+          <InputNumberField
             id="world_bank"
             label="World Bank"
             value={formState['world_bank']}
@@ -159,13 +159,13 @@ function EditStatusDialog(props: IEditStatusDialogProps) {
         <div className="my-4 border border-x-0 border-b-0 border-solid border-gray-200"></div>
 
         <div className="flex gap-x-4">
-          <InputField
+          <InputNumberField
             id="staff_contracts"
             label="Secretariat and Executive Committee costs"
             value={formState['staff_contracts']}
             onChange={handleChange('staff_contracts')}
           />
-          <InputField
+          <InputNumberField
             id="monitoring_fees"
             label="Monitoring and Evaluation costs"
             value={formState['monitoring_fees']}
@@ -174,13 +174,13 @@ function EditStatusDialog(props: IEditStatusDialogProps) {
         </div>
 
         <div className="flex gap-x-4">
-          <InputField
+          <InputNumberField
             id="information_strategy"
             label="Information Strategy costs "
             value={formState['information_strategy']}
             onChange={handleChange('information_strategy')}
           />
-          <InputField
+          <InputNumberField
             id="bilateral_assistance"
             label="Bilateral cooperation"
             value={formState['bilateral_assistance']}
@@ -259,7 +259,7 @@ function DashboardView(props: IDashboardViewProps) {
       )
       break
     case 'statistics':
-      Section = <SectionStatistics />
+      Section = <SectionStatistics asOfDate={asOfDate} />
       break
     default:
       Section = (

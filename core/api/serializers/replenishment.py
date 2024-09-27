@@ -132,6 +132,8 @@ class InvoiceSerializer(serializers.ModelSerializer):
 
     replenishment = ReplenishmentSerializer(read_only=True)
 
+    is_arrears = serializers.BooleanField(required=False)
+
     amount = serializers.DecimalField(
         max_digits=30, decimal_places=15, coerce_to_string=False
     )
@@ -151,6 +153,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
             "country",
             "replenishment",
             "year",
+            "is_arrears",
             "amount",
             "currency",
             "exchange_rate",

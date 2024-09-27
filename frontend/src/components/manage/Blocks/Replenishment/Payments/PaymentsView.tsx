@@ -2,6 +2,7 @@
 
 import React, { ChangeEvent, useContext, useMemo, useState } from 'react'
 
+import cx from 'classnames'
 import Cookies from 'js-cookie'
 import { times } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
@@ -29,9 +30,11 @@ import { AddButton } from '@ors/components/ui/Button/Button'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { formatApiUrl } from '@ors/helpers'
+import { getFloat } from '@ors/helpers/Utils/Utils'
 
 import { SortDirection } from '../Table/types'
 import {
+  FormattedPayment,
   IPaymentDialogProps,
   ParsedPayment,
   PaymentColumn,
@@ -50,10 +53,19 @@ const COLUMNS: PaymentColumn[] = [
     label: 'Exchange Rate',
   },
   { field: 'payment_for_year', label: 'Year(s)' },
-  { field: 'ferm_gain_or_loss', label: 'FERM Gain/Loss' },
+  { field: 'invoice_numbers', label: 'Invoice(s)' },
+  { field: 'ferm_gain_or_loss', label: 'Exchange (Gain)/Loss' },
   { field: 'files', label: 'Files' },
   { field: 'comment', label: 'Comments' },
 ]
+
+const COLUMNS_AS_NAMES: Record<string, PaymentColumn> = (function () {
+  const result: Record<string, PaymentColumn> = {}
+  for (let i = 0; i < COLUMNS.length; i++) {
+    result[COLUMNS[i].field] = COLUMNS[i]
+  }
+  return result
+})()
 
 const AddPaymentDialogue = function AddPaymentDialogue(
   props: Omit<IPaymentDialogProps, 'title'>,
@@ -102,6 +114,9 @@ function PaymentsView() {
           ferm_gain_or_loss: formatNumberValue(data.ferm_gain_or_loss) || 'N/A',
           files: <ViewFiles files={data.payment_files} />,
           files_data: data.payment_files,
+          invoice_numbers: data.invoices
+            .map((inv: any) => inv.number)
+            .join(', '),
           invoices: data.invoices,
           iso3: data.country.iso3,
           payment_for_year: data.payment_for_year,
@@ -109,6 +124,27 @@ function PaymentsView() {
         })),
       ]
     }, [results, loaded, pagination.rowsPerPage])
+
+  const formattedTableRows = useMemo(() => {
+    if (!loaded) {
+      return memoResults
+    }
+
+    const result: FormattedPayment[] = []
+    for (let i = 0; i < memoResults.length; i++) {
+      result.push({ ...(memoResults[i] as ParsedPayment) })
+      result[i].ferm_gain_or_loss = (
+        <span
+          className={cx({
+            'text-red-400': getFloat(result[i].ferm_gain_or_loss as string) > 0,
+          })}
+        >
+          {result[i].ferm_gain_or_loss}
+        </span>
+      )
+    }
+    return result
+  }, [loaded, memoResults])
 
   const pages = Math.ceil(count / pagination.rowsPerPage)
 
@@ -412,7 +448,7 @@ function PaymentsView() {
       ) : null}
       {showAdd ? (
         <AddPaymentDialogue
-          columns={COLUMNS}
+          columns={COLUMNS_AS_NAMES}
           countries={ctx.countriesSOA}
           onCancel={() => setShowAdd(false)}
           onSubmit={handleAddPaymentSubmit}
@@ -420,7 +456,7 @@ function PaymentsView() {
       ) : null}
       {editData !== null ? (
         <EditPaymentDialogue
-          columns={COLUMNS}
+          columns={COLUMNS_AS_NAMES}
           countries={ctx.countriesSOA}
           data={editData}
           onCancel={() => setEditIdx(null)}
@@ -490,7 +526,7 @@ function PaymentsView() {
         adminButtons={ctx.isTreasurer}
         columns={columns}
         enableSort={true}
-        rowData={memoResults}
+        rowData={formattedTableRows}
         sortDirection={sortDirection}
         sortOn={sortOn}
         sortableColumns={COLUMNS.reduce<number[]>((acc, col, idx) => {

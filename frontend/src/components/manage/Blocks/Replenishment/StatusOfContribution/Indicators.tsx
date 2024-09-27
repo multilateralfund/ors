@@ -58,8 +58,7 @@ const SummaryIndicators = ({ data }: { data: SummaryContributions }) => {
       />
       <IndicatorBox
         isPercentage={true}
-        subtext="considering only the current year for the triennials that are not closed"
-        text="paid out of the total"
+        text="paid out of the total pledged"
         value={
           data.percentage_total_paid_current_year
             ? formatNumberValue(data.percentage_total_paid_current_year, 0, 0)
@@ -82,8 +81,16 @@ const TriennialIndicators = ({
   return (
     <div className="flex flex-wrap items-stretch justify-start gap-4 border-primary text-primary">
       <IndicatorBox
+        text="Parties have made their contributions in advance"
+        value={data.contributions_advance}
+      />
+      <IndicatorBox
         text={`parties have made their contributions for ${period}`}
         value={data.contributions}
+      />
+      <IndicatorBox
+        text="parties have outstanding contributions"
+        value={data.outstanding_contributions}
       />
       <IndicatorBox
         text={`of the total pledged received for ${period}`}
@@ -106,8 +113,16 @@ const AnnualIndicators = ({
   return (
     <div className="flex flex-wrap items-stretch justify-start gap-4 border-primary text-primary">
       <IndicatorBox
+        text="Parties have made their contributions in advance"
+        value={data.contributions_advance}
+      />
+      <IndicatorBox
         text={`parties have made their contributions for ${year}`}
         value={data.contributions}
+      />
+      <IndicatorBox
+        text="parties have outstanding contributions"
+        value={data.outstanding_contributions}
       />
       <IndicatorBox
         text={`of the total pledged received for ${year}`}

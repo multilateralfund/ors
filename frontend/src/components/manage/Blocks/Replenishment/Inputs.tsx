@@ -1,3 +1,7 @@
+import type { TriggerButtonProps } from '@ors/components/manage/Widgets/YearRangeWidget'
+import type { YearRangeWidgetProps } from '@ors/components/manage/Widgets/YearRangeWidget'
+import type { MouseEventHandler } from 'react'
+
 import React, {
   ChangeEvent,
   InputHTMLAttributes,
@@ -11,6 +15,7 @@ import React, {
 
 import cx from 'classnames'
 
+import YearRangeWidget from '@ors/components/manage/Widgets/YearRangeWidget'
 import { BaseButton } from '@ors/components/ui/Button/Button'
 import { formatDecimalValue, getFloat } from '@ors/helpers/Utils/Utils'
 import useClickOutside from '@ors/hooks/useClickOutside'
@@ -19,6 +24,8 @@ import { IoClose } from 'react-icons/io5'
 
 const CLASSESS =
   'ml-4 rounded-lg border border-solid border-primary bg-white px-4 py-2 grow disabled:bg-gray-200 disabled:border-0'
+
+const STYLE = { fontFamily: 'var(--font-roboto-condensed)' }
 
 export interface IFieldProps extends React.PropsWithChildren {
   id: string
@@ -35,6 +42,28 @@ export function Field(props: IFieldProps) {
       </label>
       {children}
     </div>
+  )
+}
+
+export interface IClearButtonProps {
+  className?: string
+  onClick: MouseEventHandler
+}
+
+function ClearButton(props: IClearButtonProps) {
+  const { className, onClick } = props
+  return (
+    <button
+      className={cx(
+        'absolute top-0 h-full border-0 bg-transparent px-2 text-gray-500 hover:cursor-pointer hover:text-secondary',
+        className,
+      )}
+      aria-label="Clear selection"
+      type="button"
+      onClick={onClick}
+    >
+      <IoClose size={16} />
+    </button>
   )
 }
 
@@ -93,22 +122,14 @@ export function Select(props: ISingleSelectProps) {
         name={name || id}
         className={cx(CLASSESS, className)}
         ref={selectRef}
+        style={STYLE}
         value={value}
         onChange={handleChange}
         {...rest}
       >
         {children}
       </select>
-      {withClear && (
-        <button
-          className="absolute right-4 top-0 h-full border-0 bg-transparent px-2 text-gray-500 hover:cursor-pointer hover:text-secondary"
-          aria-label="Clear selection"
-          type="button"
-          onClick={handleClear}
-        >
-          <IoClose size={16} />
-        </button>
-      )}
+      {withClear && <ClearButton className="right-4" onClick={handleClear} />}
     </div>
   )
 }
@@ -267,16 +288,7 @@ export function MultiSelect(props: IMultiSelectProps) {
           }}
           onFocus={handleInputFocus}
         ></Input>
-        {withClear && (
-          <button
-            className="absolute right-4 top-0 h-full border-0 bg-transparent px-2 text-gray-500 hover:cursor-pointer hover:text-secondary"
-            aria-label="Clear selection"
-            type="button"
-            onClick={handleClear}
-          >
-            <IoClose size={16} />
-          </button>
-        )}
+        {withClear && <ClearButton className="right-4" onClick={handleClear} />}
       </div>
       <div
         className={cx(
@@ -323,13 +335,14 @@ export const Input = forwardRef<
     className: cx(CLASSESS, className),
     name: name || id,
     ref: ref,
+    style: STYLE,
     type: type !== 'text-area' ? type : undefined,
     ...rest,
   })
 })
 
 export interface IFormattedNumberInputProps
-  extends InputHTMLAttributes<HTMLInputElement> {
+  extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
   onlyNumber?: boolean
   value: number | string
 }
@@ -359,6 +372,7 @@ export function FormattedNumberInput(props: IFormattedNumberInputProps) {
           hidden: !inputMode && !onlyNumber,
         })}
         ref={realInput}
+        style={STYLE}
         type="number"
         value={value}
         onBlur={() => setInputMode(false)}
@@ -370,6 +384,7 @@ export function FormattedNumberInput(props: IFormattedNumberInputProps) {
         name={`${name || id}_mask`}
         className={cx(CLASSESS, className, { hidden: inputMode || onlyNumber })}
         readOnly={true}
+        style={STYLE}
         type="text"
         value={formatDecimalValue(getFloat(value), {})}
         onFocus={() => setInputMode(true)}
@@ -420,6 +435,7 @@ export function DateInput(props: IDateInputProps) {
         name={name || id}
         className={cx(CLASSESS, className, { hidden: !inputMode })}
         ref={realInput}
+        style={STYLE}
         type="date"
         value={value}
         onBlur={() => setInputMode(false)}
@@ -430,9 +446,10 @@ export function DateInput(props: IDateInputProps) {
         id={`${id}_mask`}
         name={`${name || id}_mask`}
         className={cx(CLASSESS, className, { hidden: inputMode })}
-        readOnly={true}
+        style={STYLE}
         type="text"
         value={maskDate}
+        onChange={() => false}
         onFocus={() => setInputMode(true)}
         {...rest}
       />
@@ -470,5 +487,67 @@ export function FieldInput(
     <Field id={id} label={label}>
       <Input id={id} {...rest} />
     </Field>
+  )
+}
+
+export function FieldDateInput(props: IDateInputProps & IFieldProps) {
+  const { id, label, ...rest } = props
+  return (
+    <Field id={id} label={label}>
+      <DateInput id={id} {...rest} />
+    </Field>
+  )
+}
+
+export function FieldFormattedNumberInput(
+  props: IFieldProps & IFormattedNumberInputProps,
+) {
+  const { id, label, ...rest } = props
+  return (
+    <Field id={id} label={label}>
+      <FormattedNumberInput id={id} {...rest} />
+    </Field>
+  )
+}
+
+interface IYearRangeLabelProps {
+  value?: number[]
+}
+
+function YearRangeLabel(props: IYearRangeLabelProps) {
+  const { value } = props
+  return value && value.length ? (
+    <div className="text-primary">
+      Year range: {value[0]} - {value[1]}
+    </div>
+  ) : (
+    <div className="text-gray-400">Select a range of years</div>
+  )
+}
+
+function YearRangeButton(props: TriggerButtonProps) {
+  const { label, onClick, open, uniqueId } = props
+  const ariaDescribedBy = open ? `range-widget-${uniqueId}` : undefined
+  return (
+    <button
+      className="relative flex w-full min-w-44 cursor-pointer items-center rounded-lg border border-solid border-primary bg-white px-4 py-2"
+      aria-describedby={ariaDescribedBy}
+      style={STYLE}
+      onClick={onClick}
+    >
+      {label}
+    </button>
+  )
+}
+
+export function YearRangeInput(
+  props: Omit<YearRangeWidgetProps, 'button' | 'label'>,
+) {
+  return (
+    <YearRangeWidget
+      {...props}
+      Button={YearRangeButton}
+      label={<YearRangeLabel value={props.value} />}
+    />
   )
 }

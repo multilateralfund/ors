@@ -1,4 +1,6 @@
 'use client'
+import type { MouseEventHandler } from 'react'
+
 import React, { useCallback, useId, useState } from 'react'
 
 import { Popover, Typography } from '@mui/material'
@@ -12,8 +14,9 @@ import {
 } from 'react-icons/io5'
 
 export type YearRangeWidgetProps = {
+  Button?: React.FC<TriggerButtonProps>
   className?: string
-  label?: string
+  label?: JSX.Element | string
   max: number
   min: number
   onChange?: (value: number[]) => any
@@ -164,7 +167,37 @@ const PopoverWindow = ({
   )
 }
 
+export type TriggerButtonProps = {
+  label?: JSX.Element | string
+  onClick: MouseEventHandler
+  open?: boolean
+  uniqueId?: string
+}
+
+function TriggerButton(props: TriggerButtonProps) {
+  const { label, onClick, open, uniqueId } = props
+  return (
+    <button
+      className="flex h-10 w-full cursor-pointer items-center rounded-lg border-2 border-solid border-primary bg-white py-1.5 pl-1.5 pr-[39px]"
+      aria-describedby={open ? `range-widget-${uniqueId}` : undefined}
+      onClick={onClick}
+    >
+      <div className="flex items-center gap-3 py-[2.5px] pl-2 pr-1">
+        <IoEllipseOutline className="text-typography-secondary" size={24} />
+        {label && (
+          <Typography
+            className={cx('text-lg uppercase leading-6 text-primary')}
+          >
+            {label}
+          </Typography>
+        )}
+      </div>
+    </button>
+  )
+}
+
 export default function YearRangeWidget({
+  Button,
   className,
   label,
   max,
@@ -187,26 +220,16 @@ export default function YearRangeWidget({
 
   const open = Boolean(dateRangeEl)
 
+  const ButtonComponent = Button ? Button : TriggerButton
+
   return (
     <div className={cx('range flex items-center gap-2', className)}>
-      <button
-        className="flex h-10 w-full cursor-pointer items-center rounded-lg border-2 border-solid border-primary bg-white py-1.5 pl-1.5 pr-[39px]"
-        aria-describedby={open ? `range-widget-${uniqueId}` : undefined}
+      <ButtonComponent
+        label={label}
+        open={open}
+        uniqueId={uniqueId}
         onClick={openDateRange}
-      >
-        <div className="flex items-center gap-3 py-[2.5px] pl-2 pr-1">
-          <IoEllipseOutline className="text-typography-secondary" size={24} />
-          {label && (
-            <Typography
-              className={cx(
-                'text-lg uppercase leading-6 text-primary',
-              )}
-            >
-              {label}
-            </Typography>
-          )}
-        </div>
-      </button>
+      />
       <Popover
         id={open ? `range-widget-${uniqueId}` : undefined}
         anchorEl={dateRangeEl}

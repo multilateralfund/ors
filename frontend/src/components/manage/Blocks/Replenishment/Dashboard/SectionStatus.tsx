@@ -79,7 +79,12 @@ function MiniCashCard(props: IMiniCashCardProps) {
         <div className="flex items-center">
           <span className="whitespace-break-spaces">
             {label}
-            {info_text ? <IoInformationCircleOutline className="inline" title={info_text} /> : null}
+            {info_text ? (
+              <IoInformationCircleOutline
+                className="inline"
+                title={info_text}
+              />
+            ) : null}
           </span>
         </div>
       </div>
@@ -138,7 +143,7 @@ function SectionStatus(props: ISectionStatusProps) {
           </SubmitButton>
         )}
       </div>
-      <div>
+      <div className="py-4">
         <p className="m-0 text-2xl">{asOfDate} ( USD )</p>
       </div>
 

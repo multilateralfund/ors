@@ -4,7 +4,6 @@ import { usePathname, useRouter } from 'next/navigation'
 
 import SimpleSelect from '@ors/components/ui/SimpleSelect/SimpleSelect'
 
-import styles from './periodSelector.module.css'
 import { PeriodSelectorOption, PeriodSelectorProps } from './types'
 import { getPathPeriod } from './utils'
 
@@ -56,7 +55,7 @@ function PeriodSelector(props: PeriodSelectorProps) {
   }
 
   return (
-    <div className={styles.selector}>
+    <div className="flex w-full justify-end">
       <SimpleSelect
         initialIndex={selectedIndex}
         label={label}

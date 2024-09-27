@@ -10,6 +10,7 @@ import ConfirmDialog from '@ors/components/manage/Blocks/Replenishment/ConfirmDi
 import {
   Input,
   Select,
+  YearRangeInput,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import InvoiceDialog from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceDialog'
 import InvoiceStatus from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceStatus'
@@ -37,6 +38,7 @@ import { IoSearchSharp } from 'react-icons/io5'
 const COLUMNS: InvoiceColumn[] = [
   { field: 'country', label: 'Country', sortable: true },
   { field: 'status', label: 'Status' },
+  { field: 'number', label: 'Number' },
   { field: 'year', label: 'Year' },
   { field: 'date_of_issuance', label: 'Date of issuance', sortable: true },
   { field: 'amount', label: 'Amount' },
@@ -75,7 +77,7 @@ function InvoicesView() {
   const currentYear = new Date().getFullYear()
   const ctx = useContext(ReplenishmentContext)
 
-  const { loaded, results, setParams } = useGetInvoices(currentYear)
+  const { loaded, params, results, setParams } = useGetInvoices(currentYear, currentYear)
   const memoResults: ({ id: number; isSkeleton: true } | ParsedInvoice)[] =
     useMemo(() => {
       if (!loaded) {
@@ -99,11 +101,11 @@ function InvoicesView() {
         country: data.country.name,
         country_id: data.country.id,
         currency: data.currency,
-        date_first_reminder: formatDateValue(data.date_first_reminder) || '-',
+        date_first_reminder: formatDateValue(data.date_first_reminder),
         date_of_issuance: formatDateValue(data.date_of_issuance),
-        date_second_reminder: formatDateValue(data.date_second_reminder) || '-',
-        date_sent_out: formatDateValue(data.date_sent_out) || '-',
-        exchange_rate: formatNumberValue(data.exchange_rate) || '-',
+        date_second_reminder: formatDateValue(data.date_second_reminder),
+        date_sent_out: formatDateValue(data.date_sent_out),
+        exchange_rate: formatNumberValue(data.exchange_rate),
         files: <ViewFiles files={data.invoice_files} />,
         files_data: data.invoice_files,
         gray: !data.id,
@@ -114,6 +116,23 @@ function InvoicesView() {
         year: data.year || '-',
       }))
     }, [loaded, results, ctx.isTreasurer])
+
+  const formattedTableRows = useMemo(() => {
+    if (!loaded) {
+      return memoResults
+    }
+
+    const result: ParsedInvoice[] = []
+    for (let i = 0; i < memoResults.length; i++) {
+      result.push({ ...(memoResults[i] as ParsedInvoice) })
+      result[i].date_first_reminder = result[i].date_first_reminder || '-'
+      result[i].date_of_issuance = result[i].date_of_issuance
+      result[i].date_second_reminder = result[i].date_second_reminder || '-'
+      result[i].date_sent_out = result[i].date_sent_out || '-'
+      result[i].exchange_rate = result[i].exchange_rate || '-'
+    }
+    return result
+  }, [loaded, memoResults])
 
   const columns: InvoiceColumn[] = useMemo(function () {
     const result = []
@@ -293,7 +312,7 @@ function InvoicesView() {
         csrftoken,
       )
 
-      enqueueSnackbar('Invoice updated successfully.', { variant: 'success' })
+      enqueueSnackbar('Invoice added successfully.', { variant: 'success' })
       setParams({
         cache_bust: crypto.randomUUID(),
       })
@@ -379,14 +398,35 @@ function InvoicesView() {
     setParams({ country_id })
   }
 
-  function handleYearFilter(evt: ChangeEvent<HTMLSelectElement>) {
-    setParams({ year: evt.target.value })
+  function handleYearRangeFilter(value: number[]) {
+    setParams({ year_max: value[1], year_min: value[0] })
   }
+
   const yearOptions = scAnnualOptions(ctx.periods)
+  const yearRange = {
+    max: parseInt(yearOptions[0].value, 10),
+    min: parseInt(yearOptions[yearOptions.length - 1].value, 10),
+    get value() {
+      if (params?.year_min && params?.year_max) {
+        return [params.year_min, params.year_max]
+      }
+      return []
+    },
+  }
 
   function handleStatusFilter(evt: ChangeEvent<HTMLSelectElement>) {
     const status = evt.target.value
     setParams({ status })
+  }
+
+  function handleRemindersFilter(evt: ChangeEvent<HTMLSelectElement>) {
+    const reminders_sent = evt.target.value
+    setParams({ reminders_sent })
+  }
+
+  function handleFERMFilter(evt: ChangeEvent<HTMLSelectElement>) {
+    const opted_for_ferm = evt.target.value
+    setParams({ opted_for_ferm })
   }
 
   function handleChangeHideNoInvoice(evt: ChangeEvent<HTMLInputElement>) {
@@ -411,14 +451,14 @@ function InvoicesView() {
       ) : null}
       {showAdd ? (
         <AddInvoiceDialog
-          countries={ctx.countries}
+          countries={ctx.countriesSOA}
           onCancel={() => setShowAdd(false)}
           onSubmit={handleAddInvoiceSubmit}
         />
       ) : null}
       {editData !== null ? (
         <EditInvoiceDialog
-          countries={ctx.countries}
+          countries={ctx.countriesSOA}
           data={editData}
           onCancel={() => setEditIdx(null)}
           onSubmit={handleEditInvoiceSubmit}
@@ -446,6 +486,7 @@ function InvoicesView() {
               id="country"
               className="placeholder-select !ml-0 w-52"
               onChange={handleCountryFilter}
+              onClear={() => setParams({ country_id: '' })}
               hasClear
               required
             >
@@ -459,30 +500,17 @@ function InvoicesView() {
               ))}
             </Select>
           )}
-          <Select
-            id="year"
-            className="placeholder-select w-44"
-            defaultValue={currentYear.toString()}
-            onChange={handleYearFilter}
-            required
-          >
-            <option value="" disabled hidden>
-              Year
-            </option>
-            {yearOptions.map((year) => (
-              <option
-                key={year.value}
-                className="text-primary"
-                value={year.value}
-              >
-                {year.label}
-              </option>
-            ))}
-          </Select>
+          <YearRangeInput
+            max={yearRange.max}
+            min={yearRange.min}
+            value={yearRange.value}
+            onChange={handleYearRangeFilter}
+          />
           <Select
             id="status"
-            className="placeholder-select w-44"
+            className="placeholder-select ml-0 w-44"
             onChange={handleStatusFilter}
+            onClear={() => setParams({ status: '' })}
             hasClear
           >
             <option value="" disabled hidden>
@@ -491,6 +519,33 @@ function InvoicesView() {
             <option value="paid">Paid</option>
             <option value="pending">Pending</option>
             <option value="not_issued">Not issued</option>
+          </Select>
+          <Select
+            id="reminders_sent"
+            className="placeholder-select ml-0 w-44"
+            onChange={handleRemindersFilter}
+            onClear={() => setParams({ reminders_sent: '' })}
+            hasClear
+          >
+            <option value="" disabled hidden>
+              Reminders sent
+            </option>
+            <option value="0">None</option>
+            <option value="1">One</option>
+            <option value="2">Two</option>
+          </Select>
+          <Select
+            id="opted_for_ferm"
+            className="placeholder-select ml-0 w-44"
+            onChange={handleFERMFilter}
+            onClear={() => setParams({ opted_for_ferm: '' })}
+            hasClear
+          >
+            <option value="" disabled hidden>
+              Opted for FERM
+            </option>
+            <option value="1">Yes</option>
+            <option value="0">No</option>
           </Select>
         </div>
         {ctx.isTreasurer && (
@@ -512,7 +567,7 @@ function InvoicesView() {
         adminButtons={false}
         columns={columns}
         enableSort={true}
-        rowData={memoResults}
+        rowData={formattedTableRows}
         sortDirection={sortDirection}
         sortOn={sortOn}
         sortableColumns={COLUMNS.reduce<number[]>((acc, col, idx) => {

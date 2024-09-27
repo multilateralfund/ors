@@ -661,7 +661,7 @@ class StatisticsStatusOfContributionsView(views.APIView):
         response = []
         # Annotating soc data with external income would make more queries
         # (separate for interest and miscellaneous income) and would be less
-        # readable
+        # readable.
         for soc, income in zip_longest(soc_data, external_income):
             total_payments = (
                 soc["cash_payments_sum"]
@@ -1028,7 +1028,7 @@ class ReplenishmentDashboardView(views.APIView):
 class ReplenishmentDashboardExportView(views.APIView):
     permission_classes = [IsUserAllowedReplenishment]
 
-    def get(self, request, *args, **kwargs):
+    def get_status(self):
         income = ExternalIncome.objects.aggregate(
             interest_earned=models.Sum("interest_earned", default=0),
             miscellaneous_income=models.Sum("miscellaneous_income", default=0),
@@ -1180,13 +1180,24 @@ class ReplenishmentDashboardExportView(views.APIView):
             EMPTY_ROW,
             ("Balance", None, balance),
         ]
+        return data
 
+    def get(self, request, *args, **kwargs):
         wb = openpyxl.Workbook()
         wb.remove(wb.active)
+
+        status_data = self.get_status()
         sheet = wb.create_sheet("Status")
         configure_sheet_print(sheet, "landscape")
 
-        DashboardWriter(sheet, []).write(data)
+        DashboardWriter(sheet, []).write(status_data)
+
+        periods = (
+            TriennialContributionStatus.objects.values("start_year", "end_year")
+            .distinct()
+            .order_by("start_year")
+        )
+        add_statistics_status_of_contributions_response_worksheet(wb, periods)
 
         return workbook_response("Status of the fund", wb)
 
@@ -1216,7 +1227,12 @@ class ReplenishmentInvoiceViewSet(
     ordering_fields = [
         "date_of_issuance",
     ]
-    search_fields = ["number"]
+    search_fields = [
+        "number",
+        "country__name",
+        "year",
+        "currency",
+    ]
 
     def get_queryset(self):
         user = self.request.user
@@ -1246,7 +1262,16 @@ class ReplenishmentInvoiceViewSet(
         that have not paid yet.
         """
 
-        year = request.query_params.get("year")
+        year_min = request.query_params.get("year_min")
+        year_max = request.query_params.get("year_max")
+        if (year_min is None or year_max is None) and request.query_params.get(
+            "hide_no_invoice"
+        ) != "true":
+            raise ValueError(
+                "year_min and year_max parameters are mandatory "
+                "when querying for not issued invoices"
+            )
+
         invoice_qs = self.filter_queryset(self.get_queryset())
         invoice_data = InvoiceSerializer(invoice_qs, many=True).data
         # pylint: disable=too-many-boolean-expressions
@@ -1267,20 +1292,31 @@ class ReplenishmentInvoiceViewSet(
                 status=status.HTTP_200_OK,
             )
 
-        countries_with_invoices = [invoice["country"]["id"] for invoice in invoice_data]
-        countries_without_invoices = (
-            ScaleOfAssessment.objects.filter(
-                version__is_final=True,
-                version__replenishment__start_year__lte=year,
-                version__replenishment__end_year__gte=year,
+        # Once we got here we certainly have year_min and year_max set
+        year_min = int(year_min)
+        year_max = int(year_max)
+        countries_without_invoices_data = []
+        for year in range(year_min, year_max + 1):
+            countries_with_invoices = [
+                invoice["country"]["id"]
+                for invoice in invoice_data
+                if invoice["year"] == year
+            ]
+            countries_without_invoices = (
+                ScaleOfAssessment.objects.filter(
+                    version__is_final=True,
+                    version__replenishment__start_year__lte=year,
+                    version__replenishment__end_year__gte=year,
+                )
+                .exclude(country_id__in=countries_with_invoices)
+                .select_related("country")
+                .order_by("country__name")
             )
-            .exclude(country_id__in=countries_with_invoices)
-            .select_related("country")
-            .order_by("country__name")
-        )
-        countries_without_invoices_data = EmptyInvoiceSerializer(
-            countries_without_invoices, many=True, context={"year": year}
-        ).data
+            countries_without_invoices_data.extend(
+                EmptyInvoiceSerializer(
+                    countries_without_invoices, many=True, context={"year": year}
+                ).data
+            )
 
         if request.query_params.get("status") == "not_issued":
             data = countries_without_invoices_data
@@ -1381,6 +1417,8 @@ class ReplenishmentInvoiceFileDownloadView(generics.RetrieveAPIView):
         ):
             queryset = queryset.filter(invoice__country_id=user.country_id)
 
+        return queryset
+
     def get(self, request, *args, **kwargs):
         obj = self.get_object()
         response = HttpResponse(
@@ -1419,7 +1457,17 @@ class ReplenishmentPaymentViewSet(
         "amount",
         "country__name",
     ]
-    search_fields = ["payment_for_year", "amount", "country__name"]
+    search_fields = [
+        "payment_for_year",
+        "amount",
+        "country__name",
+        "comment",
+        "invoices__number",
+        "date",
+        "currency",
+        "exchange_rate",
+        "ferm_gain_or_loss",
+    ]
 
     def get_queryset(self):
         user = self.request.user
@@ -1520,6 +1568,8 @@ class ReplenishmentPaymentFileDownloadView(generics.RetrieveAPIView):
             user.UserType.COUNTRY_SUBMITTER,
         ):
             queryset = queryset.filter(invoice__country_id=user.country_id)
+
+        return queryset
 
     def get(self, request, *args, **kwargs):
         obj = self.get_object()

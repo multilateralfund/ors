@@ -45,19 +45,27 @@ export default function SCAnnual({ year }: { year: string }) {
     return rows.reduce(
       (acc, { outstanding_contributions }) => {
         let value = outstanding_contributions
-        if (value > -1 && value < 1) {
+        if (value >= -5 && value <= 5) {
           value = 0
         }
-        if (value <= 0) {
+        if (value < 0) {
+          acc.contributions_advance += 1
+        } else if (value === 0) {
           acc.contributions += 1
+        } else {
+          acc.outstanding_contributions += 1
         }
         return acc
       },
       {
         contributions: 0,
+        contributions_advance: 0,
+        outstanding_contributions: 0,
+        percentage_total_paid_current_year:
+          data.percentage_total_paid_current_year,
       },
     )
-  }, [rows])
+  }, [rows, data.percentage_total_paid_current_year])
 
   const totalPledge = useMemo(() => {
     const cashPayments = Number(data?.total?.cash_payments) || 0

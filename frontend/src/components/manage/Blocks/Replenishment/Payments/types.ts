@@ -13,7 +13,7 @@ export type PaymentColumn<LabelType = string> = {
 }
 
 export interface IPaymentDialogProps extends FormDialogProps {
-  columns: PaymentColumn[]
+  columns: Record<string, PaymentColumn>
   countries: Country[]
   data?: ParsedPayment
   isEdit?: boolean
@@ -48,3 +48,7 @@ export type ParsedPayment = {
   payment_for_year: string
   replenishment: ApiReplenishment | null
 }
+
+export type FormattedPayment = {
+  ferm_gain_or_loss: JSX.Element | number | string
+} & Omit<ParsedPayment, 'ferm_gain_or_loss'>

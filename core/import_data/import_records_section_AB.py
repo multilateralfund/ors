@@ -14,7 +14,9 @@ from core.import_data.utils import (
     get_chemical,
     OFFSET,
     get_decimal_from_excel_string,
+    get_import_user,
     get_usages_from_sheet,
+    is_imported_today,
 )
 
 from core.models.country_programme import CPUsage
@@ -52,16 +54,16 @@ RECORD_COLUMNS_MAPPING = {
 }
 
 FILE_LIST = [
-    # {
-    #     "file_name": "SectionA.xlsx",
-    #     "convert_to_mt": True,
-    #     "section": "A",
-    # },
-    # {
-    #     "file_name": "SectionB.xlsx",
-    #     "convert_to_mt": False,
-    #     "section": "B",
-    # },
+    {
+        "file_name": "SectionA.xlsx",
+        "convert_to_mt": True,
+        "section": "A",
+    },
+    {
+        "file_name": "SectionB.xlsx",
+        "convert_to_mt": False,
+        "section": "B",
+    },
     {
         "file_name": "SectionA-Missing2022.xlsx",
         "convert_to_mt": True,
@@ -107,7 +109,7 @@ def check_gwp_value(obj, gwp_value, index_row):
 
 
 # pylint: disable=R0914
-def parse_sheet(df, file_details, year):
+def parse_sheet(df, file_details, year, system_user):
     """
     parse the sheet and import the data in database
     @param df = pandas dataframe
@@ -152,6 +154,10 @@ def parse_sheet(df, file_details, year):
             current_cp = get_cp_report(
                 year, current_country["obj"].name, current_country["obj"].id
             )
+
+        # We cannot update reports imported before today or created by a different user
+        if not is_imported_today(current_cp, system_user):
+            continue
 
         # get chemical
         # Other1 from Cuba is R-417A
@@ -214,8 +220,9 @@ def parse_sheet(df, file_details, year):
     logger.info("✔ sheet parsed")
 
 
-def parse_file(file_path, file_details):
+def parse_file(file_path, file_details, system_user):
     all_sheets = pd.read_excel(file_path, sheet_name=None, na_values="NDR", dtype=str)
+
     for sheet_name, df in all_sheets.items():
         # if the sheet_name is not a year => skip
         if not sheet_name.strip().isdigit():
@@ -228,15 +235,16 @@ def parse_file(file_path, file_details):
         # replace nan with None
         df = df.replace(np.nan, None)
 
-        parse_sheet(df, file_details, year)
+        parse_sheet(df, file_details, year, system_user)
 
 
 @transaction.atomic
 def import_records():
+    system_user = get_import_user()
     for file in FILE_LIST:
         file_path = settings.IMPORT_DATA_DIR / "records" / file["file_name"]
 
         logger.info(f"⏳ parsing file: {file['file_name']}")
-        parse_file(file_path, file)
+        parse_file(file_path, file, system_user)
 
         logger.info(f"✔ records from {file['file_name']} imported")

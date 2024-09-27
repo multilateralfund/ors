@@ -71,7 +71,7 @@ export default function SCSummary() {
     return rows.reduce(
       (acc, { outstanding_contributions }) => {
         let value = outstanding_contributions
-        if (value > -1 && value < 1) {
+        if (value >= -5 && value <= 5) {
           value = 0
         }
         if (value < 0) {

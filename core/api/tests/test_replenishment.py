@@ -2051,7 +2051,8 @@ class TestInvoices(BaseTest):
         self.client.force_authenticate(user=user)
 
         response_1 = self.client.get(
-            self.url, {"year": self.year_1, "ordering": "country"}
+            self.url,
+            {"year_min": self.year_1, "year_max": self.year_1, "ordering": "country"},
         )
         assert response_1.status_code == 200
         assert len(response_1.data) == 3
@@ -2060,11 +2061,113 @@ class TestInvoices(BaseTest):
         assert response_1.data[2].get("number") is None
 
         response_2 = self.client.get(
-            self.url, {"country_id": country_2.id, "ordering": "date_of_issuance"}
+            self.url,
+            {
+                "year_min": self.year_1,
+                "year_max": self.year_2,
+                "country_id": country_2.id,
+                "ordering": "date_of_issuance",
+            },
         )
         assert response_2.status_code == 200
         assert len(response_2.data) == 1
         assert response_2.data[0]["number"] == "aaa-yyy-2"
+
+    def test_invoices_filters(self, treasurer_user):
+        country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
+        country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
+
+        replenishment_1 = ReplenishmentFactory.create(
+            start_year=self.year_1, end_year=self.year_2
+        )
+        replenishment_2 = ReplenishmentFactory.create(
+            start_year=self.year_3, end_year=self.year_4
+        )
+        version_1 = ScaleOfAssessmentVersionFactory.create(
+            replenishment=replenishment_1, version=0, is_final=True
+        )
+        version_2 = ScaleOfAssessmentVersionFactory.create(
+            replenishment=replenishment_2, version=0, is_final=True
+        )
+        ScaleOfAssessmentFactory.create(
+            country=country_1, version=version_1, opted_for_ferm=True
+        )
+        ScaleOfAssessmentFactory.create(
+            country=country_1, version=version_2, opted_for_ferm=False
+        )
+        ScaleOfAssessmentFactory.create(
+            country=country_2, version=version_2, opted_for_ferm=False
+        )
+
+        InvoiceFactory(
+            country=country_1,
+            replenishment=replenishment_1,
+            number="aaa-yyy-1",
+            year=self.year_1,
+        )
+        InvoiceFactory(
+            country=country_1,
+            replenishment=replenishment_2,
+            number="aaa-yyy-2",
+            year=self.year_1,
+            date_first_reminder=datetime.now().date(),
+        )
+        InvoiceFactory(
+            country=country_2,
+            replenishment=replenishment_2,
+            number="aaa-yyy-3",
+            year=self.year_3,
+            date_first_reminder=datetime.now().date(),
+            date_second_reminder=datetime.now().date(),
+        )
+        InvoiceFactory(
+            country=country_2,
+            replenishment=replenishment_2,
+            number="aaa-yyy-4",
+            year=self.year_3,
+            date_first_reminder=datetime.now().date(),
+        )
+
+        self.client.force_authenticate(user=treasurer_user)
+
+        response_1 = self.client.get(
+            self.url,
+            {"year_min": self.year_1, "year_max": self.year_1, "reminders_sent": 0},
+        )
+        assert response_1.status_code == 200
+        assert len(response_1.data) == 1
+        assert response_1.data[0]["number"] == "aaa-yyy-1"
+
+        response_2 = self.client.get(
+            self.url,
+            {"year_min": self.year_1, "year_max": self.year_1, "reminders_sent": 1},
+        )
+        assert response_2.status_code == 200
+        assert len(response_2.data) == 1
+        assert response_2.data[0]["number"] == "aaa-yyy-2"
+
+        response_3 = self.client.get(
+            self.url,
+            {"year_min": self.year_3, "year_max": self.year_3, "reminders_sent": 2},
+        )
+        assert response_3.status_code == 200
+        # Just because we also append the other country (but with no invoice!)
+        # to the response. Normally the data should only have one item.
+        assert len(response_3.data) == 2
+        assert response_3.data[0]["number"] == "aaa-yyy-3"
+
+        response_ferm_1 = self.client.get(
+            self.url,
+            {"year_min": self.year_1, "year_max": self.year_1, "opted_for_ferm": True},
+        )
+        assert len(response_ferm_1.data) == 2
+
+        response_ferm_2 = self.client.get(
+            self.url,
+            {"year_min": self.year_2, "year_max": self.year_2, "opted_for_ferm": True},
+        )
+        assert len(response_ferm_2.data) == 1
+        assert response_ferm_2.data[0].get("number") is None
 
     def test_invoices_create(self, treasurer_user):
         country = CountryFactory.create(name="Country 1", iso3="XYZ")
