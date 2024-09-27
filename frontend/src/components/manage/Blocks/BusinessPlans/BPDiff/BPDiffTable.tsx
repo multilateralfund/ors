@@ -165,8 +165,8 @@ export default function BPDiffTable({
 
   const displayFilters = () => {
     return (
-      <div className="bp-table-toolbar mb-4 flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
-        <div className="flex gap-4 self-start">
+      <div className="bp-table-toolbar mb-4 flex flex-col justify-end gap-4 lg:flex-row lg:items-center">
+        <div className="flex gap-4">
           <TableDateSwitcher
             changeHandler={(event, value) => setGridOptions(value)}
             value={gridOptions}
@@ -194,7 +194,8 @@ export default function BPDiffTable({
 
   return (
     yearRanges &&
-    yearRanges.length > 0 && (
+    yearRanges.length > 0 &&
+    results?.length > 0 && (
       <form ref={form}>
         <Table
           className="bp-diff-table"

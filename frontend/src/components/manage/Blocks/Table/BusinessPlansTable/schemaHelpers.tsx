@@ -41,6 +41,7 @@ export const cellValueGetter = (params: any, colIdentifier: string) => {
     old_value: formatSimpleVals(old_val, colIdentifier),
     ...(needsExtraTooltip && {
       extraTooltipData: {
+        is_multi_year: colIdentifier === 'is_multi_year',
         new_value: currentCellData?.[colIdentifier + '_display'],
         old_value: currentCellData?.[colIdentifier + '_display_old'],
       },
@@ -72,13 +73,19 @@ export const objectCellValueGetter = (params: any, colIdentifier: string) => {
 export const textCellRenderer = (props: any) => {
   const { change_type, display_tag, extraTooltipData, new_value, old_value } =
     props.value
+  const { is_multi_year } = extraTooltipData || {}
+
+  const tooltipTitle = is_multi_year
+    ? extraTooltipData?.['new_value']
+    : extraTooltipData?.['new_value'] || new_value
 
   if (isEqual(new_value, old_value)) {
     return (
       <Tooltip
         TransitionProps={{ timeout: 0 }}
         classes={{ tooltip: 'bp-table-tooltip' }}
-        title={extraTooltipData?.['new_value'] || new_value}
+        placement={'top'}
+        title={tooltipTitle}
         followCursor
       >
         {display_tag ? (
@@ -151,6 +158,7 @@ const displaySubstanceCellValue = (substances: Array<string>) => (
   <Tooltip
     TransitionProps={{ timeout: 0 }}
     classes={{ tooltip: 'bp-table-tooltip' }}
+    placement={'top'}
     title={
       substances?.length > 0 &&
       substances.map((substance: string, index: number) =>
@@ -293,6 +301,7 @@ const displayCommentsCellValue = (
     <Tooltip
       TransitionProps={{ timeout: 0 }}
       classes={{ tooltip: 'bp-table-tooltip' }}
+      placement={'top'}
       title={commentSecretariat}
     >
       {(commentSecretariat as any) && truncateText(commentSecretariat, 45)}
