@@ -124,14 +124,12 @@ function TabContentAmount(props: TabContentProps) {
         defaultValue={countryInfo?.currency}
         label="Currency"
         type="text"
-        disabled
         readOnly
       />
       <FieldFormattedNumberInput
         id="currency"
         label={`"${countryInfo?.currency}" amount`}
         value={countryInfo?.amount_local_currency}
-        disabled
         readOnly
       />
       <FieldFormattedNumberInput
@@ -139,14 +137,12 @@ function TabContentAmount(props: TabContentProps) {
         label="Exchange rate"
         step="any"
         value={countryInfo?.exchange_rate}
-        disabled
         readOnly
       />
       <FieldFormattedNumberInput
         id="amount"
         label="USD amount"
         value={countryInfo?.amount}
-        disabled
         readOnly
       />
       <h4>Upload</h4>
@@ -198,9 +194,6 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
     formData.set('date_second_reminder', fields.date_second_reminder)
     formData.set('date_sent_out', fields.date_sent_out)
 
-    formData.set('amount', fields.amount)
-    formData.set('exchange_rate', fields.exchange_rate)
-
     formData.delete('date_of_issuance_mask')
     formData.delete('date_first_reminder_mask')
     formData.delete('date_second_reminder_mask')
@@ -208,6 +201,7 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
 
     formData.delete('amount_mask')
     formData.delete('exchange_rate_mask')
+    formData.delete('currency_mask')
 
     onSubmit(formData, evt)
   }
