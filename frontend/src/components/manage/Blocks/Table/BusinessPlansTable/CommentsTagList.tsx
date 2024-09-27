@@ -12,7 +12,7 @@ const Comment = ({
   comment: string
   withoutTooltip: boolean
 }) => {
-  const commentSecretariat = (
+  const commentTag = (
     <Typography
       className="inline-flex max-h-4 cursor-default items-center gap-2 rounded bg-gray-100 px-1 text-xs font-normal text-gray-A700"
       component="p"
@@ -30,10 +30,10 @@ const Comment = ({
         tooltip: 'bp-table-tooltip',
       }}
     >
-      {commentSecretariat}
+      {commentTag}
     </Tooltip>
   ) : (
-    commentSecretariat
+    commentTag
   )
 }
 

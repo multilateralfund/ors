@@ -262,7 +262,7 @@ const commentsColumnDefs = (isDiff?: boolean) => [
         }
       : {
           cellRenderer: commentsCellRenderer,
-          valueGetter: commentsDiffValueGetter,
+          valueGetter: commentsValueGetter,
         }),
   },
 ]

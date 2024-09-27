@@ -4,7 +4,7 @@ import cx from 'classnames'
 import { truncateText } from '@ors/components/manage/Utils/diffUtils'
 import { useStore } from '@ors/store'
 
-const BPDiffTooltipHeader = (props: any) => {
+const BPDiffTooltip = (props: any) => {
   const { extraTooltipData, new_value, old_value } = props
 
   const { currentVersion, previousVersion } = useStore(
@@ -110,4 +110,4 @@ const BPDiffTooltipHeader = (props: any) => {
   )
 }
 
-export default BPDiffTooltipHeader
+export default BPDiffTooltip

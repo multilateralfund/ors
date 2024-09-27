@@ -30,14 +30,13 @@ export default function BPDiffTable({
   diffData: BPDataInterface
 }) {
   const form = useRef<any>()
-  const params = useParams<BpPathParams>()
+  const { period } = useParams<BpPathParams>()
 
-  const { period } = params
   const year_start = period.split('-')[0]
 
   const { yearRanges } = useContext(BPYearRangesContext) as any
 
-  const { loaded, loading, results: results } = diffData || {}
+  const { loaded, loading, results } = diffData || {}
 
   const yearRangeSelected = useMemo(
     () => yearRanges.find((item: any) => item.year_start == year_start),
@@ -81,8 +80,8 @@ export default function BPDiffTable({
 
         return {
           change_type: change_type,
-          new_value: new_val ? parseFloat(new_val).toFixed(2) : '',
-          old_value: old_val ? parseFloat(old_val).toFixed(2) : '',
+          new_value: new_val ? parseFloat(new_val).toFixed(2) : '-',
+          old_value: old_val ? parseFloat(old_val).toFixed(2) : '-',
         }
       }
 
