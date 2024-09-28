@@ -553,13 +553,27 @@ class SummaryStatusOfContributionsAggregator:
         )
 
     def get_ceit_data(self):
-        ret = TriennialContributionStatus.objects.filter(
+        # Relies on the presence of `start/end_year` fields on the underlying model
+        ceit_countries_triennial_filter = (
             Q(country__ceit_statuses__is_ceit=True)
             & Q(country__ceit_statuses__start_year__lte=F("start_year"))
             & (
                 Q(country__ceit_statuses__end_year__gte=F("end_year"))
                 | Q(country__ceit_statuses__end_year__isnull=True)
             )
+        )
+        # Relies on the presence of a `year` field on the underlying model
+        ceit_countries_annual_filter = (
+            Q(country__ceit_statuses__is_ceit=True)
+            & Q(country__ceit_statuses__start_year__lte=F("year"))
+            & (
+                Q(country__ceit_statuses__end_year__gte=F("year"))
+                | Q(country__ceit_statuses__end_year__isnull=True)
+            )
+        )
+
+        ret = TriennialContributionStatus.objects.filter(
+            ceit_countries_triennial_filter
         ).aggregate(
             agreed_contributions=models.Sum("agreed_contributions", default=0),
             cash_payments=models.Sum("cash_payments", default=0),
@@ -569,13 +583,15 @@ class SummaryStatusOfContributionsAggregator:
                 "outstanding_contributions", default=0
             ),
         )
+
+        # Populate gain_loss and disputed_contributions fields; these do not have
+        # a direct relationship with TriennialContributionStatus
         ret["gain_loss"] = FermGainLoss.objects.filter(
-            Q(country__ceit_statuses__is_ceit=True)
-            & Q(country__ceit_statuses__start_year__lte=F("year"))
-            & (
-                Q(country__ceit_statuses__end_year__gte=F("year"))
-                | Q(country__ceit_statuses__end_year__isnull=True)
-            )
+            ceit_countries_annual_filter
+        ).aggregate(total=models.Sum("amount", default=0))["total"]
+
+        ret["disputed_contributions"] = DisputedContribution.objects.filter(
+            ceit_countries_annual_filter
         ).aggregate(total=models.Sum("amount", default=0))["total"]
 
         return ret
@@ -678,8 +694,13 @@ class TriennialStatusOfContributionsAggregator:
                 "outstanding_contributions", default=0
             ),
         )
-        # Add gain/loss for CEIT countries
+        # Add gain/loss & disputed for CEIT countries
         ret["gain_loss"] = FermGainLoss.objects.filter(
+            year__gte=self.start_year,
+            year__lte=self.end_year,
+            country_id__in=ceit_countries_qs.values_list("id", flat=True),
+        ).aggregate(total=models.Sum("amount", default=0))["total"]
+        ret["disputed_contributions"] = DisputedContribution.objects.filter(
             year__gte=self.start_year,
             year__lte=self.end_year,
             country_id__in=ceit_countries_qs.values_list("id", flat=True),
@@ -783,6 +804,9 @@ class AnnualStatusOfContributionsAggregator:
             ),
         )
         ret["gain_loss"] = FermGainLoss.objects.filter(
+            year=self.year, country_id__in=ceit_country_ids
+        ).aggregate(total=models.Sum("amount", default=0))["total"]
+        ret["disputed_contributions"] = DisputedContribution.objects.filter(
             year=self.year, country_id__in=ceit_country_ids
         ).aggregate(total=models.Sum("amount", default=0))["total"]
 

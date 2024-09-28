@@ -245,7 +245,7 @@ function TabIndicatorsOutstandingContributions(props: any) {
 }
 
 function TabIndicatorsDisputedContributions(props: any) {
-  const { data } = props
+  const { disputed_contributions, totals } = props
   return (
     <SummaryCard
       label="Disputed contributions"
@@ -253,15 +253,15 @@ function TabIndicatorsDisputedContributions(props: any) {
         {
           label: 'amount',
           prefix: '$',
-          value: formatNumber(data.disputed_contributions),
+          value: formatNumber(disputed_contributions),
         },
         {
           label: 'percentage of pledged',
           suffix: '%',
           value: formatNumber(
             getPercent(
-              data.total.agreed_contributions,
-              data.disputed_contributions,
+              totals.agreed_contributions,
+              disputed_contributions,
             ),
           ),
         },
@@ -272,6 +272,8 @@ function TabIndicatorsDisputedContributions(props: any) {
 
 function TabIndicatorsFerm(props: any) {
   const { totals } = props
+  const absolute_value_gain_loss = Math.abs(totals.gain_loss)
+
   return (
     <SummaryCard
       label={totals.gain_loss < 0 ? 'FERM gain' : 'FERM loss'}
@@ -279,14 +281,14 @@ function TabIndicatorsFerm(props: any) {
         {
           className: totals.gain_loss < 0 ? '' : 'text-red-500',
           label: 'amount',
-          prefix: totals.gain_loss < 0 ? '+$' : '-$',
-          value: formatNumber(totals.gain_loss),
+          prefix: '$',
+          value: formatNumber(absolute_value_gain_loss),
         },
         {
           label: 'percentage of pledged',
           suffix: '%',
           value: formatNumber(
-            getPercent(totals.agreed_contributions, totals.gain_loss),
+            getPercent(totals.agreed_contributions, absolute_value_gain_loss),
           ),
         },
       ]}
@@ -327,6 +329,8 @@ function CummulativeTab(props: any) {
 
   const totals = onlyCeits ? data.ceit : data.total
 
+  const disputed_contributions = onlyCeits ? data.ceit?.disputed_contributions : data.disputed_contributions
+
   if (totals) {
     return (
       <div className="flex w-full justify-between gap-4">
@@ -345,12 +349,11 @@ function CummulativeTab(props: any) {
             contrib={contrib}
             totals={totals}
           />
-          {onlyCeits ? null : (
-            <TabIndicatorsDisputedContributions data={data} />
-          )}
-          {onlyCeits ? null : (
-            <TabIndicatorsFerm contrib={contrib} totals={totals} />
-          )}
+          <TabIndicatorsDisputedContributions
+            disputed_contributions={disputed_contributions}
+            totals={totals}
+          />
+          <TabIndicatorsFerm contrib={contrib} totals={totals} />
         </div>
       </div>
     )
@@ -368,6 +371,7 @@ function TriennialTab(props: any) {
 
   const contrib = extractContributions(socRows(data, onlyCeits))
   const totals = onlyCeits ? data.ceit : data.total
+  const disputed_contributions = onlyCeits ? data.ceit?.disputed_contributions : data.disputed_contributions
 
   const curYear = new Date().getFullYear()
 
@@ -402,9 +406,11 @@ function TriennialTab(props: any) {
               contrib={contrib}
               totals={totals}
             />
-            {onlyCeits ? null : (
-              <TabIndicatorsDisputedContributions data={data} />
-            )}
+            <TabIndicatorsDisputedContributions
+              disputed_contributions={disputed_contributions}
+              totals={totals}
+            />
+            <TabIndicatorsFerm contrib={contrib} totals={totals} />
           </div>
         </div>
 
@@ -451,6 +457,7 @@ function AnnualTab(props: any) {
 
   const contrib = extractContributions(socRows(data, onlyCeits))
   const totals = onlyCeits ? data.ceit : data.total
+  const disputed_contributions = onlyCeits ? data.ceit?.disputed_contributions : data.disputed_contributions
 
   if (totals) {
     return (
@@ -470,9 +477,11 @@ function AnnualTab(props: any) {
             contrib={contrib}
             totals={totals}
           />
-          {onlyCeits ? null : (
-            <TabIndicatorsDisputedContributions data={data} />
-          )}
+          <TabIndicatorsDisputedContributions
+            disputed_contributions={disputed_contributions}
+            totals={totals}
+          />
+          <TabIndicatorsFerm contrib={contrib} totals={totals} />
         </div>
       </div>
     )
