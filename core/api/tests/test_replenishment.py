@@ -347,6 +347,7 @@ class TestStatusOfContributions:
                 "promissory_notes": 0,
                 "outstanding_contributions": 0,
                 "gain_loss": 0,
+                "disputed_contributions": 0,
             },
             "ceit_countries": [],
             "total": {
@@ -507,6 +508,7 @@ class TestStatusOfContributions:
                 "promissory_notes": 0,
                 "outstanding_contributions": 0,
                 "gain_loss": 0,
+                "disputed_contributions": 0,
             },
             "ceit_countries": [],
             "total": {
@@ -682,6 +684,9 @@ class TestStatusOfContributions:
                     + contribution_4.outstanding_contributions
                 ).quantize(self.fifteen_decimals),
                 "gain_loss": Decimal(0),
+                "disputed_contributions": disputed_1.amount.quantize(
+                    self.fifteen_decimals
+                ),
             },
             "ceit_countries": [
                 {

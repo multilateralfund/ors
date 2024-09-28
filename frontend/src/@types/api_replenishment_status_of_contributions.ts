@@ -16,6 +16,7 @@ export type ApiReplenishmentSoCCeit = {
   agreed_contributions: number
   bilateral_assistance: number
   cash_payments: number
+  disputed_contributions: number
   gain_loss: number
   outstanding_contributions: number
   promissory_notes: number
