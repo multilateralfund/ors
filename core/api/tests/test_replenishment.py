@@ -379,7 +379,8 @@ class TestStatusOfContributions:
                     + contribution_3.outstanding_contributions
                     + disputed_1.amount
                 ).quantize(self.fifteen_decimals),
-                "gain_loss": Decimal("0"),
+                "gain_loss": Decimal(0),
+                "interest_earned": Decimal(0),
             },
             "disputed_contributions": disputed_1.amount.quantize(self.fifteen_decimals),
             "disputed_contributions_per_country": [
@@ -540,7 +541,8 @@ class TestStatusOfContributions:
                     + contribution_3.outstanding_contributions
                     + disputed_1.amount
                 ).quantize(self.fifteen_decimals),
-                "gain_loss": Decimal("0"),
+                "gain_loss": Decimal(0),
+                "interest_earned": Decimal(0),
             },
             "disputed_contributions": disputed_1.amount.quantize(self.fifteen_decimals),
             "disputed_contributions_per_country": [],
@@ -758,6 +760,7 @@ class TestStatusOfContributions:
                 "gain_loss": (
                     ferm_gain_loss_1.amount + ferm_gain_loss_2.amount
                 ).quantize(self.fifteen_decimals),
+                "interest_earned": Decimal(0),
             },
             "percentage_total_paid_current_year": (
                 (

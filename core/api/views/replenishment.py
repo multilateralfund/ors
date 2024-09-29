@@ -613,6 +613,7 @@ class SummaryStatusOfContributionsView(views.APIView):
         )
         data["total"] = agg.get_total()
         data["total"]["gain_loss"] = agg.get_gain_loss()
+        data["total"]["interest_earned"] = agg.get_interest_earned()
 
         disputed_contribution_amount = agg.get_disputed_contribution_amount()
         data["total"]["agreed_contributions_with_disputed"] = (

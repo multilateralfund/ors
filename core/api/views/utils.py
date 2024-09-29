@@ -21,6 +21,7 @@ from core.models import (
     DisputedContribution,
     AnnualContributionStatus,
     ExternalIncome,
+    ExternalIncomeAnnual,
 )
 from core.models.business_plan import BusinessPlan
 from core.models.country_programme import CPRecord, CPReport, CPReportFormatRow
@@ -617,6 +618,11 @@ class SummaryStatusOfContributionsAggregator:
             total=models.Sum("amount", default=0)
         )["total"]
 
+    def get_interest_earned(self):
+        return ExternalIncomeAnnual.objects.aggregate(
+            total=models.Sum("interest_earned", default=0)
+        )["total"]
+
 
 class TriennialStatusOfContributionsAggregator:
     """
@@ -700,11 +706,13 @@ class TriennialStatusOfContributionsAggregator:
             year__lte=self.end_year,
             country_id__in=ceit_countries_qs.values_list("id", flat=True),
         ).aggregate(total=models.Sum("amount", default=0))["total"]
+
         ret["disputed_contributions"] = DisputedContribution.objects.filter(
             year__gte=self.start_year,
             year__lte=self.end_year,
             country_id__in=ceit_countries_qs.values_list("id", flat=True),
         ).aggregate(total=models.Sum("amount", default=0))["total"]
+
         return ret
 
     def get_total(self):
@@ -723,6 +731,11 @@ class TriennialStatusOfContributionsAggregator:
         ret["gain_loss"] = FermGainLoss.objects.filter(
             year__gte=self.start_year, year__lte=self.end_year
         ).aggregate(total=models.Sum("amount", default=0))["total"]
+
+        # Adding interest earned totals
+        ret["interest_earned"] = ExternalIncomeAnnual.objects.filter(
+            year__gte=self.start_year, year__lte=self.end_year
+        ).aggregate(total=models.Sum("interest_earned", default=0))["total"]
 
         return ret
 
@@ -825,6 +838,10 @@ class AnnualStatusOfContributionsAggregator:
         ret["gain_loss"] = FermGainLoss.objects.filter(year=self.year).aggregate(
             total=models.Sum("amount", default=0)
         )["total"]
+        # Granular interest data only found in ExternalIncomeAnnual
+        ret["interest_earned"] = ExternalIncomeAnnual.objects.filter(
+            year=self.year
+        ).aggregate(total=models.Sum("interest_earned", default=0))["total"]
 
         return ret
 

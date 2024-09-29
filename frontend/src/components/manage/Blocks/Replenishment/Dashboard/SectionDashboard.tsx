@@ -296,6 +296,30 @@ function TabIndicatorsFerm(props: any) {
   )
 }
 
+function TabIndicatorsInterestEarned(props: any) {
+  const { contrib, totals } = props
+  return (
+    <SummaryCard
+      label="Interest earned"
+      elements={[
+        {
+          label: 'amount',
+          prefix: '$',
+          value: formatNumber(totals.interest_earned),
+        },
+        {
+          label: 'percentage of pledged',
+          suffix: '%',
+          value: formatNumber(
+            getPercent(totals.agreed_contributions, totals.interest_earned),
+          ),
+        },
+      ]}
+    />
+  )
+}
+
+
 function socRows(data: Record<string, any>, onlyCeits: boolean) {
   let rows = []
 
@@ -354,6 +378,9 @@ function CummulativeTab(props: any) {
             totals={totals}
           />
           <TabIndicatorsFerm contrib={contrib} totals={totals} />
+          {onlyCeits ? null : (
+            <TabIndicatorsInterestEarned contrib={contrib} totals={totals} />
+          )}
         </div>
       </div>
     )
@@ -411,6 +438,9 @@ function TriennialTab(props: any) {
               totals={totals}
             />
             <TabIndicatorsFerm contrib={contrib} totals={totals} />
+            {onlyCeits ? null : (
+              <TabIndicatorsInterestEarned contrib={contrib} totals={totals} />
+            )}
           </div>
         </div>
 
@@ -482,6 +512,9 @@ function AnnualTab(props: any) {
             totals={totals}
           />
           <TabIndicatorsFerm contrib={contrib} totals={totals} />
+          {onlyCeits ? null : (
+            <TabIndicatorsInterestEarned contrib={contrib} totals={totals} />
+          )}
         </div>
       </div>
     )
