@@ -77,8 +77,8 @@ export default function SCAnnual({ year }: { year: string }) {
         agreedContributions) *
       100
     return total.toLocaleString('en-US', {
-      maximumFractionDigits: 0,
-      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+      minimumFractionDigits: 2,
     })
   }, [data])
 

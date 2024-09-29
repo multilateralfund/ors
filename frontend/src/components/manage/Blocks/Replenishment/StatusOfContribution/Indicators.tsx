@@ -61,7 +61,7 @@ const SummaryIndicators = ({ data }: { data: SummaryContributions }) => {
         text="paid out of the total pledged"
         value={
           data.percentage_total_paid_current_year
-            ? formatNumberValue(data.percentage_total_paid_current_year, 0, 0)
+            ? formatNumberValue(data.percentage_total_paid_current_year, 2, 2)
             : null
         }
       />
