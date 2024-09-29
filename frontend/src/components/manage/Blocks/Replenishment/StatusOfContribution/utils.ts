@@ -129,7 +129,7 @@ export function extractContributions(rows: Record<string, number>[]) {
 
     let value = rows[i].outstanding_contributions
 
-    if (value > -1 && value < 1) {
+    if (value >= -5 && value <= 5) {
       value = 0
     }
     if (value < 0) {
@@ -144,7 +144,7 @@ export function extractContributions(rows: Record<string, number>[]) {
     if (bilateral_assistance) {
       r.bilateral_assistance_countries += 1
     }
-    if (promissory_notes) {
+    if (promissory_notes >= 5) {
       r.promissory_notes_countries += 1
     }
   }
