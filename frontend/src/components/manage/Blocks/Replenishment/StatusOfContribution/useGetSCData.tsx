@@ -94,7 +94,7 @@ function useGetSCData(start_year?: string, end_year?: string) {
           country: 'Total',
           ...data.total,
         },
-        ...disputedPerCountry,
+        //...disputedPerCountry,
         {
           agreed_contributions: data.disputed_contributions,
           country: 'Disputed Contributions',
