@@ -7,6 +7,7 @@ import { enqueueSnackbar } from 'notistack'
 import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
 import {
   FieldFormattedNumberInput,
+  FieldSearchableSelect,
   FieldSelect,
   Input,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
@@ -61,10 +62,9 @@ export default function BilateralAssistanceDialog(
     }
   }
 
-  function handleSelectCountry(evt: ChangeEvent<HTMLSelectElement>) {
-    const selectedCountryId = evt.target.value
+  function handleSelectCountry(value: string) {
     for (let i = 0; i < rows.length; i++) {
-      if (parseInt(selectedCountryId, 10) == rows[i].country_id) {
+      if (parseInt(value, 10) == rows[i].country_id) {
         setFields(function (prev) {
           return {
             ...fields,
@@ -84,19 +84,18 @@ export default function BilateralAssistanceDialog(
           onCancel={() => setShowAdd(false)}
           onSubmit={confirmSave}
         >
-          <FieldSelect
+          <FieldSearchableSelect
             id="country_id"
             label="Country"
             onChange={handleSelectCountry}
             required
           >
-            <option value="">-</option>
             {countryOptions.map((c) => (
               <option key={c.country_id} value={c.country_id}>
                 {c.country}
               </option>
             ))}
-          </FieldSelect>
+          </FieldSearchableSelect>
           <FieldFormattedNumberInput
             id="potential_amount"
             label="Potential bilateral assistance"
