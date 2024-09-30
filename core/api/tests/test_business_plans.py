@@ -25,7 +25,7 @@ from core.api.tests.factories import (
 from core.models.business_plan import BPHistory, BusinessPlan
 
 pytestmark = pytest.mark.django_db
-# pylint: disable=C8008, W0221, W0613, R0913, C0302, R0914
+# pylint: disable=C8008, W0221, W0613, R0913, C0302, R0914, R0915
 
 
 @pytest.fixture(name="new_agency")
@@ -1228,6 +1228,10 @@ class TestBPActivitiesDiff:
         _setup_new_business_plan_create,
         _setup_bp_activity_create,
         agency,
+        country_ro,
+        project_cluster_kip,
+        project_cluster_kpp,
+        substance,
     ):
         self.client.force_authenticate(user=agency_user)
 
@@ -1248,8 +1252,13 @@ class TestBPActivitiesDiff:
 
         # update business plan (new version)
         url = reverse("businessplan-list") + f"{business_plan_id}/"
+        other_country = CountryFactory()
+        other_substance = SubstanceFactory.create(name="substance2")
         activity_data = _setup_bp_activity_create
         activity_data["initial_id"] = initial_id
+        activity_data["country_id"] = other_country.id
+        activity_data["project_cluster_id"] = project_cluster_kip.id
+        activity_data["substances"] = [substance.id, other_substance.id]
         activity_data["title"] = "Planu 2"
         activity_data["status"] = "P"
         activity_data["is_multi_year"] = True
@@ -1287,12 +1296,29 @@ class TestBPActivitiesDiff:
         assert response.status_code == 200
 
         assert response.data[0]["change_type"] == "changed"
+        assert response.data[0]["country"]["name"] == other_country.name
+        assert response.data[0]["country_old"]["name"] == country_ro.name
+        assert response.data[0]["project_cluster"]["name"] == project_cluster_kip.name
+        assert (
+            response.data[0]["project_cluster_old"]["name"] == project_cluster_kpp.name
+        )
+        assert response.data[0]["substances"] == [substance.id, other_substance.id]
+        assert response.data[0]["substances_old"] == [substance.id]
+        assert response.data[0]["substances_display"] == [
+            substance.name,
+            other_substance.name,
+        ]
+        assert response.data[0]["substances_display_old"] == [substance.name]
         assert response.data[0]["title"] == "Planu 2"
         assert response.data[0]["title_old"] == "Planu"
         assert response.data[0]["status"] == "P"
         assert response.data[0]["status_old"] == "A"
+        assert response.data[0]["status_display"] == "Planned"
+        assert response.data[0]["status_display_old"] == "Approved"
         assert response.data[0]["is_multi_year"] is True
         assert response.data[0]["is_multi_year_old"] is False
+        assert response.data[0]["is_multi_year_display"] == "Multi-Year"
+        assert response.data[0]["is_multi_year_display_old"] == "Individual"
         assert response.data[0]["remarks"] == "Merge rau"
         assert response.data[0]["remarks_old"] == "Merge bine, bine, bine ca aeroplanu"
 

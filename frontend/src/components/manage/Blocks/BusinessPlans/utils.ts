@@ -6,3 +6,6 @@ export const filtersToQueryParams = (filters: any) => {
 
   return filtersParams.join('&')
 }
+
+export const getAgencyByName = (commonSlice: any, agency: string) =>
+  commonSlice.agencies.data.find((item: any) => item.name === agency)
