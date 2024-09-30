@@ -1,10 +1,10 @@
-from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from rest_framework import serializers
 
 from core.api.serializers import CountrySerializer
 from core.api.serializers.agency import AgencySerializer
+from core.api.serializers.base import BulkCreateListSerializer
 from core.api.serializers.project import ProjectClusterSerializer
 from core.api.serializers.project import ProjectSectorSerializer
 from core.api.serializers.project import ProjectSubSectorSerializer
@@ -53,6 +53,10 @@ class BPActivityValueSerializer(serializers.ModelSerializer):
             "value_odp",
             "value_mt",
         ]
+        list_serializer_class = BulkCreateListSerializer
+
+    def create(self, validated_data):
+        return BPActivityValue(**validated_data)
 
 
 class BusinessPlanSerializer(serializers.ModelSerializer):
@@ -313,29 +317,15 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
             "comment_types",
             "values",
         ]
+        list_serializer_class = BulkCreateListSerializer
 
-    def _create_bp_activity_values(self, bp_activity, activity_values):
-        bp_activity.values.all().delete()
-
-        for activity_value in activity_values:
-            activity_value["bp_activity_id"] = bp_activity.id
-        activity_value_serializer = BPActivityValueSerializer(
-            data=activity_values, many=True
-        )
-        activity_value_serializer.is_valid(raise_exception=True)
-        activity_value_serializer.save()
-
-    @transaction.atomic
     def create(self, validated_data):
-        if self.context.get("ignore_comment", False):
-            validated_data.pop("comment_secretariat", "")
-            validated_data.pop("comment_types", [])
+        data = validated_data.copy()
+        data.pop("values", [])
+        data.pop("substances", [])
+        data.pop("comment_types", [])
 
-        activity_values = validated_data.pop("values", [])
-        bp_activity = super().create(validated_data)
-        self._create_bp_activity_values(bp_activity, activity_values)
-
-        return bp_activity
+        return BPActivity(**data)
 
 
 class BusinessPlanCreateSerializer(serializers.ModelSerializer):
@@ -357,18 +347,36 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
             "activities",
         ]
 
+    def _create_bp_activity_values(self, bp_activity, activity_values):
+        for activity_value in activity_values:
+            activity_value["bp_activity_id"] = bp_activity.id
+        activity_value_serializer = BPActivityValueSerializer(
+            data=activity_values, many=True
+        )
+        activity_value_serializer.is_valid(raise_exception=True)
+        activity_value_serializer.save()
+
     def _create_bp_activities(self, business_plan, activities):
+        ignore_comment = self.context.get("ignore_comment", False)
         for activity in activities:
             activity["business_plan_id"] = business_plan.id
+            if ignore_comment:
+                activity.pop("comment_secretariat", "")
+                activity.pop("comment_types", [])
 
-        ignore_comment = self.context.get("ignore_comment", False)
-        activity_serializer = BPActivityCreateSerializer(
-            data=activities, many=True, context={"ignore_comment": ignore_comment}
-        )
+        activity_serializer = BPActivityCreateSerializer(data=activities, many=True)
         activity_serializer.is_valid(raise_exception=True)
         activity_serializer.save()
 
-    @transaction.atomic
+        for instance, activity_data in zip(
+            activity_serializer.instance, activities, strict=True
+        ):
+            substances = activity_data.get("substances", [])
+            comment_types = activity_data.get("comment_types", [])
+            instance.substances.set(substances)
+            instance.comment_types.set(comment_types)
+            self._create_bp_activity_values(instance, activity_data.get("values", []))
+
     def create(self, validated_data):
         activities = validated_data.pop("activities", [])
         business_plan = super().create(validated_data)
