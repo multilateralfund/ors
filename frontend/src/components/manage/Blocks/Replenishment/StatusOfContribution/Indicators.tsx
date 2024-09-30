@@ -3,7 +3,6 @@ import cx from 'classnames'
 import { formatNumberValue } from '../utils'
 import {
   AnnualContributions,
-  Contributions,
   SummaryContributions,
   TriennialContributions,
 } from './types'

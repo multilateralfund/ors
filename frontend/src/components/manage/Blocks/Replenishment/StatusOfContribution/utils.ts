@@ -112,6 +112,7 @@ export function extractContributions(rows: Record<string, number>[]) {
 
     contributions: 0,
     contributions_advance: 0,
+    contributions_in_full: 0,
     contributions_percentage: 0,
 
     countries: rows.length,
@@ -126,6 +127,7 @@ export function extractContributions(rows: Record<string, number>[]) {
   for (let i = 0; i < rows.length; i++) {
     const bilateral_assistance = rows[i].bilateral_assistance
     const promissory_notes = rows[i].promissory_notes
+    const cash_payments = rows[i].cash_payments
 
     let value = rows[i].outstanding_contributions
 
@@ -134,13 +136,16 @@ export function extractContributions(rows: Record<string, number>[]) {
     }
     if (value < 0) {
       r.contributions_advance += 1
-      r.contributions += 1
+      r.contributions_in_full += 1
     } else if (value === 0) {
-      r.contributions += 1
+      r.contributions_in_full += 1
     } else {
       r.outstanding_contributions += 1
     }
 
+    if (cash_payments >= 5) {
+      r.contributions += 1
+    }
     if (bilateral_assistance) {
       r.bilateral_assistance_countries += 1
     }
