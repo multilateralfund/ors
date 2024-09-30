@@ -96,19 +96,20 @@ export default function BPDiffTable({
         minWidth: 80,
         resizable: true,
         valueGetter: (params: any) => valuesCellGetter(params, 'value_usd'),
-      }),
-        valuesODP.push({
-          autoHeaderHeight: true,
-          autoHeight: true,
-          cellClass: 'ag-text-center',
-          cellRenderer: numberCellRenderer,
-          field: `value_odp_${year}`,
-          headerClass: 'ag-text-center',
-          headerName: `${label}`,
-          minWidth: 80,
-          resizable: true,
-          valueGetter: (params: any) => valuesCellGetter(params, 'value_odp'),
-        })
+      })
+
+      valuesODP.push({
+        autoHeaderHeight: true,
+        autoHeight: true,
+        cellClass: 'ag-text-center',
+        cellRenderer: numberCellRenderer,
+        field: `value_odp_${year}`,
+        headerClass: 'ag-text-center',
+        headerName: `${label}`,
+        minWidth: 80,
+        resizable: true,
+        valueGetter: (params: any) => valuesCellGetter(params, 'value_odp'),
+      })
 
       valuesMT.push({
         autoHeaderHeight: true,
@@ -165,8 +166,8 @@ export default function BPDiffTable({
 
   const displayFilters = () => {
     return (
-      <div className="bp-table-toolbar mb-4 flex flex-col justify-end gap-4 lg:flex-row lg:items-center">
-        <div className="flex gap-4">
+      <div className="bp-table-toolbar mb-4 flex flex-col gap-4 lg:flex-row lg:items-center">
+        <div className="ml-auto flex gap-4">
           <TableDateSwitcher
             changeHandler={(event, value) => setGridOptions(value)}
             value={gridOptions}
