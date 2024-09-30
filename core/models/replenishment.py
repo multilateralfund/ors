@@ -420,6 +420,22 @@ class ExternalIncomeAnnual(models.Model):
     interest_earned = models.DecimalField(
         max_digits=30, decimal_places=15, default=Decimal(0)
     )
+
+    # Per-quarter breakdown of interest earned so we can import granular data.
+    # But for now only the annual `interest_earned` field is taken into account in APIs.
+    interest_earned_quarter_1 = models.DecimalField(
+        max_digits=30, decimal_places=15, null=True, blank=True
+    )
+    interest_earned_quarter_2 = models.DecimalField(
+        max_digits=30, decimal_places=15, null=True, blank=True
+    )
+    interest_earned_quarter_3 = models.DecimalField(
+        max_digits=30, decimal_places=15, null=True, blank=True
+    )
+    interest_earned_quarter_4 = models.DecimalField(
+        max_digits=30, decimal_places=15, null=True, blank=True
+    )
+
     miscellaneous_income = models.DecimalField(
         max_digits=30, decimal_places=15, default=Decimal(0)
     )
