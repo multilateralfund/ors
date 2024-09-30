@@ -2,10 +2,8 @@ from constance import config
 from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
-from django.db.models import Count
-from django.db.models import F
-from django.db.models import Window
-from django.db.models.functions import RowNumber
+from django.db.models import Count, F, Window, Value, CharField
+from django.db.models.functions import RowNumber, Concat, Cast
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
@@ -26,6 +24,7 @@ from core.api.serializers import CPReportGroupSerializer
 from core.api.serializers.cp_comment import CPCommentSerializer
 from core.api.serializers.cp_report import (
     CPReportCreateSerializer,
+    CPReportListSerializer,
     CPReportNoRelatedSerializer,
     CPReportSerializer,
 )
@@ -48,40 +47,114 @@ User = get_user_model()
 # pylint: disable=R0901
 
 
-class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
-    """
-    API endpoint that allows country programmes to be viewed or created.
-    """
-
+class BaseCPReportListView(generics.ListAPIView):
     permission_classes = [IsSecretariat | IsCountryUser | IsViewer]
     filterset_class = CPReportFilter
     filter_backends = [
         DjangoFilterBackend,
         filters.OrderingFilter,
     ]
-    lookup_field = "id"
-    ordering_fields = ["created_at", "year", "country__name"]
+    serializer_class = CPReportListSerializer
 
     def get_queryset(self):
         user = self.request.user
-        cp_reports = CPReport.objects.filter(country__is_a2=False)
+        cp_reports = CPReport.objects.filter(country__is_a2=False).annotate(
+            is_archive=Value(True),
+            cntr_year=Concat(
+                Cast("country_id", CharField()),
+                Value("_"),
+                Cast("year", CharField()),
+            ),
+        )
+
+        # filter by country for country users
         if user.user_type in (
             user.UserType.COUNTRY_USER,
             user.UserType.COUNTRY_SUBMITTER,
         ):
-            cp_reports = cp_reports.filter(country=user.country)
+            self.request.query_params["country_id"] = user.country.id
 
+        # if the user wants only final reports we need to add the final reports from archive
+        if self.request.query_params.get("status") == CPReport.CPReportStatus.FINAL:
+            draft_reports = (
+                cp_reports.filter(status=CPReport.CPReportStatus.DRAFT)
+                .values_list("cntr_year")
+                .distinct()
+                .all()
+            )
+            cp_reports_arch = (
+                CPReportArchive.objects.filter(country__is_a2=False)
+                .annotate(
+                    is_archive=Value(True),
+                    cntr_year=Concat(
+                        Cast("country_id", CharField()),
+                        Value("_"),
+                        Cast("year", CharField()),
+                    ),
+                )
+                .filter(cntr_year__in=draft_reports)
+                .select_related("country", "created_by", "version_created_by")
+            )
+
+            # exclude the archive reports that are already in the cp_reports
+
+            cp_reports_arch = self.filter_queryset(cp_reports_arch)
+
+            cp_reports = (
+                self.filter_queryset(cp_reports).select_related(
+                    "country", "created_by", "version_created_by"
+                )
+            ).union(cp_reports_arch)
+
+        return cp_reports
+
+    def list(self, request, *args, **kwargs):
+        # we do not want to filter because the queryset is already filtered
+        queryset = self.get_queryset().order_by(
+            self.request.query_params.get("ordering", "name")
+        )
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+class CPReportView(
+    BaseCPReportListView, generics.CreateAPIView, generics.UpdateAPIView
+):
+    """
+    API endpoint that allows country programmes to be viewed or created.
+    """
+
+    lookup_field = "id"
+    ordering_fields = ["created_at", "year", "country__name"]
+
+    def get_queryset(self):
         if self.request.method == "PUT":
+            user = self.request.user
+            cp_reports = CPReport.objects.filter(country__is_a2=False)
+            if user.user_type in (
+                user.UserType.COUNTRY_USER,
+                user.UserType.COUNTRY_SUBMITTER,
+            ):
+                cp_reports = cp_reports.filter(country=user.country)
+
             return cp_reports.select_for_update()
-        return cp_reports.select_related(
-            "country", "created_by", "version_created_by"
-        ).order_by("name")
+        return super().get_queryset()
 
     def get_serializer_class(self):
         if self.request.method == "POST":
             return CPReportCreateSerializer
-        return CPReportNoRelatedSerializer
+        if self.request.method == "PUT":
+            return CPReportNoRelatedSerializer
+        if self.request.method == "GET":
+            return CPReportListSerializer
 
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
         # check if the cp_record already exists
         cp_report = CPReport.objects.filter(
@@ -105,8 +178,7 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
         # All other user types and unsafe method permissions are checked via permission
         # classes.
         if (
-            "status" in request.data
-            and request.data["status"] == CPReport.CPReportStatus.FINAL
+            request.data.get("status") == CPReport.CPReportStatus.FINAL
             and request.user.user_type == User.UserType.COUNTRY_USER
         ):
             raise PermissionDenied(
@@ -507,7 +579,7 @@ class CPReportStatusUpdateView(generics.GenericAPIView):
         return Response(serializer.data)
 
 
-class CPReportGroupByYearView(generics.ListAPIView):
+class CPReportGroupByYearView(BaseCPReportListView):
     """
     API endpoint that allows listing country programme reports grouped.
     """
@@ -527,16 +599,6 @@ class CPReportGroupByYearView(generics.ListAPIView):
         if direction == "asc":
             return self.group_by
         return "-" + self.group_by
-
-    def get_queryset(self):
-        user = self.request.user
-        queryset = CPReport.objects.filter(country__is_a2=False)
-        if user.user_type in (
-            user.UserType.COUNTRY_USER,
-            user.UserType.COUNTRY_SUBMITTER,
-        ):
-            queryset = queryset.filter(country=user.country)
-        return queryset
 
     @staticmethod
     def get_group(obj):
@@ -564,7 +626,7 @@ class CPReportGroupByYearView(generics.ListAPIView):
         )
 
         # Only paginate the query based on unique Group IDs
-        queryset = self.filter_queryset(self.get_queryset())
+        queryset = self.get_queryset()
         page_queryset = (
             queryset.values_list(self.group_by, flat=True)
             .distinct()

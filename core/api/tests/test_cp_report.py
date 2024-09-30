@@ -101,6 +101,7 @@ class TestCPReportList(BaseTest):
         response = self.client.get(self.url)
         assert response.status_code == 200
         assert len(response.data) == 3
+        print(response.data)
         assert response.data[0]["name"] == "Romania2010"
         assert response.data[2]["name"] == "Romania2012"
 

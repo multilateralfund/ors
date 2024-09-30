@@ -19,7 +19,6 @@ class CPReportFilter(filters.FilterSet):
     status = filters.CharFilter(method="filter_status")
 
     class Meta:
-        model = CPReport
         fields = ["country_id", "name", "year", "status"]
 
     def filter_status(self, queryset, _name, value):
@@ -37,9 +36,8 @@ class CPReportArchiveFilter(filters.FilterSet):
         field_name="country_id",
         queryset=Country.objects.all(),
         widget=CSVWidget,
-        required=True,
     )
-    year = filters.NumberFilter(field_name="year", required=True)
+    year = filters.NumberFilter(field_name="year")
 
     class Meta:
         model = CPReportArchive
