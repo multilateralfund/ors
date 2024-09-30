@@ -19,7 +19,6 @@ from core.api.views import (
     ReplenishmentPaymentViewSet,
     ReplenishmentPaymentFileDownloadView,
     DisputedContributionViewSet,
-    BilateralAssistanceViewSet,
     ReplenishmentDashboardExportView,
     SummaryStatusOfContributionsExportView,
     TriennialStatusOfContributionsExportView,
@@ -126,11 +125,6 @@ router.register(
     "replenishment/disputed-contributions",
     DisputedContributionViewSet,
     basename="replenishment-disputed-contributions",
-)
-router.register(
-    "replenishment/bilateral-assistance",
-    BilateralAssistanceViewSet,
-    basename="replenishment-bilateral-assistance",
 )
 router.register(
     "replenishment/scales-of-assessment",

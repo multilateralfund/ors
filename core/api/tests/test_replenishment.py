@@ -942,45 +942,6 @@ class TestDisputedContributions(BaseTest):
         assert DisputedContribution.objects.count() == 0
 
 
-class TestBilateralAssistance(BaseTest):
-    url = reverse("replenishment-bilateral-assistance-list")
-
-    def test_bilateral_assistance(self, treasurer_user):
-        country = CountryFactory.create(name="Country 1", iso3="XYZ")
-
-        year_1 = 2018
-        year_2 = 2020
-        CountryCEITStatusFactory.create(
-            country=country, start_year=year_1, end_year=year_2, is_ceit=True
-        )
-        contribution_annual = AnnualContributionStatusFactory.create(
-            country=country, year=year_1
-        )
-        contribution_triennial = TriennialContributionStatusFactory.create(
-            country=country, start_year=year_1, end_year=year_2
-        )
-
-        amount = Decimal("101.785")
-
-        post_data = {
-            "year": year_1,
-            "country_id": country.id,
-            "amount": amount,
-        }
-
-        self.client.force_authenticate(user=treasurer_user)
-        response = self.client.post(
-            reverse("replenishment-bilateral-assistance-list"),
-            data=post_data,
-        )
-        assert response.status_code == 200
-
-        contribution_annual.refresh_from_db()
-        assert contribution_annual.bilateral_assistance == amount
-        contribution_triennial.refresh_from_db()
-        assert contribution_triennial.bilateral_assistance == amount
-
-
 class TestReplenishmentDashboard(BaseTest):
     url = reverse("replenishment-dashboard")
     fifteen_decimals = decimal.Decimal("0.000000000000001")
