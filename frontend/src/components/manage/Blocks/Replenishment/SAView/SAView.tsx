@@ -915,11 +915,13 @@ function SAView(props: SAViewProps) {
         countriesForAdd={countriesForAdd}
         enableEdit={ctx.isTreasurer}
         enableSort={true}
-        extraRows={[{ country: 'Total', ...sumColumns(computedData) }]}
         rowData={formattedTableData}
         showAdd={showAdd}
         sortDirection={sortDirection}
         sortOn={sortOn}
+        extraRows={formatTableData([
+          { country: 'Total', ...sumColumns(computedData) } as SAContribution,
+        ])}
         onAddCancel={() => setShowAdd(false)}
         onAddSubmit={handleAddSubmit}
         onCellEdit={handleCellEdit}

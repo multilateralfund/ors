@@ -2,6 +2,7 @@
 import React, { useContext, useMemo, useState } from 'react'
 
 import ConfirmDialog from '@ors/components/manage/Blocks/Replenishment/ConfirmDialog'
+import BilateralAssistanceDialog from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/BilateralAssistanceDialog'
 import DisputedContributionDialog from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/DisputedContributionDialog'
 import { AnnualIndicators } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/Indicators'
 import useGetSCData from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/useGetSCData'
@@ -146,11 +147,19 @@ export default function SCAnnual({ year }: { year: string }) {
           </p>
         </div>
         {ctx.isTreasurer && (
-          <DisputedContributionDialog
-            countryOptions={countriesInTable}
-            refetchSCData={refetchSCData}
-            year={year}
-          />
+          <div className="flex items-center gap-x-2 print:hidden">
+            <DisputedContributionDialog
+              countryOptions={countriesInTable}
+              refetchSCData={refetchSCData}
+              year={year}
+            />
+            <BilateralAssistanceDialog
+              countryOptions={countriesInTable}
+              refetchSCData={refetchSCData}
+              rows={rows}
+              year={year}
+            />
+          </div>
         )}
       </div>
     </>

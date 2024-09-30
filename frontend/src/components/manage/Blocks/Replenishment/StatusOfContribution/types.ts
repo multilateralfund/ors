@@ -70,3 +70,10 @@ export interface DisputedContributionDialogProps {
   refetchSCData: () => void
   year: string
 }
+
+export interface BilateralAssistanceDialogProps {
+  countryOptions: { country: string; country_id: number }[]
+  refetchSCData: () => void
+  rows: SoCRow[]
+  year: string
+}

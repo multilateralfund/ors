@@ -148,7 +148,7 @@ function formattedValue(value: boolean | null | number | string) {
 
 export function formatTableData(
   tableData: SAContribution[],
-  editableColumns: string[],
+  editableColumns: string[] = [],
 ) {
   const result: Record<string, any>[] = new Array(tableData.length)
 

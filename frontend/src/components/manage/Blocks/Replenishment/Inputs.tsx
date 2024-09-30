@@ -1,6 +1,6 @@
 import type { TriggerButtonProps } from '@ors/components/manage/Widgets/YearRangeWidget'
 import type { YearRangeWidgetProps } from '@ors/components/manage/Widgets/YearRangeWidget'
-import type { MouseEventHandler } from 'react'
+import type { InvalidEvent, MouseEventHandler } from 'react'
 
 import React, {
   ChangeEvent,
@@ -25,7 +25,25 @@ import { IoClose } from 'react-icons/io5'
 const CLASSESS =
   'ml-4 rounded-lg border border-solid border-primary bg-white px-4 py-2 grow disabled:bg-gray-200 disabled:border-0'
 
+const CSS_MASKED =
+  'absolute left-0 top-0 -z-10 inline-block h-0 border-0 focus-visible:ring-0 focus-visible:outline-none'
+
 const STYLE = { fontFamily: 'var(--font-roboto-condensed)' }
+
+function refocusMaskedInput(
+  elReal: HTMLInputElement,
+  elMask: HTMLInputElement,
+) {
+  function focusMaskOnInvalid() {
+    elMask.focus()
+  }
+
+  elReal.addEventListener('invalid', focusMaskOnInvalid)
+
+  return function () {
+    elReal.removeEventListener('invalid', focusMaskOnInvalid)
+  }
+}
 
 export interface IFieldProps extends React.PropsWithChildren {
   id: string
@@ -353,6 +371,7 @@ export function FormattedNumberInput(props: IFormattedNumberInputProps) {
   const [inputMode, setInputMode] = useState(false)
 
   const realInput = useRef<HTMLInputElement>(null)
+  const maskInput = useRef<HTMLInputElement>(null)
 
   useEffect(
     function () {
@@ -363,13 +382,19 @@ export function FormattedNumberInput(props: IFormattedNumberInputProps) {
     [realInput, inputMode],
   )
 
+  useEffect(function () {
+    if (realInput.current && maskInput.current) {
+      return refocusMaskedInput(realInput.current, maskInput.current)
+    }
+  }, [])
+
   return (
-    <>
+    <div className="relative">
       <input
         id={id}
         name={name || id}
         className={cx(CLASSESS, className, {
-          hidden: !inputMode && !onlyNumber,
+          [CSS_MASKED]: !inputMode && !onlyNumber,
         })}
         ref={realInput}
         style={STYLE}
@@ -381,16 +406,18 @@ export function FormattedNumberInput(props: IFormattedNumberInputProps) {
       />
       <input
         id={`${id}_mask`}
-        name={`${name || id}_mask`}
-        className={cx(CLASSESS, className, { hidden: inputMode || onlyNumber })}
+        className={cx(CLASSESS, className, {
+          [CSS_MASKED]: inputMode || onlyNumber,
+        })}
         readOnly={true}
+        ref={maskInput}
         style={STYLE}
         type="text"
         value={formatDecimalValue(getFloat(value), {})}
         onFocus={() => setInputMode(true)}
         {...rest}
       />
-    </>
+    </div>
   )
 }
 
@@ -404,6 +431,7 @@ export function DateInput(props: IDateInputProps) {
   const [inputMode, setInputMode] = useState(false)
 
   const realInput = useRef<HTMLInputElement>(null)
+  const maskInput = useRef<HTMLInputElement>(null)
 
   useEffect(
     function () {
@@ -414,6 +442,12 @@ export function DateInput(props: IDateInputProps) {
     },
     [realInput, inputMode],
   )
+
+  useEffect(function () {
+    if (realInput.current && maskInput.current) {
+      return refocusMaskedInput(realInput.current, maskInput.current)
+    }
+  }, [])
 
   const maskDate = useMemo(
     function () {
@@ -433,7 +467,7 @@ export function DateInput(props: IDateInputProps) {
       <input
         id={id}
         name={name || id}
-        className={cx(CLASSESS, className, { hidden: !inputMode })}
+        className={cx(CLASSESS, className, { [CSS_MASKED]: !inputMode })}
         ref={realInput}
         style={STYLE}
         type="date"
@@ -444,8 +478,8 @@ export function DateInput(props: IDateInputProps) {
       />
       <input
         id={`${id}_mask`}
-        name={`${name || id}_mask`}
-        className={cx(CLASSESS, className, { hidden: inputMode })}
+        className={cx(CLASSESS, className, { [CSS_MASKED]: inputMode })}
+        ref={maskInput}
         style={STYLE}
         type="text"
         value={maskDate}

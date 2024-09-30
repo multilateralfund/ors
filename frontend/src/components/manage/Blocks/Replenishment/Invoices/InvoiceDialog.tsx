@@ -258,12 +258,6 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
   )
 
   const handleFormSubmit: InvoiceDialogProps['onSubmit'] = (formData, evt) => {
-    for (const key of formData.keys()) {
-      if (key.endsWith('_mask')) {
-        formData.delete(key)
-      }
-    }
-
     const fieldsKeys = Object.keys(fields) as (keyof InvoiceDialogFields)[]
     for (let i = 0; i < fieldsKeys.length; i++) {
       formData.set(fieldsKeys[i], fields[fieldsKeys[i]])
