@@ -105,7 +105,8 @@ class CPReportView(generics.ListCreateAPIView, generics.UpdateAPIView):
         # All other user types and unsafe method permissions are checked via permission
         # classes.
         if (
-            request.data["status"] == CPReport.CPReportStatus.FINAL
+            "status" in request.data
+            and request.data["status"] == CPReport.CPReportStatus.FINAL
             and request.user.user_type == User.UserType.COUNTRY_USER
         ):
             raise PermissionDenied(
