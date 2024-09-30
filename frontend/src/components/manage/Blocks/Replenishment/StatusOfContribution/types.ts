@@ -28,6 +28,7 @@ export interface Contributions {
 
   contributions: number
   contributions_advance: number
+  contributions_in_full: number
   contributions_percentage: number
 
   countries: number

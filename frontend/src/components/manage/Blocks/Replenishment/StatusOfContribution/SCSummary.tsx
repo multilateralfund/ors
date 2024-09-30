@@ -55,23 +55,30 @@ export default function SCSummary() {
 
   const indicatorsData: SummaryContributions = useMemo(() => {
     return rows.reduce(
-      (acc, { outstanding_contributions }) => {
+      (acc, { cash_payments, outstanding_contributions }) => {
         let value = outstanding_contributions
+        const cash_value = cash_payments
+
         if (value >= -5 && value <= 5) {
           value = 0
         }
         if (value < 0) {
           acc.contributions_advance += 1
+          acc.contributions_full += 1
         } else if (value === 0) {
-          acc.contributions += 1
+          acc.contributions_full += 1
         } else {
           acc.outstanding_contributions += 1
+        }
+        if (cash_value >= 5) {
+          acc.contributions += 1
         }
         return acc
       },
       {
         contributions: 0,
         contributions_advance: 0,
+        contributions_full: 0,
         outstanding_contributions: 0,
         percentage_total_paid_current_year:
           data.percentage_total_paid_current_year,
