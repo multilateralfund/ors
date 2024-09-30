@@ -92,7 +92,6 @@ def set_chemicals_displayed_status(df, time_frame, section):
         "section": section,
     }
 
-    formats = []
     sort_order = 100
     for index_row, row in df.iterrows():
         chemical_name = row["chemical"]
@@ -106,11 +105,8 @@ def set_chemicals_displayed_status(df, time_frame, section):
                 "sort_order": sort_order,
             }
         )
-        formats.append(CPReportFormatRow(**format_data))
+        CPReportFormatRow.objects.get_or_create(**format_data)
         sort_order += 100
-
-    # create formats
-    CPReportFormatRow.objects.bulk_create(formats)
 
 
 def import_cp_format_row(dir_path):
@@ -144,7 +140,6 @@ def import_usages_format(file_path):
 
     df = pd.read_excel(file_path).replace({np.nan: None})
 
-    cp_fomats = []
     for index_row, row in df.iterrows():
         time_frame = TimeFrame.objects.find_by_frame(row["min_year"], row["max_year"])
         if not time_frame:
@@ -167,9 +162,7 @@ def import_usages_format(file_path):
                 "sort_order": row["sort_order"],
                 "header_name": row["header_name"] or usage.name,
             }
-            cp_fomats.append(CPReportFormatColumn(**cp_format_data))
-
-    CPReportFormatColumn.objects.bulk_create(cp_fomats)
+            CPReportFormatColumn.objects.get_or_create(**cp_format_data)
 
 
 def set_adm_immutable_cells():
