@@ -186,14 +186,14 @@ class TestCPReportList(BaseTest):
         assert len(response.data) == 9
         for report in response.data:
             assert report["status"] == "draft"
-            assert report["is_archive"] == False
+            assert report["is_archive"] is False
 
         response = self.client.get(self.url, {"status": "final"})
         assert response.status_code == 200
         assert len(response.data) == 3
         for report in response.data:
             assert report["status"] == "final"
-            assert report["is_archive"] == True
+            assert report["is_archive"] is True
 
 
 class TestCPReportListGroupByYear(BaseTest):

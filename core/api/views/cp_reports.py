@@ -2,8 +2,8 @@ from constance import config
 from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
-from django.db.models import Count, F, Window, Value, CharField
-from django.db.models.functions import RowNumber, Concat, Cast
+from django.db.models import Count, F, Window
+from django.db.models.functions import RowNumber
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
@@ -105,8 +105,8 @@ class CPReportView(
             return CPReportCreateSerializer
         if self.request.method == "PUT":
             return CPReportNoRelatedSerializer
-        if self.request.method == "GET":
-            return CPReportListSerializer
+        # "GET":
+        return CPReportListSerializer
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
