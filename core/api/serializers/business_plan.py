@@ -359,6 +359,26 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
             "activities",
         ]
 
+    def create_m2m_substances(self, bp_activity, substance_ids):
+        through_objs = []
+        for substance_id in substance_ids:
+            through_objs.append(
+                BPActivity.substances.through(
+                    substance_id=substance_id, bpactivity_id=bp_activity.id
+                )
+            )
+        return through_objs
+
+    def create_m2m_comment_types(self, bp_activity, comment_type_ids):
+        through_objs = []
+        for comment_type_id in comment_type_ids:
+            through_objs.append(
+                BPActivity.comment_types.through(
+                    commenttype_id=comment_type_id, bpactivity_id=bp_activity.id
+                )
+            )
+        return through_objs
+
     def _create_bp_activity_values(self, activity_values):
         activity_value_serializer = BPActivityValueSerializer(
             data=activity_values, many=True
@@ -379,18 +399,24 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
         activity_serializer.save()
 
         activity_values = []
+        m2m_substances = []
+        m2m_comment_types = []
         for instance, activity_data in zip(
             activity_serializer.instance, activities, strict=True
         ):
-            substances = activity_data.get("substances", [])
-            comment_types = activity_data.get("comment_types", [])
-            instance.substances.set(substances)
-            instance.comment_types.set(comment_types)
+            substance_ids = activity_data.get("substances", [])
+            comment_type_ids = activity_data.get("comment_types", [])
+            m2m_substances += self.create_m2m_substances(instance, substance_ids)
+            m2m_comment_types += self.create_m2m_comment_types(
+                instance, comment_type_ids
+            )
 
             for activity_value in activity_data.get("values", []):
                 activity_value["bp_activity_id"] = instance.id
                 activity_values.append(activity_value)
 
+        BPActivity.substances.through.objects.bulk_create(m2m_substances)
+        BPActivity.comment_types.through.objects.bulk_create(m2m_comment_types)
         self._create_bp_activity_values(activity_values)
 
     def create(self, validated_data):
