@@ -43,6 +43,7 @@ export interface IDateInputProps
 
 export interface IFormattedNumberInputProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> {
+  decimalDigits?: number
   onlyNumber?: boolean
   value?: number | string
 }

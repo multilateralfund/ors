@@ -19,6 +19,18 @@ import ClearButton from './ClearButton'
 import Input from './Input'
 import { CLASSESS, CSS_MASKED, STYLE } from './constants'
 
+function getSelectedOption(value: string, options: IOption[]) {
+  let result: IOption | null = null
+
+  for (let i = 0; i < options.length; i++) {
+    if (options[i].value === value) {
+      result = options[i]
+    }
+  }
+
+  return result
+}
+
 export interface IOption {
   label: string
   value: string
@@ -39,7 +51,7 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
   const selectRef = useRef<HTMLSelectElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const [value, setValue] = useState(defaultValue)
+  const [value, setValue] = useState(defaultValue?.toString() || '')
   const [options, setOptions] = useState<IOption[]>([])
   const [searchValue, setSearchValue] = useState<string>('')
 
@@ -55,15 +67,7 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
 
   const selectedOption = useMemo(
     function () {
-      let result: IOption | null = null
-
-      for (let i = 0; i < options.length; i++) {
-        if (options[i].value === value) {
-          result = options[i]
-        }
-      }
-
-      return result
+      return getSelectedOption(value, options)
     },
     [options, value],
   )
@@ -192,9 +196,17 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
 
   useEffect(() => {
     if (selectRef.current) {
-      setOptions(getOptions(selectRef.current))
+      const options = getOptions(selectRef.current)
+      setOptions(options)
+      const selectedOption = getSelectedOption(
+        defaultValue?.toString() || '',
+        options,
+      )
+      if (selectedOption) {
+        setSearchValue(selectedOption.label)
+      }
     }
-  }, [children])
+  }, [defaultValue, children])
 
   const withClear = hasClear && value
 

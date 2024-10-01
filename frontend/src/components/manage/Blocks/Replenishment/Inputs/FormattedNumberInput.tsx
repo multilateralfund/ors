@@ -11,7 +11,16 @@ import { refocusMaskedInput } from './utils'
 export default function FormattedNumberInput(
   props: IFormattedNumberInputProps,
 ) {
-  const { id, className, name, onChange, onlyNumber, value, ...rest } = props
+  const {
+    id,
+    className,
+    decimalDigits = 2,
+    name,
+    onChange,
+    onlyNumber,
+    value,
+    ...rest
+  } = props
 
   const [inputMode, setInputMode] = useState(false)
 
@@ -58,7 +67,11 @@ export default function FormattedNumberInput(
         ref={maskInput}
         style={STYLE}
         type="text"
-        value={formatDecimalValue(getFloat(value), {})}
+        value={formatDecimalValue(getFloat(value), {
+          maximumFractionDigits: decimalDigits,
+          minimumFractionDigits: decimalDigits,
+        })}
+        onChange={() => false}
         onFocus={() => setInputMode(true)}
         {...rest}
       />

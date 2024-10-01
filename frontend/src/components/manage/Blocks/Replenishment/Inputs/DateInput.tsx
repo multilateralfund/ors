@@ -44,7 +44,7 @@ export default function DateInput(props: IDateInputProps) {
   )
 
   return (
-    <>
+    <div className="relative">
       <input
         id={id}
         name={name || id}
@@ -68,6 +68,6 @@ export default function DateInput(props: IDateInputProps) {
         onFocus={() => setInputMode(true)}
         {...rest}
       />
-    </>
+    </div>
   )
 }
