@@ -1,11 +1,6 @@
 import React from 'react'
 
-import {
-  Checkbox,
-  FormControlLabel,
-  InputAdornment,
-  IconButton as MuiIconButton,
-} from '@mui/material'
+import { InputAdornment, IconButton as MuiIconButton } from '@mui/material'
 import { union } from 'lodash'
 
 import Field from '@ors/components/manage/Form/Field'
@@ -14,6 +9,7 @@ import { debounce } from '@ors/helpers'
 import useFocusOnCtrlF from '@ors/hooks/useFocusOnCtrlF'
 
 import ActivitiesFiltersSelectedOpts from './BPList/ActivitiesFiltersSelectedOpts'
+import { multiYearFilterOptions } from './constants'
 
 import { IoSearchOutline } from 'react-icons/io5'
 
@@ -195,23 +191,29 @@ export default function ActivitiesFilters(props: any) {
           }}
           multiple
         />
-        <FormControlLabel
-          className="BPList !m-0"
-          label="Multi-Year"
-          control={
-            <Checkbox
-              checked={filters.is_multi_year}
-              onChange={(event) => {
-                handleFilterChange({
-                  is_multi_year: event.target.checked,
-                })
-                handleParamsChange({
-                  is_multi_year: event.target.checked,
-                  offset: 0,
-                })
-              }}
-            />
+        <Field
+          FieldProps={{ className: 'mb-0 w-full md:w-40 BPList' }}
+          Input={{ placeholder: 'IND/MYA' }}
+          getOptionLabel={(option: any) => option?.name}
+          options={getFilterOptions(multiYearFilterOptions, 'is_multi_year')}
+          value={[]}
+          widget="autocomplete"
+          isOptionEqualToValue={(option: any, value: any) =>
+            option.id === value
           }
+          onChange={(_: any, value: any) => {
+            const isMultiYear = filters.is_multi_year || []
+            const newValue = union(isMultiYear, value)
+
+            handleFilterChange({
+              is_multi_year: newValue,
+            })
+            handleParamsChange({
+              is_multi_year: newValue.map((item: any) => item.id).join(','),
+              offset: 0,
+            })
+          }}
+          multiple
         />
       </div>
       <div className="bp-search-container flex w-full flex-col gap-4 md:flex-row lg:items-start">

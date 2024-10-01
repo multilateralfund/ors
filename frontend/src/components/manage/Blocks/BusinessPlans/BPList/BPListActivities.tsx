@@ -12,6 +12,7 @@ import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext
 import { formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
+import { multiYearFilterOptions } from '../constants'
 import { filtersToQueryParams } from '../utils'
 
 const ACTIVITIES_PER_PAGE = 20
@@ -33,7 +34,7 @@ export default function BPListActivities(props: any) {
   const year_start = period?.split('-')[0] || firstPeriod.split('-')[0]
 
   const initialFilters = {
-    is_multi_year: true,
+    is_multi_year: [multiYearFilterOptions[0]],
     limit: ACTIVITIES_PER_PAGE,
     offset: 0,
     ordering: 'business_plan__agency__name, country__name',
@@ -41,9 +42,15 @@ export default function BPListActivities(props: any) {
     year_start: year_start,
   }
 
+  const getActivitiesInitialFilters = {
+    ...initialFilters,
+    is_multi_year: [multiYearFilterOptions[0].id],
+  }
+
   const [filters, setFilters] = useState({ ...initialFilters })
-  const { count, loaded, params, results, setParams } =
-    useGetActivities(initialFilters)
+  const { count, loaded, params, results, setParams } = useGetActivities(
+    getActivitiesInitialFilters,
+  )
   const [pagination, setPagination] = useState({
     page: 1,
     rowsPerPage: ACTIVITIES_PER_PAGE,
