@@ -145,6 +145,7 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
   function handleOptionKeyDown(evt: React.KeyboardEvent<HTMLElement>) {
     const evTarget = evt.target as HTMLElement
     if (evt.key === 'Enter') {
+      evt.preventDefault()
       evt.currentTarget.click()
     } else if (evt.key === 'ArrowDown') {
       evt.preventDefault()
@@ -198,12 +199,15 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
     if (selectRef.current) {
       const options = getOptions(selectRef.current)
       setOptions(options)
-      const selectedOption = getSelectedOption(
-        defaultValue?.toString() || '',
-        options,
-      )
-      if (selectedOption) {
-        setSearchValue(selectedOption.label)
+
+      if (defaultValue && defaultValue === selectRef.current.value) {
+        const selectedOption = getSelectedOption(
+          defaultValue?.toString() || '',
+          options,
+        )
+        if (selectedOption) {
+          setSearchValue(selectedOption.label)
+        }
       }
     }
   }, [defaultValue, children])
@@ -276,7 +280,11 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
           className="max-h-32 overflow-y-auto"
           tabIndex={-1}
         >
-          {virtualOptions}
+          {virtualOptions.length > 0 ? (
+            virtualOptions
+          ) : (
+            <div className="flex justify-center">No options</div>
+          )}
         </div>
       </div>
       <select

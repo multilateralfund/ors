@@ -88,7 +88,10 @@ function MiniCashCard(props: IMiniCashCardProps) {
           </span>
         </div>
       </div>
-      <div className="text-3xl font-bold text-primary">{value}</div>
+      <div className="text-3xl font-bold text-primary">
+        <span className="font-normal">{'$'}</span>
+        {value}
+      </div>
     </div>
   )
 }

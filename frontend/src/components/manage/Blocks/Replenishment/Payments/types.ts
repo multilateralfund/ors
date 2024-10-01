@@ -30,6 +30,7 @@ export type PaymentForSubmit = {
 
 export type ParsedPayment = {
   amount: null | number | string
+  amount_local_currency?: null | number | string
   be_amount: number
   be_exchange_rate: number
   be_ferm: number
