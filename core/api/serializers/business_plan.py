@@ -359,9 +359,7 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
             "activities",
         ]
 
-    def _create_bp_activity_values(self, bp_activity, activity_values):
-        for activity_value in activity_values:
-            activity_value["bp_activity_id"] = bp_activity.id
+    def _create_bp_activity_values(self, activity_values):
         activity_value_serializer = BPActivityValueSerializer(
             data=activity_values, many=True
         )
@@ -380,6 +378,7 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
         activity_serializer.is_valid(raise_exception=True)
         activity_serializer.save()
 
+        activity_values = []
         for instance, activity_data in zip(
             activity_serializer.instance, activities, strict=True
         ):
@@ -387,7 +386,12 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
             comment_types = activity_data.get("comment_types", [])
             instance.substances.set(substances)
             instance.comment_types.set(comment_types)
-            self._create_bp_activity_values(instance, activity_data.get("values", []))
+
+            for activity_value in activity_data.get("values", []):
+                activity_value["bp_activity_id"] = instance.id
+                activity_values.append(activity_value)
+
+        self._create_bp_activity_values(activity_values)
 
     def create(self, validated_data):
         activities = validated_data.pop("activities", [])
