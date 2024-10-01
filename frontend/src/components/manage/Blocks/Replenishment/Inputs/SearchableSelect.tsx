@@ -12,6 +12,7 @@ import React, {
 import cx from 'classnames'
 
 import { BaseButton } from '@ors/components/ui/Button/Button'
+import { debounce } from '@ors/helpers'
 import useClickOutside from '@ors/hooks/useClickOutside'
 
 import ClearButton from './ClearButton'
@@ -137,10 +138,57 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
     [onChange],
   )
 
+  function handleOptionKeyDown(evt: React.KeyboardEvent<HTMLElement>) {
+    const evTarget = evt.target as HTMLElement
+    if (evt.key === 'Enter') {
+      evt.currentTarget.click()
+    } else if (evt.key === 'ArrowDown') {
+      evt.preventDefault()
+      const nextEl = evTarget?.nextElementSibling as HTMLElement | null
+      nextEl?.focus()
+    } else if (evt.key === 'ArrowUp') {
+      evt.preventDefault()
+      const prevEl = evTarget?.previousElementSibling as HTMLElement | null
+      prevEl?.focus()
+    }
+  }
+
   function handleInputFocus() {
     setSearchValue('')
     setShowPicker(true)
+    if (value && ref.current) {
+      debounce(function () {
+        const selEl = ref.current?.querySelector(`#${id}_${value}`)
+        if (selEl) {
+          selEl.scrollIntoView()
+        }
+      }, 100)
+    }
   }
+
+  function handleInputKeyDown(evt: React.KeyboardEvent<HTMLElement>) {
+    if (evt.key === 'ArrowDown') {
+      evt.preventDefault()
+      const elOptions = ref.current?.querySelector(`#${id}_virtualOptions`)
+      if (value) {
+        const selectedOptionEl = elOptions?.querySelector(
+          `#${id}_${value}`,
+        ) as HTMLElement
+        selectedOptionEl?.focus()
+      } else {
+        const firstOptionEl = elOptions?.querySelector(
+          `[id*=${id}`,
+        ) as HTMLElement
+        firstOptionEl?.focus()
+      }
+    }
+  }
+
+  useEffect(function () {
+    // Prevent having the select open if it's the first element in the form.
+    inputRef.current?.blur()
+    setShowPicker(false)
+  }, [])
 
   useEffect(() => {
     if (selectRef.current) {
@@ -158,16 +206,23 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
         const optionId = `${id}_${filteredOptions[i].value}`
         result.push(
           <div
+            id={optionId}
             key={optionId}
-            className={cx('flex cursor-pointer items-center rounded-lg', {
-              'bg-primary text-mlfs-hlYellow':
-                value === filteredOptions[i].value,
-              'hover:bg-gray-200': value !== filteredOptions[i].value,
-            })}
+            className={cx(
+              'flex cursor-pointer items-center rounded-lg focus:outline-none',
+              {
+                'bg-primary text-mlfs-hlYellow':
+                  value === filteredOptions[i].value,
+                'hover:bg-gray-200 focus:bg-gray-200':
+                  value !== filteredOptions[i].value,
+              },
+            )}
+            tabIndex={0}
             onClick={handleToggleSelectedOption(
               filteredOptions[i].value,
               filteredOptions[i].label,
             )}
+            onKeyDown={handleOptionKeyDown}
           >
             <span className="px-2 py-2">{filteredOptions[i].label}</span>
           </div>,
@@ -190,6 +245,7 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
           value={searchValue}
           onChange={(evt) => setSearchValue(evt.target.value.toLowerCase())}
           onFocus={handleInputFocus}
+          onKeyDown={handleInputKeyDown}
         ></Input>
         {withClear && <ClearButton className="right-4" onClick={handleClear} />}
       </div>
@@ -203,7 +259,13 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
           },
         )}
       >
-        <div className="max-h-64 overflow-y-auto">{virtualOptions}</div>
+        <div
+          id={`${id}_virtualOptions`}
+          className="max-h-32 overflow-y-auto"
+          tabIndex={-1}
+        >
+          {virtualOptions}
+        </div>
       </div>
       <select
         id={id}
