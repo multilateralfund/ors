@@ -55,15 +55,27 @@ def _mock_send_mail_report_update():
 
 
 @pytest.fixture(name="_setup_cp_report_list")
-def setup_cp_report_list():
+def setup_cp_report_list(user):
     for country in ["Romania", "Bulgaria", "Hungary"]:
         country = CountryFactory.create(name=country)
         for i in range(3):
             year = 2010 + i
+            data = {
+                "country": country,
+                "name": country.name + str(year),
+                "year": year,
+                "created_by": user,
+                "version": 1,
+            }
+            # create final report archive
+            if i == 2:
+                CPReportArchive.objects.create(
+                    **data,
+                    status=CPReport.CPReportStatus.FINAL,
+                )
+                data["version"] = 2
             CPReportFactory.create(
-                country=country,
-                name=country.name + str(year),
-                year=year,
+                **data,
                 status=CPReport.CPReportStatus.DRAFT,
             )
 
@@ -88,7 +100,7 @@ class TestCPReportList(BaseTest):
         self.client.force_authenticate(user=viewer_user)
 
         # get cp reports list
-        response = self.client.get(self.url)
+        response = self.client.get(self.url, {"ordering": "year,country__name"})
         assert response.status_code == 200
         assert len(response.data) == 9
         assert response.data[0]["name"] == "Bulgaria2010"
@@ -101,7 +113,6 @@ class TestCPReportList(BaseTest):
         response = self.client.get(self.url)
         assert response.status_code == 200
         assert len(response.data) == 3
-        print(response.data)
         assert response.data[0]["name"] == "Romania2010"
         assert response.data[2]["name"] == "Romania2012"
 
@@ -136,7 +147,7 @@ class TestCPReportList(BaseTest):
     def test_get_cp_report_list_name_filter(self, user, _setup_cp_report_list):
         self.client.force_authenticate(user=user)
 
-        response = self.client.get(self.url, {"name": "man"})
+        response = self.client.get(self.url, {"name": "man", "ordering": "year"})
         assert response.status_code == 200
         assert len(response.data) == 3
         assert response.data[0]["name"] == "Romania2010"
@@ -144,7 +155,9 @@ class TestCPReportList(BaseTest):
     def test_get_cp_report_list_year_filter(self, user, _setup_cp_report_list):
         self.client.force_authenticate(user=user)
 
-        response = self.client.get(self.url, {"year_max": 2011, "year_min": 2011})
+        response = self.client.get(
+            self.url, {"year_max": 2011, "year_min": 2011, "ordering": "country__name"}
+        )
         assert response.status_code == 200
         assert len(response.data) == 3
         assert response.data[0]["name"] == "Bulgaria2011"
@@ -171,11 +184,16 @@ class TestCPReportList(BaseTest):
         response = self.client.get(self.url, {"status": "draft"})
         assert response.status_code == 200
         assert len(response.data) == 9
-        assert response.data[0]["status"] == "draft"
+        for report in response.data:
+            assert report["status"] == "draft"
+            assert report["is_archive"] == False
 
         response = self.client.get(self.url, {"status": "final"})
         assert response.status_code == 200
-        assert len(response.data) == 0
+        assert len(response.data) == 3
+        for report in response.data:
+            assert report["status"] == "final"
+            assert report["is_archive"] == True
 
 
 class TestCPReportListGroupByYear(BaseTest):

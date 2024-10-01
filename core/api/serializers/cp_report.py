@@ -53,15 +53,15 @@ class CPReportListSerializer(serializers.Serializer):
     name = serializers.CharField()
     year = serializers.IntegerField()
     status = serializers.CharField()
-    version = serializers.FloatField(read_only=True)
+    version = serializers.FloatField()
     country = serializers.StringRelatedField()
     country_id = serializers.IntegerField()
     created_at = serializers.DateTimeField()
     created_by = serializers.SerializerMethodField()
     version_created_by = serializers.SerializerMethodField()
     version_created_by_role = serializers.SerializerMethodField()
-    reporting_entry = serializers.CharField(read_only=True)
-    reporting_email = serializers.CharField(read_only=True)
+    reporting_entry = serializers.CharField()
+    reporting_email = serializers.CharField()
     is_archive = serializers.SerializerMethodField()
 
     def get_created_by(self, obj):
@@ -81,7 +81,7 @@ class CPReportListSerializer(serializers.Serializer):
 
     def get_is_archive(self, obj):
         # check if obj class is CPReportArchive
-        return obj.__class__.__name__ == CPReportArchive.__name__
+        return getattr(obj, "is_archive", False)
 
 
 class CPReportBaseSerializer(serializers.ModelSerializer):
