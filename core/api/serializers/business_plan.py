@@ -36,11 +36,7 @@ class BPChemicalTypeSerializer(serializers.ModelSerializer):
 
 
 class BPActivityValueSerializer(serializers.ModelSerializer):
-    bp_activity_id = serializers.PrimaryKeyRelatedField(
-        required=False,
-        queryset=BPActivity.objects.all().values_list("id", flat=True),
-        write_only=True,
-    )
+    bp_activity_id = serializers.IntegerField(required=False, write_only=True)
 
     class Meta:
         model = BPActivityValue
@@ -230,22 +226,13 @@ class BPActivityListSerializer(BPActivityDetailSerializer):
 
 
 class BPActivityCreateSerializer(serializers.ModelSerializer):
-    business_plan_id = serializers.PrimaryKeyRelatedField(
-        required=False,
-        queryset=BusinessPlan.objects.all().values_list("id", flat=True),
-    )
-    country_id = serializers.PrimaryKeyRelatedField(
-        queryset=Country.objects.all().values_list("id", flat=True),
-    )
+    business_plan_id = serializers.IntegerField(required=False)
+    country_id = serializers.IntegerField()
     lvc_status = serializers.ChoiceField(choices=BPActivity.LVCStatus.choices)
     project_type_id = serializers.IntegerField()
     status = serializers.ChoiceField(choices=BPActivity.Status.choices)
-    bp_chemical_type_id = serializers.PrimaryKeyRelatedField(
-        queryset=BPChemicalType.objects.all().values_list("id", flat=True),
-    )
-    project_cluster_id = serializers.PrimaryKeyRelatedField(
-        queryset=ProjectCluster.objects.all().values_list("id", flat=True),
-    )
+    bp_chemical_type_id = serializers.IntegerField()
+    project_cluster_id = serializers.IntegerField()
 
     substances = serializers.PrimaryKeyRelatedField(
         many=True,
@@ -258,12 +245,17 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
     )
 
     sector_id = serializers.IntegerField()
-    subsector_id = serializers.PrimaryKeyRelatedField(
-        queryset=ProjectSubSector.objects.all().values_list("id", flat=True),
-    )
+    subsector_id = serializers.IntegerField()
     values = BPActivityValueSerializer(many=True)
 
     is_updated = serializers.BooleanField(read_only=True)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.country_ids = Country.objects.values_list("id", flat=True)
+        self.bp_chemical_type_ids = BPChemicalType.objects.values_list("id", flat=True)
+        self.project_cluster_ids = ProjectCluster.objects.values_list("id", flat=True)
+        self.subsector_ids = ProjectSubSector.objects.values_list("id", flat=True)
 
     def validate(self, attrs):
         # check only once if project sector and type exist
@@ -275,6 +267,26 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("Invalid sector - type combination")
 
         return super().validate(attrs)
+
+    def validate_country_id(self, country_id):
+        if country_id not in self.country_ids:
+            raise serializers.ValidationError("Country not found")
+        return country_id
+
+    def validate_bp_chemical_type_id(self, bp_chemical_type_id):
+        if bp_chemical_type_id not in self.bp_chemical_type_ids:
+            raise serializers.ValidationError("BPChemicalType not found")
+        return bp_chemical_type_id
+
+    def validate_project_cluster_id(self, project_cluster_id):
+        if project_cluster_id not in self.project_cluster_ids:
+            raise serializers.ValidationError("ProjectCluster not found")
+        return project_cluster_id
+
+    def validate_subsector_id(self, subsector_id):
+        if subsector_id not in self.subsector_ids:
+            raise serializers.ValidationError("SubSector not found")
+        return subsector_id
 
     def validate_values(self, values):
         is_after_count = 0
