@@ -19,6 +19,7 @@ import {
   FieldDateInput,
   FieldFormattedNumberInput,
   FieldInput,
+  FieldSearchableSelect,
   FieldSelect,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceAttachments'
@@ -39,6 +40,7 @@ interface TabContentProps {
 
 interface TabContentDetailsProps extends TabContentProps {
   countries: InvoiceDialogProps['countries']
+  setFields: React.Dispatch<React.SetStateAction<InvoiceDialogFields>>
 }
 
 interface TabContentAmountProps extends TabContentProps {
@@ -47,26 +49,31 @@ interface TabContentAmountProps extends TabContentProps {
 }
 
 function TabContentDetails(props: TabContentDetailsProps) {
-  const { countries, data, fields, updateField } = props
+  const { countries, data, fields, setFields, updateField } = props
   const ctx = useContext(ReplenishmentContext)
   const yearOptions = scAnnualOptions(ctx.periods)
 
+  function handleCountrySelect(value: string) {
+    setFields(function (prev) {
+      return { ...prev, country_id: value }
+    })
+  }
+
   return (
     <>
-      <FieldSelect
+      <FieldSearchableSelect
         id="country_id"
         label="Country"
         value={fields.country_id}
-        onChange={updateField('country_id')}
+        onChange={handleCountrySelect}
         required
       >
-        <option value="" disabled hidden></option>
         {countries.map((c) => (
           <option key={c.id} value={c.id}>
             {c.name_alt}
           </option>
         ))}
-      </FieldSelect>
+      </FieldSearchableSelect>
       <FieldInput
         id="number"
         defaultValue={data?.number}
@@ -288,6 +295,7 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
           countries={countries}
           data={data}
           fields={fields}
+          setFields={setFields}
           updateField={updateField}
         />
       </DialogTabContent>
