@@ -7,6 +7,7 @@ import BPContext from '@ors/contexts/BusinessPlans/BPContext'
 import BPProvider from '@ors/contexts/BusinessPlans/BPProvider'
 import BPYearRangesProvider from '@ors/contexts/BusinessPlans/BPYearRangesProvider'
 
+import BusinessPlansEditTable from './BPEditTable'
 import BPHeaderEdit from './BPHeaderEdit'
 
 function BPEdit() {
@@ -19,6 +20,7 @@ function BPEdit() {
         active={loading}
       />
       <BPHeaderEdit />
+      <BusinessPlansEditTable />
     </>
   )
 }

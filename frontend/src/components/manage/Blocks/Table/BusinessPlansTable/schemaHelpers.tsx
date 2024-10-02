@@ -140,7 +140,7 @@ export const textCellRenderer = (props: any) => {
   )
 }
 
-const substanceTag = (substance: string, index: number, classes?: string) => (
+const Tag = (tag: string, index: number, classes?: string) => (
   <Typography
     key={index}
     className={cx(
@@ -150,42 +150,38 @@ const substanceTag = (substance: string, index: number, classes?: string) => (
     component="p"
     variant="h6"
   >
-    {substance}
+    {tag}
   </Typography>
 )
 
-const displaySubstanceCellValue = (substances: Array<string>) => (
+const displayTagsCellValue = (tags: Array<string>) => (
   <Tooltip
     TransitionProps={{ timeout: 0 }}
     classes={{ tooltip: 'bp-table-tooltip' }}
     placement={'top'}
     title={
-      substances?.length > 0 &&
-      substances.map((substance: string, index: number) =>
-        substanceTag(substance, index),
-      )
+      tags?.length > 0 &&
+      tags.map((tag: string, index: number) => Tag(tag, index))
     }
     followCursor
   >
     <Typography className="diff-cell content-normal" component="span">
-      {substances?.map((substance: string, index: number) =>
-        substanceTag(substance, index),
-      )}
+      {tags?.map((tag: string, index: number) => Tag(tag, index))}
     </Typography>
   </Tooltip>
 )
 
-export const substancesCellRenderer = (props: any) => {
-  const substances = props.value || []
+export const tagsCellRenderer = (props: any) => {
+  const tags = props.value || []
 
-  return displaySubstanceCellValue(substances)
+  return displayTagsCellValue(tags)
 }
 
 export const substancesDiffCellRenderer = (props: any) => {
   const { change_type, new_value, old_value } = props.value
 
   return isEqual(new_value, old_value) ? (
-    displaySubstanceCellValue(new_value)
+    displayTagsCellValue(new_value)
   ) : (
     <Tooltip
       TransitionProps={{ timeout: 0 }}
@@ -203,7 +199,7 @@ export const substancesDiffCellRenderer = (props: any) => {
       >
         {new_value?.length > 0
           ? new_value.map((substance: string, index: number) =>
-              substanceTag(substance, index, 'text-primary'),
+              Tag(substance, index, 'text-primary'),
             )
           : '-'}
       </Typography>

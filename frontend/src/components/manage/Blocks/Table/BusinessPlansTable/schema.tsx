@@ -7,8 +7,8 @@ import {
   numberCellGetter,
   numberCellRenderer,
   objectCellValueGetter,
-  substancesCellRenderer,
   substancesDiffCellRenderer,
+  tagsCellRenderer,
   textCellRenderer,
 } from './schemaHelpers'
 
@@ -284,7 +284,7 @@ const allColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
           valueGetter: (params: any) =>
             cellValueGetter(params, 'substances_display'),
         }
-      : { cellRenderer: substancesCellRenderer }),
+      : { cellRenderer: tagsCellRenderer }),
   },
   getReqByModelColumn(isDiff),
   {

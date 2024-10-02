@@ -35,8 +35,7 @@ import TableViewSelector from './TableViewSelector'
 const BP_PER_PAGE = 20
 
 export default function BusinessPlansTable() {
-  const params = useParams<BpPathParams>()
-  const { period } = params
+  const { period } = useParams<BpPathParams>()
   const form = useRef<any>()
   const commonSlice = useStore((state) => state.common)
   const bpSlice = useStore((state) => state.businessPlans)

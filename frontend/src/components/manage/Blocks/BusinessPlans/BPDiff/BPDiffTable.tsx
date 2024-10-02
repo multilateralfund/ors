@@ -30,8 +30,8 @@ export default function BPDiffTable({
   diffData: BPDataInterface
 }) {
   const form = useRef<any>()
-  const { period } = useParams<BpPathParams>()
 
+  const { period } = useParams<BpPathParams>()
   const year_start = period.split('-')[0]
 
   const { yearRanges } = useContext(BPYearRangesContext) as any
