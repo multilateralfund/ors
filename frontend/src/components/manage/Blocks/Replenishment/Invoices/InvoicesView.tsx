@@ -36,11 +36,11 @@ import { InvoiceColumn, InvoiceForSubmit, ParsedInvoice } from './types'
 import { IoSearchSharp } from 'react-icons/io5'
 
 const COLUMNS: InvoiceColumn[] = [
-  { field: 'number', label: 'Number' },
+  { field: 'number', label: 'Invoice Number' },
   { field: 'country', label: 'Country', sortable: true },
   { field: 'status', label: 'Status' },
   { field: 'year', label: 'Year' },
-  { field: 'date_of_issuance', label: 'Date of issuance', sortable: true },
+  { field: 'date_of_issuance', label: 'Date of Issuance', sortable: true },
   { field: 'amount', label: 'Amount' },
   {
     field: 'exchange_rate',
@@ -50,12 +50,12 @@ const COLUMNS: InvoiceColumn[] = [
   { field: 'date_sent_out', label: 'Sent on' },
   {
     field: 'date_first_reminder',
-    label: 'First reminder',
+    label: 'First Reminder',
     subLabel: '(sent on)',
   },
   {
     field: 'date_second_reminder',
-    label: 'Second reminder',
+    label: 'Second Reminder',
     subLabel: '(sent on)',
   },
   { field: 'files', label: 'Files' },

@@ -44,7 +44,7 @@ import {
 import { IoSearchSharp } from 'react-icons/io5'
 
 const COLUMNS: PaymentColumn[] = [
-  { field: 'invoice_numbers', label: 'Invoice(s)' },
+  { field: 'invoice_numbers', label: 'Invoice Number(s)' },
   { field: 'country', label: 'Country', sortable: true },
   { field: 'date', label: 'Date', sortable: true },
   { field: 'amount', label: 'Amount', sortable: true },
