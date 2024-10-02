@@ -153,7 +153,7 @@ class CommentTypeSerializer(serializers.ModelSerializer):
 class BulkCreateListSerializer(serializers.ListSerializer):
     def create(self, validated_data):
         objs = [self.child.create(attrs) for attrs in validated_data]
-        return self.child.Meta.model.objects.bulk_create(objs)
+        return self.child.Meta.model.objects.bulk_create(objs, batch_size=1000)
 
     def update(self, instance, validated_data):
         raise NotImplementedError(
@@ -163,3 +163,8 @@ class BulkCreateListSerializer(serializers.ListSerializer):
             "multiple update, use a `ListSerializer` class and override "
             "`.update()` so you can specify the behavior exactly."
         )
+
+
+class Many2ManyListField(serializers.ListField):
+    def to_representation(self, data):
+        return [self.child.to_representation(item.pk) for item in data.all()]

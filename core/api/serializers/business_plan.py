@@ -1,10 +1,9 @@
-from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from rest_framework import serializers
 
 from core.api.serializers import CountrySerializer
 from core.api.serializers.agency import AgencySerializer
-from core.api.serializers.base import BulkCreateListSerializer
+from core.api.serializers.base import BulkCreateListSerializer, Many2ManyListField
 from core.api.serializers.project import ProjectClusterSerializer
 from core.api.serializers.project import ProjectSectorSerializer
 from core.api.serializers.project import ProjectSubSectorSerializer
@@ -24,6 +23,8 @@ from core.models import (
     ProjectType,
     Substance,
 )
+
+# pylint: disable=R0902
 
 
 class BPChemicalTypeSerializer(serializers.ModelSerializer):
@@ -230,21 +231,16 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
     country_id = serializers.IntegerField()
     lvc_status = serializers.ChoiceField(choices=BPActivity.LVCStatus.choices)
     project_type_id = serializers.IntegerField()
+    project_type_code = serializers.CharField(required=False, write_only=True)
     status = serializers.ChoiceField(choices=BPActivity.Status.choices)
     bp_chemical_type_id = serializers.IntegerField()
     project_cluster_id = serializers.IntegerField()
 
-    substances = serializers.PrimaryKeyRelatedField(
-        many=True,
-        queryset=Substance.objects.all().values_list("id", flat=True),
-    )
-    comment_types = serializers.PrimaryKeyRelatedField(
-        required=False,
-        many=True,
-        queryset=CommentType.objects.all().values_list("id", flat=True),
-    )
+    substances = Many2ManyListField(child=serializers.IntegerField())
+    comment_types = Many2ManyListField(child=serializers.IntegerField(), required=False)
 
     sector_id = serializers.IntegerField()
+    sector_code = serializers.CharField(required=False, write_only=True)
     subsector_id = serializers.IntegerField()
     values = BPActivityValueSerializer(many=True)
 
@@ -253,17 +249,21 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.country_ids = Country.objects.values_list("id", flat=True)
+        self.project_type_ids = ProjectType.objects.values_list("id", flat=True)
         self.bp_chemical_type_ids = BPChemicalType.objects.values_list("id", flat=True)
         self.project_cluster_ids = ProjectCluster.objects.values_list("id", flat=True)
+        self.sector_ids = ProjectSector.objects.values_list("id", flat=True)
         self.subsector_ids = ProjectSubSector.objects.values_list("id", flat=True)
+        self.substance_ids = Substance.objects.values_list("id", flat=True)
+        self.comment_type_ids = CommentType.objects.values_list("id", flat=True)
 
     def validate(self, attrs):
-        # check only once if project sector and type exist
-        sector = get_object_or_404(ProjectSector, id=attrs.get("sector_id"))
-        project_type = get_object_or_404(ProjectType, id=attrs.get("project_type_id"))
-
-        if sector.code in PROJECT_SECTOR_TYPE_MAPPING:
-            if project_type.code not in PROJECT_SECTOR_TYPE_MAPPING[sector.code]:
+        sector_code = attrs.get("sector_code")
+        if sector_code in PROJECT_SECTOR_TYPE_MAPPING:
+            if (
+                attrs.get("project_type_code")
+                not in PROJECT_SECTOR_TYPE_MAPPING[sector_code]
+            ):
                 raise serializers.ValidationError("Invalid sector - type combination")
 
         return super().validate(attrs)
@@ -272,6 +272,11 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
         if country_id not in self.country_ids:
             raise serializers.ValidationError("Country not found")
         return country_id
+
+    def validate_project_type_id(self, project_type_id):
+        if project_type_id not in self.project_type_ids:
+            raise serializers.ValidationError("ProjectType not found")
+        return project_type_id
 
     def validate_bp_chemical_type_id(self, bp_chemical_type_id):
         if bp_chemical_type_id not in self.bp_chemical_type_ids:
@@ -283,10 +288,27 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("ProjectCluster not found")
         return project_cluster_id
 
+    def validate_sector_id(self, sector_id):
+        if sector_id not in self.sector_ids:
+            raise serializers.ValidationError("Sector not found")
+        return sector_id
+
     def validate_subsector_id(self, subsector_id):
         if subsector_id not in self.subsector_ids:
             raise serializers.ValidationError("SubSector not found")
         return subsector_id
+
+    def validate_substances(self, substances):
+        for substance_id in substances:
+            if substance_id not in self.substance_ids:
+                raise serializers.ValidationError("Substance not found")
+        return substances
+
+    def validate_comment_types(self, comment_types):
+        for comment_type_id in comment_types:
+            if comment_type_id not in self.comment_type_ids:
+                raise serializers.ValidationError("CommentType not found")
+        return comment_types
 
     def validate_values(self, values):
         is_after_count = 0
@@ -313,11 +335,13 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
             "country_id",
             "lvc_status",
             "project_type_id",
+            "project_type_code",
             "bp_chemical_type_id",
             "project_cluster_id",
             "substances",
             "amount_polyol",
             "sector_id",
+            "sector_code",
             "subsector_id",
             "legacy_sector_and_subsector",
             "status",
@@ -336,6 +360,8 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
         data.pop("values", [])
         data.pop("substances", [])
         data.pop("comment_types", [])
+        data.pop("project_type_code", "")
+        data.pop("sector_code", "")
 
         return BPActivity(**data)
 
