@@ -12,6 +12,7 @@ from core.api.tests.factories import (
     AgencyFactory,
     BPActivityFactory,
     BPActivityValueFactory,
+    BPChemicalTypeFactory,
     BusinessPlanFactory,
     CommentTypeFactory,
     CountryFactory,
@@ -54,6 +55,40 @@ def _mock_send_mail_bp_update():
 def _mock_send_mail_bp_status_update():
     with patch("core.tasks.send_mail_bp_status_update.delay") as send_mail:
         yield send_mail
+
+
+class TestBPChemicalTypeList(BaseTest):
+    url = reverse("bp-chemical-type-list")
+
+    def test_bp_chemical_type_list(self, user, bp_chemical_type):
+        self.client.force_authenticate(user=user)
+
+        # get all BP chemical types
+        other_bp_chemical_type = BPChemicalTypeFactory()
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.data) == 2
+        assert response.data == [
+            {
+                "id": bp_chemical_type.id,
+                "name": bp_chemical_type.name,
+            },
+            {
+                "id": other_bp_chemical_type.id,
+                "name": other_bp_chemical_type.name,
+            },
+        ]
+
+        # filter by name
+        response = self.client.get(self.url, {"name": bp_chemical_type.name})
+        assert response.status_code == 200
+        assert len(response.data) == 1
+        assert response.data == [
+            {
+                "id": bp_chemical_type.id,
+                "name": bp_chemical_type.name,
+            }
+        ]
 
 
 class TestBPExport(BaseTest):

@@ -18,6 +18,7 @@ from core.api.export.base import configure_sheet_print
 from core.api.export.business_plan import BusinessPlanWriter
 from core.api.filters.business_plan import (
     BPActivityListFilter,
+    BPChemicalTypeFilter,
     BPFilterBackend,
 )
 from core.api.permissions import IsAgency, IsSecretariat, IsViewer
@@ -25,6 +26,7 @@ from core.api.serializers.bp_history import BPHistorySerializer
 from core.api.serializers.business_plan import (
     BusinessPlanCreateSerializer,
     BusinessPlanSerializer,
+    BPChemicalTypeSerializer,
     BPFileSerializer,
     BPActivityCreateSerializer,
     BPActivityExportSerializer,
@@ -41,12 +43,23 @@ from core.api.views.utils import (
     rename_fields,
     BPACTIVITY_ORDERING_FIELDS,
 )
-from core.models import Agency, BusinessPlan, BPHistory, BPActivity
+from core.models import Agency, BusinessPlan, BPChemicalType, BPHistory, BPActivity
 from core.tasks import (
     send_mail_bp_create,
     send_mail_bp_status_update,
     send_mail_bp_update,
 )
+
+
+class BPChemicalTypeListView(generics.ListAPIView):
+    """
+    List BP chemical types
+    """
+
+    permission_classes = [IsSecretariat | IsAgency | IsViewer]
+    queryset = BPChemicalType.objects.all()
+    filterset_class = BPChemicalTypeFilter
+    serializer_class = BPChemicalTypeSerializer
 
 
 class BusinessPlanViewSet(
