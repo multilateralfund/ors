@@ -14,6 +14,8 @@ services:
       dockerfile: docker/nextjs.docker
 
   nginx:
+    profiles:
+      - donotstart
     build:
       context: .
       dockerfile: docker/nginx.docker
