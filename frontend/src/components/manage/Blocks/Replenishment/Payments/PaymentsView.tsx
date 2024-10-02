@@ -497,7 +497,7 @@ function PaymentsView() {
               <option value="" disabled hidden>
                 Country
               </option>
-              {ctx.countries.map((c) => (
+              {ctx.countriesSOA.map((c) => (
                 <option key={c.iso3} className="text-primary" value={c.id}>
                   {c.name_alt}
                 </option>
