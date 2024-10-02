@@ -154,8 +154,8 @@ function SectionStatus(props: ISectionStatusProps) {
         style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
       >
         <div className="py-4 print:break-inside-avoid">
-          <div className="flex gap-x-4">
-            <div className="flex w-1/4 flex-col gap-y-2">
+          <div className="flex gap-4 flex-wrap 2xl:flex-nowrap">
+            <div className="flex w-full md:w-[49%] 2xl:w-1/4 flex-col gap-y-2">
               <CashCard
                 label={<div className="max-w-0">{income?.total.label}</div>}
                 value={
@@ -190,7 +190,7 @@ function SectionStatus(props: ISectionStatusProps) {
               />
             </div>
 
-            <div className="w-1/4">
+            <div className="w-full md:w-[49%] 2xl:w-1/4">
               <div className="h-full rounded-lg bg-[#F5F5F5] p-4">
                 <div className="mb-4 border-x-0 border-b border-t-0 border-solid border-[#E0E0E0] pb-4 text-lg font-medium uppercase text-[#4D4D4D]">
                   Income
@@ -214,7 +214,7 @@ function SectionStatus(props: ISectionStatusProps) {
               </div>
             </div>
 
-            <div className="w-2/4">
+            <div className="w-full 2xl:w-2/4">
               <div className="h-full rounded-lg bg-[#F5F5F5] p-4">
                 <div className="mb-4 border-x-0 border-b border-t-0 border-solid border-[#E0E0E0] pb-4 text-lg font-medium uppercase text-[#4D4D4D]">
                   Allocations
