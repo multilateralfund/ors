@@ -48,6 +48,42 @@ class CPReportInfoSerializer(serializers.ModelSerializer):
         model = CPReportSections
 
 
+class CPReportListSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    year = serializers.IntegerField()
+    status = serializers.CharField()
+    version = serializers.FloatField()
+    country = serializers.StringRelatedField()
+    country_id = serializers.IntegerField()
+    created_at = serializers.DateTimeField()
+    created_by = serializers.SerializerMethodField()
+    version_created_by = serializers.SerializerMethodField()
+    version_created_by_role = serializers.SerializerMethodField()
+    reporting_entry = serializers.CharField()
+    reporting_email = serializers.CharField()
+    is_archive = serializers.SerializerMethodField()
+
+    def get_created_by(self, obj):
+        if not obj.created_by:
+            return None
+        return obj.created_by.username
+
+    def get_version_created_by(self, obj):
+        if not obj.version_created_by:
+            return None
+        return obj.version_created_by.username
+
+    def get_version_created_by_role(self, obj):
+        if not obj.version_created_by:
+            return None
+        return obj.version_created_by.user_type
+
+    def get_is_archive(self, obj):
+        # check if obj class is CPReportArchive
+        return getattr(obj, "is_archive", False)
+
+
 class CPReportBaseSerializer(serializers.ModelSerializer):
     country = serializers.StringRelatedField()
     status = serializers.ChoiceField(
@@ -86,7 +122,7 @@ class CPReportBaseSerializer(serializers.ModelSerializer):
         ]
 
 
-class CPReportNoRelatedSerializer(CPReportBaseSerializer):
+class CPReportNoRelatedSerializer(CPReportBaseSerializer, serializers.ModelSerializer):
     class Meta(CPReportBaseSerializer.Meta):
         model = CPReport
 
@@ -139,7 +175,7 @@ class CPReportGroupSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     count = serializers.IntegerField()
     group = serializers.CharField()
-    reports = CPReportNoRelatedSerializer(many=True, read_only=True)
+    reports = CPReportListSerializer(many=True, read_only=True)
 
     class Meta:
         fields = [
@@ -286,7 +322,9 @@ class CPReportCreateSerializer(serializers.Serializer):
         history_data["reporting_officer_name"] = cp_report.reporting_entry
         history_data["reporting_officer_email"] = cp_report.reporting_email
         history_data["event_description"] = "Created by user"
-        history_data["event_in_draft"] = cp_report.status == cp_report.CPReportStatus.DRAFT
+        history_data["event_in_draft"] = (
+            cp_report.status == cp_report.CPReportStatus.DRAFT
+        )
 
         cp_history_serializer = CPHistorySerializer(data=history_data)
         cp_history_serializer.is_valid(raise_exception=True)

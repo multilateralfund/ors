@@ -197,6 +197,7 @@ class CPReportFactory(factory.django.DjangoModelFactory):
     name = factory.Faker("pystr", max_chars=100)
     year = factory.Faker("random_int", min=1995, max=2030)
     created_by = factory.SubFactory(UserFactory)
+    version = 1
 
 
 class CPReportCommentFactory(factory.django.DjangoModelFactory):
