@@ -41,7 +41,7 @@ export default function MultiSelect(props: IMultiSelectProps) {
     }
     setValue([])
     if (onChange) {
-      onChange(undefined, [])
+      onChange([])
     }
   }
 
@@ -72,27 +72,28 @@ export default function MultiSelect(props: IMultiSelectProps) {
     const newValue = getSelectedOptionsValue(evt.target)
     setValue(newValue)
     if (onChange) {
-      onChange(evt, newValue)
+      onChange(newValue)
     }
   }
 
   function handleToggleSelectedOption(
     evt: React.ChangeEvent<HTMLInputElement>,
   ) {
-    const value = evt.target.value
-    setValue(function (prev) {
-      let newValue = []
-      if (prev.includes(value)) {
-        for (let i = 0; i < prev.length; i++) {
-          if (prev[i] !== value) {
-            newValue.push(prev[i])
-          }
+    const evtValue = evt.target.value
+    let newValue = []
+    if (value.includes(evtValue)) {
+      for (let i = 0; i < value.length; i++) {
+        if (value[i] !== evtValue) {
+          newValue.push(value[i])
         }
-      } else {
-        newValue = [...prev, value]
       }
-      return newValue
-    })
+    } else {
+      newValue = [...value, evtValue]
+    }
+    setValue(newValue)
+    if (onChange) {
+      onChange(newValue)
+    }
   }
 
   function handleInputFocus() {

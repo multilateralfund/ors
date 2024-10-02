@@ -26,7 +26,6 @@ export interface IMultiSelectProps
   defaultValue?: string[]
   hasClear?: boolean
   onChange?: (
-    evt: React.ChangeEvent<HTMLSelectElement> | undefined,
     newValue: string[],
   ) => void
 }
