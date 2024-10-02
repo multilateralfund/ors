@@ -54,6 +54,7 @@ type ReportResponse = {
   country: string
   country_id: number
   id: number
+  is_archive: boolean
   name: string
   status: 'draft' | 'final'
   version: number
@@ -217,16 +218,19 @@ const SubmissionItem = (props: any) => {
 
           const country = countriesById.get(report.country_id)
 
+          let reportURL = `/country-programme/${country?.iso3}/${report.year}`
+          if (report.is_archive) {
+            reportURL = `${reportURL}/archive/${report.version}`
+          } else if (report.status === 'draft') {
+            reportURL = `${reportURL}/edit`
+          }
+
           return (
             <Link
               key={index}
               className="flex items-baseline justify-between gap-4 text-pretty border-0 border-b border-solid border-secondary pb-2 sm:min-w-60"
+              href={reportURL}
               underline="none"
-              href={
-                report.status === 'draft'
-                  ? `/country-programme/${country?.iso3}/${report.year}/edit`
-                  : `/country-programme/${country?.iso3}/${report.year}`
-              }
             >
               <>
                 <Typography className="text-lg font-semibold" color="secondary">
@@ -251,18 +255,19 @@ const SubmissionItem = (props: any) => {
         })}
       </div>
 
-      {reports.length > REPORTS_PER_COUNTRY && !isCountryUserType[user_type as UserType] && (
-        <div
-          className="w-fit cursor-pointer font-medium"
-          onClick={toggleReportsVisibility}
-        >
-          {!showAllReports ? (
-            <span key="load-more-button">View More</span>
-          ) : (
-            <span key="load-less-button">Show Less</span>
-          )}
-        </div>
-      )}
+      {reports.length > REPORTS_PER_COUNTRY &&
+        !isCountryUserType[user_type as UserType] && (
+          <div
+            className="w-fit cursor-pointer font-medium"
+            onClick={toggleReportsVisibility}
+          >
+            {!showAllReports ? (
+              <span key="load-more-button">View More</span>
+            ) : (
+              <span key="load-less-button">Show Less</span>
+            )}
+          </div>
+        )}
     </div>
   )
 }
