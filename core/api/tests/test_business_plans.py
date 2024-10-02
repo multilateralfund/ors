@@ -252,10 +252,12 @@ def setup_bp_activity_create(
         "country_id": country_ro.id,
         "lvc_status": "LVC",
         "project_type_id": project_type.id,
+        "project_type_code": project_type.code,
         "bp_chemical_type_id": bp_chemical_type.id,
         "project_cluster_id": project_cluster_kpp.id,
         "substances": [substance.id],
         "sector_id": sector.id,
+        "sector_code": sector.code,
         "subsector_id": subsector.id,
         "status": "A",
         "is_multi_year": False,
@@ -331,7 +333,7 @@ class TestBPCreate:
 
         data = _setup_new_business_plan_create
         activity_data = _setup_bp_activity_create
-        activity_data["sector_id"] = ProjectSectorFactory(code="TAS").id
+        activity_data["sector_code"] = "TAS"
         data["activities"] = [activity_data]
 
         response = self.client.post(self.url, data, format="json")
@@ -496,7 +498,7 @@ class TestBPUpdate:
         url = reverse("businessplan-list") + f"{business_plan.id}/"
 
         activity_data = _setup_bp_activity_create
-        activity_data["sector_id"] = ProjectSectorFactory(code="TAS").id
+        activity_data["sector_code"] = "TAS"
         data = {
             "agency_id": business_plan.agency_id,
             "year_start": business_plan.year_start,
