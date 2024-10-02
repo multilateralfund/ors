@@ -175,6 +175,11 @@ class ScaleOfAssessment(models.Model):
 
 
 class Invoice(models.Model):
+    class InvoiceStatus(models.TextChoices):
+        PENDING = "pending", "Pending"
+        PARTIALLY_PAID = "partially_paid", "Partially paid"
+        PAID = "paid", "Paid"
+
     country = models.ForeignKey(
         Country, on_delete=models.PROTECT, related_name="invoices"
     )
@@ -188,6 +193,10 @@ class Invoice(models.Model):
     )
     year = models.IntegerField(null=True, blank=True)
     is_arrears = models.BooleanField(default=False)
+
+    status = models.CharField(
+        max_length=20, choices=InvoiceStatus.choices, default=InvoiceStatus.PENDING
+    )
 
     amount = models.DecimalField(max_digits=30, decimal_places=15)
     currency = models.CharField(max_length=64)
