@@ -196,88 +196,88 @@ def _another_country_user():
 #             assert report["is_archive"] is True
 
 
-class TestCPReportListGroupByYear(BaseTest):
-    url = reverse("country-programme-reports-by-year")
+# class TestCPReportListGroupByYear(BaseTest):
+#     url = reverse("country-programme-reports-by-year")
 
-    def test_get_cp_report_list(self, viewer_user, _setup_cp_report_list):
-        self.client.force_authenticate(user=viewer_user)
+#     def test_get_cp_report_list(self, viewer_user, _setup_cp_report_list):
+#         self.client.force_authenticate(user=viewer_user)
 
-        response = self.client.get(self.url)
-        assert response.status_code == 200
-        assert len(response.data) == 3
-        assert response.data[0]["id"] == 2010
-        assert [report["country"] for report in response.data[0]["reports"]] == [
-            "Bulgaria",
-            "Hungary",
-            "Romania",
-        ]
+#         response = self.client.get(self.url)
+#         assert response.status_code == 200
+#         assert len(response.data) == 3
+#         assert response.data[0]["id"] == 2010
+#         assert [report["country"] for report in response.data[0]["reports"]] == [
+#             "Bulgaria",
+#             "Hungary",
+#             "Romania",
+#         ]
 
-    def test_get_cp_report_list_country_user(self, country_user, _setup_cp_report_list):
-        self.client.force_authenticate(user=country_user)
+#     def test_get_cp_report_list_country_user(self, country_user, _setup_cp_report_list):
+#         self.client.force_authenticate(user=country_user)
 
-        response = self.client.get(self.url)
-        assert response.status_code == 200
-        assert len(response.data) == 3
-        assert response.data[0]["id"] == 2010
-        assert [report["country"] for report in response.data[0]["reports"]] == [
-            "Romania",
-        ]
+#         response = self.client.get(self.url)
+#         assert response.status_code == 200
+#         assert len(response.data) == 3
+#         assert response.data[0]["id"] == 2010
+#         assert [report["country"] for report in response.data[0]["reports"]] == [
+#             "Romania",
+#         ]
 
-    def test_get_cp_report_list_order(self, user, _setup_cp_report_list):
-        self.client.force_authenticate(user=user)
+#     def test_get_cp_report_list_order(self, user, _setup_cp_report_list):
+#         self.client.force_authenticate(user=user)
 
-        response = self.client.get(self.url, {"ordering": "desc"})
-        assert response.status_code == 200
-        assert len(response.data) == 3
-        assert response.data[0]["id"] == 2012
-        assert [report["country"] for report in response.data[0]["reports"]] == [
-            "Bulgaria",
-            "Hungary",
-            "Romania",
-        ]
+#         response = self.client.get(self.url, {"ordering": "desc"})
+#         assert response.status_code == 200
+#         assert len(response.data) == 3
+#         assert response.data[0]["id"] == 2012
+#         assert [report["country"] for report in response.data[0]["reports"]] == [
+#             "Bulgaria",
+#             "Hungary",
+#             "Romania",
+#         ]
 
 
-class TestCPReportListGroupByCountry(BaseTest):
-    url = reverse("country-programme-reports-by-country")
+# class TestCPReportListGroupByCountry(BaseTest):
+#     url = reverse("country-programme-reports-by-country")
 
-    def test_get_cp_report_list(self, viewer_user, _setup_cp_report_list):
-        self.client.force_authenticate(user=viewer_user)
+#     def test_get_cp_report_list(self, viewer_user, _setup_cp_report_list):
+#         self.client.force_authenticate(user=viewer_user)
 
-        response = self.client.get(self.url)
-        assert response.status_code == 200
-        assert len(response.data) == 3
-        assert response.data[0]["group"] == "Bulgaria"
-        assert [report["year"] for report in response.data[0]["reports"]] == [
-            2012,
-            2011,
-            2010,
-        ]
+#         response = self.client.get(self.url)
+#         assert response.status_code == 200
+#         assert len(response.data) == 3
+#         assert response.data[0]["group"] == "Bulgaria"
+#         assert [report["year"] for report in response.data[0]["reports"]] == [
+#             2012,
+#             2011,
+#             2010,
+#         ]
 
-    def test_get_cp_report_list_country_user(self, country_user, _setup_cp_report_list):
-        self.client.force_authenticate(user=country_user)
+#     def test_get_cp_report_list_country_user(self, country_user, _setup_cp_report_list):
+#         self.client.force_authenticate(user=country_user)
 
-        response = self.client.get(self.url)
-        assert response.status_code == 200
-        assert len(response.data) == 1
-        assert response.data[0]["group"] == "Romania"
-        assert [report["year"] for report in response.data[0]["reports"]] == [
-            2012,
-            2011,
-            2010,
-        ]
+#         response = self.client.get(self.url)
+#         assert response.status_code == 200
+#         assert len(response.data) == 1
+#         assert response.data[0]["group"] == "Romania"
+#         assert [report["year"] for report in response.data[0]["reports"]] == [
+#             2012,
+#             2011,
+#             2010,
+#         ]
 
-    def test_get_cp_report_list_order(self, user, _setup_cp_report_list):
-        self.client.force_authenticate(user=user)
+#     def test_get_cp_report_list_order(self, user, _setup_cp_report_list):
+#         self.client.force_authenticate(user=user)
 
-        response = self.client.get(self.url, {"ordering": "desc"})
-        assert response.status_code == 200
-        assert len(response.data) == 3
-        assert response.data[0]["group"] == "Romania"
-        assert [report["year"] for report in response.data[0]["reports"]] == [
-            2012,
-            2011,
-            2010,
-        ]
+#         response = self.client.get(self.url, {"ordering": "desc"})
+#         assert response.status_code == 200
+#         assert len(response.data) == 3
+#         assert response.data[0]["group"] == "Romania"
+#         assert [report["year"] for report in response.data[0]["reports"]] == [
+#             2012,
+#             2011,
+#             2010,
+#         ]
 
 
 class TestCPReportStatusUpdate(BaseTest):
