@@ -12,8 +12,10 @@ import { api } from '@ors/helpers'
 
 import { DisputedContributionDialogProps } from './types'
 
-export default function DisputedContributionDialog(props: DisputedContributionDialogProps) {
-  const {countryOptions, refetchSCData, year} = props
+export default function DisputedContributionDialog(
+  props: DisputedContributionDialogProps,
+) {
+  const { countryOptions, refetchSCData, year } = props
   const [showAdd, setShowAdd] = useState(false)
 
   function showAddDisputedContribution() {
@@ -43,7 +45,7 @@ export default function DisputedContributionDialog(props: DisputedContributionDi
   }
 
   return (
-    <div className="print:hidden">
+    <>
       {showAdd && (
         <FormDialog
           title="Disputed Contribution:"
@@ -79,6 +81,6 @@ export default function DisputedContributionDialog(props: DisputedContributionDi
           Add disputed contribution
         </AddButton>
       </div>
-    </div>
+    </>
   )
 }

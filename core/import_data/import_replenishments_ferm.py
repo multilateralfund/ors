@@ -37,6 +37,10 @@ FERM_AMOUNT_COLUMN = 2
 
 INCOME_AGENCY_COLUMN = 0
 INCOME_YEAR_COLUMN = 1
+INCOME_AMOUNT_Q1_COLUMN = 2
+INCOME_AMOUNT_Q2_COLUMN = 3
+INCOME_AMOUNT_Q3_COLUMN = 4
+INCOME_AMOUNT_Q4_COLUMN = 5
 INCOME_AMOUNT_COLUMN = 6
 
 DISPUTED_COUNTRY_COLUMN = 0
@@ -128,9 +132,32 @@ def parse_interest(interest_df, countries):
 
         amount = get_decimal_from_excel_string(row.iloc[INCOME_AMOUNT_COLUMN].strip())
 
+        quarterly_amounts_mapping = {
+            "interest_earned_quarter_1": get_decimal_from_excel_string(
+                row.iloc[INCOME_AMOUNT_Q1_COLUMN]
+            ),
+            "interest_earned_quarter_2": get_decimal_from_excel_string(
+                row.iloc[INCOME_AMOUNT_Q2_COLUMN]
+            ),
+            "interest_earned_quarter_3": get_decimal_from_excel_string(
+                row.iloc[INCOME_AMOUNT_Q3_COLUMN]
+            ),
+            "interest_earned_quarter_4": get_decimal_from_excel_string(
+                row.iloc[INCOME_AMOUNT_Q4_COLUMN]
+            ),
+        }
+        quarterly_params = {
+            key: value
+            for key, value in quarterly_amounts_mapping.items()
+            if value is not None
+        }
+
         external_incomes.append(
             ExternalIncomeAnnual(
-                interest_earned=amount, agency_name=current_agency_name, year=year
+                interest_earned=amount,
+                agency_name=current_agency_name,
+                year=year,
+                **quarterly_params,
             )
         )
 

@@ -2,7 +2,13 @@
 
 import { ApiReplenishmentInvoices } from '@ors/types/api_replenishment_invoices'
 
-import React, { useEffect, useState } from 'react'
+import React, {
+  ChangeEventHandler,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react'
 
 import {
   DialogTabButtons,
@@ -12,16 +18,28 @@ import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
 import {
   Field,
   FieldDateInput,
+  FieldFormattedNumberInput,
   FieldInput,
   FieldMultiSelect,
-  FieldSelect,
+  FieldSearchableSelect,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceAttachments'
+import useGetCountryReplenishmentInfo from '@ors/components/manage/Blocks/Replenishment/useGetCountryReplenishmentInfo'
+import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { formatApiUrl } from '@ors/helpers'
+import { getFloat } from '@ors/helpers/Utils/Utils'
 
 import { IPaymentDialogProps } from './types'
 
 const BASE_URL = 'api/replenishment/invoices/'
+
+interface PaymentDialogFields {
+  amount: string
+  amount_local_currency: string
+  currency: string
+  exchange_rate: string
+  ferm_gain_or_loss: string
+}
 
 const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
   const { columns, countries, data, isEdit, onSubmit, title, ...dialogProps } =
@@ -35,6 +53,52 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
   const [date, setDate] = useState(data?.date ?? '')
 
   const [tab, setTab] = useState(0)
+
+  const ctx = useContext(ReplenishmentContext)
+
+  const [fields, setFields] = useState<PaymentDialogFields>({
+    amount: data?.amount?.toString() ?? '',
+    amount_local_currency: data?.amount_local_currency?.toString() ?? '',
+    currency: data?.currency?.toString() ?? '',
+    exchange_rate: data?.exchange_rate?.toString() ?? '',
+    ferm_gain_or_loss: data?.ferm_gain_or_loss?.toString() ?? '',
+  })
+
+  const updateField = useCallback(
+    (name: string) => {
+      const handler: React.ChangeEventHandler<
+        HTMLInputElement | HTMLSelectElement
+      > = (evt) => setFields((prev) => ({ ...prev, [name]: evt.target.value }))
+      return handler
+    },
+    [setFields],
+  )
+
+  const [countryInfo] = useGetCountryReplenishmentInfo(
+    ctx.periods?.[0].start_year || '',
+    selectedCountry ?? '',
+  )
+
+  useEffect(
+    function () {
+      if (!isEdit) {
+        setFields((prev) => {
+          const updated = {
+            amount_local_currency:
+              (countryInfo?.amount_local_currency || '').toString() || '',
+            currency: (countryInfo?.currency || '').toString() || '',
+            exchange_rate: (countryInfo?.exchange_rate || '').toString() || '',
+          }
+
+          return {
+            ...prev,
+            ...updated,
+          }
+        })
+      }
+    },
+    [countryInfo, isEdit],
+  )
 
   useEffect(() => {
     setInvoicesLoading(true)
@@ -64,8 +128,22 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
 
   const handleFormSubmit: IPaymentDialogProps['onSubmit'] = (formData, evt) => {
     formData.set('date', date)
-    formData.delete('date_mask')
     onSubmit(formData, evt)
+  }
+
+  const isFERM = countryInfo?.opted_for_ferm || false
+  const fieldsAreReadonly = countryInfo ? !isFERM : false
+
+  const handleChangeAmount: ChangeEventHandler<HTMLInputElement> = (evt) => {
+    const amount = evt.target.value
+    const nrAmount = getFloat(amount)
+    setFields((prev) => ({
+      ...prev,
+      amount,
+      amount_local_currency: (
+        nrAmount * (countryInfo?.exchange_rate || 1)
+      ).toString(),
+    }))
   }
 
   return (
@@ -77,22 +155,19 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
         onClick={setTab}
       />
       <DialogTabContent isCurrent={tab == 0}>
-        <FieldSelect
+        <FieldSearchableSelect
           id="country_id"
           defaultValue={data?.country_id.toString()}
           label={columns.country.label}
-          onChange={(event) => {
-            setSelectedCountry(event.target.value)
-          }}
+          onChange={setSelectedCountry}
           required
         >
-          <option value="" disabled hidden></option>
           {countries.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name_alt}
             </option>
           ))}
-        </FieldSelect>
+        </FieldSearchableSelect>
         {!invoicesLoading && invoicesOptions.length === 0 ? (
           <Field id="no_invoices" label={columns.invoice_numbers.label}>
             <span id="no_invoices" className="ml-4">
@@ -138,32 +213,46 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
       <DialogTabContent isCurrent={tab == 1}>
         <FieldInput
           id="currency"
-          defaultValue={data?.currency}
+          disabled={fieldsAreReadonly}
           label={columns.currency.label}
+          readOnly={fieldsAreReadonly}
           type="text"
+          value={fields.currency}
+          onChange={updateField('currency')}
           required
         />
-        <FieldInput
-          id="amount"
-          defaultValue={data?.amount?.toString()}
-          label={columns.amount.label}
-          step="any"
-          type="number"
-          required
+        <FieldFormattedNumberInput
+          id="amount_local_currency"
+          decimalDigits={5}
+          disabled={fieldsAreReadonly}
+          label={`"${fields.currency}" amount`}
+          readOnly={fieldsAreReadonly}
+          value={fields.amount_local_currency}
+          onChange={updateField('amount_local_currency')}
         />
-        <FieldInput
+        <FieldFormattedNumberInput
           id="exchange_rate"
-          defaultValue={data?.exchange_rate?.toString()}
+          disabled={fieldsAreReadonly}
           label={columns.exchange_rate.label}
-          step="any"
-          type="number"
+          readOnly={fieldsAreReadonly}
+          value={fields.exchange_rate}
+          onChange={updateField('exchange_rate')}
         />
-        <FieldInput
+        <FieldFormattedNumberInput
+          id="amount"
+          decimalDigits={5}
+          label="USD amount"
+          value={fields.amount}
+          onChange={isFERM ? handleChangeAmount : updateField('amount')}
+          required
+        />
+        <FieldFormattedNumberInput
           id="ferm_gain_or_loss"
-          defaultValue={data?.ferm_gain_or_loss}
+          disabled={fieldsAreReadonly}
           label={columns.ferm_gain_or_loss.label}
-          step="any"
-          type="number"
+          readOnly={fieldsAreReadonly}
+          value={fields.ferm_gain_or_loss}
+          onChange={updateField('ferm_gain_or_loss')}
         />
         <h5>Upload</h5>
         <InvoiceAttachments

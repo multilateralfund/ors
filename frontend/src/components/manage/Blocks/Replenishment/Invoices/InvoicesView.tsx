@@ -36,9 +36,9 @@ import { InvoiceColumn, InvoiceForSubmit, ParsedInvoice } from './types'
 import { IoSearchSharp } from 'react-icons/io5'
 
 const COLUMNS: InvoiceColumn[] = [
+  { field: 'number', label: 'Number' },
   { field: 'country', label: 'Country', sortable: true },
   { field: 'status', label: 'Status' },
-  { field: 'number', label: 'Number' },
   { field: 'year', label: 'Year' },
   { field: 'date_of_issuance', label: 'Date of issuance', sortable: true },
   { field: 'amount', label: 'Amount' },
@@ -77,7 +77,10 @@ function InvoicesView() {
   const currentYear = new Date().getFullYear()
   const ctx = useContext(ReplenishmentContext)
 
-  const { loaded, params, results, setParams } = useGetInvoices(currentYear, currentYear)
+  const { loaded, params, results, setParams } = useGetInvoices(
+    currentYear,
+    currentYear,
+  )
   const memoResults: ({ id: number; isSkeleton: true } | ParsedInvoice)[] =
     useMemo(() => {
       if (!loaded) {

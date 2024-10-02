@@ -3,6 +3,8 @@ import React from 'react'
 import { Typography } from '@mui/material'
 import { filter } from 'lodash'
 
+import { multiYearFilterOptions } from '../constants'
+
 import { IoClose } from 'react-icons/io5'
 
 export default function ActivitiesFiltersSelectedOpts(props: any) {
@@ -23,6 +25,7 @@ export default function ActivitiesFiltersSelectedOpts(props: any) {
   const initialParams = {
     comment_types: [],
     country_id: [],
+    is_multi_year: [],
     project_cluster_id: [],
     project_type_id: [],
     search: '',
@@ -109,6 +112,10 @@ export default function ActivitiesFiltersSelectedOpts(props: any) {
       {displaySelectedOption(formatEntity(subsectors.data), 'subsector_id')}
       {displaySelectedOption(formatEntity(types.data), 'project_type_id')}
       {displaySelectedOption(formatEntity(commentTypes.data), 'comment_types')}
+      {displaySelectedOption(
+        formatEntity(multiYearFilterOptions),
+        'is_multi_year',
+      )}
 
       {(areFiltersApplied || filters?.search) && (
         <Typography

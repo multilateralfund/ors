@@ -92,7 +92,7 @@ function SCView(props: SCViewProps) {
   const dateOfLastUpdate = '27 May 2024'
   const title = period
     ? `Status of contributions for ${period}`
-    : 'Status of contributions'
+    : `Status of contributions (1991 - ${new Date().getFullYear()})`
 
   const Component = currentSection?.component ?? SCSummary
 
@@ -100,9 +100,7 @@ function SCView(props: SCViewProps) {
     <section className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-4 print:flex-col print:items-start">
         <h2 className="flex shrink flex-wrap items-center gap-1">
-          <span className="whitespace-normal">
-            {title} (1991 - {new Date().getFullYear()})
-          </span>
+          <span className="whitespace-normal">{title}</span>
           <span className="whitespace-normal text-2xl font-normal">
             as of {dateOfLastUpdate} (USD)
           </span>

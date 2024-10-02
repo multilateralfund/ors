@@ -28,6 +28,7 @@ export interface Contributions {
 
   contributions: number
   contributions_advance: number
+  contributions_in_full: number
   contributions_percentage: number
 
   countries: number
@@ -67,5 +68,12 @@ export interface SCViewProps {
 export interface DisputedContributionDialogProps {
   countryOptions: { country: string; country_id: number }[]
   refetchSCData: () => void
+  year: string
+}
+
+export interface BilateralAssistanceDialogProps {
+  countryOptions: { country: string; country_id: number }[]
+  refetchSCData: () => void
+  rows: SoCRow[]
   year: string
 }

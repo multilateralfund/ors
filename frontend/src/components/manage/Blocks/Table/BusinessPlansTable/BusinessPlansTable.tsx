@@ -28,6 +28,7 @@ import { debounce } from '@ors/helpers/Utils/Utils'
 import { useStore } from '@ors/store'
 
 import Activities from '../../BusinessPlans/Activities'
+import { multiYearFilterOptions } from '../../BusinessPlans/constants'
 import { filtersToQueryParams } from '../../BusinessPlans/utils'
 import TableViewSelector from './TableViewSelector'
 
@@ -46,13 +47,12 @@ export default function BusinessPlansTable() {
   const initialFilters = {
     comment_types: [],
     country_id: [],
-    is_multi_year: true,
+    is_multi_year: [multiYearFilterOptions[0]],
     project_cluster_id: [],
     project_type_id: [],
     search: '',
     sector_id: [],
     subsector_id: [],
-    // year_end: end_year,
     year_start: period.split('-')[0],
   }
 

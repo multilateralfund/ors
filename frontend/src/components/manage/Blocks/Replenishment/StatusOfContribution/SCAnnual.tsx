@@ -2,6 +2,7 @@
 import React, { useContext, useMemo, useState } from 'react'
 
 import ConfirmDialog from '@ors/components/manage/Blocks/Replenishment/ConfirmDialog'
+import BilateralAssistanceDialog from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/BilateralAssistanceDialog'
 import DisputedContributionDialog from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/DisputedContributionDialog'
 import { AnnualIndicators } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/Indicators'
 import useGetSCData from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/useGetSCData'
@@ -43,23 +44,29 @@ export default function SCAnnual({ year }: { year: string }) {
 
   const indicatorsData = useMemo(() => {
     return rows.reduce(
-      (acc, { outstanding_contributions }) => {
+      (acc, { cash_payments, outstanding_contributions }) => {
         let value = outstanding_contributions
+        const cash_value = cash_payments
         if (value >= -5 && value <= 5) {
           value = 0
         }
         if (value < 0) {
           acc.contributions_advance += 1
+          acc.contributions_full += 1
         } else if (value === 0) {
-          acc.contributions += 1
+          acc.contributions_full += 1
         } else {
           acc.outstanding_contributions += 1
+        }
+        if (cash_value >= 5) {
+          acc.contributions += 1
         }
         return acc
       },
       {
         contributions: 0,
         contributions_advance: 0,
+        contributions_full: 0,
         outstanding_contributions: 0,
         percentage_total_paid_current_year:
           data.percentage_total_paid_current_year,
@@ -140,11 +147,19 @@ export default function SCAnnual({ year }: { year: string }) {
           </p>
         </div>
         {ctx.isTreasurer && (
-          <DisputedContributionDialog
-            countryOptions={countriesInTable}
-            refetchSCData={refetchSCData}
-            year={year}
-          />
+          <div className="flex items-center gap-x-2 print:hidden">
+            <DisputedContributionDialog
+              countryOptions={countriesInTable}
+              refetchSCData={refetchSCData}
+              year={year}
+            />
+            <BilateralAssistanceDialog
+              countryOptions={countriesInTable}
+              refetchSCData={refetchSCData}
+              rows={rows}
+              year={year}
+            />
+          </div>
         )}
       </div>
     </>

@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 
 import { useParams } from 'next/navigation'
 
+import { multiYearFilterOptions } from '@ors/components/manage/Blocks/BusinessPlans/constants'
 import { getAgencyByName } from '@ors/components/manage/Blocks/BusinessPlans/utils'
 import useApi from '@ors/hooks/useApi'
 import { useStore } from '@ors/store'
@@ -29,7 +30,7 @@ function BPProvider(props: BPProviderProps) {
     options: {
       params: {
         agency_id: currentAgency?.id,
-        is_multi_year: true,
+        is_multi_year: [multiYearFilterOptions[0].id],
         limit: BP_PER_PAGE,
         offset: 0,
         year_end: period.split('-')[1],
