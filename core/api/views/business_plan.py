@@ -413,6 +413,7 @@ class BusinessPlanViewSet(
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 
+    # group activities by business plan
     def group_activity_data(self, data):
         activities_dict = defaultdict(list)
         ret_data = []
@@ -439,6 +440,7 @@ class BusinessPlanViewSet(
         new_instances = []
         history_objs = []
 
+        # parse data to respect serializer format
         data = self.group_activity_data(request.data)
         serializer = self.get_serializer(data=data, many=True)
         if not serializer.is_valid():
@@ -463,10 +465,11 @@ class BusinessPlanViewSet(
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            # new status can be secretariat_draft or submitted
+            # check status
             if request.data["status"] not in [
                 BusinessPlan.Status.submitted,
                 BusinessPlan.Status.secretariat_draft,
+                BusinessPlan.Status.agency_draft,
             ]:
                 return Response(
                     {"general_error": "Invalid status transition"},

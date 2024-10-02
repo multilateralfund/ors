@@ -151,6 +151,7 @@ class CommentTypeSerializer(serializers.ModelSerializer):
 
 
 class BulkCreateListSerializer(serializers.ListSerializer):
+    # instantiate all child objs using `create` method, then save in 1 query
     def create(self, validated_data):
         objs = [self.child.create(attrs) for attrs in validated_data]
         return self.child.Meta.model.objects.bulk_create(objs, batch_size=1000)
@@ -166,5 +167,6 @@ class BulkCreateListSerializer(serializers.ListSerializer):
 
 
 class Many2ManyListField(serializers.ListField):
+    # make ListField allow `ManyRelatedManager` data
     def to_representation(self, data):
         return [self.child.to_representation(item.pk) for item in data.all()]
