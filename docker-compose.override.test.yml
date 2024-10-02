@@ -7,6 +7,8 @@ services:
       - GUNICORN_CMD_ARGS=--workers=2 --threads=2
 
   nextjs:
+    profiles:
+      - donotstart
     build:
       context: .
       dockerfile: docker/nextjs.docker
