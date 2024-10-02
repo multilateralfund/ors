@@ -19,6 +19,7 @@ import { useStore } from '@ors/store'
 import {
   allColumnDefs,
   commentsColumnDefs,
+  defaultColDef,
   odpColumnDefs,
   valuesColumnDefs,
 } from '../../Table/BusinessPlansTable/schema'
@@ -87,40 +88,34 @@ export default function BPDiffTable({
 
       valuesUSD.push({
         autoHeaderHeight: true,
-        autoHeight: true,
         cellClass: 'ag-text-center',
         cellRenderer: numberCellRenderer,
         field: `value_usd_${year}`,
         headerClass: 'ag-text-center',
         headerName: `${label}`,
         minWidth: 80,
-        resizable: true,
         valueGetter: (params: any) => valuesCellGetter(params, 'value_usd'),
       })
 
       valuesODP.push({
         autoHeaderHeight: true,
-        autoHeight: true,
         cellClass: 'ag-text-center',
         cellRenderer: numberCellRenderer,
         field: `value_odp_${year}`,
         headerClass: 'ag-text-center',
         headerName: `${label}`,
         minWidth: 80,
-        resizable: true,
         valueGetter: (params: any) => valuesCellGetter(params, 'value_odp'),
       })
 
       valuesMT.push({
         autoHeaderHeight: true,
-        autoHeight: true,
         cellClass: 'ag-text-center',
         cellRenderer: numberCellRenderer,
         field: `value_mt_${year}`,
         headerClass: 'ag-text-center',
         headerName: `${label}`,
         minWidth: 80,
-        resizable: true,
         valueGetter: (params: any) => valuesCellGetter(params, 'value_mt'),
       })
     }
@@ -202,6 +197,7 @@ export default function BPDiffTable({
           className="bp-diff-table"
           Toolbar={displayFilters}
           columnDefs={[...columnDefs]}
+          defaultColDef={defaultColDef}
           domLayout="normal"
           gridRef={grid}
           loaded={loaded}

@@ -11,7 +11,7 @@ import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext
 import { getResults } from '@ors/helpers'
 import { debounce } from '@ors/helpers/Utils/Utils'
 
-import { allColumnDefs } from './editSchema'
+import { allColumnDefs, defaultColDef } from './editSchema'
 
 export default function BusinessPlansEditTable() {
   const form = useRef<any>()
@@ -105,19 +105,16 @@ export default function BusinessPlansEditTable() {
 
       valuesUSD.push({
         autoHeaderHeight: true,
-        autoHeight: true,
         cellClass: 'ag-text-center',
         cellEditor: 'agNumberCellEditor',
         cellEditorParams: {
           allowNullVals: true,
           min: 0,
         },
-        editable: true,
         field: `value_usd_${year}`,
         headerClass: 'ag-text-center',
         headerName: `${label}`,
         minWidth: 80,
-        resizable: true,
         valueGetter: (params: any) =>
           valueGetter(params, year, isAfterMaxYear, 'value_usd'),
         valueSetter: (params: any) =>
@@ -127,19 +124,16 @@ export default function BusinessPlansEditTable() {
 
       valuesODP.push({
         autoHeaderHeight: true,
-        autoHeight: true,
         cellClass: 'ag-text-center',
         cellEditor: 'agNumberCellEditor',
         cellEditorParams: {
           allowNullVals: true,
           min: 0,
         },
-        editable: true,
         field: `value_odp_${year}`,
         headerClass: 'ag-text-center',
         headerName: `${label}`,
         minWidth: 80,
-        resizable: true,
         valueGetter: (params: any) =>
           valueGetter(params, year, isAfterMaxYear, 'value_odp'),
         valueSetter: (params: any) =>
@@ -149,19 +143,16 @@ export default function BusinessPlansEditTable() {
 
       valuesMT.push({
         autoHeaderHeight: true,
-        autoHeight: true,
         cellClass: 'ag-text-center',
         cellEditor: 'agNumberCellEditor',
         cellEditorParams: {
           allowNullVals: true,
           min: 0,
         },
-        editable: true,
         field: `value_mt_${year}`,
         headerClass: 'ag-text-center',
         headerName: `${label}`,
         minWidth: 80,
-        resizable: true,
         valueGetter: (params: any) =>
           valueGetter(params, year, isAfterMaxYear, 'value_mt'),
         valueSetter: (params: any) =>
@@ -210,11 +201,12 @@ export default function BusinessPlansEditTable() {
       <form ref={form}>
         <Table
           columnDefs={[...columnDefs]}
+          defaultColDef={defaultColDef}
           domLayout="normal"
           gridRef={grid}
           loaded={loaded}
           loading={loading}
-          rowData={results.slice(0, 1)}
+          rowData={results}
           tooltipShowDelay={200}
           onFirstDataRendered={() => {
             debounce(autoSizeColumns, 0)

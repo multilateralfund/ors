@@ -16,6 +16,7 @@ import TableDateSwitcher, {
 import {
   allColumnDefs,
   commentsColumnDefs,
+  defaultColDef,
   odpColumnDefs,
   valuesColumnDefs,
 } from '@ors/components/manage/Blocks/Table/BusinessPlansTable/schema'
@@ -107,13 +108,11 @@ export default function BusinessPlansTable() {
 
       valuesUSD.push({
         autoHeaderHeight: true,
-        autoHeight: true,
         cellClass: 'ag-text-center',
         field: `value_usd_${year}`,
         headerClass: 'ag-text-center',
         headerName: `${label}`,
         minWidth: 80,
-        resizable: true,
         valueGetter: (params: any) => {
           const value = params.data.values.find((value: any) =>
             getYearColsValue(value, year, isAfterMaxYear),
@@ -127,13 +126,11 @@ export default function BusinessPlansTable() {
 
       valuesODP.push({
         autoHeaderHeight: true,
-        autoHeight: true,
         cellClass: 'ag-text-center',
         field: `value_odp_${year}`,
         headerClass: 'ag-text-center',
         headerName: `${label}`,
         minWidth: 80,
-        resizable: true,
         valueGetter: (params: any) => {
           const value = params.data.values.find((value: any) =>
             getYearColsValue(value, year, isAfterMaxYear),
@@ -147,13 +144,11 @@ export default function BusinessPlansTable() {
 
       valuesMT.push({
         autoHeaderHeight: true,
-        autoHeight: true,
         cellClass: 'ag-text-center',
         field: `value_mt_${year}`,
         headerClass: 'ag-text-center',
         headerName: `${label}`,
         minWidth: 80,
-        resizable: true,
         valueGetter: (params: any) => {
           const value = params.data.values.find((value: any) =>
             getYearColsValue(value, year, isAfterMaxYear),
@@ -317,6 +312,7 @@ export default function BusinessPlansTable() {
           <Table
             Toolbar={displayFilters}
             columnDefs={[...columnDefs]}
+            defaultColDef={defaultColDef}
             domLayout="normal"
             enablePagination={true}
             gridRef={grid}
