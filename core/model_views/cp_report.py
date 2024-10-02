@@ -18,12 +18,14 @@ class FinalReportsView(AbstractCPReport):
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         null=True,
+        related_name="final_reports_created_by",
         help_text="User who created the report",
     )
     version_created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         null=True,
+        related_name="final_reports_version_created_by",
         help_text="User who created this archived report version",
     )
     is_archive = models.BooleanField()
