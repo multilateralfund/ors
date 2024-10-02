@@ -46,6 +46,7 @@ interface PaymentDialogFields {
   exchange_rate: string
   ferm_gain_or_loss: string
   invoices: string[]
+  payment_for_year: string
 }
 
 function getInvoiceLabel(invoice: ApiReplenishmentInvoice) {
@@ -70,6 +71,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
     exchange_rate: data?.exchange_rate?.toString() ?? '',
     ferm_gain_or_loss: data?.ferm_gain_or_loss?.toString() ?? '',
     invoices: data?.invoices?.map((o) => o.id.toString()) ?? [],
+    payment_for_year: data?.payment_for_year?.toString() ?? '',
   })
 
   const updateField = useCallback(
@@ -171,16 +173,21 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
 
   useEffect(
     function () {
-      setFields(function (prev) {
-        return {
-          ...prev,
-          ferm_gain_or_loss: (
-            invoicedAmount - getFloat(fields.amount)
-          ).toString(),
-        }
-      })
+      if (
+        fields.invoices.length > 0 &&
+        fields.payment_for_year.toLowerCase() !== 'arrears'
+      ) {
+        setFields(function (prev) {
+          return {
+            ...prev,
+            ferm_gain_or_loss: (
+              invoicedAmount - getFloat(fields.amount)
+            ).toString(),
+          }
+        })
+      }
     },
-    [invoicedAmount, fields.amount],
+    [invoicedAmount, fields.amount, fields.invoices, fields.payment_for_year],
   )
 
   return (
@@ -232,6 +239,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
           defaultValue={data?.payment_for_year}
           label={columns.payment_for_year.label}
           type="text"
+          onChange={updateField('payment_for_year')}
           required
         />
         <FieldDateInput
