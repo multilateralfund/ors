@@ -199,7 +199,10 @@ function PaymentsView() {
       ? ''
       : entry.ferm_gain_or_loss
     entry.comment = entry.comment || ''
-    entry.invoices = formData.getAll('invoices') as string[]
+    const invoices = formData.getAll('invoices') as string[]
+    if (invoices.length > 0) {
+      entry.invoices = invoices
+    }
 
     let nr_new_files = 0
     const data = new FormData()
@@ -283,7 +286,10 @@ function PaymentsView() {
       ? ''
       : entry.ferm_gain_or_loss
     entry.comment = entry.comment || ''
-    entry.invoices = formData.getAll('invoices') as string[]
+    const invoices = formData.getAll('invoices') as string[]
+    if (invoices.length > 0) {
+      entry.invoices = invoices
+    }
 
     let nr_new_files = 0
     const data = new FormData()

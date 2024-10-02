@@ -23,7 +23,7 @@ export type PaymentForSubmit = {
   date: null | string
   exchange_rate: number | string
   ferm_gain_or_loss: number | string
-  invoices: string[]
+  invoices?: string[]
   reminder: string
   year: string
 } & { [key: string]: File }
