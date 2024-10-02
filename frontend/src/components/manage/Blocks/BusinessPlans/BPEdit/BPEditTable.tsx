@@ -11,7 +11,7 @@ import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext
 import { getResults } from '@ors/helpers'
 import { debounce } from '@ors/helpers/Utils/Utils'
 
-import { allColumnDefs, defaultColDef } from './editSchema'
+import useColumnsOptions from './editSchema'
 
 export default function BusinessPlansEditTable() {
   const form = useRef<any>()
@@ -177,7 +177,7 @@ export default function BusinessPlansEditTable() {
     ]
   }, [yearRangeSelected, valueGetter, valueSetter])
 
-  const columnDefs = useMemo(() => allColumnDefs(yearColumns), [yearColumns])
+  const columnOptions = useColumnsOptions(yearColumns)
 
   const grid = useRef<any>()
 
@@ -185,7 +185,7 @@ export default function BusinessPlansEditTable() {
     if (!grid.current.api) return
     grid.current.api.autoSizeColumns(
       reduce(
-        columnDefs,
+        columnOptions.columnDefs,
         (acc: Array<string>, column) => {
           acc.push(column.field)
           return acc
@@ -200,8 +200,8 @@ export default function BusinessPlansEditTable() {
     yearRanges.length > 0 && (
       <form ref={form}>
         <Table
-          columnDefs={[...columnDefs]}
-          defaultColDef={defaultColDef}
+          columnDefs={columnOptions.columnDefs}
+          defaultColDef={columnOptions.defaultColDef}
           domLayout="normal"
           gridRef={grid}
           loaded={loaded}
