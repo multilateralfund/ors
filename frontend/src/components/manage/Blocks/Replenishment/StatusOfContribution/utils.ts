@@ -89,6 +89,9 @@ export function formatTableRows(
         value = 0
       }
 
+      if (key === 'gain_loss' && value === null) {
+        value = "N/A"
+      }
       switch (typeof value) {
         case 'number':
           result[i][key] = value.toLocaleString('en-US', {
