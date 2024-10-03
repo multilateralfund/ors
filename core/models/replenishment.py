@@ -247,7 +247,7 @@ class Payment(models.Model):
     payment_for_year = models.CharField(max_length=64)
 
     amount = models.DecimalField(max_digits=30, decimal_places=15)
-    currency = models.CharField(max_length=64)
+    currency = models.CharField(max_length=64, default="USD")
     exchange_rate = models.DecimalField(max_digits=30, decimal_places=15, null=True)
     ferm_gain_or_loss = models.DecimalField(max_digits=30, decimal_places=15, null=True)
 
