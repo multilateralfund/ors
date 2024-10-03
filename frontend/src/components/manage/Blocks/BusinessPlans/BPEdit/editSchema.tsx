@@ -13,8 +13,28 @@ const useColumnsOptions = (yearColumns: any[]) => {
   const cpReportsSlice = useStore((state) => state.cp_reports)
   const bpSlice = useStore((state) => state.businessPlans)
 
+  const countries = commonSlice.countries.data
+  const clusters = projectSlice.clusters.data
+  const types = bpSlice.types.data
+  const sectors = bpSlice.sectors.data
+  const subsectors = bpSlice.subsectors.data
+  const substances = cpReportsSlice.substances.data
+  const statuses = commonSlice.settings.data.business_plan_statuses.map(
+    (status) => ({
+      id: status[0],
+      name: status[1],
+    }),
+  )
+  const commentTypes = bpSlice.commentTypes.data
+
   const agFormatValue = (value: any) => value?.id || ''
   const agFormatValueTags = (value: any) => (value?.length > 0 ? value : '')
+  const getFormattedValue = (data: any, id: number) => find(data, { id })?.name
+
+  const getOptionLabel = (data: any, option: any) =>
+    isObject(option)
+      ? get(option, 'name')
+      : find(data, { id: option })?.name || ''
 
   const isOptionEqualToValue = (option: any, value: any) =>
     isObject(value) ? isEqual(option, value) : option.id === value
@@ -31,9 +51,14 @@ const useColumnsOptions = (yearColumns: any[]) => {
       })
 
       params.data[colIdentifier + '_id'] = newVal
+
       if (['project_type', 'sector'].includes(colIdentifier)) {
         params.data[colIdentifier + '_code'] = currentDataObj?.code
       }
+      if (colIdentifier === 'status') {
+        params.data.status_display = currentDataObj?.name
+      }
+
       params.data[colIdentifier] = currentDataObj
 
       return true
@@ -46,18 +71,18 @@ const useColumnsOptions = (yearColumns: any[]) => {
       const newValIds = params.newValue?.map((newVal: any) =>
         isObject(newVal) ? get(newVal, 'id') : newVal,
       )
-      params.data.substances = newValIds
 
+      params.data.substances = newValIds
       params.data.substances_display = newValIds?.map(
         (id: number) =>
-          find(cpReportsSlice.substances.data, {
+          find(substances, {
             id,
           })?.name,
       )
 
       return true
     },
-    [cpReportsSlice.substances.data],
+    [substances],
   )
 
   const commentsValueSetter = useCallback((params: any) => {
@@ -69,13 +94,6 @@ const useColumnsOptions = (yearColumns: any[]) => {
     return true
   }, [])
 
-  const getFormattedValue = (data: any, id: number) => find(data, { id })?.name
-
-  const getOptionLabel = (data: any, option: any) =>
-    isObject(option)
-      ? get(option, 'name')
-      : find(data, { id: option })?.name || ''
-
   const colsOptions = useMemo(
     () => ({
       columnDefs: [
@@ -85,12 +103,10 @@ const useColumnsOptions = (yearColumns: any[]) => {
           cellEditorParams: {
             Input: { placeholder: 'Select country' },
             agFormatValue,
-            getFormattedValue: (id: number) =>
-              getFormattedValue(commonSlice.countries.data, id),
-            getOptionLabel: (option: any) =>
-              getOptionLabel(commonSlice.countries.data, option),
+            getFormattedValue: (id: number) => getFormattedValue(countries, id),
+            getOptionLabel: (option: any) => getOptionLabel(countries, option),
             isOptionEqualToValue,
-            options: commonSlice.countries.data,
+            options: countries,
           },
           cellRenderer: (props: any) => (
             <AgCellRenderer {...props} value={props.data.country?.name} />
@@ -101,7 +117,7 @@ const useColumnsOptions = (yearColumns: any[]) => {
           minWidth: 150,
           tooltipField: 'country.name',
           valueSetter: (params: any) =>
-            valueSetter(params, 'country', commonSlice.countries.data),
+            valueSetter(params, 'country', countries),
         },
         {
           cellClass: 'ag-text-center ag-cell-wrap-text',
@@ -109,12 +125,10 @@ const useColumnsOptions = (yearColumns: any[]) => {
           cellEditorParams: {
             Input: { placeholder: 'Select cluster' },
             agFormatValue,
-            getFormattedValue: (id: any) =>
-              getFormattedValue(projectSlice.clusters.data, id),
-            getOptionLabel: (option: any) =>
-              getOptionLabel(projectSlice.clusters.data, option),
+            getFormattedValue: (id: any) => getFormattedValue(clusters, id),
+            getOptionLabel: (option: any) => getOptionLabel(clusters, option),
             isOptionEqualToValue,
-            options: projectSlice.clusters.data,
+            options: clusters,
           },
           cellRenderer: (props: any) => (
             <AgCellRenderer
@@ -128,7 +142,7 @@ const useColumnsOptions = (yearColumns: any[]) => {
           minWidth: 120,
           tooltipField: 'project_cluster.name',
           valueSetter: (params: any) =>
-            valueSetter(params, 'project_cluster', projectSlice.clusters.data),
+            valueSetter(params, 'project_cluster', clusters),
         },
         {
           cellClass: 'ag-text-center ag-cell-wrap-text',
@@ -136,12 +150,10 @@ const useColumnsOptions = (yearColumns: any[]) => {
           cellEditorParams: {
             Input: { placeholder: 'Select type' },
             agFormatValue,
-            getFormattedValue: (id: any) =>
-              getFormattedValue(bpSlice.types.data, id),
-            getOptionLabel: (option: any) =>
-              getOptionLabel(bpSlice.types.data, option),
+            getFormattedValue: (id: any) => getFormattedValue(types, id),
+            getOptionLabel: (option: any) => getOptionLabel(types, option),
             isOptionEqualToValue,
-            options: bpSlice.types.data,
+            options: types,
           },
           cellRenderer: (props: any) => (
             <AgCellRenderer {...props} value={props.data.project_type?.code} />
@@ -152,7 +164,7 @@ const useColumnsOptions = (yearColumns: any[]) => {
           minWidth: 120,
           tooltipField: 'project_type.name',
           valueSetter: (params: any) =>
-            valueSetter(params, 'project_type', bpSlice.types.data),
+            valueSetter(params, 'project_type', types),
         },
         {
           cellClass: 'ag-text-center ag-cell-wrap-text',
@@ -168,12 +180,10 @@ const useColumnsOptions = (yearColumns: any[]) => {
           cellEditorParams: {
             Input: { placeholder: 'Select sector' },
             agFormatValue,
-            getFormattedValue: (id: any) =>
-              getFormattedValue(bpSlice.sectors.data, id),
-            getOptionLabel: (option: any) =>
-              getOptionLabel(bpSlice.sectors.data, option),
+            getFormattedValue: (id: any) => getFormattedValue(sectors, id),
+            getOptionLabel: (option: any) => getOptionLabel(sectors, option),
             isOptionEqualToValue,
-            options: bpSlice.sectors.data,
+            options: sectors,
           },
           cellRenderer: (props: any) => (
             <AgCellRenderer {...props} value={props.data.sector?.code} />
@@ -183,8 +193,7 @@ const useColumnsOptions = (yearColumns: any[]) => {
           headerName: 'Sector',
           minWidth: 120,
           tooltipField: 'sector.name',
-          valueSetter: (params: any) =>
-            valueSetter(params, 'sector', bpSlice.sectors.data),
+          valueSetter: (params: any) => valueSetter(params, 'sector', sectors),
         },
         {
           cellClass: 'ag-text-center ag-cell-wrap-text',
@@ -192,12 +201,10 @@ const useColumnsOptions = (yearColumns: any[]) => {
           cellEditorParams: {
             Input: { placeholder: 'Select subsector' },
             agFormatValue,
-            getFormattedValue: (id: any) =>
-              getFormattedValue(bpSlice.subsectors.data, id),
-            getOptionLabel: (option: any) =>
-              getOptionLabel(bpSlice.subsectors.data, option),
+            getFormattedValue: (id: any) => getFormattedValue(subsectors, id),
+            getOptionLabel: (option: any) => getOptionLabel(subsectors, option),
             isOptionEqualToValue,
-            options: bpSlice.subsectors.data,
+            options: subsectors,
           },
           cellRenderer: (props: any) => (
             <AgCellRenderer {...props} value={props.data.subsector?.code} />
@@ -208,7 +215,7 @@ const useColumnsOptions = (yearColumns: any[]) => {
           minWidth: 120,
           tooltipField: 'subsector.name',
           valueSetter: (params: any) =>
-            valueSetter(params, 'subsector', bpSlice.subsectors.data),
+            valueSetter(params, 'subsector', subsectors),
         },
         {
           cellClass: 'ag-cell-wrap-text',
@@ -231,13 +238,11 @@ const useColumnsOptions = (yearColumns: any[]) => {
               placeholder: 'Select substances',
             },
             agFormatValue: (value: any) => agFormatValueTags(value),
-            getFormattedValue: (id: any) =>
-              getFormattedValue(cpReportsSlice.substances.data, id),
-            getOptionLabel: (option: any) =>
-              getOptionLabel(cpReportsSlice.substances.data, option),
+            getFormattedValue: (id: any) => getFormattedValue(substances, id),
+            getOptionLabel: (option: any) => getOptionLabel(substances, option),
             isMultiple: true,
             isOptionEqualToValue,
-            options: cpReportsSlice.substances.data,
+            options: substances,
           },
           cellRenderer: (props: any) =>
             tagsCellRenderer({ value: props.data.substances_display }),
@@ -279,11 +284,24 @@ const useColumnsOptions = (yearColumns: any[]) => {
         ...yearColumns,
         {
           cellClass: 'ag-text-center',
+          cellEditor: 'agSelectCellEditor',
+          cellEditorParams: {
+            Input: { placeholder: 'Select status' },
+            agFormatValue,
+            getFormattedValue: (id: any) => getFormattedValue(statuses, id),
+            getOptionLabel: (option: any) => getOptionLabel(statuses, option),
+            isOptionEqualToValue,
+            options: statuses,
+          },
+          cellRenderer: (props: any) => (
+            <AgCellRenderer {...props} value={props.data.status_display} />
+          ),
           field: 'status',
           headerClass: 'ag-text-center',
           headerName: 'Status',
-          minWidth: 100,
+          minWidth: 120,
           tooltipField: 'status_display',
+          valueSetter: (params: any) => valueSetter(params, 'status', statuses),
         },
         {
           cellClass: 'ag-text-center',
@@ -328,13 +346,12 @@ const useColumnsOptions = (yearColumns: any[]) => {
               placeholder: 'Select comment type',
             },
             agFormatValue: (value: any) => agFormatValueTags(value),
-            getFormattedValue: (id: any) =>
-              getFormattedValue(bpSlice.commentTypes.data, id),
+            getFormattedValue: (id: any) => getFormattedValue(commentTypes, id),
             getOptionLabel: (option: any) =>
-              getOptionLabel(bpSlice.commentTypes.data, option),
+              getOptionLabel(commentTypes, option),
             isMultiple: true,
             isOptionEqualToValue: isOptionEqualToValueComments,
-            options: bpSlice.commentTypes.data,
+            options: commentTypes,
           },
           cellRenderer: (props: any) =>
             tagsCellRenderer({ value: props.data.comment_types }),
@@ -352,10 +369,14 @@ const useColumnsOptions = (yearColumns: any[]) => {
       },
     }),
     [
-      commonSlice,
-      projectSlice,
-      cpReportsSlice,
-      bpSlice,
+      countries,
+      clusters,
+      types,
+      sectors,
+      subsectors,
+      substances,
+      statuses,
+      commentTypes,
       yearColumns,
       valueSetter,
       substancesValueSetter,
