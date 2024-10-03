@@ -59,7 +59,7 @@ function SummaryCard(props: any) {
   }
 
   return (
-    <div className="flex max-h-48 min-h-48 min-w-[29.33rem] max-w-[29.33rem] flex-1 flex-col justify-between rounded-lg bg-[#F5F5F5] p-4 print:break-inside-avoid">
+    <div className="flex max-h-48 min-h-48 min-w-[25rem] flex-1 flex-col justify-between rounded-lg bg-[#F5F5F5] p-4 2xl:min-w-[29.33rem] 2xl:max-w-[29.33rem] print:break-inside-avoid">
       <div className="flex items-center justify-between">
         <div className="max-w-0 text-xl font-medium uppercase text-[#4D4D4D]">
           {label}
@@ -259,10 +259,7 @@ function TabIndicatorsDisputedContributions(props: any) {
           label: 'percentage of pledged',
           suffix: '%',
           value: formatNumber(
-            getPercent(
-              totals.agreed_contributions,
-              disputed_contributions,
-            ),
+            getPercent(totals.agreed_contributions, disputed_contributions),
           ),
         },
       ]}
@@ -319,7 +316,6 @@ function TabIndicatorsInterestEarned(props: any) {
   )
 }
 
-
 function socRows(data: Record<string, any>, onlyCeits: boolean) {
   let rows = []
 
@@ -353,19 +349,21 @@ function CummulativeTab(props: any) {
 
   const totals = onlyCeits ? data.ceit : data.total
 
-  const disputed_contributions = onlyCeits ? data.ceit?.disputed_contributions : data.disputed_contributions
+  const disputed_contributions = onlyCeits
+    ? data.ceit?.disputed_contributions
+    : data.disputed_contributions
 
   if (totals) {
     return (
-      <div className="flex w-full justify-between gap-4">
-        <div className="w-1/5">
+      <div className="flex w-full flex-wrap justify-between gap-4 md:flex-nowrap">
+        <div className="w-full lg:w-1/2 2xl:w-1/5">
           <TabIndicatorsPledged
             contrib={contrib}
             period={period}
             totals={totals}
           />
         </div>
-        <div className="flex w-4/5 flex-wrap gap-4">
+        <div className="flex w-full flex-wrap gap-4 lg:w-1/2 2xl:w-4/5">
           <TabIndicatorsPayments contrib={contrib} totals={totals} />
           <TabIndicatorsBilateralAssistance contrib={contrib} totals={totals} />
           <TabIndicatorsPromissoryNotes contrib={contrib} totals={totals} />
@@ -398,7 +396,9 @@ function TriennialTab(props: any) {
 
   const contrib = extractContributions(socRows(data, onlyCeits))
   const totals = onlyCeits ? data.ceit : data.total
-  const disputed_contributions = onlyCeits ? data.ceit?.disputed_contributions : data.disputed_contributions
+  const disputed_contributions = onlyCeits
+    ? data.ceit?.disputed_contributions
+    : data.disputed_contributions
 
   const curYear = new Date().getFullYear()
 
@@ -414,15 +414,15 @@ function TriennialTab(props: any) {
   if (totals) {
     return (
       <>
-        <div className="flex w-full justify-between gap-4">
-          <div className="w-1/5">
+        <div className="flex w-full flex-wrap justify-between gap-4 md:flex-nowrap">
+          <div className="w-full lg:w-1/2 2xl:w-1/5">
             <TabIndicatorsPledged
               contrib={contrib}
               period={`${period}*`}
               totals={totals}
             />
           </div>
-          <div className="flex w-4/5 flex-wrap gap-4">
+          <div className="flex w-full flex-wrap gap-4 lg:w-1/2 2xl:w-4/5">
             <TabIndicatorsPayments contrib={contrib} totals={totals} />
             <TabIndicatorsBilateralAssistance
               contrib={contrib}
@@ -444,7 +444,7 @@ function TriennialTab(props: any) {
           </div>
         </div>
 
-        <div className="w-full lg:max-w-[50%]">
+        <div className="w-full 2xl:max-w-[50%]">
           {showOutstandingExplanation ? (
             <p>
               <sup>*</sup> {outstandingExplanation}
@@ -487,19 +487,21 @@ function AnnualTab(props: any) {
 
   const contrib = extractContributions(socRows(data, onlyCeits))
   const totals = onlyCeits ? data.ceit : data.total
-  const disputed_contributions = onlyCeits ? data.ceit?.disputed_contributions : data.disputed_contributions
+  const disputed_contributions = onlyCeits
+    ? data.ceit?.disputed_contributions
+    : data.disputed_contributions
 
   if (totals) {
     return (
-      <div className="flex w-full justify-between gap-4">
-        <div className="w-1/5">
+      <div className="flex w-full flex-wrap justify-between gap-4 md:flex-nowrap">
+        <div className="w-full lg:w-1/2 2xl:w-1/5">
           <TabIndicatorsPledged
             contrib={contrib}
             period={period}
             totals={totals}
           />
         </div>
-        <div className="flex w-4/5 flex-wrap gap-4">
+        <div className="flex w-full flex-wrap gap-4 lg:w-1/2 2xl:w-4/5">
           <TabIndicatorsPayments contrib={contrib} totals={totals} />
           <TabIndicatorsBilateralAssistance contrib={contrib} totals={totals} />
           <TabIndicatorsPromissoryNotes contrib={contrib} totals={totals} />
@@ -645,7 +647,7 @@ function SectionDashboard(props: SectionDashboardProps) {
 
   return (
     <>
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col items-center justify-between gap-y-4 2xl:flex-row">
         <div className="flex items-center gap-4 print:hidden">
           <h2 className="m-0 text-3xl">DASHBOARD</h2>{' '}
           <span className="print:hidden"> | </span>
@@ -706,10 +708,10 @@ function SectionDashboard(props: SectionDashboardProps) {
         {charts && !onlyCeits ? (
           <div className="">
             <br className="m-5 leading-7" />
-            <div className="flex w-full print:flex-col">
+            <div className="flex w-[90vw] flex-wrap 2xl:w-full print:flex-col">
               {charts && (
                 <>
-                  <div className="w-1/2 print:w-full print:break-inside-avoid">
+                  <div className="w-full 2xl:w-1/2 print:w-full print:break-inside-avoid">
                     <h3 className="text-2xl uppercase">
                       Outstanding pledges by triennium
                     </h3>
@@ -721,7 +723,7 @@ function SectionDashboard(props: SectionDashboardProps) {
                       }))}
                     />
                   </div>
-                  <div className="w-1/2 print:w-full print:break-inside-avoid">
+                  <div className="w-full 2xl:w-1/2 print:w-full print:break-inside-avoid">
                     <h3 className="text-2xl uppercase">
                       Pledged Contributions vs. total payments
                     </h3>

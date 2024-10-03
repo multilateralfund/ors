@@ -9,8 +9,6 @@ import { usePathname } from 'next/navigation'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import ReplenishmentProvider from '@ors/contexts/Replenishment/ReplenishmentProvider'
 
-import styles from './styles.module.css'
-
 interface Tab {
   label: string
   path: string
@@ -53,7 +51,10 @@ function getNavLinks(pathname: string): [Tab | undefined, JSX.Element[]] {
     result.push(
       <Link
         key={i}
-        className={cx({ [styles.current]: isCurrent })}
+        className={cx(
+          'inline-block text-nowrap rounded-t-lg px-3 py-2 text-xl font-bold uppercase leading-[2.65rem] text-gray-400 no-underline hover:bg-primary hover:text-mlfs-hlYellow',
+          { 'bg-primary text-mlfs-hlYellow': isCurrent },
+        )}
         href={entry.path}
       >
         {entry.label}
@@ -73,11 +74,15 @@ function ReplenishmentLayoutContent(props: PropsWithChildren) {
 
   return (
     <>
-      <div className={cx('print:hidden', styles.nav)}>
-        <nav>{navLinks}</nav>
+      <div className="flex w-[96vw] flex-wrap-reverse items-center justify-between lg:w-full lg:flex-nowrap print:hidden">
+        <div className="overflow-scroll">
+          <nav className="flex items-center gap-4">{navLinks}</nav>
+        </div>
         <div id="replenishment-tab-buttons" className="self-end"></div>
       </div>
-      <div className={styles.page}>{children}</div>
+      <div className="rounded-b-lg border border-solid border-primary print:border-none">
+        {children}
+      </div>
     </>
   )
 }
