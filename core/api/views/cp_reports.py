@@ -299,10 +299,10 @@ class CPReportView(
         cls_dict,
     ):
         """
-        Archive country programme report
+        Clone country programme report
 
         @param instance: CPReport object
-        @param new_instance: CPReport object
+        @param cls_dict: dict of classes for the models to clone
         """
         # clone cp_report
         cp_report_clone = self._get_data_from_object(cls_dict["report_cls"], instance)
@@ -609,6 +609,7 @@ class CPReportStatusUpdateView(generics.GenericAPIView):
             },
         ),
     )
+    @transaction.atomic
     def put(self, request, *args, **kwargs):
         cp_report = self.get_object()
         cp_status = request.data.get("status")
