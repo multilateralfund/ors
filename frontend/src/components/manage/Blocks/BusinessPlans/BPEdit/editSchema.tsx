@@ -6,6 +6,7 @@ import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRendere
 import { useStore } from '@ors/store'
 
 import { tagsCellRenderer } from '../../Table/BusinessPlansTable/schemaHelpers'
+import { multiYearFilterOptions } from '../constants'
 
 const useColumnsOptions = (yearColumns: any[]) => {
   const commonSlice = useStore((state) => state.common)
@@ -28,18 +29,23 @@ const useColumnsOptions = (yearColumns: any[]) => {
   const commentTypes = bpSlice.commentTypes.data
 
   const agFormatValue = (value: any) => value?.id || ''
+  const agFormatNameValue = (value: any) => value?.name || ''
   const agFormatValueTags = (value: any) => (value?.length > 0 ? value : '')
-  const getFormattedValue = (data: any, id: number) => find(data, { id })?.name
 
   const getOptionLabel = (data: any, option: any) =>
     isObject(option)
       ? get(option, 'name')
       : find(data, { id: option })?.name || ''
 
+  const getOptionLabelByName = (data: any, option: any) =>
+    isObject(option)
+      ? get(option, 'name')
+      : find(data, { name: option })?.name || ''
+
   const isOptionEqualToValue = (option: any, value: any) =>
     isObject(value) ? isEqual(option, value) : option.id === value
 
-  const isOptionEqualToValueComments = (option: any, value: any) =>
+  const isOptionEqualToValueByName = (option: any, value: any) =>
     isObject(value) ? isEqual(option, value) : option.name === value
 
   const valueSetter = useCallback(
@@ -50,13 +56,13 @@ const useColumnsOptions = (yearColumns: any[]) => {
         id: newVal,
       })
 
-      params.data[colIdentifier + '_id'] = newVal
+      params.data[colIdentifier + '_id'] = newVal //vezi
 
       if (['project_type', 'sector'].includes(colIdentifier)) {
         params.data[colIdentifier + '_code'] = currentDataObj?.code
       }
       if (colIdentifier === 'status') {
-        params.data.status_display = currentDataObj?.name
+        params.data[colIdentifier + '_display'] = currentDataObj?.name
       }
 
       params.data[colIdentifier] = currentDataObj
@@ -65,6 +71,19 @@ const useColumnsOptions = (yearColumns: any[]) => {
     },
     [],
   )
+
+  const MYAValueSetter = useCallback((params: any) => {
+    const newVal = params.newValue
+
+    const currentDataObj = find(multiYearFilterOptions, {
+      name: newVal,
+    })
+
+    params.data.is_multi_year_display = currentDataObj?.fullName
+    params.data.is_multi_year = currentDataObj?.id
+
+    return true
+  }, [])
 
   const substancesValueSetter = useCallback(
     (params: any) => {
@@ -103,7 +122,6 @@ const useColumnsOptions = (yearColumns: any[]) => {
           cellEditorParams: {
             Input: { placeholder: 'Select country' },
             agFormatValue,
-            getFormattedValue: (id: number) => getFormattedValue(countries, id),
             getOptionLabel: (option: any) => getOptionLabel(countries, option),
             isOptionEqualToValue,
             options: countries,
@@ -125,7 +143,6 @@ const useColumnsOptions = (yearColumns: any[]) => {
           cellEditorParams: {
             Input: { placeholder: 'Select cluster' },
             agFormatValue,
-            getFormattedValue: (id: any) => getFormattedValue(clusters, id),
             getOptionLabel: (option: any) => getOptionLabel(clusters, option),
             isOptionEqualToValue,
             options: clusters,
@@ -150,7 +167,6 @@ const useColumnsOptions = (yearColumns: any[]) => {
           cellEditorParams: {
             Input: { placeholder: 'Select type' },
             agFormatValue,
-            getFormattedValue: (id: any) => getFormattedValue(types, id),
             getOptionLabel: (option: any) => getOptionLabel(types, option),
             isOptionEqualToValue,
             options: types,
@@ -180,7 +196,6 @@ const useColumnsOptions = (yearColumns: any[]) => {
           cellEditorParams: {
             Input: { placeholder: 'Select sector' },
             agFormatValue,
-            getFormattedValue: (id: any) => getFormattedValue(sectors, id),
             getOptionLabel: (option: any) => getOptionLabel(sectors, option),
             isOptionEqualToValue,
             options: sectors,
@@ -201,7 +216,6 @@ const useColumnsOptions = (yearColumns: any[]) => {
           cellEditorParams: {
             Input: { placeholder: 'Select subsector' },
             agFormatValue,
-            getFormattedValue: (id: any) => getFormattedValue(subsectors, id),
             getOptionLabel: (option: any) => getOptionLabel(subsectors, option),
             isOptionEqualToValue,
             options: subsectors,
@@ -237,8 +251,7 @@ const useColumnsOptions = (yearColumns: any[]) => {
             Input: {
               placeholder: 'Select substances',
             },
-            agFormatValue: (value: any) => agFormatValueTags(value),
-            getFormattedValue: (id: any) => getFormattedValue(substances, id),
+            agFormatValue: agFormatValueTags,
             getOptionLabel: (option: any) => getOptionLabel(substances, option),
             isMultiple: true,
             isOptionEqualToValue,
@@ -250,7 +263,7 @@ const useColumnsOptions = (yearColumns: any[]) => {
           headerClass: 'ag-text-center',
           headerName: 'Substances',
           minWidth: 230,
-          valueSetter: (params: any) => substancesValueSetter(params),
+          valueSetter: substancesValueSetter,
         },
         {
           cellClass: 'ag-cell-wrap-text',
@@ -288,7 +301,6 @@ const useColumnsOptions = (yearColumns: any[]) => {
           cellEditorParams: {
             Input: { placeholder: 'Select status' },
             agFormatValue,
-            getFormattedValue: (id: any) => getFormattedValue(statuses, id),
             getOptionLabel: (option: any) => getOptionLabel(statuses, option),
             isOptionEqualToValue,
             options: statuses,
@@ -305,12 +317,22 @@ const useColumnsOptions = (yearColumns: any[]) => {
         },
         {
           cellClass: 'ag-text-center',
+          cellEditor: 'agSelectCellEditor',
+          cellEditorParams: {
+            Input: { placeholder: 'Select IND/MYA' },
+            agFormatValue: agFormatNameValue,
+            getOptionLabel: (option: any) =>
+              getOptionLabelByName(multiYearFilterOptions, option),
+            isOptionEqualToValue: isOptionEqualToValueByName,
+            options: multiYearFilterOptions,
+          },
           field: 'is_multi_year',
           headerClass: 'ag-text-center',
           headerName: 'IND/MYA',
-          minWidth: 100,
+          minWidth: 120,
           tooltipField: 'is_multi_year_display',
           valueGetter: ({ data }: any) => (data.is_multi_year ? 'MYA' : 'IND'),
+          valueSetter: MYAValueSetter,
         },
         {
           cellClass: 'ag-cell-wrap-text',
@@ -345,12 +367,11 @@ const useColumnsOptions = (yearColumns: any[]) => {
             Input: {
               placeholder: 'Select comment type',
             },
-            agFormatValue: (value: any) => agFormatValueTags(value),
-            getFormattedValue: (id: any) => getFormattedValue(commentTypes, id),
+            agFormatValue: agFormatValueTags,
             getOptionLabel: (option: any) =>
               getOptionLabel(commentTypes, option),
             isMultiple: true,
-            isOptionEqualToValue: isOptionEqualToValueComments,
+            isOptionEqualToValue: isOptionEqualToValueByName,
             options: commentTypes,
           },
           cellRenderer: (props: any) =>
@@ -359,7 +380,7 @@ const useColumnsOptions = (yearColumns: any[]) => {
           headerClass: 'ag-text-center',
           headerName: 'Comment types',
           minWidth: 230,
-          valueSetter: (params: any) => commentsValueSetter(params),
+          valueSetter: commentsValueSetter,
         },
       ],
       defaultColDef: {
@@ -377,6 +398,7 @@ const useColumnsOptions = (yearColumns: any[]) => {
       substances,
       statuses,
       commentTypes,
+      MYAValueSetter,
       yearColumns,
       valueSetter,
       substancesValueSetter,

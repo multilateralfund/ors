@@ -149,7 +149,7 @@ const valuesColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
   ) || [],
   {
     cellClass: 'ag-text-center',
-    field: 'status',
+    field: 'status_display',
     headerClass: 'ag-text-center',
     headerName: 'Status',
     minWidth: 100,

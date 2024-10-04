@@ -1,4 +1,4 @@
 export const multiYearFilterOptions = [
-  { id: true, name: 'MYA' },
-  { id: false, name: 'IND' },
+  { id: true, fullName: 'Multi-Year', name: 'MYA' },
+  { id: false, fullName: 'Individual', name: 'IND' },
 ]
