@@ -44,7 +44,7 @@ export default function DateInput(props: IDateInputProps) {
   )
 
   return (
-    <div className="relative">
+    <div className="relative flex flex-grow">
       <input
         id={id}
         name={name || id}

@@ -6,6 +6,10 @@ import type {
   ValidationSchemaKeys,
 } from '@ors/contexts/Validation/types'
 
+import { sumMaybeNumbers } from '@ors/helpers/Utils/Utils'
+
+export { sumMaybeNumbers }
+
 export function extractSectionErrors(vResult: ValidateSectionResult) {
   const result = [...vResult.global] || []
   if (vResult.hasErrors) {
@@ -55,16 +59,6 @@ export function sumNumbers(numbers: number[]): number {
 
   for (let i = 0; i < numbers.length; i++) {
     result += numbers[i]
-  }
-
-  return result
-}
-
-export function sumMaybeNumbers(numbers: (number | string)[]): number {
-  let result = 0
-
-  for (let i = 0; i < numbers.length; i++) {
-    result += parseFloat(numbers[i] as string) || 0
   }
 
   return result

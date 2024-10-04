@@ -276,3 +276,13 @@ export function getFloat(nr?: null | number | string): number {
   }
   return result
 }
+
+export function sumMaybeNumbers(numbers: (null | number | string)[]): number {
+  let result = 0
+
+  for (let i = 0; i < numbers.length; i++) {
+    result += getFloat(numbers[i])
+  }
+
+  return result
+}

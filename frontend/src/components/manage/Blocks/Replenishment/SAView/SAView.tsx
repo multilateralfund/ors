@@ -380,7 +380,7 @@ function DateRangeInput(props: DateRangeInputProps) {
   }
 
   return (
-    <div>
+    <div className="flex">
       <DateInput
         disabled={disabled}
         value={start}
