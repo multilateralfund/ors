@@ -37,6 +37,7 @@ from core.api.views.business_plan import (
 )
 from core.api.views.business_plan import (
     BPActivityDiffView,
+    BPActivityDiffAllView,
     BPStatusUpdateView,
     BusinessPlanViewSet,
 )
@@ -386,6 +387,11 @@ urlpatterns = [
         "business-plan/activities/diff/",
         BPActivityDiffView.as_view(),
         name="business-plan-activity-diff",
+    ),
+    path(
+        "business-plan/activities/diff-all/",
+        BPActivityDiffAllView.as_view(),
+        name="business-plan-activity-diff-all",
     ),
     path(
         "replenishment/dashboard/",

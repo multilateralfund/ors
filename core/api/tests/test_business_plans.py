@@ -1330,3 +1330,109 @@ class TestBPActivitiesDiff:
         assert values_data[1]["year"] == 2022
         assert float(values_data[1]["value_usd"]) == 300
         assert values_data[1]["value_usd_old"] is None
+
+    def test_activities_diff_all_bps(
+        self,
+        user,
+        _setup_bp_activity_create,
+        agency,
+        new_agency,
+        country_ro,
+        project_cluster_kip,
+        project_cluster_kpp,
+    ):
+        self.client.force_authenticate(user=user)
+
+        other_country = CountryFactory()
+
+        # create business plans
+        for ag, country in [(agency, country_ro), (new_agency, other_country)]:
+            data = {
+                "agency_id": ag.id,
+                "year_start": 2020,
+                "year_end": 2023,
+                "status": "Agency Draft",
+                "activities": [_setup_bp_activity_create],
+            }
+
+            url = reverse("businessplan-list")
+            response = self.client.post(url, data, format="json")
+            assert response.status_code == 201
+            business_plan_id = response.data["id"]
+            initial_id = response.data["activities"][0]["initial_id"]
+
+            # update status
+            BusinessPlan.objects.filter(id=business_plan_id).update(
+                status=BusinessPlan.Status.need_changes
+            )
+
+            # update business plan (new version)
+            url = reverse("businessplan-list") + f"{business_plan_id}/"
+            activity_data = _setup_bp_activity_create.copy()
+            activity_data["initial_id"] = initial_id
+            activity_data["country_id"] = country.id
+            activity_data["project_cluster_id"] = project_cluster_kip.id
+            activity_data["values"] = [
+                {
+                    "year": 2021,
+                    "is_after": False,
+                    "value_usd": 200,
+                    "value_odp": 200,
+                    "value_mt": 100,
+                },
+                {
+                    "year": 2022,
+                    "is_after": True,
+                    "value_usd": 300,
+                    "value_odp": 300,
+                    "value_mt": 300,
+                },
+            ]
+            data["activities"] = [activity_data]
+            response = self.client.put(url, data, format="json")
+            assert response.status_code == 200
+
+        # check all activities diff - no filter
+        url = reverse("business-plan-activity-diff-all")
+        response = self.client.get(
+            url,
+            {"year_start": 2020, "year_end": 2023},
+        )
+        assert response.status_code == 200
+        assert len(response.data) == 2
+
+        for ag, country, data in zip(
+            [agency, new_agency],
+            [country_ro, other_country],
+            response.data,
+            strict=True,
+        ):
+            assert data["agency_id"] == ag.id
+            assert data["change_type"] == "changed"
+            assert data["country"]["name"] == country.name
+            assert data["country_old"]["name"] == country_ro.name
+            assert data["project_cluster"]["name"] == project_cluster_kip.name
+            assert data["project_cluster_old"]["name"] == project_cluster_kpp.name
+
+            values_data = data["values"]
+            assert values_data[0]["year"] == 2021
+            assert float(values_data[0]["value_mt"]) == 100
+            assert float(values_data[0]["value_mt_old"]) == 200
+
+            assert values_data[1]["year"] == 2022
+            assert float(values_data[1]["value_usd"]) == 300
+            assert values_data[1]["value_usd_old"] is None
+
+        # check all activities diff - country filter
+        url = reverse("business-plan-activity-diff-all")
+        response = self.client.get(
+            url,
+            {"year_start": 2020, "year_end": 2023, "country_id": other_country.id},
+        )
+        assert response.status_code == 200
+        assert len(response.data) == 1
+
+        assert response.data[0]["agency_id"] == new_agency.id
+        assert response.data[0]["change_type"] == "changed"
+        assert response.data[0]["country"]["name"] == other_country.name
+        assert response.data[0]["country_old"]["name"] == country_ro.name
