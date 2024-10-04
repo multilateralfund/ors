@@ -2,6 +2,7 @@ import type { IValidationContext } from '@ors/contexts/Validation/types'
 import {
   UserType,
   isCountryUserType,
+  userCanDeleteCurrentDraft,
   userCanSubmitFinalReport,
   userCanSubmitReport,
 } from '@ors/types/user_types'
@@ -9,7 +10,7 @@ import {
 import { useContext } from 'react'
 import React, { useMemo, useState } from 'react'
 
-import { Button, Tooltip } from '@mui/material'
+import { Button, ButtonProps, Divider, MenuProps, Tooltip } from '@mui/material'
 import cx from 'classnames'
 import { Dictionary, capitalize, orderBy } from 'lodash'
 import NextLink from 'next/link'
@@ -17,6 +18,7 @@ import { useRouter } from 'next/navigation'
 import { useSnackbar } from 'notistack'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
+import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import Link from '@ors/components/ui/Link/Link'
 import ValidationContext from '@ors/contexts/Validation/ValidationContext'
@@ -29,6 +31,18 @@ import ConfirmSubmission from './ConfirmSubmission'
 import { useEditLocalStorage } from './useLocalStorage'
 
 import { IoChevronDown } from 'react-icons/io5'
+import { MdKeyboardArrowDown } from 'react-icons/md'
+
+const DropDownButtonProps: ButtonProps = {
+  endIcon: <MdKeyboardArrowDown />,
+  size: 'large',
+  variant: 'contained',
+}
+const DropDownMenuProps: Omit<MenuProps, 'open'> = {
+  PaperProps: {
+    className: 'mt-1 border border-solid border-black rounded-lg',
+  },
+}
 
 const CloseDiffButton = (props: any) => {
   const { report } = props
@@ -239,6 +253,11 @@ const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
 
   const isDraft = report.data?.status === 'draft'
 
+  const hasMultipleVersions =
+    (report.versions?.data?.length || 0) > 1 && report.data?.version !== 1
+  const userCanSeeEditButton =
+    userCanDeleteCurrentDraft[user_type as UserType] && hasMultipleVersions
+
   const localStorage = useEditLocalStorage(report)
 
   function handleShowConfirmation() {
@@ -280,23 +299,79 @@ const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
     }
   }
 
+  async function deleteVersion() {
+    try {
+      const response = await api(
+        `api/country-programme/reports/${report.data?.id}/`,
+        {
+          method: 'DELETE',
+        },
+      )
+
+      enqueueSnackbar(<>Version deleted successfully.</>, {
+        variant: 'success',
+      })
+      cacheInvalidateReport(response.country_id, response.year)
+      await fetchBundle(response.country_id, response.year, false)
+      localStorage.clear()
+    } catch (error) {
+      const errors = await error.json()
+      errors.detail &&
+        enqueueSnackbar(errors.detail, {
+          variant: 'error',
+        })
+    }
+  }
+
   if (!userCanSubmitReport[user_type as UserType]) return null
+
+  const EditButton = ({ title }: { title: string }) => (
+    <Link
+      className="px-4 py-2 shadow-none"
+      color="secondary"
+      href={`/country-programme/${report.country?.iso3}/${report.data?.year}/edit/`}
+      size="large"
+      variant="contained"
+      button
+    >
+      {title}
+    </Link>
+  )
 
   return (
     <div className="flex items-center">
       {!!report.data && (
         <div className="container flex w-full justify-between gap-x-4 px-0">
           <div className="flex justify-between gap-x-4">
-            <Link
-              className="px-4 py-2 shadow-none"
-              color="secondary"
-              href={`/country-programme/${report.country?.iso3}/${report.data?.year}/edit/`}
-              size="large"
-              variant="contained"
-              button
-            >
-              {isDraft ? 'Edit report' : 'Submit revised data'}
-            </Link>
+            {isDraft && userCanSeeEditButton && (
+              <Dropdown
+                className="px-4 py-2 shadow-none"
+                ButtonProps={DropDownButtonProps}
+                MenuProps={DropDownMenuProps}
+                color="secondary"
+                label={<>Edit report</>}
+              >
+                <Dropdown.Item className="bg-transparent normal-case text-primary">
+                  <Link
+                    className="no-underline"
+                    href={`/country-programme/${report.country?.iso3}/${report.data?.year}/edit/`}
+                  >
+                    Edit report
+                  </Link>
+                </Dropdown.Item>
+                <Divider className="m-0" />
+                <Dropdown.Item
+                  className="bg-transparent font-medium normal-case text-red-900"
+                  onClick={deleteVersion}
+                >
+                  Delete version
+                </Dropdown.Item>
+              </Dropdown>
+            )}
+            {isDraft && !userCanSeeEditButton && (
+              <EditButton title={'Edit report'} />
+            )}
+            {!isDraft && <EditButton title={'Submit revised data'} />}
             {isDraft && (
               <Button
                 color="primary"
@@ -369,6 +444,11 @@ const EditHeaderActions = ({
 
   const showDraftFromFinalButton = isFinal && report.variant?.model === 'V'
 
+  const hasMultipleVersions =
+    (report.versions?.data?.length || 0) > 1 && report.data?.version !== 1
+  const userCanSeeUpdateButton =
+    userCanDeleteCurrentDraft[user_type as UserType] && hasMultipleVersions
+
   if (!userCanSubmitReport[user_type as UserType]) return null
 
   function getReportSubmitter(status?: 'draft' | 'final') {
@@ -431,6 +511,30 @@ const EditHeaderActions = ({
     }
   }
 
+  async function deleteVersion() {
+    try {
+      const response = await api(
+        `api/country-programme/reports/${report.data?.id}/`,
+        {
+          method: 'DELETE',
+        },
+      )
+      setErrors({})
+      enqueueSnackbar(<>Version deleted successfully.</>, {
+        variant: 'success',
+      })
+      cacheInvalidateReport(response.country_id, response.year)
+      await fetchBundle(response.country_id, response.year, false)
+      localStorage.clear()
+    } catch (error) {
+      const errors = await error.json()
+      errors.detail &&
+        enqueueSnackbar(errors.detail, {
+          variant: 'error',
+        })
+    }
+  }
+
   function getSubmitFinalTooltipTitle() {
     if (!userCanSubmitFinalReport[user_type as UserType] && isDraft) {
       return isCountryUserType[user_type as UserType]
@@ -444,7 +548,30 @@ const EditHeaderActions = ({
     <div className="flex items-center">
       {!!report.data && (
         <div className="container flex w-full justify-between gap-x-4 px-0">
-          {isDraft && (
+          {isDraft && userCanSeeUpdateButton && (
+            <Dropdown
+              className="px-4 py-2 shadow-none"
+              ButtonProps={DropDownButtonProps}
+              MenuProps={DropDownMenuProps}
+              color="primary"
+              label={<>Update draft</>}
+            >
+              <Dropdown.Item
+                className="bg-transparent normal-case text-primary"
+                onClick={getReportSubmitter()}
+              >
+                Update draft
+              </Dropdown.Item>
+              <Divider className="m-0" />
+              <Dropdown.Item
+                className="bg-transparent font-medium normal-case text-red-900"
+                onClick={deleteVersion}
+              >
+                Delete version
+              </Dropdown.Item>
+            </Dropdown>
+          )}
+          {isDraft && !userCanSeeUpdateButton && (
             <Button
               className="px-4 py-2 shadow-none"
               color="primary"
