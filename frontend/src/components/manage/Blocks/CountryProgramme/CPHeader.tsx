@@ -27,6 +27,7 @@ import api from '@ors/helpers/Api/_api'
 import useClickOutside from '@ors/hooks/useClickOutside'
 import { useStore } from '@ors/store'
 
+import ConfirmDialog from '../Replenishment/ConfirmDialog'
 import ConfirmSubmission from './ConfirmSubmission'
 import { useEditLocalStorage } from './useLocalStorage'
 
@@ -250,6 +251,7 @@ const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
   const { user_type } = useStore((state) => state.user.data)
 
   const [showConfirm, setShowConfirm] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const isDraft = report.data?.status === 'draft'
 
@@ -263,10 +265,18 @@ const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
   function handleShowConfirmation() {
     setShowConfirm(true)
   }
+  function handleShowDeleteConfirmation() {
+    setShowDeleteConfirm(true)
+  }
 
   function handleSubmissionConfirmation() {
     setShowConfirm(false)
     handleSubmitFinal()
+  }
+
+  function handleDeleteConfirmation() {
+    setShowDeleteConfirm(false)
+    deleteVersion()
   }
 
   async function handleSubmitFinal() {
@@ -362,7 +372,7 @@ const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
                 <Divider className="m-0" />
                 <Dropdown.Item
                   className="bg-transparent font-medium normal-case text-red-900"
-                  onClick={deleteVersion}
+                  onClick={handleShowDeleteConfirmation}
                 >
                   Delete version
                 </Dropdown.Item>
@@ -404,6 +414,19 @@ const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
           onSubmit={handleSubmissionConfirmation}
         />
       ) : null}
+      {showDeleteConfirm && (
+        <ConfirmDialog
+          title={'Delete version'}
+          onCancel={() => {
+            setShowDeleteConfirm(false)
+          }}
+          onSubmit={() => handleDeleteConfirmation()}
+        >
+          <div className="text-lg">
+            Are you sure you want to delete this version ?
+          </div>
+        </ConfirmDialog>
+      )}
     </div>
   )
 }
@@ -427,16 +450,25 @@ const EditHeaderActions = ({
   const { user_type } = useStore((state) => state.user.data)
 
   const [showConfirm, setShowConfirm] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const localStorage = useEditLocalStorage(report)
 
   function handleShowConfirmation() {
     setShowConfirm(true)
   }
+  function handleShowDeleteConfirmation() {
+    setShowDeleteConfirm(true)
+  }
 
   function handleSubmissionConfirmation() {
     setShowConfirm(false)
     getReportSubmitter('final')()
+  }
+
+  function handleDeleteConfirmation() {
+    setShowDeleteConfirm(false)
+    deleteVersion()
   }
 
   const isDraft = report.data?.status === 'draft'
@@ -565,7 +597,7 @@ const EditHeaderActions = ({
               <Divider className="m-0" />
               <Dropdown.Item
                 className="bg-transparent font-medium normal-case text-red-900"
-                onClick={deleteVersion}
+                onClick={handleShowDeleteConfirmation}
               >
                 Delete version
               </Dropdown.Item>
@@ -629,6 +661,19 @@ const EditHeaderActions = ({
           onSubmit={handleSubmissionConfirmation}
         />
       ) : null}
+      {showDeleteConfirm && (
+        <ConfirmDialog
+          title={'Delete version'}
+          onCancel={() => {
+            setShowDeleteConfirm(false)
+          }}
+          onSubmit={() => handleDeleteConfirmation()}
+        >
+          <div className="text-lg">
+            Are you sure you want to delete this version ?
+          </div>
+        </ConfirmDialog>
+      )}
     </div>
   )
 }
