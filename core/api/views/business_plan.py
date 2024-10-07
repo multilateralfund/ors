@@ -486,7 +486,9 @@ class BusinessPlanViewSet(
         BusinessPlan.objects.bulk_update(
             new_instances, ["name", "version", "updated_by"]
         )
-        self.create_history(new_instances, user, "Updated by user")
+        self.create_history(
+            new_instances, user, "Consolidated data updated by secretariat user"
+        )
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
