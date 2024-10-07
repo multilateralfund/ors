@@ -213,13 +213,9 @@ class BusinessPlanViewSet(
         # check user permissions
         self.check_object_permissions(request, instance)
 
-        if not self.check_activity_values(serializer.initial_data, instance):
-            return Response(
-                {
-                    "general_error": "BP activity values year not in business plan interval"
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        ret_code, error = self.check_activity_values(serializer.initial_data, instance)
+        if ret_code != status.HTTP_200_OK:
+            return Response({"general_error": error}, status=ret_code)
 
         # check bp status
         if instance.status not in [
@@ -248,11 +244,8 @@ class BusinessPlanViewSet(
         instance.created_by = user
         instance.save()
 
-        BPHistory.objects.create(
-            business_plan=instance,
-            updated_by=user,
-            event_description="Created by user",
-        )
+        self.create_history([instance], user, "Created by user")
+
         if config.SEND_MAIL:
             send_mail_bp_create.delay(instance.id)  # send mail to MLFS
 
@@ -268,15 +261,22 @@ class BusinessPlanViewSet(
                     business_plan.year_start > activity_value["year"]
                     or activity_value["year"] > business_plan.year_end
                 ):
-                    return False
-        return True
+                    return (
+                        status.HTTP_400_BAD_REQUEST,
+                        "BP activity values year not in business plan interval",
+                    )
+
+        return status.HTTP_200_OK, ""
 
     def check_readonly_fields(self, initial_data, current_obj):
-        return (
+        if (
             initial_data["agency_id"] != current_obj.agency_id
             or initial_data["year_start"] != current_obj.year_start
             or initial_data["year_end"] != current_obj.year_end
-        )
+        ):
+            return status.HTTP_400_BAD_REQUEST, "Business plan readonly fields changed"
+
+        return status.HTTP_200_OK, ""
 
     def set_is_updated_activities(self, new_instance, bp_old_version):
         new_activities = []
@@ -345,6 +345,19 @@ class BusinessPlanViewSet(
         if bp_old_version:
             self.set_is_updated_activities(new_instance, bp_old_version)
 
+    def create_history(self, business_plans, user, event):
+        history_objs = []
+        for bp in business_plans:
+            history_objs.append(
+                BPHistory(
+                    business_plan=bp,
+                    updated_by=user,
+                    event_description=event,
+                    bp_version=bp.version,
+                )
+            )
+        BPHistory.objects.bulk_create(history_objs)
+
     @transaction.atomic
     def update(self, request, *args, **kwargs):
         user = request.user
@@ -363,19 +376,17 @@ class BusinessPlanViewSet(
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         # validate bp and activities data
-        if self.check_readonly_fields(serializer.initial_data, current_obj):
-            return Response(
-                {"general_error": "Business plan readonly fields changed"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        ret_code, error = self.check_readonly_fields(
+            serializer.initial_data, current_obj
+        )
+        if ret_code != status.HTTP_200_OK:
+            return Response({"general_error": error}, status=ret_code)
 
-        if not self.check_activity_values(serializer.initial_data, current_obj):
-            return Response(
-                {
-                    "general_error": "BP activity values year not in business plan interval"
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        ret_code, error = self.check_activity_values(
+            serializer.initial_data, current_obj
+        )
+        if ret_code != status.HTTP_200_OK:
+            return Response({"general_error": error}, status=ret_code)
 
         # the updates can only be made on drafts
         if new_status not in [
@@ -400,12 +411,7 @@ class BusinessPlanViewSet(
         new_instance.save()
 
         # create new history for update event
-        BPHistory.objects.create(
-            business_plan=new_instance,
-            updated_by=user,
-            event_description="Updated by user",
-            bp_version=new_instance.version,
-        )
+        self.create_history([new_instance], user, "Updated by user")
 
         if config.SEND_MAIL:
             send_mail_bp_update.delay(new_instance.id)  # send mail to MLFS
@@ -438,7 +444,6 @@ class BusinessPlanViewSet(
     def update_all(self, request, *args, **kwargs):
         user = request.user
         new_instances = []
-        history_objs = []
 
         # parse data to respect serializer format
         data = self.group_activity_data(request.data)
@@ -457,20 +462,12 @@ class BusinessPlanViewSet(
         for initial_data in serializer.initial_data:
             current_bp = current_bps[str(initial_data.get("agency_id"))]
             # validate activities data
-            if not self.check_activity_values(initial_data, current_bp):
-                return Response(
-                    {
-                        "general_error": "BP activity values year not in business plan interval"
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            ret_code, error = self.check_activity_values(initial_data, current_bp)
+            if ret_code != status.HTTP_200_OK:
+                return Response({"general_error": error}, status=ret_code)
 
             # check status
-            if request.data["status"] not in [
-                BusinessPlan.Status.submitted,
-                BusinessPlan.Status.secretariat_draft,
-                BusinessPlan.Status.agency_draft,
-            ]:
+            if request.data["status"] != BusinessPlan.Status.agency_draft:
                 return Response(
                     {"general_error": "Invalid status transition"},
                     status=status.HTTP_400_BAD_REQUEST,
@@ -485,21 +482,11 @@ class BusinessPlanViewSet(
             self.set_bp_data(user, new_instance, current_bp)
             new_instances.append(new_instance)
 
-            # create new history for update event
-            history_objs.append(
-                BPHistory(
-                    business_plan=new_instance,
-                    updated_by=user,
-                    event_description="Updated by user",
-                    bp_version=new_instance.version,
-                )
-            )
-
         # bulk create/update new bp instances and history
         BusinessPlan.objects.bulk_update(
             new_instances, ["name", "version", "updated_by"]
         )
-        BPHistory.objects.bulk_create(history_objs)
+        self.create_history(new_instances, user, "Updated by user")
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)

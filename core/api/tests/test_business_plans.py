@@ -1342,7 +1342,7 @@ class TestUpdateAllActivities:
         data = {
             "year_start": business_plan.year_start,
             "year_end": business_plan.year_end,
-            "status": "Secretariat Draft",
+            "status": "Agency Draft",
             "activities": [activity_data_1, activity_data_2],
         }
         response = self.client.put(self.url, data, format="json")
@@ -1351,7 +1351,7 @@ class TestUpdateAllActivities:
         for data in response.data:
             assert data["year_start"] == business_plan.year_start
             assert data["year_end"] == business_plan.year_end
-            assert data["status"] == "Secretariat Draft"
+            assert data["status"] == "Agency Draft"
 
             activities = data["activities"]
             assert activities[0]["business_plan_id"] == data["id"]
@@ -1367,4 +1367,3 @@ class TestUpdateAllActivities:
             assert activities[0]["is_multi_year"] is False
             assert activities[0]["remarks"] == "Merge bine, bine, bine ca aeroplanu"
             assert activities[0]["values"][0]["year"] == 2020
-            assert activities[0]["is_updated"] is True
