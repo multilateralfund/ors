@@ -1,9 +1,10 @@
-import { ApiReplenishments } from '@ors/types/api_replenishment_replenishments'
+import { ApiAsOfDate, ApiReplenishments } from '@ors/types/api_replenishment_replenishments'
 import { Country } from '@ors/types/store'
 
 import { createContext } from 'react'
 
 interface ReplenishmentContextType {
+  asOfDate: ApiAsOfDate
   countries: Country[]
   countriesSOA: Country[]
   isCountryUser: boolean
