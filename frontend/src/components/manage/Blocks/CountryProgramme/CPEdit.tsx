@@ -538,5 +538,5 @@ export default function CPEditWrapper(props: { iso3: string; year: number }) {
     )
   }
 
-  return <CPEdit />
+  return <CPEdit key={report?.data?.id} />
 }

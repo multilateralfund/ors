@@ -29,8 +29,18 @@ from core.api.serializers.cp_report import (
     CPReportSerializer,
 )
 from core.model_views.cp_report import FinalReportsView
-from core.models.adm import AdmRecordArchive
-from core.models.country_programme import CPComment, CPHistory, CPReport
+from core.models.adm import AdmRecord, AdmRecordArchive
+from core.models.country_programme import (
+    CPComment,
+    CPEmission,
+    CPGeneration,
+    CPHistory,
+    CPPrices,
+    CPRecord,
+    CPReport,
+    CPReportSections,
+    CPUsage,
+)
 from core.models.country_programme_archive import (
     CPCommentArchive,
     CPEmissionArchive,
@@ -78,10 +88,13 @@ class BaseCPReportListView(generics.ListAPIView):
 
 
 class CPReportView(
-    BaseCPReportListView, generics.CreateAPIView, generics.UpdateAPIView
+    BaseCPReportListView,
+    generics.CreateAPIView,
+    generics.UpdateAPIView,
+    generics.DestroyAPIView,
 ):
     """
-    API endpoint that allows country programmes to be viewed or created.
+    API endpoint that allows country programmes reports to be created, updated and deleted.
     """
 
     lookup_field = "id"
@@ -103,10 +116,17 @@ class CPReportView(
     def get_serializer_class(self):
         if self.request.method == "POST":
             return CPReportCreateSerializer
-        if self.request.method == "PUT":
+        if self.request.method in ["PUT", "DELETE"]:
             return CPReportNoRelatedSerializer
         # "GET":
         return CPReportListSerializer
+
+    def get_permissions(self):
+        # only secretariat can delete reports
+        if self.request.method == "DELETE":
+            return [IsSecretariat()]
+
+        return super().get_permissions()
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
@@ -253,7 +273,7 @@ class CPReportView(
 
         return custom_errors
 
-    def _get_archive_data(self, cls, instance, args=None):
+    def _get_data_from_object(self, cls, instance, args=None):
         """
         Get archive data for an instance of a model
           - delete unnecessary fields (id, _state)
@@ -273,107 +293,113 @@ class CPReportView(
             data.update(args)
         return cls(**data)
 
-    def _archive_cp_report(self, instance):
+    def _clone_report(
+        self,
+        instance,
+        cls_dict,
+    ):
         """
-        Archive country programme report
+        Clone country programme report
 
         @param instance: CPReport object
-        @param new_instance: CPReport object
+        @param cls_dict: dict of classes for the models to clone
         """
-        # archive cp_report
-        cp_report_ar = self._get_archive_data(CPReportArchive, instance)
-        cp_report_ar.save()
-        # Make sure archived versions keep the `created_at` of the original instance
-        cp_report_ar.created_at = instance.created_at
-        cp_report_ar.save(update_fields=["created_at"])
+        # clone cp_report
+        cp_report_clone = self._get_data_from_object(cls_dict["report_cls"], instance)
+        cp_report_clone.save()
+        # Make sure cloned versions keep the `created_at` of the original instance
+        cp_report_clone.created_at = instance.created_at
+        cp_report_clone.save(update_fields=["created_at"])
 
-        # archive cp_records and cp_usages
+        # clone cp_records and cp_usages
         cp_usages = []
         for cp_record in instance.cprecords.all():
-            cp_record_ar = self._get_archive_data(
-                CPRecordArchive,
+            cp_record_ar = self._get_data_from_object(
+                cls_dict["record_cls"],
                 cp_record,
-                {"country_programme_report_id": cp_report_ar.id},
+                {"country_programme_report_id": cp_report_clone.id},
             )
             cp_record_ar.save()
             for cp_usage in cp_record.record_usages.all():
                 cp_usages.append(
-                    self._get_archive_data(
-                        CPUsageArchive,
+                    self._get_data_from_object(
+                        cls_dict["usage_cls"],
                         cp_usage,
                         {"country_programme_record_id": cp_record_ar.id},
                     )
                 )
-        CPUsageArchive.objects.bulk_create(cp_usages, batch_size=1000)
+        cls_dict["usage_cls"].objects.bulk_create(cp_usages, batch_size=1000)
 
-        # archive cp_prices
+        # clone cp_prices
         cp_prices = []
         for cp_price in instance.prices.all():
             cp_prices.append(
-                self._get_archive_data(
-                    CPPricesArchive,
+                self._get_data_from_object(
+                    cls_dict["price_cls"],
                     cp_price,
-                    {"country_programme_report_id": cp_report_ar.id},
+                    {"country_programme_report_id": cp_report_clone.id},
                 )
             )
-        CPPricesArchive.objects.bulk_create(cp_prices, batch_size=1000)
+        cls_dict["price_cls"].objects.bulk_create(cp_prices, batch_size=1000)
 
-        # archive cp_generation
+        # clone cp_generation
         cp_generation = []
         for cp_gen in instance.cpgenerations.all():
             cp_generation.append(
-                self._get_archive_data(
-                    CPGenerationArchive,
+                self._get_data_from_object(
+                    cls_dict["generation_cls"],
                     cp_gen,
-                    {"country_programme_report_id": cp_report_ar.id},
+                    {"country_programme_report_id": cp_report_clone.id},
                 )
             )
-        CPGenerationArchive.objects.bulk_create(cp_generation, batch_size=1000)
+        cls_dict["generation_cls"].objects.bulk_create(cp_generation, batch_size=1000)
 
-        # archive cp_emission
+        # clone cp_emission
         cp_emission = []
         for cp_em in instance.cpemissions.all():
             cp_emission.append(
-                self._get_archive_data(
-                    CPEmissionArchive,
+                self._get_data_from_object(
+                    cls_dict["emission_cls"],
                     cp_em,
-                    {"country_programme_report_id": cp_report_ar.id},
+                    {"country_programme_report_id": cp_report_clone.id},
                 )
             )
-        CPEmissionArchive.objects.bulk_create(cp_emission, batch_size=1000)
+        cls_dict["emission_cls"].objects.bulk_create(cp_emission, batch_size=1000)
 
-        # archive adm records
+        # clone adm records
         adm_records = []
         for adm_record in instance.adm_records.all():
             adm_records.append(
-                self._get_archive_data(
-                    AdmRecordArchive,
+                self._get_data_from_object(
+                    cls_dict["adm_record_cls"],
                     adm_record,
-                    {"country_programme_report_id": cp_report_ar.id},
+                    {"country_programme_report_id": cp_report_clone.id},
                 )
             )
-        AdmRecordArchive.objects.bulk_create(adm_records, batch_size=1000)
+        cls_dict["adm_record_cls"].objects.bulk_create(adm_records, batch_size=1000)
 
-        # archive cp reported sections
+        # clone cp reported sections
         if hasattr(instance, "cpreportedsections"):
-            cp_reported_sections = self._get_archive_data(
-                CPReportSectionsArchive,
+            cp_reported_sections = self._get_data_from_object(
+                cls_dict["section_cls"],
                 instance.cpreportedsections,
-                {"country_programme_report_id": cp_report_ar.id},
+                {"country_programme_report_id": cp_report_clone.id},
             )
             cp_reported_sections.save()
 
-        # archive cp comments
+        # clone cp comments
         cp_comments = []
         for cp_comment in instance.cpcomments.all():
             cp_comments.append(
-                self._get_archive_data(
-                    CPCommentArchive,
+                self._get_data_from_object(
+                    cls_dict["comment_cls"],
                     cp_comment,
-                    {"country_programme_report_id": cp_report_ar.id},
+                    {"country_programme_report_id": cp_report_clone.id},
                 )
             )
-        CPCommentArchive.objects.bulk_create(cp_comments, batch_size=1000)
+        cls_dict["comment_cls"].objects.bulk_create(cp_comments, batch_size=1000)
+
+        return cp_report_clone
 
     def check_readonly_fields(self, serializer, current_obj):
         return (
@@ -425,7 +451,20 @@ class CPReportView(
 
         # archive versions only for FINAL reports
         if current_obj.status == CPReport.CPReportStatus.FINAL:
-            self._archive_cp_report(current_obj)
+            self._clone_report(
+                current_obj,
+                {
+                    "report_cls": CPReportArchive,
+                    "record_cls": CPRecordArchive,
+                    "usage_cls": CPUsageArchive,
+                    "price_cls": CPPricesArchive,
+                    "generation_cls": CPGenerationArchive,
+                    "emission_cls": CPEmissionArchive,
+                    "adm_record_cls": AdmRecordArchive,
+                    "section_cls": CPReportSectionsArchive,
+                    "comment_cls": CPCommentArchive,
+                },
+            )
 
         # inherit all history
         CPHistory.objects.filter(country_programme_report=current_obj).update(
@@ -465,6 +504,79 @@ class CPReportView(
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
 
+    @transaction.atomic
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        if instance.status != CPReport.CPReportStatus.DRAFT:
+            return Response(
+                {"status": "Only draft reports can be reverted"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        prev_version = (
+            CPReportArchive.objects.filter(
+                country_id=instance.country_id, year=instance.year
+            )
+            .order_by("-version")
+            .first()
+        )
+
+        if not prev_version:
+            return Response(
+                {"status": "Could not find previous final version"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # recreate the previous version
+        new_instance = self._clone_report(
+            prev_version,
+            {
+                "report_cls": CPReport,
+                "record_cls": CPRecord,
+                "usage_cls": CPUsage,
+                "price_cls": CPPrices,
+                "generation_cls": CPGeneration,
+                "emission_cls": CPEmission,
+                "adm_record_cls": AdmRecord,
+                "section_cls": CPReportSections,
+                "comment_cls": CPComment,
+            },
+        )
+
+        # inherit all history
+        CPHistory.objects.filter(country_programme_report_id=instance.id).update(
+            country_programme_report_id=new_instance.id
+        )
+
+        # create new history for revert event
+        CPHistory.objects.create(
+            country_programme_report=new_instance,
+            report_version=new_instance.version,
+            updated_by=request.user,
+            reporting_officer_name=new_instance.reporting_entry,
+            reporting_officer_email=new_instance.reporting_email,
+            event_description="Reverted to previous final version "
+            f"(from {instance.version} to {new_instance.version})",
+            event_in_draft=(new_instance.status != CPReport.CPReportStatus.FINAL),
+        )
+
+        # delete the current draft and previous final version from the archive
+        self.perform_destroy(instance)
+        self.perform_destroy(prev_version)
+
+        serializer = self.get_serializer(new_instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        operation_description="""Revert country programme report curent draft
+        to the previous final version. \n
+        Only the secretariat user can delete the curent draft
+        """,
+    )
+    def delete(self, request, *args, **kwargs):
+        return super().delete(request, *args, **kwargs)
+
 
 class CPReportStatusUpdateView(generics.GenericAPIView):
     """
@@ -497,6 +609,7 @@ class CPReportStatusUpdateView(generics.GenericAPIView):
             },
         ),
     )
+    @transaction.atomic
     def put(self, request, *args, **kwargs):
         cp_report = self.get_object()
         cp_status = request.data.get("status")

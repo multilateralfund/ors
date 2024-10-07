@@ -20,3 +20,7 @@ export type ApiReplenishmentsSAVersion = {
 }
 
 export type ApiReplenishments = ApiReplenishment[]
+
+export type ApiAsOfDate = {
+  as_of_date: string
+}

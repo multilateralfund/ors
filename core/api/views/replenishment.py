@@ -108,6 +108,26 @@ class ReplenishmentCountriesSOAViewSet(viewsets.GenericViewSet, mixins.ListModel
         return countries_qs.order_by("name")
 
 
+class ReplenishmentAsOfDateViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+    permission_classes = [IsUserAllowedReplenishment]
+
+    def list(self, request, *args, **kwargs):
+        self.check_permissions(request)
+
+        try:
+            latest_payment = Payment.objects.latest("date")
+        except Payment.DoesNotExist:
+            latest_payment = None
+        as_of_date = (
+            latest_payment.date
+            if latest_payment and latest_payment.date
+            else config.DEFAULT_REPLENISHMENT_AS_OF_DATE
+        ).strftime("%d %B %Y")
+        data = {"as_of_date": as_of_date}
+
+        return Response(status=status.HTTP_200_OK, data=data)
+
+
 class ReplenishmentViewSet(
     viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin
 ):

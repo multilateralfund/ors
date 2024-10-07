@@ -1232,6 +1232,133 @@ class TestCPReportUpdate(BaseTest):
         assert CPReportArchive.objects.count() == 0
 
 
+@pytest.fixture(name="_delete_url")
+def delete_url(cp_report_2019):
+    return reverse("country-programme-reports") + f"{cp_report_2019.id}/"
+
+
+class TestCPReportDelete(BaseTest):
+    def test_without_login(self, _delete_url):
+        self.client.force_authenticate(user=None)
+        response = self.client.delete(_delete_url)
+        assert response.status_code == 403
+
+    def test_as_viewer(self, viewer_user, _delete_url):
+        self.client.force_authenticate(user=viewer_user)
+        response = self.client.delete(_delete_url)
+        assert response.status_code == 403
+
+    def test_without_permission_agency(self, agency_user, _delete_url):
+        self.client.force_authenticate(user=agency_user)
+        response = self.client.delete(_delete_url)
+        assert response.status_code == 403
+
+    def test_delete_first_version(self, user, cp_report_2019, _delete_url):
+        self.client.force_authenticate(user=user)
+
+        cp_report_2019.status = CPReport.CPReportStatus.DRAFT
+        cp_report_2019.save()
+
+        response = self.client.delete(_delete_url)
+        assert response.status_code == 400
+
+    def test_delete_final_version(self, user, cp_report_2019, _delete_url):
+        self.client.force_authenticate(user=user)
+
+        cp_report_2019.status = CPReport.CPReportStatus.FINAL
+        cp_report_2019.save()
+
+        response = self.client.delete(_delete_url)
+        assert response.status_code == 400
+
+    def test_delete_cp_report_draft(
+        self, cp_report_2019, user, _delete_url, _setup_new_cp_report_create
+    ):
+        self.client.force_authenticate(user=user)
+        self.url = _delete_url
+
+        # set status final
+        cp_report_2019.status = CPReport.CPReportStatus.FINAL
+        cp_report_2019.save()
+
+        # create second version by updating the report
+        data = _setup_new_cp_report_create
+        data["status"] = CPReport.CPReportStatus.FINAL
+        data["section_f"]["remarks"] = "N-am interes sa te mint"
+        response = self.client.put(self.url, data, format="json")
+        assert response.status_code == 200
+        new_report_id = response.data["id"]
+
+        # create version 3 (this will be deleted)
+        data["status"] = CPReport.CPReportStatus.DRAFT
+        data["section_a"][0]["imports"] = 1
+        data["section_b"][0]["record_usages"] = data["section_b"][0]["record_usages"][
+            :1
+        ]
+        data["section_c"][0]["current_year_price"] = 1
+        data["section_d"][0]["all_uses"] = 1
+        data["section_e"][0]["total"] = 1
+        data["section_f"]["remarks"] = "Eu iti spun exact ce simt"
+        self.url = reverse("country-programme-reports") + f"{new_report_id}/"
+        response = self.client.put(self.url, data, format="json")
+        assert response.status_code == 200
+        new_report_id = response.data["id"]
+
+        # delete draft
+        self.url = reverse("country-programme-reports") + f"{new_report_id}/"
+        response = self.client.delete(self.url)
+        assert response.status_code == 200
+        new_report_id = response.data["id"]
+
+        # check the archive is deleted
+        assert CPReportArchive.objects.count() == 1
+
+        # check current report is the first version
+        current_report = (
+            CPReport.objects.filter(pk=new_report_id)
+            .select_related("created_by", "version_created_by")
+            .first()
+        )
+        assert current_report is not None
+        assert current_report.comment == "N-am interes sa te mint"
+        assert current_report.version == 2
+        assert current_report.status == CPReport.CPReportStatus.FINAL
+        assert current_report.created_by.username == user.username
+        assert current_report.version_created_by.username == user.username
+        assert current_report.created_at is not None
+
+        # check record usage archive
+        records = CPRecord.objects.all()
+        assert records.count() == 3
+        assert records.filter(section="A", substance_id__isnull=False).count() == 2
+        assert records.filter(section="B", blend_id__isnull=False).count() == 1
+        for record in records:
+            assert record.country_programme_report_id == current_report.id
+            assert float(record.imports) == 12.3
+            assert record.record_usages.count() == 2
+
+        # check cp prices
+        prices = CPPrices.objects.all()
+        assert prices.count() == 2
+        for price in prices:
+            assert price.country_programme_report_id == current_report.id
+            assert float(price.current_year_price) == 25.5
+
+        # check cp generation
+        generations = CPGeneration.objects.all()
+        assert generations.count() == 1
+        for generation in generations:
+            assert generation.country_programme_report_id == current_report.id
+            assert str(generation.all_uses) == "80.570"
+
+        # check cp emissions
+        emissions = CPEmission.objects.all()
+        assert emissions.count() == 1
+        for emission in emissions:
+            assert emission.country_programme_report_id == current_report.id
+            assert str(emission.total) == "12.400"
+
+
 @pytest.fixture(name="_setup_get_empty_form")
 def setup_get_empty_form(usage, substance, blend):
     time_frame = TimeFrameFactory.create(

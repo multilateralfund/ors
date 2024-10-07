@@ -1,6 +1,5 @@
 from django.urls import path, re_path
-from rest_framework import permissions
-from rest_framework import routers
+from rest_framework import routers, permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 
@@ -8,6 +7,7 @@ from core.api.views import (
     ProjectFundViewSet,
     ReplenishmentCountriesViewSet,
     ReplenishmentCountriesSOAViewSet,
+    ReplenishmentAsOfDateViewSet,
     ReplenishmentViewSet,
     AnnualStatusOfContributionsView,
     ScaleOfAssessmentViewSet,
@@ -27,15 +27,12 @@ from core.api.views import (
     AnnualStatusOfContributionsExportView,
     StatisticsStatusOfContributionsView,
 )
-from core.api.views import ProjectCommentViewSet
-from core.api.views import ProjectFileView
 from core.api.views.agency import AgencyListView
 from core.api.views.business_plan import (
+    BPChemicalTypeListView,
     BPFileDownloadView,
     BPFileView,
     BPActivityViewSet,
-)
-from core.api.views.business_plan import (
     BPActivityDiffView,
     BPActivityDiffAllView,
     BPStatusUpdateView,
@@ -63,6 +60,9 @@ from core.api.views.cp_records_export import (
     CPHCFCExportView,
     CPHFCExportView,
     CPReportListExportView,
+    CPCalculatedAmountPrintView,
+    CPRecordPrintView,
+    CPRecordExportView,
 )
 from core.api.views.cp_reports import (
     CPReportStatusUpdateView,
@@ -72,11 +72,6 @@ from core.api.views.cp_reports import (
     CPReportCommentsView,
 )
 from core.api.views.cp_records import CPRecordListView, CPRecordListDiffView
-from core.api.views.cp_records_export import (
-    CPCalculatedAmountPrintView,
-    CPRecordPrintView,
-)
-from core.api.views.cp_records_export import CPRecordExportView
 from core.api.views.cp_report_empty_form import EmptyFormView
 from core.api.views.meetings import MeetingListView
 from core.api.views.projects import (
@@ -89,6 +84,8 @@ from core.api.views.projects import (
     ProjectViewSet,
     ProjectStatusListView,
     ProjectTypeListView,
+    ProjectCommentViewSet,
+    ProjectFileView,
 )
 from core.api.views.rbm_measures import RBMMeasureListView
 from core.api.views.sector_subsector import ProjectSectorView, ProjectSubSectorView
@@ -117,6 +114,11 @@ router.register(
     "replenishment/countries-soa",
     ReplenishmentCountriesSOAViewSet,
     basename="replenishment-countries-soa",
+)
+router.register(
+    "replenishment/as-of-date",
+    ReplenishmentAsOfDateViewSet,
+    basename="replenishment-as-of-date",
 )
 router.register(
     "replenishment/replenishments",
@@ -367,6 +369,11 @@ urlpatterns = [
         "^project-files/(?P<pk>[^/]+)/$",
         ProjectFileView.as_view(),
         name="project-files",
+    ),
+    path(
+        "business-plan/bp-chemical-types/",
+        BPChemicalTypeListView.as_view(),
+        name="bp-chemical-type-list",
     ),
     path(
         "business-plan/<int:id>/file/",

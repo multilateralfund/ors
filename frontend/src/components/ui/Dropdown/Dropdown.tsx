@@ -18,6 +18,7 @@ const DropdownContext = React.createContext({ handleClose: () => {} })
 
 export default function Dropdown({
   id,
+  ButtonProps,
   MenuProps,
   children,
   className,
@@ -26,6 +27,7 @@ export default function Dropdown({
   label,
   tooltip,
 }: {
+  ButtonProps?: ButtonProps
   MenuProps?: Omit<MenuProps, 'open'>
   children: React.ReactNode
   className?: string
@@ -76,6 +78,7 @@ export default function Dropdown({
           color={color}
           ref={buttonRef}
           onClick={handleClick}
+          {...(ButtonProps || {})}
         >
           {isFunction(label) ? label({ open }) : label}
         </Button>

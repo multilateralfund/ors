@@ -12,6 +12,7 @@ from core.api.tests.factories import (
     AgencyFactory,
     BPActivityFactory,
     BPActivityValueFactory,
+    BPChemicalTypeFactory,
     BusinessPlanFactory,
     CommentTypeFactory,
     CountryFactory,
@@ -54,6 +55,40 @@ def _mock_send_mail_bp_update():
 def _mock_send_mail_bp_status_update():
     with patch("core.tasks.send_mail_bp_status_update.delay") as send_mail:
         yield send_mail
+
+
+class TestBPChemicalTypeList(BaseTest):
+    url = reverse("bp-chemical-type-list")
+
+    def test_bp_chemical_type_list(self, user, bp_chemical_type):
+        self.client.force_authenticate(user=user)
+
+        # get all BP chemical types
+        other_bp_chemical_type = BPChemicalTypeFactory()
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.data) == 2
+        assert response.data == [
+            {
+                "id": bp_chemical_type.id,
+                "name": bp_chemical_type.name,
+            },
+            {
+                "id": other_bp_chemical_type.id,
+                "name": other_bp_chemical_type.name,
+            },
+        ]
+
+        # filter by name
+        response = self.client.get(self.url, {"name": bp_chemical_type.name})
+        assert response.status_code == 200
+        assert len(response.data) == 1
+        assert response.data == [
+            {
+                "id": bp_chemical_type.id,
+                "name": bp_chemical_type.name,
+            }
+        ]
 
 
 class TestBPExport(BaseTest):
@@ -252,10 +287,12 @@ def setup_bp_activity_create(
         "country_id": country_ro.id,
         "lvc_status": "LVC",
         "project_type_id": project_type.id,
+        "project_type_code": project_type.code,
         "bp_chemical_type_id": bp_chemical_type.id,
         "project_cluster_id": project_cluster_kpp.id,
         "substances": [substance.id],
         "sector_id": sector.id,
+        "sector_code": sector.code,
         "subsector_id": subsector.id,
         "status": "A",
         "is_multi_year": False,
@@ -331,7 +368,7 @@ class TestBPCreate:
 
         data = _setup_new_business_plan_create
         activity_data = _setup_bp_activity_create
-        activity_data["sector_id"] = ProjectSectorFactory(code="TAS").id
+        activity_data["sector_code"] = "TAS"
         data["activities"] = [activity_data]
 
         response = self.client.post(self.url, data, format="json")
@@ -496,7 +533,7 @@ class TestBPUpdate:
         url = reverse("businessplan-list") + f"{business_plan.id}/"
 
         activity_data = _setup_bp_activity_create
-        activity_data["sector_id"] = ProjectSectorFactory(code="TAS").id
+        activity_data["sector_code"] = "TAS"
         data = {
             "agency_id": business_plan.agency_id,
             "year_start": business_plan.year_start,
@@ -1436,3 +1473,64 @@ class TestBPActivitiesDiff:
         assert response.data[0]["change_type"] == "changed"
         assert response.data[0]["country"]["name"] == other_country.name
         assert response.data[0]["country_old"]["name"] == country_ro.name
+
+
+class TestUpdateAllActivities:
+    client = APIClient()
+    url = reverse("businessplan-update-all")
+
+    def test_update_all_activities(
+        self,
+        user,
+        business_plan,
+        country_ro,
+        substance,
+        sector,
+        subsector,
+        project_type,
+        bp_chemical_type,
+        _setup_bp_activity_create,
+    ):
+        self.client.force_authenticate(user=user)
+
+        other_agency = AgencyFactory(name="Agency2", code="AG2")
+        other_business_plan = BusinessPlanFactory(
+            agency=other_agency,
+            year_start=business_plan.year_start,
+            year_end=business_plan.year_end,
+            version=1,
+        )
+
+        activity_data_1 = _setup_bp_activity_create.copy()
+        activity_data_2 = _setup_bp_activity_create.copy()
+        activity_data_1["agency_id"] = business_plan.agency_id
+        activity_data_2["agency_id"] = other_business_plan.agency_id
+
+        data = {
+            "year_start": business_plan.year_start,
+            "year_end": business_plan.year_end,
+            "status": "Agency Draft",
+            "activities": [activity_data_1, activity_data_2],
+        }
+        response = self.client.put(self.url, data, format="json")
+        assert response.status_code == 200
+
+        for data in response.data:
+            assert data["year_start"] == business_plan.year_start
+            assert data["year_end"] == business_plan.year_end
+            assert data["status"] == "Agency Draft"
+
+            activities = data["activities"]
+            assert activities[0]["business_plan_id"] == data["id"]
+            assert activities[0]["title"] == "Planu"
+            assert activities[0]["country_id"] == country_ro.id
+            assert activities[0]["lvc_status"] == "LVC"
+            assert activities[0]["project_type_id"] == project_type.id
+            assert activities[0]["bp_chemical_type_id"] == bp_chemical_type.id
+            assert activities[0]["substances"] == [substance.id]
+            assert activities[0]["sector_id"] == sector.id
+            assert activities[0]["subsector_id"] == subsector.id
+            assert activities[0]["status"] == "A"
+            assert activities[0]["is_multi_year"] is False
+            assert activities[0]["remarks"] == "Merge bine, bine, bine ca aeroplanu"
+            assert activities[0]["values"][0]["year"] == 2020

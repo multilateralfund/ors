@@ -330,6 +330,6 @@ class CPReportNewExporter(CPReportBase):
 
     def get_fob_retail_value(self, cp_price, header):
         year = header["year"]
-        if not cp_price.get("is_fob") and not cp_price.get("is_retail") and year < 2023:
+        if not cp_price.get("is_fob") and not cp_price.get("is_retail") and year < 2024:
             return ""
         return "Yes" if cp_price[header["id"]] else "No"
