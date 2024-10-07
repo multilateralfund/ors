@@ -53,6 +53,12 @@ function TabContentDetails(props: TabContentDetailsProps) {
   const ctx = useContext(ReplenishmentContext)
   const yearOptions = scAnnualOptions(ctx.periods)
 
+  const statusOptions = [
+    {label: 'Paid', value: 'paid'},
+    {label: 'Partially Paid', value: 'partially_paid'},
+    {label: 'Pending', value: 'pending'},
+  ]
+
   function handleCountrySelect(value: string) {
     setFields(function (prev) {
       return { ...prev, country_id: value }
@@ -124,6 +130,20 @@ function TabContentDetails(props: TabContentDetailsProps) {
         value={fields.date_second_reminder}
         onChange={updateField('date_second_reminder')}
       />
+      <FieldSelect
+        id="status"
+        label="Status"
+        value={fields.status}
+        onChange={updateField('status')}
+        required
+      >
+        <option value="" disabled hidden></option>
+        {statusOptions.map((option) => (
+          <option key={option.value} className="text-primary" value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </FieldSelect>
     </>
   )
 }
@@ -209,6 +229,7 @@ interface InvoiceDialogFields {
   date_second_reminder: string
   date_sent_out: string
   exchange_rate: string
+  status: string
   year: string
 }
 
@@ -229,6 +250,7 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
     date_second_reminder: data?.date_second_reminder ?? '',
     date_sent_out: data?.date_sent_out ?? '',
     exchange_rate: data?.exchange_rate ?? '',
+    status: data?.status ?? '',
     year: data?.year ?? '',
   })
 
