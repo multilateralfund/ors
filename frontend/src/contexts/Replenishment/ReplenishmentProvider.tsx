@@ -1,4 +1,5 @@
 import {
+  ApiAsOfDate,
   ApiReplenishment,
   ApiReplenishments,
 } from '@ors/types/api_replenishment_replenishments'
@@ -31,6 +32,7 @@ function ReplenishmentProvider(props: { children: React.ReactNode }) {
   const isCountryUser = isCountryUserType[user.data.user_type]
 
   const [periods, setPeriods] = useState<ApiReplenishment[]>([])
+  const [asOfDate, setAsOfDate] = useState<ApiAsOfDate>({as_of_date: '27 May 2024'})
   const [countries, setCountries] = useState<Country[]>([])
   const [countriesSOA, setCountriesSOA] = useState<Country[]>([])
   const [fetchTrigger, setFetchTrigger] = useState(false)
@@ -51,16 +53,20 @@ function ReplenishmentProvider(props: { children: React.ReactNode }) {
         fetch(formatApiUrl('/api/replenishment/countries-soa'), {
           credentials: 'include',
         }),
+        fetch(formatApiUrl('/api/replenishment/as-of-date'), {
+          credentials: 'include',
+        })
       ])
         .then(function (responses) {
-          const [respPeriods, respCountries, respCountriesSOA] = responses
-          return Promise.all([respPeriods.json(), respCountries.json(), respCountriesSOA.json()])
+          const [respPeriods, respCountries, respCountriesSOA, responseAsOfDate] = responses
+          return Promise.all([respPeriods.json(), respCountries.json(), respCountriesSOA.json(), responseAsOfDate.json()])
         })
-        .then(function (jsonData: [ApiReplenishments, Country[], Country[]]) {
-          const [jsonPeriods, jsonCountries, jsonCountriesSOA] = jsonData
+        .then(function (jsonData: [ApiReplenishments, Country[], Country[], ApiAsOfDate]) {
+          const [jsonPeriods, jsonCountries, jsonCountriesSOA, jsonAsOfDate] = jsonData
           setPeriods(jsonPeriods)
           setCountries(filterCountries(jsonCountries))
           setCountriesSOA(filterCountries(jsonCountriesSOA))
+          setAsOfDate(jsonAsOfDate)
         })
     },
     [fetchTrigger],
@@ -76,6 +82,7 @@ function ReplenishmentProvider(props: { children: React.ReactNode }) {
   return (
     <ReplenishmentContext.Provider
       value={{
+        asOfDate,
         countries,
         countriesSOA,
         isCountryUser,
