@@ -174,7 +174,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
 
   function handleChangeYears(value: string[]) {
     setFields(function (prev) {
-      return { ...prev, invoices: value }
+      return { ...prev, payment_for_years: value }
     })
   }
 
@@ -250,7 +250,9 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
           required={true}
           onChange={handleChangeYears}
         >
-          <option value="arrears">Arrears</option>
+          <option key="arrears" className="text-primary" value="arrears">
+            Arrears
+          </option>
           {yearOptions.map((year) => (
             <option key={year.value} className="text-primary" value={year.value}>
               {year.label}

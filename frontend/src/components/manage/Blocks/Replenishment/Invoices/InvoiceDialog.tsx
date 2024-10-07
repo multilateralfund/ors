@@ -119,7 +119,7 @@ function TabContentDetails(props: TabContentDetailsProps) {
       />
       <FieldDateInput
         id="date_second_reminder"
-        label="2nd reminder"
+        label="2nd reminder date"
         min={fields.date_of_issuance}
         value={fields.date_second_reminder}
         onChange={updateField('date_second_reminder')}
