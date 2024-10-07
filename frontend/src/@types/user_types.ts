@@ -39,7 +39,7 @@ export const userCanSubmitFinalReport: Record<UserType, boolean> = {
 }
 
 export const userCanDeleteCurrentDraft: Record<UserType, boolean> = {
-  admin: false,
+  admin: true,
   agency_inputter: false,
   agency_submitter: false,
   country_submitter: false,
