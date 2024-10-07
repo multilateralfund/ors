@@ -21,6 +21,16 @@ class BPFilterBackend(DjangoFilterBackend):
         return BusinessPlanFilter
 
 
+class BPChemicalTypeFilter(filters.FilterSet):
+    """
+    Filter for BP chemical types
+    """
+
+    class Meta:
+        model = BPChemicalType
+        fields = ["name"]
+
+
 class BusinessPlanFilter(filters.FilterSet):
     status = filters.MultipleChoiceFilter(
         choices=BusinessPlan.Status.choices,

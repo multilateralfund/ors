@@ -19,9 +19,90 @@ import ClearButton from './ClearButton'
 import Input from './Input'
 import { CLASSESS, CSS_MASKED, STYLE } from './constants'
 
+function getSelectedOption(value: string, options: IOption[]) {
+  let result: IOption | null = null
+
+  for (let i = 0; i < options.length; i++) {
+    if (options[i].value === value) {
+      result = options[i]
+    }
+  }
+
+  return result
+}
+
 export interface IOption {
   label: string
   value: string
+}
+
+interface VirtualOptionProps {
+  className?: string
+  id: string
+  label: string
+  onClick: (value: string, label: string) => void
+  onKeyDown: React.KeyboardEventHandler<HTMLElement>
+  selected: boolean
+  value: string
+}
+
+function VirtualOption(props: VirtualOptionProps) {
+  const { id, className, label, onClick, onKeyDown, selected, value } = props
+
+  function handleClick() {
+    onClick(value, label)
+  }
+
+  return (
+    <div
+      id={id}
+      className={cx(
+        'flex cursor-pointer items-center rounded-lg focus:outline-none',
+        {
+          'bg-primary text-mlfs-hlYellow': selected,
+          'hover:bg-gray-200 focus:bg-gray-200': !selected,
+        },
+        className,
+      )}
+      tabIndex={0}
+      onClick={handleClick}
+      onKeyDown={onKeyDown}
+    >
+      <span className="px-2 py-2">{label}</span>
+    </div>
+  )
+}
+
+interface PickerProps {
+  className?: string
+  id?: string
+  options: JSX.Element[]
+  show: boolean
+}
+
+function Picker(props: PickerProps) {
+  const { id, className, options, show } = props
+  const wrapperId = `${id}_virtualOptions`
+  return (
+    <div
+      className={cx(
+        'absolute left-2 z-10 mt-1 w-full origin-top rounded-md border border-solid border-primary bg-white p-2 opacity-0 shadow-xl transition-all',
+        className,
+        {
+          'collapse scale-y-0': !show,
+          'scale-y-100 opacity-100': show,
+        },
+      )}
+    >
+      <div id={wrapperId} className="max-h-32 overflow-y-auto" tabIndex={-1}>
+        {options.length > 0 ? (
+          options
+        ) : (
+          <div className="flex justify-center">No options</div>
+        )}
+      </div>
+    </div>
+  )
 }
 
 export default function SearchableSelect(props: ISearchableSelectProps) {
@@ -39,7 +120,7 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
   const selectRef = useRef<HTMLSelectElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const [value, setValue] = useState(defaultValue)
+  const [value, setValue] = useState(defaultValue?.toString() || '')
   const [options, setOptions] = useState<IOption[]>([])
   const [searchValue, setSearchValue] = useState<string>('')
 
@@ -55,15 +136,7 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
 
   const selectedOption = useMemo(
     function () {
-      let result: IOption | null = null
-
-      for (let i = 0; i < options.length; i++) {
-        if (options[i].value === value) {
-          result = options[i]
-        }
-      }
-
-      return result
+      return getSelectedOption(value, options)
     },
     [options, value],
   )
@@ -120,19 +193,17 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
 
   const handleToggleSelectedOption = useCallback(
     function (value: string, label: string) {
-      return function () {
-        setValue(function (prev) {
-          if (value !== prev) {
-            return value
-          } else {
-            return ''
-          }
-        })
-        setSearchValue(label)
-        setShowPicker(false)
-        if (onChange) {
-          onChange(value)
+      setValue(function (prev) {
+        if (value !== prev) {
+          return value
+        } else {
+          return ''
         }
+      })
+      setSearchValue(label)
+      setShowPicker(false)
+      if (onChange) {
+        onChange(value)
       }
     },
     [onChange],
@@ -141,6 +212,7 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
   function handleOptionKeyDown(evt: React.KeyboardEvent<HTMLElement>) {
     const evTarget = evt.target as HTMLElement
     if (evt.key === 'Enter') {
+      evt.preventDefault()
       evt.currentTarget.click()
     } else if (evt.key === 'ArrowDown') {
       evt.preventDefault()
@@ -186,15 +258,28 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
 
   useEffect(function () {
     // Prevent having the select open if it's the first element in the form.
-    inputRef.current?.blur()
-    setShowPicker(false)
+    debounce(function () {
+      inputRef.current?.blur()
+      setShowPicker(false)
+    }, 100)
   }, [])
 
   useEffect(() => {
     if (selectRef.current) {
-      setOptions(getOptions(selectRef.current))
+      const options = getOptions(selectRef.current)
+      setOptions(options)
+
+      if (defaultValue && defaultValue === selectRef.current.value) {
+        const selectedOption = getSelectedOption(
+          defaultValue?.toString() || '',
+          options,
+        )
+        if (selectedOption) {
+          setSearchValue(selectedOption.label)
+        }
+      }
     }
-  }, [children])
+  }, [defaultValue, children])
 
   const withClear = hasClear && value
 
@@ -205,27 +290,15 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
       for (let i = 0; i < filteredOptions.length; i++) {
         const optionId = `${id}_${filteredOptions[i].value}`
         result.push(
-          <div
+          <VirtualOption
             id={optionId}
             key={optionId}
-            className={cx(
-              'flex cursor-pointer items-center rounded-lg focus:outline-none',
-              {
-                'bg-primary text-mlfs-hlYellow':
-                  value === filteredOptions[i].value,
-                'hover:bg-gray-200 focus:bg-gray-200':
-                  value !== filteredOptions[i].value,
-              },
-            )}
-            tabIndex={0}
-            onClick={handleToggleSelectedOption(
-              filteredOptions[i].value,
-              filteredOptions[i].label,
-            )}
+            label={filteredOptions[i].label}
+            selected={value === filteredOptions[i].value}
+            value={filteredOptions[i].value}
+            onClick={handleToggleSelectedOption}
             onKeyDown={handleOptionKeyDown}
-          >
-            <span className="px-2 py-2">{filteredOptions[i].label}</span>
-          </div>,
+          />,
         )
       }
 
@@ -249,24 +322,7 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
         ></Input>
         {withClear && <ClearButton className="right-4" onClick={handleClear} />}
       </div>
-      <div
-        className={cx(
-          'absolute left-2 z-10 mt-1 w-full origin-top rounded-md border border-solid border-primary bg-white p-2 opacity-0 shadow-xl transition-all',
-          className,
-          {
-            'collapse scale-y-0': !showPicker,
-            'scale-y-100 opacity-100': showPicker,
-          },
-        )}
-      >
-        <div
-          id={`${id}_virtualOptions`}
-          className="max-h-32 overflow-y-auto"
-          tabIndex={-1}
-        >
-          {virtualOptions}
-        </div>
-      </div>
+      <Picker id={id} options={virtualOptions} show={showPicker} />
       <select
         id={id}
         name={name || id}

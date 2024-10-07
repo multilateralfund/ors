@@ -38,6 +38,18 @@ export const userCanSubmitFinalReport: Record<UserType, boolean> = {
   viewer: false,
 }
 
+export const userCanDeleteCurrentDraft: Record<UserType, boolean> = {
+  admin: true,
+  agency_inputter: false,
+  agency_submitter: false,
+  country_submitter: false,
+  country_user: false,
+  secretariat: true,
+  stakeholder: false,
+  treasurer: false,
+  viewer: false,
+}
+
 export const userCanExportData: Record<UserType, boolean> = {
   admin: true,
   agency_inputter: false,

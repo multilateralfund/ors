@@ -63,8 +63,8 @@ function TabContentDetails(props: TabContentDetailsProps) {
     <>
       <FieldSearchableSelect
         id="country_id"
+        defaultValue={fields.country_id}
         label="Country"
-        value={fields.country_id}
         onChange={handleCountrySelect}
         required
       >
@@ -77,7 +77,7 @@ function TabContentDetails(props: TabContentDetailsProps) {
       <FieldInput
         id="number"
         defaultValue={data?.number}
-        label="Inv ref."
+        label="Invoice number"
         type="text"
         required
       />
@@ -89,6 +89,7 @@ function TabContentDetails(props: TabContentDetailsProps) {
         required
       >
         <option value="" disabled hidden></option>
+        <option value="arrears">Arrears</option>
         {yearOptions.map((year) => (
           <option key={year.value} className="text-primary" value={year.value}>
             {year.label}
@@ -105,18 +106,21 @@ function TabContentDetails(props: TabContentDetailsProps) {
       <FieldDateInput
         id="date_sent_out"
         label="Sent date"
+        min={fields.date_of_issuance}
         value={fields.date_sent_out}
         onChange={updateField('date_sent_out')}
       />
       <FieldDateInput
         id="date_first_reminder"
-        label="1st reminder"
+        label="1st reminder date"
+        min={fields.date_of_issuance}
         value={fields.date_first_reminder}
         onChange={updateField('date_first_reminder')}
       />
       <FieldDateInput
         id="date_second_reminder"
         label="2nd reminder"
+        min={fields.date_of_issuance}
         value={fields.date_second_reminder}
         onChange={updateField('date_second_reminder')}
       />
@@ -128,6 +132,7 @@ function TabContentAmount(props: TabContentAmountProps) {
   const { countryInfo, data, fields, setFields, updateField } = props
 
   const isFERM = countryInfo?.opted_for_ferm || false
+  const fieldsAreReadonly = countryInfo ? !isFERM : false
 
   const handleChangeAmount: ChangeEventHandler<HTMLInputElement> = (evt) => {
     const amount = evt.target.value
@@ -147,32 +152,34 @@ function TabContentAmount(props: TabContentAmountProps) {
         <div className={cx({ 'blur-sm': !fields.country_id })}>
           <FieldInput
             id="currency"
-            disabled={!isFERM}
+            disabled={fieldsAreReadonly}
             label="Currency"
-            readOnly={!isFERM}
+            readOnly={fieldsAreReadonly}
             type="text"
             value={fields.currency}
             onChange={updateField('currency')}
           />
           <FieldFormattedNumberInput
             id="amount_local_currency"
-            disabled={!isFERM}
+            decimalDigits={5}
+            disabled={fieldsAreReadonly}
             label={`"${fields.currency}" amount`}
-            readOnly={!isFERM}
+            readOnly={fieldsAreReadonly}
             value={fields.amount_local_currency}
             onChange={updateField('amount_local_currency')}
           />
           <FieldFormattedNumberInput
             id="exchange_rate"
-            disabled={!isFERM}
+            disabled={fieldsAreReadonly}
             label="Exchange rate"
-            readOnly={!isFERM}
+            readOnly={fieldsAreReadonly}
             step="any"
             value={fields.exchange_rate}
             onChange={updateField('exchange_rate')}
           />
           <FieldFormattedNumberInput
             id="amount"
+            decimalDigits={5}
             label="USD amount"
             value={fields.amount}
             onChange={isFERM ? handleChangeAmount : updateField('amount')}
@@ -235,7 +242,10 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
     [setFields],
   )
 
-  const start_year = fields.year || ctx.periods?.[0].start_year || ''
+  const start_year =
+    (fields.year !== 'arrears' && fields.year) ||
+    ctx.periods?.[0].start_year ||
+    ''
 
   const [countryInfo] = useGetCountryReplenishmentInfo(
     start_year,

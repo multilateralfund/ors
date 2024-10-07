@@ -1,3 +1,5 @@
+'use client'
+
 import type {
   IALLOCATIONS,
   IDashboardData,
@@ -8,7 +10,12 @@ import type {
   IOVERVIEW_INDICATORS,
   IPROVISIONS,
 } from './useGetDashboardDataTypes'
+import type { ApiReplenishment } from '@ors/types/api_replenishment_replenishments'
 
+import { useContext } from 'react'
+
+import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
+import { getFloat, sumMaybeNumbers } from '@ors/helpers/Utils/Utils'
 import useApi from '@ors/hooks/useApi'
 
 const OVERVIEW: IOVERVIEW = {
@@ -68,46 +75,94 @@ const ALLOCATIONS: IALLOCATIONS = {
   world_bank: { label: 'World Bank', value: null },
 }
 
-const PROVISIONS: IPROVISIONS = {
-  bilateral_assistance: { label: 'Bilateral cooperation', value: null },
-  gain_loss: {
-    label: 'FERM loss',
-    value: null,
-  },
-  information_strategy: {
-    info_text: 'Including provision for Network maintenance for 2004',
-    label: 'Information Strategy\n (2003-2004)',
-    sub_text: '(inc. provision for Network maintenance for 2004)',
-    value: null,
-  },
-  monitoring_fees: {
-    label: 'Monitoring and evaluation\n (1999-2023)',
-    value: null,
-  },
-  staff_contracts: {
-    info_text: 'Including provision for staff contracts into 2025.',
-    label: 'Secretariat and Executive Committee (1991-2025)',
-    sub_text: '(inc. provision for staff contracts into 2025)',
-    value: null,
-  },
-  technical_audit: {
-    label: 'Technical Audit\n (1998-2010)',
-    value: null,
-  },
-  total: {
-    label: 'Total allocations and provisions',
-    total: true,
-    value: null,
-  },
-  treasury_fees: { label: 'Treasury fees\n (2003-2025)', value: null },
+function buildProvisions(
+  period: ApiReplenishment | null,
+  data: IDashboardDataApiResponse,
+) {
+  const currentYear = new Date().getFullYear()
+  const nextYear = currentYear + 1
+
+  const periodEnd = period ? period.end_year : nextYear
+
+  const result: IPROVISIONS = {
+    bilateral_assistance: { label: 'Bilateral cooperation', value: null },
+    gain_loss: {
+      label: 'FERM loss',
+      value: null,
+    },
+    information_strategy: {
+      info_text: 'Including provision for Network maintenance for 2004',
+      label: 'Information Strategy\n (2003-2004)',
+      sub_text: '(inc. provision for Network maintenance for 2004)',
+      value: null,
+    },
+    monitoring_fees: {
+      label: `Monitoring and evaluation\n (1999-${currentYear})`,
+      value: null,
+    },
+    staff_contracts: {
+      info_text: `Including provision for staff contracts into ${periodEnd}.`,
+      label: 'Secretariat and Executive Committee (1991-2025)',
+      sub_text: `(inc. provision for staff contracts into ${periodEnd})`,
+      value: null,
+    },
+    technical_audit: {
+      label: 'Technical Audit\n (1998-2010)',
+      value: null,
+    },
+    total: {
+      label: 'Total allocations and provisions',
+      total: true,
+      value: null,
+    },
+    treasury_fees: { label: 'Treasury fees\n (2003-2025)', value: null },
+  }
+
+  result.staff_contracts.value = data.allocations.staff_contracts
+  result.treasury_fees.value = data.allocations.treasury_fees
+  result.monitoring_fees.value = data.allocations.monitoring_fees
+  result.technical_audit.value = data.allocations.technical_audit
+  result.information_strategy.value = data.allocations.information_strategy
+  result.bilateral_assistance.value = data.allocations.bilateral_assistance
+  result.gain_loss.value = data.overview.gain_loss
+  result.total.value = sumMaybeNumbers([
+    calculateTotal(result),
+    data.allocations.undp,
+    data.allocations.unep,
+    data.allocations.unido,
+    data.allocations.world_bank,
+    data.overview.gain_loss,
+  ])
+  return result
 }
 
 function calculateTotal(obj: IALLOCATIONS | IINCOME | IPROVISIONS) {
-  return Object.keys(obj)
-    .filter(
-      (key) => key !== 'total' && obj[key as keyof typeof obj].value != null,
-    )
-    .reduce((acc, key) => acc + (obj[key as keyof typeof obj].value ?? 0), 0)
+  let result = 0
+
+  for (
+    let i = 0, keys = Object.keys(obj) as (keyof typeof obj)[];
+    i < keys.length;
+    i++
+  ) {
+    if (keys[i] !== 'total') {
+      result += getFloat(obj[keys[i]].value)
+    }
+  }
+
+  return result
+}
+
+function getActivePeriod(periods: ApiReplenishment[]) {
+  // Return the latest period with a final SoA.
+  let result = null
+  for (let i = 0; result == null && i < periods.length; i++) {
+    for (let j = 0; j < periods[i].scales_of_assessment_versions.length; j++) {
+      if (periods[i].scales_of_assessment_versions[j].is_final) {
+        result = periods[i]
+      }
+    }
+  }
+  return result
 }
 
 const updateObjectValues = (fetchedData: IDashboardDataApiResponse) => {
@@ -139,21 +194,6 @@ const updateObjectValues = (fetchedData: IDashboardDataApiResponse) => {
   ALLOCATIONS.unido.value = fetchedData.allocations.unido
   ALLOCATIONS.world_bank.value = fetchedData.allocations.world_bank
   ALLOCATIONS.total.value = calculateTotal(ALLOCATIONS)
-
-  // Update PROVISIONS object
-  PROVISIONS.staff_contracts.value = fetchedData.allocations.staff_contracts
-  PROVISIONS.treasury_fees.value = fetchedData.allocations.treasury_fees
-  PROVISIONS.monitoring_fees.value = fetchedData.allocations.monitoring_fees
-  PROVISIONS.technical_audit.value = fetchedData.allocations.technical_audit
-  PROVISIONS.information_strategy.value =
-    fetchedData.allocations.information_strategy
-  PROVISIONS.bilateral_assistance.value =
-    fetchedData.allocations.bilateral_assistance
-  PROVISIONS.gain_loss.value = OVERVIEW.gain_loss.value
-  PROVISIONS.total.value =
-    calculateTotal(PROVISIONS) +
-    ALLOCATIONS.total.value +
-    (OVERVIEW.gain_loss.value ?? 0)
 }
 
 function useGetDashboardData() {
@@ -161,6 +201,9 @@ function useGetDashboardData() {
     options: {},
     path: '/api/replenishment/dashboard',
   })
+
+  const ctx = useContext(ReplenishmentContext)
+  const activePeriod = getActivePeriod(ctx.periods)
 
   let formData: IFormData | Record<string, never>
   let newData: IDashboardData | Record<string, never>
@@ -181,7 +224,7 @@ function useGetDashboardData() {
       income: INCOME,
       overview: OVERVIEW,
       overviewIndicators: OVERVIEW_INDICATORS,
-      provisions: PROVISIONS,
+      provisions: buildProvisions(activePeriod, data),
     }
   } else {
     formData = {}

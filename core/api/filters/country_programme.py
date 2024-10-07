@@ -2,7 +2,7 @@ from django_filters import rest_framework as filters
 from django_filters.widgets import CSVWidget
 
 from core.models import Country
-from core.models.country_programme import CPFile, CPPrices, CPReport
+from core.models.country_programme import CPFile, CPPrices
 from core.models.country_programme_archive import CPReportArchive
 
 
@@ -19,7 +19,6 @@ class CPReportFilter(filters.FilterSet):
     status = filters.CharFilter(method="filter_status")
 
     class Meta:
-        model = CPReport
         fields = ["country_id", "name", "year", "status"]
 
     def filter_status(self, queryset, _name, value):

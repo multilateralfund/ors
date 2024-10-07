@@ -8,7 +8,6 @@ import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
 import {
   FieldFormattedNumberInput,
   FieldSearchableSelect,
-  FieldSelect,
   Input,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { AddButton } from '@ors/components/ui/Button/Button'
@@ -106,7 +105,7 @@ export default function BilateralAssistanceDialog(
           <FieldFormattedNumberInput
             id="amount"
             label="Amount (USD)"
-            max={getFloat(fields?.potential_amount) * 0.2}
+            max={getFloat(fields?.potential_amount)}
             value={fields.amount}
             onChange={(evt) =>
               setFields((prev) => ({ ...prev, amount: evt.target.value }))

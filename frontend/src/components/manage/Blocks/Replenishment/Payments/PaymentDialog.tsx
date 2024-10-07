@@ -1,8 +1,18 @@
 'use client'
 
-import { ApiReplenishmentInvoices } from '@ors/types/api_replenishment_invoices'
+import {
+  ApiReplenishmentInvoice,
+  ApiReplenishmentInvoices,
+} from '@ors/types/api_replenishment_invoices'
 
-import React, { useEffect, useState } from 'react'
+import React, {
+  ChangeEventHandler,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 
 import {
   DialogTabButtons,
@@ -12,61 +22,173 @@ import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
 import {
   Field,
   FieldDateInput,
+  FieldFormattedNumberInput,
   FieldInput,
   FieldMultiSelect,
-  FieldSelect,
+  FieldSearchableSelect,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceAttachments'
+import useGetInvoices from '@ors/components/manage/Blocks/Replenishment/Invoices/useGetInvoices'
+import useGetCountryReplenishmentInfo from '@ors/components/manage/Blocks/Replenishment/useGetCountryReplenishmentInfo'
+import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { formatApiUrl } from '@ors/helpers'
+import { getFloat } from '@ors/helpers/Utils/Utils'
 
 import { IPaymentDialogProps } from './types'
 
 const BASE_URL = 'api/replenishment/invoices/'
 
+interface PaymentDialogFields {
+  amount: string
+  amount_local_currency: string
+  country_id: string
+  currency: string
+  exchange_rate: string
+  ferm_gain_or_loss: string
+  invoices: string[]
+  payment_for_year: string
+}
+
+function getInvoiceLabel(invoice: ApiReplenishmentInvoice) {
+  return `${invoice.number} - ${invoice?.country?.name} (${invoice?.date_of_issuance})`
+}
+
 const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
   const { columns, countries, data, isEdit, onSubmit, title, ...dialogProps } =
     props
-  const [selectedCountry, setSelectedCountry] = useState<null | string>(null)
-  const [invoicesOptions, setInvoicesOptions] = useState<
-    { id: number; label: string }[]
-  >([])
-  const [invoicesLoading, setInvoicesLoading] = useState(false)
 
   const [date, setDate] = useState(data?.date ?? '')
 
   const [tab, setTab] = useState(0)
 
-  useEffect(() => {
-    setInvoicesLoading(true)
+  const ctx = useContext(ReplenishmentContext)
 
-    const countryQuery = selectedCountry ? `&country_id=${selectedCountry}` : ''
-    const url = `${formatApiUrl(BASE_URL)}?hide_no_invoice=true${countryQuery}`
+  const [fields, setFields] = useState<PaymentDialogFields>({
+    amount: data?.amount?.toString() ?? '',
+    amount_local_currency: data?.amount_local_currency?.toString() ?? '',
+    country_id: data?.country_id?.toString() ?? '',
+    currency: data?.currency?.toString() ?? '',
+    exchange_rate: data?.exchange_rate?.toString() ?? '',
+    ferm_gain_or_loss: data?.ferm_gain_or_loss?.toString() ?? '',
+    invoices: data?.invoices?.map((o) => o.id.toString()) ?? [],
+    payment_for_year: data?.payment_for_year?.toString() ?? '',
+  })
 
-    fetch(url, {
-      credentials: 'include',
-    })
-      .then((response) => response.json())
-      .then((invoicesList: ApiReplenishmentInvoices) => {
-        const invoices = invoicesList.map((invoice) => ({
-          id: invoice.id,
-          label: `${invoice.number} - ${invoice?.country?.name} (${invoice?.date_of_issuance})`,
-        }))
+  const updateField = useCallback(
+    (name: string) => {
+      const handler: React.ChangeEventHandler<
+        HTMLInputElement | HTMLSelectElement
+      > = (evt) => setFields((prev) => ({ ...prev, [name]: evt.target.value }))
+      return handler
+    },
+    [setFields],
+  )
 
-        setInvoicesOptions(invoices)
-        setInvoicesLoading(false)
-      })
-      .catch((error) => {
-        console.error('Error: ', error)
-        setInvoicesOptions([])
-        setInvoicesLoading(false)
-      })
-  }, [selectedCountry])
+  const {
+    loading: invoicesLoading,
+    results: invoicesList,
+    setParams: setGetInvoicesParams,
+  } = useGetInvoices({
+    country_id: fields.country_id,
+  })
+
+  const hasInvoices = useMemo(
+    function () {
+      return fields.country_id && invoicesList.length > 0 && !invoicesLoading
+    },
+    [fields.country_id, invoicesList, invoicesLoading],
+  )
+
+  const invoicedAmount = useMemo(
+    function () {
+      let total = 0
+      for (let i = 0; i < invoicesList.length; i++) {
+        if (fields.invoices.includes(invoicesList[i].id.toString())) {
+          total += invoicesList[i].amount
+        }
+      }
+      return total
+    },
+    [invoicesList, fields.invoices],
+  )
+
+  const [countryInfo] = useGetCountryReplenishmentInfo(
+    ctx.periods?.[0].start_year || '',
+    fields.country_id,
+  )
+
+  useEffect(
+    function () {
+      if (!isEdit) {
+        setFields((prev) => {
+          const updated = {
+            amount_local_currency:
+              (countryInfo?.amount_local_currency || '').toString() || '',
+            currency: (countryInfo?.currency || '').toString() || '',
+            exchange_rate: (countryInfo?.exchange_rate || '').toString() || '',
+          }
+
+          return {
+            ...prev,
+            ...updated,
+          }
+        })
+      }
+    },
+    [countryInfo, isEdit],
+  )
 
   const handleFormSubmit: IPaymentDialogProps['onSubmit'] = (formData, evt) => {
     formData.set('date', date)
-    formData.delete('date_mask')
     onSubmit(formData, evt)
   }
+
+  const isFERM = countryInfo?.opted_for_ferm || false
+  const fieldsAreReadonly = countryInfo ? !isFERM : false
+
+  const handleChangeAmount: ChangeEventHandler<HTMLInputElement> = (evt) => {
+    const amount = evt.target.value
+    const nrAmount = getFloat(amount)
+    setFields((prev) => ({
+      ...prev,
+      amount,
+      amount_local_currency: (
+        nrAmount * (countryInfo?.exchange_rate || 1)
+      ).toString(),
+    }))
+  }
+
+  function handleChangeCountry(value: string) {
+    setFields(function (prev) {
+      return { ...prev, country_id: value }
+    })
+    setGetInvoicesParams({ country_id: value })
+  }
+
+  function handleChangeInvoices(value: string[]) {
+    setFields(function (prev) {
+      return { ...prev, invoices: value }
+    })
+  }
+
+  useEffect(
+    function () {
+      if (
+        fields.invoices.length > 0 &&
+        fields.payment_for_year.toLowerCase() !== 'arrears'
+      ) {
+        setFields(function (prev) {
+          return {
+            ...prev,
+            ferm_gain_or_loss: (
+              invoicedAmount - getFloat(fields.amount)
+            ).toString(),
+          }
+        })
+      }
+    },
+    [invoicedAmount, fields.amount, fields.invoices, fields.payment_for_year],
+  )
 
   return (
     <FormDialog title={title} onSubmit={handleFormSubmit} {...dialogProps}>
@@ -77,48 +199,47 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
         onClick={setTab}
       />
       <DialogTabContent isCurrent={tab == 0}>
-        <FieldSelect
+        <FieldSearchableSelect
           id="country_id"
           defaultValue={data?.country_id.toString()}
           label={columns.country.label}
-          onChange={(event) => {
-            setSelectedCountry(event.target.value)
-          }}
+          onChange={handleChangeCountry}
           required
         >
-          <option value="" disabled hidden></option>
           {countries.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name_alt}
             </option>
           ))}
-        </FieldSelect>
-        {!invoicesLoading && invoicesOptions.length === 0 ? (
+        </FieldSearchableSelect>
+        {hasInvoices ? (
+          <FieldMultiSelect
+            id="invoices"
+            defaultValue={fields.invoices}
+            hasClear={true}
+            label={columns.invoice_numbers.label}
+            required={true}
+            onChange={handleChangeInvoices}
+          >
+            {invoicesList.map((inv) => (
+              <option key={inv.id} value={inv.id}>
+                {getInvoiceLabel(inv)}
+              </option>
+            ))}
+          </FieldMultiSelect>
+        ) : (
           <Field id="no_invoices" label={columns.invoice_numbers.label}>
             <span id="no_invoices" className="ml-4">
               No invoices found for this country
             </span>
           </Field>
-        ) : (
-          <FieldMultiSelect
-            id="invoices"
-            defaultValue={data?.invoices?.map((o) => o.id.toString())}
-            hasClear={true}
-            label={columns.invoice_numbers.label}
-            required={true}
-          >
-            {invoicesOptions.map((inv) => (
-              <option key={inv.id} value={inv.id}>
-                {inv.label}
-              </option>
-            ))}
-          </FieldMultiSelect>
         )}
         <FieldInput
           id="payment_for_year"
           defaultValue={data?.payment_for_year}
           label={columns.payment_for_year.label}
           type="text"
+          onChange={updateField('payment_for_year')}
           required
         />
         <FieldDateInput
@@ -138,32 +259,46 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
       <DialogTabContent isCurrent={tab == 1}>
         <FieldInput
           id="currency"
-          defaultValue={data?.currency}
+          disabled={fieldsAreReadonly}
           label={columns.currency.label}
+          readOnly={fieldsAreReadonly}
           type="text"
+          value={fields.currency}
+          onChange={updateField('currency')}
           required
         />
-        <FieldInput
-          id="amount"
-          defaultValue={data?.amount?.toString()}
-          label={columns.amount.label}
-          step="any"
-          type="number"
-          required
+        <FieldFormattedNumberInput
+          id="amount_local_currency"
+          decimalDigits={5}
+          disabled={fieldsAreReadonly}
+          label={`"${fields.currency}" amount`}
+          readOnly={fieldsAreReadonly}
+          value={fields.amount_local_currency}
+          onChange={updateField('amount_local_currency')}
         />
-        <FieldInput
+        <FieldFormattedNumberInput
           id="exchange_rate"
-          defaultValue={data?.exchange_rate?.toString()}
+          disabled={fieldsAreReadonly}
           label={columns.exchange_rate.label}
-          step="any"
-          type="number"
+          readOnly={fieldsAreReadonly}
+          value={fields.exchange_rate}
+          onChange={updateField('exchange_rate')}
         />
-        <FieldInput
+        <FieldFormattedNumberInput
+          id="amount"
+          decimalDigits={5}
+          label="USD amount"
+          value={fields.amount}
+          onChange={isFERM ? handleChangeAmount : updateField('amount')}
+          required
+        />
+        <FieldFormattedNumberInput
           id="ferm_gain_or_loss"
-          defaultValue={data?.ferm_gain_or_loss}
+          disabled={fieldsAreReadonly}
           label={columns.ferm_gain_or_loss.label}
-          step="any"
-          type="number"
+          readOnly={fieldsAreReadonly}
+          value={fields.ferm_gain_or_loss}
+          onChange={updateField('ferm_gain_or_loss')}
         />
         <h5>Upload</h5>
         <InvoiceAttachments

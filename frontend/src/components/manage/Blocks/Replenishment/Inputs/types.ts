@@ -26,7 +26,6 @@ export interface IMultiSelectProps
   defaultValue?: string[]
   hasClear?: boolean
   onChange?: (
-    evt: React.ChangeEvent<HTMLSelectElement> | undefined,
     newValue: string[],
   ) => void
 }
@@ -43,6 +42,7 @@ export interface IDateInputProps
 
 export interface IFormattedNumberInputProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> {
+  decimalDigits?: number
   onlyNumber?: boolean
   value?: number | string
 }

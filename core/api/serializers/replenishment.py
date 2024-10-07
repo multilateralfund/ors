@@ -154,6 +154,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
             "replenishment",
             "year",
             "is_arrears",
+            "status",
             "amount",
             "currency",
             "exchange_rate",
@@ -205,6 +206,7 @@ class InvoiceCreateSerializer(serializers.ModelSerializer):
         required=False,
     )
 
+    status = serializers.CharField(required=False, allow_null=True)
     amount = serializers.DecimalField(
         max_digits=30, decimal_places=15, coerce_to_string=False
     )
@@ -229,6 +231,7 @@ class InvoiceCreateSerializer(serializers.ModelSerializer):
             "country_id",
             "replenishment_id",
             "year",
+            "status",
             "amount",
             "currency",
             "exchange_rate",
@@ -313,6 +316,8 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
     amount = serializers.DecimalField(
         max_digits=30, decimal_places=15, coerce_to_string=False
     )
+    # If not currency is sent, we'll set it to USD
+    currency = serializers.CharField(required=False)
     exchange_rate = serializers.DecimalField(
         max_digits=30,
         decimal_places=15,

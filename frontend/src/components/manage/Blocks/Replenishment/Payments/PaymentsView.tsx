@@ -44,7 +44,7 @@ import {
 import { IoSearchSharp } from 'react-icons/io5'
 
 const COLUMNS: PaymentColumn[] = [
-  { field: 'invoice_numbers', label: 'Invoice(s)' },
+  { field: 'invoice_numbers', label: 'Invoice Number(s)' },
   { field: 'country', label: 'Country', sortable: true },
   { field: 'date', label: 'Date', sortable: true },
   { field: 'amount', label: 'Amount', sortable: true },
@@ -199,7 +199,10 @@ function PaymentsView() {
       ? ''
       : entry.ferm_gain_or_loss
     entry.comment = entry.comment || ''
-    entry.invoices = formData.getAll('invoices') as string[]
+    const invoices = formData.getAll('invoices') as string[]
+    if (invoices.length > 0) {
+      entry.invoices = invoices
+    }
 
     let nr_new_files = 0
     const data = new FormData()
@@ -283,7 +286,10 @@ function PaymentsView() {
       ? ''
       : entry.ferm_gain_or_loss
     entry.comment = entry.comment || ''
-    entry.invoices = formData.getAll('invoices') as string[]
+    const invoices = formData.getAll('invoices') as string[]
+    if (invoices.length > 0) {
+      entry.invoices = invoices
+    }
 
     let nr_new_files = 0
     const data = new FormData()
@@ -491,7 +497,7 @@ function PaymentsView() {
               <option value="" disabled hidden>
                 Country
               </option>
-              {ctx.countries.map((c) => (
+              {ctx.countriesSOA.map((c) => (
                 <option key={c.iso3} className="text-primary" value={c.id}>
                   {c.name_alt}
                 </option>

@@ -23,13 +23,14 @@ export type PaymentForSubmit = {
   date: null | string
   exchange_rate: number | string
   ferm_gain_or_loss: number | string
-  invoices: string[]
+  invoices?: string[]
   reminder: string
   year: string
 } & { [key: string]: File }
 
 export type ParsedPayment = {
   amount: null | number | string
+  amount_local_currency?: null | number | string
   be_amount: number
   be_exchange_rate: number
   be_ferm: number
