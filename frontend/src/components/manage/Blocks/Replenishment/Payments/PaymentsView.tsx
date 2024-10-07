@@ -203,6 +203,10 @@ function PaymentsView() {
     if (invoices.length > 0) {
       entry.invoices = invoices
     }
+    const payment_for_years = formData.getAll('payment_for_years') as string[]
+    if (payment_for_years.length > 0) {
+      entry.payment_for_years = payment_for_years
+    }
 
     let nr_new_files = 0
     const data = new FormData()
@@ -289,6 +293,10 @@ function PaymentsView() {
     const invoices = formData.getAll('invoices') as string[]
     if (invoices.length > 0) {
       entry.invoices = invoices
+    }
+    const payment_for_years = formData.getAll('payment_for_years') as string[]
+    if (payment_for_years.length > 0) {
+      entry.payment_for_years = payment_for_years
     }
 
     let nr_new_files = 0

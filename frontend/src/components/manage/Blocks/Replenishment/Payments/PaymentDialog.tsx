@@ -35,8 +35,6 @@ import { getFloat } from '@ors/helpers/Utils/Utils'
 
 import { IPaymentDialogProps } from './types'
 
-const BASE_URL = 'api/replenishment/invoices/'
-
 interface PaymentDialogFields {
   amount: string
   amount_local_currency: string
