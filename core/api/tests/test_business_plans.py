@@ -287,10 +287,12 @@ def setup_bp_activity_create(
         "country_id": country_ro.id,
         "lvc_status": "LVC",
         "project_type_id": project_type.id,
+        "project_type_code": project_type.code,
         "bp_chemical_type_id": bp_chemical_type.id,
         "project_cluster_id": project_cluster_kpp.id,
         "substances": [substance.id],
         "sector_id": sector.id,
+        "sector_code": sector.code,
         "subsector_id": subsector.id,
         "status": "A",
         "is_multi_year": False,
@@ -366,7 +368,7 @@ class TestBPCreate:
 
         data = _setup_new_business_plan_create
         activity_data = _setup_bp_activity_create
-        activity_data["sector_id"] = ProjectSectorFactory(code="TAS").id
+        activity_data["sector_code"] = "TAS"
         data["activities"] = [activity_data]
 
         response = self.client.post(self.url, data, format="json")
@@ -531,7 +533,7 @@ class TestBPUpdate:
         url = reverse("businessplan-list") + f"{business_plan.id}/"
 
         activity_data = _setup_bp_activity_create
-        activity_data["sector_id"] = ProjectSectorFactory(code="TAS").id
+        activity_data["sector_code"] = "TAS"
         data = {
             "agency_id": business_plan.agency_id,
             "year_start": business_plan.year_start,
@@ -1365,3 +1367,64 @@ class TestBPActivitiesDiff:
         assert values_data[1]["year"] == 2022
         assert float(values_data[1]["value_usd"]) == 300
         assert values_data[1]["value_usd_old"] is None
+
+
+class TestUpdateAllActivities:
+    client = APIClient()
+    url = reverse("businessplan-update-all")
+
+    def test_update_all_activities(
+        self,
+        user,
+        business_plan,
+        country_ro,
+        substance,
+        sector,
+        subsector,
+        project_type,
+        bp_chemical_type,
+        _setup_bp_activity_create,
+    ):
+        self.client.force_authenticate(user=user)
+
+        other_agency = AgencyFactory(name="Agency2", code="AG2")
+        other_business_plan = BusinessPlanFactory(
+            agency=other_agency,
+            year_start=business_plan.year_start,
+            year_end=business_plan.year_end,
+            version=1,
+        )
+
+        activity_data_1 = _setup_bp_activity_create.copy()
+        activity_data_2 = _setup_bp_activity_create.copy()
+        activity_data_1["agency_id"] = business_plan.agency_id
+        activity_data_2["agency_id"] = other_business_plan.agency_id
+
+        data = {
+            "year_start": business_plan.year_start,
+            "year_end": business_plan.year_end,
+            "status": "Agency Draft",
+            "activities": [activity_data_1, activity_data_2],
+        }
+        response = self.client.put(self.url, data, format="json")
+        assert response.status_code == 200
+
+        for data in response.data:
+            assert data["year_start"] == business_plan.year_start
+            assert data["year_end"] == business_plan.year_end
+            assert data["status"] == "Agency Draft"
+
+            activities = data["activities"]
+            assert activities[0]["business_plan_id"] == data["id"]
+            assert activities[0]["title"] == "Planu"
+            assert activities[0]["country_id"] == country_ro.id
+            assert activities[0]["lvc_status"] == "LVC"
+            assert activities[0]["project_type_id"] == project_type.id
+            assert activities[0]["bp_chemical_type_id"] == bp_chemical_type.id
+            assert activities[0]["substances"] == [substance.id]
+            assert activities[0]["sector_id"] == sector.id
+            assert activities[0]["subsector_id"] == subsector.id
+            assert activities[0]["status"] == "A"
+            assert activities[0]["is_multi_year"] is False
+            assert activities[0]["remarks"] == "Merge bine, bine, bine ca aeroplanu"
+            assert activities[0]["values"][0]["year"] == 2020
