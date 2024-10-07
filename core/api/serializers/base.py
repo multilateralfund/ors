@@ -150,22 +150,6 @@ class CommentTypeSerializer(serializers.ModelSerializer):
         fields = ["id", "name"]
 
 
-class BulkCreateListSerializer(serializers.ListSerializer):
-    # instantiate all child objs using `create` method, then save in 1 query
-    def create(self, validated_data):
-        objs = [self.child.create(attrs) for attrs in validated_data]
-        return self.child.Meta.model.objects.bulk_create(objs, batch_size=1000)
-
-    def update(self, instance, validated_data):
-        raise NotImplementedError(
-            "Serializers with many=True do not support multiple update by "
-            "default, only multiple create. For updates it is unclear how to "
-            "deal with insertions and deletions. If you need to support "
-            "multiple update, use a `ListSerializer` class and override "
-            "`.update()` so you can specify the behavior exactly."
-        )
-
-
 class Many2ManyListField(serializers.ListField):
     # make ListField allow `ManyRelatedManager` data
     def to_representation(self, data):

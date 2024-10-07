@@ -1,9 +1,11 @@
+import copy
+
 from django.urls import reverse
 from rest_framework import serializers
 
 from core.api.serializers import CountrySerializer
 from core.api.serializers.agency import AgencySerializer
-from core.api.serializers.base import BulkCreateListSerializer, Many2ManyListField
+from core.api.serializers.base import Many2ManyListField
 from core.api.serializers.project import ProjectClusterSerializer
 from core.api.serializers.project import ProjectSectorSerializer
 from core.api.serializers.project import ProjectSubSectorSerializer
@@ -50,11 +52,6 @@ class BPActivityValueSerializer(serializers.ModelSerializer):
             "value_odp",
             "value_mt",
         ]
-        list_serializer_class = BulkCreateListSerializer  # save objs in bulk
-
-    # don't call `save()` here
-    def create(self, validated_data):
-        return BPActivityValue(**validated_data)
 
 
 class BusinessPlanSerializer(serializers.ModelSerializer):
@@ -368,19 +365,6 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
             "comment_types",
             "values",
         ]
-        list_serializer_class = BulkCreateListSerializer  # save objs in bulk
-
-    # don't call `save()` here
-    def create(self, validated_data):
-        data = validated_data.copy()
-        # remove m2m fields
-        data.pop("values", [])
-        data.pop("substances", [])
-        data.pop("comment_types", [])
-        data.pop("project_type_code", "")
-        data.pop("sector_code", "")
-
-        return BPActivity(**data)
 
 
 class BusinessPlanCreateSerializer(serializers.ModelSerializer):
@@ -424,46 +408,44 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
             )
         return through_objs
 
-    def _create_bp_activity_values(self, activity_values):
-        # bulk create activity values
-        activity_value_serializer = BPActivityValueSerializer(
-            data=activity_values, many=True
-        )
-        activity_value_serializer.is_valid(raise_exception=True)
-        activity_value_serializer.save()
-
     def _create_bp_activities(self, business_plan, activities):
         ignore_comment = self.context.get("ignore_comment", False)
-        for activity in activities:
+        activity_objs = []
+        activities_copy = copy.deepcopy(activities)
+        for activity in activities_copy:
             # set `business_plan_id` for each activity
             activity["business_plan_id"] = business_plan.id
+            # remove Many2Many fields
+            activity.pop("values", [])
+            activity.pop("substances", [])
+            activity.pop("comment_types", [])
+            activity.pop("project_type_code", "")
+            activity.pop("sector_code", "")
             if ignore_comment:
                 activity.pop("comment_secretariat", "")
-                activity.pop("comment_types", [])
+
+            activity_objs.append(BPActivity(**activity))
 
         # bulk create all activities for this bp
-        activity_serializer = BPActivityCreateSerializer(data=activities, many=True)
-        activity_serializer.is_valid(raise_exception=True)
-        activity_serializer.save()
+        activity_objs = BPActivity.objects.bulk_create(activity_objs, batch_size=1000)
 
         activity_values = []
         m2m_substances = []
         m2m_comment_types = []
-        for instance, activity_data in zip(
-            activity_serializer.instance, activities, strict=True
-        ):
+        for instance, activity_data in zip(activity_objs, activities, strict=True):
             # set Many2Many fields after all activities are created
             substance_ids = activity_data.get("substances", [])
-            comment_type_ids = activity_data.get("comment_types", [])
             m2m_substances += self.create_m2m_substances(instance, substance_ids)
-            m2m_comment_types += self.create_m2m_comment_types(
-                instance, comment_type_ids
-            )
+            if not ignore_comment:
+                comment_type_ids = activity_data.get("comment_types", [])
+                m2m_comment_types += self.create_m2m_comment_types(
+                    instance, comment_type_ids
+                )
 
             for activity_value in activity_data.get("values", []):
                 # set `bp_activity_id` for each value
                 activity_value["bp_activity_id"] = instance.id
-                activity_values.append(activity_value)
+                activity_values.append(BPActivityValue(**activity_value))
 
         # bulk create Many2Many relations
         BPActivity.substances.through.objects.bulk_create(
@@ -473,7 +455,7 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
             m2m_comment_types, batch_size=1000
         )
         # bulk create activity values
-        self._create_bp_activity_values(activity_values)
+        BPActivityValue.objects.bulk_create(activity_values, batch_size=1000)
 
     def create(self, validated_data):
         activities = validated_data.pop("activities", [])
