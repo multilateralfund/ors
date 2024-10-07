@@ -1,12 +1,27 @@
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 
-import { find, get, isEqual, isNull, isObject } from 'lodash'
+import { isNull } from 'lodash'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import { useStore } from '@ors/store'
 
 import { tagsCellRenderer } from '../../Table/BusinessPlansTable/schemaHelpers'
 import { multiYearFilterOptions } from '../constants'
+import { useGetChemicalTypes } from '../useGetChemicalTypes'
+import {
+  MYAValueSetter,
+  agFormatNameValue,
+  agFormatValue,
+  agFormatValueTags,
+  commentsValueSetter,
+  getOptionLabel,
+  getOptionLabelByName,
+  isOptionEqualToValue,
+  isOptionEqualToValueByName,
+  statusValueSetter,
+  substancesValueSetter,
+  valueSetter,
+} from './editSchemaHelpers'
 
 const useColumnsOptions = (yearColumns: any[]) => {
   const commonSlice = useStore((state) => state.common)
@@ -27,91 +42,8 @@ const useColumnsOptions = (yearColumns: any[]) => {
     }),
   )
   const commentTypes = bpSlice.commentTypes.data
-
-  const agFormatValue = (value: any) => value?.id || ''
-  const agFormatNameValue = (value: any) => value?.name || ''
-  const agFormatValueTags = (value: any) => (value?.length > 0 ? value : '')
-
-  const getOptionLabel = (data: any, option: any) =>
-    isObject(option)
-      ? get(option, 'name')
-      : find(data, { id: option })?.name || ''
-
-  const getOptionLabelByName = (data: any, option: any) =>
-    isObject(option)
-      ? get(option, 'name')
-      : find(data, { name: option })?.name || ''
-
-  const isOptionEqualToValue = (option: any, value: any) =>
-    isObject(value) ? isEqual(option, value) : option.id === value
-
-  const isOptionEqualToValueByName = (option: any, value: any) =>
-    isObject(value) ? isEqual(option, value) : option.name === value
-
-  const valueSetter = useCallback(
-    (params: any, colIdentifier: string, data: any) => {
-      const newVal = params.newValue
-
-      const currentDataObj = find(data, {
-        id: newVal,
-      })
-
-      params.data[colIdentifier + '_id'] = newVal //vezi
-
-      if (['project_type', 'sector'].includes(colIdentifier)) {
-        params.data[colIdentifier + '_code'] = currentDataObj?.code
-      }
-      if (colIdentifier === 'status') {
-        params.data[colIdentifier + '_display'] = currentDataObj?.name
-      }
-
-      params.data[colIdentifier] = currentDataObj
-
-      return true
-    },
-    [],
-  )
-
-  const MYAValueSetter = useCallback((params: any) => {
-    const newVal = params.newValue
-
-    const currentDataObj = find(multiYearFilterOptions, {
-      name: newVal,
-    })
-
-    params.data.is_multi_year_display = currentDataObj?.fullName
-    params.data.is_multi_year = currentDataObj?.id
-
-    return true
-  }, [])
-
-  const substancesValueSetter = useCallback(
-    (params: any) => {
-      const newValIds = params.newValue?.map((newVal: any) =>
-        isObject(newVal) ? get(newVal, 'id') : newVal,
-      )
-
-      params.data.substances = newValIds
-      params.data.substances_display = newValIds?.map(
-        (id: number) =>
-          find(substances, {
-            id,
-          })?.name,
-      )
-
-      return true
-    },
-    [substances],
-  )
-
-  const commentsValueSetter = useCallback((params: any) => {
-    const newValNames = params.newValue?.map((newVal: any) =>
-      isObject(newVal) ? get(newVal, 'name') : newVal,
-    )
-    params.data.comment_types = newValNames
-
-    return true
-  }, [])
+  const chemicalTypes = useGetChemicalTypes()
+  const chemicalTypesResults = chemicalTypes.results
 
   const colsOptions = useMemo(
     () => ({
@@ -184,11 +116,28 @@ const useColumnsOptions = (yearColumns: any[]) => {
         },
         {
           cellClass: 'ag-text-center ag-cell-wrap-text',
-          field: 'bp_chemical_type.name',
+          cellEditor: 'agSelectCellEditor',
+          cellEditorParams: {
+            Input: { placeholder: 'Select chemical type' },
+            agFormatValue,
+            getOptionLabel: (option: any) =>
+              getOptionLabel(chemicalTypesResults, option),
+            isOptionEqualToValue,
+            options: chemicalTypesResults,
+          },
+          cellRenderer: (props: any) => (
+            <AgCellRenderer
+              {...props}
+              value={props.data.bp_chemical_type?.name}
+            />
+          ),
+          field: 'bp_chemical_type_id',
           headerClass: 'ag-text-center',
           headerName: 'Chemical type',
-          minWidth: 100,
+          minWidth: 120,
           tooltipField: 'bp_chemical_type.name',
+          valueSetter: (params: any) =>
+            valueSetter(params, 'bp_chemical_type', chemicalTypesResults),
         },
         {
           cellClass: 'ag-text-center ag-cell-wrap-text',
@@ -263,7 +212,8 @@ const useColumnsOptions = (yearColumns: any[]) => {
           headerClass: 'ag-text-center',
           headerName: 'Substances',
           minWidth: 230,
-          valueSetter: substancesValueSetter,
+          valueSetter: (params: any) =>
+            substancesValueSetter(params, substances),
         },
         {
           cellClass: 'ag-cell-wrap-text',
@@ -313,7 +263,7 @@ const useColumnsOptions = (yearColumns: any[]) => {
           headerName: 'Status',
           minWidth: 120,
           tooltipField: 'status_display',
-          valueSetter: (params: any) => valueSetter(params, 'status', statuses),
+          valueSetter: (params: any) => statusValueSetter(params, statuses),
         },
         {
           cellClass: 'ag-text-center',
@@ -332,7 +282,8 @@ const useColumnsOptions = (yearColumns: any[]) => {
           minWidth: 120,
           tooltipField: 'is_multi_year_display',
           valueGetter: ({ data }: any) => (data.is_multi_year ? 'MYA' : 'IND'),
-          valueSetter: MYAValueSetter,
+          valueSetter: (params: any) =>
+            MYAValueSetter(params, multiYearFilterOptions),
         },
         {
           cellClass: 'ag-cell-wrap-text',
@@ -393,16 +344,13 @@ const useColumnsOptions = (yearColumns: any[]) => {
       countries,
       clusters,
       types,
+      chemicalTypesResults,
       sectors,
       subsectors,
       substances,
       statuses,
       commentTypes,
-      MYAValueSetter,
       yearColumns,
-      valueSetter,
-      substancesValueSetter,
-      commentsValueSetter,
     ],
   )
 
