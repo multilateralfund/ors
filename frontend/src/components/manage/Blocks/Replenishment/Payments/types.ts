@@ -46,7 +46,7 @@ export type ParsedPayment = {
   id: number
   invoices: Pick<ApiReplenishmentInvoice, 'id' | 'number'>[]
   iso3: string
-  payment_for_year: string
+  payment_for_years: string[]
   replenishment: ApiReplenishment | null
 }
 

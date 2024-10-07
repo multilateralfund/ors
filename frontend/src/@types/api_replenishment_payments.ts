@@ -16,7 +16,7 @@ export type ApiReplenishmentPayment = {
   id: number
   invoices: Pick<ApiReplenishmentInvoice, 'id' | 'number'>[]
   payment_files: ApiReplenishmentFile[]
-  payment_for_year: string
+  payment_for_years: string[]
   replenishment: ApiReplenishment | null
 }
 
