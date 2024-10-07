@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from django.contrib.postgres import fields
 from django.db import models
 
 from core.models.base import AbstractSingleton
@@ -244,8 +245,7 @@ class Payment(models.Model):
     invoices = models.ManyToManyField(Invoice, related_name="payments", blank=True)
 
     date = models.DateField()
-    payment_for_year = models.CharField(max_length=64)
-
+    payment_for_years = fields.ArrayField(models.CharField(max_length=10), default=list)
     amount = models.DecimalField(max_digits=30, decimal_places=15)
     currency = models.CharField(max_length=64, default="USD")
     exchange_rate = models.DecimalField(max_digits=30, decimal_places=15, null=True)
