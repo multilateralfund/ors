@@ -657,6 +657,38 @@ class BPActivityDiffView(mixins.ListModelMixin, generics.GenericAPIView):
 
         return diff_data
 
+    def create_diff_list(self, business_plans, business_plans_ar):
+        ret_diff_list = []
+        business_plans_ar_dict = {
+            (bp.agency_id, bp.version): bp for bp in business_plans_ar
+        }
+
+        fields = BPActivityDetailSerializer.Meta.fields.copy()
+        for field in ("id", "initial_id", "is_updated", "values"):
+            fields.remove(field)
+
+        for business_plan in business_plans:
+            version = business_plan.version - 1
+            agency_id = business_plan.agency_id
+            business_plan_ar = business_plans_ar_dict.get((agency_id, version))
+
+            if not business_plan_ar:
+                continue
+
+            activities = self.filter_queryset(
+                self.get_queryset().filter(business_plan=business_plan)
+            )
+            old_activities = business_plan_ar.activities.all()
+
+            ret_diff_list += self.diff_activities(
+                BPActivityDetailSerializer(activities, many=True).data,
+                BPActivityDetailSerializer(old_activities, many=True).data,
+                fields,
+                agency_id,
+            )
+
+        return ret_diff_list
+
     @swagger_auto_schema(
         manual_parameters=[
             openapi.Parameter(
@@ -697,23 +729,7 @@ class BPActivityDiffView(mixins.ListModelMixin, generics.GenericAPIView):
             year_end=business_plan.year_end,
         )
 
-        fields = BPActivityDetailSerializer.Meta.fields.copy()
-        for field in ("id", "initial_id", "is_updated", "values"):
-            fields.remove(field)
-
-        activities = self.filter_queryset(
-            self.get_queryset().filter(business_plan=business_plan)
-        )
-        old_activities = business_plan_ar.activities.all()
-
-        return Response(
-            self.diff_activities(
-                BPActivityDetailSerializer(activities, many=True).data,
-                BPActivityDetailSerializer(old_activities, many=True).data,
-                fields,
-                business_plan.agency_id,
-            ),
-        )
+        return Response(self.create_diff_list([business_plan], [business_plan_ar]))
 
 
 class BPActivityDiffAllView(BPActivityDiffView):
@@ -741,33 +757,5 @@ class BPActivityDiffAllView(BPActivityDiffView):
             year_end=request.query_params.get("year_end"),
             is_latest=False,
         )
-        business_plans_ar_dict = {
-            (bp.agency_id, bp.version): bp for bp in business_plans_ar
-        }
 
-        ret_diff_list = []
-        fields = BPActivityDetailSerializer.Meta.fields.copy()
-        for field in ("id", "initial_id", "is_updated", "values"):
-            fields.remove(field)
-
-        for business_plan in business_plans:
-            version = business_plan.version - 1
-            agency_id = business_plan.agency_id
-            business_plan_ar = business_plans_ar_dict.get((agency_id, version))
-
-            if not business_plan_ar:
-                continue
-
-            activities = self.filter_queryset(
-                self.get_queryset().filter(business_plan=business_plan)
-            )
-            old_activities = business_plan_ar.activities.all()
-
-            ret_diff_list += self.diff_activities(
-                BPActivityDetailSerializer(activities, many=True).data,
-                BPActivityDetailSerializer(old_activities, many=True).data,
-                fields,
-                agency_id,
-            )
-
-        return Response(ret_diff_list)
+        return Response(self.create_diff_list(business_plans, business_plans_ar))
