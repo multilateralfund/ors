@@ -256,7 +256,7 @@ class Payment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
-        return f"Payment {self.country.name} - {self.payment_for_year}"
+        return f"Payment {self.country.name} - {self.payment_for_years}"
 
 
 class PaymentFile(models.Model):

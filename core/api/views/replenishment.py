@@ -1550,7 +1550,7 @@ class ReplenishmentPaymentViewSet(
         "country__name",
     ]
     search_fields = [
-        "payment_for_year",
+        "payment_for_years",
         "amount",
         "country__name",
         "comment",
