@@ -137,6 +137,7 @@ def cp_report_2019(country_ro, user):
         year=2019,
         comment="Valoare eu la toti va dau",
         created_by=user,
+        version_created_by=user,
     )
 
 

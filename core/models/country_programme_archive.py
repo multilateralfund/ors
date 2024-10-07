@@ -71,6 +71,7 @@ class CPPricesArchive(AbstractCPPrices):
     country_programme_report = models.ForeignKey(
         CPReportArchive,
         on_delete=models.CASCADE,
+        related_name="prices",
     )
 
     class Meta:
@@ -90,6 +91,7 @@ class CPGenerationArchive(AbstractCPGeneration):
     country_programme_report = models.ForeignKey(
         CPReportArchive,
         on_delete=models.CASCADE,
+        related_name="cpgenerations",
     )
 
     class Meta:
@@ -107,6 +109,7 @@ class CPEmissionArchive(AbstractCPEmission):
     country_programme_report = models.ForeignKey(
         CPReportArchive,
         on_delete=models.CASCADE,
+        related_name="cpemissions",
     )
 
     class Meta:
