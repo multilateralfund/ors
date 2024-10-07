@@ -119,7 +119,8 @@ function PaymentsView() {
             .join(', '),
           invoices: data.invoices,
           iso3: data.country.iso3,
-          payment_for_years: data.payment_for_years,
+          payment_for_years: data.payment_for_years
+            .join(', '),
           replenishment: data.replenishment,
         })),
       ]
