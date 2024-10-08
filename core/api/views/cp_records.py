@@ -139,8 +139,10 @@ class CPRecordBaseListView(views.APIView):
             else cp_report
         )
         if cp_report_final:
-            history_qs = cp_report_final.cphistory.all().select_related(
-                "country_programme_report", "updated_by"
+            history_qs = (
+                cp_report_final.cphistory.all()
+                .select_related("country_programme_report", "updated_by")
+                .exclude(event_description__istartswith="status changed")
             )
             if not full_history:
                 history_qs = history_qs.filter(event_in_draft=False)
