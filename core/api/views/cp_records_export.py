@@ -113,6 +113,12 @@ class CPRecordExportView(CPRecordListView):
                 description="Country programme report id",
                 type=openapi.TYPE_INTEGER,
             ),
+            openapi.Parameter(
+                "convert_data",
+                openapi.IN_QUERY,
+                description="Convert values to ODP tonnes (SectionA) Co2-eq (SectionB)",
+                type=openapi.TYPE_BOOLEAN,
+            ),
         ],
     )
     def get(self, *args, **kwargs):
@@ -134,7 +140,7 @@ class CPRecordExportView(CPRecordListView):
 
 class CPRecordPrintView(CPRecordExportView):
     def get_response(self, name, wb):
-        return workbook_pdf_response(name, wb)
+        return workbook_pdf_response(name, wb, "landscape")
 
 
 class CPEmptyExportView(CPRecordExportView):
