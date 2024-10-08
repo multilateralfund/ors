@@ -1,29 +1,25 @@
 'use client'
 import React, { useCallback, useContext, useMemo, useRef } from 'react'
 
-import { isNil, reduce } from 'lodash'
+import { findIndex, isNil, reduce } from 'lodash'
 import { useParams } from 'next/navigation'
 
-import { BpPathParams } from '@ors/components/manage/Blocks/BusinessPlans/types'
+import {
+  BPEditTableInterface,
+  BpPathParams,
+} from '@ors/components/manage/Blocks/BusinessPlans/types'
 import Table from '@ors/components/manage/Form/Table'
-import BPContext from '@ors/contexts/BusinessPlans/BPContext'
 import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
-import { getResults } from '@ors/helpers'
 import { debounce } from '@ors/helpers/Utils/Utils'
 
 import useColumnsOptions from './editSchema'
 
-export default function BusinessPlansEditTable() {
-  const form = useRef<any>()
-
+export default function BusinessPlansEditTable(props: BPEditTableInterface) {
+  const { form, loaded, loading, results, setForm } = props
   const { period } = useParams<BpPathParams>()
   const year_start = period.split('-')[0]
 
-  const { data, loading } = useContext(BPContext) as any
   const { yearRanges } = useContext(BPYearRangesContext) as any
-
-  const activities = data?.results?.activities
-  const { loaded, results } = getResults(activities)
 
   const yearRangeSelected = useMemo(
     () => yearRanges.find((item: any) => item.year_start == year_start),
@@ -198,7 +194,7 @@ export default function BusinessPlansEditTable() {
   return (
     yearRanges &&
     yearRanges.length > 0 && (
-      <form ref={form}>
+      <form>
         <Table
           columnDefs={columnOptions.columnDefs}
           defaultColDef={columnOptions.defaultColDef}
@@ -208,6 +204,23 @@ export default function BusinessPlansEditTable() {
           loading={loading}
           rowData={results}
           tooltipShowDelay={200}
+          onCellValueChanged={(event) => {
+            const eventData = event.data
+            const newData = [...form]
+
+            const rowIndex = findIndex(
+              newData,
+              (row) => row.id === eventData.id,
+            )
+
+            if (rowIndex > -1) {
+              newData.splice(rowIndex, 1, {
+                ...eventData,
+              })
+
+              setForm(newData)
+            }
+          }}
           onFirstDataRendered={() => {
             debounce(autoSizeColumns, 0)
           }}
