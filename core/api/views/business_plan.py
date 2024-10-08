@@ -758,6 +758,7 @@ class BPActivityDiffView(mixins.ListModelMixin, generics.GenericAPIView):
 
             diff_data.append(activity)
 
+        # Deleted activities aren't displayed
         return diff_data
 
     def create_diff_list(self, business_plans, business_plans_ar):
