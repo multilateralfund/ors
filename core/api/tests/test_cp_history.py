@@ -55,7 +55,7 @@ class TestCPHistory:
         mock_send_mail_report_update,
         mock_send_mail_comment,
     ):
-        VALIDATION_LIST = [
+        VALIDATION_LIST_FULL_HISTORY = [
             ("created by user", 5, 1, user.username),
             ("comments updated", 4, 1, user.username),
             ("updated by user", 3, 1, second_user.username),
@@ -63,9 +63,7 @@ class TestCPHistory:
             ("comments updated", 1, 1, second_user.username),
             ("updated by user", 0, 2, second_user.username),
         ]
-        VALIDATION_LIST_GET_RECORDS = [
-            ("created by user", 4, 1, user.username),
-            ("comments updated", 3, 1, user.username),
+        VALIDATION_LIST = [
             ("updated by user", 2, 1, second_user.username),
             ("comments updated", 1, 1, second_user.username),
             ("updated by user", 0, 2, second_user.username),
@@ -123,25 +121,31 @@ class TestCPHistory:
         assert response.status_code == 200
         new_id = response.data["id"]
 
-        # check 6 history objects created (status changed event included)
+        # check 6 history objects created
         history = CPHistory.objects.filter(country_programme_report_id=new_id)
-        assert history.count() == len(VALIDATION_LIST)
+        assert history.count() == len(VALIDATION_LIST_FULL_HISTORY)
 
-        for valid_string, i, version, req_user in VALIDATION_LIST:
+        for valid_string, i, version, req_user in VALIDATION_LIST_FULL_HISTORY:
             assert history[i].updated_by.username == req_user
             assert valid_string in history[i].event_description.lower()
             assert history[i].report_version == version
 
         # check history in API response
         url = reverse("country-programme-record-list")
-        response = self.client.get(url, {"cp_report_id": new_id, "full_history": True})
-        assert response.status_code == 200
+        for full_history, valid_list in [
+            (1, VALIDATION_LIST_FULL_HISTORY),
+            (0, VALIDATION_LIST),
+        ]:
+            response = self.client.get(
+                url, {"cp_report_id": new_id, "full_history": full_history}
+            )
+            assert response.status_code == 200
 
-        # check history items in get records (status changed event hidden)
-        history = response.data["history"]
-        assert len(history) == len(VALIDATION_LIST_GET_RECORDS)
+            # check history items in get records
+            history = response.data["history"]
+            assert len(history) == len(valid_list)
 
-        for valid_string, i, version, req_user in VALIDATION_LIST_GET_RECORDS:
-            assert history[i]["updated_by_username"] == req_user
-            assert valid_string in history[i]["event_description"].lower()
-            assert history[i]["report_version"] == version
+            for valid_string, i, version, req_user in valid_list:
+                assert history[i]["updated_by_username"] == req_user
+                assert valid_string in history[i]["event_description"].lower()
+                assert history[i]["report_version"] == version
