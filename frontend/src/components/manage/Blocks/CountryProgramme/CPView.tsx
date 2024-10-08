@@ -88,7 +88,7 @@ const TableProps: ITableProps = {
           domNode="sectionToolbar"
         >
           <div className="flex items-center justify-end gap-x-2">
-            <DownloadCalculatedAmounts report={report} />
+            {!archive && <DownloadCalculatedAmounts report={report} />}
             <DownloadReport
               archive={archive}
               convertData={convertData}
