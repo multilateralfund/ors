@@ -53,7 +53,7 @@ const COLUMNS: PaymentColumn[] = [
     field: 'exchange_rate',
     label: 'Exchange Rate',
   },
-  { field: 'payment_for_years', label: 'Year(s)' },
+  { field: 'payment_years', label: 'Year(s)' },
   { field: 'ferm_gain_or_loss', label: 'Exchange (Gain)/Loss' },
   { field: 'files', label: 'Files' },
   { field: 'comment', label: 'Comments' },
@@ -119,7 +119,8 @@ function PaymentsView() {
             .join(', '),
           invoices: data.invoices,
           iso3: data.country.iso3,
-          payment_for_years: data.payment_for_years
+          payment_for_years: data.payment_for_years,
+          payment_years: data.payment_for_years
             .join(', '),
           replenishment: data.replenishment,
         })),

@@ -244,7 +244,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
           id="payment_for_years"
           defaultValue={fields.payment_for_years}
           hasClear={true}
-          label={columns.payment_for_years.label}
+          label={columns.payment_years.label}
           required={true}
           onChange={handleChangeYears}
         >
