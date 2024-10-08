@@ -67,6 +67,7 @@ class TestCPRecordsDiff:
                 "blend_id": None,
                 "row_id": f"substance_{substance.id}",
                 "imports": 200,
+                "banned_date": "2019-11-21",
                 "record_usages": [
                     {"usage_id": usage.id, "quantity": 200},
                 ],
@@ -87,6 +88,8 @@ class TestCPRecordsDiff:
             assert response.data[section][0]["change_type"] == "changed"
             assert float(response.data[section][0]["imports"]) == 200
             assert float(response.data[section][0]["imports_old"]) == 100
+            assert response.data[section][0]["banned_date"] == "2019-11-21"
+            assert response.data[section][0]["banned_date_old"] is None
             assert (
                 float(response.data[section][0]["record_usages"][0]["quantity"]) == 200
             )

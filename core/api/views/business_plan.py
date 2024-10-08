@@ -185,7 +185,7 @@ class BusinessPlanViewSet(
     )
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
-        if not request.query_params.get("get_versions"):
+        if request.query_params.get("get_versions") != "1":
             queryset = queryset.filter(is_latest=True)
 
         page = self.paginate_queryset(queryset)
