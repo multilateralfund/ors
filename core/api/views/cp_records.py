@@ -307,6 +307,7 @@ class CPRecordListDiffView(CPRecordListView):
         "exports_odp",
         "export_quotas_odp",
         "production_odp",
+        "banned_date",
         "remarks",
     ]
     section_c_fields = ["previous_year_price", "current_year_price", "remarks"]

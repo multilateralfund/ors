@@ -56,10 +56,9 @@ class TestCPHistory:
         mock_send_mail_comment,
     ):
         VALIDATION_LIST = [
-            ("created by user", 5, 1, user.username),
-            ("comments updated", 4, 1, user.username),
-            ("updated by user", 3, 1, second_user.username),
-            ("status changed", 2, 1, second_user.username),
+            ("created by user", 4, 1, user.username),
+            ("comments updated", 3, 1, user.username),
+            ("updated by user", 2, 1, second_user.username),
             ("comments updated", 1, 1, second_user.username),
             ("updated by user", 0, 2, second_user.username),
         ]
@@ -84,7 +83,7 @@ class TestCPHistory:
         )
         assert response.status_code == 201
 
-        # update cp report ( 2 history record = update status + update report)
+        # update cp report
         self.client.force_authenticate(user=second_user)
         url = reverse("country-programme-reports") + f"{cp_report_id}/"
         data = _setup_new_cp_report_create
@@ -116,7 +115,7 @@ class TestCPHistory:
         assert response.status_code == 200
         new_id = response.data["id"]
 
-        # check 6 history objects created
+        # check 5 history objects created
         history = CPHistory.objects.filter(country_programme_report_id=new_id)
         assert history.count() == len(VALIDATION_LIST)
 

@@ -470,31 +470,17 @@ class CPReportView(
         CPHistory.objects.filter(country_programme_report=current_obj).update(
             country_programme_report=new_instance
         )
-        event_descrs = ["Updated by user"]
-
-        # check if the status was changed
-        if current_obj.status != new_instance.status:
-            event_descrs.append(
-                f"Status changed from {current_obj.status} to {new_instance.status}"
-            )
 
         # create new history for update event
-        history = []
-        for event_desc in event_descrs:
-            history.append(
-                CPHistory(
-                    country_programme_report=new_instance,
-                    report_version=new_instance.version,
-                    updated_by=request.user,
-                    reporting_officer_name=new_instance.reporting_entry,
-                    reporting_officer_email=new_instance.reporting_email,
-                    event_description=event_desc,
-                    event_in_draft=(
-                        new_instance.status != CPReport.CPReportStatus.FINAL
-                    ),
-                )
-            )
-        CPHistory.objects.bulk_create(history)
+        CPHistory.objects.create(
+            country_programme_report=new_instance,
+            report_version=new_instance.version,
+            updated_by=request.user,
+            reporting_officer_name=new_instance.reporting_entry,
+            reporting_officer_email=new_instance.reporting_email,
+            event_description="Updated by user",
+            event_in_draft=(new_instance.status != CPReport.CPReportStatus.FINAL),
+        )
 
         current_obj.delete()
 
