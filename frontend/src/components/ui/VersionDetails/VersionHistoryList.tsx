@@ -83,12 +83,7 @@ export default function VersionHistoryList(props: any) {
                         id="reporting_officer"
                         className="my-1 w-fit rounded bg-gray-100 px-1 text-sm font-normal text-gray-500"
                       >
-                        <span>{historyItem.reporting_officer_name || ''}</span>
-                        {historyItem.reporting_officer_name &&
-                          historyItem.reporting_officer_email && (
-                            <span> - </span>
-                          )}
-                        <span>{historyItem.reporting_officer_email || ''}</span>
+                        <span>{historyItem.updated_by_email || ''}</span>
                         <span> ({historyItem.updated_by_username})</span>
                       </p>
                     </div>
