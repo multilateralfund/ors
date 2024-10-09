@@ -145,7 +145,8 @@ class CPRecordBaseListView(views.APIView):
             if not full_history:
                 history_qs = history_qs.filter(event_in_draft=False)
                 history_qs = history_qs.exclude(
-                    event_description__istartswith="status changed"
+                    Q(event_description__istartswith="status changed")
+                    | Q(event_description__istartswith="status updated")
                 )
             history = CPHistorySerializer(history_qs, many=True).data
 
