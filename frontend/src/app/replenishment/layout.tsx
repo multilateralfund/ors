@@ -16,24 +16,20 @@ interface Tab {
 
 const SECTIONS: Tab[] = [
   {
-    label: 'Dashboard',
-    path: '/replenishment/dashboard',
+    label: 'Scale of assessment',
+    path: '/replenishment/scale-of-assessment',
   },
   {
     label: 'Status of contributions',
     path: '/replenishment/status-of-contributions',
   },
   {
-    label: 'Scale of assessment',
-    path: '/replenishment/scale-of-assessment',
+    label: 'In/out flows',
+    path: '/replenishment/in-out-flows',
   },
   {
-    label: 'Invoices',
-    path: '/replenishment/invoices',
-  },
-  {
-    label: 'Payments',
-    path: '/replenishment/payments',
+    label: 'Dashboard',
+    path: '/replenishment/dashboard',
   },
 ]
 

@@ -4,6 +4,7 @@ import { ChangeEvent, useContext, useMemo, useState } from 'react'
 
 import Cookies from 'js-cookie'
 import { times } from 'lodash'
+import Link from 'next/link'
 import { enqueueSnackbar } from 'notistack'
 
 import ConfirmDialog from '@ors/components/manage/Blocks/Replenishment/ConfirmDialog'
@@ -437,6 +438,21 @@ function InvoicesView() {
     setParams({ hide_no_invoice: evt.target.checked })
   }
 
+  const ViewPicker = () => {
+    return (
+      <div className="mb-2 flex items-center gap-4 print:fixed print:left-[480px] print:top-12">
+        <h2 className="m-0 text-3xl uppercase">Invoices</h2>
+        <span className="print:hidden"> | </span>
+        <Link
+          className="m-0 text-2xl uppercase text-primary no-underline print:hidden"
+          href="./payments"
+        >
+          Payments
+        </Link>
+      </div>
+    )
+  }
+
   return (
     <>
       {isDeleteModalVisible && invoiceToDelete !== null ? (
@@ -467,6 +483,7 @@ function InvoicesView() {
           onSubmit={handleEditInvoiceSubmit}
         />
       ) : null}
+      <ViewPicker />
       <div className="flex items-center justify-between gap-4 pb-4 print:hidden">
         <div className="flex items-center gap-x-4">
           <div className="relative">

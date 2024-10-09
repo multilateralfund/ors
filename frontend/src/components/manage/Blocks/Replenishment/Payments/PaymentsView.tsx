@@ -5,6 +5,7 @@ import React, { ChangeEvent, useContext, useMemo, useState } from 'react'
 import cx from 'classnames'
 import Cookies from 'js-cookie'
 import { times } from 'lodash'
+import Link from 'next/link'
 import { enqueueSnackbar } from 'notistack'
 
 import ConfirmDialog from '@ors/components/manage/Blocks/Replenishment/ConfirmDialog'
@@ -437,6 +438,21 @@ function PaymentsView() {
   }
   const yearOptions = scAnnualOptions(ctx.periods)
 
+  const ViewPicker = () => {
+    return (
+      <div className="mb-2 flex items-center gap-4 print:fixed print:left-[480px] print:top-12">
+        <Link
+          className="m-0 text-2xl uppercase text-primary no-underline print:hidden"
+          href="./invoices"
+        >
+          Invoices
+        </Link>
+        <span className="print:hidden"> | </span>
+        <h2 className="m-0 text-3xl uppercase">Payments</h2>
+      </div>
+    )
+  }
+
   return (
     <>
       {isDeleteModalVisible && paymentToDelete !== null ? (
@@ -469,6 +485,7 @@ function PaymentsView() {
           onSubmit={handleEditPaymentSubmit}
         />
       ) : null}
+      <ViewPicker />
       <div className="flex items-center justify-between gap-4 pb-4 print:hidden">
         <div className="flex items-center gap-x-4">
           <div className="relative">
