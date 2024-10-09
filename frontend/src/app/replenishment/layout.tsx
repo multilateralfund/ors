@@ -20,6 +20,10 @@ const SECTIONS: Tab[] = [
     path: '/replenishment/scale-of-assessment',
   },
   {
+    label: 'Statistics',
+    path: '/replenishment/statistics',
+  },
+  {
     label: 'Status of contributions',
     path: '/replenishment/status-of-contributions',
   },

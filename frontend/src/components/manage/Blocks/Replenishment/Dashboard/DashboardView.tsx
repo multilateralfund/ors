@@ -16,7 +16,6 @@ import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentConte
 import { api } from '@ors/helpers'
 
 import SectionDashboard from './SectionDashboard'
-import SectionStatistics from './SectionStatistics'
 import SectionStatus from './SectionStatus'
 import { IFormData } from './useGetDashboardDataTypes'
 
@@ -257,9 +256,6 @@ function DashboardView(props: IDashboardViewProps) {
           onEditButtonClick={handleEditClick}
         />
       )
-      break
-    case 'statistics':
-      Section = <SectionStatistics asOfDate={asOfDate} />
       break
     default:
       Section = (

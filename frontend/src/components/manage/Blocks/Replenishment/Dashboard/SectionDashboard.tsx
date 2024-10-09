@@ -648,23 +648,6 @@ function SectionDashboard(props: SectionDashboardProps) {
   return (
     <>
       <div className="flex flex-col items-center justify-between gap-y-4 2xl:flex-row">
-        <div className="flex items-center gap-4 print:hidden">
-          <h2 className="m-0 text-3xl">DASHBOARD</h2>{' '}
-          <span className="print:hidden"> | </span>
-          <Link
-            className="m-0 text-2xl text-primary no-underline"
-            href="/replenishment/dashboard/status"
-          >
-            STATUS OF THE FUND
-          </Link>{' '}
-          <span className="print:hidden"> | </span>
-          <Link
-            className="m-0 text-2xl text-primary no-underline"
-            href="/replenishment/dashboard/statistics"
-          >
-            STATISTICS
-          </Link>
-        </div>
         <div className="flex items-center gap-2 print:hidden">
           <label
             className={cx(
