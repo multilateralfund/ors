@@ -100,6 +100,10 @@ const useInternalNavSections = () => {
                 label: 'Scale of assessment',
                 url: '/replenishment/scale-of-assessment',
               },
+              {
+                label: 'Status of the fund',
+                url: '/replenishment/status-of-the-fund',
+              },
               { label: 'Statistics', url: '/replenishment/statistics' },
               {
                 label: 'Status of contributions',
