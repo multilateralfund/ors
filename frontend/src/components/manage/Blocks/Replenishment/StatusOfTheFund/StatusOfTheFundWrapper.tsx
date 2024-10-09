@@ -190,7 +190,7 @@ function EditStatusDialog(props: IEditStatusDialogProps) {
   )
 }
 
-function DashboardView() {
+function StatusOfTheFundWrapper() {
   const { formData, invalidateDataFn, newData } = useGetDashboardData()
   const ctx = useContext(ReplenishmentContext)
   const { allocations, asOfDate, income, overview, provisions } = newData
@@ -255,4 +255,4 @@ function DashboardView() {
   )
 }
 
-export default DashboardView
+export default StatusOfTheFundWrapper
