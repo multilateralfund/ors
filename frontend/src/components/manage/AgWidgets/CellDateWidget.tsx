@@ -114,11 +114,11 @@ export const CellDateWidget = memo(
             borderRadius: 0,
             width: '100%',
           }}
+          onAccept={() => {
+            setOpen(false)
+          }}
           onChange={(newValue) => {
             setValue(newValue)
-            if (value && newValue) {
-              setOpen(false)
-            }
           }}
           autoFocus
         />

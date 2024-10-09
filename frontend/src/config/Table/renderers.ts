@@ -13,6 +13,7 @@ const renderers: {
   type: {
     boolean: 'agBooleanCellRenderer',
     date: 'agDateCellRenderer',
+    date_diff: 'agDateDiffCellRenderer',
     float: 'agFloatCellRenderer',
     number: 'agFloatCellRenderer',
     number_diff: 'agFloatDiffCellRenderer',
