@@ -1,4 +1,5 @@
 'use client'
+
 import DownloadButtons from '@ors/app/replenishment/DownloadButtons'
 import ReplenishmentHeading from '@ors/app/replenishment/ReplenishmentHeading'
 import StatisticsView from '@ors/components/manage/Blocks/Replenishment/Statistics/StatisticsView'
