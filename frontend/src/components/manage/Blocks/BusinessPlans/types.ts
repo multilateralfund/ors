@@ -14,7 +14,7 @@ export type BpDiffPathParams = {
 export type BPDataInterface = {
   loaded: boolean
   loading: boolean
-  results: Array<ApiBPActivity>
+  results: Array<any>
 }
 
 export type BPGetVersionsInterface = {

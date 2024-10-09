@@ -20,8 +20,6 @@ const BPEditComponents = (props: BPDataInterface) => {
   const [form, setForm] = useState<Array<ApiBPActivity>>(results)
   const [activeTab, setActiveTab] = useState(0)
 
-  const getSubmitFormData = () => {}
-
   return (
     <>
       <BPHeaderEdit />
