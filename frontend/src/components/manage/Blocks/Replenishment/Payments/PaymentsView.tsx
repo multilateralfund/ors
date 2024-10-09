@@ -38,6 +38,7 @@ import {
   IPaymentDialogProps,
   ParsedPayment,
   PaymentColumn,
+  PaymentDataFields,
   PaymentForSubmit,
 } from './types'
 
@@ -178,7 +179,7 @@ function PaymentsView() {
   const editData = useMemo(() => {
     let entry = null
     if (editIdx !== null) {
-      entry = { ...memoResults[editIdx] } as ParsedPayment
+      entry = { ...memoResults[editIdx] } as PaymentDataFields
       entry.date = dateForEditField(entry.date)
       entry.amount = entry.be_amount
       entry.exchange_rate = entry.be_exchange_rate
@@ -220,6 +221,7 @@ function PaymentsView() {
       // Empty strings are used to delete a value
       if (!key.startsWith('file_')) {
         const valueIsNotAFile = value as unknown as
+          | boolean
           | null
           | string
           | string[]

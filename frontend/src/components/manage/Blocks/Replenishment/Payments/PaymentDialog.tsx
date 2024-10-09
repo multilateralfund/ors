@@ -43,6 +43,7 @@ interface PaymentDialogFields {
   exchange_rate: string
   ferm_gain_or_loss: string
   invoices: string[]
+  is_ferm: boolean
   payment_for_years: string[]
 }
 
@@ -68,6 +69,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
     exchange_rate: data?.exchange_rate?.toString() ?? '',
     ferm_gain_or_loss: data?.ferm_gain_or_loss?.toString() ?? '',
     invoices: data?.invoices?.map((o) => o.id.toString()) ?? [],
+    is_ferm: data?.is_ferm ?? false,
     payment_for_years: data?.payment_for_years?.map((o) => o.toString()) ?? [],
   })
 
@@ -125,6 +127,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
               (countryInfo?.amount_local_currency || '').toString() || '',
             currency: (countryInfo?.currency || '').toString() || '',
             exchange_rate: (countryInfo?.exchange_rate || '').toString() || '',
+            is_ferm: countryInfo?.opted_for_ferm || false,
           }
 
           return {
@@ -159,9 +162,20 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
 
   function handleChangeCountry(value: string) {
     setFields(function (prev) {
-      return { ...prev, country_id: value }
+      return {
+        ...prev,
+        country_id: value,
+        is_ferm: countryInfo?.opted_for_ferm || false,
+      }
     })
     setGetInvoicesParams({ country_id: value })
+  }
+
+  const handleToggleFerm: ChangeEventHandler<HTMLInputElement> = (evt) => {
+    setFields((prev) => ({
+      ...prev,
+      is_ferm: evt.target.checked,
+    }))
   }
 
   function handleChangeInvoices(value: string[]) {
@@ -218,6 +232,13 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
             </option>
           ))}
         </FieldSearchableSelect>
+        <FieldInput
+          id="is_ferm"
+          checked={fields.is_ferm}
+          label="Country opted for FERM"
+          type="checkbox"
+          onChange={handleToggleFerm}
+        />
         {hasInvoices ? (
           <FieldMultiSelect
             id="invoices"
