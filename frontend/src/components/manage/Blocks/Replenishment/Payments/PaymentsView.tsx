@@ -38,6 +38,7 @@ import {
   IPaymentDialogProps,
   ParsedPayment,
   PaymentColumn,
+  PaymentDataFields,
   PaymentForSubmit,
 } from './types'
 
@@ -53,7 +54,7 @@ const COLUMNS: PaymentColumn[] = [
     field: 'exchange_rate',
     label: 'Exchange Rate',
   },
-  { field: 'payment_for_year', label: 'Year(s)' },
+  { field: 'payment_years', label: 'Year(s)' },
   { field: 'ferm_gain_or_loss', label: 'Exchange (Gain)/Loss' },
   { field: 'files', label: 'Files' },
   { field: 'comment', label: 'Comments' },
@@ -119,7 +120,9 @@ function PaymentsView() {
             .join(', '),
           invoices: data.invoices,
           iso3: data.country.iso3,
-          payment_for_year: data.payment_for_year,
+          payment_for_years: data.payment_for_years,
+          payment_years: data.payment_for_years
+            .join(', '),
           replenishment: data.replenishment,
         })),
       ]
@@ -176,7 +179,7 @@ function PaymentsView() {
   const editData = useMemo(() => {
     let entry = null
     if (editIdx !== null) {
-      entry = { ...memoResults[editIdx] } as ParsedPayment
+      entry = { ...memoResults[editIdx] } as PaymentDataFields
       entry.date = dateForEditField(entry.date)
       entry.amount = entry.be_amount
       entry.exchange_rate = entry.be_exchange_rate
@@ -203,6 +206,10 @@ function PaymentsView() {
     if (invoices.length > 0) {
       entry.invoices = invoices
     }
+    const payment_for_years = formData.getAll('payment_for_years') as string[]
+    if (payment_for_years.length > 0) {
+      entry.payment_for_years = payment_for_years
+    }
 
     let nr_new_files = 0
     const data = new FormData()
@@ -214,6 +221,7 @@ function PaymentsView() {
       // Empty strings are used to delete a value
       if (!key.startsWith('file_')) {
         const valueIsNotAFile = value as unknown as
+          | boolean
           | null
           | string
           | string[]
@@ -289,6 +297,10 @@ function PaymentsView() {
     const invoices = formData.getAll('invoices') as string[]
     if (invoices.length > 0) {
       entry.invoices = invoices
+    }
+    const payment_for_years = formData.getAll('payment_for_years') as string[]
+    if (payment_for_years.length > 0) {
+      entry.payment_for_years = payment_for_years
     }
 
     let nr_new_files = 0

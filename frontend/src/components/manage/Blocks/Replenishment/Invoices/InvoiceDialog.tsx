@@ -40,6 +40,7 @@ interface TabContentProps {
 
 interface TabContentDetailsProps extends TabContentProps {
   countries: InvoiceDialogProps['countries']
+  countryInfo: ApiReplenishmentSoAEntry | null
   setFields: React.Dispatch<React.SetStateAction<InvoiceDialogFields>>
 }
 
@@ -49,14 +50,31 @@ interface TabContentAmountProps extends TabContentProps {
 }
 
 function TabContentDetails(props: TabContentDetailsProps) {
-  const { countries, data, fields, setFields, updateField } = props
+  const { countries, countryInfo, data, fields, setFields, updateField } = props
   const ctx = useContext(ReplenishmentContext)
   const yearOptions = scAnnualOptions(ctx.periods)
 
+  const statusOptions = [
+    {label: 'Paid', value: 'paid'},
+    {label: 'Partially Paid', value: 'partially_paid'},
+    {label: 'Pending', value: 'pending'},
+  ]
+
   function handleCountrySelect(value: string) {
     setFields(function (prev) {
-      return { ...prev, country_id: value }
+      return {
+        ...prev,
+        country_id: value,
+        is_ferm: countryInfo?.opted_for_ferm || false,
+      }
     })
+  }
+
+  const handleToggleFerm: ChangeEventHandler<HTMLInputElement> = (evt) => {
+    setFields((prev) => ({
+      ...prev,
+      is_ferm: evt.target.checked,
+    }))
   }
 
   return (
@@ -74,6 +92,13 @@ function TabContentDetails(props: TabContentDetailsProps) {
           </option>
         ))}
       </FieldSearchableSelect>
+      <FieldInput
+        id="is_ferm"
+        checked={fields.is_ferm}
+        label="Country opted for FERM"
+        type="checkbox"
+        onChange={handleToggleFerm}
+      />
       <FieldInput
         id="number"
         defaultValue={data?.number}
@@ -119,11 +144,25 @@ function TabContentDetails(props: TabContentDetailsProps) {
       />
       <FieldDateInput
         id="date_second_reminder"
-        label="2nd reminder"
+        label="2nd reminder date"
         min={fields.date_of_issuance}
         value={fields.date_second_reminder}
         onChange={updateField('date_second_reminder')}
       />
+      <FieldSelect
+        id="status"
+        label="Status"
+        value={fields.status}
+        onChange={updateField('status')}
+        required
+      >
+        <option value="" disabled hidden></option>
+        {statusOptions.map((option) => (
+          <option key={option.value} className="text-primary" value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </FieldSelect>
     </>
   )
 }
@@ -209,6 +248,8 @@ interface InvoiceDialogFields {
   date_second_reminder: string
   date_sent_out: string
   exchange_rate: string
+  is_ferm: boolean
+  status: string
   year: string
 }
 
@@ -229,6 +270,8 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
     date_second_reminder: data?.date_second_reminder ?? '',
     date_sent_out: data?.date_sent_out ?? '',
     exchange_rate: data?.exchange_rate ?? '',
+    is_ferm: data?.is_ferm ?? false,
+    status: data?.status ?? '',
     year: data?.year ?? '',
   })
 
@@ -262,6 +305,7 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
               (countryInfo?.amount_local_currency || '').toString() || '',
             currency: (countryInfo?.currency || '').toString() || '',
             exchange_rate: (countryInfo?.exchange_rate || '').toString() || '',
+            is_ferm: countryInfo?.opted_for_ferm || false,
           }
 
           return {
@@ -277,7 +321,7 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
   const handleFormSubmit: InvoiceDialogProps['onSubmit'] = (formData, evt) => {
     const fieldsKeys = Object.keys(fields) as (keyof InvoiceDialogFields)[]
     for (let i = 0; i < fieldsKeys.length; i++) {
-      formData.set(fieldsKeys[i], fields[fieldsKeys[i]])
+      formData.set(fieldsKeys[i], fields[fieldsKeys[i]].toString())
     }
 
     onSubmit(formData, evt)
@@ -303,6 +347,7 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
       <DialogTabContent isCurrent={tab == 0}>
         <TabContentDetails
           countries={countries}
+          countryInfo={countryInfo}
           data={data}
           fields={fields}
           setFields={setFields}

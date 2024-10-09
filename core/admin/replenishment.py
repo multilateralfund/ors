@@ -91,7 +91,7 @@ class PaymentAdmin(admin.ModelAdmin):
     search_fields = [
         "country__name",
         "date",
-        "payment_for_year",
+        "payment_for_years",
     ]
     list_filter = [
         "date",

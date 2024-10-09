@@ -18,6 +18,7 @@ export type ApiReplenishmentInvoice = {
   invoice_files: ApiReplenishmentFile[]
   number: string
   replenishment: ApiReplenishment
+  status: string
   year: number
 }
 

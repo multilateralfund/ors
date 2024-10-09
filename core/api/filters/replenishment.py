@@ -88,7 +88,10 @@ class PaymentFilter(filters.FilterSet):
     country_id = filters.ModelMultipleChoiceFilter(
         field_name="country_id", queryset=Country.objects.all(), widget=CSVWidget
     )
-    year = filters.CharFilter(field_name="payment_for_year", lookup_expr="icontains")
+    year = filters.CharFilter(method="filter_year")
+
+    def filter_year(self, queryset, _name, value):
+        return queryset.filter(payment_for_years__contains=[value])
 
     class Meta:
         model = Payment

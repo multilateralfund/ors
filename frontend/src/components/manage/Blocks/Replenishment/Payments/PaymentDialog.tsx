@@ -2,7 +2,6 @@
 
 import {
   ApiReplenishmentInvoice,
-  ApiReplenishmentInvoices,
 } from '@ors/types/api_replenishment_invoices'
 
 import React, {
@@ -29,14 +28,12 @@ import {
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceAttachments'
 import useGetInvoices from '@ors/components/manage/Blocks/Replenishment/Invoices/useGetInvoices'
+import { scAnnualOptions } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
 import useGetCountryReplenishmentInfo from '@ors/components/manage/Blocks/Replenishment/useGetCountryReplenishmentInfo'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
-import { formatApiUrl } from '@ors/helpers'
 import { getFloat } from '@ors/helpers/Utils/Utils'
 
 import { IPaymentDialogProps } from './types'
-
-const BASE_URL = 'api/replenishment/invoices/'
 
 interface PaymentDialogFields {
   amount: string
@@ -46,7 +43,8 @@ interface PaymentDialogFields {
   exchange_rate: string
   ferm_gain_or_loss: string
   invoices: string[]
-  payment_for_year: string
+  is_ferm: boolean
+  payment_for_years: string[]
 }
 
 function getInvoiceLabel(invoice: ApiReplenishmentInvoice) {
@@ -71,8 +69,11 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
     exchange_rate: data?.exchange_rate?.toString() ?? '',
     ferm_gain_or_loss: data?.ferm_gain_or_loss?.toString() ?? '',
     invoices: data?.invoices?.map((o) => o.id.toString()) ?? [],
-    payment_for_year: data?.payment_for_year?.toString() ?? '',
+    is_ferm: data?.is_ferm ?? false,
+    payment_for_years: data?.payment_for_years?.map((o) => o.toString()) ?? [],
   })
+
+  const yearOptions = scAnnualOptions(ctx.periods)
 
   const updateField = useCallback(
     (name: string) => {
@@ -126,6 +127,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
               (countryInfo?.amount_local_currency || '').toString() || '',
             currency: (countryInfo?.currency || '').toString() || '',
             exchange_rate: (countryInfo?.exchange_rate || '').toString() || '',
+            is_ferm: countryInfo?.opted_for_ferm || false,
           }
 
           return {
@@ -160,9 +162,20 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
 
   function handleChangeCountry(value: string) {
     setFields(function (prev) {
-      return { ...prev, country_id: value }
+      return {
+        ...prev,
+        country_id: value,
+        is_ferm: countryInfo?.opted_for_ferm || false,
+      }
     })
     setGetInvoicesParams({ country_id: value })
+  }
+
+  const handleToggleFerm: ChangeEventHandler<HTMLInputElement> = (evt) => {
+    setFields((prev) => ({
+      ...prev,
+      is_ferm: evt.target.checked,
+    }))
   }
 
   function handleChangeInvoices(value: string[]) {
@@ -171,11 +184,18 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
     })
   }
 
+  function handleChangeYears(value: string[]) {
+    setFields(function (prev) {
+      return { ...prev, payment_for_years: value }
+    })
+  }
+
   useEffect(
     function () {
       if (
-        fields.invoices.length > 0 &&
-        fields.payment_for_year.toLowerCase() !== 'arrears'
+        fields.invoices.length > 0
+        //TODO: how will the system treat this?
+        //&& fields.payment_for_year.toLowerCase() !== 'arrears'
       ) {
         setFields(function (prev) {
           return {
@@ -187,7 +207,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
         })
       }
     },
-    [invoicedAmount, fields.amount, fields.invoices, fields.payment_for_year],
+    [invoicedAmount, fields.amount, fields.invoices, fields.payment_for_years],
   )
 
   return (
@@ -212,6 +232,13 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
             </option>
           ))}
         </FieldSearchableSelect>
+        <FieldInput
+          id="is_ferm"
+          checked={fields.is_ferm}
+          label="Country opted for FERM"
+          type="checkbox"
+          onChange={handleToggleFerm}
+        />
         {hasInvoices ? (
           <FieldMultiSelect
             id="invoices"
@@ -234,14 +261,23 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
             </span>
           </Field>
         )}
-        <FieldInput
-          id="payment_for_year"
-          defaultValue={data?.payment_for_year}
-          label={columns.payment_for_year.label}
-          type="text"
-          onChange={updateField('payment_for_year')}
-          required
-        />
+        <FieldMultiSelect
+          id="payment_for_years"
+          defaultValue={fields.payment_for_years}
+          hasClear={true}
+          label={columns.payment_years.label}
+          required={true}
+          onChange={handleChangeYears}
+        >
+          <option key="arrears" className="text-primary" value="arrears">
+            Arrears
+          </option>
+          {yearOptions.map((year) => (
+            <option key={year.value} className="text-primary" value={year.value}>
+              {year.label}
+            </option>
+          ))}
+        </FieldMultiSelect>
         <FieldDateInput
           id="date"
           label={columns.date.label}

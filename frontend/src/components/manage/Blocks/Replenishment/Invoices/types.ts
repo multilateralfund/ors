@@ -37,6 +37,7 @@ export type InvoiceForSubmit = {
   exchange_rate: number | string
   reminder: null | string
   replenishment_id?: number
+  status: null | string
   year: string
 } & { [key: string]: File }
 

@@ -622,7 +622,7 @@ class PaymentFactory(factory.django.DjangoModelFactory):
     currency = factory.Faker("pystr", max_chars=3)
 
     date = factory.Faker("date")
-    payment_for_year = factory.Faker("pystr", max_chars=32)
+    payment_for_years = ["deferred"]
 
 
 class CommentTypeFactory(factory.django.DjangoModelFactory):
