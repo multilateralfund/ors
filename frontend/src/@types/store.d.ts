@@ -166,6 +166,8 @@ export interface HistoryListItem {
   reporting_officer_email: string
   reporting_officer_name: string
   updated_by_email: string
+  updated_by_first_name: string
+  updated_by_last_name: string
   updated_by_username: string
 }
 
