@@ -122,8 +122,7 @@ function PaymentsView() {
           invoices: data.invoices,
           iso3: data.country.iso3,
           payment_for_years: data.payment_for_years,
-          payment_years: data.payment_for_years
-            .join(', '),
+          payment_years: data.payment_for_years.join(', '),
           replenishment: data.replenishment,
         })),
       ]
@@ -520,6 +519,7 @@ function PaymentsView() {
               id="country"
               className="placeholder-select !ml-0 w-52"
               onChange={handleCountryFilter}
+              onClear={() => setParams({ country_id: '' })}
               hasClear
               required
             >
@@ -537,6 +537,7 @@ function PaymentsView() {
             id="year"
             className="placeholder-select w-44"
             onChange={handleYearFilter}
+            onClear={() => setParams({ year: '' })}
             hasClear
           >
             <option value="" disabled hidden>
