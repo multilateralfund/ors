@@ -145,9 +145,6 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
     onSubmit(formData, evt)
   }
 
-  const isFERM = countryInfo?.opted_for_ferm || false
-  const fieldsAreReadonly = countryInfo ? !isFERM : false
-
   const handleChangeAmount: ChangeEventHandler<HTMLInputElement> = (evt) => {
     const amount = evt.target.value
     const nrAmount = getFloat(amount)
@@ -295,29 +292,29 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
       <DialogTabContent isCurrent={tab == 1}>
         <FieldInput
           id="currency"
-          disabled={fieldsAreReadonly}
+          disabled={!fields.is_ferm}
           label={columns.currency.label}
-          readOnly={fieldsAreReadonly}
+          readOnly={!fields.is_ferm}
           type="text"
-          value={fields.currency}
+          value={fields.is_ferm ? fields.currency : 'USD'}
           onChange={updateField('currency')}
           required
         />
         <FieldFormattedNumberInput
           id="amount_local_currency"
           decimalDigits={5}
-          disabled={fieldsAreReadonly}
+          disabled={!fields.is_ferm}
           label={`"${fields.currency}" amount`}
-          readOnly={fieldsAreReadonly}
+          readOnly={!fields.is_ferm}
           value={fields.amount_local_currency}
           onChange={updateField('amount_local_currency')}
         />
         <FieldFormattedNumberInput
           id="exchange_rate"
-          disabled={fieldsAreReadonly}
+          disabled={!fields.is_ferm}
           label={columns.exchange_rate.label}
-          readOnly={fieldsAreReadonly}
-          value={fields.exchange_rate}
+          readOnly={!fields.is_ferm}
+          value={fields.is_ferm ? fields.exchange_rate: ''}
           onChange={updateField('exchange_rate')}
         />
         <FieldFormattedNumberInput
@@ -325,15 +322,15 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
           decimalDigits={5}
           label="USD amount"
           value={fields.amount}
-          onChange={isFERM ? handleChangeAmount : updateField('amount')}
+          onChange={fields.is_ferm ? handleChangeAmount : updateField('amount')}
           required
         />
         <FieldFormattedNumberInput
           id="ferm_gain_or_loss"
-          disabled={fieldsAreReadonly}
+          disabled={!fields.is_ferm}
           label={columns.ferm_gain_or_loss.label}
-          readOnly={fieldsAreReadonly}
-          value={fields.ferm_gain_or_loss}
+          readOnly={!fields.is_ferm}
+          value={fields.is_ferm ? fields.ferm_gain_or_loss : ''}
           onChange={updateField('ferm_gain_or_loss')}
         />
         <h5>Upload</h5>

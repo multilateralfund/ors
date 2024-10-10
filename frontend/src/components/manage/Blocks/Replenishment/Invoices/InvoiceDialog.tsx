@@ -170,9 +170,6 @@ function TabContentDetails(props: TabContentDetailsProps) {
 function TabContentAmount(props: TabContentAmountProps) {
   const { countryInfo, data, fields, setFields, updateField } = props
 
-  const isFERM = countryInfo?.opted_for_ferm || false
-  const fieldsAreReadonly = countryInfo ? !isFERM : false
-
   const handleChangeAmount: ChangeEventHandler<HTMLInputElement> = (evt) => {
     const amount = evt.target.value
     const nrAmount = getFloat(amount)
@@ -191,9 +188,9 @@ function TabContentAmount(props: TabContentAmountProps) {
         <div className={cx({ 'blur-sm': !fields.country_id })}>
           <FieldInput
             id="currency"
-            disabled={fieldsAreReadonly}
+            disabled={!fields.is_ferm}
             label="Currency"
-            readOnly={fieldsAreReadonly}
+            readOnly={!fields.is_ferm}
             type="text"
             value={fields.currency}
             onChange={updateField('currency')}
@@ -201,17 +198,17 @@ function TabContentAmount(props: TabContentAmountProps) {
           <FieldFormattedNumberInput
             id="amount_local_currency"
             decimalDigits={5}
-            disabled={fieldsAreReadonly}
+            disabled={!fields.is_ferm}
             label={`"${fields.currency}" amount`}
-            readOnly={fieldsAreReadonly}
+            readOnly={!fields.is_ferm}
             value={fields.amount_local_currency}
             onChange={updateField('amount_local_currency')}
           />
           <FieldFormattedNumberInput
             id="exchange_rate"
-            disabled={fieldsAreReadonly}
+            disabled={!fields.is_ferm}
             label="Exchange rate"
-            readOnly={fieldsAreReadonly}
+            readOnly={!fields.is_ferm}
             step="any"
             value={fields.exchange_rate}
             onChange={updateField('exchange_rate')}
@@ -221,7 +218,7 @@ function TabContentAmount(props: TabContentAmountProps) {
             decimalDigits={5}
             label="USD amount"
             value={fields.amount}
-            onChange={isFERM ? handleChangeAmount : updateField('amount')}
+            onChange={fields.is_ferm ? handleChangeAmount : updateField('amount')}
           />
         </div>
         {!fields.country_id && (
