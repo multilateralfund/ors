@@ -196,6 +196,7 @@ function StatusOfTheFundWrapper() {
   const { allocations, asOfDate, income, overview, provisions } = newData
 
   const [showEdit, setShowEdit] = useState(false)
+  const [editingSection, setEditingSection] = useState<null | string>(null)
 
   const { enqueueSnackbar } = useSnackbar()
 
@@ -248,8 +249,8 @@ function StatusOfTheFundWrapper() {
         income={income}
         overview={overview}
         provisions={provisions}
+        setEditingSection={setEditingSection}
         showEditButton={ctx.isTreasurer}
-        onEditButtonClick={handleEditClick}
       />
     </>
   )
