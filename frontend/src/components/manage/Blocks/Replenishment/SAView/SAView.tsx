@@ -538,6 +538,8 @@ function SAView(props: SAViewProps) {
   const version = ctxSoA.version
   const versions = ctxSoA.versions
 
+  const isFinal = ctxSoA.version?.is_final ?? true
+
   const contributions = useMemo(
     function () {
       return tranformContributions(ctxSoA.contributions)
@@ -843,7 +845,7 @@ function SAView(props: SAViewProps) {
               <FormattedNumberInput
                 id="triannualBudget"
                 className="w-36"
-                disabled={!ctx.isTreasurer}
+                disabled={!ctx.isTreasurer || isFinal}
                 value={replenishment?.amount}
                 onChange={handleAmountInput}
               />
@@ -859,7 +861,7 @@ function SAView(props: SAViewProps) {
               <FormattedNumberInput
                 id="previouslyUnusedSum"
                 className="w-36"
-                disabled={!ctx.isTreasurer}
+                disabled={!ctx.isTreasurer || isFinal}
                 value={unusedAmount}
                 onChange={handleUnusedAmountInput}
               />
@@ -893,7 +895,7 @@ function SAView(props: SAViewProps) {
               </div>
             </label>
             <DateRangeInput
-              disabled={!ctx.isTreasurer}
+              disabled={!ctx.isTreasurer || isFinal}
               initialEnd={dateForInput(currencyDateRange.end)}
               initialStart={dateForInput(currencyDateRange.start)}
               onChange={handleChangeCurrencyDateRange}
@@ -913,7 +915,7 @@ function SAView(props: SAViewProps) {
         adminButtons={ctx.isTreasurer}
         columns={columns}
         countriesForAdd={countriesForAdd}
-        enableEdit={ctx.isTreasurer}
+        enableEdit={ctx.isTreasurer && !isFinal}
         enableSort={true}
         rowData={formattedTableData}
         showAdd={showAdd}
