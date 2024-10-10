@@ -42,6 +42,7 @@ from core.api.views.utils import (
     copy_fields,
     delete_fields,
     get_business_plan_from_request,
+    rename_fields,
     BPACTIVITY_ORDERING_FIELDS,
 )
 from core.models import Agency, BusinessPlan, BPChemicalType, BPHistory, BPActivity
@@ -719,13 +720,27 @@ class BPActivityDiffView(mixins.ListModelMixin, generics.GenericAPIView):
     ordering = ["title", "country", "id"]
     ordering_fields = ["business_plan__agency__name"] + BPACTIVITY_ORDERING_FIELDS
 
-    def diff_activities(self, data, data_old, fields, agency_id):
+    def diff_activities(self, activities, old_activities, fields, agency_id):
         diff_data = []
         values_fields = ["value_usd", "value_odp", "value_mt"]
+
+        activities_filtered = self.filter_queryset(activities).values_list(
+            "id", flat=True
+        )
+        old_activities_filtered = self.filter_queryset(old_activities).values_list(
+            "id", flat=True
+        )
+
+        data = BPActivityDetailSerializer(activities, many=True).data
+        data_old = BPActivityDetailSerializer(old_activities, many=True).data
         activities_old = {activity["initial_id"]: activity for activity in data_old}
 
         for activity in data:
             activity_old = activities_old.pop(activity["initial_id"], None)
+
+            # check if new activity passes the filter
+            if activity["id"] not in activities_filtered:
+                continue
 
             # Prepare data for comparison
             delete_fields(activity, ["id", "is_updated"])
@@ -758,7 +773,19 @@ class BPActivityDiffView(mixins.ListModelMixin, generics.GenericAPIView):
 
             diff_data.append(activity)
 
-        # Deleted activities aren't displayed
+        for activity in activities_old.values():
+            # check if old activity passes the filter
+            if activity["id"] not in old_activities_filtered:
+                continue
+
+            rename_fields(activity, fields)
+            for value in activity.get("values", []):
+                rename_fields(value, values_fields)
+
+            activity["agency_id"] = agency_id
+            activity["change_type"] = "deleted"
+            diff_data.append(activity)
+
         return diff_data
 
     def create_diff_list(self, business_plans, business_plans_ar):
@@ -779,16 +806,11 @@ class BPActivityDiffView(mixins.ListModelMixin, generics.GenericAPIView):
             if not business_plan_ar:
                 continue
 
-            activities = self.filter_queryset(
-                self.get_queryset().filter(business_plan=business_plan)
-            )
+            activities = business_plan.activities.all()
             old_activities = business_plan_ar.activities.all()
 
             ret_diff_list += self.diff_activities(
-                BPActivityDetailSerializer(activities, many=True).data,
-                BPActivityDetailSerializer(old_activities, many=True).data,
-                fields,
-                agency_id,
+                activities, old_activities, fields, agency_id
             )
 
         return ret_diff_list

@@ -1368,6 +1368,60 @@ class TestBPActivitiesDiff:
         assert float(values_data[1]["value_usd"]) == 300
         assert values_data[1]["value_usd_old"] is None
 
+    def test_activities_diff_with_filters(
+        self,
+        agency_user,
+        _setup_new_business_plan_create,
+        _setup_bp_activity_create,
+        agency,
+        country_ro,
+    ):
+        self.client.force_authenticate(user=agency_user)
+
+        # create business plan
+        url = reverse("businessplan-list")
+        data = _setup_new_business_plan_create
+        data["activities"] = [_setup_bp_activity_create, _setup_bp_activity_create]
+
+        response = self.client.post(url, data, format="json")
+        assert response.status_code == 201
+        business_plan_id = response.data["id"]
+        initial_id = response.data["activities"][0]["initial_id"]
+
+        # update status
+        BusinessPlan.objects.filter(id=business_plan_id).update(
+            status=BusinessPlan.Status.need_changes
+        )
+
+        # update business plan (new version)
+        url = reverse("businessplan-list") + f"{business_plan_id}/"
+        activity_data = _setup_bp_activity_create
+        activity_data["initial_id"] = initial_id
+        activity_data["title"] = "Am un milion"
+        data = {
+            "agency_id": agency.id,
+            "year_start": 2020,
+            "year_end": 2023,
+            "status": "Agency Draft",
+            "activities": [activity_data],
+        }
+        response = self.client.put(url, data, format="json")
+        assert response.status_code == 200
+        new_id = response.data["id"]
+
+        # check activities diff
+        url = reverse("business-plan-activity-diff")
+        response = self.client.get(
+            url, {"business_plan_id": new_id, "country_id": country_ro.id}
+        )
+        assert response.status_code == 200
+        assert len(response.data) == 2
+
+        assert response.data[0]["change_type"] == "changed"
+        assert response.data[0]["title"] == "Am un milion"
+        assert response.data[0]["title_old"] == "Planu"
+        assert response.data[1]["change_type"] == "deleted"
+
     def test_activities_diff_all_bps(
         self,
         user,
