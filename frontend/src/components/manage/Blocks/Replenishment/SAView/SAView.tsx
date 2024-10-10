@@ -92,7 +92,7 @@ const COLUMNS: SATableColumn[] = [
   {
     field: 'annual_contributions',
     label: 'Annual contributions',
-    subLabel: '([PERIOD] in U.S.D)',
+    subLabel: '([PERIOD] in USD)',
   },
   {
     editable: true,
@@ -837,7 +837,7 @@ function SAView(props: SAViewProps) {
               <label htmlFor="triannualBudget_mask">
                 <div className="flex flex-col uppercase text-primary">
                   <span className="font-bold">Triannual budget</span>
-                  <span className="">(in U.S.D)</span>
+                  <span className="">(in USD)</span>
                 </div>
               </label>
               <FormattedNumberInput
@@ -853,7 +853,7 @@ function SAView(props: SAViewProps) {
               <label htmlFor="triannualBudget_mask">
                 <div className="flex flex-col uppercase text-primary">
                   <span className="font-bold">Previously unused sum</span>
-                  <span className="">(in U.S.D)</span>
+                  <span className="">(in USD)</span>
                 </div>
               </label>
               <FormattedNumberInput
@@ -869,7 +869,7 @@ function SAView(props: SAViewProps) {
               <label htmlFor="totalAmount_mask">
                 <div className="flex flex-col uppercase text-primary">
                   <span className="font-bold">Annual budget</span>
-                  <span className="">(in U.S.D)</span>
+                  <span className="">(in USD)</span>
                 </div>
               </label>
               <FormattedNumberInput
