@@ -109,9 +109,14 @@ class ScaleOfAssessment(models.Model):
         if self.country.iso3 == "USA":
             return US_SCALE_OF_ASSESSMENT
 
+        if self.un_scale_of_assessment is None:
+            return None
+
         un_assessment_sum = ScaleOfAssessment.objects.filter(
             version=self.version
-        ).aggregate(models.Sum("un_scale_of_assessment"))["un_scale_of_assessment__sum"]
+        ).aggregate(models.Sum("un_scale_of_assessment", default=0))[
+            "un_scale_of_assessment__sum"
+        ]
 
         if un_assessment_sum is None:
             return None
