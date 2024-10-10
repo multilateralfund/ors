@@ -138,7 +138,7 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
       <div
         style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
       >
-        <div className="py-4 print:break-inside-avoid">
+        <div className="py-4">
           <div className="flex flex-wrap gap-4 2xl:flex-nowrap">
             <div className="flex w-full flex-col gap-y-2 lg:w-[49%] 2xl:w-1/4">
               <CashCard
