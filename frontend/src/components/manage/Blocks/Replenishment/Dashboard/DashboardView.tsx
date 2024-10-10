@@ -41,7 +41,12 @@ function SummaryCard(props: any) {
   if (elements) {
     for (let i = 0; i < elements.length; i++) {
       contents.push(
-        <div key={i} className="flex flex-col gap-y-2 uppercase">
+        <div
+          key={i}
+          className={cx('flex flex-col gap-y-2 uppercase', {
+            'flex-1': elements.length === 3,
+          })}
+        >
           <div className="text-2xl font-bold text-[#4D4D4D]">
             {elements[i].label}
           </div>
@@ -56,7 +61,7 @@ function SummaryCard(props: any) {
   }
 
   return (
-    <div className="flex max-h-48 min-h-48 min-w-[25rem] flex-1 flex-col justify-between rounded-lg bg-[#F5F5F5] p-4 2xl:min-w-[29.33rem] 2xl:max-w-[29.33rem] print:break-inside-avoid">
+    <div className="flex max-h-52 min-h-52 min-w-[25rem] flex-1 flex-col justify-between rounded-lg bg-[#F5F5F5] p-4 2xl:min-w-[29.33rem] 2xl:max-w-[29.33rem] print:break-inside-avoid">
       <div className="flex items-center justify-between">
         <div className="max-w-0 text-3xl font-bold uppercase text-[#4D4D4D]">
           {label}
@@ -68,7 +73,7 @@ function SummaryCard(props: any) {
         </div>
       </div>
       <hr className="mb-4 mt-2 block w-full border border-x-0 border-b-0 border-solid border-[#E0E0E0]" />
-      <div className="flex justify-between">{contents}</div>
+      <div className="flex justify-between gap-10">{contents}</div>
     </div>
   )
 }
