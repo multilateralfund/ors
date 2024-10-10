@@ -41,14 +41,16 @@ function SummaryCard(props: any) {
   if (elements) {
     for (let i = 0; i < elements.length; i++) {
       contents.push(
-        <div key={i} className="flex flex-col gap-y-2 uppercase">
-          <div className="text-[#4D4D4D]">{elements[i].label}</div>
-          <div
-            className={cx(
-              'text-4xl font-bold text-primary',
-              elements[i].className,
-            )}
-          >
+        <div
+          key={i}
+          className={cx('flex flex-col gap-y-2 uppercase', {
+            'flex-1': elements.length === 3,
+          })}
+        >
+          <div className="text-2xl font-bold text-[#4D4D4D]">
+            {elements[i].label}
+          </div>
+          <div className={cx('text-2xl', elements[i].className)}>
             {elements[i].prefix || ''}
             {elements[i].value}
             {elements[i].suffix || ''}
@@ -59,19 +61,19 @@ function SummaryCard(props: any) {
   }
 
   return (
-    <div className="flex max-h-48 min-h-48 min-w-[25rem] flex-1 flex-col justify-between rounded-lg bg-[#F5F5F5] p-4 2xl:min-w-[29.33rem] 2xl:max-w-[29.33rem] print:break-inside-avoid">
+    <div className="flex max-h-52 min-h-52 min-w-[25rem] flex-1 flex-col justify-between rounded-lg bg-[#F5F5F5] p-4 2xl:min-w-[29.33rem] 2xl:max-w-[29.33rem] print:break-inside-avoid">
       <div className="flex items-center justify-between">
-        <div className="max-w-0 text-xl font-medium uppercase text-[#4D4D4D]">
+        <div className="max-w-0 text-3xl font-bold uppercase text-[#4D4D4D]">
           {label}
         </div>
-        <div className="text-5xl font-bold leading-normal text-primary">
-          <span className="font-normal">{prefix}</span>
+        <div className="text-3xl leading-normal">
+          <span className="font-light">{prefix}</span>
           {value}
           {suffix}
         </div>
       </div>
       <hr className="mb-4 mt-2 block w-full border border-x-0 border-b-0 border-solid border-[#E0E0E0]" />
-      <div className="flex justify-between">{contents}</div>
+      <div className="flex justify-between gap-10">{contents}</div>
     </div>
   )
 }
@@ -85,9 +87,11 @@ function BigCard(props: any) {
     for (let i = 0; i < elements.length; i++) {
       contents.push(
         <div key={i} className="my-4 flex flex-col gap-y-2 uppercase">
-          <div className="text-[#4D4D4D]">{elements[i].label}</div>
-          <div className="text-4xl font-bold text-primary">
-            <span className="font-normal">{elements[i].prefix || ''}</span>
+          <div className="text-2xl font-bold text-[#4D4D4D]">
+            {elements[i].label}
+          </div>
+          <div className="text-2xl">
+            <span className="font-light">{elements[i].prefix || ''}</span>
             {elements[i].value}
             {elements[i].suffix || ''}
           </div>
@@ -98,7 +102,7 @@ function BigCard(props: any) {
 
   return (
     <div className="flex flex-col gap-y-4 rounded-lg border border-solid border-primary p-4">
-      <div className="max-w-0 text-xl font-medium uppercase leading-normal text-[#4D4D4D]">
+      <div className="max-w-0 text-3xl font-bold uppercase leading-normal text-[#4D4D4D]">
         {label}
       </div>
       <hr className="mt-2 block w-full border border-x-0 border-b-0 border-solid border-[#E0E0E0]" />

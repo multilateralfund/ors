@@ -48,15 +48,17 @@ function CashCard(props: ICashCardProps) {
   return (
     <div
       className={cx(
-        'flex min-h-24 min-w-80 flex-1 items-center justify-between rounded-lg bg-[#F5F5F5] p-4 text-3xl font-medium md:min-w-96 print:break-inside-avoid',
+        'flex min-h-24 min-w-80 flex-1 items-center justify-between rounded-lg bg-[#F5F5F5] p-4 md:min-w-96 print:break-inside-avoid',
         className,
       )}
     >
       <div className="w-1/2">
-        <div className="uppercase text-[#4D4D4D]">{label}</div>
+        <div className="text-3xl font-bold uppercase text-[#4D4D4D]">
+          {label}
+        </div>
       </div>
-      <div className="text-4xl font-bold leading-normal text-primary">
-        <span className="font-normal">$</span>
+      <div className="text-3xl leading-normal">
+        <span className="font-light">$</span>
         {value}
       </div>
     </div>
@@ -73,11 +75,11 @@ interface IMiniCashCardProps {
 function MiniCashCard(props: IMiniCashCardProps) {
   const { className, info_text, label, value } = props
   return (
-    <div className={cx('flex flex-col gap-y-4', className)}>
+    <div className={cx('flex flex-col gap-y-2', className)}>
       <div className="uppercase text-[#4D4D4D]">
         <div className="flex items-center">
           <span className="whitespace-break-spaces">
-            <span className="text-2xl font-semibold">{label}</span>
+            <span className="text-2xl font-bold">{label}</span>
             {info_text ? (
               <IoInformationCircleOutline
                 className="inline"
@@ -88,8 +90,8 @@ function MiniCashCard(props: IMiniCashCardProps) {
         </div>
       </div>
       <div className="flex-grow"></div>
-      <div className="text-3xl font-medium text-primary">
-        <span className="font-light">{'$'}</span>
+      <div className="text-2xl">
+        <span className="font-light">$</span>
         {value}
       </div>
     </div>
@@ -136,7 +138,7 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
       <div
         style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
       >
-        <div className="py-4 print:break-inside-avoid">
+        <div className="py-4">
           <div className="flex flex-wrap gap-4 2xl:flex-nowrap">
             <div className="flex w-full flex-col gap-y-2 lg:w-[49%] 2xl:w-1/4">
               <CashCard
@@ -175,10 +177,10 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
 
             <div className="w-full lg:w-[49%] 2xl:w-1/4">
               <div className="h-full rounded-lg bg-[#F5F5F5] p-4">
-                <div className="mb-4 border-x-0 border-b border-t-0 border-solid border-[#E0E0E0] pb-4 text-3xl font-medium uppercase text-[#4D4D4D]">
+                <div className="mb-4 border-x-0 border-b border-t-0 border-solid border-[#E0E0E0] pb-4 text-3xl font-bold uppercase text-[#4D4D4D]">
                   Income
                 </div>
-                <div className="flex flex-wrap gap-y-8">
+                <div className="flex flex-wrap gap-y-11">
                   {income &&
                     incomeOrder.map((key) => (
                       <MiniCashCard
@@ -199,7 +201,7 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
 
             <div className="w-full 2xl:w-2/4">
               <div className="h-full rounded-lg bg-[#F5F5F5] p-4">
-                <div className="mb-4 border-x-0 border-b border-t-0 border-solid border-[#E0E0E0] pb-4 text-3xl font-medium uppercase text-[#4D4D4D]">
+                <div className="mb-4 border-x-0 border-b border-t-0 border-solid border-[#E0E0E0] pb-4 text-3xl font-bold uppercase text-[#4D4D4D]">
                   Allocations
                 </div>
                 <div className="mb-4 flex gap-4 border-x-0 border-b border-t-0 border-solid border-[#E0E0E0] pb-4 text-[#4D4D4D]">
@@ -223,7 +225,7 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
                     provisionsOrder.map((key) => (
                       <MiniCashCard
                         key={key}
-                        className="my-4 w-1/4"
+                        className="my-6 w-1/4"
                         info_text={provisions[key]?.info_text}
                         label={provisions[key].label}
                         value={
