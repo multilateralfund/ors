@@ -103,20 +103,22 @@ class ScaleOfAssessment(models.Model):
     def adjusted_scale_of_assessment(self):
         # TODO: Might need to be moved to the serializer and pass un_assessment_sum as context,
         # otherwise it will be computed for each contribution and will be inefficient
-        if self.override_adjusted_scale_of_assessment is not None:
-            return self.override_adjusted_scale_of_assessment
-
         if self.country.iso3 == "USA":
             return US_SCALE_OF_ASSESSMENT
+
+        if self.override_adjusted_scale_of_assessment is not None:
+            return self.override_adjusted_scale_of_assessment
 
         if self.un_scale_of_assessment is None:
             return None
 
-        un_assessment_sum = ScaleOfAssessment.objects.filter(
-            version=self.version
-        ).aggregate(models.Sum("un_scale_of_assessment", default=0))[
-            "un_scale_of_assessment__sum"
-        ]
+        un_assessment_sum = (
+            ScaleOfAssessment.objects.filter(version=self.version)
+            .exclude(country__iso3="USA")
+            .aggregate(models.Sum("un_scale_of_assessment", default=0))[
+                "un_scale_of_assessment__sum"
+            ]
+        )
 
         if un_assessment_sum is None:
             return None
