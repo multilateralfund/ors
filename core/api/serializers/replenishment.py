@@ -57,7 +57,7 @@ class ScaleOfAssessmentSerializer(serializers.ModelSerializer):
         max_digits=30, decimal_places=15, coerce_to_string=False, required=False
     )
     un_scale_of_assessment = serializers.DecimalField(
-        max_digits=30, decimal_places=15, coerce_to_string=False
+        max_digits=30, decimal_places=15, coerce_to_string=False, allow_null=True
     )
     override_adjusted_scale_of_assessment = serializers.DecimalField(
         max_digits=30, decimal_places=15, coerce_to_string=False, required=False
