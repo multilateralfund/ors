@@ -1,5 +1,4 @@
 import cx from 'classnames'
-import Link from 'next/link'
 
 import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils'
 import { SubmitButton } from '@ors/components/ui/Button/Button'
@@ -9,7 +8,7 @@ import {
   IINCOME,
   IOVERVIEW,
   IPROVISIONS,
-} from './useGetDashboardDataTypes'
+} from '../Dashboard/useGetDashboardDataTypes'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
@@ -97,7 +96,7 @@ function MiniCashCard(props: IMiniCashCardProps) {
   )
 }
 
-interface ISectionStatusProps {
+interface IStatusOfTheFundProps {
   allocations: IALLOCATIONS
   asOfDate: string
   income: IINCOME
@@ -107,7 +106,7 @@ interface ISectionStatusProps {
   showEditButton: boolean
 }
 
-function SectionStatus(props: ISectionStatusProps) {
+function StatusOfTheFundView(props: IStatusOfTheFundProps) {
   const {
     allocations,
     asOfDate,
@@ -121,22 +120,8 @@ function SectionStatus(props: ISectionStatusProps) {
   return (
     <>
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link
-            className="m-0 text-2xl text-primary no-underline print:hidden"
-            href="./"
-          >
-            DASHBOARD
-          </Link>{' '}
-          <span className="print:hidden"> | </span>
-          <h2 className="m-0 text-3xl">STATUS OF THE FUND</h2>{' '}
-          <span className="print:hidden"> | </span>
-          <Link
-            className="m-0 text-2xl text-primary no-underline print:hidden"
-            href="./statistics"
-          >
-            STATISTICS
-          </Link>
+        <div className="py-4">
+          <p className="m-0 text-2xl">{asOfDate} ( USD )</p>
         </div>
         {showEditButton && (
           <SubmitButton
@@ -146,9 +131,6 @@ function SectionStatus(props: ISectionStatusProps) {
             Edit
           </SubmitButton>
         )}
-      </div>
-      <div className="py-4">
-        <p className="m-0 text-2xl">{asOfDate} ( USD )</p>
       </div>
 
       <div
@@ -279,4 +261,4 @@ function SectionStatus(props: ISectionStatusProps) {
   )
 }
 
-export default SectionStatus
+export default StatusOfTheFundView

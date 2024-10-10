@@ -96,17 +96,21 @@ const useInternalNavSections = () => {
           {
             label: 'Replenishment',
             menu: [
-              { label: 'Dashboard', url: '/replenishment/dashboard' },
-              {
-                label: 'Status of contributions',
-                url: '/replenishment/status-of-contributions',
-              },
               {
                 label: 'Scale of assessment',
                 url: '/replenishment/scale-of-assessment',
               },
-              { label: 'Invoices', url: '/replenishment/invoices' },
-              { label: 'Payments', url: '/replenishment/payments' },
+              {
+                label: 'Status of the fund',
+                url: '/replenishment/status-of-the-fund',
+              },
+              { label: 'Statistics', url: '/replenishment/statistics' },
+              {
+                label: 'Status of contributions',
+                url: '/replenishment/status-of-contributions',
+              },
+              { label: 'In/out flows', url: '/replenishment/in-out-flows' },
+              { label: 'Dashboard', url: '/replenishment/dashboard' },
             ],
             url: '/replenishment',
           },
