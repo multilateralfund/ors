@@ -14,6 +14,7 @@ from core.api.views import (
     TriennialStatusOfContributionsView,
     SummaryStatusOfContributionsView,
     ReplenishmentDashboardView,
+    ReplenishmentExternalAllocationViewSet,
     ReplenishmentInvoiceViewSet,
     ReplenishmentInvoiceFileDownloadView,
     ReplenishmentPaymentViewSet,
@@ -138,6 +139,11 @@ router.register(
     "replenishment/scales-of-assessment",
     ScaleOfAssessmentViewSet,
     basename="replenishment-scales-of-assessment",
+)
+router.register(
+    "replenishment/external-allocations",
+    ReplenishmentExternalAllocationViewSet,
+    basename="replenishment-external-allocations",
 )
 router.register(
     "replenishment/invoices",
