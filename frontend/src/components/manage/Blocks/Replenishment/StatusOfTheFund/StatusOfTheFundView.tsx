@@ -11,42 +11,10 @@ import {
   IOVERVIEW,
   IPROVISIONS,
 } from '../Dashboard/useGetDashboardDataTypes'
+import { allocationsOrder, incomeOrder, provisionsOrder } from './constants'
 
 import { FaEdit } from 'react-icons/fa'
 import { IoInformationCircleOutline } from 'react-icons/io5'
-
-const incomeOrder: (keyof IINCOME)[] = [
-  'cash_payments',
-  'promissory_notes',
-  'bilateral_assistance',
-  'interest_earned',
-  'miscellaneous_income',
-]
-
-const allocationsOrder: (keyof IALLOCATIONS)[] = [
-  'undp',
-  'unep',
-  'unido',
-  'world_bank',
-]
-const provisionsOrder: (keyof IPROVISIONS)[] = [
-  'staff_contracts',
-  'treasury_fees',
-  'monitoring_fees',
-  'technical_audit',
-  'information_strategy',
-  'bilateral_assistance',
-  'gain_loss',
-]
-
-const editableFields = [
-  ...allocationsOrder,
-  'interest_earned',
-  'miscellaneous_income',
-  'staff_contracts',
-  'treasury_fees',
-  'monitoring_fees',
-]
 
 interface ICashCardProps {
   className?: string
@@ -79,6 +47,7 @@ function CashCard(props: ICashCardProps) {
 
 interface IMiniCashCardProps {
   className?: string
+  editableFields: Array<string>
   field: string
   info_text?: string
   isEditing: boolean
@@ -90,6 +59,7 @@ interface IMiniCashCardProps {
 function MiniCashCard(props: IMiniCashCardProps) {
   const {
     className,
+    editableFields,
     field,
     info_text,
     isEditing,
@@ -114,7 +84,7 @@ function MiniCashCard(props: IMiniCashCardProps) {
             ) : null}
             {shouldShowButton && (
               <FaEdit
-                className="ml-1.5 inline text-secondary print:hidden"
+                className="ml-1.5 inline cursor-pointer text-secondary print:hidden"
                 size={16}
                 onClick={() => setEditingSection(field)}
               />
@@ -134,6 +104,7 @@ function MiniCashCard(props: IMiniCashCardProps) {
 interface IStatusOfTheFundProps {
   allocations: IALLOCATIONS
   asOfDate: string
+  editableFields: Array<string>
   income: IINCOME
   overview: IOVERVIEW
   provisions: IPROVISIONS
@@ -145,6 +116,7 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
   const {
     allocations,
     asOfDate,
+    editableFields,
     income,
     overview,
     provisions,
@@ -229,6 +201,7 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
                       <MiniCashCard
                         key={key}
                         className="w-1/2"
+                        editableFields={editableFields}
                         field={key}
                         info_text={income[key]?.info_text}
                         isEditing={isEditing}
@@ -256,6 +229,7 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
                       <MiniCashCard
                         key={key}
                         className="w-1/4"
+                        editableFields={editableFields}
                         field={key}
                         info_text={allocations[key]?.info_text}
                         isEditing={isEditing}
@@ -275,6 +249,7 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
                       <MiniCashCard
                         key={key}
                         className="my-6 w-1/4"
+                        editableFields={editableFields}
                         field={key}
                         info_text={provisions[key]?.info_text}
                         isEditing={isEditing}

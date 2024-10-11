@@ -3,6 +3,7 @@
 import { ChangeEvent, useContext, useState } from 'react'
 
 import cx from 'classnames'
+import { get, keys, omit } from 'lodash'
 import { useSnackbar } from 'notistack'
 
 import useGetDashboardData from '@ors/components/manage/Blocks/Replenishment/Dashboard/useGetDashboardData'
@@ -16,196 +17,196 @@ import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentConte
 import { api } from '@ors/helpers'
 
 import { IFormData } from '../Dashboard/useGetDashboardDataTypes'
+import { scAnnualOptions } from '../StatusOfContribution/utils'
 import StatusOfTheFundView from '../StatusOfTheFund/StatusOfTheFundView'
+import { allocationsOrder } from './constants'
+import EditAllocationsDialog from './editDialogs/EditAllocationsDialog'
+import EditInterestEarnedDialog from './editDialogs/EditInterestEarnedDialog'
+import EditMiscellaneousIncomeDialog from './editDialogs/EditMiscellaneousIncomeDialog'
 
-function InputNumberField(props: IFieldProps & IFormattedNumberInputProps) {
-  const { id, className, label, ...fieldProps } = props
-  return (
-    <div className="flex w-72 flex-col">
-      <label htmlFor={`${id}_mask`}>
-        <div className="flex flex-col text-primary">
-          <span className="font-medium">{label}</span>
-        </div>
-      </label>
-      <FormattedNumberInput
-        id={id}
-        className={cx('!ml-0', className)}
-        {...fieldProps}
-      />
-    </div>
-  )
-}
+// function InputNumberField(props: IFieldProps & IFormattedNumberInputProps) {
+//   const { id, className, label, ...fieldProps } = props
+//   return (
+//     <div className="flex w-72 flex-col">
+//       <label htmlFor={`${id}_mask`}>
+//         <div className="flex flex-col text-primary">
+//           <span className="font-medium">{label}</span>
+//         </div>
+//       </label>
+//       <FormattedNumberInput
+//         id={id}
+//         className={cx('!ml-0', className)}
+//         {...fieldProps}
+//       />
+//     </div>
+//   )
+// }
 
-interface IEditStatusDialogProps extends React.PropsWithChildren {
-  data: IFormData
-  onCancel: () => void
-  onSubmit: (
-    formData: Record<string, number | string>,
-    evt?: React.FormEvent,
-  ) => void
-}
+// interface IEditStatusDialogProps extends React.PropsWithChildren {
+//   data: IFormData
+//   onCancel: () => void
+//   onSubmit: (
+//     formData: Record<string, number | string>,
+//     evt?: React.FormEvent,
+//   ) => void
+// }
 
-function EditStatusDialog(props: IEditStatusDialogProps) {
-  const { data, onSubmit, ...dialogProps } = props
+// function EditStatusDialog(props: IEditStatusDialogProps) {
+//   const { data, onSubmit, ...dialogProps } = props
 
-  const [formState, setFormState] = useState<IFormData>(data)
+//   const [formState, setFormState] = useState<IFormData>(data)
 
-  function handleChange(name: string) {
-    return function (evt: ChangeEvent<HTMLInputElement>) {
-      const value = parseFloat(evt.target.value)
-      if (
-        evt.target.value === '' ||
-        (typeof value === 'number' && !isNaN(value))
-      ) {
-        setFormState(function (prev) {
-          return { ...prev, [name]: value }
-        })
-      }
-    }
-  }
+//   function handleChange(name: string) {
+//     return function (evt: ChangeEvent<HTMLInputElement>) {
+//       const value = parseFloat(evt.target.value)
+//       if (
+//         evt.target.value === '' ||
+//         (typeof value === 'number' && !isNaN(value))
+//       ) {
+//         setFormState(function (prev) {
+//           return { ...prev, [name]: value }
+//         })
+//       }
+//     }
+//   }
 
-  function handleExternalIncomeYearChange(name: string) {
-    return function (evt: ChangeEvent<HTMLInputElement>) {
-      const value = parseInt(evt.target.value)
-      if (
-        evt.target.value === '' ||
-        (typeof value === 'number' && !isNaN(value))
-      ) {
-        setFormState(function (prev) {
-          return { ...prev, [name]: value }
-        })
-      }
-    }
-  }
+//   function handleExternalIncomeYearChange(name: string) {
+//     return function (evt: ChangeEvent<HTMLInputElement>) {
+//       const value = parseInt(evt.target.value)
+//       if (
+//         evt.target.value === '' ||
+//         (typeof value === 'number' && !isNaN(value))
+//       ) {
+//         setFormState(function (prev) {
+//           return { ...prev, [name]: value }
+//         })
+//       }
+//     }
+//   }
 
-  function handleSubmit() {
-    onSubmit(formState)
-  }
+//   function handleSubmit() {
+//     onSubmit(formState)
+//   }
 
-  return (
-    <FormDialog
-      title="Status of the fund:"
-      onSubmit={handleSubmit}
-      {...dialogProps}
-    >
-      <div className="flex flex-col gap-y-4">
-        <h3 className="m-0 uppercase">Income</h3>
-        <div className="flex gap-x-4">
-          <InputNumberField
-            id="external_income_start_year"
-            label="Start year of external income"
-            value={formState['external_income_start_year']}
-            onChange={handleExternalIncomeYearChange(
-              'external_income_start_year',
-            )}
-            onlyNumber
-          />
-          <InputNumberField
-            id="external_income_end_year"
-            label="End year of external income"
-            value={formState['external_income_end_year']}
-            onChange={handleExternalIncomeYearChange(
-              'external_income_end_year',
-            )}
-            onlyNumber
-          />
-        </div>
-        <div className="flex gap-x-4">
-          <InputNumberField
-            id="interest_earned"
-            label="Interest earned"
-            value={formState['interest_earned']}
-            onChange={handleChange('interest_earned')}
-          />
-          <InputNumberField
-            id="miscellaneous_income"
-            label="Miscellaneous income"
-            value={formState['miscellaneous_income']}
-            onChange={handleChange('miscellaneous_income')}
-          />
-        </div>
-        <h3 className="m-0 my-4 uppercase">Allocations and provisions</h3>
-        <div className="flex gap-x-4">
-          <InputNumberField
-            id="undp"
-            label="UNDP"
-            value={formState['undp']}
-            onChange={handleChange('undp')}
-          />
-          <InputNumberField
-            id="unep"
-            label="UNEP"
-            value={formState['unep']}
-            onChange={handleChange('unep')}
-          />
-        </div>
-        <div className="flex gap-x-4">
-          <InputNumberField
-            id="unido"
-            label="UNIDO"
-            value={formState['unido']}
-            onChange={handleChange('unido')}
-          />
-          <InputNumberField
-            id="world_bank"
-            label="World Bank"
-            value={formState['world_bank']}
-            onChange={handleChange('world_bank')}
-          />
-        </div>
+//   return (
+//     <FormDialog
+//       title="Status of the fund:"
+//       onSubmit={handleSubmit}
+//       {...dialogProps}
+//     >
+//       <div className="flex flex-col gap-y-4">
+//         <h3 className="m-0 uppercase">Income</h3>
+//         <div className="flex gap-x-4">
+//           <InputNumberField
+//             id="external_income_start_year"
+//             label="Start year of external income"
+//             value={formState['external_income_start_year']}
+//             onChange={handleExternalIncomeYearChange(
+//               'external_income_start_year',
+//             )}
+//             onlyNumber
+//           />
+//           <InputNumberField
+//             id="external_income_end_year"
+//             label="End year of external income"
+//             value={formState['external_income_end_year']}
+//             onChange={handleExternalIncomeYearChange(
+//               'external_income_end_year',
+//             )}
+//             onlyNumber
+//           />
+//         </div>
+//         <div className="flex gap-x-4">
+//           <InputNumberField
+//             id="interest_earned"
+//             label="Interest earned"
+//             value={formState['interest_earned']}
+//             onChange={handleChange('interest_earned')}
+//           />
+//           <InputNumberField
+//             id="miscellaneous_income"
+//             label="Miscellaneous income"
+//             value={formState['miscellaneous_income']}
+//             onChange={handleChange('miscellaneous_income')}
+//           />
+//         </div>
+//         <h3 className="m-0 my-4 uppercase">Allocations and provisions</h3>
+//         <div className="flex gap-x-4">
+//           <InputNumberField
+//             id="undp"
+//             label="UNDP"
+//             value={formState['undp']}
+//             onChange={handleChange('undp')}
+//           />
+//           <InputNumberField
+//             id="unep"
+//             label="UNEP"
+//             value={formState['unep']}
+//             onChange={handleChange('unep')}
+//           />
+//         </div>
+//         <div className="flex gap-x-4">
+//           <InputNumberField
+//             id="unido"
+//             label="UNIDO"
+//             value={formState['unido']}
+//             onChange={handleChange('unido')}
+//           />
+//           <InputNumberField
+//             id="world_bank"
+//             label="World Bank"
+//             value={formState['world_bank']}
+//             onChange={handleChange('world_bank')}
+//           />
+//         </div>
 
-        <div className="my-4 border border-x-0 border-b-0 border-solid border-gray-200"></div>
+//         <div className="my-4 border border-x-0 border-b-0 border-solid border-gray-200"></div>
 
-        <div className="flex gap-x-4">
-          <InputNumberField
-            id="staff_contracts"
-            label="Secretariat and Executive Committee costs"
-            value={formState['staff_contracts']}
-            onChange={handleChange('staff_contracts')}
-          />
-          <InputNumberField
-            id="monitoring_fees"
-            label="Monitoring and Evaluation costs"
-            value={formState['monitoring_fees']}
-            onChange={handleChange('monitoring_fees')}
-          />
-        </div>
+//         <div className="flex gap-x-4">
+//           <InputNumberField
+//             id="staff_contracts"
+//             label="Secretariat and Executive Committee costs"
+//             value={formState['staff_contracts']}
+//             onChange={handleChange('staff_contracts')}
+//           />
+//           <InputNumberField
+//             id="monitoring_fees"
+//             label="Monitoring and Evaluation costs"
+//             value={formState['monitoring_fees']}
+//             onChange={handleChange('monitoring_fees')}
+//           />
+//         </div>
 
-        <div className="flex gap-x-4">
-          <InputNumberField
-            id="information_strategy"
-            label="Information Strategy costs "
-            value={formState['information_strategy']}
-            onChange={handleChange('information_strategy')}
-          />
-          <InputNumberField
-            id="bilateral_assistance"
-            label="Bilateral cooperation"
-            value={formState['bilateral_assistance']}
-            onChange={handleChange('bilateral_assistance')}
-          />
-        </div>
-      </div>
-    </FormDialog>
-  )
-}
+//         <div className="flex gap-x-4">
+//           <InputNumberField
+//             id="information_strategy"
+//             label="Information Strategy costs "
+//             value={formState['information_strategy']}
+//             onChange={handleChange('information_strategy')}
+//           />
+//           <InputNumberField
+//             id="bilateral_assistance"
+//             label="Bilateral cooperation"
+//             value={formState['bilateral_assistance']}
+//             onChange={handleChange('bilateral_assistance')}
+//           />
+//         </div>
+//       </div>
+//     </FormDialog>
+//   )
+// }
 
 function StatusOfTheFundWrapper() {
   const { formData, invalidateDataFn, newData } = useGetDashboardData()
   const ctx = useContext(ReplenishmentContext)
   const { allocations, asOfDate, income, overview, provisions } = newData
 
-  const [showEdit, setShowEdit] = useState(false)
   const [editingSection, setEditingSection] = useState<null | string>(null)
 
   const { enqueueSnackbar } = useSnackbar()
 
-  function handleEditClick() {
-    setShowEdit(!showEdit)
-  }
-
   function handleEditCancel() {
-    setShowEdit(false)
+    setEditingSection(null)
   }
 
   /**
@@ -234,18 +235,101 @@ function StatusOfTheFundWrapper() {
       })
   }
 
+  const EditAlloc = () => {
+    return <>Alloc</>
+  }
+
+  const EditStaffContracts = () => {
+    return <>Staff Contracts</>
+  }
+
+  const EditTreasuryFees = () => {
+    return <>Treasury Fees</>
+  }
+
+  const EditMonitoringFees = () => {
+    return <>Monitoring Fees</>
+  }
+
+  const agencies = omit(allocations, 'total')
+  const agencyOptions = keys(agencies).map((agency: any) => ({
+    label: get(agencies, agency).label,
+    value: agency,
+  }))
+  const yearOptions = scAnnualOptions(ctx.periods)
+
+  const editableFields = [
+    ...allocationsOrder.map((allocation) => ({
+      component: (
+        <EditAllocationsDialog
+          agency={allocation}
+          agencyOptions={agencyOptions}
+          allocations={allocations}
+          data={formData as IFormData}
+          yearOptions={yearOptions}
+          onCancel={handleEditCancel}
+        />
+      ),
+      label: allocation,
+    })),
+    {
+      component: (
+        <EditInterestEarnedDialog
+          agencyOptions={agencyOptions}
+          allocations={allocations}
+          data={formData as IFormData}
+          yearOptions={yearOptions}
+          onCancel={handleEditCancel}
+        />
+      ),
+      label: 'interest_earned',
+    },
+    {
+      component: (
+        <EditMiscellaneousIncomeDialog
+          agencyOptions={agencyOptions}
+          allocations={allocations}
+          data={formData as IFormData}
+          yearOptions={yearOptions}
+          onCancel={handleEditCancel}
+        />
+      ),
+      label: 'miscellaneous_income',
+    },
+    {
+      component: <EditStaffContracts />,
+      label: 'staff_contracts',
+    },
+
+    {
+      component: <EditTreasuryFees />,
+      label: 'treasury_fees',
+    },
+    {
+      component: <EditMonitoringFees />,
+      label: 'monitoring_fees',
+    },
+  ]
+
+  const editableFieldsLabels = editableFields.map((field) => field.label)
+  const currentEditingSection = editableFields.find(
+    (field) => field.label === editingSection,
+  )
+
   return (
     <>
-      {showEdit ? (
-        <EditStatusDialog
-          data={formData as IFormData}
-          onCancel={handleEditCancel}
-          onSubmit={handleEditSubmit}
-        />
-      ) : null}
+      {
+        currentEditingSection?.component
+        // <EditStatusDialog
+        //   data={formData as IFormData}
+        //   onCancel={handleEditCancel}
+        //   onSubmit={handleEditSubmit}
+        // />
+      }
       <StatusOfTheFundView
         allocations={allocations}
         asOfDate={asOfDate}
+        editableFields={editableFieldsLabels}
         income={income}
         overview={overview}
         provisions={provisions}
