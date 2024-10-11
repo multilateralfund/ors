@@ -6,12 +6,14 @@ from core.models import (
     Country,
     Invoice,
     InvoiceFile,
+    Meeting,
     Payment,
     PaymentFile,
     Replenishment,
     ScaleOfAssessment,
     ScaleOfAssessmentVersion,
     DisputedContribution,
+    ExternalAllocation,
 )
 
 
@@ -109,6 +111,50 @@ class ScaleOfAssessmentExcelExportSerializer(serializers.ModelSerializer):
             "currency",
             "yearly_amount_local_currency",
         ]
+
+
+class ExternalAllocationSerializer(serializers.ModelSerializer):
+    is_legacy = serializers.BooleanField(required=False, allow_null=True)
+
+    undp = serializers.DecimalField(
+        max_digits=30, decimal_places=15, required=False, allow_null=True
+    )
+    unep = serializers.DecimalField(
+        max_digits=30, decimal_places=15, required=False, allow_null=True
+    )
+    unido = serializers.DecimalField(
+        max_digits=30, decimal_places=15, required=False, allow_null=True
+    )
+    world_bank = serializers.DecimalField(
+        max_digits=30, decimal_places=15, required=False, allow_null=True
+    )
+    staff_contracts = serializers.DecimalField(
+        max_digits=30, decimal_places=15, required=False, allow_null=True
+    )
+    treasury_fees = serializers.DecimalField(
+        max_digits=30, decimal_places=15, required=False, allow_null=True
+    )
+    monitoring_fees = serializers.DecimalField(
+        max_digits=30, decimal_places=15, required=False, allow_null=True
+    )
+    technical_audit = serializers.DecimalField(
+        max_digits=30, decimal_places=15, required=False, allow_null=True
+    )
+    information_strategy = serializers.DecimalField(
+        max_digits=30, decimal_places=15, required=False, allow_null=True
+    )
+
+    year = serializers.IntegerField(allow_null=True, required=False)
+
+    meeting = serializers.PrimaryKeyRelatedField(
+        queryset=Meeting.objects.all().values_list("id", flat=True),
+        allow_null=True,
+        required=False,
+    )
+
+    class Meta:
+        model = ExternalAllocation
+        fields = "__all__"
 
 
 class InvoiceFileSerializer(serializers.ModelSerializer):

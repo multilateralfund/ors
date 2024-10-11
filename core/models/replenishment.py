@@ -3,8 +3,8 @@ from decimal import Decimal
 from django.contrib.postgres import fields
 from django.db import models
 
-from core.models.base import AbstractSingleton
 from core.models.country import Country
+from core.models.meeting import Meeting
 from core.models.utils import get_protected_storage
 
 US_SCALE_OF_ASSESSMENT = Decimal("22")
@@ -465,13 +465,37 @@ class ExternalIncomeAnnual(models.Model):
         )
 
 
-class ExternalAllocation(AbstractSingleton):
-    undp = models.DecimalField(max_digits=30, decimal_places=15)
-    unep = models.DecimalField(max_digits=30, decimal_places=15)
-    unido = models.DecimalField(max_digits=30, decimal_places=15)
-    world_bank = models.DecimalField(max_digits=30, decimal_places=15)
-    staff_contracts = models.DecimalField(max_digits=30, decimal_places=15)
-    treasury_fees = models.DecimalField(max_digits=30, decimal_places=15)
-    monitoring_fees = models.DecimalField(max_digits=30, decimal_places=15)
-    technical_audit = models.DecimalField(max_digits=30, decimal_places=15)
-    information_strategy = models.DecimalField(max_digits=30, decimal_places=15)
+class ExternalAllocation(models.Model):
+    # This one will be set to True only for initially-imported data!
+    is_legacy = models.BooleanField(default=False)
+
+    # TODO: should probably makes these default=0 though
+    undp = models.DecimalField(max_digits=30, decimal_places=15, default=Decimal(0))
+    unep = models.DecimalField(max_digits=30, decimal_places=15, default=Decimal(0))
+    unido = models.DecimalField(max_digits=30, decimal_places=15, default=Decimal(0))
+    world_bank = models.DecimalField(
+        max_digits=30, decimal_places=15, default=Decimal(0)
+    )
+    staff_contracts = models.DecimalField(
+        max_digits=30, decimal_places=15, default=Decimal(0)
+    )
+    treasury_fees = models.DecimalField(
+        max_digits=30, decimal_places=15, default=Decimal(0)
+    )
+    monitoring_fees = models.DecimalField(
+        max_digits=30, decimal_places=15, default=Decimal(0)
+    )
+    technical_audit = models.DecimalField(
+        max_digits=30, decimal_places=15, default=Decimal(0)
+    )
+    information_strategy = models.DecimalField(
+        max_digits=30, decimal_places=15, default=Decimal(0)
+    )
+
+    # This is the year that the data was entered in.
+    # It should only be null for legacy entries.
+    year = models.IntegerField(null=True)
+
+    meeting = models.ForeignKey(Meeting, null=True, on_delete=models.PROTECT)
+
+    comment = models.TextField(blank=True, default="")
