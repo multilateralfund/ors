@@ -21,6 +21,9 @@ const FIRST_YEAR = 1991
 export const scAnnualOptions = (periods: ApiReplenishment[]) => {
   const options = []
 
+  // Also add "deferred" as an option
+  options.push({ label: "deferred", value: "deferred" })
+
   const latestYear =
     periods.length > 0 ? periods[0].end_year : new Date().getFullYear()
   for (let year = latestYear; year >= FIRST_YEAR; year--) {
