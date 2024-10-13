@@ -124,8 +124,8 @@ class ScaleOfAssessment(models.Model):
             return None
 
         return (
-            self.un_scale_of_assessment / (un_assessment_sum - US_SCALE_OF_ASSESSMENT)
-        ) * (Decimal("100") - un_assessment_sum) + self.un_scale_of_assessment
+            self.un_scale_of_assessment / un_assessment_sum
+        ) * (Decimal("100") - US_SCALE_OF_ASSESSMENT)
 
     @property
     def qualifies_for_fixed_rate_mechanism(self):
