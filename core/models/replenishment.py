@@ -401,7 +401,9 @@ class FermGainLoss(models.Model):
 
 class ExternalIncome(models.Model):
     """
-    External income triennial-based data
+    LEGACY External income triennial-based data.
+
+    This is now only kept for the miscellaneous_income, which will be migrated soon.
     """
 
     start_year = models.IntegerField()
@@ -427,40 +429,43 @@ class ExternalIncome(models.Model):
 
 class ExternalIncomeAnnual(models.Model):
     """
-    External income annual-based data.
-
-    For now we only have interest data on an annual basis.
+    "Interest earned" external income data; imported from the consolidated
+    financial data file.
     """
 
-    year = models.IntegerField()
+    # Triennial start year, only != None if this is for a triennial
+    triennial_start_year = models.IntegerField(null=True, default=None)
+
+    # Will only be populated for yearly OR quarterly data
+    year = models.IntegerField(null=True, default=None)
+
+    # Will only be populated for quarterly data
+    quarter = models.IntegerField(null=True, default=None)
+
+    agency_name = models.CharField(max_length=255, blank=True)
+
     interest_earned = models.DecimalField(
         max_digits=30, decimal_places=15, default=Decimal(0)
-    )
-
-    # Per-quarter breakdown of interest earned so we can import granular data.
-    # But for now only the annual `interest_earned` field is taken into account in APIs.
-    interest_earned_quarter_1 = models.DecimalField(
-        max_digits=30, decimal_places=15, null=True, blank=True
-    )
-    interest_earned_quarter_2 = models.DecimalField(
-        max_digits=30, decimal_places=15, null=True, blank=True
-    )
-    interest_earned_quarter_3 = models.DecimalField(
-        max_digits=30, decimal_places=15, null=True, blank=True
-    )
-    interest_earned_quarter_4 = models.DecimalField(
-        max_digits=30, decimal_places=15, null=True, blank=True
     )
 
     miscellaneous_income = models.DecimalField(
         max_digits=30, decimal_places=15, default=Decimal(0)
     )
-    agency_name = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
         agency_str = f" for agency {self.agency_name}" if self.agency_name else ""
+        period_str = (
+            self.triennial
+            if self.triennial
+            else (
+                self.year
+                if self.quarter is None
+                else f"{self.year} quarter {self.quarter}"
+            )
+        )
         return (
-            f"External Income{agency_str} ({self.year}): interest {self.interest_earned}; "
+            f"External Income{agency_str} ({period_str}): "
+            f"interest {self.interest_earned}; "
             f"miscellaneous {self.miscellaneous_income}"
         )
 
@@ -469,7 +474,6 @@ class ExternalAllocation(models.Model):
     # This one will be set to True only for initially-imported data!
     is_legacy = models.BooleanField(default=False)
 
-    # TODO: should probably makes these default=0 though
     undp = models.DecimalField(max_digits=30, decimal_places=15, default=Decimal(0))
     unep = models.DecimalField(max_digits=30, decimal_places=15, default=Decimal(0))
     unido = models.DecimalField(max_digits=30, decimal_places=15, default=Decimal(0))

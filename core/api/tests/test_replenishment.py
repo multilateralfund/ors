@@ -26,6 +26,7 @@ from core.api.tests.factories import (
 )
 from core.models import (
     ExternalIncome,
+    ExternalIncomeAnnual,
     ExternalAllocation,
     ScaleOfAssessment,
     ScaleOfAssessmentVersion,
@@ -1014,9 +1015,8 @@ class TestReplenishmentDashboard(BaseTest):
         ferm_gain_loss_1 = FermGainLossFactory.create(country=country_1)
         ferm_gain_loss_2 = FermGainLossFactory.create(country=country_2)
 
-        external_income = ExternalIncome.objects.create(
-            start_year=self.year_1,
-            end_year=self.year_2,
+        external_income = ExternalIncomeAnnual.objects.create(
+            triennial_start_year=self.year_1,
             interest_earned=decimal.Decimal("100"),
             miscellaneous_income=decimal.Decimal("200"),
         )
@@ -1104,9 +1104,11 @@ class TestReplenishmentDashboard(BaseTest):
                     + contribution_3.promissory_notes
                     + contribution_4.promissory_notes
                 ).quantize(self.fifteen_decimals),
-                "miscellaneous_income": external_income.miscellaneous_income.quantize(
-                    self.fifteen_decimals
-                ),
+                "miscellaneous_income": Decimal(0),
+                # TODO: reinstate once data is fully migrated to ExternalIncomeAnnual
+                # "miscellaneous_income": external_income.miscellaneous_income.quantize(
+                #     self.fifteen_decimals
+                # ),
             },
             "allocations": {
                 "undp": external_allocation.undp.quantize(self.fifteen_decimals),
@@ -1142,8 +1144,8 @@ class TestReplenishmentDashboard(BaseTest):
             },
             "external_income": [
                 {
-                    "start_year": external_income.start_year,
-                    "end_year": external_income.end_year,
+                    "year": None,
+                    "triennial_start_year": external_income.triennial_start_year,
                     "interest_earned": external_income.interest_earned.quantize(
                         self.fifteen_decimals
                     ),
@@ -1272,17 +1274,29 @@ class TestReplenishmentDashboardStatistics(BaseTest):
 
         disputed_1 = DisputedContributionsFactory.create(year=self.year_1)
 
-        external_income_1 = ExternalIncome.objects.create(
-            start_year=self.year_1,
-            end_year=self.year_2,
+        external_income_1 = ExternalIncomeAnnual.objects.create(
+            triennial_start_year=self.year_1,
             interest_earned=decimal.Decimal("100"),
             miscellaneous_income=decimal.Decimal("200"),
         )
-        external_income_2 = ExternalIncome.objects.create(
-            start_year=self.year_3,
-            end_year=self.year_4,
+        # TODO: hack to ensure endpoint returns the expected data. Remove once
+        # everything is migrated to the ExternalIncomeAnnual model!
+        ExternalIncome.objects.create(
+            start_year=self.year_1,
+            end_year=self.year_2,
+            miscellaneous_income=external_income_1.miscellaneous_income,
+        )
+        external_income_2 = ExternalIncomeAnnual.objects.create(
+            triennial_start_year=self.year_3,
             interest_earned=decimal.Decimal("300"),
             miscellaneous_income=decimal.Decimal("400"),
+        )
+        # TODO: hack to ensure endpoint returns the expected data. Remove once
+        # everything is migrated to the ExternalIncomeAnnual model!
+        ExternalIncome.objects.create(
+            start_year=self.year_3,
+            end_year=self.year_4,
+            miscellaneous_income=external_income_2.miscellaneous_income,
         )
 
         self.client.force_authenticate(user=user)

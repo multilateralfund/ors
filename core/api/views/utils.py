@@ -733,9 +733,13 @@ class TriennialStatusOfContributionsAggregator:
         ).aggregate(total=models.Sum("amount", default=0))["total"]
 
         # Adding interest earned totals
-        ret["interest_earned"] = ExternalIncomeAnnual.objects.filter(
-            year__gte=self.start_year, year__lte=self.end_year
+        yearly_or_quarterly_data = ExternalIncomeAnnual.objects.filter(
+            year__isnull=False, year__gte=self.start_year, year__lte=self.end_year
         ).aggregate(total=models.Sum("interest_earned", default=0))["total"]
+        triennial_data = ExternalIncomeAnnual.objects.filter(
+            triennial_start_year=self.start_year
+        ).aggregate(total=models.Sum("interest_earned", default=0))["total"]
+        ret["interest_earned"] = yearly_or_quarterly_data + triennial_data
 
         return ret
 
@@ -838,9 +842,8 @@ class AnnualStatusOfContributionsAggregator:
         ret["gain_loss"] = FermGainLoss.objects.filter(year=self.year).aggregate(
             total=models.Sum("amount", default=0)
         )["total"]
-        # Granular interest data only found in ExternalIncomeAnnual
         ret["interest_earned"] = ExternalIncomeAnnual.objects.filter(
-            year=self.year
+            year__isnull=False, year=self.year
         ).aggregate(total=models.Sum("interest_earned", default=0))["total"]
 
         return ret
@@ -897,16 +900,12 @@ class StatisticsStatusOfContributionsAggregator:
         )
 
     def get_external_income_data(self):
-        """
-        This returns the triennal data for ExternalIncome
-        (incomplete annual data also exists).
-        """
-        return ExternalIncome.objects.values(
-            "start_year",
-            "end_year",
+        return ExternalIncomeAnnual.objects.values(
+            "year",
+            "triennial_start_year",
             "interest_earned",
             "miscellaneous_income",
-        ).order_by("start_year")
+        ).order_by("triennial_start_year", "year")
 
 
 def add_period_status_of_contributions_response_worksheet(

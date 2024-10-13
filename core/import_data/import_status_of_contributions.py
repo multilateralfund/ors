@@ -761,7 +761,7 @@ def import_status_of_contributions(countries):
         )
 
     ExternalIncome.objects.bulk_create(external_incomes)
-    logger.info(f"Imported External Income - {len(external_incomes)} records")
+    logger.info(f"Imported External Income Legacy- {len(external_incomes)} records")
 
     allocations_kwargs = {}
     for attribute, info in DASHBOARD_DATA_ALLOCATIONS.items():
