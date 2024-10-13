@@ -2354,3 +2354,82 @@ class TestPayments(BaseTest):
 
         response = self.client.post(self.url, data=request_data, format="json")
         assert response.status_code == 403
+
+
+class TestExternalAllocations(BaseTest):
+    url = reverse("replenishment-external-allocations-list")
+    year_1 = 2021
+    year_2 = 2023
+    year_3 = 2024
+    year_4 = 2026
+
+    def test_external_allocations_list(self, user):
+        external_allocation_1 = ExternalAllocation.objects.create(
+            year=self.year_1,
+            undp=decimal.Decimal("100"),
+            comment="test",
+        )
+
+        external_allocation_2 = ExternalAllocation.objects.create(
+            year=self.year_1,
+            unep=decimal.Decimal("200"),
+            comment="test",
+        )
+
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.data) == 2
+
+    def test_external_allocations_create(self, treasurer_user):
+        self.client.force_authenticate(user=treasurer_user)
+
+        request_data = {
+            "comment": "actual comment",
+            "year": None,
+            "undp": Decimal("200.143"),
+        }
+
+        response = self.client.post(self.url, data=request_data, format="json")
+        assert response.status_code == 201
+
+
+class TestExternalIncome(BaseTest):
+    url = reverse("replenishment-external-income-list")
+    year_1 = 2021
+    year_2 = 2023
+    year_3 = 2024
+    year_4 = 2026
+
+    def test_external_income_list(self, user):
+        external_income_1 = ExternalIncomeAnnual.objects.create(
+            triennial_start_year=self.year_1,
+            interest_earned=decimal.Decimal("100"),
+            miscellaneous_income=decimal.Decimal("200"),
+        )
+
+        external_income_2 = ExternalIncomeAnnual.objects.create(
+            year=self.year_3,
+            interest_earned=decimal.Decimal("100"),
+            miscellaneous_income=decimal.Decimal("200"),
+        )
+
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.data) == 2
+
+    def test_external_income_create(self, treasurer_user):
+        self.client.force_authenticate(user=treasurer_user)
+
+        request_data = {
+            "triennial_start_year": self.year_1,
+            "year": None,
+            "quarter": None,
+            "interest_earned": Decimal("200.143"),
+        }
+
+        response = self.client.post(self.url, data=request_data, format="json")
+        assert response.status_code == 201

@@ -14,6 +14,7 @@ from core.models import (
     ScaleOfAssessmentVersion,
     DisputedContribution,
     ExternalAllocation,
+    ExternalIncomeAnnual,
 )
 
 
@@ -154,6 +155,28 @@ class ExternalAllocationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ExternalAllocation
+        fields = "__all__"
+
+
+class ExternalIncomeAnnualSerializer(serializers.ModelSerializer):
+    triennial_start_year = serializers.IntegerField(required=False, allow_null=True)
+
+    year = serializers.IntegerField(required=False, allow_null=True)
+
+    quarter = serializers.IntegerField(required=False, allow_null=True)
+
+    agency_name = serializers.CharField(required=False, allow_null=True)
+
+    interest_earned = serializers.DecimalField(
+        max_digits=30, decimal_places=15, required=False, allow_null=True
+    )
+
+    miscellaneous_income = serializers.DecimalField(
+        max_digits=30, decimal_places=15, required=False, allow_null=True
+    )
+
+    class Meta:
+        model = ExternalIncomeAnnual
         fields = "__all__"
 
 

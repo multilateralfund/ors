@@ -44,6 +44,7 @@ from core.api.serializers import (
     ScaleOfAssessmentExcelExportSerializer,
     EmptyInvoiceSerializer,
     ExternalAllocationSerializer,
+    ExternalIncomeAnnualSerializer,
 )
 from core.api.utils import workbook_response
 from core.api.views.utils import (
@@ -1301,6 +1302,28 @@ class ReplenishmentExternalAllocationViewSet(
 
     def get_queryset(self):
         return ExternalAllocation.objects.all()
+
+
+class ReplenishmentExternalIncomeAnnualViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    """
+    Viewset for the ExternalIncomeAnnual.
+    """
+
+    model = ExternalIncomeAnnual
+
+    permission_classes = [IsUserAllowedReplenishment]
+    serializer_class = ExternalIncomeAnnualSerializer
+    ordering_fields = ["-year", "quarter"]
+
+    def get_queryset(self):
+        return ExternalIncomeAnnual.objects.all()
 
 
 class ReplenishmentInvoiceViewSet(
