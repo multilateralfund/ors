@@ -20,7 +20,6 @@ from core.models import (
     FermGainLoss,
     DisputedContribution,
     AnnualContributionStatus,
-    ExternalIncome,
     ExternalIncomeAnnual,
 )
 from core.models.business_plan import BusinessPlan

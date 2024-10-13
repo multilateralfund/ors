@@ -1193,12 +1193,12 @@ class ReplenishmentDashboardExportView(views.APIView):
             (
                 "    -  Interest earned",
                 None,
-                income["interest_earned"],
+                income_interest["interest_earned"],
             ),
             (
                 "    -  Miscellaneous income",
                 None,
-                income["miscellaneous_income"],
+                income_misc["miscellaneous_income"],
             ),
             EMPTY_ROW,
             (

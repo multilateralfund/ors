@@ -2364,13 +2364,13 @@ class TestExternalAllocations(BaseTest):
     year_4 = 2026
 
     def test_external_allocations_list(self, user):
-        external_allocation_1 = ExternalAllocation.objects.create(
+        ExternalAllocation.objects.create(
             year=self.year_1,
             undp=decimal.Decimal("100"),
             comment="test",
         )
 
-        external_allocation_2 = ExternalAllocation.objects.create(
+        ExternalAllocation.objects.create(
             year=self.year_1,
             unep=decimal.Decimal("200"),
             comment="test",
@@ -2403,13 +2403,13 @@ class TestExternalIncome(BaseTest):
     year_4 = 2026
 
     def test_external_income_list(self, user):
-        external_income_1 = ExternalIncomeAnnual.objects.create(
+        ExternalIncomeAnnual.objects.create(
             triennial_start_year=self.year_1,
             interest_earned=decimal.Decimal("100"),
             miscellaneous_income=decimal.Decimal("200"),
         )
 
-        external_income_2 = ExternalIncomeAnnual.objects.create(
+        ExternalIncomeAnnual.objects.create(
             year=self.year_3,
             interest_earned=decimal.Decimal("100"),
             miscellaneous_income=decimal.Decimal("200"),

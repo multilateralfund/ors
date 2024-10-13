@@ -455,8 +455,8 @@ class ExternalIncomeAnnual(models.Model):
     def __str__(self):
         agency_str = f" for agency {self.agency_name}" if self.agency_name else ""
         period_str = (
-            self.triennial
-            if self.triennial
+            f"{self.triennial_start_year} - {self.triennial_start_year + 2}"
+            if self.triennial_start_year
             else (
                 self.year
                 if self.quarter is None
