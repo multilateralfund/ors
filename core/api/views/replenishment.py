@@ -1518,9 +1518,7 @@ class ReplenishmentInvoiceViewSet(
                 version__replenishment__end_year__gte=invoice.year,
                 version__is_final=True,
                 country=invoice.country,
-            ).update(
-                opted_for_ferm=is_ferm
-            )
+            ).update(opted_for_ferm=is_ferm)
 
         headers = self.get_success_headers(serializer.data)
         return Response(
@@ -1555,9 +1553,7 @@ class ReplenishmentInvoiceViewSet(
                 version__replenishment__end_year__gte=current_obj.year,
                 version__is_final=True,
                 country=current_obj.country,
-            ).update(
-                opted_for_ferm=is_ferm
-            )
+            ).update(opted_for_ferm=is_ferm)
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
@@ -1672,9 +1668,20 @@ class ReplenishmentPaymentViewSet(
             )
         PaymentFile.objects.bulk_create(payment_files)
 
+    def _parse_is_ferm_flag(self, request):
+        is_ferm = request.data.get("is_ferm", None)
+        if is_ferm == "true":
+            return True
+        elif is_ferm == "false":
+            return False
+        else:
+            return None
+
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         files = self._parse_payment_new_files(request)
+
+        is_ferm = self._parse_is_ferm_flag(request)
 
         serializer = PaymentCreateSerializer(data=request.data)
         if not serializer.is_valid():
@@ -1687,6 +1694,21 @@ class ReplenishmentPaymentViewSet(
         # Now create the files for this Payment
         self._create_new_payment_files(payment, files)
 
+        # And finally set the ScaleOfAssessment if all needed fields are specified
+        if is_ferm is not None and self.payment_for_years:
+            years_list = [
+                int(year)
+                for year in self.payment_for_years
+                if year != "deferred" and year != "arrears"
+            ]
+            for year in years_list:
+                ScaleOfAssessment.objects.filter(
+                    version__replenishment__start_year__lte=year,
+                    version__replenishment__end_year__gte=year,
+                    version__is_final=True,
+                    country=payment.country,
+                ).update(opted_for_ferm=is_ferm)
+
         headers = self.get_success_headers(serializer.data)
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
@@ -1695,6 +1717,8 @@ class ReplenishmentPaymentViewSet(
     @transaction.atomic
     def update(self, request, *args, **kwargs):
         current_obj = self.get_object()
+
+        is_ferm = self._parse_is_ferm_flag(request)
 
         new_files = self._parse_payment_new_files(request)
         files_to_delete = json.loads(request.data.get("deleted_files", "[]"))
@@ -1710,6 +1734,21 @@ class ReplenishmentPaymentViewSet(
 
         # And delete the ones that need to be deleted
         current_obj.payment_files.filter(id__in=files_to_delete).delete()
+
+        # And finally set the ScaleOfAssessment if all needed fields are specified
+        if is_ferm is not None and current_obj.payment_for_years:
+            years_list = [
+                int(year)
+                for year in current_obj.payment_for_years
+                if year != "deferred" and year != "arrears"
+            ]
+            for year in years_list:
+                ScaleOfAssessment.objects.filter(
+                    version__replenishment__start_year__lte=year,
+                    version__replenishment__end_year__gte=year,
+                    version__is_final=True,
+                    country=current_obj.country,
+                ).update(opted_for_ferm=is_ferm)
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
