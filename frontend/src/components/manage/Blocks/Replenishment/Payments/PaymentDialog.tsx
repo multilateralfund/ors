@@ -191,8 +191,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
     function () {
       if (
         fields.invoices.length > 0
-        //TODO: how will the system treat this?
-        //&& fields.payment_for_year.toLowerCase() !== 'arrears'
+        && (fields.payment_for_years.includes('arrears') || fields.payment_for_years.includes('Arrears') || fields.payment_for_years.includes('deferred') || fields.payment_for_years.includes('Deferred'))
       ) {
         setFields(function (prev) {
           return {
