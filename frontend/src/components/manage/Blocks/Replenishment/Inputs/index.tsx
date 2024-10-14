@@ -62,7 +62,20 @@ export function Field(props: IFieldProps) {
     </div>
   )
 }
+export function FieldTextLine(props: { label: string; text: string }) {
+  const { label, text } = props
 
+  return (
+    <div className="my-2 flex items-center">
+      <label className="inline-block w-48">{label}</label>
+      <Input
+        className="border-transparent !px-0"
+        readOnly={true}
+        value={text}
+      />
+    </div>
+  )
+}
 export function FieldSelect(props: IFieldProps & ISingleSelectProps) {
   const { id, children, label, ...rest } = props
   return (

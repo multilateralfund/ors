@@ -79,7 +79,7 @@ function ReplenishmentLayoutContent(props: PropsWithChildren) {
   return (
     <>
       <div className="flex w-[96vw] flex-wrap-reverse items-center justify-between lg:w-full lg:flex-nowrap print:hidden">
-        <div className="overflow-scroll">
+        <div className="overflow-x-auto">
           <nav className="flex items-center gap-4">{navLinks}</nav>
         </div>
         <div id="replenishment-tab-buttons" className="self-end"></div>

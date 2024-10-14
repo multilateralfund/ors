@@ -192,6 +192,15 @@ function InvoicesView() {
       ? ''
       : entry.exchange_rate
 
+    if (entry.is_ferm === 'false') {
+      entry.currency = 'USD'
+    }
+
+    if (entry.year === 'arrears') {
+      entry.year = null
+      entry.is_arrears = true
+    }
+
     let nr_new_files = 0
     const data = new FormData()
 
@@ -273,6 +282,15 @@ function InvoicesView() {
         Number(p.start_year) <= Number(entry.year) &&
         Number(p.end_year) >= Number(entry.year),
     )?.id
+
+    if (entry.is_ferm === 'false') {
+      entry.currency = 'USD'
+    }
+
+    if (entry.year === 'arrears') {
+      entry.year = null
+      entry.is_arrears = true
+    }
 
     let nr_new_files = 0
     const data = new FormData()
@@ -537,6 +555,7 @@ function InvoicesView() {
               Status
             </option>
             <option value="paid">Paid</option>
+            <option value="partially_paid">Partially paid</option>
             <option value="pending">Pending</option>
             <option value="not_issued">Not issued</option>
           </Select>

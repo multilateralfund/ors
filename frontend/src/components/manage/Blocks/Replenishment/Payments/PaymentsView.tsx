@@ -211,6 +211,12 @@ function PaymentsView() {
       entry.payment_for_years = payment_for_years
     }
 
+    if (entry?.is_ferm) {
+      entry.is_ferm = 'true'
+    } else {
+      entry.is_ferm = 'false'
+    }
+
     let nr_new_files = 0
     const data = new FormData()
 
@@ -303,6 +309,12 @@ function PaymentsView() {
       entry.payment_for_years = payment_for_years
     }
 
+    if (entry?.is_ferm) {
+      entry.is_ferm = 'true'
+    } else {
+      entry.is_ferm = 'false'
+    }
+
     let nr_new_files = 0
     const data = new FormData()
 
@@ -343,6 +355,8 @@ function PaymentsView() {
 
     try {
       const csrftoken = Cookies.get('csrftoken')
+
+      console.log('is_ferm', data.get('is_ferm'))
       await fetchWithHandling(
         formatApiUrl('api/replenishment/payments/'),
         {

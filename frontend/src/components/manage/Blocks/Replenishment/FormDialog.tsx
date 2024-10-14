@@ -15,7 +15,12 @@ const FormDialog = function FormDialog(props: FormDialogProps) {
   const formRef = useRef<HTMLFormElement>(null)
 
   useEffect(() => {
+    // Inert is used to prevent initial focus on the first field of the dialog,
+    // apparently it's an accessibility no-no, but it's the simplest way.
+    // This is mostly needed for dialogs that have a SearchableSelect initial field.
+    dialogRef.current?.setAttribute('inert', 'true')
     dialogRef.current?.showModal()
+    dialogRef.current?.removeAttribute('inert')
     const bodyOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     return () => {
