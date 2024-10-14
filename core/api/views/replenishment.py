@@ -1678,10 +1678,15 @@ class ReplenishmentPaymentViewSet(
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         files = self._parse_payment_new_files(request)
+        # request.data is not mutable and we need to perform some boolean-string magic
+        # for the is_ferm field, because we receive it from a forn.
+        request_data = request.data.copy()
 
         is_ferm = self._parse_is_ferm_flag(request)
+        if is_ferm is not None:
+            request_data["is_ferm"] = is_ferm
 
-        serializer = PaymentCreateSerializer(data=request.data)
+        serializer = PaymentCreateSerializer(data=request_data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1716,13 +1721,18 @@ class ReplenishmentPaymentViewSet(
     def update(self, request, *args, **kwargs):
         current_obj = self.get_object()
 
+        # request.data is not mutable and we need to perform some string-bollean magic
+        # for the is_ferm field, because we receive it from a forn.
+        request_data = request.data.copy()
         is_ferm = self._parse_is_ferm_flag(request)
+        if is_ferm is not None:
+            request_data["is_ferm"] = is_ferm
 
         new_files = self._parse_payment_new_files(request)
         files_to_delete = json.loads(request.data.get("deleted_files", "[]"))
 
         # First perform the update for the Payment fields
-        serializer = PaymentCreateSerializer(current_obj, data=request.data)
+        serializer = PaymentCreateSerializer(current_obj, data=request_data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         self.perform_update(serializer)

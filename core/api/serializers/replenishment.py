@@ -351,6 +351,7 @@ class PaymentSerializer(serializers.ModelSerializer):
             "id",
             "country",
             "replenishment",
+            "is_ferm",
             "date",
             "payment_for_years",
             "amount",
@@ -381,6 +382,7 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False,
     )
+    is_ferm = serializers.BooleanField(allow_null=True)
 
     amount = serializers.DecimalField(
         max_digits=30, decimal_places=15, coerce_to_string=False
@@ -409,6 +411,7 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
             "replenishment_id",
             "date",
             "payment_for_years",
+            "is_ferm",
             "amount",
             "currency",
             "exchange_rate",

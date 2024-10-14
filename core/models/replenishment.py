@@ -123,9 +123,9 @@ class ScaleOfAssessment(models.Model):
         if un_assessment_sum is None:
             return None
 
-        return (
-            self.un_scale_of_assessment / un_assessment_sum
-        ) * (Decimal("100") - US_SCALE_OF_ASSESSMENT)
+        return (self.un_scale_of_assessment / un_assessment_sum) * (
+            Decimal("100") - US_SCALE_OF_ASSESSMENT
+        )
 
     @property
     def qualifies_for_fixed_rate_mechanism(self):
@@ -250,6 +250,8 @@ class Payment(models.Model):
         Replenishment, on_delete=models.PROTECT, related_name="payments", null=True
     )
     invoices = models.ManyToManyField(Invoice, related_name="payments", blank=True)
+
+    is_ferm = models.BooleanField(default=False)
 
     date = models.DateField()
     payment_for_years = fields.ArrayField(models.CharField(max_length=10), default=list)
