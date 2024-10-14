@@ -899,12 +899,25 @@ class StatisticsStatusOfContributionsAggregator:
         )
 
     def get_external_income_data(self):
-        return ExternalIncomeAnnual.objects.values(
-            "year",
-            "triennial_start_year",
-            "interest_earned",
-            "miscellaneous_income",
-        ).order_by("triennial_start_year", "year")
+        # ExternalIncomeAnnual can now hold triennial, annual and even quarterly data
+        # This aggregator requires triennial aggregation, so we need to adjust the
+        # values.
+        ret = []
+        triennials = list(
+            TriennialContributionStatus.objects.values_list("start_year", "end_year")
+            .distinct()
+            .order_by("start_year")
+        )
+        for start_year, end_year in triennials:
+            results = ExternalIncomeAnnual.objects.filter(
+                models.Q(triennial_start_year=start_year)
+                | (models.Q(year__gte=start_year) & models.Q(year__lte=end_year))
+            ).aggregate(
+                interest_earned=models.Sum("interest_earned", default=0),
+                miscellaneous_income=models.Sum("miscellaneous_income", default=0),
+            )
+            ret.append({"start_year": start_year, **results})
+        return ret
 
 
 def add_period_status_of_contributions_response_worksheet(
