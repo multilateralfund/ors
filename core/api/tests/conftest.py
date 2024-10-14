@@ -78,6 +78,11 @@ def agency():
     return AgencyFactory.create(name="Agency", code="AG")
 
 
+@pytest.fixture(name="new_agency")
+def _new_agency():
+    return AgencyFactory.create(name="Agency2", code="AG2")
+
+
 @pytest.fixture
 def agency_user(agency):
     return UserFactory(user_type="agency_submitter", agency=agency)
@@ -766,3 +771,57 @@ def setup_old_version_2005(
 @pytest.fixture
 def comment_type():
     return CommentTypeFactory(name="Sector & Subsector")
+
+
+@pytest.fixture(name="_setup_bp_activity_create")
+def setup_bp_activity_create(
+    country_ro,
+    sector,
+    subsector,
+    project_type,
+    bp_chemical_type,
+    project_cluster_kpp,
+    substance,
+):
+    return {
+        "initial_id": 1,
+        "title": "Planu",
+        "country_id": country_ro.id,
+        "lvc_status": "LVC",
+        "project_type_id": project_type.id,
+        "project_type_code": project_type.code,
+        "bp_chemical_type_id": bp_chemical_type.id,
+        "project_cluster_id": project_cluster_kpp.id,
+        "substances": [substance.id],
+        "sector_id": sector.id,
+        "sector_code": sector.code,
+        "subsector_id": subsector.id,
+        "status": "A",
+        "is_multi_year": False,
+        "reason_for_exceeding": "Planu, planu, planu, planu, planu",
+        "remarks": "Merge bine, bine, bine ca aeroplanu",
+        "remarks_additional": "Poate si la anu / Daca merge bine planu stau ca barosanu.",
+        "values": [
+            {
+                "year": 2020,
+                "is_after": False,
+                "value_usd": 100,
+                "value_odp": 100,
+                "value_mt": 100,
+            },
+            {
+                "year": 2021,
+                "is_after": False,
+                "value_usd": 200,
+                "value_odp": 200,
+                "value_mt": 200,
+            },
+            {
+                "year": 2021,
+                "is_after": True,
+                "value_usd": 300,
+                "value_odp": 300,
+                "value_mt": 300,
+            },
+        ],
+    }

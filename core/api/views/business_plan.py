@@ -18,6 +18,7 @@ from rest_framework.response import Response
 from core.api.export.base import configure_sheet_print
 from core.api.export.business_plan import BusinessPlanWriter
 from core.api.filters.business_plan import (
+    BPActivityFilter,
     BPActivityListFilter,
     BPChemicalTypeFilter,
     BPFilterBackend,
@@ -707,14 +708,39 @@ class BPFileDownloadView(generics.RetrieveAPIView):
 
 class BPActivityDiffView(mixins.ListModelMixin, generics.GenericAPIView):
     permission_classes = [IsSecretariat | IsAgency | IsViewer]
+    filterset_class = BPActivityFilter
+    queryset = BPActivity.objects.all()
 
-    def diff_activities(self, data, data_old, fields):
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.OrderingFilter,
+        filters.SearchFilter,
+    ]
+    search_fields = ["title", "comment_secretariat"]
+    ordering = ["title", "country", "id"]
+    ordering_fields = ["business_plan__agency__name"] + BPACTIVITY_ORDERING_FIELDS
+
+    def diff_activities(self, activities, old_activities, fields, agency_id):
         diff_data = []
         values_fields = ["value_usd", "value_odp", "value_mt"]
+
+        activities_filtered = self.filter_queryset(activities).values_list(
+            "id", flat=True
+        )
+        old_activities_filtered = self.filter_queryset(old_activities).values_list(
+            "id", flat=True
+        )
+
+        data = BPActivityDetailSerializer(activities, many=True).data
+        data_old = BPActivityDetailSerializer(old_activities, many=True).data
         activities_old = {activity["initial_id"]: activity for activity in data_old}
 
         for activity in data:
             activity_old = activities_old.pop(activity["initial_id"], None)
+
+            # check if new activity passes the filter
+            if activity["id"] not in activities_filtered:
+                continue
 
             # Prepare data for comparison
             delete_fields(activity, ["id", "is_updated"])
@@ -730,6 +756,7 @@ class BPActivityDiffView(mixins.ListModelMixin, generics.GenericAPIView):
                 # Only display newly-added or changed activities
                 continue
             copy_fields(activity, activity_old, fields)
+            activity["agency_id"] = agency_id
             activity["change_type"] = "changed" if activity_old else "new"
 
             # Also copy nested values
@@ -747,13 +774,46 @@ class BPActivityDiffView(mixins.ListModelMixin, generics.GenericAPIView):
             diff_data.append(activity)
 
         for activity in activities_old.values():
+            # check if old activity passes the filter
+            if activity["id"] not in old_activities_filtered:
+                continue
+
             rename_fields(activity, fields)
             for value in activity.get("values", []):
                 rename_fields(value, values_fields)
+
+            activity["agency_id"] = agency_id
             activity["change_type"] = "deleted"
             diff_data.append(activity)
 
         return diff_data
+
+    def create_diff_list(self, business_plans, business_plans_ar):
+        ret_diff_list = []
+        business_plans_ar_dict = {
+            (bp.agency_id, bp.version): bp for bp in business_plans_ar
+        }
+
+        fields = BPActivityDetailSerializer.Meta.fields.copy()
+        for field in ("id", "initial_id", "is_updated", "values"):
+            fields.remove(field)
+
+        for business_plan in business_plans:
+            version = business_plan.version - 1
+            agency_id = business_plan.agency_id
+            business_plan_ar = business_plans_ar_dict.get((agency_id, version))
+
+            if not business_plan_ar:
+                continue
+
+            activities = business_plan.activities.all()
+            old_activities = business_plan_ar.activities.all()
+
+            ret_diff_list += self.diff_activities(
+                activities, old_activities, fields, agency_id
+            )
+
+        return ret_diff_list
 
     @swagger_auto_schema(
         manual_parameters=[
@@ -795,18 +855,33 @@ class BPActivityDiffView(mixins.ListModelMixin, generics.GenericAPIView):
             year_end=business_plan.year_end,
         )
 
-        fields = BPActivityDetailSerializer.Meta.fields.copy()
-        for field in ("id", "initial_id", "is_updated", "values"):
-            fields.remove(field)
+        return Response(self.create_diff_list([business_plan], [business_plan_ar]))
 
-        return Response(
-            self.diff_activities(
-                BPActivityDetailSerializer(
-                    business_plan.activities.all(), many=True
-                ).data,
-                BPActivityDetailSerializer(
-                    business_plan_ar.activities.all(), many=True
-                ).data,
-                fields,
+
+class BPActivityDiffAllView(BPActivityDiffView):
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "year_start",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
             ),
+            openapi.Parameter(
+                "year_end",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+            ),
+        ],
+    )
+    def get(self, request, *args, **kwargs):
+        business_plans = BusinessPlan.objects.get_latest().filter(
+            year_start=request.query_params.get("year_start"),
+            year_end=request.query_params.get("year_end"),
         )
+        business_plans_ar = BusinessPlan.objects.filter(
+            year_start=request.query_params.get("year_start"),
+            year_end=request.query_params.get("year_end"),
+            is_latest=False,
+        )
+
+        return Response(self.create_diff_list(business_plans, business_plans_ar))
