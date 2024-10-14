@@ -5,7 +5,11 @@ import {
   INumberInputProps,
   ISelectInputProps,
 } from '../types'
-import { handleInputChange, handleNumberInputChange } from './editHelpers'
+import {
+  handleClearSelect,
+  handleInputChange,
+  handleNumberInputChange,
+} from './editHelpers'
 
 const inputsClassName =
   'placeholder-select !ml-0 focus-visible:outline-none focus-visible:ring-0'
@@ -30,7 +34,7 @@ export const SelectInput = ({
   label,
   options,
   placeholder,
-  setFormState,
+  setFormData,
   value,
 }: ISelectInputProps) => (
   <InputWrapper id={field} label={label}>
@@ -40,7 +44,8 @@ export const SelectInput = ({
       {...(value && { ...{ value } })}
       disabled={!!value}
       hasClear={!value}
-      onChange={(event) => handleInputChange(event, setFormState, field)}
+      onChange={(event) => handleInputChange(event, setFormData, field)}
+      onClear={() => handleClearSelect(setFormData, field)}
     >
       <option value="" disabled hidden>
         {placeholder}
@@ -57,27 +62,26 @@ export const SelectInput = ({
 export const NumberInput = ({
   field,
   label,
-  setFormState,
+  setFormData,
 }: INumberInputProps) => (
   <InputWrapper id={field} label={label}>
     <FormattedNumberInput
       id={field}
       className="!ml-0"
       step="0.01"
-      onChange={(event) => handleNumberInputChange(event, setFormState, field)}
+      onChange={(event) => handleNumberInputChange(event, setFormData, field)}
       onlyNumber
     />
   </InputWrapper>
 )
 
-export const TextareaInput = ({ field, label, setFormState }: IInputProps) => (
+export const TextareaInput = ({ field, label, setFormData }: IInputProps) => (
   <InputWrapper id={field} label={label}>
     <Input
       id={field}
       className="!ml-0"
-      maxLength={255}
       type="text-area"
-      onChange={(event) => handleInputChange(event, setFormState, field)}
+      onChange={(event) => handleInputChange(event, setFormData, field)}
     />
   </InputWrapper>
 )

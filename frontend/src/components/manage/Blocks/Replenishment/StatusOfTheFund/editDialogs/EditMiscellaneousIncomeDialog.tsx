@@ -1,5 +1,10 @@
 import { useState } from 'react'
 
+import { get, isNil, keys, omitBy } from 'lodash'
+import { useSnackbar } from 'notistack'
+
+import { api } from '@ors/helpers'
+
 import FormDialog from '../../FormDialog'
 import { IEditIncomeDialogProps } from '../types'
 import { NumberInput, SelectInput, TextareaInput } from './editInputs'
@@ -8,20 +13,57 @@ const EditMiscellaneousIncomeDialog = (props: IEditIncomeDialogProps) => {
   const {
     agencyOptions,
     allocations,
+    invalidateDataFn,
     meetingOptions,
+    onCancel,
     yearOptions,
     ...dialogProps
   } = props
 
-  const [formState, setFormState] = useState({})
+  const { enqueueSnackbar } = useSnackbar()
+
+  const [formData, setFormData] = useState({})
 
   const handleEditMiscellaneousIncomeSubmit = () => {
-    console.log({ formState })
+    let formattedData = { ...formData }
+
+    keys(formData).map((key) => {
+      const value = get(formData, key)
+
+      formattedData = {
+        ...formattedData,
+        [key]: !!value
+          ? ['meeting', 'year'].includes(key)
+            ? parseInt(value)
+            : value
+          : null,
+      }
+    })
+
+    const cleanData = omitBy(formattedData, isNil)
+
+    console.log({ cleanData })
+
+    api('api/replenishment/external-income/', {
+      data: cleanData,
+      method: 'POST',
+    })
+      .then(() => {
+        invalidateDataFn({
+          cache_bust: crypto.randomUUID(),
+        })
+        enqueueSnackbar('Data updated successfully', { variant: 'success' })
+        onCancel()
+      })
+      .catch(() => {
+        enqueueSnackbar('Failed to update data', { variant: 'error' })
+      })
   }
 
   return (
     <FormDialog
       title="Miscellaneous income:"
+      onCancel={onCancel}
       onSubmit={handleEditMiscellaneousIncomeSubmit}
       {...dialogProps}
     >
@@ -32,27 +74,27 @@ const EditMiscellaneousIncomeDialog = (props: IEditIncomeDialogProps) => {
             label="Year"
             options={yearOptions}
             placeholder="Select year"
-            setFormState={setFormState}
+            setFormData={setFormData}
           />
           <SelectInput
-            field="meeting_number"
+            field="meeting"
             label="Meeting number"
             options={meetingOptions}
             placeholder="Select meeting number"
-            setFormState={setFormState}
+            setFormData={setFormData}
           />
         </div>
         <div className="flex flex-col gap-y-4">
           <div className="flex gap-x-4">
             <NumberInput
-              field="interest_earned"
+              field="miscellaneous_income"
               label="Amount"
-              setFormState={setFormState}
+              setFormData={setFormData}
             />
             <TextareaInput
               field={'comment'}
               label={'Comment'}
-              setFormState={setFormState}
+              setFormData={setFormData}
             />
           </div>
         </div>

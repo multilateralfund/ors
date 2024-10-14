@@ -247,10 +247,15 @@ function StatusOfTheFundWrapper() {
   }))
   const meetingOptions = reverse(formattedMeetings)
   const agencies = omit(allocations, 'total')
-  const agencyOptions = keys(agencies).map((agency: any) => ({
-    label: get(agencies, agency).label,
-    value: agency,
-  }))
+  const agencyOptions = keys(agencies).map((agency: any) => {
+    const agencyName = get(agencies, agency).label
+
+    return {
+      id: agency,
+      label: agencyName,
+      value: agencyName,
+    }
+  })
   const yearOptions = scAnnualOptions(ctx.periods)
 
   const editableFields = [
@@ -260,6 +265,7 @@ function StatusOfTheFundWrapper() {
           agency={allocation}
           agencyOptions={agencyOptions}
           allocations={allocations}
+          invalidateDataFn={invalidateDataFn}
           meetingOptions={meetingOptions}
           yearOptions={yearOptions}
           onCancel={handleEditCancel}
@@ -272,6 +278,7 @@ function StatusOfTheFundWrapper() {
         <EditInterestEarnedDialog
           agencyOptions={agencyOptions}
           allocations={allocations}
+          invalidateDataFn={invalidateDataFn}
           meetingOptions={meetingOptions}
           yearOptions={yearOptions}
           onCancel={handleEditCancel}
@@ -284,6 +291,7 @@ function StatusOfTheFundWrapper() {
         <EditMiscellaneousIncomeDialog
           agencyOptions={agencyOptions}
           allocations={allocations}
+          invalidateDataFn={invalidateDataFn}
           meetingOptions={meetingOptions}
           yearOptions={yearOptions}
           onCancel={handleEditCancel}

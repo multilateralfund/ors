@@ -3,11 +3,16 @@ import { ChangeEvent, Dispatch, ReactNode, SetStateAction } from 'react'
 import { IALLOCATIONS, IFormData } from '../Dashboard/useGetDashboardDataTypes'
 import { IFieldProps } from '../Inputs'
 
-export type InputOptionsType = Array<{ label: string; value: string }>
+export type InputOptionsType = Array<{
+  id?: string
+  label: string
+  value: string
+}>
 
 export interface IEditIncomeDialogProps extends React.PropsWithChildren {
   agencyOptions: InputOptionsType
   allocations: IALLOCATIONS
+  invalidateDataFn: any
   meetingOptions: InputOptionsType
   onCancel: () => void
   yearOptions: InputOptionsType
@@ -30,7 +35,7 @@ export interface IInputWrapper extends IFieldProps {
 export interface IInputProps {
   field: string
   label: string
-  setFormState: Dispatch<SetStateAction<any>>
+  setFormData: Dispatch<SetStateAction<any>>
 }
 
 export interface INumberInputProps extends IInputProps {
@@ -43,10 +48,14 @@ export interface ISelectInputProps extends IInputProps {
   value?: string
 }
 
+export interface IHandleClearInputChange {
+  (setFormData: Dispatch<SetStateAction<any>>, name: string): void
+}
+
 export interface IHandleInputChange {
   (
     evt: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-    setFormState: Dispatch<SetStateAction<any>>,
+    setFormData: Dispatch<SetStateAction<any>>,
     name: string,
   ): void
 }

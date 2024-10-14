@@ -47,7 +47,7 @@ export default function Select(props: ISingleSelectProps) {
   const withClear = hasClear && value
 
   return (
-    <div className="relative flex flex-1">
+    <div className="max-h-100 relative flex flex-1">
       <select
         id={id}
         name={name || id}

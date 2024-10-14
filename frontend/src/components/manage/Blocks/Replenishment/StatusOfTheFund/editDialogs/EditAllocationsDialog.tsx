@@ -1,6 +1,9 @@
 import { useState } from 'react'
 
-import { find } from 'lodash'
+import { find, get, isNil, keys, omitBy } from 'lodash'
+import { useSnackbar } from 'notistack'
+
+import { api } from '@ors/helpers'
 
 import FormDialog from '../../FormDialog'
 import { IEditAllocationsProps } from '../types'
@@ -11,44 +14,83 @@ const EditAllocationsDialog = (props: IEditAllocationsProps) => {
     agency,
     agencyOptions,
     allocations,
+    invalidateDataFn,
     meetingOptions,
+    onCancel,
     yearOptions,
     ...dialogProps
   } = props
 
-  const [formState, setFormState] = useState({ agency: agency })
+  const { enqueueSnackbar } = useSnackbar()
 
   const currentAgency = find(
     agencyOptions,
-    (agencyOpt) => agencyOpt.value === agency,
+    (agencyOpt) => agencyOpt.id === agency,
   )
 
+  const [formData, setFormData] = useState({
+    agency_name: currentAgency?.value,
+  })
+
   const handleEditAllocationsSubmit = () => {
-    console.log({ formState })
+    let formattedData = { ...formData }
+
+    keys(formData).map((key) => {
+      const value = get(formData, key)
+
+      formattedData = {
+        ...formattedData,
+        [key]: !!value
+          ? ['meeting', 'year'].includes(key)
+            ? parseInt(value)
+            : value
+          : null,
+      }
+    })
+
+    const cleanData = omitBy(formattedData, isNil)
+
+    console.log({ cleanData })
+
+    api('api/replenishment/external-allocations/', {
+      data: cleanData,
+      method: 'POST',
+    })
+      .then(() => {
+        invalidateDataFn({
+          cache_bust: crypto.randomUUID(),
+        })
+        enqueueSnackbar('Data updated successfully', { variant: 'success' })
+        onCancel()
+      })
+      .catch(() => {
+        enqueueSnackbar('Failed to update data', { variant: 'error' })
+      })
   }
 
   return (
     <FormDialog
       title={currentAgency?.label || ''}
+      onCancel={onCancel}
       onSubmit={handleEditAllocationsSubmit}
       {...dialogProps}
     >
       <div className="flex flex-col gap-y-4">
         <div className="flex gap-x-4">
           <SelectInput
-            field="agency"
+            field="agency_name"
             label="Agency"
             options={agencyOptions}
             placeholder="Select agency"
-            setFormState={setFormState}
+            setFormData={setFormData}
             value={currentAgency?.value}
           />
           <SelectInput
-            field="meeting_number"
+            field="meeting"
             label="Meeting number"
             options={meetingOptions}
             placeholder="Select meeting number"
-            setFormState={setFormState}
+            setFormData={setFormData}
           />
         </div>
         <div className="flex flex-col gap-y-4">
@@ -58,12 +100,12 @@ const EditAllocationsDialog = (props: IEditAllocationsProps) => {
               label="Year"
               options={yearOptions}
               placeholder="Select year"
-              setFormState={setFormState}
+              setFormData={setFormData}
             />
             <NumberInput
-              field="interest_earned"
+              field={agency}
               label="Amount"
-              setFormState={setFormState}
+              setFormData={setFormData}
             />
           </div>
         </div>
@@ -72,7 +114,7 @@ const EditAllocationsDialog = (props: IEditAllocationsProps) => {
             <TextareaInput
               field="comment"
               label="Comment"
-              setFormState={setFormState}
+              setFormData={setFormData}
             />
           </div>
         </div>

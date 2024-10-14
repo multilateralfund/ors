@@ -1,4 +1,4 @@
-import { IHandleInputChange } from '../types'
+import { IHandleClearInputChange, IHandleInputChange } from '../types'
 
 export const handleInputChange: IHandleInputChange = (
   evt,
@@ -14,8 +14,17 @@ export const handleNumberInputChange: IHandleInputChange = (
   setFormState,
   name,
 ) => {
-  const value = parseFloat(evt.target.value)
-  if (evt.target.value === '' || (typeof value === 'number' && !isNaN(value))) {
+  const value = evt.target.value
+  const parsedValue = parseFloat(value)
+  if (
+    value === '' ||
+    (typeof parsedValue === 'number' && !isNaN(parsedValue))
+  ) {
     setFormState((prev: any) => ({ ...prev, [name]: value }))
   }
 }
+
+export const handleClearSelect: IHandleClearInputChange = (
+  setFormState,
+  name,
+) => setFormState((prev: any) => ({ ...prev, [name]: null }))

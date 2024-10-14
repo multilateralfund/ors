@@ -1,5 +1,10 @@
 import { useState } from 'react'
 
+import { get, isNil, keys, omitBy } from 'lodash'
+import { useSnackbar } from 'notistack'
+
+import { api } from '@ors/helpers'
+
 import FormDialog from '../../FormDialog'
 import { quarterOptions } from '../constants'
 import { IEditIncomeDialogProps } from '../types'
@@ -9,38 +14,75 @@ const EditInterestEarnedDialog = (props: IEditIncomeDialogProps) => {
   const {
     agencyOptions,
     allocations,
+    invalidateDataFn,
     meetingOptions,
+    onCancel,
     yearOptions,
     ...dialogProps
   } = props
 
-  const [formState, setFormState] = useState({})
+  const { enqueueSnackbar } = useSnackbar()
+
+  const [formData, setFormData] = useState({})
 
   const handleEditInterestEarnedSubmit = () => {
-    console.log({ formState })
+    let formattedData = { ...formData }
+
+    keys(formData).map((key) => {
+      const value = get(formData, key)
+
+      formattedData = {
+        ...formattedData,
+        [key]: !!value
+          ? ['meeting', 'quarter', 'year'].includes(key)
+            ? parseInt(value)
+            : value
+          : null,
+      }
+    })
+
+    const cleanData = omitBy(formattedData, isNil)
+
+    console.log({ cleanData })
+
+    api('api/replenishment/external-income/', {
+      data: cleanData,
+      method: 'POST',
+    })
+      .then(() => {
+        invalidateDataFn({
+          cache_bust: crypto.randomUUID(),
+        })
+        enqueueSnackbar('Data updated successfully', { variant: 'success' })
+        onCancel()
+      })
+      .catch(() => {
+        enqueueSnackbar('Failed to update data', { variant: 'error' })
+      })
   }
 
   return (
     <FormDialog
       title="Interest earned:"
+      onCancel={onCancel}
       onSubmit={handleEditInterestEarnedSubmit}
       {...dialogProps}
     >
       <div className="flex flex-col gap-y-4">
         <div className="flex gap-x-4">
           <SelectInput
-            field="agency"
+            field="agency_name"
             label="Agency"
             options={agencyOptions}
             placeholder="Select agency"
-            setFormState={setFormState}
+            setFormData={setFormData}
           />
           <SelectInput
             field="year"
             label="Year"
             options={yearOptions}
             placeholder="Select year"
-            setFormState={setFormState}
+            setFormData={setFormData}
           />
         </div>
         <div className="flex flex-col gap-y-4">
@@ -50,14 +92,14 @@ const EditInterestEarnedDialog = (props: IEditIncomeDialogProps) => {
               label="Quarter"
               options={quarterOptions}
               placeholder="Select quarter"
-              setFormState={setFormState}
+              setFormData={setFormData}
             />
             <SelectInput
-              field="meeting_number"
+              field="meeting"
               label="Meeting number"
               options={meetingOptions}
               placeholder="Select meeting number"
-              setFormState={setFormState}
+              setFormData={setFormData}
             />
           </div>
         </div>
@@ -66,12 +108,12 @@ const EditInterestEarnedDialog = (props: IEditIncomeDialogProps) => {
             <TextareaInput
               field="comment"
               label="Comment"
-              setFormState={setFormState}
+              setFormData={setFormData}
             />
             <NumberInput
               field="interest_earned"
               label="Amount"
-              setFormState={setFormState}
+              setFormData={setFormData}
             />
           </div>
         </div>
