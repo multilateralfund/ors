@@ -916,7 +916,7 @@ class StatisticsStatusOfContributionsAggregator:
                 interest_earned=models.Sum("interest_earned", default=0),
                 miscellaneous_income=models.Sum("miscellaneous_income", default=0),
             )
-            ret.append({"start_year": start_year, **results})
+            ret.append({"start_year": start_year, "end_year": end_year, **results})
         return ret
 
 
