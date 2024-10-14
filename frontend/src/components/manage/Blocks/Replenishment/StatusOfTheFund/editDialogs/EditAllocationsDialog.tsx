@@ -11,7 +11,7 @@ const EditAllocationsDialog = (props: IEditAllocationsProps) => {
     agency,
     agencyOptions,
     allocations,
-    data,
+    meetingOptions,
     yearOptions,
     ...dialogProps
   } = props
@@ -43,10 +43,11 @@ const EditAllocationsDialog = (props: IEditAllocationsProps) => {
             setFormState={setFormState}
             value={currentAgency?.value}
           />
-          <NumberInput
+          <SelectInput
             field="meeting_number"
             label="Meeting number"
-            min="0"
+            options={meetingOptions}
+            placeholder="Select meeting number"
             setFormState={setFormState}
           />
         </div>

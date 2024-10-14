@@ -39,8 +39,8 @@ export const SelectInput = ({
       className={inputsClassName}
       {...(value && { ...{ value } })}
       disabled={!!value}
+      hasClear={!value}
       onChange={(event) => handleInputChange(event, setFormState, field)}
-      hasClear
     >
       <option value="" disabled hidden>
         {placeholder}
@@ -58,15 +58,14 @@ export const NumberInput = ({
   field,
   label,
   setFormState,
-  ...rest
 }: INumberInputProps) => (
   <InputWrapper id={field} label={label}>
     <FormattedNumberInput
       id={field}
       className="!ml-0"
+      step="0.01"
       onChange={(event) => handleNumberInputChange(event, setFormState, field)}
       onlyNumber
-      {...rest}
     />
   </InputWrapper>
 )

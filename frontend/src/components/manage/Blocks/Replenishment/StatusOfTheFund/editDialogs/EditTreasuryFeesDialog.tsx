@@ -1,28 +1,23 @@
 import { useState } from 'react'
 
 import FormDialog from '../../FormDialog'
-import { IEditIncomeDialogProps } from '../types'
+import { IEditStaffContractsProps } from '../types'
 import { NumberInput, SelectInput, TextareaInput } from './editInputs'
 
-const EditMiscellaneousIncomeDialog = (props: IEditIncomeDialogProps) => {
-  const {
-    agencyOptions,
-    allocations,
-    meetingOptions,
-    yearOptions,
-    ...dialogProps
-  } = props
+const EditTreasuryFeesDialog = (props: IEditStaffContractsProps) => {
+  const { meetingOptions, yearOptions, ...dialogProps } = props
+  const currentYear = new Date().getFullYear()
 
   const [formState, setFormState] = useState({})
 
-  const handleEditMiscellaneousIncomeSubmit = () => {
+  const handleEditTreasuryFeesSubmit = () => {
     console.log({ formState })
   }
 
   return (
     <FormDialog
-      title="Miscellaneous income:"
-      onSubmit={handleEditMiscellaneousIncomeSubmit}
+      title="Treasury fees:"
+      onSubmit={handleEditTreasuryFeesSubmit}
       {...dialogProps}
     >
       <div className="flex flex-col gap-y-4">
@@ -45,8 +40,22 @@ const EditMiscellaneousIncomeDialog = (props: IEditIncomeDialogProps) => {
         <div className="flex flex-col gap-y-4">
           <div className="flex gap-x-4">
             <NumberInput
-              field="interest_earned"
-              label="Amount"
+              field={`budget_${currentYear + 1}`}
+              label={`Budget for ${currentYear + 1}`}
+              setFormState={setFormState}
+            />
+            <NumberInput
+              field={`budget_${currentYear + 2}`}
+              label={`Budget for ${currentYear + 2}`}
+              setFormState={setFormState}
+            />
+          </div>
+        </div>
+        <div className="flex flex-col gap-y-4">
+          <div className="flex gap-x-4">
+            <NumberInput
+              field={`budget_${currentYear + 3}`}
+              label={`Budget for ${currentYear + 3}`}
               setFormState={setFormState}
             />
             <TextareaInput
@@ -61,4 +70,4 @@ const EditMiscellaneousIncomeDialog = (props: IEditIncomeDialogProps) => {
   )
 }
 
-export default EditMiscellaneousIncomeDialog
+export default EditTreasuryFeesDialog

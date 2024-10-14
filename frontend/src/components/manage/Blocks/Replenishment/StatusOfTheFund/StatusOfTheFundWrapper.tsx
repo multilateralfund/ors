@@ -3,7 +3,7 @@
 import { ChangeEvent, useContext, useState } from 'react'
 
 import cx from 'classnames'
-import { get, keys, omit } from 'lodash'
+import { get, keys, omit, reverse } from 'lodash'
 import { useSnackbar } from 'notistack'
 
 import useGetDashboardData from '@ors/components/manage/Blocks/Replenishment/Dashboard/useGetDashboardData'
@@ -15,6 +15,7 @@ import {
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { api } from '@ors/helpers'
+import { useStore } from '@ors/store'
 
 import { IFormData } from '../Dashboard/useGetDashboardDataTypes'
 import { scAnnualOptions } from '../StatusOfContribution/utils'
@@ -23,6 +24,9 @@ import { allocationsOrder } from './constants'
 import EditAllocationsDialog from './editDialogs/EditAllocationsDialog'
 import EditInterestEarnedDialog from './editDialogs/EditInterestEarnedDialog'
 import EditMiscellaneousIncomeDialog from './editDialogs/EditMiscellaneousIncomeDialog'
+import EditMonitoringFeesDialog from './editDialogs/EditMonitoringFeesDialog'
+import EditStaffContractsDialog from './editDialogs/EditStaffContractsDialog'
+import EditTreasuryFeesDialog from './editDialogs/EditTreasuryFeesDialog'
 
 // function InputNumberField(props: IFieldProps & IFormattedNumberInputProps) {
 //   const { id, className, label, ...fieldProps } = props
@@ -235,22 +239,13 @@ function StatusOfTheFundWrapper() {
       })
   }
 
-  const EditAlloc = () => {
-    return <>Alloc</>
-  }
-
-  const EditStaffContracts = () => {
-    return <>Staff Contracts</>
-  }
-
-  const EditTreasuryFees = () => {
-    return <>Treasury Fees</>
-  }
-
-  const EditMonitoringFees = () => {
-    return <>Monitoring Fees</>
-  }
-
+  const projectSlice = useStore((state) => state.projects)
+  const meetings = projectSlice.meetings.data
+  const formattedMeetings = meetings?.map((meeting: any) => ({
+    label: meeting.number,
+    value: meeting.id,
+  }))
+  const meetingOptions = reverse(formattedMeetings)
   const agencies = omit(allocations, 'total')
   const agencyOptions = keys(agencies).map((agency: any) => ({
     label: get(agencies, agency).label,
@@ -265,7 +260,7 @@ function StatusOfTheFundWrapper() {
           agency={allocation}
           agencyOptions={agencyOptions}
           allocations={allocations}
-          data={formData as IFormData}
+          meetingOptions={meetingOptions}
           yearOptions={yearOptions}
           onCancel={handleEditCancel}
         />
@@ -277,7 +272,7 @@ function StatusOfTheFundWrapper() {
         <EditInterestEarnedDialog
           agencyOptions={agencyOptions}
           allocations={allocations}
-          data={formData as IFormData}
+          meetingOptions={meetingOptions}
           yearOptions={yearOptions}
           onCancel={handleEditCancel}
         />
@@ -289,7 +284,7 @@ function StatusOfTheFundWrapper() {
         <EditMiscellaneousIncomeDialog
           agencyOptions={agencyOptions}
           allocations={allocations}
-          data={formData as IFormData}
+          meetingOptions={meetingOptions}
           yearOptions={yearOptions}
           onCancel={handleEditCancel}
         />
@@ -297,16 +292,34 @@ function StatusOfTheFundWrapper() {
       label: 'miscellaneous_income',
     },
     {
-      component: <EditStaffContracts />,
+      component: (
+        <EditStaffContractsDialog
+          meetingOptions={meetingOptions}
+          yearOptions={yearOptions}
+          onCancel={handleEditCancel}
+        />
+      ),
       label: 'staff_contracts',
     },
 
     {
-      component: <EditTreasuryFees />,
+      component: (
+        <EditTreasuryFeesDialog
+          meetingOptions={meetingOptions}
+          yearOptions={yearOptions}
+          onCancel={handleEditCancel}
+        />
+      ),
       label: 'treasury_fees',
     },
     {
-      component: <EditMonitoringFees />,
+      component: (
+        <EditMonitoringFeesDialog
+          meetingOptions={meetingOptions}
+          yearOptions={yearOptions}
+          onCancel={handleEditCancel}
+        />
+      ),
       label: 'monitoring_fees',
     },
   ]

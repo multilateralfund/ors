@@ -6,8 +6,13 @@ import { IEditIncomeDialogProps } from '../types'
 import { NumberInput, SelectInput, TextareaInput } from './editInputs'
 
 const EditInterestEarnedDialog = (props: IEditIncomeDialogProps) => {
-  const { agencyOptions, allocations, data, yearOptions, ...dialogProps } =
-    props
+  const {
+    agencyOptions,
+    allocations,
+    meetingOptions,
+    yearOptions,
+    ...dialogProps
+  } = props
 
   const [formState, setFormState] = useState({})
 
@@ -47,10 +52,11 @@ const EditInterestEarnedDialog = (props: IEditIncomeDialogProps) => {
               placeholder="Select quarter"
               setFormState={setFormState}
             />
-            <NumberInput
+            <SelectInput
               field="meeting_number"
               label="Meeting number"
-              min="0"
+              options={meetingOptions}
+              placeholder="Select meeting number"
               setFormState={setFormState}
             />
           </div>
