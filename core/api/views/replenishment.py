@@ -1671,10 +1671,9 @@ class ReplenishmentPaymentViewSet(
         is_ferm = request.data.get("is_ferm", None)
         if is_ferm == "true":
             return True
-        elif is_ferm == "false":
+        if is_ferm == "false":
             return False
-        else:
-            return None
+        return None
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
