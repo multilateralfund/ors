@@ -1489,10 +1489,9 @@ class ReplenishmentInvoiceViewSet(
         is_ferm = request.data.get("is_ferm", None)
         if is_ferm == "true":
             return True
-        elif is_ferm == "false":
+        if is_ferm == "false":
             return False
-        else:
-            return None
+        return None
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
@@ -1695,11 +1694,11 @@ class ReplenishmentPaymentViewSet(
         self._create_new_payment_files(payment, files)
 
         # And finally set the ScaleOfAssessment if all needed fields are specified
-        if is_ferm is not None and self.payment_for_years:
+        if is_ferm is not None and payment.payment_for_years:
             years_list = [
                 int(year)
-                for year in self.payment_for_years
-                if year != "deferred" and year != "arrears"
+                for year in payment.payment_for_years
+                if year not in ["deferred", "arrears"]
             ]
             for year in years_list:
                 ScaleOfAssessment.objects.filter(
@@ -1740,7 +1739,7 @@ class ReplenishmentPaymentViewSet(
             years_list = [
                 int(year)
                 for year in current_obj.payment_for_years
-                if year != "deferred" and year != "arrears"
+                if year not in ["deferred", "arrears"]
             ]
             for year in years_list:
                 ScaleOfAssessment.objects.filter(
