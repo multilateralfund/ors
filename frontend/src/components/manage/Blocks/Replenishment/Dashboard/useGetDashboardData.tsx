@@ -102,7 +102,7 @@ function buildProvisions(
     },
     staff_contracts: {
       info_text: `Including provision for staff contracts into ${periodEnd}.`,
-      label: 'Secretariat and Executive Committee (1991-2025)',
+      label: `Secretariat and Executive Committee (1991-${periodEnd})`,
       sub_text: `(inc. provision for staff contracts into ${periodEnd})`,
       value: null,
     },
