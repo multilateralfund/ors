@@ -25,6 +25,27 @@ function StatusOfTheFundWrapper() {
   const ctx = useContext(ReplenishmentContext)
   const { allocations, asOfDate, income, overview, provisions } = newData
 
+  const projectSlice = useStore((state) => state.projects)
+  const meetings = projectSlice.meetings.data
+  const formattedMeetings = meetings?.map((meeting: any) => ({
+    label: meeting.number,
+    value: meeting.id,
+  }))
+  const meetingOptions = reverse(formattedMeetings)
+
+  const agencies = omit(allocations, 'total')
+  const agencyOptions = keys(agencies).map((agency: any) => {
+    const agencyName = get(agencies, agency).label
+
+    return {
+      id: agency,
+      label: agencyName,
+      value: agencyName,
+    }
+  })
+
+  const yearOptions = scAnnualOptions(ctx.periods)
+
   const [editingSection, setEditingSection] = useState<null | string>(null)
 
   const { enqueueSnackbar } = useSnackbar()
@@ -91,35 +112,18 @@ function StatusOfTheFundWrapper() {
       })
   }
 
-  const projectSlice = useStore((state) => state.projects)
-  const meetings = projectSlice.meetings.data
-  const formattedMeetings = meetings?.map((meeting: any) => ({
-    label: meeting.number,
-    value: meeting.id,
-  }))
-  const meetingOptions = reverse(formattedMeetings)
-  const agencies = omit(allocations, 'total')
-  const agencyOptions = keys(agencies).map((agency: any) => {
-    const agencyName = get(agencies, agency).label
-
-    return {
-      id: agency,
-      label: agencyName,
-      value: agencyName,
-    }
-  })
-  const yearOptions = scAnnualOptions(ctx.periods)
-
   const editableFields = [
     ...allocationsOrder.map((allocation) => ({
       component: (
         <EditAllocationsDialog
+          {...{
+            agencyOptions,
+            allocations,
+            handleSubmitEditDialog,
+            meetingOptions,
+            yearOptions,
+          }}
           agency={allocation}
-          agencyOptions={agencyOptions}
-          allocations={allocations}
-          handleSubmitEditDialog={handleSubmitEditDialog}
-          meetingOptions={meetingOptions}
-          yearOptions={yearOptions}
           onCancel={handleEditCancel}
         />
       ),
@@ -128,11 +132,13 @@ function StatusOfTheFundWrapper() {
     {
       component: (
         <EditInterestEarnedDialog
-          agencyOptions={agencyOptions}
-          allocations={allocations}
-          handleSubmitEditDialog={handleSubmitEditDialog}
-          meetingOptions={meetingOptions}
-          yearOptions={yearOptions}
+          {...{
+            agencyOptions,
+            allocations,
+            handleSubmitEditDialog,
+            meetingOptions,
+            yearOptions,
+          }}
           onCancel={handleEditCancel}
         />
       ),
@@ -141,11 +147,13 @@ function StatusOfTheFundWrapper() {
     {
       component: (
         <EditMiscellaneousIncomeDialog
-          agencyOptions={agencyOptions}
-          allocations={allocations}
-          handleSubmitEditDialog={handleSubmitEditDialog}
-          meetingOptions={meetingOptions}
-          yearOptions={yearOptions}
+          {...{
+            agencyOptions,
+            allocations,
+            handleSubmitEditDialog,
+            meetingOptions,
+            yearOptions,
+          }}
           onCancel={handleEditCancel}
         />
       ),
@@ -154,9 +162,7 @@ function StatusOfTheFundWrapper() {
     {
       component: (
         <EditStaffContractsDialog
-          handleSubmitEditDialog={handleSubmitEditDialog}
-          meetingOptions={meetingOptions}
-          yearOptions={yearOptions}
+          {...{ handleSubmitEditDialog, meetingOptions, yearOptions }}
           onCancel={handleEditCancel}
         />
       ),
@@ -166,9 +172,7 @@ function StatusOfTheFundWrapper() {
     {
       component: (
         <EditTreasuryFeesDialog
-          handleSubmitEditDialog={handleSubmitEditDialog}
-          meetingOptions={meetingOptions}
-          yearOptions={yearOptions}
+          {...{ handleSubmitEditDialog, meetingOptions, yearOptions }}
           onCancel={handleEditCancel}
         />
       ),
@@ -177,9 +181,7 @@ function StatusOfTheFundWrapper() {
     {
       component: (
         <EditMonitoringFeesDialog
-          handleSubmitEditDialog={handleSubmitEditDialog}
-          meetingOptions={meetingOptions}
-          yearOptions={yearOptions}
+          {...{ handleSubmitEditDialog, meetingOptions, yearOptions }}
           onCancel={handleEditCancel}
         />
       ),
