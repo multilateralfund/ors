@@ -269,6 +269,9 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
           <option key="arrears" className="text-primary" value="arrears">
             Arrears
           </option>
+          <option key="arrears" className="text-primary" value="deferred">
+            Deferred
+          </option>
           {yearOptions.map((year) => (
             <option key={year.value} className="text-primary" value={year.value}>
               {year.label}
