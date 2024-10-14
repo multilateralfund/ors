@@ -147,7 +147,7 @@ class ExternalAllocationSerializer(serializers.ModelSerializer):
 
     year = serializers.IntegerField(allow_null=True, required=False)
 
-    meeting = serializers.PrimaryKeyRelatedField(
+    meeting_id = serializers.PrimaryKeyRelatedField(
         queryset=Meeting.objects.all().values_list("id", flat=True),
         allow_null=True,
         required=False,
@@ -155,7 +155,20 @@ class ExternalAllocationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ExternalAllocation
-        fields = "__all__"
+        fields = [
+            "is_legacy",
+            "undp",
+            "unep",
+            "unido",
+            "world_bank",
+            "staff_contracts",
+            "treasury_fees",
+            "monitoring_fees",
+            "technical_audit",
+            "information_strategy",
+            "year",
+            "meeting_id",
+        ]
 
 
 class ExternalIncomeAnnualSerializer(serializers.ModelSerializer):
@@ -386,7 +399,8 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
         max_digits=30, decimal_places=15, coerce_to_string=False
     )
     # If not currency is sent, we'll set it to USD
-    currency = serializers.CharField(required=False)
+    currency = serializers.CharField(required=False, allow_null=True)
+
     exchange_rate = serializers.DecimalField(
         max_digits=30,
         decimal_places=15,
