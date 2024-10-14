@@ -1671,9 +1671,7 @@ class ReplenishmentPaymentViewSet(
         is_ferm = request.data.get("is_ferm", None)
         if is_ferm == "true":
             return True
-        if is_ferm == "false":
-            return False
-        return None
+        return False
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
@@ -1683,8 +1681,7 @@ class ReplenishmentPaymentViewSet(
         request_data = request.data.copy()
 
         is_ferm = self._parse_is_ferm_flag(request)
-        if is_ferm is not None:
-            request_data["is_ferm"] = is_ferm
+        request_data["is_ferm"] = is_ferm
 
         serializer = PaymentCreateSerializer(data=request_data)
         if not serializer.is_valid():
@@ -1725,8 +1722,7 @@ class ReplenishmentPaymentViewSet(
         # for the is_ferm field, because we receive it from a forn.
         request_data = request.data.copy()
         is_ferm = self._parse_is_ferm_flag(request)
-        if is_ferm is not None:
-            request_data["is_ferm"] = is_ferm
+        request_data["is_ferm"] = is_ferm
 
         new_files = self._parse_payment_new_files(request)
         files_to_delete = json.loads(request.data.get("deleted_files", "[]"))
