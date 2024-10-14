@@ -43,6 +43,8 @@ from core.api.serializers import (
     DisputedContributionReadSerializer,
     ScaleOfAssessmentExcelExportSerializer,
     EmptyInvoiceSerializer,
+    ExternalAllocationSerializer,
+    ExternalIncomeAnnualSerializer,
 )
 from core.api.utils import workbook_response
 from core.api.views.utils import (
@@ -59,6 +61,7 @@ from core.models import (
     Country,
     DisputedContribution,
     ExternalIncome,
+    ExternalIncomeAnnual,
     ExternalAllocation,
     FermGainLoss,
     Invoice,
@@ -729,17 +732,20 @@ class StatisticsStatusOfContributionsView(views.APIView):
             )
 
         summary_agg = SummaryStatusOfContributionsAggregator()
-        external_income_total = ExternalIncome.objects.aggregate(
-            interest_earned=models.Sum("interest_earned", default=0),
-            miscellaneous_income=models.Sum("miscellaneous_income", default=0),
+        # Interest earned and miscellaneous income are kept in separate models
+        external_income_interest = ExternalIncomeAnnual.objects.aggregate(
+            interest_earned=models.Sum("interest_earned", default=0)
+        )
+        external_income_misc = ExternalIncome.objects.aggregate(
+            miscellaneous_income=models.Sum("miscellaneous_income", default=0)
         )
         totals = {
             "start_year": soc_data[0]["start_year"],
             "end_year": current_year,
             **summary_agg.get_total(),
             "disputed_contributions": summary_agg.get_disputed_contribution_amount(),
-            "interest_earned": external_income_total["interest_earned"],
-            "miscellaneous_income": external_income_total["miscellaneous_income"],
+            "interest_earned": external_income_interest["interest_earned"],
+            "miscellaneous_income": external_income_misc["miscellaneous_income"],
             "outstanding_ceit": summary_agg.get_ceit_data()[
                 "outstanding_contributions"
             ],
@@ -923,11 +929,23 @@ class ReplenishmentDashboardView(views.APIView):
             .order_by("-start_year")
             .first()
         )
-        income = ExternalIncome.objects.aggregate(
-            interest_earned=models.Sum("interest_earned", default=0),
+        income_interest = ExternalIncomeAnnual.objects.aggregate(
+            interest_earned=models.Sum("interest_earned", default=0)
+        )
+        income_misc = ExternalIncome.objects.aggregate(
             miscellaneous_income=models.Sum("miscellaneous_income", default=0),
         )
-        allocations = ExternalAllocation.objects.get()
+        allocations = ExternalAllocation.objects.aggregate(
+            undp=models.Sum("undp", default=0),
+            unep=models.Sum("unep", default=0),
+            unido=models.Sum("unido", default=0),
+            world_bank=models.Sum("world_bank", default=0),
+            staff_contracts=models.Sum("staff_contracts", default=0),
+            treasury_fees=models.Sum("treasury_fees", default=0),
+            monitoring_fees=models.Sum("monitoring_fees", default=0),
+            technical_audit=models.Sum("technical_audit", default=0),
+            information_strategy=models.Sum("information_strategy", default=0),
+        )
 
         computed_summary_data = TriennialContributionStatus.objects.aggregate(
             cash_payments=models.Sum("cash_payments", default=0),
@@ -1006,12 +1024,12 @@ class ReplenishmentDashboardView(views.APIView):
             else config.DEFAULT_REPLENISHMENT_AS_OF_DATE
         )
 
-        external_income = ExternalIncome.objects.values(
-            "start_year",
-            "end_year",
+        external_income = ExternalIncomeAnnual.objects.values(
+            "year",
+            "triennial_start_year",
             "interest_earned",
             "miscellaneous_income",
-        ).order_by("-start_year")
+        ).order_by("-triennial_start_year", "-year")
 
         data = {
             "as_of_date": as_of_date.strftime("%d %B %Y"),
@@ -1029,20 +1047,12 @@ class ReplenishmentDashboardView(views.APIView):
             "income": {
                 "cash_payments": computed_summary_data["cash_payments"],
                 "bilateral_assistance": computed_summary_data["bilateral_assistance"],
-                "interest_earned": income["interest_earned"],
+                "interest_earned": income_interest["interest_earned"],
                 "promissory_notes": computed_summary_data["promissory_notes"],
-                "miscellaneous_income": income["miscellaneous_income"],
+                "miscellaneous_income": income_misc["miscellaneous_income"],
             },
             "allocations": {
-                "undp": allocations.undp,
-                "unep": allocations.unep,
-                "unido": allocations.unido,
-                "world_bank": allocations.world_bank,
-                "staff_contracts": allocations.staff_contracts,
-                "treasury_fees": allocations.treasury_fees,
-                "monitoring_fees": allocations.monitoring_fees,
-                "technical_audit": allocations.technical_audit,
-                "information_strategy": allocations.information_strategy,
+                **allocations,
                 "bilateral_assistance": computed_summary_data["bilateral_assistance"],
                 "gain_loss": gain_loss,
             },
@@ -1082,50 +1092,28 @@ class ReplenishmentDashboardView(views.APIView):
 
         return Response(data)
 
-    @transaction.atomic
-    def put(self, request, *args, **kwargs):
-        self.check_permissions(request)
-
-        data = request.data
-
-        allocations = ExternalAllocation.objects.get()
-
-        # TODO: serializers?
-        if data.get("external_income_start_year") and data.get(
-            "external_income_end_year"
-        ):
-            ExternalIncome.objects.update_or_create(
-                start_year=data["external_income_start_year"],
-                end_year=data["external_income_end_year"],
-                defaults={
-                    "interest_earned": data["interest_earned"],
-                    "miscellaneous_income": data["miscellaneous_income"],
-                },
-            )
-
-        allocations.undp = data["undp"]
-        allocations.unep = data["unep"]
-        allocations.unido = data["unido"]
-        allocations.world_bank = data["world_bank"]
-        allocations.staff_contracts = data["staff_contracts"]
-        allocations.treasury_fees = data["treasury_fees"]
-        allocations.monitoring_fees = data["monitoring_fees"]
-        allocations.technical_audit = data["technical_audit"]
-        allocations.information_strategy = data["information_strategy"]
-        allocations.save()
-
-        return Response({})
-
 
 class ReplenishmentDashboardExportView(views.APIView):
     permission_classes = [IsUserAllowedReplenishment]
 
     def get_status(self):
-        income = ExternalIncome.objects.aggregate(
-            interest_earned=models.Sum("interest_earned", default=0),
-            miscellaneous_income=models.Sum("miscellaneous_income", default=0),
+        income_interest = ExternalIncomeAnnual.objects.aggregate(
+            interest_earned=models.Sum("interest_earned", default=0)
         )
-        allocations = ExternalAllocation.objects.get()
+        income_misc = ExternalIncome.objects.aggregate(
+            miscellaneous_income=models.Sum("miscellaneous_income", default=0)
+        )
+        allocations = ExternalAllocation.objects.aggregate(
+            undp=models.Sum("undp", default=0),
+            unep=models.Sum("unep", default=0),
+            unido=models.Sum("unido", default=0),
+            world_bank=models.Sum("world_bank", default=0),
+            staff_contracts=models.Sum("staff_contracts", default=0),
+            treasury_fees=models.Sum("treasury_fees", default=0),
+            monitoring_fees=models.Sum("monitoring_fees", default=0),
+            technical_audit=models.Sum("technical_audit", default=0),
+            information_strategy=models.Sum("information_strategy", default=0),
+        )
 
         computed_summary_data = TriennialContributionStatus.objects.aggregate(
             cash_payments=models.Sum("cash_payments", default=0),
@@ -1141,28 +1129,28 @@ class ReplenishmentDashboardExportView(views.APIView):
                 computed_summary_data["cash_payments"],
                 computed_summary_data["promissory_notes"],
                 computed_summary_data["bilateral_assistance"],
-                income["interest_earned"],
-                income["miscellaneous_income"],
+                income_interest["interest_earned"],
+                income_misc["miscellaneous_income"],
             ]
         )
 
         total_allocations_agencies = sum(
             [
-                allocations.undp,
-                allocations.unep,
-                allocations.unido,
-                allocations.world_bank,
+                allocations["undp"],
+                allocations["unep"],
+                allocations["unido"],
+                allocations["world_bank"],
             ]
         )
 
         total_provisions = sum(
             [
                 total_allocations_agencies,
-                allocations.staff_contracts,
-                allocations.treasury_fees,
-                allocations.monitoring_fees,
-                allocations.technical_audit,
-                allocations.information_strategy,
+                allocations["staff_contracts"],
+                allocations["treasury_fees"],
+                allocations["monitoring_fees"],
+                allocations["technical_audit"],
+                allocations["information_strategy"],
                 computed_summary_data["bilateral_assistance"],
                 gain_loss,
             ]
@@ -1205,12 +1193,12 @@ class ReplenishmentDashboardExportView(views.APIView):
             (
                 "    -  Interest earned",
                 None,
-                income["interest_earned"],
+                income_interest["interest_earned"],
             ),
             (
                 "    -  Miscellaneous income",
                 None,
-                income["miscellaneous_income"],
+                income_misc["miscellaneous_income"],
             ),
             EMPTY_ROW,
             (
@@ -1224,10 +1212,10 @@ class ReplenishmentDashboardExportView(views.APIView):
                 None,
                 None,
             ),
-            ("    -  UNDP", allocations.undp, None),
-            ("    -  UNEP", allocations.unep, None),
-            ("    -  UNIDO", allocations.unido, None),
-            ("    -  World Bank", allocations.world_bank, None),
+            ("    -  UNDP", allocations["undp"], None),
+            ("    -  UNEP", allocations["unep"], None),
+            ("    -  UNIDO", allocations["unido"], None),
+            ("    -  World Bank", allocations["world_bank"], None),
             ("Unspecified projects", "-", None),
             ("Less Adjustments", "-", None),
             (
@@ -1236,25 +1224,25 @@ class ReplenishmentDashboardExportView(views.APIView):
                 total_allocations_agencies,
             ),
             EMPTY_ROW,
-            # TODO: dynamic years?
+            # TODO: dynamic years?!
             ("Secretariat and Executive Committee costs (1991-2026)", None, None),
             (
                 "    -  including provision for staff contracts into 2026",
                 None,
-                allocations.staff_contracts,
+                allocations["staff_contracts"],
             ),
-            ("Treasury fees", None, allocations.treasury_fees),
+            ("Treasury fees", None, allocations["treasury_fees"]),
             (
                 "Monitoring and Evaluation costs (1999-2025)",
                 None,
-                allocations.monitoring_fees,
+                allocations["monitoring_fees"],
             ),
-            ("Technical Audit costs (1998-2010)", None, allocations.technical_audit),
+            ("Technical Audit costs (1998-2010)", None, allocations["technical_audit"]),
             ("Information strategy costs (2003-2004)", None, None),
             (
                 "    -  includes provision for Network maintenance costs for 2004",
                 None,
-                allocations.information_strategy,
+                allocations["information_strategy"],
             ),
             (
                 "Bilateral cooperation",
@@ -1292,6 +1280,50 @@ class ReplenishmentDashboardExportView(views.APIView):
         add_statistics_status_of_contributions_response_worksheet(wb, periods)
 
         return workbook_response("Status of the fund", wb)
+
+
+class ReplenishmentExternalAllocationViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    """
+    Viewset for all the ExternalAllocation.
+    """
+
+    model = ExternalAllocation
+
+    permission_classes = [IsUserAllowedReplenishment]
+    serializer_class = ExternalAllocationSerializer
+    ordering_fields = ["year"]
+
+    def get_queryset(self):
+        return ExternalAllocation.objects.all()
+
+
+class ReplenishmentExternalIncomeAnnualViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    """
+    Viewset for the ExternalIncomeAnnual.
+    """
+
+    model = ExternalIncomeAnnual
+
+    permission_classes = [IsUserAllowedReplenishment]
+    serializer_class = ExternalIncomeAnnualSerializer
+    ordering_fields = ["-year", "quarter"]
+
+    def get_queryset(self):
+        return ExternalIncomeAnnual.objects.all()
 
 
 class ReplenishmentInvoiceViewSet(

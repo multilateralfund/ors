@@ -3,8 +3,8 @@ from decimal import Decimal
 from django.contrib.postgres import fields
 from django.db import models
 
-from core.models.base import AbstractSingleton
 from core.models.country import Country
+from core.models.meeting import Meeting
 from core.models.utils import get_protected_storage
 
 US_SCALE_OF_ASSESSMENT = Decimal("22")
@@ -103,22 +103,29 @@ class ScaleOfAssessment(models.Model):
     def adjusted_scale_of_assessment(self):
         # TODO: Might need to be moved to the serializer and pass un_assessment_sum as context,
         # otherwise it will be computed for each contribution and will be inefficient
-        if self.override_adjusted_scale_of_assessment is not None:
-            return self.override_adjusted_scale_of_assessment
-
         if self.country.iso3 == "USA":
             return US_SCALE_OF_ASSESSMENT
 
-        un_assessment_sum = ScaleOfAssessment.objects.filter(
-            version=self.version
-        ).aggregate(models.Sum("un_scale_of_assessment"))["un_scale_of_assessment__sum"]
+        if self.override_adjusted_scale_of_assessment is not None:
+            return self.override_adjusted_scale_of_assessment
+
+        if self.un_scale_of_assessment is None:
+            return None
+
+        un_assessment_sum = (
+            ScaleOfAssessment.objects.filter(version=self.version)
+            .exclude(country__iso3="USA")
+            .aggregate(models.Sum("un_scale_of_assessment", default=0))[
+                "un_scale_of_assessment__sum"
+            ]
+        )
 
         if un_assessment_sum is None:
             return None
 
         return (
-            self.un_scale_of_assessment / (un_assessment_sum - US_SCALE_OF_ASSESSMENT)
-        ) * (Decimal("100") - un_assessment_sum) + self.un_scale_of_assessment
+            self.un_scale_of_assessment / un_assessment_sum
+        ) * (Decimal("100") - US_SCALE_OF_ASSESSMENT)
 
     @property
     def qualifies_for_fixed_rate_mechanism(self):
@@ -394,7 +401,9 @@ class FermGainLoss(models.Model):
 
 class ExternalIncome(models.Model):
     """
-    External income triennial-based data
+    LEGACY External income triennial-based data.
+
+    This is now only kept for the miscellaneous_income, which will be migrated soon.
     """
 
     start_year = models.IntegerField()
@@ -420,51 +429,77 @@ class ExternalIncome(models.Model):
 
 class ExternalIncomeAnnual(models.Model):
     """
-    External income annual-based data.
-
-    For now we only have interest data on an annual basis.
+    "Interest earned" external income data; imported from the consolidated
+    financial data file.
     """
 
-    year = models.IntegerField()
+    # Triennial start year, only != None if this is for a triennial
+    triennial_start_year = models.IntegerField(null=True, default=None)
+
+    # Will only be populated for yearly OR quarterly data
+    year = models.IntegerField(null=True, default=None)
+
+    # Will only be populated for quarterly data
+    quarter = models.IntegerField(null=True, default=None)
+
+    agency_name = models.CharField(max_length=255, blank=True)
+
     interest_earned = models.DecimalField(
         max_digits=30, decimal_places=15, default=Decimal(0)
-    )
-
-    # Per-quarter breakdown of interest earned so we can import granular data.
-    # But for now only the annual `interest_earned` field is taken into account in APIs.
-    interest_earned_quarter_1 = models.DecimalField(
-        max_digits=30, decimal_places=15, null=True, blank=True
-    )
-    interest_earned_quarter_2 = models.DecimalField(
-        max_digits=30, decimal_places=15, null=True, blank=True
-    )
-    interest_earned_quarter_3 = models.DecimalField(
-        max_digits=30, decimal_places=15, null=True, blank=True
-    )
-    interest_earned_quarter_4 = models.DecimalField(
-        max_digits=30, decimal_places=15, null=True, blank=True
     )
 
     miscellaneous_income = models.DecimalField(
         max_digits=30, decimal_places=15, default=Decimal(0)
     )
-    agency_name = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
         agency_str = f" for agency {self.agency_name}" if self.agency_name else ""
+        period_str = (
+            f"{self.triennial_start_year} - {self.triennial_start_year + 2}"
+            if self.triennial_start_year
+            else (
+                self.year
+                if self.quarter is None
+                else f"{self.year} quarter {self.quarter}"
+            )
+        )
         return (
-            f"External Income{agency_str} ({self.year}): interest {self.interest_earned}; "
+            f"External Income{agency_str} ({period_str}): "
+            f"interest {self.interest_earned}; "
             f"miscellaneous {self.miscellaneous_income}"
         )
 
 
-class ExternalAllocation(AbstractSingleton):
-    undp = models.DecimalField(max_digits=30, decimal_places=15)
-    unep = models.DecimalField(max_digits=30, decimal_places=15)
-    unido = models.DecimalField(max_digits=30, decimal_places=15)
-    world_bank = models.DecimalField(max_digits=30, decimal_places=15)
-    staff_contracts = models.DecimalField(max_digits=30, decimal_places=15)
-    treasury_fees = models.DecimalField(max_digits=30, decimal_places=15)
-    monitoring_fees = models.DecimalField(max_digits=30, decimal_places=15)
-    technical_audit = models.DecimalField(max_digits=30, decimal_places=15)
-    information_strategy = models.DecimalField(max_digits=30, decimal_places=15)
+class ExternalAllocation(models.Model):
+    # This one will be set to True only for initially-imported data!
+    is_legacy = models.BooleanField(default=False)
+
+    undp = models.DecimalField(max_digits=30, decimal_places=15, default=Decimal(0))
+    unep = models.DecimalField(max_digits=30, decimal_places=15, default=Decimal(0))
+    unido = models.DecimalField(max_digits=30, decimal_places=15, default=Decimal(0))
+    world_bank = models.DecimalField(
+        max_digits=30, decimal_places=15, default=Decimal(0)
+    )
+    staff_contracts = models.DecimalField(
+        max_digits=30, decimal_places=15, default=Decimal(0)
+    )
+    treasury_fees = models.DecimalField(
+        max_digits=30, decimal_places=15, default=Decimal(0)
+    )
+    monitoring_fees = models.DecimalField(
+        max_digits=30, decimal_places=15, default=Decimal(0)
+    )
+    technical_audit = models.DecimalField(
+        max_digits=30, decimal_places=15, default=Decimal(0)
+    )
+    information_strategy = models.DecimalField(
+        max_digits=30, decimal_places=15, default=Decimal(0)
+    )
+
+    # This is the year that the data was entered in.
+    # It should only be null for legacy entries.
+    year = models.IntegerField(null=True)
+
+    meeting = models.ForeignKey(Meeting, null=True, on_delete=models.PROTECT)
+
+    comment = models.TextField(blank=True, default="")
