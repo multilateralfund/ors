@@ -1,10 +1,5 @@
 import { useState } from 'react'
 
-import { get, isNil, keys, omitBy } from 'lodash'
-import { useSnackbar } from 'notistack'
-
-import { api } from '@ors/helpers'
-
 import FormDialog from '../../FormDialog'
 import { quarterOptions } from '../constants'
 import { IEditIncomeDialogProps } from '../types'
@@ -14,58 +9,20 @@ const EditInterestEarnedDialog = (props: IEditIncomeDialogProps) => {
   const {
     agencyOptions,
     allocations,
-    invalidateDataFn,
+    handleSubmitEditDialog,
     meetingOptions,
     onCancel,
     yearOptions,
     ...dialogProps
   } = props
 
-  const { enqueueSnackbar } = useSnackbar()
-
   const [formData, setFormData] = useState({})
-
-  const handleEditInterestEarnedSubmit = () => {
-    let formattedData = { ...formData }
-
-    keys(formData).map((key) => {
-      const value = get(formData, key)
-
-      formattedData = {
-        ...formattedData,
-        [key]: !!value
-          ? ['meeting', 'quarter', 'year'].includes(key)
-            ? parseInt(value)
-            : value
-          : null,
-      }
-    })
-
-    const cleanData = omitBy(formattedData, isNil)
-
-    console.log({ cleanData })
-
-    api('api/replenishment/external-income/', {
-      data: cleanData,
-      method: 'POST',
-    })
-      .then(() => {
-        invalidateDataFn({
-          cache_bust: crypto.randomUUID(),
-        })
-        enqueueSnackbar('Data updated successfully', { variant: 'success' })
-        onCancel()
-      })
-      .catch(() => {
-        enqueueSnackbar('Failed to update data', { variant: 'error' })
-      })
-  }
 
   return (
     <FormDialog
       title="Interest earned:"
       onCancel={onCancel}
-      onSubmit={handleEditInterestEarnedSubmit}
+      onSubmit={() => handleSubmitEditDialog(formData, 'external-income')}
       {...dialogProps}
     >
       <div className="flex flex-col gap-y-4">
@@ -95,7 +52,7 @@ const EditInterestEarnedDialog = (props: IEditIncomeDialogProps) => {
               setFormData={setFormData}
             />
             <SelectInput
-              field="meeting"
+              field="meeting_id"
               label="Meeting number"
               options={meetingOptions}
               placeholder="Select meeting number"

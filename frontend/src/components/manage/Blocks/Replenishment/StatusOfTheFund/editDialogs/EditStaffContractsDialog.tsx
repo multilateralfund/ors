@@ -5,20 +5,22 @@ import { IEditStaffContractsProps } from '../types'
 import { NumberInput, SelectInput, TextareaInput } from './editInputs'
 
 const EditStaffContractsDialog = (props: IEditStaffContractsProps) => {
-  const { meetingOptions, onCancel, yearOptions, ...dialogProps } = props
+  const {
+    handleSubmitEditDialog,
+    meetingOptions,
+    onCancel,
+    yearOptions,
+    ...dialogProps
+  } = props
   const currentYear = new Date().getFullYear()
 
   const [formData, setFormData] = useState({})
-
-  const handleEditSecretariatSubmit = () => {
-    console.log({ formData })
-  }
 
   return (
     <FormDialog
       title="Secretariat:"
       onCancel={onCancel}
-      onSubmit={handleEditSecretariatSubmit}
+      onSubmit={() => handleSubmitEditDialog(formData, 'external-allocations')}
       {...dialogProps}
     >
       <div className="flex flex-col gap-y-4">
@@ -31,7 +33,7 @@ const EditStaffContractsDialog = (props: IEditStaffContractsProps) => {
             setFormData={setFormData}
           />
           <SelectInput
-            field="meeting"
+            field="meeting_id"
             label="Meeting number"
             options={meetingOptions}
             placeholder="Select meeting number"
@@ -41,13 +43,13 @@ const EditStaffContractsDialog = (props: IEditStaffContractsProps) => {
         <div className="flex flex-col gap-y-4">
           <div className="flex gap-x-4">
             <NumberInput
-              field={`budget_${currentYear + 1}`}
-              label={`Budget for ${currentYear + 1}`}
+              field={`staff_contracts_${currentYear + 1}`}
+              label={`Staff contracts for ${currentYear + 1}`}
               setFormData={setFormData}
             />
             <NumberInput
-              field={`budget_${currentYear + 2}`}
-              label={`Budget for ${currentYear + 2}`}
+              field={`staff_contracts_${currentYear + 2}`}
+              label={`Staff contracts for ${currentYear + 2}`}
               setFormData={setFormData}
             />
           </div>
@@ -55,8 +57,8 @@ const EditStaffContractsDialog = (props: IEditStaffContractsProps) => {
         <div className="flex flex-col gap-y-4">
           <div className="flex gap-x-4">
             <NumberInput
-              field={`budget_${currentYear + 3}`}
-              label={`Budget for ${currentYear + 3}`}
+              field={`staff_contracts_${currentYear + 3}`}
+              label={`Staff contracts for ${currentYear + 3}`}
               setFormData={setFormData}
             />
             <TextareaInput

@@ -1,6 +1,6 @@
 import { ChangeEvent, Dispatch, ReactNode, SetStateAction } from 'react'
 
-import { IALLOCATIONS, IFormData } from '../Dashboard/useGetDashboardDataTypes'
+import { IALLOCATIONS } from '../Dashboard/useGetDashboardDataTypes'
 import { IFieldProps } from '../Inputs'
 
 export type InputOptionsType = Array<{
@@ -12,7 +12,7 @@ export type InputOptionsType = Array<{
 export interface IEditIncomeDialogProps extends React.PropsWithChildren {
   agencyOptions: InputOptionsType
   allocations: IALLOCATIONS
-  invalidateDataFn: any
+  handleSubmitEditDialog: (formData: any, field: string) => void
   meetingOptions: InputOptionsType
   onCancel: () => void
   yearOptions: InputOptionsType
@@ -23,6 +23,7 @@ export interface IEditAllocationsProps extends IEditIncomeDialogProps {
 }
 
 export interface IEditStaffContractsProps {
+  handleSubmitEditDialog: (formData: any, field: string) => void
   meetingOptions: InputOptionsType
   onCancel: () => void
   yearOptions: InputOptionsType

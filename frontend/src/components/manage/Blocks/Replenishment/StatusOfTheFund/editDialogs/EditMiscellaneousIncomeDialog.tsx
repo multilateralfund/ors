@@ -1,10 +1,5 @@
 import { useState } from 'react'
 
-import { get, isNil, keys, omitBy } from 'lodash'
-import { useSnackbar } from 'notistack'
-
-import { api } from '@ors/helpers'
-
 import FormDialog from '../../FormDialog'
 import { IEditIncomeDialogProps } from '../types'
 import { NumberInput, SelectInput, TextareaInput } from './editInputs'
@@ -13,58 +8,20 @@ const EditMiscellaneousIncomeDialog = (props: IEditIncomeDialogProps) => {
   const {
     agencyOptions,
     allocations,
-    invalidateDataFn,
+    handleSubmitEditDialog,
     meetingOptions,
     onCancel,
     yearOptions,
     ...dialogProps
   } = props
 
-  const { enqueueSnackbar } = useSnackbar()
-
   const [formData, setFormData] = useState({})
-
-  const handleEditMiscellaneousIncomeSubmit = () => {
-    let formattedData = { ...formData }
-
-    keys(formData).map((key) => {
-      const value = get(formData, key)
-
-      formattedData = {
-        ...formattedData,
-        [key]: !!value
-          ? ['meeting', 'year'].includes(key)
-            ? parseInt(value)
-            : value
-          : null,
-      }
-    })
-
-    const cleanData = omitBy(formattedData, isNil)
-
-    console.log({ cleanData })
-
-    api('api/replenishment/external-income/', {
-      data: cleanData,
-      method: 'POST',
-    })
-      .then(() => {
-        invalidateDataFn({
-          cache_bust: crypto.randomUUID(),
-        })
-        enqueueSnackbar('Data updated successfully', { variant: 'success' })
-        onCancel()
-      })
-      .catch(() => {
-        enqueueSnackbar('Failed to update data', { variant: 'error' })
-      })
-  }
 
   return (
     <FormDialog
       title="Miscellaneous income:"
       onCancel={onCancel}
-      onSubmit={handleEditMiscellaneousIncomeSubmit}
+      onSubmit={() => handleSubmitEditDialog(formData, 'external-income')}
       {...dialogProps}
     >
       <div className="flex flex-col gap-y-4">
@@ -77,7 +34,7 @@ const EditMiscellaneousIncomeDialog = (props: IEditIncomeDialogProps) => {
             setFormData={setFormData}
           />
           <SelectInput
-            field="meeting"
+            field="meeting_id"
             label="Meeting number"
             options={meetingOptions}
             placeholder="Select meeting number"
