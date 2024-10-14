@@ -189,9 +189,15 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
 
   useEffect(
     function () {
+      const arrears_or_deferred = (
+        fields.payment_for_years.includes('arrears')
+        || fields.payment_for_years.includes('Arrears')
+        || fields.payment_for_years.includes('deferred')
+        || fields.payment_for_years.includes('Deferred')
+      )
       if (
         fields.invoices.length > 0
-        && (fields.payment_for_years.includes('arrears') || fields.payment_for_years.includes('Arrears') || fields.payment_for_years.includes('deferred') || fields.payment_for_years.includes('Deferred'))
+        && arrears_or_deferred
       ) {
         setFields(function (prev) {
           return {
