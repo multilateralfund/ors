@@ -1817,7 +1817,9 @@ class ReplenishmentPaymentViewSet(
         current_obj.payment_files.filter(id__in=files_to_delete).delete()
 
         # Update the annual/triennial contributions
-        self._set_annual_triennial_contributions(current_obj, old_amount=previous_amount)
+        self._set_annual_triennial_contributions(
+            current_obj, old_amount=previous_amount
+        )
 
         # And finally set the ScaleOfAssessment if all needed fields are specified
         self._set_scale_of_assessment_ferm(current_obj, is_ferm)
