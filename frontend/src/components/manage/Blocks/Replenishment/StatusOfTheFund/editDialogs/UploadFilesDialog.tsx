@@ -1,5 +1,3 @@
-import { useState } from 'react'
-
 import FormDialog from '../../FormDialog'
 import { IUploadDocumentsProps } from '../types'
 import {
@@ -17,8 +15,6 @@ const UploadFilesDialog = (props: IUploadDocumentsProps) => {
     ...dialogProps
   } = props
 
-  const [formData, setFormData] = useState({})
-
   return (
     <FormDialog
       title="Upload documents:"
@@ -27,34 +23,27 @@ const UploadFilesDialog = (props: IUploadDocumentsProps) => {
       {...dialogProps}
     >
       <div className="flex flex-col gap-y-4">
-        <div className="flex gap-x-4">
+        <div className="flex flex-wrap gap-x-4 gap-y-1">
           <SearchableSelectInput
             field="year"
             label="Year"
             options={yearOptions}
             placeholder="Select year"
-            setFormData={setFormData}
           />
           <SearchableSelectInput
             field="meeting_id"
             label="Meeting number"
             options={meetingOptions}
             placeholder="Select meeting number"
-            setFormData={setFormData}
           />
         </div>
         <div className="flex flex-col gap-y-4">
-          <div className="flex gap-x-4">
-            <UploadDocumentsInput
-              field={'files'}
-              label={'Upload'}
-              setFormData={setFormData}
-            />
+          <div className="flex flex-wrap gap-x-4 gap-y-1">
+            <UploadDocumentsInput field={'files'} label={'Upload'} />
             <TextareaInput
-              className="h-[100px] w-[250px]"
+              className="h-24 w-64"
               field={'comment'}
               label={'Comment'}
-              setFormData={setFormData}
             />
           </div>
         </div>

@@ -31,7 +31,7 @@ const EditInterestEarnedDialog = (props: IEditIncomeDialogProps) => {
       {...dialogProps}
     >
       <div className="flex flex-col gap-y-4">
-        <div className="flex gap-x-4">
+        <div className="flex flex-wrap gap-x-4 gap-y-1">
           <SelectInput
             field="agency_name"
             label="Agency"
@@ -48,7 +48,7 @@ const EditInterestEarnedDialog = (props: IEditIncomeDialogProps) => {
           />
         </div>
         <div className="flex flex-col gap-y-4">
-          <div className="flex gap-x-4">
+          <div className="flex flex-wrap gap-x-4 gap-y-1">
             <SelectInput
               field="quarter"
               label="Quarter"
@@ -66,7 +66,7 @@ const EditInterestEarnedDialog = (props: IEditIncomeDialogProps) => {
           </div>
         </div>
         <div className="flex flex-col gap-y-4">
-          <div className="flex gap-x-4">
+          <div className="flex flex-wrap gap-x-4 gap-y-1">
             <TextareaInput
               field="comment"
               label="Comment"

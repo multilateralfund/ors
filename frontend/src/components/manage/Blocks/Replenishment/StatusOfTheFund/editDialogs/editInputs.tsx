@@ -1,4 +1,5 @@
 import cx from 'classnames'
+import { noop } from 'lodash'
 
 import {
   FormattedNumberInput,
@@ -43,16 +44,18 @@ export const SearchableSelectInput = ({
   field,
   label,
   options,
-  setFormData,
+  setFormData = noop,
 }: ISelectInputProps) => (
   <InputWrapper id={field} label={label}>
     <SearchableSelect
       id={field}
       className={inputsClassName}
+      hideFirstOption={true}
       pickerClassName="!left-0"
       onChange={(value) => handleSelectChange(value, setFormData, field)}
       hasClear
     >
+      <option value="" disabled hidden></option>
       {options.map(({ label, value }) => (
         <option key={value} className="text-primary" value={value}>
           {label}
@@ -67,7 +70,7 @@ export const SelectInput = ({
   label,
   options,
   placeholder,
-  setFormData,
+  setFormData = noop,
   value,
 }: ISelectInputProps) => (
   <InputWrapper id={field} label={label}>
@@ -95,7 +98,7 @@ export const SelectInput = ({
 export const NumberInput = ({
   field,
   label,
-  setFormData,
+  setFormData = noop,
 }: INumberInputProps) => (
   <InputWrapper id={field} label={label}>
     <FormattedNumberInput
@@ -112,7 +115,7 @@ export const TextareaInput = ({
   className,
   field,
   label,
-  setFormData,
+  setFormData = noop,
 }: ITextAreaProps) => (
   <InputWrapper id={field} label={label}>
     <Input
@@ -124,11 +127,7 @@ export const TextareaInput = ({
   </InputWrapper>
 )
 
-export const UploadDocumentsInput = ({
-  field,
-  label,
-  setFormData,
-}: IInputProps) => (
+export const UploadDocumentsInput = ({ field, label }: IInputProps) => (
   <InputWrapper id={field} label={label}>
     <InvoiceAttachments oldFiles={[]} withFileType={false} />
   </InputWrapper>

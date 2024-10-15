@@ -24,7 +24,7 @@ const EditMonitoringFeesDialog = (props: IEditStaffContractsProps) => {
       onCancel={onCancel}
     >
       <div className="flex flex-col gap-y-4">
-        <div className="flex gap-x-4">
+        <div className="flex flex-wrap gap-x-4 gap-y-1">
           <SearchableSelectInput
             field="year"
             label="Year"
@@ -41,7 +41,7 @@ const EditMonitoringFeesDialog = (props: IEditStaffContractsProps) => {
           />
         </div>
         <div className="flex flex-col gap-y-4">
-          <div className="flex gap-x-4">
+          <div className="flex flex-wrap gap-x-4 gap-y-1">
             <NumberInput
               field={`monitoring_fees_${currentYear + 1}`}
               label={`Monitoring fees for ${currentYear + 1}`}
@@ -55,7 +55,7 @@ const EditMonitoringFeesDialog = (props: IEditStaffContractsProps) => {
           </div>
         </div>
         <div className="flex flex-col gap-y-4">
-          <div className="flex gap-x-4">
+          <div className="flex flex-wrap gap-x-4 gap-y-1">
             <NumberInput
               field={`monitoring_fees_${currentYear + 3}`}
               label={`Monitoring fees for ${currentYear + 3}`}

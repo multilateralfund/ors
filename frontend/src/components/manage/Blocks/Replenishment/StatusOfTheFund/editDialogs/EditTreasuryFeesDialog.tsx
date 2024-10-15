@@ -24,7 +24,7 @@ const EditTreasuryFeesDialog = (props: IEditStaffContractsProps) => {
       {...dialogProps}
     >
       <div className="flex flex-col gap-y-4">
-        <div className="flex gap-x-4">
+        <div className="flex flex-wrap gap-x-4 gap-y-1">
           <SearchableSelectInput
             field="year"
             label="Year"
@@ -41,7 +41,7 @@ const EditTreasuryFeesDialog = (props: IEditStaffContractsProps) => {
           />
         </div>
         <div className="flex flex-col gap-y-4">
-          <div className="flex gap-x-4">
+          <div className="flex flex-wrap gap-x-4 gap-y-1">
             <NumberInput
               field={`treasury_fees_${currentYear + 1}`}
               label={`Treasury fees for ${currentYear + 1}`}
@@ -55,7 +55,7 @@ const EditTreasuryFeesDialog = (props: IEditStaffContractsProps) => {
           </div>
         </div>
         <div className="flex flex-col gap-y-4">
-          <div className="flex gap-x-4">
+          <div className="flex flex-wrap gap-x-4 gap-y-1">
             <NumberInput
               field={`treasury_fees_${currentYear + 3}`}
               label={`Treasury fees for ${currentYear + 3}`}

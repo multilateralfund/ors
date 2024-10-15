@@ -83,7 +83,7 @@ function StatusOfTheFundWrapper() {
         ...formattedData,
         [key]: !!value
           ? ['meeting_id', 'quarter', 'year'].includes(key)
-            ? parseFloat(value)
+            ? parseInt(value)
             : value
           : null,
         ...(staffContractsTotal && {
@@ -127,36 +127,18 @@ function StatusOfTheFundWrapper() {
 
     const data = new FormData()
 
-    for (const key in entry) {
-      const value = entry[key]
+    keys(entry).map((key) => {
+      const value = get(entry, key)
 
-      if (!key.startsWith('file_')) {
-        const valueIsNotAFile = value as unknown as
-          | null
-          | string
-          | string[]
-          | undefined
-        if (
-          valueIsNotAFile !== null &&
-          typeof valueIsNotAFile === 'object' &&
-          valueIsNotAFile.length
-        ) {
-          for (let i = 0; i < valueIsNotAFile.length; i++) {
-            data.append(key, valueIsNotAFile[i])
-          }
-        } else if (
-          valueIsNotAFile !== null &&
-          valueIsNotAFile !== undefined &&
-          valueIsNotAFile !== ''
-        ) {
-          data.append(key, valueIsNotAFile as string)
+      if (!key.startsWith('file_') && key !== 'deleted_files') {
+        if (!isNil(value) && value !== '') {
+          data.append(key, value)
         }
-      }
-      if (key.startsWith('file_') && entry[key] instanceof File) {
+      } else if (key.startsWith('file_') && value instanceof File) {
         const fileIndex = key.split('_')[1]
         data.append(`files[${fileIndex}][file]`, entry[key], entry[key].name)
       }
-    }
+    })
 
     enqueueSnackbar('Data updated successfully', { variant: 'success' })
     handleCloseUploadDialog()

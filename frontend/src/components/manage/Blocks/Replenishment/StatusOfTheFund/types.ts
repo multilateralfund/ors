@@ -47,7 +47,7 @@ export interface IInputWrapper extends IFieldProps {
 export interface IInputProps {
   field: string
   label: string
-  setFormData: Dispatch<SetStateAction<any>>
+  setFormData?: Dispatch<SetStateAction<any>>
 }
 
 export interface INumberInputProps extends IInputProps {
