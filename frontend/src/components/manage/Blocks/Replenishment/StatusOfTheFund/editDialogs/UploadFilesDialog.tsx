@@ -17,7 +17,7 @@ const UploadFilesDialog = (props: IUploadDocumentsProps) => {
     ...dialogProps
   } = props
 
-  const [formDataa, setFormData] = useState({})
+  const [formData, setFormData] = useState({})
 
   return (
     <FormDialog
