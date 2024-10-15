@@ -1,5 +1,3 @@
-import type { ChangeEvent } from 'react'
-
 import React, { useState } from 'react'
 
 import { enqueueSnackbar } from 'notistack'
@@ -7,8 +5,9 @@ import { enqueueSnackbar } from 'notistack'
 import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
 import {
   FieldFormattedNumberInput,
+  FieldInput,
   FieldSearchableSelect,
-  Input,
+  SearchableSelect,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { AddButton } from '@ors/components/ui/Button/Button'
 import { api } from '@ors/helpers'
@@ -24,7 +23,7 @@ type Fields = {
 export default function BilateralAssistanceDialog(
   props: BilateralAssistanceDialogProps,
 ) {
-  const { countryOptions, refetchSCData, rows, year } = props
+  const { countryOptions, meetingOptions, refetchSCData, rows, year } = props
   const [showAdd, setShowAdd] = useState(false)
 
   const [fields, setFields] = useState<Fields>({
@@ -38,10 +37,16 @@ export default function BilateralAssistanceDialog(
 
   async function confirmSave(formData: FormData) {
     const data = Object.fromEntries(formData.entries())
-    data.year = year
+
+    const formattedData = {
+      ...data,
+      meeting_id: parseInt(data.meeting_id.toString()),
+      year: year,
+    }
+
     try {
       await api('/api/replenishment/bilateral-assistance/', {
-        data: data,
+        data: formattedData,
         method: 'POST',
       })
       setFields({ amount: '0', potential_amount: '0' })
@@ -113,12 +118,25 @@ export default function BilateralAssistanceDialog(
             required
           />
           <div className="mt-4 flex items-center justify-start">
-            <label className="grow-1" htmlFor="approvedExCom">
+            <label className="grow-1" htmlFor="meeting_id">
               Approved by ExCom as of
             </label>
-            <Input id="approvedExCom" className="mx-4 max-w-28" type="number" />
-            <label htmlFor="approvedExCom">meeting.</label>
+            <SearchableSelect id="meeting_id" required>
+              {meetingOptions.map((m) => (
+                <option key={m.value} value={m.value}>
+                  {m.label}
+                </option>
+              ))}
+            </SearchableSelect>
+            <label className="ml-1.5" htmlFor="meeting_id">
+              meeting.
+            </label>
           </div>
+          <FieldInput
+            id="decision_number"
+            label="Decision number"
+            type="text"
+          />
         </FormDialog>
       )}
       <div>

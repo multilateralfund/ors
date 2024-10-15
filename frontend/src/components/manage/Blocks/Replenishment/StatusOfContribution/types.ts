@@ -67,12 +67,15 @@ export interface SCViewProps {
 
 export interface DisputedContributionDialogProps {
   countryOptions: { country: string; country_id: number }[]
+  meetingOptions: { label: number; value: string }[]
+
   refetchSCData: () => void
   year: string
 }
 
 export interface BilateralAssistanceDialogProps {
   countryOptions: { country: string; country_id: number }[]
+  meetingOptions: { label: number; value: string }[]
   refetchSCData: () => void
   rows: SoCRow[]
   year: string
