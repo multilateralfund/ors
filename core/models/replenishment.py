@@ -307,6 +307,14 @@ class AbstractContributionStatus(models.Model):
         max_digits=30, decimal_places=15, default=0
     )
 
+    # These need to be present in both Annual and Triennial contributions
+    bilateral_assistance_meeting = models.ForeignKey(
+        Meeting, null=True, on_delete=models.PROTECT
+    )
+    bilateral_assistance_decision_number = models.CharField(
+        max_length=32, blank=True, default=""
+    )
+
     class Meta:
         abstract = True
 
@@ -364,6 +372,9 @@ class DisputedContribution(models.Model):
         null=True,
     )
     year = models.IntegerField()
+    meeting = models.ForeignKey(Meeting, null=True, on_delete=models.PROTECT)
+    decision_number = models.CharField(max_length=32, blank=True, default="")
+
     amount = models.DecimalField(max_digits=30, decimal_places=15, default=0)
     comment = models.TextField(blank=True, default="")
 

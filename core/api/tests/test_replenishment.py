@@ -950,6 +950,8 @@ class TestBilateralAssistance(BaseTest):
     def test_bilateral_assistance(self, treasurer_user):
         country = CountryFactory.create(name="Country 1", iso3="XYZ")
 
+        meeting = MeetingFactory.create(number=3, date="2020-03-14")
+
         year_1 = 2018
         year_2 = 2020
         CountryCEITStatusFactory.create(
@@ -968,6 +970,7 @@ class TestBilateralAssistance(BaseTest):
             "year": year_1,
             "country_id": country.id,
             "amount": amount,
+            "meeting": meeting.id,
         }
 
         self.client.force_authenticate(user=treasurer_user)
@@ -979,8 +982,10 @@ class TestBilateralAssistance(BaseTest):
 
         contribution_annual.refresh_from_db()
         assert contribution_annual.bilateral_assistance == amount
+        assert contribution_annual.bilateral_assistance_meeting_id == meeting.id
         contribution_triennial.refresh_from_db()
         assert contribution_triennial.bilateral_assistance == amount
+        assert contribution_triennial.bilateral_assistance_meeting_id == meeting.id
 
 
 class TestReplenishmentDashboard(BaseTest):
