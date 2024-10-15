@@ -3,7 +3,12 @@ import { useState } from 'react'
 import FormDialog from '../../FormDialog'
 import { quarterOptions } from '../constants'
 import { IEditIncomeDialogProps } from '../types'
-import { NumberInput, SelectInput, TextareaInput } from './editInputs'
+import {
+  NumberInput,
+  SearchableSelectInput,
+  SelectInput,
+  TextareaInput,
+} from './editInputs'
 
 const EditInterestEarnedDialog = (props: IEditIncomeDialogProps) => {
   const {
@@ -34,7 +39,7 @@ const EditInterestEarnedDialog = (props: IEditIncomeDialogProps) => {
             placeholder="Select agency"
             setFormData={setFormData}
           />
-          <SelectInput
+          <SearchableSelectInput
             field="year"
             label="Year"
             options={yearOptions}
@@ -51,7 +56,7 @@ const EditInterestEarnedDialog = (props: IEditIncomeDialogProps) => {
               placeholder="Select quarter"
               setFormData={setFormData}
             />
-            <SelectInput
+            <SearchableSelectInput
               field="meeting_id"
               label="Meeting number"
               options={meetingOptions}

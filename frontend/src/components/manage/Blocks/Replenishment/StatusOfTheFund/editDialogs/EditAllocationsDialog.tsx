@@ -4,7 +4,12 @@ import { find } from 'lodash'
 
 import FormDialog from '../../FormDialog'
 import { IEditAllocationsProps } from '../types'
-import { NumberInput, SelectInput, TextareaInput } from './editInputs'
+import {
+  NumberInput,
+  SearchableSelectInput,
+  SelectInput,
+  TextareaInput,
+} from './editInputs'
 
 const EditAllocationsDialog = (props: IEditAllocationsProps) => {
   const {
@@ -44,7 +49,7 @@ const EditAllocationsDialog = (props: IEditAllocationsProps) => {
             setFormData={setFormData}
             value={currentAgency?.value}
           />
-          <SelectInput
+          <SearchableSelectInput
             field="meeting_id"
             label="Meeting number"
             options={meetingOptions}
@@ -54,7 +59,7 @@ const EditAllocationsDialog = (props: IEditAllocationsProps) => {
         </div>
         <div className="flex flex-col gap-y-4">
           <div className="flex gap-x-4">
-            <SelectInput
+            <SearchableSelectInput
               field="year"
               label="Year"
               options={yearOptions}

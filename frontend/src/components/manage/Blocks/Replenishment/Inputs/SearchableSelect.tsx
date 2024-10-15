@@ -114,6 +114,7 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
     hasClear,
     name,
     onChange,
+    pickerClassName,
     required,
     ...rest
   } = props
@@ -146,6 +147,8 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
       selectRef.current.value = ''
     }
     setValue('')
+    setSearchValue('')
+
     if (onChange) {
       onChange('')
     }
@@ -311,6 +314,7 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
     <div className="relative" ref={ref}>
       <div className="relative flex flex-1">
         <Input
+          className={className}
           placeholder={'Type to search...'}
           ref={inputRef}
           required={required}
@@ -322,7 +326,12 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
         ></Input>
         {withClear && <ClearButton className="right-4" onClick={handleClear} />}
       </div>
-      <Picker id={id} options={virtualOptions} show={showPicker} />
+      <Picker
+        id={id}
+        className={pickerClassName}
+        options={virtualOptions}
+        show={showPicker}
+      />
       <select
         id={id}
         name={name || id}

@@ -1,4 +1,9 @@
-import { FormattedNumberInput, Input, Select } from '../../Inputs'
+import {
+  FormattedNumberInput,
+  Input,
+  SearchableSelect,
+  Select,
+} from '../../Inputs'
 import {
   IInputProps,
   IInputWrapper,
@@ -9,6 +14,7 @@ import {
   handleClearSelect,
   handleInputChange,
   handleNumberInputChange,
+  handleSelectChange,
 } from './editHelpers'
 
 const inputsClassName =
@@ -28,6 +34,29 @@ const InputWrapper = (props: IInputWrapper) => {
     </div>
   )
 }
+
+export const SearchableSelectInput = ({
+  field,
+  label,
+  options,
+  setFormData,
+}: ISelectInputProps) => (
+  <InputWrapper id={field} label={label}>
+    <SearchableSelect
+      id={field}
+      className={inputsClassName}
+      pickerClassName="!left-0"
+      onChange={(value) => handleSelectChange(value, setFormData, field)}
+      hasClear
+    >
+      {options.map(({ label, value }) => (
+        <option key={value} className="text-primary" value={value}>
+          {label}
+        </option>
+      ))}
+    </SearchableSelect>
+  </InputWrapper>
+)
 
 export const SelectInput = ({
   field,

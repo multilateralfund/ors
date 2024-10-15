@@ -60,3 +60,11 @@ export interface IHandleInputChange {
     name: string,
   ): void
 }
+
+export interface IHandleSelectChange {
+  (
+    value: string,
+    setFormData: Dispatch<SetStateAction<any>>,
+    name: string,
+  ): void
+}

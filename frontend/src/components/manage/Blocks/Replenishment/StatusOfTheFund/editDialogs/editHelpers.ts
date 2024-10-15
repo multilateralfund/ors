@@ -1,4 +1,8 @@
-import { IHandleClearInputChange, IHandleInputChange } from '../types'
+import {
+  IHandleClearInputChange,
+  IHandleInputChange,
+  IHandleSelectChange,
+} from '../types'
 
 export const handleInputChange: IHandleInputChange = (
   evt,
@@ -6,6 +10,14 @@ export const handleInputChange: IHandleInputChange = (
   name,
 ) => {
   const value = evt.target.value
+  setFormState((prev: any) => ({ ...prev, [name]: value }))
+}
+
+export const handleSelectChange: IHandleSelectChange = (
+  value,
+  setFormState,
+  name,
+) => {
   setFormState((prev: any) => ({ ...prev, [name]: value }))
 }
 
