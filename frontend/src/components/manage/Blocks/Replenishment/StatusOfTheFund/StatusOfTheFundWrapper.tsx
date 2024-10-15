@@ -19,6 +19,7 @@ import EditMiscellaneousIncomeDialog from './editDialogs/EditMiscellaneousIncome
 import EditMonitoringFeesDialog from './editDialogs/EditMonitoringFeesDialog'
 import EditStaffContractsDialog from './editDialogs/EditStaffContractsDialog'
 import EditTreasuryFeesDialog from './editDialogs/EditTreasuryFeesDialog'
+import UploadFilesDialog from './editDialogs/UploadFilesDialog'
 
 function StatusOfTheFundWrapper() {
   const { invalidateDataFn, newData } = useGetDashboardData()
@@ -46,9 +47,12 @@ function StatusOfTheFundWrapper() {
 
   const yearOptions = scAnnualOptions(ctx.periods)
 
-  const [editingSection, setEditingSection] = useState<null | string>(null)
-
   const { enqueueSnackbar } = useSnackbar()
+
+  const [editingSection, setEditingSection] = useState<null | string>(null)
+  const [showUploadDialog, setShowUploadDialog] = useState(false)
+
+  const handleCloseUploadDialog = () => setShowUploadDialog(false)
 
   function handleEditCancel() {
     setEditingSection(null)
@@ -112,6 +116,8 @@ function StatusOfTheFundWrapper() {
       })
   }
 
+  const handleUploadDocuments = (formData: any) => {}
+
   const editableFields = [
     ...allocationsOrder.map((allocation) => ({
       component: (
@@ -148,8 +154,6 @@ function StatusOfTheFundWrapper() {
       component: (
         <EditMiscellaneousIncomeDialog
           {...{
-            agencyOptions,
-            allocations,
             handleSubmitEditDialog,
             meetingOptions,
             yearOptions,
@@ -196,6 +200,16 @@ function StatusOfTheFundWrapper() {
 
   return (
     <>
+      {showUploadDialog && (
+        <UploadFilesDialog
+          {...{
+            handleUploadDocuments,
+            meetingOptions,
+            yearOptions,
+          }}
+          onCancel={handleCloseUploadDialog}
+        />
+      )}
       {currentEditingSection?.component}
       <StatusOfTheFundView
         allocations={allocations}
@@ -205,6 +219,7 @@ function StatusOfTheFundWrapper() {
         overview={overview}
         provisions={provisions}
         setEditingSection={setEditingSection}
+        setShowUploadDialog={setShowUploadDialog}
         showEditButton={ctx.isTreasurer}
       />
     </>

@@ -1,13 +1,13 @@
 import { useState } from 'react'
 
 import FormDialog from '../../FormDialog'
-import { IEditIncomeDialogProps } from '../types'
+import { IEditMiscellaneousIncomeDialogProps } from '../types'
 import { NumberInput, SearchableSelectInput, TextareaInput } from './editInputs'
 
-const EditMiscellaneousIncomeDialog = (props: IEditIncomeDialogProps) => {
+const EditMiscellaneousIncomeDialog = (
+  props: IEditMiscellaneousIncomeDialogProps,
+) => {
   const {
-    agencyOptions,
-    allocations,
     handleSubmitEditDialog,
     meetingOptions,
     onCancel,

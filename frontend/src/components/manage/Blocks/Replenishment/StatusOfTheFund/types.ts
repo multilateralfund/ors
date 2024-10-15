@@ -9,10 +9,21 @@ export type InputOptionsType = Array<{
   value: string
 }>
 
-export interface IEditIncomeDialogProps extends React.PropsWithChildren {
+export interface IEditIncomeDialogProps
+  extends IEditMiscellaneousIncomeDialogProps {
   agencyOptions: InputOptionsType
   allocations: IALLOCATIONS
+}
+
+export interface IEditMiscellaneousIncomeDialogProps {
   handleSubmitEditDialog: (formData: any, field: string) => void
+  meetingOptions: InputOptionsType
+  onCancel: () => void
+  yearOptions: InputOptionsType
+}
+
+export interface IUploadDocumentsProps {
+  handleUploadDocuments: (formData: any) => void
   meetingOptions: InputOptionsType
   onCancel: () => void
   yearOptions: InputOptionsType
