@@ -1,8 +1,6 @@
 'use client'
 
-import {
-  ApiReplenishmentInvoice,
-} from '@ors/types/api_replenishment_invoices'
+import { ApiReplenishmentInvoice } from '@ors/types/api_replenishment_invoices'
 
 import React, {
   ChangeEventHandler,
@@ -25,6 +23,7 @@ import {
   FieldInput,
   FieldMultiSelect,
   FieldSearchableSelect,
+  FieldTextLine,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceAttachments'
 import useGetInvoices from '@ors/components/manage/Blocks/Replenishment/Invoices/useGetInvoices'
@@ -135,6 +134,17 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
             ...updated,
           }
         })
+      } else {
+        setFields((prev) => {
+          const updated = {
+            is_ferm: countryInfo?.opted_for_ferm || false,
+          }
+
+          return {
+            ...prev,
+            ...updated,
+          }
+        })
       }
     },
     [countryInfo, isEdit],
@@ -147,12 +157,26 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
 
   const handleChangeAmount: ChangeEventHandler<HTMLInputElement> = (evt) => {
     const amount = evt.target.value
-    const nrAmount = getFloat(amount)
+    const nrAmount = getFloat(amount) || 1
     setFields((prev) => ({
       ...prev,
       amount,
-      amount_local_currency: (
-        nrAmount * (countryInfo?.exchange_rate || 1)
+      exchange_rate: (
+        getFloat(fields.amount_local_currency) / nrAmount
+      ).toString(),
+    }))
+  }
+
+  const handleChangeCurrencyAmount: ChangeEventHandler<HTMLInputElement> = (
+    evt,
+  ) => {
+    const currencyAmount = evt.target.value
+    const nrCurrencyAmount = getFloat(currencyAmount) || 0
+    setFields((prev) => ({
+      ...prev,
+      amount_local_currency: currencyAmount,
+      exchange_rate: (
+        getFloat(nrCurrencyAmount) / getFloat(fields.amount)
       ).toString(),
     }))
   }
@@ -189,16 +213,12 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
 
   useEffect(
     function () {
-      const arrears_or_deferred = (
-        fields.payment_for_years.includes('arrears')
-        || fields.payment_for_years.includes('Arrears')
-        || fields.payment_for_years.includes('deferred')
-        || fields.payment_for_years.includes('Deferred')
-      )
-      if (
-        fields.invoices.length > 0
-        && arrears_or_deferred
-      ) {
+      const arrears_or_deferred =
+        fields.payment_for_years.includes('arrears') ||
+        fields.payment_for_years.includes('Arrears') ||
+        fields.payment_for_years.includes('deferred') ||
+        fields.payment_for_years.includes('Deferred')
+      if (fields.invoices.length > 0 && arrears_or_deferred) {
         setFields(function (prev) {
           return {
             ...prev,
@@ -236,6 +256,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
         </FieldSearchableSelect>
         <FieldInput
           id="is_ferm"
+          className="grow-0"
           checked={fields.is_ferm}
           label="Country opted for FERM"
           type="checkbox"
@@ -257,11 +278,10 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
             ))}
           </FieldMultiSelect>
         ) : (
-          <Field id="no_invoices" label={columns.invoice_numbers.label}>
-            <span id="no_invoices" className="ml-4">
-              No invoices found for this country
-            </span>
-          </Field>
+          <FieldTextLine
+            label={columns.invoice_numbers.label}
+            text={'No invoices found for this country'}
+          />
         )}
         <FieldMultiSelect
           id="payment_for_years"
@@ -278,7 +298,11 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
             Deferred
           </option>
           {yearOptions.map((year) => (
-            <option key={year.value} className="text-primary" value={year.value}>
+            <option
+              key={year.value}
+              className="text-primary"
+              value={year.value}
+            >
               {year.label}
             </option>
           ))}
@@ -312,17 +336,25 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
           id="amount_local_currency"
           decimalDigits={5}
           disabled={!fields.is_ferm}
-          label={`"${fields.currency}" amount`}
           readOnly={!fields.is_ferm}
           value={fields.amount_local_currency}
-          onChange={updateField('amount_local_currency')}
+          label={
+            fields.currency
+              ? `"${fields.currency}" amount`
+              : 'Local currency amount'
+          }
+          onChange={
+            fields.is_ferm
+              ? handleChangeCurrencyAmount
+              : updateField('amount_local_currency')
+          }
         />
         <FieldFormattedNumberInput
           id="exchange_rate"
           disabled={!fields.is_ferm}
           label={columns.exchange_rate.label}
           readOnly={!fields.is_ferm}
-          value={fields.is_ferm ? fields.exchange_rate: ''}
+          value={fields.is_ferm ? fields.exchange_rate : ''}
           onChange={updateField('exchange_rate')}
         />
         <FieldFormattedNumberInput

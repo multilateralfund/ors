@@ -55,9 +55,9 @@ function TabContentDetails(props: TabContentDetailsProps) {
   const yearOptions = scAnnualOptions(ctx.periods)
 
   const statusOptions = [
-    {label: 'Paid', value: 'paid'},
-    {label: 'Partially Paid', value: 'partially_paid'},
-    {label: 'Pending', value: 'pending'},
+    { label: 'Paid', value: 'paid' },
+    { label: 'Partially Paid', value: 'partially_paid' },
+    { label: 'Pending', value: 'pending' },
   ]
 
   function handleCountrySelect(value: string) {
@@ -94,6 +94,7 @@ function TabContentDetails(props: TabContentDetailsProps) {
       </FieldSearchableSelect>
       <FieldInput
         id="is_ferm"
+        className="grow-0"
         checked={fields.is_ferm}
         label="Country opted for FERM"
         type="checkbox"
@@ -158,7 +159,11 @@ function TabContentDetails(props: TabContentDetailsProps) {
       >
         <option value="" disabled hidden></option>
         {statusOptions.map((option) => (
-          <option key={option.value} className="text-primary" value={option.value}>
+          <option
+            key={option.value}
+            className="text-primary"
+            value={option.value}
+          >
             {option.label}
           </option>
         ))}
@@ -218,7 +223,9 @@ function TabContentAmount(props: TabContentAmountProps) {
             decimalDigits={5}
             label="USD amount"
             value={fields.amount}
-            onChange={fields.is_ferm ? handleChangeAmount : updateField('amount')}
+            onChange={
+              fields.is_ferm ? handleChangeAmount : updateField('amount')
+            }
           />
         </div>
         {!fields.country_id && (
@@ -268,7 +275,7 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
     date_sent_out: data?.date_sent_out ?? '',
     exchange_rate: data?.exchange_rate ?? '',
     is_ferm: data?.is_ferm ?? false,
-    status: data?.status ?? '',
+    status: data?.status ?? 'pending',
     year: data?.year ?? '',
   })
 

@@ -282,6 +282,8 @@ class InvoiceCreateSerializer(serializers.ModelSerializer):
         write_only=True,
     )
 
+    is_arrears = serializers.BooleanField(required=False)
+
     replenishment_id = serializers.PrimaryKeyRelatedField(
         queryset=Replenishment.objects.all().values_list("id", flat=True),
         write_only=True,
@@ -317,6 +319,7 @@ class InvoiceCreateSerializer(serializers.ModelSerializer):
             "replenishment_id",
             "is_ferm",
             "year",
+            "is_arrears",
             "status",
             "amount",
             "currency",

@@ -25,6 +25,7 @@ export type PaymentForSubmit = {
   exchange_rate: number | string
   ferm_gain_or_loss: number | string
   invoices?: string[]
+  is_ferm?: string
   payment_for_years?: string[]
 } & { [key: string]: File }
 

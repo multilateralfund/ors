@@ -11,13 +11,11 @@ import React, {
 
 import cx from 'classnames'
 
-import { BaseButton } from '@ors/components/ui/Button/Button'
 import { debounce } from '@ors/helpers'
 import useClickOutside from '@ors/hooks/useClickOutside'
 
 import ClearButton from './ClearButton'
 import Input from './Input'
-import { CLASSESS, CSS_MASKED, STYLE } from './constants'
 
 function getSelectedOption(value: string, options: IOption[]) {
   let result: IOption | null = null
@@ -259,20 +257,12 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
     }
   }
 
-  useEffect(function () {
-    // Prevent having the select open if it's the first element in the form.
-    debounce(function () {
-      inputRef.current?.blur()
-      setShowPicker(false)
-    }, 100)
-  }, [])
-
   useEffect(() => {
     if (selectRef.current) {
       const options = getOptions(selectRef.current)
       setOptions(options)
 
-      if (defaultValue && defaultValue === selectRef.current.value) {
+      if (defaultValue && defaultValue.toString() === selectRef.current.value) {
         const selectedOption = getSelectedOption(
           defaultValue?.toString() || '',
           options,
