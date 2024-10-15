@@ -7,6 +7,7 @@ from numpy import nan
 
 from core.models import (
     DisputedContribution,
+    ExternalIncome,
     ExternalIncomeAnnual,
     FermGainLoss,
     ScaleOfAssessment,
@@ -165,7 +166,7 @@ def parse_interest(interest_df, countries):
                         interest_earned=quarterly_amount,
                         agency_name=current_agency_name,
                     )
-            )
+                )
 
         if not quarterly_data_exists:
             if parsing_triennial is False:
@@ -189,11 +190,27 @@ def parse_interest(interest_df, countries):
                     )
                 )
 
-
     ExternalIncomeAnnual.objects.bulk_create(external_incomes)
     logger.info(
         f"Imported {len(external_incomes)} ExternalIncomeAnnual objects "
         f"from the consolidated data file."
+    )
+
+    misc_incomes = [
+        ExternalIncomeAnnual(
+            triennial_start_year=misc_income.start_year,
+            year=None,
+            quarter=None,
+            miscellaneous_income=misc_income.miscellaneous_income,
+        )
+        for misc_income in ExternalIncome.objects.filter(
+            miscellaneous_income__gte=0
+        ).all()
+    ]
+    ExternalIncomeAnnual.objects.bulk_create(misc_incomes)
+    logger.info(
+        f"Also created {len(misc_incomes)} ExternalIncomeAnnual objects "
+        f"based on existing triennial miscellaneous income data."
     )
 
 
