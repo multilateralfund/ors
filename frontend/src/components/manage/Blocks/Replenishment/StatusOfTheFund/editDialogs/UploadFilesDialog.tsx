@@ -51,6 +51,7 @@ const UploadFilesDialog = (props: IUploadDocumentsProps) => {
               setFormData={setFormData}
             />
             <TextareaInput
+              className="h-[100px] w-[250px]"
               field={'comment'}
               label={'Comment'}
               setFormData={setFormData}

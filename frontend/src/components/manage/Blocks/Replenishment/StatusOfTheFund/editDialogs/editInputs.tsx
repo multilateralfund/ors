@@ -1,3 +1,5 @@
+import cx from 'classnames'
+
 import {
   FormattedNumberInput,
   Input,
@@ -10,6 +12,7 @@ import {
   IInputWrapper,
   INumberInputProps,
   ISelectInputProps,
+  ITextAreaProps,
 } from '../types'
 import {
   handleClearSelect,
@@ -105,11 +108,16 @@ export const NumberInput = ({
   </InputWrapper>
 )
 
-export const TextareaInput = ({ field, label, setFormData }: IInputProps) => (
+export const TextareaInput = ({
+  className,
+  field,
+  label,
+  setFormData,
+}: ITextAreaProps) => (
   <InputWrapper id={field} label={label}>
     <Input
       id={field}
-      className="!ml-0"
+      className={cx('!ml-0', className)}
       type="text-area"
       onChange={(event) => handleInputChange(event, setFormData, field)}
     />

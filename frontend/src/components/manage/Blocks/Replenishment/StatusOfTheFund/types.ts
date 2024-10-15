@@ -60,6 +60,10 @@ export interface ISelectInputProps extends IInputProps {
   value?: string
 }
 
+export interface ITextAreaProps extends IInputProps {
+  className?: string
+}
+
 export interface IHandleClearInputChange {
   (setFormData: Dispatch<SetStateAction<any>>, name: string): void
 }
