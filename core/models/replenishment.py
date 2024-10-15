@@ -202,6 +202,8 @@ class Invoice(models.Model):
     year = models.IntegerField(null=True, blank=True)
     is_arrears = models.BooleanField(default=False)
 
+    is_ferm = models.BooleanField(default=False)
+
     status = models.CharField(
         max_length=20, choices=InvoiceStatus.choices, default=InvoiceStatus.PENDING
     )

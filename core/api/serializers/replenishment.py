@@ -223,6 +223,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
             "replenishment",
             "year",
             "is_arrears",
+            "is_ferm",
             "status",
             "amount",
             "currency",
@@ -275,6 +276,8 @@ class InvoiceCreateSerializer(serializers.ModelSerializer):
         required=False,
     )
 
+    is_ferm = serializers.BooleanField(allow_null=True)
+
     status = serializers.CharField(required=False, allow_null=True)
     amount = serializers.DecimalField(
         max_digits=30, decimal_places=15, coerce_to_string=False
@@ -299,6 +302,7 @@ class InvoiceCreateSerializer(serializers.ModelSerializer):
         fields = [
             "country_id",
             "replenishment_id",
+            "is_ferm",
             "year",
             "status",
             "amount",
