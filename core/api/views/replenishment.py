@@ -1704,6 +1704,53 @@ class ReplenishmentPaymentViewSet(
             return True
         return False
 
+    def _set_scale_of_assessment_ferm(self, payment, is_ferm):
+        if is_ferm is not None and payment.payment_for_years:
+            years_list = [
+                int(year)
+                for year in payment.payment_for_years
+                if year not in ["deferred", "arrears"]
+            ]
+            for year in years_list:
+                ScaleOfAssessment.objects.filter(
+                    version__replenishment__start_year__lte=year,
+                    version__replenishment__end_year__gte=year,
+                    version__is_final=True,
+                    country=payment.country,
+                ).update(opted_for_ferm=is_ferm)
+
+    def _set_annual_triennial_contributions(self, payment):
+        """
+        Assumes that Annual/Triennial ContributionStatus objects exist for the payment's
+        country & years.
+
+        Assumes calling method/block is wrapped in transaction.atomic.
+        """
+        years_list = []
+        if payment.payment_for_years:
+            years_list = [
+                int(year)
+                for year in payment.payment_for_years
+                if year not in ["deferred", "arrears"]
+            ]
+        AnnualContributionStatus.objects.filter(
+            country=payment.country, year__in=years_list
+        ).update(
+            cash_payments=models.F("cash_payments") + payment.amount,
+            outstanding_contributions=models.F("outstanding_contributions")
+            - payment.amount,
+        )
+        for year in years_list:
+            # Updating objects one by one to avoid race conditions
+            # (same triennial object might need to be updated multiple times)
+            TriennialContributionStatus.objects.filter(
+                country=payment.country, start_year__lte=year, end_year__gte=year
+            ).update(
+                cash_payments=models.F("cash_payments") + payment.amount,
+                outstanding_contributions=models.F("outstanding_contributions")
+                - payment.amount,
+            )
+
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         files = self._parse_payment_new_files(request)
@@ -1725,20 +1772,11 @@ class ReplenishmentPaymentViewSet(
         # Now create the files for this Payment
         self._create_new_payment_files(payment, files)
 
+        # Update the annual/triennial contributions
+        self._set_annual_triennial_contributions(payment)
+
         # And finally set the ScaleOfAssessment if all needed fields are specified
-        if is_ferm is not None and payment.payment_for_years:
-            years_list = [
-                int(year)
-                for year in payment.payment_for_years
-                if year not in ["deferred", "arrears"]
-            ]
-            for year in years_list:
-                ScaleOfAssessment.objects.filter(
-                    version__replenishment__start_year__lte=year,
-                    version__replenishment__end_year__gte=year,
-                    version__is_final=True,
-                    country=payment.country,
-                ).update(opted_for_ferm=is_ferm)
+        self._set_scale_of_assessment_ferm(payment, is_ferm)
 
         headers = self.get_success_headers(serializer.data)
         return Response(
@@ -1770,20 +1808,11 @@ class ReplenishmentPaymentViewSet(
         # And delete the ones that need to be deleted
         current_obj.payment_files.filter(id__in=files_to_delete).delete()
 
+        # Update the annual/triennial contributions
+        self._set_annual_triennial_contributions(current_obj)
+
         # And finally set the ScaleOfAssessment if all needed fields are specified
-        if is_ferm is not None and current_obj.payment_for_years:
-            years_list = [
-                int(year)
-                for year in current_obj.payment_for_years
-                if year not in ["deferred", "arrears"]
-            ]
-            for year in years_list:
-                ScaleOfAssessment.objects.filter(
-                    version__replenishment__start_year__lte=year,
-                    version__replenishment__end_year__gte=year,
-                    version__is_final=True,
-                    country=current_obj.country,
-                ).update(opted_for_ferm=is_ferm)
+        self._set_scale_of_assessment_ferm(current_obj, is_ferm)
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
