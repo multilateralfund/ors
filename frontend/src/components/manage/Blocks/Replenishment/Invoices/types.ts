@@ -22,6 +22,8 @@ export type ParsedInvoice = {
   files_data: ApiReplenishmentFile[]
   gray: boolean
   id: number
+  is_arrears: boolean
+  is_ferm: boolean
   iso3: string
   number: string
   replenishment: ApiReplenishment

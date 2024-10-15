@@ -252,6 +252,7 @@ interface InvoiceDialogFields {
   date_second_reminder: string
   date_sent_out: string
   exchange_rate: string
+  is_arrears: boolean
   is_ferm: boolean
   status: string
   year: string
@@ -274,6 +275,7 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
     date_second_reminder: data?.date_second_reminder ?? '',
     date_sent_out: data?.date_sent_out ?? '',
     exchange_rate: data?.exchange_rate ?? '',
+    is_arrears: data?.is_arrears ?? false,
     is_ferm: data?.is_ferm ?? false,
     status: data?.status ?? 'pending',
     year: data?.year ?? '',

@@ -113,6 +113,8 @@ function InvoicesView() {
         files: <ViewFiles files={data.invoice_files} />,
         files_data: data.invoice_files,
         gray: !data.id,
+        is_arrears: data.is_arrears || false,
+        is_ferm: data.is_ferm || false,
         iso3: data.country.iso3,
         number: data.number?.toLocaleString(),
         replenishment: data.replenishment,
