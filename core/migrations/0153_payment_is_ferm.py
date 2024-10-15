@@ -21,7 +21,7 @@ def forwards_func(apps, schema_editor):
                 version__is_final=True,
                 country=payment.country,
             ).first()
-            if s:
+            if s and s.opted_for_ferm is not None:
                 payment.is_ferm = s.opted_for_ferm
                 payment.save(update_fields=["is_ferm"])
 
