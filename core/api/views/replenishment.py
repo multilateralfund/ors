@@ -875,8 +875,8 @@ class BilateralAssistanceViewSet(
         # pylint: disable=too-many-locals
         input_data = request.data
         amount = input_data.get("amount")
-        meeting_id = input_data.get("meeting")
-        decision = input_data.get("decision", "")
+        meeting_id = input_data.get("meeting_id")
+        decision = input_data.get("decision_number", "")
         if amount is None:
             raise ValidationError(
                 {"amount": "Bilateral assistance amount needs to be provided."}

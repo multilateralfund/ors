@@ -970,7 +970,7 @@ class TestBilateralAssistance(BaseTest):
             "year": year_1,
             "country_id": country.id,
             "amount": amount,
-            "meeting": meeting.id,
+            "meeting_id": meeting.id,
         }
 
         self.client.force_authenticate(user=treasurer_user)
