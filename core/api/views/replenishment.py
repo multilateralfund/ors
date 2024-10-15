@@ -1719,12 +1719,15 @@ class ReplenishmentPaymentViewSet(
                     country=payment.country,
                 ).update(opted_for_ferm=is_ferm)
 
-    def _set_annual_triennial_contributions(self, payment):
+    def _set_annual_triennial_contributions(self, payment, old_amount=None):
         """
         Assumes that Annual/Triennial ContributionStatus objects exist for the payment's
         country & years.
 
         Assumes calling method/block is wrapped in transaction.atomic.
+
+        For updates the `old_value` parameter is used; if it's set, we will substract
+        the old amount from the cash payments and only then add the new amount.
         """
         years_list = []
         if payment.payment_for_years:
@@ -1733,12 +1736,15 @@ class ReplenishmentPaymentViewSet(
                 for year in payment.payment_for_years
                 if year not in ["deferred", "arrears"]
             ]
+        amount_to_add = payment.amount
+        if old_amount is not None:
+            amount_to_add -= old_amount
         AnnualContributionStatus.objects.filter(
             country=payment.country, year__in=years_list
         ).update(
-            cash_payments=models.F("cash_payments") + payment.amount,
+            cash_payments=models.F("cash_payments") + amount_to_add,
             outstanding_contributions=models.F("outstanding_contributions")
-            - payment.amount,
+            - amount_to_add,
         )
         for year in years_list:
             # Updating objects one by one to avoid race conditions
@@ -1746,9 +1752,9 @@ class ReplenishmentPaymentViewSet(
             TriennialContributionStatus.objects.filter(
                 country=payment.country, start_year__lte=year, end_year__gte=year
             ).update(
-                cash_payments=models.F("cash_payments") + payment.amount,
+                cash_payments=models.F("cash_payments") + amount_to_add,
                 outstanding_contributions=models.F("outstanding_contributions")
-                - payment.amount,
+                - amount_to_add,
             )
 
     @transaction.atomic
@@ -1787,6 +1793,8 @@ class ReplenishmentPaymentViewSet(
     def update(self, request, *args, **kwargs):
         current_obj = self.get_object()
 
+        previous_amount = current_obj.amount
+
         # request.data is not mutable and we need to perform some string-bollean magic
         # for the is_ferm field, because we receive it from a forn.
         request_data = request.data.copy()
@@ -1809,7 +1817,7 @@ class ReplenishmentPaymentViewSet(
         current_obj.payment_files.filter(id__in=files_to_delete).delete()
 
         # Update the annual/triennial contributions
-        self._set_annual_triennial_contributions(current_obj)
+        self._set_annual_triennial_contributions(current_obj, old_amount=previous_amount)
 
         # And finally set the ScaleOfAssessment if all needed fields are specified
         self._set_scale_of_assessment_ferm(current_obj, is_ferm)
