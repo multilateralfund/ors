@@ -1285,24 +1285,10 @@ class TestReplenishmentDashboardStatistics(BaseTest):
             interest_earned=decimal.Decimal("100"),
             miscellaneous_income=decimal.Decimal("200"),
         )
-        # TODO: hack to ensure endpoint returns the expected data. Remove once
-        # everything is migrated to the ExternalIncomeAnnual model!
-        ExternalIncome.objects.create(
-            start_year=self.year_1,
-            end_year=self.year_2,
-            miscellaneous_income=external_income_1.miscellaneous_income,
-        )
         external_income_2 = ExternalIncomeAnnual.objects.create(
             triennial_start_year=self.year_3,
             interest_earned=decimal.Decimal("300"),
             miscellaneous_income=decimal.Decimal("400"),
-        )
-        # TODO: hack to ensure endpoint returns the expected data. Remove once
-        # everything is migrated to the ExternalIncomeAnnual model!
-        ExternalIncome.objects.create(
-            start_year=self.year_3,
-            end_year=self.year_4,
-            miscellaneous_income=external_income_2.miscellaneous_income,
         )
 
         self.client.force_authenticate(user=user)
