@@ -26,7 +26,6 @@ from core.api.tests.factories import (
     MeetingFactory,
 )
 from core.models import (
-    ExternalIncome,
     ExternalIncomeAnnual,
     ExternalAllocation,
     ScaleOfAssessment,
@@ -1110,11 +1109,9 @@ class TestReplenishmentDashboard(BaseTest):
                     + contribution_3.promissory_notes
                     + contribution_4.promissory_notes
                 ).quantize(self.fifteen_decimals),
-                "miscellaneous_income": Decimal(0),
-                # TODO: reinstate once data is fully migrated to ExternalIncomeAnnual
-                # "miscellaneous_income": external_income.miscellaneous_income.quantize(
-                #     self.fifteen_decimals
-                # ),
+                "miscellaneous_income": external_income.miscellaneous_income.quantize(
+                    self.fifteen_decimals
+                ),
             },
             "allocations": {
                 "undp": external_allocation.undp.quantize(self.fifteen_decimals),
