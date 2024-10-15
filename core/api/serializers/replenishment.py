@@ -475,7 +475,9 @@ class DisputedContributionCreateSerializer(serializers.ModelSerializer):
         allow_null=True,
         required=False,
     )
-    decision_number = serializers.CharField(allow_null=True, required=False)
+    decision_number = serializers.CharField(
+        allow_null=True, allow_blank=True, required=False
+    )
     comment = serializers.CharField(allow_blank=True, required=False)
 
     class Meta:
