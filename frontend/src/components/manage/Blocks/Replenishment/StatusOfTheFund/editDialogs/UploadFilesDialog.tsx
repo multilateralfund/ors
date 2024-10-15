@@ -1,14 +1,16 @@
 import { useState } from 'react'
 
 import FormDialog from '../../FormDialog'
-import { IEditMiscellaneousIncomeDialogProps } from '../types'
-import { NumberInput, SearchableSelectInput, TextareaInput } from './editInputs'
+import { IUploadDocumentsProps } from '../types'
+import {
+  SearchableSelectInput,
+  TextareaInput,
+  UploadDocumentsInput,
+} from './editInputs'
 
-const EditMiscellaneousIncomeDialog = (
-  props: IEditMiscellaneousIncomeDialogProps,
-) => {
+const UploadFilesDialog = (props: IUploadDocumentsProps) => {
   const {
-    handleSubmitEditDialog,
+    handleUploadDocuments,
     meetingOptions,
     onCancel,
     yearOptions,
@@ -19,9 +21,9 @@ const EditMiscellaneousIncomeDialog = (
 
   return (
     <FormDialog
-      title="Miscellaneous income:"
+      title="Upload documents:"
       onCancel={onCancel}
-      onSubmit={() => handleSubmitEditDialog(formData, 'external-income')}
+      onSubmit={handleUploadDocuments}
       {...dialogProps}
     >
       <div className="flex flex-col gap-y-4">
@@ -43,12 +45,13 @@ const EditMiscellaneousIncomeDialog = (
         </div>
         <div className="flex flex-col gap-y-4">
           <div className="flex gap-x-4">
-            <NumberInput
-              field="miscellaneous_income"
-              label="Amount"
+            <UploadDocumentsInput
+              field={'files'}
+              label={'Upload'}
               setFormData={setFormData}
             />
             <TextareaInput
+              className="h-[100px] w-[250px]"
               field={'comment'}
               label={'Comment'}
               setFormData={setFormData}
@@ -60,4 +63,4 @@ const EditMiscellaneousIncomeDialog = (
   )
 }
 
-export default EditMiscellaneousIncomeDialog
+export default UploadFilesDialog

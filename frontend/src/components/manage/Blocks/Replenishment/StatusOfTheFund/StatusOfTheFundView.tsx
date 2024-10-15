@@ -109,6 +109,7 @@ interface IStatusOfTheFundProps {
   overview: IOVERVIEW
   provisions: IPROVISIONS
   setEditingSection: Dispatch<SetStateAction<null | string>>
+  setShowUploadDialog: Dispatch<SetStateAction<boolean>>
   showEditButton: boolean
 }
 
@@ -121,6 +122,7 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
     overview,
     provisions,
     setEditingSection,
+    setShowUploadDialog,
     showEditButton,
   } = props
 
@@ -132,22 +134,32 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
         <div className="py-4">
           <p className="m-0 text-2xl">{asOfDate} ( USD )</p>
         </div>
-        {showEditButton && !isEditing && (
-          <SubmitButton
-            className="tracking-widest print:hidden"
-            onClick={() => setIsEditing(!isEditing)}
-          >
-            Edit
-          </SubmitButton>
-        )}
-        {isEditing && (
-          <CancelButton
-            className="tracking-widest print:hidden"
-            onClick={() => setIsEditing(!isEditing)}
-          >
-            Cancel
-          </CancelButton>
-        )}
+        <div className="flex gap-2">
+          {showEditButton && !isEditing && (
+            <SubmitButton
+              className="tracking-widest print:hidden"
+              onClick={() => setIsEditing(!isEditing)}
+            >
+              Edit
+            </SubmitButton>
+          )}
+          {isEditing && (
+            <CancelButton
+              className="tracking-widest print:hidden"
+              onClick={() => setIsEditing(!isEditing)}
+            >
+              Cancel
+            </CancelButton>
+          )}
+          {showEditButton && (
+            <SubmitButton
+              className="tracking-widest print:hidden"
+              onClick={() => setShowUploadDialog(true)}
+            >
+              Upload documents
+            </SubmitButton>
+          )}
+        </div>
       </div>
 
       <div

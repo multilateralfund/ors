@@ -19,6 +19,7 @@ import EditMiscellaneousIncomeDialog from './editDialogs/EditMiscellaneousIncome
 import EditMonitoringFeesDialog from './editDialogs/EditMonitoringFeesDialog'
 import EditStaffContractsDialog from './editDialogs/EditStaffContractsDialog'
 import EditTreasuryFeesDialog from './editDialogs/EditTreasuryFeesDialog'
+import UploadFilesDialog from './editDialogs/UploadFilesDialog'
 
 function StatusOfTheFundWrapper() {
   const { invalidateDataFn, newData } = useGetDashboardData()
@@ -46,9 +47,12 @@ function StatusOfTheFundWrapper() {
 
   const yearOptions = scAnnualOptions(ctx.periods)
 
-  const [editingSection, setEditingSection] = useState<null | string>(null)
-
   const { enqueueSnackbar } = useSnackbar()
+
+  const [editingSection, setEditingSection] = useState<null | string>(null)
+  const [showUploadDialog, setShowUploadDialog] = useState(false)
+
+  const handleCloseUploadDialog = () => setShowUploadDialog(false)
 
   function handleEditCancel() {
     setEditingSection(null)
@@ -112,6 +116,52 @@ function StatusOfTheFundWrapper() {
       })
   }
 
+  const handleUploadDocuments = (formData: any) => {
+    const entry = Object.fromEntries(formData.entries())
+
+    const meetingId = entry.meeting_id
+    const year = entry.year
+
+    entry.meeting_id = !!meetingId ? parseInt(meetingId) : meetingId
+    entry.year = !!year ? parseInt(year) : year
+
+    const data = new FormData()
+
+    for (const key in entry) {
+      const value = entry[key]
+
+      if (!key.startsWith('file_')) {
+        const valueIsNotAFile = value as unknown as
+          | null
+          | string
+          | string[]
+          | undefined
+        if (
+          valueIsNotAFile !== null &&
+          typeof valueIsNotAFile === 'object' &&
+          valueIsNotAFile.length
+        ) {
+          for (let i = 0; i < valueIsNotAFile.length; i++) {
+            data.append(key, valueIsNotAFile[i])
+          }
+        } else if (
+          valueIsNotAFile !== null &&
+          valueIsNotAFile !== undefined &&
+          valueIsNotAFile !== ''
+        ) {
+          data.append(key, valueIsNotAFile as string)
+        }
+      }
+      if (key.startsWith('file_') && entry[key] instanceof File) {
+        const fileIndex = key.split('_')[1]
+        data.append(`files[${fileIndex}][file]`, entry[key], entry[key].name)
+      }
+    }
+
+    enqueueSnackbar('Data updated successfully', { variant: 'success' })
+    handleCloseUploadDialog()
+  }
+
   const editableFields = [
     ...allocationsOrder.map((allocation) => ({
       component: (
@@ -148,8 +198,6 @@ function StatusOfTheFundWrapper() {
       component: (
         <EditMiscellaneousIncomeDialog
           {...{
-            agencyOptions,
-            allocations,
             handleSubmitEditDialog,
             meetingOptions,
             yearOptions,
@@ -196,6 +244,16 @@ function StatusOfTheFundWrapper() {
 
   return (
     <>
+      {showUploadDialog && (
+        <UploadFilesDialog
+          {...{
+            handleUploadDocuments,
+            meetingOptions,
+            yearOptions,
+          }}
+          onCancel={handleCloseUploadDialog}
+        />
+      )}
       {currentEditingSection?.component}
       <StatusOfTheFundView
         allocations={allocations}
@@ -205,6 +263,7 @@ function StatusOfTheFundWrapper() {
         overview={overview}
         provisions={provisions}
         setEditingSection={setEditingSection}
+        setShowUploadDialog={setShowUploadDialog}
         showEditButton={ctx.isTreasurer}
       />
     </>
