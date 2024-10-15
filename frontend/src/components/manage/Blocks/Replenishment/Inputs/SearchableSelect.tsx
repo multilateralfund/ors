@@ -321,7 +321,7 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
           type="text"
           value={searchValue}
           onChange={(evt) => setSearchValue(evt.target.value.toLowerCase())}
-          onFocus={handleInputFocus}
+          onClick={handleInputFocus}
           onKeyDown={handleInputKeyDown}
         ></Input>
         {withClear && <ClearButton className="right-4" onClick={handleClear} />}
