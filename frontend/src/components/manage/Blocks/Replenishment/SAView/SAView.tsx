@@ -386,7 +386,12 @@ function DateRangeInput(props: DateRangeInputProps) {
         value={start}
         onChange={handleChangeStart}
       />
-      <DateInput disabled={disabled} value={end} onChange={handleChangeEnd} />
+      <DateInput
+        disabled={disabled}
+        min={start}
+        value={end}
+        onChange={handleChangeEnd}
+      />
     </div>
   )
 }
@@ -484,7 +489,12 @@ function formatCurrencyDateRangeForHeader(dateRange: {
 }) {
   const { end, start } = dateRange
   const intl = new Intl.DateTimeFormat('en-US', { month: 'short' })
-  return `${start.getUTCDate()} ${intl.format(start)} - ${end.getUTCDate()} ${intl.format(end)} ${start.getUTCFullYear()}`
+  const sameYear = end.getUTCFullYear() == start.getUTCFullYear()
+  const strStart = sameYear
+    ? `${start.getUTCDate()} ${intl.format(start)}`
+    : `${start.getUTCDate()} ${intl.format(start)} ${start.getUTCFullYear()}`
+  const strEnd = `${end.getUTCDate()} ${intl.format(end)} ${end.getUTCFullYear()}`
+  return `${strStart} - ${strEnd}`
 }
 
 function revertAllCurrencyNames(rows: SAContribution[], value: any) {
@@ -833,10 +843,10 @@ function SAView(props: SAViewProps) {
   return (
     <>
       <div className="flex items-center justify-between">
-        <div className="flex py-4 sm:flex-col 2xl:flex-row 2xl:items-center 2xl:gap-x-4 print:hidden">
+        <div className="flex items-center gap-x-4 py-4 print:hidden">
           <div className="flex items-center gap-x-4 py-4">
-            <div className="flex items-center">
-              <label htmlFor="triannualBudget_mask">
+            <div className="flex flex-col gap-y-2 2xl:flex-row 2xl:items-center">
+              <label className="pl-4 2xl:pl-0" htmlFor="triannualBudget_mask">
                 <div className="flex flex-col uppercase text-primary">
                   <span className="font-bold">Triannual budget</span>
                   <span className="">(in USD)</span>
@@ -851,8 +861,8 @@ function SAView(props: SAViewProps) {
               />
             </div>
             <div className="h-8 border-y-0 border-l border-r-0 border-solid border-gray-400"></div>
-            <div className="flex items-center">
-              <label htmlFor="triannualBudget_mask">
+            <div className="flex flex-col gap-y-2 2xl:flex-row 2xl:items-center">
+              <label className="pl-4 2xl:pl-0" htmlFor="triannualBudget_mask">
                 <div className="flex flex-col uppercase text-primary">
                   <span className="font-bold">Previously unused sum</span>
                   <span className="">(in USD)</span>
@@ -867,8 +877,8 @@ function SAView(props: SAViewProps) {
               />
             </div>
             <div className="h-8 border-y-0 border-l border-r-0 border-solid border-gray-400"></div>
-            <div className="flex items-center">
-              <label htmlFor="totalAmount_mask">
+            <div className="flex flex-col gap-y-2 2xl:flex-row 2xl:items-center">
+              <label className="pl-4 2xl:pl-0" htmlFor="totalAmount_mask">
                 <div className="flex flex-col uppercase text-primary">
                   <span className="font-bold">Annual budget</span>
                   <span className="">(in USD)</span>
@@ -886,8 +896,8 @@ function SAView(props: SAViewProps) {
             </div>
           </div>
           <div className="h-8 border-y-0 border-l border-r-0 border-solid border-gray-400 sm:hidden 2xl:block"></div>
-          <div className="flex items-center">
-            <label>
+          <div className="flex flex-col gap-y-2 2xl:flex-row 2xl:items-center">
+            <label className="pl-4 2xl:pl-0">
               <div className="flex flex-col uppercase text-primary">
                 <span className="max-w-28 font-bold">
                   Currency rate date range
