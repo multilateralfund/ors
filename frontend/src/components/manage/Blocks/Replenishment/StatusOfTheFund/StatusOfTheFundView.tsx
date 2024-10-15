@@ -1,7 +1,9 @@
+import { Dispatch, SetStateAction, useState } from 'react'
+
 import cx from 'classnames'
 
 import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils'
-import { SubmitButton } from '@ors/components/ui/Button/Button'
+import { CancelButton, SubmitButton } from '@ors/components/ui/Button/Button'
 
 import {
   IALLOCATIONS,
@@ -9,32 +11,10 @@ import {
   IOVERVIEW,
   IPROVISIONS,
 } from '../Dashboard/useGetDashboardDataTypes'
+import { allocationsOrder, incomeOrder, provisionsOrder } from './constants'
 
+import { FaEdit } from 'react-icons/fa'
 import { IoInformationCircleOutline } from 'react-icons/io5'
-
-const incomeOrder: (keyof IINCOME)[] = [
-  'cash_payments',
-  'promissory_notes',
-  'bilateral_assistance',
-  'interest_earned',
-  'miscellaneous_income',
-]
-
-const allocationsOrder: (keyof IALLOCATIONS)[] = [
-  'undp',
-  'unep',
-  'unido',
-  'world_bank',
-]
-const provisionsOrder: (keyof IPROVISIONS)[] = [
-  'staff_contracts',
-  'treasury_fees',
-  'monitoring_fees',
-  'technical_audit',
-  'information_strategy',
-  'bilateral_assistance',
-  'gain_loss',
-]
 
 interface ICashCardProps {
   className?: string
@@ -67,13 +47,29 @@ function CashCard(props: ICashCardProps) {
 
 interface IMiniCashCardProps {
   className?: string
+  editableFields: Array<string>
+  field: string
   info_text?: string
+  isEditing: boolean
   label: React.ReactNode
+  setEditingSection: Dispatch<SetStateAction<null | string>>
   value: null | number | string
 }
 
 function MiniCashCard(props: IMiniCashCardProps) {
-  const { className, info_text, label, value } = props
+  const {
+    className,
+    editableFields,
+    field,
+    info_text,
+    isEditing,
+    label,
+    setEditingSection,
+    value,
+  } = props
+
+  const shouldShowButton = isEditing && editableFields.includes(field)
+
   return (
     <div className={cx('flex flex-col gap-y-2', className)}>
       <div className="uppercase text-[#4D4D4D]">
@@ -86,6 +82,13 @@ function MiniCashCard(props: IMiniCashCardProps) {
                 title={info_text}
               />
             ) : null}
+            {shouldShowButton && (
+              <FaEdit
+                className="ml-1.5 inline cursor-pointer text-secondary print:hidden"
+                size={16}
+                onClick={() => setEditingSection(field)}
+              />
+            )}
           </span>
         </div>
       </div>
@@ -101,10 +104,11 @@ function MiniCashCard(props: IMiniCashCardProps) {
 interface IStatusOfTheFundProps {
   allocations: IALLOCATIONS
   asOfDate: string
+  editableFields: Array<string>
   income: IINCOME
-  onEditButtonClick: () => void
   overview: IOVERVIEW
   provisions: IPROVISIONS
+  setEditingSection: Dispatch<SetStateAction<null | string>>
   showEditButton: boolean
 }
 
@@ -112,12 +116,15 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
   const {
     allocations,
     asOfDate,
+    editableFields,
     income,
-    onEditButtonClick,
     overview,
     provisions,
+    setEditingSection,
     showEditButton,
   } = props
+
+  const [isEditing, setIsEditing] = useState(false)
 
   return (
     <>
@@ -125,13 +132,21 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
         <div className="py-4">
           <p className="m-0 text-2xl">{asOfDate} ( USD )</p>
         </div>
-        {showEditButton && (
+        {showEditButton && !isEditing && (
           <SubmitButton
             className="tracking-widest print:hidden"
-            onClick={onEditButtonClick}
+            onClick={() => setIsEditing(!isEditing)}
           >
             Edit
           </SubmitButton>
+        )}
+        {isEditing && (
+          <CancelButton
+            className="tracking-widest print:hidden"
+            onClick={() => setIsEditing(!isEditing)}
+          >
+            Cancel
+          </CancelButton>
         )}
       </div>
 
@@ -186,8 +201,12 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
                       <MiniCashCard
                         key={key}
                         className="w-1/2"
+                        editableFields={editableFields}
+                        field={key}
                         info_text={income[key]?.info_text}
+                        isEditing={isEditing}
                         label={income[key].label}
+                        setEditingSection={setEditingSection}
                         value={
                           income[key].value !== null
                             ? formatNumberValue(income[key].value, 0, 0)
@@ -210,8 +229,12 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
                       <MiniCashCard
                         key={key}
                         className="w-1/4"
+                        editableFields={editableFields}
+                        field={key}
                         info_text={allocations[key]?.info_text}
+                        isEditing={isEditing}
                         label={allocations[key].label}
+                        setEditingSection={setEditingSection}
                         value={
                           allocations[key].value !== null
                             ? formatNumberValue(allocations[key].value, 0, 0)
@@ -226,8 +249,12 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
                       <MiniCashCard
                         key={key}
                         className="my-6 w-1/4"
+                        editableFields={editableFields}
+                        field={key}
                         info_text={provisions[key]?.info_text}
+                        isEditing={isEditing}
                         label={provisions[key].label}
+                        setEditingSection={setEditingSection}
                         value={
                           provisions[key].value !== null
                             ? formatNumberValue(provisions[key].value, 0, 0)

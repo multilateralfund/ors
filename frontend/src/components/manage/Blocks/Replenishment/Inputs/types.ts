@@ -19,15 +19,14 @@ export interface ISearchableSelectProps
   hasClear?: boolean
   onChange?: (value: string) => void
   onClear?: () => void
+  pickerClassName?: string
 }
 
 export interface IMultiSelectProps
   extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'onChange'> {
   defaultValue?: string[]
   hasClear?: boolean
-  onChange?: (
-    newValue: string[],
-  ) => void
+  onChange?: (newValue: string[]) => void
 }
 
 export interface IClearButtonProps {

@@ -23,6 +23,7 @@ from core.api.tests.factories import (
     TriennialContributionStatusFactory,
     ScaleOfAssessmentVersionFactory,
     CountryCEITStatusFactory,
+    MeetingFactory,
 )
 from core.models import (
     ExternalIncome,
@@ -2385,10 +2386,12 @@ class TestExternalAllocations(BaseTest):
     def test_external_allocations_create(self, treasurer_user):
         self.client.force_authenticate(user=treasurer_user)
 
+        meeting = MeetingFactory.create(number=3, date="2020-03-14")
         request_data = {
             "comment": "actual comment",
             "year": None,
             "undp": Decimal("200.143"),
+            "meeting_id": meeting.id,
         }
 
         response = self.client.post(self.url, data=request_data, format="json")
