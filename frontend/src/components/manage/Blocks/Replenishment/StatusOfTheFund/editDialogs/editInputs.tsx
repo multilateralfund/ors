@@ -4,6 +4,7 @@ import {
   SearchableSelect,
   Select,
 } from '../../Inputs'
+import InvoiceAttachments from '../../Invoices/InvoiceAttachments'
 import {
   IInputProps,
   IInputWrapper,
@@ -112,5 +113,15 @@ export const TextareaInput = ({ field, label, setFormData }: IInputProps) => (
       type="text-area"
       onChange={(event) => handleInputChange(event, setFormData, field)}
     />
+  </InputWrapper>
+)
+
+export const UploadDocumentsInput = ({
+  field,
+  label,
+  setFormData,
+}: IInputProps) => (
+  <InputWrapper id={field} label={label}>
+    <InvoiceAttachments oldFiles={[]} withFileType={false} />
   </InputWrapper>
 )
