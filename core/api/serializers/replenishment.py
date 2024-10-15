@@ -467,6 +467,12 @@ class DisputedContributionCreateSerializer(serializers.ModelSerializer):
     amount = serializers.DecimalField(
         max_digits=30, decimal_places=15, coerce_to_string=False
     )
+    meeting_id = serializers.PrimaryKeyRelatedField(
+        queryset=Meeting.objects.all().values_list("id", flat=True),
+        allow_null=True,
+        required=False,
+    )
+    decision_number = serializers.CharField(allow_null=True, required=False)
     comment = serializers.CharField(allow_blank=True, required=False)
 
     class Meta:
@@ -476,5 +482,7 @@ class DisputedContributionCreateSerializer(serializers.ModelSerializer):
             "country",
             "year",
             "amount",
+            "meeting_id",
+            "decision_number",
             "comment",
         ]

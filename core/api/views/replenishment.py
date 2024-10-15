@@ -869,15 +869,21 @@ class BilateralAssistanceViewSet(
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         """
-        This viewset actually only updates the bilateral_assistance field on
-        Annual/Triennial contribution statuses.
+        This viewset actually only updates the bilateral_assistance-related
+        fields on Annual/Triennial contribution statuses.
         """
         # pylint: disable=too-many-locals
         input_data = request.data
         amount = input_data.get("amount")
+        meeting_id = input_data.get("meeting")
+        decision = input_data.get("decision", "")
         if amount is None:
             raise ValidationError(
                 {"amount": "Bilateral assistance amount needs to be provided."}
+            )
+        if meeting_id is None:
+            raise ValidationError(
+                {"meeting": "Bilateral assistance meeting needs to be provided."}
             )
 
         try:
@@ -910,9 +916,26 @@ class BilateralAssistanceViewSet(
             ) from exc
 
         annual_contribution.bilateral_assistance = amount
-        annual_contribution.save(update_fields=["bilateral_assistance"])
+        annual_contribution.bilateral_assistance_meeting_id = meeting_id
+        annual_contribution.bilateral_assistance_decision_number = decision
+        annual_contribution.save(
+            update_fields=[
+                "bilateral_assistance",
+                "bilateral_assistance_meeting_id",
+                "bilateral_assistance_decision_number",
+            ]
+        )
+
         triennial_contribution.bilateral_assistance = amount
-        triennial_contribution.save(update_fields=["bilateral_assistance"])
+        triennial_contribution.bilateral_assistance_meeting_id = meeting_id
+        triennial_contribution.bilateral_assistance_decision_number = decision
+        triennial_contribution.save(
+            update_fields=[
+                "bilateral_assistance",
+                "bilateral_assistance_meeting_id",
+                "bilateral_assistance_decision_number",
+            ]
+        )
 
         return Response(status=status.HTTP_200_OK, data=[])
 
