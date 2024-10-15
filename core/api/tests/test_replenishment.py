@@ -978,7 +978,6 @@ class TestBilateralAssistance(BaseTest):
             reverse("replenishment-bilateral-assistance-list"),
             data=post_data,
         )
-        # Wimport ipdb; ipdb.set_trace()
         assert response.status_code == 200
 
         contribution_annual.refresh_from_db()
