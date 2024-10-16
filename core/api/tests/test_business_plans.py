@@ -1,13 +1,9 @@
-import io
-
-import openpyxl
 import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
 from unittest.mock import patch
 
 from core.api.tests.base import BaseTest
-from core.api.tests.conftest import pdf_text
 from core.api.tests.factories import (
     AgencyFactory,
     BPActivityFactory,
@@ -26,12 +22,7 @@ from core.api.tests.factories import (
 from core.models.business_plan import BPHistory, BusinessPlan
 
 pytestmark = pytest.mark.django_db
-# pylint: disable=C8008, W0221, W0613, R0913, C0302, R0914, R0915
-
-
-@pytest.fixture(name="new_agency")
-def _new_agency():
-    return AgencyFactory.create(name="Agency2", code="AG2")
+# pylint: disable=C8008, W0221, R0913, C0302, R0914, R0915
 
 
 @pytest.fixture(name="new_agency_user")
@@ -89,105 +80,6 @@ class TestBPChemicalTypeList(BaseTest):
                 "name": bp_chemical_type.name,
             }
         ]
-
-
-class TestBPExport(BaseTest):
-    url = reverse("bpactivity-export")
-
-    def test_export_anon(self, business_plan):
-        response = self.client.get(
-            self.url,
-            {
-                "year_start": business_plan.year_start,
-                "year_end": business_plan.year_end,
-            },
-        )
-        assert response.status_code == 403
-
-    def test_export(
-        self, user, business_plan, bp_activity, old_bp_activity, bp_activity_values
-    ):
-        self.client.force_authenticate(user=user)
-
-        response = self.client.get(
-            self.url,
-            {
-                "year_start": business_plan.year_start,
-                "year_end": business_plan.year_end,
-            },
-        )
-        assert response.status_code == 200
-        assert (
-            response.filename
-            == f"BusinessPlanActivities{business_plan.year_start}-{business_plan.year_end}.xlsx"
-        )
-
-        wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
-        sheet = wb.active
-        assert sheet["A2"].value == bp_activity.country.name
-        assert sheet["B2"].value == business_plan.agency.name
-        assert sheet["M2"].value == bp_activity.title
-
-        assert sheet["O2"].value == bp_activity_values[0].value_usd
-        assert sheet["P2"].value == bp_activity_values[0].value_odp
-        assert sheet["Q2"].value == bp_activity_values[0].value_mt
-
-        assert sheet["R2"].value == bp_activity_values[1].value_usd
-        assert sheet["S2"].value == bp_activity_values[1].value_odp
-        assert sheet["T2"].value == bp_activity_values[1].value_mt
-
-        assert sheet["U2"].value == bp_activity_values[2].value_usd
-        assert sheet["V2"].value == bp_activity_values[2].value_odp
-        assert sheet["W2"].value == bp_activity_values[2].value_mt
-
-        assert sheet["X2"].value == bp_activity_values[3].value_usd
-        assert sheet["Y2"].value == bp_activity_values[3].value_odp
-        assert sheet["Z2"].value == bp_activity_values[3].value_mt
-
-
-class TestBPPrint(BaseTest):
-    url = reverse("bpactivity-print")
-
-    def test_print_anon(self, business_plan):
-        response = self.client.get(
-            self.url,
-            {
-                "year_start": business_plan.year_start,
-                "year_end": business_plan.year_end,
-            },
-        )
-        assert response.status_code == 403
-
-    def test_print(
-        self,
-        user,
-        agency,
-        business_plan,
-        bp_activity,
-        old_bp_activity,
-        bp_activity_values,
-    ):
-        self.client.force_authenticate(user=user)
-
-        response = self.client.get(
-            self.url,
-            {
-                "year_start": business_plan.year_start,
-                "year_end": business_plan.year_end,
-                "agency_id": agency.id,
-            },
-        )
-        assert response.status_code == 200
-        assert (
-            response.filename
-            == f"BusinessPlan{agency.name}-{business_plan.year_start}-{business_plan.year_end}.pdf"
-        )
-
-        text = pdf_text(io.BytesIO(response.getvalue())).replace("\n", "")
-
-        assert bp_activity.country.name in text
-        assert business_plan.agency.name in text
-        assert bp_activity.title in text
 
 
 @pytest.fixture(name="_setup_bp_list")
@@ -260,7 +152,7 @@ class TestBPList(BaseTest):
                 "agency_id": business_plan.agency_id,
                 "year_start": business_plan.year_start,
                 "year_end": business_plan.year_end,
-                "get_versions": True,
+                "get_versions": 1,
             },
         )
         assert response.status_code == 200
@@ -269,58 +161,6 @@ class TestBPList(BaseTest):
         assert response.json()[0]["is_latest"] == business_plan.is_latest
         assert response.json()[1]["version"] == old_business_plan.version
         assert response.json()[1]["is_latest"] == old_business_plan.is_latest
-
-
-@pytest.fixture(name="_setup_bp_activity_create")
-def setup_bp_activity_create(
-    country_ro,
-    sector,
-    subsector,
-    project_type,
-    bp_chemical_type,
-    project_cluster_kpp,
-    substance,
-):
-    return {
-        "initial_id": 1,
-        "title": "Planu",
-        "country_id": country_ro.id,
-        "lvc_status": "LVC",
-        "project_type_id": project_type.id,
-        "bp_chemical_type_id": bp_chemical_type.id,
-        "project_cluster_id": project_cluster_kpp.id,
-        "substances": [substance.id],
-        "sector_id": sector.id,
-        "subsector_id": subsector.id,
-        "status": "A",
-        "is_multi_year": False,
-        "reason_for_exceeding": "Planu, planu, planu, planu, planu",
-        "remarks": "Merge bine, bine, bine ca aeroplanu",
-        "remarks_additional": "Poate si la anu / Daca merge bine planu stau ca barosanu.",
-        "values": [
-            {
-                "year": 2020,
-                "is_after": False,
-                "value_usd": 100,
-                "value_odp": 100,
-                "value_mt": 100,
-            },
-            {
-                "year": 2021,
-                "is_after": False,
-                "value_usd": 200,
-                "value_odp": 200,
-                "value_mt": 200,
-            },
-            {
-                "year": 2021,
-                "is_after": True,
-                "value_usd": 300,
-                "value_odp": 300,
-                "value_mt": 300,
-            },
-        ],
-    }
 
 
 @pytest.fixture(name="_setup_new_business_plan_create")
@@ -366,7 +206,7 @@ class TestBPCreate:
 
         data = _setup_new_business_plan_create
         activity_data = _setup_bp_activity_create
-        activity_data["sector_id"] = ProjectSectorFactory(code="TAS").id
+        activity_data["sector_code"] = "TAS"
         data["activities"] = [activity_data]
 
         response = self.client.post(self.url, data, format="json")
@@ -531,7 +371,7 @@ class TestBPUpdate:
         url = reverse("businessplan-list") + f"{business_plan.id}/"
 
         activity_data = _setup_bp_activity_create
-        activity_data["sector_id"] = ProjectSectorFactory(code="TAS").id
+        activity_data["sector_code"] = "TAS"
         data = {
             "agency_id": business_plan.agency_id,
             "year_start": business_plan.year_start,
@@ -1254,114 +1094,62 @@ class TestBPGet:
         assert response.json()["activities"][0]["comment_types"] == [comment_type.name]
 
 
-class TestBPActivitiesDiff:
+class TestUpdateAllActivities:
     client = APIClient()
+    url = reverse("businessplan-update-all")
 
-    def test_activities_diff(
+    def test_update_all_activities(
         self,
-        agency_user,
-        _setup_new_business_plan_create,
-        _setup_bp_activity_create,
-        agency,
+        user,
+        business_plan,
         country_ro,
-        project_cluster_kip,
-        project_cluster_kpp,
         substance,
+        sector,
+        subsector,
+        project_type,
+        bp_chemical_type,
+        _setup_bp_activity_create,
     ):
-        self.client.force_authenticate(user=agency_user)
+        self.client.force_authenticate(user=user)
 
-        # create business plan
-        url = reverse("businessplan-list")
-        data = _setup_new_business_plan_create
-        data["activities"] = [_setup_bp_activity_create]
-
-        response = self.client.post(url, data, format="json")
-        assert response.status_code == 201
-        business_plan_id = response.data["id"]
-        initial_id = response.data["activities"][0]["initial_id"]
-
-        # update status
-        BusinessPlan.objects.filter(id=business_plan_id).update(
-            status=BusinessPlan.Status.need_changes
+        other_agency = AgencyFactory(name="Agency2", code="AG2")
+        other_business_plan = BusinessPlanFactory(
+            agency=other_agency,
+            year_start=business_plan.year_start,
+            year_end=business_plan.year_end,
+            version=1,
         )
 
-        # update business plan (new version)
-        url = reverse("businessplan-list") + f"{business_plan_id}/"
-        other_country = CountryFactory()
-        other_substance = SubstanceFactory.create(name="substance2")
-        activity_data = _setup_bp_activity_create
-        activity_data["initial_id"] = initial_id
-        activity_data["country_id"] = other_country.id
-        activity_data["project_cluster_id"] = project_cluster_kip.id
-        activity_data["substances"] = [substance.id, other_substance.id]
-        activity_data["title"] = "Planu 2"
-        activity_data["status"] = "P"
-        activity_data["is_multi_year"] = True
-        activity_data["remarks"] = "Merge rau"
-        activity_data["values"] = [
-            {
-                "year": 2021,
-                "is_after": False,
-                "value_usd": 200,
-                "value_odp": 200,
-                "value_mt": 100,
-            },
-            {
-                "year": 2022,
-                "is_after": True,
-                "value_usd": 300,
-                "value_odp": 300,
-                "value_mt": 300,
-            },
-        ]
+        activity_data_1 = _setup_bp_activity_create.copy()
+        activity_data_2 = _setup_bp_activity_create.copy()
+        activity_data_1["agency_id"] = business_plan.agency_id
+        activity_data_2["agency_id"] = other_business_plan.agency_id
+
         data = {
-            "agency_id": agency.id,
-            "year_start": 2020,
-            "year_end": 2023,
+            "year_start": business_plan.year_start,
+            "year_end": business_plan.year_end,
             "status": "Agency Draft",
-            "activities": [activity_data],
+            "activities": [activity_data_1, activity_data_2],
         }
-        response = self.client.put(url, data, format="json")
-        assert response.status_code == 200
-        new_id = response.data["id"]
-
-        # check activities diff
-        url = reverse("business-plan-activity-diff")
-        response = self.client.get(url, {"business_plan_id": new_id})
+        response = self.client.put(self.url, data, format="json")
         assert response.status_code == 200
 
-        assert response.data[0]["change_type"] == "changed"
-        assert response.data[0]["country"]["name"] == other_country.name
-        assert response.data[0]["country_old"]["name"] == country_ro.name
-        assert response.data[0]["project_cluster"]["name"] == project_cluster_kip.name
-        assert (
-            response.data[0]["project_cluster_old"]["name"] == project_cluster_kpp.name
-        )
-        assert response.data[0]["substances"] == [substance.id, other_substance.id]
-        assert response.data[0]["substances_old"] == [substance.id]
-        assert response.data[0]["substances_display"] == [
-            substance.name,
-            other_substance.name,
-        ]
-        assert response.data[0]["substances_display_old"] == [substance.name]
-        assert response.data[0]["title"] == "Planu 2"
-        assert response.data[0]["title_old"] == "Planu"
-        assert response.data[0]["status"] == "P"
-        assert response.data[0]["status_old"] == "A"
-        assert response.data[0]["status_display"] == "Planned"
-        assert response.data[0]["status_display_old"] == "Approved"
-        assert response.data[0]["is_multi_year"] is True
-        assert response.data[0]["is_multi_year_old"] is False
-        assert response.data[0]["is_multi_year_display"] == "Multi-Year"
-        assert response.data[0]["is_multi_year_display_old"] == "Individual"
-        assert response.data[0]["remarks"] == "Merge rau"
-        assert response.data[0]["remarks_old"] == "Merge bine, bine, bine ca aeroplanu"
+        for data in response.data:
+            assert data["year_start"] == business_plan.year_start
+            assert data["year_end"] == business_plan.year_end
+            assert data["status"] == "Agency Draft"
 
-        values_data = response.data[0]["values"]
-        assert values_data[0]["year"] == 2021
-        assert float(values_data[0]["value_mt"]) == 100
-        assert float(values_data[0]["value_mt_old"]) == 200
-
-        assert values_data[1]["year"] == 2022
-        assert float(values_data[1]["value_usd"]) == 300
-        assert values_data[1]["value_usd_old"] is None
+            activities = data["activities"]
+            assert activities[0]["business_plan_id"] == data["id"]
+            assert activities[0]["title"] == "Planu"
+            assert activities[0]["country_id"] == country_ro.id
+            assert activities[0]["lvc_status"] == "LVC"
+            assert activities[0]["project_type_id"] == project_type.id
+            assert activities[0]["bp_chemical_type_id"] == bp_chemical_type.id
+            assert activities[0]["substances"] == [substance.id]
+            assert activities[0]["sector_id"] == sector.id
+            assert activities[0]["subsector_id"] == subsector.id
+            assert activities[0]["status"] == "A"
+            assert activities[0]["is_multi_year"] is False
+            assert activities[0]["remarks"] == "Merge bine, bine, bine ca aeroplanu"
+            assert activities[0]["values"][0]["year"] == 2020

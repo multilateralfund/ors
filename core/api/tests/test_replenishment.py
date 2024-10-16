@@ -23,9 +23,10 @@ from core.api.tests.factories import (
     TriennialContributionStatusFactory,
     ScaleOfAssessmentVersionFactory,
     CountryCEITStatusFactory,
+    MeetingFactory,
 )
 from core.models import (
-    ExternalIncome,
+    ExternalIncomeAnnual,
     ExternalAllocation,
     ScaleOfAssessment,
     ScaleOfAssessmentVersion,
@@ -106,6 +107,21 @@ class TestReplenishments(BaseTest):
         assert response.data[1]["start_year"] == 2018
         assert response.data[1]["id"] == replenishment_1.id
         assert response.data[1]["end_year"] == 2020
+
+    def test_replenishments_list_final(self, user):
+        replenishment_1 = ReplenishmentFactory.create(start_year=2018, end_year=2020)
+        ReplenishmentFactory.create(start_year=2021, end_year=2023)
+
+        ScaleOfAssessmentVersionFactory.create(
+            replenishment=replenishment_1,
+            is_final=True,
+        )
+
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url, {"is_final": True})
+        assert response.status_code == 200
+        assert len(response.data) == 1
 
     def test_replenishments_list_country_user(self, country_user):
         ReplenishmentFactory.create(start_year=2018, end_year=2020)
@@ -948,6 +964,8 @@ class TestBilateralAssistance(BaseTest):
     def test_bilateral_assistance(self, treasurer_user):
         country = CountryFactory.create(name="Country 1", iso3="XYZ")
 
+        meeting = MeetingFactory.create(number=3, date="2020-03-14")
+
         year_1 = 2018
         year_2 = 2020
         CountryCEITStatusFactory.create(
@@ -966,6 +984,7 @@ class TestBilateralAssistance(BaseTest):
             "year": year_1,
             "country_id": country.id,
             "amount": amount,
+            "meeting_id": meeting.id,
         }
 
         self.client.force_authenticate(user=treasurer_user)
@@ -977,8 +996,10 @@ class TestBilateralAssistance(BaseTest):
 
         contribution_annual.refresh_from_db()
         assert contribution_annual.bilateral_assistance == amount
+        assert contribution_annual.bilateral_assistance_meeting_id == meeting.id
         contribution_triennial.refresh_from_db()
         assert contribution_triennial.bilateral_assistance == amount
+        assert contribution_triennial.bilateral_assistance_meeting_id == meeting.id
 
 
 class TestReplenishmentDashboard(BaseTest):
@@ -1014,9 +1035,8 @@ class TestReplenishmentDashboard(BaseTest):
         ferm_gain_loss_1 = FermGainLossFactory.create(country=country_1)
         ferm_gain_loss_2 = FermGainLossFactory.create(country=country_2)
 
-        external_income = ExternalIncome.objects.create(
-            start_year=self.year_1,
-            end_year=self.year_2,
+        external_income = ExternalIncomeAnnual.objects.create(
+            triennial_start_year=self.year_1,
             interest_earned=decimal.Decimal("100"),
             miscellaneous_income=decimal.Decimal("200"),
         )
@@ -1142,8 +1162,8 @@ class TestReplenishmentDashboard(BaseTest):
             },
             "external_income": [
                 {
-                    "start_year": external_income.start_year,
-                    "end_year": external_income.end_year,
+                    "year": None,
+                    "triennial_start_year": external_income.triennial_start_year,
                     "interest_earned": external_income.interest_earned.quantize(
                         self.fifteen_decimals
                     ),
@@ -1272,15 +1292,13 @@ class TestReplenishmentDashboardStatistics(BaseTest):
 
         disputed_1 = DisputedContributionsFactory.create(year=self.year_1)
 
-        external_income_1 = ExternalIncome.objects.create(
-            start_year=self.year_1,
-            end_year=self.year_2,
+        external_income_1 = ExternalIncomeAnnual.objects.create(
+            triennial_start_year=self.year_1,
             interest_earned=decimal.Decimal("100"),
             miscellaneous_income=decimal.Decimal("200"),
         )
-        external_income_2 = ExternalIncome.objects.create(
-            start_year=self.year_3,
-            end_year=self.year_4,
+        external_income_2 = ExternalIncomeAnnual.objects.create(
+            triennial_start_year=self.year_3,
             interest_earned=decimal.Decimal("300"),
             miscellaneous_income=decimal.Decimal("400"),
         )
@@ -2310,7 +2328,7 @@ class TestPayments(BaseTest):
             "country_id": country.id,
             "replenishment_id": None,
             "date": "2019-03-14",
-            "payment_for_year": "deferred",
+            "payment_for_years": ["deferred"],
             "amount": 100.0,
             "currency": "EUR",
             "exchange_rate": 0.7,
@@ -2330,7 +2348,7 @@ class TestPayments(BaseTest):
             "country_id": country.id,
             "replenishment_id": None,
             "date": "2019-03-14",
-            "payment_for_year": "deferred",
+            "payment_for_years": ["deferred"],
             "amount": 100.0,
             "currency": "EUR",
             "exchange_rate": 0.7,
@@ -2340,3 +2358,84 @@ class TestPayments(BaseTest):
 
         response = self.client.post(self.url, data=request_data, format="json")
         assert response.status_code == 403
+
+
+class TestExternalAllocations(BaseTest):
+    url = reverse("replenishment-external-allocations-list")
+    year_1 = 2021
+    year_2 = 2023
+    year_3 = 2024
+    year_4 = 2026
+
+    def test_external_allocations_list(self, user):
+        ExternalAllocation.objects.create(
+            year=self.year_1,
+            undp=decimal.Decimal("100"),
+            comment="test",
+        )
+
+        ExternalAllocation.objects.create(
+            year=self.year_1,
+            unep=decimal.Decimal("200"),
+            comment="test",
+        )
+
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.data) == 2
+
+    def test_external_allocations_create(self, treasurer_user):
+        self.client.force_authenticate(user=treasurer_user)
+
+        meeting = MeetingFactory.create(number=3, date="2020-03-14")
+        request_data = {
+            "comment": "actual comment",
+            "year": None,
+            "undp": Decimal("200.143"),
+            "meeting_id": meeting.id,
+        }
+
+        response = self.client.post(self.url, data=request_data, format="json")
+        assert response.status_code == 201
+
+
+class TestExternalIncome(BaseTest):
+    url = reverse("replenishment-external-income-list")
+    year_1 = 2021
+    year_2 = 2023
+    year_3 = 2024
+    year_4 = 2026
+
+    def test_external_income_list(self, user):
+        ExternalIncomeAnnual.objects.create(
+            triennial_start_year=self.year_1,
+            interest_earned=decimal.Decimal("100"),
+            miscellaneous_income=decimal.Decimal("200"),
+        )
+
+        ExternalIncomeAnnual.objects.create(
+            year=self.year_3,
+            interest_earned=decimal.Decimal("100"),
+            miscellaneous_income=decimal.Decimal("200"),
+        )
+
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.data) == 2
+
+    def test_external_income_create(self, treasurer_user):
+        self.client.force_authenticate(user=treasurer_user)
+
+        request_data = {
+            "triennial_start_year": self.year_1,
+            "year": None,
+            "quarter": None,
+            "interest_earned": Decimal("200.143"),
+        }
+
+        response = self.client.post(self.url, data=request_data, format="json")
+        assert response.status_code == 201

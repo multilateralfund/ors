@@ -54,7 +54,7 @@ export const userCanExportData: Record<UserType, boolean> = {
   admin: true,
   agency_inputter: false,
   agency_submitter: false,
-  country_submitter: true,
+  country_submitter: false,
   country_user: false,
   secretariat: true,
   stakeholder: false,

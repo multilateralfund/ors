@@ -148,3 +148,9 @@ class CommentTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = CommentType
         fields = ["id", "name"]
+
+
+class Many2ManyListField(serializers.ListField):
+    # make ListField allow `ManyRelatedManager` data
+    def to_representation(self, data):
+        return [self.child.to_representation(item.pk) for item in data.all()]

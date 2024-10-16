@@ -7,12 +7,15 @@ from core.api.views import (
     ProjectFundViewSet,
     ReplenishmentCountriesViewSet,
     ReplenishmentCountriesSOAViewSet,
+    ReplenishmentAsOfDateViewSet,
     ReplenishmentViewSet,
     AnnualStatusOfContributionsView,
     ScaleOfAssessmentViewSet,
     TriennialStatusOfContributionsView,
     SummaryStatusOfContributionsView,
     ReplenishmentDashboardView,
+    ReplenishmentExternalAllocationViewSet,
+    ReplenishmentExternalIncomeAnnualViewSet,
     ReplenishmentInvoiceViewSet,
     ReplenishmentInvoiceFileDownloadView,
     ReplenishmentPaymentViewSet,
@@ -33,6 +36,7 @@ from core.api.views.business_plan import (
     BPFileView,
     BPActivityViewSet,
     BPActivityDiffView,
+    BPActivityDiffAllView,
     BPStatusUpdateView,
     BusinessPlanViewSet,
 )
@@ -114,6 +118,11 @@ router.register(
     basename="replenishment-countries-soa",
 )
 router.register(
+    "replenishment/as-of-date",
+    ReplenishmentAsOfDateViewSet,
+    basename="replenishment-as-of-date",
+)
+router.register(
     "replenishment/replenishments",
     ReplenishmentViewSet,
     basename="replenishment-replenishments",
@@ -132,6 +141,16 @@ router.register(
     "replenishment/scales-of-assessment",
     ScaleOfAssessmentViewSet,
     basename="replenishment-scales-of-assessment",
+)
+router.register(
+    "replenishment/external-allocations",
+    ReplenishmentExternalAllocationViewSet,
+    basename="replenishment-external-allocations",
+)
+router.register(
+    "replenishment/external-income",
+    ReplenishmentExternalIncomeAnnualViewSet,
+    basename="replenishment-external-income",
 )
 router.register(
     "replenishment/invoices",
@@ -387,6 +406,11 @@ urlpatterns = [
         "business-plan/activities/diff/",
         BPActivityDiffView.as_view(),
         name="business-plan-activity-diff",
+    ),
+    path(
+        "business-plan/activities/diff-all/",
+        BPActivityDiffAllView.as_view(),
+        name="business-plan-activity-diff-all",
     ),
     path(
         "replenishment/dashboard/",

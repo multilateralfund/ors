@@ -1,6 +1,8 @@
 'use client'
 import React, { useContext, useMemo, useState } from 'react'
 
+import { reverse } from 'lodash'
+
 import ConfirmDialog from '@ors/components/manage/Blocks/Replenishment/ConfirmDialog'
 import BilateralAssistanceDialog from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/BilateralAssistanceDialog'
 import DisputedContributionDialog from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/DisputedContributionDialog'
@@ -14,6 +16,7 @@ import Table from '@ors/components/manage/Blocks/Replenishment/Table'
 import { sortTableData } from '@ors/components/manage/Blocks/Replenishment/utils'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { api } from '@ors/helpers'
+import { useStore } from '@ors/store'
 
 import { SortDirection } from '../Table/types'
 
@@ -34,6 +37,14 @@ export default function SCAnnual({ year }: { year: string }) {
   const countriesInTable = useMemo(() => {
     return rows.map(({ country, country_id }) => ({ country, country_id }))
   }, [rows])
+
+  const projectSlice = useStore((state) => state.projects)
+  const meetings = projectSlice.meetings.data
+  const formattedMeetings = meetings?.map((meeting: any) => ({
+    label: meeting.number,
+    value: meeting.id,
+  }))
+  const meetingOptions = reverse(formattedMeetings)
 
   function handleSort(column: number) {
     setSortDirection(
@@ -150,11 +161,13 @@ export default function SCAnnual({ year }: { year: string }) {
           <div className="flex items-center gap-x-2 print:hidden">
             <DisputedContributionDialog
               countryOptions={countriesInTable}
+              meetingOptions={meetingOptions}
               refetchSCData={refetchSCData}
               year={year}
             />
             <BilateralAssistanceDialog
               countryOptions={countriesInTable}
+              meetingOptions={meetingOptions}
               refetchSCData={refetchSCData}
               rows={rows}
               year={year}

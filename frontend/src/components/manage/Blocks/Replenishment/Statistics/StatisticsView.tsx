@@ -1,10 +1,10 @@
 'use client'
 
 import cx from 'classnames'
-import Link from 'next/link'
 
 import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils'
 
+import useGetDashboardData from '../Dashboard/useGetDashboardData'
 import styles from '../Table/table.module.css'
 import useGetStatisticsData, { SoCStatistic } from './useGetStatisticsData'
 
@@ -144,32 +144,14 @@ function StatisticsTable(props: { data: SoCStatistic[] }) {
   )
 }
 
-interface ISectionStatisticsProps {
-  asOfDate: string
-}
+function StatisticsView() {
+  const { newData } = useGetDashboardData()
+  const { asOfDate } = newData
 
-function SectionStatistics(props: ISectionStatisticsProps) {
-  const { asOfDate } = props
   const { data } = useGetStatisticsData()
+
   return (
     <>
-      <div className="flex items-center gap-4 print:fixed print:left-[470px] print:top-12">
-        <Link
-          className="m-0 text-2xl text-primary no-underline print:hidden"
-          href="./"
-        >
-          DASHBOARD
-        </Link>{' '}
-        <span className="print:hidden"> | </span>
-        <Link
-          className="m-0 text-2xl text-primary no-underline print:hidden"
-          href="./status"
-        >
-          STATUS OF THE FUND
-        </Link>{' '}
-        <span> | </span>
-        <h2 className="m-0 text-3xl">STATISTICS</h2>
-      </div>
       <div className="pt-4">
         <p className="m-0 text-2xl">{asOfDate} ( USD )</p>
       </div>
@@ -180,4 +162,4 @@ function SectionStatistics(props: ISectionStatisticsProps) {
   )
 }
 
-export default SectionStatistics
+export default StatisticsView

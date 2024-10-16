@@ -1,41 +1,20 @@
+import { Dispatch, SetStateAction, useState } from 'react'
+
 import cx from 'classnames'
-import Link from 'next/link'
 
 import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils'
-import { SubmitButton } from '@ors/components/ui/Button/Button'
+import { CancelButton, SubmitButton } from '@ors/components/ui/Button/Button'
 
 import {
   IALLOCATIONS,
   IINCOME,
   IOVERVIEW,
   IPROVISIONS,
-} from './useGetDashboardDataTypes'
+} from '../Dashboard/useGetDashboardDataTypes'
+import { allocationsOrder, incomeOrder, provisionsOrder } from './constants'
 
+import { FaEdit } from 'react-icons/fa'
 import { IoInformationCircleOutline } from 'react-icons/io5'
-
-const incomeOrder: (keyof IINCOME)[] = [
-  'cash_payments',
-  'promissory_notes',
-  'bilateral_assistance',
-  'interest_earned',
-  'miscellaneous_income',
-]
-
-const allocationsOrder: (keyof IALLOCATIONS)[] = [
-  'undp',
-  'unep',
-  'unido',
-  'world_bank',
-]
-const provisionsOrder: (keyof IPROVISIONS)[] = [
-  'staff_contracts',
-  'treasury_fees',
-  'monitoring_fees',
-  'technical_audit',
-  'information_strategy',
-  'bilateral_assistance',
-  'gain_loss',
-]
 
 interface ICashCardProps {
   className?: string
@@ -49,15 +28,17 @@ function CashCard(props: ICashCardProps) {
   return (
     <div
       className={cx(
-        'flex min-h-24 min-w-80 flex-1 items-center justify-between rounded-lg bg-[#F5F5F5] p-4 text-3xl font-medium md:min-w-96 print:break-inside-avoid',
+        'flex min-h-24 min-w-80 flex-1 items-center justify-between rounded-lg bg-[#F5F5F5] p-4 md:min-w-96 print:break-inside-avoid',
         className,
       )}
     >
       <div className="w-1/2">
-        <div className="uppercase text-[#4D4D4D]">{label}</div>
+        <div className="text-3xl font-bold uppercase text-[#4D4D4D]">
+          {label}
+        </div>
       </div>
-      <div className="text-4xl font-bold leading-normal text-primary">
-        <span className="font-normal">$</span>
+      <div className="text-3xl leading-normal">
+        <span className="font-light">$</span>
         {value}
       </div>
     </div>
@@ -66,95 +47,125 @@ function CashCard(props: ICashCardProps) {
 
 interface IMiniCashCardProps {
   className?: string
+  editableFields: Array<string>
+  field: string
   info_text?: string
+  isEditing: boolean
   label: React.ReactNode
+  setEditingSection: Dispatch<SetStateAction<null | string>>
   value: null | number | string
 }
 
 function MiniCashCard(props: IMiniCashCardProps) {
-  const { className, info_text, label, value } = props
+  const {
+    className,
+    editableFields,
+    field,
+    info_text,
+    isEditing,
+    label,
+    setEditingSection,
+    value,
+  } = props
+
+  const shouldShowButton = isEditing && editableFields.includes(field)
+
   return (
-    <div className={cx('flex flex-col gap-y-4', className)}>
+    <div className={cx('flex flex-col gap-y-2', className)}>
       <div className="uppercase text-[#4D4D4D]">
         <div className="flex items-center">
           <span className="whitespace-break-spaces">
-            <span className="text-2xl font-semibold">{label}</span>
+            <span className="text-2xl font-bold">{label}</span>
             {info_text ? (
               <IoInformationCircleOutline
                 className="inline"
                 title={info_text}
               />
             ) : null}
+            {shouldShowButton && (
+              <FaEdit
+                className="ml-1.5 inline cursor-pointer text-secondary print:hidden"
+                size={16}
+                onClick={() => setEditingSection(field)}
+              />
+            )}
           </span>
         </div>
       </div>
       <div className="flex-grow"></div>
-      <div className="text-3xl font-medium text-primary">
-        <span className="font-light">{'$'}</span>
+      <div className="text-2xl">
+        <span className="font-light">$</span>
         {value}
       </div>
     </div>
   )
 }
 
-interface ISectionStatusProps {
+interface IStatusOfTheFundProps {
   allocations: IALLOCATIONS
   asOfDate: string
+  editableFields: Array<string>
   income: IINCOME
-  onEditButtonClick: () => void
   overview: IOVERVIEW
   provisions: IPROVISIONS
+  setEditingSection: Dispatch<SetStateAction<null | string>>
+  setShowUploadDialog: Dispatch<SetStateAction<boolean>>
   showEditButton: boolean
 }
 
-function SectionStatus(props: ISectionStatusProps) {
+function StatusOfTheFundView(props: IStatusOfTheFundProps) {
   const {
     allocations,
     asOfDate,
+    editableFields,
     income,
-    onEditButtonClick,
     overview,
     provisions,
+    setEditingSection,
+    setShowUploadDialog,
     showEditButton,
   } = props
+
+  const [isEditing, setIsEditing] = useState(false)
 
   return (
     <>
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link
-            className="m-0 text-2xl text-primary no-underline print:hidden"
-            href="./"
-          >
-            DASHBOARD
-          </Link>{' '}
-          <span className="print:hidden"> | </span>
-          <h2 className="m-0 text-3xl">STATUS OF THE FUND</h2>{' '}
-          <span className="print:hidden"> | </span>
-          <Link
-            className="m-0 text-2xl text-primary no-underline print:hidden"
-            href="./statistics"
-          >
-            STATISTICS
-          </Link>
+        <div className="py-4">
+          <p className="m-0 text-2xl">{asOfDate} ( USD )</p>
         </div>
-        {showEditButton && (
-          <SubmitButton
-            className="tracking-widest print:hidden"
-            onClick={onEditButtonClick}
-          >
-            Edit
-          </SubmitButton>
-        )}
-      </div>
-      <div className="py-4">
-        <p className="m-0 text-2xl">{asOfDate} ( USD )</p>
+        <div className="flex gap-2">
+          {showEditButton && !isEditing && (
+            <SubmitButton
+              className="tracking-widest print:hidden"
+              onClick={() => setIsEditing(!isEditing)}
+            >
+              Edit
+            </SubmitButton>
+          )}
+          {isEditing && (
+            <CancelButton
+              className="tracking-widest print:hidden"
+              onClick={() => setIsEditing(!isEditing)}
+            >
+              Cancel
+            </CancelButton>
+          )}
+          {showEditButton && (
+            <SubmitButton
+              className="tracking-widest print:hidden"
+              onClick={() => setShowUploadDialog(true)}
+            >
+              Upload documents
+            </SubmitButton>
+          )}
+        </div>
       </div>
 
       <div
         style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
       >
-        <div className="py-4 print:break-inside-avoid">
+        <div className="py-4">
           <div className="flex flex-wrap gap-4 2xl:flex-nowrap">
             <div className="flex w-full flex-col gap-y-2 lg:w-[49%] 2xl:w-1/4">
               <CashCard
@@ -193,17 +204,21 @@ function SectionStatus(props: ISectionStatusProps) {
 
             <div className="w-full lg:w-[49%] 2xl:w-1/4">
               <div className="h-full rounded-lg bg-[#F5F5F5] p-4">
-                <div className="mb-4 border-x-0 border-b border-t-0 border-solid border-[#E0E0E0] pb-4 text-3xl font-medium uppercase text-[#4D4D4D]">
+                <div className="mb-4 border-x-0 border-b border-t-0 border-solid border-[#E0E0E0] pb-4 text-3xl font-bold uppercase text-[#4D4D4D]">
                   Income
                 </div>
-                <div className="flex flex-wrap gap-y-8">
+                <div className="flex flex-wrap gap-y-11">
                   {income &&
                     incomeOrder.map((key) => (
                       <MiniCashCard
                         key={key}
                         className="w-1/2"
+                        editableFields={editableFields}
+                        field={key}
                         info_text={income[key]?.info_text}
+                        isEditing={isEditing}
                         label={income[key].label}
+                        setEditingSection={setEditingSection}
                         value={
                           income[key].value !== null
                             ? formatNumberValue(income[key].value, 0, 0)
@@ -217,7 +232,7 @@ function SectionStatus(props: ISectionStatusProps) {
 
             <div className="w-full 2xl:w-2/4">
               <div className="h-full rounded-lg bg-[#F5F5F5] p-4">
-                <div className="mb-4 border-x-0 border-b border-t-0 border-solid border-[#E0E0E0] pb-4 text-3xl font-medium uppercase text-[#4D4D4D]">
+                <div className="mb-4 border-x-0 border-b border-t-0 border-solid border-[#E0E0E0] pb-4 text-3xl font-bold uppercase text-[#4D4D4D]">
                   Allocations
                 </div>
                 <div className="mb-4 flex gap-4 border-x-0 border-b border-t-0 border-solid border-[#E0E0E0] pb-4 text-[#4D4D4D]">
@@ -226,8 +241,12 @@ function SectionStatus(props: ISectionStatusProps) {
                       <MiniCashCard
                         key={key}
                         className="w-1/4"
+                        editableFields={editableFields}
+                        field={key}
                         info_text={allocations[key]?.info_text}
+                        isEditing={isEditing}
                         label={allocations[key].label}
+                        setEditingSection={setEditingSection}
                         value={
                           allocations[key].value !== null
                             ? formatNumberValue(allocations[key].value, 0, 0)
@@ -241,9 +260,13 @@ function SectionStatus(props: ISectionStatusProps) {
                     provisionsOrder.map((key) => (
                       <MiniCashCard
                         key={key}
-                        className="my-4 w-1/4"
+                        className="my-6 w-1/4"
+                        editableFields={editableFields}
+                        field={key}
                         info_text={provisions[key]?.info_text}
+                        isEditing={isEditing}
                         label={provisions[key].label}
+                        setEditingSection={setEditingSection}
                         value={
                           provisions[key].value !== null
                             ? formatNumberValue(provisions[key].value, 0, 0)
@@ -279,4 +302,4 @@ function SectionStatus(props: ISectionStatusProps) {
   )
 }
 
-export default SectionStatus
+export default StatusOfTheFundView

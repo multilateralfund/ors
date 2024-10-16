@@ -113,16 +113,25 @@ class CPRecordArchiveExportView(CPRecordsArchiveListView):
                 description="Country programme report archive id",
                 type=openapi.TYPE_INTEGER,
             ),
+            openapi.Parameter(
+                "convert_data",
+                openapi.IN_QUERY,
+                description="Convert values to ODP tonnes (SectionA) Co2-eq (SectionB)",
+                type=openapi.TYPE_BOOLEAN,
+            ),
         ],
     )
     def get(self, *args, **kwargs):
+        convert_data = str(self.request.query_params.get("convert_data", None))
         cp_report = self._get_cp_report()
         if cp_report.year > IMPORT_DB_MAX_YEAR:
             exporter = CPReportNewExporter(cp_report)
         else:
             exporter = CPReportOldExporter(cp_report)
 
-        wb = exporter.get_xlsx(self.get_data(cp_report), self.get_usages(cp_report))
+        wb = exporter.get_xlsx(
+            self.get_data(cp_report), self.get_usages(cp_report), convert_data == "1"
+        )
         return self.get_response(cp_report.name, wb)
 
     def get_response(self, name, wb):
@@ -131,4 +140,4 @@ class CPRecordArchiveExportView(CPRecordsArchiveListView):
 
 class CPRecordArchivePrintView(CPRecordArchiveExportView):
     def get_response(self, name, wb):
-        return workbook_pdf_response(name, wb)
+        return workbook_pdf_response(name, wb, "landscape")

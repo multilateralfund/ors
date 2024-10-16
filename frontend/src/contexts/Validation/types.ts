@@ -34,9 +34,11 @@ export interface IRow {
 }
 
 export interface IGlobalValidator {
-  highlight: string[]
+  highlight?: string[]
+  highlight_cells?: string[]
   id: string
   message: string
+  row_id?: string
   validator: GlobalValidatorFunc
 }
 
@@ -47,6 +49,8 @@ export interface IInvalidRowResult {
 
 export interface IInvalidGlobalResult {
   highlight?: string[]
+  highlight_cells?: string[]
+  row_id?: string
 }
 
 export type RowValidatorFuncResult = IInvalidRowResult | null | undefined
@@ -93,8 +97,10 @@ export interface IRowValidationResult extends IInvalidRowResult {
 
 export interface IGlobalValidationResult {
   highlight?: string[]
+  highlight_cells?: string[]
   id: string
   message: string
+  row_id?: string
 }
 
 export type ValidationSchemaKeys =
@@ -128,6 +134,7 @@ export interface IValidationContext {
 }
 
 export interface IValidationProvider {
+  activeSection?: string
   children: React.ReactNode
   form: CPValidationForm
   model?: string

@@ -11,13 +11,11 @@ import React, {
 
 import cx from 'classnames'
 
-import { BaseButton } from '@ors/components/ui/Button/Button'
 import { debounce } from '@ors/helpers'
 import useClickOutside from '@ors/hooks/useClickOutside'
 
 import ClearButton from './ClearButton'
 import Input from './Input'
-import { CLASSESS, CSS_MASKED, STYLE } from './constants'
 
 function getSelectedOption(value: string, options: IOption[]) {
   let result: IOption | null = null
@@ -114,6 +112,7 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
     hasClear,
     name,
     onChange,
+    pickerClassName,
     required,
     ...rest
   } = props
@@ -146,6 +145,8 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
       selectRef.current.value = ''
     }
     setValue('')
+    setSearchValue('')
+
     if (onChange) {
       onChange('')
     }
@@ -256,20 +257,12 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
     }
   }
 
-  useEffect(function () {
-    // Prevent having the select open if it's the first element in the form.
-    debounce(function () {
-      inputRef.current?.blur()
-      setShowPicker(false)
-    }, 100)
-  }, [])
-
   useEffect(() => {
     if (selectRef.current) {
       const options = getOptions(selectRef.current)
       setOptions(options)
 
-      if (defaultValue && defaultValue === selectRef.current.value) {
+      if (defaultValue && defaultValue.toString() === selectRef.current.value) {
         const selectedOption = getSelectedOption(
           defaultValue?.toString() || '',
           options,
@@ -311,18 +304,24 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
     <div className="relative" ref={ref}>
       <div className="relative flex flex-1">
         <Input
+          className={className}
           placeholder={'Type to search...'}
           ref={inputRef}
           required={required}
           type="text"
           value={searchValue}
           onChange={(evt) => setSearchValue(evt.target.value.toLowerCase())}
-          onFocus={handleInputFocus}
+          onClick={handleInputFocus}
           onKeyDown={handleInputKeyDown}
         ></Input>
         {withClear && <ClearButton className="right-4" onClick={handleClear} />}
       </div>
-      <Picker id={id} options={virtualOptions} show={showPicker} />
+      <Picker
+        id={id}
+        className={pickerClassName}
+        options={virtualOptions}
+        show={showPicker}
+      />
       <select
         id={id}
         name={name || id}

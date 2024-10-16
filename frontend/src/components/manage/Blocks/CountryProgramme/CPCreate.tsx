@@ -573,7 +573,11 @@ const CPCreate: React.FC = () => {
   }
 
   return (
-    <ValidationProvider form={form} model={variant.model}>
+    <ValidationProvider
+      activeSection={sections[activeTab].id}
+      form={form}
+      model={variant.model}
+    >
       <Loading
         className="!fixed bg-action-disabledBackground"
         active={

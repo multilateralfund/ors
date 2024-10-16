@@ -371,7 +371,11 @@ function CPEdit() {
   const showComments = variant?.model === 'V'
 
   return (
-    <ValidationProvider form={form} model={variant?.model}>
+    <ValidationProvider
+      activeSection={sections[activeTab].id}
+      form={form}
+      model={variant?.model}
+    >
       <Loading
         className="!fixed bg-action-disabledBackground"
         active={

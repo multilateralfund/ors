@@ -6,12 +6,15 @@ from core.models import (
     Country,
     Invoice,
     InvoiceFile,
+    Meeting,
     Payment,
     PaymentFile,
     Replenishment,
     ScaleOfAssessment,
     ScaleOfAssessmentVersion,
     DisputedContribution,
+    ExternalAllocation,
+    ExternalIncomeAnnual,
 )
 
 
@@ -57,7 +60,7 @@ class ScaleOfAssessmentSerializer(serializers.ModelSerializer):
         max_digits=30, decimal_places=15, coerce_to_string=False, required=False
     )
     un_scale_of_assessment = serializers.DecimalField(
-        max_digits=30, decimal_places=15, coerce_to_string=False
+        max_digits=30, decimal_places=15, coerce_to_string=False, allow_null=True
     )
     override_adjusted_scale_of_assessment = serializers.DecimalField(
         max_digits=30, decimal_places=15, coerce_to_string=False, required=False
@@ -111,6 +114,85 @@ class ScaleOfAssessmentExcelExportSerializer(serializers.ModelSerializer):
         ]
 
 
+class ExternalAllocationSerializer(serializers.ModelSerializer):
+    is_legacy = serializers.BooleanField(required=False, allow_null=True)
+
+    undp = serializers.DecimalField(
+        max_digits=30, decimal_places=15, required=False, allow_null=True
+    )
+    unep = serializers.DecimalField(
+        max_digits=30, decimal_places=15, required=False, allow_null=True
+    )
+    unido = serializers.DecimalField(
+        max_digits=30, decimal_places=15, required=False, allow_null=True
+    )
+    world_bank = serializers.DecimalField(
+        max_digits=30, decimal_places=15, required=False, allow_null=True
+    )
+    staff_contracts = serializers.DecimalField(
+        max_digits=30, decimal_places=15, required=False, allow_null=True
+    )
+    treasury_fees = serializers.DecimalField(
+        max_digits=30, decimal_places=15, required=False, allow_null=True
+    )
+    monitoring_fees = serializers.DecimalField(
+        max_digits=30, decimal_places=15, required=False, allow_null=True
+    )
+    technical_audit = serializers.DecimalField(
+        max_digits=30, decimal_places=15, required=False, allow_null=True
+    )
+    information_strategy = serializers.DecimalField(
+        max_digits=30, decimal_places=15, required=False, allow_null=True
+    )
+
+    year = serializers.IntegerField(allow_null=True, required=False)
+
+    meeting_id = serializers.PrimaryKeyRelatedField(
+        queryset=Meeting.objects.all().values_list("id", flat=True),
+        allow_null=True,
+        required=False,
+    )
+
+    class Meta:
+        model = ExternalAllocation
+        fields = [
+            "is_legacy",
+            "undp",
+            "unep",
+            "unido",
+            "world_bank",
+            "staff_contracts",
+            "treasury_fees",
+            "monitoring_fees",
+            "technical_audit",
+            "information_strategy",
+            "year",
+            "meeting_id",
+        ]
+
+
+class ExternalIncomeAnnualSerializer(serializers.ModelSerializer):
+    triennial_start_year = serializers.IntegerField(required=False, allow_null=True)
+
+    year = serializers.IntegerField(required=False, allow_null=True)
+
+    quarter = serializers.IntegerField(required=False, allow_null=True)
+
+    agency_name = serializers.CharField(required=False, allow_null=True)
+
+    interest_earned = serializers.DecimalField(
+        max_digits=30, decimal_places=15, required=False, allow_null=True
+    )
+
+    miscellaneous_income = serializers.DecimalField(
+        max_digits=30, decimal_places=15, required=False, allow_null=True
+    )
+
+    class Meta:
+        model = ExternalIncomeAnnual
+        fields = "__all__"
+
+
 class InvoiceFileSerializer(serializers.ModelSerializer):
     download_url = serializers.SerializerMethodField(read_only=True)
 
@@ -154,6 +236,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
             "replenishment",
             "year",
             "is_arrears",
+            "is_ferm",
             "status",
             "amount",
             "currency",
@@ -199,12 +282,16 @@ class InvoiceCreateSerializer(serializers.ModelSerializer):
         write_only=True,
     )
 
+    is_arrears = serializers.BooleanField(required=False)
+
     replenishment_id = serializers.PrimaryKeyRelatedField(
         queryset=Replenishment.objects.all().values_list("id", flat=True),
         write_only=True,
         allow_null=True,
         required=False,
     )
+
+    is_ferm = serializers.BooleanField(allow_null=True)
 
     status = serializers.CharField(required=False, allow_null=True)
     amount = serializers.DecimalField(
@@ -230,7 +317,9 @@ class InvoiceCreateSerializer(serializers.ModelSerializer):
         fields = [
             "country_id",
             "replenishment_id",
+            "is_ferm",
             "year",
+            "is_arrears",
             "status",
             "amount",
             "currency",
@@ -282,8 +371,9 @@ class PaymentSerializer(serializers.ModelSerializer):
             "id",
             "country",
             "replenishment",
+            "is_ferm",
             "date",
-            "payment_for_year",
+            "payment_for_years",
             "amount",
             "currency",
             "exchange_rate",
@@ -312,12 +402,14 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
         write_only=True,
         required=False,
     )
+    is_ferm = serializers.BooleanField(allow_null=True)
 
     amount = serializers.DecimalField(
         max_digits=30, decimal_places=15, coerce_to_string=False
     )
     # If not currency is sent, we'll set it to USD
-    currency = serializers.CharField(required=False)
+    currency = serializers.CharField(required=False, allow_null=True)
+
     exchange_rate = serializers.DecimalField(
         max_digits=30,
         decimal_places=15,
@@ -339,7 +431,8 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
             "country_id",
             "replenishment_id",
             "date",
-            "payment_for_year",
+            "payment_for_years",
+            "is_ferm",
             "amount",
             "currency",
             "exchange_rate",
@@ -377,6 +470,14 @@ class DisputedContributionCreateSerializer(serializers.ModelSerializer):
     amount = serializers.DecimalField(
         max_digits=30, decimal_places=15, coerce_to_string=False
     )
+    meeting_id = serializers.PrimaryKeyRelatedField(
+        queryset=Meeting.objects.all().values_list("id", flat=True),
+        allow_null=True,
+        required=False,
+    )
+    decision_number = serializers.CharField(
+        allow_null=True, allow_blank=True, required=False
+    )
     comment = serializers.CharField(allow_blank=True, required=False)
 
     class Meta:
@@ -386,5 +487,7 @@ class DisputedContributionCreateSerializer(serializers.ModelSerializer):
             "country",
             "year",
             "amount",
+            "meeting_id",
+            "decision_number",
             "comment",
         ]

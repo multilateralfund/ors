@@ -20,7 +20,6 @@ from core.models import (
     FermGainLoss,
     DisputedContribution,
     AnnualContributionStatus,
-    ExternalIncome,
     ExternalIncomeAnnual,
 )
 from core.models.business_plan import BusinessPlan
@@ -733,9 +732,13 @@ class TriennialStatusOfContributionsAggregator:
         ).aggregate(total=models.Sum("amount", default=0))["total"]
 
         # Adding interest earned totals
-        ret["interest_earned"] = ExternalIncomeAnnual.objects.filter(
-            year__gte=self.start_year, year__lte=self.end_year
+        yearly_or_quarterly_data = ExternalIncomeAnnual.objects.filter(
+            year__isnull=False, year__gte=self.start_year, year__lte=self.end_year
         ).aggregate(total=models.Sum("interest_earned", default=0))["total"]
+        triennial_data = ExternalIncomeAnnual.objects.filter(
+            triennial_start_year=self.start_year
+        ).aggregate(total=models.Sum("interest_earned", default=0))["total"]
+        ret["interest_earned"] = yearly_or_quarterly_data + triennial_data
 
         return ret
 
@@ -838,9 +841,8 @@ class AnnualStatusOfContributionsAggregator:
         ret["gain_loss"] = FermGainLoss.objects.filter(year=self.year).aggregate(
             total=models.Sum("amount", default=0)
         )["total"]
-        # Granular interest data only found in ExternalIncomeAnnual
         ret["interest_earned"] = ExternalIncomeAnnual.objects.filter(
-            year=self.year
+            year__isnull=False, year=self.year
         ).aggregate(total=models.Sum("interest_earned", default=0))["total"]
 
         return ret
@@ -897,16 +899,25 @@ class StatisticsStatusOfContributionsAggregator:
         )
 
     def get_external_income_data(self):
-        """
-        This returns the triennal data for ExternalIncome
-        (incomplete annual data also exists).
-        """
-        return ExternalIncome.objects.values(
-            "start_year",
-            "end_year",
-            "interest_earned",
-            "miscellaneous_income",
-        ).order_by("start_year")
+        # ExternalIncomeAnnual can now hold triennial, annual and even quarterly data
+        # This aggregator requires triennial aggregation, so we need to adjust the
+        # values.
+        ret = []
+        triennials = list(
+            TriennialContributionStatus.objects.values_list("start_year", "end_year")
+            .distinct()
+            .order_by("start_year")
+        )
+        for start_year, end_year in triennials:
+            results = ExternalIncomeAnnual.objects.filter(
+                models.Q(triennial_start_year=start_year)
+                | (models.Q(year__gte=start_year) & models.Q(year__lte=end_year))
+            ).aggregate(
+                interest_earned=models.Sum("interest_earned", default=0),
+                miscellaneous_income=models.Sum("miscellaneous_income", default=0),
+            )
+            ret.append({"start_year": start_year, "end_year": end_year, **results})
+        return ret
 
 
 def add_period_status_of_contributions_response_worksheet(

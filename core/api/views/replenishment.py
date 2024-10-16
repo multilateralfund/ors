@@ -28,6 +28,7 @@ from core.api.export.replenishment import (
 from core.api.filters.replenishment import (
     InvoiceFilter,
     PaymentFilter,
+    ReplenishmentFilter,
     ScaleOfAssessmentFilter,
 )
 from core.api.permissions import IsUserAllowedReplenishment
@@ -43,6 +44,8 @@ from core.api.serializers import (
     DisputedContributionReadSerializer,
     ScaleOfAssessmentExcelExportSerializer,
     EmptyInvoiceSerializer,
+    ExternalAllocationSerializer,
+    ExternalIncomeAnnualSerializer,
 )
 from core.api.utils import workbook_response
 from core.api.views.utils import (
@@ -58,7 +61,7 @@ from core.models import (
     AnnualContributionStatus,
     Country,
     DisputedContribution,
-    ExternalIncome,
+    ExternalIncomeAnnual,
     ExternalAllocation,
     FermGainLoss,
     Invoice,
@@ -108,6 +111,26 @@ class ReplenishmentCountriesSOAViewSet(viewsets.GenericViewSet, mixins.ListModel
         return countries_qs.order_by("name")
 
 
+class ReplenishmentAsOfDateViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+    permission_classes = [IsUserAllowedReplenishment]
+
+    def list(self, request, *args, **kwargs):
+        self.check_permissions(request)
+
+        try:
+            latest_payment = Payment.objects.latest("date")
+        except Payment.DoesNotExist:
+            latest_payment = None
+        as_of_date = (
+            latest_payment.date
+            if latest_payment and latest_payment.date
+            else config.DEFAULT_REPLENISHMENT_AS_OF_DATE
+        ).strftime("%d %B %Y")
+        data = {"as_of_date": as_of_date}
+
+        return Response(status=status.HTTP_200_OK, data=data)
+
+
 class ReplenishmentViewSet(
     viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin
 ):
@@ -118,6 +141,7 @@ class ReplenishmentViewSet(
     model = Replenishment
     serializer_class = ReplenishmentSerializer
     permission_classes = [IsUserAllowedReplenishment]
+    filterset_class = ReplenishmentFilter
 
     def get_queryset(self):
         return Replenishment.objects.prefetch_related(
@@ -709,7 +733,8 @@ class StatisticsStatusOfContributionsView(views.APIView):
             )
 
         summary_agg = SummaryStatusOfContributionsAggregator()
-        external_income_total = ExternalIncome.objects.aggregate(
+        # Interest earned and miscellaneous income are kept in separate models
+        external_income_interest = ExternalIncomeAnnual.objects.aggregate(
             interest_earned=models.Sum("interest_earned", default=0),
             miscellaneous_income=models.Sum("miscellaneous_income", default=0),
         )
@@ -718,8 +743,8 @@ class StatisticsStatusOfContributionsView(views.APIView):
             "end_year": current_year,
             **summary_agg.get_total(),
             "disputed_contributions": summary_agg.get_disputed_contribution_amount(),
-            "interest_earned": external_income_total["interest_earned"],
-            "miscellaneous_income": external_income_total["miscellaneous_income"],
+            "interest_earned": external_income_interest["interest_earned"],
+            "miscellaneous_income": external_income_interest["miscellaneous_income"],
             "outstanding_ceit": summary_agg.get_ceit_data()[
                 "outstanding_contributions"
             ],
@@ -843,15 +868,21 @@ class BilateralAssistanceViewSet(
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         """
-        This viewset actually only updates the bilateral_assistance field on
-        Annual/Triennial contribution statuses.
+        This viewset actually only updates the bilateral_assistance-related
+        fields on Annual/Triennial contribution statuses.
         """
         # pylint: disable=too-many-locals
         input_data = request.data
         amount = input_data.get("amount")
+        meeting_id = input_data.get("meeting_id")
+        decision = input_data.get("decision_number", "")
         if amount is None:
             raise ValidationError(
                 {"amount": "Bilateral assistance amount needs to be provided."}
+            )
+        if meeting_id is None:
+            raise ValidationError(
+                {"meeting": "Bilateral assistance meeting needs to be provided."}
             )
 
         try:
@@ -884,9 +915,26 @@ class BilateralAssistanceViewSet(
             ) from exc
 
         annual_contribution.bilateral_assistance = amount
-        annual_contribution.save(update_fields=["bilateral_assistance"])
+        annual_contribution.bilateral_assistance_meeting_id = meeting_id
+        annual_contribution.bilateral_assistance_decision_number = decision
+        annual_contribution.save(
+            update_fields=[
+                "bilateral_assistance",
+                "bilateral_assistance_meeting_id",
+                "bilateral_assistance_decision_number",
+            ]
+        )
+
         triennial_contribution.bilateral_assistance = amount
-        triennial_contribution.save(update_fields=["bilateral_assistance"])
+        triennial_contribution.bilateral_assistance_meeting_id = meeting_id
+        triennial_contribution.bilateral_assistance_decision_number = decision
+        triennial_contribution.save(
+            update_fields=[
+                "bilateral_assistance",
+                "bilateral_assistance_meeting_id",
+                "bilateral_assistance_decision_number",
+            ]
+        )
 
         return Response(status=status.HTTP_200_OK, data=[])
 
@@ -903,11 +951,21 @@ class ReplenishmentDashboardView(views.APIView):
             .order_by("-start_year")
             .first()
         )
-        income = ExternalIncome.objects.aggregate(
+        income_interest = ExternalIncomeAnnual.objects.aggregate(
             interest_earned=models.Sum("interest_earned", default=0),
             miscellaneous_income=models.Sum("miscellaneous_income", default=0),
         )
-        allocations = ExternalAllocation.objects.get()
+        allocations = ExternalAllocation.objects.aggregate(
+            undp=models.Sum("undp", default=0),
+            unep=models.Sum("unep", default=0),
+            unido=models.Sum("unido", default=0),
+            world_bank=models.Sum("world_bank", default=0),
+            staff_contracts=models.Sum("staff_contracts", default=0),
+            treasury_fees=models.Sum("treasury_fees", default=0),
+            monitoring_fees=models.Sum("monitoring_fees", default=0),
+            technical_audit=models.Sum("technical_audit", default=0),
+            information_strategy=models.Sum("information_strategy", default=0),
+        )
 
         computed_summary_data = TriennialContributionStatus.objects.aggregate(
             cash_payments=models.Sum("cash_payments", default=0),
@@ -986,12 +1044,12 @@ class ReplenishmentDashboardView(views.APIView):
             else config.DEFAULT_REPLENISHMENT_AS_OF_DATE
         )
 
-        external_income = ExternalIncome.objects.values(
-            "start_year",
-            "end_year",
+        external_income = ExternalIncomeAnnual.objects.values(
+            "year",
+            "triennial_start_year",
             "interest_earned",
             "miscellaneous_income",
-        ).order_by("-start_year")
+        ).order_by("-triennial_start_year", "-year")
 
         data = {
             "as_of_date": as_of_date.strftime("%d %B %Y"),
@@ -1009,20 +1067,12 @@ class ReplenishmentDashboardView(views.APIView):
             "income": {
                 "cash_payments": computed_summary_data["cash_payments"],
                 "bilateral_assistance": computed_summary_data["bilateral_assistance"],
-                "interest_earned": income["interest_earned"],
+                "interest_earned": income_interest["interest_earned"],
                 "promissory_notes": computed_summary_data["promissory_notes"],
-                "miscellaneous_income": income["miscellaneous_income"],
+                "miscellaneous_income": income_interest["miscellaneous_income"],
             },
             "allocations": {
-                "undp": allocations.undp,
-                "unep": allocations.unep,
-                "unido": allocations.unido,
-                "world_bank": allocations.world_bank,
-                "staff_contracts": allocations.staff_contracts,
-                "treasury_fees": allocations.treasury_fees,
-                "monitoring_fees": allocations.monitoring_fees,
-                "technical_audit": allocations.technical_audit,
-                "information_strategy": allocations.information_strategy,
+                **allocations,
                 "bilateral_assistance": computed_summary_data["bilateral_assistance"],
                 "gain_loss": gain_loss,
             },
@@ -1062,50 +1112,26 @@ class ReplenishmentDashboardView(views.APIView):
 
         return Response(data)
 
-    @transaction.atomic
-    def put(self, request, *args, **kwargs):
-        self.check_permissions(request)
-
-        data = request.data
-
-        allocations = ExternalAllocation.objects.get()
-
-        # TODO: serializers?
-        if data.get("external_income_start_year") and data.get(
-            "external_income_end_year"
-        ):
-            ExternalIncome.objects.update_or_create(
-                start_year=data["external_income_start_year"],
-                end_year=data["external_income_end_year"],
-                defaults={
-                    "interest_earned": data["interest_earned"],
-                    "miscellaneous_income": data["miscellaneous_income"],
-                },
-            )
-
-        allocations.undp = data["undp"]
-        allocations.unep = data["unep"]
-        allocations.unido = data["unido"]
-        allocations.world_bank = data["world_bank"]
-        allocations.staff_contracts = data["staff_contracts"]
-        allocations.treasury_fees = data["treasury_fees"]
-        allocations.monitoring_fees = data["monitoring_fees"]
-        allocations.technical_audit = data["technical_audit"]
-        allocations.information_strategy = data["information_strategy"]
-        allocations.save()
-
-        return Response({})
-
 
 class ReplenishmentDashboardExportView(views.APIView):
     permission_classes = [IsUserAllowedReplenishment]
 
     def get_status(self):
-        income = ExternalIncome.objects.aggregate(
+        income_interest = ExternalIncomeAnnual.objects.aggregate(
             interest_earned=models.Sum("interest_earned", default=0),
             miscellaneous_income=models.Sum("miscellaneous_income", default=0),
         )
-        allocations = ExternalAllocation.objects.get()
+        allocations = ExternalAllocation.objects.aggregate(
+            undp=models.Sum("undp", default=0),
+            unep=models.Sum("unep", default=0),
+            unido=models.Sum("unido", default=0),
+            world_bank=models.Sum("world_bank", default=0),
+            staff_contracts=models.Sum("staff_contracts", default=0),
+            treasury_fees=models.Sum("treasury_fees", default=0),
+            monitoring_fees=models.Sum("monitoring_fees", default=0),
+            technical_audit=models.Sum("technical_audit", default=0),
+            information_strategy=models.Sum("information_strategy", default=0),
+        )
 
         computed_summary_data = TriennialContributionStatus.objects.aggregate(
             cash_payments=models.Sum("cash_payments", default=0),
@@ -1121,28 +1147,28 @@ class ReplenishmentDashboardExportView(views.APIView):
                 computed_summary_data["cash_payments"],
                 computed_summary_data["promissory_notes"],
                 computed_summary_data["bilateral_assistance"],
-                income["interest_earned"],
-                income["miscellaneous_income"],
+                income_interest["interest_earned"],
+                income_interest["miscellaneous_income"],
             ]
         )
 
         total_allocations_agencies = sum(
             [
-                allocations.undp,
-                allocations.unep,
-                allocations.unido,
-                allocations.world_bank,
+                allocations["undp"],
+                allocations["unep"],
+                allocations["unido"],
+                allocations["world_bank"],
             ]
         )
 
         total_provisions = sum(
             [
                 total_allocations_agencies,
-                allocations.staff_contracts,
-                allocations.treasury_fees,
-                allocations.monitoring_fees,
-                allocations.technical_audit,
-                allocations.information_strategy,
+                allocations["staff_contracts"],
+                allocations["treasury_fees"],
+                allocations["monitoring_fees"],
+                allocations["technical_audit"],
+                allocations["information_strategy"],
                 computed_summary_data["bilateral_assistance"],
                 gain_loss,
             ]
@@ -1185,12 +1211,12 @@ class ReplenishmentDashboardExportView(views.APIView):
             (
                 "    -  Interest earned",
                 None,
-                income["interest_earned"],
+                income_interest["interest_earned"],
             ),
             (
                 "    -  Miscellaneous income",
                 None,
-                income["miscellaneous_income"],
+                income_interest["miscellaneous_income"],
             ),
             EMPTY_ROW,
             (
@@ -1204,10 +1230,10 @@ class ReplenishmentDashboardExportView(views.APIView):
                 None,
                 None,
             ),
-            ("    -  UNDP", allocations.undp, None),
-            ("    -  UNEP", allocations.unep, None),
-            ("    -  UNIDO", allocations.unido, None),
-            ("    -  World Bank", allocations.world_bank, None),
+            ("    -  UNDP", allocations["undp"], None),
+            ("    -  UNEP", allocations["unep"], None),
+            ("    -  UNIDO", allocations["unido"], None),
+            ("    -  World Bank", allocations["world_bank"], None),
             ("Unspecified projects", "-", None),
             ("Less Adjustments", "-", None),
             (
@@ -1216,25 +1242,25 @@ class ReplenishmentDashboardExportView(views.APIView):
                 total_allocations_agencies,
             ),
             EMPTY_ROW,
-            # TODO: dynamic years?
+            # TODO: dynamic years?!
             ("Secretariat and Executive Committee costs (1991-2026)", None, None),
             (
                 "    -  including provision for staff contracts into 2026",
                 None,
-                allocations.staff_contracts,
+                allocations["staff_contracts"],
             ),
-            ("Treasury fees", None, allocations.treasury_fees),
+            ("Treasury fees", None, allocations["treasury_fees"]),
             (
                 "Monitoring and Evaluation costs (1999-2025)",
                 None,
-                allocations.monitoring_fees,
+                allocations["monitoring_fees"],
             ),
-            ("Technical Audit costs (1998-2010)", None, allocations.technical_audit),
+            ("Technical Audit costs (1998-2010)", None, allocations["technical_audit"]),
             ("Information strategy costs (2003-2004)", None, None),
             (
                 "    -  includes provision for Network maintenance costs for 2004",
                 None,
-                allocations.information_strategy,
+                allocations["information_strategy"],
             ),
             (
                 "Bilateral cooperation",
@@ -1272,6 +1298,50 @@ class ReplenishmentDashboardExportView(views.APIView):
         add_statistics_status_of_contributions_response_worksheet(wb, periods)
 
         return workbook_response("Status of the fund", wb)
+
+
+class ReplenishmentExternalAllocationViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    """
+    Viewset for all the ExternalAllocation.
+    """
+
+    model = ExternalAllocation
+
+    permission_classes = [IsUserAllowedReplenishment]
+    serializer_class = ExternalAllocationSerializer
+    ordering_fields = ["year"]
+
+    def get_queryset(self):
+        return ExternalAllocation.objects.all()
+
+
+class ReplenishmentExternalIncomeAnnualViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    """
+    Viewset for the ExternalIncomeAnnual.
+    """
+
+    model = ExternalIncomeAnnual
+
+    permission_classes = [IsUserAllowedReplenishment]
+    serializer_class = ExternalIncomeAnnualSerializer
+    ordering_fields = ["-year", "quarter"]
+
+    def get_queryset(self):
+        return ExternalIncomeAnnual.objects.all()
 
 
 class ReplenishmentInvoiceViewSet(
@@ -1433,11 +1503,24 @@ class ReplenishmentInvoiceViewSet(
             )
         InvoiceFile.objects.bulk_create(invoice_files)
 
+    def _parse_is_ferm_flag(self, request):
+        is_ferm = request.data.get("is_ferm", None)
+        if is_ferm == "true":
+            return True
+        return False
+
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         files = self._parse_invoice_new_files(request)
 
-        serializer = InvoiceCreateSerializer(data=request.data)
+        # request.data is not mutable and we need to perform some boolean-string magic
+        # for the is_ferm field, because we receive it from a forn.
+        request_data = request.data.copy()
+
+        is_ferm = self._parse_is_ferm_flag(request)
+        request_data["is_ferm"] = is_ferm
+
+        serializer = InvoiceCreateSerializer(data=request_data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1448,6 +1531,15 @@ class ReplenishmentInvoiceViewSet(
         # Now create the files for this Invoice
         self._create_new_invoice_files(invoice, files)
 
+        # And finally set the ScaleOfAssessment if all needed fields are specified
+        if is_ferm is not None and invoice.year and not invoice.is_arrears:
+            ScaleOfAssessment.objects.filter(
+                version__replenishment__start_year__lte=invoice.year,
+                version__replenishment__end_year__gte=invoice.year,
+                version__is_final=True,
+                country=invoice.country,
+            ).update(opted_for_ferm=is_ferm)
+
         headers = self.get_success_headers(serializer.data)
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
@@ -1457,11 +1549,18 @@ class ReplenishmentInvoiceViewSet(
     def update(self, request, *args, **kwargs):
         current_obj = self.get_object()
 
+        # request.data is not mutable and we need to perform some boolean-string magic
+        # for the is_ferm field, because we receive it from a forn.
+        request_data = request.data.copy()
+
+        is_ferm = self._parse_is_ferm_flag(request)
+        request_data["is_ferm"] = is_ferm
+
         new_files = self._parse_invoice_new_files(request)
         files_to_delete = json.loads(request.data.get("deleted_files", "[]"))
 
         # First perform the update for the Invoice fields
-        serializer = InvoiceCreateSerializer(current_obj, data=request.data)
+        serializer = InvoiceCreateSerializer(current_obj, data=request_data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         self.perform_update(serializer)
@@ -1471,6 +1570,15 @@ class ReplenishmentInvoiceViewSet(
 
         # And delete the ones that need to be deleted
         current_obj.invoice_files.filter(id__in=files_to_delete).delete()
+
+        # And finally set the ScaleOfAssessment if all needed fields are specified
+        if is_ferm is not None and current_obj.year and not current_obj.is_arrears:
+            ScaleOfAssessment.objects.filter(
+                version__replenishment__start_year__lte=current_obj.year,
+                version__replenishment__end_year__gte=current_obj.year,
+                version__is_final=True,
+                country=current_obj.country,
+            ).update(opted_for_ferm=is_ferm)
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
@@ -1530,7 +1638,7 @@ class ReplenishmentPaymentViewSet(
         "country__name",
     ]
     search_fields = [
-        "payment_for_year",
+        "payment_for_years",
         "amount",
         "country__name",
         "comment",
@@ -1585,11 +1693,76 @@ class ReplenishmentPaymentViewSet(
             )
         PaymentFile.objects.bulk_create(payment_files)
 
+    def _parse_is_ferm_flag(self, request):
+        is_ferm = request.data.get("is_ferm", None)
+        if is_ferm == "true":
+            return True
+        return False
+
+    def _set_scale_of_assessment_ferm(self, payment, is_ferm):
+        if is_ferm is not None and payment.payment_for_years:
+            years_list = [
+                int(year)
+                for year in payment.payment_for_years
+                if year not in ["deferred", "arrears"]
+            ]
+            for year in years_list:
+                ScaleOfAssessment.objects.filter(
+                    version__replenishment__start_year__lte=year,
+                    version__replenishment__end_year__gte=year,
+                    version__is_final=True,
+                    country=payment.country,
+                ).update(opted_for_ferm=is_ferm)
+
+    def _set_annual_triennial_contributions(self, payment, old_amount=None):
+        """
+        Assumes that Annual/Triennial ContributionStatus objects exist for the payment's
+        country & years.
+
+        Assumes calling method/block is wrapped in transaction.atomic.
+
+        For updates the `old_value` parameter is used; if it's set, we will substract
+        the old amount from the cash payments and only then add the new amount.
+        """
+        years_list = []
+        if payment.payment_for_years:
+            years_list = [
+                int(year)
+                for year in payment.payment_for_years
+                if year not in ["deferred", "arrears"]
+            ]
+        amount_to_add = payment.amount
+        if old_amount is not None:
+            amount_to_add -= old_amount
+        AnnualContributionStatus.objects.filter(
+            country=payment.country, year__in=years_list
+        ).update(
+            cash_payments=models.F("cash_payments") + amount_to_add,
+            outstanding_contributions=models.F("outstanding_contributions")
+            - amount_to_add,
+        )
+        for year in years_list:
+            # Updating objects one by one to avoid race conditions
+            # (same triennial object might need to be updated multiple times)
+            TriennialContributionStatus.objects.filter(
+                country=payment.country, start_year__lte=year, end_year__gte=year
+            ).update(
+                cash_payments=models.F("cash_payments") + amount_to_add,
+                outstanding_contributions=models.F("outstanding_contributions")
+                - amount_to_add,
+            )
+
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         files = self._parse_payment_new_files(request)
+        # request.data is not mutable and we need to perform some boolean-string magic
+        # for the is_ferm field, because we receive it from a forn.
+        request_data = request.data.copy()
 
-        serializer = PaymentCreateSerializer(data=request.data)
+        is_ferm = self._parse_is_ferm_flag(request)
+        request_data["is_ferm"] = is_ferm
+
+        serializer = PaymentCreateSerializer(data=request_data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1600,6 +1773,12 @@ class ReplenishmentPaymentViewSet(
         # Now create the files for this Payment
         self._create_new_payment_files(payment, files)
 
+        # Update the annual/triennial contributions
+        self._set_annual_triennial_contributions(payment)
+
+        # And finally set the ScaleOfAssessment if all needed fields are specified
+        self._set_scale_of_assessment_ferm(payment, is_ferm)
+
         headers = self.get_success_headers(serializer.data)
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
@@ -1609,11 +1788,19 @@ class ReplenishmentPaymentViewSet(
     def update(self, request, *args, **kwargs):
         current_obj = self.get_object()
 
+        previous_amount = current_obj.amount
+
+        # request.data is not mutable and we need to perform some string-bollean magic
+        # for the is_ferm field, because we receive it from a forn.
+        request_data = request.data.copy()
+        is_ferm = self._parse_is_ferm_flag(request)
+        request_data["is_ferm"] = is_ferm
+
         new_files = self._parse_payment_new_files(request)
         files_to_delete = json.loads(request.data.get("deleted_files", "[]"))
 
         # First perform the update for the Payment fields
-        serializer = PaymentCreateSerializer(current_obj, data=request.data)
+        serializer = PaymentCreateSerializer(current_obj, data=request_data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         self.perform_update(serializer)
@@ -1623,6 +1810,14 @@ class ReplenishmentPaymentViewSet(
 
         # And delete the ones that need to be deleted
         current_obj.payment_files.filter(id__in=files_to_delete).delete()
+
+        # Update the annual/triennial contributions
+        self._set_annual_triennial_contributions(
+            current_obj, old_amount=previous_amount
+        )
+
+        # And finally set the ScaleOfAssessment if all needed fields are specified
+        self._set_scale_of_assessment_ferm(current_obj, is_ferm)
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)

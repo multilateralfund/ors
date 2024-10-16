@@ -16,24 +16,28 @@ interface Tab {
 
 const SECTIONS: Tab[] = [
   {
-    label: 'Dashboard',
-    path: '/replenishment/dashboard',
+    label: 'Scale of assessment',
+    path: '/replenishment/scale-of-assessment',
+  },
+  {
+    label: 'Status of the fund',
+    path: '/replenishment/status-of-the-fund',
+  },
+  {
+    label: 'Statistics',
+    path: '/replenishment/statistics',
   },
   {
     label: 'Status of contributions',
     path: '/replenishment/status-of-contributions',
   },
   {
-    label: 'Scale of assessment',
-    path: '/replenishment/scale-of-assessment',
+    label: 'In/out flows',
+    path: '/replenishment/in-out-flows',
   },
   {
-    label: 'Invoices',
-    path: '/replenishment/invoices',
-  },
-  {
-    label: 'Payments',
-    path: '/replenishment/payments',
+    label: 'Dashboard',
+    path: '/replenishment/dashboard',
   },
 ]
 
@@ -75,7 +79,7 @@ function ReplenishmentLayoutContent(props: PropsWithChildren) {
   return (
     <>
       <div className="flex w-[96vw] flex-wrap-reverse items-center justify-between lg:w-full lg:flex-nowrap print:hidden">
-        <div className="overflow-scroll">
+        <div className="overflow-x-auto">
           <nav className="flex items-center gap-4">{navLinks}</nav>
         </div>
         <div id="replenishment-tab-buttons" className="self-end"></div>

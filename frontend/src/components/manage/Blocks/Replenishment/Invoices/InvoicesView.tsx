@@ -4,6 +4,7 @@ import { ChangeEvent, useContext, useMemo, useState } from 'react'
 
 import Cookies from 'js-cookie'
 import { times } from 'lodash'
+import Link from 'next/link'
 import { enqueueSnackbar } from 'notistack'
 
 import ConfirmDialog from '@ors/components/manage/Blocks/Replenishment/ConfirmDialog'
@@ -112,6 +113,8 @@ function InvoicesView() {
         files: <ViewFiles files={data.invoice_files} />,
         files_data: data.invoice_files,
         gray: !data.id,
+        is_arrears: data.is_arrears || false,
+        is_ferm: data.is_ferm || false,
         iso3: data.country.iso3,
         number: data.number?.toLocaleString(),
         replenishment: data.replenishment,
@@ -190,6 +193,15 @@ function InvoicesView() {
     entry.exchange_rate = isNaN(entry.exchange_rate as number)
       ? ''
       : entry.exchange_rate
+
+    if (entry.is_ferm === 'false') {
+      entry.currency = 'USD'
+    }
+
+    if (entry.year === 'arrears') {
+      entry.year = null
+      entry.is_arrears = true
+    }
 
     let nr_new_files = 0
     const data = new FormData()
@@ -272,6 +284,15 @@ function InvoicesView() {
         Number(p.start_year) <= Number(entry.year) &&
         Number(p.end_year) >= Number(entry.year),
     )?.id
+
+    if (entry.is_ferm === 'false') {
+      entry.currency = 'USD'
+    }
+
+    if (entry.year === 'arrears') {
+      entry.year = null
+      entry.is_arrears = true
+    }
 
     let nr_new_files = 0
     const data = new FormData()
@@ -437,6 +458,21 @@ function InvoicesView() {
     setParams({ hide_no_invoice: evt.target.checked })
   }
 
+  const ViewPicker = () => {
+    return (
+      <div className="mb-2 flex items-center gap-4 print:fixed print:left-[480px] print:top-12">
+        <h2 className="m-0 text-3xl uppercase">Invoices</h2>
+        <span className="print:hidden"> | </span>
+        <Link
+          className="m-0 text-2xl uppercase text-primary no-underline print:hidden"
+          href="./payments"
+        >
+          Payments
+        </Link>
+      </div>
+    )
+  }
+
   return (
     <>
       {isDeleteModalVisible && invoiceToDelete !== null ? (
@@ -467,6 +503,7 @@ function InvoicesView() {
           onSubmit={handleEditInvoiceSubmit}
         />
       ) : null}
+      <ViewPicker />
       <div className="flex items-center justify-between gap-4 pb-4 print:hidden">
         <div className="flex items-center gap-x-4">
           <div className="relative">
@@ -520,6 +557,7 @@ function InvoicesView() {
               Status
             </option>
             <option value="paid">Paid</option>
+            <option value="partially_paid">Partially paid</option>
             <option value="pending">Pending</option>
             <option value="not_issued">Not issued</option>
           </Select>

@@ -1,3 +1,4 @@
+from decimal import Decimal
 from openpyxl.cell import WriteOnlyCell
 from openpyxl.styles import Font, Side, Border, Alignment
 
@@ -58,6 +59,9 @@ class DashboardWriter(WriteOnlyBase):
             bottom=Side(style="thin"),
         )
         cell.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
+        if type(value) in (float, Decimal):
+            cell.number_format = "###,###,##0.00###"
+
         return cell
 
 
@@ -146,6 +150,9 @@ class StatusOfContributionsWriter(WriteOnlyBase):
 
     def write_record_cell(self, value, read_only=False):
         cell = super().write_record_cell(value, read_only)
+        if type(value) in (float, Decimal):
+            cell.number_format = "###,###,##0.00###"
+
         if any(bold_string == value for bold_string in self.BOLD_RECORD_CELLS):
             cell.border = Border(
                 top=Side(style="thick"),
@@ -219,6 +226,9 @@ class StatisticsStatusOfContributionsWriter(WriteOnlyBase):
 
     def write_record_cell(self, value, read_only=False):
         cell = super().write_record_cell(value, read_only)
+        if type(value) in (float, Decimal):
+            cell.number_format = "###,###,##0.00###"
+
         if any(bold_string == value for bold_string in self.BOLD_RECORD_CELLS):
             cell.font = Font(name="Times New Roman", bold=True)
 
@@ -303,6 +313,8 @@ class ScaleOfAssessmentWriter(WriteOnlyBase):
 
     def write_record_cell(self, value, read_only=False):
         cell = super().write_record_cell(value, read_only)
+        if type(value) in (float, Decimal):
+            cell.number_format = "###,###,##0.00###"
         cell.font = Font(name="Times New Roman")
         return cell
 

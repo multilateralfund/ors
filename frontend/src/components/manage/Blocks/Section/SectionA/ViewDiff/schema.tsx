@@ -129,7 +129,7 @@ function useGridOptions(props: {
         ? [
             {
               ...sectionColDefById['banned_date'],
-              dataType: 'date',
+              dataType: 'date_diff',
               field: 'banned_date',
               // ...(standalone ? { flex: 1 } : { flex: 1 }),
             },

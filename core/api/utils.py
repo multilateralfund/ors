@@ -2,6 +2,7 @@ import shutil
 import subprocess
 import tempfile
 from pathlib import Path
+from openpyxl.worksheet.page import PageMargins
 
 from django.contrib.auth import get_user_model
 from django.db.models import Exists
@@ -114,17 +115,31 @@ def workbook_response(name, wb):
         return res
 
 
-def workbook_pdf_response(name, wb):
+def workbook_pdf_response(name, wb, orientation=None):
     """Save pdf and return the response"""
 
     with tempfile.TemporaryDirectory(prefix="mlf-print-") as tmpdirname:
         pdf_file = Path(tmpdirname) / (name + ".pdf")
         xlsx_file = Path(tmpdirname) / (name + ".xlsx")
+
+        if orientation:
+            for sheet in wb.worksheets:
+                sheet.page_setup.orientation = sheet.ORIENTATION_LANDSCAPE
+                sheet.page_margins = PageMargins(
+                    left=0.5, right=0.5, top=0.75, bottom=0.75
+                )
+
         wb.save(xlsx_file)
 
         libreoffice_bin = shutil.which("libreoffice")
         subprocess.check_call(
-            [libreoffice_bin, "--headless", "--convert-to", "pdf", str(xlsx_file)],
+            [
+                libreoffice_bin,
+                "--headless",
+                "--convert-to",
+                "pdf",
+                str(xlsx_file),
+            ],
             cwd=tmpdirname,
             shell=False,
         )

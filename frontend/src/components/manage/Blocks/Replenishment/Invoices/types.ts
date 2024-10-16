@@ -22,6 +22,8 @@ export type ParsedInvoice = {
   files_data: ApiReplenishmentFile[]
   gray: boolean
   id: number
+  is_arrears: boolean
+  is_ferm: boolean
   iso3: string
   number: string
   replenishment: ApiReplenishment
@@ -30,14 +32,18 @@ export type ParsedInvoice = {
 }
 
 export type InvoiceForSubmit = {
+  currency: string
   date_first_reminder: null | string
   date_of_issuance: null | string
   date_second_reminder: null | string
   date_sent_out: null | string
   exchange_rate: number | string
+  is_arrears: boolean
+  is_ferm: string
   reminder: null | string
   replenishment_id?: number
-  year: string
+  status: null | string
+  year: null | string
 } & { [key: string]: File }
 
 export type InvoiceColumn = {

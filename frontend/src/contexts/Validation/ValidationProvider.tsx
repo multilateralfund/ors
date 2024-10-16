@@ -30,7 +30,7 @@ function hasErrors(
 }
 
 const ValidationProvider = (props: IValidationProvider) => {
-  const { children, form, model, silent = false } = props
+  const { activeSection, children, form, model, silent = false } = props
 
   const [openDrawer, setOpenDrawer] = useState(false)
 
@@ -69,6 +69,7 @@ const ValidationProvider = (props: IValidationProvider) => {
   return (
     <ValidationContext.Provider value={retVal}>
       <ValidationDrawer
+        activeSection={activeSection}
         errors={errors}
         isOpen={openDrawer}
         onClose={toggleDrawer(false)}

@@ -144,6 +144,10 @@ class CPRecordBaseListView(views.APIView):
             )
             if not full_history:
                 history_qs = history_qs.filter(event_in_draft=False)
+                history_qs = history_qs.exclude(
+                    Q(event_description__istartswith="status changed")
+                    | Q(event_description__istartswith="status updated")
+                )
             history = CPHistorySerializer(history_qs, many=True).data
 
         return history
@@ -268,7 +272,7 @@ class CPRecordBaseListView(views.APIView):
         ],
     )
     def get(self, *args, **kwargs):
-        full_history = self.request.query_params.get("full_history", False)
+        full_history = self.request.query_params.get("full_history") == "1"
         return Response(self.get_data(self._get_cp_report(), full_history))
 
 
@@ -307,6 +311,7 @@ class CPRecordListDiffView(CPRecordListView):
         "exports_odp",
         "export_quotas_odp",
         "production_odp",
+        "banned_date",
         "remarks",
     ]
     section_c_fields = ["previous_year_price", "current_year_price", "remarks"]

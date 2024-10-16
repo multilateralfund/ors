@@ -92,7 +92,7 @@ const COLUMNS: SATableColumn[] = [
   {
     field: 'annual_contributions',
     label: 'Annual contributions',
-    subLabel: '([PERIOD] in U.S.D)',
+    subLabel: '([PERIOD] in USD)',
   },
   {
     editable: true,
@@ -386,7 +386,12 @@ function DateRangeInput(props: DateRangeInputProps) {
         value={start}
         onChange={handleChangeStart}
       />
-      <DateInput disabled={disabled} value={end} onChange={handleChangeEnd} />
+      <DateInput
+        disabled={disabled}
+        min={start}
+        value={end}
+        onChange={handleChangeEnd}
+      />
     </div>
   )
 }
@@ -484,7 +489,12 @@ function formatCurrencyDateRangeForHeader(dateRange: {
 }) {
   const { end, start } = dateRange
   const intl = new Intl.DateTimeFormat('en-US', { month: 'short' })
-  return `${start.getUTCDate()} ${intl.format(start)} - ${end.getUTCDate()} ${intl.format(end)} ${start.getUTCFullYear()}`
+  const sameYear = end.getUTCFullYear() == start.getUTCFullYear()
+  const strStart = sameYear
+    ? `${start.getUTCDate()} ${intl.format(start)}`
+    : `${start.getUTCDate()} ${intl.format(start)} ${start.getUTCFullYear()}`
+  const strEnd = `${end.getUTCDate()} ${intl.format(end)} ${end.getUTCFullYear()}`
+  return `${strStart} - ${strEnd}`
 }
 
 function revertAllCurrencyNames(rows: SAContribution[], value: any) {
@@ -537,6 +547,8 @@ function SAView(props: SAViewProps) {
   const ctxSoA = useContext(SoAContext)
   const version = ctxSoA.version
   const versions = ctxSoA.versions
+
+  const isFinal = ctxSoA.version?.is_final ?? true
 
   const contributions = useMemo(
     function () {
@@ -831,45 +843,45 @@ function SAView(props: SAViewProps) {
   return (
     <>
       <div className="flex items-center justify-between">
-        <div className="flex py-4 sm:flex-col 2xl:flex-row 2xl:items-center 2xl:gap-x-4 print:hidden">
+        <div className="flex items-center gap-x-4 py-4 print:hidden">
           <div className="flex items-center gap-x-4 py-4">
-            <div className="flex items-center">
-              <label htmlFor="triannualBudget_mask">
+            <div className="flex flex-col gap-y-2 2xl:flex-row 2xl:items-center">
+              <label className="pl-4 2xl:pl-0" htmlFor="triannualBudget_mask">
                 <div className="flex flex-col uppercase text-primary">
                   <span className="font-bold">Triannual budget</span>
-                  <span className="">(in U.S.D)</span>
+                  <span className="">(in USD)</span>
                 </div>
               </label>
               <FormattedNumberInput
                 id="triannualBudget"
                 className="w-36"
-                disabled={!ctx.isTreasurer}
+                disabled={!ctx.isTreasurer || isFinal}
                 value={replenishment?.amount}
                 onChange={handleAmountInput}
               />
             </div>
             <div className="h-8 border-y-0 border-l border-r-0 border-solid border-gray-400"></div>
-            <div className="flex items-center">
-              <label htmlFor="triannualBudget_mask">
+            <div className="flex flex-col gap-y-2 2xl:flex-row 2xl:items-center">
+              <label className="pl-4 2xl:pl-0" htmlFor="triannualBudget_mask">
                 <div className="flex flex-col uppercase text-primary">
                   <span className="font-bold">Previously unused sum</span>
-                  <span className="">(in U.S.D)</span>
+                  <span className="">(in USD)</span>
                 </div>
               </label>
               <FormattedNumberInput
                 id="previouslyUnusedSum"
                 className="w-36"
-                disabled={!ctx.isTreasurer}
+                disabled={!ctx.isTreasurer || isFinal}
                 value={unusedAmount}
                 onChange={handleUnusedAmountInput}
               />
             </div>
             <div className="h-8 border-y-0 border-l border-r-0 border-solid border-gray-400"></div>
-            <div className="flex items-center">
-              <label htmlFor="totalAmount_mask">
+            <div className="flex flex-col gap-y-2 2xl:flex-row 2xl:items-center">
+              <label className="pl-4 2xl:pl-0" htmlFor="totalAmount_mask">
                 <div className="flex flex-col uppercase text-primary">
                   <span className="font-bold">Annual budget</span>
-                  <span className="">(in U.S.D)</span>
+                  <span className="">(in USD)</span>
                 </div>
               </label>
               <FormattedNumberInput
@@ -884,8 +896,8 @@ function SAView(props: SAViewProps) {
             </div>
           </div>
           <div className="h-8 border-y-0 border-l border-r-0 border-solid border-gray-400 sm:hidden 2xl:block"></div>
-          <div className="flex items-center">
-            <label>
+          <div className="flex flex-col gap-y-2 2xl:flex-row 2xl:items-center">
+            <label className="pl-4 2xl:pl-0">
               <div className="flex flex-col uppercase text-primary">
                 <span className="max-w-28 font-bold">
                   Currency rate date range
@@ -893,7 +905,7 @@ function SAView(props: SAViewProps) {
               </div>
             </label>
             <DateRangeInput
-              disabled={!ctx.isTreasurer}
+              disabled={!ctx.isTreasurer || isFinal}
               initialEnd={dateForInput(currencyDateRange.end)}
               initialStart={dateForInput(currencyDateRange.start)}
               onChange={handleChangeCurrencyDateRange}
@@ -913,7 +925,7 @@ function SAView(props: SAViewProps) {
         adminButtons={ctx.isTreasurer}
         columns={columns}
         countriesForAdd={countriesForAdd}
-        enableEdit={ctx.isTreasurer}
+        enableEdit={ctx.isTreasurer && !isFinal}
         enableSort={true}
         rowData={formattedTableData}
         showAdd={showAdd}

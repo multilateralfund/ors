@@ -8,11 +8,16 @@ import { IValidationDrawer } from './types'
 import { IoCloseCircle } from 'react-icons/io5'
 
 export default function ValidationDrawer({
+  activeSection,
   isOpen,
   onClose,
   ...props
 }: IValidationDrawer) {
-  const errors = extractErrors(props.errors)
+  const errors = !!activeSection
+    ? extractErrors(props.errors).filter(
+        (err) => err.section_id === activeSection,
+      )
+    : extractErrors(props.errors)
   const ref = useClickOutside<HTMLDivElement>(() => {
     onClose()
   })
@@ -34,7 +39,7 @@ export default function ValidationDrawer({
           />
         </div>
       </div>
-      <div className="h-full overflow-auto px-6 py-4">
+      <div className="h-full overflow-auto px-6 py-4 pb-40">
         {errors.map((sectionErrors) => {
           const { errors: errorList, section_id } = sectionErrors
           return (

@@ -54,6 +54,14 @@ export default function VersionHistoryList(props: any) {
             const displayHR = index !== itemsToShow - 1
             const isCurrentVersion = data_version === currentDataVersion
 
+            const {
+              event_description,
+              updated_by_email,
+              updated_by_first_name,
+              updated_by_last_name,
+              updated_by_username,
+            } = historyItem
+
             return (
               <React.Fragment key={`${index}`}>
                 <div
@@ -74,8 +82,7 @@ export default function VersionHistoryList(props: any) {
                         id={`report_summary`}
                         className="text-md my-1 font-medium text-gray-900"
                       >
-                        {historyItem.event_description} (
-                        {`Version ${data_version}`})
+                        {event_description} ({`Version ${data_version}`})
                       </p>
                     </div>
                     <div>
@@ -83,13 +90,14 @@ export default function VersionHistoryList(props: any) {
                         id="reporting_officer"
                         className="my-1 w-fit rounded bg-gray-100 px-1 text-sm font-normal text-gray-500"
                       >
-                        <span>{historyItem.reporting_officer_name || ''}</span>
-                        {historyItem.reporting_officer_name &&
-                          historyItem.reporting_officer_email && (
-                            <span> - </span>
-                          )}
-                        <span>{historyItem.reporting_officer_email || ''}</span>
-                        <span> ({historyItem.updated_by_username})</span>
+                        <span>
+                          {updated_by_first_name || ''}{' '}
+                          {updated_by_last_name || ''}
+                        </span>
+                        {(updated_by_last_name || updated_by_first_name) &&
+                          updated_by_email && <span> - </span>}
+                        <span>{updated_by_email || ''}</span>
+                        <span> ({updated_by_username})</span>
                       </p>
                     </div>
                   </div>

@@ -24,10 +24,15 @@ export default function SectionECreate(props: SectionECreateProps) {
   const pinnedBottomRowData = useMemo(() => {
     return form.section_e.length > 0
       ? [
-          { facility: 'TOTAL', rowType: 'total', tooltip: true },
+          {
+            facility: 'TOTAL',
+            row_id: 'bottom_total',
+            rowType: 'total',
+            tooltip: true,
+          },
           { rowType: 'control' },
         ]
-      : [{ rowType: 'control' }]
+      : [{ row_id: 'add_facility', rowType: 'control' }]
   }, [form.section_e])
 
   const addFacility = useCallback(() => {

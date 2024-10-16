@@ -1,10 +1,11 @@
-from django.db import transaction
-from django.shortcuts import get_object_or_404
+import copy
+
 from django.urls import reverse
 from rest_framework import serializers
 
 from core.api.serializers import CountrySerializer
 from core.api.serializers.agency import AgencySerializer
+from core.api.serializers.base import Many2ManyListField
 from core.api.serializers.project import ProjectClusterSerializer
 from core.api.serializers.project import ProjectSectorSerializer
 from core.api.serializers.project import ProjectSubSectorSerializer
@@ -25,6 +26,8 @@ from core.models import (
     Substance,
 )
 
+# pylint: disable=R0902
+
 
 class BPChemicalTypeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -36,11 +39,7 @@ class BPChemicalTypeSerializer(serializers.ModelSerializer):
 
 
 class BPActivityValueSerializer(serializers.ModelSerializer):
-    bp_activity_id = serializers.PrimaryKeyRelatedField(
-        required=False,
-        queryset=BPActivity.objects.all().values_list("id", flat=True),
-        write_only=True,
-    )
+    bp_activity_id = serializers.IntegerField(required=False, write_only=True)
 
     class Meta:
         model = BPActivityValue
@@ -142,6 +141,7 @@ class BPActivityDetailSerializer(serializers.ModelSerializer):
     country = CountrySerializer()
     lvc_status = serializers.ChoiceField(choices=BPActivity.LVCStatus.choices)
     project_type = ProjectTypeSerializer()
+    project_type_code = serializers.SerializerMethodField()
     status = serializers.ChoiceField(choices=BPActivity.Status.choices)
     bp_chemical_type = BPChemicalTypeSerializer()
     is_multi_year_display = serializers.SerializerMethodField()
@@ -164,6 +164,7 @@ class BPActivityDetailSerializer(serializers.ModelSerializer):
     comment_types = serializers.SlugRelatedField("name", many=True, read_only=True)
 
     sector = ProjectSectorSerializer()
+    sector_code = serializers.SerializerMethodField()
     subsector = ProjectSubSectorSerializer()
     values = BPActivityValueSerializer(many=True)
 
@@ -182,6 +183,7 @@ class BPActivityDetailSerializer(serializers.ModelSerializer):
             "lvc_status",
             "project_type",
             "project_type_id",
+            "project_type_code",
             "bp_chemical_type",
             "bp_chemical_type_id",
             "project_cluster",
@@ -191,6 +193,7 @@ class BPActivityDetailSerializer(serializers.ModelSerializer):
             "amount_polyol",
             "sector",
             "sector_id",
+            "sector_code",
             "subsector",
             "subsector_id",
             "legacy_sector_and_subsector",
@@ -214,6 +217,12 @@ class BPActivityDetailSerializer(serializers.ModelSerializer):
     def get_status_display(self, obj):
         return obj.get_status_display()
 
+    def get_project_type_code(self, obj):
+        return obj.project_type.code
+
+    def get_sector_code(self, obj):
+        return obj.sector.code if obj.sector else ""
+
 
 class BPActivityListSerializer(BPActivityDetailSerializer):
     agency = serializers.SerializerMethodField()
@@ -226,51 +235,92 @@ class BPActivityListSerializer(BPActivityDetailSerializer):
 
 
 class BPActivityCreateSerializer(serializers.ModelSerializer):
-    business_plan_id = serializers.PrimaryKeyRelatedField(
-        required=False,
-        queryset=BusinessPlan.objects.all().values_list("id", flat=True),
-    )
-    country_id = serializers.PrimaryKeyRelatedField(
-        queryset=Country.objects.all().values_list("id", flat=True),
-    )
+    # don't use `PrimaryKeyRelatedField`; makes 1 query / item when `many=True`
+    # FKs will be manually validated
+    business_plan_id = serializers.IntegerField(required=False)
+    country_id = serializers.IntegerField()
     lvc_status = serializers.ChoiceField(choices=BPActivity.LVCStatus.choices)
     project_type_id = serializers.IntegerField()
+    project_type_code = serializers.CharField(write_only=True)
     status = serializers.ChoiceField(choices=BPActivity.Status.choices)
-    bp_chemical_type_id = serializers.PrimaryKeyRelatedField(
-        queryset=BPChemicalType.objects.all().values_list("id", flat=True),
-    )
-    project_cluster_id = serializers.PrimaryKeyRelatedField(
-        queryset=ProjectCluster.objects.all().values_list("id", flat=True),
-    )
+    bp_chemical_type_id = serializers.IntegerField()
+    project_cluster_id = serializers.IntegerField()
 
-    substances = serializers.PrimaryKeyRelatedField(
-        many=True,
-        queryset=Substance.objects.all().values_list("id", flat=True),
-    )
-    comment_types = serializers.PrimaryKeyRelatedField(
-        required=False,
-        many=True,
-        queryset=CommentType.objects.all().values_list("id", flat=True),
-    )
+    # Many2Many represented as list of integers and manually validated
+    substances = Many2ManyListField(child=serializers.IntegerField())
+    comment_types = Many2ManyListField(child=serializers.IntegerField(), required=False)
 
     sector_id = serializers.IntegerField()
-    subsector_id = serializers.PrimaryKeyRelatedField(
-        queryset=ProjectSubSector.objects.all().values_list("id", flat=True),
-    )
+    sector_code = serializers.CharField(write_only=True)
+    subsector_id = serializers.IntegerField()
     values = BPActivityValueSerializer(many=True)
 
     is_updated = serializers.BooleanField(read_only=True)
 
-    def validate(self, attrs):
-        # check only once if project sector and type exist
-        sector = get_object_or_404(ProjectSector, id=attrs.get("sector_id"))
-        project_type = get_object_or_404(ProjectType, id=attrs.get("project_type_id"))
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # get all related obj IDs only once for validation
+        self.country_ids = Country.objects.values_list("id", flat=True)
+        self.project_type_ids = ProjectType.objects.values_list("id", flat=True)
+        self.bp_chemical_type_ids = BPChemicalType.objects.values_list("id", flat=True)
+        self.project_cluster_ids = ProjectCluster.objects.values_list("id", flat=True)
+        self.sector_ids = ProjectSector.objects.values_list("id", flat=True)
+        self.subsector_ids = ProjectSubSector.objects.values_list("id", flat=True)
+        self.substance_ids = Substance.objects.values_list("id", flat=True)
+        self.comment_type_ids = CommentType.objects.values_list("id", flat=True)
 
-        if sector.code in PROJECT_SECTOR_TYPE_MAPPING:
-            if project_type.code not in PROJECT_SECTOR_TYPE_MAPPING[sector.code]:
+    def validate(self, attrs):
+        sector_code = attrs.get("sector_code")
+        if sector_code in PROJECT_SECTOR_TYPE_MAPPING:
+            if (
+                attrs.get("project_type_code")
+                not in PROJECT_SECTOR_TYPE_MAPPING[sector_code]
+            ):
                 raise serializers.ValidationError("Invalid sector - type combination")
 
         return super().validate(attrs)
+
+    def validate_country_id(self, country_id):
+        if country_id not in self.country_ids:
+            raise serializers.ValidationError("Country not found")
+        return country_id
+
+    def validate_project_type_id(self, project_type_id):
+        if project_type_id not in self.project_type_ids:
+            raise serializers.ValidationError("ProjectType not found")
+        return project_type_id
+
+    def validate_bp_chemical_type_id(self, bp_chemical_type_id):
+        if bp_chemical_type_id not in self.bp_chemical_type_ids:
+            raise serializers.ValidationError("BPChemicalType not found")
+        return bp_chemical_type_id
+
+    def validate_project_cluster_id(self, project_cluster_id):
+        if project_cluster_id not in self.project_cluster_ids:
+            raise serializers.ValidationError("ProjectCluster not found")
+        return project_cluster_id
+
+    def validate_sector_id(self, sector_id):
+        if sector_id not in self.sector_ids:
+            raise serializers.ValidationError("Sector not found")
+        return sector_id
+
+    def validate_subsector_id(self, subsector_id):
+        if subsector_id not in self.subsector_ids:
+            raise serializers.ValidationError("SubSector not found")
+        return subsector_id
+
+    def validate_substances(self, substances):
+        for substance_id in substances:
+            if substance_id not in self.substance_ids:
+                raise serializers.ValidationError("Substance not found")
+        return substances
+
+    def validate_comment_types(self, comment_types):
+        for comment_type_id in comment_types:
+            if comment_type_id not in self.comment_type_ids:
+                raise serializers.ValidationError("CommentType not found")
+        return comment_types
 
     def validate_values(self, values):
         is_after_count = 0
@@ -297,11 +347,13 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
             "country_id",
             "lvc_status",
             "project_type_id",
+            "project_type_code",
             "bp_chemical_type_id",
             "project_cluster_id",
             "substances",
             "amount_polyol",
             "sector_id",
+            "sector_code",
             "subsector_id",
             "legacy_sector_and_subsector",
             "status",
@@ -313,29 +365,6 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
             "comment_types",
             "values",
         ]
-
-    def _create_bp_activity_values(self, bp_activity, activity_values):
-        bp_activity.values.all().delete()
-
-        for activity_value in activity_values:
-            activity_value["bp_activity_id"] = bp_activity.id
-        activity_value_serializer = BPActivityValueSerializer(
-            data=activity_values, many=True
-        )
-        activity_value_serializer.is_valid(raise_exception=True)
-        activity_value_serializer.save()
-
-    @transaction.atomic
-    def create(self, validated_data):
-        if self.context.get("ignore_comment", False):
-            validated_data.pop("comment_secretariat", "")
-            validated_data.pop("comment_types", [])
-
-        activity_values = validated_data.pop("values", [])
-        bp_activity = super().create(validated_data)
-        self._create_bp_activity_values(bp_activity, activity_values)
-
-        return bp_activity
 
 
 class BusinessPlanCreateSerializer(serializers.ModelSerializer):
@@ -357,18 +386,77 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
             "activities",
         ]
 
+    # don't call `save()` here
+    def create_m2m_substances(self, bp_activity, substance_ids):
+        through_objs = []
+        for substance_id in substance_ids:
+            through_objs.append(
+                BPActivity.substances.through(
+                    substance_id=substance_id, bpactivity_id=bp_activity.id
+                )
+            )
+        return through_objs
+
+    # don't call `save()` here
+    def create_m2m_comment_types(self, bp_activity, comment_type_ids):
+        through_objs = []
+        for comment_type_id in comment_type_ids:
+            through_objs.append(
+                BPActivity.comment_types.through(
+                    commenttype_id=comment_type_id, bpactivity_id=bp_activity.id
+                )
+            )
+        return through_objs
+
     def _create_bp_activities(self, business_plan, activities):
-        for activity in activities:
-            activity["business_plan_id"] = business_plan.id
-
         ignore_comment = self.context.get("ignore_comment", False)
-        activity_serializer = BPActivityCreateSerializer(
-            data=activities, many=True, context={"ignore_comment": ignore_comment}
-        )
-        activity_serializer.is_valid(raise_exception=True)
-        activity_serializer.save()
+        activity_objs = []
+        activities_copy = copy.deepcopy(activities)
+        for activity in activities_copy:
+            # set `business_plan_id` for each activity
+            activity["business_plan_id"] = business_plan.id
+            # remove Many2Many fields
+            activity.pop("values", [])
+            activity.pop("substances", [])
+            activity.pop("comment_types", [])
+            activity.pop("project_type_code", "")
+            activity.pop("sector_code", "")
+            if ignore_comment:
+                activity.pop("comment_secretariat", "")
 
-    @transaction.atomic
+            activity_objs.append(BPActivity(**activity))
+
+        # bulk create all activities for this bp
+        activity_objs = BPActivity.objects.bulk_create(activity_objs, batch_size=1000)
+
+        activity_values = []
+        m2m_substances = []
+        m2m_comment_types = []
+        for instance, activity_data in zip(activity_objs, activities, strict=True):
+            # set Many2Many fields after all activities are created
+            substance_ids = activity_data.get("substances", [])
+            m2m_substances += self.create_m2m_substances(instance, substance_ids)
+            if not ignore_comment:
+                comment_type_ids = activity_data.get("comment_types", [])
+                m2m_comment_types += self.create_m2m_comment_types(
+                    instance, comment_type_ids
+                )
+
+            for activity_value in activity_data.get("values", []):
+                # set `bp_activity_id` for each value
+                activity_value["bp_activity_id"] = instance.id
+                activity_values.append(BPActivityValue(**activity_value))
+
+        # bulk create Many2Many relations
+        BPActivity.substances.through.objects.bulk_create(
+            m2m_substances, batch_size=1000
+        )
+        BPActivity.comment_types.through.objects.bulk_create(
+            m2m_comment_types, batch_size=1000
+        )
+        # bulk create activity values
+        BPActivityValue.objects.bulk_create(activity_values, batch_size=1000)
+
     def create(self, validated_data):
         activities = validated_data.pop("activities", [])
         business_plan = super().create(validated_data)

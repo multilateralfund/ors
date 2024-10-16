@@ -5,6 +5,7 @@ import React, { ChangeEvent, useContext, useMemo, useState } from 'react'
 import cx from 'classnames'
 import Cookies from 'js-cookie'
 import { times } from 'lodash'
+import Link from 'next/link'
 import { enqueueSnackbar } from 'notistack'
 
 import ConfirmDialog from '@ors/components/manage/Blocks/Replenishment/ConfirmDialog'
@@ -38,6 +39,7 @@ import {
   IPaymentDialogProps,
   ParsedPayment,
   PaymentColumn,
+  PaymentDataFields,
   PaymentForSubmit,
 } from './types'
 
@@ -53,7 +55,7 @@ const COLUMNS: PaymentColumn[] = [
     field: 'exchange_rate',
     label: 'Exchange Rate',
   },
-  { field: 'payment_for_year', label: 'Year(s)' },
+  { field: 'payment_years', label: 'Year(s)' },
   { field: 'ferm_gain_or_loss', label: 'Exchange (Gain)/Loss' },
   { field: 'files', label: 'Files' },
   { field: 'comment', label: 'Comments' },
@@ -119,7 +121,8 @@ function PaymentsView() {
             .join(', '),
           invoices: data.invoices,
           iso3: data.country.iso3,
-          payment_for_year: data.payment_for_year,
+          payment_for_years: data.payment_for_years,
+          payment_years: data.payment_for_years.join(', '),
           replenishment: data.replenishment,
         })),
       ]
@@ -176,7 +179,7 @@ function PaymentsView() {
   const editData = useMemo(() => {
     let entry = null
     if (editIdx !== null) {
-      entry = { ...memoResults[editIdx] } as ParsedPayment
+      entry = { ...memoResults[editIdx] } as PaymentDataFields
       entry.date = dateForEditField(entry.date)
       entry.amount = entry.be_amount
       entry.exchange_rate = entry.be_exchange_rate
@@ -203,6 +206,16 @@ function PaymentsView() {
     if (invoices.length > 0) {
       entry.invoices = invoices
     }
+    const payment_for_years = formData.getAll('payment_for_years') as string[]
+    if (payment_for_years.length > 0) {
+      entry.payment_for_years = payment_for_years
+    }
+
+    if (entry?.is_ferm) {
+      entry.is_ferm = 'true'
+    } else {
+      entry.is_ferm = 'false'
+    }
 
     let nr_new_files = 0
     const data = new FormData()
@@ -214,6 +227,7 @@ function PaymentsView() {
       // Empty strings are used to delete a value
       if (!key.startsWith('file_')) {
         const valueIsNotAFile = value as unknown as
+          | boolean
           | null
           | string
           | string[]
@@ -290,6 +304,16 @@ function PaymentsView() {
     if (invoices.length > 0) {
       entry.invoices = invoices
     }
+    const payment_for_years = formData.getAll('payment_for_years') as string[]
+    if (payment_for_years.length > 0) {
+      entry.payment_for_years = payment_for_years
+    }
+
+    if (entry?.is_ferm) {
+      entry.is_ferm = 'true'
+    } else {
+      entry.is_ferm = 'false'
+    }
 
     let nr_new_files = 0
     const data = new FormData()
@@ -331,6 +355,8 @@ function PaymentsView() {
 
     try {
       const csrftoken = Cookies.get('csrftoken')
+
+      console.log('is_ferm', data.get('is_ferm'))
       await fetchWithHandling(
         formatApiUrl('api/replenishment/payments/'),
         {
@@ -437,6 +463,21 @@ function PaymentsView() {
   }
   const yearOptions = scAnnualOptions(ctx.periods)
 
+  const ViewPicker = () => {
+    return (
+      <div className="mb-2 flex items-center gap-4 print:fixed print:left-[480px] print:top-12">
+        <Link
+          className="m-0 text-2xl uppercase text-primary no-underline print:hidden"
+          href="./invoices"
+        >
+          Invoices
+        </Link>
+        <span className="print:hidden"> | </span>
+        <h2 className="m-0 text-3xl uppercase">Payments</h2>
+      </div>
+    )
+  }
+
   return (
     <>
       {isDeleteModalVisible && paymentToDelete !== null ? (
@@ -469,6 +510,7 @@ function PaymentsView() {
           onSubmit={handleEditPaymentSubmit}
         />
       ) : null}
+      <ViewPicker />
       <div className="flex items-center justify-between gap-4 pb-4 print:hidden">
         <div className="flex items-center gap-x-4">
           <div className="relative">
@@ -491,6 +533,7 @@ function PaymentsView() {
               id="country"
               className="placeholder-select !ml-0 w-52"
               onChange={handleCountryFilter}
+              onClear={() => setParams({ country_id: '' })}
               hasClear
               required
             >
@@ -508,6 +551,7 @@ function PaymentsView() {
             id="year"
             className="placeholder-select w-44"
             onChange={handleYearFilter}
+            onClear={() => setParams({ year: '' })}
             hasClear
           >
             <option value="" disabled hidden>

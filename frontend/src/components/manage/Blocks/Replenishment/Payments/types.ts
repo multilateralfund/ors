@@ -15,7 +15,8 @@ export type PaymentColumn<LabelType = string> = {
 export interface IPaymentDialogProps extends FormDialogProps {
   columns: Record<string, PaymentColumn>
   countries: Country[]
-  data?: ParsedPayment
+  data?: PaymentDataFields
+  is_ferm?: boolean
   isEdit?: boolean
 }
 
@@ -24,8 +25,8 @@ export type PaymentForSubmit = {
   exchange_rate: number | string
   ferm_gain_or_loss: number | string
   invoices?: string[]
-  reminder: string
-  year: string
+  is_ferm?: string
+  payment_for_years?: string[]
 } & { [key: string]: File }
 
 export type ParsedPayment = {
@@ -46,9 +47,11 @@ export type ParsedPayment = {
   id: number
   invoices: Pick<ApiReplenishmentInvoice, 'id' | 'number'>[]
   iso3: string
-  payment_for_year: string
+  payment_for_years: string[]
   replenishment: ApiReplenishment | null
 }
+
+export type PaymentDataFields = { is_ferm?: boolean } & ParsedPayment
 
 export type FormattedPayment = {
   ferm_gain_or_loss: JSX.Element | number | string

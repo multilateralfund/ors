@@ -7,6 +7,7 @@ from numpy import nan
 
 from core.models import (
     DisputedContribution,
+    ExternalIncome,
     ExternalIncomeAnnual,
     FermGainLoss,
     ScaleOfAssessment,
@@ -111,60 +112,105 @@ def parse_interest(interest_df, countries):
     external_incomes = []
     current_agency_name = ""
 
+    parsing_triennial = False
+
     for index, row in interest_df.iterrows():
         # Skipping first row
         if index == 0:
             continue
 
-        # Only importing the granular data in this iteration; need to stop here
+        # Once we reach this row, we are parsing triennial data
         if row.iloc[INCOME_AGENCY_COLUMN] == "TOTAL INTEREST BY TRIENNIUM/YEAR":
-            break
+            parsing_triennial = True
 
         if row.iloc[INCOME_AGENCY_COLUMN]:
             agency_name = row.iloc[INCOME_AGENCY_COLUMN].replace("\n", " ").strip()
-            if agency_name:
+            if agency_name and not parsing_triennial:
                 current_agency_name = agency_name
+            else:
+                current_agency_name = ""
 
         year = row.iloc[INCOME_YEAR_COLUMN].strip()
-        if "-" in year:
+        if "-" in year and not parsing_triennial:
             # Skipping per-agency partial totals rows
             continue
 
-        amount = get_decimal_from_excel_string(row.iloc[INCOME_AMOUNT_COLUMN].strip())
+        if parsing_triennial and "-" not in year:
+            # This means we have reached the per-year totals;
+            # importing these would duplicate amounts, so we stop.
+            break
 
-        quarterly_amounts_mapping = {
-            "interest_earned_quarter_1": get_decimal_from_excel_string(
-                row.iloc[INCOME_AMOUNT_Q1_COLUMN]
-            ),
-            "interest_earned_quarter_2": get_decimal_from_excel_string(
-                row.iloc[INCOME_AMOUNT_Q2_COLUMN]
-            ),
-            "interest_earned_quarter_3": get_decimal_from_excel_string(
-                row.iloc[INCOME_AMOUNT_Q3_COLUMN]
-            ),
-            "interest_earned_quarter_4": get_decimal_from_excel_string(
-                row.iloc[INCOME_AMOUNT_Q4_COLUMN]
-            ),
-        }
-        quarterly_params = {
-            key: value
-            for key, value in quarterly_amounts_mapping.items()
-            if value is not None
-        }
-
-        external_incomes.append(
-            ExternalIncomeAnnual(
-                interest_earned=amount,
-                agency_name=current_agency_name,
-                year=year,
-                **quarterly_params,
-            )
+        total_amount = get_decimal_from_excel_string(
+            row.iloc[INCOME_AMOUNT_COLUMN].strip()
         )
+
+        quarter_columns_list = [
+            (1, INCOME_AMOUNT_Q1_COLUMN),
+            (2, INCOME_AMOUNT_Q2_COLUMN),
+            (3, INCOME_AMOUNT_Q3_COLUMN),
+            (4, INCOME_AMOUNT_Q4_COLUMN),
+        ]
+
+        # If quarterly data exists, we'll create entries for each quarter with values.
+        # If not, we'll create one entry with the total amount for the year.
+        quarterly_data_exists = False
+        for quarter, amount_column in quarter_columns_list:
+            quarterly_amount = get_decimal_from_excel_string(row.iloc[amount_column])
+            if quarterly_amount:
+                quarterly_data_exists = True
+                external_incomes.append(
+                    ExternalIncomeAnnual(
+                        triennial_start_year=None,
+                        year=year,
+                        quarter=quarter,
+                        interest_earned=quarterly_amount,
+                        agency_name=current_agency_name,
+                    )
+                )
+
+        if not quarterly_data_exists:
+            if parsing_triennial is False:
+                external_incomes.append(
+                    ExternalIncomeAnnual(
+                        triennial_start_year=None,
+                        year=year,
+                        quarter=None,
+                        interest_earned=total_amount,
+                        agency_name=current_agency_name,
+                    )
+                )
+            else:
+                external_incomes.append(
+                    ExternalIncomeAnnual(
+                        triennial_start_year=int(year.split("-")[0]),
+                        year=None,
+                        quarter=None,
+                        interest_earned=total_amount,
+                        agency_name=current_agency_name,
+                    )
+                )
 
     ExternalIncomeAnnual.objects.bulk_create(external_incomes)
     logger.info(
         f"Imported {len(external_incomes)} ExternalIncomeAnnual objects "
         f"from the consolidated data file."
+    )
+
+    misc_incomes = [
+        ExternalIncomeAnnual(
+            triennial_start_year=misc_income.start_year,
+            year=None,
+            quarter=None,
+            miscellaneous_income=misc_income.miscellaneous_income,
+        )
+        for misc_income in ExternalIncome.objects.filter(
+            miscellaneous_income__gte=0
+        ).all()
+    ]
+    ExternalIncomeAnnual.objects.bulk_create(misc_incomes)
+    logger.info(
+        f"Also created {len(misc_incomes)} ExternalIncomeAnnual objects "
+        f"based on existing triennial miscellaneous income data."
     )
 
 
@@ -236,3 +282,19 @@ def import_ferm_interest_disputed(countries):
         logger.info(f"Start parsing sheet: {sheet_name}")
         parser_method = PARSE_MAPPING[sheet_name]
         parser_method(df.replace({nan: None}), countries)
+
+
+@transaction.atomic
+def import_only_external_income(countries):
+    """
+    Imports external income only from the consolidated data file.
+    """
+    # This file only contains external income annual data; so only delete that one.
+    delete_old_data(ExternalIncomeAnnual)
+
+    file_path = IMPORT_RESOURCES_DIR / "Consolidated_Financial_Data.xlsx"
+    all_sheets = pd.read_excel(file_path, sheet_name=None, na_values="NDR", dtype=str)
+    for sheet_name, df in all_sheets.items():
+        if sheet_name == "Interest":
+            logger.info("Only parsing interest sheet")
+            parse_interest(df.replace({nan: None}), countries)

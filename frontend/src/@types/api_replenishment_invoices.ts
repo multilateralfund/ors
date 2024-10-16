@@ -16,8 +16,11 @@ export type ApiReplenishmentInvoice = {
   exchange_rate: number
   id: number
   invoice_files: ApiReplenishmentFile[]
+  is_arrears: boolean
+  is_ferm: boolean
   number: string
   replenishment: ApiReplenishment
+  status: string
   year: number
 }
 

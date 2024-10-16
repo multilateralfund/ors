@@ -89,7 +89,8 @@ function SCView(props: SCViewProps) {
     ? scPeriodOptions(ctx.periods)
     : scAnnualOptions(ctx.periods)
 
-  const dateOfLastUpdate = '27 May 2024'
+  console.log(ctx.asOfDate)
+  const dateOfLastUpdate = ctx.asOfDate.as_of_date
   const title = period
     ? `Status of contributions for ${period}`
     : `Status of contributions (1991 - ${new Date().getFullYear()})`
@@ -100,10 +101,7 @@ function SCView(props: SCViewProps) {
     <section className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-4 print:flex-col print:items-start">
         <h2 className="flex shrink flex-wrap items-center gap-1">
-          <span className="whitespace-normal">{title}</span>
-          <span className="whitespace-normal text-2xl font-normal">
-            as of {dateOfLastUpdate} (USD)
-          </span>
+          <span className="whitespace-normal">{title} as of {dateOfLastUpdate} (USD)</span>
         </h2>
         <div className="flex items-center gap-2 print:hidden">
           {currentSection?.showPeriodSelector ?? true ? (
