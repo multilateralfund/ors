@@ -62,7 +62,7 @@ function getDecimalCellValue(
                 Metric tonnes: {formatDecimalValue(value, defaultDecimals)}
               </span>
               <span>
-                CO<sup>2</sup>-eq tonnes:{' '}
+                CO<sub>2</sub>-eq tonnes:{' '}
                 {formatDecimalValue(valueGWP, {
                   maximumFractionDigits: 0,
                   minimumFractionDigits: 0,
@@ -90,7 +90,7 @@ function getDecimalCellValue(
                 Metric tonnes: {formatDecimalValue(value, defaultDecimals)}
               </span>
               <span>
-                CO<sup>2</sup>-eq tonnes:{' '}
+                CO<sub>2</sub>-eq tonnes:{' '}
                 {formatDecimalValue(valueGWP, defaultDecimals)}
               </span>
               <span>

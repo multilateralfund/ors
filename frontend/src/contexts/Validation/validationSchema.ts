@@ -35,7 +35,6 @@ const validationSchema: ValidationSchema = {
       {
         id: 'validate-annex-e-qps',
         highlight_cells: {
-          banned_date: (row) => !row.banned_date,
           remarks: (row) => !row.remarks,
         },
         message:

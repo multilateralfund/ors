@@ -128,6 +128,7 @@ export interface IValidationContext {
 }
 
 export interface IValidationProvider {
+  activeSection?: string
   children: React.ReactNode
   form: CPValidationForm
   model?: string

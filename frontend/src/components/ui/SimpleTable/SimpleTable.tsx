@@ -280,7 +280,9 @@ export default function SimpleTable(props: any) {
                     <TableCell align="center">{row.version}</TableCell>
                     <TableCell align="right">{row.created_at}</TableCell>
                     <TableCell className="capitalize" align="left">
-                      {row.version_created_by_role}
+                      {row.version_created_by_role === 'country_user'
+                        ? 'country'
+                        : row.version_created_by_role}
                     </TableCell>
                     <TableCell className="print:hidden" align="center">
                       <Typography className="flex items-center justify-center">
