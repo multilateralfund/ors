@@ -37,7 +37,7 @@ class ReplenishmentFilter(filters.FilterSet):
     is_final = filters.BooleanFilter(method="filter_is_final")
 
     def filter_is_final(self, queryset, _name, value):
-        if value == True:
+        if value is True:
             return queryset.filter(
                 scales_of_assessment_versions__pk__in=Subquery(
                     ScaleOfAssessmentVersion.objects.exclude(is_final=False).values(
