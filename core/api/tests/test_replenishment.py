@@ -110,7 +110,7 @@ class TestReplenishments(BaseTest):
 
     def test_replenishments_list_final(self, user):
         replenishment_1 = ReplenishmentFactory.create(start_year=2018, end_year=2020)
-        replenishment_2 = ReplenishmentFactory.create(start_year=2021, end_year=2023)
+        ReplenishmentFactory.create(start_year=2021, end_year=2023)
 
         ScaleOfAssessmentVersionFactory.create(
             replenishment=replenishment_1,
