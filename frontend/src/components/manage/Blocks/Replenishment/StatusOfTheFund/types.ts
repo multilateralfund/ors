@@ -40,7 +40,6 @@ export interface IEditSecretariatProps {
   meetingOptions: InputOptionsType
   onCancel: () => void
   title: string
-  yearOptions: InputOptionsType
 }
 
 export interface IInputWrapper extends IFieldProps {
@@ -63,8 +62,8 @@ export interface ISelectInputProps extends IInputProps {
   value?: string
 }
 
-export interface ITextAreaProps extends IInputProps {
-  className?: string
+export interface ISimpleInputProps extends IInputProps {
+  type?: string
 }
 
 export interface IHandleClearInputChange {

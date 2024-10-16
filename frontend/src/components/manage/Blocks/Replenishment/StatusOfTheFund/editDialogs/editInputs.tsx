@@ -12,7 +12,7 @@ import {
   IInputWrapper,
   INumberInputProps,
   ISelectInputProps,
-  ITextAreaProps,
+  ISimpleInputProps,
 } from '../types'
 import {
   handleClearSelect,
@@ -38,6 +38,22 @@ const InputWrapper = (props: IInputWrapper) => {
     </div>
   )
 }
+
+export const SimpleInput = ({
+  field,
+  label,
+  setFormData,
+  type,
+}: ISimpleInputProps) => (
+  <InputWrapper id={field} label={label}>
+    <Input
+      id={field}
+      className={cx('!ml-0', { 'h-[100px] w-[250px]': type === 'text-area' })}
+      onChange={(event) => handleInputChange(event, setFormData, field)}
+      {...(type && { ...{ type } })}
+    />
+  </InputWrapper>
+)
 
 export const SearchableSelectInput = ({
   field,
@@ -104,22 +120,6 @@ export const NumberInput = ({
       step="0.01"
       onChange={(event) => handleNumberInputChange(event, setFormData, field)}
       onlyNumber
-    />
-  </InputWrapper>
-)
-
-export const TextareaInput = ({
-  className,
-  field,
-  label,
-  setFormData,
-}: ITextAreaProps) => (
-  <InputWrapper id={field} label={label}>
-    <Input
-      id={field}
-      className={cx('!ml-0', className)}
-      type="text-area"
-      onChange={(event) => handleInputChange(event, setFormData, field)}
     />
   </InputWrapper>
 )

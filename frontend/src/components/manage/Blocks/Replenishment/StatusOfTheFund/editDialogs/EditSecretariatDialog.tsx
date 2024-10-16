@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import FormDialog from '../../FormDialog'
 import { IEditSecretariatProps } from '../types'
-import { NumberInput, SearchableSelectInput, TextareaInput } from './editInputs'
+import { NumberInput, SearchableSelectInput, SimpleInput } from './editInputs'
 
 const EditSecretariatDialog = (props: IEditSecretariatProps) => {
   const {
@@ -11,7 +11,6 @@ const EditSecretariatDialog = (props: IEditSecretariatProps) => {
     label,
     meetingOptions,
     onCancel,
-    yearOptions,
     ...dialogProps
   } = props
   const currentYear = new Date().getFullYear()
@@ -27,30 +26,28 @@ const EditSecretariatDialog = (props: IEditSecretariatProps) => {
       <div className="flex flex-col gap-y-4">
         <div className="flex gap-x-4">
           <SearchableSelectInput
-            field="year"
-            label="Year"
-            options={yearOptions}
-            placeholder="Select year"
-            setFormData={setFormData}
-          />
-          <SearchableSelectInput
             field="meeting_id"
             label="Meeting number"
             options={meetingOptions}
             placeholder="Select meeting number"
             setFormData={setFormData}
           />
+          <SimpleInput
+            field="decision_number"
+            label="Decision number"
+            setFormData={setFormData}
+          />
         </div>
         <div className="flex flex-col gap-y-4">
           <div className="flex gap-x-4">
             <NumberInput
-              field={`${field}_${currentYear + 1}`}
-              label={`${label} ${currentYear + 1}`}
+              field={`${field}_${currentYear}`}
+              label={`${currentYear} ${label}`}
               setFormData={setFormData}
             />
             <NumberInput
-              field={`${field}_${currentYear + 2}`}
-              label={`${label} ${currentYear + 2}`}
+              field={`${field}_${currentYear + 1}`}
+              label={`${currentYear + 1} ${label}`}
               setFormData={setFormData}
             />
           </div>
@@ -58,14 +55,24 @@ const EditSecretariatDialog = (props: IEditSecretariatProps) => {
         <div className="flex flex-col gap-y-4">
           <div className="flex gap-x-4">
             <NumberInput
-              field={`${field}_${currentYear + 3}`}
-              label={`${label} ${currentYear + 3}`}
+              field={`${field}_${currentYear + 2}`}
+              label={`${currentYear + 2} ${label}`}
               setFormData={setFormData}
             />
-            <TextareaInput
-              field={'comment'}
-              label={'Comment'}
+            <NumberInput
+              field={`${field}_${currentYear + 3}`}
+              label={`${currentYear + 3} ${label}`}
               setFormData={setFormData}
+            />
+          </div>
+        </div>
+        <div className="flex flex-col gap-y-4">
+          <div className="flex gap-x-4">
+            <SimpleInput
+              field="comment"
+              label="Comment"
+              setFormData={setFormData}
+              type="text-area"
             />
           </div>
         </div>

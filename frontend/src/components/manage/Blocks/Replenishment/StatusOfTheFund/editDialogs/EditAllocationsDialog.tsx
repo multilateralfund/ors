@@ -8,7 +8,7 @@ import {
   NumberInput,
   SearchableSelectInput,
   SelectInput,
-  TextareaInput,
+  SimpleInput,
 } from './editInputs'
 
 const EditAllocationsDialog = (props: IEditAllocationsProps) => {
@@ -75,10 +75,11 @@ const EditAllocationsDialog = (props: IEditAllocationsProps) => {
         </div>
         <div className="flex flex-col gap-y-4">
           <div className="flex gap-x-4">
-            <TextareaInput
+            <SimpleInput
               field="comment"
               label="Comment"
               setFormData={setFormData}
+              type="text-area"
             />
           </div>
         </div>

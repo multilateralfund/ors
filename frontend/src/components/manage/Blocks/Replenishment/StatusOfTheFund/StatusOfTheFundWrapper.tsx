@@ -208,10 +208,10 @@ function StatusOfTheFundWrapper() {
     {
       component: (
         <EditSecretariatDialog
-          {...{ handleSubmitEditDialog, meetingOptions, yearOptions }}
+          {...{ handleSubmitEditDialog, meetingOptions }}
           field="staff_contracts"
-          label="Staff contracts for"
-          title="Secretariat:"
+          label="budget"
+          title="Budget:"
           onCancel={handleEditCancel}
         />
       ),
@@ -221,10 +221,10 @@ function StatusOfTheFundWrapper() {
     {
       component: (
         <EditSecretariatDialog
-          {...{ handleSubmitEditDialog, meetingOptions, yearOptions }}
+          {...{ handleSubmitEditDialog, meetingOptions }}
           field="treasury_fees"
-          label="Treasury fees for"
-          title="Treasury fees:"
+          label="treasurer fees"
+          title="Treasurer fees:"
           onCancel={handleEditCancel}
         />
       ),
@@ -233,10 +233,10 @@ function StatusOfTheFundWrapper() {
     {
       component: (
         <EditSecretariatDialog
-          {...{ handleSubmitEditDialog, meetingOptions, yearOptions }}
+          {...{ handleSubmitEditDialog, meetingOptions }}
           field="monitoring_fees"
-          label="Monitoring fees for"
-          title="Monitoring and evaluation:"
+          label="evaluation budget"
+          title="Evaluation budget:"
           onCancel={handleEditCancel}
         />
       ),
