@@ -1,12 +1,14 @@
 import { useState } from 'react'
 
 import FormDialog from '../../FormDialog'
-import { IEditStaffContractsProps } from '../types'
+import { IEditSecretariatProps } from '../types'
 import { NumberInput, SearchableSelectInput, TextareaInput } from './editInputs'
 
-const EditMonitoringFeesDialog = (props: IEditStaffContractsProps) => {
+const EditSecretariatDialog = (props: IEditSecretariatProps) => {
   const {
+    field,
     handleSubmitEditDialog,
+    label,
     meetingOptions,
     onCancel,
     yearOptions,
@@ -18,10 +20,9 @@ const EditMonitoringFeesDialog = (props: IEditStaffContractsProps) => {
 
   return (
     <FormDialog
-      title="Monitoring and evaluation:"
+      onCancel={onCancel}
       onSubmit={() => handleSubmitEditDialog(formData, 'external-allocations')}
       {...dialogProps}
-      onCancel={onCancel}
     >
       <div className="flex flex-col gap-y-4">
         <div className="flex gap-x-4">
@@ -43,13 +44,13 @@ const EditMonitoringFeesDialog = (props: IEditStaffContractsProps) => {
         <div className="flex flex-col gap-y-4">
           <div className="flex gap-x-4">
             <NumberInput
-              field={`monitoring_fees_${currentYear + 1}`}
-              label={`Monitoring fees for ${currentYear + 1}`}
+              field={`${field}_${currentYear + 1}`}
+              label={`${label} ${currentYear + 1}`}
               setFormData={setFormData}
             />
             <NumberInput
-              field={`monitoring_fees_${currentYear + 2}`}
-              label={`Monitoring fees for ${currentYear + 2}`}
+              field={`${field}_${currentYear + 2}`}
+              label={`${label} ${currentYear + 2}`}
               setFormData={setFormData}
             />
           </div>
@@ -57,8 +58,8 @@ const EditMonitoringFeesDialog = (props: IEditStaffContractsProps) => {
         <div className="flex flex-col gap-y-4">
           <div className="flex gap-x-4">
             <NumberInput
-              field={`monitoring_fees_${currentYear + 3}`}
-              label={`Monitoring fees for ${currentYear + 3}`}
+              field={`${field}_${currentYear + 3}`}
+              label={`${label} ${currentYear + 3}`}
               setFormData={setFormData}
             />
             <TextareaInput
@@ -73,4 +74,4 @@ const EditMonitoringFeesDialog = (props: IEditStaffContractsProps) => {
   )
 }
 
-export default EditMonitoringFeesDialog
+export default EditSecretariatDialog

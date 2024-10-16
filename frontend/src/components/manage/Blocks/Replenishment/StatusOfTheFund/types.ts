@@ -33,10 +33,13 @@ export interface IEditAllocationsProps extends IEditIncomeDialogProps {
   agency: string
 }
 
-export interface IEditStaffContractsProps {
+export interface IEditSecretariatProps {
+  field: string
   handleSubmitEditDialog: (formData: any, field: string) => void
+  label: string
   meetingOptions: InputOptionsType
   onCancel: () => void
+  title: string
   yearOptions: InputOptionsType
 }
 

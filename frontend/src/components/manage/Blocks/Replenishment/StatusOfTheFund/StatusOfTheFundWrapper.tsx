@@ -16,9 +16,7 @@ import { allocationsOrder } from './constants'
 import EditAllocationsDialog from './editDialogs/EditAllocationsDialog'
 import EditInterestEarnedDialog from './editDialogs/EditInterestEarnedDialog'
 import EditMiscellaneousIncomeDialog from './editDialogs/EditMiscellaneousIncomeDialog'
-import EditMonitoringFeesDialog from './editDialogs/EditMonitoringFeesDialog'
-import EditStaffContractsDialog from './editDialogs/EditStaffContractsDialog'
-import EditTreasuryFeesDialog from './editDialogs/EditTreasuryFeesDialog'
+import EditSecretariatDialog from './editDialogs/EditSecretariatDialog'
 import UploadFilesDialog from './editDialogs/UploadFilesDialog'
 
 function StatusOfTheFundWrapper() {
@@ -209,8 +207,11 @@ function StatusOfTheFundWrapper() {
     },
     {
       component: (
-        <EditStaffContractsDialog
+        <EditSecretariatDialog
           {...{ handleSubmitEditDialog, meetingOptions, yearOptions }}
+          field="staff_contracts"
+          label="Staff contracts for"
+          title="Secretariat:"
           onCancel={handleEditCancel}
         />
       ),
@@ -219,8 +220,11 @@ function StatusOfTheFundWrapper() {
 
     {
       component: (
-        <EditTreasuryFeesDialog
+        <EditSecretariatDialog
           {...{ handleSubmitEditDialog, meetingOptions, yearOptions }}
+          field="treasury_fees"
+          label="Treasury fees for"
+          title="Treasury fees:"
           onCancel={handleEditCancel}
         />
       ),
@@ -228,8 +232,11 @@ function StatusOfTheFundWrapper() {
     },
     {
       component: (
-        <EditMonitoringFeesDialog
+        <EditSecretariatDialog
           {...{ handleSubmitEditDialog, meetingOptions, yearOptions }}
+          field="monitoring_fees"
+          label="Monitoring fees for"
+          title="Monitoring and evaluation:"
           onCancel={handleEditCancel}
         />
       ),
