@@ -66,7 +66,8 @@ function RevertButton(props: ButtonHTMLAttributes<HTMLButtonElement>) {
 }
 
 function ViewField(props: ViewFieldProps) {
-  const { cell, onRevert } = props
+  const { cell, enableEdit, onRevert } = props
+
   if (cell?.isEditable) {
     return (
       <div className="flex items-center justify-between">
@@ -78,7 +79,9 @@ function ViewField(props: ViewFieldProps) {
         {cell.hasOverride ? (
           <RevertButton onClick={onRevert} />
         ) : (
-          <span className="text-gray-400 print:hidden">{'\u22EE'}</span>
+          enableEdit && (
+            <span className="text-gray-400 print:hidden">{'\u22EE'}</span>
+          )
         )}
       </div>
     )
@@ -262,7 +265,11 @@ function TableCell(props: SATableCellProps) {
             ) : null}
           </div>
         ) : (
-          <ViewField cell={cell} onRevert={handleRevert} />
+          <ViewField
+            cell={cell}
+            enableEdit={enableEdit}
+            onRevert={handleRevert}
+          />
         )}
       </div>
       {c === 0 && enableEdit && !editing ? (
@@ -384,7 +391,13 @@ function SATable(props: SATableProps) {
       for (let i = 0; i < columns.length; i++) {
         row.push(
           <td key={i} className={cx(columns[i].className)}>
-            <TableCell c={i} columns={columns} r={j} rowData={extraRows} />
+            <TableCell
+              c={i}
+              columns={columns}
+              enableEdit={enableEdit}
+              r={j}
+              rowData={extraRows}
+            />
           </td>,
         )
       }

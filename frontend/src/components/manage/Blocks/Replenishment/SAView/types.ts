@@ -27,6 +27,7 @@ export interface SATableCellProps
     'adminButtons' | 'columns' | 'onDelete' | 'onEdit' | 'rowData'
   > {
   columns: SATableColumn[]
+  enableEdit: boolean
   onCellEdit?: (
     rowIndex: number,
     colIndex: number,
@@ -51,6 +52,7 @@ export interface AddRowProps {
 
 export interface ViewFieldProps {
   cell: any
+  enableEdit: boolean
   onRevert: () => void
 }
 
@@ -75,7 +77,7 @@ export interface SATableProps
     >,
     Omit<TableProps, 'columns' | 'extraRows' | 'onDelete' | 'rowData'> {
   countriesForAdd: Country[]
-  enableEdit?: boolean
+  enableEdit: boolean
   extraRows?: Record<string, any>[]
   onAddCancel: AddRowProps['onCancel']
   onAddSubmit: AddRowProps['onSubmit']
