@@ -239,10 +239,20 @@ export function validatePrices(row: IRow): RowValidatorFuncResult {
 }
 
 export function validateSectionDTotals(
-  row: IRow,
+  section_id: ValidationSchemaKeys,
   { form }: RowValidatorFuncContext,
-): RowValidatorFuncResult {
-  const lTotal = sumRowColumns(row, ['all_uses', 'destruction', 'feedstock_gc'])
+): GlobalValidatorFuncResult {
+  let lTotal = 0
+  const lTotals = { all_uses: 0, destruction: 0, feedstock_gc: 0 }
+
+  for (let i = 0, sRows = form[section_id] as IRow[]; i < sRows.length; i++) {
+    const row = sRows[i]
+    lTotal += sumRowColumns(row, ['all_uses', 'destruction', 'feedstock_gc'])
+    lTotals.all_uses += getFloat(row.all_uses)
+    lTotals.destruction += getFloat(row.destruction)
+    lTotals.feedstock_gc += getFloat(row.feedstock_gc)
+  }
+
   const dTotal = sumNumbers(
     form.section_d.flatMap((row) =>
       sumRowColumns(row, ['all_uses', 'destruction', 'feedstock']),
@@ -261,17 +271,17 @@ export function validateSectionDTotals(
     )
 
     const highlight_cells = []
-    if (row.all_uses != dA) {
+    if (lTotals.all_uses != dA) {
       highlight_cells.push('all_uses')
     }
-    if (row.destruction != dD) {
+    if (lTotals.destruction != dD) {
       highlight_cells.push('destruction')
     }
-    if (row.feedstock_gc != dF) {
+    if (lTotals.feedstock_gc != dF) {
       highlight_cells.push('feedstock_gc')
     }
 
-    return { highlight_cells, row: row.display_name }
+    return { highlight_cells }
   }
 }
 // export function validateSectionDFilled(

@@ -180,16 +180,15 @@ const validationSchema: ValidationSchema = {
           'Facility name must be provided if data in Section D is provided.',
         validator: validateFacilityName,
       },
-    ],
-    rows: [
       {
         id: 'validate-section-d-totals',
-        highlight_cells: {},
         message:
           'Total for columns under "Amount generated and captured" in Section E should be reported in Section D under the respective column.',
+        row_id: 'bottom_total',
         validator: validateSectionDTotals,
       },
     ],
+    rows: [],
   },
 }
 
