@@ -601,7 +601,7 @@ interface IDashboardViewProps {
 function DashboardView(props: IDashboardViewProps) {
   const { period, section: tab } = props
   const { newData } = useGetDashboardData()
-  const { charts } = newData
+  const { asOfDate, charts } = newData
 
   const searchParams = useSearchParams()
   const onlyCeits = searchParams.has('ceits')
@@ -653,7 +653,12 @@ function DashboardView(props: IDashboardViewProps) {
 
   return (
     <>
-      <div className="flex flex-row items-center justify-between gap-y-4">
+      <div className="flex flex-row items-center justify-between gap-x-3 gap-y-4">
+        <h2 className="flex shrink flex-wrap items-center gap-1">
+          <span className="whitespace-normal">
+            Dashboard as of {asOfDate} (USD)
+          </span>
+        </h2>
         <div className="flex items-center gap-2 print:hidden">
           <label
             className={cx(

@@ -152,9 +152,11 @@ function StatisticsView() {
 
   return (
     <>
-      <div className="pt-4">
-        <p className="m-0 text-2xl">{asOfDate} ( USD )</p>
-      </div>
+      <h2 className="flex shrink flex-wrap items-center gap-1">
+        <span className="whitespace-normal">
+          Statistics as of {asOfDate} (USD)
+        </span>
+      </h2>
       <div className="mt-8 print:mt-0">
         {data ? <StatisticsTable data={data} /> : null}
       </div>
