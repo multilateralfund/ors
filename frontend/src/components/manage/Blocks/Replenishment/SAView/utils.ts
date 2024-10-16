@@ -168,6 +168,8 @@ export function formatTableData(
       if (key === 'opted_for_ferm' && value == null) {
         newValue = '-'
         isEditable = false
+      } else if (key === 'ferm_cur' && !value) {
+        newValue = '-'
       } else if (key === 'un_soa' && value === null) {
         newValue = ''
       } else {
