@@ -125,7 +125,7 @@ const COLUMNS: SATableColumn[] = [
       { label: 'No', value: 'false' },
     ],
     editParser: function (v) {
-      return v ? v.toString() : 'false'
+      return v.toString()
     },
     editWidget: 'select',
     editable: true,

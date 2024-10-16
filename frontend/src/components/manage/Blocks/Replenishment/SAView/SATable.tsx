@@ -109,15 +109,23 @@ function EditField(props: EditFieldProps) {
     case 'select':
       const options = []
       const editOptions = column.editOptions ?? []
+
+      options.push(<option key={0} value="" disabled hidden />)
+
       for (let i = 0; i < editOptions.length; i++) {
         options.push(
-          <option key={i} value={editOptions[i].value}>
+          <option key={i + 1} value={editOptions[i].value}>
             {editOptions[i].label}
           </option>,
         )
       }
       Field = (
-        <select ref={selectRef} value={fieldValue} {...rest}>
+        <select
+          defaultValue={fieldValue}
+          ref={selectRef}
+          value={fieldValue}
+          {...rest}
+        >
           {options}
         </select>
       )
@@ -144,7 +152,7 @@ function TableCell(props: SATableCellProps) {
   const column = columns[c]
   const fname = column.field
   const cell = rowData[r][fname]
-  const initialValue = cell?.hasOwnProperty('edit') ? cell.edit || '' : cell
+  const initialValue = cell?.hasOwnProperty('edit') ? cell.edit ?? '' : cell
 
   const confirmationText = columns[c].confirmationText ?? null
 
