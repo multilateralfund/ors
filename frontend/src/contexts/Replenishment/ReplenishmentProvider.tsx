@@ -44,7 +44,7 @@ function ReplenishmentProvider(props: { children: React.ReactNode }) {
   useEffect(
     function () {
       Promise.all([
-        fetch(formatApiUrl('/api/replenishment/replenishments'), {
+        fetch(formatApiUrl('/api/replenishment/replenishments?final=true'), {
           credentials: 'include',
         }),
         fetch(formatApiUrl('/api/replenishment/countries'), {

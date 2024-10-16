@@ -2,7 +2,14 @@ from django_filters import rest_framework as filters
 from django_filters.widgets import CSVWidget
 from django.db.models import OuterRef, Subquery
 
-from core.models import Country, Invoice, Payment, ScaleOfAssessment
+from core.models import (
+    Country,
+    Invoice,
+    Payment,
+    Replenishment,
+    ScaleOfAssessment,
+    ScaleOfAssessmentVersion,
+)
 
 
 class ScaleOfAssessmentFilter(filters.FilterSet):
@@ -20,6 +27,29 @@ class ScaleOfAssessmentFilter(filters.FilterSet):
     class Meta:
         model = ScaleOfAssessment
         fields = ["country_id", "start_year", "version", "is_final"]
+
+
+class ReplenishmentFilter(filters.FilterSet):
+    """
+    FilterSet for Replenishment
+    """
+
+    is_final = filters.BooleanFilter(method="filter_is_final")
+
+    def filter_is_final(self, queryset, _name, value):
+        if value is True:
+            return queryset.filter(
+                scales_of_assessment_versions__pk__in=Subquery(
+                    ScaleOfAssessmentVersion.objects.exclude(is_final=False).values(
+                        "pk"
+                    )
+                )
+            )
+        return queryset
+
+    class Meta:
+        model = Replenishment
+        fields = ["is_final"]
 
 
 class InvoiceFilter(filters.FilterSet):

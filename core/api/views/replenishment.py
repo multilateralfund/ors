@@ -28,6 +28,7 @@ from core.api.export.replenishment import (
 from core.api.filters.replenishment import (
     InvoiceFilter,
     PaymentFilter,
+    ReplenishmentFilter,
     ScaleOfAssessmentFilter,
 )
 from core.api.permissions import IsUserAllowedReplenishment
@@ -140,6 +141,7 @@ class ReplenishmentViewSet(
     model = Replenishment
     serializer_class = ReplenishmentSerializer
     permission_classes = [IsUserAllowedReplenishment]
+    filterset_class = ReplenishmentFilter
 
     def get_queryset(self):
         return Replenishment.objects.prefetch_related(

@@ -108,6 +108,21 @@ class TestReplenishments(BaseTest):
         assert response.data[1]["id"] == replenishment_1.id
         assert response.data[1]["end_year"] == 2020
 
+    def test_replenishments_list_final(self, user):
+        replenishment_1 = ReplenishmentFactory.create(start_year=2018, end_year=2020)
+        ReplenishmentFactory.create(start_year=2021, end_year=2023)
+
+        ScaleOfAssessmentVersionFactory.create(
+            replenishment=replenishment_1,
+            is_final=True,
+        )
+
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url, {"is_final": True})
+        assert response.status_code == 200
+        assert len(response.data) == 1
+
     def test_replenishments_list_country_user(self, country_user):
         ReplenishmentFactory.create(start_year=2018, end_year=2020)
         ReplenishmentFactory.create(start_year=2021, end_year=2023)
