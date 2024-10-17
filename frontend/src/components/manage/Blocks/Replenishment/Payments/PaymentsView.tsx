@@ -124,6 +124,7 @@ function PaymentsView() {
           payment_for_years: data.payment_for_years,
           payment_years: data.payment_for_years.join(', '),
           replenishment: data.replenishment,
+          status: data.status,
         })),
       ]
     }, [results, loaded, pagination.rowsPerPage])

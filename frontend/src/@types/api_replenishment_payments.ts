@@ -18,6 +18,7 @@ export type ApiReplenishmentPayment = {
   payment_files: ApiReplenishmentFile[]
   payment_for_years: string[]
   replenishment: ApiReplenishment | null
+  status?: string
 }
 
 export type ApiReplenishmentPayments = ApiReplenishmentPayment[]

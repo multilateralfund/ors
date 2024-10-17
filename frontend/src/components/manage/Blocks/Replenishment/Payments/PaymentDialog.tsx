@@ -23,6 +23,7 @@ import {
   FieldInput,
   FieldMultiSelect,
   FieldSearchableSelect,
+  FieldSelect,
   FieldTextLine,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceAttachments'
@@ -44,6 +45,7 @@ interface PaymentDialogFields {
   invoices: string[]
   is_ferm: boolean
   payment_for_years: string[]
+  status: string
 }
 
 function getInvoiceLabel(invoice: ApiReplenishmentInvoice) {
@@ -70,6 +72,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
     invoices: data?.invoices?.map((o) => o.id.toString()) ?? [],
     is_ferm: data?.is_ferm ?? false,
     payment_for_years: data?.payment_for_years?.map((o) => o.toString()) ?? [],
+    status: data?.status?.toString() ?? '',
   })
 
   const yearOptions = scAnnualOptions(ctx.periods)
@@ -307,6 +310,18 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
             </option>
           ))}
         </FieldMultiSelect>
+        <FieldSelect
+          id="status"
+          label="Status"
+          value={fields.status}
+          onChange={updateField('status')}
+          required
+        >
+          <option value="" disabled hidden></option>
+          <option value="paid">Paid</option>
+          <option value="partially_paid">Partially Paid</option>
+          <option value="pending">Pending</option>
+        </FieldSelect>
         <FieldDateInput
           id="date"
           label={columns.date.label}
