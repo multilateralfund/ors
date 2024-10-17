@@ -2178,6 +2178,7 @@ class TestInvoices(BaseTest):
             replenishment=replenishment_1,
             number="aaa-yyy-1",
             year=self.year_1,
+            is_ferm=True,
         )
         InvoiceFactory(
             country=country_1,
@@ -2185,6 +2186,7 @@ class TestInvoices(BaseTest):
             number="aaa-yyy-2",
             year=self.year_1,
             date_first_reminder=datetime.now().date(),
+            is_ferm=True,
         )
         InvoiceFactory(
             country=country_2,
