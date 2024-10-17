@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 
+import { omitBy } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 
 import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
@@ -7,7 +8,6 @@ import {
   FieldFormattedNumberInput,
   FieldInput,
   FieldSearchableSelect,
-  SearchableSelect,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { AddButton } from '@ors/components/ui/Button/Button'
 import { api } from '@ors/helpers'
@@ -38,8 +38,10 @@ export default function BilateralAssistanceDialog(
   async function confirmSave(formData: FormData) {
     const data = Object.fromEntries(formData.entries())
 
+    const cleanData = omitBy(data, (value) => value === '')
+
     const formattedData = {
-      ...data,
+      ...cleanData,
       meeting_id: parseInt(data.meeting_id.toString()),
       year: year,
     }
@@ -117,26 +119,19 @@ export default function BilateralAssistanceDialog(
             }
             required
           />
-          <div className="mt-4 flex items-center justify-start">
-            <label className="grow-1" htmlFor="meeting_id">
-              Approved by ExCom as of
-            </label>
-            <SearchableSelect id="meeting_id" required>
-              {meetingOptions.map((m) => (
-                <option key={m.value} value={m.value}>
-                  {m.label}
-                </option>
-              ))}
-            </SearchableSelect>
-            <label className="ml-1.5" htmlFor="meeting_id">
-              meeting.
-            </label>
-          </div>
+          <FieldSearchableSelect id="meeting_id" label="Meeting" required>
+            {meetingOptions.map((m) => (
+              <option key={m.value} value={m.value}>
+                {m.label}
+              </option>
+            ))}
+          </FieldSearchableSelect>
           <FieldInput
             id="decision_number"
             label="Decision number"
             type="text"
           />
+          <FieldInput id="comment" label="Comment" type="text-area" required />
         </FormDialog>
       )}
       <div>

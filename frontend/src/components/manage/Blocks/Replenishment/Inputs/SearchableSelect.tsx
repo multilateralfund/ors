@@ -110,6 +110,7 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
     className,
     defaultValue,
     hasClear,
+    hideFirstOption = false,
     name,
     onChange,
     pickerClassName,
@@ -281,23 +282,25 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
       const result = []
 
       for (let i = 0; i < filteredOptions.length; i++) {
-        const optionId = `${id}_${filteredOptions[i].value}`
-        result.push(
-          <VirtualOption
-            id={optionId}
-            key={optionId}
-            label={filteredOptions[i].label}
-            selected={value === filteredOptions[i].value}
-            value={filteredOptions[i].value}
-            onClick={handleToggleSelectedOption}
-            onKeyDown={handleOptionKeyDown}
-          />,
-        )
+        if (!(hideFirstOption && i === 0)) {
+          const optionId = `${id}_${filteredOptions[i].value}`
+          result.push(
+            <VirtualOption
+              id={optionId}
+              key={optionId}
+              label={filteredOptions[i].label}
+              selected={value === filteredOptions[i].value}
+              value={filteredOptions[i].value}
+              onClick={handleToggleSelectedOption}
+              onKeyDown={handleOptionKeyDown}
+            />,
+          )
+        }
       }
 
       return result
     },
-    [id, value, filteredOptions, handleToggleSelectedOption],
+    [id, value, filteredOptions, handleToggleSelectedOption,hideFirstOption],
   )
 
   return (
