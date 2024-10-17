@@ -5,7 +5,7 @@ import { Country } from '@ors/types/store'
 import { FormDialogProps } from '../types'
 
 export type ParsedInvoice = {
-  amount: number | string
+  amount: null | number | string
   be_amount: number
   be_exchange_rate: number
   can_delete: boolean

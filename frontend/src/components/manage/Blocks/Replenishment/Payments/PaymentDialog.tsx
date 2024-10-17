@@ -23,6 +23,7 @@ import {
   FieldInput,
   FieldMultiSelect,
   FieldSearchableSelect,
+  FieldSelect,
   FieldTextLine,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceAttachments'
@@ -44,6 +45,7 @@ interface PaymentDialogFields {
   invoices: string[]
   is_ferm: boolean
   payment_for_years: string[]
+  status: string
 }
 
 function getInvoiceLabel(invoice: ApiReplenishmentInvoice) {
@@ -70,19 +72,23 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
     invoices: data?.invoices?.map((o) => o.id.toString()) ?? [],
     is_ferm: data?.is_ferm ?? false,
     payment_for_years: data?.payment_for_years?.map((o) => o.toString()) ?? [],
+    status: data?.status?.toString() ?? '',
   })
 
   const yearOptions = scAnnualOptions(ctx.periods)
 
-  const updateField = useCallback(
-    (name: string) => {
-      const handler: React.ChangeEventHandler<
-        HTMLInputElement | HTMLSelectElement
-      > = (evt) => setFields((prev) => ({ ...prev, [name]: evt.target.value }))
-      return handler
-    },
-    [setFields],
-  )
+  function setField(name: keyof PaymentDialogFields) {
+    return function (value: PaymentDialogFields[typeof name]) {
+      setFields((prev) => ({ ...prev, [name]: value }))
+    }
+  }
+
+  const updateField = useCallback((name: keyof PaymentDialogFields) => {
+    const handler: React.ChangeEventHandler<
+      HTMLInputElement | HTMLSelectElement
+    > = (evt) => setField(name)(evt.target.value)
+    return handler
+  }, [])
 
   const {
     loading: invoicesLoading,
@@ -112,9 +118,27 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
     [invoicesList, fields.invoices],
   )
 
-  const [countryInfo] = useGetCountryReplenishmentInfo(
-    ctx.periods?.[0].start_year || '',
-    fields.country_id,
+  const paymentForYear = useMemo(
+    () =>
+      fields.payment_for_years.length > 0
+        ? fields.payment_for_years[0] !== 'arrears'
+          ? parseInt(fields.payment_for_years[0], 10) ||
+            ctx.periods?.[0].start_year
+          : ctx.periods?.[0].start_year
+        : ctx.periods?.[0].start_year,
+    [ctx.periods, fields.payment_for_years],
+  )
+
+  const { getForYear } = useGetCountryReplenishmentInfo(fields.country_id)
+  const {
+    entry: countryInfo,
+    matched: countryInfoMatched,
+    period: countryInfoPeriod,
+  } = useMemo(
+    function () {
+      return getForYear(paymentForYear)
+    },
+    [getForYear, paymentForYear],
   )
 
   useEffect(
@@ -199,15 +223,15 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
     }))
   }
 
-  function handleChangeInvoices(value: string[]) {
+  function handleChangeInvoices(value: string) {
     setFields(function (prev) {
-      return { ...prev, invoices: value }
+      return { ...prev, invoices: [value] }
     })
   }
 
-  function handleChangeYears(value: string[]) {
+  function handleChangeYears(value: string) {
     setFields(function (prev) {
-      return { ...prev, payment_for_years: value }
+      return { ...prev, payment_for_years: [value] }
     })
   }
 
@@ -263,9 +287,9 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
           onChange={handleToggleFerm}
         />
         {hasInvoices ? (
-          <FieldMultiSelect
+          <FieldSearchableSelect
             id="invoices"
-            defaultValue={fields.invoices}
+            defaultValue={fields.invoices?.[0] ?? ''}
             hasClear={true}
             label={columns.invoice_numbers.label}
             required={true}
@@ -276,16 +300,16 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
                 {getInvoiceLabel(inv)}
               </option>
             ))}
-          </FieldMultiSelect>
+          </FieldSearchableSelect>
         ) : (
           <FieldTextLine
             label={columns.invoice_numbers.label}
             text={'No invoices found for this country'}
           />
         )}
-        <FieldMultiSelect
+        <FieldSearchableSelect
           id="payment_for_years"
-          defaultValue={fields.payment_for_years}
+          defaultValue={fields.payment_for_years?.[0] ?? ''}
           hasClear={true}
           label={columns.payment_years.label}
           required={true}
@@ -294,9 +318,9 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
           <option key="arrears" className="text-primary" value="arrears">
             Arrears
           </option>
-          <option key="deferred" className="text-primary" value="deferred">
-            Deferred
-          </option>
+          {/*<option key="deferred" className="text-primary" value="deferred">*/}
+          {/*  Deferred*/}
+          {/*</option>*/}
           {yearOptions.map((year) => (
             <option
               key={year.value}
@@ -306,7 +330,20 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
               {year.label}
             </option>
           ))}
-        </FieldMultiSelect>
+        </FieldSearchableSelect>
+        <FieldSearchableSelect
+          id="status"
+          defaultValue={fields.status}
+          hasClear={true}
+          label="Status"
+          onChange={setField('status')}
+          onClear={() => setField('status')('')}
+          required
+        >
+          <option value="paid">Paid</option>
+          <option value="partially_paid">Partially Paid</option>
+          <option value="pending">Pending</option>
+        </FieldSearchableSelect>
         <FieldDateInput
           id="date"
           label={columns.date.label}
@@ -322,6 +359,15 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
         />
       </DialogTabContent>
       <DialogTabContent isCurrent={tab == 1}>
+        {countryInfo && !countryInfoMatched ? (
+          <div className="text-center">
+            No <span className="underline">final</span> data found for the
+            selected year (<strong>{paymentForYear}</strong>).
+            <br />
+            Using data from the <strong>{countryInfoPeriod}</strong> period
+            instead.
+          </div>
+        ) : null}
         <FieldInput
           id="currency"
           disabled={!fields.is_ferm}

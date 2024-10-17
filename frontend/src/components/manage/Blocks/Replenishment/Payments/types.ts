@@ -49,6 +49,7 @@ export type ParsedPayment = {
   iso3: string
   payment_for_years: string[]
   replenishment: ApiReplenishment | null
+  status?: string
 }
 
 export type PaymentDataFields = { is_ferm?: boolean } & ParsedPayment

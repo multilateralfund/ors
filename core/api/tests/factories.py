@@ -610,6 +610,8 @@ class InvoiceFactory(factory.django.DjangoModelFactory):
     number = factory.Faker("pystr", max_chars=16)
     date_of_issuance = factory.Faker("date")
 
+    is_ferm = factory.Faker("pybool")
+
 
 class PaymentFactory(factory.django.DjangoModelFactory):
     class Meta:
