@@ -357,7 +357,6 @@ function PaymentsView() {
     try {
       const csrftoken = Cookies.get('csrftoken')
 
-      console.log('is_ferm', data.get('is_ferm'))
       await fetchWithHandling(
         formatApiUrl('api/replenishment/payments/'),
         {

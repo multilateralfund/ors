@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from 'react'
 
@@ -23,12 +24,11 @@ import {
   FieldSelect,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceAttachments'
+import { InvoiceDialogProps } from '@ors/components/manage/Blocks/Replenishment/Invoices/types'
 import { scAnnualOptions } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
 import useGetCountryReplenishmentInfo from '@ors/components/manage/Blocks/Replenishment/useGetCountryReplenishmentInfo'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { getFloat } from '@ors/helpers/Utils/Utils'
-
-import { InvoiceDialogProps } from './types'
 
 interface TabContentProps {
   data: InvoiceDialogProps['data']
@@ -266,13 +266,20 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
   )
 
   const start_year =
-    (fields.year !== 'arrears' && fields.year) ||
+    (fields.year !== 'arrears' && parseInt(fields.year, 10)) ||
     ctx.periods?.[0].start_year ||
-    ''
+    0
 
-  const [countryInfo] = useGetCountryReplenishmentInfo(
-    start_year,
-    fields.country_id,
+  const { getForYear } = useGetCountryReplenishmentInfo(fields.country_id)
+  const {
+    entry: countryInfo,
+    matched: countryInfoMatched,
+    period: countryInfoPeriod,
+  } = useMemo(
+    function () {
+      return getForYear(start_year)
+    },
+    [getForYear, start_year],
   )
 
   useEffect(
@@ -314,7 +321,7 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
           <input name="id" defaultValue={data?.id} type="hidden" />
           <input
             name="replenishment_id"
-            defaultValue={data?.replenishment.id}
+            defaultValue={data?.replenishment?.id}
             type="hidden"
           />
         </>
@@ -335,6 +342,15 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
         />
       </DialogTabContent>
       <DialogTabContent isCurrent={tab == 1}>
+        {countryInfo && !countryInfoMatched ? (
+          <div className="text-center">
+            No <span className="underline">final</span> data found for the
+            selected year (<strong>{start_year}</strong>).
+            <br />
+            Using data from the <strong>{countryInfoPeriod}</strong> period
+            instead.
+          </div>
+        ) : null}
         <TabContentAmount
           countryInfo={countryInfo}
           data={data}

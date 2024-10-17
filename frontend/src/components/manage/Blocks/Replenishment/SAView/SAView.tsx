@@ -726,7 +726,6 @@ function SAView(props: SAViewProps) {
 
   const handleAmountInput: ChangeEventHandler<HTMLInputElement> = (evt) => {
     const value = getFloat(evt.target.value)
-    console.log(evt.target.value, value)
     setReplenishment(
       (oldReplenishment) =>
         ({
