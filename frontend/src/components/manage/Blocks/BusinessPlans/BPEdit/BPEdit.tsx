@@ -11,12 +11,12 @@ import BPYearRangesProvider from '@ors/contexts/BusinessPlans/BPYearRangesProvid
 import { getResults } from '@ors/helpers'
 
 import BPTabs from '../BPTabs'
-import { BPDataInterface } from '../types'
-import BusinessPlansEditTable from './BPEditTable'
+import { BPEditDataInterface } from '../types'
+import BEditTable from './BPEditTable'
 import BPHeaderEdit from './BPHeaderEdit'
 
-const BPEditComponents = (props: BPDataInterface) => {
-  const { results } = props
+const BPEditComponents = (props: BPEditDataInterface) => {
+  const { params, results } = props
   const [form, setForm] = useState<Array<ApiBPActivity>>(results)
   const [activeTab, setActiveTab] = useState(0)
 
@@ -24,14 +24,14 @@ const BPEditComponents = (props: BPDataInterface) => {
     <>
       <BPHeaderEdit />
       <BPTabs {...{ activeTab, setActiveTab }}>
-        <BusinessPlansEditTable {...{ form, setForm }} {...props} />
+        <BEditTable {...{ form, params, setForm }} {...props} />
       </BPTabs>
     </>
   )
 }
 
 const BPEdit = () => {
-  const { data, loading } = useContext(BPContext) as any
+  const { data, loading, params } = useContext(BPContext) as any
 
   const activities = data?.results?.activities
   const { loaded, results } = getResults(activities)
@@ -47,7 +47,7 @@ const BPEdit = () => {
     )
   }
 
-  return <BPEditComponents {...{ loaded, loading, results }} />
+  return <BPEditComponents {...{ loaded, loading, params, results }} />
 }
 
 export default function BPEditWrapper() {

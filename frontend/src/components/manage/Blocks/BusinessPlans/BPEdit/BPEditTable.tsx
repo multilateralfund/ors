@@ -4,18 +4,21 @@ import React, { useCallback, useContext, useMemo, useRef } from 'react'
 import { findIndex, isNil, reduce } from 'lodash'
 import { useParams } from 'next/navigation'
 
+import DownloadButtons from '@ors/app/business-plans/DownloadButtons'
 import {
   BPEditTableInterface,
   BpPathParams,
 } from '@ors/components/manage/Blocks/BusinessPlans/types'
 import Table from '@ors/components/manage/Form/Table'
 import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
+import { formatApiUrl } from '@ors/helpers'
 import { debounce } from '@ors/helpers/Utils/Utils'
 
+import { filtersToQueryParams } from '../utils'
 import useColumnsOptions from './editSchema'
 
-export default function BusinessPlansEditTable(props: BPEditTableInterface) {
-  const { form, loaded, loading, results, setForm } = props
+export default function BPEditTable(props: BPEditTableInterface) {
+  const { form, loaded, loading, params, results, setForm } = props
   const { period } = useParams<BpPathParams>()
   const year_start = period.split('-')[0]
 
@@ -177,6 +180,8 @@ export default function BusinessPlansEditTable(props: BPEditTableInterface) {
 
   const grid = useRef<any>()
 
+  const exportParams = useMemo(() => filtersToQueryParams(params), [params])
+
   const autoSizeColumns = () => {
     if (!grid.current.api) return
     grid.current.api.autoSizeColumns(
@@ -194,41 +199,49 @@ export default function BusinessPlansEditTable(props: BPEditTableInterface) {
   return (
     yearRanges &&
     yearRanges.length > 0 && (
-      <form>
-        <Table
-          columnDefs={columnOptions.columnDefs}
-          defaultColDef={columnOptions.defaultColDef}
-          domLayout="normal"
-          gridRef={grid}
-          loaded={loaded}
-          loading={loading}
-          rowData={results}
-          tooltipShowDelay={200}
-          onCellValueChanged={(event) => {
-            const eventData = event.data
-            const newData = [...form]
-
-            const rowIndex = findIndex(
-              newData,
-              (row) => row.id === eventData.id,
-            )
-
-            if (rowIndex > -1) {
-              newData.splice(rowIndex, 1, {
-                ...eventData,
-              })
-
-              setForm(newData)
-            }
-          }}
-          onFirstDataRendered={() => {
-            debounce(autoSizeColumns, 0)
-          }}
-          onRowDataUpdated={() => {
-            debounce(autoSizeColumns, 0)
-          }}
+      <>
+        <DownloadButtons
+          downloadTexts={['Download']}
+          downloadUrls={[
+            formatApiUrl(`/api/business-plan-activity/export/?${exportParams}`),
+          ]}
         />
-      </form>
+        <form>
+          <Table
+            columnDefs={columnOptions.columnDefs}
+            defaultColDef={columnOptions.defaultColDef}
+            domLayout="normal"
+            gridRef={grid}
+            loaded={loaded}
+            loading={loading}
+            rowData={results}
+            tooltipShowDelay={200}
+            onCellValueChanged={(event) => {
+              const eventData = event.data
+              const newData = [...form]
+
+              const rowIndex = findIndex(
+                newData,
+                (row) => row.id === eventData.id,
+              )
+
+              if (rowIndex > -1) {
+                newData.splice(rowIndex, 1, {
+                  ...eventData,
+                })
+
+                setForm(newData)
+              }
+            }}
+            onFirstDataRendered={() => {
+              debounce(autoSizeColumns, 0)
+            }}
+            onRowDataUpdated={() => {
+              debounce(autoSizeColumns, 0)
+            }}
+          />
+        </form>
+      </>
     )
   )
 }

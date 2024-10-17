@@ -15,7 +15,7 @@ export default function CellValidationWidget(props: any) {
   const globalErrors = validation?.global
   const rowErrors = [
     ...(validation?.rows[props.data.row_id] || []),
-    ...globalErrors.filter((v) => v.row_id === props.data.row_id),
+    ...(globalErrors?.filter((v) => v.row_id === props.data.row_id) || []),
   ]
   const cellErrors = rowErrors.filter((err) =>
     (err?.highlight_cells || []).includes(props.column.colId),

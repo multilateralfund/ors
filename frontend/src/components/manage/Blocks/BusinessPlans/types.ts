@@ -11,10 +11,14 @@ export type BpDiffPathParams = {
   version: string
 } & BpPathParams
 
-export type BPDataInterface = {
+export interface BPDataInterface {
   loaded: boolean
   loading: boolean
   results: Array<any>
+}
+
+export interface BPEditDataInterface extends BPDataInterface {
+  params: any
 }
 
 export type BPGetVersionsInterface = {
@@ -35,6 +39,7 @@ export type BPTabsInterface = {
 
 export type BPEditTableInterface = {
   form: Array<ApiBPActivity>
+  params: any
   setForm: Dispatch<SetStateAction<Array<ApiBPActivity>>>
 } & BPDataInterface
 
