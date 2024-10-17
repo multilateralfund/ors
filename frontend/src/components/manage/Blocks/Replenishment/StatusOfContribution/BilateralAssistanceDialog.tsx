@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 
+import { Alert } from '@mui/material'
 import { omitBy } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 
@@ -14,6 +15,8 @@ import { api } from '@ors/helpers'
 import { getFloat } from '@ors/helpers/Utils/Utils'
 
 import { BilateralAssistanceDialogProps } from './types'
+
+import { IoInformationCircleOutline } from 'react-icons/io5'
 
 type Fields = {
   amount: string
@@ -30,6 +33,15 @@ export default function BilateralAssistanceDialog(
     amount: '0',
     potential_amount: '0',
   })
+  const [warning, setWarning] = useState<null | string>(null)
+
+  const handleChangeWarning = (amount: string, potential_amount: string) => {
+    setWarning(
+      getFloat(amount) > getFloat(potential_amount)
+        ? 'Amount is greater than potential bilateral assistance'
+        : null,
+    )
+  }
 
   function showAddBilateralAssistance() {
     setShowAdd(true)
@@ -71,12 +83,16 @@ export default function BilateralAssistanceDialog(
   function handleSelectCountry(value: string) {
     for (let i = 0; i < rows.length; i++) {
       if (parseInt(value, 10) == rows[i].country_id) {
+        const potential_amount = (rows[i].agreed_contributions * 0.2).toString()
+
         setFields(function (prev) {
           return {
             ...fields,
-            potential_amount: (rows[i].agreed_contributions * 0.2).toString(),
+            potential_amount: potential_amount,
           }
         })
+        handleChangeWarning(fields?.amount, potential_amount)
+
         break
       }
     }
@@ -112,11 +128,11 @@ export default function BilateralAssistanceDialog(
           <FieldFormattedNumberInput
             id="amount"
             label="Amount (USD)"
-            max={getFloat(fields?.potential_amount)}
             value={fields.amount}
-            onChange={(evt) =>
+            onChange={(evt) => {
               setFields((prev) => ({ ...prev, amount: evt.target.value }))
-            }
+              handleChangeWarning(evt.target.value, fields?.potential_amount)
+            }}
             required
           />
           <FieldSearchableSelect id="meeting_id" label="Meeting" required>
@@ -132,6 +148,15 @@ export default function BilateralAssistanceDialog(
             type="text"
           />
           <FieldInput id="comment" label="Comment" type="text-area" required />
+          {warning && (
+            <Alert
+              className="mt-4 bg-mlfs-bannerColor"
+              icon={<IoInformationCircleOutline size={24} />}
+              severity="info"
+            >
+              {warning}
+            </Alert>
+          )}
         </FormDialog>
       )}
       <div>
