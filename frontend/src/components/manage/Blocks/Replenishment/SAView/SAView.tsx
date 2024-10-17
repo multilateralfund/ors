@@ -19,7 +19,7 @@ import { AddButton, SubmitButton } from '@ors/components/ui/Button/Button'
 import Link from '@ors/components/ui/Link/Link'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import SoAContext from '@ors/contexts/Replenishment/SoAContext'
-import { api, formatApiUrl } from '@ors/helpers'
+import { api, formatApiUrl, getFloat } from '@ors/helpers'
 
 import FormDialog from '../FormDialog'
 import { DateInput, FormattedNumberInput, Input } from '../Inputs'
@@ -725,24 +725,23 @@ function SAView(props: SAViewProps) {
   }
 
   const handleAmountInput: ChangeEventHandler<HTMLInputElement> = (evt) => {
-    const value = parseFloat(evt.target.value)
-    if (typeof value === 'number' && !isNaN(value)) {
-      setReplenishment(
-        (oldReplenishment) =>
-          ({
-            ...oldReplenishment,
-            amount: value,
-          }) as ApiReplenishment,
-      )
-      setShouldCompute(true)
-    }
+    const value = getFloat(evt.target.value)
+    console.log(evt.target.value, value)
+    setReplenishment(
+      (oldReplenishment) =>
+        ({
+          ...oldReplenishment,
+          amount: value,
+        }) as ApiReplenishment,
+    )
+    setShouldCompute(true)
   }
 
   const handleUnusedAmountInput: ChangeEventHandler<HTMLInputElement> = (
     evt,
   ) => {
-    const value = parseFloat(evt.target.value)
-    if (typeof value === 'number' && !isNaN(value)) {
+    const value = getFloat(evt.target.value)
+    if (value) {
       setUnusedAmount(value)
       setShouldCompute(true)
     } else {

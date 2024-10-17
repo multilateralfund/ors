@@ -5,6 +5,7 @@ import { enqueueSnackbar } from 'notistack'
 import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
 import {
   FieldInput,
+  FieldNumberInput,
   FieldSelect,
   SearchableSelect,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
@@ -68,20 +69,9 @@ export default function DisputedContributionDialog(
               </option>
             ))}
           </FieldSelect>
-          <FieldInput
-            id="amount"
-            label="Disputed amount"
-            type="number"
-            required
-          />
+          <FieldNumberInput id="amount" label="Disputed amount" required />
           <FieldInput id="comment" label="Comment" type="text-area" required />
-          <FieldInput
-            id="year"
-            label="Year"
-            type="number"
-            value={year}
-            readOnly
-          />
+          <FieldNumberInput id="year" label="Year" value={year} readOnly />
           <div className="mt-4 flex items-center justify-start">
             <label className="grow-1" htmlFor="meeting_id">
               Approved by ExCom as of
