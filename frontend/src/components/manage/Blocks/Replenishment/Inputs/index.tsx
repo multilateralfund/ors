@@ -122,6 +122,19 @@ export function FieldInput(
   )
 }
 
+export function FieldTextInput(
+  props: IFieldProps & React.InputHTMLAttributes<HTMLInputElement>,
+) {
+  const { id, children, label, ...rest } = props
+  return (
+    <Field id={id} label={label}>
+      <div className="relative">
+        <Input id={id} {...rest} />
+      </div>
+    </Field>
+  )
+}
+
 export function FieldDateInput(props: IDateInputProps & IFieldProps) {
   const { id, label, ...rest } = props
   return (
