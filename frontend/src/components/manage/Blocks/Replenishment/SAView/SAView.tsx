@@ -548,7 +548,11 @@ function SAView(props: SAViewProps) {
   const version = ctxSoA.version
   const versions = ctxSoA.versions
 
-  const isFinal = ctxSoA.version?.is_final ?? true
+  const isTreasurer = ctx.isTreasurer
+  const isFinal = version?.is_final ?? true
+  const isNewestVersion = version?.version === versions[0]?.version
+
+  const isEditable = isTreasurer && !isFinal && isNewestVersion
 
   const contributions = useMemo(
     function () {
@@ -855,7 +859,7 @@ function SAView(props: SAViewProps) {
               <FormattedNumberInput
                 id="triannualBudget"
                 className="w-36"
-                disabled={!ctx.isTreasurer || isFinal}
+                disabled={!isEditable}
                 value={replenishment?.amount}
                 onChange={handleAmountInput}
               />
@@ -871,7 +875,7 @@ function SAView(props: SAViewProps) {
               <FormattedNumberInput
                 id="previouslyUnusedSum"
                 className="w-36"
-                disabled={!ctx.isTreasurer || isFinal}
+                disabled={!isEditable}
                 value={unusedAmount}
                 onChange={handleUnusedAmountInput}
               />
@@ -905,7 +909,7 @@ function SAView(props: SAViewProps) {
               </div>
             </label>
             <DateRangeInput
-              disabled={!ctx.isTreasurer || isFinal}
+              disabled={!isEditable}
               initialEnd={dateForInput(currencyDateRange.end)}
               initialStart={dateForInput(currencyDateRange.start)}
               onChange={handleChangeCurrencyDateRange}
@@ -922,10 +926,10 @@ function SAView(props: SAViewProps) {
         />
       </div>
       <SATable
-        adminButtons={ctx.isTreasurer}
+        adminButtons={isTreasurer}
         columns={columns}
         countriesForAdd={countriesForAdd}
-        enableEdit={ctx.isTreasurer && !isFinal}
+        enableEdit={isEditable}
         enableSort={true}
         rowData={formattedTableData}
         showAdd={showAdd}
@@ -941,7 +945,7 @@ function SAView(props: SAViewProps) {
         onDelete={handleDelete}
         onSort={handleSort}
       />
-      {!showAdd && ctx.isTreasurer ? (
+      {!showAdd && isTreasurer ? (
         <div className="flex items-center py-4 print:hidden">
           <AddButton onClick={showAddRow}>Add country</AddButton>
         </div>
@@ -981,7 +985,7 @@ function SAView(props: SAViewProps) {
           .
         </p>
       </div>
-      {ctx.isTreasurer && (
+      {isTreasurer && (
         <div className="-mx-4 -mb-4 rounded-b-lg bg-gray-200 p-4 print:hidden">
           <div className="flex items-center gap-x-2">
             <h2>Comment Version {version?.version} </h2>
