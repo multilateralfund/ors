@@ -9,6 +9,7 @@ import {
   FieldFormattedNumberInput,
   FieldInput,
   FieldSearchableSelect,
+  FieldTextInput,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { AddButton } from '@ors/components/ui/Button/Button'
 import { api } from '@ors/helpers'
@@ -142,7 +143,7 @@ export default function BilateralAssistanceDialog(
               </option>
             ))}
           </FieldSearchableSelect>
-          <FieldInput
+          <FieldTextInput
             id="decision_number"
             label="Decision number"
             type="text"

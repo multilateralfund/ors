@@ -300,7 +300,7 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
 
       return result
     },
-    [id, value, filteredOptions, handleToggleSelectedOption,hideFirstOption],
+    [id, value, filteredOptions, handleToggleSelectedOption, hideFirstOption],
   )
 
   return (

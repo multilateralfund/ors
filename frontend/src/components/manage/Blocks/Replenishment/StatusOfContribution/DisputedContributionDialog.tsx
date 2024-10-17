@@ -7,7 +7,7 @@ import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
 import {
   FieldInput,
   FieldSearchableSelect,
-  FieldSelect,
+  FieldTextInput,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { AddButton } from '@ors/components/ui/Button/Button'
 import { api } from '@ors/helpers'
@@ -65,22 +65,21 @@ export default function DisputedContributionDialog(
           onCancel={() => setShowAdd(false)}
           onSubmit={confirmSave}
         >
-          <FieldSelect id="country" label="Country" required>
-            <option value=""> -</option>
+          <FieldSearchableSelect id="country" label="Country" required>
             {countryOptions.map((c) => (
               <option key={c.country_id} value={c.country_id}>
                 {c.country}
               </option>
             ))}
-          </FieldSelect>
-          <FieldInput
+          </FieldSearchableSelect>
+          <FieldTextInput
             id="amount"
             label="Disputed amount"
             type="number"
             required
           />
           <FieldInput id="comment" label="Comment" type="text-area" required />
-          <FieldInput
+          <FieldTextInput
             id="year"
             label="Year"
             type="number"
@@ -99,7 +98,7 @@ export default function DisputedContributionDialog(
               </option>
             ))}
           </FieldSearchableSelect>
-          <FieldInput
+          <FieldTextInput
             id="decision_number"
             label="Decision number"
             type="text"
