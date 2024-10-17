@@ -202,15 +202,15 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
     }))
   }
 
-  function handleChangeInvoices(value: string[]) {
+  function handleChangeInvoices(value: string) {
     setFields(function (prev) {
-      return { ...prev, invoices: value }
+      return { ...prev, invoices: [value] }
     })
   }
 
-  function handleChangeYears(value: string[]) {
+  function handleChangeYears(value: string) {
     setFields(function (prev) {
-      return { ...prev, payment_for_years: value }
+      return { ...prev, payment_for_years: [value] }
     })
   }
 
@@ -266,12 +266,12 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
           onChange={handleToggleFerm}
         />
         {hasInvoices ? (
-          <FieldMultiSelect
+          <FieldSearchableSelect
             id="invoices"
-            defaultValue={fields.invoices}
             hasClear={true}
             label={columns.invoice_numbers.label}
             required={true}
+            value={fields.invoices?.[0] ?? ''}
             onChange={handleChangeInvoices}
           >
             {invoicesList.map((inv) => (
@@ -279,27 +279,27 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
                 {getInvoiceLabel(inv)}
               </option>
             ))}
-          </FieldMultiSelect>
+          </FieldSearchableSelect>
         ) : (
           <FieldTextLine
             label={columns.invoice_numbers.label}
             text={'No invoices found for this country'}
           />
         )}
-        <FieldMultiSelect
+        <FieldSearchableSelect
           id="payment_for_years"
-          defaultValue={fields.payment_for_years}
           hasClear={true}
           label={columns.payment_years.label}
           required={true}
+          value={fields.payment_for_years?.[0] ?? ''}
           onChange={handleChangeYears}
         >
           <option key="arrears" className="text-primary" value="arrears">
             Arrears
           </option>
-          <option key="deferred" className="text-primary" value="deferred">
-            Deferred
-          </option>
+          {/*<option key="deferred" className="text-primary" value="deferred">*/}
+          {/*  Deferred*/}
+          {/*</option>*/}
           {yearOptions.map((year) => (
             <option
               key={year.value}
@@ -309,7 +309,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
               {year.label}
             </option>
           ))}
-        </FieldMultiSelect>
+        </FieldSearchableSelect>
         <FieldSelect
           id="status"
           label="Status"
