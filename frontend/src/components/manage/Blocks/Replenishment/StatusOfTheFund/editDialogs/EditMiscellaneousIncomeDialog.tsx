@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import FormDialog from '../../FormDialog'
 import { IEditMiscellaneousIncomeDialogProps } from '../types'
-import { NumberInput, SearchableSelectInput, TextareaInput } from './editInputs'
+import { NumberInput, SearchableSelectInput, SimpleInput } from './editInputs'
 
 const EditMiscellaneousIncomeDialog = (
   props: IEditMiscellaneousIncomeDialogProps,
@@ -48,10 +48,11 @@ const EditMiscellaneousIncomeDialog = (
               label="Amount"
               setFormData={setFormData}
             />
-            <TextareaInput
-              field={'comment'}
-              label={'Comment'}
+            <SimpleInput
+              field="comment"
+              label="Comment"
               setFormData={setFormData}
+              type="text-area"
             />
           </div>
         </div>
