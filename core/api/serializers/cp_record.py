@@ -19,11 +19,13 @@ class CPRecordBaseSerializer(BaseCPWChemicalSerializer):
     exports_gwp = serializers.SerializerMethodField()
     export_quotas_gwp = serializers.SerializerMethodField()
     production_gwp = serializers.SerializerMethodField()
+    manufacturing_blends_gwp = serializers.SerializerMethodField()
     imports_odp = serializers.SerializerMethodField()
     import_quotas_odp = serializers.SerializerMethodField()
     exports_odp = serializers.SerializerMethodField()
     export_quotas_odp = serializers.SerializerMethodField()
     production_odp = serializers.SerializerMethodField()
+    manufacturing_blends_odp = serializers.SerializerMethodField()
 
     class Meta:
         fields = BaseCPWChemicalSerializer.Meta.fields + [
@@ -43,11 +45,13 @@ class CPRecordBaseSerializer(BaseCPWChemicalSerializer):
             "exports_gwp",
             "export_quotas_gwp",
             "production_gwp",
+            "manufacturing_blends_gwp",
             "imports_odp",
             "import_quotas_odp",
             "exports_odp",
             "export_quotas_odp",
             "production_odp",
+            "manufacturing_blends_odp",
         ]
 
     def get_excluded_usages(self, obj):
@@ -69,6 +73,9 @@ class CPRecordBaseSerializer(BaseCPWChemicalSerializer):
     def get_production_gwp(self, obj):
         return obj.mt_convert_to_gwp(obj.production)
 
+    def get_manufacturing_blends_gwp(self, obj):
+        return obj.mt_convert_to_gwp(obj.manufacturing_blends)
+
     def get_imports_odp(self, obj):
         return obj.mt_convert_to_odp(obj.imports)
 
@@ -83,6 +90,9 @@ class CPRecordBaseSerializer(BaseCPWChemicalSerializer):
 
     def get_production_odp(self, obj):
         return obj.mt_convert_to_odp(obj.production)
+
+    def get_manufacturing_blends_odp(self, obj):
+        return obj.mt_convert_to_odp(obj.manufacturing_blends)
 
     @transaction.atomic
     def create(self, validated_data):
