@@ -133,7 +133,9 @@ export const PopoverInputField = ({
 }: ISelectInputProps) => (
   <InputWrapper id={field} label={label}>
     <PopoverInput
+      withClear={true}
       onChange={(value) => handleSelectChange(value, setFormData, field)}
+      onClear={() => handleClearSelect(setFormData, field)}
       {...rest}
     />
   </InputWrapper>

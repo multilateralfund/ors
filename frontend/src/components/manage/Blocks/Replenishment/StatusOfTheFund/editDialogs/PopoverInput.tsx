@@ -7,6 +7,7 @@ import { Popover } from '@mui/material'
 import cx from 'classnames'
 import { chunk } from 'lodash'
 
+import ClearButton from '../../Inputs/ClearButton'
 import { STYLE } from '../../Inputs/constants'
 import {
   IPopoverContentProps,
@@ -99,9 +100,11 @@ const PopoverContent = ({
 
 export default function PopoverInput({
   onChange,
+  onClear,
   options,
   placeholder,
   value,
+  withClear,
 }: IPopoverInputProps) {
   const uniqueId = useId()
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
@@ -123,20 +126,33 @@ export default function PopoverInput({
     setPopoverWidth(null)
   }
 
+  const handleClear = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+    event.stopPropagation()
+
+    if (onClear) {
+      onClear()
+    }
+  }
+
   return (
     <div className="flex items-center gap-2">
-      <button
-        className="relative flex w-full min-w-44 cursor-pointer items-center rounded-lg border border-solid border-primary bg-white px-4 py-2"
-        aria-describedby={ariaDescribedBy}
-        style={STYLE}
-        onClick={openPopover}
-      >
-        {value ? (
-          <div className="text-primary">{value}</div>
-        ) : (
-          <div className="text-gray-500">{placeholder}</div>
-        )}
-      </button>
+      <div className="relative">
+        <button
+          className="relative flex w-full min-w-44 cursor-pointer items-center justify-between gap-2 rounded-lg border border-solid border-primary bg-white px-4 py-2"
+          aria-describedby={ariaDescribedBy}
+          style={STYLE}
+          onClick={openPopover}
+        >
+          {value ? (
+            <div className="text-primary">{value}</div>
+          ) : (
+            <div className="text-gray-500">{placeholder}</div>
+          )}
+        </button>
+        {withClear && <ClearButton className="right-3" onClick={handleClear} />}
+      </div>
+
       <Popover
         id={ariaDescribedBy}
         anchorEl={anchorEl}

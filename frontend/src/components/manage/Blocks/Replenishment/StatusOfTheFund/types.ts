@@ -70,9 +70,11 @@ export interface ISimpleInputProps extends IInputProps {
 
 export interface IPopoverInputProps {
   onChange?: (value: string) => void
+  onClear?: () => void
   options: InputOptionsType
   placeholder?: string
   value?: string
+  withClear?: boolean
 }
 
 export interface IPopoverContentProps extends IPopoverInputProps {
