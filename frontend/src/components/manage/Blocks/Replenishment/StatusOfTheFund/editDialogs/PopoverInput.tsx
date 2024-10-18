@@ -10,6 +10,7 @@ import { chunk } from 'lodash'
 import { Input } from '../../Inputs'
 import ClearButton from '../../Inputs/ClearButton'
 import { STYLE } from '../../Inputs/constants'
+import { getOrdinalNumberLabel } from '../../utils'
 import {
   IPopoverContentProps,
   IPopoverInputProps,
@@ -93,7 +94,7 @@ const PopoverContent = ({
               )}
               onClick={() => handleSelectEntry(entryValue)}
             >
-              {entryLabel}
+              {getOrdinalNumberLabel(entryLabel)}
             </div>
           )
         })}
@@ -155,7 +156,7 @@ export default function PopoverInput({
             className,
           )}
           aria-describedby={ariaDescribedBy}
-          placeholder={value ?? placeholder}
+          placeholder={placeholder}
           required={required}
           style={STYLE}
           value={selectedEntry}
@@ -177,7 +178,7 @@ export default function PopoverInput({
         slotProps={{
           paper: {
             className: cx(
-              'overflow-visible mt-2 p-3 rounded-lg border-2 border-solid border-primary bg-white p-4 shadow-xl',
+              'overflow-visible mt-2 p-3 rounded-lg border-2 border-solid border-primary bg-white shadow-xl pb-1',
             ),
             style: { minWidth: popoverWidth ?? 'auto' },
           },

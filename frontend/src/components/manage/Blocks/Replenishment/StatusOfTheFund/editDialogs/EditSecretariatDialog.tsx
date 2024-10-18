@@ -28,9 +28,9 @@ const EditSecretariatDialog = (props: IEditSecretariatProps) => {
         <div className="flex gap-x-4">
           <PopoverInputField
             field="meeting_id"
-            label="Meeting number"
+            label="Meeting"
             options={meetingOptions}
-            placeholder="Select meeting number"
+            placeholder="Select meeting"
             setFormData={setFormData}
             value={formData.meeting_id}
           />

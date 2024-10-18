@@ -31,11 +31,12 @@ export default function BilateralAssistanceDialog(
   const { countryOptions, meetingOptions, refetchSCData, rows, year } = props
   const [showAdd, setShowAdd] = useState(false)
 
-  const [fields, setFields] = useState<Fields>({
+  const defaultFields = {
     amount: '0',
     potential_amount: '0',
-  })
+  }
 
+  const [fields, setFields] = useState<Fields>(defaultFields)
   const [warning, setWarning] = useState<null | string>(null)
 
   const handleChangeWarning = (amount: string, potential_amount: string) => {
@@ -47,6 +48,7 @@ export default function BilateralAssistanceDialog(
   }
 
   function showAddBilateralAssistance() {
+    setFields(defaultFields)
     setShowAdd(true)
   }
 
