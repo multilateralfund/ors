@@ -33,11 +33,13 @@ export interface IEditAllocationsProps extends IEditIncomeDialogProps {
   agency: string
 }
 
-export interface IEditStaffContractsProps {
+export interface IEditSecretariatProps {
+  field: string
   handleSubmitEditDialog: (formData: any, field: string) => void
+  label: string
   meetingOptions: InputOptionsType
   onCancel: () => void
-  yearOptions: InputOptionsType
+  title: string
 }
 
 export interface IInputWrapper extends IFieldProps {
@@ -60,8 +62,8 @@ export interface ISelectInputProps extends IInputProps {
   value?: string
 }
 
-export interface ITextAreaProps extends IInputProps {
-  className?: string
+export interface ISimpleInputProps extends IInputProps {
+  type?: string
 }
 
 export interface IHandleClearInputChange {

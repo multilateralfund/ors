@@ -40,6 +40,12 @@ export interface IDateInputProps
   value: string
 }
 
+export interface INumberInputProps
+  extends Omit<
+    React.InputHTMLAttributes<HTMLInputElement>,
+    'inputMode' | 'type'
+  > {}
+
 export interface IFormattedNumberInputProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> {
   decimalDigits?: number

@@ -4,6 +4,7 @@ import type {
   IFieldProps,
   IFormattedNumberInputProps,
   IMultiSelectProps,
+  INumberInputProps,
   ISearchableSelectProps,
   ISingleSelectProps,
 } from './types'
@@ -23,6 +24,7 @@ import React, {
 
 import cx from 'classnames'
 
+import NumberInput from '@ors/components/manage/Blocks/Replenishment/Inputs/NumberInput'
 import YearRangeWidget from '@ors/components/manage/Widgets/YearRangeWidget'
 import useClickOutside from '@ors/hooks/useClickOutside'
 
@@ -118,6 +120,28 @@ export function FieldInput(
   return (
     <Field id={id} label={label}>
       <Input id={id} {...rest} />
+    </Field>
+  )
+}
+
+export function FieldNumberInput(props: IFieldProps & INumberInputProps) {
+  const { id, children, label, ...rest } = props
+  return (
+    <Field id={id} label={label}>
+      <NumberInput id={id} {...rest} />
+    </Field>
+  )
+}
+
+export function FieldWrappedNumberInput(
+  props: IFieldProps & INumberInputProps,
+) {
+  const { id, children, label, ...rest } = props
+  return (
+    <Field id={id} label={label}>
+      <div className="relative">
+        <NumberInput id={id} {...rest} />
+      </div>
     </Field>
   )
 }

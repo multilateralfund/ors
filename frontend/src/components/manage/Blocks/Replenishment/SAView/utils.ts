@@ -116,11 +116,10 @@ export function computeTableData(
           result[i].annual_contributions
         : null
 
-    if (!result[i].opted_for_ferm && result[i].qual_ferm) {
+    if (result[i].opted_for_ferm === null && result[i].qual_ferm) {
       result[i].opted_for_ferm = false
     } else if (!result[i].qual_ferm) {
       result[i].opted_for_ferm = null
-      delete result[i].override_opted_for_ferm
     }
   }
 
@@ -167,7 +166,8 @@ export function formatTableData(
 
       if (key === 'opted_for_ferm' && value == null) {
         newValue = '-'
-        isEditable = false
+      } else if (key === 'ferm_cur' && !value) {
+        newValue = '-'
       } else if (key === 'un_soa' && value === null) {
         newValue = ''
       } else {

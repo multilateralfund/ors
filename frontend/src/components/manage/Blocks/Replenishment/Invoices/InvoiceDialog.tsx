@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from 'react'
 
@@ -23,12 +24,11 @@ import {
   FieldSelect,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceAttachments'
+import { InvoiceDialogProps } from '@ors/components/manage/Blocks/Replenishment/Invoices/types'
 import { scAnnualOptions } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
 import useGetCountryReplenishmentInfo from '@ors/components/manage/Blocks/Replenishment/useGetCountryReplenishmentInfo'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { getFloat } from '@ors/helpers/Utils/Utils'
-
-import { InvoiceDialogProps } from './types'
 
 interface TabContentProps {
   data: InvoiceDialogProps['data']
@@ -53,12 +53,6 @@ function TabContentDetails(props: TabContentDetailsProps) {
   const { countries, countryInfo, data, fields, setFields, updateField } = props
   const ctx = useContext(ReplenishmentContext)
   const yearOptions = scAnnualOptions(ctx.periods)
-
-  const statusOptions = [
-    { label: 'Paid', value: 'paid' },
-    { label: 'Partially Paid', value: 'partially_paid' },
-    { label: 'Pending', value: 'pending' },
-  ]
 
   function handleCountrySelect(value: string) {
     setFields(function (prev) {
@@ -150,24 +144,6 @@ function TabContentDetails(props: TabContentDetailsProps) {
         value={fields.date_second_reminder}
         onChange={updateField('date_second_reminder')}
       />
-      <FieldSelect
-        id="status"
-        label="Status"
-        value={fields.status}
-        onChange={updateField('status')}
-        required
-      >
-        <option value="" disabled hidden></option>
-        {statusOptions.map((option) => (
-          <option
-            key={option.value}
-            className="text-primary"
-            value={option.value}
-          >
-            {option.label}
-          </option>
-        ))}
-      </FieldSelect>
     </>
   )
 }
@@ -254,7 +230,6 @@ interface InvoiceDialogFields {
   exchange_rate: string
   is_arrears: boolean
   is_ferm: boolean
-  status: string
   year: string
 }
 
@@ -277,7 +252,6 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
     exchange_rate: data?.exchange_rate ?? '',
     is_arrears: data?.is_arrears ?? false,
     is_ferm: data?.is_ferm ?? false,
-    status: data?.status ?? 'pending',
     year: data?.year ?? '',
   })
 
@@ -292,13 +266,20 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
   )
 
   const start_year =
-    (fields.year !== 'arrears' && fields.year) ||
+    (fields.year !== 'arrears' && parseInt(fields.year, 10)) ||
     ctx.periods?.[0].start_year ||
-    ''
+    0
 
-  const [countryInfo] = useGetCountryReplenishmentInfo(
-    start_year,
-    fields.country_id,
+  const { getForYear } = useGetCountryReplenishmentInfo(fields.country_id)
+  const {
+    entry: countryInfo,
+    matched: countryInfoMatched,
+    period: countryInfoPeriod,
+  } = useMemo(
+    function () {
+      return getForYear(start_year)
+    },
+    [getForYear, start_year],
   )
 
   useEffect(
@@ -340,7 +321,7 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
           <input name="id" defaultValue={data?.id} type="hidden" />
           <input
             name="replenishment_id"
-            defaultValue={data?.replenishment.id}
+            defaultValue={data?.replenishment?.id}
             type="hidden"
           />
         </>
@@ -361,6 +342,15 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
         />
       </DialogTabContent>
       <DialogTabContent isCurrent={tab == 1}>
+        {countryInfo && !countryInfoMatched ? (
+          <div className="text-center">
+            No <span className="underline">final</span> data found for the
+            selected year (<strong>{start_year}</strong>).
+            <br />
+            Using data from the <strong>{countryInfoPeriod}</strong> period
+            instead.
+          </div>
+        ) : null}
         <TabContentAmount
           countryInfo={countryInfo}
           data={data}

@@ -124,6 +124,7 @@ function PaymentsView() {
           payment_for_years: data.payment_for_years,
           payment_years: data.payment_for_years.join(', '),
           replenishment: data.replenishment,
+          status: data.status,
         })),
       ]
     }, [results, loaded, pagination.rowsPerPage])
@@ -356,7 +357,6 @@ function PaymentsView() {
     try {
       const csrftoken = Cookies.get('csrftoken')
 
-      console.log('is_ferm', data.get('is_ferm'))
       await fetchWithHandling(
         formatApiUrl('api/replenishment/payments/'),
         {

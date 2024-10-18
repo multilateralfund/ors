@@ -7,7 +7,7 @@ import {
   NumberInput,
   SearchableSelectInput,
   SelectInput,
-  TextareaInput,
+  SimpleInput,
 } from './editInputs'
 
 const EditInterestEarnedDialog = (props: IEditIncomeDialogProps) => {
@@ -67,15 +67,16 @@ const EditInterestEarnedDialog = (props: IEditIncomeDialogProps) => {
         </div>
         <div className="flex flex-col gap-y-4">
           <div className="flex gap-x-4">
-            <TextareaInput
-              field="comment"
-              label="Comment"
-              setFormData={setFormData}
-            />
             <NumberInput
               field="interest_earned"
               label="Amount"
               setFormData={setFormData}
+            />
+            <SimpleInput
+              field="comment"
+              label="Comment"
+              setFormData={setFormData}
+              type="text-area"
             />
           </div>
         </div>

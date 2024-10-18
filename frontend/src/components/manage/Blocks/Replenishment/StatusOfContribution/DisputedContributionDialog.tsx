@@ -8,6 +8,7 @@ import {
   FieldInput,
   FieldSearchableSelect,
   FieldTextInput,
+  FieldWrappedNumberInput,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { AddButton } from '@ors/components/ui/Button/Button'
 import { api } from '@ors/helpers'
@@ -72,17 +73,15 @@ export default function DisputedContributionDialog(
               </option>
             ))}
           </FieldSearchableSelect>
-          <FieldTextInput
+          <FieldWrappedNumberInput
             id="amount"
             label="Disputed amount"
-            type="number"
             required
           />
           <FieldInput id="comment" label="Comment" type="text-area" required />
-          <FieldTextInput
+          <FieldWrappedNumberInput
             id="year"
             label="Year"
-            type="number"
             value={year}
             readOnly
           />

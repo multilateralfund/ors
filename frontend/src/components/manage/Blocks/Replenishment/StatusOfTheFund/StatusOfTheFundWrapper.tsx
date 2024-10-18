@@ -16,9 +16,7 @@ import { allocationsOrder } from './constants'
 import EditAllocationsDialog from './editDialogs/EditAllocationsDialog'
 import EditInterestEarnedDialog from './editDialogs/EditInterestEarnedDialog'
 import EditMiscellaneousIncomeDialog from './editDialogs/EditMiscellaneousIncomeDialog'
-import EditMonitoringFeesDialog from './editDialogs/EditMonitoringFeesDialog'
-import EditStaffContractsDialog from './editDialogs/EditStaffContractsDialog'
-import EditTreasuryFeesDialog from './editDialogs/EditTreasuryFeesDialog'
+import EditSecretariatDialog from './editDialogs/EditSecretariatDialog'
 import UploadFilesDialog from './editDialogs/UploadFilesDialog'
 
 function StatusOfTheFundWrapper() {
@@ -209,8 +207,11 @@ function StatusOfTheFundWrapper() {
     },
     {
       component: (
-        <EditStaffContractsDialog
-          {...{ handleSubmitEditDialog, meetingOptions, yearOptions }}
+        <EditSecretariatDialog
+          {...{ handleSubmitEditDialog, meetingOptions }}
+          field="staff_contracts"
+          label="budget"
+          title="Budget:"
           onCancel={handleEditCancel}
         />
       ),
@@ -219,8 +220,11 @@ function StatusOfTheFundWrapper() {
 
     {
       component: (
-        <EditTreasuryFeesDialog
-          {...{ handleSubmitEditDialog, meetingOptions, yearOptions }}
+        <EditSecretariatDialog
+          {...{ handleSubmitEditDialog, meetingOptions }}
+          field="treasury_fees"
+          label="treasurer fees"
+          title="Treasurer fees:"
           onCancel={handleEditCancel}
         />
       ),
@@ -228,8 +232,11 @@ function StatusOfTheFundWrapper() {
     },
     {
       component: (
-        <EditMonitoringFeesDialog
-          {...{ handleSubmitEditDialog, meetingOptions, yearOptions }}
+        <EditSecretariatDialog
+          {...{ handleSubmitEditDialog, meetingOptions }}
+          field="monitoring_fees"
+          label="evaluation budget"
+          title="Evaluation budget:"
           onCancel={handleEditCancel}
         />
       ),
