@@ -1,13 +1,14 @@
 import React, { useState } from 'react'
 
+import { omitBy } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 
 import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
 import {
   FieldInput,
-  FieldNumberInput,
-  FieldSelect,
-  SearchableSelect,
+  FieldSearchableSelect,
+  FieldTextInput,
+  FieldWrappedNumberInput,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { AddButton } from '@ors/components/ui/Button/Button'
 import { api } from '@ors/helpers'
@@ -27,9 +28,13 @@ export default function DisputedContributionDialog(
   async function confirmSave(formData: FormData) {
     const data = Object.fromEntries(formData.entries())
 
+    const cleanData = omitBy(data, (value) => value === '')
+
     const formattedData = {
-      ...data,
-      meeting_id: parseInt(data.meeting_id.toString()),
+      ...cleanData,
+      ...(cleanData.meeting_id && {
+        meeting_id: parseInt(cleanData.meeting_id.toString()),
+      }),
     }
 
     try {
@@ -61,33 +66,38 @@ export default function DisputedContributionDialog(
           onCancel={() => setShowAdd(false)}
           onSubmit={confirmSave}
         >
-          <FieldSelect id="country" label="Country" required>
-            <option value=""> -</option>
+          <FieldSearchableSelect id="country" label="Country" required>
             {countryOptions.map((c) => (
               <option key={c.country_id} value={c.country_id}>
                 {c.country}
               </option>
             ))}
-          </FieldSelect>
-          <FieldNumberInput id="amount" label="Disputed amount" required />
+          </FieldSearchableSelect>
+          <FieldWrappedNumberInput
+            id="amount"
+            label="Disputed amount"
+            required
+          />
           <FieldInput id="comment" label="Comment" type="text-area" required />
-          <FieldNumberInput id="year" label="Year" value={year} readOnly />
-          <div className="mt-4 flex items-center justify-start">
-            <label className="grow-1" htmlFor="meeting_id">
-              Approved by ExCom as of
-            </label>
-            <SearchableSelect id="meeting_id" required>
-              {meetingOptions.map((m) => (
-                <option key={m.value} value={m.value}>
-                  {m.label}
-                </option>
-              ))}
-            </SearchableSelect>
-            <label className="ml-1.5" htmlFor="meeting_id">
-              meeting.
-            </label>
-          </div>
-          <FieldInput
+          <FieldWrappedNumberInput
+            id="year"
+            label="Year"
+            value={year}
+            readOnly
+          />
+          <FieldSearchableSelect
+            id="meeting_id"
+            hideFirstOption={true}
+            label="Meeting"
+          >
+            <option value="" disabled hidden />
+            {meetingOptions.map((m) => (
+              <option key={m.value} value={m.value}>
+                {m.label}
+              </option>
+            ))}
+          </FieldSearchableSelect>
+          <FieldTextInput
             id="decision_number"
             label="Decision number"
             type="text"
