@@ -58,12 +58,23 @@ export interface INumberInputProps extends IInputProps {
 
 export interface ISelectInputProps extends IInputProps {
   options: InputOptionsType
-  placeholder: string
+  placeholder?: string
   value?: string
 }
 
 export interface ISimpleInputProps extends IInputProps {
   type?: string
+}
+
+export interface IPopoverInputProps {
+  onChange?: (value: string) => void
+  options: InputOptionsType
+  placeholder?: string
+  value?: string
+}
+
+export interface IPopoverContentProps extends IPopoverInputProps {
+  closePopover: () => void
 }
 
 export interface IHandleClearInputChange {

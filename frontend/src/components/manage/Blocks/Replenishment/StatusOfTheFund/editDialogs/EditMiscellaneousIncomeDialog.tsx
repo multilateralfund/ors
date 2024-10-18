@@ -1,8 +1,13 @@
 import { useState } from 'react'
 
-import FormDialog from '../../FormDialog'
 import { IEditMiscellaneousIncomeDialogProps } from '../types'
-import { NumberInput, SearchableSelectInput, SimpleInput } from './editInputs'
+import FormDialog from './FormDialog'
+import {
+  NumberInput,
+  PopoverInputField,
+  SearchableSelectInput,
+  SimpleInput,
+} from './editInputs'
 
 const EditMiscellaneousIncomeDialog = (
   props: IEditMiscellaneousIncomeDialogProps,
@@ -15,7 +20,7 @@ const EditMiscellaneousIncomeDialog = (
     ...dialogProps
   } = props
 
-  const [formData, setFormData] = useState({})
+  const [formData, setFormData] = useState<any>({})
 
   return (
     <FormDialog
@@ -30,15 +35,15 @@ const EditMiscellaneousIncomeDialog = (
             field="year"
             label="Year"
             options={yearOptions}
-            placeholder="Select year"
             setFormData={setFormData}
           />
-          <SearchableSelectInput
+          <PopoverInputField
             field="meeting_id"
             label="Meeting number"
             options={meetingOptions}
             placeholder="Select meeting number"
             setFormData={setFormData}
+            value={formData.meeting_id}
           />
         </div>
         <div className="flex flex-col gap-y-4">
