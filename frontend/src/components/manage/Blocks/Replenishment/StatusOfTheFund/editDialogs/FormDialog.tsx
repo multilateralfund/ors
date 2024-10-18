@@ -1,12 +1,9 @@
-import * as React from 'react'
+import { FormEvent, Fragment } from 'react'
 
-import Button from '@mui/material/Button'
 import Dialog from '@mui/material/Dialog'
 import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
-import DialogContentText from '@mui/material/DialogContentText'
 import DialogTitle from '@mui/material/DialogTitle'
-import TextField from '@mui/material/TextField'
 
 import { CancelButton, SubmitButton } from '@ors/components/ui/Button/Button'
 
@@ -18,21 +15,19 @@ export default function FormDialog(props: FormDialogProps) {
   const { children, onCancel, onSubmit, title } = props
 
   return (
-    <React.Fragment>
+    <Fragment>
       <Dialog
         open={true}
         PaperProps={{
           component: 'form',
-          onSubmit: (event: React.FormEvent<HTMLFormElement>) => {
+          onSubmit: (event: FormEvent<HTMLFormElement>) => {
             event.preventDefault()
             const formData = new FormData(event.currentTarget)
-            // const formJson = Object.fromEntries((formData as any).entries())
-            // const email = formJson.email
-            // console.log(email)
-            onCancel()
+
             if (onSubmit) {
               onSubmit(formData, event)
             }
+            onCancel()
           },
           style: { borderRadius: 8 },
         }}
@@ -57,6 +52,6 @@ export default function FormDialog(props: FormDialogProps) {
         </DialogContent>
         <DialogActions></DialogActions>
       </Dialog>
-    </React.Fragment>
+    </Fragment>
   )
 }

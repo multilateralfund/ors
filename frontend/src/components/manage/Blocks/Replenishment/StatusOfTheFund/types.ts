@@ -3,11 +3,13 @@ import { ChangeEvent, Dispatch, ReactNode, SetStateAction } from 'react'
 import { IALLOCATIONS } from '../Dashboard/useGetDashboardDataTypes'
 import { IFieldProps } from '../Inputs'
 
-export type InputOptionsType = Array<{
+export type InputOptionType = {
   id?: string
   label: string
   value: string
-}>
+}
+
+export type InputOptionsType = Array<InputOptionType>
 
 export interface IEditIncomeDialogProps
   extends IEditMiscellaneousIncomeDialogProps {

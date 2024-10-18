@@ -1,13 +1,18 @@
 'use client'
 import type { MouseEvent } from 'react'
 
-import React, { useCallback, useId, useState } from 'react'
+import { useCallback, useId, useState } from 'react'
 
 import { Popover } from '@mui/material'
 import cx from 'classnames'
 import { chunk } from 'lodash'
 
-import { IPopoverContentProps, IPopoverInputProps } from '../types'
+import { STYLE } from '../../Inputs/constants'
+import {
+  IPopoverContentProps,
+  IPopoverInputProps,
+  InputOptionType,
+} from '../types'
 
 import {
   IoChevronBackCircleOutline,
@@ -22,30 +27,28 @@ const PopoverContent = ({
   value,
 }: IPopoverContentProps) => {
   const PAGE_SIZE = 12
+  const pagedData = chunk(options, PAGE_SIZE).map((chunk) => chunk.reverse())
 
-  const pagedMeetings = chunk(options, PAGE_SIZE).map((chunk) =>
-    chunk.reverse(),
-  )
-
-  const [curPage, setCurPage] = useState(0)
-
-  const handleNextPage = useCallback(() => {
-    if (curPage + 1 < pagedMeetings.length) {
-      setCurPage((prev) => prev + 1)
-    }
-  }, [curPage, setCurPage, pagedMeetings])
+  const [currentPage, setCurrentPage] = useState(0)
 
   const handlePrevPage = useCallback(() => {
-    if (curPage - 1 >= 0) {
-      setCurPage((prev) => prev - 1)
+    if (currentPage - 1 >= 0) {
+      setCurrentPage((prev) => prev - 1)
     }
-  }, [curPage, setCurPage])
+  }, [currentPage, setCurrentPage])
 
-  const handleClickMeeting = (meeting: string) => {
-    closePopover()
+  const handleNextPage = useCallback(() => {
+    if (currentPage + 1 < pagedData.length) {
+      setCurrentPage((prev) => prev + 1)
+    }
+  }, [currentPage, setCurrentPage, pagedData])
+
+  const handleSelectMeeting = (meeting: string) => {
     if (onChange) {
       onChange(meeting)
     }
+
+    closePopover()
   }
 
   const btnClasses = 'text-secondary hover:text-primary cursor-pointer'
@@ -55,35 +58,37 @@ const PopoverContent = ({
       <div className="flex items-center justify-between gap-x-4">
         <IoChevronBackCircleOutline
           className={cx(btnClasses, {
-            'cursor-no-drop opacity-40': curPage === pagedMeetings.length - 1,
+            'cursor-no-drop opacity-40': currentPage === pagedData.length - 1,
           })}
           size={24}
-          onClick={() => handleNextPage()}
+          onClick={handleNextPage}
         />
         <div className="pointer-events-none select-none">{placeholder}</div>
         <IoChevronForwardCircleOutline
           className={cx(btnClasses, {
-            'cursor-no-drop opacity-40': curPage === 0,
+            'cursor-no-drop opacity-40': currentPage === 0,
           })}
           size={24}
-          onClick={() => handlePrevPage()}
+          onClick={handlePrevPage}
         />
       </div>
       <div className="grid w-full grid-flow-row grid-cols-4 grid-rows-3 justify-items-center gap-1">
-        {pagedMeetings[curPage].map((yy: any) => {
-          const y = yy.value
+        {pagedData[currentPage].map((meeting: InputOptionType) => {
+          const meetingNr = meeting.value
+          const meetingLabel = meeting.label
+
           return (
             <div
-              key={y}
+              key={meetingNr}
               className={cx(
-                'w-full cursor-pointer rounded-md px-4 py-3 hover:bg-gray-100',
+                'w-full cursor-pointer rounded-md px-4 py-3 text-center hover:bg-gray-100',
                 {
-                  'bg-mlfs-hlYellow': y === value,
+                  'bg-mlfs-hlYellow': meetingNr === value,
                 },
               )}
-              onClick={() => handleClickMeeting(y)}
+              onClick={() => handleSelectMeeting(meetingNr)}
             >
-              {y}
+              {meetingLabel}
             </div>
           )
         })}
@@ -123,12 +128,13 @@ export default function PopoverInput({
       <button
         className="relative flex w-full min-w-44 cursor-pointer items-center rounded-lg border border-solid border-primary bg-white px-4 py-2"
         aria-describedby={ariaDescribedBy}
+        style={STYLE}
         onClick={openPopover}
       >
         {value ? (
           <div className="text-primary">{value}</div>
         ) : (
-          <div className="text-gray-400">{placeholder}</div>
+          <div className="text-gray-500">{placeholder}</div>
         )}
       </button>
       <Popover
