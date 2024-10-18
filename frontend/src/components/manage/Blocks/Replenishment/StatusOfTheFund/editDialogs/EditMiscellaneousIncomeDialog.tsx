@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { IEditMiscellaneousIncomeDialogProps } from '../types'
-import FormDialog from './FormDialog'
+import FormEditDialog from './FormEditDialog'
 import {
   NumberInput,
   PopoverInputField,
@@ -23,7 +23,7 @@ const EditMiscellaneousIncomeDialog = (
   const [formData, setFormData] = useState<any>({})
 
   return (
-    <FormDialog
+    <FormEditDialog
       title="Miscellaneous income:"
       onCancel={onCancel}
       onSubmit={() => handleSubmitEditDialog(formData, 'external-income')}
@@ -62,7 +62,7 @@ const EditMiscellaneousIncomeDialog = (
           </div>
         </div>
       </div>
-    </FormDialog>
+    </FormEditDialog>
   )
 }
 

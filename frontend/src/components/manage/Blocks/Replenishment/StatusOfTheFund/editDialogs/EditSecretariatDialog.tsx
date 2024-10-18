@@ -1,8 +1,13 @@
 import { useState } from 'react'
 
-import FormDialog from '../../FormDialog'
 import { IEditSecretariatProps } from '../types'
-import { NumberInput, SearchableSelectInput, SimpleInput } from './editInputs'
+import FormEditDialog from './FormEditDialog'
+import {
+  NumberInput,
+  PopoverInputField,
+  SearchableSelectInput,
+  SimpleInput,
+} from './editInputs'
 
 const EditSecretariatDialog = (props: IEditSecretariatProps) => {
   const {
@@ -15,22 +20,23 @@ const EditSecretariatDialog = (props: IEditSecretariatProps) => {
   } = props
   const currentYear = new Date().getFullYear()
 
-  const [formData, setFormData] = useState({})
+  const [formData, setFormData] = useState<any>({})
 
   return (
-    <FormDialog
+    <FormEditDialog
       onCancel={onCancel}
       onSubmit={() => handleSubmitEditDialog(formData, 'external-allocations')}
       {...dialogProps}
     >
       <div className="flex flex-col gap-y-4">
         <div className="flex gap-x-4">
-          <SearchableSelectInput
+          <PopoverInputField
             field="meeting_id"
             label="Meeting number"
             options={meetingOptions}
             placeholder="Select meeting number"
             setFormData={setFormData}
+            value={formData.meeting_id}
           />
           <SimpleInput
             field="decision_number"
@@ -77,7 +83,7 @@ const EditSecretariatDialog = (props: IEditSecretariatProps) => {
           </div>
         </div>
       </div>
-    </FormDialog>
+    </FormEditDialog>
   )
 }
 

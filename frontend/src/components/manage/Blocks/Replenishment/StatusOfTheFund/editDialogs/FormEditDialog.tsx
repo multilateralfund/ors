@@ -11,8 +11,14 @@ import { FormDialogProps } from '../../types'
 
 import { IoCloseCircle } from 'react-icons/io5'
 
-export default function FormDialog(props: FormDialogProps) {
+export default function FormEditDialog(props: FormDialogProps) {
   const { children, onCancel, onSubmit, title } = props
+
+  const handleKeyDown = (evt: any) => {
+    if (evt.key === 'Enter') {
+      evt.preventDefault()
+    }
+  }
 
   return (
     <Fragment>
@@ -32,6 +38,7 @@ export default function FormDialog(props: FormDialogProps) {
           style: { borderRadius: 8 },
         }}
         onClose={onCancel}
+        onKeyDown={handleKeyDown}
       >
         <DialogTitle>
           <div className="flex items-center justify-between py-4 text-secondary">
