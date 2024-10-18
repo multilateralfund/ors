@@ -7,6 +7,7 @@ import { Popover } from '@mui/material'
 import cx from 'classnames'
 import { chunk } from 'lodash'
 
+import { Input } from '../../Inputs'
 import ClearButton from '../../Inputs/ClearButton'
 import { STYLE } from '../../Inputs/constants'
 import {
@@ -25,6 +26,7 @@ const PopoverContent = ({
   onChange,
   options,
   placeholder,
+  setSelectedEntry,
   value,
 }: IPopoverContentProps) => {
   const PAGE_SIZE = 12
@@ -44,9 +46,11 @@ const PopoverContent = ({
     }
   }, [currentPage, setCurrentPage, pagedData])
 
-  const handleSelectMeeting = (meeting: string) => {
+  const handleSelectEntry = (entry: string) => {
+    setSelectedEntry(entry)
+
     if (onChange) {
-      onChange(meeting)
+      onChange(entry)
     }
 
     closePopover()
@@ -74,22 +78,22 @@ const PopoverContent = ({
         />
       </div>
       <div className="grid w-full grid-flow-row grid-cols-4 grid-rows-3 justify-items-center gap-1">
-        {pagedData[currentPage].map((meeting: InputOptionType) => {
-          const meetingNr = meeting.value
-          const meetingLabel = meeting.label
+        {pagedData[currentPage].map((entry: InputOptionType) => {
+          const entryValue = entry.value
+          const entryLabel = entry.label
 
           return (
             <div
-              key={meetingNr}
+              key={entryValue}
               className={cx(
-                'w-full cursor-pointer rounded-md px-4 py-3 text-center hover:bg-gray-100',
+                'w-full cursor-pointer rounded-md p-3 text-center hover:bg-gray-100',
                 {
-                  'bg-mlfs-hlYellow': meetingNr === value,
+                  'bg-mlfs-hlYellow': entryValue === value,
                 },
               )}
-              onClick={() => handleSelectMeeting(meetingNr)}
+              onClick={() => handleSelectEntry(entryValue)}
             >
-              {meetingLabel}
+              {entryLabel}
             </div>
           )
         })}
@@ -99,22 +103,26 @@ const PopoverContent = ({
 }
 
 export default function PopoverInput({
+  className,
+  field,
   onChange,
   onClear,
   options,
   placeholder,
+  required = false,
   value,
   withClear,
 }: IPopoverInputProps) {
   const uniqueId = useId()
-  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null)
+  const [anchorEl, setAnchorEl] = useState<HTMLInputElement | null>(null)
   const [popoverWidth, setPopoverWidth] = useState<null | number>(null)
+  const [selectedEntry, setSelectedEntry] = useState<string>(value || '')
 
   const open = Boolean(anchorEl)
 
   const ariaDescribedBy = open ? `popover-widget-${uniqueId}` : undefined
 
-  const openPopover = (event: MouseEvent<HTMLButtonElement>) => {
+  const openPopover = (event: MouseEvent<HTMLInputElement>) => {
     event.preventDefault()
 
     setAnchorEl(event.currentTarget)
@@ -130,27 +138,32 @@ export default function PopoverInput({
     event.preventDefault()
     event.stopPropagation()
 
+    setSelectedEntry('')
     if (onClear) {
       onClear()
     }
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="relative">
-        <button
-          className="relative flex w-full min-w-44 cursor-pointer items-center justify-between gap-2 rounded-lg border border-solid border-primary bg-white px-4 py-2"
-          aria-describedby={ariaDescribedBy}
-          style={STYLE}
-          onClick={openPopover}
-        >
-          {value ? (
-            <div className="text-primary">{value}</div>
-          ) : (
-            <div className="text-gray-500">{placeholder}</div>
+    <>
+      <div className="relative flex flex-1">
+        <Input
+          id={field}
+          name={field}
+          className={cx(
+            'relative flex w-full min-w-44 cursor-pointer items-center justify-between gap-2 rounded-lg border border-solid border-primary bg-white px-4 py-2',
+            className,
           )}
-        </button>
-        {withClear && <ClearButton className="right-3" onClick={handleClear} />}
+          aria-describedby={ariaDescribedBy}
+          placeholder={value ?? placeholder}
+          required={required}
+          style={STYLE}
+          value={selectedEntry}
+          onClick={openPopover}
+        />
+        {withClear && selectedEntry && (
+          <ClearButton className="right-4" onClick={handleClear} />
+        )}
       </div>
 
       <Popover
@@ -164,7 +177,7 @@ export default function PopoverInput({
         slotProps={{
           paper: {
             className: cx(
-              'overflow-visible mt-2 px-3 pt-3 pb-5 rounded-lg border-2 border-solid border-primary bg-white p-4 shadow-xl',
+              'overflow-visible mt-2 p-3 rounded-lg border-2 border-solid border-primary bg-white p-4 shadow-xl',
             ),
             style: { minWidth: popoverWidth ?? 'auto' },
           },
@@ -180,10 +193,11 @@ export default function PopoverInput({
           closePopover={closePopover}
           options={options}
           placeholder={placeholder}
-          value={value}
+          setSelectedEntry={setSelectedEntry}
+          value={selectedEntry}
           onChange={onChange}
         />
       </Popover>
-    </div>
+    </>
   )
 }

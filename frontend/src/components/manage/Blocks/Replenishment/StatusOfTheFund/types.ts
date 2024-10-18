@@ -69,16 +69,20 @@ export interface ISimpleInputProps extends IInputProps {
 }
 
 export interface IPopoverInputProps {
+  className?: string
+  field?: string
   onChange?: (value: string) => void
   onClear?: () => void
   options: InputOptionsType
   placeholder?: string
+  required?: boolean
   value?: string
   withClear?: boolean
 }
 
 export interface IPopoverContentProps extends IPopoverInputProps {
   closePopover: () => void
+  setSelectedEntry: Dispatch<SetStateAction<string>>
 }
 
 export interface IHandleClearInputChange {

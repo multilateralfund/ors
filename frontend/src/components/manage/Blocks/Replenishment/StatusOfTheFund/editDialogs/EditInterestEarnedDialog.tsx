@@ -1,8 +1,9 @@
 import { useState } from 'react'
 
+import FormEditDialog from '@ors/components/manage/Blocks/Replenishment/FormEditDialog'
+
 import { quarterOptions } from '../constants'
 import { IEditIncomeDialogProps } from '../types'
-import FormEditDialog from './FormEditDialog'
 import {
   NumberInput,
   PopoverInputField,

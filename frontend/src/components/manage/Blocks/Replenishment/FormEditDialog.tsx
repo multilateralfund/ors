@@ -7,12 +7,12 @@ import DialogTitle from '@mui/material/DialogTitle'
 
 import { CancelButton, SubmitButton } from '@ors/components/ui/Button/Button'
 
-import { FormDialogProps } from '../../types'
+import { FormEditDialogProps } from './types'
 
 import { IoCloseCircle } from 'react-icons/io5'
 
-export default function FormEditDialog(props: FormDialogProps) {
-  const { children, onCancel, onSubmit, title } = props
+export default function FormEditDialog(props: FormEditDialogProps) {
+  const { children, onCancel, onSubmit, style, title } = props
 
   const handleKeyDown = (evt: any) => {
     if (evt.key === 'Enter') {
@@ -35,7 +35,7 @@ export default function FormEditDialog(props: FormDialogProps) {
             }
             onCancel()
           },
-          style: { borderRadius: 8 },
+          style: { ...style, borderRadius: 8 },
         }}
         onClose={onCancel}
         onKeyDown={handleKeyDown}

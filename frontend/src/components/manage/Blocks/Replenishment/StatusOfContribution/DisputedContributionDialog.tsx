@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import { omitBy } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 
-import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
+import FormEditDialog from '@ors/components/manage/Blocks/Replenishment/FormEditDialog'
 import {
   FieldInput,
   FieldSearchableSelect,
@@ -61,7 +61,7 @@ export default function DisputedContributionDialog(
   return (
     <>
       {showAdd && (
-        <FormDialog
+        <FormEditDialog
           title="Disputed Contribution:"
           onCancel={() => setShowAdd(false)}
           onSubmit={confirmSave}
@@ -102,7 +102,7 @@ export default function DisputedContributionDialog(
             label="Decision number"
             type="text"
           />
-        </FormDialog>
+        </FormEditDialog>
       )}
       <div>
         <AddButton onClick={showAddDisputedContribution}>

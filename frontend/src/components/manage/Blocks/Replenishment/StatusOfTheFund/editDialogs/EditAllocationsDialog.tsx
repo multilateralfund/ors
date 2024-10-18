@@ -2,8 +2,9 @@ import { useState } from 'react'
 
 import { find } from 'lodash'
 
+import FormEditDialog from '@ors/components/manage/Blocks/Replenishment/FormEditDialog'
+
 import { IEditAllocationsProps } from '../types'
-import FormEditDialog from './FormEditDialog'
 import {
   NumberInput,
   PopoverInputField,

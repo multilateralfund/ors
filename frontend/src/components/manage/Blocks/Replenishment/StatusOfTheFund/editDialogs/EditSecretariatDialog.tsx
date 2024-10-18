@@ -1,13 +1,9 @@
 import { useState } from 'react'
 
+import FormEditDialog from '@ors/components/manage/Blocks/Replenishment/FormEditDialog'
+
 import { IEditSecretariatProps } from '../types'
-import FormEditDialog from './FormEditDialog'
-import {
-  NumberInput,
-  PopoverInputField,
-  SearchableSelectInput,
-  SimpleInput,
-} from './editInputs'
+import { NumberInput, PopoverInputField, SimpleInput } from './editInputs'
 
 const EditSecretariatDialog = (props: IEditSecretariatProps) => {
   const {

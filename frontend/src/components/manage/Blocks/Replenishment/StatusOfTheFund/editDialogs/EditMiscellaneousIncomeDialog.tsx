@@ -1,7 +1,8 @@
 import { useState } from 'react'
 
+import FormEditDialog from '@ors/components/manage/Blocks/Replenishment/FormEditDialog'
+
 import { IEditMiscellaneousIncomeDialogProps } from '../types'
-import FormEditDialog from './FormEditDialog'
 import {
   NumberInput,
   PopoverInputField,
