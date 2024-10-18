@@ -10,7 +10,7 @@ import type {
 } from './types'
 import type { TriggerButtonProps } from '@ors/components/manage/Widgets/YearRangeWidget'
 import type { YearRangeWidgetProps } from '@ors/components/manage/Widgets/YearRangeWidget'
-import type { InvalidEvent, MouseEventHandler } from 'react'
+import type { InvalidEvent, MouseEvent, MouseEventHandler } from 'react'
 
 import React, {
   ChangeEvent,
@@ -28,6 +28,8 @@ import NumberInput from '@ors/components/manage/Blocks/Replenishment/Inputs/Numb
 import YearRangeWidget from '@ors/components/manage/Widgets/YearRangeWidget'
 import useClickOutside from '@ors/hooks/useClickOutside'
 
+import PopoverInput from '../StatusOfTheFund/editDialogs/PopoverInput'
+import { IPopoverInputProps } from '../StatusOfTheFund/types'
 import ClearButton from './ClearButton'
 import DateInput from './DateInput'
 import FormattedNumberInput from './FormattedNumberInput'
@@ -110,6 +112,25 @@ export function FieldSearchableSelect(
         {children}
       </SearchableSelect>
     </Field>
+  )
+}
+
+export function FieldPopoverInput(props: IFieldProps & IPopoverInputProps) {
+  const { id, label, ...rest } = props
+
+  const preventParentClick = (event: MouseEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    event.stopPropagation()
+  }
+
+  return (
+    <div onClick={preventParentClick}>
+      <Field id={id} label={label}>
+        <div className="relative">
+          <PopoverInput {...rest} />
+        </div>
+      </Field>
+    </div>
   )
 }
 

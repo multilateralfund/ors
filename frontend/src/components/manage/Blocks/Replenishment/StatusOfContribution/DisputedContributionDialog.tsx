@@ -3,9 +3,11 @@ import React, { useState } from 'react'
 import { omitBy } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 
-import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
+import FormEditDialog from '@ors/components/manage/Blocks/Replenishment/FormEditDialog'
 import {
+  FieldFormattedNumberInput,
   FieldInput,
+  FieldPopoverInput,
   FieldSearchableSelect,
   FieldTextInput,
   FieldWrappedNumberInput,
@@ -19,9 +21,16 @@ export default function DisputedContributionDialog(
   props: DisputedContributionDialogProps,
 ) {
   const { countryOptions, meetingOptions, refetchSCData, year } = props
+
+  const defaultFields = {
+    amount: '0',
+  }
+
+  const [fields, setFields] = useState(defaultFields)
   const [showAdd, setShowAdd] = useState(false)
 
   function showAddDisputedContribution() {
+    setFields(defaultFields)
     setShowAdd(true)
   }
 
@@ -61,7 +70,8 @@ export default function DisputedContributionDialog(
   return (
     <>
       {showAdd && (
-        <FormDialog
+        <FormEditDialog
+          style={{ minWidth: '40%' }}
           title="Disputed Contribution:"
           onCancel={() => setShowAdd(false)}
           onSubmit={confirmSave}
@@ -73,9 +83,13 @@ export default function DisputedContributionDialog(
               </option>
             ))}
           </FieldSearchableSelect>
-          <FieldWrappedNumberInput
+          <FieldFormattedNumberInput
             id="amount"
             label="Disputed amount"
+            value={fields.amount}
+            onChange={(evt) => {
+              setFields((prev) => ({ ...prev, amount: evt.target.value }))
+            }}
             required
           />
           <FieldInput id="comment" label="Comment" type="text-area" required />
@@ -85,24 +99,20 @@ export default function DisputedContributionDialog(
             value={year}
             readOnly
           />
-          <FieldSearchableSelect
+          <FieldPopoverInput
             id="meeting_id"
-            hideFirstOption={true}
+            field="meeting_id"
             label="Meeting"
-          >
-            <option value="" disabled hidden />
-            {meetingOptions.map((m) => (
-              <option key={m.value} value={m.value}>
-                {m.label}
-              </option>
-            ))}
-          </FieldSearchableSelect>
+            options={meetingOptions}
+            placeholder="Select meeting"
+            withClear={true}
+          />
           <FieldTextInput
             id="decision_number"
             label="Decision number"
             type="text"
           />
-        </FormDialog>
+        </FormEditDialog>
       )}
       <div>
         <AddButton onClick={showAddDisputedContribution}>

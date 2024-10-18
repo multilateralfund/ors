@@ -1,8 +1,14 @@
 import { useState } from 'react'
 
-import FormDialog from '../../FormDialog'
+import FormEditDialog from '@ors/components/manage/Blocks/Replenishment/FormEditDialog'
+
 import { IEditMiscellaneousIncomeDialogProps } from '../types'
-import { NumberInput, SearchableSelectInput, SimpleInput } from './editInputs'
+import {
+  NumberInput,
+  PopoverInputField,
+  SearchableSelectInput,
+  SimpleInput,
+} from './editInputs'
 
 const EditMiscellaneousIncomeDialog = (
   props: IEditMiscellaneousIncomeDialogProps,
@@ -15,10 +21,10 @@ const EditMiscellaneousIncomeDialog = (
     ...dialogProps
   } = props
 
-  const [formData, setFormData] = useState({})
+  const [formData, setFormData] = useState<any>({})
 
   return (
-    <FormDialog
+    <FormEditDialog
       title="Miscellaneous income:"
       onCancel={onCancel}
       onSubmit={() => handleSubmitEditDialog(formData, 'external-income')}
@@ -30,15 +36,15 @@ const EditMiscellaneousIncomeDialog = (
             field="year"
             label="Year"
             options={yearOptions}
-            placeholder="Select year"
             setFormData={setFormData}
           />
-          <SearchableSelectInput
+          <PopoverInputField
             field="meeting_id"
-            label="Meeting number"
+            label="Meeting"
             options={meetingOptions}
-            placeholder="Select meeting number"
+            placeholder="Select meeting"
             setFormData={setFormData}
+            value={formData.meeting_id}
           />
         </div>
         <div className="flex flex-col gap-y-4">
@@ -57,7 +63,7 @@ const EditMiscellaneousIncomeDialog = (
           </div>
         </div>
       </div>
-    </FormDialog>
+    </FormEditDialog>
   )
 }
 

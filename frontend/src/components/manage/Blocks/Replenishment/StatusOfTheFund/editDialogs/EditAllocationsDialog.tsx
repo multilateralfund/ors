@@ -2,10 +2,12 @@ import { useState } from 'react'
 
 import { find } from 'lodash'
 
-import FormDialog from '../../FormDialog'
+import FormEditDialog from '@ors/components/manage/Blocks/Replenishment/FormEditDialog'
+
 import { IEditAllocationsProps } from '../types'
 import {
   NumberInput,
+  PopoverInputField,
   SearchableSelectInput,
   SelectInput,
   SimpleInput,
@@ -28,12 +30,12 @@ const EditAllocationsDialog = (props: IEditAllocationsProps) => {
     (agencyOpt) => agencyOpt.id === agency,
   )
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<any>({
     agency_name: currentAgency?.value,
   })
 
   return (
-    <FormDialog
+    <FormEditDialog
       title={currentAgency?.label || ''}
       onCancel={onCancel}
       onSubmit={() => handleSubmitEditDialog(formData, 'external-allocations')}
@@ -49,12 +51,13 @@ const EditAllocationsDialog = (props: IEditAllocationsProps) => {
             setFormData={setFormData}
             value={currentAgency?.value}
           />
-          <SearchableSelectInput
+          <PopoverInputField
             field="meeting_id"
-            label="Meeting number"
+            label="Meeting"
             options={meetingOptions}
-            placeholder="Select meeting number"
+            placeholder="Select meeting"
             setFormData={setFormData}
+            value={formData.meeting_id}
           />
         </div>
         <div className="flex flex-col gap-y-4">
@@ -84,7 +87,7 @@ const EditAllocationsDialog = (props: IEditAllocationsProps) => {
           </div>
         </div>
       </div>
-    </FormDialog>
+    </FormEditDialog>
   )
 }
 

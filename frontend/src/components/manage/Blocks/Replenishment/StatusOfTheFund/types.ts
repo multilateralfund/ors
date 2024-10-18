@@ -3,11 +3,13 @@ import { ChangeEvent, Dispatch, ReactNode, SetStateAction } from 'react'
 import { IALLOCATIONS } from '../Dashboard/useGetDashboardDataTypes'
 import { IFieldProps } from '../Inputs'
 
-export type InputOptionsType = Array<{
+export type InputOptionType = {
   id?: string
   label: string
   value: string
-}>
+}
+
+export type InputOptionsType = Array<InputOptionType>
 
 export interface IEditIncomeDialogProps
   extends IEditMiscellaneousIncomeDialogProps {
@@ -58,12 +60,29 @@ export interface INumberInputProps extends IInputProps {
 
 export interface ISelectInputProps extends IInputProps {
   options: InputOptionsType
-  placeholder: string
+  placeholder?: string
   value?: string
 }
 
 export interface ISimpleInputProps extends IInputProps {
   type?: string
+}
+
+export interface IPopoverInputProps {
+  className?: string
+  field?: string
+  onChange?: (value: string) => void
+  onClear?: () => void
+  options: InputOptionsType
+  placeholder?: string
+  required?: boolean
+  value?: string
+  withClear?: boolean
+}
+
+export interface IPopoverContentProps extends IPopoverInputProps {
+  closePopover: () => void
+  setSelectedEntry: Dispatch<SetStateAction<string>>
 }
 
 export interface IHandleClearInputChange {

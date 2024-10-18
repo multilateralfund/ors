@@ -2,7 +2,9 @@ import { MAX_DECIMALS, MIN_DECIMALS } from './constants'
 
 const RE_PERIOD = new RegExp(/\d{4}-\d{4}/)
 
-export function makePeriodOptions(periods: {end_year: number; start_year: number}[]) {
+export function makePeriodOptions(
+  periods: { end_year: number; start_year: number }[],
+) {
   const result = []
   for (let i = 0; i < periods.length; i++) {
     const labelComponents = [periods[i].start_year, periods[i].end_year]
@@ -178,4 +180,29 @@ export async function fetchWithHandling(
     error.message = errorData
     throw error
   }
+}
+
+export const getOrdinalNumberLabel = (number: string) => {
+  const parsedNumber = parseInt(number)
+
+  const lastDigit = parsedNumber % 10
+  const secondToLastDigit = Math.floor((parsedNumber % 100) / 10)
+
+  let ordinalSuffix = 'th'
+
+  if (secondToLastDigit !== 1) {
+    switch (lastDigit) {
+      case 1:
+        ordinalSuffix = 'st'
+        break
+      case 2:
+        ordinalSuffix = 'nd'
+        break
+      case 3:
+        ordinalSuffix = 'rd'
+        break
+    }
+  }
+
+  return number + ordinalSuffix
 }
