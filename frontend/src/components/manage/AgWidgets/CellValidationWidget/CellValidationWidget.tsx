@@ -12,7 +12,7 @@ export default function CellValidationWidget(props: any) {
   const validation =
     validationContext?.errors[props.context?.section.id as ValidationSchemaKeys]
 
-  const globalErrors = validation?.global
+  const globalErrors = validation?.global ?? []
   const rowErrors = [
     ...(validation?.rows[props.data.row_id] || []),
     ...globalErrors.filter((v) => v.row_id === props.data.row_id),
