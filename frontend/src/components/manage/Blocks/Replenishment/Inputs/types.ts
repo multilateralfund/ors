@@ -17,6 +17,7 @@ export interface ISearchableSelectProps
   extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'onChange'> {
   defaultValue?: string
   hasClear?: boolean
+  hideFirstOption?: boolean
   onChange?: (value: string) => void
   onClear?: () => void
   pickerClassName?: string
