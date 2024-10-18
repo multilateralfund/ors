@@ -87,6 +87,8 @@ class SectionWriter(BaseWriter):
         for header_id, header in self.headers.items():
             if header.get("columnCategory") == "usage":
                 value = by_usage_id.get(header_id)
+            elif self.convert_to != "mt" and header.get("is_convertable"):
+                value = record.get(f"{header_id}_{self.convert_to}")
             else:
                 value = record.get(header_id)
 

@@ -73,17 +73,20 @@ class CPReportNewExporter(CPReportBase):
                         "id": "imports",
                         "headerName": "Import",
                         "is_numeric": True,
+                        "is_convertable": True,
                         "align": "right",
                     },
                     {
                         "id": "exports",
                         "headerName": "Export",
+                        "is_convertable": True,
                         "is_numeric": True,
                         "align": "right",
                     },
                     {
                         "id": "production",
                         "headerName": "Production",
+                        "is_convertable": True,
                         "is_numeric": True,
                         "align": "right",
                     },
@@ -92,7 +95,9 @@ class CPReportNewExporter(CPReportBase):
                             {
                                 "id": "manufacturing_blends",
                                 "headerName": "Manufacturing of Blends",
+                                "is_convertable": True,
                                 "is_numeric": True,
+                                "align": "right",
                             }
                         ]
                         if manufacturing_blends
@@ -101,6 +106,7 @@ class CPReportNewExporter(CPReportBase):
                     {
                         "id": "import_quotas",
                         "headerName": "Import Quotas",
+                        "is_convertable": True,
                         "is_numeric": True,
                         "align": "right",
                     },
