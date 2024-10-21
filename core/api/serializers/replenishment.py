@@ -517,7 +517,6 @@ class StatusOfTheFundFileSerializer(serializers.ModelSerializer):
             "meeting_id",
             "comment",
             "filename",
-            "file",
             "uploaded_at",
             "download_url",
         ]
