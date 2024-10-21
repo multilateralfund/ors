@@ -1,6 +1,8 @@
 import type { DeserializedSubstance } from '@ors/models/Section'
 import type { ReportVariant } from '@ors/types/variants'
 
+import React from 'react'
+
 export type CPRowData = {
   count?: number
   display_name?: string
@@ -29,7 +31,7 @@ export type SectionMeta = {
   title: string
 }
 
-export type DefaultComponentType = () => JSX.Element
+export type DefaultComponentType = () => React.JSX.Element
 
 export type DispatchWithLocalStorage<A> = (
   value: A,

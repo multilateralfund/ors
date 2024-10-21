@@ -1,6 +1,6 @@
 'use client'
 
-import { PropsWithChildren } from 'react'
+import React, { PropsWithChildren } from 'react'
 
 import cx from 'classnames'
 import Link from 'next/link'
@@ -41,8 +41,8 @@ const SECTIONS: Tab[] = [
   },
 ]
 
-function getNavLinks(pathname: string): [Tab | undefined, JSX.Element[]] {
-  const result: JSX.Element[] = []
+function getNavLinks(pathname: string): [Tab | undefined, React.JSX.Element[]] {
+  const result: React.JSX.Element[] = []
 
   let currentSection: Tab | undefined
 

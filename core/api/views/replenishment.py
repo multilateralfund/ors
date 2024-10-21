@@ -1635,12 +1635,11 @@ class ReplenishmentPaymentViewSet(
         filters.SearchFilter,
     ]
     ordering_fields = [
-        "amount",
+        "amount_assessed",
         "country__name",
     ]
     search_fields = [
         "payment_for_years",
-        "amount",
         "country__name",
         "comment",
         "invoices__number",
@@ -1734,7 +1733,7 @@ class ReplenishmentPaymentViewSet(
                 for year in payment.payment_for_years
                 if year not in ["deferred", "arrears"]
             ]
-        amount_to_add = payment.amount
+        amount_to_add = payment.amount_assessed
         if old_amount is not None:
             amount_to_add -= old_amount
         AnnualContributionStatus.objects.filter(
@@ -1774,9 +1773,9 @@ class ReplenishmentPaymentViewSet(
         AnnualContributionStatus.objects.filter(
             country=payment.country, year__in=years_list
         ).update(
-            cash_payments=models.F("cash_payments") - payment.amount,
+            cash_payments=models.F("cash_payments") - payment.amount_assessed,
             outstanding_contributions=models.F("outstanding_contributions")
-            + payment.amount,
+            + payment.amount_assessed,
         )
         for year in years_list:
             # Updating objects one by one to avoid race conditions
@@ -1784,9 +1783,9 @@ class ReplenishmentPaymentViewSet(
             TriennialContributionStatus.objects.filter(
                 country=payment.country, start_year__lte=year, end_year__gte=year
             ).update(
-                cash_payments=models.F("cash_payments") - payment.amount,
+                cash_payments=models.F("cash_payments") - payment.amount_assessed,
                 outstanding_contributions=models.F("outstanding_contributions")
-                + payment.amount,
+                + payment.amount_assessed,
             )
 
     @transaction.atomic
@@ -1825,7 +1824,7 @@ class ReplenishmentPaymentViewSet(
     def update(self, request, *args, **kwargs):
         current_obj = self.get_object()
 
-        previous_amount = current_obj.amount
+        previous_amount = current_obj.amount_assessed
 
         # request.data is not mutable and we need to perform some string-bollean magic
         # for the is_ferm field, because we receive it from a forn.

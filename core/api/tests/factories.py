@@ -620,7 +620,8 @@ class PaymentFactory(factory.django.DjangoModelFactory):
     country = factory.SubFactory(CountryFactory)
     replenishment = factory.SubFactory(ReplenishmentFactory)
 
-    amount = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    amount_assessed = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    amount_received = factory.Faker("pydecimal", left_digits=10, right_digits=2)
     currency = factory.Faker("pystr", max_chars=3)
 
     date = factory.Faker("date")

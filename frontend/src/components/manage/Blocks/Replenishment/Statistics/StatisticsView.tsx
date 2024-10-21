@@ -1,5 +1,7 @@
 'use client'
 
+import React from 'react'
+
 import cx from 'classnames'
 
 import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils'
@@ -95,8 +97,8 @@ const HEADERS: HeaderDefinition[] = [
 function StatisticsTable(props: { data: SoCStatistic[] }) {
   const { data } = props
 
-  const header: JSX.Element[] = []
-  const rows: JSX.Element[] = []
+  const header: React.JSX.Element[] = []
+  const rows: React.JSX.Element[] = []
 
   for (let i = 0; i < HEADERS.length; i++) {
     const cells = []

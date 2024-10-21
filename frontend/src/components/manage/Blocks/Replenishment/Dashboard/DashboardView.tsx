@@ -1,6 +1,6 @@
 'use client'
 
-import { useContext } from 'react'
+import React, { useContext } from 'react'
 
 import cx from 'classnames'
 import Link from 'next/link'
@@ -560,7 +560,7 @@ const TABS: ITab[] = [
 function getTabLinks(
   pathname: string,
   searchParams: string,
-): [ITab | null, JSX.Element[]] {
+): [ITab | null, React.JSX.Element[]] {
   const result = []
 
   let currentSection: ITab | null = null

@@ -1,6 +1,6 @@
 'use client'
 
-import { useContext } from 'react'
+import React, { useContext } from 'react'
 
 import cx from 'classnames'
 import Link from 'next/link'
@@ -44,7 +44,7 @@ const TABS: Tab[] = [
   },
 ]
 
-function getTabLinks(pathname: string): [Tab | undefined, JSX.Element[]] {
+function getTabLinks(pathname: string): [Tab | undefined, React.JSX.Element[]] {
   const result = []
 
   let currentSection: Tab | undefined
