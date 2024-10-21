@@ -68,6 +68,11 @@ export default function BilateralAssistanceDialog(
         data: formattedData,
         method: 'POST',
       })
+
+      enqueueSnackbar('Bilateral assistance added successfully.', {
+        variant: 'success',
+      })
+
       setFields({ amount: '0', potential_amount: '0' })
       setShowAdd(false)
       refetchSCData()
@@ -107,7 +112,6 @@ export default function BilateralAssistanceDialog(
     <div className="print:hidden">
       {showAdd && (
         <FormEditDialog
-          style={{ minWidth: '40%' }}
           title={`Bilateral assistance (${year}):`}
           onCancel={() => setShowAdd(false)}
           onSubmit={confirmSave}
@@ -155,7 +159,12 @@ export default function BilateralAssistanceDialog(
             label="Decision number"
             type="text"
           />
-          <FieldInput id="comment" label="Comment" type="text-area" required />
+          <FieldInput
+            id="comment"
+            className="h-[100px] w-[250px]"
+            label="Comment"
+            type="text-area"
+          />
           {warning && (
             <Alert
               className="mt-4 bg-mlfs-bannerColor"
