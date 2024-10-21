@@ -1910,7 +1910,7 @@ class StatusOfTheFundFileViewSet(
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        file = request.FILES.get("file")
+        file = request.data.get("file")
         if file is None:
             raise ValidationError(
                 {
