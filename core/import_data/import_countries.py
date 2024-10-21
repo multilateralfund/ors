@@ -175,8 +175,9 @@ def parse_regions_file(file_path):
             "name_alt": f"Region: {region_json['abbr']}",
             "full_name": f"Region: {region_json['name']}",
             "location_type": Country.LocationType.REGION,
+            "parent_id": None,
         }
-        Country.objects.get_or_create(
+        Country.objects.update_or_create(
             name=region_data["name"],
             defaults=region_data,
         )
@@ -198,12 +199,18 @@ def parse_subregions_file(file_path):
         subregion_data = {
             "name": subregion_json["name"],
             "abbr": subregion_json["abbr"],
+            "name_alt": subregion_json.get("name_alt"),
             "import_id": subregion_json["pk"],
             "parent": region,
             "location_type": Country.LocationType.SUBREGION,
         }
-        Country.objects.get_or_create(
+
+        if region and region.name == subregion_json["name"]:
+            subregion_data["name"] = f"{subregion_data['name']} Subregion"
+
+        Country.objects.update_or_create(
             name=subregion_data["name"],
+            location_type=Country.LocationType.SUBREGION,
             defaults=subregion_data,
         )
 
@@ -248,6 +255,32 @@ def set_a2_countries():
             logger.error(f"Country {country_name} not found => A2 not set")
 
 
+def reset_regions_subregions(file_path):
+    """
+    Reset regions and subregions
+    """
+    df = pd.read_excel(file_path)
+    for _, row in df.iterrows():
+        country_name = COUNTRY_NAME_MAPPING.get(row["Country"], row["Country"])
+        country = Country.objects.find_by_name(country_name)
+        subregion = Country.objects.find_by_name_and_type(
+            row["A5 Sub-region"], Country.LocationType.SUBREGION
+        )
+
+        # "West Asia" subregion is referred to as "West Asia Subregion" in the database
+        # to avoid confusion between the subregion and the region.
+        if not subregion:
+            subregion_name = f"{row['A5 Sub-region']} Subregion"
+            subregion = Country.objects.find_by_name(subregion_name)
+
+        if not all([country, subregion]):
+            logger.error(f"Country, Region or Subregion not found: {row['Country']}")
+            continue
+
+        country.parent = subregion
+        country.save()
+
+
 @transaction.atomic
 def import_countries():
     country_lvc = parse_country_lvc_file(IMPORT_RESOURCES_DIR / "countries_lvc.xlsx")
@@ -265,4 +298,7 @@ def import_countries():
         IMPORT_RESOURCES_DIR / "country_consumption_groups.json",
     )
     logger.info("✔ countries consumption files parsed")
+
+    reset_regions_subregions(IMPORT_RESOURCES_DIR / "regions_and_countries.xlsx")
+    logger.info("✔ regions and subregions reset")
     set_a2_countries()
