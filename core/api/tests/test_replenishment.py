@@ -2331,7 +2331,7 @@ class TestPayments(BaseTest):
             "replenishment_id": None,
             "date": "2019-03-14",
             "payment_for_years": ["deferred"],
-            "amount": 100.0,
+            "amount_assessed": 100.0,
             "currency": "EUR",
             "exchange_rate": 0.7,
             "ferm_gain_or_loss": None,
@@ -2351,7 +2351,7 @@ class TestPayments(BaseTest):
             "replenishment_id": None,
             "date": "2019-03-14",
             "payment_for_years": ["deferred"],
-            "amount": 100.0,
+            "amount_assessed": 100.0,
             "currency": "EUR",
             "exchange_rate": 0.7,
             "ferm_gain_or_loss": None,
@@ -2385,7 +2385,7 @@ class TestPayments(BaseTest):
             "replenishment_id": None,
             "date": "2019-03-14",
             "payment_for_years": [self.year_1],
-            "amount": 100.0,
+            "amount_assessed": 100.0,
             "currency": "EUR",
             "exchange_rate": 0.7,
             "ferm_gain_or_loss": None,
@@ -2421,7 +2421,9 @@ class TestPayments(BaseTest):
         )
 
         payment = PaymentFactory(
-            country=country, payment_for_years=[self.year_1], amount=Decimal(100)
+            country=country,
+            payment_for_years=[self.year_1],
+            amount_assessed=Decimal(100),
         )
 
         self.client.force_authenticate(user=treasurer_user)

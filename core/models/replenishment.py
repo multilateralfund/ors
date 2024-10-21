@@ -251,13 +251,25 @@ class Payment(models.Model):
     replenishment = models.ForeignKey(
         Replenishment, on_delete=models.PROTECT, related_name="payments", null=True
     )
-    invoices = models.ManyToManyField(Invoice, related_name="payments", blank=True)
+    invoice = models.ForeignKey(
+        Invoice,
+        related_name="payments",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
+    )
 
     is_ferm = models.BooleanField(default=False)
 
     date = models.DateField()
     payment_for_years = fields.ArrayField(models.CharField(max_length=10), default=list)
-    amount = models.DecimalField(max_digits=30, decimal_places=15)
+
+    # These are both in USD - strangely, amount_assessed is what should be taken
+    # into account when calculating available cash for the fund.
+    # The difference between these two is basically the FERM gain/loss.
+    amount_assessed = models.DecimalField(max_digits=30, decimal_places=15)
+    amount_received = models.DecimalField(max_digits=30, decimal_places=15, null=True)
+
     currency = models.CharField(max_length=64, default="USD")
     exchange_rate = models.DecimalField(max_digits=30, decimal_places=15, null=True)
     ferm_gain_or_loss = models.DecimalField(max_digits=30, decimal_places=15, null=True)
