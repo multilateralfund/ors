@@ -18,7 +18,8 @@ import { filtersToQueryParams } from '../utils'
 import useColumnsOptions from './editSchema'
 
 export default function BPEditTable(props: BPEditTableInterface) {
-  const { form, loaded, loading, params, results, setForm } = props
+  const { activities, form, loading, params, setForm } = props
+
   const { period } = useParams<BpPathParams>()
   const year_start = period.split('-')[0]
 
@@ -212,9 +213,9 @@ export default function BPEditTable(props: BPEditTableInterface) {
             defaultColDef={columnOptions.defaultColDef}
             domLayout="normal"
             gridRef={grid}
-            loaded={loaded}
+            loaded={!loading}
             loading={loading}
-            rowData={results}
+            rowData={activities}
             tooltipShowDelay={200}
             onCellValueChanged={(event) => {
               const eventData = event.data

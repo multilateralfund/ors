@@ -2,22 +2,24 @@
 
 import { ApiBPActivity } from '@ors/types/api_bp_get'
 
-import React, { useContext, useState } from 'react'
+import React, { useState } from 'react'
+
+import { useParams } from 'next/navigation'
 
 import Loading from '@ors/components/theme/Loading/Loading'
-import BPContext from '@ors/contexts/BusinessPlans/BPContext'
 import BPProvider from '@ors/contexts/BusinessPlans/BPProvider'
 import BPYearRangesProvider from '@ors/contexts/BusinessPlans/BPYearRangesProvider'
-import { getResults } from '@ors/helpers'
 
 import BPTabs from '../BPTabs'
 import { BPEditDataInterface } from '../types'
 import BEditTable from './BPEditTable'
 import BPHeaderEdit from './BPHeaderEdit'
+import { useGetAllActivities } from './useGetAllActivities'
 
 const BPEditComponents = (props: BPEditDataInterface) => {
-  const { params, results } = props
-  const [form, setForm] = useState<Array<ApiBPActivity>>(results)
+  const { activities, params } = props
+
+  const [form, setForm] = useState<Array<ApiBPActivity>>(activities)
   const [activeTab, setActiveTab] = useState(0)
 
   return (
@@ -31,12 +33,12 @@ const BPEditComponents = (props: BPEditDataInterface) => {
 }
 
 const BPEdit = () => {
-  const { data, loading, params } = useContext(BPContext) as any
+  const pathParams = useParams<{ agency: string; period: string }>()
 
-  const activities = data?.results?.activities
-  const { loaded, results } = getResults(activities)
+  const { data, loading, params } = useGetAllActivities(pathParams) as any
+  const { activities } = data || {}
 
-  const dataReady = loaded && results
+  const dataReady = !loading && activities
 
   if (!dataReady) {
     return (
@@ -47,7 +49,7 @@ const BPEdit = () => {
     )
   }
 
-  return <BPEditComponents {...{ loaded, loading, params, results }} />
+  return <BPEditComponents {...{ activities, loading, params }} />
 }
 
 export default function BPEditWrapper() {

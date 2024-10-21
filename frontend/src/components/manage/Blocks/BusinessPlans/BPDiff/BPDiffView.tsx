@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 
 import { useParams } from 'next/navigation'
 
@@ -10,7 +10,6 @@ import BPYearRangesProvider from '@ors/contexts/BusinessPlans/BPYearRangesProvid
 import { useStore } from '@ors/store'
 
 import { useGetBPVersions } from '../BP/useGetBPVersions'
-import BPTabs from '../BPTabs'
 import { BpDiffPathParams } from '../types'
 import { getAgencyByName } from '../utils'
 import BPDiffHeader from './BPDiffHeader'
@@ -20,8 +19,6 @@ import { useGetBPDiff } from './useGetBPDiff'
 const BPDiffView = () => {
   const pathParams = useParams<BpDiffPathParams>()
   const { agency, period, version } = pathParams
-
-  const [activeTab, setActiveTab] = useState(0)
 
   const [year_start, year_end] = period.split('-').map(Number)
 
@@ -73,9 +70,7 @@ const BPDiffView = () => {
         <BPYearRangesProvider>
           <BPProvider>
             <BPDiffHeader />
-            <BPTabs {...{ activeTab, setActiveTab }}>
-              <BPDiffTable {...{ diffData }} />
-            </BPTabs>
+            <BPDiffTable {...{ diffData }} />
           </BPProvider>
         </BPYearRangesProvider>
       </>

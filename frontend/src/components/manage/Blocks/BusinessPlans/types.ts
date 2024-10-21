@@ -1,4 +1,4 @@
-import { ApiBPActivity } from '@ors/types/api_bp_get'
+import { ApiBP, ApiBPActivity } from '@ors/types/api_bp_get'
 
 import { Dispatch, ReactNode, SetStateAction } from 'react'
 
@@ -17,7 +17,9 @@ export interface BPDataInterface {
   results: Array<any>
 }
 
-export interface BPEditDataInterface extends BPDataInterface {
+export interface BPEditDataInterface {
+  activities: ApiBPActivity[]
+  loading: boolean
   params: any
 }
 
@@ -41,6 +43,6 @@ export type BPEditTableInterface = {
   form: Array<ApiBPActivity>
   params: any
   setForm: Dispatch<SetStateAction<Array<ApiBPActivity>>>
-} & BPDataInterface
+} & BPEditDataInterface
 
 export type ViewSelectorValuesType = 'list' | 'table'
