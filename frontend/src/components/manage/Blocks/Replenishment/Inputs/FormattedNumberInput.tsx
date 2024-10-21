@@ -20,6 +20,7 @@ export default function FormattedNumberInput(
     onChange,
     onlyNumber,
     value,
+    withoutInitialValue = false,
     ...rest
   } = props
 
@@ -67,9 +68,11 @@ export default function FormattedNumberInput(
         ref={maskInput}
         style={STYLE}
         type="text"
-        value={formatDecimalValue(getFloat(value), {
-          maximumFractionDigits: decimalDigits,
-          minimumFractionDigits: decimalDigits,
+        {...((!withoutInitialValue || value) && {
+          value: formatDecimalValue(getFloat(value), {
+            maximumFractionDigits: decimalDigits,
+            minimumFractionDigits: decimalDigits,
+          }),
         })}
         onChange={() => false}
         onFocus={() => setInputMode(true)}

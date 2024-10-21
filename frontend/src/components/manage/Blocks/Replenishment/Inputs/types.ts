@@ -51,4 +51,5 @@ export interface IFormattedNumberInputProps
   decimalDigits?: number
   onlyNumber?: boolean
   value?: number | string
+  withoutInitialValue?: boolean
 }

@@ -113,14 +113,14 @@ export const NumberInput = ({
   field,
   label,
   setFormData,
+  ...rest
 }: INumberInputProps) => (
   <InputWrapper id={field} label={label}>
     <FormattedNumberInput
       id={field}
       className="!ml-0"
-      step="0.01"
       onChange={(event) => handleNumberInputChange(event, setFormData, field)}
-      onlyNumber
+      {...rest}
     />
   </InputWrapper>
 )

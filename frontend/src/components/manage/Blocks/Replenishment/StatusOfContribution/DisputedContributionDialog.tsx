@@ -51,6 +51,11 @@ export default function DisputedContributionDialog(
         data: formattedData,
         method: 'POST',
       })
+
+      enqueueSnackbar('Disputed contribution added successfully.', {
+        variant: 'success',
+      })
+
       setShowAdd(false)
       refetchSCData()
     } catch (error) {
@@ -71,7 +76,6 @@ export default function DisputedContributionDialog(
     <>
       {showAdd && (
         <FormEditDialog
-          style={{ minWidth: '40%' }}
           title="Disputed Contribution:"
           onCancel={() => setShowAdd(false)}
           onSubmit={confirmSave}
@@ -92,7 +96,12 @@ export default function DisputedContributionDialog(
             }}
             required
           />
-          <FieldInput id="comment" label="Comment" type="text-area" required />
+          <FieldInput
+            id="comment"
+            className="h-[100px] w-[250px]"
+            label="Comment"
+            type="text-area"
+          />
           <FieldWrappedNumberInput
             id="year"
             label="Year"

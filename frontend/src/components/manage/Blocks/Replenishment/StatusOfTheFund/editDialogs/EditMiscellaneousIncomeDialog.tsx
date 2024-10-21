@@ -53,6 +53,8 @@ const EditMiscellaneousIncomeDialog = (
               field="miscellaneous_income"
               label="Amount"
               setFormData={setFormData}
+              value={formData.miscellaneous_income}
+              required
             />
             <SimpleInput
               field="comment"

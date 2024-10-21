@@ -73,6 +73,8 @@ const EditAllocationsDialog = (props: IEditAllocationsProps) => {
               field={agency}
               label="Amount"
               setFormData={setFormData}
+              value={formData[agency]}
+              required
             />
           </div>
         </div>
