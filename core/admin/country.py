@@ -33,5 +33,6 @@ class CountryAdmin(admin.ModelAdmin):
             "triennial_contributions_status",
             "ferm_gain_loss",
             "disputed_contributions",
+            "finalreportsview",
         ]
         return get_final_display_list(Country, exclude)

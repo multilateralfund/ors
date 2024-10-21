@@ -23,6 +23,15 @@ class CountryManager(models.Manager):
             )
         )
 
+    def find_by_name_and_type(self, name, location_type):
+        name_str = name.strip()
+        return self.filter(
+            models.Q(name__iexact=name_str)
+            | models.Q(full_name__iexact=name_str)
+            | models.Q(name_alt__iexact=name_str),
+            location_type=location_type,
+        ).first()
+
 
 # country model; contains name, m49 code, and iso code
 class Country(models.Model):

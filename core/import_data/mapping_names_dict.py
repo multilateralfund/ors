@@ -24,6 +24,18 @@ COUNTRY_NAME_MAPPING = {
     "Commonwealth of Dominica": "Dominica",
     "Lao, DPR": "Lao People's Democratic Republic",
     "PAK": "Pakistan",
+    "Eswatini, Kingdom of": "Eswatini",
+    "Gambia, Republic of the": "Gambia",
+    "Tanzania, United Republic of": "Tanzania",
+    "Congo, Democratic Republic of": "Democratic Republic of the Congo",
+    "Cote d’Ivoire": "Côte d'Ivoire",
+    "Moldova, Republic of": "Moldova",
+    "Bolivia, Plurinational State of": "Bolivia",
+    "Venezuela, Bolivarian Republic of": "Venezuela",
+    "Micronesia, Federated States of": "Micronesia (Federated States of)",
+    "Lao People’s Democratic Republic": "Lao PDR",
+    "Iran, Islamic Republic of": "Iran",
+    "Korea, Democratic People’s Republic of": "Democratic People's Republic of Korea",
 }
 
 SECTOR_NAME_MAPPING = {

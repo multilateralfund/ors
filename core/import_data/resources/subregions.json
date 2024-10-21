@@ -3,12 +3,14 @@
         "pk": 1,
         "abbr": "AFE",
         "name": "English-speaking Africa",
+        "name_alt": "Anglophone",
         "region": "Africa"
     },
     {
         "pk": 2,
         "abbr": "AFF",
         "name": "French-speaking Africa",
+        "name_alt": "Francophone",
         "region": "Africa"
     },
     {
@@ -27,7 +29,7 @@
         "pk": 5,
         "abbr": "ASR",
         "name": "West Asia",
-        "region": "Asia and the Pacific"
+        "region": "West Asia"
     },
     {
         "pk": 6,
@@ -52,5 +54,35 @@
         "abbr": "LCS",
         "name": "Southern Latin America Network",
         "region": "Latin America and the Caribbean"
+    },
+    {
+        "pk": 10,
+        "abbr": "ECA",
+        "name": "Europe and Central Asia",
+        "region": "Europe and Central Asia"
+    },
+    {
+        "pk": 11,
+        "abbr": "CM",
+        "name": "Central and Mexico",
+        "region": "Latin America and the Caribbean"
+    },
+    {
+        "pk": 12,
+        "abbr": "SOUTH",
+        "name": "South",
+        "region": "Latin America and the Caribbean"
+    },
+    {
+        "pk": 13,
+        "abbr": "PIC",
+        "name": "Pacific Island Countries",
+        "region": "Asia and the Pacific"
+    },
+    {
+        "pk": 14,
+        "abbr": "SEA",
+        "name": "Southeast Asia",
+        "region": "Asia and the Pacific"
     }
 ]
