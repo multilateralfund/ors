@@ -46,6 +46,7 @@ from core.api.serializers import (
     EmptyInvoiceSerializer,
     ExternalAllocationSerializer,
     ExternalIncomeAnnualSerializer,
+    StatusOfTheFundFileSerializer,
 )
 from core.api.utils import workbook_response
 from core.api.views.utils import (
@@ -1883,6 +1884,29 @@ class ReplenishmentPaymentFileDownloadView(generics.RetrieveAPIView):
             queryset = queryset.filter(invoice__country_id=user.country_id)
 
         return queryset
+
+    def get(self, request, *args, **kwargs):
+        obj = self.get_object()
+        response = HttpResponse(
+            obj.file.read(), content_type="application/octet-stream"
+        )
+        file_name = urllib.parse.quote(obj.filename)
+        response["Content-Disposition"] = (
+            f"attachment; filename*=UTF-8''{file_name}; filename=\"{file_name}\""
+        )
+        return response
+
+
+class StatusOfTheFundFileViewSet(
+    mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    serializer_class = StatusOfTheFundFileSerializer
+    permission_classes = [IsUserAllowedReplenishment]
+    lookup_field = "id"
 
     def get(self, request, *args, **kwargs):
         obj = self.get_object()

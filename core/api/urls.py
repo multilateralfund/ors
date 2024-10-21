@@ -28,6 +28,7 @@ from core.api.views import (
     StatisticsStatusOfContributionsExportView,
     AnnualStatusOfContributionsExportView,
     StatisticsStatusOfContributionsView,
+    StatusOfTheFundFileViewSet,
 )
 from core.api.views.agency import AgencyListView
 from core.api.views.business_plan import (
@@ -161,6 +162,11 @@ router.register(
     "replenishment/payments",
     ReplenishmentPaymentViewSet,
     basename="replenishment-payments",
+)
+router.register(
+    "replenishment/status-files",
+    StatusOfTheFundFileViewSet,
+    basename="replenishment-status-files",
 )
 
 

@@ -15,6 +15,7 @@ from core.models import (
     DisputedContribution,
     ExternalAllocation,
     ExternalIncomeAnnual,
+    StatusOfTheFundFile,
 )
 
 
@@ -491,3 +492,21 @@ class DisputedContributionCreateSerializer(serializers.ModelSerializer):
             "decision_number",
             "comment",
         ]
+
+
+class StatusOfTheFundFileSerializer(serializers.ModelSerializer):
+    year = serializers.IntegerField(allow_null=True, required=False)
+
+    meeting_id = serializers.PrimaryKeyRelatedField(
+        queryset=Meeting.objects.all().values_list("id", flat=True),
+        allow_null=True,
+        required=False,
+    )
+
+    uploaded_at = serializers.DateTimeField(read_only=True)
+
+    filename = serializers.CharField()
+
+    class Meta:
+        model = StatusOfTheFundFile
+        fields = ["year", "meeting_id", "comment", "uploaded_at"]
