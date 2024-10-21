@@ -1908,6 +1908,25 @@ class StatusOfTheFundFileViewSet(
     permission_classes = [IsUserAllowedReplenishment]
     lookup_field = "id"
 
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        file = request.FILES.get("file")
+        if file is None:
+            raise ValidationError(
+                {
+                    "file": "File contents must be uploaded."
+                }
+            )
+
+        serializer = StatusOfTheFundFileSerializer(request.data)
+        created_obj = serializer.save()
+
+        file_to_save = ContentFile(b64decode(file.get("data")), name=created_obj.filename)
+
+        created_obj.file = file_to_save
+        created_obj.save(update_fields=["filename", "file"])
+
+
     def get(self, request, *args, **kwargs):
         obj = self.get_object()
         response = HttpResponse(

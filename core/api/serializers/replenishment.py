@@ -507,8 +507,6 @@ class StatusOfTheFundFileSerializer(serializers.ModelSerializer):
 
     filename = serializers.CharField()
 
-    file = serializers.FileField()
-
     download_url = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
@@ -519,7 +517,6 @@ class StatusOfTheFundFileSerializer(serializers.ModelSerializer):
             "meeting_id",
             "comment",
             "filename",
-            "file",
             "uploaded_at",
             "download_url",
         ]
