@@ -507,6 +507,20 @@ class StatusOfTheFundFileSerializer(serializers.ModelSerializer):
 
     filename = serializers.CharField()
 
+    download_url = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = StatusOfTheFundFile
-        fields = ["year", "meeting_id", "comment", "uploaded_at"]
+        fields = [
+            "id",
+            "year",
+            "meeting_id",
+            "comment",
+            "filename",
+            "file",
+            "uploaded_at",
+            "download_url",
+        ]
+
+    def get_download_url(self, obj):
+        return f"{reverse('replenishment-status-files-list')}/{obj.id}/"
