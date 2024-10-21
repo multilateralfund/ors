@@ -518,3 +518,24 @@ class ExternalAllocation(models.Model):
     meeting = models.ForeignKey(Meeting, null=True, on_delete=models.PROTECT)
 
     comment = models.TextField(blank=True, default="")
+
+
+class StatusOfTheFundFile(models.Model):
+    """
+    Files uploaded via the Status of the Fund interface.
+    """
+
+    def upload_path(self, filename):
+        return f"status_of_the_fund_files/{self.id}__{filename}"
+
+    year = models.IntegerField(null=True)
+
+    meeting = models.ForeignKey(Meeting, null=True, on_delete=models.PROTECT)
+
+    comment = models.TextField(blank=True, default="")
+
+    uploaded_at = models.DateTimeField(
+        auto_now_add=True, help_text="Date of file upload"
+    )
+    filename = models.CharField(max_length=128)
+    file = models.FileField(storage=get_protected_storage, upload_to=upload_path)
