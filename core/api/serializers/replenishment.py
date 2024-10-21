@@ -507,6 +507,8 @@ class StatusOfTheFundFileSerializer(serializers.ModelSerializer):
 
     filename = serializers.CharField()
 
+    file = serializers.FileField()
+
     download_url = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
