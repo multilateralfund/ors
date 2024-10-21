@@ -40,43 +40,37 @@ const EditSecretariatDialog = (props: IEditSecretariatProps) => {
             setFormData={setFormData}
           />
         </div>
-        <div className="flex flex-col gap-y-4">
-          <div className="flex gap-x-4">
-            <NumberInput
-              field={`${field}_${currentYear}`}
-              label={`${currentYear} ${label}`}
-              setFormData={setFormData}
-            />
-            <NumberInput
-              field={`${field}_${currentYear + 1}`}
-              label={`${currentYear + 1} ${label}`}
-              setFormData={setFormData}
-            />
-          </div>
+        <div className="flex gap-x-4">
+          <NumberInput
+            field={`${field}_${currentYear}`}
+            label={`${currentYear} ${label}`}
+            setFormData={setFormData}
+          />
+          <NumberInput
+            field={`${field}_${currentYear + 1}`}
+            label={`${currentYear + 1} ${label}`}
+            setFormData={setFormData}
+          />
         </div>
-        <div className="flex flex-col gap-y-4">
-          <div className="flex gap-x-4">
-            <NumberInput
-              field={`${field}_${currentYear + 2}`}
-              label={`${currentYear + 2} ${label}`}
-              setFormData={setFormData}
-            />
-            <NumberInput
-              field={`${field}_${currentYear + 3}`}
-              label={`${currentYear + 3} ${label}`}
-              setFormData={setFormData}
-            />
-          </div>
+        <div className="flex gap-x-4">
+          <NumberInput
+            field={`${field}_${currentYear + 2}`}
+            label={`${currentYear + 2} ${label}`}
+            setFormData={setFormData}
+          />
+          <NumberInput
+            field={`${field}_${currentYear + 3}`}
+            label={`${currentYear + 3} ${label}`}
+            setFormData={setFormData}
+          />
         </div>
-        <div className="flex flex-col gap-y-4">
-          <div className="flex gap-x-4">
-            <SimpleInput
-              field="comment"
-              label="Comment"
-              setFormData={setFormData}
-              type="text-area"
-            />
-          </div>
+        <div className="flex gap-x-4">
+          <SimpleInput
+            field="comment"
+            label="Comment"
+            setFormData={setFormData}
+            type="text-area"
+          />
         </div>
       </div>
     </FormEditDialog>

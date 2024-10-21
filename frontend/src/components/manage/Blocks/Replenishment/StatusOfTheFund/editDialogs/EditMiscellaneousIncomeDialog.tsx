@@ -47,20 +47,18 @@ const EditMiscellaneousIncomeDialog = (
             value={formData.meeting_id}
           />
         </div>
-        <div className="flex flex-col gap-y-4">
-          <div className="flex gap-x-4">
-            <NumberInput
-              field="miscellaneous_income"
-              label="Amount"
-              setFormData={setFormData}
-            />
-            <SimpleInput
-              field="comment"
-              label="Comment"
-              setFormData={setFormData}
-              type="text-area"
-            />
-          </div>
+        <div className="flex gap-x-4">
+          <NumberInput
+            field="miscellaneous_income"
+            label="Amount"
+            setFormData={setFormData}
+          />
+          <SimpleInput
+            field="comment"
+            label="Comment"
+            setFormData={setFormData}
+            type="text-area"
+          />
         </div>
       </div>
     </FormEditDialog>

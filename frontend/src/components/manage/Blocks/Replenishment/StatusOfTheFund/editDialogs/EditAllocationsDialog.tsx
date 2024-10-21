@@ -60,31 +60,27 @@ const EditAllocationsDialog = (props: IEditAllocationsProps) => {
             value={formData.meeting_id}
           />
         </div>
-        <div className="flex flex-col gap-y-4">
-          <div className="flex gap-x-4">
-            <SearchableSelectInput
-              field="year"
-              label="Year"
-              options={yearOptions}
-              placeholder="Select year"
-              setFormData={setFormData}
-            />
-            <NumberInput
-              field={agency}
-              label="Amount"
-              setFormData={setFormData}
-            />
-          </div>
+        <div className="flex gap-x-4">
+          <SearchableSelectInput
+            field="year"
+            label="Year"
+            options={yearOptions}
+            placeholder="Select year"
+            setFormData={setFormData}
+          />
+          <NumberInput
+            field={agency}
+            label="Amount"
+            setFormData={setFormData}
+          />
         </div>
-        <div className="flex flex-col gap-y-4">
-          <div className="flex gap-x-4">
-            <SimpleInput
-              field="comment"
-              label="Comment"
-              setFormData={setFormData}
-              type="text-area"
-            />
-          </div>
+        <div className="flex gap-x-4">
+          <SimpleInput
+            field="comment"
+            label="Comment"
+            setFormData={setFormData}
+            type="text-area"
+          />
         </div>
       </div>
     </FormEditDialog>
