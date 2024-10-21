@@ -23,5 +23,20 @@
         "pk": 5,
         "abbr": "GLO",
         "name": "Global"
+    },
+    {
+        "pk": 6,
+        "abbr": "ECA",
+        "name": "Europe and Central Asia"
+    },
+    {
+        "pk": 7,
+        "abbr": "ASP",
+        "name": "Asia and the Pacific"
+    },
+    {
+        "pk": 8,
+        "abbr": "WA",
+        "name": "West Asia"
     }
 ]
