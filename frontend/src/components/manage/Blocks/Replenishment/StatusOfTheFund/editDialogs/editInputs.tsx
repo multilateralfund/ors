@@ -14,6 +14,7 @@ import {
   ISelectInputProps,
   ISimpleInputProps,
 } from '../types'
+import PopoverInput from './PopoverInput'
 import {
   handleClearSelect,
   handleInputChange,
@@ -120,6 +121,23 @@ export const NumberInput = ({
       step="0.01"
       onChange={(event) => handleNumberInputChange(event, setFormData, field)}
       onlyNumber
+    />
+  </InputWrapper>
+)
+
+export const PopoverInputField = ({
+  field,
+  label,
+  setFormData,
+  ...rest
+}: ISelectInputProps) => (
+  <InputWrapper id={field} label={label}>
+    <PopoverInput
+      className="!ml-0"
+      withClear={true}
+      onChange={(value) => handleSelectChange(value, setFormData, field)}
+      onClear={() => handleClearSelect(setFormData, field)}
+      {...rest}
     />
   </InputWrapper>
 )

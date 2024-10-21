@@ -1,10 +1,12 @@
 import { useState } from 'react'
 
-import FormDialog from '../../FormDialog'
+import FormEditDialog from '@ors/components/manage/Blocks/Replenishment/FormEditDialog'
+
 import { quarterOptions } from '../constants'
 import { IEditIncomeDialogProps } from '../types'
 import {
   NumberInput,
+  PopoverInputField,
   SearchableSelectInput,
   SelectInput,
   SimpleInput,
@@ -21,10 +23,10 @@ const EditInterestEarnedDialog = (props: IEditIncomeDialogProps) => {
     ...dialogProps
   } = props
 
-  const [formData, setFormData] = useState({})
+  const [formData, setFormData] = useState<any>({})
 
   return (
-    <FormDialog
+    <FormEditDialog
       title="Interest earned:"
       onCancel={onCancel}
       onSubmit={() => handleSubmitEditDialog(formData, 'external-income')}
@@ -56,12 +58,13 @@ const EditInterestEarnedDialog = (props: IEditIncomeDialogProps) => {
               placeholder="Select quarter"
               setFormData={setFormData}
             />
-            <SearchableSelectInput
+            <PopoverInputField
               field="meeting_id"
-              label="Meeting number"
+              label="Meeting"
               options={meetingOptions}
-              placeholder="Select meeting number"
+              placeholder="Select meeting"
               setFormData={setFormData}
+              value={formData.meeting_id}
             />
           </div>
         </div>
@@ -81,7 +84,7 @@ const EditInterestEarnedDialog = (props: IEditIncomeDialogProps) => {
           </div>
         </div>
       </div>
-    </FormDialog>
+    </FormEditDialog>
   )
 }
 

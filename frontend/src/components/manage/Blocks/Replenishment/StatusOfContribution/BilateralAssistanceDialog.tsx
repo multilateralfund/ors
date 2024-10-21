@@ -4,10 +4,11 @@ import { Alert } from '@mui/material'
 import { omitBy } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 
-import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
+import FormEditDialog from '@ors/components/manage/Blocks/Replenishment/FormEditDialog'
 import {
   FieldFormattedNumberInput,
   FieldInput,
+  FieldPopoverInput,
   FieldSearchableSelect,
   FieldTextInput,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
@@ -30,10 +31,12 @@ export default function BilateralAssistanceDialog(
   const { countryOptions, meetingOptions, refetchSCData, rows, year } = props
   const [showAdd, setShowAdd] = useState(false)
 
-  const [fields, setFields] = useState<Fields>({
+  const defaultFields = {
     amount: '0',
     potential_amount: '0',
-  })
+  }
+
+  const [fields, setFields] = useState<Fields>(defaultFields)
   const [warning, setWarning] = useState<null | string>(null)
 
   const handleChangeWarning = (amount: string, potential_amount: string) => {
@@ -45,6 +48,7 @@ export default function BilateralAssistanceDialog(
   }
 
   function showAddBilateralAssistance() {
+    setFields(defaultFields)
     setShowAdd(true)
   }
 
@@ -102,7 +106,8 @@ export default function BilateralAssistanceDialog(
   return (
     <div className="print:hidden">
       {showAdd && (
-        <FormDialog
+        <FormEditDialog
+          style={{ minWidth: '40%' }}
           title={`Bilateral assistance (${year}):`}
           onCancel={() => setShowAdd(false)}
           onSubmit={confirmSave}
@@ -136,13 +141,15 @@ export default function BilateralAssistanceDialog(
             }}
             required
           />
-          <FieldSearchableSelect id="meeting_id" label="Meeting" required>
-            {meetingOptions.map((m) => (
-              <option key={m.value} value={m.value}>
-                {m.label}
-              </option>
-            ))}
-          </FieldSearchableSelect>
+          <FieldPopoverInput
+            id="meeting_id"
+            field="meeting_id"
+            label="Meeting"
+            options={meetingOptions}
+            placeholder="Select meeting"
+            required={true}
+            withClear={true}
+          />
           <FieldTextInput
             id="decision_number"
             label="Decision number"
@@ -158,7 +165,7 @@ export default function BilateralAssistanceDialog(
               {warning}
             </Alert>
           )}
-        </FormDialog>
+        </FormEditDialog>
       )}
       <div>
         <AddButton onClick={showAddBilateralAssistance}>
