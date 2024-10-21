@@ -1,7 +1,9 @@
+import React from 'react'
+
 export interface TableColumn {
   className?: string
   field: string
-  label: JSX.Element | string
+  label: React.JSX.Element | string
 }
 
 export interface TableHeaderCellsProps {
