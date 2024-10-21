@@ -19,7 +19,7 @@ import { AddButton, SubmitButton } from '@ors/components/ui/Button/Button'
 import Link from '@ors/components/ui/Link/Link'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import SoAContext from '@ors/contexts/Replenishment/SoAContext'
-import { api, formatApiUrl } from '@ors/helpers'
+import { api, formatApiUrl, getFloat } from '@ors/helpers'
 
 import FormDialog from '../FormDialog'
 import { DateInput, FormattedNumberInput, Input } from '../Inputs'
@@ -125,7 +125,7 @@ const COLUMNS: SATableColumn[] = [
       { label: 'No', value: 'false' },
     ],
     editParser: function (v) {
-      return v ? v.toString() : 'false'
+      return v.toString()
     },
     editWidget: 'select',
     editable: true,
@@ -548,7 +548,11 @@ function SAView(props: SAViewProps) {
   const version = ctxSoA.version
   const versions = ctxSoA.versions
 
-  const isFinal = ctxSoA.version?.is_final ?? true
+  const isTreasurer = ctx.isTreasurer
+  const isFinal = version?.is_final ?? true
+  const isNewestVersion = version?.version === versions[0]?.version
+
+  const isEditable = isTreasurer && !isFinal && isNewestVersion
 
   const contributions = useMemo(
     function () {
@@ -721,24 +725,22 @@ function SAView(props: SAViewProps) {
   }
 
   const handleAmountInput: ChangeEventHandler<HTMLInputElement> = (evt) => {
-    const value = parseFloat(evt.target.value)
-    if (typeof value === 'number' && !isNaN(value)) {
-      setReplenishment(
-        (oldReplenishment) =>
-          ({
-            ...oldReplenishment,
-            amount: value,
-          }) as ApiReplenishment,
-      )
-      setShouldCompute(true)
-    }
+    const value = getFloat(evt.target.value)
+    setReplenishment(
+      (oldReplenishment) =>
+        ({
+          ...oldReplenishment,
+          amount: value,
+        }) as ApiReplenishment,
+    )
+    setShouldCompute(true)
   }
 
   const handleUnusedAmountInput: ChangeEventHandler<HTMLInputElement> = (
     evt,
   ) => {
-    const value = parseFloat(evt.target.value)
-    if (typeof value === 'number' && !isNaN(value)) {
+    const value = getFloat(evt.target.value)
+    if (value) {
       setUnusedAmount(value)
       setShouldCompute(true)
     } else {
@@ -855,7 +857,7 @@ function SAView(props: SAViewProps) {
               <FormattedNumberInput
                 id="triannualBudget"
                 className="w-36"
-                disabled={!ctx.isTreasurer || isFinal}
+                disabled={!isEditable}
                 value={replenishment?.amount}
                 onChange={handleAmountInput}
               />
@@ -871,7 +873,7 @@ function SAView(props: SAViewProps) {
               <FormattedNumberInput
                 id="previouslyUnusedSum"
                 className="w-36"
-                disabled={!ctx.isTreasurer || isFinal}
+                disabled={!isEditable}
                 value={unusedAmount}
                 onChange={handleUnusedAmountInput}
               />
@@ -905,7 +907,7 @@ function SAView(props: SAViewProps) {
               </div>
             </label>
             <DateRangeInput
-              disabled={!ctx.isTreasurer || isFinal}
+              disabled={!isEditable}
               initialEnd={dateForInput(currencyDateRange.end)}
               initialStart={dateForInput(currencyDateRange.start)}
               onChange={handleChangeCurrencyDateRange}
@@ -922,10 +924,10 @@ function SAView(props: SAViewProps) {
         />
       </div>
       <SATable
-        adminButtons={ctx.isTreasurer}
+        adminButtons={isTreasurer}
         columns={columns}
         countriesForAdd={countriesForAdd}
-        enableEdit={ctx.isTreasurer && !isFinal}
+        enableEdit={isEditable}
         enableSort={true}
         rowData={formattedTableData}
         showAdd={showAdd}
@@ -941,7 +943,7 @@ function SAView(props: SAViewProps) {
         onDelete={handleDelete}
         onSort={handleSort}
       />
-      {!showAdd && ctx.isTreasurer ? (
+      {!showAdd && isTreasurer ? (
         <div className="flex items-center py-4 print:hidden">
           <AddButton onClick={showAddRow}>Add country</AddButton>
         </div>
@@ -981,7 +983,7 @@ function SAView(props: SAViewProps) {
           .
         </p>
       </div>
-      {ctx.isTreasurer && (
+      {isTreasurer && (
         <div className="-mx-4 -mb-4 rounded-b-lg bg-gray-200 p-4 print:hidden">
           <div className="flex items-center gap-x-2">
             <h2>Comment Version {version?.version} </h2>

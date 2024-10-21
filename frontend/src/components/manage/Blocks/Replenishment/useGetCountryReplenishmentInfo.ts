@@ -5,7 +5,7 @@ import {
   ApiReplenishmentSoAEntry,
 } from '@ors/types/api_replenishment_scales_of_assessment'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { formatApiUrl } from '@ors/helpers/Api/utils'
 
@@ -18,19 +18,15 @@ function cancelInFlight() {
   ABORT_CONTROLLER = new AbortController()
 }
 
-function useGetCountryReplenishmentInfo(
-  start_year: number | string,
-  country_id: number | string,
-) {
-  const [result, setResult] = useState<ApiReplenishmentSoAEntry | null>(null)
+function useGetCountryReplenishmentInfo(country_id: number | string) {
+  const [results, setResults] = useState<ApiReplenishmentSoAEntry[]>([])
 
   useEffect(() => {
     cancelInFlight()
-    if (start_year && country_id) {
+    if (country_id) {
       const params = new URLSearchParams({
         country_id: country_id.toString(),
         is_final: 'true',
-        start_year: start_year.toString(),
       })
       const url = `${formatApiUrl(BASE_URL)}?${params.toString()}`
 
@@ -39,30 +35,69 @@ function useGetCountryReplenishmentInfo(
         signal: ABORT_CONTROLLER.signal,
       })
         .then((response) => response.json())
-        .then((results: ApiReplenishmentSoA) => {
-          if (results.length > 1) {
+        .then((entries: ApiReplenishmentSoA) => {
+          if (entries.length > 1) {
             console.warn(
               'useGetCountryReplenishmentInfo',
               'got more than one result!',
-              results,
+              entries,
             )
           }
-          if (results.length > 0) {
-            setResult(results[0])
+          if (entries.length > 0) {
+            setResults(entries)
           } else {
-            setResult(null)
+            setResults([])
           }
         })
         .catch((error) => {
           if (error.name !== 'AbortError') {
             console.error('Error: ', error)
           }
-          setResult(null)
+          setResults([])
         })
     }
-  }, [start_year, country_id])
+  }, [country_id])
 
-  return [result]
+  const result = useMemo(
+    function () {
+      return {
+        entries: results,
+        getForYear: (year: number) => getEntryForYear(results, year),
+      }
+    },
+    [results],
+  )
+
+  return result
+}
+
+function getEntryForYear(entries: ApiReplenishmentSoAEntry[], year: number) {
+  const result: {
+    entry: ApiReplenishmentSoAEntry | null
+    matched: boolean
+    period: null | string
+  } = {
+    entry: entries.length > 0 ? entries[entries.length - 1] : null,
+    matched: false,
+    period: null,
+  }
+
+  for (let i = 0; i < entries.length; i++) {
+    const entry = entries[i]
+    const { end_year, start_year } = entry.replenishment
+    if (year >= start_year && year <= end_year) {
+      result.entry = entry
+      result.matched = true
+      break
+    }
+  }
+
+  if (result.entry) {
+    const { end_year, start_year } = result.entry?.replenishment
+    result.period = `${start_year} - ${end_year}`
+  }
+
+  return result
 }
 
 export default useGetCountryReplenishmentInfo

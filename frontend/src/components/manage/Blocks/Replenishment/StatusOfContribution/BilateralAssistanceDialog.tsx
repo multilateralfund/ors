@@ -1,19 +1,24 @@
 import React, { useState } from 'react'
 
+import { Alert } from '@mui/material'
+import { omitBy } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 
-import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
+import FormEditDialog from '@ors/components/manage/Blocks/Replenishment/FormEditDialog'
 import {
   FieldFormattedNumberInput,
   FieldInput,
+  FieldPopoverInput,
   FieldSearchableSelect,
-  SearchableSelect,
+  FieldTextInput,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { AddButton } from '@ors/components/ui/Button/Button'
 import { api } from '@ors/helpers'
 import { getFloat } from '@ors/helpers/Utils/Utils'
 
 import { BilateralAssistanceDialogProps } from './types'
+
+import { IoInformationCircleOutline } from 'react-icons/io5'
 
 type Fields = {
   amount: string
@@ -26,20 +31,34 @@ export default function BilateralAssistanceDialog(
   const { countryOptions, meetingOptions, refetchSCData, rows, year } = props
   const [showAdd, setShowAdd] = useState(false)
 
-  const [fields, setFields] = useState<Fields>({
+  const defaultFields = {
     amount: '0',
     potential_amount: '0',
-  })
+  }
+
+  const [fields, setFields] = useState<Fields>(defaultFields)
+  const [warning, setWarning] = useState<null | string>(null)
+
+  const handleChangeWarning = (amount: string, potential_amount: string) => {
+    setWarning(
+      getFloat(amount) > getFloat(potential_amount)
+        ? 'Amount is greater than potential bilateral assistance'
+        : null,
+    )
+  }
 
   function showAddBilateralAssistance() {
+    setFields(defaultFields)
     setShowAdd(true)
   }
 
   async function confirmSave(formData: FormData) {
     const data = Object.fromEntries(formData.entries())
 
+    const cleanData = omitBy(data, (value) => value === '')
+
     const formattedData = {
-      ...data,
+      ...cleanData,
       meeting_id: parseInt(data.meeting_id.toString()),
       year: year,
     }
@@ -69,12 +88,16 @@ export default function BilateralAssistanceDialog(
   function handleSelectCountry(value: string) {
     for (let i = 0; i < rows.length; i++) {
       if (parseInt(value, 10) == rows[i].country_id) {
+        const potential_amount = (rows[i].agreed_contributions * 0.2).toString()
+
         setFields(function (prev) {
           return {
             ...fields,
-            potential_amount: (rows[i].agreed_contributions * 0.2).toString(),
+            potential_amount: potential_amount,
           }
         })
+        handleChangeWarning(fields?.amount, potential_amount)
+
         break
       }
     }
@@ -83,7 +106,8 @@ export default function BilateralAssistanceDialog(
   return (
     <div className="print:hidden">
       {showAdd && (
-        <FormDialog
+        <FormEditDialog
+          style={{ minWidth: '40%' }}
           title={`Bilateral assistance (${year}):`}
           onCancel={() => setShowAdd(false)}
           onSubmit={confirmSave}
@@ -110,34 +134,38 @@ export default function BilateralAssistanceDialog(
           <FieldFormattedNumberInput
             id="amount"
             label="Amount (USD)"
-            max={getFloat(fields?.potential_amount)}
             value={fields.amount}
-            onChange={(evt) =>
+            onChange={(evt) => {
               setFields((prev) => ({ ...prev, amount: evt.target.value }))
-            }
+              handleChangeWarning(evt.target.value, fields?.potential_amount)
+            }}
             required
           />
-          <div className="mt-4 flex items-center justify-start">
-            <label className="grow-1" htmlFor="meeting_id">
-              Approved by ExCom as of
-            </label>
-            <SearchableSelect id="meeting_id" required>
-              {meetingOptions.map((m) => (
-                <option key={m.value} value={m.value}>
-                  {m.label}
-                </option>
-              ))}
-            </SearchableSelect>
-            <label className="ml-1.5" htmlFor="meeting_id">
-              meeting.
-            </label>
-          </div>
-          <FieldInput
+          <FieldPopoverInput
+            id="meeting_id"
+            field="meeting_id"
+            label="Meeting"
+            options={meetingOptions}
+            placeholder="Select meeting"
+            required={true}
+            withClear={true}
+          />
+          <FieldTextInput
             id="decision_number"
             label="Decision number"
             type="text"
           />
-        </FormDialog>
+          <FieldInput id="comment" label="Comment" type="text-area" required />
+          {warning && (
+            <Alert
+              className="mt-4 bg-mlfs-bannerColor"
+              icon={<IoInformationCircleOutline size={24} />}
+              severity="info"
+            >
+              {warning}
+            </Alert>
+          )}
+        </FormEditDialog>
       )}
       <div>
         <AddButton onClick={showAddBilateralAssistance}>

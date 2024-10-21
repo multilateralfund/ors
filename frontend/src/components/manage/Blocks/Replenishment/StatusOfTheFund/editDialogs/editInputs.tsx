@@ -12,8 +12,9 @@ import {
   IInputWrapper,
   INumberInputProps,
   ISelectInputProps,
-  ITextAreaProps,
+  ISimpleInputProps,
 } from '../types'
+import PopoverInput from './PopoverInput'
 import {
   handleClearSelect,
   handleInputChange,
@@ -38,6 +39,22 @@ const InputWrapper = (props: IInputWrapper) => {
     </div>
   )
 }
+
+export const SimpleInput = ({
+  field,
+  label,
+  setFormData,
+  type,
+}: ISimpleInputProps) => (
+  <InputWrapper id={field} label={label}>
+    <Input
+      id={field}
+      className={cx('!ml-0', { 'h-[100px] w-[250px]': type === 'text-area' })}
+      onChange={(event) => handleInputChange(event, setFormData, field)}
+      {...(type && { ...{ type } })}
+    />
+  </InputWrapper>
+)
 
 export const SearchableSelectInput = ({
   field,
@@ -108,18 +125,19 @@ export const NumberInput = ({
   </InputWrapper>
 )
 
-export const TextareaInput = ({
-  className,
+export const PopoverInputField = ({
   field,
   label,
   setFormData,
-}: ITextAreaProps) => (
+  ...rest
+}: ISelectInputProps) => (
   <InputWrapper id={field} label={label}>
-    <Input
-      id={field}
-      className={cx('!ml-0', className)}
-      type="text-area"
-      onChange={(event) => handleInputChange(event, setFormData, field)}
+    <PopoverInput
+      className="!ml-0"
+      withClear={true}
+      onChange={(value) => handleSelectChange(value, setFormData, field)}
+      onClear={() => handleClearSelect(setFormData, field)}
+      {...rest}
     />
   </InputWrapper>
 )

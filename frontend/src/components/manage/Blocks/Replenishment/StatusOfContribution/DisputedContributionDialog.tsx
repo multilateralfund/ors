@@ -1,12 +1,16 @@
 import React, { useState } from 'react'
 
+import { omitBy } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 
-import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
+import FormEditDialog from '@ors/components/manage/Blocks/Replenishment/FormEditDialog'
 import {
+  FieldFormattedNumberInput,
   FieldInput,
-  FieldSelect,
-  SearchableSelect,
+  FieldPopoverInput,
+  FieldSearchableSelect,
+  FieldTextInput,
+  FieldWrappedNumberInput,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { AddButton } from '@ors/components/ui/Button/Button'
 import { api } from '@ors/helpers'
@@ -17,18 +21,29 @@ export default function DisputedContributionDialog(
   props: DisputedContributionDialogProps,
 ) {
   const { countryOptions, meetingOptions, refetchSCData, year } = props
+
+  const defaultFields = {
+    amount: '0',
+  }
+
+  const [fields, setFields] = useState(defaultFields)
   const [showAdd, setShowAdd] = useState(false)
 
   function showAddDisputedContribution() {
+    setFields(defaultFields)
     setShowAdd(true)
   }
 
   async function confirmSave(formData: FormData) {
     const data = Object.fromEntries(formData.entries())
 
+    const cleanData = omitBy(data, (value) => value === '')
+
     const formattedData = {
-      ...data,
-      meeting_id: parseInt(data.meeting_id.toString()),
+      ...cleanData,
+      ...(cleanData.meeting_id && {
+        meeting_id: parseInt(cleanData.meeting_id.toString()),
+      }),
     }
 
     try {
@@ -55,54 +70,49 @@ export default function DisputedContributionDialog(
   return (
     <>
       {showAdd && (
-        <FormDialog
+        <FormEditDialog
+          style={{ minWidth: '40%' }}
           title="Disputed Contribution:"
           onCancel={() => setShowAdd(false)}
           onSubmit={confirmSave}
         >
-          <FieldSelect id="country" label="Country" required>
-            <option value=""> -</option>
+          <FieldSearchableSelect id="country" label="Country" required>
             {countryOptions.map((c) => (
               <option key={c.country_id} value={c.country_id}>
                 {c.country}
               </option>
             ))}
-          </FieldSelect>
-          <FieldInput
+          </FieldSearchableSelect>
+          <FieldFormattedNumberInput
             id="amount"
             label="Disputed amount"
-            type="number"
+            value={fields.amount}
+            onChange={(evt) => {
+              setFields((prev) => ({ ...prev, amount: evt.target.value }))
+            }}
             required
           />
           <FieldInput id="comment" label="Comment" type="text-area" required />
-          <FieldInput
+          <FieldWrappedNumberInput
             id="year"
             label="Year"
-            type="number"
             value={year}
             readOnly
           />
-          <div className="mt-4 flex items-center justify-start">
-            <label className="grow-1" htmlFor="meeting_id">
-              Approved by ExCom as of
-            </label>
-            <SearchableSelect id="meeting_id" required>
-              {meetingOptions.map((m) => (
-                <option key={m.value} value={m.value}>
-                  {m.label}
-                </option>
-              ))}
-            </SearchableSelect>
-            <label className="ml-1.5" htmlFor="meeting_id">
-              meeting.
-            </label>
-          </div>
-          <FieldInput
+          <FieldPopoverInput
+            id="meeting_id"
+            field="meeting_id"
+            label="Meeting"
+            options={meetingOptions}
+            placeholder="Select meeting"
+            withClear={true}
+          />
+          <FieldTextInput
             id="decision_number"
             label="Decision number"
             type="text"
           />
-        </FormDialog>
+        </FormEditDialog>
       )}
       <div>
         <AddButton onClick={showAddDisputedContribution}>

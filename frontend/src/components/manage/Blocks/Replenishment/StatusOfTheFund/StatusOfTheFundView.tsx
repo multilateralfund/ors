@@ -130,10 +130,12 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
 
   return (
     <>
-      <div className="flex items-center justify-between">
-        <div className="py-4">
-          <p className="m-0 text-2xl">{asOfDate} ( USD )</p>
-        </div>
+      <div className="flex flex-wrap items-center justify-between gap-x-3">
+        <h2 className="flex shrink flex-wrap items-center gap-1">
+          <span className="whitespace-normal">
+            Status of the fund as of {asOfDate} (USD)
+          </span>
+        </h2>
         <div className="flex gap-2">
           {showEditButton && !isEditing && (
             <SubmitButton

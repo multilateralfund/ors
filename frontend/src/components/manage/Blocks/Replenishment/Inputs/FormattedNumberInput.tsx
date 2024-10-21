@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 
 import cx from 'classnames'
 
+import NumberInput from '@ors/components/manage/Blocks/Replenishment/Inputs/NumberInput'
 import { formatDecimalValue, getFloat } from '@ors/helpers/Utils/Utils'
 
 import { CLASSESS, CSS_MASKED, STYLE } from './constants'
@@ -44,7 +45,7 @@ export default function FormattedNumberInput(
 
   return (
     <div className="relative">
-      <input
+      <NumberInput
         id={id}
         name={name || id}
         className={cx(CLASSESS, className, {
@@ -52,7 +53,6 @@ export default function FormattedNumberInput(
         })}
         ref={realInput}
         style={STYLE}
-        type="number"
         value={value}
         onBlur={() => setInputMode(false)}
         onChange={onChange}

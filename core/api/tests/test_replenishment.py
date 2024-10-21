@@ -2178,6 +2178,7 @@ class TestInvoices(BaseTest):
             replenishment=replenishment_1,
             number="aaa-yyy-1",
             year=self.year_1,
+            is_ferm=True,
         )
         InvoiceFactory(
             country=country_1,
@@ -2185,6 +2186,7 @@ class TestInvoices(BaseTest):
             number="aaa-yyy-2",
             year=self.year_1,
             date_first_reminder=datetime.now().date(),
+            is_ferm=True,
         )
         InvoiceFactory(
             country=country_2,
@@ -2358,6 +2360,84 @@ class TestPayments(BaseTest):
 
         response = self.client.post(self.url, data=request_data, format="json")
         assert response.status_code == 403
+
+    def test_payment_create_updates_contributions(self, treasurer_user):
+        country = CountryFactory.create(name="Country 1", iso3="XYZ")
+
+        annual_contribution = AnnualContributionStatusFactory.create(
+            country=country,
+            year=self.year_1,
+            outstanding_contributions=Decimal(100),
+            cash_payments=Decimal(100),
+        )
+        triennial_contribution = TriennialContributionStatusFactory.create(
+            country=country,
+            start_year=self.year_1,
+            end_year=self.year_2,
+            outstanding_contributions=Decimal(300),
+            cash_payments=Decimal(300),
+        )
+
+        self.client.force_authenticate(user=treasurer_user)
+
+        request_data = {
+            "country_id": country.id,
+            "replenishment_id": None,
+            "date": "2019-03-14",
+            "payment_for_years": [self.year_1],
+            "amount": 100.0,
+            "currency": "EUR",
+            "exchange_rate": 0.7,
+            "ferm_gain_or_loss": None,
+            "files": [],
+        }
+
+        response = self.client.post(self.url, data=request_data, format="json")
+        assert response.status_code == 201
+
+        annual_contribution.refresh_from_db()
+        assert annual_contribution.outstanding_contributions == Decimal(0)
+        assert annual_contribution.cash_payments == Decimal(200)
+
+        triennial_contribution.refresh_from_db()
+        assert triennial_contribution.outstanding_contributions == Decimal(200)
+        assert triennial_contribution.cash_payments == Decimal(400)
+
+    def test_payment_delete_updates_contributions(self, treasurer_user):
+        country = CountryFactory.create(name="Country 1", iso3="XYZ")
+
+        annual_contribution = AnnualContributionStatusFactory.create(
+            country=country,
+            year=self.year_1,
+            outstanding_contributions=Decimal(100),
+            cash_payments=Decimal(100),
+        )
+        triennial_contribution = TriennialContributionStatusFactory.create(
+            country=country,
+            start_year=self.year_1,
+            end_year=self.year_2,
+            outstanding_contributions=Decimal(300),
+            cash_payments=Decimal(300),
+        )
+
+        payment = PaymentFactory(
+            country=country, payment_for_years=[self.year_1], amount=Decimal(100)
+        )
+
+        self.client.force_authenticate(user=treasurer_user)
+
+        payment_url = self.url + f"{payment.id}/"
+        response = self.client.delete(payment_url)
+
+        assert response.status_code == 204
+
+        annual_contribution.refresh_from_db()
+        assert annual_contribution.outstanding_contributions == Decimal(200)
+        assert annual_contribution.cash_payments == Decimal(0)
+
+        triennial_contribution.refresh_from_db()
+        assert triennial_contribution.outstanding_contributions == Decimal(400)
+        assert triennial_contribution.cash_payments == Decimal(200)
 
 
 class TestExternalAllocations(BaseTest):

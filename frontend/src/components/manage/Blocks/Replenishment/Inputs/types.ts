@@ -17,6 +17,7 @@ export interface ISearchableSelectProps
   extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'onChange'> {
   defaultValue?: string
   hasClear?: boolean
+  hideFirstOption?: boolean
   onChange?: (value: string) => void
   onClear?: () => void
   pickerClassName?: string
@@ -38,6 +39,12 @@ export interface IDateInputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   value: string
 }
+
+export interface INumberInputProps
+  extends Omit<
+    React.InputHTMLAttributes<HTMLInputElement>,
+    'inputMode' | 'type'
+  > {}
 
 export interface IFormattedNumberInputProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> {

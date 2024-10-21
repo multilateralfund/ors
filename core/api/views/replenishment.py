@@ -1716,6 +1716,8 @@ class ReplenishmentPaymentViewSet(
 
     def _set_annual_triennial_contributions(self, payment, old_amount=None):
         """
+        To be called when a payment is added or updated.
+
         Assumes that Annual/Triennial ContributionStatus objects exist for the payment's
         country & years.
 
@@ -1750,6 +1752,40 @@ class ReplenishmentPaymentViewSet(
                 cash_payments=models.F("cash_payments") + amount_to_add,
                 outstanding_contributions=models.F("outstanding_contributions")
                 - amount_to_add,
+            )
+
+    def _unset_annual_triennial_contributions(self, payment):
+        """
+        To be called when a payment is deleted.
+
+        Assumes that Annual/Triennial ContributionStatus objects exist for the payment's
+        country & years.
+
+        Assumes calling method/block is wrapped in transaction.atomic.
+        """
+        years_list = []
+        if payment.payment_for_years:
+            years_list = [
+                int(year)
+                for year in payment.payment_for_years
+                if year not in ["deferred", "arrears"]
+            ]
+        AnnualContributionStatus.objects.filter(
+            country=payment.country, year__in=years_list
+        ).update(
+            cash_payments=models.F("cash_payments") - payment.amount,
+            outstanding_contributions=models.F("outstanding_contributions")
+            + payment.amount,
+        )
+        for year in years_list:
+            # Updating objects one by one to avoid race conditions
+            # (same triennial object might need to be updated multiple times)
+            TriennialContributionStatus.objects.filter(
+                country=payment.country, start_year__lte=year, end_year__gte=year
+            ).update(
+                cash_payments=models.F("cash_payments") - payment.amount,
+                outstanding_contributions=models.F("outstanding_contributions")
+                + payment.amount,
             )
 
     @transaction.atomic
@@ -1821,6 +1857,16 @@ class ReplenishmentPaymentViewSet(
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
+
+    @transaction.atomic
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        # First update the contributions
+        self._unset_annual_triennial_contributions(instance)
+
+        # Then actually delete the payment
+        return super().destroy(request, *args, **kwargs)
 
 
 class ReplenishmentPaymentFileDownloadView(generics.RetrieveAPIView):

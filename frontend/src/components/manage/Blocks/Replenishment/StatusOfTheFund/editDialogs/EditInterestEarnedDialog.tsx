@@ -1,13 +1,15 @@
 import { useState } from 'react'
 
-import FormDialog from '../../FormDialog'
+import FormEditDialog from '@ors/components/manage/Blocks/Replenishment/FormEditDialog'
+
 import { quarterOptions } from '../constants'
 import { IEditIncomeDialogProps } from '../types'
 import {
   NumberInput,
+  PopoverInputField,
   SearchableSelectInput,
   SelectInput,
-  TextareaInput,
+  SimpleInput,
 } from './editInputs'
 
 const EditInterestEarnedDialog = (props: IEditIncomeDialogProps) => {
@@ -21,10 +23,10 @@ const EditInterestEarnedDialog = (props: IEditIncomeDialogProps) => {
     ...dialogProps
   } = props
 
-  const [formData, setFormData] = useState({})
+  const [formData, setFormData] = useState<any>({})
 
   return (
-    <FormDialog
+    <FormEditDialog
       title="Interest earned:"
       onCancel={onCancel}
       onSubmit={() => handleSubmitEditDialog(formData, 'external-income')}
@@ -56,31 +58,33 @@ const EditInterestEarnedDialog = (props: IEditIncomeDialogProps) => {
               placeholder="Select quarter"
               setFormData={setFormData}
             />
-            <SearchableSelectInput
+            <PopoverInputField
               field="meeting_id"
-              label="Meeting number"
+              label="Meeting"
               options={meetingOptions}
-              placeholder="Select meeting number"
+              placeholder="Select meeting"
               setFormData={setFormData}
+              value={formData.meeting_id}
             />
           </div>
         </div>
         <div className="flex flex-col gap-y-4">
           <div className="flex gap-x-4">
-            <TextareaInput
-              field="comment"
-              label="Comment"
-              setFormData={setFormData}
-            />
             <NumberInput
               field="interest_earned"
               label="Amount"
               setFormData={setFormData}
             />
+            <SimpleInput
+              field="comment"
+              label="Comment"
+              setFormData={setFormData}
+              type="text-area"
+            />
           </div>
         </div>
       </div>
-    </FormDialog>
+    </FormEditDialog>
   )
 }
 

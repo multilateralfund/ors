@@ -43,6 +43,7 @@ const COLUMNS: InvoiceColumn[] = [
   { field: 'year', label: 'Year' },
   { field: 'date_of_issuance', label: 'Date of Issuance', sortable: true },
   { field: 'amount', label: 'Amount' },
+  { field: 'currency', label: 'Currency' },
   {
     field: 'exchange_rate',
     label: 'Exchange Rate',
@@ -94,10 +95,7 @@ function InvoicesView() {
       }
       return results.map((data) => ({
         id: data.id,
-        amount:
-          data.amount && data.currency
-            ? formatNumberValue(data.amount) + ' ' + data.currency
-            : '-',
+        amount: formatNumberValue(data.amount),
         be_amount: data.amount,
         be_exchange_rate: data.exchange_rate,
         can_delete: !!(ctx.isTreasurer && data.id),
@@ -109,7 +107,9 @@ function InvoicesView() {
         date_of_issuance: formatDateValue(data.date_of_issuance),
         date_second_reminder: formatDateValue(data.date_second_reminder),
         date_sent_out: formatDateValue(data.date_sent_out),
-        exchange_rate: formatNumberValue(data.exchange_rate),
+        exchange_rate: data.is_ferm
+          ? formatNumberValue(data.exchange_rate)
+          : null,
         files: <ViewFiles files={data.invoice_files} />,
         files_data: data.invoice_files,
         gray: !data.id,

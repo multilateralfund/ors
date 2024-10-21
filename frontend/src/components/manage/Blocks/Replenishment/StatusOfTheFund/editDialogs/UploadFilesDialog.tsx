@@ -1,10 +1,12 @@
 import { useState } from 'react'
 
-import FormDialog from '../../FormDialog'
+import FormEditDialog from '@ors/components/manage/Blocks/Replenishment/FormEditDialog'
+
 import { IUploadDocumentsProps } from '../types'
 import {
+  PopoverInputField,
   SearchableSelectInput,
-  TextareaInput,
+  SimpleInput,
   UploadDocumentsInput,
 } from './editInputs'
 
@@ -17,10 +19,10 @@ const UploadFilesDialog = (props: IUploadDocumentsProps) => {
     ...dialogProps
   } = props
 
-  const [formData, setFormData] = useState({})
+  const [formData, setFormData] = useState<any>({})
 
   return (
-    <FormDialog
+    <FormEditDialog
       title="Upload documents:"
       onCancel={onCancel}
       onSubmit={handleUploadDocuments}
@@ -35,31 +37,32 @@ const UploadFilesDialog = (props: IUploadDocumentsProps) => {
             placeholder="Select year"
             setFormData={setFormData}
           />
-          <SearchableSelectInput
+          <PopoverInputField
             field="meeting_id"
-            label="Meeting number"
+            label="Meeting"
             options={meetingOptions}
-            placeholder="Select meeting number"
+            placeholder="Select meeting"
             setFormData={setFormData}
+            value={formData.meeting_id}
           />
         </div>
         <div className="flex flex-col gap-y-4">
           <div className="flex gap-x-4">
             <UploadDocumentsInput
-              field={'files'}
-              label={'Upload'}
+              field="files"
+              label="Upload"
               setFormData={setFormData}
             />
-            <TextareaInput
-              className="h-[100px] w-[250px]"
-              field={'comment'}
-              label={'Comment'}
+            <SimpleInput
+              field="comment"
+              label="Comment"
               setFormData={setFormData}
+              type="text-area"
             />
           </div>
         </div>
       </div>
-    </FormDialog>
+    </FormEditDialog>
   )
 }
 
