@@ -1912,20 +1912,25 @@ class StatusOfTheFundFileViewSet(
     def create(self, request, *args, **kwargs):
         file = request.data.get("file")
         if file is None:
-            raise ValidationError(
-                {
-                    "file": "File contents must be uploaded."
-                }
-            )
+            raise ValidationError({"file": "File contents must be uploaded."})
 
-        serializer = StatusOfTheFundFileSerializer(request.data)
+        serializer = StatusOfTheFundFileSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         created_obj = serializer.save()
 
-        file_to_save = ContentFile(b64decode(file.get("data")), name=created_obj.filename)
+        file_to_save = ContentFile(
+            b64decode(file.get("data")), name=created_obj.filename
+        )
 
         created_obj.file = file_to_save
-        created_obj.save(update_fields=["filename", "file"])
+        created_obj.save(update_fields=["file"])
 
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            {},
+            status=status.HTTP_201_CREATED,
+            headers=headers,
+        )
 
     def get(self, request, *args, **kwargs):
         obj = self.get_object()
