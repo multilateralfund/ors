@@ -36,8 +36,9 @@ import { getFloat } from '@ors/helpers/Utils/Utils'
 import { IPaymentDialogProps } from './types'
 
 interface PaymentDialogFields {
-  amount: string
+  amount_assessed: string
   amount_local_currency: string
+  amount_received: string
   country_id: string
   currency: string
   exchange_rate: string
@@ -63,8 +64,9 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
   const ctx = useContext(ReplenishmentContext)
 
   const [fields, setFields] = useState<PaymentDialogFields>({
-    amount: data?.amount?.toString() ?? '',
+    amount_assessed: data?.amount_assessed?.toString() ?? '',
     amount_local_currency: data?.amount_local_currency?.toString() ?? '',
+    amount_received: data?.amount_received?.toString() ?? '',
     country_id: data?.country_id?.toString() ?? '',
     currency: data?.currency?.toString() ?? '',
     exchange_rate: data?.exchange_rate?.toString() ?? '',
@@ -179,18 +181,6 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
     onSubmit(formData, evt)
   }
 
-  const handleChangeAmount: ChangeEventHandler<HTMLInputElement> = (evt) => {
-    const amount = evt.target.value
-    const nrAmount = getFloat(amount) || 1
-    setFields((prev) => ({
-      ...prev,
-      amount,
-      exchange_rate: (
-        getFloat(fields.amount_local_currency) / nrAmount
-      ).toString(),
-    }))
-  }
-
   const handleChangeCurrencyAmount: ChangeEventHandler<HTMLInputElement> = (
     evt,
   ) => {
@@ -198,10 +188,10 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
     const nrCurrencyAmount = getFloat(currencyAmount) || 0
     setFields((prev) => ({
       ...prev,
-      amount_local_currency: currencyAmount,
-      exchange_rate: (
-        getFloat(nrCurrencyAmount) / getFloat(fields.amount)
+      amount_assessed: (
+        nrCurrencyAmount * getFloat(fields.exchange_rate)
       ).toString(),
+      amount_local_currency: currencyAmount,
     }))
   }
 
@@ -234,27 +224,6 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
       return { ...prev, payment_for_years: [value] }
     })
   }
-
-  useEffect(
-    function () {
-      const arrears_or_deferred =
-        fields.payment_for_years.includes('arrears') ||
-        fields.payment_for_years.includes('Arrears') ||
-        fields.payment_for_years.includes('deferred') ||
-        fields.payment_for_years.includes('Deferred')
-      if (fields.invoices.length > 0 && arrears_or_deferred) {
-        setFields(function (prev) {
-          return {
-            ...prev,
-            ferm_gain_or_loss: (
-              invoicedAmount - getFloat(fields.amount)
-            ).toString(),
-          }
-        })
-      }
-    },
-    [invoicedAmount, fields.amount, fields.invoices, fields.payment_for_years],
-  )
 
   return (
     <FormDialog title={title} onSubmit={handleFormSubmit} {...dialogProps}>
@@ -404,11 +373,19 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
           onChange={updateField('exchange_rate')}
         />
         <FieldFormattedNumberInput
-          id="amount"
+          id="amount_received"
           decimalDigits={5}
-          label="USD amount"
-          value={fields.amount}
-          onChange={fields.is_ferm ? handleChangeAmount : updateField('amount')}
+          label="USD amount received"
+          value={fields.amount_received}
+          onChange={updateField('amount_received')}
+          required
+        />
+        <FieldFormattedNumberInput
+          id="amount_assessed"
+          decimalDigits={5}
+          label="USD amount assessed"
+          value={fields.amount_assessed}
+          onChange={updateField('amount_assessed')}
           required
         />
         <FieldFormattedNumberInput

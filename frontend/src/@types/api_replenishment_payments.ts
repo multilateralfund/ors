@@ -6,7 +6,9 @@ import { ApiReplenishment } from './api_replenishment_replenishments'
 import { Country } from './store'
 
 export type ApiReplenishmentPayment = {
-  amount: number
+  amount_assessed: null | number
+  amount_local_currency: null | number
+  amount_received: null | number
   comment: string
   country: Country
   currency: string
