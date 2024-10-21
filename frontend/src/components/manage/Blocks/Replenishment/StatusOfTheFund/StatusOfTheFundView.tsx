@@ -158,7 +158,7 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
               className="tracking-widest print:hidden"
               onClick={() => setShowUploadDialog(true)}
             >
-              Upload documents
+              Upload files
             </SubmitButton>
           )}
         </div>

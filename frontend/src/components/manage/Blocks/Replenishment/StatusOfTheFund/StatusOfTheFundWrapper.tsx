@@ -10,6 +10,7 @@ import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentConte
 import { api } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
+import { encodeFileForUpload } from '../SAView/SAView'
 import { scAnnualOptions } from '../StatusOfContribution/utils'
 import StatusOfTheFundView from '../StatusOfTheFund/StatusOfTheFundView'
 import { allocationsOrder } from './constants'
@@ -81,7 +82,7 @@ function StatusOfTheFundWrapper() {
         ...formattedData,
         [key]: !!value
           ? ['meeting_id', 'quarter', 'year'].includes(key)
-            ? parseFloat(value)
+            ? parseInt(value)
             : value
           : null,
         ...(staffContractsTotal && {
@@ -114,50 +115,52 @@ function StatusOfTheFundWrapper() {
       })
   }
 
-  const handleUploadDocuments = (formData: any) => {
+  const handleUploadFiles = async (formData: any) => {
     const entry = Object.fromEntries(formData.entries())
-
     const meetingId = entry.meeting_id
     const year = entry.year
 
     entry.meeting_id = !!meetingId ? parseInt(meetingId) : meetingId
     entry.year = !!year ? parseInt(year) : year
 
+    const file = await encodeFileForUpload(entry['file_0'] as File)
+
+    entry['file'] = file
+    entry['filename'] = file.filename
     const data = new FormData()
 
-    for (const key in entry) {
-      const value = entry[key]
+    // keys(entry).map((key) => {
+    //   const value = get(entry, key)
 
-      if (!key.startsWith('file_')) {
-        const valueIsNotAFile = value as unknown as
-          | null
-          | string
-          | string[]
-          | undefined
-        if (
-          valueIsNotAFile !== null &&
-          typeof valueIsNotAFile === 'object' &&
-          valueIsNotAFile.length
-        ) {
-          for (let i = 0; i < valueIsNotAFile.length; i++) {
-            data.append(key, valueIsNotAFile[i])
-          }
-        } else if (
-          valueIsNotAFile !== null &&
-          valueIsNotAFile !== undefined &&
-          valueIsNotAFile !== ''
-        ) {
-          data.append(key, valueIsNotAFile as string)
-        }
-      }
-      if (key.startsWith('file_') && entry[key] instanceof File) {
-        const fileIndex = key.split('_')[1]
-        data.append(`files[${fileIndex}][file]`, entry[key], entry[key].name)
-      }
-    }
+    //   if (!key.startsWith('file_') && key !== 'deleted_files') {
+    //     if (!isNil(value) && value !== '') {
+    //       data.append(key, value)
+    //     }
+    //   } else if (key.startsWith('file_') && value instanceof File) {
+    //     const fileIndex = key.split('_')[1]
+    //     console.log(value)
+    //   }
+    // })
 
-    enqueueSnackbar('Data updated successfully', { variant: 'success' })
-    handleCloseUploadDialog()
+    api('/api/replenishment/status-files/', {
+      data: { file: entry.file, filename: entry.filename },
+      method: 'POST',
+    })
+      .then(() => {
+        invalidateDataFn({
+          cache_bust: crypto.randomUUID(),
+        })
+        enqueueSnackbar('Data updated successfully', { variant: 'success' })
+        handleEditCancel()
+      })
+      .catch(() => {
+        enqueueSnackbar('Failed to update data', { variant: 'error' })
+      })
+
+    console.log(Object.fromEntries(data.entries()))
+
+    // enqueueSnackbar('Data updated successfully', { variant: 'success' })
+    // handleCloseUploadDialog()
   }
 
   const editableFields = [
@@ -254,7 +257,7 @@ function StatusOfTheFundWrapper() {
       {showUploadDialog && (
         <UploadFilesDialog
           {...{
-            handleUploadDocuments,
+            handleUploadFiles,
             meetingOptions,
             yearOptions,
           }}
