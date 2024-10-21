@@ -363,6 +363,14 @@ class PaymentSerializer(serializers.ModelSerializer):
         required=False,
     )
 
+    amount_local_currency = serializers.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        coerce_to_string=False,
+        allow_null=True,
+        required=False,
+    )
+
     exchange_rate = serializers.DecimalField(
         max_digits=30, decimal_places=15, allow_null=True, coerce_to_string=False
     )
@@ -384,6 +392,7 @@ class PaymentSerializer(serializers.ModelSerializer):
             "payment_for_years",
             "amount_assessed",
             "amount_received",
+            "amount_local_currency",
             "currency",
             "exchange_rate",
             "ferm_gain_or_loss",
@@ -410,6 +419,14 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
         max_digits=30, decimal_places=15, coerce_to_string=False
     )
     amount_received = serializers.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        coerce_to_string=False,
+        allow_null=True,
+        required=False,
+    )
+
+    amount_local_currency = serializers.DecimalField(
         max_digits=30,
         decimal_places=15,
         coerce_to_string=False,
@@ -445,6 +462,7 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
             "is_ferm",
             "amount_assessed",
             "amount_received",
+            "amount_local_currency",
             "currency",
             "exchange_rate",
             "ferm_gain_or_loss",

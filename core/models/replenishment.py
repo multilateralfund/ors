@@ -264,11 +264,16 @@ class Payment(models.Model):
     date = models.DateField()
     payment_for_years = fields.ArrayField(models.CharField(max_length=10), default=list)
 
-    # These are both in USD - strangely, amount_assessed is what should be taken
-    # into account when calculating available cash for the fund.
+    # Amounts assessed & received are both in USD.
+    # Strangely, amount_assessed is what should be taken into account when calculating
+    # available cash for the fund.
     # The difference between these two is basically the FERM gain/loss.
     amount_assessed = models.DecimalField(max_digits=30, decimal_places=15)
     amount_received = models.DecimalField(max_digits=30, decimal_places=15, null=True)
+
+    amount_local_currency = models.DecimalField(
+        max_digits=30, decimal_places=15, null=True
+    )
 
     currency = models.CharField(max_length=64, default="USD")
     exchange_rate = models.DecimalField(max_digits=30, decimal_places=15, null=True)
