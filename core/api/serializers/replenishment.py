@@ -15,6 +15,7 @@ from core.models import (
     DisputedContribution,
     ExternalAllocation,
     ExternalIncomeAnnual,
+    StatusOfTheFundFile,
 )
 
 
@@ -491,3 +492,34 @@ class DisputedContributionCreateSerializer(serializers.ModelSerializer):
             "decision_number",
             "comment",
         ]
+
+
+class StatusOfTheFundFileSerializer(serializers.ModelSerializer):
+    year = serializers.IntegerField(allow_null=True, required=False)
+
+    meeting_id = serializers.PrimaryKeyRelatedField(
+        queryset=Meeting.objects.all().values_list("id", flat=True),
+        allow_null=True,
+        required=False,
+    )
+
+    uploaded_at = serializers.DateTimeField(read_only=True)
+
+    filename = serializers.CharField()
+
+    download_url = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = StatusOfTheFundFile
+        fields = [
+            "id",
+            "year",
+            "meeting_id",
+            "comment",
+            "filename",
+            "uploaded_at",
+            "download_url",
+        ]
+
+    def get_download_url(self, obj):
+        return f"{reverse('replenishment-status-files-list')}/{obj.id}/"

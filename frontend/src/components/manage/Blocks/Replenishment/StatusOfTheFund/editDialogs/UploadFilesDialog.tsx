@@ -1,31 +1,27 @@
-import { useState } from 'react'
-
 import FormEditDialog from '@ors/components/manage/Blocks/Replenishment/FormEditDialog'
 
-import { IUploadDocumentsProps } from '../types'
+import { IUploadFilesProps } from '../types'
 import {
   PopoverInputField,
   SearchableSelectInput,
   SimpleInput,
-  UploadDocumentsInput,
+  UploadFilesInput,
 } from './editInputs'
 
-const UploadFilesDialog = (props: IUploadDocumentsProps) => {
+const UploadFilesDialog = (props: IUploadFilesProps) => {
   const {
-    handleUploadDocuments,
+    handleUploadFiles,
     meetingOptions,
     onCancel,
     yearOptions,
     ...dialogProps
   } = props
 
-  const [formData, setFormData] = useState<any>({})
-
   return (
     <FormEditDialog
-      title="Upload documents:"
+      title="Upload files:"
       onCancel={onCancel}
-      onSubmit={handleUploadDocuments}
+      onSubmit={handleUploadFiles}
       {...dialogProps}
     >
       <div className="flex flex-col gap-y-4">
@@ -35,30 +31,18 @@ const UploadFilesDialog = (props: IUploadDocumentsProps) => {
             label="Year"
             options={yearOptions}
             placeholder="Select year"
-            setFormData={setFormData}
           />
           <PopoverInputField
             field="meeting_id"
             label="Meeting"
             options={meetingOptions}
             placeholder="Select meeting"
-            setFormData={setFormData}
-            value={formData.meeting_id}
           />
         </div>
         <div className="flex flex-col gap-y-4">
           <div className="flex gap-x-4">
-            <UploadDocumentsInput
-              field="files"
-              label="Upload"
-              setFormData={setFormData}
-            />
-            <SimpleInput
-              field="comment"
-              label="Comment"
-              setFormData={setFormData}
-              type="text-area"
-            />
+            <UploadFilesInput field="files" label="Upload" />
+            <SimpleInput field="comment" label="Comment" type="text-area" />
           </div>
         </div>
       </div>

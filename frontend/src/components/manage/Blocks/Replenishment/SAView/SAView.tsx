@@ -48,7 +48,7 @@ import {
   sumColumns,
 } from './utils'
 
-function encodeFileForUpload(file: File) {
+export function encodeFileForUpload(file: File) {
   function resolver(resolve: (value: FileForUpload) => void) {
     const r = new FileReader()
     r.onload = function (evt) {
@@ -225,6 +225,8 @@ function SaveManager(props: SaveManagerProps) {
     } else {
       saveData['decision_pdf'] = null
     }
+
+    console.log({ saveData })
 
     setSaving(false)
     api('api/replenishment/scales-of-assessment', {
