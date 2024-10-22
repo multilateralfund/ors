@@ -16,7 +16,7 @@ export type ApiReplenishmentPayment = {
   exchange_rate: number
   ferm_gain_or_loss: number
   id: number
-  invoices: Pick<ApiReplenishmentInvoice, 'id' | 'number'>[]
+  invoice: Pick<ApiReplenishmentInvoice, 'id' | 'number'> | null
   payment_files: ApiReplenishmentFile[]
   payment_for_years: string[]
   replenishment: ApiReplenishment | null

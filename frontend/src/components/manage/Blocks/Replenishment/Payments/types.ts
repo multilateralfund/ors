@@ -27,7 +27,7 @@ export type PaymentForSubmit = {
   date: null | string
   exchange_rate: number | string
   ferm_gain_or_loss: number | string
-  invoices?: string[]
+  invoice?: string
   is_ferm?: string
   payment_for_years?: string[]
 } & { [key: string]: File }
@@ -51,8 +51,8 @@ export type ParsedPayment = {
   files: React.JSX.Element
   files_data: ApiReplenishmentFile[]
   id: number
-  invoice_numbers: string
-  invoices: Pick<ApiReplenishmentInvoice, 'id' | 'number'>[]
+  invoice: Pick<ApiReplenishmentInvoice, 'id' | 'number'> | null
+  invoice_number: string
   iso3: string
   payment_for_years: string[]
   payment_years: string

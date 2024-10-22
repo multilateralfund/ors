@@ -5,6 +5,7 @@ import { ApiReplenishmentPayment } from '@ors/types/api_replenishment_payments'
 import React, { ChangeEvent, useContext, useMemo, useState } from 'react'
 
 import cx from 'classnames'
+import Cookies from 'js-cookie'
 import { times } from 'lodash'
 import Link from 'next/link'
 import { enqueueSnackbar } from 'notistack'
@@ -24,13 +25,14 @@ import ViewFiles from '@ors/components/manage/Blocks/Replenishment/ViewFiles'
 import {
   dateForEditField,
   dateForInput,
+  fetchWithHandling,
   formatDateValue,
   formatNumberValue,
 } from '@ors/components/manage/Blocks/Replenishment/utils'
 import { AddButton } from '@ors/components/ui/Button/Button'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
-import { api } from '@ors/helpers'
+import { formatApiUrl } from '@ors/helpers'
 import { getFloat } from '@ors/helpers/Utils/Utils'
 
 import { SortDirection } from '../Table/types'
@@ -46,7 +48,7 @@ import {
 import { IoSearchSharp } from 'react-icons/io5'
 
 const COLUMNS: PaymentColumn[] = [
-  { field: 'invoice_numbers', label: 'Invoice Number(s)' },
+  { field: 'invoice_number', label: 'Invoice Number' },
   { field: 'country', label: 'Country', sortable: true },
   { field: 'date', label: 'Date', sortable: true },
   { field: 'amount', label: 'Amount', sortable: true },
@@ -101,8 +103,8 @@ function parsePayment(entry: ApiReplenishmentPayment): ParsedPayment {
     ferm_gain_or_loss: formatNumberValue(entry.ferm_gain_or_loss) || 'N/A',
     files: <ViewFiles files={entry.payment_files} />,
     files_data: entry.payment_files,
-    invoice_numbers: entry.invoices.map((inv: any) => inv.number).join(', '),
-    invoices: entry.invoices,
+    invoice: entry.invoice,
+    invoice_number: entry.invoice ? entry.invoice.number : '',
     iso3: entry.country.iso3,
     payment_for_years: entry.payment_for_years,
     payment_years: entry.payment_for_years.join(', '),
@@ -121,10 +123,6 @@ function prepareFormDataForSubmit(formData: FormData): FormData {
     ? ''
     : entry.ferm_gain_or_loss
   entry.comment = entry.comment || ''
-  const invoices = formData.getAll('invoices') as string[]
-  if (invoices.length > 0) {
-    entry.invoices = invoices
-  }
   const payment_for_years = formData.getAll('payment_for_years') as string[]
   if (payment_for_years.length > 0) {
     entry.payment_for_years = payment_for_years
@@ -175,6 +173,18 @@ function prepareFormDataForSubmit(formData: FormData): FormData {
 
   data.append('nr_new_files', nr_new_files.toString())
   return data
+}
+
+async function apiRequest(url: string, method: string, data: any) {
+  const csrftoken = Cookies.get('csrftoken')
+  await fetchWithHandling(
+    formatApiUrl(url),
+    {
+      body: data,
+      method,
+    },
+    csrftoken,
+  )
 }
 
 async function handleErrors(error: any) {
@@ -283,10 +293,11 @@ function PaymentsView() {
     const data = prepareFormDataForSubmit(formData)
 
     try {
-      await api(`api/replenishment/payments/${data.get('id')}/`, {
+      await apiRequest(
+        `api/replenishment/payments/${data.get('id')}/`,
+        'PUT',
         data,
-        method: 'PUT',
-      })
+      )
       enqueueSnackbar('Payment updated successfully.', { variant: 'success' })
       setParams({
         offset: ((pagination.page || 1) - 1) * pagination.rowsPerPage,
@@ -303,11 +314,10 @@ function PaymentsView() {
   async function handleAddPaymentSubmit(formData: FormData) {
     const data = prepareFormDataForSubmit(formData)
 
+    console.log(data)
+
     try {
-      await api('api/replenishment/payments/', {
-        data,
-        method: 'POST',
-      })
+      await apiRequest('api/replenishment/payments/', 'POST', data)
       enqueueSnackbar('Payment updated successfully.', { variant: 'success' })
       setParams({
         offset: 0,
@@ -333,9 +343,11 @@ function PaymentsView() {
     const entry = { ...memoResults[rowId] }
 
     try {
-      await api(`api/replenishment/payments/${entry.id}/`, {
-        method: 'DELETE',
-      })
+      await apiRequest(
+        `api/replenishment/payments/${entry.id}/`,
+        'DELETE',
+        null,
+      )
       enqueueSnackbar('Payment deleted.', { variant: 'success' })
       setParams({
         offset: ((pagination.page || 1) - 1) * pagination.rowsPerPage,

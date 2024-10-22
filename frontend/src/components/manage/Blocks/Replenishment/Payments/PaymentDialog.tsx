@@ -17,13 +17,10 @@ import {
 } from '@ors/components/manage/Blocks/Replenishment/DialogTabs'
 import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
 import {
-  Field,
   FieldDateInput,
   FieldFormattedNumberInput,
   FieldInput,
-  FieldMultiSelect,
   FieldSearchableSelect,
-  FieldSelect,
   FieldTextLine,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceAttachments'
@@ -43,7 +40,7 @@ interface PaymentDialogFields {
   currency: string
   exchange_rate: string
   ferm_gain_or_loss: string
-  invoices: string[]
+  invoice: string
   is_ferm: boolean
   payment_for_years: string[]
   status: string
@@ -51,6 +48,20 @@ interface PaymentDialogFields {
 
 function getInvoiceLabel(invoice: ApiReplenishmentInvoice) {
   return `${invoice.number} - ${invoice?.country?.name} (${invoice?.date_of_issuance})`
+}
+
+function calculateAssessed(currencyAmount: number, exchangeRate: number) {
+  return currencyAmount / exchangeRate
+}
+
+function assessAmountFromCurrency(
+  currencyAmount: string,
+  exchangeRate: string,
+): string {
+  return calculateAssessed(
+    getFloat(currencyAmount) || 0,
+    getFloat(exchangeRate) || 1,
+  ).toString()
 }
 
 const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
@@ -71,7 +82,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
     currency: data?.currency?.toString() ?? '',
     exchange_rate: data?.exchange_rate?.toString() ?? '',
     ferm_gain_or_loss: data?.ferm_gain_or_loss?.toString() ?? '',
-    invoices: data?.invoices?.map((o) => o.id.toString()) ?? [],
+    invoice: data?.invoice?.id.toString() ?? '',
     is_ferm: data?.is_ferm ?? false,
     payment_for_years: data?.payment_for_years?.map((o) => o.toString()) ?? [],
     status: data?.status?.toString() ?? '',
@@ -107,19 +118,6 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
     [fields.country_id, invoicesList, invoicesLoading],
   )
 
-  const invoicedAmount = useMemo(
-    function () {
-      let total = 0
-      for (let i = 0; i < invoicesList.length; i++) {
-        if (fields.invoices.includes(invoicesList[i].id.toString())) {
-          total += invoicesList[i].amount
-        }
-      }
-      return total
-    },
-    [invoicesList, fields.invoices],
-  )
-
   const paymentForYear = useMemo(
     () =>
       fields.payment_for_years.length > 0
@@ -145,14 +143,23 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
 
   useEffect(
     function () {
+      const optedForFerm = countryInfo?.opted_for_ferm || false
+
       if (!isEdit) {
+        const amountLocalCurrency =
+          (countryInfo?.amount_local_currency || '').toString() || ''
+        const exchangeRate = (countryInfo?.exchange_rate || '').toString() || ''
+
         setFields((prev) => {
           const updated = {
-            amount_local_currency:
-              (countryInfo?.amount_local_currency || '').toString() || '',
+            amount_assessed: assessAmountFromCurrency(
+              amountLocalCurrency,
+              exchangeRate,
+            ),
+            amount_local_currency: amountLocalCurrency,
             currency: (countryInfo?.currency || '').toString() || '',
-            exchange_rate: (countryInfo?.exchange_rate || '').toString() || '',
-            is_ferm: countryInfo?.opted_for_ferm || false,
+            exchange_rate: exchangeRate,
+            is_ferm: optedForFerm,
           }
 
           return {
@@ -163,7 +170,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
       } else {
         setFields((prev) => {
           const updated = {
-            is_ferm: countryInfo?.opted_for_ferm || false,
+            is_ferm: optedForFerm,
           }
 
           return {
@@ -185,12 +192,12 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
     evt,
   ) => {
     const currencyAmount = evt.target.value
-    const nrCurrencyAmount = getFloat(currencyAmount) || 0
     setFields((prev) => ({
       ...prev,
-      amount_assessed: (
-        nrCurrencyAmount * getFloat(fields.exchange_rate)
-      ).toString(),
+      amount_assessed: assessAmountFromCurrency(
+        currencyAmount,
+        fields.exchange_rate,
+      ),
       amount_local_currency: currencyAmount,
     }))
   }
@@ -211,12 +218,6 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
       ...prev,
       is_ferm: evt.target.checked,
     }))
-  }
-
-  function handleChangeInvoices(value: string) {
-    setFields(function (prev) {
-      return { ...prev, invoices: [value] }
-    })
   }
 
   function handleChangeYears(value: string) {
@@ -257,12 +258,12 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
         />
         {hasInvoices ? (
           <FieldSearchableSelect
-            id="invoices"
-            defaultValue={fields.invoices?.[0] ?? ''}
+            id="invoice"
+            defaultValue={fields.invoice ?? ''}
             hasClear={true}
-            label={columns.invoice_numbers.label}
+            label={columns.invoice_number.label}
             required={true}
-            onChange={handleChangeInvoices}
+            onChange={setField('invoice')}
           >
             {invoicesList.map((inv) => (
               <option key={inv.id} value={inv.id}>
@@ -272,7 +273,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
           </FieldSearchableSelect>
         ) : (
           <FieldTextLine
-            label={columns.invoice_numbers.label}
+            label={columns.invoice_number.label}
             text={'No invoices found for this country'}
           />
         )}
@@ -352,7 +353,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
           decimalDigits={5}
           disabled={!fields.is_ferm}
           readOnly={!fields.is_ferm}
-          value={fields.amount_local_currency}
+          value={fields.is_ferm ? fields.amount_local_currency : ''}
           label={
             fields.currency
               ? `"${fields.currency}" amount`
