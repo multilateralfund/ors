@@ -351,11 +351,26 @@ class PaymentFileSerializer(serializers.ModelSerializer):
 
 class PaymentSerializer(serializers.ModelSerializer):
     country = CountrySerializer(read_only=True)
-    replenishment = ReplenishmentSerializer(read_only=True, allow_null=True)
 
-    amount = serializers.DecimalField(
+    amount_assessed = serializers.DecimalField(
         max_digits=30, decimal_places=15, coerce_to_string=False
     )
+    amount_received = serializers.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        coerce_to_string=False,
+        allow_null=True,
+        required=False,
+    )
+
+    amount_local_currency = serializers.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        coerce_to_string=False,
+        allow_null=True,
+        required=False,
+    )
+
     exchange_rate = serializers.DecimalField(
         max_digits=30, decimal_places=15, allow_null=True, coerce_to_string=False
     )
@@ -364,24 +379,26 @@ class PaymentSerializer(serializers.ModelSerializer):
     )
 
     payment_files = PaymentFileSerializer(many=True, read_only=True)
-    invoices = InvoiceForPaymentChoicesSerializer(many=True, read_only=True)
+    invoice = InvoiceForPaymentChoicesSerializer(many=False, read_only=True)
 
     class Meta:
         model = Payment
         fields = [
             "id",
             "country",
-            "replenishment",
+            "invoice",
             "is_ferm",
+            "status",
             "date",
             "payment_for_years",
-            "amount",
+            "amount_assessed",
+            "amount_received",
+            "amount_local_currency",
             "currency",
             "exchange_rate",
             "ferm_gain_or_loss",
             "comment",
             "payment_files",
-            "invoices",
         ]
 
 
@@ -391,23 +408,35 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
         write_only=True,
     )
 
-    replenishment_id = serializers.PrimaryKeyRelatedField(
-        queryset=Replenishment.objects.all().values_list("id", flat=True),
-        write_only=True,
-        allow_null=True,
-        required=False,
-    )
-    invoices = serializers.PrimaryKeyRelatedField(
+    invoice_id = serializers.PrimaryKeyRelatedField(
         queryset=Invoice.objects.all().values_list("id", flat=True),
-        many=True,
+        many=False,
         write_only=True,
         required=False,
     )
     is_ferm = serializers.BooleanField(allow_null=True)
 
-    amount = serializers.DecimalField(
+    status = serializers.CharField(required=False, allow_null=True)
+
+    amount_assessed = serializers.DecimalField(
         max_digits=30, decimal_places=15, coerce_to_string=False
     )
+    amount_received = serializers.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        coerce_to_string=False,
+        allow_null=True,
+        required=False,
+    )
+
+    amount_local_currency = serializers.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        coerce_to_string=False,
+        allow_null=True,
+        required=False,
+    )
+
     # If not currency is sent, we'll set it to USD
     currency = serializers.CharField(required=False, allow_null=True)
 
@@ -430,16 +459,18 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
         model = Payment
         fields = [
             "country_id",
-            "replenishment_id",
             "date",
             "payment_for_years",
+            "invoice_id",
             "is_ferm",
-            "amount",
+            "status",
+            "amount_assessed",
+            "amount_received",
+            "amount_local_currency",
             "currency",
             "exchange_rate",
             "ferm_gain_or_loss",
             "comment",
-            "invoices",
         ]
 
 

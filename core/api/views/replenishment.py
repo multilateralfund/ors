@@ -1635,12 +1635,11 @@ class ReplenishmentPaymentViewSet(
         filters.SearchFilter,
     ]
     ordering_fields = [
-        "amount",
+        "amount_assessed",
         "country__name",
     ]
     search_fields = [
         "payment_for_years",
-        "amount",
         "country__name",
         "comment",
         "invoices__number",
@@ -1734,7 +1733,7 @@ class ReplenishmentPaymentViewSet(
                 for year in payment.payment_for_years
                 if year not in ["deferred", "arrears"]
             ]
-        amount_to_add = payment.amount
+        amount_to_add = payment.amount_assessed
         if old_amount is not None:
             amount_to_add -= old_amount
         AnnualContributionStatus.objects.filter(
@@ -1774,9 +1773,9 @@ class ReplenishmentPaymentViewSet(
         AnnualContributionStatus.objects.filter(
             country=payment.country, year__in=years_list
         ).update(
-            cash_payments=models.F("cash_payments") - payment.amount,
+            cash_payments=models.F("cash_payments") - payment.amount_assessed,
             outstanding_contributions=models.F("outstanding_contributions")
-            + payment.amount,
+            + payment.amount_assessed,
         )
         for year in years_list:
             # Updating objects one by one to avoid race conditions
@@ -1784,10 +1783,58 @@ class ReplenishmentPaymentViewSet(
             TriennialContributionStatus.objects.filter(
                 country=payment.country, start_year__lte=year, end_year__gte=year
             ).update(
-                cash_payments=models.F("cash_payments") - payment.amount,
+                cash_payments=models.F("cash_payments") - payment.amount_assessed,
                 outstanding_contributions=models.F("outstanding_contributions")
-                + payment.amount,
+                + payment.amount_assessed,
             )
+
+    def _set_ferm(self, payment, old_amount=None):
+        """
+        Updates global FERM data based on a added/updated payment.
+        `old_amount` only used for updating payments so we know what to add/substract
+        """
+        years_list = []
+        if payment.payment_for_years:
+            years_list = [
+                int(year)
+                for year in payment.payment_for_years
+                if year not in ["deferred", "arrears"]
+            ]
+        if not years_list:
+            return
+
+        amount_to_add = payment.ferm_gain_or_loss
+        if amount_to_add is None:
+            return
+        if old_amount is not None:
+            amount_to_add -= old_amount
+
+        ferm_gain_loss_qs = FermGainLoss.objects.filter(
+            country=payment.country, year__in=years_list
+        )
+        if ferm_gain_loss_qs.exists():
+            ferm_gain_loss_qs.update(amount=models.F("amount") + amount_to_add)
+        else:
+            FermGainLoss.objects.create(
+                country=payment.country,
+                year=years_list[0],
+                amount=amount_to_add,
+            )
+
+    def _unset_ferm(self, payment):
+        """
+        Updates global FERM data based on a deleted payment.
+        """
+        years_list = []
+        if payment.payment_for_years:
+            years_list = [
+                int(year)
+                for year in payment.payment_for_years
+                if year not in ["deferred", "arrears"]
+            ]
+        FermGainLoss.objects.filter(
+            country=payment.country, year__in=years_list
+        ).update(amount=models.F("amount") - payment.ferm_gain_or_loss)
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
@@ -1810,8 +1857,9 @@ class ReplenishmentPaymentViewSet(
         # Now create the files for this Payment
         self._create_new_payment_files(payment, files)
 
-        # Update the annual/triennial contributions
+        # Update the annual/triennial contributions & FERM
         self._set_annual_triennial_contributions(payment)
+        self._set_ferm(payment)
 
         # And finally set the ScaleOfAssessment if all needed fields are specified
         self._set_scale_of_assessment_ferm(payment, is_ferm)
@@ -1825,7 +1873,7 @@ class ReplenishmentPaymentViewSet(
     def update(self, request, *args, **kwargs):
         current_obj = self.get_object()
 
-        previous_amount = current_obj.amount
+        previous_amount = current_obj.amount_assessed
 
         # request.data is not mutable and we need to perform some string-bollean magic
         # for the is_ferm field, because we receive it from a forn.
@@ -1848,10 +1896,11 @@ class ReplenishmentPaymentViewSet(
         # And delete the ones that need to be deleted
         current_obj.payment_files.filter(id__in=files_to_delete).delete()
 
-        # Update the annual/triennial contributions
+        # Update the annual/triennial contributions & FERM
         self._set_annual_triennial_contributions(
             current_obj, old_amount=previous_amount
         )
+        self._set_ferm(current_obj, old_amount=previous_amount)
 
         # And finally set the ScaleOfAssessment if all needed fields are specified
         self._set_scale_of_assessment_ferm(current_obj, is_ferm)
@@ -1863,8 +1912,9 @@ class ReplenishmentPaymentViewSet(
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
 
-        # First update the contributions
+        # First update the contributions & FERM
         self._unset_annual_triennial_contributions(instance)
+        self._unset_ferm(instance)
 
         # Then actually delete the payment
         return super().destroy(request, *args, **kwargs)

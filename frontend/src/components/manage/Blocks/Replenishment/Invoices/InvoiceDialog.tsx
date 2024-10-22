@@ -109,7 +109,6 @@ function TabContentDetails(props: TabContentDetailsProps) {
         required
       >
         <option value="" disabled hidden></option>
-        <option value="arrears">Arrears</option>
         {yearOptions.map((year) => (
           <option key={year.value} className="text-primary" value={year.value}>
             {year.label}
@@ -228,7 +227,6 @@ interface InvoiceDialogFields {
   date_second_reminder: string
   date_sent_out: string
   exchange_rate: string
-  is_arrears: boolean
   is_ferm: boolean
   year: string
 }
@@ -250,7 +248,6 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
     date_second_reminder: data?.date_second_reminder ?? '',
     date_sent_out: data?.date_sent_out ?? '',
     exchange_rate: data?.exchange_rate ?? '',
-    is_arrears: data?.is_arrears ?? false,
     is_ferm: data?.is_ferm ?? false,
     year: data?.year ?? '',
   })
@@ -266,9 +263,7 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
   )
 
   const start_year =
-    (fields.year !== 'arrears' && parseInt(fields.year, 10)) ||
-    ctx.periods?.[0].start_year ||
-    0
+    parseInt(fields.year, 10) || ctx.periods?.[0].start_year || 0
 
   const { getForYear } = useGetCountryReplenishmentInfo(fields.country_id)
   const {

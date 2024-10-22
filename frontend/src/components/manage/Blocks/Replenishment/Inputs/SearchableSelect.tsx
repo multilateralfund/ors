@@ -74,7 +74,7 @@ function VirtualOption(props: VirtualOptionProps) {
 interface PickerProps {
   className?: string
   id?: string
-  options: JSX.Element[]
+  options: React.JSX.Element[]
   show: boolean
 }
 
