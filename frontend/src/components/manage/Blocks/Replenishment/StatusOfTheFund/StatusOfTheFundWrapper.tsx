@@ -2,7 +2,7 @@
 
 import { useContext, useState } from 'react'
 
-import { get, isNil, keys, omit, omitBy, reduce, reverse } from 'lodash'
+import { get, isNil, keys, omit, omitBy, pickBy, reduce, reverse } from 'lodash'
 import { useSnackbar } from 'notistack'
 
 import useGetDashboardData from '@ors/components/manage/Blocks/Replenishment/Dashboard/useGetDashboardData'
@@ -117,33 +117,22 @@ function StatusOfTheFundWrapper() {
 
   const handleUploadFiles = async (formData: any) => {
     const entry = Object.fromEntries(formData.entries())
+
     const meetingId = entry.meeting_id
     const year = entry.year
 
     entry.meeting_id = !!meetingId ? parseInt(meetingId) : meetingId
     entry.year = !!year ? parseInt(year) : year
 
-    const file = await encodeFileForUpload(entry['file_0'] as File)
+    const file = await encodeFileForUpload(entry['file'] as File)
 
     entry['file'] = file
     entry['filename'] = file.filename
-    const data = new FormData()
 
-    // keys(entry).map((key) => {
-    //   const value = get(entry, key)
-
-    //   if (!key.startsWith('file_') && key !== 'deleted_files') {
-    //     if (!isNil(value) && value !== '') {
-    //       data.append(key, value)
-    //     }
-    //   } else if (key.startsWith('file_') && value instanceof File) {
-    //     const fileIndex = key.split('_')[1]
-    //     console.log(value)
-    //   }
-    // })
+    const cleanData = pickBy(entry, (value) => !isNil(value) && value !== '')
 
     api('/api/replenishment/status-files/', {
-      data: { file: entry.file, filename: entry.filename },
+      data: cleanData,
       method: 'POST',
     })
       .then(() => {
@@ -156,11 +145,6 @@ function StatusOfTheFundWrapper() {
       .catch(() => {
         enqueueSnackbar('Failed to update data', { variant: 'error' })
       })
-
-    console.log(Object.fromEntries(data.entries()))
-
-    // enqueueSnackbar('Data updated successfully', { variant: 'success' })
-    // handleCloseUploadDialog()
   }
 
   const editableFields = [

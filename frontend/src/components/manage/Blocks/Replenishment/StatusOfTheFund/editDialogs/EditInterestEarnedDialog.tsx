@@ -49,39 +49,35 @@ const EditInterestEarnedDialog = (props: IEditIncomeDialogProps) => {
             setFormData={setFormData}
           />
         </div>
-        <div className="flex flex-col gap-y-4">
-          <div className="flex gap-x-4">
-            <SelectInput
-              field="quarter"
-              label="Quarter"
-              options={quarterOptions}
-              placeholder="Select quarter"
-              setFormData={setFormData}
-            />
-            <PopoverInputField
-              field="meeting_id"
-              label="Meeting"
-              options={meetingOptions}
-              placeholder="Select meeting"
-              setFormData={setFormData}
-              value={formData.meeting_id}
-            />
-          </div>
+        <div className="flex gap-x-4">
+          <SelectInput
+            field="quarter"
+            label="Quarter"
+            options={quarterOptions}
+            placeholder="Select quarter"
+            setFormData={setFormData}
+          />
+          <PopoverInputField
+            field="meeting_id"
+            label="Meeting"
+            options={meetingOptions}
+            placeholder="Select meeting"
+            setFormData={setFormData}
+            value={formData.meeting_id}
+          />
         </div>
-        <div className="flex flex-col gap-y-4">
-          <div className="flex gap-x-4">
-            <NumberInput
-              field="interest_earned"
-              label="Amount"
-              setFormData={setFormData}
-            />
-            <SimpleInput
-              field="comment"
-              label="Comment"
-              setFormData={setFormData}
-              type="text-area"
-            />
-          </div>
+        <div className="flex gap-x-4">
+          <NumberInput
+            field="interest_earned"
+            label="Amount"
+            setFormData={setFormData}
+          />
+          <SimpleInput
+            field="comment"
+            label="Comment"
+            setFormData={setFormData}
+            type="text-area"
+          />
         </div>
       </div>
     </FormEditDialog>
