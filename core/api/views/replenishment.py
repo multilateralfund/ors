@@ -25,6 +25,7 @@ from core.api.export.replenishment import (
     DashboardWriter,
     EMPTY_ROW,
     ScaleOfAssessmentWriter,
+    ScaleOfAssessmentTemplateWriter,
 )
 from core.api.filters.replenishment import (
     InvoiceFilter,
@@ -396,23 +397,30 @@ class ScaleOfAssessmentViewSet(
             )
         ]
         data_count = len(data)
-        data.append(
-            {
-                "country": "Total",
-                "un_scale_of_assessment": f"=SUM(C2:C{data_count + 1})",
-                "adjusted_scale_of_assessment": f"=SUM(D2:D{data_count + 1})",
-                "yearly_amount": f"=SUM(E2:E{data_count + 1})",
-            }
-        )
 
-        ScaleOfAssessmentWriter(
+        # TODO: maybe just write totals in the writer!!!
+        # data.append(
+        #    {
+        #        "country": "Total",
+        #        "un_scale_of_assessment": f"=SUM(C2:C{data_count + 1})",
+        #        "adjusted_scale_of_assessment": f"=SUM(D2:D{data_count + 1})",
+        #        "yearly_amount": f"=SUM(E2:E{data_count + 1})",
+        #    }
+        # )
+        ScaleOfAssessmentTemplateWriter(
             ws,
-            f"{start_year - 2}-{start_year}",
-            f"{start_year - 3} - {start_year - 1}",
-            f"{start_year} - {start_year + 2}",
-            start_year - 1,
-            queryset.first().version.comment,
-        ).write(data)
+            data,
+            data_count,
+            start_year,
+        ).write()
+        # ScaleOfAssessmentWriter(
+        #    ws,
+        #    f"{start_year - 2}-{start_year}",
+        #    f"{start_year - 3} - {start_year - 1}",
+        #    f"{start_year} - {start_year + 2}",
+        #    start_year - 1,
+        #    queryset.first().version.comment,
+        # ).write(data)
 
         return workbook_response(
             f"Scales of Assessment {start_year} - {start_year + 2}",

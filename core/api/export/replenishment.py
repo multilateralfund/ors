@@ -340,6 +340,126 @@ class ScaleOfAssessmentTemplateWriter:
 
     No cell formatting (except number format?), merging or table formatting are needed;
     just filling out values.
+
+    Assumes a certain format of the template file, but easily configurable.
     """
 
-    pass
+    HEADERS_ROW = 1
+    DATA_START_ROW = 2
+
+    # Position and formatting for each filed from the serializer data rows
+    DATA_MAPPING = {
+        "no": {
+            "column": 1,
+            "type": int,
+        },
+        "country": {
+            "column": 2,
+            "type": str,
+        },
+        "un_scale_of_assessment": {
+            "column": 3,
+            "type": Decimal,
+            "number_format": "###,###,##0.00###",
+        },
+        "adjusted_scale_of_assessment": {
+            "column": 4,
+            "type": Decimal,
+            "number_format": "###,###,##0.00###",
+        },
+        "yearly_amount": {
+            "column": 5,
+            "type": Decimal,
+            "number_format": "###,###,##0.00###",
+        },
+        "average_inflation_rate": {
+            "column": 6,
+            "type": Decimal,
+            "number_format": "###,###,##0.00###",
+        },
+        "qualifies_for_fixed_rate_mechanism": {
+             "column": 7,
+            "type": bool,
+        },
+        "exchange_rate": {
+            "column": 8,
+            "type": Decimal,
+            "number_format": "###,###,##0.00###",
+        },
+        "currency": {
+            "column": 9,
+            "type": str,
+        },
+        "yearly_amount_local_currency": {
+            "column": 10,
+            "type": Decimal,
+            "number_format": "###,###,##0.00###",
+        },
+    }
+
+    TEMPLATE_FIRST_DATA_ROW = 2
+    TEMPLATE_LAST_DATA_ROW = 50
+
+    def __init__(
+        self,
+        sheet,
+        data,
+        number_of_rows,
+        start_year,
+    ):
+        self.sheet = sheet
+        self.data = data
+        self.number_of_rows = number_of_rows
+        self.start_year = start_year
+
+    def write_headers(self):
+        for key, item in self.DATA_MAPPING.items():
+            value = self.sheet.cell(self.HEADERS_ROW, item["column"]).value
+            if "2022-24" in value:
+                value = value.replace()
+
+
+    def write(self):
+        # Overwrite headers
+        # Write data
+        for row_data in self.data:
+            self.write_row(row_data)
+        # TODO: also make sure to delete any extra rows that the template MIGHT have
+        # TODO: also make sure to add rows if needed !
+
+        # Write footers (needed?)
+
+    def write_row(self, row_data):
+        # We need to make sure to copy row style form template's first & last data rows
+        # on this export's first and last row.
+        index = row_data["no"]
+        if index == 1:
+            # copy style from self.TEMPLATE_FIRST_DATA_ROW
+            pass
+        elif index == self.number_of_rows:
+            # copy style from self.TEMPLATE_LAST_DATA_ROW
+            pass
+        else:
+            # copy style from any intermediary row
+            pass
+        # TODO: should the above if-elif also handle the totals row? Guess so!
+
+        row_to_overwrite = self.TEMPLATE_FIRST_DATA_ROW + index - 1
+        for key in row_data.keys():
+            if self.DATA_MAPPING.get(key) is None:
+                continue
+            column = self.DATA_MAPPING[key]["column"]
+            cell = self.sheet.cell(row=row_to_overwrite, column=column)
+            self.write_cell(
+                cell,
+                self.DATA_MAPPING[key].get("type"),
+                self.DATA_MAPPING[key].get("format"),
+                row_data[key],
+            )
+
+    def write_cell(self, cell, type, format, value):
+        cell.value = value
+        if type in (Decimal, float) and format is not None:
+            cell.number_format = format
+        elif type == "boolean":
+            pass
