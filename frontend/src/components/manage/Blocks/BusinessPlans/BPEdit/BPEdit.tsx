@@ -17,14 +17,15 @@ import BPHeaderEdit from './BPHeaderEdit'
 import { useGetAllActivities } from './useGetAllActivities'
 
 const BPEditComponents = (props: BPEditDataInterface) => {
-  const { activities, params } = props
+  const { data, params } = props
+  const { activities, business_plan } = data || {}
 
   const [form, setForm] = useState<Array<ApiBPActivity>>(activities)
   const [activeTab, setActiveTab] = useState(0)
 
   return (
     <>
-      <BPHeaderEdit />
+      <BPHeaderEdit business_plan={business_plan} form={form} />
       <BPTabs {...{ activeTab, setActiveTab }}>
         <BEditTable {...{ form, params, setForm }} {...props} />
       </BPTabs>
@@ -49,7 +50,7 @@ const BPEdit = () => {
     )
   }
 
-  return <BPEditComponents {...{ activities, loading, params }} />
+  return <BPEditComponents {...{ data, loading, params }} />
 }
 
 export default function BPEditWrapper() {

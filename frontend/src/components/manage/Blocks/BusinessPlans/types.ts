@@ -18,7 +18,7 @@ export interface BPDataInterface {
 }
 
 export interface BPEditDataInterface {
-  activities: ApiBPActivity[]
+  data: { activities: ApiBPActivity[]; business_plan: ApiBP }
   loading: boolean
   params: any
 }

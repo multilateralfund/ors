@@ -18,7 +18,8 @@ import { filtersToQueryParams } from '../utils'
 import useColumnsOptions from './editSchema'
 
 export default function BPEditTable(props: BPEditTableInterface) {
-  const { activities, form, loading, params, setForm } = props
+  const { data, form, loading, params, setForm } = props
+  const { activities } = data || {}
 
   const { period } = useParams<BpPathParams>()
   const year_start = period.split('-')[0]
