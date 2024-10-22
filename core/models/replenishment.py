@@ -245,6 +245,10 @@ class InvoiceFile(models.Model):
 
 
 class Payment(models.Model):
+    class PaymentStatus(models.TextChoices):
+        PARTIALLY_PAID = "partially_paid", "Partially paid"
+        PAID = "paid", "Paid"
+
     country = models.ForeignKey(
         Country, on_delete=models.PROTECT, related_name="payments"
     )
@@ -260,6 +264,10 @@ class Payment(models.Model):
     )
 
     is_ferm = models.BooleanField(default=False)
+
+    status = models.CharField(
+        max_length=20, choices=PaymentStatus.choices, default=PaymentStatus.PAID
+    )
 
     date = models.DateField()
     payment_for_years = fields.ArrayField(models.CharField(max_length=10), default=list)

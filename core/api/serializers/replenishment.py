@@ -388,6 +388,7 @@ class PaymentSerializer(serializers.ModelSerializer):
             "country",
             "invoice",
             "is_ferm",
+            "status",
             "date",
             "payment_for_years",
             "amount_assessed",
@@ -414,6 +415,8 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
         required=False,
     )
     is_ferm = serializers.BooleanField(allow_null=True)
+
+    status = serializers.CharField(required=False, allow_null=True)
 
     amount_assessed = serializers.DecimalField(
         max_digits=30, decimal_places=15, coerce_to_string=False
@@ -460,6 +463,7 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
             "payment_for_years",
             "invoice_id",
             "is_ferm",
+            "status",
             "amount_assessed",
             "amount_received",
             "amount_local_currency",
