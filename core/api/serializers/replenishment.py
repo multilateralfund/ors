@@ -407,7 +407,7 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
         write_only=True,
     )
 
-    invoice = serializers.PrimaryKeyRelatedField(
+    invoice_id = serializers.PrimaryKeyRelatedField(
         queryset=Invoice.objects.all().values_list("id", flat=True),
         many=False,
         write_only=True,
@@ -458,7 +458,7 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
             "country_id",
             "date",
             "payment_for_years",
-            "invoice",
+            "invoice_id",
             "is_ferm",
             "amount_assessed",
             "amount_received",
