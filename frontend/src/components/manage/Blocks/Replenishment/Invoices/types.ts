@@ -24,7 +24,6 @@ export type ParsedInvoice = {
   files_data: ApiReplenishmentFile[]
   gray: boolean
   id: number
-  is_arrears: boolean
   is_ferm: boolean
   iso3: string
   number: string
@@ -40,7 +39,6 @@ export type InvoiceForSubmit = {
   date_second_reminder: null | string
   date_sent_out: null | string
   exchange_rate: number | string
-  is_arrears: boolean
   is_ferm: string
   reminder: null | string
   replenishment_id?: number

@@ -121,10 +121,8 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
   const paymentForYear = useMemo(
     () =>
       fields.payment_for_years.length > 0
-        ? fields.payment_for_years[0] !== 'arrears'
-          ? parseInt(fields.payment_for_years[0], 10) ||
-            ctx.periods?.[0].start_year
-          : ctx.periods?.[0].start_year
+        ? parseInt(fields.payment_for_years[0], 10) ||
+          ctx.periods?.[0].start_year
         : ctx.periods?.[0].start_year,
     [ctx.periods, fields.payment_for_years],
   )
@@ -285,12 +283,6 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
           required={true}
           onChange={handleChangeYears}
         >
-          <option key="arrears" className="text-primary" value="arrears">
-            Arrears
-          </option>
-          {/*<option key="deferred" className="text-primary" value="deferred">*/}
-          {/*  Deferred*/}
-          {/*</option>*/}
           {yearOptions.map((year) => (
             <option
               key={year.value}
@@ -312,7 +304,6 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
         >
           <option value="paid">Paid</option>
           <option value="partially_paid">Partially Paid</option>
-          <option value="pending">Pending</option>
         </FieldSearchableSelect>
         <FieldDateInput
           id="date"

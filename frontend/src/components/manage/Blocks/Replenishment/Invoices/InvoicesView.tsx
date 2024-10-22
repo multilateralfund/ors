@@ -113,7 +113,6 @@ function InvoicesView() {
         files: <ViewFiles files={data.invoice_files} />,
         files_data: data.invoice_files,
         gray: !data.id,
-        is_arrears: data.is_arrears || false,
         is_ferm: data.is_ferm || false,
         iso3: data.country.iso3,
         number: data.number?.toLocaleString(),
@@ -196,11 +195,6 @@ function InvoicesView() {
 
     if (entry.is_ferm === 'false') {
       entry.currency = 'USD'
-    }
-
-    if (entry.year === 'arrears') {
-      entry.year = null
-      entry.is_arrears = true
     }
 
     let nr_new_files = 0
@@ -287,11 +281,6 @@ function InvoicesView() {
 
     if (entry.is_ferm === 'false') {
       entry.currency = 'USD'
-    }
-
-    if (entry.year === 'arrears') {
-      entry.year = null
-      entry.is_arrears = true
     }
 
     let nr_new_files = 0
