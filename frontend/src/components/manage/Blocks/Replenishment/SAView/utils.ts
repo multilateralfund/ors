@@ -104,8 +104,6 @@ export function computeTableData(
     // Does it qualify for FERM?
     result[i].qual_ferm =
       ((getOverrideOrDefault(result[i], 'avg_ir') as number) ?? 100) < 10
-        ? true
-        : false
     result[i].qual_ferm = result[i].qual_ferm || result[i].ferm_cur === 'Euro'
 
     // Calculate contribution in national currency for those qualifying for FERM

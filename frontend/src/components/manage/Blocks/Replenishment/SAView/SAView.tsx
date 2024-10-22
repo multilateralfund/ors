@@ -623,6 +623,11 @@ function SAView(props: SAViewProps) {
   >({ amount: 0 })
   const [unusedAmount, setUnusedAmount] = useState<'' | number>('')
 
+  const annualBudget = useMemo(
+    () => (getFloat(replenishment.amount) - getFloat(unusedAmount)) / 3,
+    [replenishment.amount, unusedAmount],
+  )
+
   const [commentText, setCommentText] = useState<string>('')
 
   function handleNewTableData(newData: SAContribution[]) {
@@ -645,12 +650,7 @@ function SAView(props: SAViewProps) {
 
   const computedData = useMemo(
     () =>
-      shouldCompute
-        ? computeTableData(
-            tableData,
-            replenishment.amount - (unusedAmount || 0),
-          )
-        : tableData,
+      shouldCompute ? computeTableData(tableData, annualBudget) : tableData,
     /* eslint-disable-next-line */
     [tableData, replenishment, unusedAmount, shouldCompute],
   )
@@ -891,9 +891,7 @@ function SAView(props: SAViewProps) {
               <FormattedNumberInput
                 id="totalAmount"
                 className="w-36"
-                value={
-                  (replenishment?.amount - (unusedAmount as number) || 0) / 3
-                }
+                value={annualBudget}
                 disabled
                 readOnly
               />
