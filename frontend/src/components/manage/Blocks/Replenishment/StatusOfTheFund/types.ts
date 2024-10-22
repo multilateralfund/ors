@@ -65,6 +65,7 @@ export interface ISelectInputProps extends IInputProps {
 }
 
 export interface ISimpleInputProps extends IInputProps {
+  required?: boolean
   type?: string
 }
 
