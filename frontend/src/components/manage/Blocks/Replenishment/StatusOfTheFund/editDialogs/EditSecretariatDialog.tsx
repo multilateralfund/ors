@@ -45,11 +45,15 @@ const EditSecretariatDialog = (props: IEditSecretariatProps) => {
             field={`${field}_${currentYear}`}
             label={`${currentYear} ${label}`}
             setFormData={setFormData}
+            value={formData[`${field}_${currentYear}`]}
+            withoutInitialValue={true}
           />
           <NumberInput
             field={`${field}_${currentYear + 1}`}
             label={`${currentYear + 1} ${label}`}
             setFormData={setFormData}
+            value={formData[`${field}_${currentYear + 1}`]}
+            withoutInitialValue={true}
           />
         </div>
         <div className="flex gap-x-4">
@@ -57,11 +61,15 @@ const EditSecretariatDialog = (props: IEditSecretariatProps) => {
             field={`${field}_${currentYear + 2}`}
             label={`${currentYear + 2} ${label}`}
             setFormData={setFormData}
+            value={formData[`${field}_${currentYear + 2}`]}
+            withoutInitialValue={true}
           />
           <NumberInput
             field={`${field}_${currentYear + 3}`}
             label={`${currentYear + 3} ${label}`}
             setFormData={setFormData}
+            value={formData[`${field}_${currentYear + 3}`]}
+            withoutInitialValue={true}
           />
         </div>
         <div className="flex gap-x-4">

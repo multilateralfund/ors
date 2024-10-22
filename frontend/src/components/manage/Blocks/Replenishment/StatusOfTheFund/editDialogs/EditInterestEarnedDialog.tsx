@@ -71,6 +71,8 @@ const EditInterestEarnedDialog = (props: IEditIncomeDialogProps) => {
             field="interest_earned"
             label="Amount"
             setFormData={setFormData}
+            value={formData.interest_earned}
+            required
           />
           <SimpleInput
             field="comment"
