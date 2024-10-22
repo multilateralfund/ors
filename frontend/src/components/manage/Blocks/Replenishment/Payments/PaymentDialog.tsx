@@ -258,7 +258,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
         />
         {hasInvoices ? (
           <FieldSearchableSelect
-            id="invoice"
+            id="invoice_id"
             defaultValue={fields.invoice ?? ''}
             hasClear={true}
             label={columns.invoice_number.label}
