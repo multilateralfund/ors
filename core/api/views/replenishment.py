@@ -1529,7 +1529,7 @@ class ReplenishmentInvoiceViewSet(
         self._create_new_invoice_files(invoice, files)
 
         # And finally set the ScaleOfAssessment if all needed fields are specified
-        if is_ferm is not None and invoice.year and not invoice.is_arrears:
+        if is_ferm is not None and invoice.year:
             ScaleOfAssessment.objects.filter(
                 version__replenishment__start_year__lte=invoice.year,
                 version__replenishment__end_year__gte=invoice.year,
@@ -1569,7 +1569,7 @@ class ReplenishmentInvoiceViewSet(
         current_obj.invoice_files.filter(id__in=files_to_delete).delete()
 
         # And finally set the ScaleOfAssessment if all needed fields are specified
-        if is_ferm is not None and current_obj.year and not current_obj.is_arrears:
+        if is_ferm is not None and current_obj.year:
             ScaleOfAssessment.objects.filter(
                 version__replenishment__start_year__lte=current_obj.year,
                 version__replenishment__end_year__gte=current_obj.year,
