@@ -2256,7 +2256,8 @@ class TestInvoices(BaseTest):
         request_data = {
             "country_id": country.id,
             "replenishment_id": replenishment.id,
-            "amount": 100.0,
+            "amount_usd": 110.0,
+            "amount_local_currency": 100.0,
             "currency": "EUR",
             "exchange_rate": 0.7,
             "number": "aaa-yyy-create-1",
@@ -2282,7 +2283,8 @@ class TestInvoices(BaseTest):
         request_data = {
             "country_id": country.id,
             "replenishment_id": replenishment.id,
-            "amount": 100.0,
+            "amount_usd": 110.0,
+            "amount_local_currency": 100.0,
             "currency": "EUR",
             "exchange_rate": 0.7,
             "number": "aaa-yyy-create-1",

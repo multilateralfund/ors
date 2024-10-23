@@ -604,7 +604,8 @@ class InvoiceFactory(factory.django.DjangoModelFactory):
     country = factory.SubFactory(CountryFactory)
     replenishment = factory.SubFactory(ReplenishmentFactory)
 
-    amount = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    amount_usd = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    amount_local_currency = factory.Faker("pydecimal", left_digits=10, right_digits=2)
     currency = factory.Faker("pystr", max_chars=3)
 
     number = factory.Faker("pystr", max_chars=16)

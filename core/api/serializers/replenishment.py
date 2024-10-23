@@ -217,7 +217,10 @@ class InvoiceSerializer(serializers.ModelSerializer):
 
     is_arrears = serializers.BooleanField(required=False)
 
-    amount = serializers.DecimalField(
+    amount_usd = serializers.DecimalField(
+        max_digits=30, decimal_places=15, coerce_to_string=False
+    )
+    amount_local_currency = serializers.DecimalField(
         max_digits=30, decimal_places=15, coerce_to_string=False
     )
     currency = serializers.CharField()
@@ -239,7 +242,8 @@ class InvoiceSerializer(serializers.ModelSerializer):
             "is_arrears",
             "is_ferm",
             "status",
-            "amount",
+            "amount_usd",
+            "amount_local_currency",
             "currency",
             "exchange_rate",
             "number",
@@ -295,8 +299,13 @@ class InvoiceCreateSerializer(serializers.ModelSerializer):
     is_ferm = serializers.BooleanField(allow_null=True)
 
     status = serializers.CharField(required=False, allow_null=True)
-    amount = serializers.DecimalField(
+    amount_usd = serializers.DecimalField(
         max_digits=30, decimal_places=15, coerce_to_string=False
+    )
+    amount_local_currency = serializers.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        coerce_to_string=False,
     )
     currency = serializers.CharField()
     exchange_rate = serializers.DecimalField(
@@ -322,7 +331,8 @@ class InvoiceCreateSerializer(serializers.ModelSerializer):
             "year",
             "is_arrears",
             "status",
-            "amount",
+            "amount_usd",
+            "amount_local_currency",
             "currency",
             "exchange_rate",
             "number",

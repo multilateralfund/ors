@@ -208,7 +208,8 @@ class Invoice(models.Model):
         max_length=20, choices=InvoiceStatus.choices, default=InvoiceStatus.PENDING
     )
 
-    amount = models.DecimalField(max_digits=30, decimal_places=15)
+    amount_usd = models.DecimalField(max_digits=30, decimal_places=15)
+    amount_local_currency = models.DecimalField(max_digits=30, decimal_places=15)
     currency = models.CharField(max_length=64)
     exchange_rate = models.DecimalField(max_digits=30, decimal_places=15, null=True)
 
