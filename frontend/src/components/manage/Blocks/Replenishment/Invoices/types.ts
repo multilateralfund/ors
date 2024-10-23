@@ -7,8 +7,10 @@ import React from 'react'
 import { FormDialogProps } from '../types'
 
 export type ParsedInvoice = {
-  amount: null | number | string
-  be_amount: number
+  amount_local_currency: null | number | string  
+  amount_usd: null | number | string
+  be_amount_local_currency: number
+  be_amount_usd: number
   be_exchange_rate: number
   can_delete: boolean
   can_edit: boolean
@@ -27,7 +29,6 @@ export type ParsedInvoice = {
   is_ferm: boolean
   iso3: string
   number: string
-  replenishment: ApiReplenishment
   status: React.JSX.Element
   year: number | string
 }
@@ -41,7 +42,6 @@ export type InvoiceForSubmit = {
   exchange_rate: number | string
   is_ferm: string
   reminder: null | string
-  replenishment_id?: number
   status: null | string
   year: null | string
 } & { [key: string]: File }

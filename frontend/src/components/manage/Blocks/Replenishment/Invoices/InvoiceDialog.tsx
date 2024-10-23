@@ -151,14 +151,14 @@ function TabContentAmount(props: TabContentAmountProps) {
   const { countryInfo, data, fields, setFields, updateField } = props
 
   const handleChangeAmount: ChangeEventHandler<HTMLInputElement> = (evt) => {
-    const amount = evt.target.value
-    const nrAmount = getFloat(amount)
+    const amount_usd = evt.target.value
+    const nrAmountUsd = getFloat(amount_usd)
     setFields((prev) => ({
       ...prev,
-      amount,
       amount_local_currency: (
-        nrAmount * (countryInfo?.exchange_rate || 1)
+        nrAmountUsd * (countryInfo?.exchange_rate || 1)
       ).toString(),
+      amount_usd,
     }))
   }
   const handleChangeLocalCurrencyAmount: ChangeEventHandler<
@@ -168,8 +168,8 @@ function TabContentAmount(props: TabContentAmountProps) {
     const nrAmountLocal = getFloat(amountLocal)
     setFields((prev) => ({
       ...prev,
-      amount: (nrAmountLocal / (countryInfo?.exchange_rate || 1)).toString(),
       amount_local_currency: amountLocal,
+      amount_usd: (nrAmountLocal / (countryInfo?.exchange_rate || 1)).toString(),
     }))
   }
 
@@ -209,12 +209,12 @@ function TabContentAmount(props: TabContentAmountProps) {
             onChange={updateField('exchange_rate')}
           />
           <FieldFormattedNumberInput
-            id="amount"
+            id="amount_usd"
             decimalDigits={5}
             label="USD amount"
-            value={fields.amount}
+            value={fields.amount_usd}
             onChange={
-              fields.is_ferm ? handleChangeAmount : updateField('amount')
+              fields.is_ferm ? handleChangeAmount : updateField('amount_usd')
             }
           />
         </div>
@@ -233,8 +233,8 @@ function TabContentAmount(props: TabContentAmountProps) {
 }
 
 interface InvoiceDialogFields {
-  amount: string
   amount_local_currency: string
+  amount_usd: string
   country_id: string
   currency: string
   date_first_reminder: string
@@ -254,8 +254,8 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
   const ctx = useContext(ReplenishmentContext)
 
   const [fields, setFields] = useState<InvoiceDialogFields>({
-    amount: data?.amount?.toString() ?? '',
     amount_local_currency: data?.amount_local_currency?.toString() || '',
+    amount_usd: data?.amount_usd?.toString() ?? '',
     country_id: data?.country_id?.toString() ?? '',
     currency: data?.currency?.toString() ?? '',
     date_first_reminder: data?.date_first_reminder?.toString() ?? '',
@@ -297,9 +297,9 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
       if (!isEdit) {
         setFields((prev) => {
           const updated = {
-            amount: (countryInfo?.amount || '').toString() || '',
             amount_local_currency:
               (countryInfo?.amount_local_currency || '').toString() || '',
+            amount_usd: (countryInfo?.amount || '').toString() || '',
             currency: (countryInfo?.currency || '').toString() || '',
             exchange_rate: (countryInfo?.exchange_rate || '').toString() || '',
             is_ferm: countryInfo?.opted_for_ferm || false,
