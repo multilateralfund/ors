@@ -163,21 +163,20 @@ def send_mail_bp_status_update(business_plan_id):
 def send_mail_set_password_country_user(user_emails):
     for user_email in user_emails:
         try:
-            country_users = User.objects.filter(email=user_email)
             form = CountryUserPasswordResetForm({"email": user_email})
-            if not form.is_valid() or country_users.count() != 2:
+            if not form.is_valid():
                 logger.error(f"Password reset mail error: {user_email}")
                 continue
 
-            country_inputter = country_users.filter(
-                user_type=User.UserType.COUNTRY_USER
+            country_inputter = User.objects.filter(
+                email=user_email, user_type=User.UserType.COUNTRY_USER
             ).first()
             password_inputter = User.objects.make_random_password(length=12)
             country_inputter.set_password(password_inputter)
             country_inputter.save()
 
-            country_submitter = country_users.filter(
-                user_type=User.UserType.COUNTRY_SUBMITTER
+            country_submitter = User.objects.filter(
+                email=user_email, user_type=User.UserType.COUNTRY_SUBMITTER
             ).first()
             password_submitter = User.objects.make_random_password(length=12)
             country_submitter.set_password(password_submitter)
