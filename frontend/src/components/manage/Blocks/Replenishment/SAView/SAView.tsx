@@ -405,7 +405,7 @@ function tranformContributions(cs: ApiReplenishmentSoA) {
     const cur = cs[i].currency
     r.push({
       adj_un_soa: cs[i].adjusted_scale_of_assessment,
-      annual_contributions: cs[i].amount,
+      annual_contributions: cs[i].yearly_amount,
       avg_ir: cs[i].average_inflation_rate,
       country: cs[i].country.name_alt,
       country_id: cs[i].country.id,
