@@ -78,12 +78,11 @@ class InvoiceAdmin(admin.ModelAdmin):
     list_filter = [
         "date_of_issuance",
         AutocompleteFilterFactory("country", "country"),
-        AutocompleteFilterFactory("replenishment", "replenishment"),
     ]
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
-        return queryset.select_related("country", "replenishment")
+        return queryset.select_related("country")
 
 
 @admin.register(Payment)
@@ -96,9 +95,7 @@ class PaymentAdmin(admin.ModelAdmin):
     list_filter = [
         "date",
         AutocompleteFilterFactory("country", "country"),
-        AutocompleteFilterFactory("replenishment", "replenishment"),
     ]
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
-        return queryset.select_related("country", "replenishment")

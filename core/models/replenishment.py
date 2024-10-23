@@ -192,15 +192,7 @@ class Invoice(models.Model):
         Country, on_delete=models.PROTECT, related_name="invoices"
     )
 
-    replenishment = models.ForeignKey(
-        Replenishment,
-        on_delete=models.PROTECT,
-        null=True,
-        blank=True,
-        related_name="invoices",
-    )
     year = models.IntegerField(null=True, blank=True)
-    is_arrears = models.BooleanField(default=False)
 
     is_ferm = models.BooleanField(default=False)
 
@@ -252,9 +244,6 @@ class Payment(models.Model):
 
     country = models.ForeignKey(
         Country, on_delete=models.PROTECT, related_name="payments"
-    )
-    replenishment = models.ForeignKey(
-        Replenishment, on_delete=models.PROTECT, related_name="payments", null=True
     )
     invoice = models.ForeignKey(
         Invoice,

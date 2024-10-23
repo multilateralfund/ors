@@ -213,10 +213,6 @@ class InvoiceFileSerializer(serializers.ModelSerializer):
 class InvoiceSerializer(serializers.ModelSerializer):
     country = CountrySerializer(read_only=True)
 
-    replenishment = ReplenishmentSerializer(read_only=True)
-
-    is_arrears = serializers.BooleanField(required=False)
-
     amount_usd = serializers.DecimalField(
         max_digits=30, decimal_places=15, coerce_to_string=False
     )
@@ -237,9 +233,7 @@ class InvoiceSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "country",
-            "replenishment",
             "year",
-            "is_arrears",
             "is_ferm",
             "status",
             "amount_usd",
@@ -287,15 +281,6 @@ class InvoiceCreateSerializer(serializers.ModelSerializer):
         write_only=True,
     )
 
-    is_arrears = serializers.BooleanField(required=False)
-
-    replenishment_id = serializers.PrimaryKeyRelatedField(
-        queryset=Replenishment.objects.all().values_list("id", flat=True),
-        write_only=True,
-        allow_null=True,
-        required=False,
-    )
-
     is_ferm = serializers.BooleanField(allow_null=True)
 
     status = serializers.CharField(required=False, allow_null=True)
@@ -326,10 +311,8 @@ class InvoiceCreateSerializer(serializers.ModelSerializer):
         model = Invoice
         fields = [
             "country_id",
-            "replenishment_id",
             "is_ferm",
             "year",
-            "is_arrears",
             "status",
             "amount_usd",
             "amount_local_currency",
