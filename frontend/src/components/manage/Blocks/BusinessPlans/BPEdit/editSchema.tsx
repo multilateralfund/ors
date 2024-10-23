@@ -6,7 +6,11 @@ import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRendere
 import { useStore } from '@ors/store'
 
 import { tagsCellRenderer } from '../../Table/BusinessPlansTable/schemaHelpers'
-import { multiYearFilterOptions } from '../constants'
+import {
+  multiYearFilterOptions,
+  statusOptions,
+  tableColumns,
+} from '../constants'
 import { useGetChemicalTypes } from '../useGetChemicalTypes'
 import {
   MYAValueSetter,
@@ -14,6 +18,7 @@ import {
   agFormatValue,
   agFormatValueTags,
   commentsValueSetter,
+  editTagsCellRenderer,
   getOptionLabel,
   getOptionLabelByName,
   isOptionEqualToValue,
@@ -35,12 +40,10 @@ const useColumnsOptions = (yearColumns: any[]) => {
   const sectors = bpSlice.sectors.data
   const subsectors = bpSlice.subsectors.data
   const substances = cpReportsSlice.substances.data
-  const statuses = commonSlice.settings.data.business_plan_statuses.map(
-    (status) => ({
-      id: status[0],
-      name: status[1],
-    }),
-  )
+  const statuses = statusOptions.map((status) => ({
+    id: status.status,
+    name: status.status_displayed,
+  }))
   const commentTypes = bpSlice.commentTypes.data
   const chemicalTypes = useGetChemicalTypes()
   const chemicalTypesResults = chemicalTypes.results
@@ -63,7 +66,7 @@ const useColumnsOptions = (yearColumns: any[]) => {
           ),
           field: 'country_id',
           headerClass: 'ag-text-center',
-          headerName: 'Country',
+          headerName: tableColumns.country_id,
           minWidth: 150,
           tooltipField: 'country.name',
           valueSetter: (params: any) =>
@@ -87,7 +90,7 @@ const useColumnsOptions = (yearColumns: any[]) => {
           ),
           field: 'project_cluster_id',
           headerClass: 'ag-text-center',
-          headerName: 'Cluster',
+          headerName: tableColumns.project_cluster_id,
           minWidth: 120,
           tooltipField: 'project_cluster.name',
           valueSetter: (params: any) =>
@@ -108,7 +111,7 @@ const useColumnsOptions = (yearColumns: any[]) => {
           ),
           field: 'project_type_id',
           headerClass: 'ag-text-center',
-          headerName: 'Type',
+          headerName: tableColumns.project_type_id,
           minWidth: 120,
           tooltipField: 'project_type.name',
           valueSetter: (params: any) =>
@@ -133,7 +136,7 @@ const useColumnsOptions = (yearColumns: any[]) => {
           ),
           field: 'bp_chemical_type_id',
           headerClass: 'ag-text-center',
-          headerName: 'Chemical type',
+          headerName: tableColumns.bp_chemical_type_id,
           minWidth: 120,
           tooltipField: 'bp_chemical_type.name',
           valueSetter: (params: any) =>
@@ -154,7 +157,7 @@ const useColumnsOptions = (yearColumns: any[]) => {
           ),
           field: 'sector_id',
           headerClass: 'ag-text-center',
-          headerName: 'Sector',
+          headerName: tableColumns.sector_id,
           minWidth: 120,
           tooltipField: 'sector.name',
           valueSetter: (params: any) => valueSetter(params, 'sector', sectors),
@@ -174,7 +177,7 @@ const useColumnsOptions = (yearColumns: any[]) => {
           ),
           field: 'subsector_id',
           headerClass: 'ag-text-center',
-          headerName: 'Subsector',
+          headerName: tableColumns.subsector_id,
           minWidth: 120,
           tooltipField: 'subsector.name',
           valueSetter: (params: any) =>
@@ -184,7 +187,7 @@ const useColumnsOptions = (yearColumns: any[]) => {
           cellClass: 'ag-cell-wrap-text',
           field: 'title',
           headerClass: 'ag-text-center',
-          headerName: 'Title',
+          headerName: tableColumns.title,
           minWidth: 200,
           suppressAutoSize: true,
           tooltipField: 'title',
@@ -210,7 +213,7 @@ const useColumnsOptions = (yearColumns: any[]) => {
             tagsCellRenderer({ value: props.data.substances_display }),
           field: 'substances',
           headerClass: 'ag-text-center',
-          headerName: 'Substances',
+          headerName: tableColumns.substances,
           minWidth: 230,
           valueSetter: (params: any) =>
             substancesValueSetter(params, substances),
@@ -219,7 +222,7 @@ const useColumnsOptions = (yearColumns: any[]) => {
           cellClass: 'ag-cell-wrap-text',
           field: 'required_by_model',
           headerClass: 'ag-text-center',
-          headerName: 'Required by model',
+          headerName: tableColumns.required_by_model,
           minWidth: 150,
           suppressAutoSize: true,
           tooltipField: 'required_by_model',
@@ -229,11 +232,10 @@ const useColumnsOptions = (yearColumns: any[]) => {
           cellEditor: 'agNumberCellEditor',
           cellEditorParams: {
             allowNullVals: true,
-            min: 0,
           },
           field: 'amount_polyol',
           headerClass: 'ag-text-center',
-          headerName: 'Polyol Amount',
+          headerName: tableColumns.amount_polyol,
           minWidth: 100,
           valueGetter: (params: any) => {
             const polyolAmount = params.data.amount_polyol
@@ -256,11 +258,11 @@ const useColumnsOptions = (yearColumns: any[]) => {
             options: statuses,
           },
           cellRenderer: (props: any) => (
-            <AgCellRenderer {...props} value={props.data.status_display} />
+            <AgCellRenderer {...props} value={props.data.status} />
           ),
           field: 'status',
           headerClass: 'ag-text-center',
-          headerName: 'Status',
+          headerName: tableColumns.status,
           minWidth: 120,
           tooltipField: 'status_display',
           valueSetter: (params: any) => statusValueSetter(params, statuses),
@@ -278,7 +280,7 @@ const useColumnsOptions = (yearColumns: any[]) => {
           },
           field: 'is_multi_year',
           headerClass: 'ag-text-center',
-          headerName: 'IND/MYA',
+          headerName: tableColumns.is_multi_year,
           minWidth: 120,
           tooltipField: 'is_multi_year_display',
           valueGetter: ({ data }: any) => (data.is_multi_year ? 'MYA' : 'IND'),
@@ -289,7 +291,7 @@ const useColumnsOptions = (yearColumns: any[]) => {
           cellClass: 'ag-cell-wrap-text',
           field: 'reason_for_exceeding',
           headerClass: 'ag-text-center',
-          headerName: 'Reason for Exceeding',
+          headerName: tableColumns.reason_for_exceeding,
           minWidth: 200,
           suppressAutoSize: true,
           tooltipField: 'reason_for_exceeding',
@@ -298,7 +300,7 @@ const useColumnsOptions = (yearColumns: any[]) => {
           cellClass: 'ag-cell-wrap-text',
           field: 'remarks',
           headerClass: 'ag-text-center',
-          headerName: 'Remarks',
+          headerName: tableColumns.remarks,
           minWidth: 200,
           suppressAutoSize: true,
           tooltipField: 'remarks',
@@ -307,7 +309,7 @@ const useColumnsOptions = (yearColumns: any[]) => {
           cellClass: 'ag-cell-wrap-text',
           field: 'comment_secretariat',
           headerClass: 'ag-text-center',
-          headerName: 'Comment',
+          headerName: tableColumns.comment_secretariat,
           minWidth: 200,
           suppressAutoSize: true,
           tooltipField: 'comment_secretariat',
@@ -322,14 +324,17 @@ const useColumnsOptions = (yearColumns: any[]) => {
             getOptionLabel: (option: any) =>
               getOptionLabel(commentTypes, option),
             isMultiple: true,
-            isOptionEqualToValue: isOptionEqualToValueByName,
+            isOptionEqualToValue: isOptionEqualToValue,
             options: commentTypes,
           },
           cellRenderer: (props: any) =>
-            tagsCellRenderer({ value: props.data.comment_types }),
+            editTagsCellRenderer({
+              commentTypes,
+              value: props.data.comment_types,
+            }),
           field: 'comment_types',
           headerClass: 'ag-text-center',
-          headerName: 'Comment types',
+          headerName: tableColumns.comment_types,
           minWidth: 230,
           valueSetter: commentsValueSetter,
         },

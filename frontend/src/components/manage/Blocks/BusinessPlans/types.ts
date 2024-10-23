@@ -17,12 +17,6 @@ export interface BPDataInterface {
   results: Array<any>
 }
 
-export interface BPEditDataInterface {
-  data: { activities: ApiBPActivity[]; business_plan: ApiBP }
-  loading: boolean
-  params: any
-}
-
 export type BPGetVersionsInterface = {
   agency_id: number
   year_end: number
@@ -41,8 +35,9 @@ export type BPTabsInterface = {
 
 export type BPEditTableInterface = {
   form: Array<ApiBPActivity>
+  loading: boolean
   params: any
-  setForm: Dispatch<SetStateAction<Array<ApiBPActivity>>>
-} & BPEditDataInterface
+  setForm: Dispatch<SetStateAction<Array<ApiBPActivity> | null | undefined>>
+}
 
 export type ViewSelectorValuesType = 'list' | 'table'

@@ -1,12 +1,14 @@
 import { Button } from '@mui/material'
-import { pick } from 'lodash'
+import { entries, find, indexOf, isEmpty, pick } from 'lodash'
 import { useParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useSnackbar } from 'notistack'
 
 import Link from '@ors/components/ui/Link/Link'
 import { api } from '@ors/helpers'
 
 import BPHeaderView from '../BPHeaderView'
+import { tableColumns } from '../constants'
 import { BpPathParams } from '../types'
 
 export default function BPHeaderEdit({ business_plan, form }: any) {
@@ -14,6 +16,7 @@ export default function BPHeaderEdit({ business_plan, form }: any) {
   const { agency, period } = pathParams
 
   const { enqueueSnackbar } = useSnackbar()
+  const router = useRouter()
 
   const editBP = async () => {
     try {
@@ -29,13 +32,39 @@ export default function BPHeaderEdit({ business_plan, form }: any) {
         method: 'PUT',
       })
 
-      enqueueSnackbar(<>Updated submission.</>, { variant: 'success' })
+      enqueueSnackbar(<>Updated submission for {response.name}.</>, {
+        variant: 'success',
+      })
+      router.push(`/business-plans/${agency}/${period}`)
     } catch (error) {
       if (error.status === 400) {
         const errors = await error.json()
-        enqueueSnackbar(<>Please make sure all the inputs are correct.</>, {
-          variant: 'error',
-        })
+
+        const firstError = find(errors.activities, (err) => !isEmpty(err))
+        const index = indexOf(errors.activities, firstError)
+
+        enqueueSnackbar(
+          <div className="flex flex-col">
+            Row {index + 1}
+            {entries(firstError).map((error) => {
+              const headerName = tableColumns[error[0]]
+              const errorMessage = (error[1] as Array<string>)[0]
+
+              return ['project_type_code', 'sector_code'].includes(
+                error[0],
+              ) ? null : headerName ? (
+                <div key={error[0]}>
+                  {headerName} - {errorMessage}
+                </div>
+              ) : (
+                <>{errorMessage}</>
+              )
+            })}
+          </div>,
+          {
+            variant: 'error',
+          },
+        )
       } else {
         enqueueSnackbar(<>An error occurred. Please try again.</>, {
           variant: 'error',

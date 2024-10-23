@@ -1,4 +1,6 @@
-import { find, get, isEqual, isNull, isObject } from 'lodash'
+import { find, get, isEqual, isNull, isObject, map } from 'lodash'
+
+import { displayTagsCellValue } from '../../Table/BusinessPlansTable/schemaHelpers'
 
 export const agFormatValue = (value: any) => value?.id || ''
 export const agFormatNameValue = (value: any) => value?.name || ''
@@ -83,9 +85,18 @@ export const MYAValueSetter = (params: any, multiYearFilterOptions: any) => {
 
 export const commentsValueSetter = (params: any) => {
   const newValNames = params.newValue?.map((newVal: any) =>
-    isObject(newVal) ? get(newVal, 'name') : newVal,
+    isObject(newVal) ? get(newVal, 'id') : newVal,
   )
   params.data.comment_types = newValNames
 
   return true
+}
+
+export const editTagsCellRenderer = (props: any) => {
+  const tags = map(
+    props.value,
+    (tagId) => find(props.commentTypes, (comm) => comm.id === tagId)?.name,
+  )
+
+  return displayTagsCellValue(tags)
 }

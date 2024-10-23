@@ -154,7 +154,7 @@ const Tag = (tag: string, index: number, classes?: string) => (
   </Typography>
 )
 
-const displayTagsCellValue = (tags: Array<string>) => (
+export const displayTagsCellValue = (tags: Array<string>) => (
   <Tooltip
     TransitionProps={{ timeout: 0 }}
     classes={{ tooltip: 'bp-table-tooltip' }}

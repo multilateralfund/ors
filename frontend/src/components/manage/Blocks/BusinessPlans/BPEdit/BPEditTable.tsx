@@ -18,8 +18,7 @@ import { filtersToQueryParams } from '../utils'
 import useColumnsOptions from './editSchema'
 
 export default function BPEditTable(props: BPEditTableInterface) {
-  const { data, form, loading, params, setForm } = props
-  const { activities } = data || {}
+  const { form, loading, params, setForm } = props
 
   const { period } = useParams<BpPathParams>()
   const year_start = period.split('-')[0]
@@ -110,7 +109,6 @@ export default function BPEditTable(props: BPEditTableInterface) {
         cellEditor: 'agNumberCellEditor',
         cellEditorParams: {
           allowNullVals: true,
-          min: 0,
         },
         field: `value_usd_${year}`,
         headerClass: 'ag-text-center',
@@ -129,7 +127,6 @@ export default function BPEditTable(props: BPEditTableInterface) {
         cellEditor: 'agNumberCellEditor',
         cellEditorParams: {
           allowNullVals: true,
-          min: 0,
         },
         field: `value_odp_${year}`,
         headerClass: 'ag-text-center',
@@ -148,7 +145,6 @@ export default function BPEditTable(props: BPEditTableInterface) {
         cellEditor: 'agNumberCellEditor',
         cellEditorParams: {
           allowNullVals: true,
-          min: 0,
         },
         field: `value_mt_${year}`,
         headerClass: 'ag-text-center',
@@ -216,7 +212,7 @@ export default function BPEditTable(props: BPEditTableInterface) {
             gridRef={grid}
             loaded={!loading}
             loading={loading}
-            rowData={activities}
+            rowData={form}
             tooltipShowDelay={200}
             onCellValueChanged={(event) => {
               const eventData = event.data
