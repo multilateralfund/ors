@@ -186,6 +186,20 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
     onSubmit(formData, evt)
   }
 
+  const handleSelectInvoice = useCallback(
+    function handleSelectInvoice(invoiceId: string) {
+      const invoice = invoicesList.find(({ id }) => id.toString() === invoiceId)
+      setFields(function (prevState) {
+        return {
+          ...prevState,
+          invoice: invoiceId,
+          payment_for_years: invoice ? [invoice?.year.toString()] : [],
+        }
+      })
+    },
+    [invoicesList],
+  )
+
   const handleChangeCurrencyAmount: ChangeEventHandler<HTMLInputElement> = (
     evt,
   ) => {
@@ -205,6 +219,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
       return {
         ...prev,
         country_id: value,
+        invoice: '',
         is_ferm: countryInfo?.opted_for_ferm || false,
       }
     })
@@ -235,8 +250,8 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
       <DialogTabContent isCurrent={tab == 0}>
         <FieldSearchableSelect
           id="country_id"
-          defaultValue={data?.country_id.toString()}
           label={columns.country.label}
+          value={fields.country_id}
           onChange={handleChangeCountry}
           required
         >
@@ -257,11 +272,11 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
         {hasInvoices ? (
           <FieldSearchableSelect
             id="invoice_id"
-            defaultValue={fields.invoice ?? ''}
             hasClear={true}
             label={columns.invoice_number.label}
             required={true}
-            onChange={setField('invoice')}
+            value={fields.invoice ?? ''}
+            onChange={handleSelectInvoice}
           >
             {invoicesList.map((inv) => (
               <option key={inv.id} value={inv.id}>
@@ -277,10 +292,10 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
         )}
         <FieldSearchableSelect
           id="payment_for_years"
-          defaultValue={fields.payment_for_years?.[0] ?? ''}
           hasClear={true}
           label={columns.payment_years.label}
           required={true}
+          value={fields.payment_for_years?.[0] ?? ''}
           onChange={handleChangeYears}
         >
           {yearOptions.map((year) => (
@@ -292,18 +307,6 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
               {year.label}
             </option>
           ))}
-        </FieldSearchableSelect>
-        <FieldSearchableSelect
-          id="status"
-          defaultValue={fields.status}
-          hasClear={true}
-          label="Status"
-          onChange={setField('status')}
-          onClear={() => setField('status')('')}
-          required
-        >
-          <option value="paid">Paid</option>
-          <option value="partially_paid">Partially Paid</option>
         </FieldSearchableSelect>
         <FieldDateInput
           id="date"
@@ -388,6 +391,17 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
           value={fields.is_ferm ? fields.ferm_gain_or_loss : ''}
           onChange={updateField('ferm_gain_or_loss')}
         />
+        <FieldSearchableSelect
+          id="status"
+          hasClear={true}
+          label="Status"
+          value={fields.status}
+          onChange={setField('status')}
+          required
+        >
+          <option value="paid">Paid</option>
+          <option value="partially_paid">Partially Paid</option>
+        </FieldSearchableSelect>
         <h5>Upload</h5>
         <InvoiceAttachments
           oldFiles={data?.files_data || []}

@@ -75,8 +75,8 @@ function TabContentDetails(props: TabContentDetailsProps) {
     <>
       <FieldSearchableSelect
         id="country_id"
-        defaultValue={fields.country_id}
         label="Country"
+        value={fields.country_id}
         onChange={handleCountrySelect}
         required
       >
@@ -161,6 +161,17 @@ function TabContentAmount(props: TabContentAmountProps) {
       ).toString(),
     }))
   }
+  const handleChangeLocalCurrencyAmount: ChangeEventHandler<
+    HTMLInputElement
+  > = (evt) => {
+    const amountLocal = evt.target.value
+    const nrAmountLocal = getFloat(amountLocal)
+    setFields((prev) => ({
+      ...prev,
+      amount: (nrAmountLocal / (countryInfo?.exchange_rate || 1)).toString(),
+      amount_local_currency: amountLocal,
+    }))
+  }
 
   return (
     <>
@@ -182,7 +193,11 @@ function TabContentAmount(props: TabContentAmountProps) {
             label={`"${fields.currency}" amount`}
             readOnly={!fields.is_ferm}
             value={fields.amount_local_currency}
-            onChange={updateField('amount_local_currency')}
+            onChange={
+              fields.is_ferm
+                ? handleChangeLocalCurrencyAmount
+                : updateField('amount_local_currency')
+            }
           />
           <FieldFormattedNumberInput
             id="exchange_rate"
@@ -239,17 +254,17 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
   const ctx = useContext(ReplenishmentContext)
 
   const [fields, setFields] = useState<InvoiceDialogFields>({
-    amount: data?.amount ?? '',
-    amount_local_currency: data?.amount_local_currency || '',
-    country_id: data?.country_id ?? '',
-    currency: data?.currency ?? '',
-    date_first_reminder: data?.date_first_reminder ?? '',
-    date_of_issuance: data?.date_of_issuance ?? '',
-    date_second_reminder: data?.date_second_reminder ?? '',
-    date_sent_out: data?.date_sent_out ?? '',
-    exchange_rate: data?.exchange_rate ?? '',
+    amount: data?.amount?.toString() ?? '',
+    amount_local_currency: data?.amount_local_currency?.toString() || '',
+    country_id: data?.country_id?.toString() ?? '',
+    currency: data?.currency?.toString() ?? '',
+    date_first_reminder: data?.date_first_reminder?.toString() ?? '',
+    date_of_issuance: data?.date_of_issuance?.toString() ?? '',
+    date_second_reminder: data?.date_second_reminder?.toString() ?? '',
+    date_sent_out: data?.date_sent_out?.toString() ?? '',
+    exchange_rate: data?.exchange_rate?.toString() ?? '',
     is_ferm: data?.is_ferm ?? false,
-    year: data?.year ?? '',
+    year: data?.year?.toString() ?? '',
   })
 
   const updateField = useCallback(
