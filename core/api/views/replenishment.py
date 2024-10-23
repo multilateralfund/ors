@@ -1386,11 +1386,7 @@ class ReplenishmentInvoiceViewSet(
         ):
             queryset = queryset.filter(country_id=user.country_id)
 
-        return queryset.select_related("country", "replenishment").prefetch_related(
-            models.Prefetch(
-                "replenishment__scales_of_assessment_versions",
-                queryset=ScaleOfAssessmentVersion.objects.order_by("-version"),
-            ),
+        return queryset.select_related("country").prefetch_related(
             "invoice_files",
         )
 
@@ -1658,12 +1654,7 @@ class ReplenishmentPaymentViewSet(
         ):
             queryset = queryset.filter(country_id=user.country_id)
 
-        return queryset.select_related("country", "replenishment").prefetch_related(
-            models.Prefetch(
-                "replenishment__scales_of_assessment_versions",
-                queryset=ScaleOfAssessmentVersion.objects.order_by("-version"),
-            )
-        )
+        return queryset.select_related("country")
 
     def get_serializer_class(self):
         if self.request.method in ["POST", "PUT"]:

@@ -2111,13 +2111,11 @@ class TestInvoices(BaseTest):
 
         InvoiceFactory(
             country=country_1,
-            replenishment=replenishment_1,
             number="aaa-yyy-1",
             year=self.year_1,
         )
         InvoiceFactory(
             country=country_2,
-            replenishment=replenishment_1,
             number="aaa-yyy-2",
             year=self.year_2,
         )
@@ -2175,14 +2173,12 @@ class TestInvoices(BaseTest):
 
         InvoiceFactory(
             country=country_1,
-            replenishment=replenishment_1,
             number="aaa-yyy-1",
             year=self.year_1,
             is_ferm=True,
         )
         InvoiceFactory(
             country=country_1,
-            replenishment=replenishment_2,
             number="aaa-yyy-2",
             year=self.year_1,
             date_first_reminder=datetime.now().date(),
@@ -2190,7 +2186,6 @@ class TestInvoices(BaseTest):
         )
         InvoiceFactory(
             country=country_2,
-            replenishment=replenishment_2,
             number="aaa-yyy-3",
             year=self.year_3,
             date_first_reminder=datetime.now().date(),
@@ -2198,7 +2193,6 @@ class TestInvoices(BaseTest):
         )
         InvoiceFactory(
             country=country_2,
-            replenishment=replenishment_2,
             number="aaa-yyy-4",
             year=self.year_3,
             date_first_reminder=datetime.now().date(),
@@ -2256,7 +2250,8 @@ class TestInvoices(BaseTest):
         request_data = {
             "country_id": country.id,
             "replenishment_id": replenishment.id,
-            "amount": 100.0,
+            "amount_usd": 110.0,
+            "amount_local_currency": 100.0,
             "currency": "EUR",
             "exchange_rate": 0.7,
             "number": "aaa-yyy-create-1",
@@ -2270,19 +2265,14 @@ class TestInvoices(BaseTest):
 
     def test_invoices_update(self, treasurer_user):
         country = CountryFactory.create(name="Country 1", iso3="XYZ")
-        replenishment = ReplenishmentFactory.create(
-            start_year=self.year_1, end_year=self.year_2
-        )
-        invoice = InvoiceFactory(
-            country=country, replenishment=replenishment, number="aaa-yyy-1"
-        )
+        invoice = InvoiceFactory(country=country, number="aaa-yyy-1")
 
         self.client.force_authenticate(user=treasurer_user)
 
         request_data = {
             "country_id": country.id,
-            "replenishment_id": replenishment.id,
-            "amount": 100.0,
+            "amount_usd": 110.0,
+            "amount_local_currency": 100.0,
             "currency": "EUR",
             "exchange_rate": 0.7,
             "number": "aaa-yyy-create-1",
@@ -2308,12 +2298,8 @@ class TestPayments(BaseTest):
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
         country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
 
-        replenishment = ReplenishmentFactory.create(
-            start_year=self.year_3, end_year=self.year_4
-        )
-
-        PaymentFactory(country=country_1, replenishment=None)
-        PaymentFactory(country=country_2, replenishment=replenishment)
+        PaymentFactory(country=country_1)
+        PaymentFactory(country=country_2)
 
         self.client.force_authenticate(user=user)
 
@@ -2328,7 +2314,6 @@ class TestPayments(BaseTest):
 
         request_data = {
             "country_id": country.id,
-            "replenishment_id": None,
             "date": "2019-03-14",
             "payment_for_years": ["deferred"],
             "amount_assessed": 100.0,
@@ -2348,7 +2333,6 @@ class TestPayments(BaseTest):
 
         request_data = {
             "country_id": country.id,
-            "replenishment_id": None,
             "date": "2019-03-14",
             "payment_for_years": ["deferred"],
             "amount_assessed": 100.0,
@@ -2382,7 +2366,6 @@ class TestPayments(BaseTest):
 
         request_data = {
             "country_id": country.id,
-            "replenishment_id": None,
             "date": "2019-03-14",
             "payment_for_years": [self.year_1],
             "amount_assessed": 100.0,

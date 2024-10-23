@@ -192,15 +192,7 @@ class Invoice(models.Model):
         Country, on_delete=models.PROTECT, related_name="invoices"
     )
 
-    replenishment = models.ForeignKey(
-        Replenishment,
-        on_delete=models.PROTECT,
-        null=True,
-        blank=True,
-        related_name="invoices",
-    )
     year = models.IntegerField(null=True, blank=True)
-    is_arrears = models.BooleanField(default=False)
 
     is_ferm = models.BooleanField(default=False)
 
@@ -208,7 +200,8 @@ class Invoice(models.Model):
         max_length=20, choices=InvoiceStatus.choices, default=InvoiceStatus.PENDING
     )
 
-    amount = models.DecimalField(max_digits=30, decimal_places=15)
+    amount_usd = models.DecimalField(max_digits=30, decimal_places=15)
+    amount_local_currency = models.DecimalField(max_digits=30, decimal_places=15)
     currency = models.CharField(max_length=64)
     exchange_rate = models.DecimalField(max_digits=30, decimal_places=15, null=True)
 
@@ -251,9 +244,6 @@ class Payment(models.Model):
 
     country = models.ForeignKey(
         Country, on_delete=models.PROTECT, related_name="payments"
-    )
-    replenishment = models.ForeignKey(
-        Replenishment, on_delete=models.PROTECT, related_name="payments", null=True
     )
     invoice = models.ForeignKey(
         Invoice,
