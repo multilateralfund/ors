@@ -95,8 +95,10 @@ function InvoicesView() {
       }
       return results.map((data) => ({
         id: data.id,
-        amount: formatNumberValue(data.amount),
-        be_amount: data.amount,
+        amount_local_currency: formatNumberValue(data.amount_local_currency),
+        amount_usd: formatNumberValue(data.amount_usd),
+        be_amount_local_currency: data.amount_local_currency,
+        be_amount_usd: data.amount_usd,
         be_exchange_rate: data.exchange_rate,
         can_delete: !!(ctx.isTreasurer && data.id),
         can_edit: !!(ctx.isTreasurer && data.id),
@@ -116,7 +118,6 @@ function InvoicesView() {
         is_ferm: data.is_ferm || false,
         iso3: data.country.iso3,
         number: data.number?.toLocaleString(),
-        replenishment: data.replenishment,
         status: <InvoiceStatus row={data} />,
         year: data.year || '-',
       }))
@@ -173,7 +174,8 @@ function InvoicesView() {
       entry.date_sent_out = dateForEditField(entry.date_sent_out)
       entry.date_first_reminder = dateForEditField(entry?.date_first_reminder)
       entry.date_second_reminder = dateForEditField(entry?.date_second_reminder)
-      entry.amount = entry.be_amount
+      entry.amount_local_currency = entry.be_amount_local_currency
+      entry.amount_usd = entry.be_amount_usd
       entry.exchange_rate = entry.be_exchange_rate
     }
     return entry
@@ -273,11 +275,6 @@ function InvoicesView() {
     entry.exchange_rate = isNaN(entry.exchange_rate as number)
       ? ''
       : entry.exchange_rate
-    entry.replenishment_id = ctx.periods.find(
-      (p) =>
-        Number(p.start_year) <= Number(entry.year) &&
-        Number(p.end_year) >= Number(entry.year),
-    )?.id
 
     if (entry.is_ferm === 'false') {
       entry.currency = 'USD'
