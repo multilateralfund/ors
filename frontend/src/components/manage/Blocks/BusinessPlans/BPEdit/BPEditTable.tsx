@@ -1,7 +1,7 @@
 'use client'
-import React, { useCallback, useContext, useMemo, useRef } from 'react'
+import React, { useCallback, useContext, useMemo } from 'react'
 
-import { findIndex, isNil, reduce } from 'lodash'
+import { findIndex, isNil } from 'lodash'
 import { useParams } from 'next/navigation'
 
 import DownloadButtons from '@ors/app/business-plans/DownloadButtons'
@@ -12,7 +12,6 @@ import {
 import Table from '@ors/components/manage/Form/Table'
 import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
 import { formatApiUrl } from '@ors/helpers'
-import { debounce } from '@ors/helpers/Utils/Utils'
 
 import { filtersToQueryParams } from '../utils'
 import useColumnsOptions from './editSchema'
@@ -176,23 +175,7 @@ export default function BPEditTable(props: BPEditTableInterface) {
 
   const columnOptions = useColumnsOptions(yearColumns)
 
-  const grid = useRef<any>()
-
   const exportParams = useMemo(() => filtersToQueryParams(params), [params])
-
-  const autoSizeColumns = () => {
-    if (!grid.current.api) return
-    grid.current.api.autoSizeColumns(
-      reduce(
-        columnOptions.columnDefs,
-        (acc: Array<string>, column) => {
-          acc.push(column.field)
-          return acc
-        },
-        [],
-      ),
-    )
-  }
 
   return (
     yearRanges &&
@@ -209,10 +192,10 @@ export default function BPEditTable(props: BPEditTableInterface) {
             columnDefs={columnOptions.columnDefs}
             defaultColDef={columnOptions.defaultColDef}
             domLayout="normal"
-            gridRef={grid}
             loaded={!loading}
             loading={loading}
             rowData={form}
+            suppressScrollOnNewData={true}
             tooltipShowDelay={200}
             onCellValueChanged={(event) => {
               const eventData = event.data
@@ -230,12 +213,6 @@ export default function BPEditTable(props: BPEditTableInterface) {
 
                 setForm(newData)
               }
-            }}
-            onFirstDataRendered={() => {
-              debounce(autoSizeColumns, 0)
-            }}
-            onRowDataUpdated={() => {
-              debounce(autoSizeColumns, 0)
             }}
           />
         </form>

@@ -17,12 +17,14 @@ import {
   agFormatNameValue,
   agFormatValue,
   agFormatValueTags,
+  commentSecretariatValueSetter,
   commentsValueSetter,
   editTagsCellRenderer,
   getOptionLabel,
   getOptionLabelByName,
   isOptionEqualToValue,
   isOptionEqualToValueByName,
+  remarksValueSetter,
   statusValueSetter,
   substancesValueSetter,
   valueSetter,
@@ -52,7 +54,7 @@ const useColumnsOptions = (yearColumns: any[]) => {
     () => ({
       columnDefs: [
         {
-          cellClass: 'ag-text-center ag-cell-wrap-text ag-country-cell-text',
+          cellClass: 'ag-text-center ag-cell-centered ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select country' },
@@ -184,12 +186,11 @@ const useColumnsOptions = (yearColumns: any[]) => {
             valueSetter(params, 'subsector', subsectors),
         },
         {
-          cellClass: 'ag-cell-wrap-text',
+          cellClass: 'ag-cell-ellipsed',
           field: 'title',
           headerClass: 'ag-text-center',
           headerName: tableColumns.title,
           minWidth: 200,
-          suppressAutoSize: true,
           tooltipField: 'title',
           valueSetter: (params: any) => {
             params.data.title = params.newValue ?? '-'
@@ -197,7 +198,7 @@ const useColumnsOptions = (yearColumns: any[]) => {
           },
         },
         {
-          cellClass: 'ag-substances-cell-content',
+          cellClass: 'ag-tags-cell-content',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: {
@@ -219,12 +220,11 @@ const useColumnsOptions = (yearColumns: any[]) => {
             substancesValueSetter(params, substances),
         },
         {
-          cellClass: 'ag-cell-wrap-text',
+          cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
           field: 'required_by_model',
           headerClass: 'ag-text-center',
           headerName: tableColumns.required_by_model,
           minWidth: 150,
-          suppressAutoSize: true,
           tooltipField: 'required_by_model',
         },
         {
@@ -288,31 +288,30 @@ const useColumnsOptions = (yearColumns: any[]) => {
             MYAValueSetter(params, multiYearFilterOptions),
         },
         {
-          cellClass: 'ag-cell-wrap-text',
+          cellClass: 'ag-cell-ellipsed',
           field: 'reason_for_exceeding',
           headerClass: 'ag-text-center',
           headerName: tableColumns.reason_for_exceeding,
           minWidth: 200,
-          suppressAutoSize: true,
           tooltipField: 'reason_for_exceeding',
         },
         {
-          cellClass: 'ag-cell-wrap-text',
-          field: 'remarks',
+          cellClass: 'ag-cell-ellipsed',
           headerClass: 'ag-text-center',
           headerName: tableColumns.remarks,
           minWidth: 200,
-          suppressAutoSize: true,
           tooltipField: 'remarks',
+          valueGetter: ({ data }: any) => data.remarks,
+          valueSetter: remarksValueSetter,
         },
         {
-          cellClass: 'ag-cell-wrap-text',
+          cellClass: 'ag-cell-ellipsed',
           field: 'comment_secretariat',
           headerClass: 'ag-text-center',
           headerName: tableColumns.comment_secretariat,
           minWidth: 200,
-          suppressAutoSize: true,
           tooltipField: 'comment_secretariat',
+          valueSetter: commentSecretariatValueSetter,
         },
         {
           cellEditor: 'agSelectCellEditor',

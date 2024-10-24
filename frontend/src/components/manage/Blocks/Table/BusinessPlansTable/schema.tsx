@@ -14,7 +14,7 @@ import {
 
 const getDefaultColumnDefs = (isDiff?: boolean) => [
   {
-    cellClass: 'ag-text-center ag-cell-wrap-text ag-country-cell-text',
+    cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
     field: 'country.name',
     headerClass: 'ag-text-center',
     headerName: 'Country',
@@ -108,7 +108,7 @@ const getDefaultColumnDefs = (isDiff?: boolean) => [
     //     {params.data.title}
     //   </Link>
     // ),
-    cellClass: 'ag-cell-wrap-text',
+    cellClass: 'ag-cell-ellipsed',
     field: 'title',
     headerClass: 'ag-text-center',
     headerName: 'Title',
@@ -125,7 +125,7 @@ const getDefaultColumnDefs = (isDiff?: boolean) => [
 
 const getReqByModelColumn = (isDiff?: boolean) => {
   return {
-    cellClass: 'ag-text-center ag-cell-wrap-text',
+    cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
     field: 'required_by_model',
     headerClass: 'ag-text-center',
     headerName: 'Required by model',
@@ -140,6 +140,57 @@ const getReqByModelColumn = (isDiff?: boolean) => {
       : { tooltipField: 'required_by_model' }),
   }
 }
+
+const getCommentsColumnsDefs = (isDiff?: boolean) => [
+  {
+    cellClass: 'ag-cell-ellipsed',
+    field: 'reason_for_exceeding',
+    headerClass: 'ag-text-center',
+    headerName: 'Reason for Exceeding',
+    minWidth: 200,
+    sortable: !isDiff,
+    ...(isDiff
+      ? {
+          cellRenderer: textCellRenderer,
+          valueGetter: (params: any) =>
+            cellValueGetter(params, 'reason_for_exceeding'),
+        }
+      : { tooltipField: 'reason_for_exceeding' }),
+  },
+  {
+    cellClass: 'ag-cell-ellipsed',
+    headerClass: 'ag-text-center',
+    headerName: 'Remarks',
+    minWidth: 200,
+    sortable: !isDiff,
+    ...(isDiff
+      ? {
+          cellRenderer: textCellRenderer,
+          valueGetter: (params: any) => cellValueGetter(params, 'remarks'),
+        }
+      : {
+          tooltipField: 'remarks',
+          valueGetter: (params: any) => params.data.remarks,
+        }),
+  },
+  {
+    cellClass: 'ag-text-center',
+    field: 'comment_secretariat',
+    headerClass: 'ag-text-center',
+    headerName: 'Comment',
+    minWidth: 200,
+    sortable: !isDiff,
+    ...(isDiff
+      ? {
+          cellRenderer: commentsDiffCellRenderer,
+          valueGetter: (params: any) => commentsDiffValueGetter(params),
+        }
+      : {
+          cellRenderer: commentsCellRenderer,
+          valueGetter: commentsValueGetter,
+        }),
+  },
+]
 
 const valuesColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
   ...getDefaultColumnDefs(isDiff),
@@ -193,58 +244,13 @@ const odpColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
 const commentsColumnDefs = (isDiff?: boolean) => [
   ...getDefaultColumnDefs(isDiff),
   getReqByModelColumn(isDiff),
-  {
-    cellClass: 'ag-cell-wrap-text',
-    field: 'reason_for_exceeding',
-    headerClass: 'ag-text-center',
-    headerName: 'Reason for Exceeding',
-    minWidth: 200,
-    sortable: !isDiff,
-    ...(isDiff
-      ? {
-          cellRenderer: textCellRenderer,
-          valueGetter: (params: any) =>
-            cellValueGetter(params, 'reason_for_exceeding'),
-        }
-      : { tooltipField: 'reason_for_exceeding' }),
-  },
-  {
-    cellClass: 'ag-cell-wrap-text',
-    field: 'remarks',
-    headerClass: 'ag-text-center',
-    headerName: 'Remarks',
-    minWidth: 200,
-    sortable: !isDiff,
-    ...(isDiff
-      ? {
-          cellRenderer: textCellRenderer,
-          valueGetter: (params: any) => cellValueGetter(params, 'remarks'),
-        }
-      : { tooltipField: 'remarks' }),
-  },
-  {
-    cellClass: 'ag-text-center ag-cell-wrap-text',
-    field: 'comment_secretariat',
-    headerClass: 'ag-text-center',
-    headerName: 'Comment',
-    minWidth: 200,
-    sortable: !isDiff,
-    ...(isDiff
-      ? {
-          cellRenderer: commentsDiffCellRenderer,
-          valueGetter: (params: any) => commentsDiffValueGetter(params),
-        }
-      : {
-          cellRenderer: commentsCellRenderer,
-          valueGetter: commentsValueGetter,
-        }),
-  },
+  ...getCommentsColumnsDefs(isDiff),
 ]
 
 const allColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
   ...getDefaultColumnDefs(isDiff),
   {
-    cellClass: !isDiff && 'ag-substances-cell-content',
+    cellClass: !isDiff && 'ag-tags-cell-content',
     field: 'substances_display',
     headerClass: 'ag-text-center',
     headerName: 'Substances',
@@ -312,52 +318,7 @@ const allColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
           valueGetter: ({ data }: any) => (data.is_multi_year ? 'MYA' : 'IND'),
         }),
   },
-  {
-    cellClass: 'ag-cell-wrap-text',
-    field: 'reason_for_exceeding',
-    headerClass: 'ag-text-center',
-    headerName: 'Reason for Exceeding',
-    minWidth: 200,
-    sortable: !isDiff,
-    ...(isDiff
-      ? {
-          cellRenderer: textCellRenderer,
-          valueGetter: (params: any) =>
-            cellValueGetter(params, 'reason_for_exceeding'),
-        }
-      : { tooltipField: 'reason_for_exceeding' }),
-  },
-  {
-    cellClass: 'ag-cell-wrap-text',
-    field: 'remarks',
-    headerClass: 'ag-text-center',
-    headerName: 'Remarks',
-    minWidth: 200,
-    sortable: !isDiff,
-    ...(isDiff
-      ? {
-          cellRenderer: textCellRenderer,
-          valueGetter: (params: any) => cellValueGetter(params, 'remarks'),
-        }
-      : { tooltipField: 'remarks' }),
-  },
-  {
-    cellClass: 'ag-text-center ag-cell-wrap-text',
-    field: 'comment_secretariat',
-    headerClass: 'ag-text-center',
-    headerName: 'Comment',
-    minWidth: 200,
-    sortable: !isDiff,
-    ...(isDiff
-      ? {
-          cellRenderer: commentsDiffCellRenderer,
-          valueGetter: (params: any) => commentsDiffValueGetter(params),
-        }
-      : {
-          cellRenderer: commentsCellRenderer,
-          valueGetter: commentsValueGetter,
-        }),
-  },
+  ...getCommentsColumnsDefs(isDiff),
 ]
 
 const defaultColDef = {

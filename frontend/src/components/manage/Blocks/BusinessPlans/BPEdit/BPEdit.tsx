@@ -26,8 +26,6 @@ const BPEdit = () => {
   const bpSlice = useStore((state) => state.businessPlans)
   const commentTypes = bpSlice.commentTypes.data
 
-  const dataReady = !loading && activities
-
   const [activeTab, setActiveTab] = useState(0)
   const [form, setForm] = useState<Array<ApiBPActivity> | null>()
 

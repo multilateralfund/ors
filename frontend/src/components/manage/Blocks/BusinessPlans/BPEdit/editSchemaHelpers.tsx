@@ -57,6 +57,18 @@ export const substancesValueSetter = (params: any, substances: any) => {
   return true
 }
 
+export const remarksValueSetter = (params: any) => {
+  params.data.remarks = params.newValue
+
+  return true
+}
+
+export const commentSecretariatValueSetter = (params: any) => {
+  params.data.comment_secretariat = params.newValue ?? ''
+
+  return true
+}
+
 export const statusValueSetter = (params: any, statuses: any) => {
   const newVal = params.newValue
 

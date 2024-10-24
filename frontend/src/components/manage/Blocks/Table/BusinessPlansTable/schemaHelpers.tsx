@@ -300,12 +300,19 @@ const displayCommentsCellValue = (
       placement={'top'}
       title={commentSecretariat}
     >
-      {(commentSecretariat as any) && truncateText(commentSecretariat, 45)}
+      <div
+        className="block overflow-hidden text-ellipsis"
+        style={{ whiteSpace: 'nowrap' }}
+      >
+        {commentSecretariat}
+      </div>
     </Tooltip>
   </div>
 )
 
-export const commentsCellRenderer = (props: any) => {
+export const commentsCellRenderer = (props: {
+  value: { commentSecretariat: string; commentTypes: Array<string> }
+}) => {
   const { commentSecretariat, commentTypes } = props.value
 
   return displayCommentsCellValue(commentSecretariat, commentTypes)
@@ -344,7 +351,12 @@ export const commentsDiffCellRenderer = (props: any) => {
                 withoutTooltip={true}
               />
             )}
-            {new_comment && truncateText(new_comment, 45)}
+            <div
+              className="block overflow-hidden text-ellipsis"
+              style={{ whiteSpace: 'nowrap' }}
+            >
+              {new_comment}
+            </div>
           </>
         ) : (
           <>-</>

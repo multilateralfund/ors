@@ -1,7 +1,6 @@
 'use client'
 import React, { useContext, useMemo, useRef, useState } from 'react'
 
-import { reduce } from 'lodash'
 import { useParams } from 'next/navigation'
 
 import DownloadButtons from '@ors/app/business-plans/DownloadButtons'
@@ -25,7 +24,6 @@ import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import BPContext from '@ors/contexts/BusinessPlans/BPContext'
 import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
 import { formatApiUrl, getResults } from '@ors/helpers'
-import { debounce } from '@ors/helpers/Utils/Utils'
 import { useStore } from '@ors/store'
 
 import Activities from '../../BusinessPlans/Activities'
@@ -238,43 +236,6 @@ export default function BusinessPlansTable() {
             value={gridOptions}
           />
         </div>
-        {/*<Dropdown*/}
-        {/*  color="primary"*/}
-        {/*  label={<IoDownloadOutline />}*/}
-        {/*  tooltip="Download"*/}
-        {/*  icon*/}
-        {/*>*/}
-        {/*  <Dropdown.Item>*/}
-        {/*    <Link*/}
-        {/*      className="flex items-center gap-x-2 text-black no-underline"*/}
-        {/*      target="_blank"*/}
-        {/*      href={*/}
-        {/*        formatApiUrl('api/business-plan-record/export/') +*/}
-        {/*        '?year_start=' +*/}
-        {/*        yearRangeSelected?.year_start.toString()*/}
-        {/*      }*/}
-        {/*      download*/}
-        {/*    >*/}
-        {/*      <AiFillFileExcel className="fill-green-700" size={24} />*/}
-        {/*      <span>XLSX</span>*/}
-        {/*    </Link>*/}
-        {/*  </Dropdown.Item>*/}
-        {/*  <Dropdown.Item>*/}
-        {/*    <Link*/}
-        {/*      className="flex items-center gap-x-2 text-black no-underline"*/}
-        {/*      target="_blank"*/}
-        {/*      href={*/}
-        {/*        formatApiUrl('api/business-plan-record/print/') +*/}
-        {/*        '?year_start=' +*/}
-        {/*        yearRangeSelected?.year_start.toString()*/}
-        {/*      }*/}
-        {/*      download*/}
-        {/*    >*/}
-        {/*      <AiFillFilePdf className="fill-red-700" size={24} />*/}
-        {/*      <span>PDF</span>*/}
-        {/*    </Link>*/}
-        {/*  </Dropdown.Item>*/}
-        {/*</Dropdown>*/}
       </div>
     )
   }
@@ -288,22 +249,6 @@ export default function BusinessPlansTable() {
   }
   const paginationPageSizeSelectorOpts = getPaginationSelectorOpts()
 
-  const grid = useRef<any>()
-
-  const autoSizeColumns = () => {
-    if (!grid.current.api) return
-    grid.current.api.autoSizeColumns(
-      reduce(
-        columnDefs,
-        (acc: Array<string>, column) => {
-          acc.push(column.field)
-          return acc
-        },
-        [],
-      ),
-    )
-  }
-
   return (
     yearRanges &&
     yearRanges.length > 0 && (
@@ -315,7 +260,6 @@ export default function BusinessPlansTable() {
             defaultColDef={defaultColDef}
             domLayout="normal"
             enablePagination={true}
-            gridRef={grid}
             loaded={loaded}
             loading={loading}
             paginationPageSize={BP_PER_PAGE}
@@ -329,18 +273,11 @@ export default function BusinessPlansTable() {
               agColumnHeader: undefined,
               agTextCellRenderer: undefined,
             }}
-            onFirstDataRendered={() => {
-              debounce(autoSizeColumns, 0)
-            }}
             onPaginationChanged={({ page, rowsPerPage }) => {
               setParams({
                 limit: rowsPerPage,
                 offset: page * rowsPerPage,
               })
-              debounce(autoSizeColumns, 0)
-            }}
-            onRowDataUpdated={() => {
-              debounce(autoSizeColumns, 0)
             }}
             onSortChanged={({ api }) => {
               const ordering = api
