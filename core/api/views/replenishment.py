@@ -1784,6 +1784,9 @@ class ReplenishmentPaymentViewSet(
         Updates global FERM data based on a added/updated payment.
         `old_amount` only used for updating payments so we know what to add/substract
         """
+        if payment.ferm_gain_or_loss is None:
+            return
+
         years_list = []
         if payment.payment_for_years:
             years_list = [
@@ -1795,8 +1798,6 @@ class ReplenishmentPaymentViewSet(
             return
 
         amount_to_add = payment.ferm_gain_or_loss
-        if amount_to_add is None:
-            return
         if old_amount is not None:
             amount_to_add -= old_amount
 
@@ -1816,6 +1817,9 @@ class ReplenishmentPaymentViewSet(
         """
         Updates global FERM data based on a deleted payment.
         """
+        if payment.ferm_gain_or_loss is None:
+            return
+
         years_list = []
         if payment.payment_for_years:
             years_list = [
