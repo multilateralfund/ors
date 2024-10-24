@@ -7,7 +7,8 @@ import React from 'react'
 import { FormDialogProps } from '../types'
 
 export type ParsedInvoice = {
-  amount_local_currency: null | number | string  
+  amount: null | number | string
+  amount_local_currency: null | number | string
   amount_usd: null | number | string
   be_amount_local_currency: number
   be_amount_usd: number

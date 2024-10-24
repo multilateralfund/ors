@@ -189,10 +189,22 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
   const handleSelectInvoice = useCallback(
     function handleSelectInvoice(invoiceId: string) {
       const invoice = invoicesList.find(({ id }) => id.toString() === invoiceId)
-      setFields(function (prevState) {
+      setFields(function (prevState): PaymentDialogFields {
         return {
           ...prevState,
+          get amount_assessed() {
+            return this.is_ferm
+              ? assessAmountFromCurrency(
+                  this.amount_local_currency,
+                  this.exchange_rate,
+                )
+              : ''
+          },
+          amount_local_currency:
+            invoice?.amount_local_currency.toString() ?? '',
+          amount_received: invoice?.amount_usd.toString() ?? '',
           invoice: invoiceId,
+          is_ferm: invoice?.is_ferm ?? prevState.is_ferm,
           payment_for_years: invoice ? [invoice?.year.toString()] : [],
         }
       })
