@@ -13,7 +13,7 @@ export interface SoCExtraRow {
   agreed_contributions?: null | number
   bilateral_assistance?: null | number
   cash_payments?: null | number
-  country?: JSX.Element | null | string
+  country?: React.JSX.Element | null | string
   country_id?: null | number
   country_to_display?: string
   disputed_id?: number

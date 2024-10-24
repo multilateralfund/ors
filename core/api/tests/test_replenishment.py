@@ -33,6 +33,8 @@ from core.models import (
     Replenishment,
     Country,
     DisputedContribution,
+    Invoice,
+    Payment,
 )
 
 
@@ -2111,13 +2113,11 @@ class TestInvoices(BaseTest):
 
         InvoiceFactory(
             country=country_1,
-            replenishment=replenishment_1,
             number="aaa-yyy-1",
             year=self.year_1,
         )
         InvoiceFactory(
             country=country_2,
-            replenishment=replenishment_1,
             number="aaa-yyy-2",
             year=self.year_2,
         )
@@ -2175,14 +2175,12 @@ class TestInvoices(BaseTest):
 
         InvoiceFactory(
             country=country_1,
-            replenishment=replenishment_1,
             number="aaa-yyy-1",
             year=self.year_1,
             is_ferm=True,
         )
         InvoiceFactory(
             country=country_1,
-            replenishment=replenishment_2,
             number="aaa-yyy-2",
             year=self.year_1,
             date_first_reminder=datetime.now().date(),
@@ -2190,7 +2188,6 @@ class TestInvoices(BaseTest):
         )
         InvoiceFactory(
             country=country_2,
-            replenishment=replenishment_2,
             number="aaa-yyy-3",
             year=self.year_3,
             date_first_reminder=datetime.now().date(),
@@ -2198,7 +2195,6 @@ class TestInvoices(BaseTest):
         )
         InvoiceFactory(
             country=country_2,
-            replenishment=replenishment_2,
             number="aaa-yyy-4",
             year=self.year_3,
             date_first_reminder=datetime.now().date(),
@@ -2256,7 +2252,8 @@ class TestInvoices(BaseTest):
         request_data = {
             "country_id": country.id,
             "replenishment_id": replenishment.id,
-            "amount": 100.0,
+            "amount_usd": 110.0,
+            "amount_local_currency": 100.0,
             "currency": "EUR",
             "exchange_rate": 0.7,
             "number": "aaa-yyy-create-1",
@@ -2270,19 +2267,14 @@ class TestInvoices(BaseTest):
 
     def test_invoices_update(self, treasurer_user):
         country = CountryFactory.create(name="Country 1", iso3="XYZ")
-        replenishment = ReplenishmentFactory.create(
-            start_year=self.year_1, end_year=self.year_2
-        )
-        invoice = InvoiceFactory(
-            country=country, replenishment=replenishment, number="aaa-yyy-1"
-        )
+        invoice = InvoiceFactory(country=country, number="aaa-yyy-1")
 
         self.client.force_authenticate(user=treasurer_user)
 
         request_data = {
             "country_id": country.id,
-            "replenishment_id": replenishment.id,
-            "amount": 100.0,
+            "amount_usd": 110.0,
+            "amount_local_currency": 100.0,
             "currency": "EUR",
             "exchange_rate": 0.7,
             "number": "aaa-yyy-create-1",
@@ -2308,12 +2300,8 @@ class TestPayments(BaseTest):
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
         country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
 
-        replenishment = ReplenishmentFactory.create(
-            start_year=self.year_3, end_year=self.year_4
-        )
-
-        PaymentFactory(country=country_1, replenishment=None)
-        PaymentFactory(country=country_2, replenishment=replenishment)
+        PaymentFactory(country=country_1)
+        PaymentFactory(country=country_2)
 
         self.client.force_authenticate(user=user)
 
@@ -2328,10 +2316,9 @@ class TestPayments(BaseTest):
 
         request_data = {
             "country_id": country.id,
-            "replenishment_id": None,
             "date": "2019-03-14",
             "payment_for_years": ["deferred"],
-            "amount": 100.0,
+            "amount_assessed": 100.0,
             "currency": "EUR",
             "exchange_rate": 0.7,
             "ferm_gain_or_loss": None,
@@ -2348,10 +2335,9 @@ class TestPayments(BaseTest):
 
         request_data = {
             "country_id": country.id,
-            "replenishment_id": None,
             "date": "2019-03-14",
             "payment_for_years": ["deferred"],
-            "amount": 100.0,
+            "amount_assessed": 100.0,
             "currency": "EUR",
             "exchange_rate": 0.7,
             "ferm_gain_or_loss": None,
@@ -2382,10 +2368,9 @@ class TestPayments(BaseTest):
 
         request_data = {
             "country_id": country.id,
-            "replenishment_id": None,
             "date": "2019-03-14",
             "payment_for_years": [self.year_1],
-            "amount": 100.0,
+            "amount_assessed": 100.0,
             "currency": "EUR",
             "exchange_rate": 0.7,
             "ferm_gain_or_loss": None,
@@ -2421,7 +2406,9 @@ class TestPayments(BaseTest):
         )
 
         payment = PaymentFactory(
-            country=country, payment_for_years=[self.year_1], amount=Decimal(100)
+            country=country,
+            payment_for_years=[self.year_1],
+            amount_assessed=Decimal(100),
         )
 
         self.client.force_authenticate(user=treasurer_user)
@@ -2438,6 +2425,62 @@ class TestPayments(BaseTest):
         triennial_contribution.refresh_from_db()
         assert triennial_contribution.outstanding_contributions == Decimal(400)
         assert triennial_contribution.cash_payments == Decimal(200)
+
+    def test_payment_create_updates_invoice(self, treasurer_user):
+        country = CountryFactory.create(name="Country 1", iso3="XYZ")
+
+        invoice = InvoiceFactory(
+            country=country,
+            number="aaa-yyy-1",
+            year=self.year_1,
+            status=Invoice.InvoiceStatus.PENDING,
+        )
+        self.client.force_authenticate(user=treasurer_user)
+
+        request_data = {
+            "country_id": country.id,
+            "date": "2019-03-14",
+            "payment_for_years": [self.year_1],
+            "amount_assessed": 100.0,
+            "currency": "EUR",
+            "exchange_rate": 0.7,
+            "ferm_gain_or_loss": None,
+            "invoice_id": invoice.id,
+            "status": Payment.PaymentStatus.PARTIALLY_PAID,
+            "files": [],
+        }
+
+        response = self.client.post(self.url, data=request_data, format="json")
+        assert response.status_code == 201
+
+        invoice.refresh_from_db()
+        assert invoice.status == Invoice.InvoiceStatus.PARTIALLY_PAID
+
+    def test_payment_delete_updates_invoice(self, treasurer_user):
+        country = CountryFactory.create(name="Country 1", iso3="XYZ")
+        invoice = InvoiceFactory(
+            country=country,
+            number="aaa-yyy-1",
+            year=self.year_1,
+            status=Invoice.InvoiceStatus.PAID,
+        )
+        payment = PaymentFactory(
+            country=country,
+            invoice=invoice,
+            payment_for_years=[self.year_1],
+            amount_assessed=Decimal(100),
+            status=Payment.PaymentStatus.PAID,
+        )
+
+        self.client.force_authenticate(user=treasurer_user)
+
+        payment_url = self.url + f"{payment.id}/"
+        response = self.client.delete(payment_url)
+
+        assert response.status_code == 204
+
+        invoice.refresh_from_db()
+        assert invoice.status == Invoice.InvoiceStatus.PENDING
 
 
 class TestExternalAllocations(BaseTest):

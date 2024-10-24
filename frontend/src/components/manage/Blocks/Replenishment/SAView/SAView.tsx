@@ -48,7 +48,7 @@ import {
   sumColumns,
 } from './utils'
 
-function encodeFileForUpload(file: File) {
+export function encodeFileForUpload(file: File) {
   function resolver(resolve: (value: FileForUpload) => void) {
     const r = new FileReader()
     r.onload = function (evt) {
@@ -225,6 +225,8 @@ function SaveManager(props: SaveManagerProps) {
     } else {
       saveData['decision_pdf'] = null
     }
+
+    console.log({ saveData })
 
     setSaving(false)
     api('api/replenishment/scales-of-assessment', {
@@ -403,7 +405,7 @@ function tranformContributions(cs: ApiReplenishmentSoA) {
     const cur = cs[i].currency
     r.push({
       adj_un_soa: cs[i].adjusted_scale_of_assessment,
-      annual_contributions: cs[i].amount,
+      annual_contributions: cs[i].yearly_amount,
       avg_ir: cs[i].average_inflation_rate,
       country: cs[i].country.name_alt,
       country_id: cs[i].country.id,
@@ -621,6 +623,11 @@ function SAView(props: SAViewProps) {
   >({ amount: 0 })
   const [unusedAmount, setUnusedAmount] = useState<'' | number>('')
 
+  const annualBudget = useMemo(
+    () => (getFloat(replenishment.amount) - getFloat(unusedAmount)) / 3,
+    [replenishment.amount, unusedAmount],
+  )
+
   const [commentText, setCommentText] = useState<string>('')
 
   function handleNewTableData(newData: SAContribution[]) {
@@ -643,12 +650,7 @@ function SAView(props: SAViewProps) {
 
   const computedData = useMemo(
     () =>
-      shouldCompute
-        ? computeTableData(
-            tableData,
-            replenishment.amount - (unusedAmount || 0),
-          )
-        : tableData,
+      shouldCompute ? computeTableData(tableData, annualBudget) : tableData,
     /* eslint-disable-next-line */
     [tableData, replenishment, unusedAmount, shouldCompute],
   )
@@ -889,9 +891,7 @@ function SAView(props: SAViewProps) {
               <FormattedNumberInput
                 id="totalAmount"
                 className="w-36"
-                value={
-                  (replenishment?.amount - (unusedAmount as number) || 0) / 3
-                }
+                value={annualBudget}
                 disabled
                 readOnly
               />

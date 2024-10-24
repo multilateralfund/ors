@@ -206,3 +206,15 @@ export const getOrdinalNumberLabel = (number: string) => {
 
   return number + ordinalSuffix
 }
+
+export function floorSmallValue(
+  value: number,
+  upperLimit = 5,
+  lowerLimit = -5,
+) {
+  let result = value
+  if (value >= lowerLimit && value <= upperLimit) {
+    result = 0
+  }
+  return result
+}

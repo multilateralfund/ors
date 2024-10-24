@@ -15,12 +15,18 @@ export interface ISingleSelectProps
 
 export interface ISearchableSelectProps
   extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'onChange'> {
-  defaultValue?: string
   hasClear?: boolean
   hideFirstOption?: boolean
-  onChange?: (value: string) => void
-  onClear?: () => void
+  onChange: (value: string) => void
   pickerClassName?: string
+  value: string
+}
+
+export interface IWrappedSearchableSelectProps
+  extends Omit<ISearchableSelectProps, 'onChange' | 'value'> {
+  defaultValue?: ISearchableSelectProps['value']
+  onChange?: ISearchableSelectProps['onChange']
+  value?: ISearchableSelectProps['value']
 }
 
 export interface IMultiSelectProps
@@ -51,4 +57,5 @@ export interface IFormattedNumberInputProps
   decimalDigits?: number
   onlyNumber?: boolean
   value?: number | string
+  withoutInitialValue?: boolean
 }

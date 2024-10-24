@@ -1,4 +1,5 @@
 import cx from 'classnames'
+import { noop } from 'lodash'
 
 import {
   FormattedNumberInput,
@@ -6,9 +7,7 @@ import {
   SearchableSelect,
   Select,
 } from '../../Inputs'
-import InvoiceAttachments from '../../Invoices/InvoiceAttachments'
 import {
-  IInputProps,
   IInputWrapper,
   INumberInputProps,
   ISelectInputProps,
@@ -43,8 +42,9 @@ const InputWrapper = (props: IInputWrapper) => {
 export const SimpleInput = ({
   field,
   label,
-  setFormData,
+  setFormData = noop,
   type,
+  ...rest
 }: ISimpleInputProps) => (
   <InputWrapper id={field} label={label}>
     <Input
@@ -52,6 +52,7 @@ export const SimpleInput = ({
       className={cx('!ml-0', { 'h-[100px] w-[250px]': type === 'text-area' })}
       onChange={(event) => handleInputChange(event, setFormData, field)}
       {...(type && { ...{ type } })}
+      {...rest}
     />
   </InputWrapper>
 )
@@ -60,16 +61,18 @@ export const SearchableSelectInput = ({
   field,
   label,
   options,
-  setFormData,
+  setFormData = noop,
 }: ISelectInputProps) => (
   <InputWrapper id={field} label={label}>
     <SearchableSelect
       id={field}
       className={inputsClassName}
+      hideFirstOption={true}
       pickerClassName="!left-0"
       onChange={(value) => handleSelectChange(value, setFormData, field)}
       hasClear
     >
+      <option value="" disabled hidden />
       {options.map(({ label, value }) => (
         <option key={value} className="text-primary" value={value}>
           {label}
@@ -84,7 +87,7 @@ export const SelectInput = ({
   label,
   options,
   placeholder,
-  setFormData,
+  setFormData = noop,
   value,
 }: ISelectInputProps) => (
   <InputWrapper id={field} label={label}>
@@ -112,15 +115,15 @@ export const SelectInput = ({
 export const NumberInput = ({
   field,
   label,
-  setFormData,
+  setFormData = noop,
+  ...rest
 }: INumberInputProps) => (
   <InputWrapper id={field} label={label}>
     <FormattedNumberInput
       id={field}
       className="!ml-0"
-      step="0.01"
       onChange={(event) => handleNumberInputChange(event, setFormData, field)}
-      onlyNumber
+      {...rest}
     />
   </InputWrapper>
 )
@@ -128,26 +131,17 @@ export const NumberInput = ({
 export const PopoverInputField = ({
   field,
   label,
-  setFormData,
+  setFormData = noop,
   ...rest
 }: ISelectInputProps) => (
   <InputWrapper id={field} label={label}>
     <PopoverInput
       className="!ml-0"
+      field={field}
       withClear={true}
       onChange={(value) => handleSelectChange(value, setFormData, field)}
       onClear={() => handleClearSelect(setFormData, field)}
       {...rest}
     />
-  </InputWrapper>
-)
-
-export const UploadDocumentsInput = ({
-  field,
-  label,
-  setFormData,
-}: IInputProps) => (
-  <InputWrapper id={field} label={label}>
-    <InvoiceAttachments oldFiles={[]} withFileType={false} />
   </InputWrapper>
 )

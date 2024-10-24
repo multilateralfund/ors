@@ -1,5 +1,3 @@
-import type { ISearchableSelectProps } from './types'
-
 import React, {
   ChangeEvent,
   useCallback,
@@ -16,6 +14,7 @@ import useClickOutside from '@ors/hooks/useClickOutside'
 
 import ClearButton from './ClearButton'
 import Input from './Input'
+import { ISearchableSelectProps, IWrappedSearchableSelectProps } from './types'
 
 function getSelectedOption(value: string, options: IOption[]) {
   let result: IOption | null = null
@@ -74,7 +73,7 @@ function VirtualOption(props: VirtualOptionProps) {
 interface PickerProps {
   className?: string
   id?: string
-  options: JSX.Element[]
+  options: React.JSX.Element[]
   show: boolean
 }
 
@@ -103,54 +102,41 @@ function Picker(props: PickerProps) {
   )
 }
 
-export default function SearchableSelect(props: ISearchableSelectProps) {
+export function SearchableSelect(props: ISearchableSelectProps) {
   const {
     id,
     children,
     className,
-    defaultValue,
     hasClear,
     hideFirstOption = false,
     name,
     onChange,
     pickerClassName,
     required,
+    value,
     ...rest
   } = props
   const selectRef = useRef<HTMLSelectElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const [value, setValue] = useState(defaultValue?.toString() || '')
   const [options, setOptions] = useState<IOption[]>([])
   const [searchValue, setSearchValue] = useState<string>('')
 
   const [showPicker, setShowPicker] = useState(false)
 
-  const ref = useClickOutside<HTMLDivElement>(function () {
+  const ref = useClickOutside<HTMLDivElement>(() => {
     if (showPicker) {
       setShowPicker(false)
     }
-    setValue(selectedOption?.value || '')
-    setSearchValue(selectedOption?.label || '')
   })
 
   const selectedOption = useMemo(
-    function () {
-      return getSelectedOption(value, options)
-    },
+    () => getSelectedOption(value, options),
     [options, value],
   )
 
   function handleClear() {
-    if (selectRef.current) {
-      selectRef.current.value = ''
-    }
-    setValue('')
-    setSearchValue('')
-
-    if (onChange) {
-      onChange('')
-    }
+    onChange('')
   }
 
   const filteredOptions = useMemo(
@@ -187,26 +173,13 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
 
   function handleChange(evt: ChangeEvent<HTMLSelectElement>) {
     const newValue = evt.target.value
-    setValue(newValue)
-    if (onChange) {
-      onChange(newValue)
-    }
+    onChange(newValue)
   }
 
   const handleToggleSelectedOption = useCallback(
     function (value: string, label: string) {
-      setValue(function (prev) {
-        if (value !== prev) {
-          return value
-        } else {
-          return ''
-        }
-      })
-      setSearchValue(label)
       setShowPicker(false)
-      if (onChange) {
-        onChange(value)
-      }
+      onChange(value)
     },
     [onChange],
   )
@@ -227,18 +200,20 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
     }
   }
 
-  function handleInputFocus() {
-    setSearchValue('')
-    setShowPicker(true)
-    if (value && ref.current) {
-      debounce(function () {
-        const selEl = ref.current?.querySelector(`#${id}_${value}`)
-        if (selEl) {
-          selEl.scrollIntoView()
-        }
-      }, 100)
-    }
-  }
+  const handleInputFocus = useCallback(
+    function handleInputFocus() {
+      setShowPicker(true)
+      if (value && ref.current) {
+        debounce(function () {
+          const selEl = ref.current?.querySelector(`#${id}_${value}`)
+          if (selEl) {
+            selEl.scrollIntoView()
+          }
+        }, 100)
+      }
+    },
+    [id, ref, value],
+  )
 
   function handleInputKeyDown(evt: React.KeyboardEvent<HTMLElement>) {
     if (evt.key === 'ArrowDown') {
@@ -262,20 +237,18 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
     if (selectRef.current) {
       const options = getOptions(selectRef.current)
       setOptions(options)
-
-      if (defaultValue && defaultValue.toString() === selectRef.current.value) {
-        const selectedOption = getSelectedOption(
-          defaultValue?.toString() || '',
-          options,
-        )
-        if (selectedOption) {
-          setSearchValue(selectedOption.label)
-        }
-      }
     }
-  }, [defaultValue, children])
+  }, [value, children])
 
   const withClear = hasClear && value
+
+  useEffect(() => {
+    if (showPicker) {
+      setSearchValue('')
+    } else {
+      setSearchValue(selectedOption?.label || '')
+    }
+  }, [selectedOption?.label, showPicker])
 
   const virtualOptions = useMemo(
     function () {
@@ -337,5 +310,28 @@ export default function SearchableSelect(props: ISearchableSelectProps) {
         {children}
       </select>
     </div>
+  )
+}
+
+export default function SearchableSelectWrapper(
+  props: IWrappedSearchableSelectProps,
+) {
+  const { defaultValue, onChange, value, ...rest } = props
+  const [innerValue, setInnerValue] = useState(defaultValue ?? '')
+  function handleChange(newValue: string) {
+    if (value === undefined) {
+      setInnerValue(newValue)
+    }
+    if (onChange) {
+      onChange(newValue)
+    }
+  }
+  const wrappedValue = useMemo(
+    () => (value === undefined ? innerValue : value),
+    [innerValue, value],
+  )
+
+  return (
+    <SearchableSelect value={wrappedValue} onChange={handleChange} {...rest} />
   )
 }

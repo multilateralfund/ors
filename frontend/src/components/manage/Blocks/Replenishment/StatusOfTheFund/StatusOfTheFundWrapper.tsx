@@ -2,7 +2,7 @@
 
 import { useContext, useState } from 'react'
 
-import { get, isNil, keys, omit, omitBy, reduce, reverse } from 'lodash'
+import { get, isNil, keys, omit, omitBy, pickBy, reduce, reverse } from 'lodash'
 import { useSnackbar } from 'notistack'
 
 import useGetDashboardData from '@ors/components/manage/Blocks/Replenishment/Dashboard/useGetDashboardData'
@@ -10,6 +10,7 @@ import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentConte
 import { api } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
+import { encodeFileForUpload } from '../SAView/SAView'
 import { scAnnualOptions } from '../StatusOfContribution/utils'
 import StatusOfTheFundView from '../StatusOfTheFund/StatusOfTheFundView'
 import { allocationsOrder } from './constants'
@@ -81,7 +82,7 @@ function StatusOfTheFundWrapper() {
         ...formattedData,
         [key]: !!value
           ? ['meeting_id', 'quarter', 'year'].includes(key)
-            ? parseFloat(value)
+            ? parseInt(value)
             : value
           : null,
         ...(staffContractsTotal && {
@@ -114,7 +115,7 @@ function StatusOfTheFundWrapper() {
       })
   }
 
-  const handleUploadDocuments = (formData: any) => {
+  const handleUploadFiles = async (formData: any) => {
     const entry = Object.fromEntries(formData.entries())
 
     const meetingId = entry.meeting_id
@@ -123,41 +124,27 @@ function StatusOfTheFundWrapper() {
     entry.meeting_id = !!meetingId ? parseInt(meetingId) : meetingId
     entry.year = !!year ? parseInt(year) : year
 
-    const data = new FormData()
+    const file = await encodeFileForUpload(entry['file'] as File)
 
-    for (const key in entry) {
-      const value = entry[key]
+    entry['file'] = file
+    entry['filename'] = file.filename
 
-      if (!key.startsWith('file_')) {
-        const valueIsNotAFile = value as unknown as
-          | null
-          | string
-          | string[]
-          | undefined
-        if (
-          valueIsNotAFile !== null &&
-          typeof valueIsNotAFile === 'object' &&
-          valueIsNotAFile.length
-        ) {
-          for (let i = 0; i < valueIsNotAFile.length; i++) {
-            data.append(key, valueIsNotAFile[i])
-          }
-        } else if (
-          valueIsNotAFile !== null &&
-          valueIsNotAFile !== undefined &&
-          valueIsNotAFile !== ''
-        ) {
-          data.append(key, valueIsNotAFile as string)
-        }
-      }
-      if (key.startsWith('file_') && entry[key] instanceof File) {
-        const fileIndex = key.split('_')[1]
-        data.append(`files[${fileIndex}][file]`, entry[key], entry[key].name)
-      }
-    }
+    const cleanData = pickBy(entry, (value) => !isNil(value) && value !== '')
 
-    enqueueSnackbar('Data updated successfully', { variant: 'success' })
-    handleCloseUploadDialog()
+    api('/api/replenishment/status-files/', {
+      data: cleanData,
+      method: 'POST',
+    })
+      .then(() => {
+        invalidateDataFn({
+          cache_bust: crypto.randomUUID(),
+        })
+        enqueueSnackbar('Data updated successfully', { variant: 'success' })
+        handleEditCancel()
+      })
+      .catch(() => {
+        enqueueSnackbar('Failed to update data', { variant: 'error' })
+      })
   }
 
   const editableFields = [
@@ -254,7 +241,7 @@ function StatusOfTheFundWrapper() {
       {showUploadDialog && (
         <UploadFilesDialog
           {...{
-            handleUploadDocuments,
+            handleUploadFiles,
             meetingOptions,
             yearOptions,
           }}

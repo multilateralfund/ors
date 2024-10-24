@@ -75,8 +75,8 @@ function TabContentDetails(props: TabContentDetailsProps) {
     <>
       <FieldSearchableSelect
         id="country_id"
-        defaultValue={fields.country_id}
         label="Country"
+        value={fields.country_id}
         onChange={handleCountrySelect}
         required
       >
@@ -109,7 +109,6 @@ function TabContentDetails(props: TabContentDetailsProps) {
         required
       >
         <option value="" disabled hidden></option>
-        <option value="arrears">Arrears</option>
         {yearOptions.map((year) => (
           <option key={year.value} className="text-primary" value={year.value}>
             {year.label}
@@ -152,13 +151,26 @@ function TabContentAmount(props: TabContentAmountProps) {
   const { countryInfo, data, fields, setFields, updateField } = props
 
   const handleChangeAmount: ChangeEventHandler<HTMLInputElement> = (evt) => {
-    const amount = evt.target.value
-    const nrAmount = getFloat(amount)
+    const amount_usd = evt.target.value
+    const nrAmountUsd = getFloat(amount_usd)
     setFields((prev) => ({
       ...prev,
-      amount,
       amount_local_currency: (
-        nrAmount * (countryInfo?.exchange_rate || 1)
+        nrAmountUsd * (countryInfo?.exchange_rate || 1)
+      ).toString(),
+      amount_usd,
+    }))
+  }
+  const handleChangeLocalCurrencyAmount: ChangeEventHandler<
+    HTMLInputElement
+  > = (evt) => {
+    const amountLocal = evt.target.value
+    const nrAmountLocal = getFloat(amountLocal)
+    setFields((prev) => ({
+      ...prev,
+      amount_local_currency: amountLocal,
+      amount_usd: (
+        nrAmountLocal / (countryInfo?.exchange_rate || 1)
       ).toString(),
     }))
   }
@@ -173,17 +185,25 @@ function TabContentAmount(props: TabContentAmountProps) {
             label="Currency"
             readOnly={!fields.is_ferm}
             type="text"
-            value={fields.currency}
+            value={fields.is_ferm ? fields.currency : 'USD'}
             onChange={updateField('currency')}
           />
           <FieldFormattedNumberInput
             id="amount_local_currency"
             decimalDigits={5}
             disabled={!fields.is_ferm}
-            label={`"${fields.currency}" amount`}
             readOnly={!fields.is_ferm}
-            value={fields.amount_local_currency}
-            onChange={updateField('amount_local_currency')}
+            value={fields.is_ferm ? fields.amount_local_currency : ''}
+            label={
+              fields.is_ferm
+                ? `"${fields.currency}" amount`
+                : 'Local currency amount'
+            }
+            onChange={
+              fields.is_ferm
+                ? handleChangeLocalCurrencyAmount
+                : updateField('amount_local_currency')
+            }
           />
           <FieldFormattedNumberInput
             id="exchange_rate"
@@ -191,16 +211,16 @@ function TabContentAmount(props: TabContentAmountProps) {
             label="Exchange rate"
             readOnly={!fields.is_ferm}
             step="any"
-            value={fields.exchange_rate}
+            value={fields.is_ferm ? fields.exchange_rate : ''}
             onChange={updateField('exchange_rate')}
           />
           <FieldFormattedNumberInput
-            id="amount"
+            id="amount_usd"
             decimalDigits={5}
             label="USD amount"
-            value={fields.amount}
+            value={fields.amount_usd}
             onChange={
-              fields.is_ferm ? handleChangeAmount : updateField('amount')
+              fields.is_ferm ? handleChangeAmount : updateField('amount_usd')
             }
           />
         </div>
@@ -219,8 +239,8 @@ function TabContentAmount(props: TabContentAmountProps) {
 }
 
 interface InvoiceDialogFields {
-  amount: string
   amount_local_currency: string
+  amount_usd: string
   country_id: string
   currency: string
   date_first_reminder: string
@@ -228,7 +248,6 @@ interface InvoiceDialogFields {
   date_second_reminder: string
   date_sent_out: string
   exchange_rate: string
-  is_arrears: boolean
   is_ferm: boolean
   year: string
 }
@@ -241,18 +260,17 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
   const ctx = useContext(ReplenishmentContext)
 
   const [fields, setFields] = useState<InvoiceDialogFields>({
-    amount: data?.amount ?? '',
-    amount_local_currency: data?.amount_local_currency || '',
-    country_id: data?.country_id ?? '',
-    currency: data?.currency ?? '',
-    date_first_reminder: data?.date_first_reminder ?? '',
-    date_of_issuance: data?.date_of_issuance ?? '',
-    date_second_reminder: data?.date_second_reminder ?? '',
-    date_sent_out: data?.date_sent_out ?? '',
-    exchange_rate: data?.exchange_rate ?? '',
-    is_arrears: data?.is_arrears ?? false,
+    amount_local_currency: data?.amount_local_currency?.toString() || '',
+    amount_usd: data?.amount_usd?.toString() ?? '',
+    country_id: data?.country_id?.toString() ?? '',
+    currency: data?.currency?.toString() ?? '',
+    date_first_reminder: data?.date_first_reminder?.toString() ?? '',
+    date_of_issuance: data?.date_of_issuance?.toString() ?? '',
+    date_second_reminder: data?.date_second_reminder?.toString() ?? '',
+    date_sent_out: data?.date_sent_out?.toString() ?? '',
+    exchange_rate: data?.exchange_rate?.toString() ?? '',
     is_ferm: data?.is_ferm ?? false,
-    year: data?.year ?? '',
+    year: data?.year?.toString() ?? '',
   })
 
   const updateField = useCallback(
@@ -266,9 +284,7 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
   )
 
   const start_year =
-    (fields.year !== 'arrears' && parseInt(fields.year, 10)) ||
-    ctx.periods?.[0].start_year ||
-    0
+    parseInt(fields.year, 10) || ctx.periods?.[0].start_year || 0
 
   const { getForYear } = useGetCountryReplenishmentInfo(fields.country_id)
   const {
@@ -287,9 +303,9 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
       if (!isEdit) {
         setFields((prev) => {
           const updated = {
-            amount: (countryInfo?.amount || '').toString() || '',
             amount_local_currency:
               (countryInfo?.amount_local_currency || '').toString() || '',
+            amount_usd: (countryInfo?.amount || '').toString() || '',
             currency: (countryInfo?.currency || '').toString() || '',
             exchange_rate: (countryInfo?.exchange_rate || '').toString() || '',
             is_ferm: countryInfo?.opted_for_ferm || false,
