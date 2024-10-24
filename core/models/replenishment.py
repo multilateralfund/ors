@@ -201,7 +201,9 @@ class Invoice(models.Model):
     )
 
     amount_usd = models.DecimalField(max_digits=30, decimal_places=15)
-    amount_local_currency = models.DecimalField(max_digits=30, decimal_places=15)
+    amount_local_currency = models.DecimalField(
+        max_digits=30, decimal_places=15, null=True
+    )
     currency = models.CharField(max_length=64)
     exchange_rate = models.DecimalField(max_digits=30, decimal_places=15, null=True)
 

@@ -290,6 +290,8 @@ class InvoiceCreateSerializer(serializers.ModelSerializer):
     amount_local_currency = serializers.DecimalField(
         max_digits=30,
         decimal_places=15,
+        required=False,
+        allow_null=True,
         coerce_to_string=False,
     )
     currency = serializers.CharField()
