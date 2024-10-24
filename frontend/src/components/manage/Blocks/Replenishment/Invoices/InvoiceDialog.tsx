@@ -169,7 +169,9 @@ function TabContentAmount(props: TabContentAmountProps) {
     setFields((prev) => ({
       ...prev,
       amount_local_currency: amountLocal,
-      amount_usd: (nrAmountLocal / (countryInfo?.exchange_rate || 1)).toString(),
+      amount_usd: (
+        nrAmountLocal / (countryInfo?.exchange_rate || 1)
+      ).toString(),
     }))
   }
 
@@ -183,16 +185,20 @@ function TabContentAmount(props: TabContentAmountProps) {
             label="Currency"
             readOnly={!fields.is_ferm}
             type="text"
-            value={fields.currency}
+            value={fields.is_ferm ? fields.currency : 'USD'}
             onChange={updateField('currency')}
           />
           <FieldFormattedNumberInput
             id="amount_local_currency"
             decimalDigits={5}
             disabled={!fields.is_ferm}
-            label={`"${fields.currency}" amount`}
             readOnly={!fields.is_ferm}
-            value={fields.amount_local_currency}
+            value={fields.is_ferm ? fields.amount_local_currency : ''}
+            label={
+              fields.is_ferm
+                ? `"${fields.currency}" amount`
+                : 'Local currency amount'
+            }
             onChange={
               fields.is_ferm
                 ? handleChangeLocalCurrencyAmount
@@ -205,7 +211,7 @@ function TabContentAmount(props: TabContentAmountProps) {
             label="Exchange rate"
             readOnly={!fields.is_ferm}
             step="any"
-            value={fields.exchange_rate}
+            value={fields.is_ferm ? fields.exchange_rate : ''}
             onChange={updateField('exchange_rate')}
           />
           <FieldFormattedNumberInput
