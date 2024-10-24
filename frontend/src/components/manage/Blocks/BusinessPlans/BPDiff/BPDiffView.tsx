@@ -5,6 +5,7 @@ import { useEffect, useMemo } from 'react'
 import { useParams } from 'next/navigation'
 
 import Loading from '@ors/components/theme/Loading/Loading'
+import BPProvider from '@ors/contexts/BusinessPlans/BPProvider'
 import BPYearRangesProvider from '@ors/contexts/BusinessPlans/BPYearRangesProvider'
 import { useStore } from '@ors/store'
 
@@ -66,9 +67,11 @@ const BPDiffView = () => {
           className="!fixed bg-action-disabledBackground"
           active={loading}
         />
-        <BPDiffHeader {...{ pathParams }} />
         <BPYearRangesProvider>
-          <BPDiffTable {...{ diffData }} />
+          <BPProvider>
+            <BPDiffHeader />
+            <BPDiffTable {...{ diffData }} />
+          </BPProvider>
         </BPYearRangesProvider>
       </>
     )

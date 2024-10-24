@@ -28,6 +28,8 @@ export const CellAutocompleteWidget = memo(
       props: {
         agFormatValue?: (value: any) => any
         getOptions?: (params: ICellEditorParams) => any
+        isMultiple?: boolean
+        isOptionEqualToValue?: (option: any, value: any) => any
         openOnFocus?: boolean
       } & AutocompleteWidgetProps &
         ICellEditorParams,
@@ -115,10 +117,16 @@ export const CellAutocompleteWidget = memo(
           Input={props.Input}
           getOptionLabel={props.getOptionLabel}
           groupBy={props.groupBy}
+          isOptionEqualToValue={props.isOptionEqualToValue}
           openOnFocus={props.openOnFocus}
           options={props.options || props.getOptions?.(props) || []}
           ref={refInput}
           renderOption={props.renderOption}
+          {...(props.isMultiple && {
+            disableCloseOnSelect: true,
+            multiple: true,
+            renderTags: () => null,
+          })}
           value={value}
           sx={{
             '& .MuiInputBase-root': {

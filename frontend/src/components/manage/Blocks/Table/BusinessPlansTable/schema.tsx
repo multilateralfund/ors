@@ -7,20 +7,18 @@ import {
   numberCellGetter,
   numberCellRenderer,
   objectCellValueGetter,
-  substancesCellRenderer,
   substancesDiffCellRenderer,
+  tagsCellRenderer,
   textCellRenderer,
 } from './schemaHelpers'
 
 const getDefaultColumnDefs = (isDiff?: boolean) => [
   {
-    autoHeight: true,
-    cellClass: 'ag-text-center ag-cell-wrap-text ag-country-cell-text',
+    cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
     field: 'country.name',
     headerClass: 'ag-text-center',
     headerName: 'Country',
     minWidth: 150,
-    resizable: true,
     sortable: !isDiff,
     ...(isDiff
       ? {
@@ -31,13 +29,11 @@ const getDefaultColumnDefs = (isDiff?: boolean) => [
       : { tooltipField: 'country.name' }),
   },
   {
-    autoHeight: true,
     cellClass: 'ag-text-center ag-cell-wrap-text',
     field: 'project_cluster.code',
     headerClass: 'ag-text-center',
     headerName: 'Cluster',
     minWidth: 70,
-    resizable: true,
     sortable: !isDiff,
     ...(isDiff
       ? {
@@ -48,13 +44,11 @@ const getDefaultColumnDefs = (isDiff?: boolean) => [
       : { tooltipField: 'project_cluster.name' }),
   },
   {
-    autoHeight: true,
     cellClass: 'ag-text-center ag-cell-wrap-text',
     field: 'project_type.code',
     headerClass: 'ag-text-center',
     headerName: 'Type',
     minWidth: 70,
-    resizable: true,
     sortable: !isDiff,
     ...(isDiff
       ? {
@@ -65,13 +59,11 @@ const getDefaultColumnDefs = (isDiff?: boolean) => [
       : { tooltipField: 'project_type.name' }),
   },
   {
-    autoHeight: true,
     cellClass: 'ag-text-center ag-cell-wrap-text',
     field: 'bp_chemical_type.name',
     headerClass: 'ag-text-center',
     headerName: 'Chemical type',
     minWidth: 100,
-    resizable: true,
     sortable: !isDiff,
     ...(isDiff
       ? {
@@ -82,13 +74,11 @@ const getDefaultColumnDefs = (isDiff?: boolean) => [
       : { tooltipField: 'bp_chemical_type.name' }),
   },
   {
-    autoHeight: true,
     cellClass: 'ag-text-center ag-cell-wrap-text',
     field: 'sector.code',
     headerClass: 'ag-text-center',
     headerName: 'Sector',
     minWidth: 70,
-    resizable: true,
     sortable: !isDiff,
     ...(isDiff
       ? {
@@ -98,13 +88,11 @@ const getDefaultColumnDefs = (isDiff?: boolean) => [
       : { tooltipField: 'sector.name' }),
   },
   {
-    autoHeight: true,
     cellClass: 'ag-text-center ag-cell-wrap-text',
     field: 'subsector.code',
     headerClass: 'ag-text-center',
     headerName: 'Subsector',
     minWidth: 100,
-    resizable: true,
     sortable: !isDiff,
     ...(isDiff
       ? {
@@ -115,18 +103,16 @@ const getDefaultColumnDefs = (isDiff?: boolean) => [
       : { tooltipField: 'subsector.name' }),
   },
   {
-    autoHeight: true,
     // cellRenderer: (params: any) => (
     //   <Link href={`/business-plans/${params.data.id}`}>
     //     {params.data.title}
     //   </Link>
     // ),
-    cellClass: 'ag-cell-wrap-text',
+    cellClass: 'ag-cell-ellipsed',
     field: 'title',
     headerClass: 'ag-text-center',
     headerName: 'Title',
     minWidth: 200,
-    resizable: true,
     sortable: !isDiff,
     ...(isDiff
       ? {
@@ -139,13 +125,11 @@ const getDefaultColumnDefs = (isDiff?: boolean) => [
 
 const getReqByModelColumn = (isDiff?: boolean) => {
   return {
-    autoHeight: true,
-    cellClass: 'ag-text-center ag-cell-wrap-text',
+    cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
     field: 'required_by_model',
     headerClass: 'ag-text-center',
     headerName: 'Required by model',
     minWidth: 150,
-    resizable: true,
     sortable: !isDiff,
     ...(isDiff
       ? {
@@ -157,6 +141,57 @@ const getReqByModelColumn = (isDiff?: boolean) => {
   }
 }
 
+const getCommentsColumnsDefs = (isDiff?: boolean) => [
+  {
+    cellClass: 'ag-cell-ellipsed',
+    field: 'reason_for_exceeding',
+    headerClass: 'ag-text-center',
+    headerName: 'Reason for Exceeding',
+    minWidth: 200,
+    sortable: !isDiff,
+    ...(isDiff
+      ? {
+          cellRenderer: textCellRenderer,
+          valueGetter: (params: any) =>
+            cellValueGetter(params, 'reason_for_exceeding'),
+        }
+      : { tooltipField: 'reason_for_exceeding' }),
+  },
+  {
+    cellClass: 'ag-cell-ellipsed',
+    headerClass: 'ag-text-center',
+    headerName: 'Remarks',
+    minWidth: 200,
+    sortable: !isDiff,
+    ...(isDiff
+      ? {
+          cellRenderer: textCellRenderer,
+          valueGetter: (params: any) => cellValueGetter(params, 'remarks'),
+        }
+      : {
+          tooltipField: 'remarks',
+          valueGetter: (params: any) => params.data.remarks,
+        }),
+  },
+  {
+    cellClass: 'ag-text-center',
+    field: 'comment_secretariat',
+    headerClass: 'ag-text-center',
+    headerName: 'Comment',
+    minWidth: 200,
+    sortable: !isDiff,
+    ...(isDiff
+      ? {
+          cellRenderer: commentsDiffCellRenderer,
+          valueGetter: (params: any) => commentsDiffValueGetter(params),
+        }
+      : {
+          cellRenderer: commentsCellRenderer,
+          valueGetter: commentsValueGetter,
+        }),
+  },
+]
+
 const valuesColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
   ...getDefaultColumnDefs(isDiff),
   getReqByModelColumn(isDiff),
@@ -164,13 +199,11 @@ const valuesColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
     (column: { headerName: string }) => column.headerName === 'Value ($000)',
   ) || [],
   {
-    autoHeight: true,
     cellClass: 'ag-text-center',
-    field: 'status',
+    field: 'status_display',
     headerClass: 'ag-text-center',
     headerName: 'Status',
     minWidth: 100,
-    resizable: true,
     sortable: !isDiff,
     ...(isDiff
       ? {
@@ -180,13 +213,11 @@ const valuesColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
       : { tooltipField: 'status_display' }),
   },
   {
-    autoHeight: true,
     cellClass: 'ag-text-center',
     field: 'is_multi_year',
     headerClass: 'ag-text-center',
     headerName: 'IND/MYA',
     minWidth: 100,
-    resizable: true,
     sortable: !isDiff,
     ...(isDiff
       ? {
@@ -213,70 +244,17 @@ const odpColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
 const commentsColumnDefs = (isDiff?: boolean) => [
   ...getDefaultColumnDefs(isDiff),
   getReqByModelColumn(isDiff),
-  {
-    autoHeight: true,
-    cellClass: 'ag-cell-wrap-text',
-    field: 'reason_for_exceeding',
-    headerClass: 'ag-text-center',
-    headerName: 'Reason for Exceeding',
-    minWidth: 200,
-    resizable: true,
-    sortable: !isDiff,
-    ...(isDiff
-      ? {
-          cellRenderer: textCellRenderer,
-          valueGetter: (params: any) =>
-            cellValueGetter(params, 'reason_for_exceeding'),
-        }
-      : { tooltipField: 'reason_for_exceeding' }),
-  },
-  {
-    autoHeight: true,
-    cellClass: 'ag-cell-wrap-text',
-    field: 'remarks',
-    headerClass: 'ag-text-center',
-    headerName: 'Remarks',
-    minWidth: 200,
-    resizable: true,
-    sortable: !isDiff,
-    ...(isDiff
-      ? {
-          cellRenderer: textCellRenderer,
-          valueGetter: (params: any) => cellValueGetter(params, 'remarks'),
-        }
-      : { tooltipField: 'remarks' }),
-  },
-  {
-    autoHeight: true,
-    cellClass: 'ag-text-center ag-cell-wrap-text',
-    field: 'comment_secretariat',
-    headerClass: 'ag-text-center',
-    headerName: 'Comment',
-    minWidth: 200,
-    resizable: true,
-    sortable: !isDiff,
-    ...(isDiff
-      ? {
-          cellRenderer: commentsDiffCellRenderer,
-          valueGetter: (params: any) => commentsDiffValueGetter(params),
-        }
-      : {
-          cellRenderer: commentsCellRenderer,
-          valueGetter: commentsValueGetter,
-        }),
-  },
+  ...getCommentsColumnsDefs(isDiff),
 ]
 
 const allColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
   ...getDefaultColumnDefs(isDiff),
   {
-    autoHeight: true,
-    cellClass: !isDiff && 'ag-substances-cell-content',
+    cellClass: !isDiff && 'ag-tags-cell-content',
     field: 'substances_display',
     headerClass: 'ag-text-center',
     headerName: 'Substances',
     minWidth: 230,
-    resizable: true,
     sortable: !isDiff,
     ...(isDiff
       ? {
@@ -284,17 +262,15 @@ const allColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
           valueGetter: (params: any) =>
             cellValueGetter(params, 'substances_display'),
         }
-      : { cellRenderer: substancesCellRenderer }),
+      : { cellRenderer: tagsCellRenderer }),
   },
   getReqByModelColumn(isDiff),
   {
-    autoHeight: true,
     cellClass: 'ag-text-center',
     field: 'amount_polyol',
     headerClass: 'ag-text-center',
     headerName: 'Polyol Amount',
     minWidth: 100,
-    resizable: true,
     sortable: !isDiff,
     ...(isDiff
       ? {
@@ -311,13 +287,11 @@ const allColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
   },
   ...yearColumns,
   {
-    autoHeight: true,
     cellClass: 'ag-text-center',
     field: 'status',
     headerClass: 'ag-text-center',
     headerName: 'Status',
     minWidth: 100,
-    resizable: true,
     sortable: !isDiff,
     ...(isDiff
       ? {
@@ -327,13 +301,11 @@ const allColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
       : { tooltipField: 'status_display' }),
   },
   {
-    autoHeight: true,
     cellClass: 'ag-text-center',
     field: 'is_multi_year',
     headerClass: 'ag-text-center',
     headerName: 'IND/MYA',
     minWidth: 100,
-    resizable: true,
     sortable: !isDiff,
     ...(isDiff
       ? {
@@ -346,58 +318,18 @@ const allColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
           valueGetter: ({ data }: any) => (data.is_multi_year ? 'MYA' : 'IND'),
         }),
   },
-  {
-    autoHeight: true,
-    cellClass: 'ag-cell-wrap-text',
-    field: 'reason_for_exceeding',
-    headerClass: 'ag-text-center',
-    headerName: 'Reason for Exceeding',
-    minWidth: 200,
-    resizable: true,
-    sortable: !isDiff,
-    ...(isDiff
-      ? {
-          cellRenderer: textCellRenderer,
-          valueGetter: (params: any) =>
-            cellValueGetter(params, 'reason_for_exceeding'),
-        }
-      : { tooltipField: 'reason_for_exceeding' }),
-  },
-  {
-    autoHeight: true,
-    cellClass: 'ag-cell-wrap-text',
-    field: 'remarks',
-    headerClass: 'ag-text-center',
-    headerName: 'Remarks',
-    minWidth: 200,
-    resizable: true,
-    sortable: !isDiff,
-    ...(isDiff
-      ? {
-          cellRenderer: textCellRenderer,
-          valueGetter: (params: any) => cellValueGetter(params, 'remarks'),
-        }
-      : { tooltipField: 'remarks' }),
-  },
-  {
-    autoHeight: true,
-    cellClass: 'ag-text-center ag-cell-wrap-text',
-    field: 'comment_secretariat',
-    headerClass: 'ag-text-center',
-    headerName: 'Comment',
-    minWidth: 200,
-    resizable: true,
-    sortable: !isDiff,
-    ...(isDiff
-      ? {
-          cellRenderer: commentsDiffCellRenderer,
-          valueGetter: (params: any) => commentsDiffValueGetter(params),
-        }
-      : {
-          cellRenderer: commentsCellRenderer,
-          valueGetter: commentsValueGetter,
-        }),
-  },
+  ...getCommentsColumnsDefs(isDiff),
 ]
 
-export { allColumnDefs, commentsColumnDefs, odpColumnDefs, valuesColumnDefs }
+const defaultColDef = {
+  autoHeight: true,
+  resizable: true,
+}
+
+export {
+  allColumnDefs,
+  commentsColumnDefs,
+  defaultColDef,
+  odpColumnDefs,
+  valuesColumnDefs,
+}
