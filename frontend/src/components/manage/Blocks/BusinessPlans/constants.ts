@@ -21,10 +21,3 @@ export const tableColumns: { [key: string]: string } = {
   substances: 'Substances',
   title: 'Title',
 }
-
-export const statusOptions = [
-  { status: 'A', status_displayed: 'Approved' },
-  { status: 'P', status_displayed: 'Planned' },
-  { status: 'R', status_displayed: 'Rejected' },
-  { status: 'U', status_displayed: 'Undefined' },
-]

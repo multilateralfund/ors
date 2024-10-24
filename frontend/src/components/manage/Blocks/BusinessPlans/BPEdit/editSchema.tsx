@@ -6,11 +6,7 @@ import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRendere
 import { useStore } from '@ors/store'
 
 import { tagsCellRenderer } from '../../Table/BusinessPlansTable/schemaHelpers'
-import {
-  multiYearFilterOptions,
-  statusOptions,
-  tableColumns,
-} from '../constants'
+import { multiYearFilterOptions, tableColumns } from '../constants'
 import { useGetChemicalTypes } from '../useGetChemicalTypes'
 import {
   MYAValueSetter,
@@ -42,10 +38,12 @@ const useColumnsOptions = (yearColumns: any[]) => {
   const sectors = bpSlice.sectors.data
   const subsectors = bpSlice.subsectors.data
   const substances = cpReportsSlice.substances.data
-  const statuses = statusOptions.map((status) => ({
-    id: status.status,
-    name: status.status_displayed,
-  }))
+  const statuses =
+    commonSlice.settings.data.business_plan_activity_statuses.map((status) => ({
+      id: status[0],
+      name: status[1],
+    }))
+
   const commentTypes = bpSlice.commentTypes.data
   const chemicalTypes = useGetChemicalTypes()
   const chemicalTypesResults = chemicalTypes.results
