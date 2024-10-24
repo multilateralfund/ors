@@ -1827,6 +1827,37 @@ class ReplenishmentPaymentViewSet(
             country=payment.country, year__in=years_list
         ).update(amount=models.F("amount") - payment.ferm_gain_or_loss)
 
+    def _set_invoice_status(self, payment):
+        """
+        Update linked invoice when a payment is added or edited.
+        """
+        if payment.invoice is None:
+            return
+        invoice = payment.invoice
+        # This relied on partially_paid and paid having the same char values in both
+        # invoices and payments models.
+        invoice.status = payment.status
+        invoice.save(update_fields=["status"])
+
+    def _unset_invoice_status(self, payment):
+        """
+        Update linked invoice when a payment is deleted.
+
+        Called just before payment deletion.
+
+        If other payments exist for that invoice, marking it as partially paid.
+        If no other payments exist, marking it as pending.
+        """
+        if payment.invoice is None:
+            return
+        invoice = payment.invoice
+        # The invoice still has this payment
+        if invoice.payments.count() <= 1:
+            invoice.status = invoice.InvoiceStatus.PENDING
+        else:
+            invoice.status = invoice.InvoiceStatus.PARTYALLY_PAID
+        invoice.save(update_fields=["status"])
+
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         files = self._parse_payment_new_files(request)
@@ -1848,9 +1879,10 @@ class ReplenishmentPaymentViewSet(
         # Now create the files for this Payment
         self._create_new_payment_files(payment, files)
 
-        # Update the annual/triennial contributions & FERM
+        # Update the annual/triennial contributions, FERM & invoice status
         self._set_annual_triennial_contributions(payment)
         self._set_ferm(payment)
+        self._set_invoice_status(payment)
 
         # And finally set the ScaleOfAssessment if all needed fields are specified
         self._set_scale_of_assessment_ferm(payment, is_ferm)
@@ -1887,11 +1919,12 @@ class ReplenishmentPaymentViewSet(
         # And delete the ones that need to be deleted
         current_obj.payment_files.filter(id__in=files_to_delete).delete()
 
-        # Update the annual/triennial contributions & FERM
+        # Update the annual/triennial contributions, FERM & invoice status
         self._set_annual_triennial_contributions(
             current_obj, old_amount=previous_amount
         )
         self._set_ferm(current_obj, old_amount=previous_amount)
+        self._set_invoice_status(current_obj)
 
         # And finally set the ScaleOfAssessment if all needed fields are specified
         self._set_scale_of_assessment_ferm(current_obj, is_ferm)
@@ -1903,9 +1936,10 @@ class ReplenishmentPaymentViewSet(
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
 
-        # First update the contributions & FERM
+        # First update the contributions, FERM & invoice status
         self._unset_annual_triennial_contributions(instance)
         self._unset_ferm(instance)
+        self._unset_invoice_status(instance)
 
         # Then actually delete the payment
         return super().destroy(request, *args, **kwargs)
