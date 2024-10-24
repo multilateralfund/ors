@@ -332,3 +332,14 @@ class ScaleOfAssessmentWriter(WriteOnlyBase):
         super().write(data)
         # Data, header, total, empty row
         self.add_comments(len(data) + 3)
+
+
+class ScaleOfAssessmentTemplateWriter:
+    """
+    Writes based on preloaded template file.
+
+    No cell formatting (except number format?), merging or table formatting are needed;
+    just filling out values.
+    """
+
+    pass

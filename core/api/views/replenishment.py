@@ -10,6 +10,7 @@ from itertools import zip_longest
 
 import openpyxl
 from constance import config
+from django.conf import settings
 from django.core.files.base import ContentFile
 from django.db import models, transaction
 from django.http import HttpResponse
@@ -74,6 +75,8 @@ from core.models import (
     ScaleOfAssessmentVersion,
     TriennialContributionStatus,
 )
+
+EXPORT_RESOURCES_DIR = settings.ROOT_DIR / "api" / "export" / "templates"
 
 
 class ReplenishmentCountriesViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
@@ -379,9 +382,12 @@ class ScaleOfAssessmentViewSet(
 
         start_year = int(request.query_params["start_year"])
         queryset = self.filter_queryset(self.get_queryset())
-        wb = openpyxl.Workbook()
-        wb.remove(wb.active)
-        ws = wb.create_sheet("Scales of Assessment")
+
+        # Open template file
+        wb = openpyxl.load_workbook(
+            filename=EXPORT_RESOURCES_DIR / "Scale of Assesement.xlsx"
+        )
+        ws = wb.active
 
         data = [
             {"no": i + 1, **soa}
