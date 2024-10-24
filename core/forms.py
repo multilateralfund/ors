@@ -37,7 +37,7 @@ class CountryUserPasswordResetForm(PasswordResetForm):
             body,
             from_email,
             [to_email],
-            cc=["alexandra.mereu@eaudeweb.ro", "rares.siteavu@eaudeweb.ro"],
+            cc=["mereu.alexandra95@gmail.com", "rares.siteavu00@gmail.com"],
         )
         email_message.send()
 

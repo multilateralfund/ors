@@ -1,11 +1,11 @@
 import logging
 import pandas as pd
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
 
 from core.import_data.mapping_names_dict import COUNTRY_NAME_MAPPING
-from core.import_data.utils import IMPORT_RESOURCES_DIR
 from core.models.country import Country
 from core.tasks import send_mail_set_password_country_user
 
@@ -49,7 +49,7 @@ def make_user(row, user_type):
 
 def import_country_users():
     users_to_create = []
-    file_path = IMPORT_RESOURCES_DIR / "country_users.xlsx"
+    file_path = settings.IMPORT_DATA_DIR / "users/country_users.xlsx"
 
     df = pd.read_excel(file_path)
     for _, row in df.iterrows():
@@ -68,7 +68,9 @@ def import_country_users():
     if users_to_create:
         transaction.on_commit(
             lambda: send_mail_set_password_country_user.apply_async(
-                args=(list(dict.fromkeys([user.email for user in users_to_create])),)
+                args=(
+                    list(dict.fromkeys([user.country_id for user in users_to_create])),
+                )
             )
         )
 

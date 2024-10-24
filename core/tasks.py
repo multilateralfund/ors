@@ -160,23 +160,25 @@ def send_mail_bp_status_update(business_plan_id):
 
 
 @app.task()
-def send_mail_set_password_country_user(user_emails):
-    for user_email in user_emails:
+def send_mail_set_password_country_user(country_ids):
+    for country_id in country_ids:
         try:
+            country_users = User.objects.filter(country_id=country_id)
+            user_email = country_users.first().email  # 2 users, 1 email
             form = CountryUserPasswordResetForm({"email": user_email})
-            if not form.is_valid():
+            if not form.is_valid() or country_users.count() != 2:
                 logger.error(f"Password reset mail error: {user_email}")
                 continue
 
-            country_inputter = User.objects.filter(
-                email=user_email, user_type=User.UserType.COUNTRY_USER
+            country_inputter = country_users.filter(
+                user_type=User.UserType.COUNTRY_USER
             ).first()
             password_inputter = User.objects.make_random_password(length=12)
             country_inputter.set_password(password_inputter)
             country_inputter.save()
 
-            country_submitter = User.objects.filter(
-                email=user_email, user_type=User.UserType.COUNTRY_SUBMITTER
+            country_submitter = country_users.filter(
+                user_type=User.UserType.COUNTRY_SUBMITTER
             ).first()
             password_submitter = User.objects.make_random_password(length=12)
             country_submitter.set_password(password_submitter)
@@ -196,4 +198,6 @@ def send_mail_set_password_country_user(user_emails):
             )
             logger.info(f"Password reset mail sent successfully to {user_email}!")
         except Exception as e:
-            logger.error(f"Could not send password email to {user_email} - {str(e)}")
+            logger.error(
+                f"Could not send password email for Country: {country_id} - {str(e)}"
+            )
