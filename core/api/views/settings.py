@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from core.api.utils import PROJECT_SECTOR_TYPE_MAPPING, STATUS_TRANSITIONS
 from core.models import CPReport
 from core.models.blend import Blend
-from core.models.business_plan import BusinessPlan
+from core.models.business_plan import BPActivity, BusinessPlan
 from core.models.project import Project, ProjectFund, ProjectOdsOdp, SubmissionAmount
 from core.models.utils import SubstancesType
 
@@ -44,6 +44,7 @@ class SettingsView(views.APIView):
             ],
             "blend_types": Blend.BlendTypes.choices,
             "business_plan_statuses": BusinessPlan.Status.choices,
+            "business_plan_activity_statuses": BPActivity.Status.choices,
             "business_plan_status_transitions": STATUS_TRANSITIONS,
             "project_sector_type_mapping": PROJECT_SECTOR_TYPE_MAPPING,
             "project_submission_categories": Project.SubmissionCategory.choices,
