@@ -27,9 +27,9 @@ def make_user(row, user_type):
     )
     country = Country.objects.find_by_name(country_name)
     username = (
-        f"{country.name}_inputter"
+        f"{country.name.lower()}_inputter"
         if user_type == User.UserType.COUNTRY_USER
-        else f"{country.name}_submitter"
+        else f"{country.name.lower()}_submitter"
     )
 
     user_kwargs = {
@@ -68,9 +68,7 @@ def import_country_users():
     if users_to_create:
         transaction.on_commit(
             lambda: send_mail_set_password_country_user.apply_async(
-                args=(
-                    list(dict.fromkeys([user.country_id for user in users_to_create])),
-                )
+                args=(list(dict.fromkeys([user.email for user in users_to_create])),)
             )
         )
 
