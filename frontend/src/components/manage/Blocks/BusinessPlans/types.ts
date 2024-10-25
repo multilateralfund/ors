@@ -1,15 +1,17 @@
+import { ApiBP, ApiBPActivity } from '@ors/types/api_bp_get'
+
+import { Dispatch, ReactNode, SetStateAction } from 'react'
+
 export type BpPathParams = {
   agency: string
   period: string
 }
 
 export type BpDiffPathParams = {
-  agency: string
-  period: string
   version: string
-}
+} & BpPathParams
 
-export type BPDataInterface = {
+export interface BPDataInterface {
   loaded: boolean
   loading: boolean
   results: Array<any>
@@ -22,10 +24,20 @@ export type BPGetVersionsInterface = {
 }
 
 export type BPGetDiffInterface = {
-  agency_id: number
   version: string
-  year_end: number
-  year_start: number
+} & BPGetVersionsInterface
+
+export type BPTabsInterface = {
+  activeTab: number
+  children: ReactNode
+  setActiveTab: Dispatch<SetStateAction<number>>
+}
+
+export type BPEditTableInterface = {
+  form: Array<ApiBPActivity>
+  loading: boolean
+  params: any
+  setForm: Dispatch<SetStateAction<Array<ApiBPActivity> | null | undefined>>
 }
 
 export type ViewSelectorValuesType = 'list' | 'table'

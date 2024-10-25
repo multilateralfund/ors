@@ -9,7 +9,7 @@ import {
 } from 'react'
 
 import { ICellEditorParams } from 'ag-grid-community'
-import { isNaN, isNumber } from 'lodash'
+import { isNaN, isNull, isNumber } from 'lodash'
 
 import { parseNumber } from '@ors/helpers/Utils/Utils'
 
@@ -24,13 +24,18 @@ export const CellNumberWidget = memo(
   forwardRef(
     (
       props: {
+        allowNullVals: boolean
         max: string
         min: string
       } & ICellEditorParams,
       ref,
     ) => {
       const createInitialState = () => {
-        let startValue = parseFloat(props.value) || ''
+        let startValue = props.allowNullVals
+          ? !isNull(props.value)
+            ? parseFloat(props.value)
+            : ''
+          : parseFloat(props.value) || ''
         let highlightAllOnFocus = true
 
         const eventKey = props.eventKey
@@ -85,7 +90,9 @@ export const CellNumberWidget = memo(
         return {
           // the final value to send to the grid, on completion of editing
           getValue() {
-            const finalValue = parseNumber(value) || 0
+            const finalValue = props.allowNullVals
+              ? parseNumber(value)
+              : parseNumber(value) || 0
             const min = parseNumber(props.min)
             const max = parseNumber(props.max)
             if (finalValue && isNumber(min) && finalValue < min) return min

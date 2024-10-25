@@ -19,11 +19,11 @@
       }
     }
 
-    &.ag-country-cell-text .inline {
+    &.ag-cell-centered .inline {
       min-width: 120px;
     }
 
-    &.ag-substances-cell-content {
+    &.ag-tags-cell-content {
       align-items: flex-start;
 
       .ag-cell-value {
@@ -106,6 +106,12 @@
   .ag-cell-hashed {
     @apply pattern-diagonal-lines pattern-bg-transparent pattern-slate-300
     pattern-opacity-80 pattern-size-1;
+  }
+
+  .ag-cell-ellipsed .cell-renderer .inline span {
+    @apply block overflow-hidden text-ellipsis;
+
+    white-space: nowrap;
   }
 
   /* .ag-cell.ag-flex-cell .ag-cell-wrapper {
