@@ -185,7 +185,8 @@ def send_mail_set_password_country_user(user_emails):
             form.save(
                 domain_override=settings.FRONTEND_HOST[0],
                 subject_template_name="registration/create_new_country_user_subject.txt",
-                email_template_name="registration/create_new_country_user_email.html",
+                email_template_name="registration/create_new_country_user_email.txt",
+                html_email_template_name="registration/create_new_country_user_email.html",
                 use_https=settings.HAS_HTTPS,
                 extra_email_context={
                     "username_inputter": country_inputter.username,
