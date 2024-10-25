@@ -207,6 +207,11 @@ class MeetingAdmin(admin.ModelAdmin):
             "approved_projects",
             "transferred_projects",
             "projectcomment",
+            "annualcontributionstatus",
+            "triennialcontributionstatus",
+            "disputedcontribution",
+            "externalallocation",
+            "statusofthefundfile",
         ]
         return get_final_display_list(Meeting, exclude)
 
