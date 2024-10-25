@@ -201,8 +201,8 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
               : ''
           },
           amount_local_currency:
-            invoice?.amount_local_currency.toString() ?? '',
-          amount_received: invoice?.amount_usd.toString() ?? '',
+            invoice?.amount_local_currency?.toString() ?? '',
+          amount_received: invoice?.amount_usd?.toString() ?? '',
           invoice: invoiceId,
           is_ferm: invoice?.is_ferm ?? prevState.is_ferm,
           payment_for_years: invoice ? [invoice?.year.toString()] : [],
