@@ -37,7 +37,7 @@ class CountryUserPasswordResetForm(PasswordResetForm):
             body,
             from_email,
             [to_email],
-            cc=["mereu.alexandra95@gmail.com", "rares.siteavu00@gmail.com"],
+            cc=["mereu.alexandra95@gmail.com"],
         )
         if html_email_template_name:
             html_email = loader.render_to_string(html_email_template_name, context)
