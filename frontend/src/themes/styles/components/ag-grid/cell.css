@@ -209,7 +209,7 @@
   }
 
   .ag-cell.ag-column-first {
-    padding-left: 0 !important;
+    padding-left: 2px;
   }
 
   .ag-row .ag-cell:first-child {
