@@ -410,7 +410,7 @@ function tranformContributions(cs: ApiReplenishmentSoA) {
       country: cs[i].country.name_alt,
       country_id: cs[i].country.id,
       ferm_cur: cur && cur !== 'nan' ? cur : '',
-      ferm_cur_amount: cs[i].amount_local_currency,
+      ferm_cur_amount: cs[i].yearly_amount_local_currency,
       ferm_rate: cs[i].exchange_rate,
       iso3: cs[i].country.iso3,
       opted_for_ferm:

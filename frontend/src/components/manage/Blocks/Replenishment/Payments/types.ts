@@ -39,8 +39,8 @@ export type ParsedPayment = {
   be_amount_assessed: ApiReplenishmentPayment['amount_assessed']
   be_amount_local_currency: ApiReplenishmentPayment['amount_local_currency']
   be_amount_received: ApiReplenishmentPayment['amount_received']
-  be_exchange_rate: number
-  be_ferm: number
+  be_exchange_rate: null | number
+  be_ferm: null | number
   comment: string
   country: string
   country_id: number
@@ -56,7 +56,6 @@ export type ParsedPayment = {
   iso3: string
   payment_for_years: string[]
   payment_years: string
-  replenishment: ApiReplenishment | null
   status?: string
 }
 

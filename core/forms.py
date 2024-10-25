@@ -39,6 +39,10 @@ class CountryUserPasswordResetForm(PasswordResetForm):
             [to_email],
             cc=["mereu.alexandra95@gmail.com", "rares.siteavu00@gmail.com"],
         )
+        if html_email_template_name:
+            html_email = loader.render_to_string(html_email_template_name, context)
+            email_message.attach_alternative(html_email, "text/html")
+
         email_message.send()
 
     def save(

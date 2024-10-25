@@ -108,7 +108,6 @@ function parsePayment(entry: ApiReplenishmentPayment): ParsedPayment {
     iso3: entry.country.iso3,
     payment_for_years: entry.payment_for_years,
     payment_years: entry.payment_for_years.join(', '),
-    replenishment: entry.replenishment,
     status: entry.status,
   }
 }
@@ -280,7 +279,7 @@ function PaymentsView() {
       entry.amount_assessed = entry.be_amount_assessed
       entry.amount_received = entry.be_amount_received
       entry.exchange_rate = entry.be_exchange_rate
-      entry.ferm_gain_or_loss = entry.be_ferm
+      entry.ferm_gain_or_loss = entry.be_ferm ?? ''
     }
     return entry
   }, [editIdx, memoResults])

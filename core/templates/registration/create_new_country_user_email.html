@@ -1,113 +1,172 @@
 {% load settings_value %}
 
-****** Mensaje a continuación en español***** Message ci-dessous en français****
-
-
-Dear National Ozone Officers,
-
-We are excited to announce the launch of the new online Country Programme Data Reporting system, which will streamline and enhance the CP data reporting process. The system will officially go live on January 1st, 2025 at {% frontend_host %}/country-programme/reports.
-
-There are two types of credentials for accessing the system: inputter and submitter.
-Your credentials are as follows:
-
-The inputter role allows users to enter and modify data.
-
-• Inputter:
-Username: {{ username_inputter }}
-Password: {{ password_inputter }}
-
-Please go to the following page and choose a new password:
-{% frontend_host %}/reset-password/?uid={{ uid_inputter }}&token={{ token_inputter }}
-
-The submitter is the user who can input but also submit the data to the Secretariat.
-
-• Submitter:
-Username: {{ username_submitter }}
-Password: {{ password_submitter }}
-
-Please go to the following page and choose a new password:
-{% frontend_host %}/reset-password/?uid={{ uid_submitter }}&token={{ token_submitter }}
-
-To assist in the transition to the new system, we will be holding a training workshop during the upcoming Combined Conference of the Parties and Thirty-Sixth Meeting of the Parties to the Montreal Protocol, which will take place in Bangkok from October 28th to November 1st, 2024.
-
-In case of any technical issues or questions please contact Laura Duong laura.duong@un.org and Misha Alberizzi misha.alberizzi@un.org.
-
-We look forward to introducing the system.
-
-Best regards,
-
-Multilateral Fund Secretariat
-
-<hr>
-
-Estimados oficiales nacionales de ozono:
-
-Nos complace anunciar el lanzamiento del nuevo sistema de presentación de datos de los programas nacionales en línea, que agilizará y mejorará el proceso de presentación de datos de los programas nacionales. El sistema se pondrá en marcha oficialmente el 1 de enero de 2025 en {% frontend_host %}/country-programme/reports.
-
-Existen dos tipos de credenciales para acceder al sistema: el de introductor y el de remitente.
-Sus credenciales son las siguientes:
-
-El rol de Inputter – usuario que entra datos - permite a los usuarios introducir y modificar datos.
-
-• Inputter (usuario que entra datos):
-Username Nombre de usuario: {{ username_inputter }}
-Password contraseña: {{ password_inputter }}
-
-Vaya a la siguiente página y elija una nueva contraseña:
-{% frontend_host %}/reset-password/?uid={{ uid_inputter }}&token={{ token_inputter }}
-
-El Submitter Validador es el usuario que no solo puede introducir datos sino que es responsable de enviar los datos a la Secretaría.
-
-• Submitter:
-Username Nombre de usuario: {{ username_submitter }}
-Password contraseña: {{ password_submitter }}
-
-Vaya a la siguiente página y elija una nueva contraseña:
-{% frontend_host %}/reset-password/?uid={{ uid_submitter }}&token={{ token_submitter }}
-
-Para ayudar en la transición al nuevo sistema, organizaremos un taller de capacitación durante la próxima Conferencia de las Partes y la Trigésima Sexta Reunión Combinada de las Partes en el Protocolo de Montreal, que se llevará a cabo en Bangkok del 28 de octubre al 1 de noviembre de 2024.
-
-Si tiene alguna pregunta o problema técnico, póngase en contacto con Laura Duong en laura.duong@un.org y Misha Alberizzi misha.alberizzi@un.org.
-
-Esperamos presentarles pronto el nuevo sistema.
-
-Atentamente,
-
-Secretaría del Fondo Multilateral
-
-<hr>
-
-Chers responsables nationaux de l’ozone,
-
-Nous sommes heureux d'annoncer le lancement du nouveau système en ligne de communication des données des programmes de pays, qui rationalisera et améliorera le processus de communication des données des programmes de pays. Le système sera officiellement mis en service le 1er janvier 2025 sur {% frontend_host %}/country-programme/reports.
-
-Il existe deux types d'identifiants pour accéder au système : auteur de saisie et auteur de soumission.
-Vos identifiants sont les suivants :
-
-Le rôle d'auteur de saisie (Inputter) permet aux utilisateurs de saisir et de modifier des données.
-
-• Inputter :
-Nom d’utilisateur: {{ username_inputter }}
-Password mot de passe: {{ password_inputter }}
-
-Veuillez vous rendre sur la page suivante et choisir un nouveau mot de passe:
-{% frontend_host %}/reset-password/?uid={{ uid_inputter }}&token={{ token_inputter }}
-
-L'auteur de soumission (Submitter) est l'utilisateur qui peut saisir mais aussi soumettre les données au Secrétariat.
-
-• Submitter (utilsateur validateur):
-Nom d’utilisateur: {{ username_submitter }}
-Password mot de passe: {{ password_submitter }}
-
-Veuillez vous rendre sur la page suivante et choisir un nouveau mot de passe:
-{% frontend_host %}/reset-password/?uid={{ uid_submitter }}&token={{ token_submitter }}
-
-Pour faciliter la transition vers le nouveau système, nous organiserons un atelier de formation lors de la prochaine Conférence des Parties combinée et de la trente-sixième Réunion des Parties au Protocole de Montréal, qui se tiendra à Bangkok du 28 octobre au 1er novembre 2024.
-
-En cas de problèmes techniques ou de questions, veuillez contacter Laura Duong laura.duong@un.org et Misha Alberizzi misha.alberizzi@un.org.
-
-Nous avons hâte de vous présenter le système.
-
-Cordialement,
-
-Secrétariat du Fonds Multilatéral
+{% block content %}
+  <p>****** Mensaje a continuación en español***** Message ci-dessous en français****</p>
+  <br>
+  <p>Dear National Ozone Officers,</p>
+  <p>
+    We are excited to announce the launch of the new online Country Programme Data Reporting system, which will streamline and enhance the CP data reporting process. The system will officially go live on January 1st, 2025 at <a href="{% frontend_host %}/country-programme/reports">{% frontend_host %}/country-programme/reports</a>.
+  </p>
+  <p>
+    There are two types of credentials for accessing the system: <b>inputter</b> and <b>submitter</b>.
+    <br>
+    Your credentials are as follows:
+  </p>
+  <p>The inputter role allows users to enter and modify data.</p>
+  <p>
+    • Inputter:
+    <br>
+    <b>Username:</b> {{ username_inputter }}
+    <br>
+    <b>Password:</b> {{ password_inputter }}
+  </p>
+  <p>
+    Please go to the following page and choose a new password:
+    <br>
+    <a
+      href="{% frontend_host %}/reset-password/?uid={{ uid_inputter }}&token={{ token_inputter }}"
+      target="_blank"
+    >
+      Reset password inputter
+    </a>
+  </p>
+  <p>The submitter is the user who can input but also submit the data to the Secretariat.</p>
+  <p>
+    • Submitter:
+    <br>
+    <b>Username:</b> {{ username_submitter }}
+    <br>
+    <b>Password:</b> {{ password_submitter }}
+  </p>
+  <p>
+    Please go to the following page and choose a new password:
+    <br>
+    <a
+      href="{% frontend_host %}/reset-password/?uid={{ uid_submitter }}&token={{ token_submitter }}"
+      target="_blank"
+    >
+      Reset password submitter
+    </a>
+  </p>
+  <p>
+    To assist in the transition to the new system, we will be holding a training workshop during the upcoming Combined Conference of the Parties and Thirty-Sixth Meeting of the Parties to the Montreal Protocol, which will take place in Bangkok from October 28th to November 1st, 2024.
+  </p>
+  <p>
+    In case of any technical issues or questions please contact Laura Duong <a href="mailto:laura.duong@un.org">laura.duong@un.org</a> and Misha Alberizzi <a href="mailto:misha.alberizzi@un.org">misha.alberizzi@un.org</a>.
+  </p>
+  <p>We look forward to introducing the system.</p>
+  <p>Best regards,</p>
+  <p>Multilateral Fund Secretariat</p>
+  <hr>
+  <p>Estimados oficiales nacionales de ozono:</p>
+  <p>
+    Nos complace anunciar el lanzamiento del nuevo sistema de presentación de datos de los programas nacionales en línea, que agilizará y mejorará el proceso de presentación de datos de los programas nacionales. El sistema se pondrá en marcha oficialmente el 1 de enero de 2025 en <a href="{% frontend_host %}/country-programme/reports">{% frontend_host %}/country-programme/reports</a>.
+  </p>
+  <p>
+    Existen dos tipos de credenciales para acceder al sistema: el de introductor y el de remitente.
+    <br>
+    Sus credenciales son las siguientes:
+  </p>
+  <p>El rol de Inputter – usuario que entra datos - permite a los usuarios introducir y modificar datos.</p>
+  <p>
+    • Inputter (usuario que entra datos):
+    <br>
+    <b>Username Nombre de usuario:</b> {{ username_inputter }}
+    <br>
+    <b>Password contraseña:</b> {{ password_inputter }}
+  </p>
+  <p>
+    Vaya a la siguiente página y elija una nueva contraseña:
+    <br>
+    <a
+      href="{% frontend_host %}/reset-password/?uid={{ uid_inputter }}&token={{ token_inputter }}"
+      target="_blank"
+    >
+      Reset password inputter
+    </a>
+  </p>
+  <p>
+    El Submitter Validador es el usuario que no solo puede introducir datos sino que es responsable de enviar los datos a la Secretaría.
+  </p>
+  <p>
+    • Submitter:
+    <br>
+    <b>Username Nombre de usuario:</b> {{ username_submitter }}
+    <br>
+    <b>Password contraseña:</b> {{ password_submitter }}
+  </p>
+  <p>
+    Vaya a la siguiente página y elija una nueva contraseña:
+    <br>
+    <a
+      href="{% frontend_host %}/reset-password/?uid={{ uid_submitter }}&token={{ token_submitter }}"
+      target="_blank"
+    >
+      Reset password submitter
+    </a>
+  </p>
+  <p>
+    Para ayudar en la transición al nuevo sistema, organizaremos un taller de capacitación durante la próxima Conferencia de las Partes y la Trigésima Sexta Reunión Combinada de las Partes en el Protocolo de Montreal, que se llevará a cabo en Bangkok del 28 de octubre al 1 de noviembre de 2024.
+  </p>
+  <p>
+    Si tiene alguna pregunta o problema técnico, póngase en contacto con Laura Duong en <a href="mailto:laura.duong@un.org">laura.duong@un.org</a> y Misha Alberizzi <a href="mailto:misha.alberizzi@un.org">misha.alberizzi@un.org</a>.
+  </p>
+  <p>Esperamos presentarles pronto el nuevo sistema.</p>
+  <p>Atentamente,</p>
+  <p>Secretaría del Fondo Multilateral</p>
+  <hr>
+  <p>Chers responsables nationaux de l’ozone,</p>
+  <p>
+    Nous sommes heureux d'annoncer le lancement du nouveau système en ligne de communication des données des programmes de pays, qui rationalisera et améliorera le processus de communication des données des programmes de pays. Le système sera officiellement mis en service le 1er janvier 2025 sur <a href="{% frontend_host %}/country-programme/reports">{% frontend_host %}/country-programme/reports</a>.
+  </p>
+  <p>
+    Il existe deux types d'identifiants pour accéder au système : auteur de saisie et auteur de soumission.
+    <br>
+    Vos identifiants sont les suivants :
+  </p>
+  <p>Le rôle d'auteur de saisie (Inputter) permet aux utilisateurs de saisir et de modifier des données.</p>
+  <p>
+    • Inputter :
+    <br>
+    <b>Nom d’utilisateur:</b> {{ username_inputter }}
+    <br>
+    <b>Password mot de passe:</b> {{ password_inputter }}
+  </p>
+  <p>
+    Veuillez vous rendre sur la page suivante et choisir un nouveau mot de passe:
+    <br>
+    <a
+      href="{% frontend_host %}/reset-password/?uid={{ uid_inputter }}&token={{ token_inputter }}"
+      target="_blank"
+    >
+      Reset password inputter
+    </a>
+  <p>
+  <p>L'auteur de soumission (Submitter) est l'utilisateur qui peut saisir mais aussi soumettre les données au Secrétariat.</p>
+  <p>
+    • Submitter (utilsateur validateur):
+    <br>
+    <b>Nom d’utilisateur:</b> {{ username_submitter }}
+    <br>
+    <b>Password mot de passe:</b> {{ password_submitter }}
+  </p>
+  <p>
+    Veuillez vous rendre sur la page suivante et choisir un nouveau mot de passe:
+    <br>
+    <a
+      href="{% frontend_host %}/reset-password/?uid={{ uid_submitter }}&token={{ token_submitter }}"
+      target="_blank"
+    >
+      Reset password submitter
+    </a>
+  </p>
+  <p>
+    Pour faciliter la transition vers le nouveau système, nous organiserons un atelier de formation lors de la prochaine Conférence des Parties combinée et de la trente-sixième Réunion des Parties au Protocole de Montréal, qui se tiendra à Bangkok du 28 octobre au 1er novembre 2024.
+  </p>
+  <p>
+    En cas de problèmes techniques ou de questions, veuillez contacter Laura Duong <a href="mailto:laura.duong@un.org">laura.duong@un.org</a> et Misha Alberizzi <a href="mailto:misha.alberizzi@un.org">misha.alberizzi@un.org</a>.
+  </p>
+  <p>Nous avons hâte de vous présenter le système.</p>
+  <p>Cordialement,</p>
+  <p>Secrétariat du Fonds Multilatéral</p>
+{% endblock %}
