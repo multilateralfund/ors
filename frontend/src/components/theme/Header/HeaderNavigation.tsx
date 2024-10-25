@@ -25,7 +25,7 @@ import { useStore } from '@ors/store'
 
 import { IoChevronDown, IoChevronUp, IoClose, IoMenu } from 'react-icons/io5'
 
-const EXTERNAL_BASE_URL = 'https://prod.multilateralfund.edw.ro'
+const EXTERNAL_BASE_URL = 'https://www.multilateralfund.org/'
 const makeExternalUrl = (path: string) => `${EXTERNAL_BASE_URL}${path}`
 
 interface MenuItem {
