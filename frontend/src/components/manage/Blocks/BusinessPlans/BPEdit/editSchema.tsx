@@ -66,6 +66,7 @@ const useColumnsOptions = (
               }}
             />
           ),
+          field: '',
           minWidth: 20,
         },
         {
