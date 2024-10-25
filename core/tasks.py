@@ -4,12 +4,14 @@ from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 
+from core.forms import CountryUserPasswordResetForm
 from core.models.business_plan import BusinessPlan
 from core.models.country_programme import CPComment, CPReport
 from multilateralfund.celery import app
 
 logger = get_task_logger(__name__)
 User = get_user_model()
+# pylint: disable=W0718
 
 
 # Country Programme
@@ -155,3 +157,43 @@ def send_mail_bp_status_update(business_plan_id):
         recipients.values_list("email", flat=True),
         fail_silently=False,
     )
+
+
+@app.task()
+def send_mail_set_password_country_user(user_emails):
+    for user_email in user_emails:
+        try:
+            form = CountryUserPasswordResetForm({"email": user_email})
+            if not form.is_valid():
+                logger.error(f"Password reset mail error: {user_email}")
+                continue
+
+            country_inputter = User.objects.filter(
+                email=user_email, user_type=User.UserType.COUNTRY_USER
+            ).first()
+            password_inputter = User.objects.make_random_password(length=12)
+            country_inputter.set_password(password_inputter)
+            country_inputter.save()
+
+            country_submitter = User.objects.filter(
+                email=user_email, user_type=User.UserType.COUNTRY_SUBMITTER
+            ).first()
+            password_submitter = User.objects.make_random_password(length=12)
+            country_submitter.set_password(password_submitter)
+            country_submitter.save()
+
+            form.save(
+                domain_override=settings.FRONTEND_HOST[0],
+                subject_template_name="registration/create_new_country_user_subject.txt",
+                email_template_name="registration/create_new_country_user_email.html",
+                use_https=settings.HAS_HTTPS,
+                extra_email_context={
+                    "username_inputter": country_inputter.username,
+                    "password_inputter": password_inputter,
+                    "username_submitter": country_submitter.username,
+                    "password_submitter": password_submitter,
+                },
+            )
+            logger.info(f"Password reset mail sent successfully to {user_email}!")
+        except Exception as e:
+            logger.error(f"Could not send password email to {user_email} - {str(e)}")

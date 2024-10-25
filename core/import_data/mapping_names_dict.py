@@ -6,6 +6,7 @@ COUNTRY_NAME_MAPPING = {
     "Federated States of Micronesia": "Micronesia (Federated States of)",
     "Lao, PDR": "Lao PDR",
     "SAO TOME ET PRINCIPE": "Sao Tome and Principe",
+    "Sao Tomé-et-Principe": "Sao Tome and Principe",
     "Turkiye": "Turkey",
     "Tuerkiye": "Turkey",
     "USA": "United States of America",
@@ -28,14 +29,20 @@ COUNTRY_NAME_MAPPING = {
     "Gambia, Republic of the": "Gambia",
     "Tanzania, United Republic of": "Tanzania",
     "Congo, Democratic Republic of": "Democratic Republic of the Congo",
+    "Congo (Republic of the)": "Congo",
     "Cote d’Ivoire": "Côte d'Ivoire",
     "Moldova, Republic of": "Moldova",
     "Bolivia, Plurinational State of": "Bolivia",
+    "Plurinational State of Bolivia": "Bolivia",
     "Venezuela, Bolivarian Republic of": "Venezuela",
+    "Bolivarian Republic of Venezuela": "Venezuela",
     "Micronesia, Federated States of": "Micronesia (Federated States of)",
     "Lao People’s Democratic Republic": "Lao PDR",
     "Iran, Islamic Republic of": "Iran",
     "Korea, Democratic People’s Republic of": "Democratic People's Republic of Korea",
+    "Korea, (Democratic People's Republic of)": "Democratic People's Republic of Korea",
+    "Kyrgyz Republic": "Kyrgyzstan",
+    "Panamá": "Panama",
 }
 
 SECTOR_NAME_MAPPING = {

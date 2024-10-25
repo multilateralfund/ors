@@ -151,50 +151,45 @@ const makeExternalNavItem = (label: string, url: string, menu?: navItem[]) => {
 const useMenuItems = () => {
   return [
     makeExternalNavItem('About MLF', '/about', [
-      makeExternalNavItem('Governance', '/about/governance'),
-      makeExternalNavItem('History', '/about/history'),
       makeExternalNavItem('Mission', '/about/mission'),
+      makeExternalNavItem('History', '/about/history'),
+      makeExternalNavItem('Governance', '/about/governance'),
+      makeExternalNavItem('Partners', '/about/partners'),
+      makeExternalNavItem('Secretariat', '/about/secretariat'),
       makeExternalNavItem(
         'Monitoring & Evaluation',
         '/about/monitoring-evaluation',
       ),
-      makeExternalNavItem('Partners', '/about/partners'),
-      makeExternalNavItem('Secretariat', '/about/secretariat'),
+      makeExternalNavItem(
+        'Greening our operations',
+        '/greening-our-operations',
+      ),
     ]),
     makeExternalNavItem('Our impact', '/our-impact'),
     makeExternalNavItem('Projects & Data', '/projects-data', [
-      {
-        label: 'Dashboards',
-        menu: [
-          makeExternalNavItem(
-            'Countries Dashboard',
-            '/projects-data/countries-dashboard',
-          ),
-          makeExternalNavItem(
-            'Funding Dashboard',
-            '/projects-data/funding-dashboard',
-          ),
-          makeExternalNavItem(
-            'People & Environment',
-            '/projects-data/people-environment',
-          ),
-          makeExternalNavItem(
-            'Projects Dashboard',
-            '/projects-data/projects-dashboard',
-          ),
-        ],
-        url: '',
-      },
-      { label: 'Data Center', url: '#' },
+      makeExternalNavItem('Projects', '/projects-data/dashboards'),
+      makeExternalNavItem(
+        'Contributions',
+        '/projects-data/countries-dashboard',
+      ),
+      makeExternalNavItem('Countries', '/projects-data/funding-dashboard'),
+      makeExternalNavItem('Our impact', '/projects-data/people-environment'),
+      makeExternalNavItem(
+        'CP Data Center',
+        '/projects-data/projects-dashboard',
+      ),
       ...useInternalNavSections(),
     ]),
     makeExternalNavItem('Resources', '/resources', [
-      makeExternalNavItem('Decision handbook', '/resources/decisions'),
+      makeExternalNavItem('Decisions', '/resources/decisions'),
       makeExternalNavItem(
         'Project Guides & Tools',
         '/resources/project-guides-tools',
       ),
       makeExternalNavItem('Scorecards', '/resources/secretariat-scorecards'),
+      makeExternalNavItem('Factsheets', '/factsheets'),
+      makeExternalNavItem('Newsletters', '/newsletters'),
+      makeExternalNavItem('Policy frameworks', '/policy-frameworks'),
     ]),
     makeExternalNavItem('Meetings', '/meetings'),
     makeExternalNavItem('News & Stories', '/news-stories'),
