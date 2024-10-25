@@ -10,9 +10,9 @@ export type ParsedInvoice = {
   amount: null | number | string
   amount_local_currency: null | number | string
   amount_usd: null | number | string
-  be_amount_local_currency: number
-  be_amount_usd: number
-  be_exchange_rate: number
+  be_amount_local_currency: null | number
+  be_amount_usd: null | number
+  be_exchange_rate: null | number
   can_delete: boolean
   can_edit: boolean
   country: string
