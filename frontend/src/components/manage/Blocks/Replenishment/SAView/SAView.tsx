@@ -325,7 +325,7 @@ function SaveManager(props: SaveManagerProps) {
                 <Input
                   id="decision_pdf"
                   className="!ml-0 h-10"
-                  required={isFinal}
+                  required={false}
                   type="file"
                 />
               </div>
