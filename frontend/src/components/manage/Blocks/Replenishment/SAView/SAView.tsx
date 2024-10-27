@@ -226,8 +226,6 @@ function SaveManager(props: SaveManagerProps) {
       saveData['decision_pdf'] = null
     }
 
-    console.log({ saveData })
-
     setSaving(false)
     api('api/replenishment/scales-of-assessment', {
       data: saveData,
