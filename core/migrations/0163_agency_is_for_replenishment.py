@@ -19,10 +19,10 @@ def forwards_func(apps, schema_editor):
 
     # Create agencies that don't exist
     for name in (external_income_agencies_set - existing_agencies_set):
-        agency_type = Agency.AgencyType.NATIONAL
+        agency_type = "National"
         is_for_replenishment = True
         if name in ["Treasurer (Cash Pool)", "UNIDO", "UNDP", "UNEP", "World Bank"]:
-            agency_type = Agency.AgencyType.AGENCY
+            agency_type = "Agency"
         
         agencies.append(
             Agency(
