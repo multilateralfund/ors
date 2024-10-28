@@ -4,6 +4,8 @@ import { Country } from '@ors/types/store'
 
 import { HTMLAttributes } from 'react'
 
+import Big from 'big.js'
+
 import { IDateInputProps } from '../Inputs'
 import { TableCellProps, TableColumn, TableProps } from '../Table/types'
 
@@ -106,26 +108,26 @@ export interface DateRangeInputProps
 }
 
 export interface SAContribution {
-  adj_un_soa?: number
-  annual_contributions?: number
-  avg_ir: null | number
+  adj_un_soa?: Big
+  annual_contributions?: Big
+  avg_ir: Big | null
   country: string
   country_id: number
   ferm_cur: null | string
-  ferm_cur_amount?: number
-  ferm_rate: null | number
+  ferm_cur_amount?: Big
+  ferm_rate: Big | null
   isNew?: boolean
   iso3: string
   opted_for_ferm: boolean | null
-  override_adj_un_soa?: null | number
-  override_avg_ir?: null | number
+  override_adj_un_soa?: Big | null
+  override_avg_ir?: Big | null
   override_ferm_cur?: null | string
-  override_ferm_rate?: null | number
+  override_ferm_rate?: Big | null
   override_opted_for_ferm?: boolean | null
   override_qual_ferm?: boolean | null
-  override_un_soa?: null | number
+  override_un_soa?: Big | null
   qual_ferm: boolean
-  un_soa: null | number
+  un_soa: Big | null
 }
 
 export interface SAContributionForSave {

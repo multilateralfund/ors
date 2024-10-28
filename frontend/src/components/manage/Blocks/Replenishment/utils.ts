@@ -1,3 +1,5 @@
+import Big from 'big.js'
+
 import { MAX_DECIMALS, MIN_DECIMALS } from './constants'
 
 const RE_PERIOD = new RegExp(/\d{4}-\d{4}/)
@@ -229,4 +231,22 @@ export function floorSmallValue(
     result = 0
   }
   return result
+}
+export function asDecimal(value: null): null
+export function asDecimal(value: undefined): undefined
+export function asDecimal(value: number): Big
+export function asDecimal(value: string): Big
+export function asDecimal(value?: null | number | string): Big | typeof value {
+  if (value === undefined || value === null) {
+    return value
+  } else if (value === '') {
+    return new Big('0')
+  }
+  return new Big(value)
+}
+
+export function toFormat(nr: Big, dp: number, ts = ',', ds = '.'): string {
+  const arr = nr.toFixed(dp).split('.')
+  arr[0] = arr[0].replace(/\B(?=(\d{3})+(?!\d))/g, ts)
+  return arr.join(ds)
 }

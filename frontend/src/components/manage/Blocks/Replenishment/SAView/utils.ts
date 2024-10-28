@@ -1,26 +1,8 @@
-import { fixFloat } from '@ors/helpers/Utils/Utils'
+import Big from 'big.js'
 
-import { MAX_DECIMALS, MIN_DECIMALS, PRECISION } from '../constants'
-import { getDefaultFieldSorter } from '../utils'
+import { MAX_DECIMALS, MIN_DECIMALS } from '../constants'
+import { getDefaultFieldSorter, toFormat } from '../utils'
 import { SAContribution, SATableRow } from './types'
-
-export function nullIfNaN(value: number) {
-  let result: null | number = value
-
-  if (typeof value === 'number' && isNaN(value)) {
-    result = null
-  }
-
-  return result
-}
-
-export function uniformDecimals(v: null | number) {
-  let result = null
-  if (v !== null) {
-    result = fixFloat(v, MAX_DECIMALS)
-  }
-  return result
-}
 
 export function clearNew(d: Record<string, any>) {
   const r = []
@@ -31,82 +13,71 @@ export function clearNew(d: Record<string, any>) {
   return r
 }
 
-export function getOverrideOrDefault(
+export function getOverrideOrDefault<T = SAContribution[keyof SAContribution]>(
   record: SAContribution,
   name: keyof SAContribution,
-) {
-  let result = record[`override_${name}` as keyof SAContribution]
+): T {
+  const overrideKey = `override_${name}` as keyof SAContribution
+  let result = record[overrideKey] as T
   if (result === undefined) {
-    result = record[name]
+    result = record[name] as T
   }
   return result
 }
 
 export function computeTableData(
   tableData: SAContribution[],
-  totalReplenishment: number,
+  totalReplenishment: Big,
 ) {
   const result = new Array(tableData.length)
 
-  let adj_un_soa = 0
-  let adj_un_soa_percent = 100
+  let adj_un_soa = new Big('0')
+  let adj_un_soa_percent = new Big('100')
 
   for (let i = 0; i < tableData.length; i++) {
     if (tableData[i].iso3 === 'USA') {
-      adj_un_soa_percent -=
-        nullIfNaN(
-          fixFloat(
-            (getOverrideOrDefault(tableData[i], 'un_soa') as number) ?? 0,
-            PRECISION,
-          ),
-        ) ?? 0
+      adj_un_soa_percent = adj_un_soa_percent.minus(
+        getOverrideOrDefault<Big | null>(tableData[i], 'un_soa') ??
+          new Big('0'),
+      )
     } else {
-      adj_un_soa +=
-        nullIfNaN(
-          fixFloat(
-            (getOverrideOrDefault(tableData[i], 'un_soa') as number) ?? 0,
-            PRECISION,
-          ),
-        ) ?? 0
+      adj_un_soa = adj_un_soa.plus(
+        getOverrideOrDefault<Big | null>(tableData[i], 'un_soa') ??
+          new Big('0'),
+      )
     }
   }
 
-  adj_un_soa_percent -= fixFloat(adj_un_soa, PRECISION)
+  adj_un_soa_percent = adj_un_soa_percent.minus(adj_un_soa)
 
   for (let i = 0; i < tableData.length; i++) {
     result[i] = { ...tableData[i] }
 
-    const un_soa = fixFloat(
-      (getOverrideOrDefault(tableData[i], 'un_soa') as number) ?? 0,
-      PRECISION,
-    )
+    const un_soa =
+      getOverrideOrDefault<Big | null>(tableData[i], 'un_soa') ?? new Big('0')
 
     if (tableData[i].iso3 === 'USA') {
       result[i].adj_un_soa = un_soa
     } else {
-      result[i].adj_un_soa = nullIfNaN(
-        fixFloat(
-          (un_soa / adj_un_soa) * adj_un_soa_percent + un_soa,
-          PRECISION,
-        ),
-      )
+      result[i].adj_un_soa = un_soa
+        .div(adj_un_soa)
+        .mul(adj_un_soa_percent)
+        .plus(un_soa)
     }
 
-    result[i].annual_contributions = nullIfNaN(
-      fixFloat(
-        ((getOverrideOrDefault(result[i], 'adj_un_soa') as number) *
-          totalReplenishment) /
-          100,
-        PRECISION,
-      ),
+    result[i].annual_contributions = (
+      getOverrideOrDefault<Big | null>(result[i], 'adj_un_soa') ?? Big('0')
     )
+      .mul(totalReplenishment)
+      .div(100)
 
     // Does it qualify for FERM?
     if (tableData[i].iso3 === 'USA') {
       result[i].qual_ferm = false
     } else {
-      result[i].qual_ferm =
-        ((getOverrideOrDefault(result[i], 'avg_ir') as number) ?? 100) < 10
+      result[i].qual_ferm = (
+        getOverrideOrDefault<Big | null>(result[i], 'avg_ir') ?? new Big('100')
+      ).lt(new Big('10'))
       result[i].qual_ferm = result[i].qual_ferm || result[i].ferm_cur === 'Euro'
     }
 
@@ -114,8 +85,9 @@ export function computeTableData(
     result[i].ferm_cur_amount =
       getOverrideOrDefault(result[i], 'qual_ferm') &&
       getOverrideOrDefault(result[i], 'ferm_rate') !== null
-        ? (getOverrideOrDefault(result[i], 'ferm_rate') as number) *
-          result[i].annual_contributions
+        ? getOverrideOrDefault<Big>(result[i], 'ferm_rate').mul(
+            result[i].annual_contributions,
+          )
         : null
 
     if (
@@ -133,7 +105,7 @@ export function computeTableData(
   return result
 }
 
-function formattedValue(value: boolean | null | number | string) {
+function formattedValue(value: Big | boolean | null | number | string) {
   let newValue = value
 
   if (value === null) {
@@ -143,6 +115,8 @@ function formattedValue(value: boolean | null | number | string) {
       maximumFractionDigits: MAX_DECIMALS,
       minimumFractionDigits: MIN_DECIMALS,
     })
+  } else if (value instanceof Big) {
+    newValue = toFormat(value, MIN_DECIMALS)
   } else if (value === false) {
     newValue = 'No'
   } else if (value === true) {
@@ -199,46 +173,35 @@ export function formatTableData(
 }
 
 export function sumColumns(tableData: Record<string, any>) {
-  const result: Record<string, number | string> = {
-    adj_un_soa: 0,
-    annual_contributions: 0,
-    un_soa: 0,
+  const _result = {
+    adj_un_soa: new Big('0'),
+    annual_contributions: new Big('0'),
+    un_soa: new Big('0'),
   }
 
   for (let i = 0; i < tableData.length; i++) {
     if (!tableData[i].hasOwnProperty('override_adj_un_soa')) {
-      ;(result.un_soa as number) += getOverrideOrDefault(
-        tableData[i],
-        'un_soa',
-      ) as number
+      _result.un_soa = _result.un_soa.plus(
+        getOverrideOrDefault<Big | null>(tableData[i], 'un_soa') ??
+          new Big('0'),
+      )
     }
-    ;(result.adj_un_soa as number) += getOverrideOrDefault(
-      tableData[i],
-      'adj_un_soa',
-    ) as number
-    ;(result.annual_contributions as number) += getOverrideOrDefault(
-      tableData[i],
-      'annual_contributions',
-    ) as number
+    _result.adj_un_soa = _result.adj_un_soa.plus(
+      getOverrideOrDefault<Big | null>(tableData[i], 'adj_un_soa') ??
+        new Big('0'),
+    )
+
+    _result.annual_contributions = _result.annual_contributions.plus(
+      getOverrideOrDefault<Big | null>(tableData[i], 'annual_contributions') ??
+        new Big('0'),
+    )
   }
 
-  result.un_soa =
-    result.un_soa.toLocaleString('en-US', {
-      maximumFractionDigits: MAX_DECIMALS,
-      minimumFractionDigits: MIN_DECIMALS,
-    }) + '%'
-  result.adj_un_soa =
-    result.adj_un_soa.toLocaleString('en-US', {
-      maximumFractionDigits: MAX_DECIMALS,
-      minimumFractionDigits: MIN_DECIMALS,
-    }) + '%'
-  result.annual_contributions = result.annual_contributions.toLocaleString(
-    'en-US',
-    {
-      maximumFractionDigits: MAX_DECIMALS,
-      minimumFractionDigits: MIN_DECIMALS,
-    },
-  )
+  const result = {
+    adj_un_soa: toFormat(_result.adj_un_soa, MIN_DECIMALS),
+    annual_contributions: toFormat(_result.annual_contributions, MIN_DECIMALS),
+    un_soa: toFormat(_result.un_soa, MIN_DECIMALS),
+  }
 
   return result
 }

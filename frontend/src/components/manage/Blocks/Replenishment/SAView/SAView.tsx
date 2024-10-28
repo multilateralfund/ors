@@ -12,6 +12,7 @@ import {
   useState,
 } from 'react'
 
+import Big from 'big.js'
 import { useSnackbar } from 'notistack'
 
 import DownloadButtons from '@ors/app/replenishment/DownloadButtons'
@@ -24,7 +25,7 @@ import { api, formatApiUrl, getFloat } from '@ors/helpers'
 import FormDialog from '../FormDialog'
 import { DateInput, FormattedNumberInput, Input } from '../Inputs'
 import { SortDirection } from '../Table/types'
-import { dateForInput, dateFromInput } from '../utils'
+import { asDecimal, dateForInput, dateFromInput } from '../utils'
 import SATable from './SATable'
 import {
   SAContribution,
@@ -73,7 +74,7 @@ const COLUMNS: SATableColumn[] = [
     editable: true,
     field: 'un_soa',
     label: 'UN scale of assessment *',
-    parser: parseFloat,
+    parser: asDecimal,
     subLabel: '( [UN_SCALE_PERIOD] )',
   },
   {
@@ -82,7 +83,7 @@ const COLUMNS: SATableColumn[] = [
     editable: true,
     field: 'adj_un_soa',
     label: 'Adjusted UN Scale of Assessment',
-    parser: parseFloat,
+    parser: asDecimal,
     validator: function (value) {
       if (value > 22) {
         return "Value can't be greater than 22."
@@ -98,7 +99,7 @@ const COLUMNS: SATableColumn[] = [
     editable: true,
     field: 'avg_ir',
     label: 'Average inflation rate **',
-    parser: parseFloat,
+    parser: asDecimal,
     subLabel: '( [PREV_PERIOD] )',
   },
   {
@@ -140,7 +141,7 @@ const COLUMNS: SATableColumn[] = [
     editable: true,
     field: 'ferm_rate',
     label: 'Currency rate of exchange used for fixed exchange ***',
-    parser: parseFloat,
+    parser: asDecimal,
     subLabel: '[DATE_RANGE]',
   },
   {
@@ -403,18 +404,18 @@ function tranformContributions(cs: ApiReplenishmentSoA) {
     const entry = cs[i]
     const cur = entry.currency
     const parsed: SAContribution = {
-      adj_un_soa: entry.adjusted_scale_of_assessment,
-      annual_contributions: entry.yearly_amount,
-      avg_ir: entry.average_inflation_rate,
+      adj_un_soa: asDecimal(entry.adjusted_scale_of_assessment),
+      annual_contributions: asDecimal(entry.yearly_amount),
+      avg_ir: asDecimal(entry.average_inflation_rate),
       country: entry.country.name_alt,
       country_id: entry.country.id,
       ferm_cur: cur && cur !== 'nan' ? cur : '',
-      ferm_cur_amount: entry.yearly_amount_local_currency,
-      ferm_rate: entry.exchange_rate,
+      ferm_cur_amount: asDecimal(entry.yearly_amount_local_currency),
+      ferm_rate: asDecimal(entry.exchange_rate),
       iso3: entry.country.iso3,
       opted_for_ferm: entry.opted_for_ferm,
       qual_ferm: entry.qualifies_for_fixed_rate_mechanism,
-      un_soa: entry.un_scale_of_assessment,
+      un_soa: asDecimal(entry.un_scale_of_assessment),
     }
     r.push(parsed)
   }
@@ -448,8 +449,9 @@ function transformForSave(d: SAContribution[]) {
       }
     }
 
-    if (!isNaN(d[i].override_adj_un_soa as number)) {
-      n.override_adjusted_scale_of_assessment = d[i].override_adj_un_soa
+    if (d[i].override_adj_un_soa instanceof Big) {
+      n.override_adjusted_scale_of_assessment =
+        d[i].override_adj_un_soa?.toString()
     }
 
     if (d[i].hasOwnProperty('override_qual_ferm')) {
@@ -529,7 +531,7 @@ function updateAllCurrencyNames(
 function updateAllCurrencyRates(
   rows: SAContribution[],
   name: string,
-  newValue: number,
+  newValue: Big,
 ) {
   if (name !== null && name !== '') {
     for (let i = 0; i < rows.length; i++) {
@@ -621,7 +623,10 @@ function SAView(props: SAViewProps) {
   const [unusedAmount, setUnusedAmount] = useState<'' | number>('')
 
   const annualBudget = useMemo(
-    () => (getFloat(replenishment.amount) - getFloat(unusedAmount)) / 3,
+    () =>
+      new Big(replenishment.amount)
+        .minus(new Big(unusedAmount || '0'))
+        .div(new Big('3')),
     [replenishment.amount, unusedAmount],
   )
 
@@ -701,7 +706,7 @@ function SAView(props: SAViewProps) {
       iso3: country.iso3,
       opted_for_ferm: null,
       qual_ferm: false,
-      un_soa: 0.0,
+      un_soa: asDecimal('0.0'),
     }
     setTableData((prev) => [entry, ...prev])
     setShowAdd(false)
@@ -881,7 +886,7 @@ function SAView(props: SAViewProps) {
               <FormattedNumberInput
                 id="totalAmount"
                 className="w-36"
-                value={annualBudget}
+                value={annualBudget.toString()}
                 disabled
                 readOnly
               />
@@ -924,7 +929,10 @@ function SAView(props: SAViewProps) {
         sortDirection={sortDirection}
         sortOn={sortOn}
         extraRows={formatTableData([
-          { country: 'Total', ...sumColumns(computedData) } as SAContribution,
+          {
+            country: 'Total',
+            ...sumColumns(computedData),
+          } as unknown as SAContribution,
         ])}
         onAddCancel={() => setShowAdd(false)}
         onAddSubmit={handleAddSubmit}
