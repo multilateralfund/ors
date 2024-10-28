@@ -20,7 +20,7 @@ import useColumnsOptions from './editSchema'
 import { IoAddCircle } from 'react-icons/io5'
 
 export default function BPEditTable(props: BPEditTableInterface) {
-  const { form, loading, params, setForm } = props
+  const { form = [], loading, params, setForm } = props
 
   const { period } = useParams<BpPathParams>()
   const year_start = period.split('-')[0]
@@ -183,6 +183,7 @@ export default function BPEditTable(props: BPEditTableInterface) {
       {
         comment_secretariat: '',
         lvc_status: 'LVC',
+        row_id: form.length + 1,
         title: '-',
         values: [],
       } as any,
@@ -196,7 +197,7 @@ export default function BPEditTable(props: BPEditTableInterface) {
 
     const index = findIndex(
       newData,
-      (row: any) => row.id === removedActivity.id,
+      (row: any) => row.row_id === removedActivity.row_id,
     )
 
     if (index > -1) {
@@ -245,9 +246,11 @@ export default function BPEditTable(props: BPEditTableInterface) {
             columnDefs={columnOptions.columnDefs}
             defaultColDef={columnOptions.defaultColDef}
             domLayout="normal"
+            getRowId={(props) => props.data.row_id}
             gridRef={grid}
             loaded={!loading}
             loading={loading}
+            resizeGridOnRowUpdate={true}
             rowData={form}
             suppressScrollOnNewData={true}
             tooltipShowDelay={200}
@@ -257,7 +260,7 @@ export default function BPEditTable(props: BPEditTableInterface) {
 
               const rowIndex = findIndex(
                 newData,
-                (row) => row.id === eventData.id,
+                (row) => row.row_id === eventData.row_id,
               )
 
               if (rowIndex > -1) {

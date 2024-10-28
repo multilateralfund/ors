@@ -60,6 +60,7 @@ export type TableProps = {
   fadeInOut?: boolean
   headerDepth?: number
   paginationPageSizeSelector?: Array<number>
+  resizeGridOnRowUpdate?: boolean
   rowsVisible?: number
   withFluidEmptyColumn?: boolean
 } & AgGridReactProps
@@ -172,6 +173,7 @@ function Table(props: TableProps) {
     paginationPageSize = 10,
     paginationPageSizeSelector,
     pinnedBottomRowData,
+    resizeGridOnRowUpdate = false,
     rowBuffer = 20,
     rowCount = 0,
     rowHeight = 36,
@@ -667,6 +669,10 @@ function Table(props: TableProps) {
               // props.api.autoSizeAllColumns()
               // props.api.sizeColumnsToFit()
               onRowDataUpdated(props)
+
+              if (resizeGridOnRowUpdate) {
+                updateTableHeight()
+              }
             }}
             {...omit(props, [
               'pagination',
