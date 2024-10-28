@@ -144,8 +144,9 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
       const optedForFerm = countryInfo?.opted_for_ferm || false
 
       if (!isEdit) {
-        const amountLocalCurrency =
+        const amountLocalCurrency = optedForFerm ?
           (countryInfo?.yearly_amount_local_currency || '').toString() || ''
+          : (countryInfo?.yearly_amount || '').toString() || ''
         const exchangeRate = (countryInfo?.exchange_rate || '').toString() || ''
 
         setFields((prev) => {
@@ -155,7 +156,9 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
               exchangeRate,
             ),
             amount_local_currency: amountLocalCurrency,
-            currency: (countryInfo?.currency || '').toString() || '',
+            currency: optedForFerm ?
+              (countryInfo?.currency || '').toString() || ''
+              : 'USD',
             exchange_rate: exchangeRate,
             is_ferm: optedForFerm,
           }
