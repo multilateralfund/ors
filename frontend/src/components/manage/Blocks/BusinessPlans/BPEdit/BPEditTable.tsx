@@ -1,5 +1,5 @@
 'use client'
-import React, { useCallback, useContext, useMemo } from 'react'
+import React, { useCallback, useContext, useMemo, useRef } from 'react'
 
 import { findIndex, isNil } from 'lodash'
 import { useParams } from 'next/navigation'
@@ -11,7 +11,7 @@ import {
 } from '@ors/components/manage/Blocks/BusinessPlans/types'
 import Table from '@ors/components/manage/Form/Table'
 import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
-import { formatApiUrl } from '@ors/helpers'
+import { applyTransaction, formatApiUrl } from '@ors/helpers'
 
 import { filtersToQueryParams } from '../utils'
 import useColumnsOptions from './editSchema'
@@ -28,6 +28,8 @@ export default function BPEditTable(props: BPEditTableInterface) {
     () => yearRanges.find((item: any) => item.year_start == year_start),
     [yearRanges, year_start],
   )
+
+  const grid = useRef<any>()
 
   const getYearColsValue = (
     value: any,
@@ -173,7 +175,26 @@ export default function BPEditTable(props: BPEditTableInterface) {
     ]
   }, [yearRangeSelected, valueGetter, valueSetter])
 
-  const columnOptions = useColumnsOptions(yearColumns)
+  const onRemoveActivity = (props: any) => {
+    const removedActivity = props.data
+    const newData = [...form]
+
+    const index = findIndex(
+      newData,
+      (row: any) => row.id === removedActivity.id,
+    )
+
+    if (index > -1) {
+      newData.splice(index, 1)
+      setForm(newData)
+
+      applyTransaction(grid.current.api, {
+        remove: [removedActivity],
+      })
+    }
+  }
+
+  const columnOptions = useColumnsOptions(yearColumns, onRemoveActivity)
 
   const exportParams = useMemo(() => filtersToQueryParams(params), [params])
 
@@ -189,9 +210,11 @@ export default function BPEditTable(props: BPEditTableInterface) {
         />
         <form>
           <Table
+            className="bp-edit-table"
             columnDefs={columnOptions.columnDefs}
             defaultColDef={columnOptions.defaultColDef}
             domLayout="normal"
+            gridRef={grid}
             loaded={!loading}
             loading={loading}
             rowData={form}

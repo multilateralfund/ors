@@ -202,3 +202,17 @@
     }
   }
 }
+
+.bp-edit-table.ag-table {
+  .ag-header-row .ag-header-cell:first-child .ag-header-cell-resize {
+    display: none;
+  }
+
+  .ag-cell.ag-column-first {
+    padding-left: 0 !important;
+  }
+
+  .ag-row .ag-cell:first-child {
+    border: none;
+  }
+}

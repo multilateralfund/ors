@@ -26,7 +26,12 @@ import {
   valueSetter,
 } from './editSchemaHelpers'
 
-const useColumnsOptions = (yearColumns: any[]) => {
+import { IoTrash } from 'react-icons/io5'
+
+const useColumnsOptions = (
+  yearColumns: any[],
+  onRemoveActivity: (props: any) => void,
+) => {
   const commonSlice = useStore((state) => state.common)
   const projectSlice = useStore((state) => state.projects)
   const cpReportsSlice = useStore((state) => state.cp_reports)
@@ -51,6 +56,19 @@ const useColumnsOptions = (yearColumns: any[]) => {
   const colsOptions = useMemo(
     () => ({
       columnDefs: [
+        {
+          cellRenderer: (props: any) => (
+            <IoTrash
+              className="cursor-pointer fill-gray-400"
+              size={16}
+              onClick={() => {
+                onRemoveActivity(props)
+              }}
+            />
+          ),
+          field: '',
+          minWidth: 20,
+        },
         {
           cellClass: 'ag-text-center ag-cell-centered ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
@@ -353,6 +371,7 @@ const useColumnsOptions = (yearColumns: any[]) => {
       statuses,
       commentTypes,
       yearColumns,
+      onRemoveActivity,
     ],
   )
 
