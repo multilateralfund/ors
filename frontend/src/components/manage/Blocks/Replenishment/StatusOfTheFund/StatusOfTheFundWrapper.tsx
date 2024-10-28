@@ -23,7 +23,7 @@ import UploadFilesDialog from './editDialogs/UploadFilesDialog'
 function StatusOfTheFundWrapper() {
   const { invalidateDataFn, newData } = useGetDashboardData()
   const ctx = useContext(ReplenishmentContext)
-  const { allocations, asOfDate, income, overview, provisions } = newData
+  const { agencies, allocations, asOfDate, income, overview, provisions } = newData
 
   const projectSlice = useStore((state) => state.projects)
   const meetings = projectSlice.meetings.data
@@ -33,9 +33,8 @@ function StatusOfTheFundWrapper() {
   }))
   const meetingOptions = reverse(formattedMeetings)
 
-  const agencies = omit(allocations, 'total')
   const agencyOptions = keys(agencies).map((agency: any) => {
-    const agencyName = get(agencies, agency).label
+    const agencyName = get(agencies, agency).name
 
     return {
       id: agency,
