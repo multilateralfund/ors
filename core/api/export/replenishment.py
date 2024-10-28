@@ -446,7 +446,8 @@ class ScaleOfAssessmentTemplateWriter:
         else:
             # copy style from any intermediary row
             pass
-        # TODO: should the above if-elif also handle the totals row? Guess so!
+        
+        # Totals row is calculated via formulas, leaving it alone
 
         row_to_overwrite = self.TEMPLATE_FIRST_DATA_ROW + index - 1
         for key in row_data.keys():
@@ -457,6 +458,7 @@ class ScaleOfAssessmentTemplateWriter:
             self.write_cell(
                 cell,
                 self.DATA_MAPPING[key].get("type"),
+                # TODO: maybe I should just leave the format be!
                 self.DATA_MAPPING[key].get("format"),
                 row_data[key],
             )
