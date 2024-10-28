@@ -8,6 +8,10 @@ interface IExternalIncome {
 }
 
 interface IDashboardDataApiResponse {
+  agencies: {
+    name: string
+    agency_type: string
+  }[]
   allocations: {
     bilateral_assistance: number
     gain_loss: number
@@ -111,6 +115,7 @@ interface IPROVISIONS {
 }
 
 interface IDashboardData {
+  agencies: IDashboardDataApiResponse['agencies']
   allocations: IALLOCATIONS
   asOfDate: IDashboardDataApiResponse['as_of_date']
   charts: IDashboardDataApiResponse['charts']
