@@ -150,7 +150,7 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
               className="tracking-widest print:hidden"
               onClick={() => setIsEditing(!isEditing)}
             >
-              Cancel
+              Save
             </CancelButton>
           )}
           {showEditButton && (
