@@ -176,7 +176,8 @@ export function formatTableData(
         newValue = value !== undefined ? formattedValue(value) : value
       }
 
-      if (key === 'adj_un_soa' && tableData[i].iso3 == 'USA') {
+      const usNonEditableColumns = ['adj_un_soa', 'opted_for_ferm']
+      if (tableData[i].iso3 == 'USA' && usNonEditableColumns.includes(key)) {
         isEditable = false
       }
 

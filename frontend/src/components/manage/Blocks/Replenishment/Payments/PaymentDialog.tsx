@@ -47,7 +47,7 @@ interface PaymentDialogFields {
 }
 
 function getInvoiceLabel(invoice: ApiReplenishmentInvoice) {
-  return `${invoice.number} - ${invoice?.country?.name} (${invoice?.date_of_issuance})`
+  return `${invoice.number} (${invoice?.date_of_issuance})`
 }
 
 function calculateAssessed(currencyAmount: number, exchangeRate: number) {
@@ -144,8 +144,9 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
       const optedForFerm = countryInfo?.opted_for_ferm || false
 
       if (!isEdit) {
-        const amountLocalCurrency =
-          (countryInfo?.amount_local_currency || '').toString() || ''
+        const amountLocalCurrency = optedForFerm ?
+          (countryInfo?.yearly_amount_local_currency || '').toString() || ''
+          : (countryInfo?.yearly_amount || '').toString() || ''
         const exchangeRate = (countryInfo?.exchange_rate || '').toString() || ''
 
         setFields((prev) => {
@@ -155,7 +156,9 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
               exchangeRate,
             ),
             amount_local_currency: amountLocalCurrency,
-            currency: (countryInfo?.currency || '').toString() || '',
+            currency: optedForFerm ?
+              (countryInfo?.currency || '').toString() || ''
+              : 'USD',
             exchange_rate: exchangeRate,
             is_ferm: optedForFerm,
           }
