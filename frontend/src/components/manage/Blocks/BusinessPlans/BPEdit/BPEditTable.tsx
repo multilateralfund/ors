@@ -1,6 +1,7 @@
 'use client'
 import React, { useCallback, useContext, useMemo, useRef } from 'react'
 
+import { Button } from '@mui/material'
 import { findIndex, isNil } from 'lodash'
 import { useParams } from 'next/navigation'
 
@@ -15,6 +16,8 @@ import { applyTransaction, formatApiUrl } from '@ors/helpers'
 
 import { filtersToQueryParams } from '../utils'
 import useColumnsOptions from './editSchema'
+
+import { IoAddCircle } from 'react-icons/io5'
 
 export default function BPEditTable(props: BPEditTableInterface) {
   const { form, loading, params, setForm } = props
@@ -175,6 +178,18 @@ export default function BPEditTable(props: BPEditTableInterface) {
     ]
   }, [yearRangeSelected, valueGetter, valueSetter])
 
+  const addActivity = () => {
+    setForm([
+      {
+        comment_secretariat: '',
+        lvc_status: 'LVC',
+        title: '-',
+        values: [],
+      } as any,
+      ...form,
+    ])
+  }
+
   const onRemoveActivity = (props: any) => {
     const removedActivity = props.data
     const newData = [...form]
@@ -198,6 +213,21 @@ export default function BPEditTable(props: BPEditTableInterface) {
 
   const exportParams = useMemo(() => filtersToQueryParams(params), [params])
 
+  const AddActivityButton = () => (
+    <div className="bp-table-toolbar mb-4 flex">
+      <div className="ml-auto flex">
+        <Button
+          className="border border-solid border-primary bg-white px-3 py-1 normal-case text-primary shadow-none"
+          size="large"
+          variant="contained"
+          onClick={addActivity}
+        >
+          Add activity <IoAddCircle className="ml-1.5" size={18} />
+        </Button>
+      </div>
+    </div>
+  )
+
   return (
     yearRanges &&
     yearRanges.length > 0 && (
@@ -211,6 +241,7 @@ export default function BPEditTable(props: BPEditTableInterface) {
         <form>
           <Table
             className="bp-edit-table"
+            Toolbar={AddActivityButton}
             columnDefs={columnOptions.columnDefs}
             defaultColDef={columnOptions.defaultColDef}
             domLayout="normal"

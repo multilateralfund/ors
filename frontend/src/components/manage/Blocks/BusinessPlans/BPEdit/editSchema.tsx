@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import { isNull } from 'lodash'
+import { isNil } from 'lodash'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import { useStore } from '@ors/store'
@@ -256,7 +256,7 @@ const useColumnsOptions = (
           valueGetter: (params: any) => {
             const polyolAmount = params.data.amount_polyol
 
-            return !isNull(polyolAmount)
+            return !isNil(polyolAmount)
               ? parseFloat(polyolAmount).toFixed(2)
               : null
           },
