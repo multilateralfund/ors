@@ -59,6 +59,7 @@ from core.api.views.utils import (
     StatisticsStatusOfContributionsAggregator,
 )
 from core.models import (
+    Agency,
     AnnualContributionStatus,
     Country,
     DisputedContribution,
@@ -1052,6 +1053,12 @@ class ReplenishmentDashboardView(views.APIView):
             "miscellaneous_income",
         ).order_by("-triennial_start_year", "-year")
 
+        agencies = list(
+            Agency.objects.filter(is_for_replenishment=True)
+            .values("name", "agency_type")
+            .order_by("agency_type", "name")
+        )
+
         data = {
             "as_of_date": as_of_date.strftime("%d %B %Y"),
             "overview": {
@@ -1105,6 +1112,7 @@ class ReplenishmentDashboardView(views.APIView):
                 ],
             },
             "external_income": external_income,
+            "agencies": agencies,
         }
 
         data["overview"]["balance"] = sum(data["income"].values()) - sum(

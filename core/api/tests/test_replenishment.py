@@ -1089,6 +1089,7 @@ class TestReplenishmentDashboard(BaseTest):
             + contribution_4.outstanding_contributions
         )
         correct_response = {
+            "agencies": [],
             "as_of_date": config.DEFAULT_REPLENISHMENT_AS_OF_DATE.strftime("%d %B %Y"),
             "overview": {
                 "payment_pledge_percentage": payment_pledge_percentage,

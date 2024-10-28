@@ -18,6 +18,8 @@ class Agency(models.Model):
         max_length=16, choices=AgencyType.choices, default=AgencyType.AGENCY
     )
 
+    is_for_replenishment = models.BooleanField(default=False)
+
     objects = AgencyManager()
 
     class Meta:

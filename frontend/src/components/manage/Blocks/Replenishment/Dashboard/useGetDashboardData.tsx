@@ -218,6 +218,7 @@ function useGetDashboardData() {
       miscellaneous_income: data.external_income[0].miscellaneous_income,
     }
     newData = {
+      agencies: data.agencies,
       allocations: ALLOCATIONS,
       asOfDate: data.as_of_date,
       charts: data.charts,
