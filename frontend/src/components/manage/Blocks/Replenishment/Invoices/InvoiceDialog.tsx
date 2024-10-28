@@ -304,8 +304,8 @@ const InvoiceDialog = function InvoiceDialog(props: InvoiceDialogProps) {
         setFields((prev) => {
           const updated = {
             amount_local_currency:
-              (countryInfo?.amount_local_currency || '').toString() || '',
-            amount_usd: (countryInfo?.amount || '').toString() || '',
+              (countryInfo?.yearly_amount_local_currency || '').toString() || '',
+            amount_usd: (countryInfo?.yearly_amount || '').toString() || '',
             currency: (countryInfo?.currency || '').toString() || '',
             exchange_rate: (countryInfo?.exchange_rate || '').toString() || '',
             is_ferm: countryInfo?.opted_for_ferm || false,
