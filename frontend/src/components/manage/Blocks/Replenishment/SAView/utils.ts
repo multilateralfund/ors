@@ -118,10 +118,15 @@ export function computeTableData(
           result[i].annual_contributions
         : null
 
-    if (result[i].opted_for_ferm === null && result[i].qual_ferm) {
-      result[i].opted_for_ferm = false
+    if (
+      result[i].opted_for_ferm === null &&
+      result[i].qual_ferm &&
+      !result[i].hasOwnProperty('override_opted_for_ferm')
+    ) {
+      result[i].override_opted_for_ferm = true
     } else if (!result[i].qual_ferm) {
       result[i].opted_for_ferm = null
+      delete result[i]['override_opted_for_ferm']
     }
   }
 

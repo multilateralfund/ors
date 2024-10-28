@@ -400,23 +400,23 @@ function tranformContributions(cs: ApiReplenishmentSoA) {
   const r: SAContribution[] = []
 
   for (let i = 0; i < cs.length; i++) {
-    const cur = cs[i].currency
-    r.push({
-      adj_un_soa: cs[i].adjusted_scale_of_assessment,
-      annual_contributions: cs[i].yearly_amount,
-      avg_ir: cs[i].average_inflation_rate,
-      country: cs[i].country.name_alt,
-      country_id: cs[i].country.id,
+    const entry = cs[i]
+    const cur = entry.currency
+    const parsed: SAContribution = {
+      adj_un_soa: entry.adjusted_scale_of_assessment,
+      annual_contributions: entry.yearly_amount,
+      avg_ir: entry.average_inflation_rate,
+      country: entry.country.name_alt,
+      country_id: entry.country.id,
       ferm_cur: cur && cur !== 'nan' ? cur : '',
-      ferm_cur_amount: cs[i].yearly_amount_local_currency,
-      ferm_rate: cs[i].exchange_rate,
-      iso3: cs[i].country.iso3,
-      opted_for_ferm:
-        cs[i].opted_for_ferm ??
-        (cs[i].qualifies_for_fixed_rate_mechanism ? false : null),
-      qual_ferm: cs[i].qualifies_for_fixed_rate_mechanism,
-      un_soa: cs[i].un_scale_of_assessment,
-    })
+      ferm_cur_amount: entry.yearly_amount_local_currency,
+      ferm_rate: entry.exchange_rate,
+      iso3: entry.country.iso3,
+      opted_for_ferm: entry.opted_for_ferm,
+      qual_ferm: entry.qualifies_for_fixed_rate_mechanism,
+      un_soa: entry.un_scale_of_assessment,
+    }
+    r.push(parsed)
   }
 
   return r
@@ -609,7 +609,6 @@ function SAView(props: SAViewProps) {
   )
 
   const [tableData, setTableData] = useState(contributions)
-  const [shouldCompute, setShouldCompute] = useState(false)
 
   const [sortOn, setSortOn] = useState(0)
   const [sortDirection, setSortDirection] = useState<SortDirection>(1)
@@ -647,10 +646,9 @@ function SAView(props: SAViewProps) {
   )
 
   const computedData = useMemo(
-    () =>
-      shouldCompute ? computeTableData(tableData, annualBudget) : tableData,
+    () => computeTableData(tableData, annualBudget),
     /* eslint-disable-next-line */
-    [tableData, replenishment, unusedAmount, shouldCompute],
+    [tableData, replenishment, unusedAmount],
   )
 
   const sortedData = useMemo(
@@ -707,7 +705,6 @@ function SAView(props: SAViewProps) {
     }
     setTableData((prev) => [entry, ...prev])
     setShowAdd(false)
-    setShouldCompute(true)
   }
 
   function handleDelete(idx: number) {
@@ -720,7 +717,6 @@ function SAView(props: SAViewProps) {
         }
       }
       setTableData(next)
-      setShouldCompute(true)
     }
   }
 
@@ -733,7 +729,6 @@ function SAView(props: SAViewProps) {
           amount: value,
         }) as ApiReplenishment,
     )
-    setShouldCompute(true)
   }
 
   const handleUnusedAmountInput: ChangeEventHandler<HTMLInputElement> = (
@@ -742,7 +737,6 @@ function SAView(props: SAViewProps) {
     const value = getFloat(evt.target.value)
     if (value) {
       setUnusedAmount(value)
-      setShouldCompute(true)
     } else {
       setUnusedAmount('')
     }
@@ -807,7 +801,6 @@ function SAView(props: SAViewProps) {
       next[r][overrideKey] = value
     }
     setTableData(next as SAContribution[])
-    setShouldCompute(true)
   }
 
   function handleCellRevert(r: number, n: keyof SAContribution) {
@@ -828,7 +821,6 @@ function SAView(props: SAViewProps) {
       delete next[r][overrideKey]
     }
     setTableData(next)
-    setShouldCompute(true)
   }
 
   const handleCommentInput: ChangeEventHandler<HTMLTextAreaElement> = (evt) => {

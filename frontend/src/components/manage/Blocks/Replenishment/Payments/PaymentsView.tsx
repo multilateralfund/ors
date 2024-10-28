@@ -313,8 +313,6 @@ function PaymentsView() {
   async function handleAddPaymentSubmit(formData: FormData) {
     const data = prepareFormDataForSubmit(formData)
 
-    console.log(data)
-
     try {
       await apiRequest('api/replenishment/payments/', 'POST', data)
       enqueueSnackbar('Payment updated successfully.', { variant: 'success' })

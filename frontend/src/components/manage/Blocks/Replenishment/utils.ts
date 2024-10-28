@@ -64,10 +64,11 @@ export function dateForEditField(value?: null | string) {
     return null
   }
   const date = new Date(Date.parse(value))
-  const utcYear = date.getUTCFullYear()
-  const utcMonth = zeroPad(date.getUTCMonth() + 1)
-  const utcDay = zeroPad(date.getUTCDate())
-  return `${utcYear}-${utcMonth}-${utcDay}`
+  const year = date.getFullYear()
+  const month = zeroPad(date.getMonth() + 1)
+  const day = zeroPad(date.getDate())
+  const result = `${year}-${month}-${day}`
+  return result
 }
 
 export function dateForInput(input: Date): string
