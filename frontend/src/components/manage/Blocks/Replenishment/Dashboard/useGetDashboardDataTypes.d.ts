@@ -9,8 +9,8 @@ interface IExternalIncome {
 
 interface IDashboardDataApiResponse {
   agencies: {
-    name: string
     agency_type: string
+    name: string
   }[]
   allocations: {
     bilateral_assistance: number

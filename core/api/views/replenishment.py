@@ -1053,7 +1053,7 @@ class ReplenishmentDashboardView(views.APIView):
             "miscellaneous_income",
         ).order_by("-triennial_start_year", "-year")
 
-        agencies = (
+        agencies = list(
             Agency.objects.filter(is_for_replenishment=True)
             .values("name", "agency_type")
             .order_by("agency_type", "name")
