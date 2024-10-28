@@ -1,6 +1,8 @@
+from datetime import datetime
 from decimal import Decimal
 from openpyxl.cell import WriteOnlyCell
 from openpyxl.styles import Font, Side, Border, Alignment
+from openpyxl.utils import range_boundaries
 
 from core.api.export.base import WriteOnlyBase
 
@@ -334,18 +336,107 @@ class ScaleOfAssessmentWriter(WriteOnlyBase):
         self.add_comments(len(data) + 3)
 
 
-class ScaleOfAssessmentTemplateWriter:
+class BaseTemplateSheetWriter:
     """
-    Writes based on preloaded template file.
+    Base class for writing sheets based on an existing preloaded template sheet.
 
-    No cell formatting (except number format?), merging or table formatting are needed;
+    No cell formatting, merging or table formatting are needed;
     just filling out values.
 
     Assumes a certain format of the template file, but easily configurable.
     """
 
+    DATA_MAPPING = {}
     HEADERS_ROW = 1
-    DATA_START_ROW = 2
+    TEMPLATE_FIRST_DATA_ROW = 2
+    TEMPLATE_LAST_DATA_ROW = 50
+
+    def __init__(
+        self,
+        sheet,
+        data,
+        number_of_rows,
+        start_year,
+    ):
+        self.sheet = sheet
+        self.data = data
+        self.number_of_rows = number_of_rows
+        self.start_year = start_year
+
+    def write_headers(self):
+        pass
+
+    def _delete_middle_rows(self, rows_number):
+        start_row = self.TEMPLATE_FIRST_DATA_ROW + 1
+        self.sheet.delete_rows(start_row, rows_number)
+
+    def _add_middle_rows(self, extra_rows):
+        start_row = self.TEMPLATE_FIRST_DATA_ROW + 2
+
+        # TODO: need to shift these rows for deletion as well
+        # Shift merged cells to avoid footer breaking down
+        merged_cells_range = self.sheet.merged_cells.ranges
+        for merged_cell in merged_cells_range:
+            min_col, min_row, max_col, max_row = range_boundaries(str(merged_cell))
+            if min_row >= start_row:
+                merged_cell.shift(0, extra_rows)
+
+        self.sheet.insert_rows(start_row, extra_rows)
+
+    def write(self):
+        """
+        Writes the entire sheet.
+        """
+        # Overwrite headers
+        self.write_headers()
+
+        # Before writing, we need to:
+        # - delete any extra rows that the template MIGHT have OR
+        # - add any needed rows, copying an existing intermediate row's style
+        template_data_rows_number = (
+            self.TEMPLATE_LAST_DATA_ROW - self.TEMPLATE_FIRST_DATA_ROW
+        )
+        data_rows_number = len(self.data)
+        extra_rows = data_rows_number - template_data_rows_number
+        if extra_rows < 0:
+            self._delete_middle_rows(-1 * extra_rows)
+        elif extra_rows > 0:
+            self._add_middle_rows(extra_rows)
+
+        # Write data
+        for row_data in self.data:
+            self.write_row(row_data, row_data["no"])
+
+    def write_row(self, row_data, index):
+        """
+        Writing row values for data rows.
+
+        Totals row is calculated via formulas, leaving it alone.
+        """
+        row_to_overwrite = self.TEMPLATE_FIRST_DATA_ROW + index - 1
+        for key in row_data.keys():
+            if self.DATA_MAPPING.get(key) is None:
+                continue
+            column = self.DATA_MAPPING[key]["column"]
+            cell = self.sheet.cell(row=row_to_overwrite, column=column)
+            self.write_cell(
+                cell,
+                self.DATA_MAPPING[key].get("type"),
+                # TODO: maybe I should just leave the format be!
+                self.DATA_MAPPING[key].get("format"),
+                row_data[key],
+            )
+
+    def write_cell(self, cell, type, format, value):
+        cell.value = value
+        if type in (Decimal, float) and format is not None:
+            cell.number_format = format
+
+
+class ScaleOfAssessmentTemplateWriter(BaseTemplateSheetWriter):
+    """
+    Template sheet writer for SoA.
+    """
 
     # Position and formatting for each filed from the serializer data rows
     DATA_MAPPING = {
@@ -378,7 +469,7 @@ class ScaleOfAssessmentTemplateWriter:
             "number_format": "###,###,##0.00###",
         },
         "qualifies_for_fixed_rate_mechanism": {
-             "column": 7,
+            "column": 7,
             "type": bool,
         },
         "exchange_rate": {
@@ -399,60 +490,66 @@ class ScaleOfAssessmentTemplateWriter:
         },
     }
 
+    HEADERS_ROW = 1
     TEMPLATE_FIRST_DATA_ROW = 2
     TEMPLATE_LAST_DATA_ROW = 50
-
-    def __init__(
-        self,
-        sheet,
-        data,
-        number_of_rows,
-        start_year,
-    ):
-        self.sheet = sheet
-        self.data = data
-        self.number_of_rows = number_of_rows
-        self.start_year = start_year
 
     def write_headers(self):
         for key, item in self.DATA_MAPPING.items():
             cell = self.sheet.cell(self.HEADERS_ROW, item["column"])
             value = cell.value
             if value and "2022-24" in value:
-                cell.value = value.replace("2022-24", f"{self.start_year}-{self.start_year+2}")
+                cell.value = value.replace(
+                    "2022-24", f"{self.start_year}-{self.start_year+2}"
+                )
+
+
+class StatusOfTheFundTemplateWriter(BaseTemplateSheetWriter):
+    """
+    Template sheet writer for SoA.
+    """
+
+    # Position and formatting for each filed from the serializer data rows
+    DATA_MAPPING = {
+        "3": {
+            "column": 3,
+            "type": Decimal,
+            "number_format": "###,###,##0",
+        },
+        "4": {
+            "column": 4,
+            "type": Decimal,
+            "number_format": "###,###,##0",
+        },
+    }
+
+    TEMPLATE_FIRST_DATA_ROW = 12
+    TEMPLATE_LAST_DATA_ROW = 42
 
     def write(self):
-        template_data_rows_number = self.TEMPLATE_LAST_DATA_ROW - self.TEMPLATE_FIRST_DATA_ROW
-        # Overwrite headers
-        self.write_headers()
-        # Write data
-        for row_data in self.data:
-            self.write_row(row_data)
-        # TODO: also make sure to delete any extra rows that the template MIGHT have
-        # TODO: also make sure to add rows if needed !
+        # Here data comes as tuples; no need for row shifting
+        # TODO: maybe add write_header?
+        for index, row_data in enumerate(self.data):
+            self.write_row(row_data, index)
 
-        # Write footers (needed?)
+    def write_row(self, row_data, index):
+        """
+        Writing row values for data rows.
 
-    def write_row(self, row_data):
-        # We need to make sure to copy row style form template's first & last data rows
-        # on this export's first and last row.
-        index = row_data["no"]
-        if index == 1:
-            # copy style from self.TEMPLATE_FIRST_DATA_ROW
-            pass
-        elif index == self.number_of_rows:
-            # copy style from self.TEMPLATE_LAST_DATA_ROW
-            pass
-        else:
-            # copy style from any intermediary row
-            pass
-        
-        # Totals row is calculated via formulas, leaving it alone
+        Here the values come as tuples and we need to do the mapping directly.
+        """
+        row_to_overwrite = self.TEMPLATE_FIRST_DATA_ROW + index
 
-        row_to_overwrite = self.TEMPLATE_FIRST_DATA_ROW + index - 1
-        for key in row_data.keys():
-            if self.DATA_MAPPING.get(key) is None:
+        # Skip empty rows
+        if row_data is None:
+            return
+        if all(cell_data is None for cell_data in row_data):
+            return
+
+        for index, cell_data in enumerate(row_data[1:]):
+            if cell_data is None:
                 continue
+            key = str(index + 3)
             column = self.DATA_MAPPING[key]["column"]
             cell = self.sheet.cell(row=row_to_overwrite, column=column)
             self.write_cell(
@@ -460,12 +557,38 @@ class ScaleOfAssessmentTemplateWriter:
                 self.DATA_MAPPING[key].get("type"),
                 # TODO: maybe I should just leave the format be!
                 self.DATA_MAPPING[key].get("format"),
-                row_data[key],
+                cell_data,
             )
 
-    def write_cell(self, cell, type, format, value):
-        cell.value = value
-        if type in (Decimal, float) and format is not None:
-            cell.number_format = format
-        elif type == "boolean":
-            pass
+
+class StatisticsTemplateWriter(BaseTemplateSheetWriter):
+    """
+    Template sheet writer for Statistics.
+    """
+
+    # All header cells are on column 1
+    HEADER_COLUMN = 2
+    TABLE_DESCRIPTION_ROW = 7
+    AS_OF_ROW = 9
+
+    TEMPLATE_FIRST_DATA_ROW = 11
+    TEMPLATE_LAST_DATA_ROW = 35
+    TEMPLATE_FIRST_DATA_COLUMN = 3
+
+    def write_headers(self):
+        description_cell = self.sheet.cell(
+            row=self.TABLE_DESCRIPTION_ROW, column=self.HEADER_COLUMN
+        )
+        value = description_cell.value
+        current_year = datetime.now().year
+        description_cell.value = value.replace("2024", str(current_year))
+
+    def write(self):
+        self.write_headers()
+        for column_index, triennial_data in enumerate(self.data):
+            for row_key in triennial_data.keys():
+                row_to_overwrite = self.TEMPLATE_FIRST_DATA_ROW + row_key
+                column_to_overwrite = self.TEMPLATE_FIRST_DATA_COLUMN + column_index
+                cell = self.sheet.cell(row=row_to_overwrite, column=column_to_overwrite)
+
+                cell.value = triennial_data[row_key]

@@ -22,10 +22,10 @@ from rest_framework.response import Response
 
 from core.api.export.base import configure_sheet_print
 from core.api.export.replenishment import (
-    DashboardWriter,
     EMPTY_ROW,
-    ScaleOfAssessmentWriter,
     ScaleOfAssessmentTemplateWriter,
+    StatusOfTheFundTemplateWriter,
+    StatisticsTemplateWriter,
 )
 from core.api.filters.replenishment import (
     InvoiceFilter,
@@ -399,29 +399,12 @@ class ScaleOfAssessmentViewSet(
         ]
         data_count = len(data)
 
-        # TODO: maybe just write totals in the writer!!!
-        # data.append(
-        #    {
-        #        "country": "Total",
-        #        "un_scale_of_assessment": f"=SUM(C2:C{data_count + 1})",
-        #        "adjusted_scale_of_assessment": f"=SUM(D2:D{data_count + 1})",
-        #        "yearly_amount": f"=SUM(E2:E{data_count + 1})",
-        #    }
-        # )
         ScaleOfAssessmentTemplateWriter(
             ws,
             data,
             data_count,
             start_year,
         ).write()
-        # ScaleOfAssessmentWriter(
-        #    ws,
-        #    f"{start_year - 2}-{start_year}",
-        #    f"{start_year - 3} - {start_year - 1}",
-        #    f"{start_year} - {start_year + 2}",
-        #    start_year - 1,
-        #    queryset.first().version.comment,
-        # ).write(data)
 
         return workbook_response(
             f"Scales of Assessment {start_year} - {start_year + 2}",
@@ -790,6 +773,102 @@ class StatisticsStatusOfContributionsView(views.APIView):
         response.append(totals)
 
         return Response(response)
+
+
+class StatisticsExportView(views.APIView):
+    permission_classes = [IsUserAllowedReplenishment]
+
+    def get(self, request, *args, **kwargs):
+        self.check_permissions(request)
+
+        statistics_agg = StatisticsStatusOfContributionsAggregator()
+        soc_data = statistics_agg.get_soc_data()
+        external_income = statistics_agg.get_external_income_data()
+
+        statistics_data = []
+        for soc, income in zip_longest(soc_data, external_income):
+            total_payments = (
+                soc["cash_payments_sum"]
+                + soc["bilateral_assistance_sum"]
+                + soc["promissory_notes_sum"]
+            )
+            statistics_data.append(
+                {
+                    0: f"{soc['start_year']}-{soc['end_year']}",
+                    1: soc["agreed_contributions_sum"],
+                    2: soc["cash_payments_sum"],
+                    3: soc["bilateral_assistance_sum"],
+                    4: soc["promissory_notes_sum"],
+                    5: total_payments,
+                    6: soc["disputed_contributions"],
+                    7: soc["outstanding_contributions_sum"],
+                    8: (
+                        total_payments
+                        / soc["agreed_contributions_sum"]
+                        * Decimal("100")
+                    ),
+                    # One empty row in between
+                    10: income["interest_earned"],
+                    # One empty row in between
+                    12: income["miscellaneous_income"],
+                    # One empty row in between
+                    14: (
+                        total_payments
+                        + income["interest_earned"]
+                        + income["miscellaneous_income"]
+                    ),
+                    # One empty row in between
+                    16: f"{soc['start_year']}-{soc['end_year']}",
+                    17: soc["agreed_contributions_sum"],
+                    18: total_payments,
+                    19: (
+                        total_payments
+                        / soc["agreed_contributions_sum"]
+                        * Decimal("100")
+                    ),
+                    # Total income
+                    20: (
+                        total_payments
+                        + income["interest_earned"]
+                        + income["miscellaneous_income"]
+                    ),
+                    21: soc["outstanding_contributions_sum"],
+                    22: (
+                        soc["outstanding_contributions_sum"]
+                        / soc["agreed_contributions_sum"]
+                        * Decimal("100")
+                    ),
+                    23: soc["outstanding_ceit"],
+                    24: (
+                        soc["outstanding_ceit"]
+                        / soc["agreed_contributions_sum"]
+                        * Decimal("100")
+                    ),
+                }
+            )
+
+        WORKSHEET_NAME = "Statistics"
+        # Open template file
+        wb = openpyxl.load_workbook(
+            filename=EXPORT_RESOURCES_DIR / "ContributionsFormatted.xlsx"
+        )
+        ws = wb[WORKSHEET_NAME]
+
+        data_count = len(statistics_data)
+
+        StatisticsTemplateWriter(
+            ws,
+            statistics_data,
+            data_count,
+            None,
+        ).write()
+
+        # Delete all other worksheets
+        for name in wb.sheetnames:
+            if name != WORKSHEET_NAME:
+                wb.remove(wb[name])
+
+        return workbook_response(WORKSHEET_NAME, wb)
 
 
 class StatisticsStatusOfContributionsExportView(views.APIView):
@@ -1200,127 +1279,120 @@ class ReplenishmentDashboardExportView(views.APIView):
         balance = total_income - total_provisions
 
         data = [
-            EMPTY_ROW,
-            EMPTY_ROW,
             (
-                "TRUST  FUND FOR THE  MULTILATERAL FUND FOR THE IMPLEMENTATION OF THE MONTREAL PROTOCOL",
                 None,
-                None,
-            ),
-            (
-                f"TABLE 1 : STATUS OF THE FUND FROM 1991-{datetime.now().year} (IN US DOLLARS)",
-                None,
-                None,
-            ),
-            ("As at 24/05/2024", None, None),
-            EMPTY_ROW,
-            ("INCOME", None, None),
-            ("Contributions received:", None, None),
-            (
-                "    -  Cash payments including note encashments",
                 None,
                 computed_summary_data["cash_payments"],
             ),
             (
-                "    -  Promissory notes held",
+                None,
                 None,
                 computed_summary_data["promissory_notes"],
             ),
             (
-                "    -  Bilateral cooperation",
+                None,
                 None,
                 computed_summary_data["bilateral_assistance"],
             ),
             (
-                "    -  Interest earned",
+                None,
                 None,
                 income_interest["interest_earned"],
             ),
             (
-                "    -  Miscellaneous income",
+                None,
                 None,
                 income_interest["miscellaneous_income"],
             ),
             EMPTY_ROW,
             (
-                "Total income",
+                None,
                 None,
                 total_income,
             ),
             EMPTY_ROW,
+            EMPTY_ROW,
+            (None, allocations["undp"], None),
+            (None, allocations["unep"], None),
+            (None, allocations["unido"], None),
+            (None, allocations["world_bank"], None),
+            (None, "-", None),
+            (None, "-", None),
             (
-                "ALLOCATIONS AND PROVISIONS",
                 None,
-                None,
-            ),
-            ("    -  UNDP", allocations["undp"], None),
-            ("    -  UNEP", allocations["unep"], None),
-            ("    -  UNIDO", allocations["unido"], None),
-            ("    -  World Bank", allocations["world_bank"], None),
-            ("Unspecified projects", "-", None),
-            ("Less Adjustments", "-", None),
-            (
-                "Total allocations to implementing agencies",
                 None,
                 total_allocations_agencies,
             ),
             EMPTY_ROW,
-            # TODO: dynamic years?!
-            ("Secretariat and Executive Committee costs (1991-2026)", None, None),
+            EMPTY_ROW,
             (
-                "    -  including provision for staff contracts into 2026",
+                None,
                 None,
                 allocations["staff_contracts"],
             ),
-            ("Treasury fees", None, allocations["treasury_fees"]),
+            (None, None, allocations["treasury_fees"]),
             (
-                "Monitoring and Evaluation costs (1999-2025)",
+                None,
                 None,
                 allocations["monitoring_fees"],
             ),
-            ("Technical Audit costs (1998-2010)", None, allocations["technical_audit"]),
-            ("Information strategy costs (2003-2004)", None, None),
+            (None, None, allocations["technical_audit"]),
+            (None, None, None),
             (
-                "    -  includes provision for Network maintenance costs for 2004",
+                None,
                 None,
                 allocations["information_strategy"],
             ),
             (
-                "Bilateral cooperation",
+                None,
                 None,
                 computed_summary_data["bilateral_assistance"],
             ),
-            ("Provision for fixed-exchange-rate mechanism's fluctuations", None, None),
-            ("    -  losses/(gains) in value", None, gain_loss),
+            EMPTY_ROW,
+            (None, None, gain_loss),
             EMPTY_ROW,
             (
-                "Total allocations and provisions",
+                None,
                 None,
                 total_provisions,
             ),
-            EMPTY_ROW,
-            ("Balance", None, balance),
+            None,
+            (None, None, balance),
         ]
         return data
 
     def get(self, request, *args, **kwargs):
-        wb = openpyxl.Workbook()
-        wb.remove(wb.active)
+        WORKSHEET_NAME = "Status of the Fund"
+        # Open template file
+        wb = openpyxl.load_workbook(
+            filename=EXPORT_RESOURCES_DIR / "ContributionsFormatted.xlsx"
+        )
+        ws = wb[WORKSHEET_NAME]
 
         status_data = self.get_status()
-        sheet = wb.create_sheet("Status")
-        configure_sheet_print(sheet, "landscape")
+        data_count = len(status_data)
 
-        DashboardWriter(sheet, []).write(status_data)
+        # TODO: use this for the status of contributions?
+        # periods = (
+        #     TriennialContributionStatus.objects.values("start_year", "end_year")
+        #     .distinct()
+        #     .order_by("start_year")
+        # )
+        # add_statistics_status_of_contributions_response_worksheet(wb, periods)
 
-        periods = (
-            TriennialContributionStatus.objects.values("start_year", "end_year")
-            .distinct()
-            .order_by("start_year")
-        )
-        add_statistics_status_of_contributions_response_worksheet(wb, periods)
+        StatusOfTheFundTemplateWriter(
+            ws,
+            status_data,
+            data_count,
+            None,
+        ).write()
 
-        return workbook_response("Status of the fund", wb)
+        # Delete all other worksheets
+        for name in wb.sheetnames:
+            if name != WORKSHEET_NAME:
+                wb.remove(wb[name])
+
+        return workbook_response(WORKSHEET_NAME, wb)
 
 
 class ReplenishmentExternalAllocationViewSet(
