@@ -47,7 +47,7 @@ interface PaymentDialogFields {
 }
 
 function getInvoiceLabel(invoice: ApiReplenishmentInvoice) {
-  return `${invoice.number} - ${invoice?.country?.name} (${invoice?.date_of_issuance})`
+  return `${invoice.number} (${invoice?.date_of_issuance})`
 }
 
 function calculateAssessed(currencyAmount: number, exchangeRate: number) {
