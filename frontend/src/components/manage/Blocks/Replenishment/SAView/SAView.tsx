@@ -226,8 +226,6 @@ function SaveManager(props: SaveManagerProps) {
       saveData['decision_pdf'] = null
     }
 
-    console.log({ saveData })
-
     setSaving(false)
     api('api/replenishment/scales-of-assessment', {
       data: saveData,
@@ -327,7 +325,7 @@ function SaveManager(props: SaveManagerProps) {
                 <Input
                   id="decision_pdf"
                   className="!ml-0 h-10"
-                  required={isFinal}
+                  required={false}
                   type="file"
                 />
               </div>
