@@ -386,12 +386,14 @@ class ScaleOfAssessmentTemplateWriter:
             "type": Decimal,
             "number_format": "###,###,##0.00###",
         },
+        # There is an empty column here, hence going from 8 to 10
         "currency": {
-            "column": 9,
+            "column": 10,
             "type": str,
         },
+        # Another empty column here
         "yearly_amount_local_currency": {
-            "column": 10,
+            "column": 12,
             "type": Decimal,
             "number_format": "###,###,##0.00###",
         },
@@ -414,13 +416,15 @@ class ScaleOfAssessmentTemplateWriter:
 
     def write_headers(self):
         for key, item in self.DATA_MAPPING.items():
-            value = self.sheet.cell(self.HEADERS_ROW, item["column"]).value
-            if "2022-24" in value:
-                value = value.replace()
-
+            cell = self.sheet.cell(self.HEADERS_ROW, item["column"])
+            value = cell.value
+            if value and "2022-24" in value:
+                cell.value = value.replace("2022-24", f"{self.start_year}-{self.start_year+2}")
 
     def write(self):
+        template_data_rows_number = self.TEMPLATE_LAST_DATA_ROW - self.TEMPLATE_FIRST_DATA_ROW
         # Overwrite headers
+        self.write_headers()
         # Write data
         for row_data in self.data:
             self.write_row(row_data)
