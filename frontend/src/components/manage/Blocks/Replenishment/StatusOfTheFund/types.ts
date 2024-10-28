@@ -7,6 +7,7 @@ export type InputOptionType = {
   id?: string
   label: string
   value: string
+  year?: string
 }
 
 export type InputOptionsType = Array<InputOptionType>
@@ -71,7 +72,9 @@ export interface ISimpleInputProps extends IInputProps {
 
 export interface IPopoverInputProps {
   className?: string
+  clearBtnClassName?: string
   field?: string
+  id?: string
   onChange?: (value: string) => void
   onClear?: () => void
   options: InputOptionsType
@@ -79,6 +82,7 @@ export interface IPopoverInputProps {
   required?: boolean
   value?: string
   withClear?: boolean
+  withInputPlaceholder?: boolean
 }
 
 export interface IPopoverContentProps extends IPopoverInputProps {
