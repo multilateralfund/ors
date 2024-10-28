@@ -207,7 +207,7 @@ class Invoice(models.Model):
     currency = models.CharField(max_length=64)
     exchange_rate = models.DecimalField(max_digits=30, decimal_places=15, null=True)
 
-    number = models.CharField(max_length=128, unique=True)
+    number = models.CharField(max_length=128)
     date_of_issuance = models.DateField()
     date_sent_out = models.DateField(null=True, blank=True)
     date_paid = models.DateField(null=True, blank=True)
