@@ -30,6 +30,7 @@ function StatusOfTheFundWrapper() {
   const formattedMeetings = meetings?.map((meeting: any) => ({
     label: meeting.number,
     value: meeting.id,
+    year: meeting.date ? new Date(meeting.date).getFullYear() : '-',
   }))
   const meetingOptions = reverse(formattedMeetings)
 

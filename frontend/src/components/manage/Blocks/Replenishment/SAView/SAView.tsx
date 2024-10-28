@@ -12,6 +12,7 @@ import {
   useState,
 } from 'react'
 
+import { reverse } from 'lodash'
 import { useSnackbar } from 'notistack'
 
 import DownloadButtons from '@ors/app/replenishment/DownloadButtons'
@@ -20,9 +21,11 @@ import Link from '@ors/components/ui/Link/Link'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import SoAContext from '@ors/contexts/Replenishment/SoAContext'
 import { api, formatApiUrl, getFloat } from '@ors/helpers'
+import { useStore } from '@ors/store'
 
-import FormDialog from '../FormDialog'
+import FormEditDialog from '../FormEditDialog'
 import { DateInput, FormattedNumberInput, Input } from '../Inputs'
+import PopoverInput from '../StatusOfTheFund/editDialogs/PopoverInput'
 import { SortDirection } from '../Table/types'
 import { dateForInput, dateFromInput } from '../utils'
 import SATable from './SATable'
@@ -171,6 +174,15 @@ function SaveManager(props: SaveManagerProps) {
   const { comment, currencyDateRange, data, replenishment, version, versions } =
     props
 
+  const projectSlice = useStore((state) => state.projects)
+  const meetings = projectSlice.meetings.data
+  const formattedMeetings = meetings?.map((meeting: any) => ({
+    label: meeting.number,
+    value: meeting.id,
+    year: meeting.date ? new Date(meeting.date).getFullYear() : '-',
+  }))
+  const meetingOptions = reverse(formattedMeetings)
+
   const { refetchData: refetchReplenishment } = useContext(ReplenishmentContext)
   const { refetchData: refetchSoA, setCurrentVersion } = useContext(SoAContext)
   const ctx = useContext(ReplenishmentContext)
@@ -289,7 +301,7 @@ function SaveManager(props: SaveManagerProps) {
   return (
     <div className="flex items-center gap-x-4 print:hidden">
       {saving ? (
-        <FormDialog
+        <FormEditDialog
           title="Save changes?"
           onCancel={cancelSave}
           onSubmit={confirmSave}
@@ -303,11 +315,16 @@ function SaveManager(props: SaveManagerProps) {
               <div className="flex gap-4">
                 <div className="flex flex-col">
                   <label htmlFor="meeting">Meeting</label>
-                  <Input
+                  <PopoverInput
                     id="meeting"
-                    className="!m-0 h-12 w-16 !py-1"
+                    className="!m-0 h-12 !w-16 !py-1"
+                    clearBtnClassName="right-1"
+                    field="meeting"
+                    options={meetingOptions}
+                    placeholder="Select meeting"
                     required={isFinal}
-                    type="text"
+                    withClear={true}
+                    withInputPlaceholder={false}
                   />
                 </div>
                 <div className="flex flex-col">
@@ -343,7 +360,7 @@ function SaveManager(props: SaveManagerProps) {
               <label htmlFor="createNewVersion">Create new version</label>
             </div>
           </div>
-        </FormDialog>
+        </FormEditDialog>
       ) : null}
       {showSave && ctx.isTreasurer && (
         <>

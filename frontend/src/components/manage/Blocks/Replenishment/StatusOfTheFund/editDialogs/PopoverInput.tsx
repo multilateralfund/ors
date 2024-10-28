@@ -87,14 +87,15 @@ const PopoverContent = ({
             <div
               key={entryValue}
               className={cx(
-                'w-full cursor-pointer rounded-md p-3 text-center hover:bg-gray-100',
+                'flex w-full cursor-pointer flex-col rounded-md px-3 py-2 text-center hover:bg-gray-100',
                 {
                   'bg-mlfs-hlYellow': entryValue === value,
                 },
               )}
               onClick={() => handleSelectEntry(entryValue)}
             >
-              {getOrdinalNumberLabel(entryLabel)}
+              <span>{getOrdinalNumberLabel(entryLabel)}</span>
+              <span className="font-light">{entry.year}</span>
             </div>
           )
         })}
@@ -105,6 +106,7 @@ const PopoverContent = ({
 
 export default function PopoverInput({
   className,
+  clearBtnClassName = 'right-4',
   field,
   onChange,
   onClear,
@@ -113,6 +115,7 @@ export default function PopoverInput({
   required = false,
   value,
   withClear,
+  withInputPlaceholder = true,
 }: IPopoverInputProps) {
   const uniqueId = useId()
   const [anchorEl, setAnchorEl] = useState<HTMLInputElement | null>(null)
@@ -156,14 +159,14 @@ export default function PopoverInput({
             className,
           )}
           aria-describedby={ariaDescribedBy}
-          placeholder={placeholder}
+          {...(withInputPlaceholder && { ...{ placeholder } })}
           required={required}
           style={STYLE}
           value={selectedEntry}
           onClick={openPopover}
         />
         {withClear && selectedEntry && (
-          <ClearButton className="right-4" onClick={handleClear} />
+          <ClearButton className={clearBtnClassName} onClick={handleClear} />
         )}
       </div>
 
