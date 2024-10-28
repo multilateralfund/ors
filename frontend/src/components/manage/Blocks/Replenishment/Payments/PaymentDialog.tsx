@@ -385,8 +385,10 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
         <FieldFormattedNumberInput
           id="amount_received"
           decimalDigits={5}
+          disabled={!fields.is_ferm}
           label="USD amount received"
-          value={fields.amount_received}
+          readOnly={!fields.is_ferm}
+          value={fields.is_ferm ? fields.amount_received: ''}
           onChange={updateField('amount_received')}
           required
         />
