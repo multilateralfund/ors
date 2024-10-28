@@ -5,7 +5,6 @@ import {
   PopoverInputField,
   SearchableSelectInput,
   SimpleInput,
-  UploadFilesInput,
 } from './editInputs'
 
 const UploadFilesDialog = (props: IUploadFilesProps) => {
@@ -39,11 +38,9 @@ const UploadFilesDialog = (props: IUploadFilesProps) => {
             placeholder="Select meeting"
           />
         </div>
-        <div className="flex flex-col gap-y-4">
-          <div className="flex gap-x-4">
-            <UploadFilesInput field="files" label="Upload" />
-            <SimpleInput field="comment" label="Comment" type="text-area" />
-          </div>
+        <div className="flex gap-x-4">
+          <SimpleInput field="file" label="File" type="file" required />
+          <SimpleInput field="comment" label="Comment" type="text-area" />
         </div>
       </div>
     </FormEditDialog>

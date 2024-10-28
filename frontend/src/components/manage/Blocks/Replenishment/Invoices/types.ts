@@ -2,12 +2,17 @@ import type { ApiReplenishmentFile } from '@ors/types/api_replenishment'
 import { ApiReplenishment } from '@ors/types/api_replenishment_replenishments'
 import { Country } from '@ors/types/store'
 
+import React from 'react'
+
 import { FormDialogProps } from '../types'
 
 export type ParsedInvoice = {
   amount: null | number | string
-  be_amount: number
-  be_exchange_rate: number
+  amount_local_currency: null | number | string
+  amount_usd: null | number | string
+  be_amount_local_currency: null | number
+  be_amount_usd: null | number
+  be_exchange_rate: null | number
   can_delete: boolean
   can_edit: boolean
   country: string
@@ -18,16 +23,14 @@ export type ParsedInvoice = {
   date_second_reminder: null | string
   date_sent_out: null | string
   exchange_rate: null | number | string
-  files: JSX.Element
+  files: React.JSX.Element
   files_data: ApiReplenishmentFile[]
   gray: boolean
   id: number
-  is_arrears: boolean
   is_ferm: boolean
   iso3: string
   number: string
-  replenishment: ApiReplenishment
-  status: JSX.Element
+  status: React.JSX.Element
   year: number | string
 }
 
@@ -38,17 +41,15 @@ export type InvoiceForSubmit = {
   date_second_reminder: null | string
   date_sent_out: null | string
   exchange_rate: number | string
-  is_arrears: boolean
   is_ferm: string
   reminder: null | string
-  replenishment_id?: number
   status: null | string
   year: null | string
 } & { [key: string]: File }
 
 export type InvoiceColumn = {
   field: string
-  label: JSX.Element | string
+  label: React.JSX.Element | string
   sortable?: boolean
   subLabel?: string
 }

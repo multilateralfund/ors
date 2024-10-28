@@ -5,7 +5,8 @@ import { ApiReplenishment } from './api_replenishment_replenishments'
 import { Country } from './store'
 
 export type ApiReplenishmentInvoice = {
-  amount: number
+  amount_local_currency: null | number
+  amount_usd: null | number
   country: Country
   currency: string
   date_first_reminder: null
@@ -13,13 +14,11 @@ export type ApiReplenishmentInvoice = {
   date_paid: null
   date_second_reminder: null
   date_sent_out: string
-  exchange_rate: number
+  exchange_rate: null | number
   id: number
   invoice_files: ApiReplenishmentFile[]
-  is_arrears: boolean
   is_ferm: boolean
   number: string
-  replenishment: ApiReplenishment
   status: string
   year: number
 }

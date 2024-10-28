@@ -2,6 +2,14 @@ import { MAX_DECIMALS, MIN_DECIMALS } from './constants'
 
 const RE_PERIOD = new RegExp(/\d{4}-\d{4}/)
 
+export function zeroPad(value: number) {
+  let result = value.toString()
+  if (value < 10) {
+    result = `0${value}`
+  }
+  return result
+}
+
 export function makePeriodOptions(
   periods: { end_year: number; start_year: number }[],
 ) {
@@ -29,11 +37,11 @@ export function formatDateValue(value?: null | string) {
   if (!value) {
     return null
   }
-  return new Date(value).toLocaleDateString('en-US', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  })
+  return new Date(Date.parse(value))
+    .toUTCString()
+    .split('00')[0]
+    .split(',')[1]
+    .trim()
 }
 
 export function formatNumberValue(
@@ -56,7 +64,10 @@ export function dateForEditField(value?: null | string) {
     return null
   }
   const date = new Date(Date.parse(value))
-  return dateForInput(date)
+  const utcYear = date.getUTCFullYear()
+  const utcMonth = zeroPad(date.getUTCMonth() + 1)
+  const utcDay = zeroPad(date.getUTCDate())
+  return `${utcYear}-${utcMonth}-${utcDay}`
 }
 
 export function dateForInput(input: Date): string
@@ -205,4 +216,16 @@ export const getOrdinalNumberLabel = (number: string) => {
   }
 
   return number + ordinalSuffix
+}
+
+export function floorSmallValue(
+  value: number,
+  upperLimit = 5,
+  lowerLimit = -5,
+) {
+  let result = value
+  if (value >= lowerLimit && value <= upperLimit) {
+    result = 0
+  }
+  return result
 }

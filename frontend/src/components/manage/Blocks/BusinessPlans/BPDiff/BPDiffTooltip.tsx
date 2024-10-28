@@ -79,8 +79,8 @@ const BPDiffTooltip = (props: any) => {
               style={{ minWidth: 8 + currentVersion.toString().length + 'ch' }}
             >
               {index === 0
-                ? currentVersion && `Version ${currentVersion}`
-                : previousVersion && `Version ${previousVersion}`}
+                ? `Version ${currentVersion || ''}`
+                : `Version ${previousVersion || ''}`}
             </span>
             <span className="min-w-1">-</span>
             {typeof value === 'object' && !Array.isArray(value) ? (

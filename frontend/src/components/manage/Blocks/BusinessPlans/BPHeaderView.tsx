@@ -61,8 +61,10 @@ const tagClassnames =
 
 const HeaderVersionsDropdown = ({
   bpVersions,
+  viewType,
 }: {
   bpVersions: BPDataInterface
+  viewType?: string
 }) => {
   const [showVersionsMenu, setShowVersionsMenu] = useState(false)
   const { data, loading, params, setParams } = useContext(BPContext)
@@ -77,8 +79,10 @@ const HeaderVersionsDropdown = ({
   const { loading: versionsLoading, results: versionsData = [] } = bpVersions
   const versionsReady = business_plan || (!versionsLoading && !loading)
 
+  const isView = viewType === 'view'
+
   const versions =
-    versionsReady && versionsData.length > 0
+    isView && versionsReady && versionsData.length > 0
       ? versionsData.map((version: any) => ({
           id: version.id,
           isLatest: version.is_latest,
@@ -118,7 +122,7 @@ const HeaderVersionsDropdown = ({
   }
   const fullLabel = `${business_plan?.agency.name} ${business_plan?.year_start} - ${business_plan?.year_end}`
 
-  return (
+  return isView ? (
     <div className="relative">
       <div
         className="flex cursor-pointer items-center justify-between gap-x-2"
@@ -156,6 +160,8 @@ const HeaderVersionsDropdown = ({
         })}
       </div>
     </div>
+  ) : (
+    <h1 className="m-0 text-5xl leading-normal">{fullLabel}</h1>
   )
 }
 
@@ -182,7 +188,8 @@ const ViewHeaderActions = () => {
                   variant="contained"
                   button
                 >
-                  {isDraft ? 'Edit report' : 'Add new version'}
+                  {/* {isDraft ? 'Edit as draft' : 'Add new version'} */}
+                  Edit as draft
                 </Link>
                 {isDraft && (
                   <Button
@@ -249,10 +256,12 @@ const BPHeader = ({
   business_plan,
   tag,
   titlePrefix,
+  viewType,
 }: {
   business_plan: ApiBP
   tag?: React.JSX.Element
   titlePrefix?: React.JSX.Element
+  viewType?: string
 }) => {
   const { agency, year_end, year_start } = business_plan
   const { id: agency_id } = agency || {}
@@ -267,10 +276,12 @@ const BPHeader = ({
     <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
       <div className="flex flex-wrap items-center gap-x-2">
         {titlePrefix}
-        <HeaderVersionsDropdown {...{ bpVersions }} />
+        <HeaderVersionsDropdown {...{ bpVersions, viewType }} />
         {tag}
       </div>
-      <BPDiffButton {...{ bpVersions, business_plan }} />
+      {viewType === 'view' && (
+        <BPDiffButton {...{ bpVersions, business_plan }} />
+      )}
     </div>
   )
 }
@@ -279,10 +290,12 @@ const BPHeaderView = ({
   actions = <ViewHeaderActions />,
   tag = <ViewHeaderTag />,
   titlePrefix,
+  viewType = 'view',
 }: {
   actions?: React.JSX.Element
   tag?: React.JSX.Element
   titlePrefix?: React.JSX.Element
+  viewType?: string
 }) => {
   const contextBP = useContext(BPContext) as any
   const { data } = contextBP
@@ -296,7 +309,7 @@ const BPHeaderView = ({
       <div>
         <RedirectToBpList {...{ currentYearRange }} />
         <div className="mb-4 flex min-h-[40px] flex-wrap items-center justify-between gap-x-8 gap-y-2">
-          <BPHeader {...{ business_plan, tag, titlePrefix }} />
+          <BPHeader {...{ business_plan, tag, titlePrefix, viewType }} />
           <div className="ml-auto">{actions}</div>
         </div>
       </div>

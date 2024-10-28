@@ -1,5 +1,7 @@
 'use client'
 
+import { ApiReplenishmentPayment } from '@ors/types/api_replenishment_payments'
+
 import React, { ChangeEvent, useContext, useMemo, useState } from 'react'
 
 import cx from 'classnames'
@@ -46,10 +48,10 @@ import {
 import { IoSearchSharp } from 'react-icons/io5'
 
 const COLUMNS: PaymentColumn[] = [
-  { field: 'invoice_numbers', label: 'Invoice Number(s)' },
+  { field: 'invoice_number', label: 'Invoice Number' },
   { field: 'country', label: 'Country', sortable: true },
   { field: 'date', label: 'Date', sortable: true },
-  { field: 'amount', label: 'Amount', sortable: true },
+  { field: 'amount_received', label: 'Amount', sortable: true },
   { field: 'currency', label: 'Currency' },
   {
     field: 'exchange_rate',
@@ -81,11 +83,129 @@ const EditPaymentDialogue = function EditPaymentDialogue(
   return <PaymentDialog title="Edit payment" isEdit {...props} />
 }
 
+function parsePayment(entry: ApiReplenishmentPayment): ParsedPayment {
+  return {
+    id: entry.id,
+    amount_assessed: formatNumberValue(entry.amount_assessed),
+    amount_local_currency: formatNumberValue(entry.amount_local_currency),
+    amount_received: formatNumberValue(entry.amount_received),
+    be_amount_assessed: entry.amount_assessed,
+    be_amount_local_currency: entry.amount_local_currency,
+    be_amount_received: entry.amount_received,
+    be_exchange_rate: entry.exchange_rate,
+    be_ferm: entry.ferm_gain_or_loss,
+    comment: entry.comment,
+    country: entry.country.name,
+    country_id: entry.country.id,
+    currency: entry.currency,
+    date: formatDateValue(entry.date),
+    exchange_rate: formatNumberValue(entry.exchange_rate) || 'N/A',
+    ferm_gain_or_loss: formatNumberValue(entry.ferm_gain_or_loss) || 'N/A',
+    files: <ViewFiles files={entry.payment_files} />,
+    files_data: entry.payment_files,
+    invoice: entry.invoice,
+    invoice_number: entry.invoice ? entry.invoice.number : '',
+    iso3: entry.country.iso3,
+    payment_for_years: entry.payment_for_years,
+    payment_years: entry.payment_for_years.join(', '),
+    status: entry.status,
+  }
+}
+
+function prepareFormDataForSubmit(formData: FormData): FormData {
+  const entry = Object.fromEntries(formData.entries()) as PaymentForSubmit
+  entry.date = dateForInput(entry.date)
+  entry.exchange_rate = isNaN(entry.exchange_rate as number)
+    ? ''
+    : entry.exchange_rate
+  entry.ferm_gain_or_loss = isNaN(entry.ferm_gain_or_loss as number)
+    ? ''
+    : entry.ferm_gain_or_loss
+  entry.comment = entry.comment || ''
+  const payment_for_years = formData.getAll('payment_for_years') as string[]
+  if (payment_for_years.length > 0) {
+    entry.payment_for_years = payment_for_years
+  }
+
+  if (entry?.is_ferm) {
+    entry.is_ferm = 'true'
+  } else {
+    entry.is_ferm = 'false'
+  }
+
+  let nr_new_files = 0
+  const data = new FormData()
+
+  for (const key in entry) {
+    const value = entry[key]
+
+    // Append non-file fields if they are not null, undefined, or empty string
+    if (!key.startsWith('file_')) {
+      const valueIsNotAFile = value as unknown as
+        | boolean
+        | null
+        | string
+        | string[]
+        | undefined
+      if (
+        valueIsNotAFile !== null &&
+        typeof valueIsNotAFile === 'object' &&
+        valueIsNotAFile.length
+      ) {
+        for (let i = 0; i < valueIsNotAFile.length; i++) {
+          data.append(key, valueIsNotAFile[i])
+        }
+      } else if (
+        valueIsNotAFile !== null &&
+        valueIsNotAFile !== undefined &&
+        valueIsNotAFile !== ''
+      ) {
+        data.append(key, valueIsNotAFile as string)
+      }
+    }
+    if (key.startsWith('file_') && entry[key] instanceof File) {
+      const fileIndex = key.split('_')[1]
+      data.append(`files[${fileIndex}][file]`, entry[key], entry[key].name)
+      nr_new_files++
+    }
+  }
+
+  data.append('nr_new_files', nr_new_files.toString())
+  return data
+}
+
+async function apiRequest(url: string, method: string, data: any) {
+  const csrftoken = Cookies.get('csrftoken')
+  await fetchWithHandling(
+    formatApiUrl(url),
+    {
+      body: data,
+      method,
+    },
+    csrftoken,
+  )
+}
+
+async function handleErrors(error: any) {
+  if (error.status === 400) {
+    const errors = await error.json()
+    enqueueSnackbar(
+      errors.general_error ||
+        errors.files ||
+        'Please make sure all the inputs are correct.',
+      { variant: 'error' },
+    )
+  } else {
+    enqueueSnackbar(<>An error occurred. Please try again.</>, {
+      variant: 'error',
+    })
+  }
+}
+
 function PaymentsView() {
   const ctx = useContext(ReplenishmentContext)
 
   const { count, loaded, results, setParams } = useGetPayments()
-  const [_, setError] = useState(null)
   const [pagination, setPagination] = useState({
     page: 1,
     rowsPerPage: _PER_PAGE,
@@ -100,33 +220,7 @@ function PaymentsView() {
           }
         })
       }
-      return [
-        ...results.map((data) => ({
-          id: data.id,
-          amount: formatNumberValue(data.amount),
-          be_amount: data.amount,
-          be_exchange_rate: data.exchange_rate,
-          be_ferm: data.ferm_gain_or_loss,
-          comment: data.comment,
-          country: data.country.name,
-          country_id: data.country.id,
-          currency: data.currency,
-          date: formatDateValue(data.date),
-          exchange_rate: formatNumberValue(data.exchange_rate) || 'N/A',
-          ferm_gain_or_loss: formatNumberValue(data.ferm_gain_or_loss) || 'N/A',
-          files: <ViewFiles files={data.payment_files} />,
-          files_data: data.payment_files,
-          invoice_numbers: data.invoices
-            .map((inv: any) => inv.number)
-            .join(', '),
-          invoices: data.invoices,
-          iso3: data.country.iso3,
-          payment_for_years: data.payment_for_years,
-          payment_years: data.payment_for_years.join(', '),
-          replenishment: data.replenishment,
-          status: data.status,
-        })),
-      ]
+      return [...results.map(parsePayment)]
     }, [results, loaded, pagination.rowsPerPage])
 
   const formattedTableRows = useMemo(() => {
@@ -152,7 +246,7 @@ function PaymentsView() {
 
   const pages = Math.ceil(count / pagination.rowsPerPage)
 
-  const columns: PaymentColumn<JSX.Element>[] = useMemo(function () {
+  const columns: PaymentColumn<React.JSX.Element>[] = useMemo(function () {
     const result = []
     for (let i = 0; i < COLUMNS.length; i++) {
       const Label = (
@@ -182,9 +276,10 @@ function PaymentsView() {
     if (editIdx !== null) {
       entry = { ...memoResults[editIdx] } as PaymentDataFields
       entry.date = dateForEditField(entry.date)
-      entry.amount = entry.be_amount
+      entry.amount_assessed = entry.be_amount_assessed
+      entry.amount_received = entry.be_amount_received
       entry.exchange_rate = entry.be_exchange_rate
-      entry.ferm_gain_or_loss = entry.be_ferm
+      entry.ferm_gain_or_loss = entry.be_ferm ?? ''
     }
     return entry
   }, [editIdx, memoResults])
@@ -194,75 +289,13 @@ function PaymentsView() {
   }
 
   async function handleEditPaymentSubmit(formData: FormData) {
-    const entry = Object.fromEntries(formData.entries()) as PaymentForSubmit
-    entry.date = dateForInput(entry.date)
-    entry.exchange_rate = isNaN(entry.exchange_rate as number)
-      ? ''
-      : entry.exchange_rate
-    entry.ferm_gain_or_loss = isNaN(entry.ferm_gain_or_loss as number)
-      ? ''
-      : entry.ferm_gain_or_loss
-    entry.comment = entry.comment || ''
-    const invoices = formData.getAll('invoices') as string[]
-    if (invoices.length > 0) {
-      entry.invoices = invoices
-    }
-    const payment_for_years = formData.getAll('payment_for_years') as string[]
-    if (payment_for_years.length > 0) {
-      entry.payment_for_years = payment_for_years
-    }
-
-    if (entry?.is_ferm) {
-      entry.is_ferm = 'true'
-    } else {
-      entry.is_ferm = 'false'
-    }
-
-    let nr_new_files = 0
-    const data = new FormData()
-
-    for (const key in entry) {
-      const value = entry[key]
-
-      // Append non-file fields if they are not null, undefined
-      // Empty strings are used to delete a value
-      if (!key.startsWith('file_')) {
-        const valueIsNotAFile = value as unknown as
-          | boolean
-          | null
-          | string
-          | string[]
-          | undefined
-        if (
-          valueIsNotAFile !== null &&
-          typeof valueIsNotAFile === 'object' &&
-          valueIsNotAFile.length
-        ) {
-          for (let i = 0; i < valueIsNotAFile.length; i++) {
-            data.append(key, valueIsNotAFile[i])
-          }
-        } else if (valueIsNotAFile !== null && valueIsNotAFile !== undefined) {
-          data.append(key, valueIsNotAFile as string)
-        }
-      }
-      if (key.startsWith('file_') && entry[key] instanceof File) {
-        const fileIndex = key.split('_')[1]
-        data.append(`files[${fileIndex}][file]`, entry[key], entry[key].name)
-        nr_new_files++
-      }
-    }
-
-    data.append('nr_new_files', nr_new_files.toString())
+    const data = prepareFormDataForSubmit(formData)
 
     try {
-      const csrftoken = Cookies.get('csrftoken')
-      await fetchWithHandling(
-        formatApiUrl(`api/replenishment/payments/${entry.id}/`),
-        {
-          body: data,
-          method: 'PUT',
-        },
-        csrftoken,
+      await apiRequest(
+        `api/replenishment/payments/${data.get('id')}/`,
+        'PUT',
+        data,
       )
       enqueueSnackbar('Payment updated successfully.', { variant: 'success' })
       setParams({
@@ -271,100 +304,19 @@ function PaymentsView() {
       setShowAdd(false)
     } catch (error) {
       setShowAdd(false)
-      if (error.status === 400) {
-        const errors = await error.json()
-        setError({ ...errors })
-        enqueueSnackbar(
-          errors.general_error ||
-            errors.files ||
-            'Please make sure all the inputs are correct.',
-          { variant: 'error' },
-        )
-      } else {
-        enqueueSnackbar(<>An error occurred. Please try again.</>, {
-          variant: 'error',
-        })
-        setError(null)
-      }
+      await handleErrors(error)
     }
 
     setEditIdx(null)
   }
 
   async function handleAddPaymentSubmit(formData: FormData) {
-    const entry = Object.fromEntries(formData.entries()) as PaymentForSubmit
-    entry.date = dateForInput(entry.date)
-    entry.exchange_rate = isNaN(entry.exchange_rate as number)
-      ? ''
-      : entry.exchange_rate
-    entry.ferm_gain_or_loss = isNaN(entry.ferm_gain_or_loss as number)
-      ? ''
-      : entry.ferm_gain_or_loss
-    entry.comment = entry.comment || ''
-    const invoices = formData.getAll('invoices') as string[]
-    if (invoices.length > 0) {
-      entry.invoices = invoices
-    }
-    const payment_for_years = formData.getAll('payment_for_years') as string[]
-    if (payment_for_years.length > 0) {
-      entry.payment_for_years = payment_for_years
-    }
+    const data = prepareFormDataForSubmit(formData)
 
-    if (entry?.is_ferm) {
-      entry.is_ferm = 'true'
-    } else {
-      entry.is_ferm = 'false'
-    }
-
-    let nr_new_files = 0
-    const data = new FormData()
-
-    for (const key in entry) {
-      const value = entry[key]
-
-      // Append non-file fields if they are not null, undefined, or empty string
-      if (!key.startsWith('file_')) {
-        const valueIsNotAFile = value as unknown as
-          | null
-          | string
-          | string[]
-          | undefined
-        if (
-          valueIsNotAFile !== null &&
-          typeof valueIsNotAFile === 'object' &&
-          valueIsNotAFile.length
-        ) {
-          for (let i = 0; i < valueIsNotAFile.length; i++) {
-            data.append(key, valueIsNotAFile[i])
-          }
-        } else if (
-          valueIsNotAFile !== null &&
-          valueIsNotAFile !== undefined &&
-          valueIsNotAFile !== ''
-        ) {
-          data.append(key, valueIsNotAFile as string)
-        }
-      }
-      if (key.startsWith('file_') && entry[key] instanceof File) {
-        const fileIndex = key.split('_')[1]
-        data.append(`files[${fileIndex}][file]`, entry[key], entry[key].name)
-        nr_new_files++
-      }
-    }
-
-    data.append('nr_new_files', nr_new_files.toString())
+    console.log(data)
 
     try {
-      const csrftoken = Cookies.get('csrftoken')
-
-      await fetchWithHandling(
-        formatApiUrl('api/replenishment/payments/'),
-        {
-          body: data,
-          method: 'POST',
-        },
-        csrftoken,
-      )
+      await apiRequest('api/replenishment/payments/', 'POST', data)
       enqueueSnackbar('Payment updated successfully.', { variant: 'success' })
       setParams({
         offset: 0,
@@ -373,21 +325,7 @@ function PaymentsView() {
       setShowAdd(false)
     } catch (error) {
       setShowAdd(false)
-      if (error.status === 400) {
-        const errors = await error.json()
-        setError({ ...errors })
-        enqueueSnackbar(
-          errors.general_error ||
-            errors.files ||
-            'Please make sure all the inputs are correct.',
-          { variant: 'error' },
-        )
-      } else {
-        enqueueSnackbar(<>An error occurred. Please try again.</>, {
-          variant: 'error',
-        })
-        setError(null)
-      }
+      await handleErrors(error)
     }
   }
 
@@ -404,34 +342,17 @@ function PaymentsView() {
     const entry = { ...memoResults[rowId] }
 
     try {
-      const csrftoken = Cookies.get('csrftoken')
-      await fetchWithHandling(
-        formatApiUrl(`api/replenishment/payments/${entry.id}/`),
-        {
-          method: 'DELETE',
-        },
-        csrftoken,
+      await apiRequest(
+        `api/replenishment/payments/${entry.id}/`,
+        'DELETE',
+        null,
       )
       enqueueSnackbar('Payment deleted.', { variant: 'success' })
       setParams({
         offset: ((pagination.page || 1) - 1) * pagination.rowsPerPage,
       })
     } catch (error) {
-      if (error.status === 400) {
-        const errors = await error.json()
-        setError({ ...errors })
-        enqueueSnackbar(
-          errors.general_error ||
-            errors.files ||
-            'Please make sure all the inputs are correct.',
-          { variant: 'error' },
-        )
-      } else {
-        enqueueSnackbar(<>An error occurred. Please try again.</>, {
-          variant: 'error',
-        })
-        setError(null)
-      }
+      await handleErrors(error)
     }
   }
 

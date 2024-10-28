@@ -152,7 +152,7 @@ export default function PopoverInput({
           id={field}
           name={field}
           className={cx(
-            'relative flex w-full min-w-44 cursor-pointer items-center justify-between gap-2 rounded-lg border border-solid border-primary bg-white px-4 py-2',
+            'relative flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-solid border-primary bg-white px-4 py-2',
             className,
           )}
           aria-describedby={ariaDescribedBy}

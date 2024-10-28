@@ -1,5 +1,7 @@
 'use client'
 
+import React from 'react'
+
 import cx from 'classnames'
 
 import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils'
@@ -11,6 +13,7 @@ import useGetStatisticsData, { SoCStatistic } from './useGetStatisticsData'
 interface HeaderDefinition {
   field: keyof SoCStatistic
   headerClass?: string
+  isPercentage?: boolean
   label: string
   rowClass?: string
   skipFormatting?: boolean
@@ -37,6 +40,7 @@ const HEADERS: HeaderDefinition[] = [
   { field: 'outstanding_contributions', label: 'Outstanding pledges' },
   {
     field: 'payment_pledge_percentage',
+    isPercentage: true,
     label: 'Payments %age to pledges',
   },
   EMPTY_ROW,
@@ -70,6 +74,7 @@ const HEADERS: HeaderDefinition[] = [
   },
   {
     field: 'payment_pledge_percentage',
+    isPercentage: true,
     label: 'Payments %age to pledges',
   },
   { field: 'total_income', label: 'Total income' },
@@ -79,6 +84,7 @@ const HEADERS: HeaderDefinition[] = [
   },
   {
     field: 'outstanding_contributions_percentage',
+    isPercentage: true,
     label: 'As % to total pledges',
   },
   {
@@ -88,15 +94,16 @@ const HEADERS: HeaderDefinition[] = [
   },
   {
     field: 'percentage_outstanding_ceit',
-    label: "CEITs' oustandings %age to pledges",
+    isPercentage: true,
+    label: "CEITs' outstanding %age to pledges",
   },
 ]
 
 function StatisticsTable(props: { data: SoCStatistic[] }) {
   const { data } = props
 
-  const header: JSX.Element[] = []
-  const rows: JSX.Element[] = []
+  const header: React.JSX.Element[] = []
+  const rows: React.JSX.Element[] = []
 
   for (let i = 0; i < HEADERS.length; i++) {
     const cells = []
@@ -118,10 +125,13 @@ function StatisticsTable(props: { data: SoCStatistic[] }) {
 
     for (let j = 0; j < data.length; j++) {
       const content = data[j][HEADERS[i].field]
-      const cellValue =
+      let cellValue =
         content !== null && !HEADERS[i]?.skipFormatting
           ? formatNumberValue(content, 2, 2) || content
           : content
+      if (HEADERS[i]?.isPercentage ?? false) {
+        cellValue = `${cellValue}%`
+      }
       if (i == 0) {
         cells.push(<th key={j}>{cellValue}</th>)
       } else {

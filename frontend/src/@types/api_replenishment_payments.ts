@@ -6,18 +6,19 @@ import { ApiReplenishment } from './api_replenishment_replenishments'
 import { Country } from './store'
 
 export type ApiReplenishmentPayment = {
-  amount: number
+  amount_assessed: null | number
+  amount_local_currency: null | number
+  amount_received: null | number
   comment: string
   country: Country
   currency: string
   date: string
-  exchange_rate: number
-  ferm_gain_or_loss: number
+  exchange_rate: null | number
+  ferm_gain_or_loss: null | number
   id: number
-  invoices: Pick<ApiReplenishmentInvoice, 'id' | 'number'>[]
+  invoice: Pick<ApiReplenishmentInvoice, 'id' | 'number'> | null
   payment_files: ApiReplenishmentFile[]
   payment_for_years: string[]
-  replenishment: ApiReplenishment | null
   status?: string
 }
 

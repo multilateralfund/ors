@@ -17,13 +17,10 @@ import {
 } from '@ors/components/manage/Blocks/Replenishment/DialogTabs'
 import FormDialog from '@ors/components/manage/Blocks/Replenishment/FormDialog'
 import {
-  Field,
   FieldDateInput,
   FieldFormattedNumberInput,
   FieldInput,
-  FieldMultiSelect,
   FieldSearchableSelect,
-  FieldSelect,
   FieldTextLine,
 } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invoices/InvoiceAttachments'
@@ -36,20 +33,35 @@ import { getFloat } from '@ors/helpers/Utils/Utils'
 import { IPaymentDialogProps } from './types'
 
 interface PaymentDialogFields {
-  amount: string
+  amount_assessed: string
   amount_local_currency: string
+  amount_received: string
   country_id: string
   currency: string
   exchange_rate: string
   ferm_gain_or_loss: string
-  invoices: string[]
+  invoice: string
   is_ferm: boolean
   payment_for_years: string[]
   status: string
 }
 
 function getInvoiceLabel(invoice: ApiReplenishmentInvoice) {
-  return `${invoice.number} - ${invoice?.country?.name} (${invoice?.date_of_issuance})`
+  return `${invoice.number} (${invoice?.date_of_issuance})`
+}
+
+function calculateAssessed(currencyAmount: number, exchangeRate: number) {
+  return currencyAmount / exchangeRate
+}
+
+function assessAmountFromCurrency(
+  currencyAmount: string,
+  exchangeRate: string,
+): string {
+  return calculateAssessed(
+    getFloat(currencyAmount) || 0,
+    getFloat(exchangeRate) || 1,
+  ).toString()
 }
 
 const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
@@ -63,13 +75,14 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
   const ctx = useContext(ReplenishmentContext)
 
   const [fields, setFields] = useState<PaymentDialogFields>({
-    amount: data?.amount?.toString() ?? '',
+    amount_assessed: data?.amount_assessed?.toString() ?? '',
     amount_local_currency: data?.amount_local_currency?.toString() ?? '',
+    amount_received: data?.amount_received?.toString() ?? '',
     country_id: data?.country_id?.toString() ?? '',
     currency: data?.currency?.toString() ?? '',
     exchange_rate: data?.exchange_rate?.toString() ?? '',
     ferm_gain_or_loss: data?.ferm_gain_or_loss?.toString() ?? '',
-    invoices: data?.invoices?.map((o) => o.id.toString()) ?? [],
+    invoice: data?.invoice?.id.toString() ?? '',
     is_ferm: data?.is_ferm ?? false,
     payment_for_years: data?.payment_for_years?.map((o) => o.toString()) ?? [],
     status: data?.status?.toString() ?? '',
@@ -105,26 +118,11 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
     [fields.country_id, invoicesList, invoicesLoading],
   )
 
-  const invoicedAmount = useMemo(
-    function () {
-      let total = 0
-      for (let i = 0; i < invoicesList.length; i++) {
-        if (fields.invoices.includes(invoicesList[i].id.toString())) {
-          total += invoicesList[i].amount
-        }
-      }
-      return total
-    },
-    [invoicesList, fields.invoices],
-  )
-
   const paymentForYear = useMemo(
     () =>
       fields.payment_for_years.length > 0
-        ? fields.payment_for_years[0] !== 'arrears'
-          ? parseInt(fields.payment_for_years[0], 10) ||
-            ctx.periods?.[0].start_year
-          : ctx.periods?.[0].start_year
+        ? parseInt(fields.payment_for_years[0], 10) ||
+          ctx.periods?.[0].start_year
         : ctx.periods?.[0].start_year,
     [ctx.periods, fields.payment_for_years],
   )
@@ -143,14 +141,26 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
 
   useEffect(
     function () {
+      const optedForFerm = countryInfo?.opted_for_ferm || false
+
       if (!isEdit) {
+        const amountLocalCurrency = optedForFerm ?
+          (countryInfo?.yearly_amount_local_currency || '').toString() || ''
+          : (countryInfo?.yearly_amount || '').toString() || ''
+        const exchangeRate = (countryInfo?.exchange_rate || '').toString() || ''
+
         setFields((prev) => {
           const updated = {
-            amount_local_currency:
-              (countryInfo?.amount_local_currency || '').toString() || '',
-            currency: (countryInfo?.currency || '').toString() || '',
-            exchange_rate: (countryInfo?.exchange_rate || '').toString() || '',
-            is_ferm: countryInfo?.opted_for_ferm || false,
+            amount_assessed: assessAmountFromCurrency(
+              amountLocalCurrency,
+              exchangeRate,
+            ),
+            amount_local_currency: amountLocalCurrency,
+            currency: optedForFerm ?
+              (countryInfo?.currency || '').toString() || ''
+              : 'USD',
+            exchange_rate: exchangeRate,
+            is_ferm: optedForFerm,
           }
 
           return {
@@ -161,7 +171,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
       } else {
         setFields((prev) => {
           const updated = {
-            is_ferm: countryInfo?.opted_for_ferm || false,
+            is_ferm: optedForFerm,
           }
 
           return {
@@ -179,29 +189,43 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
     onSubmit(formData, evt)
   }
 
-  const handleChangeAmount: ChangeEventHandler<HTMLInputElement> = (evt) => {
-    const amount = evt.target.value
-    const nrAmount = getFloat(amount) || 1
-    setFields((prev) => ({
-      ...prev,
-      amount,
-      exchange_rate: (
-        getFloat(fields.amount_local_currency) / nrAmount
-      ).toString(),
-    }))
-  }
+  const handleSelectInvoice = useCallback(
+    function handleSelectInvoice(invoiceId: string) {
+      const invoice = invoicesList.find(({ id }) => id.toString() === invoiceId)
+      setFields(function (prevState): PaymentDialogFields {
+        return {
+          ...prevState,
+          get amount_assessed() {
+            return this.is_ferm
+              ? assessAmountFromCurrency(
+                  this.amount_local_currency,
+                  this.exchange_rate,
+                )
+              : ''
+          },
+          amount_local_currency:
+            invoice?.amount_local_currency?.toString() ?? '',
+          amount_received: invoice?.amount_usd?.toString() ?? '',
+          invoice: invoiceId,
+          is_ferm: invoice?.is_ferm ?? prevState.is_ferm,
+          payment_for_years: invoice ? [invoice?.year.toString()] : [],
+        }
+      })
+    },
+    [invoicesList],
+  )
 
   const handleChangeCurrencyAmount: ChangeEventHandler<HTMLInputElement> = (
     evt,
   ) => {
     const currencyAmount = evt.target.value
-    const nrCurrencyAmount = getFloat(currencyAmount) || 0
     setFields((prev) => ({
       ...prev,
+      amount_assessed: assessAmountFromCurrency(
+        currencyAmount,
+        fields.exchange_rate,
+      ),
       amount_local_currency: currencyAmount,
-      exchange_rate: (
-        getFloat(nrCurrencyAmount) / getFloat(fields.amount)
-      ).toString(),
     }))
   }
 
@@ -210,6 +234,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
       return {
         ...prev,
         country_id: value,
+        invoice: '',
         is_ferm: countryInfo?.opted_for_ferm || false,
       }
     })
@@ -223,38 +248,11 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
     }))
   }
 
-  function handleChangeInvoices(value: string) {
-    setFields(function (prev) {
-      return { ...prev, invoices: [value] }
-    })
-  }
-
   function handleChangeYears(value: string) {
     setFields(function (prev) {
       return { ...prev, payment_for_years: [value] }
     })
   }
-
-  useEffect(
-    function () {
-      const arrears_or_deferred =
-        fields.payment_for_years.includes('arrears') ||
-        fields.payment_for_years.includes('Arrears') ||
-        fields.payment_for_years.includes('deferred') ||
-        fields.payment_for_years.includes('Deferred')
-      if (fields.invoices.length > 0 && arrears_or_deferred) {
-        setFields(function (prev) {
-          return {
-            ...prev,
-            ferm_gain_or_loss: (
-              invoicedAmount - getFloat(fields.amount)
-            ).toString(),
-          }
-        })
-      }
-    },
-    [invoicedAmount, fields.amount, fields.invoices, fields.payment_for_years],
-  )
 
   return (
     <FormDialog title={title} onSubmit={handleFormSubmit} {...dialogProps}>
@@ -267,8 +265,8 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
       <DialogTabContent isCurrent={tab == 0}>
         <FieldSearchableSelect
           id="country_id"
-          defaultValue={data?.country_id.toString()}
           label={columns.country.label}
+          value={fields.country_id}
           onChange={handleChangeCountry}
           required
         >
@@ -288,12 +286,12 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
         />
         {hasInvoices ? (
           <FieldSearchableSelect
-            id="invoices"
-            defaultValue={fields.invoices?.[0] ?? ''}
+            id="invoice_id"
             hasClear={true}
-            label={columns.invoice_numbers.label}
+            label={columns.invoice_number.label}
             required={true}
-            onChange={handleChangeInvoices}
+            value={fields.invoice ?? ''}
+            onChange={handleSelectInvoice}
           >
             {invoicesList.map((inv) => (
               <option key={inv.id} value={inv.id}>
@@ -303,24 +301,18 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
           </FieldSearchableSelect>
         ) : (
           <FieldTextLine
-            label={columns.invoice_numbers.label}
+            label={columns.invoice_number.label}
             text={'No invoices found for this country'}
           />
         )}
         <FieldSearchableSelect
           id="payment_for_years"
-          defaultValue={fields.payment_for_years?.[0] ?? ''}
           hasClear={true}
           label={columns.payment_years.label}
           required={true}
+          value={fields.payment_for_years?.[0] ?? ''}
           onChange={handleChangeYears}
         >
-          <option key="arrears" className="text-primary" value="arrears">
-            Arrears
-          </option>
-          {/*<option key="deferred" className="text-primary" value="deferred">*/}
-          {/*  Deferred*/}
-          {/*</option>*/}
           {yearOptions.map((year) => (
             <option
               key={year.value}
@@ -330,19 +322,6 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
               {year.label}
             </option>
           ))}
-        </FieldSearchableSelect>
-        <FieldSearchableSelect
-          id="status"
-          defaultValue={fields.status}
-          hasClear={true}
-          label="Status"
-          onChange={setField('status')}
-          onClear={() => setField('status')('')}
-          required
-        >
-          <option value="paid">Paid</option>
-          <option value="partially_paid">Partially Paid</option>
-          <option value="pending">Pending</option>
         </FieldSearchableSelect>
         <FieldDateInput
           id="date"
@@ -383,7 +362,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
           decimalDigits={5}
           disabled={!fields.is_ferm}
           readOnly={!fields.is_ferm}
-          value={fields.amount_local_currency}
+          value={fields.is_ferm ? fields.amount_local_currency : ''}
           label={
             fields.currency
               ? `"${fields.currency}" amount`
@@ -404,11 +383,19 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
           onChange={updateField('exchange_rate')}
         />
         <FieldFormattedNumberInput
-          id="amount"
+          id="amount_received"
           decimalDigits={5}
-          label="USD amount"
-          value={fields.amount}
-          onChange={fields.is_ferm ? handleChangeAmount : updateField('amount')}
+          label="USD amount received"
+          value={fields.amount_received}
+          onChange={updateField('amount_received')}
+          required
+        />
+        <FieldFormattedNumberInput
+          id="amount_assessed"
+          decimalDigits={5}
+          label="USD amount assessed"
+          value={fields.amount_assessed}
+          onChange={updateField('amount_assessed')}
           required
         />
         <FieldFormattedNumberInput
@@ -419,6 +406,17 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
           value={fields.is_ferm ? fields.ferm_gain_or_loss : ''}
           onChange={updateField('ferm_gain_or_loss')}
         />
+        <FieldSearchableSelect
+          id="status"
+          hasClear={true}
+          label="Status"
+          value={fields.status}
+          onChange={setField('status')}
+          required
+        >
+          <option value="paid">Paid</option>
+          <option value="partially_paid">Partially Paid</option>
+        </FieldSearchableSelect>
         <h5>Upload</h5>
         <InvoiceAttachments
           oldFiles={data?.files_data || []}

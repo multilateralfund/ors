@@ -192,15 +192,7 @@ class Invoice(models.Model):
         Country, on_delete=models.PROTECT, related_name="invoices"
     )
 
-    replenishment = models.ForeignKey(
-        Replenishment,
-        on_delete=models.PROTECT,
-        null=True,
-        blank=True,
-        related_name="invoices",
-    )
     year = models.IntegerField(null=True, blank=True)
-    is_arrears = models.BooleanField(default=False)
 
     is_ferm = models.BooleanField(default=False)
 
@@ -208,11 +200,14 @@ class Invoice(models.Model):
         max_length=20, choices=InvoiceStatus.choices, default=InvoiceStatus.PENDING
     )
 
-    amount = models.DecimalField(max_digits=30, decimal_places=15)
+    amount_usd = models.DecimalField(max_digits=30, decimal_places=15)
+    amount_local_currency = models.DecimalField(
+        max_digits=30, decimal_places=15, null=True
+    )
     currency = models.CharField(max_length=64)
     exchange_rate = models.DecimalField(max_digits=30, decimal_places=15, null=True)
 
-    number = models.CharField(max_length=128, unique=True)
+    number = models.CharField(max_length=128)
     date_of_issuance = models.DateField()
     date_sent_out = models.DateField(null=True, blank=True)
     date_paid = models.DateField(null=True, blank=True)
@@ -245,19 +240,41 @@ class InvoiceFile(models.Model):
 
 
 class Payment(models.Model):
+    class PaymentStatus(models.TextChoices):
+        PARTIALLY_PAID = "partially_paid", "Partially paid"
+        PAID = "paid", "Paid"
+
     country = models.ForeignKey(
         Country, on_delete=models.PROTECT, related_name="payments"
     )
-    replenishment = models.ForeignKey(
-        Replenishment, on_delete=models.PROTECT, related_name="payments", null=True
+    invoice = models.ForeignKey(
+        Invoice,
+        related_name="payments",
+        null=True,
+        blank=True,
+        on_delete=models.PROTECT,
     )
-    invoices = models.ManyToManyField(Invoice, related_name="payments", blank=True)
 
     is_ferm = models.BooleanField(default=False)
 
+    status = models.CharField(
+        max_length=20, choices=PaymentStatus.choices, default=PaymentStatus.PAID
+    )
+
     date = models.DateField()
     payment_for_years = fields.ArrayField(models.CharField(max_length=10), default=list)
-    amount = models.DecimalField(max_digits=30, decimal_places=15)
+
+    # Amounts assessed & received are both in USD.
+    # Strangely, amount_assessed is what should be taken into account when calculating
+    # available cash for the fund.
+    # The difference between these two is basically the FERM gain/loss.
+    amount_assessed = models.DecimalField(max_digits=30, decimal_places=15)
+    amount_received = models.DecimalField(max_digits=30, decimal_places=15, null=True)
+
+    amount_local_currency = models.DecimalField(
+        max_digits=30, decimal_places=15, null=True
+    )
+
     currency = models.CharField(max_length=64, default="USD")
     exchange_rate = models.DecimalField(max_digits=30, decimal_places=15, null=True)
     ferm_gain_or_loss = models.DecimalField(max_digits=30, decimal_places=15, null=True)

@@ -19,11 +19,11 @@
       }
     }
 
-    &.ag-country-cell-text .inline {
+    &.ag-cell-centered .inline {
       min-width: 120px;
     }
 
-    &.ag-substances-cell-content {
+    &.ag-tags-cell-content {
       align-items: flex-start;
 
       .ag-cell-value {
@@ -106,6 +106,12 @@
   .ag-cell-hashed {
     @apply pattern-diagonal-lines pattern-bg-transparent pattern-slate-300
     pattern-opacity-80 pattern-size-1;
+  }
+
+  .ag-cell-ellipsed .cell-renderer .inline span {
+    @apply block overflow-hidden text-ellipsis;
+
+    white-space: nowrap;
   }
 
   /* .ag-cell.ag-flex-cell .ag-cell-wrapper {
@@ -194,5 +200,19 @@
     .ag-cell-value {
       @apply flex items-center;
     }
+  }
+}
+
+.bp-edit-table.ag-table {
+  .ag-header-row .ag-header-cell:first-child .ag-header-cell-resize {
+    display: none;
+  }
+
+  .ag-cell.ag-column-first {
+    padding-left: 2px;
+  }
+
+  .ag-row .ag-cell:first-child {
+    border: none;
   }
 }

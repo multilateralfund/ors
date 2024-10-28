@@ -102,11 +102,13 @@ export function computeTableData(
     )
 
     // Does it qualify for FERM?
-    result[i].qual_ferm =
-      ((getOverrideOrDefault(result[i], 'avg_ir') as number) ?? 100) < 10
-        ? true
-        : false
-    result[i].qual_ferm = result[i].qual_ferm || result[i].ferm_cur === 'Euro'
+    if (tableData[i].iso3 === 'USA') {
+      result[i].qual_ferm = false
+    } else {
+      result[i].qual_ferm =
+        ((getOverrideOrDefault(result[i], 'avg_ir') as number) ?? 100) < 10
+      result[i].qual_ferm = result[i].qual_ferm || result[i].ferm_cur === 'Euro'
+    }
 
     // Calculate contribution in national currency for those qualifying for FERM
     result[i].ferm_cur_amount =
@@ -174,7 +176,8 @@ export function formatTableData(
         newValue = value !== undefined ? formattedValue(value) : value
       }
 
-      if (key === 'adj_un_soa' && tableData[i].iso3 == 'USA') {
+      const usNonEditableColumns = ['adj_un_soa', 'opted_for_ferm']
+      if (tableData[i].iso3 == 'USA' && usNonEditableColumns.includes(key)) {
         isEditable = false
       }
 

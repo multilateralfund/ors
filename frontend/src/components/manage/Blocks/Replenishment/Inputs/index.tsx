@@ -1,57 +1,50 @@
 import type {
-  IClearButtonProps,
-  IDateInputProps,
-  IFieldProps,
-  IFormattedNumberInputProps,
-  IMultiSelectProps,
-  INumberInputProps,
-  ISearchableSelectProps,
-  ISingleSelectProps,
-} from './types'
-import type { TriggerButtonProps } from '@ors/components/manage/Widgets/YearRangeWidget'
-import type { YearRangeWidgetProps } from '@ors/components/manage/Widgets/YearRangeWidget'
-import type { InvalidEvent, MouseEvent, MouseEventHandler } from 'react'
+  TriggerButtonProps,
+  YearRangeWidgetProps,
+} from '@ors/components/manage/Widgets/YearRangeWidget'
+import type { MouseEvent } from 'react'
 
-import React, {
-  ChangeEvent,
-  InputHTMLAttributes,
-  SelectHTMLAttributes,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
-
-import cx from 'classnames'
+import React from 'react'
 
 import NumberInput from '@ors/components/manage/Blocks/Replenishment/Inputs/NumberInput'
 import YearRangeWidget from '@ors/components/manage/Widgets/YearRangeWidget'
-import useClickOutside from '@ors/hooks/useClickOutside'
 
 import PopoverInput from '../StatusOfTheFund/editDialogs/PopoverInput'
 import { IPopoverInputProps } from '../StatusOfTheFund/types'
-import ClearButton from './ClearButton'
 import DateInput from './DateInput'
 import FormattedNumberInput from './FormattedNumberInput'
 import Input from './Input'
 import MultiSelect from './MultiSelect'
 import SearchableSelect from './SearchableSelect'
 import Select from './Select'
-import { CLASSESS, CSS_MASKED, STYLE } from './constants'
-
-export {
-  DateInput,
-  FormattedNumberInput,
+import { STYLE } from './constants'
+import {
   IClearButtonProps,
   IDateInputProps,
   IFieldProps,
   IFormattedNumberInputProps,
   IMultiSelectProps,
-  ISearchableSelectProps,
+  INumberInputProps,
+  ISingleSelectProps,
+  IWrappedSearchableSelectProps,
+} from './types'
+
+export {
+  DateInput,
+  FormattedNumberInput,
   Input,
   MultiSelect,
   SearchableSelect,
   Select,
+}
+
+export type {
+  IClearButtonProps,
+  IDateInputProps,
+  IFieldProps,
+  IFormattedNumberInputProps,
+  IMultiSelectProps,
+  IWrappedSearchableSelectProps,
 }
 
 export function Field(props: IFieldProps) {
@@ -103,7 +96,7 @@ export function FieldMultiSelect(props: IFieldProps & IMultiSelectProps) {
 }
 
 export function FieldSearchableSelect(
-  props: IFieldProps & ISearchableSelectProps,
+  props: IFieldProps & IWrappedSearchableSelectProps,
 ) {
   const { id, children, label, ...rest } = props
   return (

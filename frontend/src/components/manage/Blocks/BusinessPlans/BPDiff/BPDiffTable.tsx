@@ -19,6 +19,7 @@ import { useStore } from '@ors/store'
 import {
   allColumnDefs,
   commentsColumnDefs,
+  defaultColDef,
   odpColumnDefs,
   valuesColumnDefs,
 } from '../../Table/BusinessPlansTable/schema'
@@ -30,8 +31,8 @@ export default function BPDiffTable({
   diffData: BPDataInterface
 }) {
   const form = useRef<any>()
-  const { period } = useParams<BpPathParams>()
 
+  const { period } = useParams<BpPathParams>()
   const year_start = period.split('-')[0]
 
   const { yearRanges } = useContext(BPYearRangesContext) as any
@@ -87,39 +88,34 @@ export default function BPDiffTable({
 
       valuesUSD.push({
         autoHeaderHeight: true,
-        autoHeight: true,
         cellClass: 'ag-text-center',
         cellRenderer: numberCellRenderer,
         field: `value_usd_${year}`,
         headerClass: 'ag-text-center',
         headerName: `${label}`,
         minWidth: 80,
-        resizable: true,
         valueGetter: (params: any) => valuesCellGetter(params, 'value_usd'),
-      }),
-        valuesODP.push({
-          autoHeaderHeight: true,
-          autoHeight: true,
-          cellClass: 'ag-text-center',
-          cellRenderer: numberCellRenderer,
-          field: `value_odp_${year}`,
-          headerClass: 'ag-text-center',
-          headerName: `${label}`,
-          minWidth: 80,
-          resizable: true,
-          valueGetter: (params: any) => valuesCellGetter(params, 'value_odp'),
-        })
+      })
+
+      valuesODP.push({
+        autoHeaderHeight: true,
+        cellClass: 'ag-text-center',
+        cellRenderer: numberCellRenderer,
+        field: `value_odp_${year}`,
+        headerClass: 'ag-text-center',
+        headerName: `${label}`,
+        minWidth: 80,
+        valueGetter: (params: any) => valuesCellGetter(params, 'value_odp'),
+      })
 
       valuesMT.push({
         autoHeaderHeight: true,
-        autoHeight: true,
         cellClass: 'ag-text-center',
         cellRenderer: numberCellRenderer,
         field: `value_mt_${year}`,
         headerClass: 'ag-text-center',
         headerName: `${label}`,
         minWidth: 80,
-        resizable: true,
         valueGetter: (params: any) => valuesCellGetter(params, 'value_mt'),
       })
     }
@@ -165,8 +161,8 @@ export default function BPDiffTable({
 
   const displayFilters = () => {
     return (
-      <div className="bp-table-toolbar mb-4 flex flex-col justify-end gap-4 lg:flex-row lg:items-center">
-        <div className="flex gap-4">
+      <div className="bp-table-toolbar mb-4 flex flex-col gap-4 lg:flex-row lg:items-center">
+        <div className="ml-auto flex gap-4">
           <TableDateSwitcher
             changeHandler={(event, value) => setGridOptions(value)}
             value={gridOptions}
@@ -201,6 +197,7 @@ export default function BPDiffTable({
           className="bp-diff-table"
           Toolbar={displayFilters}
           columnDefs={[...columnDefs]}
+          defaultColDef={defaultColDef}
           domLayout="normal"
           gridRef={grid}
           loaded={loaded}

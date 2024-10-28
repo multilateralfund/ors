@@ -1,7 +1,6 @@
 'use client'
 import React, { useContext, useMemo, useRef, useState } from 'react'
 
-import { reduce } from 'lodash'
 import { useParams } from 'next/navigation'
 
 import DownloadButtons from '@ors/app/business-plans/DownloadButtons'
@@ -16,6 +15,7 @@ import TableDateSwitcher, {
 import {
   allColumnDefs,
   commentsColumnDefs,
+  defaultColDef,
   odpColumnDefs,
   valuesColumnDefs,
 } from '@ors/components/manage/Blocks/Table/BusinessPlansTable/schema'
@@ -24,7 +24,6 @@ import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import BPContext from '@ors/contexts/BusinessPlans/BPContext'
 import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
 import { formatApiUrl, getResults } from '@ors/helpers'
-import { debounce } from '@ors/helpers/Utils/Utils'
 import { useStore } from '@ors/store'
 
 import Activities from '../../BusinessPlans/Activities'
@@ -35,8 +34,7 @@ import TableViewSelector from './TableViewSelector'
 const BP_PER_PAGE = 20
 
 export default function BusinessPlansTable() {
-  const params = useParams<BpPathParams>()
-  const { period } = params
+  const { period } = useParams<BpPathParams>()
   const form = useRef<any>()
   const commonSlice = useStore((state) => state.common)
   const bpSlice = useStore((state) => state.businessPlans)
@@ -108,13 +106,11 @@ export default function BusinessPlansTable() {
 
       valuesUSD.push({
         autoHeaderHeight: true,
-        autoHeight: true,
         cellClass: 'ag-text-center',
         field: `value_usd_${year}`,
         headerClass: 'ag-text-center',
         headerName: `${label}`,
         minWidth: 80,
-        resizable: true,
         valueGetter: (params: any) => {
           const value = params.data.values.find((value: any) =>
             getYearColsValue(value, year, isAfterMaxYear),
@@ -128,13 +124,11 @@ export default function BusinessPlansTable() {
 
       valuesODP.push({
         autoHeaderHeight: true,
-        autoHeight: true,
         cellClass: 'ag-text-center',
         field: `value_odp_${year}`,
         headerClass: 'ag-text-center',
         headerName: `${label}`,
         minWidth: 80,
-        resizable: true,
         valueGetter: (params: any) => {
           const value = params.data.values.find((value: any) =>
             getYearColsValue(value, year, isAfterMaxYear),
@@ -148,13 +142,11 @@ export default function BusinessPlansTable() {
 
       valuesMT.push({
         autoHeaderHeight: true,
-        autoHeight: true,
         cellClass: 'ag-text-center',
         field: `value_mt_${year}`,
         headerClass: 'ag-text-center',
         headerName: `${label}`,
         minWidth: 80,
-        resizable: true,
         valueGetter: (params: any) => {
           const value = params.data.values.find((value: any) =>
             getYearColsValue(value, year, isAfterMaxYear),
@@ -244,43 +236,6 @@ export default function BusinessPlansTable() {
             value={gridOptions}
           />
         </div>
-        {/*<Dropdown*/}
-        {/*  color="primary"*/}
-        {/*  label={<IoDownloadOutline />}*/}
-        {/*  tooltip="Download"*/}
-        {/*  icon*/}
-        {/*>*/}
-        {/*  <Dropdown.Item>*/}
-        {/*    <Link*/}
-        {/*      className="flex items-center gap-x-2 text-black no-underline"*/}
-        {/*      target="_blank"*/}
-        {/*      href={*/}
-        {/*        formatApiUrl('api/business-plan-record/export/') +*/}
-        {/*        '?year_start=' +*/}
-        {/*        yearRangeSelected?.year_start.toString()*/}
-        {/*      }*/}
-        {/*      download*/}
-        {/*    >*/}
-        {/*      <AiFillFileExcel className="fill-green-700" size={24} />*/}
-        {/*      <span>XLSX</span>*/}
-        {/*    </Link>*/}
-        {/*  </Dropdown.Item>*/}
-        {/*  <Dropdown.Item>*/}
-        {/*    <Link*/}
-        {/*      className="flex items-center gap-x-2 text-black no-underline"*/}
-        {/*      target="_blank"*/}
-        {/*      href={*/}
-        {/*        formatApiUrl('api/business-plan-record/print/') +*/}
-        {/*        '?year_start=' +*/}
-        {/*        yearRangeSelected?.year_start.toString()*/}
-        {/*      }*/}
-        {/*      download*/}
-        {/*    >*/}
-        {/*      <AiFillFilePdf className="fill-red-700" size={24} />*/}
-        {/*      <span>PDF</span>*/}
-        {/*    </Link>*/}
-        {/*  </Dropdown.Item>*/}
-        {/*</Dropdown>*/}
       </div>
     )
   }
@@ -294,22 +249,6 @@ export default function BusinessPlansTable() {
   }
   const paginationPageSizeSelectorOpts = getPaginationSelectorOpts()
 
-  const grid = useRef<any>()
-
-  const autoSizeColumns = () => {
-    if (!grid.current.api) return
-    grid.current.api.autoSizeColumns(
-      reduce(
-        columnDefs,
-        (acc: Array<string>, column) => {
-          acc.push(column.field)
-          return acc
-        },
-        [],
-      ),
-    )
-  }
-
   return (
     yearRanges &&
     yearRanges.length > 0 && (
@@ -318,9 +257,9 @@ export default function BusinessPlansTable() {
           <Table
             Toolbar={displayFilters}
             columnDefs={[...columnDefs]}
+            defaultColDef={defaultColDef}
             domLayout="normal"
             enablePagination={true}
-            gridRef={grid}
             loaded={loaded}
             loading={loading}
             paginationPageSize={BP_PER_PAGE}
@@ -334,18 +273,11 @@ export default function BusinessPlansTable() {
               agColumnHeader: undefined,
               agTextCellRenderer: undefined,
             }}
-            onFirstDataRendered={() => {
-              debounce(autoSizeColumns, 0)
-            }}
             onPaginationChanged={({ page, rowsPerPage }) => {
               setParams({
                 limit: rowsPerPage,
                 offset: page * rowsPerPage,
               })
-              debounce(autoSizeColumns, 0)
-            }}
-            onRowDataUpdated={() => {
-              debounce(autoSizeColumns, 0)
             }}
             onSortChanged={({ api }) => {
               const ordering = api
