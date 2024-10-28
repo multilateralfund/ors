@@ -145,7 +145,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
 
       if (!isEdit) {
         const amountLocalCurrency =
-          (countryInfo?.amount_local_currency || '').toString() || ''
+          (countryInfo?.yearly_amount_local_currency || '').toString() || ''
         const exchangeRate = (countryInfo?.exchange_rate || '').toString() || ''
 
         setFields((prev) => {
