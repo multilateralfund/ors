@@ -12,11 +12,8 @@ import {
   useState,
 } from 'react'
 
-
 import Big from 'big.js'
-
 import { reverse } from 'lodash'
-
 import { useSnackbar } from 'notistack'
 
 import DownloadButtons from '@ors/app/replenishment/DownloadButtons'

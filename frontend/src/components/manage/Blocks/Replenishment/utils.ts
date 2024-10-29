@@ -98,37 +98,6 @@ export function dateFromInput(value: string) {
   )
 }
 
-export function numberForEditField(value: string) {
-  return parseFloat(value.replaceAll(',', ''))
-}
-
-export function filterTableData(
-  tableData: Record<string, number | string>[],
-  searchValue: string,
-) {
-  const result = []
-  const searchFor = searchValue.toLowerCase()
-  for (let i = 0; i < tableData.length; i++) {
-    const rowValues = Object.values(tableData[i])
-
-    for (let j = 0; j < rowValues.length; j++) {
-      let value = ''
-
-      if (typeof rowValues[j] === 'string') {
-        value = rowValues[j] as string
-      } else if (rowValues[j]) {
-        value = rowValues[j].toString()
-      }
-
-      if (value.toLowerCase().indexOf(searchFor) !== -1) {
-        result.push(tableData[i])
-        break
-      }
-    }
-  }
-  return result
-}
-
 export function getDefaultFieldSorter(field: string, direction: -1 | 1) {
   return function (a: Record<string, any>, b: Record<string, any>) {
     const a_val = a[field]
