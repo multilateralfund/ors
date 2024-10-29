@@ -1,6 +1,6 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
-import { isNil } from 'lodash'
+import { filter, isNil } from 'lodash'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import { useStore } from '@ors/store'
@@ -53,6 +53,15 @@ const useColumnsOptions = (
   const chemicalTypes = useGetChemicalTypes()
   const chemicalTypesResults = chemicalTypes.results
 
+  const getSubsectorsOfSector = useCallback(
+    (params: any) =>
+      filter(
+        subsectors,
+        (subsector) => subsector.sector_id === params.data.sector_id,
+      ),
+    [subsectors],
+  )
+
   const colsOptions = useMemo(
     () => ({
       columnDefs: [
@@ -77,6 +86,7 @@ const useColumnsOptions = (
             agFormatValue,
             getOptionLabel: (option: any) => getOptionLabel(countries, option),
             isOptionEqualToValue,
+            openOnFocus: true,
             options: countries,
           },
           cellRenderer: (props: any) => (
@@ -98,6 +108,7 @@ const useColumnsOptions = (
             agFormatValue,
             getOptionLabel: (option: any) => getOptionLabel(clusters, option),
             isOptionEqualToValue,
+            openOnFocus: true,
             options: clusters,
           },
           cellRenderer: (props: any) => (
@@ -122,6 +133,7 @@ const useColumnsOptions = (
             agFormatValue,
             getOptionLabel: (option: any) => getOptionLabel(types, option),
             isOptionEqualToValue,
+            openOnFocus: true,
             options: types,
           },
           cellRenderer: (props: any) => (
@@ -144,6 +156,7 @@ const useColumnsOptions = (
             getOptionLabel: (option: any) =>
               getOptionLabel(chemicalTypesResults, option),
             isOptionEqualToValue,
+            openOnFocus: true,
             options: chemicalTypesResults,
           },
           cellRenderer: (props: any) => (
@@ -168,6 +181,7 @@ const useColumnsOptions = (
             agFormatValue,
             getOptionLabel: (option: any) => getOptionLabel(sectors, option),
             isOptionEqualToValue,
+            openOnFocus: true,
             options: sectors,
           },
           cellRenderer: (props: any) => (
@@ -178,28 +192,41 @@ const useColumnsOptions = (
           headerName: tableColumns.sector_id,
           minWidth: 120,
           tooltipField: 'sector.name',
-          valueSetter: (params: any) => valueSetter(params, 'sector', sectors),
+          valueSetter: (params: any) =>
+            valueSetter(
+              params,
+              'sector',
+              sectors,
+              getSubsectorsOfSector(params),
+            ),
         },
         {
           cellClass: 'ag-text-center ag-cell-wrap-text',
           cellEditor: 'agSelectCellEditor',
-          cellEditorParams: {
-            Input: { placeholder: 'Select subsector' },
-            agFormatValue,
-            getOptionLabel: (option: any) => getOptionLabel(subsectors, option),
-            isOptionEqualToValue,
-            options: subsectors,
+          cellEditorParams: (params: any) => {
+            const subsectorsOfSector = getSubsectorsOfSector(params)
+
+            return {
+              Input: { placeholder: 'Select subsector' },
+              agFormatValue,
+              getOptionLabel: (option: any) =>
+                getOptionLabel(subsectorsOfSector, option),
+              isOptionEqualToValue,
+              openOnFocus: true,
+              options: subsectorsOfSector,
+            }
           },
           cellRenderer: (props: any) => (
             <AgCellRenderer {...props} value={props.data.subsector?.code} />
           ),
+          enableCellChangeFlash: false,
           field: 'subsector_id',
           headerClass: 'ag-text-center',
           headerName: tableColumns.subsector_id,
           minWidth: 120,
           tooltipField: 'subsector.name',
           valueSetter: (params: any) =>
-            valueSetter(params, 'subsector', subsectors),
+            valueSetter(params, 'subsector', getSubsectorsOfSector(params)),
         },
         {
           cellClass: 'ag-cell-ellipsed',
@@ -224,6 +251,7 @@ const useColumnsOptions = (
             getOptionLabel: (option: any) => getOptionLabel(substances, option),
             isMultiple: true,
             isOptionEqualToValue,
+            openOnFocus: true,
             options: substances,
           },
           cellRenderer: (props: any) =>
@@ -271,6 +299,7 @@ const useColumnsOptions = (
             agFormatValue,
             getOptionLabel: (option: any) => getOptionLabel(statuses, option),
             isOptionEqualToValue,
+            openOnFocus: true,
             options: statuses,
           },
           cellRenderer: (props: any) => (
@@ -292,6 +321,7 @@ const useColumnsOptions = (
             getOptionLabel: (option: any) =>
               getOptionLabelByName(multiYearFilterOptions, option),
             isOptionEqualToValue: isOptionEqualToValueByName,
+            openOnFocus: true,
             options: multiYearFilterOptions,
           },
           field: 'is_multi_year',
@@ -340,6 +370,7 @@ const useColumnsOptions = (
               getOptionLabel(commentTypes, option),
             isMultiple: true,
             isOptionEqualToValue: isOptionEqualToValue,
+            openOnFocus: true,
             options: commentTypes,
           },
           cellRenderer: (props: any) =>
@@ -364,9 +395,9 @@ const useColumnsOptions = (
       countries,
       clusters,
       types,
+      getSubsectorsOfSector,
       chemicalTypesResults,
       sectors,
-      subsectors,
       substances,
       statuses,
       commentTypes,

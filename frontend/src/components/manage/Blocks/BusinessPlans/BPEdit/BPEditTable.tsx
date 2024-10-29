@@ -252,6 +252,7 @@ export default function BPEditTable(props: BPEditTableInterface) {
             loading={loading}
             resizeGridOnRowUpdate={true}
             rowData={form}
+            singleClickEdit={true}
             suppressScrollOnNewData={true}
             tooltipShowDelay={200}
             onCellValueChanged={(event) => {

@@ -23,7 +23,24 @@ export const isOptionEqualToValue = (option: any, value: any) =>
 export const isOptionEqualToValueByName = (option: any, value: any) =>
   isObject(value) ? isEqual(option, value) : option.name === value
 
-export const valueSetter = (params: any, colIdentifier: string, data: any) => {
+const updateSubsector = (params: any, value: any, subsectors: any) => {
+  const subsectorsSectorIds = map(
+    subsectors,
+    (subsector) => subsector.sector_id,
+  )
+
+  if (!subsectorsSectorIds.includes(value)) {
+    params.data.subsector_id = null
+    params.data.subsector = {}
+  }
+}
+
+export const valueSetter = (
+  params: any,
+  colIdentifier: string,
+  data: any,
+  extraData?: any,
+) => {
   const newVal = params.newValue
 
   const currentDataObj = find(data, {
@@ -34,6 +51,10 @@ export const valueSetter = (params: any, colIdentifier: string, data: any) => {
 
   if (['project_type', 'sector'].includes(colIdentifier)) {
     params.data[colIdentifier + '_code'] = currentDataObj?.code
+  }
+
+  if (colIdentifier === 'sector') {
+    updateSubsector(params, newVal, extraData)
   }
 
   params.data[colIdentifier] = currentDataObj
