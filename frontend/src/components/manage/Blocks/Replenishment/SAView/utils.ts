@@ -72,14 +72,7 @@ export function computeTableData(
       .div(100)
 
     // Does it qualify for FERM?
-    if (tableData[i].iso3 === 'USA') {
-      result[i].qual_ferm = false
-    } else {
-      result[i].qual_ferm = (
-        getOverrideOrDefault<Big | null>(result[i], 'avg_ir') ?? new Big('100')
-      ).lt(new Big('10'))
-      result[i].qual_ferm = result[i].qual_ferm || result[i].ferm_cur === 'Euro'
-    }
+    result[i].qual_ferm = checkQualifiesForFerm(result[i])
 
     // Calculate contribution in national currency for those qualifying for FERM
     result[i].ferm_cur_amount =
@@ -89,17 +82,6 @@ export function computeTableData(
             result[i].annual_contributions,
           )
         : null
-
-    if (
-      result[i].opted_for_ferm === null &&
-      result[i].qual_ferm &&
-      !result[i].hasOwnProperty('override_opted_for_ferm')
-    ) {
-      result[i].override_opted_for_ferm = true
-    } else if (!result[i].qual_ferm) {
-      result[i].opted_for_ferm = null
-      delete result[i]['override_opted_for_ferm']
-    }
   }
 
   return result
@@ -197,13 +179,11 @@ export function sumColumns(tableData: Record<string, any>) {
     )
   }
 
-  const result = {
+  return {
     adj_un_soa: toFormat(_result.adj_un_soa, MIN_DECIMALS),
     annual_contributions: toFormat(_result.annual_contributions, MIN_DECIMALS),
     un_soa: toFormat(_result.un_soa, MIN_DECIMALS),
   }
-
-  return result
 }
 
 function currencyNameFieldSorter(
@@ -254,5 +234,19 @@ export function sortSATableData(
   }
 
   result.sort(sorter)
+  return result
+}
+
+export function checkQualifiesForFerm(entry: SAContribution) {
+  let result = false
+  if (entry.iso3 === 'USA') {
+    result = false
+  } else if (entry.ferm_cur === 'Euro') {
+    result = true
+  } else {
+    result = (
+      getOverrideOrDefault<Big | null>(entry, 'avg_ir') ?? new Big('100')
+    ).lt(new Big('10'))
+  }
   return result
 }

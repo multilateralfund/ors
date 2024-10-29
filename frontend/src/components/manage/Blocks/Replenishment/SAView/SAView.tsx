@@ -41,6 +41,7 @@ import {
   SAViewProps,
 } from './types'
 import {
+  checkQualifiesForFerm,
   clearNew,
   computeTableData,
   formatTableData,
@@ -208,7 +209,7 @@ function SaveManager(props: SaveManagerProps) {
   async function confirmSave(formData: FormData) {
     const saveData: SaveData = {
       ...Object.fromEntries(formData.entries()),
-      amount: replenishment.amount,
+      amount: new Big(replenishment.amount).toString(),
       comment,
       data,
       replenishment_id: replenishment.id,
@@ -228,6 +229,7 @@ function SaveManager(props: SaveManagerProps) {
     }
 
     setSaving(false)
+
     api('api/replenishment/scales-of-assessment', {
       data: saveData,
       method: 'POST',
@@ -397,7 +399,7 @@ function DateRangeInput(props: DateRangeInputProps) {
   )
 }
 
-function tranformContributions(cs: ApiReplenishmentSoA) {
+function transformContributions(cs: ApiReplenishmentSoA) {
   const r: SAContribution[] = []
 
   for (let i = 0; i < cs.length; i++) {
@@ -431,6 +433,7 @@ function transformForSave(d: SAContribution[]) {
     ['exchange_rate', 'ferm_rate'],
     ['currency', 'ferm_cur'],
     ['un_scale_of_assessment', 'un_soa'],
+    ['opted_for_ferm', 'opted_for_ferm'],
   ]
 
   for (let i = 0; i < d.length; i++) {
@@ -558,7 +561,7 @@ function SAView(props: SAViewProps) {
 
   const contributions = useMemo(
     function () {
-      return tranformContributions(ctxSoA.contributions)
+      return transformContributions(ctxSoA.contributions)
     },
     [ctxSoA.contributions],
   )
@@ -805,6 +808,18 @@ function SAView(props: SAViewProps) {
     } else {
       next[r][overrideKey] = value
     }
+
+    if (n === 'avg_ir') {
+      const qualifiesForFerm = checkQualifiesForFerm(next[r] as SAContribution)
+      next[r].qual_ferm = qualifiesForFerm
+      if (qualifiesForFerm) {
+        next[r].override_opted_for_ferm = qualifiesForFerm
+      } else {
+        delete next[r]['override_opted_for_ferm']
+        next[r].opted_for_ferm = null
+      }
+    }
+
     setTableData(next as SAContribution[])
   }
 

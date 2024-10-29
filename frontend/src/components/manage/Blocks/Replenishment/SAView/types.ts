@@ -131,11 +131,11 @@ export interface SAContribution {
 }
 
 export interface SAContributionForSave {
-  average_inflation_rate?: null | number
+  average_inflation_rate?: null | string
   country_id: number
   currency?: null | string
-  exchange_rate?: null | number
-  un_scale_of_assessment?: null | number
+  exchange_rate?: null | string
+  un_scale_of_assessment?: null | string
 }
 
 export interface SaveManagerProps {
@@ -151,7 +151,7 @@ export interface SaveManagerProps {
 }
 
 export interface SaveData extends Pick<SaveManagerProps, 'comment' | 'data'> {
-  amount: number
+  amount: string
   currency_date_range_end?: string
   currency_date_range_start?: string
   decision_pdf?: File | FileForUpload | null

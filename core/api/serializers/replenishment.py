@@ -75,12 +75,12 @@ class ScaleOfAssessmentSerializer(serializers.ModelSerializer):
         required=False
     )
 
-    adjusted_scale_of_assessment = serializers.ReadOnlyField()
+    adjusted_scale_of_assessment = serializers.DecimalField(read_only=True, max_digits=30, decimal_places=15)
     qualifies_for_fixed_rate_mechanism = serializers.ReadOnlyField()
-    amount = serializers.ReadOnlyField()
-    amount_local_currency = serializers.ReadOnlyField()
-    yearly_amount = serializers.ReadOnlyField()
-    yearly_amount_local_currency = serializers.ReadOnlyField()
+    amount = serializers.DecimalField(read_only=True, max_digits=30, decimal_places=15)
+    amount_local_currency = serializers.DecimalField(read_only=True, max_digits=30, decimal_places=15)
+    yearly_amount = serializers.DecimalField(read_only=True, max_digits=30, decimal_places=15)
+    yearly_amount_local_currency = serializers.DecimalField(read_only=True, max_digits=30, decimal_places=15)
 
     class Meta:
         model = ScaleOfAssessment

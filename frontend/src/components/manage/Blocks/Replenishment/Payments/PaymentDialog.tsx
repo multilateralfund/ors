@@ -11,6 +11,8 @@ import React, {
   useState,
 } from 'react'
 
+import Big from 'big.js'
+
 import {
   DialogTabButtons,
   DialogTabContent,
@@ -27,8 +29,8 @@ import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invo
 import useGetInvoices from '@ors/components/manage/Blocks/Replenishment/Invoices/useGetInvoices'
 import { scAnnualOptions } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
 import useGetCountryReplenishmentInfo from '@ors/components/manage/Blocks/Replenishment/useGetCountryReplenishmentInfo'
+import { asDecimal } from '@ors/components/manage/Blocks/Replenishment/utils'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
-import { getFloat } from '@ors/helpers/Utils/Utils'
 
 import { IPaymentDialogProps } from './types'
 
@@ -50,18 +52,13 @@ function getInvoiceLabel(invoice: ApiReplenishmentInvoice) {
   return `${invoice.number} (${invoice?.date_of_issuance})`
 }
 
-function calculateAssessed(currencyAmount: number, exchangeRate: number) {
-  return currencyAmount / exchangeRate
-}
-
 function assessAmountFromCurrency(
   currencyAmount: string,
   exchangeRate: string,
 ): string {
-  return calculateAssessed(
-    getFloat(currencyAmount) || 0,
-    getFloat(exchangeRate) || 1,
-  ).toString()
+  const am = asDecimal(currencyAmount) || new Big('0')
+  const er = asDecimal(exchangeRate) || new Big('1')
+  return am.div(er).toString()
 }
 
 const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
@@ -144,8 +141,8 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
       const optedForFerm = countryInfo?.opted_for_ferm || false
 
       if (!isEdit) {
-        const amountLocalCurrency = optedForFerm ?
-          (countryInfo?.yearly_amount_local_currency || '').toString() || ''
+        const amountLocalCurrency = optedForFerm
+          ? (countryInfo?.yearly_amount_local_currency || '').toString() || ''
           : (countryInfo?.yearly_amount || '').toString() || ''
         const exchangeRate = (countryInfo?.exchange_rate || '').toString() || ''
 
@@ -156,8 +153,8 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
               exchangeRate,
             ),
             amount_local_currency: amountLocalCurrency,
-            currency: optedForFerm ?
-              (countryInfo?.currency || '').toString() || ''
+            currency: optedForFerm
+              ? (countryInfo?.currency || '').toString() || ''
               : 'USD',
             exchange_rate: exchangeRate,
             is_ferm: optedForFerm,

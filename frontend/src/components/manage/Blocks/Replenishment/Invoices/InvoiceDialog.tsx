@@ -27,8 +27,8 @@ import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invo
 import { InvoiceDialogProps } from '@ors/components/manage/Blocks/Replenishment/Invoices/types'
 import { scAnnualOptions } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
 import useGetCountryReplenishmentInfo from '@ors/components/manage/Blocks/Replenishment/useGetCountryReplenishmentInfo'
+import { asDecimal } from '@ors/components/manage/Blocks/Replenishment/utils'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
-import { getFloat } from '@ors/helpers/Utils/Utils'
 
 interface TabContentProps {
   data: InvoiceDialogProps['data']
@@ -152,12 +152,12 @@ function TabContentAmount(props: TabContentAmountProps) {
 
   const handleChangeAmount: ChangeEventHandler<HTMLInputElement> = (evt) => {
     const amount_usd = evt.target.value
-    const nrAmountUsd = getFloat(amount_usd)
+    const nrAmountUsd = asDecimal(amount_usd)
     setFields((prev) => ({
       ...prev,
-      amount_local_currency: (
-        nrAmountUsd * (countryInfo?.exchange_rate || 1)
-      ).toString(),
+      amount_local_currency: nrAmountUsd
+        .mul(asDecimal(countryInfo?.exchange_rate || '1'))
+        .toString(),
       amount_usd,
     }))
   }
@@ -165,13 +165,13 @@ function TabContentAmount(props: TabContentAmountProps) {
     HTMLInputElement
   > = (evt) => {
     const amountLocal = evt.target.value
-    const nrAmountLocal = getFloat(amountLocal)
+    const nrAmountLocal = asDecimal(amountLocal)
     setFields((prev) => ({
       ...prev,
       amount_local_currency: amountLocal,
-      amount_usd: (
-        nrAmountLocal / (countryInfo?.exchange_rate || 1)
-      ).toString(),
+      amount_usd: nrAmountLocal
+        .div(asDecimal(countryInfo?.exchange_rate || '1'))
+        .toString(),
     }))
   }
 
