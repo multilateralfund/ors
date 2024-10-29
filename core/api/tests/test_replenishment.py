@@ -202,14 +202,14 @@ class TestScalesOfAssessment(BaseTest):
         assert response.data[0]["country"]["name"] == "Country 1"
         assert response.data[0]["country"]["iso3"] == "XYZ"
         assert (
-            response.data[0]["adjusted_scale_of_assessment"]
+            Decimal(response.data[0]["adjusted_scale_of_assessment"])
             == soa_1.override_adjusted_scale_of_assessment
         )
 
         assert response.data[1]["country"]["name"] == "Country 2"
         assert response.data[1]["country"]["iso3"] == "ABC"
         assert (
-            response.data[1]["adjusted_scale_of_assessment"]
+            Decimal(response.data[1]["adjusted_scale_of_assessment"])
             == soa_2.override_adjusted_scale_of_assessment
         )
 
