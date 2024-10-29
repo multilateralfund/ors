@@ -264,6 +264,7 @@ export default function BusinessPlansTable() {
             loading={loading}
             paginationPageSize={BP_PER_PAGE}
             paginationPageSizeSelector={paginationPageSizeSelectorOpts}
+            resizeGridOnRowUpdate={true}
             rowBuffer={50}
             rowCount={count}
             rowData={results}
