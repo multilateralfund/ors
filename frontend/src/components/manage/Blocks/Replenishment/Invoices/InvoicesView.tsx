@@ -20,10 +20,8 @@ import { scAnnualOptions } from '@ors/components/manage/Blocks/Replenishment/Sta
 import Table from '@ors/components/manage/Blocks/Replenishment/Table'
 import ViewFiles from '@ors/components/manage/Blocks/Replenishment/ViewFiles'
 import {
-  dateForEditField,
-  dateForInput,
   fetchWithHandling,
-  formatDateValue,
+  formatDateForDisplay,
   formatNumberValue,
 } from '@ors/components/manage/Blocks/Replenishment/utils'
 import { AddButton } from '@ors/components/ui/Button/Button'
@@ -31,8 +29,12 @@ import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentConte
 import { formatApiUrl } from '@ors/helpers'
 
 import { SortDirection } from '../Table/types'
-import { InvoiceDialogProps } from './types'
-import { InvoiceColumn, InvoiceForSubmit, ParsedInvoice } from './types'
+import {
+  InvoiceColumn,
+  InvoiceDialogProps,
+  InvoiceForSubmit,
+  ParsedInvoice,
+} from './types'
 
 import { IoSearchSharp } from 'react-icons/io5'
 
@@ -109,10 +111,10 @@ function InvoicesView() {
           country: data.country.name,
           country_id: data.country.id,
           currency: data.currency,
-          date_first_reminder: formatDateValue(data.date_first_reminder),
-          date_of_issuance: formatDateValue(data.date_of_issuance),
-          date_second_reminder: formatDateValue(data.date_second_reminder),
-          date_sent_out: formatDateValue(data.date_sent_out),
+          date_first_reminder: data.date_first_reminder,
+          date_of_issuance: data.date_of_issuance,
+          date_second_reminder: data.date_second_reminder,
+          date_sent_out: data.date_sent_out,
           exchange_rate: data.is_ferm
             ? formatNumberValue(data.exchange_rate)
             : null,
@@ -136,11 +138,16 @@ function InvoicesView() {
     const result: ParsedInvoice[] = []
     for (let i = 0; i < memoResults.length; i++) {
       result.push({ ...(memoResults[i] as ParsedInvoice) })
-      result[i].date_first_reminder = result[i].date_first_reminder || '-'
-      result[i].date_of_issuance = result[i].date_of_issuance
-      result[i].date_second_reminder = result[i].date_second_reminder || '-'
-      result[i].date_sent_out = result[i].date_sent_out || '-'
-      result[i].exchange_rate = result[i].exchange_rate || '-'
+      const entry = result[i]
+      entry.date_first_reminder = formatDateForDisplay(
+        entry.date_first_reminder,
+      )
+      entry.date_of_issuance = formatDateForDisplay(entry.date_of_issuance)
+      entry.date_second_reminder = formatDateForDisplay(
+        entry.date_second_reminder,
+      )
+      entry.date_sent_out = formatDateForDisplay(entry.date_sent_out)
+      entry.exchange_rate = entry.exchange_rate || '-'
     }
     return result
   }, [loaded, memoResults])
@@ -175,10 +182,6 @@ function InvoicesView() {
     let entry = null
     if (editIdx !== null) {
       entry = { ...memoResults[editIdx] } as ParsedInvoice
-      entry.date_of_issuance = dateForEditField(entry.date_of_issuance)
-      entry.date_sent_out = dateForEditField(entry.date_sent_out)
-      entry.date_first_reminder = dateForEditField(entry?.date_first_reminder)
-      entry.date_second_reminder = dateForEditField(entry?.date_second_reminder)
       entry.amount_local_currency = entry.be_amount_local_currency
       entry.amount_usd = entry.be_amount_usd
       entry.exchange_rate = entry.be_exchange_rate
@@ -192,10 +195,10 @@ function InvoicesView() {
 
   async function handleEditInvoiceSubmit(formData: FormData) {
     const entry = Object.fromEntries(formData.entries()) as InvoiceForSubmit
-    entry.date_of_issuance = dateForInput(entry.date_of_issuance)
-    entry.date_sent_out = dateForInput(entry.date_sent_out) || ''
-    entry.date_first_reminder = dateForInput(entry.date_first_reminder) || ''
-    entry.date_second_reminder = dateForInput(entry.date_second_reminder) || ''
+    entry.date_of_issuance = entry.date_of_issuance || ''
+    entry.date_sent_out = entry.date_sent_out || ''
+    entry.date_first_reminder = entry.date_first_reminder || ''
+    entry.date_second_reminder = entry.date_second_reminder || ''
     entry.exchange_rate = isNaN(entry.exchange_rate as number)
       ? ''
       : entry.exchange_rate
@@ -272,11 +275,6 @@ function InvoicesView() {
 
   async function handleAddInvoiceSubmit(formData: FormData) {
     const entry = Object.fromEntries(formData.entries()) as InvoiceForSubmit
-    entry.date_of_issuance = dateForInput(entry.date_of_issuance)
-    entry.date_sent_out = dateForInput(entry.date_sent_out)
-    entry.date_first_reminder = dateForInput(entry.date_first_reminder)
-    entry.date_second_reminder = dateForInput(entry.date_second_reminder)
-    entry.reminder = dateForInput(entry.reminder)
     entry.exchange_rate = isNaN(entry.exchange_rate as number)
       ? ''
       : entry.exchange_rate

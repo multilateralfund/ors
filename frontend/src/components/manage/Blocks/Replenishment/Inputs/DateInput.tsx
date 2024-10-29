@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 import cx from 'classnames'
 
+import { formatIso8601DateString } from '@ors/components/manage/Blocks/Replenishment/utils'
+
 import { CLASSESS, CSS_MASKED, STYLE } from './constants'
 import { IDateInputProps } from './types'
 import { refocusMaskedInput } from './utils'
@@ -32,13 +34,7 @@ export default function DateInput(props: IDateInputProps) {
 
   const maskDate = useMemo(
     function () {
-      let result = ''
-      if (value) {
-        const intl = new Intl.DateTimeFormat('en-US', { month: 'short' })
-        const date = new Date(Date.parse(value))
-        result = `${date.getDate()} ${intl.format(date)} ${date.getFullYear()}`
-      }
-      return result
+      return value ? formatIso8601DateString(value) : ''
     },
     [value],
   )

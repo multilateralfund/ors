@@ -30,3 +30,10 @@ export interface PeriodSelectorProps {
   periodOptions: PeriodSelectorOption[]
   selectedPeriod?: string
 }
+
+export interface FileForUpload {
+  contentType: string
+  data: string
+  encoding: string
+  filename: string
+}

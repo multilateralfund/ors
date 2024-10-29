@@ -6,7 +6,8 @@ import { HTMLAttributes } from 'react'
 
 import Big from 'big.js'
 
-import { IDateInputProps } from '../Inputs'
+import { FileForUpload } from '@ors/components/manage/Blocks/Replenishment/types'
+
 import { TableCellProps, TableColumn, TableProps } from '../Table/types'
 
 export interface SAHeadingProps {}
@@ -93,20 +94,6 @@ export interface SAViewWrapperProps {
   period?: string
 }
 
-export interface FileForUpload {
-  contentType: string
-  data: string
-  encoding: string
-  filename: string
-}
-
-export interface DateRangeInputProps
-  extends Omit<IDateInputProps, 'onChange' | 'value'> {
-  initialEnd: string
-  initialStart: string
-  onChange: (start: string, end: string) => void
-}
-
 export interface SAContribution {
   adj_un_soa?: Big
   annual_contributions?: Big
@@ -141,8 +128,8 @@ export interface SAContributionForSave {
 export interface SaveManagerProps {
   comment: string
   currencyDateRange: {
-    end: Date
-    start: Date
+    end: string
+    start: string
   }
   data: SAContributionForSave[]
   replenishment: ApiReplenishment

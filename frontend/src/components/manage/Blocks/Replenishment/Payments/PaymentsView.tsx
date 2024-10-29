@@ -23,10 +23,8 @@ import { scAnnualOptions } from '@ors/components/manage/Blocks/Replenishment/Sta
 import Table from '@ors/components/manage/Blocks/Replenishment/Table'
 import ViewFiles from '@ors/components/manage/Blocks/Replenishment/ViewFiles'
 import {
-  dateForEditField,
-  dateForInput,
   fetchWithHandling,
-  formatDateValue,
+  formatDateForDisplay,
   formatNumberValue,
 } from '@ors/components/manage/Blocks/Replenishment/utils'
 import { AddButton } from '@ors/components/ui/Button/Button'
@@ -98,7 +96,7 @@ function parsePayment(entry: ApiReplenishmentPayment): ParsedPayment {
     country: entry.country.name,
     country_id: entry.country.id,
     currency: entry.currency,
-    date: formatDateValue(entry.date),
+    date: entry.date,
     exchange_rate: formatNumberValue(entry.exchange_rate) || 'N/A',
     ferm_gain_or_loss: formatNumberValue(entry.ferm_gain_or_loss) || 'N/A',
     files: <ViewFiles files={entry.payment_files} />,
@@ -114,7 +112,6 @@ function parsePayment(entry: ApiReplenishmentPayment): ParsedPayment {
 
 function prepareFormDataForSubmit(formData: FormData): FormData {
   const entry = Object.fromEntries(formData.entries()) as PaymentForSubmit
-  entry.date = dateForInput(entry.date)
   entry.exchange_rate = isNaN(entry.exchange_rate as number)
     ? ''
     : entry.exchange_rate
@@ -231,13 +228,15 @@ function PaymentsView() {
     const result: FormattedPayment[] = []
     for (let i = 0; i < memoResults.length; i++) {
       result.push({ ...(memoResults[i] as ParsedPayment) })
-      result[i].ferm_gain_or_loss = (
+      const entry = result[i]
+      entry.date = formatDateForDisplay(entry.date)
+      entry.ferm_gain_or_loss = (
         <span
           className={cx({
-            'text-red-400': getFloat(result[i].ferm_gain_or_loss as string) > 0,
+            'text-red-400': getFloat(entry.ferm_gain_or_loss as string) > 0,
           })}
         >
-          {result[i].ferm_gain_or_loss}
+          {entry.ferm_gain_or_loss}
         </span>
       )
     }
@@ -275,7 +274,6 @@ function PaymentsView() {
     let entry = null
     if (editIdx !== null) {
       entry = { ...memoResults[editIdx] } as PaymentDataFields
-      entry.date = dateForEditField(entry.date)
       entry.amount_assessed = entry.be_amount_assessed
       entry.amount_received = entry.be_amount_received
       entry.exchange_rate = entry.be_exchange_rate
