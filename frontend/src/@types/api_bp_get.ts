@@ -82,6 +82,10 @@ export interface ApiBPActivity {
   values: ApiBPValue[]
 }
 
+export interface ApiEditBPActivity extends ApiBPActivity {
+  row_id: number
+}
+
 export interface ApiBPHistory {}
 
 export interface ApiBPGet {

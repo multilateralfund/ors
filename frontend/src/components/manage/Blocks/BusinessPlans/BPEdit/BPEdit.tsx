@@ -1,6 +1,6 @@
 'use client'
 
-import { ApiBPActivity } from '@ors/types/api_bp_get'
+import { ApiEditBPActivity } from '@ors/types/api_bp_get'
 
 import React, { useCallback, useEffect, useState } from 'react'
 
@@ -27,14 +27,14 @@ const BPEdit = () => {
   const commentTypes = bpSlice.commentTypes.data
 
   const [activeTab, setActiveTab] = useState(0)
-  const [form, setForm] = useState<Array<ApiBPActivity> | null>()
+  const [form, setForm] = useState<Array<ApiEditBPActivity> | null>()
 
   const getFormattedActivities = useCallback(() => {
     if (!activities) {
       return null
     }
 
-    return map(activities, (activity) => ({
+    return map(activities, (activity, index) => ({
       ...activity,
       comment_types: map(
         activity.comment_types,
@@ -42,6 +42,7 @@ const BPEdit = () => {
           find(commentTypes, (comm_type) => comm_type.name === comment_type)
             ?.id,
       ),
+      row_id: index,
     }))
   }, [commentTypes, activities])
 

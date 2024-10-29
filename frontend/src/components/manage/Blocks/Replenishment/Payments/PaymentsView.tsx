@@ -51,7 +51,7 @@ const COLUMNS: PaymentColumn[] = [
   { field: 'invoice_number', label: 'Invoice Number' },
   { field: 'country', label: 'Country', sortable: true },
   { field: 'date', label: 'Date', sortable: true },
-  { field: 'amount_received', label: 'Amount', sortable: true },
+  { field: 'amount_assessed', label: 'Amount', sortable: true },
   { field: 'currency', label: 'Currency' },
   {
     field: 'exchange_rate',
