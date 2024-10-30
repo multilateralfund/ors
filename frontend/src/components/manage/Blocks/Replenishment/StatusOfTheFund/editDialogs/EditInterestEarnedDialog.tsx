@@ -35,6 +35,7 @@ const EditInterestEarnedDialog = (props: IEditIncomeDialogProps) => {
       <div className="flex flex-col gap-y-4">
         <div className="flex gap-x-4">
           <SelectInput
+            clearBtnClassName="!px-1"
             field="agency_name"
             label="Agency"
             options={agencyOptions}

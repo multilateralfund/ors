@@ -27,7 +27,8 @@ const EditAllocationsDialog = (props: IEditAllocationsProps) => {
 
   const currentAgency = find(
     agencyOptions,
-    (agencyOpt) => agencyOpt.id === agency,
+    (agencyOpt) =>
+      agencyOpt.value.toUpperCase() === agency.toUpperCase().replace('_', ' '),
   )
 
   const [formData, setFormData] = useState<any>({
