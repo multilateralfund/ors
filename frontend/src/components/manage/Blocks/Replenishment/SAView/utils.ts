@@ -52,34 +52,41 @@ export function computeTableData(
 
   for (let i = 0; i < tableData.length; i++) {
     result[i] = { ...tableData[i] }
+    const entry = result[i]
 
     const un_soa =
       getOverrideOrDefault<Big | null>(tableData[i], 'un_soa') ?? new Big('0')
 
     if (tableData[i].iso3 === 'USA') {
-      result[i].adj_un_soa = un_soa
+      entry.adj_un_soa = un_soa
     } else {
-      result[i].adj_un_soa = un_soa
+      entry.adj_un_soa = un_soa
         .div(adj_un_soa)
         .mul(adj_un_soa_percent)
         .plus(un_soa)
     }
 
-    result[i].annual_contributions = (
-      getOverrideOrDefault<Big | null>(result[i], 'adj_un_soa') ?? Big('0')
+    entry.annual_contributions = (
+      getOverrideOrDefault<Big | null>(entry, 'adj_un_soa') ?? Big('0')
     )
       .mul(totalReplenishment)
       .div(100)
 
     // Does it qualify for FERM?
-    result[i].qual_ferm = checkQualifiesForFerm(result[i])
+    entry.qual_ferm = checkQualifiesForFerm(entry)
+    if (
+      !entry.qual_ferm &&
+      getOverrideOrDefault<Big>(entry, 'avg_ir').eq('0')
+    ) {
+      entry.qual_ferm = null
+    }
 
     // Calculate contribution in national currency for those qualifying for FERM
-    result[i].ferm_cur_amount =
-      getOverrideOrDefault(result[i], 'qual_ferm') &&
-      getOverrideOrDefault(result[i], 'ferm_rate') !== null
-        ? getOverrideOrDefault<Big>(result[i], 'ferm_rate').mul(
-            result[i].annual_contributions,
+    entry.ferm_cur_amount =
+      getOverrideOrDefault(entry, 'qual_ferm') &&
+      getOverrideOrDefault(entry, 'ferm_rate') !== null
+        ? getOverrideOrDefault<Big>(entry, 'ferm_rate').mul(
+            entry.annual_contributions,
           )
         : null
   }
@@ -244,9 +251,9 @@ export function checkQualifiesForFerm(entry: SAContribution) {
   } else if (entry.ferm_cur === 'Euro') {
     result = true
   } else {
-    result = (
+    const avgIr =
       getOverrideOrDefault<Big | null>(entry, 'avg_ir') ?? new Big('100')
-    ).lt(new Big('10'))
+    result = avgIr.gt(0) && avgIr.lt(10)
   }
   return result
 }

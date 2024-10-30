@@ -11,8 +11,6 @@ import React, {
   useState,
 } from 'react'
 
-import Big from 'big.js'
-
 import {
   DialogTabButtons,
   DialogTabContent,
@@ -59,6 +57,13 @@ function assessAmountFromCurrency(
   const am = asDecimal(currencyAmount, '0')
   const er = asDecimal(exchangeRate, '1')
   return am.div(er).toString()
+}
+
+function getInvoice(
+  invoicesList: ApiReplenishmentInvoice[],
+  invoiceId: string,
+) {
+  return invoicesList.find(({ id }) => id.toString() === invoiceId)!
 }
 
 const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
@@ -141,10 +146,17 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
       const optedForFerm = countryInfo?.opted_for_ferm || false
 
       if (!isEdit) {
-        const amountLocalCurrency = optedForFerm
-          ? (countryInfo?.yearly_amount_local_currency || '').toString() || ''
-          : (countryInfo?.yearly_amount || '').toString() || ''
-        const exchangeRate = (countryInfo?.exchange_rate || '').toString() || ''
+        let amountLocalCurrency = optedForFerm
+          ? countryInfo?.yearly_amount_local_currency || ''
+          : countryInfo?.yearly_amount || ''
+        if (fields.invoice) {
+          amountLocalCurrency =
+            getInvoice(
+              invoicesList,
+              fields.invoice,
+            ).amount_local_currency?.toString() || ''
+        }
+        const exchangeRate = countryInfo?.exchange_rate || ''
 
         setFields((prev) => {
           const updated = {
@@ -153,9 +165,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
               exchangeRate,
             ),
             amount_local_currency: amountLocalCurrency,
-            currency: optedForFerm
-              ? (countryInfo?.currency || '').toString() || ''
-              : 'USD',
+            currency: optedForFerm ? countryInfo?.currency || '' : 'USD',
             exchange_rate: exchangeRate,
             is_ferm: optedForFerm,
           }
@@ -178,7 +188,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
         })
       }
     },
-    [countryInfo, isEdit],
+    [fields.invoice, countryInfo, isEdit, invoicesList],
   )
 
   const handleFormSubmit: IPaymentDialogProps['onSubmit'] = (formData, evt) => {
@@ -188,7 +198,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
 
   const handleSelectInvoice = useCallback(
     function handleSelectInvoice(invoiceId: string) {
-      const invoice = invoicesList.find(({ id }) => id.toString() === invoiceId)
+      const invoice = getInvoice(invoicesList, invoiceId)
       setFields(function (prevState): PaymentDialogFields {
         return {
           ...prevState,
