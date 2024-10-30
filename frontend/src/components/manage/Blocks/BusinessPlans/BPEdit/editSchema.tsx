@@ -75,6 +75,7 @@ const useColumnsOptions = (
               }}
             />
           ),
+          editable: false,
           field: '',
           minWidth: 20,
         },
