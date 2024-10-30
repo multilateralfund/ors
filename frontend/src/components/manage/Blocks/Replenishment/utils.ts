@@ -148,8 +148,11 @@ export function floorSmallValue(
   return result
 }
 
-// export function asDecimal(value: null, fallback: null): null
-// export function asDecimal(value: BigSource | null, fallback: null): Big | null
+export function asDecimal(value: null | undefined, fallback: null): null
+export function asDecimal(
+  value: BigSource | null | undefined,
+  fallback: null,
+): Big | null
 export function asDecimal(
   value: BigSource | null | undefined,
   fallback: BigSource,
