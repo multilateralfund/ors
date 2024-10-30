@@ -8,6 +8,7 @@ import { filter, join, range, split } from 'lodash'
 import { SubmitButton } from '@ors/components/ui/Button/Button'
 import Link from '@ors/components/ui/Link/Link'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
+import { formatApiUrl } from '@ors/helpers'
 
 import FormEditDialog from '../FormEditDialog'
 import { SCDownloadDialogProps } from './types'
@@ -63,10 +64,19 @@ const SCDownloadDialog = (props: SCDownloadDialogProps) => {
     }
   }
 
+  const handleCloseDialog = () => {
+    setTimeout(() => {
+      setIsDialogOpen(false)
+      setYears([])
+      setTrienniums([])
+    }, 20)
+  }
+
   return (
     <FormEditDialog
       title="Download status of the contribution:"
       withFooter={false}
+      onCancel={handleCloseDialog}
       onSubmit={() => {}}
       {...dialogProps}
     >
@@ -129,16 +139,13 @@ const SCDownloadDialog = (props: SCDownloadDialogProps) => {
           'mt-5 flex cursor-pointer items-center gap-x-2 text-primary no-underline',
           { 'pointer-events-none': !url },
         )}
-        href={url ?? '#'}
+        href={url ? formatApiUrl(url) : '#'}
         prefetch={false}
         target="_blank"
+        onClick={handleCloseDialog}
         download
       >
-        <SubmitButton
-          className={cx({ 'opacity-45': !url })}
-          type="button"
-          onClick={() => setIsDialogOpen(false)}
-        >
+        <SubmitButton className={cx({ 'opacity-45': !url })} type="button">
           Download
         </SubmitButton>
       </Link>

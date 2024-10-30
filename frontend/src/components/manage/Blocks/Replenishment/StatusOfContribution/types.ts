@@ -85,7 +85,6 @@ export interface BilateralAssistanceDialogProps {
 
 export interface SCDownloadDialogProps {
   baseUrl: string
-  onCancel: () => void
   open: boolean
   setIsDialogOpen: Dispatch<SetStateAction<boolean>>
 }

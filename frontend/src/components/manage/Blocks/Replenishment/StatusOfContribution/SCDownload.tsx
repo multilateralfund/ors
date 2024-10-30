@@ -26,17 +26,12 @@ const SCDownload = ({ period, year }: SCViewProps) => {
     setIsDialogOpen(true)
   }
 
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false)
-  }
-
   return (
     <>
       <SCDownloadDialog
         baseUrl={baseUrl}
         open={isDialogOpen}
         setIsDialogOpen={setIsDialogOpen}
-        onCancel={handleCloseDialog}
       />
       <SCDownloadButtons
         downloadText={'Download ALL'}
