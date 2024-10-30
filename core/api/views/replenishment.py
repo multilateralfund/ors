@@ -495,7 +495,7 @@ class StatusOfContributionsExportView(views.APIView):
         soc_qs = agg.get_status_of_contributions_qs()
         summary_data = [
             {
-                "no": index,
+                "no": index + 1,
                 "country": country.name,
                 "agreed_contributions": country.agreed_contributions,
                 "cash_payments": country.cash_payments,

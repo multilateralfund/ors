@@ -602,9 +602,10 @@ class StatisticsTemplateWriter(BaseTemplateSheetWriter):
 
 
 class StatusOfContributionsSummaryTemplateWriter(BaseTemplateSheetWriter):
-    HEADERS_ROW = 1
-    TEMPLATE_FIRST_DATA_ROW = 2
-    TEMPLATE_LAST_DATA_ROW = 50
+    # TODO: HEADERS_ROW should be a list
+    HEADERS_ROW = 7
+    TEMPLATE_FIRST_DATA_ROW = 11
+    TEMPLATE_LAST_DATA_ROW = 65
 
     # Position and formatting for each filed from the serializer data rows
     DATA_MAPPING = {
