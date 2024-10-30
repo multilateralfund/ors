@@ -14,7 +14,7 @@ import { SCDownloadDialogProps } from './types'
 import { scPeriodOptions } from './utils'
 
 const SCDownloadDialog = (props: SCDownloadDialogProps) => {
-  const { setIsDialogOpen, ...dialogProps } = props
+  const { baseUrl, setIsDialogOpen, ...dialogProps } = props
 
   const currentYear = new Date().getFullYear()
   const yearsOptions = range(currentYear, currentYear - 10)
@@ -28,17 +28,17 @@ const SCDownloadDialog = (props: SCDownloadDialogProps) => {
   const formattedYears = useMemo(() => join(years, ','), [years])
   const formattedTrienniums = useMemo(() => join(trienniums, ','), [trienniums])
 
-  const url = useMemo(() => {
-    const baseUrl = '/api/replenishment/status-of-contributions/export/'
-
-    return formattedYears && formattedTrienniums
-      ? `${baseUrl}?years=${formattedYears}&triennials=${formattedTrienniums}`
-      : formattedYears
-        ? `${baseUrl}?years=${formattedYears}`
-        : formattedTrienniums
-          ? `${baseUrl}?triennials=${formattedTrienniums}`
-          : null
-  }, [formattedYears, formattedTrienniums])
+  const url = useMemo(
+    () =>
+      formattedYears && formattedTrienniums
+        ? `${baseUrl}?years=${formattedYears}&triennials=${formattedTrienniums}`
+        : formattedYears
+          ? `${baseUrl}?years=${formattedYears}`
+          : formattedTrienniums
+            ? `${baseUrl}?triennials=${formattedTrienniums}`
+            : null,
+    [formattedYears, formattedTrienniums, baseUrl],
+  )
 
   const handleChangeYear = (event: any) => {
     const { checked, name } = event.target

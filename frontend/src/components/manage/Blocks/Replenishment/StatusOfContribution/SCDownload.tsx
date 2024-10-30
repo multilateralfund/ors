@@ -14,11 +14,13 @@ const SCDownload = ({ period, year }: SCViewProps) => {
 
   const periodYears = period?.split('-')
 
+  const baseUrl = '/api/replenishment/status-of-contributions/export/'
+
   const downloadCurrentViewUrl = year
-    ? `/api/replenishment/status-of-contributions/${year}/export`
+    ? `${baseUrl}?years=${year}`
     : period
-      ? `/api/replenishment/status-of-contributions/${periodYears?.[0]}/${periodYears?.[1]}/export`
-      : '/api/replenishment/status-of-contributions/summary/export/'
+      ? `${baseUrl}?triennials=${periodYears?.[0]}`
+      : baseUrl
 
   const handleOpenDialog = () => {
     setIsDialogOpen(true)
@@ -31,12 +33,13 @@ const SCDownload = ({ period, year }: SCViewProps) => {
   return (
     <>
       <SCDownloadDialog
+        baseUrl={baseUrl}
         open={isDialogOpen}
         setIsDialogOpen={setIsDialogOpen}
         onCancel={handleCloseDialog}
       />
       <SCDownloadButtons
-        downloadText={'Download'}
+        downloadText={'Download ALL'}
         handleDownloadClick={handleOpenDialog}
       />
       <DownloadButtons
