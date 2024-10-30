@@ -398,18 +398,6 @@ class DisputedContribution(models.Model):
     def __str__(self):
         return f"Disputed Contribution {self.year} - {self.amount}"
 
-    class Meta:
-        constraints = [
-            # Disputed contributions with country should be unique by year and country
-            models.UniqueConstraint(
-                fields=["country", "year"], name="unique_disputed_country_year"
-            ),
-            # Disputed contributions without country should be unique by year
-            models.UniqueConstraint(
-                fields=["year"], condition=models.Q(country=None), name="unique_year"
-            ),
-        ]
-
 
 class FermGainLoss(models.Model):
     country = models.ForeignKey(

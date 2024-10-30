@@ -968,16 +968,22 @@ class TestBilateralAssistance(BaseTest):
 
         meeting = MeetingFactory.create(number=3, date="2020-03-14")
 
+        initial_bilateral_assistance = Decimal("100")
         year_1 = 2018
         year_2 = 2020
         CountryCEITStatusFactory.create(
             country=country, start_year=year_1, end_year=year_2, is_ceit=True
         )
         contribution_annual = AnnualContributionStatusFactory.create(
-            country=country, year=year_1
+            country=country,
+            year=year_1,
+            bilateral_assistance=initial_bilateral_assistance,
         )
         contribution_triennial = TriennialContributionStatusFactory.create(
-            country=country, start_year=year_1, end_year=year_2
+            country=country,
+            start_year=year_1,
+            end_year=year_2,
+            bilateral_assistance=initial_bilateral_assistance,
         )
 
         amount = Decimal("101.785")
@@ -997,10 +1003,16 @@ class TestBilateralAssistance(BaseTest):
         assert response.status_code == 200
 
         contribution_annual.refresh_from_db()
-        assert contribution_annual.bilateral_assistance == amount
+        assert (
+            contribution_annual.bilateral_assistance
+            == initial_bilateral_assistance + amount
+        )
         assert contribution_annual.bilateral_assistance_meeting_id == meeting.id
         contribution_triennial.refresh_from_db()
-        assert contribution_triennial.bilateral_assistance == amount
+        assert (
+            contribution_triennial.bilateral_assistance
+            == initial_bilateral_assistance + amount
+        )
         assert contribution_triennial.bilateral_assistance_meeting_id == meeting.id
 
 
