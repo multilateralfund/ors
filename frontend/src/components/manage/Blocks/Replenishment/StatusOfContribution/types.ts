@@ -80,3 +80,9 @@ export interface BilateralAssistanceDialogProps {
   rows: SoCRow[]
   year: string
 }
+
+export interface SCDownloadDialogProps {
+  handleSubmitEditDialog: (formData: FormData) => void
+  onCancel: () => void
+  open: boolean
+}

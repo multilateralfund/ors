@@ -7,12 +7,19 @@ import DialogTitle from '@mui/material/DialogTitle'
 
 import { CancelButton, SubmitButton } from '@ors/components/ui/Button/Button'
 
-import { FormDialogProps } from './types'
+import { FormEditDialogProps } from './types'
 
 import { IoCloseCircle } from 'react-icons/io5'
 
-export default function FormEditDialog(props: FormDialogProps) {
-  const { children, onCancel, onSubmit, title } = props
+export default function FormEditDialog(props: FormEditDialogProps) {
+  const {
+    children,
+    onCancel,
+    onSubmit,
+    open = true,
+    title,
+    withFooter = true,
+  } = props
 
   const handleKeyDown = (evt: any) => {
     if (evt.key === 'Enter') {
@@ -23,7 +30,7 @@ export default function FormEditDialog(props: FormDialogProps) {
   return (
     <Fragment>
       <Dialog
-        open={true}
+        open={open}
         PaperProps={{
           component: 'form',
           onSubmit: (event: FormEvent<HTMLFormElement>) => {
@@ -52,10 +59,12 @@ export default function FormEditDialog(props: FormDialogProps) {
         </DialogTitle>
         <DialogContent>
           {children}
-          <footer className="mt-8 flex w-full items-center justify-between border-x-0 border-b-0 border-t border-solid border-gray-200 pt-6">
-            <CancelButton onClick={onCancel}>Cancel</CancelButton>
-            <SubmitButton>Submit</SubmitButton>
-          </footer>
+          {withFooter && (
+            <footer className="mt-8 flex w-full items-center justify-between border-x-0 border-b-0 border-t border-solid border-gray-200 pt-6">
+              <CancelButton onClick={onCancel}>Cancel</CancelButton>
+              <SubmitButton>Submit</SubmitButton>
+            </footer>
+          )}
         </DialogContent>
         <DialogActions></DialogActions>
       </Dialog>
