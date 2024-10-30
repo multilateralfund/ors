@@ -12,7 +12,7 @@ class Command(BaseCommand):
     help = """
         Import replenishments
         (replenishments, status of contributions, invoices, payments).
-        
+
         Requires import of countries.
         """
 
