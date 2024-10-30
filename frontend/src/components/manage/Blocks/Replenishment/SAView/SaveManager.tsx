@@ -19,8 +19,15 @@ import { api } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
 export function SaveManager(props: SaveManagerProps) {
-  const { comment, currencyDateRange, data, replenishment, version, versions } =
-    props
+  const {
+    comment,
+    currencyDateRange,
+    data,
+    replenishmentAmount,
+    replenishmentId,
+    version,
+    versions,
+  } = props
 
   const projectSlice = useStore((state) => state.projects)
   const meetings = projectSlice.meetings.data
@@ -67,10 +74,10 @@ export function SaveManager(props: SaveManagerProps) {
   async function confirmSave(formData: FormData) {
     const saveData: SaveData = {
       ...Object.fromEntries(formData.entries()),
-      amount: new Big(replenishment.amount).toString(),
+      amount: replenishmentAmount,
       comment,
       data,
-      replenishment_id: replenishment.id,
+      replenishment_id: replenishmentId?.toString() ?? '',
     }
 
     saveData['final'] = isFinal

@@ -132,7 +132,8 @@ export interface SaveManagerProps {
     start: string
   }
   data: SAContributionForSave[]
-  replenishment: ApiReplenishment
+  replenishmentAmount: string
+  replenishmentId?: number
   version: ApiReplenishmentSoAVersion | null
   versions: ApiReplenishmentSoAVersion[]
 }
@@ -143,5 +144,5 @@ export interface SaveData extends Pick<SaveManagerProps, 'comment' | 'data'> {
   currency_date_range_start?: string
   decision_pdf?: File | FileForUpload | null
   final?: boolean
-  replenishment_id: number
+  replenishment_id: string
 }

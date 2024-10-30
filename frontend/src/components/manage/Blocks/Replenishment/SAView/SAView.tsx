@@ -275,7 +275,9 @@ function SAView(props: SAViewProps) {
     function () {
       handleNewTableData(contributions)
       if (ctxSoA.replenishment) {
-        setReplenishment(ctxSoA.replenishment)
+        setReplenishmentAmount(
+          asDecimal(ctxSoA.replenishment.amount).toString(),
+        )
       }
     },
     [contributions, ctxSoA.replenishment],
@@ -288,17 +290,15 @@ function SAView(props: SAViewProps) {
 
   const [showAdd, setShowAdd] = useState(false)
 
-  const [replenishment, setReplenishment] = useState<
-    { amount: 0 } | ApiReplenishment
-  >({ amount: 0 })
-  const [unusedAmount, setUnusedAmount] = useState<'' | number>('')
+  const [replenishmentAmount, setReplenishmentAmount] = useState('')
+  const [unusedAmount, setUnusedAmount] = useState('')
 
   const annualBudget = useMemo(
     () =>
-      new Big(replenishment.amount)
-        .minus(new Big(unusedAmount || '0'))
-        .div(new Big('3')),
-    [replenishment.amount, unusedAmount],
+      asDecimal(replenishmentAmount)
+        .minus(asDecimal(unusedAmount))
+        .div(asDecimal('3')),
+    [replenishmentAmount, unusedAmount],
   )
 
   const [commentText, setCommentText] = useState<string>('')
@@ -324,7 +324,7 @@ function SAView(props: SAViewProps) {
   const computedData = useMemo(
     () => computeTableData(tableData, annualBudget),
     /* eslint-disable-next-line */
-    [tableData, replenishment, unusedAmount],
+    [tableData, replenishmentAmount, unusedAmount],
   )
 
   const sortedData = useMemo(
@@ -397,25 +397,13 @@ function SAView(props: SAViewProps) {
   }
 
   const handleAmountInput: ChangeEventHandler<HTMLInputElement> = (evt) => {
-    const value = getFloat(evt.target.value)
-    setReplenishment(
-      (oldReplenishment) =>
-        ({
-          ...oldReplenishment,
-          amount: value,
-        }) as ApiReplenishment,
-    )
+    setReplenishmentAmount(evt.target.value)
   }
 
   const handleUnusedAmountInput: ChangeEventHandler<HTMLInputElement> = (
     evt,
   ) => {
-    const value = getFloat(evt.target.value)
-    if (value) {
-      setUnusedAmount(value)
-    } else {
-      setUnusedAmount('')
-    }
+    setUnusedAmount(evt.target.value)
   }
 
   function handleSort(column: number) {
@@ -538,7 +526,7 @@ function SAView(props: SAViewProps) {
                 id="triannualBudget"
                 className="w-36"
                 disabled={!isEditable}
-                value={replenishment?.amount}
+                value={replenishmentAmount}
                 onChange={handleAmountInput}
               />
             </div>
@@ -596,7 +584,8 @@ function SAView(props: SAViewProps) {
           comment={commentText}
           currencyDateRange={currencyDateRange}
           data={transformForSave(tableData)}
-          replenishment={replenishment as ApiReplenishment}
+          replenishmentAmount={replenishmentAmount}
+          replenishmentId={ctxSoA.replenishment?.id}
           version={version}
           versions={versions}
         />

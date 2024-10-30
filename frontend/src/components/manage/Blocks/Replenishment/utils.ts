@@ -149,7 +149,7 @@ export function floorSmallValue(
 }
 
 export function asDecimal(value?: null | number | string, fallback = '0') {
-  return !value && value != 0 ? new Big(fallback) : new Big(value)
+  return !value && value !== 0 ? new Big(fallback) : new Big(value)
 }
 
 export function toFormat(nr: Big, dp: number, ts = ',', ds = '.'): string {
