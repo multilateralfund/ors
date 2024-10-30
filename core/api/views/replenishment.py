@@ -26,6 +26,7 @@ from core.api.export.replenishment import (
     ScaleOfAssessmentTemplateWriter,
     StatusOfTheFundTemplateWriter,
     StatisticsTemplateWriter,
+    StatusOfContributionsSummaryTemplateWriter,
 )
 from core.api.filters.replenishment import (
     InvoiceFilter,
@@ -477,6 +478,57 @@ class AnnualStatusOfContributionsExportView(views.APIView):
         )
 
         return workbook_response(f"Status of Contributions {year}", wb)
+
+
+class StatusOfContributionsExportView(views.APIView):
+    permission_classes = [IsUserAllowedReplenishment]
+
+    def get(self, request, *args, **kwargs):
+        self.check_permissions(request)
+
+        years = request.query_params.get("years")
+        triennial_start_years = request.query_params.get("triennials")
+        # agg = AnnualStatusOfContributionsAggregator(year)
+
+        agg = SummaryStatusOfContributionsAggregator()
+
+        soc_qs = agg.get_status_of_contributions_qs()
+        summary_data = [
+            {
+                "no": index,
+                "country": country.name,
+                "agreed_contributions": country.agreed_contributions,
+                "cash_payments": country.cash_payments,
+                "bilateral_assistance": country.bilateral_assistance,
+                "promissory_notes": country.promissory_notes,
+                "outstanding_contributions": country.outstanding_contributions,
+                "gain_loss": country.gain_loss,
+            }
+            for index, country in enumerate(soc_qs)
+        ]
+        data_count = len(summary_data)
+
+        WORKSHEET_NAME = "Summary Status of Contributions"
+        # Open template file
+        wb = openpyxl.load_workbook(
+            filename=EXPORT_RESOURCES_DIR / "ContributionsFormatted.xlsx"
+        )
+        ws = wb[WORKSHEET_NAME]
+
+        StatusOfContributionsSummaryTemplateWriter(
+            ws,
+            summary_data,
+            data_count,
+            None,
+        ).write()
+
+        # Delete all other worksheets
+        for name in wb.sheetnames:
+            if name != WORKSHEET_NAME:
+                wb.remove(wb[name])
+
+        # TODO: customize name based on years and triennials (or summary)
+        return workbook_response(f"Status of Contributions", wb)
 
 
 class TriennialStatusOfContributionsView(views.APIView):

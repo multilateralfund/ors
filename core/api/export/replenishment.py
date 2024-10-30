@@ -370,10 +370,16 @@ class BaseTemplateSheetWriter:
         start_row = self.TEMPLATE_FIRST_DATA_ROW + 1
         self.sheet.delete_rows(start_row, rows_number)
 
+        # Shift merged cells to avoid footer breaking down
+        merged_cells_range = self.sheet.merged_cells.ranges
+        for merged_cell in merged_cells_range:
+            min_col, min_row, max_col, max_row = range_boundaries(str(merged_cell))
+            if min_row >= start_row:
+                merged_cell.shift(0, -1 * rows_number)
+
     def _add_middle_rows(self, extra_rows):
         start_row = self.TEMPLATE_FIRST_DATA_ROW + 2
 
-        # TODO: need to shift these rows for deletion as well
         # Shift merged cells to avoid footer breaking down
         merged_cells_range = self.sheet.merged_cells.ranges
         for merged_cell in merged_cells_range:
@@ -381,6 +387,7 @@ class BaseTemplateSheetWriter:
             if min_row >= start_row:
                 merged_cell.shift(0, extra_rows)
 
+        # TODO: need to also copy row styles
         self.sheet.insert_rows(start_row, extra_rows)
 
     def write(self):
@@ -394,7 +401,7 @@ class BaseTemplateSheetWriter:
         # - delete any extra rows that the template MIGHT have OR
         # - add any needed rows, copying an existing intermediate row's style
         template_data_rows_number = (
-            self.TEMPLATE_LAST_DATA_ROW - self.TEMPLATE_FIRST_DATA_ROW
+            self.TEMPLATE_LAST_DATA_ROW - self.TEMPLATE_FIRST_DATA_ROW + 1
         )
         data_rows_number = len(self.data)
         extra_rows = data_rows_number - template_data_rows_number
@@ -592,3 +599,47 @@ class StatisticsTemplateWriter(BaseTemplateSheetWriter):
                 cell = self.sheet.cell(row=row_to_overwrite, column=column_to_overwrite)
 
                 cell.value = triennial_data[row_key]
+
+
+class StatusOfContributionsSummaryTemplateWriter(BaseTemplateSheetWriter):
+    HEADERS_ROW = 1
+    TEMPLATE_FIRST_DATA_ROW = 2
+    TEMPLATE_LAST_DATA_ROW = 50
+
+    # Position and formatting for each filed from the serializer data rows
+    DATA_MAPPING = {
+        "country": {
+            "column": 2,
+            "type": str,
+        },
+        "agreed_contributions": {
+            "column": 3,
+            "type": Decimal,
+            "number_format": "###,###,##0",
+        },
+        "cash_payments": {
+            "column": 4,
+            "type": Decimal,
+            "number_format": "###,###,##0",
+        },
+        "bilateral_assistance": {
+            "column": 5,
+            "type": Decimal,
+            "number_format": "###,###,##0",
+        },
+        "promissory_notes": {
+            "column": 6,
+            "type": Decimal,
+            "number_format": "###,###,##0",
+        },
+        "outstanding_contributions": {
+            "column": 7,
+            "type": Decimal,
+            "number_format": "###,###,##0",
+        },
+        "gain_loss": {
+            "column": 8,
+            "type": Decimal,
+            "number_format": "###,###,##0",
+        },
+    }
