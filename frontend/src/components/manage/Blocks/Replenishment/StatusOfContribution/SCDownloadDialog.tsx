@@ -1,10 +1,12 @@
-import { useContext } from 'react'
+import { useContext, useMemo, useState } from 'react'
 
 import { Checkbox, FormGroup } from '@mui/material'
 import { FormControlLabel } from '@mui/material'
-import { range } from 'lodash'
+import cx from 'classnames'
+import { filter, join, range, split } from 'lodash'
 
 import { SubmitButton } from '@ors/components/ui/Button/Button'
+import Link from '@ors/components/ui/Link/Link'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 
 import FormEditDialog from '../FormEditDialog'
@@ -12,7 +14,7 @@ import { SCDownloadDialogProps } from './types'
 import { scPeriodOptions } from './utils'
 
 const SCDownloadDialog = (props: SCDownloadDialogProps) => {
-  const { handleSubmitEditDialog, ...dialogProps } = props
+  const { setIsDialogOpen, ...dialogProps } = props
 
   const currentYear = new Date().getFullYear()
   const yearsOptions = range(currentYear, currentYear - 10)
@@ -20,11 +22,53 @@ const SCDownloadDialog = (props: SCDownloadDialogProps) => {
   const ctx = useContext(ReplenishmentContext)
   const periodOptions = scPeriodOptions(ctx.periods)
 
+  const [years, setYears] = useState<Array<string>>([])
+  const [trienniums, setTrienniums] = useState<Array<string>>([])
+
+  const formattedYears = useMemo(() => join(years, ','), [years])
+  const formattedTrienniums = useMemo(() => join(trienniums, ','), [trienniums])
+
+  const url = useMemo(() => {
+    const baseUrl =
+      '/api/replenishment/status-of-contributions/statistics-export/'
+
+    return formattedYears && formattedTrienniums
+      ? `${baseUrl}?years=${formattedYears}&triennials=${formattedTrienniums}`
+      : formattedYears
+        ? `${baseUrl}?years=${formattedYears}`
+        : formattedTrienniums
+          ? `${baseUrl}?triennials=${formattedTrienniums}`
+          : null
+  }, [formattedYears, formattedTrienniums])
+
+  const handleChangeYear = (event: any) => {
+    const { checked, name } = event.target
+
+    if (checked) {
+      setYears([...years, name])
+    } else {
+      setYears(filter(years, (year) => year !== name))
+    }
+  }
+
+  const handleChangeTriennium = (event: any) => {
+    const { checked, name } = event.target
+    const formattedName = split(name, '-')[0]
+
+    if (checked) {
+      setTrienniums([...trienniums, formattedName])
+    } else {
+      setTrienniums(
+        filter(trienniums, (triennium) => triennium !== formattedName),
+      )
+    }
+  }
+
   return (
     <FormEditDialog
       title="Download status of the contribution:"
       withFooter={false}
-      onSubmit={handleSubmitEditDialog}
+      onSubmit={() => {}}
       {...dialogProps}
     >
       <div className="flex flex-col gap-y-7">
@@ -46,6 +90,7 @@ const SCDownloadDialog = (props: SCDownloadDialogProps) => {
                       sx={{
                         color: 'black',
                       }}
+                      onChange={handleChangeYear}
                     />
                   }
                 />
@@ -71,6 +116,7 @@ const SCDownloadDialog = (props: SCDownloadDialogProps) => {
                       sx={{
                         color: 'black',
                       }}
+                      onChange={handleChangeTriennium}
                     />
                   }
                 />
@@ -79,7 +125,24 @@ const SCDownloadDialog = (props: SCDownloadDialogProps) => {
           </div>
         )}
       </div>
-      <SubmitButton className="mt-4">Download</SubmitButton>
+      <Link
+        className={cx(
+          'mt-5 flex cursor-pointer items-center gap-x-2 text-primary no-underline',
+          { 'pointer-events-none': !url },
+        )}
+        href={url ?? '#'}
+        prefetch={false}
+        target="_blank"
+        download
+      >
+        <SubmitButton
+          className={cx({ 'opacity-45': !url })}
+          type="button"
+          onClick={() => setIsDialogOpen(false)}
+        >
+          Download
+        </SubmitButton>
+      </Link>
     </FormEditDialog>
   )
 }

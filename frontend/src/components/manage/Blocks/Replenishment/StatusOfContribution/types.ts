@@ -1,3 +1,5 @@
+import { Dispatch, SetStateAction } from 'react'
+
 export interface SoCRow {
   agreed_contributions: number
   bilateral_assistance: number
@@ -82,7 +84,7 @@ export interface BilateralAssistanceDialogProps {
 }
 
 export interface SCDownloadDialogProps {
-  handleSubmitEditDialog: (formData: FormData) => void
   onCancel: () => void
   open: boolean
+  setIsDialogOpen: Dispatch<SetStateAction<boolean>>
 }
