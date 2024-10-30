@@ -61,7 +61,7 @@ export function computeTableData(
       entry.adj_un_soa = un_soa
     } else {
       entry.adj_un_soa = un_soa
-        .div(adj_un_soa)
+        .div(adj_un_soa.gt(0) ? adj_un_soa : 1)
         .mul(adj_un_soa_percent)
         .plus(un_soa)
     }
@@ -76,9 +76,15 @@ export function computeTableData(
     entry.qual_ferm = checkQualifiesForFerm(entry)
     if (
       !entry.qual_ferm &&
-      getOverrideOrDefault<Big>(entry, 'avg_ir').eq('0')
+      (getOverrideOrDefault<Big | null>(entry, 'avg_ir') ?? new Big('0')).eq(
+        '0',
+      )
     ) {
       entry.qual_ferm = null
+    }
+
+    if (entry.qual_ferm === null) {
+      entry.avg_ir = null
     }
 
     // Calculate contribution in national currency for those qualifying for FERM

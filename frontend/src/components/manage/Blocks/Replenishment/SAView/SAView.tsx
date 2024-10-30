@@ -67,18 +67,18 @@ function transformContributions(cs: ApiReplenishmentSoA) {
     const entry = cs[i]
     const cur = entry.currency
     const parsed: SAContribution = {
-      adj_un_soa: asDecimal(entry.adjusted_scale_of_assessment),
-      annual_contributions: asDecimal(entry.yearly_amount),
-      avg_ir: asDecimal(entry.average_inflation_rate),
+      adj_un_soa: asDecimal(entry.adjusted_scale_of_assessment, null),
+      annual_contributions: asDecimal(entry.yearly_amount, null),
+      avg_ir: asDecimal(entry.average_inflation_rate, null),
       country: entry.country.name_alt,
       country_id: entry.country.id,
       ferm_cur: cur && cur !== 'nan' ? cur : '',
-      ferm_cur_amount: asDecimal(entry.yearly_amount_local_currency),
-      ferm_rate: asDecimal(entry.exchange_rate),
+      ferm_cur_amount: asDecimal(entry.yearly_amount_local_currency, null),
+      ferm_rate: asDecimal(entry.exchange_rate, null),
       iso3: entry.country.iso3,
       opted_for_ferm: entry.opted_for_ferm,
       qual_ferm: entry.qualifies_for_fixed_rate_mechanism,
-      un_soa: asDecimal(entry.un_scale_of_assessment),
+      un_soa: asDecimal(entry.un_scale_of_assessment, null),
     }
     r.push(parsed)
   }

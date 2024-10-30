@@ -95,13 +95,13 @@ export interface SAViewWrapperProps {
 }
 
 export interface SAContribution {
-  adj_un_soa?: Big
-  annual_contributions?: Big
+  adj_un_soa?: Big | null
+  annual_contributions?: Big | null
   avg_ir: Big | null
   country: string
   country_id: number
   ferm_cur: null | string
-  ferm_cur_amount?: Big
+  ferm_cur_amount?: Big | null
   ferm_rate: Big | null
   isNew?: boolean
   iso3: string

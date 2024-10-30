@@ -1,4 +1,4 @@
-import Big from 'big.js'
+import Big, { BigSource } from 'big.js'
 
 import { FileForUpload } from '@ors/components/manage/Blocks/Replenishment/types'
 
@@ -148,8 +148,17 @@ export function floorSmallValue(
   return result
 }
 
-export function asDecimal(value?: null | number | string, fallback = '0') {
-  return !value && value !== 0 ? new Big(fallback) : new Big(value)
+export function asDecimal(value: null, fallback: null): null
+export function asDecimal(value: BigSource | null, fallback: null): Big | null
+export function asDecimal(value: BigSource): Big
+export function asDecimal(
+  value?: BigSource | null,
+  fallback: BigSource | null = '0',
+) {
+  if (!value && value !== 0) {
+    return fallback === null ? null : new Big(fallback)
+  }
+  return new Big(value)
 }
 
 export function toFormat(nr: Big, dp: number, ts = ',', ds = '.'): string {
