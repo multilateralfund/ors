@@ -602,9 +602,10 @@ class StatisticsTemplateWriter(BaseTemplateSheetWriter):
 
 
 class StatusOfContributionsSummaryTemplateWriter(BaseTemplateSheetWriter):
-    HEADERS_ROW = 1
-    TEMPLATE_FIRST_DATA_ROW = 2
-    TEMPLATE_LAST_DATA_ROW = 50
+    # TODO: HEADERS_ROW should be a list
+    HEADERS_ROW = 7
+    TEMPLATE_FIRST_DATA_ROW = 11
+    TEMPLATE_LAST_DATA_ROW = 65
 
     # Position and formatting for each filed from the serializer data rows
     DATA_MAPPING = {
@@ -639,6 +640,46 @@ class StatusOfContributionsSummaryTemplateWriter(BaseTemplateSheetWriter):
         },
         "gain_loss": {
             "column": 8,
+            "type": Decimal,
+            "number_format": "###,###,##0",
+        },
+    }
+
+
+class StatusOfContributionsTriennialTemplateWriter(BaseTemplateSheetWriter):
+    # TODO: HEADERS_ROW should be a list
+    HEADERS_ROW = 7
+    TEMPLATE_FIRST_DATA_ROW = 11
+    TEMPLATE_LAST_DATA_ROW = 59
+
+    # Position and formatting for each filed from the serializer data rows
+    DATA_MAPPING = {
+        "country": {
+            "column": 2,
+            "type": str,
+        },
+        "agreed_contributions": {
+            "column": 3,
+            "type": Decimal,
+            "number_format": "###,###,##0",
+        },
+        "cash_payments": {
+            "column": 4,
+            "type": Decimal,
+            "number_format": "###,###,##0",
+        },
+        "bilateral_assistance": {
+            "column": 5,
+            "type": Decimal,
+            "number_format": "###,###,##0",
+        },
+        "promissory_notes": {
+            "column": 6,
+            "type": Decimal,
+            "number_format": "###,###,##0",
+        },
+        "outstanding_contributions": {
+            "column": 7,
             "type": Decimal,
             "number_format": "###,###,##0",
         },
