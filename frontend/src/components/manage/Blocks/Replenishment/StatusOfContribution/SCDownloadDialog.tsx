@@ -29,8 +29,7 @@ const SCDownloadDialog = (props: SCDownloadDialogProps) => {
   const formattedTrienniums = useMemo(() => join(trienniums, ','), [trienniums])
 
   const url = useMemo(() => {
-    const baseUrl =
-      '/api/replenishment/status-of-contributions/statistics-export/'
+    const baseUrl = '/api/replenishment/status-of-contributions/export/'
 
     return formattedYears && formattedTrienniums
       ? `${baseUrl}?years=${formattedYears}&triennials=${formattedTrienniums}`
