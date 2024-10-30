@@ -7,6 +7,11 @@ export interface FormDialogProps extends PropsWithChildren {
   title: string
 }
 
+export interface FormEditDialogProps extends FormDialogProps {
+  open?: boolean
+  withFooter?: boolean
+}
+
 export interface ConfirmDialogProps extends PropsWithChildren {
   className?: string
   onCancel: () => void

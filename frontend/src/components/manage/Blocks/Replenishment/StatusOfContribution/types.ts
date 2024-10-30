@@ -1,3 +1,5 @@
+import { Dispatch, SetStateAction } from 'react'
+
 export interface SoCRow {
   agreed_contributions: number
   bilateral_assistance: number
@@ -79,4 +81,10 @@ export interface BilateralAssistanceDialogProps {
   refetchSCData: () => void
   rows: SoCRow[]
   year: string
+}
+
+export interface SCDownloadDialogProps {
+  baseUrl: string
+  open: boolean
+  setIsDialogOpen: Dispatch<SetStateAction<boolean>>
 }

@@ -27,6 +27,8 @@ from core.api.views import (
     TriennialStatusOfContributionsExportView,
     StatisticsStatusOfContributionsExportView,
     AnnualStatusOfContributionsExportView,
+    StatusOfContributionsExportView,
+    StatisticsExportView,
     StatisticsStatusOfContributionsView,
     StatusOfTheFundFileViewSet,
 )
@@ -454,6 +456,11 @@ urlpatterns = [
         name="replenishment-status-of-contributions-triennial-export",
     ),
     path(
+        "replenishment/status-of-contributions/export/",
+        StatusOfContributionsExportView.as_view(),
+        name="replenishment-status-of-contributions-export",
+    ),
+    path(
         "replenishment/status-of-contributions/<int:start_year>/<int:end_year>/",
         TriennialStatusOfContributionsView.as_view(),
         name="replenishment-status-of-contributions-triennial",
@@ -462,6 +469,11 @@ urlpatterns = [
         "replenishment/status-of-contributions/<int:year>/export/",
         AnnualStatusOfContributionsExportView.as_view(),
         name="replenishment-status-of-contributions-annual-export",
+    ),
+    path(
+        "replenishment/statistics/export/",
+        StatisticsExportView.as_view(),
+        name="replenishment-statistics-export",
     ),
     path(
         "replenishment/status-of-contributions/<int:year>/",

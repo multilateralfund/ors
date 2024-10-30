@@ -14,7 +14,7 @@ export default function ReplenishmentStatistics() {
         <ReplenishmentHeading>Statistics</ReplenishmentHeading>
         <DownloadButtons
           downloadTexts={['Download']}
-          downloadUrls={[formatApiUrl('/api/replenishment/dashboard/export')]}
+          downloadUrls={[formatApiUrl('/api/replenishment/statistics/export')]}
         />
         <StatisticsView />
       </PageWrapper>

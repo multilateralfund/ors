@@ -11,6 +11,7 @@ export default function Select(props: ISingleSelectProps) {
     id,
     children,
     className,
+    clearBtnClassName,
     defaultValue,
     hasClear,
     name,
@@ -60,7 +61,12 @@ export default function Select(props: ISingleSelectProps) {
       >
         {children}
       </select>
-      {withClear && <ClearButton className="right-4" onClick={handleClear} />}
+      {withClear && (
+        <ClearButton
+          className={cx('right-4', clearBtnClassName)}
+          onClick={handleClear}
+        />
+      )}
     </div>
   )
 }

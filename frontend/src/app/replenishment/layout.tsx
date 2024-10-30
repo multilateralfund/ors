@@ -82,7 +82,10 @@ function ReplenishmentLayoutContent(props: PropsWithChildren) {
         <div className="overflow-x-auto">
           <nav className="flex items-center gap-4">{navLinks}</nav>
         </div>
-        <div id="replenishment-tab-buttons" className="self-end"></div>
+        <div className="flex gap-x-3.5 self-end">
+          <div id="replenishment-sc-tab-buttons" />
+          <div id="replenishment-tab-buttons" />
+        </div>
       </div>
       <div className="rounded-b-lg border border-solid border-primary print:border-none">
         {children}

@@ -83,6 +83,7 @@ export const SearchableSelectInput = ({
 )
 
 export const SelectInput = ({
+  clearBtnClassName,
   field,
   label,
   options,
@@ -94,6 +95,7 @@ export const SelectInput = ({
     <Select
       id={field}
       className={inputsClassName}
+      clearBtnClassName={clearBtnClassName}
       {...(value && { ...{ value } })}
       disabled={!!value}
       hasClear={!value}

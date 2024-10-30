@@ -7,6 +7,7 @@ export interface IFieldProps extends React.PropsWithChildren {
 
 export interface ISingleSelectProps
   extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'onChange'> {
+  clearBtnClassName?: string
   defaultValue?: string
   hasClear?: boolean
   onChange?: (evt: React.ChangeEvent<HTMLSelectElement>) => void

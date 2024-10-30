@@ -60,6 +60,7 @@ export interface INumberInputProps extends IInputProps {
 }
 
 export interface ISelectInputProps extends IInputProps {
+  clearBtnClassName?: string
   options: InputOptionsType
   placeholder?: string
   value?: string
