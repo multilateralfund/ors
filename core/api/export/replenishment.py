@@ -377,7 +377,6 @@ class BaseTemplateSheetWriter:
             if min_row >= start_row:
                 merged_cell.shift(0, -1 * rows_number)
 
-
     def _add_middle_rows(self, extra_rows):
         start_row = self.TEMPLATE_FIRST_DATA_ROW + 2
 
@@ -600,3 +599,47 @@ class StatisticsTemplateWriter(BaseTemplateSheetWriter):
                 cell = self.sheet.cell(row=row_to_overwrite, column=column_to_overwrite)
 
                 cell.value = triennial_data[row_key]
+
+
+class StatusOfContributionsSummaryTemplateWriter(BaseTemplateSheetWriter):
+    HEADERS_ROW = 1
+    TEMPLATE_FIRST_DATA_ROW = 2
+    TEMPLATE_LAST_DATA_ROW = 50
+
+    # Position and formatting for each filed from the serializer data rows
+    DATA_MAPPING = {
+        "country": {
+            "column": 2,
+            "type": str,
+        },
+        "agreed_contributions": {
+            "column": 3,
+            "type": Decimal,
+            "number_format": "###,###,##0",
+        },
+        "cash_payments": {
+            "column": 4,
+            "type": Decimal,
+            "number_format": "###,###,##0",
+        },
+        "bilateral_assistance": {
+            "column": 5,
+            "type": Decimal,
+            "number_format": "###,###,##0",
+        },
+        "promissory_notes": {
+            "column": 6,
+            "type": Decimal,
+            "number_format": "###,###,##0",
+        },
+        "outstanding_contributions": {
+            "column": 7,
+            "type": Decimal,
+            "number_format": "###,###,##0",
+        },
+        "gain_loss": {
+            "column": 8,
+            "type": Decimal,
+            "number_format": "###,###,##0",
+        },
+    }
