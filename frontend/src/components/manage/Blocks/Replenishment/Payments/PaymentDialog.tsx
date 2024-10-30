@@ -27,8 +27,8 @@ import InvoiceAttachments from '@ors/components/manage/Blocks/Replenishment/Invo
 import useGetInvoices from '@ors/components/manage/Blocks/Replenishment/Invoices/useGetInvoices'
 import { scAnnualOptions } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/utils'
 import useGetCountryReplenishmentInfo from '@ors/components/manage/Blocks/Replenishment/useGetCountryReplenishmentInfo'
+import { asDecimal } from '@ors/components/manage/Blocks/Replenishment/utils'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
-import { getFloat } from '@ors/helpers/Utils/Utils'
 
 import { IPaymentDialogProps } from './types'
 
@@ -50,18 +50,20 @@ function getInvoiceLabel(invoice: ApiReplenishmentInvoice) {
   return `${invoice.number} (${invoice?.date_of_issuance})`
 }
 
-function calculateAssessed(currencyAmount: number, exchangeRate: number) {
-  return currencyAmount / exchangeRate
-}
-
 function assessAmountFromCurrency(
   currencyAmount: string,
   exchangeRate: string,
 ): string {
-  return calculateAssessed(
-    getFloat(currencyAmount) || 0,
-    getFloat(exchangeRate) || 1,
-  ).toString()
+  const am = asDecimal(currencyAmount, '0')
+  const er = asDecimal(exchangeRate, '1')
+  return am.div(er).toString()
+}
+
+function getInvoice(
+  invoicesList: ApiReplenishmentInvoice[],
+  invoiceId: string,
+) {
+  return invoicesList.find(({ id }) => id.toString() === invoiceId)!
 }
 
 const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
@@ -144,10 +146,17 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
       const optedForFerm = countryInfo?.opted_for_ferm || false
 
       if (!isEdit) {
-        const amountLocalCurrency = optedForFerm ?
-          (countryInfo?.yearly_amount_local_currency || '').toString() || ''
-          : (countryInfo?.yearly_amount || '').toString() || ''
-        const exchangeRate = (countryInfo?.exchange_rate || '').toString() || ''
+        let amountLocalCurrency = optedForFerm
+          ? countryInfo?.yearly_amount_local_currency || ''
+          : countryInfo?.yearly_amount || ''
+        if (fields.invoice) {
+          amountLocalCurrency =
+            getInvoice(
+              invoicesList,
+              fields.invoice,
+            ).amount_local_currency?.toString() || ''
+        }
+        const exchangeRate = countryInfo?.exchange_rate || ''
 
         setFields((prev) => {
           const updated = {
@@ -156,9 +165,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
               exchangeRate,
             ),
             amount_local_currency: amountLocalCurrency,
-            currency: optedForFerm ?
-              (countryInfo?.currency || '').toString() || ''
-              : 'USD',
+            currency: optedForFerm ? countryInfo?.currency || '' : 'USD',
             exchange_rate: exchangeRate,
             is_ferm: optedForFerm,
           }
@@ -181,7 +188,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
         })
       }
     },
-    [countryInfo, isEdit],
+    [fields.invoice, countryInfo, isEdit, invoicesList],
   )
 
   const handleFormSubmit: IPaymentDialogProps['onSubmit'] = (formData, evt) => {
@@ -191,7 +198,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
 
   const handleSelectInvoice = useCallback(
     function handleSelectInvoice(invoiceId: string) {
-      const invoice = invoicesList.find(({ id }) => id.toString() === invoiceId)
+      const invoice = getInvoice(invoicesList, invoiceId)
       setFields(function (prevState): PaymentDialogFields {
         return {
           ...prevState,
@@ -388,7 +395,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
           disabled={!fields.is_ferm}
           label="USD amount received"
           readOnly={!fields.is_ferm}
-          value={fields.is_ferm ? fields.amount_received: ''}
+          value={fields.is_ferm ? fields.amount_received : ''}
           onChange={updateField('amount_received')}
           required
         />

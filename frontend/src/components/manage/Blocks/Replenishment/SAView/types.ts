@@ -4,7 +4,10 @@ import { Country } from '@ors/types/store'
 
 import { HTMLAttributes } from 'react'
 
-import { IDateInputProps } from '../Inputs'
+import Big from 'big.js'
+
+import { FileForUpload } from '@ors/components/manage/Blocks/Replenishment/types'
+
 import { TableCellProps, TableColumn, TableProps } from '../Table/types'
 
 export interface SAHeadingProps {}
@@ -91,68 +94,55 @@ export interface SAViewWrapperProps {
   period?: string
 }
 
-export interface FileForUpload {
-  contentType: string
-  data: string
-  encoding: string
-  filename: string
-}
-
-export interface DateRangeInputProps
-  extends Omit<IDateInputProps, 'onChange' | 'value'> {
-  initialEnd: string
-  initialStart: string
-  onChange: (start: string, end: string) => void
-}
-
 export interface SAContribution {
-  adj_un_soa?: number
-  annual_contributions?: number
-  avg_ir: null | number
+  adj_un_soa?: Big | null
+  annual_contributions?: Big | null
+  avg_ir: Big | null
   country: string
   country_id: number
   ferm_cur: null | string
-  ferm_cur_amount?: number
-  ferm_rate: null | number
+  ferm_cur_amount?: Big | null
+  ferm_rate: Big | null
   isNew?: boolean
   iso3: string
   opted_for_ferm: boolean | null
-  override_adj_un_soa?: null | number
-  override_avg_ir?: null | number
+  override_adj_un_soa?: Big | null
+  override_avg_ir?: Big | null
   override_ferm_cur?: null | string
-  override_ferm_rate?: null | number
+  override_ferm_rate?: Big | null
   override_opted_for_ferm?: boolean | null
   override_qual_ferm?: boolean | null
-  override_un_soa?: null | number
+  override_un_soa?: Big | null
   qual_ferm: boolean
-  un_soa: null | number
+  un_soa: Big | null
 }
 
 export interface SAContributionForSave {
-  average_inflation_rate?: null | number
+  average_inflation_rate?: null | string
   country_id: number
   currency?: null | string
-  exchange_rate?: null | number
-  un_scale_of_assessment?: null | number
+  exchange_rate?: null | string
+  un_scale_of_assessment?: null | string
 }
 
 export interface SaveManagerProps {
   comment: string
   currencyDateRange: {
-    end: Date
-    start: Date
+    end: string
+    start: string
   }
   data: SAContributionForSave[]
-  replenishment: ApiReplenishment
+  replenishmentAmount: string
+  replenishmentId?: number
   version: ApiReplenishmentSoAVersion | null
   versions: ApiReplenishmentSoAVersion[]
 }
 
 export interface SaveData extends Pick<SaveManagerProps, 'comment' | 'data'> {
-  amount: number
+  amount: string
   currency_date_range_end?: string
   currency_date_range_start?: string
   decision_pdf?: File | FileForUpload | null
   final?: boolean
-  replenishment_id: number
+  replenishment_id: string
 }

@@ -123,12 +123,7 @@ function EditField(props: EditFieldProps) {
         )
       }
       Field = (
-        <select
-          defaultValue={fieldValue}
-          ref={selectRef}
-          value={fieldValue}
-          {...rest}
-        >
+        <select defaultValue={fieldValue} ref={selectRef} {...rest}>
           {options}
         </select>
       )

@@ -59,3 +59,10 @@ export interface IFormattedNumberInputProps
   value?: number | string
   withoutInitialValue?: boolean
 }
+
+export interface DateRangeInputProps
+  extends Omit<IDateInputProps, 'onChange' | 'value'> {
+  initialEnd: string
+  initialStart: string
+  onChange: (start: string, end: string) => void
+}

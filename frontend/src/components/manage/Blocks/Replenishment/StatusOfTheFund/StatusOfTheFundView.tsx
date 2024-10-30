@@ -242,7 +242,7 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
                     allocationsOrder.map((key) => (
                       <MiniCashCard
                         key={key}
-                        className="w-1/4"
+                        className="mx-2 w-1/4"
                         editableFields={editableFields}
                         field={key}
                         info_text={allocations[key]?.info_text}
@@ -262,7 +262,7 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
                     provisionsOrder.map((key) => (
                       <MiniCashCard
                         key={key}
-                        className="my-6 w-1/4"
+                        className="my-6 w-1/3"
                         editableFields={editableFields}
                         field={key}
                         info_text={provisions[key]?.info_text}

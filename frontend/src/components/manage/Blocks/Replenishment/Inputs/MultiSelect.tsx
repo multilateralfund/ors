@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import cx from 'classnames'
 
@@ -76,25 +76,28 @@ export default function MultiSelect(props: IMultiSelectProps) {
     }
   }
 
-  function handleToggleSelectedOption(
-    evt: React.ChangeEvent<HTMLInputElement>,
-  ) {
-    const evtValue = evt.target.value
-    let newValue = []
-    if (value.includes(evtValue)) {
-      for (let i = 0; i < value.length; i++) {
-        if (value[i] !== evtValue) {
-          newValue.push(value[i])
+  const handleToggleSelectedOption = useCallback(
+    function handleToggleSelectedOption(
+      evt: React.ChangeEvent<HTMLInputElement>,
+    ) {
+      const evtValue = evt.target.value
+      let newValue = []
+      if (value.includes(evtValue)) {
+        for (let i = 0; i < value.length; i++) {
+          if (value[i] !== evtValue) {
+            newValue.push(value[i])
+          }
         }
+      } else {
+        newValue = [...value, evtValue]
       }
-    } else {
-      newValue = [...value, evtValue]
-    }
-    setValue(newValue)
-    if (onChange) {
-      onChange(newValue)
-    }
-  }
+      setValue(newValue)
+      if (onChange) {
+        onChange(newValue)
+      }
+    },
+    [onChange, value],
+  )
 
   function handleInputFocus() {
     setShowPicker(true)
@@ -139,7 +142,7 @@ export default function MultiSelect(props: IMultiSelectProps) {
 
       return result
     },
-    [id, value, options],
+    [options, id, value, handleToggleSelectedOption],
   )
 
   return (

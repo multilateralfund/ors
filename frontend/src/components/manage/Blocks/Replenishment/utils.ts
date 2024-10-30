@@ -1,14 +1,10 @@
+import Big, { BigSource } from 'big.js'
+
+import { FileForUpload } from '@ors/components/manage/Blocks/Replenishment/types'
+
 import { MAX_DECIMALS, MIN_DECIMALS } from './constants'
 
 const RE_PERIOD = new RegExp(/\d{4}-\d{4}/)
-
-export function zeroPad(value: number) {
-  let result = value.toString()
-  if (value < 10) {
-    result = `0${value}`
-  }
-  return result
-}
 
 export function makePeriodOptions(
   periods: { end_year: number; start_year: number }[],
@@ -33,17 +29,6 @@ export function getPathPeriod(path: string) {
   return result
 }
 
-export function formatDateValue(value?: null | string) {
-  if (!value) {
-    return null
-  }
-  return new Date(Date.parse(value))
-    .toUTCString()
-    .split('00')[0]
-    .split(',')[1]
-    .trim()
-}
-
 export function formatNumberValue(
   value: null | number | string,
   minDigits?: number,
@@ -57,73 +42,6 @@ export function formatNumberValue(
     minimumFractionDigits: minDigits ?? MIN_DECIMALS,
   })
   return formatted === '-0' ? '0' : formatted
-}
-
-export function dateForEditField(value?: null | string) {
-  if (!value) {
-    return null
-  }
-  const date = new Date(Date.parse(value))
-  const utcYear = date.getUTCFullYear()
-  const utcMonth = zeroPad(date.getUTCMonth() + 1)
-  const utcDay = zeroPad(date.getUTCDate())
-  return `${utcYear}-${utcMonth}-${utcDay}`
-}
-
-export function dateForInput(input: Date): string
-export function dateForInput(input: null | string): null | string
-export function dateForInput(input?: Date | null | string): null | string {
-  if (!input) {
-    return null
-  }
-
-  const date = typeof input === 'string' ? new Date(input) : input
-
-  let day: number | string = date.getDate()
-  let month: number | string = date.getMonth() + 1
-
-  day = day < 10 ? `0${day}` : day
-  month = month < 10 ? `0${month}` : month
-
-  return `${date.getFullYear()}-${month}-${day}`
-}
-
-export function dateFromInput(value: string) {
-  const [year, month, day] = value.split('-')
-  return new Date(
-    Date.UTC(parseInt(year, 10), parseInt(month, 10) - 1, parseInt(day, 10)),
-  )
-}
-
-export function numberForEditField(value: string) {
-  return parseFloat(value.replaceAll(',', ''))
-}
-
-export function filterTableData(
-  tableData: Record<string, number | string>[],
-  searchValue: string,
-) {
-  const result = []
-  const searchFor = searchValue.toLowerCase()
-  for (let i = 0; i < tableData.length; i++) {
-    const rowValues = Object.values(tableData[i])
-
-    for (let j = 0; j < rowValues.length; j++) {
-      let value = ''
-
-      if (typeof rowValues[j] === 'string') {
-        value = rowValues[j] as string
-      } else if (rowValues[j]) {
-        value = rowValues[j].toString()
-      }
-
-      if (value.toLowerCase().indexOf(searchFor) !== -1) {
-        result.push(tableData[i])
-        break
-      }
-    }
-  }
-  return result
 }
 
 export function getDefaultFieldSorter(field: string, direction: -1 | 1) {
@@ -228,4 +146,77 @@ export function floorSmallValue(
     result = 0
   }
   return result
+}
+
+export function asDecimal(value: null | undefined, fallback: null): null
+export function asDecimal(
+  value: BigSource | null | undefined,
+  fallback: null,
+): Big | null
+export function asDecimal(
+  value: BigSource | null | undefined,
+  fallback: BigSource,
+): Big
+export function asDecimal(value: BigSource): Big
+export function asDecimal(
+  value: BigSource | null | undefined,
+  fallback: BigSource | null = '0',
+) {
+  if (!value && value !== 0) {
+    return fallback === null ? null : new Big(fallback)
+  }
+  return new Big(value)
+}
+
+export function toFormat(nr: Big, dp: number, ts = ',', ds = '.'): string {
+  const arr = nr.toFixed(dp).split('.')
+  arr[0] = arr[0].replace(/\B(?=(\d{3})+(?!\d))/g, ts)
+  return arr.join(ds)
+}
+
+export function formatIso8601DateString(date: string) {
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jun',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ]
+
+  const [year, month, day] = date.split('-')
+  const fmtDay = parseInt(day, 10)
+  const fmtMonth = months[parseInt(month, 10) - 1]
+
+  return `${fmtDay} ${fmtMonth} ${year}`
+}
+
+export function encodeFileForUpload(file: File) {
+  function resolver(resolve: (value: FileForUpload) => void) {
+    const r = new FileReader()
+    r.onload = function (evt) {
+      const read = evt.target?.result
+      if (read) {
+        resolve({
+          contentType: file.type,
+          data: (read as string).split(',')[1],
+          encoding: 'base64',
+          filename: file.name,
+        })
+      }
+    }
+    r.readAsDataURL(file)
+  }
+
+  return new Promise<FileForUpload>(resolver)
+}
+
+export function formatDateForDisplay(date: null | string, emptyString = '-') {
+  return date ? formatIso8601DateString(date) : emptyString
 }

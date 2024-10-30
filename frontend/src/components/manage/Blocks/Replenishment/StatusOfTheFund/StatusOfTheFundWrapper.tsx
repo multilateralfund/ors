@@ -6,11 +6,11 @@ import { get, isNil, keys, omit, omitBy, pickBy, reduce, reverse } from 'lodash'
 import { useSnackbar } from 'notistack'
 
 import useGetDashboardData from '@ors/components/manage/Blocks/Replenishment/Dashboard/useGetDashboardData'
+import { encodeFileForUpload } from '@ors/components/manage/Blocks/Replenishment/utils'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { api } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
-import { encodeFileForUpload } from '../SAView/SAView'
 import { scAnnualOptions } from '../StatusOfContribution/utils'
 import StatusOfTheFundView from '../StatusOfTheFund/StatusOfTheFundView'
 import { allocationsOrder } from './constants'
@@ -23,7 +23,8 @@ import UploadFilesDialog from './editDialogs/UploadFilesDialog'
 function StatusOfTheFundWrapper() {
   const { invalidateDataFn, newData } = useGetDashboardData()
   const ctx = useContext(ReplenishmentContext)
-  const { agencies, allocations, asOfDate, income, overview, provisions } = newData
+  const { agencies, allocations, asOfDate, income, overview, provisions } =
+    newData
 
   const projectSlice = useStore((state) => state.projects)
   const meetings = projectSlice.meetings.data

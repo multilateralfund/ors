@@ -1,4 +1,6 @@
+from decimal import Decimal, InvalidOperation
 from django.urls import reverse
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from core.api.serializers.country import CountrySerializer
@@ -55,37 +57,95 @@ class ScaleOfAssessmentSerializer(serializers.ModelSerializer):
     )
     currency = serializers.CharField(allow_blank=True, required=False)
     exchange_rate = serializers.DecimalField(
-        max_digits=30, decimal_places=15, coerce_to_string=False, allow_null=True
+        max_digits=30, decimal_places=15, allow_null=True
     )
     bilateral_assistance_amount = serializers.DecimalField(
-        max_digits=30, decimal_places=15, coerce_to_string=False, required=False
+        max_digits=30, decimal_places=15, required=False
     )
     un_scale_of_assessment = serializers.DecimalField(
-        max_digits=30, decimal_places=15, coerce_to_string=False, allow_null=True
+        max_digits=30, decimal_places=15, allow_null=True
     )
     override_adjusted_scale_of_assessment = serializers.DecimalField(
-        max_digits=30, decimal_places=15, coerce_to_string=False, required=False
+        max_digits=30, decimal_places=15, required=False
     )
     average_inflation_rate = serializers.DecimalField(
         max_digits=30,
         decimal_places=15,
-        coerce_to_string=False,
         allow_null=True,
     )
     override_qualifies_for_fixed_rate_mechanism = serializers.BooleanField(
         required=False
     )
 
-    adjusted_scale_of_assessment = serializers.ReadOnlyField()
+    adjusted_scale_of_assessment = serializers.SerializerMethodField()
     qualifies_for_fixed_rate_mechanism = serializers.ReadOnlyField()
-    amount = serializers.ReadOnlyField()
-    amount_local_currency = serializers.ReadOnlyField()
-    yearly_amount = serializers.ReadOnlyField()
-    yearly_amount_local_currency = serializers.ReadOnlyField()
+    amount = serializers.SerializerMethodField()
+    amount_local_currency = serializers.SerializerMethodField()
+    yearly_amount = serializers.SerializerMethodField()
+    yearly_amount_local_currency = serializers.SerializerMethodField()
 
     class Meta:
         model = ScaleOfAssessment
-        fields = "__all__"
+        fields = [
+            "id",
+            "version",
+            "replenishment",
+            "country",
+            "country_id",
+            "currency",
+            "exchange_rate",
+            "bilateral_assistance_amount",
+            "un_scale_of_assessment",
+            "override_adjusted_scale_of_assessment",
+            "average_inflation_rate",
+            "override_qualifies_for_fixed_rate_mechanism",
+            "opted_for_ferm",
+            # Method fields
+            "adjusted_scale_of_assessment",
+            "qualifies_for_fixed_rate_mechanism",
+            "amount",
+            "amount_local_currency",
+            "yearly_amount",
+            "yearly_amount_local_currency",
+        ]
+
+    def _get_quantized_str_decimal_value(self, decimal_value):
+        try:
+            quantized_value = decimal_value.quantize(Decimal("0.1") ** 15)
+        except InvalidOperation:
+            # Quantizing may fail if `decimal_value` does not have enough decimal places
+            quantized_value = decimal_value
+        return str(quantized_value)
+
+    @extend_schema_field(serializers.CharField)
+    def get_adjusted_scale_of_assessment(self, obj):
+        if getattr(obj, "adjusted_scale_of_assessment", None) is None:
+            return None
+        return self._get_quantized_str_decimal_value(obj.adjusted_scale_of_assessment)
+
+    @extend_schema_field(serializers.CharField)
+    def get_amount(self, obj):
+        if getattr(obj, "amount", None) is None:
+            return None
+        return self._get_quantized_str_decimal_value(obj.amount)
+
+    @extend_schema_field(serializers.CharField)
+    def get_amount_local_currency(self, obj):
+        if getattr(obj, "amount_local_currency", None) is None:
+            return None
+        return self._get_quantized_str_decimal_value(obj.amount_local_currency)
+
+    @extend_schema_field(serializers.CharField)
+    def get_yearly_amount(self, obj):
+        if getattr(obj, "yearly_amount", None) is None:
+            return None
+        return self._get_quantized_str_decimal_value(obj.yearly_amount)
+
+    @extend_schema_field(serializers.CharField)
+    def get_yearly_amount_local_currency(self, obj):
+        if getattr(obj, "yearly_amount_local_currency", None) is None:
+            return None
+        return self._get_quantized_str_decimal_value(obj.yearly_amount_local_currency)
 
 
 class ScaleOfAssessmentExcelExportSerializer(serializers.ModelSerializer):

@@ -34,6 +34,7 @@
     "@types/mdx": "^2.0.13",
     "ag-grid-community": "^31.0.3",
     "ag-grid-react": "^31.3.1",
+    "big.js": "^6.2.2",
     "chart.js": "^4.4.3",
     "classnames": "^2.5.1",
     "dayjs": "^1.11.11",
@@ -70,6 +71,7 @@
   "devDependencies": {
     "@next/bundle-analyzer": "^14.2.3",
     "@svgr/webpack": "^8.1.0",
+    "@types/big.js": "^6.2.2",
     "@types/js-cookie": "^3.0.6",
     "@types/lodash": "^4.17.0",
     "@types/node": "20.12.8",
