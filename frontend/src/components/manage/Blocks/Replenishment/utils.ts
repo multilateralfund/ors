@@ -147,17 +147,9 @@ export function floorSmallValue(
   }
   return result
 }
-export function asDecimal(value: null): null
-export function asDecimal(value: undefined): undefined
-export function asDecimal(value: number): Big
-export function asDecimal(value: string): Big
-export function asDecimal(value?: null | number | string): Big | typeof value {
-  if (value === undefined || value === null) {
-    return value
-  } else if (value === '') {
-    return new Big('0')
-  }
-  return new Big(value)
+
+export function asDecimal(value?: null | number | string, fallback = '0') {
+  return !value && value != 0 ? new Big(fallback) : new Big(value)
 }
 
 export function toFormat(nr: Big, dp: number, ts = ',', ds = '.'): string {

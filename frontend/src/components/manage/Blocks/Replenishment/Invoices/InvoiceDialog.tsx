@@ -156,7 +156,7 @@ function TabContentAmount(props: TabContentAmountProps) {
     setFields((prev) => ({
       ...prev,
       amount_local_currency: nrAmountUsd
-        .mul(asDecimal(countryInfo?.exchange_rate || '1'))
+        .mul(asDecimal(countryInfo?.exchange_rate, '1'))
         .toString(),
       amount_usd,
     }))
@@ -170,7 +170,7 @@ function TabContentAmount(props: TabContentAmountProps) {
       ...prev,
       amount_local_currency: amountLocal,
       amount_usd: nrAmountLocal
-        .div(asDecimal(countryInfo?.exchange_rate || '1'))
+        .div(asDecimal(countryInfo?.exchange_rate, '1'))
         .toString(),
     }))
   }

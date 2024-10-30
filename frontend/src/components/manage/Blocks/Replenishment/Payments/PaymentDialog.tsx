@@ -56,8 +56,8 @@ function assessAmountFromCurrency(
   currencyAmount: string,
   exchangeRate: string,
 ): string {
-  const am = asDecimal(currencyAmount) || new Big('0')
-  const er = asDecimal(exchangeRate) || new Big('1')
+  const am = asDecimal(currencyAmount, '0')
+  const er = asDecimal(exchangeRate, '1')
   return am.div(er).toString()
 }
 
@@ -385,7 +385,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
           disabled={!fields.is_ferm}
           label="USD amount received"
           readOnly={!fields.is_ferm}
-          value={fields.is_ferm ? fields.amount_received: ''}
+          value={fields.is_ferm ? fields.amount_received : ''}
           onChange={updateField('amount_received')}
           required
         />
