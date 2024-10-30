@@ -27,6 +27,7 @@ from core.api.export.replenishment import (
     StatusOfTheFundTemplateWriter,
     StatisticsTemplateWriter,
     StatusOfContributionsSummaryTemplateWriter,
+    StatusOfContributionsTriennialTemplateWriter,
 )
 from core.api.filters.replenishment import (
     InvoiceFilter,
@@ -484,14 +485,15 @@ class StatusOfContributionsExportView(views.APIView):
     permission_classes = [IsUserAllowedReplenishment]
 
     def get(self, request, *args, **kwargs):
+        SUMMARY_WORKSHEET_NAME = "Summary Status of Contributions"
+        TRIENIAL_WORKSHEET_NAME = "2024-26 Contributions"
+
         self.check_permissions(request)
 
         years = request.query_params.get("years")
         triennial_start_years = request.query_params.get("triennials")
-        # agg = AnnualStatusOfContributionsAggregator(year)
 
         agg = SummaryStatusOfContributionsAggregator()
-
         soc_qs = agg.get_status_of_contributions_qs()
         summary_data = [
             {
@@ -508,12 +510,11 @@ class StatusOfContributionsExportView(views.APIView):
         ]
         data_count = len(summary_data)
 
-        WORKSHEET_NAME = "Summary Status of Contributions"
         # Open template file
         wb = openpyxl.load_workbook(
             filename=EXPORT_RESOURCES_DIR / "ContributionsFormatted.xlsx"
         )
-        ws = wb[WORKSHEET_NAME]
+        ws = wb[SUMMARY_WORKSHEET_NAME]
 
         StatusOfContributionsSummaryTemplateWriter(
             ws,
@@ -521,10 +522,49 @@ class StatusOfContributionsExportView(views.APIView):
             data_count,
             None,
         ).write()
+        sheet_names = [SUMMARY_WORKSHEET_NAME]
+
+        # Now add triennials
+        for triennial_start_year in triennial_start_years.split(","):
+            start_year = int(triennial_start_year)
+            end_year = start_year + 2
+            agg = TriennialStatusOfContributionsAggregator(start_year, end_year)
+
+            soc_qs = agg.get_status_of_contributions_qs()
+            triennial_data = [
+                {
+                    "no": index + 1,
+                    "country": country.name,
+                    "agreed_contributions": country.agreed_contributions,
+                    "cash_payments": country.cash_payments,
+                    "bilateral_assistance": country.bilateral_assistance,
+                    "promissory_notes": country.promissory_notes,
+                    "outstanding_contributions": country.outstanding_contributions,
+                    "gain_loss": country.gain_loss,
+                }
+                for index, country in enumerate(soc_qs)
+            ]
+
+            # Need to also get and write CEIT data & Disputed contributions
+            # ceit_countries_qs = agg.get_ceit_countries()
+            # triennial_data["ceit"] = agg.get_ceit_data(ceit_countries_qs)
+
+            ws = wb[TRIENIAL_WORKSHEET_NAME]
+            StatusOfContributionsTriennialTemplateWriter(
+                ws,
+                triennial_data,
+                len(triennial_data),
+                None,
+            ).write()
+            sheet_name = f"{start_year}-{end_year-2000} Contributions"
+            # Save sheet with the updated title
+            ws.title = sheet_name
+            # Make sure sheet doesn't get deleted in the end
+            sheet_names.append(sheet_name)
 
         # Delete all other worksheets
         for name in wb.sheetnames:
-            if name != WORKSHEET_NAME:
+            if name not in sheet_names:
                 wb.remove(wb[name])
 
         # TODO: customize name based on years and triennials (or summary)
@@ -1423,14 +1463,6 @@ class ReplenishmentDashboardExportView(views.APIView):
 
         status_data = self.get_status()
         data_count = len(status_data)
-
-        # TODO: use this for the status of contributions?
-        # periods = (
-        #     TriennialContributionStatus.objects.values("start_year", "end_year")
-        #     .distinct()
-        #     .order_by("start_year")
-        # )
-        # add_statistics_status_of_contributions_response_worksheet(wb, periods)
 
         StatusOfTheFundTemplateWriter(
             ws,
