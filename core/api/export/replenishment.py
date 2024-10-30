@@ -7,6 +7,7 @@ from openpyxl.utils import range_boundaries
 from core.api.export.base import WriteOnlyBase
 
 EMPTY_ROW = (None, None, None)
+# pylint: disable=W0612
 
 
 class DashboardWriter(WriteOnlyBase):
@@ -414,13 +415,13 @@ class BaseTemplateSheetWriter:
         for row_data in self.data:
             self.write_row(row_data, row_data["no"])
 
-    def write_row(self, row_data, index):
+    def write_row(self, row_data, row_index):
         """
         Writing row values for data rows.
 
         Totals row is calculated via formulas, leaving it alone.
         """
-        row_to_overwrite = self.TEMPLATE_FIRST_DATA_ROW + index - 1
+        row_to_overwrite = self.TEMPLATE_FIRST_DATA_ROW + row_index - 1
         for key in row_data.keys():
             if self.DATA_MAPPING.get(key) is None:
                 continue
@@ -434,9 +435,9 @@ class BaseTemplateSheetWriter:
                 row_data[key],
             )
 
-    def write_cell(self, cell, type, format, value):
+    def write_cell(self, cell, cell_type, cell_format, value):
         cell.value = value
-        if type in (Decimal, float) and format is not None:
+        if cell_type in (Decimal, float) and cell_format is not None:
             cell.number_format = format
 
 
@@ -539,13 +540,13 @@ class StatusOfTheFundTemplateWriter(BaseTemplateSheetWriter):
         for index, row_data in enumerate(self.data):
             self.write_row(row_data, index)
 
-    def write_row(self, row_data, index):
+    def write_row(self, row_data, row_index):
         """
         Writing row values for data rows.
 
         Here the values come as tuples and we need to do the mapping directly.
         """
-        row_to_overwrite = self.TEMPLATE_FIRST_DATA_ROW + index
+        row_to_overwrite = self.TEMPLATE_FIRST_DATA_ROW + row_index
 
         # Skip empty rows
         if row_data is None:

@@ -1,5 +1,5 @@
 # TODO: split the file into multiple files
-# pylint: disable=C0302
+# pylint: disable=C0302,R0914
 
 import json
 import urllib
@@ -20,7 +20,6 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
-from core.api.export.base import configure_sheet_print
 from core.api.export.replenishment import (
     EMPTY_ROW,
     ScaleOfAssessmentTemplateWriter,
@@ -483,10 +482,10 @@ class AnnualStatusOfContributionsExportView(views.APIView):
 
 class StatusOfContributionsExportView(views.APIView):
     permission_classes = [IsUserAllowedReplenishment]
+    SUMMARY_WORKSHEET_NAME = "Summary Status of Contributions"
+    TRIENIAL_WORKSHEET_NAME = "2024-26 Contributions"
 
     def get(self, request, *args, **kwargs):
-        SUMMARY_WORKSHEET_NAME = "Summary Status of Contributions"
-        TRIENIAL_WORKSHEET_NAME = "2024-26 Contributions"
 
         self.check_permissions(request)
 
@@ -514,7 +513,7 @@ class StatusOfContributionsExportView(views.APIView):
         wb = openpyxl.load_workbook(
             filename=EXPORT_RESOURCES_DIR / "ContributionsFormatted.xlsx"
         )
-        ws = wb[SUMMARY_WORKSHEET_NAME]
+        ws = wb[self.SUMMARY_WORKSHEET_NAME]
 
         StatusOfContributionsSummaryTemplateWriter(
             ws,
@@ -522,7 +521,7 @@ class StatusOfContributionsExportView(views.APIView):
             data_count,
             None,
         ).write()
-        sheet_names = [SUMMARY_WORKSHEET_NAME]
+        sheet_names = [self.SUMMARY_WORKSHEET_NAME]
 
         # Now add triennials
         for triennial_start_year in triennial_start_years.split(","):
@@ -549,7 +548,7 @@ class StatusOfContributionsExportView(views.APIView):
             # ceit_countries_qs = agg.get_ceit_countries()
             # triennial_data["ceit"] = agg.get_ceit_data(ceit_countries_qs)
 
-            ws = wb[TRIENIAL_WORKSHEET_NAME]
+            ws = wb[self.TRIENIAL_WORKSHEET_NAME]
             StatusOfContributionsTriennialTemplateWriter(
                 ws,
                 triennial_data,
@@ -562,13 +561,51 @@ class StatusOfContributionsExportView(views.APIView):
             # Make sure sheet doesn't get deleted in the end
             sheet_names.append(sheet_name)
 
+        # Now add years
+        for year in years.split(","):
+            year = int(year)
+            # We can use the same writer
+            agg = AnnualStatusOfContributionsAggregator(year)
+
+            soc_qs = agg.get_status_of_contributions_qs()
+            annual_data = [
+                {
+                    "no": index + 1,
+                    "country": country.name,
+                    "agreed_contributions": country.agreed_contributions,
+                    "cash_payments": country.cash_payments,
+                    "bilateral_assistance": country.bilateral_assistance,
+                    "promissory_notes": country.promissory_notes,
+                    "outstanding_contributions": country.outstanding_contributions,
+                    "gain_loss": country.gain_loss,
+                }
+                for index, country in enumerate(soc_qs)
+            ]
+
+            # Need to also get and write CEIT data & Disputed contributions
+            # ceit_countries_qs = agg.get_ceit_countries()
+            # triennial_data["ceit"] = agg.get_ceit_data(ceit_countries_qs)
+
+            ws = wb[self.TRIENIAL_WORKSHEET_NAME]
+            StatusOfContributionsTriennialTemplateWriter(
+                ws,
+                annual_data,
+                len(annual_data),
+                None,
+            ).write()
+            sheet_name = f"{year} Contributions"
+            # Save sheet with the updated title
+            ws.title = sheet_name
+            # Make sure sheet doesn't get deleted in the end
+            sheet_names.append(sheet_name)
+
         # Delete all other worksheets
         for name in wb.sheetnames:
             if name not in sheet_names:
                 wb.remove(wb[name])
 
         # TODO: customize name based on years and triennials (or summary)
-        return workbook_response(f"Status of Contributions", wb)
+        return workbook_response("Status of Contributions", wb)
 
 
 class TriennialStatusOfContributionsView(views.APIView):
