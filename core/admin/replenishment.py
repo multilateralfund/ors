@@ -9,6 +9,9 @@ from core.models import (
     Payment,
     ExternalAllocation,
     ExternalIncomeAnnual,
+    DisputedContribution,
+    AnnualContributionStatus,
+    TriennialContributionStatus,
 )
 
 
@@ -143,4 +146,50 @@ class ExternalIncomeAnnualAdmin(admin.ModelAdmin):
             "quarter",
             "year",
             "triennial_start_year",
+        ]
+
+
+@admin.register(DisputedContribution)
+class DisputedContributionAdmin(admin.ModelAdmin):
+    def get_list_display(self, request):
+        return [
+            "__str__",
+            "country",
+            "year",
+            "amount",
+        ]
+
+
+@admin.register(AnnualContributionStatus)
+class AnnualContributionStatusAdmin(admin.ModelAdmin):
+    def get_list_display(self, request):
+        return [
+            "id",
+            "country",
+            "year",
+            "agreed_contributions",
+            "cash_payments",
+            "bilateral_assistance",
+            "promissory_notes",
+            "outstanding_contributions",
+            "bilateral_assistance_meeting",
+            "bilateral_assistance_decision_number",
+        ]
+
+
+@admin.register(TriennialContributionStatus)
+class TriennialContributionStatus(admin.ModelAdmin):
+    def get_list_display(self, request):
+        return [
+            "id",
+            "country",
+            "start_year",
+            "end_year",
+            "agreed_contributions",
+            "cash_payments",
+            "bilateral_assistance",
+            "promissory_notes",
+            "outstanding_contributions",
+            "bilateral_assistance_meeting",
+            "bilateral_assistance_decision_number",
         ]
