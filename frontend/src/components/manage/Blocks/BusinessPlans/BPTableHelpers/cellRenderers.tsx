@@ -4,7 +4,7 @@ import { Dispatch, SetStateAction, useState } from 'react'
 
 import { Tooltip } from '@mui/material'
 import { Typography } from '@mui/material'
-import { filter, find, findIndex } from 'lodash'
+import { filter, find, findIndex, map } from 'lodash'
 
 import { IoClose } from 'react-icons/io5'
 
@@ -31,17 +31,29 @@ const Tag = (tags: Array<string>, onDelete: (tag: string) => void) =>
     </Typography>
   ))
 
-const updateGridData = (tag: string, options: Array<any>, props: any) => {
+const updateGridData = (
+  tag: string,
+  options: Array<any>,
+  field: string,
+  props: any,
+) => {
   const optionId = find(options, (option) => option.name === tag)?.id
 
-  props.data.substances_display = filter(
-    props.data.substances_display,
-    (tagName) => tagName !== tag,
-  )
-  props.data.substances = filter(
-    props.data.substances,
-    (tagId) => tagId !== optionId,
-  )
+  if (field === 'substances') {
+    props.data.substances_display = filter(
+      props.data.substances_display,
+      (tagName) => tagName !== tag,
+    )
+    props.data.substances = filter(
+      props.data.substances,
+      (tagId) => tagId !== optionId,
+    )
+  } else {
+    props.data.comment_types = filter(
+      props.data.comment_types,
+      (tagId) => tagId !== optionId,
+    )
+  }
 }
 
 const updateFormData = (
@@ -65,32 +77,40 @@ const updateFormData = (
 const TooltipTag = (
   tags: Array<string>,
   setTags: Dispatch<SetStateAction<Array<string>>>,
-  options: Array<any>,
-  props: any,
+  params: any,
 ) => {
+  const { field, options, props } = params
+
   const deleteTag = (tag: string) => {
-    updateGridData(tag, options, props)
+    updateGridData(tag, options, field, props)
     setTags(filter(tags, (tagName) => tagName !== tag))
   }
 
   return Tag(tags, deleteTag)
 }
 
-const CellTag = (params: any) => {
-  const { form, props, setForm, substances } = params
-  const tags = props.data.substances_display || []
+const CellTag = (propTags: Array<string>, params: any) => {
+  const { field, form, options, props, setForm } = params
 
   const deleteTag = (tag: string) => {
-    updateGridData(tag, substances, props)
+    updateGridData(tag, options, field, props)
     updateFormData(form, setForm, props)
   }
 
-  return Tag(tags, deleteTag)
+  return Tag(propTags, deleteTag)
 }
 
 export const EditTagsCellRenderer = (params: any) => {
-  const { form, props, setForm, substances } = params
-  const propsTags = props.data.substances_display || []
+  const { field, form, options, props, setForm } = params
+  const { comment_types, substances_display } = props.data
+
+  const propsTags =
+    field === 'substances'
+      ? substances_display
+      : map(
+          comment_types,
+          (comId) => find(options, (comm) => comm.id === comId)?.name,
+        )
 
   const [tags, setTags] = useState(propsTags)
 
@@ -103,11 +123,11 @@ export const EditTagsCellRenderer = (params: any) => {
       TransitionProps={{ timeout: 0 }}
       classes={{ tooltip: 'bp-table-tooltip' }}
       placement={'top'}
-      title={tags.length > 0 && TooltipTag(tags, setTags, substances, props)}
+      title={tags.length > 0 && TooltipTag(tags, setTags, params)}
       onClose={onTooltipClose}
     >
       <Typography className="diff-cell content-normal" component="span">
-        {CellTag(params)}
+        {CellTag(propsTags, params)}
       </Typography>
     </Tooltip>
   )

@@ -1,7 +1,5 @@
 import { filter, find, get, isEqual, isObject, map } from 'lodash'
 
-import { displayTagsCellValue } from '../../Table/BusinessPlansTable/schemaHelpers'
-
 export const agFormatValue = (value: any) => value?.id || ''
 export const agFormatNameValue = (value: any) => value?.name || ''
 export const agFormatValueTags = (value: any) =>
@@ -131,13 +129,4 @@ export const commentsValueSetter = (params: any) => {
   params.data.comment_types = newValNames
 
   return true
-}
-
-export const editTagsCellRenderer = (props: any) => {
-  const tags = map(
-    props.value,
-    (tagId) => find(props.commentTypes, (comm) => comm.id === tagId)?.name,
-  )
-
-  return displayTagsCellValue(tags)
 }

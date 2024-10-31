@@ -17,7 +17,6 @@ import {
   agFormatValueTags,
   commentSecretariatValueSetter,
   commentsValueSetter,
-  editTagsCellRenderer,
   getOptionLabel,
   getOptionLabelByName,
   getOptions,
@@ -247,7 +246,6 @@ const useColumnsOptions = (
           },
         },
         {
-          cellClass: 'ag-tags-cell-content',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: {
@@ -262,7 +260,11 @@ const useColumnsOptions = (
             showUnselectedOptions: true,
           },
           cellRenderer: (props: any) =>
-            EditTagsCellRenderer({ ...{ form, props, setForm, substances } }),
+            EditTagsCellRenderer({
+              ...{ form, props, setForm },
+              field: 'substances',
+              options: substances,
+            }),
           enableCellChangeFlash: false,
           field: 'substances',
           headerClass: 'ag-text-center',
@@ -383,10 +385,12 @@ const useColumnsOptions = (
             showUnselectedOptions: true,
           },
           cellRenderer: (props: any) =>
-            editTagsCellRenderer({
-              commentTypes,
-              value: props.data.comment_types,
+            EditTagsCellRenderer({
+              ...{ form, props, setForm },
+              field: 'comment_types',
+              options: commentTypes,
             }),
+          enableCellChangeFlash: false,
           field: 'comment_types',
           headerClass: 'ag-text-center',
           headerName: tableColumns.comment_types,
