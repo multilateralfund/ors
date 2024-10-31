@@ -523,8 +523,11 @@ class StatusOfContributionsExportView(views.APIView):
         ).write()
         sheet_names = [self.SUMMARY_WORKSHEET_NAME]
 
+
+        triennial_ws = wb[self.TRIENIAL_WORKSHEET_NAME]
         # Now add triennials
-        for triennial_start_year in triennial_start_years.split(","):
+        triennial_start_years = [] if not triennial_start_years else triennial_start_years.split(",")
+        for triennial_start_year in triennial_start_years:
             start_year = int(triennial_start_year)
             end_year = start_year + 2
             agg = TriennialStatusOfContributionsAggregator(start_year, end_year)
@@ -548,21 +551,22 @@ class StatusOfContributionsExportView(views.APIView):
             # ceit_countries_qs = agg.get_ceit_countries()
             # triennial_data["ceit"] = agg.get_ceit_data(ceit_countries_qs)
 
-            ws = wb[self.TRIENIAL_WORKSHEET_NAME]
+            ws = wb.copy_worksheet(triennial_ws)
             StatusOfContributionsTriennialTemplateWriter(
                 ws,
                 triennial_data,
                 len(triennial_data),
                 None,
             ).write()
-            sheet_name = f"{start_year}-{end_year-2000} Contributions"
+            sheet_name = f"{start_year}-{end_year} Contributions"
             # Save sheet with the updated title
             ws.title = sheet_name
             # Make sure sheet doesn't get deleted in the end
             sheet_names.append(sheet_name)
 
         # Now add years
-        for year in years.split(","):
+        years = [] if not years else years.split(",")
+        for year in years:
             year = int(year)
             # We can use the same writer
             agg = AnnualStatusOfContributionsAggregator(year)
@@ -586,7 +590,7 @@ class StatusOfContributionsExportView(views.APIView):
             # ceit_countries_qs = agg.get_ceit_countries()
             # triennial_data["ceit"] = agg.get_ceit_data(ceit_countries_qs)
 
-            ws = wb[self.TRIENIAL_WORKSHEET_NAME]
+            ws = wb.copy_worksheet(triennial_ws)
             StatusOfContributionsTriennialTemplateWriter(
                 ws,
                 annual_data,
