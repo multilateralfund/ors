@@ -15,14 +15,11 @@ import {
   agFormatNameValue,
   agFormatValue,
   agFormatValueTags,
-  commentSecretariatValueSetter,
   commentsValueSetter,
   getOptionLabel,
-  getOptionLabelByName,
   getOptions,
   isOptionEqualToValue,
   isOptionEqualToValueByName,
-  remarksValueSetter,
   statusValueSetter,
   substancesValueSetter,
   valueSetter,
@@ -329,7 +326,7 @@ const useColumnsOptions = (
             Input: { placeholder: 'Select IND/MYA' },
             agFormatValue: agFormatNameValue,
             getOptionLabel: (option: any) =>
-              getOptionLabelByName(multiYearFilterOptions, option),
+              getOptionLabel(multiYearFilterOptions, option, 'name'),
             isOptionEqualToValue: isOptionEqualToValueByName,
             openOnFocus: true,
             options: multiYearFilterOptions,
@@ -353,12 +350,11 @@ const useColumnsOptions = (
         },
         {
           cellClass: 'ag-cell-ellipsed',
+          field: 'remarks',
           headerClass: 'ag-text-center',
           headerName: tableColumns.remarks,
           minWidth: 200,
           tooltipField: 'remarks',
-          valueGetter: ({ data }: any) => data.remarks,
-          valueSetter: remarksValueSetter,
         },
         {
           cellClass: 'ag-cell-ellipsed',
@@ -367,7 +363,10 @@ const useColumnsOptions = (
           headerName: tableColumns.comment_secretariat,
           minWidth: 200,
           tooltipField: 'comment_secretariat',
-          valueSetter: commentSecretariatValueSetter,
+          valueSetter: (params: any) => {
+            params.data.comment_secretariat = params.newValue ?? ''
+            return true
+          },
         },
         {
           cellEditor: 'agSelectCellEditor',

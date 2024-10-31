@@ -13,15 +13,10 @@ export const getOptions = (value: any, options: Array<any>) => {
   return filter(options, (option) => !formattedValue.includes(option.id))
 }
 
-export const getOptionLabel = (data: any, option: any) =>
+export const getOptionLabel = (data: any, option: any, field: string = 'id') =>
   isObject(option)
     ? get(option, 'name')
-    : find(data, { id: option })?.name || ''
-
-export const getOptionLabelByName = (data: any, option: any) =>
-  isObject(option)
-    ? get(option, 'name')
-    : find(data, { name: option })?.name || ''
+    : find(data, { [field]: option })?.name || ''
 
 export const isOptionEqualToValue = (option: any, value: any) =>
   isObject(value) ? isEqual(option, value) : option.id === value
@@ -80,18 +75,6 @@ export const substancesValueSetter = (params: any, substances: any) => {
         id,
       })?.name,
   )
-
-  return true
-}
-
-export const remarksValueSetter = (params: any) => {
-  params.data.remarks = params.newValue
-
-  return true
-}
-
-export const commentSecretariatValueSetter = (params: any) => {
-  params.data.comment_secretariat = params.newValue ?? ''
 
   return true
 }
