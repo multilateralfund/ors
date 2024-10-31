@@ -169,9 +169,24 @@ class Blend(models.Model):
     @cached_property
     def is_related_preblended_polyol(self):
         """
-        Check if thethere is component that is in pre-blended polyol
+        Check if the blend is related to pre-blended polyol
+        (check the name, composition, other names and components names)
         @return: True if there is a component that is in pre-blended polyol
         """
+        if self.is_contained_in_polyols:
+            return True
+
+        check_name = str(
+            [
+                self.name,
+                self.composition,
+                self.composition_alt,
+                self.other_names,
+            ]
+        )
+        if "pre-blended polyol" in check_name.lower():
+            return True
+
         for component in self.components.all():
             if "pre-blended polyol" in component.component_name.lower():
                 return True
