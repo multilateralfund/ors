@@ -7,6 +7,8 @@ from core.models import (
     ScaleOfAssessmentVersion,
     Invoice,
     Payment,
+    ExternalAllocation,
+    ExternalIncome,
 )
 
 

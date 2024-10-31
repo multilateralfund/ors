@@ -1539,6 +1539,11 @@ class ReplenishmentExternalAllocationViewSet(
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
+        agency_name = request.data.get("agency_name")
+        if agency_name is not None:
+            return super().create(request, *args, **kwargs)
+
+        # If no agency name is used, it's a special case of using the endpoint
         data_to_create = []
 
         meeting_id = request.data.get("meeting_id")
