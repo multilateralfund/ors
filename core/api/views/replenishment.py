@@ -1537,6 +1537,53 @@ class ReplenishmentExternalAllocationViewSet(
     def get_queryset(self):
         return ExternalAllocation.objects.all()
 
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        data_to_create = []
+
+        meeting_id = request.data.get("meeting_id")
+        decision_number = request.data.get("decision_number", "")
+        comment = request.data.get("comment", "")
+
+        for key in request.data.keys():
+            params = {}
+            if key.startswith("staff_contracts_"):
+                params = {
+                    "year": int(key.replace("staff_contracts_", "")),
+                    "staff_contracts": Decimal(request.data.get(key)),
+                }
+            elif key.startswith("treasury_fees_"):
+                params = {
+                    "year": int(key.replace("treasury_fees_", "")),
+                    "treasury_fees": Decimal(request.data.get(key)),
+                }
+            elif key.startswith("monitoring_fees_"):
+                params = {
+                    "year": int(key.replace("monitoring_fees_", "")),
+                    "monitoring_fees": Decimal(request.data.get(key)),
+                }
+            else:
+                # Non-relevant key
+                continue
+
+            data_to_create.append(
+                {
+                    "meeting_id": meeting_id,
+                    "decision_number": decision_number,
+                    "comment": comment,
+                    **params,
+                }
+            )
+        serializer = ExternalAllocationSerializer(data=data_to_create, many=True)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
 
 class ReplenishmentExternalIncomeAnnualViewSet(
     mixins.CreateModelMixin,
