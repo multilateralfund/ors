@@ -523,8 +523,11 @@ class StatusOfContributionsExportView(views.APIView):
         ).write()
         sheet_names = [self.SUMMARY_WORKSHEET_NAME]
 
+
+        triennial_ws = wb[self.TRIENIAL_WORKSHEET_NAME]
         # Now add triennials
-        for triennial_start_year in triennial_start_years.split(","):
+        triennial_start_years = [] if not triennial_start_years else triennial_start_years.split(",")
+        for triennial_start_year in triennial_start_years:
             start_year = int(triennial_start_year)
             end_year = start_year + 2
             agg = TriennialStatusOfContributionsAggregator(start_year, end_year)
@@ -548,21 +551,22 @@ class StatusOfContributionsExportView(views.APIView):
             # ceit_countries_qs = agg.get_ceit_countries()
             # triennial_data["ceit"] = agg.get_ceit_data(ceit_countries_qs)
 
-            ws = wb[self.TRIENIAL_WORKSHEET_NAME]
+            ws = wb.copy_worksheet(triennial_ws)
             StatusOfContributionsTriennialTemplateWriter(
                 ws,
                 triennial_data,
                 len(triennial_data),
                 None,
             ).write()
-            sheet_name = f"{start_year}-{end_year-2000} Contributions"
+            sheet_name = f"{start_year}-{end_year} Contributions"
             # Save sheet with the updated title
             ws.title = sheet_name
             # Make sure sheet doesn't get deleted in the end
             sheet_names.append(sheet_name)
 
         # Now add years
-        for year in years.split(","):
+        years = [] if not years else years.split(",")
+        for year in years:
             year = int(year)
             # We can use the same writer
             agg = AnnualStatusOfContributionsAggregator(year)
@@ -586,7 +590,7 @@ class StatusOfContributionsExportView(views.APIView):
             # ceit_countries_qs = agg.get_ceit_countries()
             # triennial_data["ceit"] = agg.get_ceit_data(ceit_countries_qs)
 
-            ws = wb[self.TRIENIAL_WORKSHEET_NAME]
+            ws = wb.copy_worksheet(triennial_ws)
             StatusOfContributionsTriennialTemplateWriter(
                 ws,
                 annual_data,
@@ -934,7 +938,6 @@ class StatisticsExportView(views.APIView):
                     8: (
                         total_payments
                         / soc["agreed_contributions_sum"]
-                        * Decimal("100")
                     ),
                     # One empty row in between
                     10: income["interest_earned"],
@@ -953,7 +956,6 @@ class StatisticsExportView(views.APIView):
                     19: (
                         total_payments
                         / soc["agreed_contributions_sum"]
-                        * Decimal("100")
                     ),
                     # Total income
                     20: (
@@ -965,13 +967,11 @@ class StatisticsExportView(views.APIView):
                     22: (
                         soc["outstanding_contributions_sum"]
                         / soc["agreed_contributions_sum"]
-                        * Decimal("100")
                     ),
                     23: soc["outstanding_ceit"],
                     24: (
                         soc["outstanding_ceit"]
                         / soc["agreed_contributions_sum"]
-                        * Decimal("100")
                     ),
                 }
             )
@@ -1139,6 +1139,7 @@ class BilateralAssistanceViewSet(
             ) from exc
 
         annual_contribution.bilateral_assistance += Decimal(amount)
+        annual_contribution.outstanding_contributions -= Decimal(amount)
         annual_contribution.bilateral_assistance_meeting_id = meeting_id
         annual_contribution.bilateral_assistance_decision_number = decision
         annual_contribution.save(
@@ -1150,6 +1151,7 @@ class BilateralAssistanceViewSet(
         )
 
         triennial_contribution.bilateral_assistance += Decimal(amount)
+        triennial_contribution.outstanding_contributions -= Decimal(amount)
         triennial_contribution.bilateral_assistance_meeting_id = meeting_id
         triennial_contribution.bilateral_assistance_decision_number = decision
         triennial_contribution.save(
@@ -1501,11 +1503,22 @@ class ReplenishmentDashboardExportView(views.APIView):
         status_data = self.get_status()
         data_count = len(status_data)
 
+        try:
+            latest_payment = Payment.objects.latest("date")
+        except Payment.DoesNotExist:
+            latest_payment = None
+        as_of_date = (
+            latest_payment.date
+            if latest_payment and latest_payment.date
+            else config.DEFAULT_REPLENISHMENT_AS_OF_DATE
+        )
+
         StatusOfTheFundTemplateWriter(
             ws,
             status_data,
             data_count,
             None,
+            as_of_date=as_of_date,
         ).write()
 
         # Delete all other worksheets
@@ -1536,6 +1549,58 @@ class ReplenishmentExternalAllocationViewSet(
 
     def get_queryset(self):
         return ExternalAllocation.objects.all()
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        agency_name = request.data.get("agency_name")
+        if agency_name is not None:
+            return super().create(request, *args, **kwargs)
+
+        # If no agency name is used, it's a special case of using the endpoint
+        data_to_create = []
+
+        meeting_id = request.data.get("meeting_id")
+        decision_number = request.data.get("decision_number", "")
+        comment = request.data.get("comment", "")
+
+        for key in request.data.keys():
+            params = {}
+            if key.startswith("staff_contracts_"):
+                params = {
+                    "year": int(key.replace("staff_contracts_", "")),
+                    "staff_contracts": Decimal(request.data.get(key)),
+                }
+            elif key.startswith("treasury_fees_"):
+                params = {
+                    "year": int(key.replace("treasury_fees_", "")),
+                    "treasury_fees": Decimal(request.data.get(key)),
+                }
+            elif key.startswith("monitoring_fees_"):
+                params = {
+                    "year": int(key.replace("monitoring_fees_", "")),
+                    "monitoring_fees": Decimal(request.data.get(key)),
+                }
+            else:
+                # Non-relevant key
+                continue
+
+            data_to_create.append(
+                {
+                    "meeting_id": meeting_id,
+                    "decision_number": decision_number,
+                    "comment": comment,
+                    **params,
+                }
+            )
+        serializer = ExternalAllocationSerializer(data=data_to_create, many=True)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
 
 
 class ReplenishmentExternalIncomeAnnualViewSet(
@@ -1853,7 +1918,7 @@ class ReplenishmentPaymentViewSet(
         "payment_for_years",
         "country__name",
         "comment",
-        "invoices__number",
+        "invoice__number",
         "date",
         "currency",
         "exchange_rate",

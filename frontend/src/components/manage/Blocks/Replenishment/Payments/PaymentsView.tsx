@@ -55,7 +55,7 @@ const COLUMNS: PaymentColumn[] = [
     field: 'exchange_rate',
     label: 'Exchange Rate',
   },
-  { field: 'payment_years', label: 'Year(s)' },
+  { field: 'payment_years', label: 'Year' },
   { field: 'ferm_gain_or_loss', label: 'Exchange (Gain)/Loss' },
   { field: 'files', label: 'Files' },
   { field: 'comment', label: 'Comments' },

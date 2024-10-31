@@ -522,6 +522,8 @@ class ExternalAllocation(models.Model):
 
     meeting = models.ForeignKey(Meeting, null=True, on_delete=models.PROTECT)
 
+    decision_number = models.CharField(max_length=32, default="")
+
     comment = models.TextField(blank=True, default="")
 
 
