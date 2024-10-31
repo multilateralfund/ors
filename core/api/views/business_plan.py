@@ -150,7 +150,7 @@ class BusinessPlanViewSet(
     @action(methods=["GET"], detail=False)
     def get(self, *args, **kwargs):
         self.search_fields = ["title", "comment_secretariat"]
-        self.ordering = ["title", "country", "id"]
+        self.ordering = ["country__abbr", "initial_id"]
         self.ordering_fields = BPACTIVITY_ORDERING_FIELDS
 
         # get activities and history for a specific business plan
@@ -573,7 +573,7 @@ class BPActivityViewSet(
         filters.SearchFilter,
     ]
     search_fields = ["title", "comment_secretariat"]
-    ordering = ["title", "country", "id"]
+    ordering = ["business_plan__agency__name", "country__abbr", "initial_id"]
     ordering_fields = ["business_plan__agency__name"] + BPACTIVITY_ORDERING_FIELDS
 
     def get_serializer_class(self):
