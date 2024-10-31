@@ -1,3 +1,5 @@
+import { ApiEditBPActivity } from '@ors/types/api_bp_get'
+
 import { Reducer } from 'react'
 
 import {
@@ -7,7 +9,7 @@ import {
 
 export interface BPCreateState {
   activeTab: number
-  somethingElseState?: boolean
+  form: ApiEditBPActivity[]
 }
 
 export const bpReducer: Reducer<BPCreateState, BPCreateAction> = function (
@@ -17,9 +19,16 @@ export const bpReducer: Reducer<BPCreateState, BPCreateAction> = function (
   switch (action.type) {
     case ActionType.setActiveTab:
       return { ...state, activeTab: action.payload }
-    case ActionType.somethingElse:
-      return { ...state, somethingElseState: action.payload }
+    case ActionType.addActivity:
+      return { ...state, form: action.payload }
     default:
       return { ...state }
+  }
+}
+
+export function initialState(): BPCreateState {
+  return {
+    activeTab: 0,
+    form: [],
   }
 }

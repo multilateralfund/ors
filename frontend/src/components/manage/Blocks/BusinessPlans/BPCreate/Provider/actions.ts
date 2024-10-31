@@ -1,12 +1,14 @@
+import { ApiEditBPActivity } from '@ors/types/api_bp_get'
+
 export enum ActionType {
+  addActivity = 'addActivity',
   setActiveTab = 'setActiveTab',
-  somethingElse = 'somethingElse',
 }
 
 export type BPCreateAction =
   | {
-      payload: boolean
-      type: ActionType.somethingElse
+      payload: ApiEditBPActivity[]
+      type: ActionType.addActivity
     }
   | {
       payload: number

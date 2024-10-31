@@ -10,6 +10,7 @@ import { BPCreateAction } from '@ors/components/manage/Blocks/BusinessPlans/BPCr
 import {
   BPCreateState,
   bpReducer,
+  initialState,
 } from '@ors/components/manage/Blocks/BusinessPlans/BPCreate/Provider/state'
 
 const BPCreateContext = createContext<BPCreateState>(
@@ -21,9 +22,7 @@ const BPDispatchContext = createContext<Dispatch<BPCreateAction>>(
 
 export default function BPCreateProvider(props: PropsWithChildren) {
   const { children } = props
-  const [state, dispatch] = useReducer(bpReducer, {
-    activeTab: 0,
-  })
+  const [state, dispatch] = useReducer(bpReducer, initialState())
   return (
     <BPCreateContext.Provider value={state}>
       <BPDispatchContext.Provider value={dispatch}>

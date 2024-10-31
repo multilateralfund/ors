@@ -1,4 +1,6 @@
 'use client'
+import { ApiBPYearRange } from '@ors/types/api_bp_get_years'
+
 import React, { useCallback, useContext, useMemo, useRef } from 'react'
 
 import { Button } from '@mui/material'
@@ -19,18 +21,10 @@ import useColumnsOptions from './editSchema'
 
 import { IoAddCircle } from 'react-icons/io5'
 
-export default function BPEditTable(props: BPEditTableInterface) {
-  const { form = [], loading, params, setForm } = props
-
-  const { period } = useParams<BpPathParams>()
-  const year_start = period.split('-')[0]
-
-  const { yearRanges } = useContext(BPYearRangesContext) as any
-
-  const yearRangeSelected = useMemo(
-    () => yearRanges.find((item: any) => item.year_start == year_start),
-    [yearRanges, year_start],
-  )
+export function BPEditBaseTable(
+  props: { yearRangeSelected: ApiBPYearRange } & BPEditTableInterface,
+) {
+  const { form = [], loading, setForm, yearRangeSelected } = props
 
   const grid = useRef<any>()
 
@@ -102,7 +96,7 @@ export default function BPEditTable(props: BPEditTableInterface) {
     ) {
       const isAfterMaxYear = year > yearRangeSelected.max_year
 
-      let label = year
+      let label = year.toString()
       if (isAfterMaxYear) {
         label = `After ${yearRangeSelected.max_year}`
       }
@@ -217,8 +211,6 @@ export default function BPEditTable(props: BPEditTableInterface) {
     setForm,
   )
 
-  const exportParams = useMemo(() => filtersToQueryParams(params), [params])
-
   const AddActivityButton = () => (
     <div className="bp-table-toolbar mb-4 flex">
       <div className="ml-auto flex">
@@ -235,51 +227,69 @@ export default function BPEditTable(props: BPEditTableInterface) {
   )
 
   return (
-    yearRanges &&
-    yearRanges.length > 0 && (
-      <>
-        <DownloadButtons
-          downloadTexts={['Download']}
-          downloadUrls={[
-            formatApiUrl(`/api/business-plan-activity/export/?${exportParams}`),
-          ]}
+    <>
+      <form>
+        <Table
+          className="bp-edit-table"
+          Toolbar={AddActivityButton}
+          columnDefs={columnOptions.columnDefs}
+          defaultColDef={columnOptions.defaultColDef}
+          domLayout="normal"
+          getRowId={(props) => props.data.row_id}
+          gridRef={grid}
+          loaded={!loading}
+          loading={loading}
+          resizeGridOnRowUpdate={true}
+          rowData={form}
+          singleClickEdit={true}
+          suppressScrollOnNewData={true}
+          tooltipShowDelay={200}
+          onCellValueChanged={(event) => {
+            const eventData = event.data
+            const newData = [...form]
+
+            const rowIndex = findIndex(
+              newData,
+              (row) => row.row_id === eventData.row_id,
+            )
+
+            if (rowIndex > -1) {
+              newData.splice(rowIndex, 1, {
+                ...eventData,
+              })
+
+              setForm(newData)
+            }
+          }}
         />
-        <form>
-          <Table
-            className="bp-edit-table"
-            Toolbar={AddActivityButton}
-            columnDefs={columnOptions.columnDefs}
-            defaultColDef={columnOptions.defaultColDef}
-            domLayout="normal"
-            getRowId={(props) => props.data.row_id}
-            gridRef={grid}
-            loaded={!loading}
-            loading={loading}
-            resizeGridOnRowUpdate={true}
-            rowData={form}
-            singleClickEdit={true}
-            suppressScrollOnNewData={true}
-            tooltipShowDelay={200}
-            onCellValueChanged={(event) => {
-              const eventData = event.data
-              const newData = [...form]
-
-              const rowIndex = findIndex(
-                newData,
-                (row) => row.row_id === eventData.row_id,
-              )
-
-              if (rowIndex > -1) {
-                newData.splice(rowIndex, 1, {
-                  ...eventData,
-                })
-
-                setForm(newData)
-              }
-            }}
-          />
-        </form>
-      </>
-    )
+      </form>
+    </>
   )
+}
+
+export default function BPEditTable(props: BPEditTableInterface) {
+  const { params } = props
+  const { period } = useParams<BpPathParams>()
+  const year_start = period.split('-')[0]
+
+  const { yearRanges } = useContext(BPYearRangesContext)
+
+  const yearRangeSelected = useMemo(
+    () => yearRanges.find((item: any) => item.year_start == year_start),
+    [yearRanges, year_start],
+  )
+
+  const exportParams = useMemo(() => filtersToQueryParams(params), [params])
+
+  return yearRangeSelected ? (
+    <>
+      <DownloadButtons
+        downloadTexts={['Download']}
+        downloadUrls={[
+          formatApiUrl(`/api/business-plan-activity/export/?${exportParams}`),
+        ]}
+      />
+      <BPEditBaseTable yearRangeSelected={yearRangeSelected} {...props} />
+    </>
+  ) : null
 }
