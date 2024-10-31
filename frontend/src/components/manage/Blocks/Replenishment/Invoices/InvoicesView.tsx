@@ -172,7 +172,7 @@ function InvoicesView() {
   }, [])
 
   const [sortOn, setSortOn] = useState(1)
-  const [sortDirection, setSortDirection] = useState<SortDirection>(1)
+  const [sortDirection, setSortDirection] = useState<SortDirection>(4)
 
   const [editIdx, setEditIdx] = useState<null | number>(null)
   const [showAdd, setShowAdd] = useState<boolean>(false)
