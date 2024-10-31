@@ -934,7 +934,6 @@ class StatisticsExportView(views.APIView):
                     8: (
                         total_payments
                         / soc["agreed_contributions_sum"]
-                        * Decimal("100")
                     ),
                     # One empty row in between
                     10: income["interest_earned"],
@@ -953,7 +952,6 @@ class StatisticsExportView(views.APIView):
                     19: (
                         total_payments
                         / soc["agreed_contributions_sum"]
-                        * Decimal("100")
                     ),
                     # Total income
                     20: (
@@ -965,13 +963,11 @@ class StatisticsExportView(views.APIView):
                     22: (
                         soc["outstanding_contributions_sum"]
                         / soc["agreed_contributions_sum"]
-                        * Decimal("100")
                     ),
                     23: soc["outstanding_ceit"],
                     24: (
                         soc["outstanding_ceit"]
                         / soc["agreed_contributions_sum"]
-                        * Decimal("100")
                     ),
                 }
             )
