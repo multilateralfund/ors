@@ -1,11 +1,13 @@
-import { useCallback, useMemo } from 'react'
+import { ApiEditBPActivity } from '@ors/types/api_bp_get'
+
+import { Dispatch, SetStateAction, useCallback, useMemo } from 'react'
 
 import { filter, isNil } from 'lodash'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import { useStore } from '@ors/store'
 
-import { tagsCellRenderer } from '../../Table/BusinessPlansTable/schemaHelpers'
+import { EditTagsCellRenderer } from '../BPTableHelpers/cellRenderers'
 import { multiYearFilterOptions, tableColumns } from '../constants'
 import { useGetChemicalTypes } from '../useGetChemicalTypes'
 import {
@@ -18,6 +20,7 @@ import {
   editTagsCellRenderer,
   getOptionLabel,
   getOptionLabelByName,
+  getOptions,
   isOptionEqualToValue,
   isOptionEqualToValueByName,
   remarksValueSetter,
@@ -31,6 +34,8 @@ import { IoTrash } from 'react-icons/io5'
 const useColumnsOptions = (
   yearColumns: any[],
   onRemoveActivity: (props: any) => void,
+  form: Array<ApiEditBPActivity>,
+  setForm: Dispatch<SetStateAction<ApiEditBPActivity[] | null | undefined>>,
 ) => {
   const commonSlice = useStore((state) => state.common)
   const projectSlice = useStore((state) => state.projects)
@@ -250,13 +255,15 @@ const useColumnsOptions = (
             },
             agFormatValue: agFormatValueTags,
             getOptionLabel: (option: any) => getOptionLabel(substances, option),
+            getOptions: (value: any) => getOptions(value, substances),
             isMultiple: true,
             isOptionEqualToValue,
             openOnFocus: true,
-            options: substances,
+            showUnselectedOptions: true,
           },
           cellRenderer: (props: any) =>
-            tagsCellRenderer({ value: props.data.substances_display }),
+            EditTagsCellRenderer({ ...{ form, props, setForm, substances } }),
+          enableCellChangeFlash: false,
           field: 'substances',
           headerClass: 'ag-text-center',
           headerName: tableColumns.substances,
@@ -369,10 +376,11 @@ const useColumnsOptions = (
             agFormatValue: agFormatValueTags,
             getOptionLabel: (option: any) =>
               getOptionLabel(commentTypes, option),
+            getOptions: (value: any) => getOptions(value, commentTypes),
             isMultiple: true,
             isOptionEqualToValue: isOptionEqualToValue,
             openOnFocus: true,
-            options: commentTypes,
+            showUnselectedOptions: true,
           },
           cellRenderer: (props: any) =>
             editTagsCellRenderer({
@@ -395,6 +403,8 @@ const useColumnsOptions = (
     [
       countries,
       clusters,
+      form,
+      setForm,
       types,
       getSubsectorsOfSector,
       chemicalTypesResults,

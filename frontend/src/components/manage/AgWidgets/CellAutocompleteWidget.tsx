@@ -31,6 +31,7 @@ export const CellAutocompleteWidget = memo(
         isMultiple?: boolean
         isOptionEqualToValue?: (option: any, value: any) => any
         openOnFocus?: boolean
+        showUnselectedOptions?: boolean
       } & AutocompleteWidgetProps &
         ICellEditorParams,
       ref,
@@ -119,9 +120,13 @@ export const CellAutocompleteWidget = memo(
           groupBy={props.groupBy}
           isOptionEqualToValue={props.isOptionEqualToValue}
           openOnFocus={props.openOnFocus}
-          options={props.options || props.getOptions?.(props) || []}
           ref={refInput}
           renderOption={props.renderOption}
+          options={
+            props.options ||
+            props.getOptions?.(props.showUnselectedOptions ? value : props) ||
+            []
+          }
           {...(props.isMultiple && {
             disableCloseOnSelect: true,
             multiple: true,

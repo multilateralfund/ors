@@ -1,4 +1,4 @@
-import { find, get, isEqual, isNull, isObject, map } from 'lodash'
+import { filter, find, get, isEqual, isObject, map } from 'lodash'
 
 import { displayTagsCellValue } from '../../Table/BusinessPlansTable/schemaHelpers'
 
@@ -6,6 +6,14 @@ export const agFormatValue = (value: any) => value?.id || ''
 export const agFormatNameValue = (value: any) => value?.name || ''
 export const agFormatValueTags = (value: any) =>
   value?.length > 0 ? value : ''
+
+export const getOptions = (value: any, options: Array<any>) => {
+  const formattedValue = map(value, (val) =>
+    isObject(val) ? get(val, 'id') : val,
+  )
+
+  return filter(options, (option) => !formattedValue.includes(option.id))
+}
 
 export const getOptionLabel = (data: any, option: any) =>
   isObject(option)
