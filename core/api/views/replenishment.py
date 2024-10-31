@@ -1853,7 +1853,7 @@ class ReplenishmentPaymentViewSet(
         "payment_for_years",
         "country__name",
         "comment",
-        "invoices__number",
+        "invoice__number",
         "date",
         "currency",
         "exchange_rate",
