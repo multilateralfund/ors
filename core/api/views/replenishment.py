@@ -1139,6 +1139,7 @@ class BilateralAssistanceViewSet(
             ) from exc
 
         annual_contribution.bilateral_assistance += Decimal(amount)
+        annual_contribution.outstanding_contributions -= Decimal(amount)
         annual_contribution.bilateral_assistance_meeting_id = meeting_id
         annual_contribution.bilateral_assistance_decision_number = decision
         annual_contribution.save(
@@ -1150,6 +1151,7 @@ class BilateralAssistanceViewSet(
         )
 
         triennial_contribution.bilateral_assistance += Decimal(amount)
+        triennial_contribution.outstanding_contributions -= Decimal(amount)
         triennial_contribution.bilateral_assistance_meeting_id = meeting_id
         triennial_contribution.bilateral_assistance_decision_number = decision
         triennial_contribution.save(
