@@ -1,11 +1,11 @@
 import { Button } from '@mui/material'
 import { entries, find, indexOf, isEmpty, pick, values } from 'lodash'
 import { useParams } from 'next/navigation'
-import { useRouter } from 'next/navigation'
 import { useSnackbar } from 'notistack'
 
 import Link from '@ors/components/ui/Link/Link'
 import { api } from '@ors/helpers'
+import { useStore } from '@ors/store'
 
 import BPHeaderView from '../BPHeaderView'
 import { tableColumns } from '../constants'
@@ -15,8 +15,8 @@ export default function BPHeaderEdit({ business_plan, form }: any) {
   const pathParams = useParams<BpPathParams>()
   const { agency, period } = pathParams
 
+  const { setBusinessPlan } = useStore((state) => state.businessPlan)
   const { enqueueSnackbar } = useSnackbar()
-  const router = useRouter()
 
   const editBP = async () => {
     try {
@@ -35,7 +35,7 @@ export default function BPHeaderEdit({ business_plan, form }: any) {
       enqueueSnackbar(<>Updated submission for {response.name}.</>, {
         variant: 'success',
       })
-      router.push(`/business-plans/${agency}/${period}`)
+      setBusinessPlan(response)
     } catch (error) {
       if (error.status === 400) {
         const errors = await error.json()
@@ -98,7 +98,7 @@ export default function BPHeaderEdit({ business_plan, form }: any) {
           variant="contained"
           onClick={editBP}
         >
-          Save draft
+          Update draft
         </Button>
       </div>
     </div>

@@ -9,6 +9,7 @@ import type { PartialDeep } from 'type-fest'
 import { StoreApi } from 'zustand'
 
 import { ApiAgency } from './api_agencies'
+import { ApiBP } from './api_bp_get'
 import { ReportVariant } from './variants'
 
 type StoreProviderProps = {
@@ -105,6 +106,21 @@ export interface BPDiffVersionsSlice {
   setPreviousVersion: (version: number) => void
 }
 
+type UpdatedBusinessPlan = {
+  activities: Array<ApiBP>
+  agency_id: number
+  id: number
+  name: string
+  status: string
+  year_end: number
+  year_start: number
+}
+
+export interface BPSlice {
+  businessPlan: UpdatedBusinessPlan
+  setBusinessPlan: (business_plan: UpdatedBusinessPlan) => void
+}
+
 export interface ProjectsSlice {
   clusters: SliceData
   meetings: SliceData
@@ -175,6 +191,7 @@ export interface HistoryListItem {
 export type StoreState = {
   bp_diff_versions: BPDiffVersionsSlice
   bpFilters: BPFiltersSlice
+  businessPlan: BPSlice
   businessPlans: BusinessPlanSlice
   cache: CacheSlice
   common: CommonSlice
