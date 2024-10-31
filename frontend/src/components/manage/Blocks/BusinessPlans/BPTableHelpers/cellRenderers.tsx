@@ -102,7 +102,7 @@ const CellTag = (propTags: Array<string>, params: any) => {
 
 export const EditTagsCellRenderer = (params: any) => {
   const { field, form, options, props, setForm } = params
-  const { comment_types, substances_display } = props.data
+  const { comment_types = [], substances_display = [] } = props.data
 
   const propsTags =
     field === 'substances'
