@@ -178,7 +178,7 @@ class AnnualContributionStatusAdmin(admin.ModelAdmin):
 
 
 @admin.register(TriennialContributionStatus)
-class TriennialContributionStatus(admin.ModelAdmin):
+class TriennialContributionStatusAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         return [
             "id",

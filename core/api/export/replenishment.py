@@ -545,7 +545,7 @@ class StatusOfTheFundTemplateWriter(BaseTemplateSheetWriter):
         self.sheet.cell(column=self.MEETING_COLUMN, row=self.MEETING_ROW).value = (
             "UNEP/OzL.Pro/ExCom"
         )
-        if self.as_of_date != None:
+        if self.as_of_date is not None:
             cell = self.sheet.cell(
                 column=self.AS_OF_DATE_COLUMN, row=self.AS_OF_DATE_ROW
             )
