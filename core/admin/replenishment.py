@@ -8,7 +8,7 @@ from core.models import (
     Invoice,
     Payment,
     ExternalAllocation,
-    ExternalIncome,
+    ExternalIncomeAnnual,
 )
 
 
@@ -102,3 +102,45 @@ class PaymentAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
         return queryset.select_related("country")
+
+
+@admin.register(ExternalAllocation)
+class ExternalAllocationAdmin(admin.ModelAdmin):
+    search_fields = [
+        "year",
+        "meeting",
+    ]
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("meeting")
+
+    def get_list_display(self, request):
+        return [
+            "id",
+            "meeting",
+            "decision_number",
+            "undp",
+            "unep",
+            "unido",
+            "world_bank",
+            "comment",
+        ]
+
+
+@admin.register(ExternalIncomeAnnual)
+class ExternalIncomeAnnualAdmin(admin.ModelAdmin):
+    search_fields = [
+        "agency_name",
+        "year",
+        "triennial_start_year",
+    ]
+
+    def get_list_display(self, request):
+        return [
+            "__str__",
+            "agency_name",
+            "quarter",
+            "year",
+            "triennial_start_year",
+        ]
