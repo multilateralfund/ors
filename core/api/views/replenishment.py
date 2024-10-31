@@ -1503,11 +1503,22 @@ class ReplenishmentDashboardExportView(views.APIView):
         status_data = self.get_status()
         data_count = len(status_data)
 
+        try:
+            latest_payment = Payment.objects.latest("date")
+        except Payment.DoesNotExist:
+            latest_payment = None
+        as_of_date = (
+            latest_payment.date
+            if latest_payment and latest_payment.date
+            else config.DEFAULT_REPLENISHMENT_AS_OF_DATE
+        )
+
         StatusOfTheFundTemplateWriter(
             ws,
             status_data,
             data_count,
             None,
+            as_of_date=as_of_date,
         ).write()
 
         # Delete all other worksheets
