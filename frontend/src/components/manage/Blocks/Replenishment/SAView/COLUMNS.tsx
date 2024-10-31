@@ -17,8 +17,8 @@ const COLUMNS: SATableColumn[] = [
     field: 'adj_un_soa',
     label: 'Adjusted UN Scale of Assessment',
     parser: asDecimal,
-    validator: function (value) {
-      if (value > 22) {
+    validator: function (value: Big | null) {
+      if (value && value.gt(22)) {
         return "Value can't be greater than 22."
       }
     },
