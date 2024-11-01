@@ -2,9 +2,11 @@
 
 import { ApiEditBPActivity } from '@ors/types/api_bp_get'
 
-import React, { PropsWithChildren } from 'react'
+import { ChangeEventHandler, PropsWithChildren } from 'react'
 
 import { Button, Tab, Tabs } from '@mui/material'
+import { entries, find, indexOf, isEmpty, values } from 'lodash'
+import { useSnackbar } from 'notistack'
 
 import BPCreateProvider, {
   useBPCreate,
@@ -13,16 +15,81 @@ import BPCreateProvider, {
 import { ActionType } from '@ors/components/manage/Blocks/BusinessPlans/BPCreate/Provider/actions'
 import { BPEditBaseTable } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/BPEditTable'
 import { FilesViewer } from '@ors/components/manage/Blocks/Section/ReportInfo/FilesViewer'
-import SimpleField from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleField'
 import Link from '@ors/components/ui/Link/Link'
 import VersionHistoryList from '@ors/components/ui/VersionDetails/VersionHistoryList'
+import { api } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
+import SimpleInput from '../../Section/ReportInfo/SimpleInput'
 import useGetBpPeriods from '../BPList/useGetBPPeriods'
 import { RedirectToBpList } from '../RedirectToBpList'
+import { tableColumns } from '../constants'
 import { useGetYearRanges } from '../useGetYearRanges'
 
 function BPCreateHeader(props: PropsWithChildren) {
+  const ctx = useBPCreate()
+
+  const { enqueueSnackbar } = useSnackbar()
+
+  const handleSubmitBP = async () => {
+    try {
+      const response = await api('api/business-plan/', {
+        data: {
+          activities: ctx.activities,
+          agency_id: ctx.reportingAgency,
+          name: ctx.reportingAgency,
+          status: 'Agency Draft',
+          year_end: ctx.yearRange.year_end,
+          year_start: ctx.yearRange.year_start,
+        },
+        method: 'POST',
+      })
+
+      enqueueSnackbar(<>Submitted business plan {response.name}.</>, {
+        variant: 'success',
+      })
+    } catch (error) {
+      if (error.status === 400) {
+        const errors = await error.json()
+        const firstDataError = find(errors.activities, (err) => !isEmpty(err))
+        const index = indexOf(errors.activities, firstDataError)
+
+        if (firstDataError) {
+          enqueueSnackbar(
+            <div className="flex flex-col">
+              Row {index + 1}
+              {entries(firstDataError).map((error) => {
+                const headerName = tableColumns[error[0]]
+                const errorMessage = (error[1] as Array<string>)[0]
+
+                return ['project_type_code', 'sector_code'].includes(
+                  error[0],
+                ) ? null : headerName ? (
+                  <div key={error[0]}>
+                    {headerName} - {errorMessage}
+                  </div>
+                ) : (
+                  <>{errorMessage}</>
+                )
+              })}
+            </div>,
+            {
+              variant: 'error',
+            },
+          )
+        } else {
+          enqueueSnackbar(<>{values(errors)[0]}</>, {
+            variant: 'error',
+          })
+        }
+      } else {
+        enqueueSnackbar(<>An error occurred. Please try again.</>, {
+          variant: 'error',
+        })
+      }
+    }
+  }
+
   return (
     <div className="mb-4 flex min-h-[40px] flex-wrap items-center justify-between gap-x-8 gap-y-2">
       <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
@@ -48,7 +115,7 @@ function BPCreateHeader(props: PropsWithChildren) {
               className="px-4 py-2 shadow-none hover:text-white"
               size="large"
               variant="contained"
-              onClick={() => false}
+              onClick={handleSubmitBP}
             >
               Save draft
             </Button>
@@ -60,29 +127,58 @@ function BPCreateHeader(props: PropsWithChildren) {
 }
 
 function BPCreateContentDetails() {
+  const ctx = useBPCreate()
+  const dispatch = useBPCreateDispatch()
+
+  const handleChangeReportingOfficer: ChangeEventHandler<HTMLInputElement> = (
+    evt,
+  ) =>
+    dispatch({
+      payload: evt.target.value,
+      type: ActionType.setReportingOfficer,
+    })
+
+  const handleChangeReportingYear: ChangeEventHandler<HTMLInputElement> = (
+    evt,
+  ) =>
+    dispatch({
+      payload: parseInt(evt.target.value, 10),
+      type: ActionType.setCurrentYear,
+    })
+
+  const handleChangeReportingAgency: ChangeEventHandler<HTMLInputElement> = (
+    evt,
+  ) =>
+    dispatch({
+      payload: evt.target.value,
+      type: ActionType.setReportingAgency,
+    })
   return (
     <section className="grid items-start gap-6 md:auto-rows-auto md:grid-cols-2">
       <div className="flex flex-col gap-6 rounded-lg bg-gray-100 p-4">
         <p className="m-0 text-2xl font-normal">Summary</p>
         <div className="grid w-full gap-4 md:grid-cols-2 md:grid-rows-3 lg:grid-cols-3 lg:grid-rows-2">
-          {/*<SimpleField*/}
-          {/*  id="username"*/}
-          {/*  className="col-span-2 lg:col-span-1"*/}
-          {/*  data={'Username'}*/}
-          {/*  label="Username"*/}
-          {/*/>*/}
-          <SimpleField
+          <SimpleInput
             id="name_reporting_officer"
-            data={'Name'}
             label="Name of reporting officer"
+            type="text"
+            value={ctx.reportingOfficer}
+            onChange={handleChangeReportingOfficer}
           />
-          {/*<SimpleField*/}
-          {/*  id="email_reporting_officer"*/}
-          {/*  data={'Email'}*/}
-          {/*  label="Email of reporting officer"*/}
-          {/*/>*/}
-          <SimpleField id="agency" data={'UNEP'} label="Agency" />
-          <SimpleField id="year" data={'2024'} label="Year" />
+          <SimpleInput
+            id="agency"
+            label="Agency"
+            type="text"
+            value={ctx.reportingAgency}
+            onChange={handleChangeReportingAgency}
+          />
+          <SimpleInput
+            id="year"
+            label="Year"
+            type="text"
+            value={ctx.currentYear.toString()}
+            onChange={handleChangeReportingYear}
+          />
         </div>
 
         <FilesViewer files={[]} heading={'File attachments'} isEdit={false} />
@@ -105,21 +201,16 @@ function BPCreateContentActivities() {
   const dispatch = useBPCreateDispatch()
   return (
     <BPEditBaseTable
-      form={ctx.form}
+      form={ctx.activities}
       loading={false}
       params={[]}
+      yearRangeSelected={ctx.yearRange}
       setForm={(form) =>
         dispatch({
           payload: form as ApiEditBPActivity[],
           type: ActionType.addActivity,
         })
       }
-      yearRangeSelected={{
-        max_year: 2024 + 2,
-        min_year: 2024,
-        year_end: 2024 + 2,
-        year_start: 2024,
-      }}
     />
   )
 }
@@ -140,7 +231,10 @@ function BPCreate() {
     <>
       <div>
         <RedirectToBpList {...{ currentYearRange }} />
-        <BPCreateHeader>New business plan</BPCreateHeader>
+        <BPCreateHeader>
+          New business plan ({ctx.reportingAgency} {ctx.yearRange.year_start} -{' '}
+          {ctx.yearRange.year_end})
+        </BPCreateHeader>
       </div>
       <div className="flex items-center justify-between gap-2 lg:flex-nowrap print:hidden">
         <Tabs
