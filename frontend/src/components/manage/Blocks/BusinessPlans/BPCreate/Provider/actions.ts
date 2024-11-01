@@ -1,3 +1,4 @@
+import { ApiAgency } from '@ors/types/api_agencies'
 import { ApiEditBPActivity } from '@ors/types/api_bp_get'
 
 export enum ActionType {
@@ -10,6 +11,10 @@ export enum ActionType {
 
 export type BPCreateAction =
   | {
+      payload: ApiAgency
+      type: ActionType.setReportingAgency
+    }
+  | {
       payload: ApiEditBPActivity[]
       type: ActionType.addActivity
     }
@@ -20,10 +25,6 @@ export type BPCreateAction =
   | {
       payload: number
       type: ActionType.setCurrentYear
-    }
-  | {
-      payload: string
-      type: ActionType.setReportingAgency
     }
   | {
       payload: string

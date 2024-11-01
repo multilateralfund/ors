@@ -1,3 +1,4 @@
+import { ApiAgency } from '@ors/types/api_agencies'
 import { ApiEditBPActivity } from '@ors/types/api_bp_get'
 import { ApiBPYearRange } from '@ors/types/api_bp_get_years'
 
@@ -12,7 +13,7 @@ export interface BPCreateState {
   activeTab: number
   activities: ApiEditBPActivity[]
   currentYear: number
-  reportingAgency: string
+  reportingAgency: ApiAgency | null
   reportingOfficer: string
   yearRange: ApiBPYearRange
 }
@@ -59,7 +60,7 @@ export function initialState(): BPCreateState {
     activeTab: 0,
     activities: [],
     currentYear: new Date().getFullYear(),
-    reportingAgency: '',
+    reportingAgency: null,
     reportingOfficer: '',
     get yearRange() {
       const startOn = this.currentYear

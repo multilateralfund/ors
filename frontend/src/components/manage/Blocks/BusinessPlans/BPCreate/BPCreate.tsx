@@ -1,8 +1,9 @@
 'use client'
 
+import { ApiAgency } from '@ors/types/api_agencies'
 import { ApiEditBPActivity } from '@ors/types/api_bp_get'
 
-import { ChangeEventHandler, PropsWithChildren } from 'react'
+import React, { ChangeEventHandler, PropsWithChildren } from 'react'
 
 import { Button, Tab, Tabs } from '@mui/material'
 import { entries, find, indexOf, isEmpty, values } from 'lodash'
@@ -14,7 +15,10 @@ import BPCreateProvider, {
 } from '@ors/components/manage/Blocks/BusinessPlans/BPCreate/Provider/BPCreateProvider'
 import { ActionType } from '@ors/components/manage/Blocks/BusinessPlans/BPCreate/Provider/actions'
 import { BPEditBaseTable } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/BPEditTable'
+import { WidgetCountry } from '@ors/components/manage/Blocks/CountryProgramme/typesCPCreate'
 import { FilesViewer } from '@ors/components/manage/Blocks/Section/ReportInfo/FilesViewer'
+import SimpleField from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleField'
+import Field from '@ors/components/manage/Form/Field'
 import Link from '@ors/components/ui/Link/Link'
 import VersionHistoryList from '@ors/components/ui/VersionDetails/VersionHistoryList'
 import { api } from '@ors/helpers'
@@ -36,8 +40,8 @@ function BPCreateHeader(props: PropsWithChildren) {
       const response = await api('api/business-plan/', {
         data: {
           activities: ctx.activities,
-          agency_id: ctx.reportingAgency,
-          name: ctx.reportingAgency,
+          agency_id: ctx.reportingAgency?.id,
+          name: ctx.reportingOfficer,
           status: 'Agency Draft',
           year_end: ctx.yearRange.year_end,
           year_start: ctx.yearRange.year_start,
@@ -126,6 +130,54 @@ function BPCreateHeader(props: PropsWithChildren) {
   )
 }
 
+function AgencyField() {
+  const ctx = useBPCreate()
+  const dispatch = useBPCreateDispatch()
+
+  const agencies = useStore((state) => state?.common.agencies.data)
+  const { user_type } = useStore((state) => state.user?.data)
+
+  function handleChangeReportingAgency(
+    _: React.ChangeEvent,
+    option: ApiAgency,
+  ) {
+    console.log(option)
+    dispatch({
+      payload: option as ApiAgency,
+      type: ActionType.setReportingAgency,
+    })
+  }
+  const agencyFieldProps = {
+    FieldProps: { className: 'mb-0 ReportInfo' },
+    getOptionLabel: (option: ApiAgency) => option.name,
+    onChange: handleChangeReportingAgency,
+    options: agencies,
+    widget: 'autocomplete',
+  }
+
+  return (
+    <>
+      {['admin', 'secretariat'].includes(user_type) ? (
+        <div className="flex h-full flex-col justify-end">
+          <label
+            className="mb-2 block text-lg font-normal text-gray-900"
+            htmlFor="agency"
+          >
+            Agency
+          </label>
+          <Field id="agency" name="agency_id" {...(agencyFieldProps as any)} />
+        </div>
+      ) : (
+        <SimpleField
+          id="agency"
+          data={ctx.reportingAgency?.name ?? '-'}
+          label="Agency"
+        />
+      )}
+    </>
+  )
+}
+
 function BPCreateContentDetails() {
   const ctx = useBPCreate()
   const dispatch = useBPCreateDispatch()
@@ -146,13 +198,6 @@ function BPCreateContentDetails() {
       type: ActionType.setCurrentYear,
     })
 
-  const handleChangeReportingAgency: ChangeEventHandler<HTMLInputElement> = (
-    evt,
-  ) =>
-    dispatch({
-      payload: evt.target.value,
-      type: ActionType.setReportingAgency,
-    })
   return (
     <section className="grid items-start gap-6 md:auto-rows-auto md:grid-cols-2">
       <div className="flex flex-col gap-6 rounded-lg bg-gray-100 p-4">
@@ -165,13 +210,7 @@ function BPCreateContentDetails() {
             value={ctx.reportingOfficer}
             onChange={handleChangeReportingOfficer}
           />
-          <SimpleInput
-            id="agency"
-            label="Agency"
-            type="text"
-            value={ctx.reportingAgency}
-            onChange={handleChangeReportingAgency}
-          />
+          <AgencyField />
           <SimpleInput
             id="year"
             label="Year"
@@ -232,8 +271,8 @@ function BPCreate() {
       <div>
         <RedirectToBpList {...{ currentYearRange }} />
         <BPCreateHeader>
-          New business plan ({ctx.reportingAgency} {ctx.yearRange.year_start} -{' '}
-          {ctx.yearRange.year_end})
+          New business plan ({ctx.reportingAgency?.name}{' '}
+          {ctx.yearRange.year_start} - {ctx.yearRange.year_end})
         </BPCreateHeader>
       </div>
       <div className="flex items-center justify-between gap-2 lg:flex-nowrap print:hidden">
