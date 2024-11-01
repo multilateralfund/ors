@@ -24,12 +24,16 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
             "full_name",
             "country",
             "country_id",
+            "agency",
+            "agency_id",
             "user_type",
         )
         read_only_fields = UserDetailsSerializer.Meta.read_only_fields + (
             "full_name",
             "country",
             "country_id",
+            "agency",
+            "agency_id",
             "user_type",
         )
 
