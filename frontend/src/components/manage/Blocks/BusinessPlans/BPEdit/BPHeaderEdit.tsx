@@ -10,6 +10,7 @@ import { useStore } from '@ors/store'
 import BPHeaderView from '../BPHeaderView'
 import { tableColumns } from '../constants'
 import { BpPathParams } from '../types'
+import { useEditLocalStorage } from '../useLocalStorage'
 
 export default function BPHeaderEdit({ business_plan, form }: any) {
   const pathParams = useParams<BpPathParams>()
@@ -17,6 +18,11 @@ export default function BPHeaderEdit({ business_plan, form }: any) {
 
   const { setBusinessPlan } = useStore((state) => state.businessPlan)
   const { enqueueSnackbar } = useSnackbar()
+
+  const localStorage = useEditLocalStorage({
+    activities: form,
+    business_plan: business_plan,
+  })
 
   const editBP = async () => {
     try {
@@ -31,7 +37,7 @@ export default function BPHeaderEdit({ business_plan, form }: any) {
         },
         method: 'PUT',
       })
-
+      localStorage.clear()
       enqueueSnackbar(<>Updated submission for {response.name}.</>, {
         variant: 'success',
       })

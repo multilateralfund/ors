@@ -10,11 +10,14 @@ import { useParams } from 'next/navigation'
 import Loading from '@ors/components/theme/Loading/Loading'
 import BPProvider from '@ors/contexts/BusinessPlans/BPProvider'
 import BPYearRangesProvider from '@ors/contexts/BusinessPlans/BPYearRangesProvider'
+import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 import { useStore } from '@ors/store'
 
 import BPTabs from '../BPTabs'
+import { useEditLocalStorage } from '../useLocalStorage'
 import BEditTable from './BPEditTable'
 import BPHeaderEdit from './BPHeaderEdit'
+import BPRestoreEdit from './BPRestoreEdit'
 import { useGetAllActivities } from './useGetAllActivities'
 
 const BPEdit = () => {
@@ -28,6 +31,25 @@ const BPEdit = () => {
 
   const [activeTab, setActiveTab] = useState(0)
   const [form, setForm] = useState<Array<ApiEditBPActivity> | null>()
+
+  const [warnOnClose, setWarnOnClose] = useState(false)
+  useVisibilityChange(warnOnClose)
+
+  const localStorage = useEditLocalStorage(data)
+
+  const handleSetForm = useCallback(
+    (value: any, updateLocalStorage: boolean = true) => {
+      if (!!updateLocalStorage) {
+        localStorage.update(value)
+      }
+      if (localStorage.load()) {
+        setWarnOnClose(true)
+      }
+
+      setForm(value)
+    },
+    [localStorage],
+  )
 
   const getFormattedActivities = useCallback(() => {
     if (!activities) {
@@ -47,8 +69,11 @@ const BPEdit = () => {
   }, [commentTypes, activities])
 
   useEffect(() => {
-    setForm(getFormattedActivities())
-  }, [getFormattedActivities])
+    const formattedActivities = getFormattedActivities()
+    if (formattedActivities) {
+      handleSetForm(formattedActivities, false)
+    }
+  }, [getFormattedActivities, handleSetForm])
 
   return (
     <>
@@ -57,8 +82,15 @@ const BPEdit = () => {
         active={loading}
       />
       <BPHeaderEdit business_plan={business_plan} form={form} />
+      <BPRestoreEdit
+        key={business_plan?.id}
+        localStorage={localStorage}
+        setForm={handleSetForm}
+      />
       <BPTabs {...{ activeTab, setActiveTab }}>
-        {form && <BEditTable {...{ form, loading, params, setForm }} />}
+        {form && (
+          <BEditTable {...{ form, loading, params }} setForm={handleSetForm} />
+        )}
       </BPTabs>
     </>
   )

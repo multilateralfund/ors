@@ -40,4 +40,20 @@ export type BPEditTableInterface = {
   setForm: Dispatch<SetStateAction<Array<ApiEditBPActivity> | null | undefined>>
 }
 
+export interface EditBPLocalStorageType {
+  clear: () => void
+  load: () => Array<ApiEditBPActivity> | undefined
+  update: (form: Array<ApiEditBPActivity> | undefined) => void
+}
+
+export interface BPRestoreEditProps {
+  localStorage: EditBPLocalStorageType
+  setForm: (form: Array<ApiEditBPActivity> | undefined) => void
+}
+
+export interface ILSBPDataEdit {
+  bp_id?: number
+  form: Array<ApiEditBPActivity> | undefined
+}
+
 export type ViewSelectorValuesType = 'list' | 'table'

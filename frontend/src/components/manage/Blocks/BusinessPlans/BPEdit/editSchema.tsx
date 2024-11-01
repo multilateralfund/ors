@@ -221,7 +221,6 @@ const useColumnsOptions = (
           cellRenderer: (props: any) => (
             <AgCellRenderer {...props} value={props.data.subsector?.code} />
           ),
-          enableCellChangeFlash: false,
           field: 'subsector_id',
           headerClass: 'ag-text-center',
           headerName: tableColumns.subsector_id,
@@ -262,7 +261,6 @@ const useColumnsOptions = (
               field: 'substances',
               options: substances,
             }),
-          enableCellChangeFlash: false,
           field: 'substances',
           headerClass: 'ag-text-center',
           headerName: tableColumns.substances,
@@ -389,7 +387,6 @@ const useColumnsOptions = (
               field: 'comment_types',
               options: commentTypes,
             }),
-          enableCellChangeFlash: false,
           field: 'comment_types',
           headerClass: 'ag-text-center',
           headerName: tableColumns.comment_types,
@@ -400,6 +397,7 @@ const useColumnsOptions = (
       defaultColDef: {
         autoHeight: true,
         editable: true,
+        enableCellChangeFlash: false,
         resizable: true,
       },
     }),
