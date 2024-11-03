@@ -352,6 +352,8 @@ class BaseTemplateSheetWriter:
     TEMPLATE_FIRST_DATA_ROW = 2
     TEMPLATE_LAST_DATA_ROW = 50
 
+    CONVERT_BOOL_TO_NUMERIC = True
+
     def __init__(
         self,
         sheet,
@@ -436,6 +438,18 @@ class BaseTemplateSheetWriter:
             )
 
     def write_cell(self, cell, cell_type, cell_format, value):
+        if value is None:
+            value = "N/A"
+            cell.alignment = Alignment(
+                horizontal="right", vertical="center", wrap_text=True
+            )
+            cell_format = None
+        if self.CONVERT_BOOL_TO_NUMERIC:
+            # Do not fall into the trap of using `if value`
+            if value is True:
+                value = 1
+            if value is False:
+                value = 0
         cell.value = value
         if cell_type in (Decimal, float) and cell_format is not None:
             cell.number_format = format
