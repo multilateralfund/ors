@@ -9,6 +9,7 @@ from core.api.export.base import WriteOnlyBase
 
 EMPTY_ROW = (None, None, None)
 # pylint: disable=W0612
+# pylint: disable=R0913
 
 
 class DashboardWriter(WriteOnlyBase):
@@ -698,6 +699,10 @@ class StatusOfContributionsSummaryTemplateWriter(BaseTemplateSheetWriter):
     TEMPLATE_FIRST_DATA_ROW = 11
     TEMPLATE_LAST_DATA_ROW = 65
 
+    # Distance between last "normal" data row and the disputed contributions row
+    DISPUTED_CONTRIBUTIONS_ROW_OFFSET = 2
+    DISPUTED_CONTRIBUTIONS_COLUMN = 3
+
     # Position and formatting for each filed from the serializer data rows
     DATA_MAPPING = {
         "country": {
@@ -736,11 +741,45 @@ class StatusOfContributionsSummaryTemplateWriter(BaseTemplateSheetWriter):
         },
     }
 
+    # pylint:
+    def __init__(
+        self,
+        sheet,
+        data,
+        number_of_rows,
+        start_year,
+        as_of_date=None,
+        disputed_contributions=None,
+    ):
+        self.disputed_contributions = disputed_contributions
+        super().__init__(sheet, data, number_of_rows, start_year, as_of_date)
 
-class StatusOfContributionsTriennialTemplateWriter(BaseTemplateSheetWriter):
-    # TODO: HEADERS_ROW should be a list
-    HEADERS_ROW = 7
-    TEMPLATE_FIRST_DATA_ROW = 11
+    def write(self):
+        """
+        Overwriting base write() method to also write the disputed contributions row
+        """
+        super().write()
+
+        if (
+            self.disputed_contributions is not None
+            and getattr(self, "DISPUTED_CONTRIBUTIONS_ROW_OFFSET") is not None
+            and getattr(self, "DISPUTED_CONTRIBUTIONS_COLUMN") is not None
+        ):
+            # The last row of the actual output
+            last_row = self.TEMPLATE_FIRST_DATA_ROW + len(self.data) - 1
+            # The contributions row of the actual output
+            disputed_row = last_row + self.DISPUTED_CONTRIBUTIONS_ROW_OFFSET
+
+            cell = self.sheet.cell(
+                row=disputed_row, column=self.DISPUTED_CONTRIBUTIONS_COLUMN
+            )
+            cell.value = self.disputed_contributions
+
+
+class StatusOfContributionsTriennialTemplateWriter(
+    StatusOfContributionsSummaryTemplateWriter
+):
+    # Only overwriting what's needed
     TEMPLATE_LAST_DATA_ROW = 59
 
     # Position and formatting for each filed from the serializer data rows

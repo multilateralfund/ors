@@ -500,6 +500,7 @@ class StatusOfContributionsExportView(views.APIView):
             for index, country in enumerate(soc_qs)
         ]
         data_count = len(summary_data)
+        disputed_contributions = agg.get_disputed_contribution_amount()
 
         # Open template file
         wb = openpyxl.load_workbook(
@@ -512,6 +513,7 @@ class StatusOfContributionsExportView(views.APIView):
             summary_data,
             data_count,
             None,
+            disputed_contributions=disputed_contributions,
         ).write()
         sheet_names = [self.SUMMARY_WORKSHEET_NAME]
 
@@ -539,8 +541,9 @@ class StatusOfContributionsExportView(views.APIView):
                 }
                 for index, country in enumerate(soc_qs)
             ]
+            disputed_contributions = agg.get_disputed_contribution_amount()
 
-            # Need to also get and write CEIT data & Disputed contributions
+            # Need to also get and write CEIT data
             # ceit_countries_qs = agg.get_ceit_countries()
             # triennial_data["ceit"] = agg.get_ceit_data(ceit_countries_qs)
 
@@ -550,6 +553,7 @@ class StatusOfContributionsExportView(views.APIView):
                 triennial_data,
                 len(triennial_data),
                 None,
+                disputed_contributions=disputed_contributions,
             ).write()
             sheet_name = f"{start_year}-{end_year} Contributions"
             # Save sheet with the updated title
@@ -578,8 +582,9 @@ class StatusOfContributionsExportView(views.APIView):
                 }
                 for index, country in enumerate(soc_qs)
             ]
+            disputed_contributions = agg.get_disputed_contribution_amount()
 
-            # Need to also get and write CEIT data & Disputed contributions
+            # Need to also get and write CEIT data
             # ceit_countries_qs = agg.get_ceit_countries()
             # triennial_data["ceit"] = agg.get_ceit_data(ceit_countries_qs)
 
@@ -589,6 +594,7 @@ class StatusOfContributionsExportView(views.APIView):
                 annual_data,
                 len(annual_data),
                 None,
+                disputed_contributions=disputed_contributions,
             ).write()
             sheet_name = f"{year} Contributions"
             # Save sheet with the updated title
@@ -601,7 +607,6 @@ class StatusOfContributionsExportView(views.APIView):
             if name not in sheet_names:
                 wb.remove(wb[name])
 
-        # TODO: customize name based on years and triennials (or summary)
         return workbook_response("Status of Contributions", wb)
 
 
