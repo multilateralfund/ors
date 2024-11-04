@@ -1,4 +1,5 @@
 import { ApiBPGet } from '@ors/types/api_bp_get'
+import { ApiBPYearRange } from '@ors/types/api_bp_get_years'
 
 import { PropsWithChildren } from 'react'
 
@@ -13,6 +14,6 @@ export interface BPProviderProps extends PropsWithChildren {}
 export interface BPYearRangesProviderProps extends PropsWithChildren {}
 
 export interface BPYearRangesContextType {
-  yearRanges: any[]
+  yearRanges: ApiBPYearRange[]
   yearRangesLoading: boolean
 }

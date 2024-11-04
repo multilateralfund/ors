@@ -12,6 +12,8 @@ export type ApiUserType =
   | 'viewer'
 
 export type ApiUser = {
+  agency?: null | string
+  agency_id?: number
   country?: null | string
   country_id?: number
   email: string

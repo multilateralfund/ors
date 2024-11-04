@@ -1,8 +1,6 @@
-import React from 'react'
-
 import { Metadata } from 'next'
 
-import BPCreate from '@ors/components/manage/Blocks/BusinessPlans/BPCreate'
+import BPCreate from '@ors/components/manage/Blocks/BusinessPlans/BPCreate/BPCreate'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
 export const metadata: Metadata = {
@@ -11,7 +9,7 @@ export const metadata: Metadata = {
 
 export default async function BusinessPlans() {
   return (
-    <PageWrapper className="max-w-screen-xl xl:px-0">
+    <PageWrapper>
       <BPCreate />
     </PageWrapper>
   )

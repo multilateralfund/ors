@@ -13,6 +13,9 @@ class CustomPasswordResetSerializer(PasswordResetSerializer):
 
 
 class CustomUserDetailsSerializer(UserDetailsSerializer):
+    agency = serializers.StringRelatedField(
+        read_only=True, source="agency.name", allow_null=True
+    )
     country = serializers.StringRelatedField(
         read_only=True, source="country.name", allow_null=True
     )
@@ -24,12 +27,16 @@ class CustomUserDetailsSerializer(UserDetailsSerializer):
             "full_name",
             "country",
             "country_id",
+            "agency",
+            "agency_id",
             "user_type",
         )
         read_only_fields = UserDetailsSerializer.Meta.read_only_fields + (
             "full_name",
             "country",
             "country_id",
+            "agency",
+            "agency_id",
             "user_type",
         )
 
