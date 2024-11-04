@@ -162,10 +162,15 @@ export function asDecimal(
   value: BigSource | null | undefined,
   fallback: BigSource | null = '0',
 ) {
-  if (!value && value !== 0) {
+  try {
+    if (!value && value !== 0) {
+      return fallback === null ? null : new Big(fallback)
+    }
+    return new Big(value)
+  } catch (err) {
+    console.warn(err.message, value)
     return fallback === null ? null : new Big(fallback)
   }
-  return new Big(value)
 }
 
 export function toFormat(nr: Big, dp: number, ts = ',', ds = '.'): string {

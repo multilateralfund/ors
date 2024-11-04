@@ -7,6 +7,11 @@ from core.models import (
     ScaleOfAssessmentVersion,
     Invoice,
     Payment,
+    ExternalAllocation,
+    ExternalIncomeAnnual,
+    DisputedContribution,
+    AnnualContributionStatus,
+    TriennialContributionStatus,
 )
 
 
@@ -100,3 +105,91 @@ class PaymentAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
         return queryset.select_related("country")
+
+
+@admin.register(ExternalAllocation)
+class ExternalAllocationAdmin(admin.ModelAdmin):
+    search_fields = [
+        "year",
+        "meeting",
+    ]
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related("meeting")
+
+    def get_list_display(self, request):
+        return [
+            "id",
+            "meeting",
+            "decision_number",
+            "undp",
+            "unep",
+            "unido",
+            "world_bank",
+            "comment",
+        ]
+
+
+@admin.register(ExternalIncomeAnnual)
+class ExternalIncomeAnnualAdmin(admin.ModelAdmin):
+    search_fields = [
+        "agency_name",
+        "year",
+        "triennial_start_year",
+    ]
+
+    def get_list_display(self, request):
+        return [
+            "__str__",
+            "agency_name",
+            "quarter",
+            "year",
+            "triennial_start_year",
+        ]
+
+
+@admin.register(DisputedContribution)
+class DisputedContributionAdmin(admin.ModelAdmin):
+    def get_list_display(self, request):
+        return [
+            "__str__",
+            "country",
+            "year",
+            "amount",
+        ]
+
+
+@admin.register(AnnualContributionStatus)
+class AnnualContributionStatusAdmin(admin.ModelAdmin):
+    def get_list_display(self, request):
+        return [
+            "id",
+            "country",
+            "year",
+            "agreed_contributions",
+            "cash_payments",
+            "bilateral_assistance",
+            "promissory_notes",
+            "outstanding_contributions",
+            "bilateral_assistance_meeting",
+            "bilateral_assistance_decision_number",
+        ]
+
+
+@admin.register(TriennialContributionStatus)
+class TriennialContributionStatusAdmin(admin.ModelAdmin):
+    def get_list_display(self, request):
+        return [
+            "id",
+            "country",
+            "start_year",
+            "end_year",
+            "agreed_contributions",
+            "cash_payments",
+            "bilateral_assistance",
+            "promissory_notes",
+            "outstanding_contributions",
+            "bilateral_assistance_meeting",
+            "bilateral_assistance_decision_number",
+        ]

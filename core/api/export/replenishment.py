@@ -358,11 +358,13 @@ class BaseTemplateSheetWriter:
         data,
         number_of_rows,
         start_year,
+        as_of_date=None,
     ):
         self.sheet = sheet
         self.data = data
         self.number_of_rows = number_of_rows
         self.start_year = start_year
+        self.as_of_date = as_of_date
 
     def write_headers(self):
         pass
@@ -534,9 +536,22 @@ class StatusOfTheFundTemplateWriter(BaseTemplateSheetWriter):
     TEMPLATE_FIRST_DATA_ROW = 12
     TEMPLATE_LAST_DATA_ROW = 42
 
+    MEETING_ROW = 1
+    MEETING_COLUMN = 2
+    AS_OF_DATE_ROW = 8
+    AS_OF_DATE_COLUMN = 2
+
     def write(self):
+        self.sheet.cell(column=self.MEETING_COLUMN, row=self.MEETING_ROW).value = (
+            "UNEP/OzL.Pro/ExCom"
+        )
+        if self.as_of_date is not None:
+            cell = self.sheet.cell(
+                column=self.AS_OF_DATE_COLUMN, row=self.AS_OF_DATE_ROW
+            )
+            cell.value = f"As of {self.as_of_date.strftime('%d/%m/%Y')}"
+
         # Here data comes as tuples; no need for row shifting
-        # TODO: maybe add write_header?
         for index, row_data in enumerate(self.data):
             self.write_row(row_data, index)
 

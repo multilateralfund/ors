@@ -65,10 +65,12 @@ const BPEdit = () => {
 }
 
 export default function BPEditWrapper() {
+  const { businessPlan } = useStore((state) => state.businessPlan)
+
   return (
     <BPYearRangesProvider>
       <BPProvider>
-        <BPEdit />
+        <BPEdit key={businessPlan.id} />
       </BPProvider>
     </BPYearRangesProvider>
   )

@@ -1,11 +1,13 @@
-import { useMemo } from 'react'
+import { ApiEditBPActivity } from '@ors/types/api_bp_get'
 
-import { isNil } from 'lodash'
+import { Dispatch, SetStateAction, useCallback, useMemo } from 'react'
+
+import { filter, isNil } from 'lodash'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import { useStore } from '@ors/store'
 
-import { tagsCellRenderer } from '../../Table/BusinessPlansTable/schemaHelpers'
+import { EditTagsCellRenderer } from '../BPTableHelpers/cellRenderers'
 import { multiYearFilterOptions, tableColumns } from '../constants'
 import { useGetChemicalTypes } from '../useGetChemicalTypes'
 import {
@@ -13,14 +15,11 @@ import {
   agFormatNameValue,
   agFormatValue,
   agFormatValueTags,
-  commentSecretariatValueSetter,
   commentsValueSetter,
-  editTagsCellRenderer,
   getOptionLabel,
-  getOptionLabelByName,
+  getOptions,
   isOptionEqualToValue,
   isOptionEqualToValueByName,
-  remarksValueSetter,
   statusValueSetter,
   substancesValueSetter,
   valueSetter,
@@ -31,6 +30,8 @@ import { IoTrash } from 'react-icons/io5'
 const useColumnsOptions = (
   yearColumns: any[],
   onRemoveActivity: (props: any) => void,
+  form: Array<ApiEditBPActivity>,
+  setForm: Dispatch<SetStateAction<ApiEditBPActivity[] | null | undefined>>,
 ) => {
   const commonSlice = useStore((state) => state.common)
   const projectSlice = useStore((state) => state.projects)
@@ -53,6 +54,15 @@ const useColumnsOptions = (
   const chemicalTypes = useGetChemicalTypes()
   const chemicalTypesResults = chemicalTypes.results
 
+  const getSubsectorsOfSector = useCallback(
+    (params: any) =>
+      filter(
+        subsectors,
+        (subsector) => subsector.sector_id === params.data.sector_id,
+      ),
+    [subsectors],
+  )
+
   const colsOptions = useMemo(
     () => ({
       columnDefs: [
@@ -66,6 +76,7 @@ const useColumnsOptions = (
               }}
             />
           ),
+          editable: false,
           field: '',
           minWidth: 20,
         },
@@ -77,6 +88,7 @@ const useColumnsOptions = (
             agFormatValue,
             getOptionLabel: (option: any) => getOptionLabel(countries, option),
             isOptionEqualToValue,
+            openOnFocus: true,
             options: countries,
           },
           cellRenderer: (props: any) => (
@@ -98,6 +110,7 @@ const useColumnsOptions = (
             agFormatValue,
             getOptionLabel: (option: any) => getOptionLabel(clusters, option),
             isOptionEqualToValue,
+            openOnFocus: true,
             options: clusters,
           },
           cellRenderer: (props: any) => (
@@ -122,6 +135,7 @@ const useColumnsOptions = (
             agFormatValue,
             getOptionLabel: (option: any) => getOptionLabel(types, option),
             isOptionEqualToValue,
+            openOnFocus: true,
             options: types,
           },
           cellRenderer: (props: any) => (
@@ -144,6 +158,7 @@ const useColumnsOptions = (
             getOptionLabel: (option: any) =>
               getOptionLabel(chemicalTypesResults, option),
             isOptionEqualToValue,
+            openOnFocus: true,
             options: chemicalTypesResults,
           },
           cellRenderer: (props: any) => (
@@ -168,6 +183,7 @@ const useColumnsOptions = (
             agFormatValue,
             getOptionLabel: (option: any) => getOptionLabel(sectors, option),
             isOptionEqualToValue,
+            openOnFocus: true,
             options: sectors,
           },
           cellRenderer: (props: any) => (
@@ -178,28 +194,41 @@ const useColumnsOptions = (
           headerName: tableColumns.sector_id,
           minWidth: 120,
           tooltipField: 'sector.name',
-          valueSetter: (params: any) => valueSetter(params, 'sector', sectors),
+          valueSetter: (params: any) =>
+            valueSetter(
+              params,
+              'sector',
+              sectors,
+              getSubsectorsOfSector(params),
+            ),
         },
         {
           cellClass: 'ag-text-center ag-cell-wrap-text',
           cellEditor: 'agSelectCellEditor',
-          cellEditorParams: {
-            Input: { placeholder: 'Select subsector' },
-            agFormatValue,
-            getOptionLabel: (option: any) => getOptionLabel(subsectors, option),
-            isOptionEqualToValue,
-            options: subsectors,
+          cellEditorParams: (params: any) => {
+            const subsectorsOfSector = getSubsectorsOfSector(params)
+
+            return {
+              Input: { placeholder: 'Select subsector' },
+              agFormatValue,
+              getOptionLabel: (option: any) =>
+                getOptionLabel(subsectorsOfSector, option),
+              isOptionEqualToValue,
+              openOnFocus: true,
+              options: subsectorsOfSector,
+            }
           },
           cellRenderer: (props: any) => (
             <AgCellRenderer {...props} value={props.data.subsector?.code} />
           ),
+          enableCellChangeFlash: false,
           field: 'subsector_id',
           headerClass: 'ag-text-center',
           headerName: tableColumns.subsector_id,
           minWidth: 120,
           tooltipField: 'subsector.name',
           valueSetter: (params: any) =>
-            valueSetter(params, 'subsector', subsectors),
+            valueSetter(params, 'subsector', getSubsectorsOfSector(params)),
         },
         {
           cellClass: 'ag-cell-ellipsed',
@@ -214,7 +243,6 @@ const useColumnsOptions = (
           },
         },
         {
-          cellClass: 'ag-tags-cell-content',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: {
@@ -222,12 +250,19 @@ const useColumnsOptions = (
             },
             agFormatValue: agFormatValueTags,
             getOptionLabel: (option: any) => getOptionLabel(substances, option),
+            getOptions: (value: any) => getOptions(value, substances),
             isMultiple: true,
             isOptionEqualToValue,
-            options: substances,
+            openOnFocus: true,
+            showUnselectedOptions: true,
           },
           cellRenderer: (props: any) =>
-            tagsCellRenderer({ value: props.data.substances_display }),
+            EditTagsCellRenderer({
+              ...{ form, props, setForm },
+              field: 'substances',
+              options: substances,
+            }),
+          enableCellChangeFlash: false,
           field: 'substances',
           headerClass: 'ag-text-center',
           headerName: tableColumns.substances,
@@ -271,6 +306,7 @@ const useColumnsOptions = (
             agFormatValue,
             getOptionLabel: (option: any) => getOptionLabel(statuses, option),
             isOptionEqualToValue,
+            openOnFocus: true,
             options: statuses,
           },
           cellRenderer: (props: any) => (
@@ -290,8 +326,9 @@ const useColumnsOptions = (
             Input: { placeholder: 'Select IND/MYA' },
             agFormatValue: agFormatNameValue,
             getOptionLabel: (option: any) =>
-              getOptionLabelByName(multiYearFilterOptions, option),
+              getOptionLabel(multiYearFilterOptions, option, 'name'),
             isOptionEqualToValue: isOptionEqualToValueByName,
+            openOnFocus: true,
             options: multiYearFilterOptions,
           },
           field: 'is_multi_year',
@@ -313,12 +350,11 @@ const useColumnsOptions = (
         },
         {
           cellClass: 'ag-cell-ellipsed',
+          field: 'remarks',
           headerClass: 'ag-text-center',
           headerName: tableColumns.remarks,
           minWidth: 200,
           tooltipField: 'remarks',
-          valueGetter: ({ data }: any) => data.remarks,
-          valueSetter: remarksValueSetter,
         },
         {
           cellClass: 'ag-cell-ellipsed',
@@ -327,7 +363,10 @@ const useColumnsOptions = (
           headerName: tableColumns.comment_secretariat,
           minWidth: 200,
           tooltipField: 'comment_secretariat',
-          valueSetter: commentSecretariatValueSetter,
+          valueSetter: (params: any) => {
+            params.data.comment_secretariat = params.newValue ?? ''
+            return true
+          },
         },
         {
           cellEditor: 'agSelectCellEditor',
@@ -338,15 +377,19 @@ const useColumnsOptions = (
             agFormatValue: agFormatValueTags,
             getOptionLabel: (option: any) =>
               getOptionLabel(commentTypes, option),
+            getOptions: (value: any) => getOptions(value, commentTypes),
             isMultiple: true,
             isOptionEqualToValue: isOptionEqualToValue,
-            options: commentTypes,
+            openOnFocus: true,
+            showUnselectedOptions: true,
           },
           cellRenderer: (props: any) =>
-            editTagsCellRenderer({
-              commentTypes,
-              value: props.data.comment_types,
+            EditTagsCellRenderer({
+              ...{ form, props, setForm },
+              field: 'comment_types',
+              options: commentTypes,
             }),
+          enableCellChangeFlash: false,
           field: 'comment_types',
           headerClass: 'ag-text-center',
           headerName: tableColumns.comment_types,
@@ -363,10 +406,12 @@ const useColumnsOptions = (
     [
       countries,
       clusters,
+      form,
+      setForm,
       types,
+      getSubsectorsOfSector,
       chemicalTypesResults,
       sectors,
-      subsectors,
       substances,
       statuses,
       commentTypes,

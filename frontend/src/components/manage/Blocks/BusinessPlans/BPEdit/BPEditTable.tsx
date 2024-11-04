@@ -210,7 +210,12 @@ export default function BPEditTable(props: BPEditTableInterface) {
     }
   }
 
-  const columnOptions = useColumnsOptions(yearColumns, onRemoveActivity)
+  const columnOptions = useColumnsOptions(
+    yearColumns,
+    onRemoveActivity,
+    form,
+    setForm,
+  )
 
   const exportParams = useMemo(() => filtersToQueryParams(params), [params])
 
@@ -252,6 +257,7 @@ export default function BPEditTable(props: BPEditTableInterface) {
             loading={loading}
             resizeGridOnRowUpdate={true}
             rowData={form}
+            singleClickEdit={true}
             suppressScrollOnNewData={true}
             tooltipShowDelay={200}
             onCellValueChanged={(event) => {

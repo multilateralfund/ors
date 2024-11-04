@@ -21,6 +21,7 @@ export default function ReplenishmentDashboard(props: {
         <DownloadButtons
           downloadTexts={['Download']}
           downloadUrls={[formatApiUrl('/api/replenishment/dashboard/export')]}
+          showPrintButton={false}
         />
         <DashboardView section={section} />
       </PageWrapper>
