@@ -30,7 +30,6 @@ function BPProvider(props: BPProviderProps) {
     options: {
       params: {
         agency_id: currentAgency?.id,
-        is_multi_year: [multiYearFilterOptions[0].id],
         limit: BP_PER_PAGE,
         offset: 0,
         year_end: period.split('-')[1],
