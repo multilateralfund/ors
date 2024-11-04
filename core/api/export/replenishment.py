@@ -576,7 +576,7 @@ class ScaleOfAssessmentTemplateWriter(BaseTemplateSheetWriter):
 
 class StatusOfTheFundTemplateWriter(BaseTemplateSheetWriter):
     """
-    Template sheet writer for SoA.
+    Template sheet writer for Status of the Fund.
     """
 
     # Position and formatting for each filed from the serializer data rows
@@ -741,7 +741,6 @@ class StatusOfContributionsSummaryTemplateWriter(BaseTemplateSheetWriter):
         },
     }
 
-    # pylint:
     def __init__(
         self,
         sheet,
@@ -750,8 +749,10 @@ class StatusOfContributionsSummaryTemplateWriter(BaseTemplateSheetWriter):
         start_year,
         as_of_date=None,
         disputed_contributions=None,
+        ceit_data=None,
     ):
         self.disputed_contributions = disputed_contributions
+        self.ceit_data = ceit_data
         super().__init__(sheet, data, number_of_rows, start_year, as_of_date)
 
     MEETING_ROW = 1
@@ -777,8 +778,8 @@ class StatusOfContributionsSummaryTemplateWriter(BaseTemplateSheetWriter):
 
         if (
             self.disputed_contributions is not None
-            and getattr(self, "DISPUTED_CONTRIBUTIONS_ROW_OFFSET") is not None
-            and getattr(self, "DISPUTED_CONTRIBUTIONS_COLUMN") is not None
+            and hasattr(self, "DISPUTED_CONTRIBUTIONS_ROW_OFFSET")
+            and hasattr(self, "DISPUTED_CONTRIBUTIONS_COLUMN")
         ):
             # The last row of the actual output
             last_row = self.TEMPLATE_FIRST_DATA_ROW + len(self.data) - 1
@@ -799,6 +800,9 @@ class StatusOfContributionsTriennialTemplateWriter(
 
     MEETING_ROW = 1
     MEETING_COLUMN = 6
+
+    # Relative to the last data row
+    CEIT_ROW_OFFSET = 5
 
     # Position and formatting for each filed from the serializer data rows
     DATA_MAPPING = {
@@ -832,3 +836,27 @@ class StatusOfContributionsTriennialTemplateWriter(
             "number_format": "###,###,##0",
         },
     }
+
+    def write_ceit_row(self):
+        if self.ceit_data is not None and hasattr(self, "CEIT_ROW_OFFSET"):
+            # The last row of the actual output
+            last_row = self.TEMPLATE_FIRST_DATA_ROW + len(self.data) - 1
+            # The CEIT row of the actual output
+            ceit_row = last_row + self.CEIT_ROW_OFFSET
+
+            for key in self.ceit_data.keys():
+                if self.DATA_MAPPING.get(key) is None:
+                    continue
+                column = self.DATA_MAPPING[key]["column"]
+                cell = self.sheet.cell(row=ceit_row, column=column)
+                self.write_cell(
+                    cell,
+                    self.DATA_MAPPING[key].get("type"),
+                    self.DATA_MAPPING[key].get("format"),
+                    self.ceit_data[key],
+                )
+
+    def write(self):
+        super().write()
+
+        self.write_ceit_row()
