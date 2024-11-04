@@ -428,6 +428,10 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
                   method: 'POST',
                 })
                 await fetchBlends()
+                setForm({
+                  ...prevForm.current,
+                  composition: blend.composition,
+                })
                 onCreateBlend(blend)
               } catch (error) {
                 if (error.status === 400) {
