@@ -58,7 +58,7 @@ export const bpReducer: Reducer<BPCreateState, BPCreateAction> = function (
 
 export function useInitialState(): BPCreateState {
   const agencies = useStore((state) => state?.common.agencies.data)
-  const { agency_id } = useStore((state) => state.user?.data)
+  const { agency_id, full_name } = useStore((state) => state.user?.data)
 
   const agency = agencies.find(({ id }) => id == agency_id) ?? null
 
@@ -67,7 +67,7 @@ export function useInitialState(): BPCreateState {
     activities: [],
     currentYear: new Date().getFullYear(),
     reportingAgency: agency,
-    reportingOfficer: '',
+    reportingOfficer: full_name,
     get yearRange() {
       const startOn = this.currentYear
       const endOn = startOn + 2

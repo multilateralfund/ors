@@ -140,7 +140,6 @@ function AgencyField() {
     _: React.ChangeEvent,
     option: ApiAgency,
   ) {
-    console.log(option)
     dispatch({
       payload: option as ApiAgency,
       type: ActionType.setReportingAgency,
