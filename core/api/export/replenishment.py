@@ -9,6 +9,7 @@ from core.api.export.base import WriteOnlyBase
 
 EMPTY_ROW = (None, None, None)
 # pylint: disable=W0612
+# pylint: disable=R0913
 
 
 class DashboardWriter(WriteOnlyBase):
@@ -575,7 +576,7 @@ class ScaleOfAssessmentTemplateWriter(BaseTemplateSheetWriter):
 
 class StatusOfTheFundTemplateWriter(BaseTemplateSheetWriter):
     """
-    Template sheet writer for SoA.
+    Template sheet writer for Status of the Fund.
     """
 
     # Position and formatting for each filed from the serializer data rows
@@ -698,6 +699,10 @@ class StatusOfContributionsSummaryTemplateWriter(BaseTemplateSheetWriter):
     TEMPLATE_FIRST_DATA_ROW = 11
     TEMPLATE_LAST_DATA_ROW = 65
 
+    # Distance between last "normal" data row and the disputed contributions row
+    DISPUTED_CONTRIBUTIONS_ROW_OFFSET = 2
+    DISPUTED_CONTRIBUTIONS_COLUMN = 3
+
     # Position and formatting for each filed from the serializer data rows
     DATA_MAPPING = {
         "country": {
@@ -736,12 +741,68 @@ class StatusOfContributionsSummaryTemplateWriter(BaseTemplateSheetWriter):
         },
     }
 
+    def __init__(
+        self,
+        sheet,
+        data,
+        number_of_rows,
+        start_year,
+        as_of_date=None,
+        disputed_contributions=None,
+        ceit_data=None,
+    ):
+        self.disputed_contributions = disputed_contributions
+        self.ceit_data = ceit_data
+        super().__init__(sheet, data, number_of_rows, start_year, as_of_date)
 
-class StatusOfContributionsTriennialTemplateWriter(BaseTemplateSheetWriter):
-    # TODO: HEADERS_ROW should be a list
-    HEADERS_ROW = 7
-    TEMPLATE_FIRST_DATA_ROW = 11
+    MEETING_ROW = 1
+    MEETING_COLUMN = 2
+    AS_OF_DATE_ROW = 8
+    AS_OF_DATE_COLUMN = 2
+
+    def write_headers(self):
+        self.sheet.cell(column=self.MEETING_COLUMN, row=self.MEETING_ROW).value = (
+            "UNEP/OzL.Pro/ExCom"
+        )
+        if self.as_of_date is not None:
+            cell = self.sheet.cell(
+                column=self.AS_OF_DATE_COLUMN, row=self.AS_OF_DATE_ROW
+            )
+            cell.value = f"As of {self.as_of_date.strftime('%d/%m/%Y')}"
+
+    def write(self):
+        """
+        Overwriting base write() method to also write the disputed contributions row
+        """
+        super().write()
+
+        if (
+            self.disputed_contributions is not None
+            and hasattr(self, "DISPUTED_CONTRIBUTIONS_ROW_OFFSET")
+            and hasattr(self, "DISPUTED_CONTRIBUTIONS_COLUMN")
+        ):
+            # The last row of the actual output
+            last_row = self.TEMPLATE_FIRST_DATA_ROW + len(self.data) - 1
+            # The contributions row of the actual output
+            disputed_row = last_row + self.DISPUTED_CONTRIBUTIONS_ROW_OFFSET
+
+            cell = self.sheet.cell(
+                row=disputed_row, column=self.DISPUTED_CONTRIBUTIONS_COLUMN
+            )
+            cell.value = self.disputed_contributions
+
+
+class StatusOfContributionsTriennialTemplateWriter(
+    StatusOfContributionsSummaryTemplateWriter
+):
+    # Only overwriting what's needed
     TEMPLATE_LAST_DATA_ROW = 59
+
+    MEETING_ROW = 1
+    MEETING_COLUMN = 6
+
+    # Relative to the last data row
+    CEIT_ROW_OFFSET = 5
 
     # Position and formatting for each filed from the serializer data rows
     DATA_MAPPING = {
@@ -775,3 +836,27 @@ class StatusOfContributionsTriennialTemplateWriter(BaseTemplateSheetWriter):
             "number_format": "###,###,##0",
         },
     }
+
+    def write_ceit_row(self):
+        if self.ceit_data is not None and hasattr(self, "CEIT_ROW_OFFSET"):
+            # The last row of the actual output
+            last_row = self.TEMPLATE_FIRST_DATA_ROW + len(self.data) - 1
+            # The CEIT row of the actual output
+            ceit_row = last_row + self.CEIT_ROW_OFFSET
+
+            for key in self.ceit_data.keys():
+                if self.DATA_MAPPING.get(key) is None:
+                    continue
+                column = self.DATA_MAPPING[key]["column"]
+                cell = self.sheet.cell(row=ceit_row, column=column)
+                self.write_cell(
+                    cell,
+                    self.DATA_MAPPING[key].get("type"),
+                    self.DATA_MAPPING[key].get("format"),
+                    self.ceit_data[key],
+                )
+
+    def write(self):
+        super().write()
+
+        self.write_ceit_row()
