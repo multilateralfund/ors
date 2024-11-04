@@ -1,3 +1,4 @@
+from copy import copy
 from datetime import datetime
 from decimal import Decimal
 from openpyxl.cell import WriteOnlyCell
@@ -354,6 +355,9 @@ class BaseTemplateSheetWriter:
 
     CONVERT_BOOL_TO_NUMERIC = True
 
+    # Distance between last data row and the totals row
+    TOTALS_ROW_OFFSET = None
+
     def __init__(
         self,
         sheet,
@@ -368,6 +372,20 @@ class BaseTemplateSheetWriter:
 
     def write_headers(self):
         pass
+
+    def _copy_row_format(self, source_row, new_row):
+
+        for col in range(1, self.sheet.max_column + 1):
+
+            source_cell = self.sheet.cell(row=source_row, column=col)
+            new_cell = self.sheet.cell(row=new_row, column=col)
+
+            new_cell.font = copy(source_cell.font)
+            new_cell.border = copy(source_cell.border)
+            new_cell.fill = copy(source_cell.fill)
+            new_cell.alignment = copy(source_cell.alignment)
+            new_cell.number_format = copy(source_cell.number_format)
+            new_cell.protection = copy(source_cell.protection)
 
     def _delete_middle_rows(self, rows_number):
         start_row = self.TEMPLATE_FIRST_DATA_ROW + 1
@@ -390,8 +408,11 @@ class BaseTemplateSheetWriter:
             if min_row >= start_row:
                 merged_cell.shift(0, extra_rows)
 
-        # TODO: need to also copy row styles
         self.sheet.insert_rows(start_row, extra_rows)
+
+        # also copy row styles (based on row just above the inserted ones)
+        for inserted_row in range(start_row, start_row + extra_rows):
+            self._copy_row_format(start_row - 1, inserted_row)
 
     def write(self):
         """
@@ -416,6 +437,9 @@ class BaseTemplateSheetWriter:
         # Write data
         for row_data in self.data:
             self.write_row(row_data, row_data["no"])
+
+        # Write totals rows (existing formulas may need updating)
+        self.write_totals()
 
     def write_row(self, row_data, row_index):
         """
@@ -453,6 +477,25 @@ class BaseTemplateSheetWriter:
         cell.value = value
         if cell_type in (Decimal, float) and cell_format is not None:
             cell.number_format = format
+
+    def write_totals(self):
+        """
+        If the number of data rows changes, formulas need to be updated
+        """
+        if not self.TOTALS_ROW_OFFSET or not self.DATA_MAPPING:
+            return
+        # The last row of the actual output
+        last_row = self.TEMPLATE_FIRST_DATA_ROW + len(self.data) - 1
+        # The totals row of the actual output
+        totals_row = last_row + self.TOTALS_ROW_OFFSET
+        # Update sum values
+        for key, item in self.DATA_MAPPING.items():
+            cell = self.sheet.cell(totals_row, item["column"])
+            value = cell.value
+            if value and isinstance(value, str) and "=SUM" in value:
+                cell.value = value.replace(
+                    str(self.TEMPLATE_LAST_DATA_ROW), str(last_row)
+                )
 
 
 class ScaleOfAssessmentTemplateWriter(BaseTemplateSheetWriter):
@@ -516,6 +559,9 @@ class ScaleOfAssessmentTemplateWriter(BaseTemplateSheetWriter):
     TEMPLATE_FIRST_DATA_ROW = 2
     TEMPLATE_LAST_DATA_ROW = 50
 
+    # Totals row immediately under last data row
+    TOTALS_ROW_OFFSET = 1
+
     def write_headers(self):
         for key, item in self.DATA_MAPPING.items():
             cell = self.sheet.cell(self.HEADERS_ROW, item["column"])
@@ -577,7 +623,6 @@ class StatusOfTheFundTemplateWriter(BaseTemplateSheetWriter):
             self.write_cell(
                 cell,
                 self.DATA_MAPPING[key].get("type"),
-                # TODO: maybe I should just leave the format be!
                 self.DATA_MAPPING[key].get("format"),
                 cell_data,
             )
