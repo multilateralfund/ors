@@ -754,6 +754,21 @@ class StatusOfContributionsSummaryTemplateWriter(BaseTemplateSheetWriter):
         self.disputed_contributions = disputed_contributions
         super().__init__(sheet, data, number_of_rows, start_year, as_of_date)
 
+    MEETING_ROW = 1
+    MEETING_COLUMN = 2
+    AS_OF_DATE_ROW = 8
+    AS_OF_DATE_COLUMN = 2
+
+    def write_headers(self):
+        self.sheet.cell(column=self.MEETING_COLUMN, row=self.MEETING_ROW).value = (
+            "UNEP/OzL.Pro/ExCom"
+        )
+        if self.as_of_date is not None:
+            cell = self.sheet.cell(
+                column=self.AS_OF_DATE_COLUMN, row=self.AS_OF_DATE_ROW
+            )
+            cell.value = f"As of {self.as_of_date.strftime('%d/%m/%Y')}"
+
     def write(self):
         """
         Overwriting base write() method to also write the disputed contributions row
@@ -781,6 +796,9 @@ class StatusOfContributionsTriennialTemplateWriter(
 ):
     # Only overwriting what's needed
     TEMPLATE_LAST_DATA_ROW = 59
+
+    MEETING_ROW = 1
+    MEETING_COLUMN = 6
 
     # Position and formatting for each filed from the serializer data rows
     DATA_MAPPING = {
