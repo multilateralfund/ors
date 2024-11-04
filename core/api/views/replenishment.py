@@ -523,10 +523,11 @@ class StatusOfContributionsExportView(views.APIView):
         ).write()
         sheet_names = [self.SUMMARY_WORKSHEET_NAME]
 
-
         triennial_ws = wb[self.TRIENIAL_WORKSHEET_NAME]
         # Now add triennials
-        triennial_start_years = [] if not triennial_start_years else triennial_start_years.split(",")
+        triennial_start_years = (
+            [] if not triennial_start_years else triennial_start_years.split(",")
+        )
         for triennial_start_year in triennial_start_years:
             start_year = int(triennial_start_year)
             end_year = start_year + 2
@@ -935,10 +936,7 @@ class StatisticsExportView(views.APIView):
                     5: total_payments,
                     6: soc["disputed_contributions"],
                     7: soc["outstanding_contributions_sum"],
-                    8: (
-                        total_payments
-                        / soc["agreed_contributions_sum"]
-                    ),
+                    8: (total_payments / soc["agreed_contributions_sum"]),
                     # One empty row in between
                     10: income["interest_earned"],
                     # One empty row in between
@@ -953,10 +951,7 @@ class StatisticsExportView(views.APIView):
                     16: f"{soc['start_year']}-{soc['end_year']}",
                     17: soc["agreed_contributions_sum"],
                     18: total_payments,
-                    19: (
-                        total_payments
-                        / soc["agreed_contributions_sum"]
-                    ),
+                    19: (total_payments / soc["agreed_contributions_sum"]),
                     # Total income
                     20: (
                         total_payments
@@ -969,10 +964,7 @@ class StatisticsExportView(views.APIView):
                         / soc["agreed_contributions_sum"]
                     ),
                     23: soc["outstanding_ceit"],
-                    24: (
-                        soc["outstanding_ceit"]
-                        / soc["agreed_contributions_sum"]
-                    ),
+                    24: (soc["outstanding_ceit"] / soc["agreed_contributions_sum"]),
                 }
             )
 
@@ -1407,6 +1399,11 @@ class ReplenishmentDashboardExportView(views.APIView):
             ]
         )
 
+        promissory_notes = computed_summary_data["promissory_notes"]
+        promissory_notes = (
+            promissory_notes if abs(promissory_notes) > Decimal(5) else Decimal(0)
+        )
+
         balance = total_income - total_provisions
 
         data = [
@@ -1418,7 +1415,7 @@ class ReplenishmentDashboardExportView(views.APIView):
             (
                 None,
                 None,
-                computed_summary_data["promissory_notes"],
+                promissory_notes,
             ),
             (
                 None,

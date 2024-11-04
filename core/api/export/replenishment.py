@@ -458,7 +458,6 @@ class BaseTemplateSheetWriter:
             self.write_cell(
                 cell,
                 self.DATA_MAPPING[key].get("type"),
-                # TODO: maybe I should just leave the format be!
                 self.DATA_MAPPING[key].get("format"),
                 row_data[key],
             )
@@ -601,7 +600,7 @@ class StatusOfTheFundTemplateWriter(BaseTemplateSheetWriter):
     AS_OF_DATE_ROW = 8
     AS_OF_DATE_COLUMN = 2
 
-    def write(self):
+    def write_headers(self):
         self.sheet.cell(column=self.MEETING_COLUMN, row=self.MEETING_ROW).value = (
             "UNEP/OzL.Pro/ExCom"
         )
@@ -610,6 +609,9 @@ class StatusOfTheFundTemplateWriter(BaseTemplateSheetWriter):
                 column=self.AS_OF_DATE_COLUMN, row=self.AS_OF_DATE_ROW
             )
             cell.value = f"As of {self.as_of_date.strftime('%d/%m/%Y')}"
+
+    def write(self):
+        self.write_headers()
 
         # Here data comes as tuples; no need for row shifting
         for index, row_data in enumerate(self.data):
