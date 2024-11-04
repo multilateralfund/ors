@@ -21,8 +21,12 @@ const FIRST_YEAR = 1991
 export const scAnnualOptions = (periods: ApiReplenishment[]) => {
   const options = []
 
+  function isFinalPeriod(period: ApiReplenishment) {
+    return period.scales_of_assessment_versions.some(e => e.is_final === true)
+  }
+  const finalPeriods = periods.filter(isFinalPeriod)
   const latestYear =
-    periods.length > 0 ? periods[0].end_year : new Date().getFullYear()
+    finalPeriods.length > 0 ? finalPeriods[0].end_year : new Date().getFullYear()
   for (let year = latestYear; year >= FIRST_YEAR; year--) {
     options.push({ label: year.toString(), value: year.toString() })
   }
@@ -34,18 +38,19 @@ export function scPeriodOptions(periods: ApiReplenishment[]) {
   const options = []
   let startYear: number
   periods.forEach((period) => {
-    startYear = period.start_year
-    options.push({
-      end_year: period.end_year,
-      start_year: period.start_year,
-    })
+    if (period.scales_of_assessment_versions.some(e => e.is_final === true)) {
+      startYear = period.start_year
+      options.push({
+        end_year: period.end_year,
+        start_year: period.start_year,
+      })
+    }
   })
 
   while (startYear! > FIRST_YEAR) {
     options.push({ end_year: startYear! - 1, start_year: startYear! - 3 })
     startYear! -= 3
   }
-
   return makePeriodOptions(options)
 }
 

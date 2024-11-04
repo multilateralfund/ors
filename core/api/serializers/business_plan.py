@@ -100,11 +100,13 @@ class BPActivityExportSerializer(serializers.ModelSerializer):
     sector = serializers.SlugRelatedField("name", read_only=True)
     subsector = serializers.SlugRelatedField("name", read_only=True)
     values = BPActivityValueSerializer(many=True)
+    display_internal_id = serializers.SerializerMethodField()
 
     class Meta:
         model = BPActivity
         fields = [
             "id",
+            "display_internal_id",
             "business_plan_id",
             "agency",
             "title",
@@ -135,6 +137,13 @@ class BPActivityExportSerializer(serializers.ModelSerializer):
 
     def get_chemical_detail(self, obj):
         return "/".join(chem.name for chem in obj.substances.all())
+
+    def get_display_internal_id(self, obj):
+        agency_code = obj.business_plan.agency.name
+        country_code = obj.country.abbr or obj.country.name
+        # add 0 padding to internal_id to make it 9 digits
+        internal_id = str(obj.initial_id).zfill(9)
+        return f"{agency_code}-{country_code}-{internal_id}"
 
 
 class BPActivityDetailSerializer(serializers.ModelSerializer):

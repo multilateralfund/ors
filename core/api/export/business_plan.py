@@ -39,6 +39,12 @@ class BusinessPlanWriter(BaseWriter):
 
         headers = [
             {
+                "id": "display_internal_id",
+                "headerName": "Sort Order",
+                "read_only": True,
+                "column_width": self.COLUMN_WIDTH + 5,
+            },
+            {
                 "id": "country",
                 "headerName": "Country",
                 "column_width": self.COLUMN_WIDTH * 2,

@@ -3,6 +3,7 @@ import { PropsWithChildren } from 'react'
 export interface DownloadButtonsProps {
   downloadTexts?: string[]
   downloadUrls?: string[]
+  showPrintButton?: boolean
 }
 
 export interface SCDownloadButtonProps {

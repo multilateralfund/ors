@@ -147,6 +147,7 @@ class CPRecordBaseListView(views.APIView):
                 history_qs = history_qs.exclude(
                     Q(event_description__istartswith="status changed")
                     | Q(event_description__istartswith="status updated")
+                    | Q(event_description__istartswith="reverted to previous")
                 )
             history = CPHistorySerializer(history_qs, many=True).data
 

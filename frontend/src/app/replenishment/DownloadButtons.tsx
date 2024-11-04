@@ -16,7 +16,7 @@ const PRINT_LANDSCAPE_PAGES = [
 ]
 
 export default function DownloadButtons(props: DownloadButtonsProps) {
-  const { downloadTexts = [], downloadUrls = [] } = props
+  const { downloadTexts = [], downloadUrls = [], showPrintButton = true } = props
   const pathname = usePathname()
 
   useEffect(() => {
@@ -63,13 +63,15 @@ export default function DownloadButtons(props: DownloadButtonsProps) {
             {downloadTexts[i]}
           </DownloadLink>
         ))}
-        <PrintButton
-          onClick={function () {
-            window.print()
-          }}
-        >
-          Print
-        </PrintButton>
+        {showPrintButton &&
+          <PrintButton
+            onClick={function () {
+              window.print()
+            }}
+          >
+            Print
+          </PrintButton>
+        }
       </div>
     </Portal>
   )

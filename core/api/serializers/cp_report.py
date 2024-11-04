@@ -77,6 +77,8 @@ class CPReportListSerializer(serializers.Serializer):
     def get_version_created_by_role(self, obj):
         if not obj.version_created_by:
             return None
+        if "country" in obj.version_created_by.user_type:
+            return "Country"
         return obj.version_created_by.user_type
 
     def get_is_archive(self, obj):
