@@ -653,7 +653,12 @@ class StatisticsTemplateWriter(BaseTemplateSheetWriter):
     # All header cells are on column 1
     HEADER_COLUMN = 2
     TABLE_DESCRIPTION_ROW = 7
-    AS_OF_ROW = 9
+
+    AS_OF_DATE_ROW = 9
+    AS_OF_DATE_COLUMN = HEADER_COLUMN
+
+    MEETING_ROW = 1
+    MEETING_COLUMN = 14
 
     TEMPLATE_FIRST_DATA_ROW = 11
     TEMPLATE_LAST_DATA_ROW = 35
@@ -667,6 +672,15 @@ class StatisticsTemplateWriter(BaseTemplateSheetWriter):
         current_year = datetime.now().year
         description_cell.value = value.replace("2024", str(current_year))
 
+        self.sheet.cell(column=self.MEETING_COLUMN, row=self.MEETING_ROW).value = (
+            "UNEP/OzL.Pro/ExCom"
+        )
+        if self.as_of_date is not None:
+            cell = self.sheet.cell(
+                column=self.AS_OF_DATE_COLUMN, row=self.AS_OF_DATE_ROW
+            )
+            cell.value = f"As of {self.as_of_date.strftime('%d/%m/%Y')}"
+
     def write(self):
         self.write_headers()
         for column_index, triennial_data in enumerate(self.data):
@@ -679,7 +693,7 @@ class StatisticsTemplateWriter(BaseTemplateSheetWriter):
 
 
 class StatusOfContributionsSummaryTemplateWriter(BaseTemplateSheetWriter):
-    # TODO: HEADERS_ROW should be a list
+    # TODO: HEADERS_ROW could be a list
     HEADERS_ROW = 7
     TEMPLATE_FIRST_DATA_ROW = 11
     TEMPLATE_LAST_DATA_ROW = 65

@@ -8,6 +8,7 @@ from openpyxl.utils import get_column_letter
 from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
+from constance import config
 from core.api.export.base import configure_sheet_print
 from core.api.export.replenishment import (
     StatusOfContributionsWriter,
@@ -21,6 +22,7 @@ from core.models import (
     DisputedContribution,
     AnnualContributionStatus,
     ExternalIncomeAnnual,
+    Payment,
 )
 from core.models.business_plan import BusinessPlan
 from core.models.country_programme import CPRecord, CPReport, CPReportFormatRow
@@ -1286,3 +1288,15 @@ def add_statistics_status_of_contributions_response_worksheet(wb, periods):
         headers,
         f"1991-{current_year}",
     ).write(data)
+
+
+def get_as_of_date():
+    try:
+        latest_payment = Payment.objects.latest("date")
+    except Payment.DoesNotExist:
+        latest_payment = None
+    return (
+        latest_payment.date
+        if latest_payment and latest_payment.date
+        else config.DEFAULT_REPLENISHMENT_AS_OF_DATE
+    )

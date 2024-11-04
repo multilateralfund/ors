@@ -9,7 +9,6 @@ from decimal import Decimal
 from itertools import zip_longest
 
 import openpyxl
-from constance import config
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.db import models, transaction
@@ -60,6 +59,7 @@ from core.api.views.utils import (
     add_summary_status_of_contributions_response_worksheet,
     add_statistics_status_of_contributions_response_worksheet,
     StatisticsStatusOfContributionsAggregator,
+    get_as_of_date,
 )
 from core.models import (
     Agency,
@@ -124,15 +124,7 @@ class ReplenishmentAsOfDateViewSet(viewsets.GenericViewSet, mixins.ListModelMixi
     def list(self, request, *args, **kwargs):
         self.check_permissions(request)
 
-        try:
-            latest_payment = Payment.objects.latest("date")
-        except Payment.DoesNotExist:
-            latest_payment = None
-        as_of_date = (
-            latest_payment.date
-            if latest_payment and latest_payment.date
-            else config.DEFAULT_REPLENISHMENT_AS_OF_DATE
-        ).strftime("%d %B %Y")
+        as_of_date = get_as_of_date().strftime("%d %B %Y")
         data = {"as_of_date": as_of_date}
 
         return Response(status=status.HTTP_200_OK, data=data)
@@ -982,6 +974,7 @@ class StatisticsExportView(views.APIView):
             statistics_data,
             data_count,
             None,
+            as_of_date=get_as_of_date(),
         ).write()
 
         # Delete all other worksheets
@@ -1252,15 +1245,7 @@ class ReplenishmentDashboardView(views.APIView):
             .order_by("start_year")
         )
 
-        try:
-            latest_payment = Payment.objects.latest("date")
-        except Payment.DoesNotExist:
-            latest_payment = None
-        as_of_date = (
-            latest_payment.date
-            if latest_payment and latest_payment.date
-            else config.DEFAULT_REPLENISHMENT_AS_OF_DATE
-        )
+        as_of_date = get_as_of_date()
 
         external_income = ExternalIncomeAnnual.objects.values(
             "year",
@@ -1500,15 +1485,7 @@ class ReplenishmentDashboardExportView(views.APIView):
         status_data = self.get_status()
         data_count = len(status_data)
 
-        try:
-            latest_payment = Payment.objects.latest("date")
-        except Payment.DoesNotExist:
-            latest_payment = None
-        as_of_date = (
-            latest_payment.date
-            if latest_payment and latest_payment.date
-            else config.DEFAULT_REPLENISHMENT_AS_OF_DATE
-        )
+        as_of_date = get_as_of_date()
 
         StatusOfTheFundTemplateWriter(
             ws,
