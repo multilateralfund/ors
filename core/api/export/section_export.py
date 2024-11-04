@@ -104,7 +104,6 @@ class SectionWriter(BaseWriter):
                 value = "Yes" if value else "No"
             elif header.get("is_numeric", True):
                 value = float(value or 0)
-                value = round(value, 2)
             elif header.get("type", None) == "date":
                 # DD/MM/YYYY
                 value = parse(value).strftime("%d/%m/%Y") if value else ""
