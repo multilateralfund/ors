@@ -42,7 +42,7 @@
     "immer": "^10.1.1",
     "js-cookie": "^3.0.5",
     "lodash": "^4.17.21",
-    "next": "14.2.3",
+    "next": "14.2.16",
     "notistack": "^3.0.1",
     "object-hash": "^3.0.0",
     "postcss": "8.4.38",
