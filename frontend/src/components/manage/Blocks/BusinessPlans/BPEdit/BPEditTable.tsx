@@ -181,10 +181,8 @@ export default function BPEditTable(props: BPEditTableInterface) {
   const addActivity = () => {
     setForm([
       {
-        comment_secretariat: '',
         lvc_status: 'LVC',
         row_id: form.length + 1,
-        title: '-',
         values: [],
       } as any,
       ...form,

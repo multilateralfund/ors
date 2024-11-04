@@ -45,7 +45,7 @@ export default function BusinessPlansTable() {
   const initialFilters = {
     comment_types: [],
     country_id: [],
-    is_multi_year: [multiYearFilterOptions[0]],
+    is_multi_year: [],
     project_cluster_id: [],
     project_type_id: [],
     search: '',
