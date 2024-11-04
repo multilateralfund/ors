@@ -15,7 +15,6 @@ import BPCreateProvider, {
 } from '@ors/components/manage/Blocks/BusinessPlans/BPCreate/Provider/BPCreateProvider'
 import { ActionType } from '@ors/components/manage/Blocks/BusinessPlans/BPCreate/Provider/actions'
 import { BPEditBaseTable } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/BPEditTable'
-import { WidgetCountry } from '@ors/components/manage/Blocks/CountryProgramme/typesCPCreate'
 import { FilesViewer } from '@ors/components/manage/Blocks/Section/ReportInfo/FilesViewer'
 import SimpleField from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleField'
 import Field from '@ors/components/manage/Form/Field'
@@ -152,6 +151,7 @@ function AgencyField() {
     getOptionLabel: (option: ApiAgency) => option.name,
     onChange: handleChangeReportingAgency,
     options: agencies,
+    value: ctx.reportingAgency,
     widget: 'autocomplete',
   }
 

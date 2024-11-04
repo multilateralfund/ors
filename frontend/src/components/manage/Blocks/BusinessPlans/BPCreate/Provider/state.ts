@@ -8,6 +8,7 @@ import {
   ActionType,
   BPCreateAction,
 } from '@ors/components/manage/Blocks/BusinessPlans/BPCreate/Provider/actions'
+import { useStore } from '@ors/store'
 
 export interface BPCreateState {
   activeTab: number
@@ -55,12 +56,17 @@ export const bpReducer: Reducer<BPCreateState, BPCreateAction> = function (
   }
 }
 
-export function initialState(): BPCreateState {
+export function useInitialState(): BPCreateState {
+  const agencies = useStore((state) => state?.common.agencies.data)
+  const { agency_id } = useStore((state) => state.user?.data)
+
+  const agency = agencies.find(({ id }) => id == agency_id) ?? null
+
   return {
     activeTab: 0,
     activities: [],
     currentYear: new Date().getFullYear(),
-    reportingAgency: null,
+    reportingAgency: agency,
     reportingOfficer: '',
     get yearRange() {
       const startOn = this.currentYear
