@@ -1138,6 +1138,7 @@ class BilateralAssistanceViewSet(
         annual_contribution.save(
             update_fields=[
                 "bilateral_assistance",
+                "outstanding_contributions",
                 "bilateral_assistance_meeting_id",
                 "bilateral_assistance_decision_number",
             ]
@@ -1150,6 +1151,7 @@ class BilateralAssistanceViewSet(
         triennial_contribution.save(
             update_fields=[
                 "bilateral_assistance",
+                "outstanding_contributions",
                 "bilateral_assistance_meeting_id",
                 "bilateral_assistance_decision_number",
             ]
