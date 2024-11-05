@@ -61,6 +61,11 @@ function assessAmountFromCurrency(
 
   const zero = new Big(0)
   // If exchange rate is 0; just return 0
+  Big.DP = 15
+  // @ts-ignore
+  am.DP = 15
+  // @ts-ignore
+  er.DP = 15
   return er.cmp(zero) === 0 ? '0' : am.div(er).toString()
 }
 
