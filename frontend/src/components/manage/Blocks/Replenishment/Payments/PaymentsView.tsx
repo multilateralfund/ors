@@ -276,6 +276,7 @@ function PaymentsView() {
       entry = { ...memoResults[editIdx] } as PaymentDataFields
       entry.amount_assessed = entry.be_amount_assessed
       entry.amount_received = entry.be_amount_received
+      entry.amount_local_currency = entry.be_amount_local_currency
       entry.exchange_rate = entry.be_exchange_rate
       entry.ferm_gain_or_loss = entry.be_ferm ?? ''
     }

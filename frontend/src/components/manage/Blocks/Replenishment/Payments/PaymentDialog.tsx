@@ -60,8 +60,7 @@ function assessAmountFromCurrency(
   const er = asDecimal(exchangeRate, '1')
 
   const zero = new Big(0)
-  // If exchange rate is 0; just return 0
-  Big.DP = 15
+  // If exchange rate is 0; just return 0. Quantize to 15 decimals.
   // @ts-ignore
   am.DP = 15
   // @ts-ignore
