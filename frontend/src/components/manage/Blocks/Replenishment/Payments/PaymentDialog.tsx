@@ -11,6 +11,8 @@ import React, {
   useState,
 } from 'react'
 
+import Big from 'big.js'
+
 import {
   DialogTabButtons,
   DialogTabContent,
@@ -56,7 +58,10 @@ function assessAmountFromCurrency(
 ): string {
   const am = asDecimal(currencyAmount, '0')
   const er = asDecimal(exchangeRate, '1')
-  return am.div(er).toString()
+
+  const zero = new Big(0)
+  // If exchange rate is 0; just return 0
+  return er.cmp(zero) === 0 ? '0' : am.div(er).toString()
 }
 
 function getInvoice(

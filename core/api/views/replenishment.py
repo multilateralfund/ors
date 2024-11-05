@@ -1138,6 +1138,7 @@ class BilateralAssistanceViewSet(
         annual_contribution.save(
             update_fields=[
                 "bilateral_assistance",
+                "outstanding_contributions",
                 "bilateral_assistance_meeting_id",
                 "bilateral_assistance_decision_number",
             ]
@@ -1150,6 +1151,7 @@ class BilateralAssistanceViewSet(
         triennial_contribution.save(
             update_fields=[
                 "bilateral_assistance",
+                "outstanding_contributions",
                 "bilateral_assistance_meeting_id",
                 "bilateral_assistance_decision_number",
             ]
@@ -2121,7 +2123,7 @@ class ReplenishmentPaymentViewSet(
         if invoice.payments.count() <= 1:
             invoice.status = invoice.InvoiceStatus.PENDING
         else:
-            invoice.status = invoice.InvoiceStatus.PARTYALLY_PAID
+            invoice.status = invoice.InvoiceStatus.PARTIALLY_PAID
         invoice.save(update_fields=["status"])
 
     @transaction.atomic

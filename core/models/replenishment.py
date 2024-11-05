@@ -141,7 +141,7 @@ class ScaleOfAssessment(models.Model):
             return None
 
         return (
-            self.version.replenishment.amount
+            Decimal(self.version.replenishment.amount)
             * self.adjusted_scale_of_assessment
             / Decimal("100")
         )
