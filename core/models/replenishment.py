@@ -252,7 +252,7 @@ class Payment(models.Model):
         related_name="payments",
         null=True,
         blank=True,
-        on_delete=models.PROTECT,
+        on_delete=models.SET_NULL,
     )
 
     is_ferm = models.BooleanField(default=False)
