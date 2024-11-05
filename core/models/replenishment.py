@@ -2,6 +2,7 @@ from decimal import Decimal
 
 from django.contrib.postgres import fields
 from django.db import models
+from django.utils.functional import cached_property
 
 from core.models.country import Country
 from core.models.meeting import Meeting
@@ -99,10 +100,18 @@ class ScaleOfAssessment(models.Model):
     # is to actually help when populating data from 2021-onwards
     opted_for_ferm = models.BooleanField(null=True)
 
+    @cached_property
+    def un_assessment_sum(self):
+        return (
+            ScaleOfAssessment.objects.filter(version=self.version)
+            .exclude(country__iso3="USA")
+            .aggregate(models.Sum("un_scale_of_assessment", default=0))[
+                "un_scale_of_assessment__sum"
+            ]
+        )
+
     @property
     def adjusted_scale_of_assessment(self):
-        # TODO: Might need to be moved to the serializer and pass un_assessment_sum as context,
-        # otherwise it will be computed for each contribution and will be inefficient
         if self.country.iso3 == "USA":
             return US_SCALE_OF_ASSESSMENT
 
@@ -112,18 +121,10 @@ class ScaleOfAssessment(models.Model):
         if self.un_scale_of_assessment is None:
             return None
 
-        un_assessment_sum = (
-            ScaleOfAssessment.objects.filter(version=self.version)
-            .exclude(country__iso3="USA")
-            .aggregate(models.Sum("un_scale_of_assessment", default=0))[
-                "un_scale_of_assessment__sum"
-            ]
-        )
-
-        if un_assessment_sum is None:
+        if self.un_assessment_sum is None:
             return None
 
-        return (self.un_scale_of_assessment / un_assessment_sum) * (
+        return (self.un_scale_of_assessment / self.un_assessment_sum) * (
             Decimal("100") - US_SCALE_OF_ASSESSMENT
         )
 
