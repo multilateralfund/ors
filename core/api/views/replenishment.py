@@ -2121,7 +2121,7 @@ class ReplenishmentPaymentViewSet(
         if invoice.payments.count() <= 1:
             invoice.status = invoice.InvoiceStatus.PENDING
         else:
-            invoice.status = invoice.InvoiceStatus.PARTYALLY_PAID
+            invoice.status = invoice.InvoiceStatus.PARTIALLY_PAID
         invoice.save(update_fields=["status"])
 
     @transaction.atomic
