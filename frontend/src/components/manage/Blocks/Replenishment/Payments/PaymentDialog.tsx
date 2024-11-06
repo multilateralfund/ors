@@ -155,26 +155,31 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
   useEffect(
     function () {
       const optedForFerm = countryInfo?.opted_for_ferm || false
+      const exchangeRate = countryInfo?.exchange_rate || ''
 
       if (!isEdit) {
+        let amountAssessed = countryInfo?.yearly_amount || ''
         let amountLocalCurrency = optedForFerm
           ? countryInfo?.yearly_amount_local_currency || ''
           : countryInfo?.yearly_amount || ''
         if (fields.invoice) {
+          const invoice = getInvoice(
+            invoicesList,
+            fields.invoice,
+          )
           amountLocalCurrency =
-            getInvoice(
-              invoicesList,
-              fields.invoice,
-            ).amount_local_currency?.toString() || ''
+            invoice.amount_local_currency?.toString() || ''
+          amountAssessed = optedForFerm
+            ? assessAmountFromCurrency(
+              amountLocalCurrency,
+              exchangeRate,
+            )
+            : invoice.amount_usd?.toString() || ''
         }
-        const exchangeRate = countryInfo?.exchange_rate || ''
 
         setFields((prev) => {
           const updated = {
-            amount_assessed: assessAmountFromCurrency(
-              amountLocalCurrency,
-              exchangeRate,
-            ),
+            amount_assessed: amountAssessed,
             amount_local_currency: amountLocalCurrency,
             currency: optedForFerm ? countryInfo?.currency || '' : 'USD',
             exchange_rate: exchangeRate,
