@@ -4,7 +4,7 @@ import { ApiEditBPActivity } from '@ors/types/api_bp_get'
 
 import React, { useCallback, useEffect, useState } from 'react'
 
-import { find, map } from 'lodash'
+import { find, isEmpty, map } from 'lodash'
 import { useParams } from 'next/navigation'
 
 import Loading from '@ors/components/theme/Loading/Loading'
@@ -24,10 +24,10 @@ const BPEdit = () => {
   const pathParams = useParams<{ agency: string; period: string }>()
 
   const { data, loading, params } = useGetAllActivities(pathParams) as any
-  const { activities, business_plan: business_plann } = data || {}
+  const { activities, business_plan } = data || {}
   const { businessPlan } = useStore((state) => state.businessPlan)
 
-  const business_plan = businessPlan?.id ? businessPlan : business_plann || {}
+  const crtBp = isEmpty(businessPlan) ? business_plan || {} : businessPlan
 
   const bpSlice = useStore((state) => state.businessPlans)
   const commentTypes = bpSlice.commentTypes.data
@@ -86,15 +86,15 @@ const BPEdit = () => {
         className="!fixed bg-action-disabledBackground"
         active={loading}
       />
-      <BPHeaderEdit business_plan={business_plan} files={files} form={form} />
+      <BPHeaderEdit business_plan={crtBp} files={files} form={form} />
       <BPRestoreEdit
-        key={business_plan?.id}
+        key={crtBp?.id}
         localStorage={localStorage}
         setForm={handleSetForm}
       />
       <BPTabs
-        key={business_plan?.id}
-        {...{ activeTab, business_plan, files, setActiveTab, setFiles }}
+        key={crtBp?.id}
+        {...{ activeTab, crtBp, files, setActiveTab, setFiles }}
         isEdit={true}
       >
         {form && (
