@@ -1,4 +1,4 @@
-import { ApiEditBPActivity } from '@ors/types/api_bp_get'
+import { ApiBP, ApiEditBPActivity } from '@ors/types/api_bp_get'
 
 import { Dispatch, ReactNode, SetStateAction } from 'react'
 
@@ -29,8 +29,12 @@ export type BPGetDiffInterface = {
 
 export type BPTabsInterface = {
   activeTab: number
+  business_plan?: ApiBP
   children: ReactNode
+  files?: File | null | undefined
+  isEdit?: boolean
   setActiveTab: Dispatch<SetStateAction<number>>
+  setFiles?: Dispatch<SetStateAction<File | null | undefined>>
 }
 
 export type BPEditTableInterface = {

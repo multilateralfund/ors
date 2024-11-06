@@ -11,10 +11,9 @@ export function useEditLocalStorage(data: {
   business_plan: any
 }): EditBPLocalStorageType {
   const { activities, business_plan } = data || {}
-
   const key = useMemo(
     () =>
-      `BP_RECOVERY_${business_plan?.agency.name}_${business_plan?.year_start}-${business_plan?.year_end}_EDIT`,
+      `BP_RECOVERY_${business_plan?.agency?.name}_${business_plan?.year_start}-${business_plan?.year_end}_EDIT`,
     [business_plan],
   )
 

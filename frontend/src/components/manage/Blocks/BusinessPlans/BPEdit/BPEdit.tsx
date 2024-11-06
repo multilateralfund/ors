@@ -24,13 +24,18 @@ const BPEdit = () => {
   const pathParams = useParams<{ agency: string; period: string }>()
 
   const { data, loading, params } = useGetAllActivities(pathParams) as any
-  const { activities, business_plan } = data || {}
+  const { activities, business_plan: business_plann } = data || {}
+  const { businessPlan } = useStore((state) => state.businessPlan)
+
+  const business_plan = businessPlan?.id ? businessPlan : business_plann || {}
 
   const bpSlice = useStore((state) => state.businessPlans)
   const commentTypes = bpSlice.commentTypes.data
 
   const [activeTab, setActiveTab] = useState(0)
   const [form, setForm] = useState<Array<ApiEditBPActivity> | null>()
+
+  const [files, setFiles] = useState<File | null | undefined>(null)
 
   const [warnOnClose, setWarnOnClose] = useState(false)
   useVisibilityChange(warnOnClose)
@@ -81,13 +86,17 @@ const BPEdit = () => {
         className="!fixed bg-action-disabledBackground"
         active={loading}
       />
-      <BPHeaderEdit business_plan={business_plan} form={form} />
+      <BPHeaderEdit business_plan={business_plan} files={files} form={form} />
       <BPRestoreEdit
         key={business_plan?.id}
         localStorage={localStorage}
         setForm={handleSetForm}
       />
-      <BPTabs {...{ activeTab, setActiveTab }}>
+      <BPTabs
+        key={business_plan?.id}
+        {...{ activeTab, business_plan, files, setActiveTab, setFiles }}
+        isEdit={true}
+      >
         {form && (
           <BEditTable {...{ form, loading, params }} setForm={handleSetForm} />
         )}
