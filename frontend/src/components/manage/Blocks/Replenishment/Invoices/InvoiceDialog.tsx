@@ -9,6 +9,7 @@ import React, {
   useState,
 } from 'react'
 
+import Big from 'big.js'
 import cx from 'classnames'
 
 import {
