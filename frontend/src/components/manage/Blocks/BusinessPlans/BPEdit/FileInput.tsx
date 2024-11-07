@@ -14,7 +14,7 @@ const FileInput = (props: BpFileInput) => {
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (setFiles && event.target.files && event.target.files.length > 0) {
-      setFiles({ ...files, newFiles: Array.from(event.target.files || []) })
+      setFiles({ ...files, newFiles: Array.from(event.target.files) })
     }
   }
 

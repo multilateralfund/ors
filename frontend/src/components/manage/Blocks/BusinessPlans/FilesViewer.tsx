@@ -18,8 +18,8 @@ export function FilesViewer(props: BpDetails) {
   }
 
   const handleDelete = (fileId: number) => {
-    const remainingFiles = filter(currentFiles, (file) => file.id !== fileId)
-    setCurrentFiles(remainingFiles)
+    const updatedFiles = filter(currentFiles, (file) => file.id !== fileId)
+    setCurrentFiles(updatedFiles)
 
     if (setFiles) {
       setFiles({

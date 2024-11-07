@@ -35,7 +35,7 @@ export default function BPHeaderEdit({ business_plan, files, form }: any) {
       if (newFiles.length > 0) {
         await uploadFiles(
           `api/business-plan/files/?agency_id=${agency.id}&year_start=${year_start}&year_end=${year_end}`,
-          files.newFiles,
+          newFiles,
         )
       }
 
@@ -44,7 +44,7 @@ export default function BPHeaderEdit({ business_plan, files, form }: any) {
           `api/business-plan/files/?agency_id=${agency.id}&year_start=${year_start}&year_end=${year_end}`,
           {
             data: {
-              file_ids: files.deletedFilesIds,
+              file_ids: deletedFilesIds,
             },
             headers: {
               'Content-Type': 'application/json',

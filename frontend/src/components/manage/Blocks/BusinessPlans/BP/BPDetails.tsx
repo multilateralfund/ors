@@ -6,7 +6,7 @@ import BPContext from '@ors/contexts/BusinessPlans/BPContext'
 
 import FileInput from '../BPEdit/FileInput'
 import { FilesViewer } from '../FilesViewer'
-import { BpDetails, BpFilesObject } from '../types'
+import { BpDetails } from '../types'
 
 function BPHistory() {
   const { data } = useContext(BPContext) as any
@@ -52,7 +52,7 @@ function BPSummary(props: BpDetails) {
   )
 }
 
-export default function BPDetails(props: any) {
+export default function BPDetails(props: BpDetails) {
   return (
     <section className="grid items-start gap-6 md:auto-rows-auto md:grid-cols-2">
       <BPSummary {...props} />

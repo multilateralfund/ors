@@ -1,4 +1,4 @@
-import { ApiBP, ApiEditBPActivity } from '@ors/types/api_bp_get'
+import { ApiEditBPActivity } from '@ors/types/api_bp_get'
 
 import { Dispatch, ReactNode, SetStateAction } from 'react'
 
