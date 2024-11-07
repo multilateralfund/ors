@@ -7,7 +7,7 @@ django-environ==0.10.0
 django-picklefield==3.1
 django-mptt==0.14.0
 django-sql-explorer==3.2.1
-djangorestframework==3.14.0
+djangorestframework==3.15.2
 djangorestframework-simplejwt==5.2.2
 django-cors-headers==3.14.0
 django-colorfield==0.9.0
