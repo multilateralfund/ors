@@ -3,7 +3,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 
 from core.api.tests.factories import AgencyFactory, UserFactory
-from core.models.business_plan import BPFile, BusinessPlan
+from core.models.business_plan import BPFile
 
 pytestmark = pytest.mark.django_db
 

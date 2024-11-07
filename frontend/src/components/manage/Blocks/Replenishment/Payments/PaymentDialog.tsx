@@ -11,6 +11,8 @@ import React, {
   useState,
 } from 'react'
 
+import Big from 'big.js'
+
 import {
   DialogTabButtons,
   DialogTabContent,
@@ -56,7 +58,16 @@ function assessAmountFromCurrency(
 ): string {
   const am = asDecimal(currencyAmount, '0')
   const er = asDecimal(exchangeRate, '1')
-  return am.div(er).toString()
+
+  const zero = new Big(0)
+  // If exchange rate is 0; just return 0. Quantize to 15 decimals.
+  // @ts-ignore
+  Big.DP = 15
+  // @ts-ignore
+  am.DP = 15
+  // @ts-ignore
+  er.DP = 15
+  return er.cmp(zero) === 0 ? '0' : am.div(er).toString()
 }
 
 function getInvoice(
@@ -144,26 +155,31 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
   useEffect(
     function () {
       const optedForFerm = countryInfo?.opted_for_ferm || false
+      const exchangeRate = countryInfo?.exchange_rate || ''
 
       if (!isEdit) {
+        let amountAssessed = countryInfo?.yearly_amount || ''
         let amountLocalCurrency = optedForFerm
           ? countryInfo?.yearly_amount_local_currency || ''
           : countryInfo?.yearly_amount || ''
         if (fields.invoice) {
+          const invoice = getInvoice(
+            invoicesList,
+            fields.invoice,
+          )
           amountLocalCurrency =
-            getInvoice(
-              invoicesList,
-              fields.invoice,
-            ).amount_local_currency?.toString() || ''
+            invoice.amount_local_currency?.toString() || ''
+          amountAssessed = optedForFerm
+            ? assessAmountFromCurrency(
+              amountLocalCurrency,
+              exchangeRate,
+            )
+            : invoice.amount_usd?.toString() || ''
         }
-        const exchangeRate = countryInfo?.exchange_rate || ''
 
         setFields((prev) => {
           const updated = {
-            amount_assessed: assessAmountFromCurrency(
-              amountLocalCurrency,
-              exchangeRate,
-            ),
+            amount_assessed: amountAssessed,
             amount_local_currency: amountLocalCurrency,
             currency: optedForFerm ? countryInfo?.currency || '' : 'USD',
             exchange_rate: exchangeRate,
@@ -202,19 +218,7 @@ const PaymentDialog = function PaymentDialog(props: IPaymentDialogProps) {
       setFields(function (prevState): PaymentDialogFields {
         return {
           ...prevState,
-          get amount_assessed() {
-            return this.is_ferm
-              ? assessAmountFromCurrency(
-                  this.amount_local_currency,
-                  this.exchange_rate,
-                )
-              : ''
-          },
-          amount_local_currency:
-            invoice?.amount_local_currency?.toString() ?? '',
-          amount_received: invoice?.amount_usd?.toString() ?? '',
           invoice: invoiceId,
-          is_ferm: invoice?.is_ferm ?? prevState.is_ferm,
           payment_for_years: invoice ? [invoice?.year.toString()] : [],
         }
       })

@@ -7,7 +7,7 @@ import type {
   ValidationSchemaKeys,
 } from './types'
 
-import { getFloat } from '@ors/helpers/Utils/Utils'
+import { fixFloat, getFloat } from '@ors/helpers/Utils/Utils'
 
 import { sumMaybeNumbers, sumNumbers, sumRowColumns, sumUsages } from './utils'
 
@@ -52,7 +52,7 @@ export function validateUsageTotals(row: IRow): RowValidatorFuncResult {
     getFloat(row.imports as string) -
     getFloat(row.exports as string) +
     getFloat(row.production as string)
-  const isValid = totalUsages == totalImpExp
+  const isValid = fixFloat(totalUsages) == fixFloat(totalImpExp)
 
   if (!isValid && !row.remarks) {
     return { row: row.display_name }
