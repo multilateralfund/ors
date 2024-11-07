@@ -77,6 +77,7 @@ from core.models import (
     ScaleOfAssessment,
     ScaleOfAssessmentVersion,
     TriennialContributionStatus,
+    StatusOfTheFundFile,
 )
 
 EXPORT_RESOURCES_DIR = settings.ROOT_DIR / "api" / "export" / "templates"
@@ -2250,6 +2251,7 @@ class StatusOfTheFundFileViewSet(
     serializer_class = StatusOfTheFundFileSerializer
     permission_classes = [IsUserAllowedReplenishment]
     lookup_field = "id"
+    queryset = StatusOfTheFundFile.objects.all()
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
@@ -2275,7 +2277,7 @@ class StatusOfTheFundFileViewSet(
             headers=headers,
         )
 
-    def get(self, request, *args, **kwargs):
+    def retrieve(self, request, *args, **kwargs):
         obj = self.get_object()
         response = HttpResponse(
             obj.file.read(), content_type="application/octet-stream"
