@@ -43,7 +43,7 @@ const FileInput = (props: BpFileInput) => {
               {newFiles.length > 0 && (
                 <IconButton
                   className="h-full rounded-none border-y-0 border-r-0"
-                  onClick={() => handleClearInput}
+                  onClick={handleClearInput}
                 >
                   <IoTrash
                     className="transition-colors ease-in-out hover:text-mlfs-purple"

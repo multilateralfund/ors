@@ -1,8 +1,15 @@
+import {
+  UserType,
+  userCanUpdateFilesBusinessPlan,
+  userCanViewFilesBusinessPlan,
+} from '@ors/types/user_types'
+
 import { useContext } from 'react'
 
 import SimpleField from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleField'
 import VersionHistoryList from '@ors/components/ui/VersionDetails/VersionHistoryList'
 import BPContext from '@ors/contexts/BusinessPlans/BPContext'
+import { useStore } from '@ors/store'
 
 import FileInput from '../BPEdit/FileInput'
 import { FilesViewer } from '../FilesViewer'
@@ -28,6 +35,10 @@ function BPSummary(props: BpDetails) {
   const { business_plan = {} } = data?.results
   const { agency, year_start } = business_plan
 
+  const { user_type } = useStore((state) => state.user.data)
+  const canViewFiles = userCanViewFilesBusinessPlan[user_type as UserType]
+  const canUpdateFiles = userCanUpdateFilesBusinessPlan[user_type as UserType]
+
   return (
     <div className="flex flex-col gap-6 rounded-lg bg-gray-100 p-4">
       <p className="m-0 text-2xl font-normal">Summary</p>
@@ -42,11 +53,11 @@ function BPSummary(props: BpDetails) {
       </div>
       {setFiles ? (
         <>
-          <FilesViewer {...{ bpFiles, files, setFiles }} />
-          <FileInput {...{ files, setFiles }} />
+          {canViewFiles && <FilesViewer {...{ bpFiles, files, setFiles }} />}
+          {canUpdateFiles && <FileInput {...{ files, setFiles }} />}
         </>
       ) : (
-        <FilesViewer bpFiles={bpFiles} />
+        canViewFiles && <FilesViewer bpFiles={bpFiles} />
       )}
     </div>
   )
