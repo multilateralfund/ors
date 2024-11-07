@@ -11,7 +11,7 @@ from core.models import ProjectSubSector
 from core.models import ProjectType
 from core.models.agency import Agency
 from core.models.base import CommentType
-from core.models.business_plan import BPChemicalType
+from core.models.business_plan import BPChemicalType, BPFile
 
 
 class BPFilterBackend(DjangoFilterBackend):
@@ -125,3 +125,23 @@ class BPActivityListFilter(BPActivityFilter):
 
     class Meta(BPActivityFilter.Meta):
         fields = BPActivityFilter.Meta.fields + ["year_start", "year_end", "agency_id"]
+
+
+class BPFileFilter(filters.FilterSet):
+    agency_id = filters.ModelChoiceFilter(
+        required=True,
+        field_name="agency_id",
+        queryset=Agency.objects.all(),
+    )
+    year_start = filters.NumberFilter(
+        required=True,
+        field_name="year_start",
+    )
+    year_end = filters.NumberFilter(
+        required=True,
+        field_name="year_end",
+    )
+
+    class Meta:
+        model = BPFile
+        fields = ["agency_id", "year_start", "year_end"]
