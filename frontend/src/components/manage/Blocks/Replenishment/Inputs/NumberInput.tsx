@@ -12,10 +12,8 @@ const NumberInput = forwardRef<HTMLInputElement, INumberInputProps>(
     const { id, className, name, onChange, ...rest } = props
 
     const handleChange: ChangeEventHandler<HTMLInputElement> = (evt) => {
-      if (
-        !evt.target.value ||
-        (!!evt.target.value && getFloat(evt.target.value))
-      ) {
+      const value = evt.target.value
+      if (!value || (!!value && getFloat(value)) || value === '-') {
         onChange!(evt)
       }
     }
