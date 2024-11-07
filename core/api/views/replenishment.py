@@ -484,6 +484,8 @@ class StatusOfContributionsExportView(views.APIView):
         years = request.query_params.get("years")
         triennial_start_years = request.query_params.get("triennials")
 
+        as_of_date = get_as_of_date()
+
         agg = SummaryStatusOfContributionsAggregator()
         soc_qs = agg.get_status_of_contributions_qs()
         summary_data = [
@@ -500,6 +502,7 @@ class StatusOfContributionsExportView(views.APIView):
             for index, country in enumerate(soc_qs)
         ]
         data_count = len(summary_data)
+        disputed_contributions = agg.get_disputed_contribution_amount()
 
         # Open template file
         wb = openpyxl.load_workbook(
@@ -512,6 +515,8 @@ class StatusOfContributionsExportView(views.APIView):
             summary_data,
             data_count,
             None,
+            as_of_date=as_of_date,
+            disputed_contributions=disputed_contributions,
         ).write()
         sheet_names = [self.SUMMARY_WORKSHEET_NAME]
 
@@ -539,10 +544,9 @@ class StatusOfContributionsExportView(views.APIView):
                 }
                 for index, country in enumerate(soc_qs)
             ]
-
-            # Need to also get and write CEIT data & Disputed contributions
-            # ceit_countries_qs = agg.get_ceit_countries()
-            # triennial_data["ceit"] = agg.get_ceit_data(ceit_countries_qs)
+            disputed_contributions = agg.get_disputed_contribution_amount()
+            ceit_countries_qs = agg.get_ceit_countries()
+            ceit_data = agg.get_ceit_data(ceit_countries_qs)
 
             ws = wb.copy_worksheet(triennial_ws)
             StatusOfContributionsTriennialTemplateWriter(
@@ -550,6 +554,9 @@ class StatusOfContributionsExportView(views.APIView):
                 triennial_data,
                 len(triennial_data),
                 None,
+                as_of_date=as_of_date,
+                disputed_contributions=disputed_contributions,
+                ceit_data=ceit_data,
             ).write()
             sheet_name = f"{start_year}-{end_year} Contributions"
             # Save sheet with the updated title
@@ -578,10 +585,9 @@ class StatusOfContributionsExportView(views.APIView):
                 }
                 for index, country in enumerate(soc_qs)
             ]
-
-            # Need to also get and write CEIT data & Disputed contributions
-            # ceit_countries_qs = agg.get_ceit_countries()
-            # triennial_data["ceit"] = agg.get_ceit_data(ceit_countries_qs)
+            disputed_contributions = agg.get_disputed_contribution_amount()
+            ceit_countries_qs = agg.get_ceit_countries()
+            ceit_data = agg.get_ceit_data(ceit_countries_qs)
 
             ws = wb.copy_worksheet(triennial_ws)
             StatusOfContributionsTriennialTemplateWriter(
@@ -589,6 +595,9 @@ class StatusOfContributionsExportView(views.APIView):
                 annual_data,
                 len(annual_data),
                 None,
+                as_of_date=as_of_date,
+                disputed_contributions=disputed_contributions,
+                ceit_data=ceit_data,
             ).write()
             sheet_name = f"{year} Contributions"
             # Save sheet with the updated title
@@ -601,7 +610,6 @@ class StatusOfContributionsExportView(views.APIView):
             if name not in sheet_names:
                 wb.remove(wb[name])
 
-        # TODO: customize name based on years and triennials (or summary)
         return workbook_response("Status of Contributions", wb)
 
 
@@ -1130,6 +1138,7 @@ class BilateralAssistanceViewSet(
         annual_contribution.save(
             update_fields=[
                 "bilateral_assistance",
+                "outstanding_contributions",
                 "bilateral_assistance_meeting_id",
                 "bilateral_assistance_decision_number",
             ]
@@ -1142,6 +1151,7 @@ class BilateralAssistanceViewSet(
         triennial_contribution.save(
             update_fields=[
                 "bilateral_assistance",
+                "outstanding_contributions",
                 "bilateral_assistance_meeting_id",
                 "bilateral_assistance_decision_number",
             ]
@@ -2113,7 +2123,7 @@ class ReplenishmentPaymentViewSet(
         if invoice.payments.count() <= 1:
             invoice.status = invoice.InvoiceStatus.PENDING
         else:
-            invoice.status = invoice.InvoiceStatus.PARTYALLY_PAID
+            invoice.status = invoice.InvoiceStatus.PARTIALLY_PAID
         invoice.save(update_fields=["status"])
 
     @transaction.atomic

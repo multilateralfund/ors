@@ -9,6 +9,7 @@ import React, {
   useState,
 } from 'react'
 
+import Big from 'big.js'
 import cx from 'classnames'
 
 import {
@@ -166,11 +167,20 @@ function TabContentAmount(props: TabContentAmountProps) {
   > = (evt) => {
     const amountLocal = evt.target.value
     const nrAmountLocal = asDecimal(amountLocal)
+    const exchangeRate =  asDecimal(countryInfo?.exchange_rate, '1')
+    // If exchange rate is 0; just return 0. Quantize to 15 decimals.
+    // @ts-ignore
+    Big.DP = 15
+    // @ts-ignore
+    nrAmountLocal.DP = 15
+    // @ts-ignore
+    exchangeRate.DP = 15
+
     setFields((prev) => ({
       ...prev,
       amount_local_currency: amountLocal,
       amount_usd: nrAmountLocal
-        .div(asDecimal(countryInfo?.exchange_rate, '1'))
+        .div(exchangeRate)
         .toString(),
     }))
   }
