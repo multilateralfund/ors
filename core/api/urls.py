@@ -396,12 +396,12 @@ urlpatterns = [
         name="bp-chemical-type-list",
     ),
     path(
-        "business-plan/<int:id>/file/",
+        "business-plan/files/",
         BPFileView.as_view(),
-        name="business-plan-file",
+        name="business-plan-files",
     ),
     path(
-        "business-plan/<int:id>/file/download/",
+        "business-plan/files/<int:id>/download/",
         BPFileDownloadView.as_view(),
         name="business-plan-file-download",
     ),
