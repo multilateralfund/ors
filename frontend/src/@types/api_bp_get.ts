@@ -54,7 +54,6 @@ export interface ApiBPActivity {
   comment_types: string[]
   country: Country
   country_id: number
-
   id: number
   initial_id: null | number
   is_multi_year: true

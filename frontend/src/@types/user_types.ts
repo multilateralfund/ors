@@ -109,3 +109,27 @@ export const userCanEditBusinessPlan: Record<UserType, boolean> = {
   treasurer: false,
   viewer: false,
 }
+
+export const userCanViewFilesBusinessPlan: Record<UserType, boolean> = {
+  admin: true,
+  agency_inputter: true,
+  agency_submitter: true,
+  country_submitter: false,
+  country_user: false,
+  secretariat: true,
+  stakeholder: false,
+  treasurer: false,
+  viewer: true,
+}
+
+export const userCanUpdateFilesBusinessPlan: Record<UserType, boolean> = {
+  admin: true,
+  agency_inputter: false,
+  agency_submitter: false,
+  country_submitter: false,
+  country_user: false,
+  secretariat: true,
+  stakeholder: false,
+  treasurer: false,
+  viewer: false,
+}

@@ -25,6 +25,7 @@ from core.models import (
     ProjectType,
     Substance,
 )
+from core.models.business_plan import BPFile
 
 # pylint: disable=R0902
 
@@ -59,8 +60,6 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
     status = serializers.ChoiceField(
         choices=BusinessPlan.Status.choices, required=False
     )
-    feedback_filename = serializers.CharField(read_only=True)
-    feedback_file_download_url = serializers.SerializerMethodField(read_only=True)
     updated_by = serializers.StringRelatedField(
         read_only=True, source="updated_by.username"
     )
@@ -74,16 +73,11 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
             "year_start",
             "year_end",
             "agency",
-            "feedback_filename",
-            "feedback_file_download_url",
             "updated_at",
             "updated_by",
             "version",
             "is_latest",
         ]
-
-    def get_feedback_file_download_url(self, obj):
-        return reverse("business-plan-file-download", args=(obj.id,))
 
 
 class BPActivityExportSerializer(serializers.ModelSerializer):
@@ -475,6 +469,23 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
 
 
 class BPFileSerializer(serializers.ModelSerializer):
+    agency_id = serializers.PrimaryKeyRelatedField(
+        required=True,
+        queryset=Agency.objects.all().values_list("id", flat=True),
+    )
+    download_url = serializers.SerializerMethodField()
+
     class Meta:
-        model = BusinessPlan
-        fields = ["feedback_filename"]
+        model = BPFile
+        fields = [
+            "id",
+            "agency_id",
+            "year_start",
+            "year_end",
+            "uploaded_at",
+            "filename",
+            "download_url",
+        ]
+
+    def get_download_url(self, obj):
+        return reverse("business-plan-file-download", args=(obj.id,))
