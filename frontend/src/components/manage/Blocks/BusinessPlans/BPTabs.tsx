@@ -5,12 +5,9 @@ import { BPTabsInterface } from './types'
 
 const BPTabs = ({
   activeTab,
-  business_plan,
   children,
-  files,
-  isEdit,
   setActiveTab,
-  setFiles,
+  ...props
 }: BPTabsInterface) => {
   return (
     <>
@@ -55,9 +52,7 @@ const BPTabs = ({
       </div>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary bg-white p-6">
         {activeTab === 0 && children}
-        {activeTab === 1 && (
-          <BPDetails {...{ business_plan, files, isEdit, setFiles }} />
-        )}
+        {activeTab === 1 && <BPDetails {...props} />}
       </div>
     </>
   )

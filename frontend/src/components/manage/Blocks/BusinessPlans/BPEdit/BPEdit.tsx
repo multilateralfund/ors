@@ -4,7 +4,7 @@ import { ApiEditBPActivity } from '@ors/types/api_bp_get'
 
 import React, { useCallback, useEffect, useState } from 'react'
 
-import { find, isEmpty, map } from 'lodash'
+import { find, map } from 'lodash'
 import { useParams } from 'next/navigation'
 
 import Loading from '@ors/components/theme/Loading/Loading'
@@ -14,28 +14,31 @@ import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 import { useStore } from '@ors/store'
 
 import BPTabs from '../BPTabs'
+import { BpFilesObject } from '../types'
 import { useEditLocalStorage } from '../useLocalStorage'
 import BEditTable from './BPEditTable'
 import BPHeaderEdit from './BPHeaderEdit'
 import BPRestoreEdit from './BPRestoreEdit'
 import { useGetAllActivities } from './useGetAllActivities'
+import { useGetFiles } from './useGetFiles'
 
 const BPEdit = () => {
   const pathParams = useParams<{ agency: string; period: string }>()
 
   const { data, loading, params } = useGetAllActivities(pathParams) as any
-  const { activities, business_plan } = data || {}
-  const { businessPlan } = useStore((state) => state.businessPlan)
+  const { data: bpFiles } = useGetFiles(pathParams) as any
 
-  const crtBp = isEmpty(businessPlan) ? business_plan || {} : businessPlan
+  const { activities, business_plan } = data || {}
 
   const bpSlice = useStore((state) => state.businessPlans)
   const commentTypes = bpSlice.commentTypes.data
 
   const [activeTab, setActiveTab] = useState(0)
   const [form, setForm] = useState<Array<ApiEditBPActivity> | null>()
-
-  const [files, setFiles] = useState<File | null | undefined>(null)
+  const [files, setFiles] = useState<BpFilesObject>({
+    deletedFilesIds: [],
+    newFiles: [],
+  })
 
   const [warnOnClose, setWarnOnClose] = useState(false)
   useVisibilityChange(warnOnClose)
@@ -86,16 +89,15 @@ const BPEdit = () => {
         className="!fixed bg-action-disabledBackground"
         active={loading}
       />
-      <BPHeaderEdit business_plan={crtBp} files={files} form={form} />
+      <BPHeaderEdit business_plan={business_plan} files={files} form={form} />
       <BPRestoreEdit
-        key={crtBp?.id}
+        key={business_plan?.id + '_restore'}
         localStorage={localStorage}
         setForm={handleSetForm}
       />
       <BPTabs
-        key={crtBp?.id}
-        {...{ activeTab, crtBp, files, setActiveTab, setFiles }}
-        isEdit={true}
+        key={business_plan?.id + '_tabs'}
+        {...{ activeTab, bpFiles, files, setActiveTab, setFiles }}
       >
         {form && (
           <BEditTable {...{ form, loading, params }} setForm={handleSetForm} />
@@ -111,7 +113,7 @@ export default function BPEditWrapper() {
   return (
     <BPYearRangesProvider>
       <BPProvider>
-        <BPEdit key={businessPlan.id} />
+        <BPEdit key={businessPlan.id + '_edit'} />
       </BPProvider>
     </BPYearRangesProvider>
   )

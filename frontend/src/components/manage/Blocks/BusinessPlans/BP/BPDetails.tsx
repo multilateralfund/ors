@@ -1,8 +1,4 @@
-import { ApiBPGet } from '@ors/types/api_bp_get'
-
 import { useContext } from 'react'
-
-import { isEmpty } from 'lodash'
 
 import SimpleField from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleField'
 import VersionHistoryList from '@ors/components/ui/VersionDetails/VersionHistoryList'
@@ -10,6 +6,7 @@ import BPContext from '@ors/contexts/BusinessPlans/BPContext'
 
 import FileInput from '../BPEdit/FileInput'
 import { FilesViewer } from '../FilesViewer'
+import { BpDetails, BpFilesObject } from '../types'
 
 function BPHistory() {
   const { data } = useContext(BPContext) as any
@@ -24,21 +21,12 @@ function BPHistory() {
   )
 }
 
-function BPSummary(props: {
-  business_plan?: ApiBPGet
-  files?: FileList
-  isEdit?: boolean
-  setFiles?: React.Dispatch<React.SetStateAction<FileList | null>>
-}) {
-  const { business_plan, files, isEdit = false, setFiles } = props
+function BPSummary(props: BpDetails) {
+  const { bpFiles, files, setFiles } = props
+
   const { data } = useContext(BPContext) as any
-
-  const crtBp =
-    business_plan && !isEmpty(business_plan)
-      ? business_plan
-      : data?.results.business_plan || {}
-
-  const { agency, year_start } = crtBp
+  const { business_plan = {} } = data?.results
+  const { agency, year_start } = business_plan
 
   return (
     <div className="flex flex-col gap-6 rounded-lg bg-gray-100 p-4">
@@ -52,13 +40,13 @@ function BPSummary(props: {
         <SimpleField id="agency" data={agency?.name} label="Agency" />
         <SimpleField id="year" data={year_start} label="Year" />
       </div>
-      {isEdit && setFiles ? (
+      {setFiles ? (
         <>
-          <FilesViewer business_plan={crtBp} />
+          <FilesViewer {...{ bpFiles, files, setFiles }} />
           <FileInput {...{ files, setFiles }} />
         </>
       ) : (
-        <FilesViewer business_plan={crtBp} />
+        <FilesViewer bpFiles={bpFiles} />
       )}
     </div>
   )

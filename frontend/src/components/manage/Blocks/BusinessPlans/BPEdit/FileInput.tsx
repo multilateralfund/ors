@@ -4,17 +4,27 @@ import { TextField } from '@mui/material'
 
 import IconButton from '@ors/components/ui/IconButton/IconButton'
 
+import { BpFileInput } from '../types'
+
 import { IoTrash } from 'react-icons/io5'
 
-const FileInput = (props: {
-  files?: FileList
-  setFiles: React.Dispatch<React.SetStateAction<FileList | null>>
-}) => {
+const FileInput = (props: BpFileInput) => {
   const { files, setFiles } = props
+  const { newFiles = [] } = files || {}
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      setFiles(event.target.files)
+    if (setFiles && event.target.files && event.target.files.length > 0) {
+      setFiles({ ...files, newFiles: Array.from(event.target.files || []) })
+    }
+  }
+
+  const formatFileNames = () => {
+    return newFiles.map((file: File) => file.name).join('; ')
+  }
+
+  const handleClearInput = () => {
+    if (setFiles) {
+      setFiles({ ...files, newFiles: [] })
     }
   }
 
@@ -22,7 +32,7 @@ const FileInput = (props: {
     <div className="flex flex-col">
       <TextField
         type="text"
-        value={!files ? 'No files selected' : files?.[0]?.name}
+        value={newFiles.length === 0 ? 'No files selected' : formatFileNames()}
         variant="standard"
         InputProps={{
           className:
@@ -30,10 +40,10 @@ const FileInput = (props: {
           disableUnderline: true,
           endAdornment: (
             <>
-              {files && (
+              {newFiles.length > 0 && (
                 <IconButton
                   className="h-full rounded-none border-y-0 border-r-0"
-                  onClick={() => setFiles(null)}
+                  onClick={() => handleClearInput}
                 >
                   <IoTrash
                     className="transition-colors ease-in-out hover:text-mlfs-purple"
@@ -57,6 +67,7 @@ const FileInput = (props: {
                 .zip, .rar"
                   onChange={handleFileChange}
                   hidden
+                  multiple
                 />
                 Browse files
               </IconButton>

@@ -24,19 +24,46 @@ export default function BPHeaderEdit({ business_plan, files, form }: any) {
     business_plan: business_plan,
   })
 
+  const { deletedFilesIds = [], newFiles = [] } = files || {}
+
   const editBP = async () => {
     try {
       const bpData = pick(business_plan, ['name', 'year_start', 'year_end'])
 
-      const response = await api(`api/business-plan/${business_plan.id}/`, {
+      const { id, agency, year_end, year_start } = business_plan
+
+      if (newFiles.length > 0) {
+        await uploadFiles(
+          `api/business-plan/files/?agency_id=${agency.id}&year_start=${year_start}&year_end=${year_end}`,
+          files.newFiles,
+        )
+      }
+
+      if (deletedFilesIds.length > 0) {
+        await api(
+          `api/business-plan/files/?agency_id=${agency.id}&year_start=${year_start}&year_end=${year_end}`,
+          {
+            data: {
+              file_ids: files.deletedFilesIds,
+            },
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            method: 'DELETE',
+          },
+        )
+      }
+
+      const response = await api(`api/business-plan/${id}/`, {
         data: {
           activities: form,
-          agency_id: business_plan.agency.id,
+          agency_id: agency.id,
           ...bpData,
           status: 'Agency Draft',
         },
         method: 'PUT',
       })
+
       localStorage.clear()
       enqueueSnackbar(<>Updated submission for {response.name}.</>, {
         variant: 'success',
@@ -45,13 +72,7 @@ export default function BPHeaderEdit({ business_plan, files, form }: any) {
       setBusinessPlan({
         ...business_plan,
         id: response.id,
-        feedback_file_download_url: response.feedback_file_download_url,
-        feedback_filename: response.feedback_filename,
       })
-
-      if (files && files[0]) {
-        await uploadFiles(`api/business-plan/${response.id}/file/`, [files[0]])
-      }
     } catch (error) {
       if (error.status === 400) {
         const errors = await error.json()

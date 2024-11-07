@@ -27,14 +27,34 @@ export type BPGetDiffInterface = {
   version: string
 } & BPGetVersionsInterface
 
-export type BPTabsInterface = {
+export type BpFilesObject = {
+  deletedFilesIds?: Array<number>
+  newFiles?: Array<File>
+}
+
+export type BpFile = {
+  agency_id: number
+  download_url: string
+  filename: string
+  id: number
+  uploaded_at: string
+  year_end: number
+  year_start: number
+}
+
+export type BpFileInput = {
+  files?: BpFilesObject
+  setFiles?: React.Dispatch<React.SetStateAction<BpFilesObject>>
+}
+
+export interface BpDetails extends BpFileInput {
+  bpFiles: Array<BpFile>
+}
+
+export interface BPTabsInterface extends BpDetails {
   activeTab: number
-  business_plan?: ApiBP
   children: ReactNode
-  files?: File | null | undefined
-  isEdit?: boolean
   setActiveTab: Dispatch<SetStateAction<number>>
-  setFiles?: Dispatch<SetStateAction<File | null | undefined>>
 }
 
 export type BPEditTableInterface = {
