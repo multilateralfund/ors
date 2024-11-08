@@ -187,7 +187,7 @@ export function formatIso8601DateString(date: string) {
     'Apr',
     'May',
     'Jun',
-    'Jun',
+    'Jul',
     'Aug',
     'Sep',
     'Oct',
