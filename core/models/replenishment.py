@@ -246,8 +246,8 @@ class InvoiceFile(models.Model):
         if self.file:
             url = reverse("replenishment-invoice-file-download", args=(self.id,))
             return format_html(f"<a href='{url}'>download</a>")
-        else:
-            return "No attachment"
+
+        return "No attachment"
 
     file_link.allow_tags = True
 
@@ -326,8 +326,8 @@ class PaymentFile(models.Model):
         if self.file:
             url = reverse("replenishment-payment-file-download", args=(self.id,))
             return format_html(f"<a href='{url}'>download</a>")
-        else:
-            return "No attachment"
+
+        return "No attachment"
 
     file_link.allow_tags = True
 
@@ -573,7 +573,7 @@ class StatusOfTheFundFile(models.Model):
         if self.file:
             url = reverse("replenishment-status-files-detail", args=(self.id,))
             return format_html(f"<a href='{url}'>download</a>")
-        else:
-            return "No attachment"
+
+        return "No attachment"
 
     file_link.allow_tags = True
