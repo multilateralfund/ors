@@ -297,8 +297,8 @@ class ScaleOfAssessmentViewSet(
             version.is_final = final
             version.comment = comment
             version.decision_pdf = decision_file
-            currency_date_range_start = (currency_date_range_start,)
-            currency_date_range_end = (currency_date_range_end,)
+            version.currency_date_range_start = currency_date_range_start
+            version.currency_date_range_end = currency_date_range_end
 
             version.save()
 
