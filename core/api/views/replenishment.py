@@ -252,14 +252,6 @@ class ScaleOfAssessmentViewSet(
         currency_date_range_start = input_data.get("currency_date_range_start") or ""
         currency_date_range_end = input_data.get("currency_date_range_end") or ""
 
-        if final and not decision_pdf:
-            raise ValidationError(
-                {
-                    "non_field_errors": "Uploading document is required for final "
-                    "version."
-                }
-            )
-
         previous_version = replenishment.scales_of_assessment_versions.order_by(
             "-version"
         ).first()
