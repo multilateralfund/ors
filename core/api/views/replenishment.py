@@ -390,6 +390,8 @@ class ScaleOfAssessmentViewSet(
         wb = openpyxl.load_workbook(
             filename=EXPORT_RESOURCES_DIR / "Scale of Assesement.xlsx"
         )
+        # Delete non-useful external links from these files; they are just exports
+        wb._external_links = []
         ws = wb.active
 
         data = [
@@ -516,6 +518,9 @@ class StatusOfContributionsExportView(views.APIView):
         wb = openpyxl.load_workbook(
             filename=EXPORT_RESOURCES_DIR / "ContributionsFormatted.xlsx"
         )
+        # Delete non-useful external links from these files; they are just exports
+        wb._external_links = []
+
         ws = wb[self.SUMMARY_WORKSHEET_NAME]
 
         StatusOfContributionsSummaryTemplateWriter(
@@ -981,6 +986,9 @@ class StatisticsExportView(views.APIView):
         wb = openpyxl.load_workbook(
             filename=EXPORT_RESOURCES_DIR / "ContributionsFormatted.xlsx"
         )
+        # Delete non-useful external links from these files; they are just exports
+        wb._external_links = []
+
         ws = wb[WORKSHEET_NAME]
 
         data_count = len(statistics_data)
@@ -1532,6 +1540,9 @@ class ReplenishmentDashboardExportView(views.APIView):
         wb = openpyxl.load_workbook(
             filename=EXPORT_RESOURCES_DIR / "ContributionsFormatted.xlsx"
         )
+        # Delete non-useful external links from these files; they are just exports
+        wb._external_links = []
+
         ws = wb[WORKSHEET_NAME]
 
         status_data = self.get_status()
