@@ -4,6 +4,7 @@ import urllib
 import openpyxl
 from collections import defaultdict
 from constance import config
+from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.db.models import F, Max, Min
 from django.http import HttpResponse
@@ -21,6 +22,7 @@ from core.api.filters.business_plan import (
     BPActivityFilter,
     BPActivityListFilter,
     BPChemicalTypeFilter,
+    BPFileFilter,
     BPFilterBackend,
 )
 from core.api.permissions import IsAgency, IsSecretariat, IsViewer
@@ -46,6 +48,7 @@ from core.api.views.utils import (
     BPACTIVITY_ORDERING_FIELDS,
 )
 from core.models import Agency, BusinessPlan, BPChemicalType, BPHistory, BPActivity
+from core.models.business_plan import BPFile
 from core.tasks import (
     send_mail_bp_create,
     send_mail_bp_status_update,
@@ -629,15 +632,20 @@ class BPActivityViewSet(
         return self.get_wb(workbook_pdf_response)
 
 
-class BPFileView(generics.GenericAPIView):
+class BPFileView(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.DestroyModelMixin,
+    generics.GenericAPIView,
+):
     """
     API endpoint that allows uploading business plan file.
     """
 
     permission_classes = [IsSecretariat | IsAgency | IsViewer]
-    queryset = BusinessPlan.objects.get_latest()
+    queryset = BPFile.objects.select_related("agency")
     serializer_class = BPFileSerializer
-    lookup_field = "id"
+    filter_class = BPFileFilter
 
     ACCEPTED_EXTENSIONS = [
         ".pdf",
@@ -657,10 +665,27 @@ class BPFileView(generics.GenericAPIView):
         ".7z",
     ]
 
-    def _file_create(self, request, *args, **kwargs):
-        business_plan = self.get_object()
+    def get_permissions(self):
+        # only the secretariat can create / delete files
+        if self.request.method in ["POST", "DELETE"]:
+            return [IsSecretariat()]
+        return super().get_permissions()
 
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        agency_id = request.query_params.get("agency_id")
+        if "agency" in user.user_type.lower() and user.agency_id != int(agency_id):
+            raise PermissionDenied("User represents other agency")
+
+        return self.list(request, *args, **kwargs)
+
+    def _file_create(self, request, *args, **kwargs):
         files = request.FILES
+        bp_file_data = {
+            "agency_id": request.query_params.get("agency_id"),
+            "year_start": request.query_params.get("year_start"),
+            "year_end": request.query_params.get("year_end"),
+        }
         if not files:
             return Response(
                 {"feedback_file": "File not provided"},
@@ -675,34 +700,58 @@ class BPFileView(generics.GenericAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if bool(business_plan.feedback_file):
-            business_plan.feedback_file.delete(save=False)
+        existing_file = BPFile.objects.filter(
+            **bp_file_data,
+            filename__in=list(files.keys()),
+        ).values_list("filename", flat=True)
 
-        business_plan.feedback_filename = filename
-        business_plan.feedback_file = file
-        business_plan.save()
-        serializer = self.get_serializer(business_plan)
+        if existing_file:
+            return Response(
+                {
+                    "files": "Some files already exist: "
+                    + str(", ".join(existing_file)),
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        bp_files = []
+        for filename, file in files.items():
+            bp_files.append(
+                BPFile(
+                    **bp_file_data,
+                    filename=filename,
+                    file=file,
+                )
+            )
+        BPFile.objects.bulk_create(bp_files)
+        return Response({}, status=status.HTTP_201_CREATED)
 
     def post(self, request, *args, **kwargs):
         return self._file_create(request, *args, **kwargs)
 
+    def delete(self, request, *args, **kwargs):
+        file_ids = request.data.get("file_ids")
+        queryset = self.filter_queryset(self.get_queryset())
+        queryset.filter(id__in=file_ids).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class BPFileDownloadView(generics.RetrieveAPIView):
     permission_classes = [IsSecretariat | IsAgency | IsViewer]
-    queryset = BusinessPlan.objects.all()
+    queryset = BPFile.objects.all()
     lookup_field = "id"
 
     def get(self, request, *args, **kwargs):
-        business_plan = self.get_object()
-        response = HttpResponse(
-            business_plan.feedback_file.read(), content_type="application/octet-stream"
-        )
-        file_name = urllib.parse.quote(business_plan.feedback_filename)
+        obj = self.get_object()
+        self.check_object_permissions(request, obj)
+
+        response = HttpResponse(obj.file, content_type="application/octet-stream")
+        file_name = urllib.parse.quote(obj.filename)
+
         response["Content-Disposition"] = (
             f"attachment; filename*=UTF-8''{file_name}; filename=\"{file_name}\""
         )
+
         return response
 
 

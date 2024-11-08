@@ -18,5 +18,6 @@ class AgencyAdmin(admin.ModelAdmin):
             "pcrdelayexplanation",
             "pcrlearnedlessons",
             "user",
+            "bpfile",
         ]
         return get_final_display_list(Agency, exclude)

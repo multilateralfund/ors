@@ -77,12 +77,6 @@ class BusinessPlan(models.Model):
     version = models.IntegerField(default=1)
     is_latest = models.BooleanField(default=True)  # latest version
 
-    # feedback file
-    feedback_filename = models.CharField(max_length=100, blank=True)
-    feedback_file = models.FileField(
-        storage=get_protected_storage, upload_to=upload_path, blank=True
-    )
-
     objects = BusinessPlanManager()
 
     def __str__(self):
@@ -222,3 +216,30 @@ class BPHistory(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+
+
+class BPFile(models.Model):
+    def upload_path(self, filename):
+        return f"bp_files/{self.agency_id}/{self.year_start}-{self.year_end}/{filename}"
+
+    uploaded_at = models.DateTimeField(
+        auto_now_add=True, help_text="Date of file upload"
+    )
+    agency = models.ForeignKey(Agency, on_delete=models.CASCADE)
+    year_start = models.IntegerField(
+        validators=[MinValueValidator(settings.MIN_VALID_YEAR)]
+    )
+    year_end = models.IntegerField(
+        validators=[MinValueValidator(settings.MIN_VALID_YEAR)]
+    )
+    filename = models.CharField(max_length=100)
+    file = models.FileField(storage=get_protected_storage, upload_to=upload_path)
+
+    class Meta:
+        ordering = ["-uploaded_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["agency", "year_start", "year_end", "filename"],
+                name="unique_business_plan_filename",
+            )
+        ]

@@ -14,16 +14,20 @@ import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 import { useStore } from '@ors/store'
 
 import BPTabs from '../BPTabs'
+import { BpFilesObject } from '../types'
 import { useEditLocalStorage } from '../useLocalStorage'
 import BEditTable from './BPEditTable'
 import BPHeaderEdit from './BPHeaderEdit'
 import BPRestoreEdit from './BPRestoreEdit'
 import { useGetAllActivities } from './useGetAllActivities'
+import { useGetFiles } from './useGetFiles'
 
 const BPEdit = () => {
   const pathParams = useParams<{ agency: string; period: string }>()
 
   const { data, loading, params } = useGetAllActivities(pathParams) as any
+  const { data: bpFiles } = useGetFiles(pathParams) as any
+
   const { activities, business_plan } = data || {}
 
   const bpSlice = useStore((state) => state.businessPlans)
@@ -31,6 +35,10 @@ const BPEdit = () => {
 
   const [activeTab, setActiveTab] = useState(0)
   const [form, setForm] = useState<Array<ApiEditBPActivity> | null>()
+  const [files, setFiles] = useState<BpFilesObject>({
+    deletedFilesIds: [],
+    newFiles: [],
+  })
 
   const [warnOnClose, setWarnOnClose] = useState(false)
   useVisibilityChange(warnOnClose)
@@ -81,13 +89,16 @@ const BPEdit = () => {
         className="!fixed bg-action-disabledBackground"
         active={loading}
       />
-      <BPHeaderEdit business_plan={business_plan} form={form} />
+      <BPHeaderEdit business_plan={business_plan} files={files} form={form} />
       <BPRestoreEdit
-        key={business_plan?.id}
+        key={business_plan?.id + '_restore'}
         localStorage={localStorage}
         setForm={handleSetForm}
       />
-      <BPTabs {...{ activeTab, setActiveTab }}>
+      <BPTabs
+        key={business_plan?.id + '_tabs'}
+        {...{ activeTab, bpFiles, files, setActiveTab, setFiles }}
+      >
         {form && (
           <BEditTable {...{ form, loading, params }} setForm={handleSetForm} />
         )}
@@ -102,7 +113,7 @@ export default function BPEditWrapper() {
   return (
     <BPYearRangesProvider>
       <BPProvider>
-        <BPEdit key={businessPlan.id} />
+        <BPEdit key={businessPlan.id + '_edit'} />
       </BPProvider>
     </BPYearRangesProvider>
   )
