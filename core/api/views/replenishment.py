@@ -1071,6 +1071,40 @@ class DisputedContributionViewSet(
 
         return queryset.select_related("country")
 
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        """
+        Override base DRF create to update annual/triennial agreed contributions.
+        """
+        amount = request.data.get("amount")
+        country_id = request.data.get("country")
+        year = request.data.get("year")
+
+        ret = super().create(request, *args, **kwargs)
+
+        try:
+            annual_contribution = AnnualContributionStatus.objects.get(
+                country_id=int(country_id),
+                year=int(year),
+            )
+            triennial_contribution = TriennialContributionStatus.objects.get(
+                country_id=int(country_id),
+                start_year__lte=int(year),
+                end_year__gte=int(year),
+            )
+        except AnnualContributionStatus.DoesNotExist as exc:
+            return ret
+        except TriennialContributionStatus.DoesNotExist as exc:
+            return ret
+
+        annual_contribution.agreed_contributions -= Decimal(amount)
+        annual_contribution.save(update_fields=["agreed_contributions"])
+
+        triennial_contribution.agreed_contributions -= Decimal(amount)
+        triennial_contribution.save(update_fields=["agreed_contributions"])
+
+        return ret
+
 
 class BilateralAssistanceViewSet(
     viewsets.GenericViewSet,
