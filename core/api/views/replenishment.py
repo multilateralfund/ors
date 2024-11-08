@@ -229,6 +229,7 @@ class ScaleOfAssessmentViewSet(
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         # pylint: disable=too-many-locals
+        # pylint: disable=too-many-statements
         input_data = request.data
 
         try:
@@ -391,6 +392,7 @@ class ScaleOfAssessmentViewSet(
             filename=EXPORT_RESOURCES_DIR / "Scale of Assesement.xlsx"
         )
         # Delete non-useful external links from these files; they are just exports
+        # pylint: disable=protected-access
         wb._external_links = []
         ws = wb.active
 
@@ -519,6 +521,7 @@ class StatusOfContributionsExportView(views.APIView):
             filename=EXPORT_RESOURCES_DIR / "ContributionsFormatted.xlsx"
         )
         # Delete non-useful external links from these files; they are just exports
+        # pylint: disable=protected-access
         wb._external_links = []
 
         ws = wb[self.SUMMARY_WORKSHEET_NAME]
@@ -987,6 +990,7 @@ class StatisticsExportView(views.APIView):
             filename=EXPORT_RESOURCES_DIR / "ContributionsFormatted.xlsx"
         )
         # Delete non-useful external links from these files; they are just exports
+        # pylint: disable=protected-access
         wb._external_links = []
 
         ws = wb[WORKSHEET_NAME]
@@ -1100,9 +1104,9 @@ class DisputedContributionViewSet(
                 start_year__lte=int(year),
                 end_year__gte=int(year),
             )
-        except AnnualContributionStatus.DoesNotExist as exc:
+        except AnnualContributionStatus.DoesNotExist:
             return ret
-        except TriennialContributionStatus.DoesNotExist as exc:
+        except TriennialContributionStatus.DoesNotExist:
             return ret
 
         annual_contribution.agreed_contributions -= Decimal(amount)
@@ -1541,6 +1545,7 @@ class ReplenishmentDashboardExportView(views.APIView):
             filename=EXPORT_RESOURCES_DIR / "ContributionsFormatted.xlsx"
         )
         # Delete non-useful external links from these files; they are just exports
+        # pylint: disable=protected-access
         wb._external_links = []
 
         ws = wb[WORKSHEET_NAME]
