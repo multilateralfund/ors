@@ -1908,7 +1908,8 @@ class ReplenishmentPaymentViewSet(
     ]
     ordering_fields = [
         "amount_assessed",
-        "country__name",
+        "country",
+        "date",
     ]
     search_fields = [
         "payment_for_years",
