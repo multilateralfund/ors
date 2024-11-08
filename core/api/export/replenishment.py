@@ -568,9 +568,27 @@ class ScaleOfAssessmentTemplateWriter(BaseTemplateSheetWriter):
         for key, item in self.DATA_MAPPING.items():
             cell = self.sheet.cell(self.HEADERS_ROW, item["column"])
             value = cell.value
-            if value and "2022-24" in value:
+            if key == "un_scale_of_assessment":
                 cell.value = value.replace(
-                    "2022-24", f"{self.start_year}-{self.start_year+2}"
+                    "2022-2024", f"{self.start_year-2}-{self.start_year}"
+                )
+            if key == "adjusted_scale_of_assessment":
+                cell.value = value.replace(
+                    "2022-24", f"{self.start_year-2}-{self.start_year - 2000}"
+                )
+            if key == "yearly_amount":
+                cell.value = value.replace(
+                    "2024, 2025 and 2026",
+                    f"{self.start_year}, {self.start_year + 1} and {self.start_year + 2}"
+                )
+            if key == "average_inflation_rate":
+                cell.value = value.replace(
+                    "2021- 2023",
+                    f"{self.start_year-3}-{self.start_year - 1}"
+                )
+            if key == "exchange_rate":
+                cell.value = value.replace(
+                    "01 Jan - 30 June 2023", ""
                 )
 
 
