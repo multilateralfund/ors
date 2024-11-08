@@ -247,6 +247,8 @@ class ScaleOfAssessmentViewSet(
         decision_number = input_data.get("decision") or ""
         comment = input_data.get("comment") or ""
         decision_pdf = input_data.get("decision_pdf") or {}
+        currency_date_range_start = input_data.get("currency_date_range_start") or ""
+        currency_date_range_end = input_data.get("currency_date_range_end") or ""
 
         if final and not decision_pdf:
             raise ValidationError(
@@ -284,6 +286,8 @@ class ScaleOfAssessmentViewSet(
                 version=previous_version.version + 1,
                 comment=comment,
                 decision_pdf=decision_file,
+                currency_date_range_start=currency_date_range_start,
+                currency_date_range_end=currency_date_range_end,
             )
         else:
             version = previous_version
@@ -292,6 +296,9 @@ class ScaleOfAssessmentViewSet(
             version.is_final = final
             version.comment = comment
             version.decision_pdf = decision_file
+            currency_date_range_start=currency_date_range_start,
+            currency_date_range_end=currency_date_range_end,
+
             version.save()
 
         # Delete all scales of assessment if updating the latest version

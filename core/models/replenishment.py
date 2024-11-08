@@ -42,6 +42,9 @@ class ScaleOfAssessmentVersion(models.Model):
     decision_number = models.CharField(max_length=32, default="")
     comment = models.TextField(blank=True, default="")
 
+    currency_date_range_start = models.CharField(max_length=32, blank=True)
+    currency_date_range_end = models.CharField(max_length=32, blank=True)
+
     def upload_path(self, filename):
         # pylint: disable=line-too-long
         return f"scale_of_assessment_files/{self.replenishment.start_year}-{self.replenishment.end_year}/Version_{self.version}__{filename}"
