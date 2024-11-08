@@ -248,11 +248,10 @@ class ScaleOfAssessmentViewSet(
         comment = input_data.get("comment") or ""
         decision_pdf = input_data.get("decision_pdf") or {}
 
-        if final and (not meeting_number or not decision_number or not decision_pdf):
+        if final and not decision_pdf:
             raise ValidationError(
                 {
-                    "non_field_errors": "Meeting number, decision number and "
-                    "decision PDF are required for final "
+                    "non_field_errors": "Uploading document is required for final "
                     "version."
                 }
             )
