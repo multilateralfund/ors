@@ -42,16 +42,14 @@ STATUS_TRANSITIONS = {
             User.UserType.AGENCY_INPUTTER,
             User.UserType.SECRETARIAT,
         ],
-        BusinessPlan.Status.submitted: [
+        BusinessPlan.Status.submitted_for_review: [
             User.UserType.AGENCY_SUBMITTER,
             User.UserType.SECRETARIAT,
         ],
     },
-    BusinessPlan.Status.submitted: {
+    BusinessPlan.Status.submitted_for_review: {
         BusinessPlan.Status.need_changes: [User.UserType.SECRETARIAT],
-        BusinessPlan.Status.secretariat_draft: [User.UserType.SECRETARIAT],
-        BusinessPlan.Status.approved: [User.UserType.SECRETARIAT],
-        BusinessPlan.Status.rejected: [User.UserType.SECRETARIAT],
+        BusinessPlan.Status.submitted: [User.UserType.SECRETARIAT],
     },
     BusinessPlan.Status.need_changes: {
         BusinessPlan.Status.agency_draft: [
@@ -59,11 +57,34 @@ STATUS_TRANSITIONS = {
             User.UserType.AGENCY_INPUTTER,
             User.UserType.SECRETARIAT,
         ],
+        BusinessPlan.Status.submitted_for_review: [
+            User.UserType.AGENCY_SUBMITTER,
+            User.UserType.AGENCY_INPUTTER,
+            User.UserType.SECRETARIAT,
+        ],
+    },
+    BusinessPlan.Status.submitted: {
+        BusinessPlan.Status.approved: [User.UserType.SECRETARIAT],
+        BusinessPlan.Status.rejected: [User.UserType.SECRETARIAT],
+    },
+}
+
+STATUS_TRANSITIONS_CONSOLIDATED_DATA = {
+    BusinessPlan.Status.submitted_for_review: {
         BusinessPlan.Status.secretariat_draft: [User.UserType.SECRETARIAT],
     },
     BusinessPlan.Status.secretariat_draft: {
         BusinessPlan.Status.secretariat_draft: [User.UserType.SECRETARIAT],
+        BusinessPlan.Status.need_changes: [User.UserType.SECRETARIAT],
         BusinessPlan.Status.submitted: [User.UserType.SECRETARIAT],
+        BusinessPlan.Status.approved: [User.UserType.SECRETARIAT],
+        BusinessPlan.Status.rejected: [User.UserType.SECRETARIAT],
+    },
+    BusinessPlan.Status.need_changes: {
+        BusinessPlan.Status.secretariat_draft: [User.UserType.SECRETARIAT],
+    },
+    BusinessPlan.Status.submitted: {
+        BusinessPlan.Status.secretariat_draft: [User.UserType.SECRETARIAT],
     },
 }
 

@@ -29,15 +29,13 @@ class BusinessPlanManager(models.Manager):
 
 class BusinessPlan(models.Model):
     class Status(models.TextChoices):
-        agency_draft = "Agency Draft", "Agency Draft"  # update => not saving versions
-        secretariat_draft = (
-            "Secretariat Draft",
-            "Secretariat Draft",
-        )  # update => not versions
-        submitted = "Submitted", "Submitted"  # can't update
-        need_changes = "Need Changes", "Need Changes"  # update => saving versions
-        approved = "Approved", "Approved"  # can't update
-        rejected = "Rejected", "Rejected"  # can't update
+        agency_draft = "Agency Draft", "Agency Draft"
+        secretariat_draft = "Secretariat Draft", "Secretariat Draft"
+        submitted_for_review = "Submitted for review", "Submitted for review"
+        submitted = "Submitted", "Submitted"
+        need_changes = "Need Changes", "Need Changes"
+        approved = "Approved", "Approved"
+        rejected = "Rejected", "Rejected"
 
     def upload_path(self, filename):
         return f"bp_files/{self.agency}/{self.year_start}-{self.year_end}/{filename}"
@@ -219,6 +217,11 @@ class BPHistory(models.Model):
     )
     event_description = models.TextField(blank=True)
     bp_version = models.IntegerField(default=1)
+
+    event_in_draft = models.BooleanField(
+        default=True,
+        help_text="Indicate whether history entry was created while in Draft",
+    )
 
     class Meta:
         ordering = ["-created_at"]

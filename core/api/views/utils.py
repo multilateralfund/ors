@@ -14,7 +14,6 @@ from core.api.export.replenishment import (
     StatusOfContributionsWriter,
     StatisticsStatusOfContributionsWriter,
 )
-from core.api.utils import STATUS_TRANSITIONS
 from core.models import (
     Country,
     TriennialContributionStatus,
@@ -478,16 +477,16 @@ def get_business_plan_from_request(request):
     return business_plan
 
 
-def check_status_transition(user, initial_status, new_status):
+def check_status_transition(user, initial_status, new_status, status_transitions):
     # validate status transition
     if (
-        initial_status not in STATUS_TRANSITIONS
-        or new_status not in STATUS_TRANSITIONS[initial_status]
+        initial_status not in status_transitions
+        or new_status not in status_transitions[initial_status]
     ):
         return status.HTTP_400_BAD_REQUEST, "Invalid status transition"
 
     # validate user permissions
-    if user.user_type not in STATUS_TRANSITIONS[initial_status][new_status]:
+    if user.user_type not in status_transitions[initial_status][new_status]:
         return status.HTTP_403_FORBIDDEN, "User not allowed to update status"
 
     return status.HTTP_200_OK, ""
