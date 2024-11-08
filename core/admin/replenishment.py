@@ -12,6 +12,9 @@ from core.models import (
     DisputedContribution,
     AnnualContributionStatus,
     TriennialContributionStatus,
+    InvoiceFile,
+    PaymentFile,
+    StatusOfTheFundFile,
 )
 
 
@@ -193,3 +196,28 @@ class TriennialContributionStatusAdmin(admin.ModelAdmin):
             "bilateral_assistance_meeting",
             "bilateral_assistance_decision_number",
         ]
+
+
+@admin.register(InvoiceFile)
+class InvoiceFileAdmin(admin.ModelAdmin):
+    list_display = ["invoice", "filename", "uploaded_at", "file_link"]
+    readonly_fields = ["invoice", "filename", "uploaded_at", "file_link"]
+
+
+@admin.register(PaymentFile)
+class PaymentFileAdmin(admin.ModelAdmin):
+    list_display = ["payment", "filename", "uploaded_at", "file_link"]
+    readonly_fields = ["payment", "filename", "uploaded_at", "file_link"]
+
+
+@admin.register(StatusOfTheFundFile)
+class StatusOfTheFundFileAdmin(admin.ModelAdmin):
+    list_display = ["filename", "year", "meeting", "uploaded_at", "file_link"]
+    readonly_fields = [
+        "filename",
+        "year",
+        "meeting",
+        "comment",
+        "uploaded_at",
+        "file_link",
+    ]

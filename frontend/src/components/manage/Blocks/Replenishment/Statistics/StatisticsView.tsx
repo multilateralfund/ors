@@ -124,7 +124,7 @@ function StatisticsTable(props: { data: SoCStatistic[] }) {
     }
 
     for (let j = 0; j < data.length; j++) {
-      const content = data[j][HEADERS[i].field]
+      const content = data[j][HEADERS[i].field] || 0
       let cellValue =
         content !== null && !HEADERS[i]?.skipFormatting
           ? formatNumberValue(content, 2, 2) || content
