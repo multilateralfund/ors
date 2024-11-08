@@ -26,6 +26,7 @@ from core.api.export.replenishment import (
     StatisticsTemplateWriter,
     StatusOfContributionsSummaryTemplateWriter,
     StatusOfContributionsTriennialTemplateWriter,
+    StatusOfContributionsAnnualTemplateWriter,
 )
 from core.api.filters.replenishment import (
     InvoiceFilter,
@@ -296,8 +297,8 @@ class ScaleOfAssessmentViewSet(
             version.is_final = final
             version.comment = comment
             version.decision_pdf = decision_file
-            currency_date_range_start=currency_date_range_start,
-            currency_date_range_end=currency_date_range_end,
+            currency_date_range_start = (currency_date_range_start,)
+            currency_date_range_end = (currency_date_range_end,)
 
             version.save()
 
@@ -560,7 +561,7 @@ class StatusOfContributionsExportView(views.APIView):
                 ws,
                 triennial_data,
                 len(triennial_data),
-                None,
+                start_year,
                 as_of_date=as_of_date,
                 disputed_contributions=disputed_contributions,
                 ceit_data=ceit_data,
@@ -597,11 +598,11 @@ class StatusOfContributionsExportView(views.APIView):
             ceit_data = agg.get_ceit_data(ceit_countries_qs)
 
             ws = wb.copy_worksheet(triennial_ws)
-            StatusOfContributionsTriennialTemplateWriter(
+            StatusOfContributionsAnnualTemplateWriter(
                 ws,
                 annual_data,
                 len(annual_data),
-                None,
+                year,
                 as_of_date=as_of_date,
                 disputed_contributions=disputed_contributions,
                 ceit_data=ceit_data,

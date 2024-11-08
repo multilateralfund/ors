@@ -579,17 +579,14 @@ class ScaleOfAssessmentTemplateWriter(BaseTemplateSheetWriter):
             if key == "yearly_amount":
                 cell.value = value.replace(
                     "2024, 2025 and 2026",
-                    f"{self.start_year}, {self.start_year + 1} and {self.start_year + 2}"
+                    f"{self.start_year}, {self.start_year + 1} and {self.start_year + 2}",
                 )
             if key == "average_inflation_rate":
                 cell.value = value.replace(
-                    "2021- 2023",
-                    f"{self.start_year-3}-{self.start_year - 1}"
+                    "2021- 2023", f"{self.start_year-3}-{self.start_year - 1}"
                 )
             if key == "exchange_rate":
-                cell.value = value.replace(
-                    "01 Jan - 30 June 2023", ""
-                )
+                cell.value = value.replace("01 Jan - 30 June 2023", "")
 
 
 class StatusOfTheFundTemplateWriter(BaseTemplateSheetWriter):
@@ -856,6 +853,18 @@ class StatusOfContributionsTriennialTemplateWriter(
         },
     }
 
+    PERIOD_ROW = 7
+    PERIOD_COLUMN = 2
+
+    def write_headers(self):
+        super().write_headers()
+
+        cell = self.sheet.cell(row=self.PERIOD_ROW, column=self.PERIOD_COLUMN)
+        value = cell.value
+        cell.value = value.replace(
+            "2024-2026", f"{self.start_year}-{self.start_year + 2}"
+        )
+
     def write_ceit_row(self):
         if self.ceit_data is not None and hasattr(self, "CEIT_ROW_OFFSET"):
             # The last row of the actual output
@@ -879,3 +888,16 @@ class StatusOfContributionsTriennialTemplateWriter(
         super().write()
 
         self.write_ceit_row()
+
+
+class StatusOfContributionsAnnualTemplateWriter(
+    StatusOfContributionsTriennialTemplateWriter
+):
+    def write_headers(self):
+        super().write_headers()
+
+        cell = self.sheet.cell(row=self.PERIOD_ROW, column=self.PERIOD_COLUMN)
+        value = cell.value
+        cell.value = value.replace(
+            f"{self.start_year}-{self.start_year + 2}", f"{self.start_year}"
+        )
