@@ -708,7 +708,8 @@ class StatisticsTemplateWriter(BaseTemplateSheetWriter):
                 column_to_overwrite = self.TEMPLATE_FIRST_DATA_COLUMN + column_index
                 cell = self.sheet.cell(row=row_to_overwrite, column=column_to_overwrite)
 
-                cell.value = triennial_data[row_key]
+                value = triennial_data[row_key] or Decimal(0.0)
+                cell.value = value
 
 
 class StatusOfContributionsSummaryTemplateWriter(BaseTemplateSheetWriter):
