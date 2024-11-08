@@ -1658,6 +1658,9 @@ class ReplenishmentInvoiceViewSet(
         ):
             queryset = queryset.filter(country_id=user.country_id)
 
+        ordering_params = self.request.query_params.get("ordering", "")
+        if ordering_params:
+            queryset = queryset.order_by(ordering_params)
         return queryset.select_related("country").prefetch_related(
             "invoice_files",
         )
@@ -1737,11 +1740,12 @@ class ReplenishmentInvoiceViewSet(
                 *countries_without_invoices_data,
             ]
 
-        if "country" in request.query_params.get("ordering", ""):
+        ordering_params = request.query_params.get("ordering", "")
+        if "country" in ordering_params:
             data = sorted(
                 data,
                 key=lambda x: x["country"]["name"],
-                reverse=request.query_params.get("ordering", "").startswith("-"),
+                reverse="-country" in ordering_params,
             )
 
         return Response(
