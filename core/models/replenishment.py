@@ -132,8 +132,6 @@ class ScaleOfAssessment(models.Model):
 
     @property
     def qualifies_for_fixed_rate_mechanism(self):
-        if self.override_qualifies_for_fixed_rate_mechanism is not None:
-            return self.override_qualifies_for_fixed_rate_mechanism
         if self.average_inflation_rate is None:
             return False
         return self.average_inflation_rate < Decimal("10")
