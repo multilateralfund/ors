@@ -3,10 +3,15 @@
 import { ApiAgency } from '@ors/types/api_agencies'
 import { ApiEditBPActivity } from '@ors/types/api_bp_get'
 
-import React, { ChangeEventHandler, PropsWithChildren } from 'react'
+import React, {
+  ChangeEventHandler,
+  PropsWithChildren,
+  useCallback,
+  useEffect,
+} from 'react'
 
 import { Button, Tab, Tabs } from '@mui/material'
-import { entries, find, indexOf, isEmpty, values } from 'lodash'
+import { entries, filter, find, indexOf, isEmpty, map, values } from 'lodash'
 import { useSnackbar } from 'notistack'
 
 import BPCreateProvider, {
@@ -28,17 +33,29 @@ import useGetBpPeriods from '../BPList/useGetBPPeriods'
 import { RedirectToBpList } from '../RedirectToBpList'
 import { tableColumns } from '../constants'
 import { useGetYearRanges } from '../useGetYearRanges'
+import CloneActivitiesDialog from './CloneActivitiesDialog'
 
 function BPCreateHeader(props: PropsWithChildren) {
   const ctx = useBPCreate()
+  const activities = ctx.activities
+  const yearStart = ctx.yearRange.year_start - 1
 
   const { enqueueSnackbar } = useSnackbar()
+
+  const getFormattedActivities = useCallback(
+    () =>
+      map(activities, (activity) => ({
+        ...activity,
+        values: filter(activity.values, (value) => value.year !== yearStart),
+      })),
+    [yearStart, activities],
+  )
 
   const handleSubmitBP = async () => {
     try {
       const response = await api('api/business-plan/', {
         data: {
-          activities: ctx.activities,
+          activities: getFormattedActivities(),
           agency_id: ctx.reportingAgency?.id,
           name: ctx.reportingOfficer,
           status: 'Agency Draft',
@@ -237,9 +254,11 @@ function BPCreateContentDetails() {
 function BPCreateContentActivities() {
   const ctx = useBPCreate()
   const dispatch = useBPCreateDispatch()
+
   return (
     <BPEditBaseTable
       form={ctx.activities}
+      isEdit={false}
       loading={false}
       params={[]}
       yearRangeSelected={ctx.yearRange}
@@ -263,12 +282,34 @@ function BPCreate() {
     : periodOptions?.[0]?.value
 
   const ctx = useBPCreate()
+  const agencyId = ctx.reportingAgency?.id
+
   const dispatch = useBPCreateDispatch()
+
+  useEffect(() => {
+    if (!agencyId) {
+      dispatch({
+        payload: [] as ApiEditBPActivity[],
+        type: ActionType.addActivity,
+      })
+    }
+  }, [agencyId, dispatch])
 
   return (
     <>
       <div>
         <RedirectToBpList {...{ currentYearRange }} />
+        {agencyId && (
+          <CloneActivitiesDialog
+            key={agencyId + '-' + ctx.yearRange.year_start}
+            setForm={(form: ApiEditBPActivity[]) =>
+              dispatch({
+                payload: form as ApiEditBPActivity[],
+                type: ActionType.addActivity,
+              })
+            }
+          />
+        )}
         <BPCreateHeader>
           New business plan ({ctx.reportingAgency?.name}{' '}
           {ctx.yearRange.year_start} - {ctx.yearRange.year_end})

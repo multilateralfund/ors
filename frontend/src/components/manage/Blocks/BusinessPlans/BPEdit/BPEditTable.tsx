@@ -24,7 +24,13 @@ import { IoAddCircle } from 'react-icons/io5'
 export function BPEditBaseTable(
   props: { yearRangeSelected: ApiBPYearRange } & BPEditTableInterface,
 ) {
-  const { form = [], loading, setForm, yearRangeSelected } = props
+  const {
+    form = [],
+    isEdit = true,
+    loading,
+    setForm,
+    yearRangeSelected,
+  } = props
 
   const grid = useRef<any>()
 
@@ -89,11 +95,11 @@ export function BPEditBaseTable(
     const valuesODP = []
     const valuesMT = []
 
-    for (
-      let year = yearRangeSelected.year_start;
-      year <= yearRangeSelected.year_end + 1;
-      year++
-    ) {
+    const yearStart = isEdit
+      ? yearRangeSelected.year_start
+      : yearRangeSelected.year_start - 1
+
+    for (let year = yearStart; year <= yearRangeSelected.year_end + 1; year++) {
       const isAfterMaxYear = year > yearRangeSelected.year_end
 
       let label = year.toString()
@@ -170,7 +176,7 @@ export function BPEditBaseTable(
         headerName: 'MT for HFC',
       },
     ]
-  }, [yearRangeSelected, valueGetter, valueSetter])
+  }, [yearRangeSelected, valueGetter, valueSetter, isEdit])
 
   const addActivity = () => {
     setForm([

@@ -59,6 +59,7 @@ export interface BPTabsInterface extends BpDetails {
 
 export type BPEditTableInterface = {
   form: Array<ApiEditBPActivity>
+  isEdit?: boolean
   loading: boolean
   params: any
   setForm: Dispatch<SetStateAction<Array<ApiEditBPActivity> | null | undefined>>
