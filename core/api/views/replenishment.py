@@ -61,6 +61,7 @@ from core.api.views.utils import (
     add_statistics_status_of_contributions_response_worksheet,
     StatisticsStatusOfContributionsAggregator,
     get_as_of_date,
+    get_budget_years,
 )
 from core.models import (
     Agency,
@@ -130,6 +131,15 @@ class ReplenishmentAsOfDateViewSet(viewsets.GenericViewSet, mixins.ListModelMixi
         data = {"as_of_date": as_of_date}
 
         return Response(status=status.HTTP_200_OK, data=data)
+
+
+class ReplenishmentBudgetYearsViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+    permission_classes = [IsUserAllowedReplenishment]
+
+    def list(self, request, *args, **kwargs):
+        self.check_permissions(request)
+
+        return Response(status=status.HTTP_200_OK, data=get_budget_years())
 
 
 class ReplenishmentViewSet(

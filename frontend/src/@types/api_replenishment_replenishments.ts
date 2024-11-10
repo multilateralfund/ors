@@ -24,3 +24,9 @@ export type ApiReplenishments = ApiReplenishment[]
 export type ApiAsOfDate = {
   as_of_date: string
 }
+
+export type ApiBudgetYears = {
+  secretariat_and_executive_committee: number
+  treasury_fees: number
+  monitoring_fees: number
+} | null
