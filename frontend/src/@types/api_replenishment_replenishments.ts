@@ -26,7 +26,7 @@ export type ApiAsOfDate = {
 }
 
 export type ApiBudgetYears = {
+  monitoring_fees: number
   secretariat_and_executive_committee: number
   treasury_fees: number
-  monitoring_fees: number
 } | null
