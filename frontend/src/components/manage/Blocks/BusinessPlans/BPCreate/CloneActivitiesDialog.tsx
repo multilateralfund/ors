@@ -61,7 +61,7 @@ const CloneActivitiesDialogContent = (props: {
     } else {
       enqueueSnackbar(
         <>
-          Loaded activities for {agencyName} {year_start}-{year_end}.
+          Loaded activities from {agencyName} {year_start - 1}-{year_end - 1}.
         </>,
         {
           variant: 'success',

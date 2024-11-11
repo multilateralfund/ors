@@ -283,25 +283,24 @@ function BPCreate() {
 
   const ctx = useBPCreate()
   const agencyId = ctx.reportingAgency?.id
+  const yearStart = ctx.yearRange?.year_start
 
   const dispatch = useBPCreateDispatch()
 
   useEffect(() => {
-    if (!agencyId) {
-      dispatch({
-        payload: [] as ApiEditBPActivity[],
-        type: ActionType.addActivity,
-      })
-    }
-  }, [agencyId, dispatch])
+    dispatch({
+      payload: [] as ApiEditBPActivity[],
+      type: ActionType.addActivity,
+    })
+  }, [agencyId, dispatch, yearStart])
 
   return (
     <>
       <div>
         <RedirectToBpList {...{ currentYearRange }} />
-        {agencyId && (
+        {agencyId && yearStart.toString().length === 4 && (
           <CloneActivitiesDialog
-            key={agencyId + '-' + ctx.yearRange.year_start}
+            key={agencyId + '-' + yearStart}
             setForm={(form: ApiEditBPActivity[]) =>
               dispatch({
                 payload: form as ApiEditBPActivity[],
