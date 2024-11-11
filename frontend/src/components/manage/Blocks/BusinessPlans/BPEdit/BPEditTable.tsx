@@ -4,6 +4,7 @@ import { ApiBPYearRange } from '@ors/types/api_bp_get_years'
 import React, { useCallback, useContext, useMemo, useRef } from 'react'
 
 import { Button } from '@mui/material'
+import { Tooltip } from '@mui/material'
 import { findIndex, isNil } from 'lodash'
 import { useParams } from 'next/navigation'
 
@@ -19,7 +20,7 @@ import { applyTransaction, formatApiUrl } from '@ors/helpers'
 import { filtersToQueryParams } from '../utils'
 import useColumnsOptions from './editSchema'
 
-import { IoAddCircle } from 'react-icons/io5'
+import { IoAddCircle, IoInformationCircleOutline } from 'react-icons/io5'
 
 export function BPEditBaseTable(
   props: { yearRangeSelected: ApiBPYearRange } & BPEditTableInterface,
@@ -107,6 +108,20 @@ export function BPEditBaseTable(
         label = `After ${yearRangeSelected.year_end}`
       }
 
+      const headerInfo = !isEdit &&
+        year === yearStart && {
+          headerComponentParams: {
+            className: 'flex justify-center gap-1 font-bold',
+            details: (
+              <Tooltip placement="top" title="Cloned for reference purpose">
+                <span className="flex items-center gap-1">
+                  <IoInformationCircleOutline size={16} />
+                </span>
+              </Tooltip>
+            ),
+          },
+        }
+
       valuesUSD.push({
         autoHeaderHeight: true,
         cellClass: 'ag-text-center',
@@ -114,6 +129,7 @@ export function BPEditBaseTable(
         cellEditorParams: {
           allowNullVals: true,
         },
+        ...headerInfo,
         field: `value_usd_${year}`,
         headerClass: 'ag-text-center',
         headerName: `${label}`,
@@ -132,6 +148,7 @@ export function BPEditBaseTable(
         cellEditorParams: {
           allowNullVals: true,
         },
+        ...headerInfo,
         field: `value_odp_${year}`,
         headerClass: 'ag-text-center',
         headerName: `${label}`,
@@ -150,6 +167,7 @@ export function BPEditBaseTable(
         cellEditorParams: {
           allowNullVals: true,
         },
+        ...headerInfo,
         field: `value_mt_${year}`,
         headerClass: 'ag-text-center',
         headerName: `${label}`,

@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from '@mui/material'
 import { find, map } from 'lodash'
+import { enqueueSnackbar } from 'notistack'
 
 import { useStore } from '@ors/store'
 
@@ -18,19 +19,18 @@ import { useGetActivities } from '../useGetActivities'
 import { useBPCreate } from './Provider/BPCreateProvider'
 
 const CloneActivitiesDialogContent = (props: {
+  error: any
   results: ApiBPActivity[]
   setForm: (form: ApiEditBPActivity[]) => void
 }) => {
-  const { results = [], setForm } = props
+  const { error, results = [], setForm } = props
 
   const ctx = useBPCreate()
-  const yearEnd = ctx.yearRange.year_end
+  const agencyName = ctx.reportingAgency?.name
+  const { year_end, year_start } = ctx.yearRange || {}
 
-  const [show, setShow] = useState(results.length > 0)
-
-  const handleCancel = () => {
-    setShow(false)
-  }
+  const showDialog = results.length > 0 || error
+  const [show, setShow] = useState(showDialog)
 
   const bpSlice = useStore((state) => state.businessPlans)
   const commentTypes = bpSlice.commentTypes.data
@@ -47,14 +47,33 @@ const CloneActivitiesDialogContent = (props: {
         ),
         row_id: index,
         values: map(activity.values, (value) =>
-          value.is_after ? { ...value, year: yearEnd } : value,
+          value.is_after ? { ...value, year: year_end } : value,
         ),
       })),
-    [commentTypes, results, yearEnd],
+    [commentTypes, results, year_end],
   )
 
   const handleLoad = () => {
+    if (error) {
+      enqueueSnackbar(<>An error occurred. Please try again.</>, {
+        variant: 'error',
+      })
+    } else {
+      enqueueSnackbar(
+        <>
+          Loaded activities for {agencyName} {year_start}-{year_end}.
+        </>,
+        {
+          variant: 'success',
+        },
+      )
+    }
+
     setForm(getFormattedActivities())
+    setShow(false)
+  }
+
+  const handleCancel = () => {
     setShow(false)
   }
 
@@ -88,16 +107,25 @@ const CloneActivitiesDialog = (props: {
 }) => {
   const ctx = useBPCreate()
   const agencyId = ctx.reportingAgency?.id
+  const { year_end, year_start } = ctx.yearRange || {}
 
   const params = {
     agency_id: agencyId,
-    year_end: ctx.yearRange.year_end - 1,
-    year_start: ctx.yearRange.year_start - 1,
+    year_end: year_end - 1,
+    year_start: year_start - 1,
   }
 
-  const { loaded, results } = useGetActivities(params)
+  const { error, loaded, results } = useGetActivities(params)
 
-  return loaded && <CloneActivitiesDialogContent {...props} results={results} />
+  return (
+    (loaded || error) && (
+      <CloneActivitiesDialogContent
+        {...props}
+        error={error}
+        results={results}
+      />
+    )
+  )
 }
 
 export default CloneActivitiesDialog
