@@ -36,6 +36,7 @@ PROJECT_SECTOR_TYPE_MAPPING = {
 }
 
 STATUS_TRANSITIONS = {
+    # no new version
     BusinessPlan.Status.agency_draft: {
         BusinessPlan.Status.agency_draft: [
             User.UserType.AGENCY_SUBMITTER,
@@ -47,10 +48,12 @@ STATUS_TRANSITIONS = {
             User.UserType.SECRETARIAT,
         ],
     },
+    # new version
     BusinessPlan.Status.submitted_for_review: {
         BusinessPlan.Status.need_changes: [User.UserType.SECRETARIAT],
         BusinessPlan.Status.submitted: [User.UserType.SECRETARIAT],
     },
+    # new version
     BusinessPlan.Status.need_changes: {
         BusinessPlan.Status.agency_draft: [
             User.UserType.AGENCY_SUBMITTER,
@@ -63,6 +66,7 @@ STATUS_TRANSITIONS = {
             User.UserType.SECRETARIAT,
         ],
     },
+    # new version
     BusinessPlan.Status.submitted: {
         BusinessPlan.Status.approved: [User.UserType.SECRETARIAT],
         BusinessPlan.Status.rejected: [User.UserType.SECRETARIAT],
@@ -70,9 +74,11 @@ STATUS_TRANSITIONS = {
 }
 
 STATUS_TRANSITIONS_CONSOLIDATED_DATA = {
+    # new version
     BusinessPlan.Status.submitted_for_review: {
         BusinessPlan.Status.secretariat_draft: [User.UserType.SECRETARIAT],
     },
+    # no new version
     BusinessPlan.Status.secretariat_draft: {
         BusinessPlan.Status.secretariat_draft: [User.UserType.SECRETARIAT],
         BusinessPlan.Status.need_changes: [User.UserType.SECRETARIAT],
@@ -80,9 +86,11 @@ STATUS_TRANSITIONS_CONSOLIDATED_DATA = {
         BusinessPlan.Status.approved: [User.UserType.SECRETARIAT],
         BusinessPlan.Status.rejected: [User.UserType.SECRETARIAT],
     },
+    # new version
     BusinessPlan.Status.need_changes: {
         BusinessPlan.Status.secretariat_draft: [User.UserType.SECRETARIAT],
     },
+    # new version
     BusinessPlan.Status.submitted: {
         BusinessPlan.Status.secretariat_draft: [User.UserType.SECRETARIAT],
     },

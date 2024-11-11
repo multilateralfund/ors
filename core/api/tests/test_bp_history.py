@@ -73,10 +73,8 @@ class TestBPHistory:
         }
         response = self.client.put(url, data, format="json")
         assert response.status_code == 200
-        new_id = response.data[0]["id"]
 
         # consolidated data update business plan, set status to submitted
-        url = reverse("businessplan-update-all")
         data["status"] = "Submitted"
         response = self.client.put(url, data, format="json")
         assert response.status_code == 200

@@ -250,7 +250,7 @@ class BusinessPlanViewSet(
         if ret_code != status.HTTP_200_OK:
             return Response({"general_error": error}, status=ret_code)
 
-        # check bp status
+        # status must be Agency Draft or Submitted for review
         if instance.status not in [
             BusinessPlan.Status.agency_draft,
             BusinessPlan.Status.submitted_for_review,
@@ -356,7 +356,7 @@ class BusinessPlanViewSet(
         if not new_instance.name:
             new_instance.name = f"{new_instance.agency} {new_instance.year_start} - {new_instance.year_end}"
 
-        # set version
+        # update from Needs Changes, Submit for review, Submitted => new version
         if initial_status in [
             BusinessPlan.Status.submitted_for_review,
             BusinessPlan.Status.need_changes,
@@ -498,6 +498,14 @@ class BusinessPlanViewSet(
 
         first_bp = next(iter(current_bps.values()))
         initial_status = first_bp.status if first_bp else None
+        new_status = request.data["status"]
+
+        ret_code, error = check_status_transition(
+            user, initial_status, new_status, STATUS_TRANSITIONS_CONSOLIDATED_DATA
+        )
+        if ret_code != status.HTTP_200_OK:
+            return Response({"general_error": error}, status=ret_code)
+
         for initial_data in serializer.initial_data:
             current_bp = current_bps[str(initial_data.get("agency_id"))]
             # validate activities data
@@ -505,19 +513,12 @@ class BusinessPlanViewSet(
             if ret_code != status.HTTP_200_OK:
                 return Response({"general_error": error}, status=ret_code)
 
-            # check status
+            # all updated BPs must have the same status
             if initial_status != current_bp.status:
                 return Response(
                     {"general_error": "All BPs must have the same status"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-
-            new_status = request.data["status"]
-            ret_code, error = check_status_transition(
-                user, initial_status, new_status, STATUS_TRANSITIONS_CONSOLIDATED_DATA
-            )
-            if ret_code != status.HTTP_200_OK:
-                return Response({"general_error": error}, status=ret_code)
 
         # create new bp instances and activities
         self.perform_create(serializer)
