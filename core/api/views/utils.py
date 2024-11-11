@@ -196,7 +196,10 @@ def get_final_records_for_years(min_year, max_year, filter_list=None):
      - first get the final records for the countries that have a final report (CPReport)
      - then get the max version for each archive report that does not have a final report
      - get all the records for the archive reports
-     - union the final records with the archive records
+     - union the final records with the archive records in a dict
+     - get the display_substance for years using the CPReportFormatRow
+     - set the final list of records
+        using the display_substance and the records from the dict
 
     @param min_year: min year
     @param max_year: max year
@@ -207,18 +210,9 @@ def get_final_records_for_years(min_year, max_year, filter_list=None):
     if not filter_list:
         filter_list = []
 
-    final_records = (
-        CPRecord.objects.get_for_years(min_year, max_year)
-        .filter(
-            country_programme_report__status=CPReport.CPReportStatus.FINAL,
-            *filter_list,
-        )
-        .order_by(
-            "country_programme_report__year",
-            "country_programme_report__country__name",
-            "substance__sort_order",
-            "blend__sort_order",
-        )
+    final_records = CPRecord.objects.get_for_years(min_year, max_year).filter(
+        country_programme_report__status=CPReport.CPReportStatus.FINAL,
+        *filter_list,
     )
 
     # get the max version for each archive report that does not have a final report
@@ -245,16 +239,73 @@ def get_final_records_for_years(min_year, max_year, filter_list=None):
             ],
             _connector=models.Q.OR,
         )
-        .order_by(
-            "country_programme_report__year",
-            "country_programme_report__country__name",
-            "substance__sort_order",
-            "blend__sort_order",
-        )
     )
 
     # union the final records with the archive records
-    return list(final_records) + list(archive_records)
+    reported_list = list(final_records) + list(archive_records)
+    # set dict (country, year)
+    existent_records = {}
+    for r in reported_list:
+        country_year = (
+            r.country_programme_report.country_id,
+            r.country_programme_report.year,
+        )
+        if country_year not in existent_records:
+            existent_records[country_year] = {}
+        chemical = (
+            f"substance_{r.substance_id}" if r.substance else f"blend_{r.blend_id}"
+        )
+        existent_records[country_year][chemical] = r
+
+    # get display_substance for years
+    displayed_rows = {}
+    for year in range(min_year, max_year + 1):
+        displayed_rows[year] = (
+            CPReportFormatRow.objects.get_for_year(year)
+            .filter(*filter_list)
+            .select_related("substance__group", "blend")
+            .all()
+        )
+
+    # set the final list of records
+    # if the country does not have the display_substance for the year,
+    # then include an 0 value record
+    final_list = []
+    for country, year in existent_records:
+        for row in displayed_rows[year]:
+            chemical = row.substance or row.blend
+            chemical_key = (
+                f"blend_{chemical.id}" if row.blend else f"substance_{chemical.id}"
+            )
+            if chemical_key not in existent_records[(country, year)]:
+                cp_record_data = {
+                    "country_programme_report": CPReport(
+                        country_id=country, year=year, version=0
+                    ),
+                    "substance": chemical if row.substance else None,
+                    "blend": chemical if row.blend else None,
+                    "id": 0,
+                }
+                final_list.append(CPRecord(**cp_record_data))
+            else:
+                final_list.append(existent_records[(country, year)][chemical_key])
+
+    # sort the final list
+    final_list.sort(
+        key=lambda x: (
+            (
+                x.country_programme_report.year,
+                x.country_programme_report.country.name,
+                (
+                    x.substance.sort_order or float("inf")
+                    if x.substance
+                    else x.blend.sort_order or float("inf")
+                ),
+            )
+        )
+    )
+
+    return final_list
 
 
 def set_chemical_items_dict(

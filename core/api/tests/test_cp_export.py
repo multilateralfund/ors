@@ -285,7 +285,7 @@ class TestCPExtractionALLExport(BaseTest):
         assert wb["HFC-Consumption(MTvsCO₂Equi)"].max_row == 2
         assert wb["HFC-23Generation"].max_row == 2
         assert wb["HFC-23Emission"].max_row == 3
-        assert wb["MbrConsumption"].max_row == 1
+        assert wb["MbrConsumption"].max_row == 2
 
         # check number of columns
         # country, substance, price,fob, retail_proce, remarks, notes
