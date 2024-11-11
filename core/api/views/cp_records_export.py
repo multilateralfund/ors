@@ -558,7 +558,9 @@ class CPDataExtractionAllExport(views.APIView):
 
         # MbrConsumption
         exporter = MbrConsumptionWriter(wb, min_year, max_year)
-        data = self.get_mbr_consumption_data(min_year, max_year, archive_reports)
+        data = self.get_mbr_consumption_data(
+            min_year, max_year, archive_reports, existent_reports
+        )
         exporter.write(data)
 
         # delete default sheet
@@ -597,7 +599,9 @@ class CPDataExtractionAllExport(views.APIView):
             if any([record.imports, record.exports, record.production])
         }
 
-    def get_mbr_consumption_data(self, min_year, max_year, archive_reports):
+    def get_mbr_consumption_data(
+        self, min_year, max_year, archive_reports, existent_reports
+    ):
         final_records = (
             CPRecord.objects.get_for_years(min_year, max_year)
             .filter(
@@ -674,12 +678,22 @@ class CPDataExtractionAllExport(views.APIView):
             )
 
             mbr_list = list(final_records) + list(archive_records)
+
+        # initialize the data with the existent reports
+        # there might be reports without records for methyl bromide
+        # that means the country has 0 consumption
         mbr_data = {}
-        for mbr in mbr_list:
-            if mbr["country_name"] not in mbr_data:
-                mbr_data[mbr["country_name"]] = {
-                    "country_name": mbr["country_name"],
+        for c, years in existent_reports.items():
+            for y in years:
+                mbr_data[c] = {
+                    "country_name": c,
+                    f"methyl_bromide_qps_{y}": 0,
+                    f"methyl_bromide_non_qps_{y}": 0,
+                    f"total_{y}": 0,
                 }
+
+        # update the data
+        for mbr in mbr_list:
             mbr_data[mbr["country_name"]].update(
                 {
                     f"methyl_bromide_qps_{mbr['year']}": mbr["methyl_bromide_qps"],
@@ -833,7 +847,13 @@ class CPDataExtractionAllExport(views.APIView):
 
             cp_details[key][f"record_value_{year}"] = cons_value
 
-        return dict(sorted(cp_details.items(), key=lambda x: x[0]))
+        # sort by country and substance_group
+        return dict(
+            sorted(
+                cp_details.items(),
+                key=lambda x: (x[0][0], x[1]["substance_group"]),
+            )
+        )
 
     def _get_cp_consumption_data(
         self, min_year, max_year, using_consumption_value_set, existent_reports
