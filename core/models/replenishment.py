@@ -2,7 +2,9 @@ from decimal import Decimal
 
 from django.contrib.postgres import fields
 from django.db import models
+from django.urls import reverse
 from django.utils.functional import cached_property
+from django.utils.html import format_html
 
 from core.models.country import Country
 from core.models.meeting import Meeting
@@ -39,6 +41,9 @@ class ScaleOfAssessmentVersion(models.Model):
     meeting_number = models.CharField(max_length=32, default="")
     decision_number = models.CharField(max_length=32, default="")
     comment = models.TextField(blank=True, default="")
+
+    currency_date_range_start = models.CharField(max_length=32, blank=True)
+    currency_date_range_end = models.CharField(max_length=32, blank=True)
 
     def upload_path(self, filename):
         # pylint: disable=line-too-long
@@ -130,8 +135,6 @@ class ScaleOfAssessment(models.Model):
 
     @property
     def qualifies_for_fixed_rate_mechanism(self):
-        if self.override_qualifies_for_fixed_rate_mechanism is not None:
-            return self.override_qualifies_for_fixed_rate_mechanism
         if self.average_inflation_rate is None:
             return False
         return self.average_inflation_rate < Decimal("10")
@@ -239,6 +242,15 @@ class InvoiceFile(models.Model):
         max_length=16, choices=InvoiceFileType.choices, default=InvoiceFileType.INVOICE
     )
 
+    def file_link(self):
+        if self.file:
+            url = reverse("replenishment-invoice-file-download", args=(self.id,))
+            return format_html(f"<a href='{url}'>download</a>")
+
+        return "No attachment"
+
+    file_link.allow_tags = True
+
 
 class Payment(models.Model):
     class PaymentStatus(models.TextChoices):
@@ -309,6 +321,15 @@ class PaymentFile(models.Model):
         choices=PaymentFileType.choices,
         default=PaymentFileType.BANK_STATEMENT,
     )
+
+    def file_link(self):
+        if self.file:
+            url = reverse("replenishment-payment-file-download", args=(self.id,))
+            return format_html(f"<a href='{url}'>download</a>")
+
+        return "No attachment"
+
+    file_link.allow_tags = True
 
 
 # Dashboard and Status of Contributions
@@ -547,3 +568,12 @@ class StatusOfTheFundFile(models.Model):
     )
     filename = models.CharField(max_length=128)
     file = models.FileField(storage=get_protected_storage, upload_to=upload_path)
+
+    def file_link(self):
+        if self.file:
+            url = reverse("replenishment-status-files-detail", args=(self.id,))
+            return format_html(f"<a href='{url}'>download</a>")
+
+        return "No attachment"
+
+    file_link.allow_tags = True

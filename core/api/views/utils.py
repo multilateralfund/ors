@@ -21,6 +21,7 @@ from core.models import (
     DisputedContribution,
     AnnualContributionStatus,
     ExternalIncomeAnnual,
+    ExternalAllocation,
     Payment,
 )
 from core.models.business_plan import BusinessPlan
@@ -1299,3 +1300,17 @@ def get_as_of_date():
         if latest_payment and latest_payment.date
         else config.DEFAULT_REPLENISHMENT_AS_OF_DATE
     )
+
+
+def get_budget_years():
+    return {
+        "secretariat_and_executive_committee": ExternalAllocation.objects.filter(
+            staff_contracts__gt=0
+        ).aggregate(max_year=models.Max("year"))["max_year"],
+        "treasury_fees": ExternalAllocation.objects.filter(
+            treasury_fees__gt=0
+        ).aggregate(max_year=models.Max("year"))["max_year"],
+        "monitoring_fees": ExternalAllocation.objects.filter(
+            monitoring_fees__gt=0
+        ).aggregate(max_year=models.Max("year"))["max_year"],
+    }

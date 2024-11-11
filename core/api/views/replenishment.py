@@ -26,6 +26,7 @@ from core.api.export.replenishment import (
     StatisticsTemplateWriter,
     StatusOfContributionsSummaryTemplateWriter,
     StatusOfContributionsTriennialTemplateWriter,
+    StatusOfContributionsAnnualTemplateWriter,
 )
 from core.api.filters.replenishment import (
     InvoiceFilter,
@@ -60,6 +61,7 @@ from core.api.views.utils import (
     add_statistics_status_of_contributions_response_worksheet,
     StatisticsStatusOfContributionsAggregator,
     get_as_of_date,
+    get_budget_years,
 )
 from core.models import (
     Agency,
@@ -77,6 +79,7 @@ from core.models import (
     ScaleOfAssessment,
     ScaleOfAssessmentVersion,
     TriennialContributionStatus,
+    StatusOfTheFundFile,
 )
 
 EXPORT_RESOURCES_DIR = settings.ROOT_DIR / "api" / "export" / "templates"
@@ -128,6 +131,15 @@ class ReplenishmentAsOfDateViewSet(viewsets.GenericViewSet, mixins.ListModelMixi
         data = {"as_of_date": as_of_date}
 
         return Response(status=status.HTTP_200_OK, data=data)
+
+
+class ReplenishmentBudgetYearsViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+    permission_classes = [IsUserAllowedReplenishment]
+
+    def list(self, request, *args, **kwargs):
+        self.check_permissions(request)
+
+        return Response(status=status.HTTP_200_OK, data=get_budget_years())
 
 
 class ReplenishmentViewSet(
@@ -227,6 +239,7 @@ class ScaleOfAssessmentViewSet(
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         # pylint: disable=too-many-locals
+        # pylint: disable=too-many-statements
         input_data = request.data
 
         try:
@@ -246,15 +259,8 @@ class ScaleOfAssessmentViewSet(
         decision_number = input_data.get("decision") or ""
         comment = input_data.get("comment") or ""
         decision_pdf = input_data.get("decision_pdf") or {}
-
-        if final and (not meeting_number or not decision_number or not decision_pdf):
-            raise ValidationError(
-                {
-                    "non_field_errors": "Meeting number, decision number and "
-                    "decision PDF are required for final "
-                    "version."
-                }
-            )
+        currency_date_range_start = input_data.get("currency_date_range_start") or ""
+        currency_date_range_end = input_data.get("currency_date_range_end") or ""
 
         previous_version = replenishment.scales_of_assessment_versions.order_by(
             "-version"
@@ -284,6 +290,8 @@ class ScaleOfAssessmentViewSet(
                 version=previous_version.version + 1,
                 comment=comment,
                 decision_pdf=decision_file,
+                currency_date_range_start=currency_date_range_start,
+                currency_date_range_end=currency_date_range_end,
             )
         else:
             version = previous_version
@@ -292,6 +300,9 @@ class ScaleOfAssessmentViewSet(
             version.is_final = final
             version.comment = comment
             version.decision_pdf = decision_file
+            version.currency_date_range_start = currency_date_range_start
+            version.currency_date_range_end = currency_date_range_end
+
             version.save()
 
         # Delete all scales of assessment if updating the latest version
@@ -382,6 +393,9 @@ class ScaleOfAssessmentViewSet(
         wb = openpyxl.load_workbook(
             filename=EXPORT_RESOURCES_DIR / "Scale of Assesement.xlsx"
         )
+        # Delete non-useful external links from these files; they are just exports
+        # pylint: disable=protected-access
+        wb._external_links = []
         ws = wb.active
 
         data = [
@@ -508,6 +522,10 @@ class StatusOfContributionsExportView(views.APIView):
         wb = openpyxl.load_workbook(
             filename=EXPORT_RESOURCES_DIR / "ContributionsFormatted.xlsx"
         )
+        # Delete non-useful external links from these files; they are just exports
+        # pylint: disable=protected-access
+        wb._external_links = []
+
         ws = wb[self.SUMMARY_WORKSHEET_NAME]
 
         StatusOfContributionsSummaryTemplateWriter(
@@ -553,7 +571,7 @@ class StatusOfContributionsExportView(views.APIView):
                 ws,
                 triennial_data,
                 len(triennial_data),
-                None,
+                start_year,
                 as_of_date=as_of_date,
                 disputed_contributions=disputed_contributions,
                 ceit_data=ceit_data,
@@ -590,11 +608,11 @@ class StatusOfContributionsExportView(views.APIView):
             ceit_data = agg.get_ceit_data(ceit_countries_qs)
 
             ws = wb.copy_worksheet(triennial_ws)
-            StatusOfContributionsTriennialTemplateWriter(
+            StatusOfContributionsAnnualTemplateWriter(
                 ws,
                 annual_data,
                 len(annual_data),
-                None,
+                year,
                 as_of_date=as_of_date,
                 disputed_contributions=disputed_contributions,
                 ceit_data=ceit_data,
@@ -973,6 +991,10 @@ class StatisticsExportView(views.APIView):
         wb = openpyxl.load_workbook(
             filename=EXPORT_RESOURCES_DIR / "ContributionsFormatted.xlsx"
         )
+        # Delete non-useful external links from these files; they are just exports
+        # pylint: disable=protected-access
+        wb._external_links = []
+
         ws = wb[WORKSHEET_NAME]
 
         data_count = len(statistics_data)
@@ -1062,6 +1084,40 @@ class DisputedContributionViewSet(
             queryset = queryset.filter(country_id=user.country_id)
 
         return queryset.select_related("country")
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        """
+        Override base DRF create to update annual/triennial agreed contributions.
+        """
+        amount = request.data.get("amount")
+        country_id = request.data.get("country")
+        year = request.data.get("year")
+
+        ret = super().create(request, *args, **kwargs)
+
+        try:
+            annual_contribution = AnnualContributionStatus.objects.get(
+                country_id=int(country_id),
+                year=int(year),
+            )
+            triennial_contribution = TriennialContributionStatus.objects.get(
+                country_id=int(country_id),
+                start_year__lte=int(year),
+                end_year__gte=int(year),
+            )
+        except AnnualContributionStatus.DoesNotExist:
+            return ret
+        except TriennialContributionStatus.DoesNotExist:
+            return ret
+
+        annual_contribution.agreed_contributions -= Decimal(amount)
+        annual_contribution.save(update_fields=["agreed_contributions"])
+
+        triennial_contribution.agreed_contributions -= Decimal(amount)
+        triennial_contribution.save(update_fields=["agreed_contributions"])
+
+        return ret
 
 
 class BilateralAssistanceViewSet(
@@ -1490,6 +1546,10 @@ class ReplenishmentDashboardExportView(views.APIView):
         wb = openpyxl.load_workbook(
             filename=EXPORT_RESOURCES_DIR / "ContributionsFormatted.xlsx"
         )
+        # Delete non-useful external links from these files; they are just exports
+        # pylint: disable=protected-access
+        wb._external_links = []
+
         ws = wb[WORKSHEET_NAME]
 
         status_data = self.get_status()
@@ -1650,6 +1710,9 @@ class ReplenishmentInvoiceViewSet(
         ):
             queryset = queryset.filter(country_id=user.country_id)
 
+        ordering_params = self.request.query_params.get("ordering", "")
+        if ordering_params:
+            queryset = queryset.order_by(ordering_params)
         return queryset.select_related("country").prefetch_related(
             "invoice_files",
         )
@@ -1729,11 +1792,12 @@ class ReplenishmentInvoiceViewSet(
                 *countries_without_invoices_data,
             ]
 
-        if "country" in request.query_params.get("ordering", ""):
+        ordering_params = request.query_params.get("ordering", "")
+        if "country" in ordering_params:
             data = sorted(
                 data,
                 key=lambda x: x["country"]["name"],
-                reverse=request.query_params.get("ordering", "").startswith("-"),
+                reverse="-country" in ordering_params,
             )
 
         return Response(
@@ -1896,7 +1960,8 @@ class ReplenishmentPaymentViewSet(
     ]
     ordering_fields = [
         "amount_assessed",
-        "country__name",
+        "country",
+        "date",
     ]
     search_fields = [
         "payment_for_years",
@@ -2250,6 +2315,7 @@ class StatusOfTheFundFileViewSet(
     serializer_class = StatusOfTheFundFileSerializer
     permission_classes = [IsUserAllowedReplenishment]
     lookup_field = "id"
+    queryset = StatusOfTheFundFile.objects.all()
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
@@ -2275,7 +2341,7 @@ class StatusOfTheFundFileViewSet(
             headers=headers,
         )
 
-    def get(self, request, *args, **kwargs):
+    def retrieve(self, request, *args, **kwargs):
         obj = self.get_object()
         response = HttpResponse(
             obj.file.read(), content_type="application/octet-stream"

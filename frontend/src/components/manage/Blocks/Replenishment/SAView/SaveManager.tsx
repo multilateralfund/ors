@@ -177,7 +177,7 @@ export function SaveManager(props: SaveManagerProps) {
                     field="meeting"
                     options={meetingOptions}
                     placeholder="Select meeting"
-                    required={isFinal}
+                    required={false}
                     withClear={true}
                     withInputPlaceholder={false}
                   />
@@ -187,7 +187,7 @@ export function SaveManager(props: SaveManagerProps) {
                   <Input
                     id="decision"
                     className="!m-0 h-12 w-16 !py-1"
-                    required={isFinal}
+                    required={false}
                     type="text"
                   />
                 </div>

@@ -1,5 +1,6 @@
 import {
   ApiAsOfDate,
+  ApiBudgetYears,
   ApiReplenishment,
   ApiReplenishments,
 } from '@ors/types/api_replenishment_replenishments'
@@ -33,6 +34,7 @@ function ReplenishmentProvider(props: { children: React.ReactNode }) {
 
   const [periods, setPeriods] = useState<ApiReplenishment[]>([])
   const [asOfDate, setAsOfDate] = useState<ApiAsOfDate>({as_of_date: '27 May 2024'})
+  const [budgetYears, setBudgetYears] = useState<ApiBudgetYears>(null)
   const [countries, setCountries] = useState<Country[]>([])
   const [countriesSOA, setCountriesSOA] = useState<Country[]>([])
   const [fetchTrigger, setFetchTrigger] = useState(false)
@@ -55,18 +57,22 @@ function ReplenishmentProvider(props: { children: React.ReactNode }) {
         }),
         fetch(formatApiUrl('/api/replenishment/as-of-date'), {
           credentials: 'include',
-        })
+        }),
+        fetch(formatApiUrl('/api/replenishment/budget-years'), {
+          credentials: 'include',
+        }),
       ])
         .then(function (responses) {
-          const [respPeriods, respCountries, respCountriesSOA, responseAsOfDate] = responses
-          return Promise.all([respPeriods.json(), respCountries.json(), respCountriesSOA.json(), responseAsOfDate.json()])
+          const [respPeriods, respCountries, respCountriesSOA, respAsOfDate, respBudgetYears] = responses
+          return Promise.all([respPeriods.json(), respCountries.json(), respCountriesSOA.json(), respAsOfDate.json(), respBudgetYears.json()])
         })
-        .then(function (jsonData: [ApiReplenishments, Country[], Country[], ApiAsOfDate]) {
-          const [jsonPeriods, jsonCountries, jsonCountriesSOA, jsonAsOfDate] = jsonData
+        .then(function (jsonData: [ApiReplenishments, Country[], Country[], ApiAsOfDate, ApiBudgetYears]) {
+          const [jsonPeriods, jsonCountries, jsonCountriesSOA, jsonAsOfDate, jsonBudgetYears] = jsonData
           setPeriods(jsonPeriods)
           setCountries(filterCountries(jsonCountries))
           setCountriesSOA(filterCountries(jsonCountriesSOA))
           setAsOfDate(jsonAsOfDate)
+          setBudgetYears(jsonBudgetYears)
         })
     },
     [fetchTrigger],
@@ -83,6 +89,7 @@ function ReplenishmentProvider(props: { children: React.ReactNode }) {
     <ReplenishmentContext.Provider
       value={{
         asOfDate,
+        budgetYears,
         countries,
         countriesSOA,
         isCountryUser,

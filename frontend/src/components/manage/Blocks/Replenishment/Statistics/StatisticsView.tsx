@@ -125,10 +125,14 @@ function StatisticsTable(props: { data: SoCStatistic[] }) {
 
     for (let j = 0; j < data.length; j++) {
       const content = data[j][HEADERS[i].field]
-      let cellValue =
-        content !== null && !HEADERS[i]?.skipFormatting
-          ? formatNumberValue(content, 2, 2) || content
-          : content
+      let cellValue = ''
+      if (content !== null && !HEADERS[i]?.skipFormatting) {
+        cellValue = formatNumberValue(content, 2, 2) || ''
+      } else if (HEADERS[i]?.skipFormatting) {
+        cellValue = ''
+      } else {
+        cellValue = formatNumberValue(0, 2, 2) || ''
+      }
       if (HEADERS[i]?.isPercentage ?? false) {
         cellValue = `${cellValue}%`
       }
