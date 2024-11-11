@@ -10,7 +10,7 @@ import type {
   IOVERVIEW_INDICATORS,
   IPROVISIONS,
 } from './useGetDashboardDataTypes'
-import type { ApiReplenishment } from '@ors/types/api_replenishment_replenishments'
+import type { ApiBudgetYears, ApiReplenishment } from '@ors/types/api_replenishment_replenishments'
 
 import { useContext } from 'react'
 
@@ -77,12 +77,17 @@ const ALLOCATIONS: IALLOCATIONS = {
 
 function buildProvisions(
   period: ApiReplenishment | null,
+  budgetYears: ApiBudgetYears,
   data: IDashboardDataApiResponse,
 ) {
   const currentYear = new Date().getFullYear()
   const nextYear = currentYear + 1
 
   const periodEnd = period ? period.end_year : nextYear
+
+  const monitoringFeesEnd = budgetYears?.monitoring_fees || currentYear
+  const staffContractsEnd = budgetYears?.secretariat_and_executive_committee || periodEnd
+  const treasuryFeesEnd = budgetYears?.treasury_fees || periodEnd
 
   const result: IPROVISIONS = {
     bilateral_assistance: { label: 'Bilateral cooperation', value: null },
@@ -97,13 +102,13 @@ function buildProvisions(
       value: null,
     },
     monitoring_fees: {
-      label: `Monitoring and evaluation\n (1999-${currentYear})`,
+      label: `Monitoring and evaluation\n (1999-${monitoringFeesEnd})`,
       value: null,
     },
     staff_contracts: {
-      info_text: `Including provision for staff contracts into ${periodEnd}.`,
-      label: `Secretariat and Executive Committee (1991-${periodEnd})`,
-      sub_text: `(inc. provision for staff contracts into ${periodEnd})`,
+      info_text: `Including provision for staff contracts into ${staffContractsEnd}.`,
+      label: `Secretariat and Executive Committee (1991-${staffContractsEnd})`,
+      sub_text: `(inc. provision for staff contracts into ${staffContractsEnd})`,
       value: null,
     },
     technical_audit: {
@@ -115,7 +120,7 @@ function buildProvisions(
       total: true,
       value: null,
     },
-    treasury_fees: { label: 'Treasury fees\n (2003-2025)', value: null },
+    treasury_fees: { label: `Treasury fees\n (2003-${treasuryFeesEnd})`, value: null },
   }
 
   result.staff_contracts.value = data.allocations.staff_contracts
@@ -204,6 +209,7 @@ function useGetDashboardData() {
 
   const ctx = useContext(ReplenishmentContext)
   const activePeriod = getActivePeriod(ctx.periods)
+  const budgetYears = ctx.budgetYears
 
   let formData: IFormData | Record<string, never>
   let newData: IDashboardData | Record<string, never>
@@ -225,7 +231,7 @@ function useGetDashboardData() {
       income: INCOME,
       overview: OVERVIEW,
       overviewIndicators: OVERVIEW_INDICATORS,
-      provisions: buildProvisions(activePeriod, data),
+      provisions: buildProvisions(activePeriod, budgetYears, data),
     }
   } else {
     formData = {}

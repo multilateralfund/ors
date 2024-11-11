@@ -570,11 +570,11 @@ class ScaleOfAssessmentTemplateWriter(BaseTemplateSheetWriter):
             value = cell.value
             if key == "un_scale_of_assessment":
                 cell.value = value.replace(
-                    "2022-2024", f"{self.start_year-2}-{self.start_year}"
+                    "2022-24", f"{self.start_year - 2}-{self.start_year}"
                 )
             if key == "adjusted_scale_of_assessment":
                 cell.value = value.replace(
-                    "2022-24", f"{self.start_year-2}-{self.start_year - 2000}"
+                    "2022-24", f"{self.start_year - 2}-{self.start_year - 2000}"
                 )
             if key == "yearly_amount":
                 cell.value = value.replace(
@@ -583,10 +583,10 @@ class ScaleOfAssessmentTemplateWriter(BaseTemplateSheetWriter):
                 )
             if key == "average_inflation_rate":
                 cell.value = value.replace(
-                    "2021- 2023", f"{self.start_year-3}-{self.start_year - 1}"
+                    "2021 -2023", f"{self.start_year - 3}-{self.start_year -  1}"
                 )
             if key == "exchange_rate":
-                cell.value = value.replace("01 Jan - 30 June 2023", "")
+                cell.value = value.replace("(01 Jan - 30 June 2023)", "")
 
 
 class StatusOfTheFundTemplateWriter(BaseTemplateSheetWriter):

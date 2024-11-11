@@ -8,6 +8,7 @@ from core.api.views import (
     ReplenishmentCountriesViewSet,
     ReplenishmentCountriesSOAViewSet,
     ReplenishmentAsOfDateViewSet,
+    ReplenishmentBudgetYearsViewSet,
     ReplenishmentViewSet,
     AnnualStatusOfContributionsView,
     ScaleOfAssessmentViewSet,
@@ -124,6 +125,11 @@ router.register(
     "replenishment/as-of-date",
     ReplenishmentAsOfDateViewSet,
     basename="replenishment-as-of-date",
+)
+router.register(
+    "replenishment/budget-years",
+    ReplenishmentBudgetYearsViewSet,
+    basename="replenishment-budget-years",
 )
 router.register(
     "replenishment/replenishments",
