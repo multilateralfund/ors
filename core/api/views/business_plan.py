@@ -37,8 +37,12 @@ from core.api.serializers.business_plan import (
     BPActivityDetailSerializer,
     BPActivityListSerializer,
 )
-from core.api.utils import workbook_pdf_response
-from core.api.utils import workbook_response
+from core.api.utils import (
+    STATUS_TRANSITIONS,
+    STATUS_TRANSITIONS_CONSOLIDATED_DATA,
+    workbook_response,
+    workbook_pdf_response,
+)
 from core.api.views.utils import (
     check_status_transition,
     copy_fields,
@@ -148,6 +152,12 @@ class BusinessPlanViewSet(
                 openapi.IN_QUERY,
                 type=openapi.TYPE_INTEGER,
             ),
+            openapi.Parameter(
+                "full_history",
+                openapi.IN_QUERY,
+                description="Include full event history for the business plan",
+                type=openapi.TYPE_BOOLEAN,
+            ),
         ],
     )
     @action(methods=["GET"], detail=False)
@@ -160,14 +170,20 @@ class BusinessPlanViewSet(
         bp = get_business_plan_from_request(self.request)
         self.check_object_permissions(self.request, bp)
 
+        full_history = self.request.query_params.get("full_history") == "1"
         history_qs = bp.bphistory.select_related("business_plan", "updated_by")
-        activities = self.filter_queryset(self.get_queryset()).filter(business_plan=bp)
+        if not full_history:
+            history_qs = history_qs.filter(event_in_draft=False)
+            history_qs = history_qs.exclude(
+                event_description__istartswith="status updated"
+            )
 
         ret = {
             "business_plan": BusinessPlanSerializer(bp).data,
             "history": BPHistorySerializer(history_qs, many=True).data,
         }
 
+        activities = self.filter_queryset(self.get_queryset()).filter(business_plan=bp)
         page = self.paginate_queryset(activities)
         if page is not None:
             ret["activities"] = self.get_serializer(page, many=True).data
@@ -234,13 +250,15 @@ class BusinessPlanViewSet(
         if ret_code != status.HTTP_200_OK:
             return Response({"general_error": error}, status=ret_code)
 
-        # check bp status
+        # status must be Agency Draft or Submitted for review
         if instance.status not in [
             BusinessPlan.Status.agency_draft,
-            BusinessPlan.Status.secretariat_draft,
+            BusinessPlan.Status.submitted_for_review,
         ]:
             return Response(
-                {"general_error": "Only draft BP can be created"},
+                {
+                    "general_error": "Status must be Agency Draft or Submitted for review"
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -329,8 +347,6 @@ class BusinessPlanViewSet(
 
     def set_bp_data(self, user, new_instance, current_obj):
         initial_status = current_obj.status
-        new_status = new_instance.status
-
         # inherit all history
         BPHistory.objects.filter(business_plan=current_obj).update(
             business_plan=new_instance
@@ -340,8 +356,12 @@ class BusinessPlanViewSet(
         if not new_instance.name:
             new_instance.name = f"{new_instance.agency} {new_instance.year_start} - {new_instance.year_end}"
 
-        # set version
-        if new_status != initial_status:
+        # update from Needs Changes, Submit for review, Submitted => new version
+        if initial_status in [
+            BusinessPlan.Status.submitted_for_review,
+            BusinessPlan.Status.need_changes,
+            BusinessPlan.Status.submitted,
+        ]:
             new_instance.version = current_obj.version + 1
             current_obj.is_latest = False
             current_obj.save()
@@ -365,12 +385,20 @@ class BusinessPlanViewSet(
     def create_history(self, business_plans, user, event):
         history_objs = []
         for bp in business_plans:
+            event_in_draft = False
+            if bp.status in [
+                BusinessPlan.Status.agency_draft,
+                BusinessPlan.Status.secretariat_draft,
+            ]:
+                event_in_draft = True
+
             history_objs.append(
                 BPHistory(
                     business_plan=bp,
                     updated_by=user,
                     event_description=event,
                     bp_version=bp.version,
+                    event_in_draft=event_in_draft,
                 )
             )
         BPHistory.objects.bulk_create(history_objs)
@@ -405,17 +433,9 @@ class BusinessPlanViewSet(
         if ret_code != status.HTTP_200_OK:
             return Response({"general_error": error}, status=ret_code)
 
-        # the updates can only be made on drafts
-        if new_status not in [
-            BusinessPlan.Status.agency_draft,
-            BusinessPlan.Status.secretariat_draft,
-        ]:
-            return Response(
-                {"general_error": "Only draft BP can be updated"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        ret_code, error = check_status_transition(user, initial_status, new_status)
+        ret_code, error = check_status_transition(
+            user, initial_status, new_status, STATUS_TRANSITIONS
+        )
         if ret_code != status.HTTP_200_OK:
             return Response({"general_error": error}, status=ret_code)
 
@@ -476,6 +496,16 @@ class BusinessPlanViewSet(
             )
         }
 
+        first_bp = next(iter(current_bps.values()))
+        initial_status = first_bp.status if first_bp else None
+        new_status = request.data["status"]
+
+        ret_code, error = check_status_transition(
+            user, initial_status, new_status, STATUS_TRANSITIONS_CONSOLIDATED_DATA
+        )
+        if ret_code != status.HTTP_200_OK:
+            return Response({"general_error": error}, status=ret_code)
+
         for initial_data in serializer.initial_data:
             current_bp = current_bps[str(initial_data.get("agency_id"))]
             # validate activities data
@@ -483,10 +513,10 @@ class BusinessPlanViewSet(
             if ret_code != status.HTTP_200_OK:
                 return Response({"general_error": error}, status=ret_code)
 
-            # check status
-            if request.data["status"] != BusinessPlan.Status.agency_draft:
+            # all updated BPs must have the same status
+            if initial_status != current_bp.status:
                 return Response(
-                    {"general_error": "Invalid status transition"},
+                    {"general_error": "All BPs must have the same status"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
@@ -539,7 +569,9 @@ class BPStatusUpdateView(generics.GenericAPIView):
         new_status = request.data.get("status")
         user = request.user
 
-        ret_code, error = check_status_transition(user, initial_status, new_status)
+        ret_code, error = check_status_transition(
+            user, initial_status, new_status, STATUS_TRANSITIONS
+        )
         if ret_code != status.HTTP_200_OK:
             return Response({"general_error": error}, status=ret_code)
 
@@ -547,11 +579,19 @@ class BPStatusUpdateView(generics.GenericAPIView):
         business_plan.status = new_status
         business_plan.save()
 
+        event_in_draft = False
+        if new_status in [
+            BusinessPlan.Status.agency_draft,
+            BusinessPlan.Status.secretariat_draft,
+        ]:
+            event_in_draft = True
+
         BPHistory.objects.create(
             business_plan=business_plan,
             updated_by=request.user,
             event_description=f"Status updated from {initial_status} to {new_status}",
             bp_version=business_plan.version,
+            event_in_draft=event_in_draft,
         )
 
         serializer = self.get_serializer(business_plan)

@@ -216,7 +216,7 @@ class TestBPCreate:
             == "Invalid sector - type combination"
         )
 
-    def test_create_final_version(
+    def test_create_wrong_status(
         self, agency_user, _setup_bp_activity_create, _setup_new_business_plan_create
     ):
         self.client.force_authenticate(user=agency_user)
@@ -226,7 +226,10 @@ class TestBPCreate:
         data["activities"] = [_setup_bp_activity_create]
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 400
-        assert response.data["general_error"] == "Only draft BP can be created"
+        assert (
+            response.data["general_error"]
+            == "Status must be Agency Draft or Submitted for review"
+        )
 
     def test_create_wrong_activity_values(
         self, agency_user, _setup_bp_activity_create, _setup_new_business_plan_create
@@ -387,12 +390,10 @@ class TestBPUpdate:
             == "Invalid sector - type combination"
         )
 
-    def test_update_final_version(
+    def test_update_wrong_status(
         self, agency_user, _setup_bp_activity_create, business_plan
     ):
         self.client.force_authenticate(user=agency_user)
-        business_plan.status = BusinessPlan.Status.submitted
-        business_plan.save()
 
         url = reverse("businessplan-list") + f"{business_plan.id}/"
         data = {
@@ -404,7 +405,7 @@ class TestBPUpdate:
         }
         response = self.client.put(url, data, format="json")
         assert response.status_code == 400
-        assert response.data["general_error"] == "Only draft BP can be updated"
+        assert "Invalid status" in response.data["general_error"]
 
     def test_update_wrong_activity_values(
         self, agency_user, _setup_bp_activity_create, business_plan
@@ -533,7 +534,7 @@ class TestBPUpdate:
         url = reverse("businessplan-get")
         response = self.client.get(url, {"business_plan_id": new_id})
         assert response.status_code == 200
-        data["status"] = "Agency Draft"
+        data["status"] = "Submitted for review"
         data["activities"] = response.json()["activities"]
 
         # update bp again without changes (new version)
@@ -667,7 +668,7 @@ class TestBPStatusUpdate:
         self.client.force_authenticate(user=agency_inputter_user)
         url = reverse("business-plan-status", kwargs={"id": business_plan.id})
 
-        response = self.client.put(url, {"status": "Submitted"})
+        response = self.client.put(url, {"status": "Submitted for review"})
         assert response.status_code == 403
 
         self.client.force_authenticate(user=new_agency_user)
@@ -691,10 +692,10 @@ class TestBPStatusUpdate:
         assert response.status_code == 200
         mock_send_mail_bp_status_update.assert_called_once()
 
-        # update to submitted
-        response = self.client.put(url, {"status": "Submitted"})
+        # update to submitted for review
+        response = self.client.put(url, {"status": "Submitted for review"})
         assert response.status_code == 200
-        assert response.data["status"] == "Submitted"
+        assert response.data["status"] == "Submitted for review"
         assert response.data["id"] == business_plan.id
 
         # check history
@@ -1111,12 +1112,15 @@ class TestUpdateAllActivities:
         _setup_bp_activity_create,
     ):
         self.client.force_authenticate(user=user)
+        business_plan.status = BusinessPlan.Status.need_changes
+        business_plan.save()
 
         other_agency = AgencyFactory(name="Agency2", code="AG2")
         other_business_plan = BusinessPlanFactory(
             agency=other_agency,
             year_start=business_plan.year_start,
             year_end=business_plan.year_end,
+            status=BusinessPlan.Status.need_changes,
             version=1,
         )
 
@@ -1128,7 +1132,7 @@ class TestUpdateAllActivities:
         data = {
             "year_start": business_plan.year_start,
             "year_end": business_plan.year_end,
-            "status": "Agency Draft",
+            "status": "Secretariat Draft",
             "activities": [activity_data_1, activity_data_2],
         }
         response = self.client.put(self.url, data, format="json")
@@ -1137,7 +1141,7 @@ class TestUpdateAllActivities:
         for data in response.data:
             assert data["year_start"] == business_plan.year_start
             assert data["year_end"] == business_plan.year_end
-            assert data["status"] == "Agency Draft"
+            assert data["status"] == "Secretariat Draft"
 
             activities = data["activities"]
             assert activities[0]["business_plan_id"] == data["id"]
