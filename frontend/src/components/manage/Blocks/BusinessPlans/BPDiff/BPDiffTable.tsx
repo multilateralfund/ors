@@ -142,13 +142,13 @@ export default function BPDiffTable({
   const columnDefs = useMemo(() => {
     switch (gridOptions) {
       case 'values':
-        return valuesColumnDefs(yearColumns, true)
+        return valuesColumnDefs(yearColumns, true, false)
       case 'odp':
-        return odpColumnDefs(yearColumns, true)
+        return odpColumnDefs(yearColumns, true, false)
       case 'comments':
-        return commentsColumnDefs(true)
+        return commentsColumnDefs(true, false)
       default:
-        return allColumnDefs(yearColumns, true)
+        return allColumnDefs(yearColumns, true, false)
     }
   }, [gridOptions, yearColumns])
 
