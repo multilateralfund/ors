@@ -212,7 +212,6 @@ export default function BusinessPlansTable() {
   const form = useRef<any>()
 
   const initialFilters = {
-    comment_types: [],
     country_id: [],
     is_multi_year: [],
     project_cluster_id: [],
