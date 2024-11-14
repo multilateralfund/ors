@@ -13,6 +13,8 @@ import BPFilters from '../../Table/BusinessPlansTable/BPFilters'
 import { BPTable } from '../../Table/BusinessPlansTable/BusinessPlansTable'
 import { TableDataSelectorValuesType } from '../../Table/BusinessPlansTable/TableDateSwitcher'
 import { ViewSelectorValuesType } from '../types'
+import BPListHeader from './BPListHeader'
+import BPListTabs from './BPListTabs'
 
 const ACTIVITIES_PER_PAGE = 20
 
@@ -42,6 +44,8 @@ export default function BPListActivitiesWrapper(props: any) {
         className="!fixed bg-action-disabledBackground"
         active={loading}
       />
+      <BPListHeader viewType="activities" />
+      <BPListTabs />
       <BPListActivities
         {...{
           activities,
