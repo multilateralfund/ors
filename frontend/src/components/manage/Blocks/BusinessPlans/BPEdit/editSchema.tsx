@@ -32,6 +32,7 @@ const useColumnsOptions = (
   onRemoveActivity: (props: any) => void,
   form: Array<ApiEditBPActivity>,
   setForm: Dispatch<SetStateAction<ApiEditBPActivity[] | null | undefined>>,
+  isConsolidatedView?: boolean,
 ) => {
   const commonSlice = useStore((state) => state.common)
   const projectSlice = useStore((state) => state.projects)
@@ -39,6 +40,7 @@ const useColumnsOptions = (
   const bpSlice = useStore((state) => state.businessPlans)
 
   const countries = commonSlice.countries.data
+  const agencies = commonSlice.agencies.data
   const clusters = projectSlice.clusters.data
   const types = bpSlice.types.data
   const sectors = bpSlice.sectors.data
@@ -49,7 +51,6 @@ const useColumnsOptions = (
       id: status[0],
       name: status[1],
     }))
-
   const commentTypes = bpSlice.commentTypes.data
   const chemicalTypes = useGetChemicalTypes()
   const chemicalTypesResults = chemicalTypes.results
@@ -105,6 +106,34 @@ const useColumnsOptions = (
           valueSetter: (params: any) =>
             valueSetter(params, 'country', countries),
         },
+        ...(isConsolidatedView
+          ? [
+              {
+                cellClass: 'ag-text-center ag-cell-centered ag-cell-ellipsed',
+                cellEditor: 'agSelectCellEditor',
+                cellEditorParams: {
+                  Input: { placeholder: 'Select agency' },
+                  agFormatValue: agFormatNameValue,
+                  getOptionLabel: (option: any) =>
+                    getOptionLabel(agencies, option, 'name'),
+                  isOptionEqualToValue: isOptionEqualToValueByName,
+                  openOnFocus: true,
+                  options: agencies,
+                },
+                cellRenderer: (props: any) => (
+                  <AgCellRenderer {...props} value={props.data.agency} />
+                ),
+                field: 'agency',
+                headerClass: 'ag-text-center',
+                headerComponentParams: {
+                  details: <sup className="font-bold">*</sup>,
+                },
+                headerName: tableColumns.agency,
+                minWidth: 150,
+                tooltipField: 'agency',
+              },
+            ]
+          : []),
         {
           cellClass: 'ag-text-center ag-cell-wrap-text',
           cellEditor: 'agSelectCellEditor',
@@ -427,6 +456,7 @@ const useColumnsOptions = (
     [
       countries,
       clusters,
+      isConsolidatedView,
       form,
       setForm,
       types,
@@ -438,6 +468,7 @@ const useColumnsOptions = (
       commentTypes,
       yearColumns,
       onRemoveActivity,
+      agencies,
     ],
   )
 

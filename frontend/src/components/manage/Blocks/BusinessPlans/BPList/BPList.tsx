@@ -37,7 +37,7 @@ function useBPListApi(filters?: any) {
         offset: 0,
         ordering: '-updated_at',
       },
-      withStoreCache: true,
+      withStoreCache: false,
     },
     path: 'api/business-plan/',
   })

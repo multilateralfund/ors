@@ -40,19 +40,22 @@ export default function BPListActivitiesWrapper(props: any) {
   const activities = useGetActivities(initialFilters)
   const { loading } = activities
 
+  const [bpType, setBpType] = useState(bpTypes[0].id)
+
   return (
     <>
       <Loading
         className="!fixed bg-action-disabledBackground"
         active={loading}
       />
-      <BPListHeader viewType="activities" />
+      <BPListHeader bpType={bpType} viewType="activities" />
       <BPListTabs />
       <BPListActivities
         {...{
           activities,
           initialFilters,
           period,
+          setBpType,
           yearRanges,
         }}
       />
@@ -61,7 +64,7 @@ export default function BPListActivitiesWrapper(props: any) {
 }
 
 function BPListActivities(props: any) {
-  const { activities, initialFilters, period, yearRanges } = props
+  const { activities, initialFilters, period, setBpType, yearRanges } = props
   const {
     count,
     loaded,
@@ -96,6 +99,7 @@ function BPListActivities(props: any) {
         gridOptions,
         initialFilters,
         reqParams,
+        setBpType,
         setDisplayOptions,
         setFilters,
         setGridOptions,

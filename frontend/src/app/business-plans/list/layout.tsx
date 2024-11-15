@@ -5,7 +5,7 @@ import BPYearRangesProvider from '@ors/contexts/BusinessPlans/BPYearRangesProvid
 
 export default function BusinessPlansListLayout({ children }: any) {
   return (
-    <PageWrapper className="max-w-screen-xl print:p-0">
+    <PageWrapper className="print:p-0">
       <BPYearRangesProvider>{children}</BPYearRangesProvider>
     </PageWrapper>
   )

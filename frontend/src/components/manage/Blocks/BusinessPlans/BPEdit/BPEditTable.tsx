@@ -24,7 +24,13 @@ import { IoAddCircle } from 'react-icons/io5'
 export function BPEditBaseTable(
   props: { yearRangeSelected: ApiBPYearRange } & BPEditTableInterface,
 ) {
-  const { form = [], loading, setForm, yearRangeSelected } = props
+  const {
+    form = [],
+    isConsolidatedView = false,
+    loading,
+    setForm,
+    yearRangeSelected,
+  } = props
 
   const grid = useRef<any>()
 
@@ -207,6 +213,7 @@ export function BPEditBaseTable(
     onRemoveActivity,
     form,
     setForm,
+    isConsolidatedView,
   )
 
   const AddActivityButton = () => (

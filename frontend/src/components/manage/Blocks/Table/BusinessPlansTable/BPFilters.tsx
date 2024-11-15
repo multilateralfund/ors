@@ -21,6 +21,7 @@ export default function BPFilters({
   gridOptions,
   initialFilters,
   reqParams,
+  setBpType,
   setDisplayOptions,
   setFilters,
   setGridOptions,
@@ -82,6 +83,9 @@ export default function BPFilters({
             option.id === value.toLowerCase()
           }
           onChange={(_: any, value: any) => {
+            if (setBpType) {
+              setBpType(value.id)
+            }
             handleParamsChange({
               offset: 0,
               version_type: value.id,

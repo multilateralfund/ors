@@ -6,7 +6,13 @@ import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import CustomLink from '@ors/components/ui/Link/Link'
 import { useStore } from '@ors/store'
 
-const BPListHeader = ({ viewType }: { viewType: string }) => {
+const BPListHeader = ({
+  bpType,
+  viewType,
+}: {
+  bpType?: string
+  viewType: string
+}) => {
   const { user_type } = useStore((state) => state.user?.data)
 
   const pathname = usePathname()
@@ -29,11 +35,11 @@ const BPListHeader = ({ viewType }: { viewType: string }) => {
             <CustomLink
               className="px-4 py-2 text-lg uppercase"
               color="secondary"
-              href={pathname + '/edit'}
+              href={`${pathname}/${bpType}/edit`}
               variant="contained"
               button
             >
-              Revise Consolidated BP
+              Revise {bpType} BP
             </CustomLink>
           )}
         </div>
