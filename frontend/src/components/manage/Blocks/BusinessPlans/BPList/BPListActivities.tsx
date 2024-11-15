@@ -12,6 +12,7 @@ import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext
 import BPFilters from '../../Table/BusinessPlansTable/BPFilters'
 import { BPTable } from '../../Table/BusinessPlansTable/BusinessPlansTable'
 import { TableDataSelectorValuesType } from '../../Table/BusinessPlansTable/TableDateSwitcher'
+import { bpTypes } from '../constants'
 import { ViewSelectorValuesType } from '../types'
 import BPListHeader from './BPListHeader'
 import BPListTabs from './BPListTabs'
@@ -32,6 +33,7 @@ export default function BPListActivitiesWrapper(props: any) {
   const initialFilters = {
     limit: ACTIVITIES_PER_PAGE,
     offset: 0,
+    version_type: bpTypes[0].id,
     year_end: year_end,
     year_start: year_start,
   }

@@ -21,3 +21,8 @@ export const tableColumns: { [key: string]: string } = {
   substances: 'Substances',
   title: 'Title',
 }
+
+export const bpTypes = [
+  { id: 'consolidated', label: 'Consolidated' },
+  { id: 'endorsed', label: 'Endorsed' },
+]
