@@ -6,14 +6,9 @@ import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import CustomLink from '@ors/components/ui/Link/Link'
 import { useStore } from '@ors/store'
 
-const BPListHeader = ({
-  bpType,
-  viewType,
-}: {
-  bpType?: string
-  viewType: string
-}) => {
+const BPListHeader = ({ viewType }: { viewType: string }) => {
   const { user_type } = useStore((state) => state.user?.data)
+  const { bpType } = useStore((state) => state.bpType)
 
   const pathname = usePathname()
 

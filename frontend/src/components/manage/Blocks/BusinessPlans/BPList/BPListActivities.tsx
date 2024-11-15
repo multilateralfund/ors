@@ -8,11 +8,11 @@ import { useGetActivities } from '@ors/components/manage/Blocks/BusinessPlans/us
 import Loading from '@ors/components/theme/Loading/Loading'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
+import { useStore } from '@ors/store'
 
 import BPFilters from '../../Table/BusinessPlansTable/BPFilters'
 import { BPTable } from '../../Table/BusinessPlansTable/BusinessPlansTable'
 import { TableDataSelectorValuesType } from '../../Table/BusinessPlansTable/TableDateSwitcher'
-import { bpTypes } from '../constants'
 import { ViewSelectorValuesType } from '../types'
 import BPListHeader from './BPListHeader'
 import BPListTabs from './BPListTabs'
@@ -30,17 +30,17 @@ export default function BPListActivitiesWrapper(props: any) {
   const year_end = period?.split('-')[1] || lastPeriod.split('-')[1]
   const year_start = period?.split('-')[0] || firstPeriod.split('-')[0]
 
+  const { bpType } = useStore((state) => state.bpType)
+
   const initialFilters = {
     limit: ACTIVITIES_PER_PAGE,
     offset: 0,
-    version_type: bpTypes[0].id,
+    version_type: bpType,
     year_end: year_end,
     year_start: year_start,
   }
   const activities = useGetActivities(initialFilters)
   const { loading } = activities
-
-  const [bpType, setBpType] = useState(bpTypes[0].id)
 
   return (
     <>
@@ -48,14 +48,13 @@ export default function BPListActivitiesWrapper(props: any) {
         className="!fixed bg-action-disabledBackground"
         active={loading}
       />
-      <BPListHeader bpType={bpType} viewType="activities" />
+      <BPListHeader viewType="activities" />
       <BPListTabs />
       <BPListActivities
         {...{
           activities,
           initialFilters,
           period,
-          setBpType,
           yearRanges,
         }}
       />
@@ -64,7 +63,7 @@ export default function BPListActivitiesWrapper(props: any) {
 }
 
 function BPListActivities(props: any) {
-  const { activities, initialFilters, period, setBpType, yearRanges } = props
+  const { activities, initialFilters, period, yearRanges } = props
   const {
     count,
     loaded,
@@ -99,7 +98,6 @@ function BPListActivities(props: any) {
         gridOptions,
         initialFilters,
         reqParams,
-        setBpType,
         setDisplayOptions,
         setFilters,
         setGridOptions,

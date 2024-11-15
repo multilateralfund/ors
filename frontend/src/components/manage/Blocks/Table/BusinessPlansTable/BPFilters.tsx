@@ -21,7 +21,6 @@ export default function BPFilters({
   gridOptions,
   initialFilters,
   reqParams,
-  setBpType,
   setDisplayOptions,
   setFilters,
   setGridOptions,
@@ -32,6 +31,8 @@ export default function BPFilters({
   const bpSlice = useStore((state) => state.businessPlans)
   const projects = useStore((state) => state.projects)
   const clusters = projects.clusters.data || []
+
+  const { setBPType } = useStore((state) => state.bpType)
 
   function handleParamsChange(params: { [key: string]: any }) {
     setParams(params)
@@ -83,8 +84,8 @@ export default function BPFilters({
             option.id === value.toLowerCase()
           }
           onChange={(_: any, value: any) => {
-            if (setBpType) {
-              setBpType(value.id)
+            if (withAgency) {
+              setBPType(value.id)
             }
             handleParamsChange({
               offset: 0,
