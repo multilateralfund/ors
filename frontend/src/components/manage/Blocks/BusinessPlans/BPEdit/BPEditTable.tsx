@@ -8,6 +8,7 @@ import { findIndex, isNil } from 'lodash'
 import { useParams } from 'next/navigation'
 
 import DownloadButtons from '@ors/app/business-plans/DownloadButtons'
+import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import {
   BPEditTableInterface,
   BpPathParams,
@@ -19,7 +20,7 @@ import { applyTransaction, formatApiUrl } from '@ors/helpers'
 import { filtersToQueryParams } from '../utils'
 import useColumnsOptions from './editSchema'
 
-import { IoAddCircle } from 'react-icons/io5'
+import { IoAddCircle, IoClipboardOutline } from 'react-icons/io5'
 
 export function BPEditBaseTable(
   props: { yearRangeSelected: ApiBPYearRange } & BPEditTableInterface,
@@ -165,15 +166,42 @@ export function BPEditBaseTable(
     return [
       {
         children: valuesUSD,
-        headerName: 'Value ($000)',
+        headerGroupComponent: function () {
+          return (
+            <div className="flex items-center gap-x-2">
+              <div>Value ($000)</div>
+              <div>
+                <IoClipboardOutline />
+              </div>
+            </div>
+          )
+        },
       },
       {
         children: valuesODP,
-        headerName: 'ODP',
+        headerGroupComponent: function () {
+          return (
+            <div className="flex items-center gap-x-2">
+              <div>ODP</div>
+              <div>
+                <IoClipboardOutline />
+              </div>
+            </div>
+          )
+        },
       },
       {
         children: valuesMT,
-        headerName: 'MT for HFC',
+        headerGroupComponent: function () {
+          return (
+            <div className="flex items-center gap-x-2">
+              <div>MT for HFC</div>
+              <div>
+                <IoClipboardOutline />
+              </div>
+            </div>
+          )
+        },
       },
     ]
   }, [yearRangeSelected, valueGetter, valueSetter])
