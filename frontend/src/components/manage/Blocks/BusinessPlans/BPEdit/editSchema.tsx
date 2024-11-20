@@ -25,7 +25,7 @@ import {
   valueSetter,
 } from './editSchemaHelpers'
 
-import { IoTrash } from 'react-icons/io5'
+import { IoClipboardOutline, IoTrash } from 'react-icons/io5'
 
 const useColumnsOptions = (
   yearColumns: any[],
@@ -321,7 +321,17 @@ const useColumnsOptions = (
           cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
           field: 'required_by_model',
           headerClass: 'ag-text-center',
-          headerName: tableColumns.required_by_model,
+          // headerName: tableColumns.required_by_model,
+          headerValueGetter: function (params: any) {
+            return (
+              <div className="flex items-center gap-x-2">
+                <div>{tableColumns.required_by_model}</div>
+                <div>
+                  <IoClipboardOutline />
+                </div>
+              </div>
+            )
+          },
           minWidth: 150,
           tooltipField: 'required_by_model',
         },
@@ -410,7 +420,17 @@ const useColumnsOptions = (
           cellClass: 'ag-cell-ellipsed',
           field: 'comment_secretariat',
           headerClass: 'ag-text-center',
-          headerName: tableColumns.comment_secretariat,
+          // headerName: tableColumns.comment_secretariat,
+          headerValueGetter: function (params: any) {
+            return (
+              <div className="flex items-center gap-x-2">
+                <div>{tableColumns.comment_secretariat}</div>
+                <div>
+                  <IoClipboardOutline />
+                </div>
+              </div>
+            )
+          },
           minWidth: 200,
           tooltipField: 'comment_secretariat',
           valueSetter: (params: any) => {
