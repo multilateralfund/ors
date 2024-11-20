@@ -24,7 +24,7 @@ const BPListHeader = ({ viewType }: { viewType: string }) => {
             variant="contained"
             button
           >
-            Upload
+            Create
           </CustomLink>
           {viewType === 'activities' && (
             <CustomLink
