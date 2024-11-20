@@ -15,6 +15,7 @@ import {
   agFormatNameValue,
   agFormatValue,
   agFormatValueTags,
+  agencyValueSetter,
   commentsValueSetter,
   getOptionLabel,
   getOptions,
@@ -131,6 +132,8 @@ const useColumnsOptions = (
                 headerName: tableColumns.agency,
                 minWidth: 150,
                 tooltipField: 'agency',
+                valueSetter: (params: any) =>
+                  agencyValueSetter(params, agencies),
               },
             ]
           : []),

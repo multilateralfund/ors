@@ -28,7 +28,7 @@ export default function BPHeaderEditConsolidated({
         data: {
           activities: form,
           ...{ year_end, year_start },
-          status: 'Agency Draft',
+          status: 'Secretariat Draft',
           version_type: type,
         },
         method: 'PUT',

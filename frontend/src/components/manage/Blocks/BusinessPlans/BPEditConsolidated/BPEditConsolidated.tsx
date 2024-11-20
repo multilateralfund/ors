@@ -36,6 +36,7 @@ const BPEdit = () => {
 
   const bpSlice = useStore((state) => state.businessPlans)
   const commentTypes = bpSlice.commentTypes.data
+  const agencies = useStore((state) => state?.common.agencies.data)
 
   const [form, setForm] = useState<Array<ApiEditBPActivity> | null>()
   const [warnOnClose, setWarnOnClose] = useState(false)
@@ -64,6 +65,8 @@ const BPEdit = () => {
 
     return map(activities, (activity, index) => ({
       ...activity,
+      agency_id: find(agencies, (agency) => agency.name === activity.agency)
+        ?.id,
       comment_types: map(
         activity.comment_types,
         (comment_type) =>
@@ -72,7 +75,7 @@ const BPEdit = () => {
       ),
       row_id: index,
     }))
-  }, [commentTypes, activities])
+  }, [commentTypes, activities, agencies])
 
   useEffect(() => {
     const formattedActivities = getFormattedActivities()
