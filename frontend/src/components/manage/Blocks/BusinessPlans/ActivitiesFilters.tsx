@@ -4,7 +4,6 @@ import { InputAdornment, IconButton as MuiIconButton } from '@mui/material'
 import { union } from 'lodash'
 
 import Field from '@ors/components/manage/Form/Field'
-import { KEY_ENTER } from '@ors/constants'
 import { debounce } from '@ors/helpers'
 import useFocusOnCtrlF from '@ors/hooks/useFocusOnCtrlF'
 
@@ -165,28 +164,6 @@ export default function ActivitiesFilters(props: any) {
             handleParamsChange({
               offset: 0,
               project_type_id: newValue.map((item: any) => item.id).join(','),
-            })
-          }}
-          multiple
-        />
-        <Field
-          FieldProps={{ className: 'mb-0 w-full md:w-40 BPList' }}
-          Input={{ placeholder: 'Comment type' }}
-          getOptionLabel={(option: any) => option?.name}
-          options={getFilterOptions(bpSlice.commentTypes.data, 'comment_types')}
-          value={[]}
-          widget="autocomplete"
-          isOptionEqualToValue={(option: any, value: any) =>
-            option.id === value
-          }
-          onChange={(_: any, value: any) => {
-            const commentTypes = filters.comment_types || []
-            const newValue = union(commentTypes, value)
-
-            handleFilterChange({ comment_types: newValue })
-            handleParamsChange({
-              comment_types: newValue.map((item: any) => item.id).join(','),
-              offset: 0,
             })
           }}
           multiple

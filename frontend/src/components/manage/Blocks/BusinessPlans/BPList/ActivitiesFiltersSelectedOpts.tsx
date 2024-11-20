@@ -20,10 +20,9 @@ export default function ActivitiesFiltersSelectedOpts(props: any) {
     withAgency,
   } = props
   const { agencies, countries } = commonSlice
-  const { commentTypes, sectors, subsectors, types } = bpSlice
+  const { sectors, subsectors, types } = bpSlice
 
   const initialParams = {
-    comment_types: [],
     country_id: [],
     is_multi_year: [],
     project_cluster_id: [],
@@ -111,7 +110,6 @@ export default function ActivitiesFiltersSelectedOpts(props: any) {
       {displaySelectedOption(formatEntity(sectors.data), 'sector_id')}
       {displaySelectedOption(formatEntity(subsectors.data), 'subsector_id')}
       {displaySelectedOption(formatEntity(types.data), 'project_type_id')}
-      {displaySelectedOption(formatEntity(commentTypes.data), 'comment_types')}
       {displaySelectedOption(
         formatEntity(multiYearFilterOptions),
         'is_multi_year',

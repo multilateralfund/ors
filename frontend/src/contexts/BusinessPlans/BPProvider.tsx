@@ -4,7 +4,6 @@ import { useMemo } from 'react'
 
 import { useParams } from 'next/navigation'
 
-import { multiYearFilterOptions } from '@ors/components/manage/Blocks/BusinessPlans/constants'
 import { getAgencyByName } from '@ors/components/manage/Blocks/BusinessPlans/utils'
 import useApi from '@ors/hooks/useApi'
 import { useStore } from '@ors/store'

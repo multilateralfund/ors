@@ -74,7 +74,7 @@ export default function BPList(props: any) {
   }
 
   return (
-    <div className="flex flex-1 flex-col justify-start gap-6 pt-6">
+    <div className="flex flex-1 flex-col justify-start gap-6 border-0 border-t border-solid border-primary pt-6">
       <BPListFilters
         agencies={agencies.data}
         filters={filters}

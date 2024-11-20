@@ -138,7 +138,12 @@ const ValuesTable: React.FC<Props> = ({
   )
 }
 
-function OpenActivity({ activity, gridOptions, period }: any) {
+function OpenActivity({
+  activity,
+  displayAgency = false,
+  gridOptions,
+  period,
+}: any) {
   const isValuesView = gridOptions === 'values'
   const isCommentsView = gridOptions === 'comments'
   const isAllView = gridOptions === 'all' || !gridOptions
@@ -156,7 +161,7 @@ function OpenActivity({ activity, gridOptions, period }: any) {
           <span>Country</span>
           <h4 className="m-0">{activity.country.name}</h4>
         </span>
-        {period && !gridOptions && (
+        {period && displayAgency && (
           <span className="flex items-center gap-2">
             <span>Agency</span>
             <h4 className="m-0">{activity.agency}</h4>
@@ -292,7 +297,7 @@ function OpenActivity({ activity, gridOptions, period }: any) {
   )
 }
 
-function ClosedActivity({ activity, gridOptions, period }: any) {
+function ClosedActivity({ activity, displayAgency = false, period }: any) {
   return (
     <div className="transition-opacity flex w-full flex-col-reverse justify-between gap-4 opacity-100 duration-300 ease-in-out lg:flex-row">
       <div className="flex flex-wrap items-center gap-4">
@@ -303,7 +308,7 @@ function ClosedActivity({ activity, gridOptions, period }: any) {
           <span>Country</span>
           <h4 className="m-0">{activity.country.name}</h4>
         </span>
-        {period && !gridOptions && (
+        {period && displayAgency && (
           <span className="flex items-center gap-2">
             <span>Agency</span>
             <h4 className="m-0">{activity.agency}</h4>
@@ -350,7 +355,7 @@ function Activity(props: any) {
 }
 
 export default function Activities(props: any) {
-  const { gridOptions, loaded, period, results } = props
+  const { loaded, results, ...rest } = props
 
   if (!loaded) {
     return <Loading />
@@ -359,7 +364,7 @@ export default function Activities(props: any) {
   return (
     <ul className="m-0 flex list-none flex-col gap-6 pl-0">
       {results.map((activity: any) => (
-        <Activity key={activity.id} {...{ activity, gridOptions, period }} />
+        <Activity key={activity.id} activity={activity} {...rest} />
       ))}
     </ul>
   )

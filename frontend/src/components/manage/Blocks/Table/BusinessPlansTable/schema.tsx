@@ -12,7 +12,7 @@ import {
   textCellRenderer,
 } from './schemaHelpers'
 
-const getDefaultColumnDefs = (isDiff?: boolean) => [
+const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
   {
     cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
     field: 'country.name',
@@ -28,6 +28,19 @@ const getDefaultColumnDefs = (isDiff?: boolean) => [
         }
       : { tooltipField: 'country.name' }),
   },
+  ...(withAgency
+    ? [
+        {
+          cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
+          field: 'agency',
+          headerClass: 'ag-text-center',
+          headerName: 'Agency',
+          minWidth: 110,
+          sortable: true,
+          tooltipField: 'agency',
+        },
+      ]
+    : []),
   {
     cellClass: 'ag-text-center ag-cell-wrap-text',
     field: 'project_cluster.code',
@@ -123,7 +136,7 @@ const getDefaultColumnDefs = (isDiff?: boolean) => [
   },
 ]
 
-const getReqByModelColumn = (isDiff?: boolean) => {
+const getReqByModelColumn = (isDiff: boolean) => {
   return {
     cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
     field: 'required_by_model',
@@ -141,7 +154,7 @@ const getReqByModelColumn = (isDiff?: boolean) => {
   }
 }
 
-const getCommentsColumnsDefs = (isDiff?: boolean) => [
+const getCommentsColumnsDefs = (isDiff: boolean) => [
   {
     cellClass: 'ag-cell-ellipsed',
     field: 'reason_for_exceeding',
@@ -192,8 +205,12 @@ const getCommentsColumnsDefs = (isDiff?: boolean) => [
   },
 ]
 
-const valuesColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
-  ...getDefaultColumnDefs(isDiff),
+const valuesColumnDefs = (
+  yearColumns: any[],
+  isDiff: boolean,
+  withAgency: boolean,
+) => [
+  ...getDefaultColumnDefs(isDiff, withAgency),
   getReqByModelColumn(isDiff),
   yearColumns.find(
     (column: { headerName: string }) => column.headerName === 'Value ($000)',
@@ -232,8 +249,12 @@ const valuesColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
   },
 ]
 
-const odpColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
-  ...getDefaultColumnDefs(isDiff),
+const odpColumnDefs = (
+  yearColumns: any[],
+  isDiff: boolean,
+  withAgency: boolean,
+) => [
+  ...getDefaultColumnDefs(isDiff, withAgency),
   getReqByModelColumn(isDiff),
   ...(yearColumns.filter(
     (column: { headerName: string }) =>
@@ -241,14 +262,18 @@ const odpColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
   ) || []),
 ]
 
-const commentsColumnDefs = (isDiff?: boolean) => [
-  ...getDefaultColumnDefs(isDiff),
+const commentsColumnDefs = (isDiff: boolean, withAgency: boolean) => [
+  ...getDefaultColumnDefs(isDiff, withAgency),
   getReqByModelColumn(isDiff),
   ...getCommentsColumnsDefs(isDiff),
 ]
 
-const allColumnDefs = (yearColumns: any[], isDiff?: boolean) => [
-  ...getDefaultColumnDefs(isDiff),
+const allColumnDefs = (
+  yearColumns: any[],
+  isDiff: boolean,
+  withAgency: boolean,
+) => [
+  ...getDefaultColumnDefs(isDiff, withAgency),
   {
     cellClass: !isDiff && 'ag-tags-cell-content',
     field: 'substances_display',

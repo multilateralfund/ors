@@ -26,7 +26,7 @@ const SECTIONS = [
     path: '/business-plans/list/plans',
   },
   {
-    label: 'All Activities',
+    label: 'Activities',
     path: '/business-plans/list/activities',
   },
 ]
