@@ -77,7 +77,7 @@ export default function BPList(props: any) {
   }
 
   return (
-    <>
+    <div className="m-auto max-w-screen-xl">
       <BPListHeader viewType="plans" />
       <BPListTabs />
       <div className="flex flex-1 flex-col justify-start gap-6 border-0 border-t border-solid border-primary pt-6">
@@ -106,6 +106,6 @@ export default function BPList(props: any) {
           </div>
         )}
       </div>
-    </>
+    </div>
   )
 }
