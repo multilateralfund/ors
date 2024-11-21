@@ -2,6 +2,7 @@ import { ApiEditBPActivity } from '@ors/types/api_bp_get'
 
 import { Dispatch, SetStateAction, useCallback, useMemo } from 'react'
 
+import { ColDef } from 'ag-grid-community'
 import { filter, isNil } from 'lodash'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
@@ -25,6 +26,7 @@ import {
   substancesValueSetter,
   valueSetter,
 } from './editSchemaHelpers'
+import { HeaderPasteWrapper } from './pasteSupport'
 
 import { IoClipboardOutline, IoTrash } from 'react-icons/io5'
 
@@ -324,17 +326,17 @@ const useColumnsOptions = (
           cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
           field: 'required_by_model',
           headerClass: 'ag-text-center',
-          // headerName: tableColumns.required_by_model,
-          headerValueGetter: function (params: any) {
+          headerComponent: function (props: any) {
             return (
-              <div className="flex items-center gap-x-2">
-                <div>{tableColumns.required_by_model}</div>
-                <div>
-                  <IoClipboardOutline />
-                </div>
-              </div>
+              <HeaderPasteWrapper
+                addTopMargin={true}
+                field={props.column.colDef.field}
+                label={props.displayName}
+                setForm={setForm}
+              />
             )
           },
+          headerName: tableColumns.required_by_model,
           minWidth: 150,
           tooltipField: 'required_by_model',
         },

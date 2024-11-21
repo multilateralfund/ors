@@ -19,6 +19,7 @@ import { applyTransaction, formatApiUrl } from '@ors/helpers'
 
 import { filtersToQueryParams } from '../utils'
 import useColumnsOptions from './editSchema'
+import { HeaderPasteWrapper, usePasteSupport } from './pasteSupport'
 
 import { IoAddCircle, IoClipboardOutline } from 'react-icons/io5'
 
@@ -117,6 +118,15 @@ export function BPEditBaseTable(
         },
         field: `value_usd_${year}`,
         headerClass: 'ag-text-center',
+        headerComponent: function (props: any) {
+          return (
+            <HeaderPasteWrapper
+              field={props.column.colDef.field}
+              label={props.displayName}
+              setForm={setForm}
+            />
+          )
+        },
         headerName: `${label}`,
         minWidth: 80,
         valueGetter: (params: any) =>
@@ -166,45 +176,18 @@ export function BPEditBaseTable(
     return [
       {
         children: valuesUSD,
-        headerGroupComponent: function () {
-          return (
-            <div className="flex items-center gap-x-2">
-              <div>Value ($000)</div>
-              <div>
-                <IoClipboardOutline />
-              </div>
-            </div>
-          )
-        },
+        headerName: 'Value ($000)',
       },
       {
         children: valuesODP,
-        headerGroupComponent: function () {
-          return (
-            <div className="flex items-center gap-x-2">
-              <div>ODP</div>
-              <div>
-                <IoClipboardOutline />
-              </div>
-            </div>
-          )
-        },
+        headerName: 'ODP',
       },
       {
         children: valuesMT,
-        headerGroupComponent: function () {
-          return (
-            <div className="flex items-center gap-x-2">
-              <div>MT for HFC</div>
-              <div>
-                <IoClipboardOutline />
-              </div>
-            </div>
-          )
-        },
+        headerName: 'MT for HFC',
       },
     ]
-  }, [yearRangeSelected, valueGetter, valueSetter])
+  }, [yearRangeSelected, valueGetter, valueSetter, setForm])
 
   const addActivity = () => {
     setForm([
@@ -258,6 +241,8 @@ export function BPEditBaseTable(
       </div>
     </div>
   )
+
+  usePasteSupport(columnOptions.columnDefs, setForm)
 
   return (
     <>
