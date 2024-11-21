@@ -27,6 +27,7 @@ import BPFilters from './BPFilters'
 const BP_PER_PAGE = 20
 
 export const BPTable = ({
+  bpPerPage,
   count,
   displayFilters,
   displayOptions,
@@ -173,7 +174,7 @@ export const BPTable = ({
       enablePagination={true}
       loaded={loaded}
       loading={loading}
-      paginationPageSize={BP_PER_PAGE}
+      paginationPageSize={bpPerPage || BP_PER_PAGE}
       paginationPageSizeSelector={paginationPageSizeSelectorOpts}
       resizeGridOnRowUpdate={true}
       rowBuffer={50}

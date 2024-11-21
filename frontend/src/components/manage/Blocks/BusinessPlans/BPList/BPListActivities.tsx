@@ -14,7 +14,8 @@ import { BPTable } from '../../Table/BusinessPlansTable/BusinessPlansTable'
 import { TableDataSelectorValuesType } from '../../Table/BusinessPlansTable/TableDateSwitcher'
 import { ViewSelectorValuesType } from '../types'
 
-const ACTIVITIES_PER_PAGE = 20
+const ACTIVITIES_PER_PAGE_TABLE = 100
+const ACTIVITIES_PER_PAGE_LIST = 20
 
 export default function BPListActivitiesWrapper(props: any) {
   const { period } = props
@@ -28,7 +29,7 @@ export default function BPListActivitiesWrapper(props: any) {
   const year_start = period?.split('-')[0] || firstPeriod.split('-')[0]
 
   const initialFilters = {
-    limit: ACTIVITIES_PER_PAGE,
+    limit: ACTIVITIES_PER_PAGE_TABLE,
     offset: 0,
     year_end: year_end,
     year_start: year_start,
@@ -70,7 +71,7 @@ function BPListActivities(props: any) {
   const [filters, setFilters] = useState({ ...initialFilters })
   const [pagination, setPagination] = useState({
     page: 1,
-    rowsPerPage: ACTIVITIES_PER_PAGE,
+    rowsPerPage: ACTIVITIES_PER_PAGE_LIST,
   })
   const pages = Math.ceil(count / pagination.rowsPerPage)
 
@@ -105,6 +106,7 @@ function BPListActivities(props: any) {
         <form className="flex flex-col gap-6" ref={form}>
           {displayOptions === 'table' ? (
             <BPTable
+              bpPerPage={ACTIVITIES_PER_PAGE_TABLE}
               withAgency={true}
               {...{
                 count,

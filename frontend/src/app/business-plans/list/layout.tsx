@@ -1,7 +1,5 @@
 'use client'
 
-import { UserType, userCanEditBusinessPlan } from '@ors/types/user_types'
-
 import React, { PropsWithChildren, useContext, useEffect } from 'react'
 
 import cx from 'classnames'
@@ -13,7 +11,6 @@ import PeriodSelector from '@ors/components/manage/Blocks/Replenishment/PeriodSe
 import { getPathPeriod } from '@ors/components/manage/Blocks/Replenishment/utils'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
-import CustomLink from '@ors/components/ui/Link/Link'
 import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
 import BPYearRangesProvider from '@ors/contexts/BusinessPlans/BPYearRangesProvider'
 import { useStore } from '@ors/store'
@@ -22,12 +19,12 @@ import styles from './styles.module.css'
 
 const SECTIONS = [
   {
-    label: 'Plans',
-    path: '/business-plans/list/plans',
-  },
-  {
     label: 'Activities',
     path: '/business-plans/list/activities',
+  },
+  {
+    label: 'By Agency',
+    path: '/business-plans/list/plans',
   },
 ]
 
@@ -98,24 +95,13 @@ function BPListHeader() {
   return (
     <div className="mb-8 flex items-center justify-between">
       <PageHeading>Business Plans</PageHeading>
-      {userCanEditBusinessPlan[user_type as UserType] && (
-        <CustomLink
-          className="px-4 py-2 text-lg uppercase"
-          color="secondary"
-          href="/business-plans/create"
-          variant="contained"
-          button
-        >
-          Create new plan
-        </CustomLink>
-      )}
     </div>
   )
 }
 
 export default function BusinessPlansListLayout({ children }: any) {
   return (
-    <PageWrapper className="max-w-screen-xl print:p-0">
+    <PageWrapper className="print:p-0">
       <BPYearRangesProvider>
         <BPListHeader />
         <BusinessPlansList>{children}</BusinessPlansList>

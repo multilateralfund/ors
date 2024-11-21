@@ -10,6 +10,9 @@ import { useStore } from '@ors/store'
 import { filtersToQueryParams } from '../../BusinessPlans/utils'
 import TableViewSelector from './TableViewSelector'
 
+const ACTIVITIES_PER_PAGE_TABLE = 100
+const ACTIVITIES_PER_PAGE_LIST = 20
+
 export default function BPFilters({
   displayOptions,
   filters,
@@ -62,8 +65,17 @@ export default function BPFilters({
       />
       <div className="flex gap-4 self-start">
         <TableViewSelector
-          changeHandler={(_, value) => setDisplayOptions(value)}
           value={displayOptions}
+          changeHandler={(_, value) => {
+            setParams({
+              limit:
+                value === 'list'
+                  ? ACTIVITIES_PER_PAGE_LIST
+                  : ACTIVITIES_PER_PAGE_TABLE,
+              offset: 0,
+            })
+            setDisplayOptions(value)
+          }}
         />
         <TableDateSwitcher
           changeHandler={(event, value) => setGridOptions(value)}
