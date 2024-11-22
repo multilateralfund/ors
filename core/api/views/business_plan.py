@@ -418,11 +418,9 @@ class BusinessPlanViewSet(
             for bp in BusinessPlan.objects.get_latest().filter(
                 year_start=request.data["year_start"],
                 year_end=request.data["year_end"],
+                status=request.data["status"],
             )
         }
-
-        first_bp = next(iter(current_bps.values()))
-        initial_status = first_bp.status if first_bp else None
 
         for initial_data in serializer.initial_data:
             current_bp = current_bps[str(initial_data.get("agency_id"))]
@@ -430,13 +428,6 @@ class BusinessPlanViewSet(
             ret_code, error = self.check_activity_values(initial_data, current_bp)
             if ret_code != status.HTTP_200_OK:
                 return Response({"general_error": error}, status=ret_code)
-
-            # all updated BPs must have the same status
-            if initial_status != current_bp.status:
-                return Response(
-                    {"general_error": "All BPs must have the same status"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
 
         # create new bp instances and activities
         self.perform_create(serializer)
