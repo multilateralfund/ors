@@ -8,7 +8,6 @@ import { findIndex, isNil } from 'lodash'
 import { useParams } from 'next/navigation'
 
 import DownloadButtons from '@ors/app/business-plans/DownloadButtons'
-import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import {
   BPEditTableInterface,
   BpPathParams,
@@ -19,14 +18,9 @@ import { applyTransaction, formatApiUrl } from '@ors/helpers'
 
 import { filtersToQueryParams } from '../utils'
 import useColumnsOptions from './editSchema'
-import {
-  BasePasteWrapper,
-  HeaderGroupPasteWrapper,
-  HeaderPasteWrapper,
-  usePasteSupport,
-} from './pasteSupport'
+import { BasePasteWrapper } from './pasteSupport'
 
-import { IoAddCircle, IoClipboardOutline } from 'react-icons/io5'
+import { IoAddCircle } from 'react-icons/io5'
 
 export function BPEditBaseTable(
   props: { yearRangeSelected: ApiBPYearRange } & BPEditTableInterface,
@@ -95,7 +89,7 @@ export function BPEditBaseTable(
     [yearRangeSelected?.year_end],
   )
 
-  const yearColumns = useMemo(() => {
+  const yearColumns: { children: any[]; headerName: string }[] = useMemo(() => {
     if (!yearRangeSelected) return []
 
     const valuesUSD = []

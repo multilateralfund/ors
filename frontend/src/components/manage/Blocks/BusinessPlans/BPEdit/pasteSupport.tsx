@@ -1,3 +1,5 @@
+import { ApiEditBPActivity } from '@ors/types/api_bp_get'
+
 import { useCallback, useEffect } from 'react'
 
 import { IoClipboardOutline } from 'react-icons/io5'
@@ -103,7 +105,7 @@ export function BasePasteWrapper(props: any) {
 
   async function handlePaste() {
     const pastedTable = await readPastedTableFromNavigator()
-    setForm(function (prev) {
+    setForm(function (prev: ApiEditBPActivity[]) {
       const next = [...prev!]
       const newValues: Record<string, any> = {}
       for (let i = 0; i < pastedTable.length; i++) {
