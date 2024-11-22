@@ -46,44 +46,44 @@ export default function BPHeaderEditConsolidated({
         },
       )
     } catch (error) {
-      if (error.status === 400) {
-        const errors = await error.json()
-        const firstDataError = find(errors.activities, (err) => !isEmpty(err))
-        const index = indexOf(errors.activities, firstDataError)
+      // if (error.status === 400) {
+      //   const errors = await error.json()
+      //   const firstDataError = find(errors.activities, (err) => !isEmpty(err))
+      //   const index = indexOf(errors.activities, firstDataError)
 
-        if (firstDataError) {
-          enqueueSnackbar(
-            <div className="flex flex-col">
-              Row {index + 1}
-              {entries(firstDataError).map((error) => {
-                const headerName = tableColumns[error[0]]
-                const errorMessage = (error[1] as Array<string>)[0]
+      //   if (firstDataError) {
+      //     enqueueSnackbar(
+      //       <div className="flex flex-col">
+      //         Row {index + 1}
+      //         {entries(firstDataError).map((error) => {
+      //           const headerName = tableColumns[error[0]]
+      //           const errorMessage = (error[1] as Array<string>)[0]
 
-                return ['project_type_code', 'sector_code'].includes(
-                  error[0],
-                ) ? null : headerName ? (
-                  <div key={error[0]}>
-                    {headerName} - {errorMessage}
-                  </div>
-                ) : (
-                  <>{errorMessage}</>
-                )
-              })}
-            </div>,
-            {
-              variant: 'error',
-            },
-          )
-        } else {
-          enqueueSnackbar(<>{values(errors)[0]}</>, {
-            variant: 'error',
-          })
-        }
-      } else {
-        enqueueSnackbar(<>An error occurred. Please try again.</>, {
-          variant: 'error',
-        })
-      }
+      //           return ['project_type_code', 'sector_code'].includes(
+      //             error[0],
+      //           ) ? null : headerName ? (
+      //             <div key={error[0]}>
+      //               {headerName} - {errorMessage}
+      //             </div>
+      //           ) : (
+      //             <>{errorMessage}</>
+      //           )
+      //         })}
+      //       </div>,
+      //       {
+      //         variant: 'error',
+      //       },
+      //     )
+      //   } else {
+      //     enqueueSnackbar(<>{values(errors)[0]}</>, {
+      //       variant: 'error',
+      //     })
+      //   }
+      // } else {
+      enqueueSnackbar(<>An error occurred. Please try again.</>, {
+        variant: 'error',
+      })
+      // }
     }
   }
 
