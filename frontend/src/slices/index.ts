@@ -14,11 +14,13 @@ import { createUserSlice } from '@ors/slices/createUserSlice'
 
 import { createBPDiffVersionsSlice } from './createBPDiffVersionsSlice'
 import { createBPSlice } from './createBPSlice'
+import { createBPTypeSlice } from './createBPTypeSlice'
 
 export default function createSlices(props: CreateSliceProps) {
   return {
     bp_diff_versions: { ...createBPDiffVersionsSlice(props) },
     bpFilters: { ...createBPFiltersSlice(props) },
+    bpType: { ...createBPTypeSlice(props) },
     businessPlan: { ...createBPSlice(props) },
     businessPlans: { ...createBusinessPlanSlice(props) },
     cache: { ...createCacheSlice(props) },

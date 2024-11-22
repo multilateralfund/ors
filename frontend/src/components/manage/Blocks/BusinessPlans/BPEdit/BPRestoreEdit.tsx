@@ -12,7 +12,7 @@ import {
 import { BPRestoreEditProps } from '../types'
 
 const BPRestoreEdit = (props: BPRestoreEditProps) => {
-  const { localStorage, setForm } = props
+  const { children, localStorage, setForm } = props
 
   const storedData = localStorage.load()
 
@@ -41,8 +41,7 @@ const BPRestoreEdit = (props: BPRestoreEditProps) => {
           id="alert-dialog-description"
           className="text-pretty"
         >
-          Unsaved data exists for the current business plan, would you like to
-          recover it?
+          {children}
         </DialogContentText>
       </DialogContent>
       <DialogActions>
