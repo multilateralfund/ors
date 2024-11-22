@@ -100,8 +100,8 @@ export const isCountryUserType: Record<UserType, boolean> = {
 
 export const userCanEditBusinessPlan: Record<UserType, boolean> = {
   admin: true,
-  agency_inputter: true,
-  agency_submitter: true,
+  agency_inputter: false,
+  agency_submitter: false,
   country_submitter: false,
   country_user: false,
   secretariat: true,

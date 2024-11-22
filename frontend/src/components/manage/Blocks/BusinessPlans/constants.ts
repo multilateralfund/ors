@@ -4,6 +4,7 @@ export const multiYearFilterOptions = [
 ]
 
 export const tableColumns: { [key: string]: string } = {
+  agency: 'Agency',
   amount_polyol: 'Polyol Amount',
   bp_chemical_type_id: 'Chemical type',
   comment_secretariat: 'Comment',
@@ -21,3 +22,8 @@ export const tableColumns: { [key: string]: string } = {
   substances: 'Substances',
   title: 'Title',
 }
+
+export const bpTypes = [
+  { id: 'consolidated', label: 'Consolidated' },
+  { id: 'endorsed', label: 'Endorsed' },
+]

@@ -2,6 +2,7 @@ import { ApiEditBPActivity } from '@ors/types/api_bp_get'
 
 import { Dispatch, SetStateAction, useCallback, useMemo } from 'react'
 
+import { ColDef } from 'ag-grid-community'
 import { filter, isNil } from 'lodash'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
@@ -15,6 +16,7 @@ import {
   agFormatNameValue,
   agFormatValue,
   agFormatValueTags,
+  agencyValueSetter,
   commentsValueSetter,
   getOptionLabel,
   getOptions,
@@ -24,14 +26,16 @@ import {
   substancesValueSetter,
   valueSetter,
 } from './editSchemaHelpers'
+import { HeaderPasteWrapper } from './pasteSupport'
 
-import { IoTrash } from 'react-icons/io5'
+import { IoClipboardOutline, IoTrash } from 'react-icons/io5'
 
 const useColumnsOptions = (
   yearColumns: any[],
   onRemoveActivity: (props: any) => void,
   form: Array<ApiEditBPActivity>,
   setForm: Dispatch<SetStateAction<ApiEditBPActivity[] | null | undefined>>,
+  isConsolidatedView?: boolean,
 ) => {
   const commonSlice = useStore((state) => state.common)
   const projectSlice = useStore((state) => state.projects)
@@ -39,6 +43,7 @@ const useColumnsOptions = (
   const bpSlice = useStore((state) => state.businessPlans)
 
   const countries = commonSlice.countries.data
+  const agencies = commonSlice.agencies.data
   const clusters = projectSlice.clusters.data
   const types = bpSlice.types.data
   const sectors = bpSlice.sectors.data
@@ -49,7 +54,6 @@ const useColumnsOptions = (
       id: status[0],
       name: status[1],
     }))
-
   const commentTypes = bpSlice.commentTypes.data
   const chemicalTypes = useGetChemicalTypes()
   const chemicalTypesResults = chemicalTypes.results
@@ -105,6 +109,36 @@ const useColumnsOptions = (
           valueSetter: (params: any) =>
             valueSetter(params, 'country', countries),
         },
+        ...(isConsolidatedView
+          ? [
+              {
+                cellClass: 'ag-text-center ag-cell-centered ag-cell-ellipsed',
+                cellEditor: 'agSelectCellEditor',
+                cellEditorParams: {
+                  Input: { placeholder: 'Select agency' },
+                  agFormatValue: agFormatNameValue,
+                  getOptionLabel: (option: any) =>
+                    getOptionLabel(agencies, option, 'name'),
+                  isOptionEqualToValue: isOptionEqualToValueByName,
+                  openOnFocus: true,
+                  options: agencies,
+                },
+                cellRenderer: (props: any) => (
+                  <AgCellRenderer {...props} value={props.data.agency} />
+                ),
+                field: 'agency',
+                headerClass: 'ag-text-center',
+                headerComponentParams: {
+                  details: <sup className="font-bold">*</sup>,
+                },
+                headerName: tableColumns.agency,
+                minWidth: 150,
+                tooltipField: 'agency',
+                valueSetter: (params: any) =>
+                  agencyValueSetter(params, agencies),
+              },
+            ]
+          : []),
         {
           cellClass: 'ag-text-center ag-cell-wrap-text',
           cellEditor: 'agSelectCellEditor',
@@ -292,6 +326,16 @@ const useColumnsOptions = (
           cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
           field: 'required_by_model',
           headerClass: 'ag-text-center',
+          headerComponent: function (props: any) {
+            return (
+              <HeaderPasteWrapper
+                addTopMargin={true}
+                field={props.column.colDef.field}
+                label={props.displayName}
+                setForm={setForm}
+              />
+            )
+          },
           headerName: tableColumns.required_by_model,
           minWidth: 150,
           tooltipField: 'required_by_model',
@@ -381,6 +425,16 @@ const useColumnsOptions = (
           cellClass: 'ag-cell-ellipsed',
           field: 'comment_secretariat',
           headerClass: 'ag-text-center',
+          headerComponent: function (props: any) {
+            return (
+              <HeaderPasteWrapper
+                addTopMargin={true}
+                field={props.column.colDef.field}
+                label={props.displayName}
+                setForm={setForm}
+              />
+            )
+          },
           headerName: tableColumns.comment_secretariat,
           minWidth: 200,
           tooltipField: 'comment_secretariat',
@@ -427,6 +481,7 @@ const useColumnsOptions = (
     [
       countries,
       clusters,
+      isConsolidatedView,
       form,
       setForm,
       types,
@@ -438,6 +493,7 @@ const useColumnsOptions = (
       commentTypes,
       yearColumns,
       onRemoveActivity,
+      agencies,
     ],
   )
 

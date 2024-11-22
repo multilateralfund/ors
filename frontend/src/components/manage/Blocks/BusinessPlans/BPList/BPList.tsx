@@ -9,6 +9,9 @@ import { getResults } from '@ors/helpers'
 import useApi from '@ors/hooks/useApi'
 import { useStore } from '@ors/store'
 
+import BPListHeader from './BPListHeader'
+import BPListTabs from './BPListTabs'
+
 type StatusFilterTypes =
   | 'Approved'
   | 'Draft'
@@ -34,7 +37,7 @@ function useBPListApi(filters?: any) {
         offset: 0,
         ordering: '-updated_at',
       },
-      withStoreCache: true,
+      withStoreCache: false,
     },
     path: 'api/business-plan/',
   })
@@ -74,31 +77,35 @@ export default function BPList(props: any) {
   }
 
   return (
-    <div className="flex flex-1 flex-col justify-start gap-6 border-0 border-t border-solid border-primary pt-6">
-      <BPListFilters
-        agencies={agencies.data}
-        filters={filters}
-        handleSearch={handleSearch}
-        setFilters={handleFiltersChange}
-        statuses={settings.data.business_plan_statuses}
-      />
-      <SimpleList list={results} />
-      {!!pages && pages > 1 && (
-        <div className="mt-4 flex items-center justify-start">
-          <Pagination
-            count={pages}
-            page={pagination.page}
-            siblingCount={1}
-            onPaginationChanged={(page) => {
-              setPagination({ ...pagination, page: page || 1 })
-              setParams({
-                limit: pagination.rowsPerPage,
-                offset: ((page || 1) - 1) * pagination.rowsPerPage,
-              })
-            }}
-          />
-        </div>
-      )}
+    <div className="m-auto max-w-screen-xl">
+      <BPListHeader viewType="plans" />
+      <BPListTabs />
+      <div className="flex flex-1 flex-col justify-start gap-6 border-0 border-t border-solid border-primary pt-6">
+        <BPListFilters
+          agencies={agencies.data}
+          filters={filters}
+          handleSearch={handleSearch}
+          setFilters={handleFiltersChange}
+          statuses={settings.data.business_plan_statuses}
+        />
+        <SimpleList list={results} />
+        {!!pages && pages > 1 && (
+          <div className="mt-4 flex items-center justify-start">
+            <Pagination
+              count={pages}
+              page={pagination.page}
+              siblingCount={1}
+              onPaginationChanged={(page) => {
+                setPagination({ ...pagination, page: page || 1 })
+                setParams({
+                  limit: pagination.rowsPerPage,
+                  offset: ((page || 1) - 1) * pagination.rowsPerPage,
+                })
+              }}
+            />
+          </div>
+        )}
+      </div>
     </div>
   )
 }
