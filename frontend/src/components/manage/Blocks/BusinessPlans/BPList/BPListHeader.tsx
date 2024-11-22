@@ -17,7 +17,7 @@ const BPListHeader = ({ viewType }: { viewType: string }) => {
       <PageHeading>Business Plans</PageHeading>
       {userCanEditBusinessPlan[user_type as UserType] && (
         <div className="flex gap-4">
-          <CustomLink
+          {/* <CustomLink
             className="px-4 py-2 text-lg uppercase"
             color="secondary"
             href="/business-plans/create"
@@ -25,7 +25,7 @@ const BPListHeader = ({ viewType }: { viewType: string }) => {
             button
           >
             Create
-          </CustomLink>
+          </CustomLink> */}
           {viewType === 'activities' && (
             <CustomLink
               className="px-4 py-2 text-lg uppercase"

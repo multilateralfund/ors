@@ -1,6 +1,6 @@
 'use client'
 
-import { useContext, useRef, useState } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
 
 import Activities from '@ors/components/manage/Blocks/BusinessPlans/Activities'
 import useGetBpPeriods from '@ors/components/manage/Blocks/BusinessPlans/BPList/useGetBPPeriods'
@@ -17,7 +17,8 @@ import { ViewSelectorValuesType } from '../types'
 import BPListHeader from './BPListHeader'
 import BPListTabs from './BPListTabs'
 
-const ACTIVITIES_PER_PAGE = 20
+const ACTIVITIES_PER_PAGE_TABLE = 100
+const ACTIVITIES_PER_PAGE_LIST = 20
 
 export default function BPListActivitiesWrapper(props: any) {
   const { period } = props
@@ -33,7 +34,7 @@ export default function BPListActivitiesWrapper(props: any) {
   const { bpType } = useStore((state) => state.bpType)
 
   const initialFilters = {
-    limit: ACTIVITIES_PER_PAGE,
+    limit: ACTIVITIES_PER_PAGE_TABLE,
     offset: 0,
     version_type: bpType,
     year_end: year_end,
@@ -78,7 +79,7 @@ function BPListActivities(props: any) {
   const [filters, setFilters] = useState({ ...initialFilters })
   const [pagination, setPagination] = useState({
     page: 1,
-    rowsPerPage: ACTIVITIES_PER_PAGE,
+    rowsPerPage: ACTIVITIES_PER_PAGE_LIST,
   })
   const pages = Math.ceil(count / pagination.rowsPerPage)
 
@@ -106,6 +107,13 @@ function BPListActivities(props: any) {
     />
   )
 
+  const { bpType } = useStore((state) => state.bpType)
+  const key = JSON.stringify(filters) + '-' + bpType
+
+  useEffect(() => {
+    setPagination({ page: 1, rowsPerPage: ACTIVITIES_PER_PAGE_LIST })
+  }, [key, displayOptions])
+
   return (
     yearRanges &&
     yearRanges.length > 0 && (
@@ -113,11 +121,12 @@ function BPListActivities(props: any) {
         <form className="flex flex-col gap-6" ref={form}>
           {displayOptions === 'table' ? (
             <BPTable
+              key={key}
+              bpPerPage={ACTIVITIES_PER_PAGE_TABLE}
               withAgency={true}
               {...{
                 count,
                 displayFilters,
-                displayOptions,
                 filters,
                 gridOptions,
                 loaded,
