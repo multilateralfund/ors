@@ -105,20 +105,18 @@ export function BasePasteWrapper(props: any) {
     const pastedTable = await readPastedTableFromNavigator()
     setForm(function (prev) {
       const next = [...prev!]
-      const newValues: Record<number, any> = {}
+      const newValues: Record<string, any> = {}
       for (let i = 0; i < pastedTable.length; i++) {
         const row = pastedTable[i]
-        const entryId = parseInt(row[0], 10)
-        if (entryId && !isNaN(entryId)) {
+        const entryId = row[0]
+        if (entryId) {
           const entryValue = row[1]
           newValues[entryId] = entryValue
         }
       }
-      let pendingIds = Array.from(Object.keys(newValues)).map((v) =>
-        parseInt(v, 10),
-      )
+      let pendingIds = Array.from(Object.keys(newValues))
       for (let i = 0; i < next.length && pendingIds.length; i++) {
-        const rowId = next[i].id
+        const rowId = next[i].display_internal_id
         if (pendingIds.includes(rowId)) {
           mutator(next[i], newValues[rowId])
           pendingIds = pendingIds.filter((v) => v != rowId)
