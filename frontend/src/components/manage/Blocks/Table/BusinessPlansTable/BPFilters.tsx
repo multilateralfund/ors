@@ -11,6 +11,7 @@ import { formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
 import { bpTypes } from '../../BusinessPlans/constants'
+
 import { filtersToQueryParams } from '../../BusinessPlans/utils'
 import TableViewSelector from './TableViewSelector'
 
@@ -33,6 +34,7 @@ export default function BPFilters({
   const clusters = projects.clusters.data || []
 
   const { setBPType } = useStore((state) => state.bpType)
+
 
   function handleParamsChange(params: { [key: string]: any }) {
     setParams(params)
