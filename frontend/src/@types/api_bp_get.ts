@@ -82,6 +82,7 @@ export interface ApiBPActivity {
 }
 
 export interface ApiEditBPActivity extends ApiBPActivity {
+  display_internal_id: string
   row_id: number
 }
 

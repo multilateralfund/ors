@@ -20,6 +20,7 @@ import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import BPContext from '@ors/contexts/BusinessPlans/BPContext'
 import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
 import { getResults } from '@ors/helpers'
+import { useStore } from '@ors/store'
 
 import Activities from '../../BusinessPlans/Activities'
 import BPFilters from './BPFilters'
@@ -30,7 +31,6 @@ export const BPTable = ({
   bpPerPage,
   count,
   displayFilters,
-  displayOptions,
   filters,
   gridOptions,
   loaded,
@@ -166,7 +166,6 @@ export const BPTable = ({
 
   return (
     <Table
-      key={displayOptions + '_' + gridOptions}
       Toolbar={displayFilters}
       columnDefs={[...columnDefs]}
       defaultColDef={defaultColDef}
@@ -248,6 +247,9 @@ export default function BusinessPlansTable() {
   const [displayOptions, setDisplayOptions] =
     useState<ViewSelectorValuesType>('table')
 
+  const { bpType } = useStore((state) => state.bpType)
+  const key = JSON.stringify(filters) + '-' + bpType
+
   const displayFilters = () => (
     <BPFilters
       {...{
@@ -271,10 +273,10 @@ export default function BusinessPlansTable() {
       <form ref={form}>
         {displayOptions === 'table' ? (
           <BPTable
+            key={key}
             {...{
               count,
               displayFilters,
-              displayOptions,
               filters,
               gridOptions,
               loaded,

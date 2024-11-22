@@ -59,6 +59,7 @@ export interface BPTabsInterface extends BpDetails {
 
 export type BPEditTableInterface = {
   form: Array<ApiEditBPActivity>
+  isConsolidatedView?: boolean
   loading: boolean
   params: any
   setForm: Dispatch<SetStateAction<Array<ApiEditBPActivity> | null | undefined>>
@@ -71,6 +72,7 @@ export interface EditBPLocalStorageType {
 }
 
 export interface BPRestoreEditProps {
+  children: any
   localStorage: EditBPLocalStorageType
   setForm: (form: Array<ApiEditBPActivity> | undefined) => void
 }
