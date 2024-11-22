@@ -1,8 +1,10 @@
 import { ApiEditBPActivity } from '@ors/types/api_bp_get'
 
-import { useCallback, useEffect } from 'react'
+import { useCallback, useState } from 'react'
 
-import { IoClipboardOutline } from 'react-icons/io5'
+import { EnqueueSnackbar, useSnackbar } from 'notistack'
+
+import { IoClipboardOutline, IoHourglassOutline } from 'react-icons/io5'
 
 export function parsePastedText(text: string) {
   let result: any
@@ -38,10 +40,14 @@ function transposeMatrix(matrix: string[][]) {
   return result
 }
 
-export function removeEmptyColumns(matrix: string[][]) {
+function removeEmptyRowsAndColumns(matrix: string[][]) {
   return transposeMatrix(
-    transposeMatrix(matrix).filter((r) => r.filter((c) => !!c).length),
+    removeEmptyRows(transposeMatrix(removeEmptyRows(matrix))),
   )
+}
+
+function removeEmptyRows(matrix: string[][]) {
+  return matrix.filter((r) => r.filter((c) => !!c).length)
 }
 
 export function parsePastedHTML(html: string) {
@@ -62,20 +68,47 @@ export function parsePastedHTML(html: string) {
   return result
 }
 
-export async function readPastedTableFromNavigator() {
+export async function readPastedTableFromNavigator(
+  throwError: EnqueueSnackbar,
+) {
   let result: any[][] = []
+  let canceled = false
   try {
     const pasteData = await navigator.clipboard.read()
     const paste = pasteData[0]
-    const pastedTable =
+    const htmlContent =
       paste.types.indexOf('text/html') != -1
-        ? parsePastedHTML(await (await paste.getType('text/html')).text())
-        : parsePastedText(await (await paste.getType('text')).text())
+        ? await (await paste.getType('text/html')).text()
+        : ''
 
-    const cleanTable = removeEmptyColumns(pastedTable)
+    const textContent = await (await paste.getType('text/plain')).text()
+
+    const pastedTable = !!htmlContent
+      ? parsePastedHTML(htmlContent)
+      : parsePastedText(textContent)
+
+    const cleanTable = removeEmptyRowsAndColumns(pastedTable)
     result = cleanTable
-  } catch {
-    console.warn('Could not read clipboard data!')
+  } catch (error) {
+    if (error.name === 'NotFoundError') {
+      throwError(
+        'Could not read clipbord data! Make sure you are pasting a 2 column table.',
+        {
+          variant: 'error',
+        },
+      )
+    } else if (error.name === 'NotAllowedError') {
+      canceled = true
+    }
+  }
+  if (!canceled && (result.length == 0 || result[0].length != 2)) {
+    result = []
+    throwError(
+      'Could not read a valid table from clipboard! Make sure you are pasting a 2 column table.',
+      {
+        variant: 'error',
+      },
+    )
   }
   return result
 }
@@ -94,6 +127,8 @@ export function HeaderPasteWrapper(props: any) {
 
 export function BasePasteWrapper(props: any) {
   const { addTopMargin = false, label, mutator, setForm } = props
+  const { enqueueSnackbar } = useSnackbar()
+  const [pasting, setPasting] = useState(false)
 
   const styles: Record<string, string> = {
     fontSize: '0.75rem',
@@ -104,40 +139,62 @@ export function BasePasteWrapper(props: any) {
   }
 
   async function handlePaste() {
-    const pastedTable = await readPastedTableFromNavigator()
-    setForm(function (prev: ApiEditBPActivity[]) {
-      const next = [...prev!]
-      const newValues: Record<string, any> = {}
-      for (let i = 0; i < pastedTable.length; i++) {
-        const row = pastedTable[i]
-        const entryId = row[0]
-        if (entryId) {
-          const entryValue = row[1]
-          newValues[entryId] = entryValue
-        }
+    setPasting(true)
+    const pastedTable = await readPastedTableFromNavigator(enqueueSnackbar)
+    const newValues: Record<string, any> = {}
+    for (let i = 0; i < pastedTable.length; i++) {
+      const row = pastedTable[i]
+      const entryId = row[0]
+      if (entryId) {
+        const entryValue = row[1]
+        newValues[entryId] = entryValue
       }
-      let pendingIds = Array.from(Object.keys(newValues))
-      for (let i = 0; i < next.length && pendingIds.length; i++) {
-        const rowId = next[i].display_internal_id
-        if (pendingIds.includes(rowId)) {
-          mutator(next[i], newValues[rowId])
-          pendingIds = pendingIds.filter((v) => v != rowId)
+    }
+    let pendingIds = Array.from(Object.keys(newValues))
+    const numEntries = pendingIds.length
+    let numInserted = 0
+    if (numEntries > 0) {
+      setForm(function (prev: ApiEditBPActivity[]) {
+        const next = [...prev!]
+        for (let i = 0; i < next.length && pendingIds.length; i++) {
+          const rowId = next[i].display_internal_id
+          if (pendingIds.includes(rowId)) {
+            mutator(next[i], newValues[rowId])
+            pendingIds = pendingIds.filter((v) => v != rowId)
+            numInserted++
+          }
         }
+        setPasting(false)
+        return next
+      })
+      if (numInserted > 0) {
+        enqueueSnackbar(
+          `Successfully pasted ${numInserted}/${numEntries} entries.`,
+          {
+            variant: 'success',
+          },
+        )
+      } else if (pendingIds.length > numInserted) {
+        enqueueSnackbar(
+          'No valid entries found in pasted data! Make sure you are pasting a 2 column table.',
+          {
+            variant: 'error',
+          },
+        )
       }
-      return next
-    })
+    } else {
+      setPasting(false)
+    }
   }
   return (
     <div
       className="flex h-full w-full items-center justify-center gap-x-2 hover:text-red-500"
       style={styles}
       title="Click for paste."
-      onClick={handlePaste}
+      onClick={pasting ? () => {} : handlePaste}
     >
       <div>{label}</div>
-      <div>
-        <IoClipboardOutline />
-      </div>
+      <div>{pasting ? <IoHourglassOutline /> : <IoClipboardOutline />}</div>
     </div>
   )
 }
