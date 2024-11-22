@@ -1,26 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import { IoClipboardOutline } from 'react-icons/io5'
-
-function findParentRow(
-  el: HTMLElement,
-  data: {
-    col_id?: null | string
-    row_id?: null | string
-    row_index?: null | string
-  } = {},
-) {
-  if (el.getAttribute('col-id')) {
-    data.col_id = el.getAttribute('col-id')
-  } else if (el.getAttribute('row-id')) {
-    data.row_id = el.getAttribute('row-id')
-    data.row_index = el.getAttribute('row-index')
-    return data
-  } else if (el.tagName === 'BODY') {
-    return null
-  }
-  return findParentRow(el.parentElement as HTMLElement, data)
-}
 
 export function parsePastedText(text: string) {
   let result: any
@@ -98,66 +78,22 @@ export async function readPastedTableFromNavigator() {
   return result
 }
 
-export function usePasteSupport(columnDefs: any, setForm: any) {
-  const pasteListener = useCallback(
-    (event: ClipboardEvent) => {
-      event.preventDefault()
-
-      const paste = event.clipboardData!
-
-      const pastedTable =
-        paste.types.indexOf('text/html') != -1
-          ? parsePastedHTML(paste.getData('text/html'))
-          : parsePastedText(paste.getData('text'))
-
-      const cleanTable = removeEmptyColumns(pastedTable)
-
-      console.log(cleanTable, event.target)
-
-      const numColumns = cleanTable[0].length
-      const pasteColumns: string[] = []
-
-      const colDefs: any[] = columnDefs as any[]
-
-      const pasteLocation = findParentRow(event.target as HTMLElement)
-
-      console.log(colDefs, pasteLocation)
-
-      return
-
-      for (let i = 0; i < colDefs.length; i++) {
-        console.log('xxxx: ', colDefs[i])
-        if (colDefs[i].field === pasteLocation?.col_id) {
-          for (let j = 0; j < numColumns; j++) {
-            pasteColumns.push(colDefs[i + j].field)
-          }
-          break
-        }
-      }
-
-      setForm((prev) => {
-        const next = { ...prev }
-
-        console.log('PASTE setForm', next)
-
-        return next
-      })
+export function HeaderPasteWrapper(props: any) {
+  const { field, ...rest } = props
+  const mutateRow = useCallback(
+    function (row: any, value: any) {
+      row[field] = value
     },
-    [setForm, columnDefs],
+    [field],
   )
 
-  useEffect(() => {
-    document.addEventListener('paste', pasteListener)
-    return () => {
-      document.removeEventListener('paste', pasteListener)
-    }
-  }, [pasteListener])
+  return <BasePasteWrapper addTopMargin={true} mutator={mutateRow} {...rest} />
 }
 
-export function HeaderPasteWrapper(props: any) {
-  const { addTopMargin = false, field, label, setForm } = props
+export function BasePasteWrapper(props: any) {
+  const { addTopMargin = false, label, mutator, setForm } = props
 
-  const styles = {
+  const styles: Record<string, string> = {
     fontSize: '0.75rem',
   }
 
@@ -169,7 +105,6 @@ export function HeaderPasteWrapper(props: any) {
     const pastedTable = await readPastedTableFromNavigator()
     setForm(function (prev) {
       const next = [...prev!]
-      console.log(next, pastedTable)
       const newValues: Record<number, any> = {}
       for (let i = 0; i < pastedTable.length; i++) {
         const row = pastedTable[i]
@@ -185,7 +120,7 @@ export function HeaderPasteWrapper(props: any) {
       for (let i = 0; i < next.length && pendingIds.length; i++) {
         const rowId = next[i].id
         if (pendingIds.includes(rowId)) {
-          next[i][field] = newValues[rowId]
+          mutator(next[i], newValues[rowId])
           pendingIds = pendingIds.filter((v) => v != rowId)
         }
       }
@@ -196,6 +131,7 @@ export function HeaderPasteWrapper(props: any) {
     <div
       className="flex h-full w-full items-center justify-center gap-x-2 hover:text-red-500"
       style={styles}
+      title="Click for paste."
       onClick={handlePaste}
     >
       <div>{label}</div>

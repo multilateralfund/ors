@@ -425,17 +425,17 @@ const useColumnsOptions = (
           cellClass: 'ag-cell-ellipsed',
           field: 'comment_secretariat',
           headerClass: 'ag-text-center',
-          // headerName: tableColumns.comment_secretariat,
-          headerValueGetter: function (params: any) {
+          headerComponent: function (props: any) {
             return (
-              <div className="flex items-center gap-x-2">
-                <div>{tableColumns.comment_secretariat}</div>
-                <div>
-                  <IoClipboardOutline />
-                </div>
-              </div>
+              <HeaderPasteWrapper
+                addTopMargin={true}
+                field={props.column.colDef.field}
+                label={props.displayName}
+                setForm={setForm}
+              />
             )
           },
+          headerName: tableColumns.comment_secretariat,
           minWidth: 200,
           tooltipField: 'comment_secretariat',
           valueSetter: (params: any) => {

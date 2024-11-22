@@ -19,7 +19,12 @@ import { applyTransaction, formatApiUrl } from '@ors/helpers'
 
 import { filtersToQueryParams } from '../utils'
 import useColumnsOptions from './editSchema'
-import { HeaderPasteWrapper, usePasteSupport } from './pasteSupport'
+import {
+  BasePasteWrapper,
+  HeaderGroupPasteWrapper,
+  HeaderPasteWrapper,
+  usePasteSupport,
+} from './pasteSupport'
 
 import { IoAddCircle, IoClipboardOutline } from 'react-icons/io5'
 
@@ -120,10 +125,17 @@ export function BPEditBaseTable(
         headerClass: 'ag-text-center',
         headerComponent: function (props: any) {
           return (
-            <HeaderPasteWrapper
-              field={props.column.colDef.field}
+            <BasePasteWrapper
               label={props.displayName}
               setForm={setForm}
+              mutator={function (row: any, value: any) {
+                valueSetter(
+                  { data: row, newValue: value },
+                  year,
+                  isAfterMaxYear,
+                  'value_usd',
+                )
+              }}
             />
           )
         },
@@ -145,6 +157,22 @@ export function BPEditBaseTable(
         },
         field: `value_odp_${year}`,
         headerClass: 'ag-text-center',
+        headerComponent: function (props: any) {
+          return (
+            <BasePasteWrapper
+              label={props.displayName}
+              setForm={setForm}
+              mutator={function (row: any, value: any) {
+                valueSetter(
+                  { data: row, newValue: value },
+                  year,
+                  isAfterMaxYear,
+                  'value_odp',
+                )
+              }}
+            />
+          )
+        },
         headerName: `${label}`,
         minWidth: 80,
         valueGetter: (params: any) =>
@@ -163,6 +191,22 @@ export function BPEditBaseTable(
         },
         field: `value_mt_${year}`,
         headerClass: 'ag-text-center',
+        headerComponent: function (props: any) {
+          return (
+            <BasePasteWrapper
+              label={props.displayName}
+              setForm={setForm}
+              mutator={function (row: any, value: any) {
+                valueSetter(
+                  { data: row, newValue: value },
+                  year,
+                  isAfterMaxYear,
+                  'value_mt',
+                )
+              }}
+            />
+          )
+        },
         headerName: `${label}`,
         minWidth: 80,
         valueGetter: (params: any) =>
@@ -241,8 +285,6 @@ export function BPEditBaseTable(
       </div>
     </div>
   )
-
-  usePasteSupport(columnOptions.columnDefs, setForm)
 
   return (
     <>
