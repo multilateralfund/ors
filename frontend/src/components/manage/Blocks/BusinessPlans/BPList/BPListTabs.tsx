@@ -16,12 +16,12 @@ import styles from '@ors/app/business-plans/list/styles.module.css'
 
 const SECTIONS = [
   {
-    label: 'Plans',
-    path: '/business-plans/list/plans',
-  },
-  {
     label: 'Activities',
     path: '/business-plans/list/activities',
+  },
+  {
+    label: 'By Agency',
+    path: '/business-plans/list/plans',
   },
 ]
 
