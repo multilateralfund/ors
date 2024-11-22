@@ -38,13 +38,10 @@ from core.api.serializers.business_plan import (
     BPActivityListSerializer,
 )
 from core.api.utils import (
-    STATUS_TRANSITIONS,
-    STATUS_TRANSITIONS_CONSOLIDATED_DATA,
     workbook_response,
     workbook_pdf_response,
 )
 from core.api.views.utils import (
-    check_status_transition,
     copy_fields,
     delete_fields,
     get_business_plan_from_request,
@@ -55,7 +52,6 @@ from core.models import Agency, BusinessPlan, BPChemicalType, BPHistory, BPActiv
 from core.models.business_plan import BPFile
 from core.tasks import (
     send_mail_bp_create,
-    send_mail_bp_status_update,
     send_mail_bp_update,
 )
 
@@ -152,12 +148,6 @@ class BusinessPlanViewSet(
                 openapi.IN_QUERY,
                 type=openapi.TYPE_INTEGER,
             ),
-            openapi.Parameter(
-                "full_history",
-                openapi.IN_QUERY,
-                description="Include full event history for the business plan",
-                type=openapi.TYPE_BOOLEAN,
-            ),
         ],
     )
     @action(methods=["GET"], detail=False)
@@ -170,13 +160,7 @@ class BusinessPlanViewSet(
         bp = get_business_plan_from_request(self.request)
         self.check_object_permissions(self.request, bp)
 
-        full_history = self.request.query_params.get("full_history") == "1"
         history_qs = bp.bphistory.select_related("business_plan", "updated_by")
-        if not full_history:
-            history_qs = history_qs.filter(event_in_draft=False)
-            history_qs = history_qs.exclude(
-                event_description__istartswith="status updated"
-            )
 
         ret = {
             "business_plan": BusinessPlanSerializer(bp).data,
@@ -192,21 +176,9 @@ class BusinessPlanViewSet(
         ret["activities"] = self.get_serializer(activities, many=True).data
         return Response(ret)
 
-    @swagger_auto_schema(
-        operation_description="List business plans",
-        manual_parameters=[
-            openapi.Parameter(
-                name="get_versions",
-                in_=openapi.IN_QUERY,
-                type=openapi.TYPE_BOOLEAN,
-                description="Get all versions or only latest ones",
-            ),
-        ],
-    )
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
-        if request.query_params.get("get_versions") != "1":
-            queryset = queryset.filter(is_latest=True)
+        queryset = queryset.filter(is_latest=True)
 
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -223,6 +195,7 @@ class BusinessPlanViewSet(
             agency_id=request.data.get("agency_id"),
             year_start=request.data.get("year_start"),
             year_end=request.data.get("year_end"),
+            status=request.data.get("status"),
         ).first()
 
         if business_plan:
@@ -249,18 +222,6 @@ class BusinessPlanViewSet(
         ret_code, error = self.check_activity_values(serializer.initial_data, instance)
         if ret_code != status.HTTP_200_OK:
             return Response({"general_error": error}, status=ret_code)
-
-        # status must be Agency Draft or Submitted for review
-        if instance.status not in [
-            BusinessPlan.Status.agency_draft,
-            BusinessPlan.Status.submitted_for_review,
-        ]:
-            return Response(
-                {
-                    "general_error": "Status must be Agency Draft or Submitted for review"
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
 
         self.perform_create(serializer)
         instance = serializer.instance
@@ -308,17 +269,18 @@ class BusinessPlanViewSet(
             initial_data["agency_id"] != current_obj.agency_id
             or initial_data["year_start"] != current_obj.year_start
             or initial_data["year_end"] != current_obj.year_end
+            or initial_data["status"] != current_obj.status
         ):
             return status.HTTP_400_BAD_REQUEST, "Business plan readonly fields changed"
 
         return status.HTTP_200_OK, ""
 
-    def set_is_updated_activities(self, new_instance, bp_old_version):
+    def set_is_updated_activities(self, new_instance, current_obj):
         new_activities = []
         updated_activities = []
         data = BPActivityCreateSerializer(new_instance.activities.all(), many=True).data
         data_old = BPActivityCreateSerializer(
-            bp_old_version.activities.all(), many=True
+            current_obj.activities.all(), many=True
         ).data
         activities_old = {activity["initial_id"]: activity for activity in data_old}
 
@@ -346,7 +308,6 @@ class BusinessPlanViewSet(
         BPActivity.objects.filter(id__in=updated_activities).update(is_updated=True)
 
     def set_bp_data(self, user, new_instance, current_obj):
-        initial_status = current_obj.status
         # inherit all history
         BPHistory.objects.filter(business_plan=current_obj).update(
             business_plan=new_instance
@@ -356,49 +317,23 @@ class BusinessPlanViewSet(
         if not new_instance.name:
             new_instance.name = f"{new_instance.agency} {new_instance.year_start} - {new_instance.year_end}"
 
-        # update from Needs Changes, Submit for review, Submitted => new version
-        if initial_status in [
-            BusinessPlan.Status.submitted_for_review,
-            BusinessPlan.Status.need_changes,
-            BusinessPlan.Status.submitted,
-        ]:
-            new_instance.version = current_obj.version + 1
-            current_obj.is_latest = False
-            current_obj.save()
-        else:
-            new_instance.version = current_obj.version
-            current_obj.delete()
-
         # set updated by user
         new_instance.updated_by = user
 
-        # set is_updated, compare with `latest_version - 1`
-        bp_old_version = BusinessPlan.objects.filter(
-            agency_id=new_instance.agency_id,
-            year_start=new_instance.year_start,
-            year_end=new_instance.year_end,
-            version=new_instance.version - 1,
-        ).first()
-        if bp_old_version:
-            self.set_is_updated_activities(new_instance, bp_old_version)
+        # set is_updated, compare with current obj
+        self.set_is_updated_activities(new_instance, current_obj)
+
+        current_obj.delete()
 
     def create_history(self, business_plans, user, event):
         history_objs = []
         for bp in business_plans:
-            event_in_draft = False
-            if bp.status in [
-                BusinessPlan.Status.agency_draft,
-                BusinessPlan.Status.secretariat_draft,
-            ]:
-                event_in_draft = True
-
             history_objs.append(
                 BPHistory(
                     business_plan=bp,
                     updated_by=user,
                     event_description=event,
                     bp_version=bp.version,
-                    event_in_draft=event_in_draft,
                 )
             )
         BPHistory.objects.bulk_create(history_objs)
@@ -407,12 +342,8 @@ class BusinessPlanViewSet(
     def update(self, request, *args, **kwargs):
         user = request.user
         current_obj = self.get_object()
-        initial_status = current_obj.status
-        new_status = request.data["status"]
 
-        ignore_comment = bool(
-            "agency" in user.user_type.lower() and initial_status != new_status
-        )
+        ignore_comment = bool("agency" in user.user_type.lower())
         serializer = self.get_serializer(
             data=request.data, context={"ignore_comment": ignore_comment}
         )
@@ -433,17 +364,11 @@ class BusinessPlanViewSet(
         if ret_code != status.HTTP_200_OK:
             return Response({"general_error": error}, status=ret_code)
 
-        ret_code, error = check_status_transition(
-            user, initial_status, new_status, STATUS_TRANSITIONS
-        )
-        if ret_code != status.HTTP_200_OK:
-            return Response({"general_error": error}, status=ret_code)
-
         # create new bp instance and activities
         self.perform_create(serializer)
         new_instance = serializer.instance
 
-        # set name, version, updated_by, is_updated
+        # set name, updated_by, is_updated
         self.set_bp_data(user, new_instance, current_obj)
         new_instance.save()
 
@@ -498,13 +423,6 @@ class BusinessPlanViewSet(
 
         first_bp = next(iter(current_bps.values()))
         initial_status = first_bp.status if first_bp else None
-        new_status = request.data["status"]
-
-        ret_code, error = check_status_transition(
-            user, initial_status, new_status, STATUS_TRANSITIONS_CONSOLIDATED_DATA
-        )
-        if ret_code != status.HTTP_200_OK:
-            return Response({"general_error": error}, status=ret_code)
 
         for initial_data in serializer.initial_data:
             current_bp = current_bps[str(initial_data.get("agency_id"))]
@@ -525,81 +443,18 @@ class BusinessPlanViewSet(
 
         for new_instance in serializer.instance:
             current_bp = current_bps[str(new_instance.agency_id)]
-            # set name, version, updated_by, is_updated
+            # set name, updated_by, is_updated
             self.set_bp_data(user, new_instance, current_bp)
             new_instances.append(new_instance)
 
         # bulk create/update new bp instances and history
-        BusinessPlan.objects.bulk_update(
-            new_instances, ["name", "version", "updated_by"]
-        )
+        BusinessPlan.objects.bulk_update(new_instances, ["name", "updated_by"])
         self.create_history(
             new_instances, user, "Consolidated data updated by secretariat user"
         )
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
-
-
-class BPStatusUpdateView(generics.GenericAPIView):
-    """
-    API endpoint that allows updating business plan status.
-    """
-
-    queryset = BusinessPlan.objects.get_latest()
-    serializer_class = BusinessPlanSerializer
-    lookup_field = "id"
-    permission_classes = [IsSecretariat | IsAgency]
-
-    @swagger_auto_schema(
-        operation_description="Update business plan status",
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                "status": openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description="Update bp status",
-                )
-            },
-        ),
-    )
-    def put(self, request, *args, **kwargs):
-        business_plan = self.get_object()
-        initial_status = business_plan.status
-        new_status = request.data.get("status")
-        user = request.user
-
-        ret_code, error = check_status_transition(
-            user, initial_status, new_status, STATUS_TRANSITIONS
-        )
-        if ret_code != status.HTTP_200_OK:
-            return Response({"general_error": error}, status=ret_code)
-
-        # update status
-        business_plan.status = new_status
-        business_plan.save()
-
-        event_in_draft = False
-        if new_status in [
-            BusinessPlan.Status.agency_draft,
-            BusinessPlan.Status.secretariat_draft,
-        ]:
-            event_in_draft = True
-
-        BPHistory.objects.create(
-            business_plan=business_plan,
-            updated_by=request.user,
-            event_description=f"Status updated from {initial_status} to {new_status}",
-            bp_version=business_plan.version,
-            event_in_draft=event_in_draft,
-        )
-
-        serializer = self.get_serializer(business_plan)
-
-        if config.SEND_MAIL:
-            send_mail_bp_status_update.delay(business_plan.id)
-
-        return Response(serializer.data)
 
 
 class BPActivityViewSet(

@@ -529,21 +529,6 @@ def get_business_plan_from_request(request):
     return business_plan
 
 
-def check_status_transition(user, initial_status, new_status, status_transitions):
-    # validate status transition
-    if (
-        initial_status not in status_transitions
-        or new_status not in status_transitions[initial_status]
-    ):
-        return status.HTTP_400_BAD_REQUEST, "Invalid status transition"
-
-    # validate user permissions
-    if user.user_type not in status_transitions[initial_status][new_status]:
-        return status.HTTP_403_FORBIDDEN, "User not allowed to update status"
-
-    return status.HTTP_200_OK, ""
-
-
 def copy_fields(obj, obj_old, fields):
     for field in fields:
         obj[f"{field}_old"] = obj_old[field] if obj_old else None

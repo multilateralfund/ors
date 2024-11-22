@@ -14,7 +14,7 @@ def setup_new_business_plan_create(agency):
         "agency_id": agency.id,
         "year_start": 2020,
         "year_end": 2022,
-        "status": BusinessPlan.Status.agency_draft,
+        "status": BusinessPlan.Status.endorsed,
     }
 
 
@@ -28,16 +28,9 @@ class TestBPHistory:
         _setup_new_business_plan_create,
         _setup_bp_activity_create,
     ):
-        VALIDATION_LIST_FULL_HISTORY = [
-            ("created by user", 4, 1, agency_user.username),
-            ("updated by user", 3, 1, agency_user.username),
-            ("status updated", 2, 1, user.username),
-            ("consolidated data updated", 1, 2, user.username),
-            ("consolidated data updated", 0, 2, user.username),
-        ]
         VALIDATION_LIST = [
-            ("updated by user", 1, 1, agency_user.username),
-            ("consolidated data updated", 0, 2, user.username),
+            ("created by user", 1, 1, agency_user.username),
+            ("updated by user", 0, 1, user.username),
         ]
 
         # create new business plan
@@ -47,64 +40,39 @@ class TestBPHistory:
         assert response.status_code == 201
         business_plan_id = response.data["id"]
 
-        # update business plan and status to submitted for review
+        # update business plan
+        self.client.force_authenticate(user=user)
         url = reverse("businessplan-list") + f"{business_plan_id}/"
-        data = _setup_new_business_plan_create
-        data["status"] = "Submitted for review"
+        data = {
+            "agency_id": agency_user.agency_id,
+            "year_start": 2020,
+            "year_end": 2022,
+            "status": BusinessPlan.Status.endorsed,
+            "activities": [_setup_bp_activity_create],
+        }
         response = self.client.put(url, data, format="json")
         assert response.status_code == 200
         new_id = response.data["id"]
 
-        # update status to need changes
-        self.client.force_authenticate(user=user)
-        url = reverse("business-plan-status", kwargs={"id": new_id})
-        response = self.client.put(url, {"status": "Need Changes"})
-        assert response.status_code == 200
-
-        # consolidated data update business plan, set status to secretariat draft
-        url = reverse("businessplan-update-all")
-        activity_data = _setup_bp_activity_create
-        activity_data["agency_id"] = agency_user.agency_id
-        data = {
-            "year_start": 2020,
-            "year_end": 2022,
-            "status": "Secretariat Draft",
-            "activities": [activity_data],
-        }
-        response = self.client.put(url, data, format="json")
-        assert response.status_code == 200
-
-        # consolidated data update business plan, set status to submitted
-        data["status"] = "Submitted"
-        response = self.client.put(url, data, format="json")
-        assert response.status_code == 200
-        new_id = response.data[0]["id"]
-
-        # check 5 history objects created
+        # check 2 history objects created
         history = BPHistory.objects.filter(business_plan_id=new_id)
-        assert history.count() == len(VALIDATION_LIST_FULL_HISTORY)
+        assert history.count() == len(VALIDATION_LIST)
 
-        for valid_string, i, version, req_user in VALIDATION_LIST_FULL_HISTORY:
+        for valid_string, i, version, req_user in VALIDATION_LIST:
             assert history[i].updated_by.username == req_user
             assert valid_string in history[i].event_description.lower()
             assert history[i].bp_version == version
 
         # check history in API response
         url = reverse("businessplan-get")
-        for full_history, valid_list in [
-            (1, VALIDATION_LIST_FULL_HISTORY),
-            (0, VALIDATION_LIST),
-        ]:
-            response = self.client.get(
-                url, {"business_plan_id": new_id, "full_history": full_history}
-            )
-            assert response.status_code == 200
+        response = self.client.get(url, {"business_plan_id": new_id})
+        assert response.status_code == 200
 
-            # check same history items in get business plan
-            history = response.data["history"]
-            assert len(history) == len(valid_list)
+        # check same history items in get business plan
+        history = response.data["history"]
+        assert len(history) == len(VALIDATION_LIST)
 
-            for valid_string, i, version, req_user in valid_list:
-                assert history[i]["updated_by_username"] == req_user
-                assert valid_string in history[i]["event_description"].lower()
-                assert history[i]["bp_version"] == version
+        for valid_string, i, version, req_user in VALIDATION_LIST:
+            assert history[i]["updated_by_username"] == req_user
+            assert valid_string in history[i]["event_description"].lower()
+            assert history[i]["bp_version"] == version
