@@ -10,8 +10,6 @@ from django.db.models import OuterRef
 from django.http import FileResponse
 from django_filters import rest_framework as filters
 
-from core.models.business_plan import BusinessPlan
-
 User = get_user_model()
 
 SECTION_ANNEX_MAPPING = {

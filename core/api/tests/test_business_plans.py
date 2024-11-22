@@ -19,7 +19,6 @@ from core.api.tests.factories import (
     SubstanceFactory,
     UserFactory,
 )
-from core.models.business_plan import BPHistory, BusinessPlan
 
 pytestmark = pytest.mark.django_db
 # pylint: disable=C8008, W0221, R0913, C0302, R0914, R0915

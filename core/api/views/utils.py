@@ -5,7 +5,6 @@ from datetime import datetime
 from django.db import models
 from django.db.models import Q, F
 from openpyxl.utils import get_column_letter
-from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
 from constance import config
