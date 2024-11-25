@@ -4,6 +4,8 @@ import { Country } from '@ors/types/store'
 
 import React, {useState, useEffect} from 'react'
 
+import cx from 'classnames'
+
 import { useLocation } from "wouter";
 
 import View from '@ors/components/theme/Views/View'
@@ -13,7 +15,6 @@ import { getInitialSliceData } from '@ors/helpers/Store/Store'
 import { getCurrentView } from '@ors/helpers/View/View'
 import { StoreProvider } from '@ors/store'
 import ThemeProvider from '@ors/themes/ThemeProvider'
-import { robotoCondensed } from '@ors/themes/fonts'
 
 import '../themes/styles/global.css'
 
@@ -143,7 +144,7 @@ export default function RootLayout({
   console.log(appState, pathname)
 
   return (
-        <div id="layout" className={'h-full'}>
+        <div id="layout" className={cx("h-full")}>
           <StoreProvider
             initialState={{
               ...appState,

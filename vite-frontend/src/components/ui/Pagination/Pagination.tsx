@@ -5,8 +5,8 @@ import {
 } from '@mui/material'
 import cx from 'classnames'
 
-import BackArrow from './back-arrow.svg'
-import NextArrow from './next-arrow.svg'
+import BackArrow from './back-arrow.svg?react'
+import NextArrow from './next-arrow.svg?react'
 
 type PaginationProps = {
   loading?: boolean
@@ -61,8 +61,10 @@ export function Pagination({
             onClick={isEllipsis ? () => {} : item.onClick}
             disableRipple
           >
+            {item.type === 'previous' && <BackArrow className="arrow-prev" />}
             {item.type === 'page' && item.page}
             {isEllipsis && '...'}
+            {item.type === 'next' && <NextArrow className="arrow-next" />}
           </Button>
         )
       }}
