@@ -1,0 +1,15 @@
+.image-block {
+  @apply h-full w-full;
+}
+
+.image-container {
+  @apply h-full w-full;
+}
+
+.image-container > div {
+  position: unset !important;
+}
+
+.image-container img {
+  @apply !relative !h-full !w-full !object-contain;
+}

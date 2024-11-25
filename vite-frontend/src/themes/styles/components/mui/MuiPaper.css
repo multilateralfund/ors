@@ -1,0 +1,28 @@
+.MuiPaper-root:not(.MuiDrawer-paper) {
+  @apply border-mui-paper-border duration-300 transition;
+  @apply rounded border border-solid;
+}
+
+.MuiPaper-root.MuiPaper-elevation {
+  @apply shadow-sm;
+}
+
+.MuiPaper-root.MuiPaper-elevation1 {
+  @apply shadow;
+}
+
+.MuiPaper-root.MuiPaper-elevation2 {
+  @apply shadow-md;
+}
+
+.MuiPaper-root.MuiPaper-elevation3 {
+  @apply shadow-lg;
+}
+
+.MuiPaper-root.MuiPaper-elevation4 {
+  @apply shadow-xl;
+}
+
+.MuiPaper-root.MuiPaper-elevation5 {
+  @apply shadow-2xl;
+}

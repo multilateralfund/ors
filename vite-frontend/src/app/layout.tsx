@@ -1,0 +1,168 @@
+import { ApiBlend } from '@ors/types/api_blends'
+import { ApiSubstance } from '@ors/types/api_substances'
+import { Country } from '@ors/types/store'
+
+import React, {useState, useEffect} from 'react'
+
+import { useLocation } from "wouter";
+
+import View from '@ors/components/theme/Views/View'
+// import View from '../components/theme/Views/View'
+import api from '@ors/helpers/Api/_api'
+import { getInitialSliceData } from '@ors/helpers/Store/Store'
+import { getCurrentView } from '@ors/helpers/View/View'
+import { StoreProvider } from '@ors/store'
+import ThemeProvider from '@ors/themes/ThemeProvider'
+import { robotoCondensed } from '@ors/themes/fonts'
+
+import '../themes/styles/global.css'
+
+// export const metadata: Metadata = {
+//   description:
+//     'Multilateral Fund for the Implementation of the Montreal Protocol',
+//   title: 'KMS',
+// }
+
+
+function useUser() {
+  const [user, setUser] = useState(null)
+
+  async function fetchUser() {
+    try {
+      const apiUser = await api('api/auth/user/', {})
+      setUser(apiUser)
+    } catch (error) {
+    }
+  }
+
+  useEffect(() => fetchUser, [])
+
+  return user
+}
+
+function useAppState(user) {
+  const [ state, setState ] = useState(null)
+
+  async function fetchState(user) {
+    const [
+      // Common data
+      settings,
+      agencies,
+      countries,
+      // Projects data
+      statuses,
+      sectors,
+      subsectors,
+      types,
+      meetings,
+      clusters,
+      // Country programme data
+      blends,
+      substances,
+      // Business Plans
+      commentTypes,
+    ] = await Promise.all([
+      api('api/settings/', {}, false),
+      api('api/agencies/', {}, false),
+      api('api/countries/', {}, false),
+      api('api/project-statuses/', {}, false),
+      api('api/project-sector/', {}, false),
+      api('api/project-subsector/', {}, false),
+      api('api/project-types/', {}, false),
+      api('api/meetings/', {}, false),
+      api('api/project-clusters/', {}, false),
+      api(
+        'api/blends/',
+        { params: { with_alt_names: true, with_usages: true } },
+        false,
+      ),
+      api(
+        'api/substances/',
+        { params: { with_alt_names: true, with_usages: true } },
+        false,
+      ),
+      // api('api/usages/', {}, false),
+      api('api/comment-types/', {}, false),
+    ])
+
+    const common = {
+      agencies: getInitialSliceData(agencies),
+      countries: getInitialSliceData<Country[]>(countries),
+      countries_for_create: getInitialSliceData<Country[]>(
+        countries.filter((c: Country) => c.has_cp_report && !c.is_a2),
+      ),
+      countries_for_listing: getInitialSliceData<Country[]>(
+        countries.filter((c: Country) => c.has_cp_report),
+      ),
+      settings: getInitialSliceData(settings),
+    }
+    const projects = {
+      clusters: getInitialSliceData(clusters),
+      meetings: getInitialSliceData(meetings),
+      sectors: getInitialSliceData(sectors),
+      statuses: getInitialSliceData(statuses),
+      subsectors: getInitialSliceData(subsectors),
+      types: getInitialSliceData(types),
+    }
+    const cp_reports = {
+      blends: getInitialSliceData<ApiBlend[]>(blends),
+      substances: getInitialSliceData<ApiSubstance[]>(substances),
+    }
+    const businessPlans = {
+      commentTypes: getInitialSliceData(commentTypes),
+      sectors: getInitialSliceData(sectors),
+      subsectors: getInitialSliceData(subsectors),
+      types: getInitialSliceData(types),
+    }
+
+    setState({common, projects, cp_reports, businessPlans})
+  }
+
+  useEffect(function() {
+    if (user) {
+      fetchState(user)
+    }
+  }, [user])
+
+  return state
+}
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  // const cookies = nextCookies()
+  const [ pathname ] = useLocation()
+  const theme = { value: 'light' }
+  const currentView = getCurrentView(pathname || '')
+
+  const user = useUser()
+  const appState = useAppState(user)
+
+  console.log(appState, pathname)
+
+  return (
+        <div id="layout" className={'h-full'}>
+          <StoreProvider
+            initialState={{
+              ...appState,
+              theme: {
+                mode: theme.value as 'dark' | 'light' | null,
+              },
+              user: { data: user, loaded: !!user },
+            }}
+          >
+            <ThemeProvider
+              options={{
+                enableCssLayer: true,
+                prepend: true,
+                speedy: true,
+              }}
+            >
+              <View>{appState ? children : null}</View>
+            </ThemeProvider>
+          </StoreProvider>
+        </div>
+  )
+}

@@ -1,0 +1,46 @@
+@layer base {
+  :root[data-printing]:not([data-printing='no']) .not-printable {
+    margin-left: -9999px;
+    pointer-events: none;
+    position: absolute;
+  }
+
+  :root[data-printing]:not([data-printing='no']) {
+    --print-dpi: 96;
+    --print-unit: '1mm';
+    --print-scale: 1;
+    --print-margin-x: 16px;
+    --print-margin-y: 0px;
+    --print-device-pixel-ratio: 1.5;
+
+    &[data-browser='Chrome'],
+    &[data-browser='Edge'],
+    &[data-browser='Opera'] {
+      --print-scale: 1.5;
+    }
+  }
+}
+
+@media print {
+  @page {
+    /* size: 210mm 297mm; */
+    margin: 1rem;
+  }
+
+  .print-section {
+    margin: 1rem 0;
+  }
+
+  .print-section:not(:first-child) {
+    page-break-before: always;
+  }
+
+  .ag-header-cell-resize::after {
+    display: none;
+  }
+
+  .SimpleTable table,
+  .SimpleTable td {
+    border-collapse: separate;
+  }
+}
