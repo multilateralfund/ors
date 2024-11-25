@@ -121,6 +121,11 @@ export interface BPSlice {
   setBusinessPlan: (business_plan: UpdatedBusinessPlan) => void
 }
 
+export interface BPTypeSlice {
+  bpType: string
+  setBPType: (type: string) => void
+}
+
 export interface ProjectsSlice {
   clusters: SliceData
   meetings: SliceData
@@ -191,6 +196,7 @@ export interface HistoryListItem {
 export type StoreState = {
   bp_diff_versions: BPDiffVersionsSlice
   bpFilters: BPFiltersSlice
+  bpType: BPTypeSlice
   businessPlan: BPSlice
   businessPlans: BusinessPlanSlice
   cache: CacheSlice

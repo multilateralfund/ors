@@ -227,12 +227,28 @@ class BPActivityDetailSerializer(serializers.ModelSerializer):
 
 class BPActivityListSerializer(BPActivityDetailSerializer):
     agency = serializers.SerializerMethodField()
+    bp_status = serializers.SerializerMethodField()
+    display_internal_id = serializers.SerializerMethodField()
 
     class Meta(BPActivityDetailSerializer.Meta):
-        fields = ["agency"] + BPActivityDetailSerializer.Meta.fields
+        fields = [
+            "agency",
+            "bp_status",
+            "display_internal_id",
+        ] + BPActivityDetailSerializer.Meta.fields
 
     def get_agency(self, obj):
         return obj.business_plan.agency.name
+
+    def get_bp_status(self, obj):
+        return obj.business_plan.status
+
+    def get_display_internal_id(self, obj):
+        agency_code = obj.business_plan.agency.name
+        country_code = obj.country.abbr or obj.country.name
+        # add 0 padding to internal_id to make it 9 digits
+        internal_id = str(obj.initial_id).zfill(9)
+        return f"{agency_code}-{country_code}-{internal_id}"
 
 
 class BPActivityCreateSerializer(serializers.ModelSerializer):

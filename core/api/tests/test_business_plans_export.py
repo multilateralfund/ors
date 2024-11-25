@@ -24,9 +24,7 @@ class TestBPExport(BaseTest):
         )
         assert response.status_code == 403
 
-    def test_export(
-        self, user, business_plan, bp_activity, bp_activity_values
-    ):
+    def test_export(self, user, business_plan, bp_activity, bp_activity_values):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(
