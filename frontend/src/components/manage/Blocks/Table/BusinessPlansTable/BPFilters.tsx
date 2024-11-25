@@ -1,14 +1,21 @@
 'use client'
 import React, { useMemo } from 'react'
 
+import { capitalize } from 'lodash'
+
 import DownloadButtons from '@ors/app/business-plans/DownloadButtons'
 import ActivitiesFilters from '@ors/components/manage/Blocks/BusinessPlans/ActivitiesFilters'
 import TableDateSwitcher from '@ors/components/manage/Blocks/Table/BusinessPlansTable/TableDateSwitcher'
+import Field from '@ors/components/manage/Form/Field'
 import { formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
+import { bpTypes } from '../../BusinessPlans/constants'
 import { filtersToQueryParams } from '../../BusinessPlans/utils'
 import TableViewSelector from './TableViewSelector'
+
+const ACTIVITIES_PER_PAGE_TABLE = 100
+const ACTIVITIES_PER_PAGE_LIST = 20
 
 export default function BPFilters({
   displayOptions,
@@ -27,6 +34,8 @@ export default function BPFilters({
   const bpSlice = useStore((state) => state.businessPlans)
   const projects = useStore((state) => state.projects)
   const clusters = projects.clusters.data || []
+
+  const { setBPType } = useStore((state) => state.bpType)
 
   function handleParamsChange(params: { [key: string]: any }) {
     setParams(params)
@@ -62,12 +71,40 @@ export default function BPFilters({
       />
       <div className="flex gap-4 self-start">
         <TableViewSelector
-          changeHandler={(_, value) => setDisplayOptions(value)}
           value={displayOptions}
+          changeHandler={(_, value) => {
+            setParams({
+              limit:
+                value === 'list'
+                  ? ACTIVITIES_PER_PAGE_LIST
+                  : ACTIVITIES_PER_PAGE_TABLE,
+              offset: 0,
+            })
+            setDisplayOptions(value)
+          }}
         />
         <TableDateSwitcher
           changeHandler={(event, value) => setGridOptions(value)}
           value={gridOptions}
+        />
+        <Field
+          FieldProps={{ className: 'mb-0 w-full md:w-36 BPList' }}
+          options={bpTypes}
+          value={capitalize(reqParams.version_type)}
+          widget="autocomplete"
+          isOptionEqualToValue={(option, value) =>
+            option.id === value.toLowerCase()
+          }
+          onChange={(_: any, value: any) => {
+            if (withAgency) {
+              setBPType(value.id)
+            }
+            handleParamsChange({
+              offset: 0,
+              version_type: value.id,
+            })
+          }}
+          disableClearable
         />
       </div>
     </div>
