@@ -24,9 +24,7 @@ class TestBPExport(BaseTest):
         )
         assert response.status_code == 403
 
-    def test_export(
-        self, user, business_plan, bp_activity, old_bp_activity, bp_activity_values
-    ):
+    def test_export(self, user, business_plan, bp_activity, bp_activity_values):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(
@@ -89,7 +87,6 @@ class TestBPPrint(BaseTest):
         agency,
         business_plan,
         bp_activity,
-        old_bp_activity,
         bp_activity_values,
     ):
         self.client.force_authenticate(user=user)
@@ -100,6 +97,7 @@ class TestBPPrint(BaseTest):
                 "year_start": business_plan.year_start,
                 "year_end": business_plan.year_end,
                 "agency_id": agency.id,
+                "bp_status": business_plan.status,
             },
         )
         assert response.status_code == 200

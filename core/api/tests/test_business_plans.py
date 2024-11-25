@@ -740,6 +740,21 @@ class TestBPActivityList:
         assert len(response.json()) == 4
         assert response.json()[0]["agency"] == business_plan.agency.name
 
+    def test_bp_status_filter(self, user, business_plan, _setup_bp_activity_list):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(
+            self.url,
+            {
+                "year_start": business_plan.year_start,
+                "year_end": business_plan.year_end,
+                "bp_status": business_plan.status,
+            },
+        )
+        assert response.status_code == 200
+        assert len(response.json()) == 8
+        assert response.json()[0]["bp_status"] == business_plan.status
+
     def test_invalid_agency(self, user, business_plan, _setup_bp_activity_list):
         self.client.force_authenticate(user=user)
 
@@ -749,6 +764,19 @@ class TestBPActivityList:
                 "year_start": business_plan.year_start,
                 "year_end": business_plan.year_end,
                 "agency_id": 999,
+            },
+        )
+        assert response.status_code == 400
+
+    def test_invalid_bp_status(self, user, business_plan, _setup_bp_activity_list):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(
+            self.url,
+            {
+                "year_start": business_plan.year_start,
+                "year_end": business_plan.year_end,
+                "bp_status": "Draft",
             },
         )
         assert response.status_code == 400
