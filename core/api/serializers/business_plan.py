@@ -229,12 +229,16 @@ class BPActivityDetailSerializer(serializers.ModelSerializer):
 
 class BPActivityListSerializer(BPActivityDetailSerializer):
     agency = serializers.SerializerMethodField()
+    bp_status = serializers.SerializerMethodField()
 
     class Meta(BPActivityDetailSerializer.Meta):
-        fields = ["agency"] + BPActivityDetailSerializer.Meta.fields
+        fields = ["agency", "bp_status"] + BPActivityDetailSerializer.Meta.fields
 
     def get_agency(self, obj):
         return obj.business_plan.agency.name
+
+    def get_bp_status(self, obj):
+        return obj.business_plan.status
 
 
 class BPActivityCreateSerializer(serializers.ModelSerializer):
