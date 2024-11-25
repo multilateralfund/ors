@@ -4,7 +4,7 @@ import { ApiEditBPActivity } from '@ors/types/api_bp_get'
 
 import React, { useCallback, useEffect, useState } from 'react'
 
-import { find, map } from 'lodash'
+import { capitalize, find, map } from 'lodash'
 import { useParams } from 'next/navigation'
 
 import Loading from '@ors/components/theme/Loading/Loading'
@@ -23,7 +23,7 @@ const BPEdit = () => {
   const [year_start, year_end] = period.split('-')
 
   const initialFilters = {
-    version_type: type,
+    bp_status: capitalize(type),
     year_end: year_end,
     year_start: year_start,
   }
@@ -38,7 +38,9 @@ const BPEdit = () => {
   const commentTypes = bpSlice.commentTypes.data
   const agencies = useStore((state) => state?.common.agencies.data)
 
-  const [form, setForm] = useState<Array<ApiEditBPActivity> | null>()
+  const [form, setForm] = useState<Array<ApiEditBPActivity> | undefined>(
+    undefined,
+  )
   const [warnOnClose, setWarnOnClose] = useState(false)
   useVisibilityChange(warnOnClose)
 
@@ -92,11 +94,13 @@ const BPEdit = () => {
         active={loading}
       />
       <BPHeaderEditConsolidated {...{ form, setWarnOnClose, type }} />
-      <BPRestoreEdit localStorage={localStorage} setForm={handleSetForm}>
-        Unsaved {type} data exists for {year_start}-{year_end}, would you like
-        to recover it?
-      </BPRestoreEdit>
-      {form && !loading && (
+      {!loading && (
+        <BPRestoreEdit localStorage={localStorage} setForm={handleSetForm}>
+          Unsaved {type} data exists for {year_start}-{year_end}, would you like
+          to recover it?
+        </BPRestoreEdit>
+      )}
+      {!loading && (
         <>
           <div className="mb-1 flex justify-end">
             <div

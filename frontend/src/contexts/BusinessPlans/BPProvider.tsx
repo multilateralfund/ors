@@ -4,7 +4,6 @@ import { useMemo } from 'react'
 
 import { useParams } from 'next/navigation'
 
-import { bpTypes } from '@ors/components/manage/Blocks/BusinessPlans/constants'
 import { getAgencyByName } from '@ors/components/manage/Blocks/BusinessPlans/utils'
 import useApi from '@ors/hooks/useApi'
 import { useStore } from '@ors/store'
@@ -32,7 +31,6 @@ function BPProvider(props: BPProviderProps) {
         agency_id: currentAgency?.id,
         limit: BP_PER_PAGE,
         offset: 0,
-        version_type: bpTypes[0].id,
         year_end: period.split('-')[1],
         year_start: period.split('-')[0],
       },

@@ -1,12 +1,6 @@
 import cx from 'classnames'
 
-export type Status =
-  | 'Agency Draft'
-  | 'Approved'
-  | 'Need Changes'
-  | 'Rejected'
-  | 'Secretariat Draft'
-  | 'Submitted'
+export type Status = 'Consolidated' | 'Endorsed'
 
 interface StatusStyle {
   bgColor: string
@@ -15,28 +9,12 @@ interface StatusStyle {
 }
 
 export const statusStyles: Record<Status, StatusStyle> = {
-  'Agency Draft': {
+  Consolidated: {
     bgColor: 'bg-white',
     border: 'border-mlfs-deepTealShade',
     textColor: 'text-mlfs-deepTealShade',
   },
-  Approved: { bgColor: 'bg-secondary', textColor: 'text-white' },
-  'Need Changes': {
-    bgColor: 'bg-mlfs-hlYellow',
-    border: 'border-transparent',
-    textColor: 'text-primary',
-  },
-  Rejected: {
-    bgColor: 'bg-gray-500',
-    border: 'border-transparent',
-    textColor: 'text-white',
-  },
-  'Secretariat Draft': {
-    bgColor: 'bg-white',
-    border: 'border-mlfs-deepTealShade',
-    textColor: 'text-mlfs-deepTealShade',
-  },
-  Submitted: {
+  Endorsed: {
     bgColor: 'bg-primary',
     border: 'border-transparent',
     textColor: 'text-mlfs-hlYellow',
