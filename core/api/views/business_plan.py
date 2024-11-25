@@ -19,7 +19,6 @@ from rest_framework.response import Response
 from core.api.export.base import configure_sheet_print
 from core.api.export.business_plan import BusinessPlanWriter
 from core.api.filters.business_plan import (
-    BPActivityFilter,
     BPActivityListFilter,
     BPChemicalTypeFilter,
     BPFileFilter,
@@ -42,10 +41,8 @@ from core.api.utils import (
     workbook_pdf_response,
 )
 from core.api.views.utils import (
-    copy_fields,
     delete_fields,
     get_business_plan_from_request,
-    rename_fields,
     BPACTIVITY_ORDERING_FIELDS,
 )
 from core.models import Agency, BusinessPlan, BPChemicalType, BPHistory, BPActivity
@@ -89,7 +86,7 @@ class BusinessPlanViewSet(
             return BPActivity.objects.all()
 
         if self.request.method == "PUT":
-            return BusinessPlan.objects.get_latest().select_for_update()
+            return BusinessPlan.objects.select_for_update()
 
         business_plans = BusinessPlan.objects.all()
         # filter business plans by agency if user is agency
@@ -111,8 +108,7 @@ class BusinessPlanViewSet(
     def get_years(self, *args, **kwargs):
         return Response(
             (
-                BusinessPlan.objects.get_latest()
-                .values("year_start", "year_end")
+                BusinessPlan.objects.values("year_start", "year_end")
                 .annotate(
                     min_year=Min("activities__values__year"),
                     max_year=Max("activities__values__year"),
@@ -144,9 +140,9 @@ class BusinessPlanViewSet(
                 type=openapi.TYPE_INTEGER,
             ),
             openapi.Parameter(
-                "version",
+                "bp_status",
                 openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
+                type=openapi.TYPE_STRING,
             ),
         ],
     )
@@ -178,7 +174,6 @@ class BusinessPlanViewSet(
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
-        queryset = queryset.filter(is_latest=True)
 
         page = self.paginate_queryset(queryset)
         if page is not None:
@@ -333,7 +328,6 @@ class BusinessPlanViewSet(
                     business_plan=bp,
                     updated_by=user,
                     event_description=event,
-                    bp_version=bp.version,
                 )
             )
         BPHistory.objects.bulk_create(history_objs)
@@ -415,7 +409,7 @@ class BusinessPlanViewSet(
 
         current_bps = {
             str(bp.agency_id): bp
-            for bp in BusinessPlan.objects.get_latest().filter(
+            for bp in BusinessPlan.objects.filter(
                 year_start=request.data["year_start"],
                 year_end=request.data["year_end"],
                 status=request.data["status"],
@@ -471,7 +465,7 @@ class BPActivityViewSet(
         return BPActivityDetailSerializer
 
     def get_queryset(self):
-        queryset = BPActivity.objects.get_latest()
+        queryset = BPActivity.objects.all()
 
         if "agency" in self.request.user.user_type.lower():
             # filter activities by agency if user is agency
@@ -639,184 +633,3 @@ class BPFileDownloadView(generics.RetrieveAPIView):
         )
 
         return response
-
-
-class BPActivityDiffView(mixins.ListModelMixin, generics.GenericAPIView):
-    permission_classes = [IsSecretariat | IsAgency | IsViewer]
-    filterset_class = BPActivityFilter
-    queryset = BPActivity.objects.all()
-
-    filter_backends = [
-        DjangoFilterBackend,
-        filters.OrderingFilter,
-        filters.SearchFilter,
-    ]
-    search_fields = ["title", "comment_secretariat"]
-    ordering = ["title", "country", "id"]
-    ordering_fields = ["business_plan__agency__name"] + BPACTIVITY_ORDERING_FIELDS
-
-    def diff_activities(self, activities, old_activities, fields, agency_id):
-        diff_data = []
-        values_fields = ["value_usd", "value_odp", "value_mt"]
-
-        activities_filtered = self.filter_queryset(activities).values_list(
-            "id", flat=True
-        )
-        old_activities_filtered = self.filter_queryset(old_activities).values_list(
-            "id", flat=True
-        )
-
-        data = BPActivityDetailSerializer(activities, many=True).data
-        data_old = BPActivityDetailSerializer(old_activities, many=True).data
-        activities_old = {activity["initial_id"]: activity for activity in data_old}
-
-        for activity in data:
-            activity_old = activities_old.pop(activity["initial_id"], None)
-
-            # check if new activity passes the filter
-            if activity["id"] not in activities_filtered:
-                continue
-
-            # Prepare data for comparison
-            delete_fields(activity, ["id", "is_updated"])
-            if activity_old:
-                delete_fields(activity_old, ["id", "is_updated"])
-                for value in activity.get("values", []) + activity_old.get(
-                    "values", []
-                ):
-                    delete_fields(value, ["id"])
-
-            # And now actually compare
-            if activity == activity_old:
-                # Only display newly-added or changed activities
-                continue
-            copy_fields(activity, activity_old, fields)
-            activity["agency_id"] = agency_id
-            activity["change_type"] = "changed" if activity_old else "new"
-
-            # Also copy nested values
-            old_activity_values = activity_old.get("values", []) if activity_old else []
-            values_old = {
-                (str(value["year"]), value["is_after"]): value
-                for value in old_activity_values
-            }
-            for value in activity.get("values", []):
-                value_old = values_old.pop(
-                    (str(value["year"]), value["is_after"]), None
-                )
-                copy_fields(value, value_old, values_fields)
-
-            diff_data.append(activity)
-
-        for activity in activities_old.values():
-            # check if old activity passes the filter
-            if activity["id"] not in old_activities_filtered:
-                continue
-
-            rename_fields(activity, fields)
-            for value in activity.get("values", []):
-                rename_fields(value, values_fields)
-
-            activity["agency_id"] = agency_id
-            activity["change_type"] = "deleted"
-            diff_data.append(activity)
-
-        return diff_data
-
-    def create_diff_list(self, business_plans, business_plans_ar):
-        ret_diff_list = []
-        business_plans_ar_dict = {
-            (bp.agency_id, bp.version): bp for bp in business_plans_ar
-        }
-
-        fields = BPActivityDetailSerializer.Meta.fields.copy()
-        for field in ("id", "initial_id", "is_updated", "values"):
-            fields.remove(field)
-
-        for business_plan in business_plans:
-            version = business_plan.version - 1
-            agency_id = business_plan.agency_id
-            business_plan_ar = business_plans_ar_dict.get((agency_id, version))
-
-            if not business_plan_ar:
-                continue
-
-            activities = business_plan.activities.all()
-            old_activities = business_plan_ar.activities.all()
-
-            ret_diff_list += self.diff_activities(
-                activities, old_activities, fields, agency_id
-            )
-
-        return ret_diff_list
-
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "business_plan_id",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
-            ),
-            openapi.Parameter(
-                "agency_id",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
-            ),
-            openapi.Parameter(
-                "year_start",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
-            ),
-            openapi.Parameter(
-                "year_end",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
-            ),
-            openapi.Parameter(
-                "version",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
-            ),
-        ],
-    )
-    def get(self, request, *args, **kwargs):
-        business_plan = get_business_plan_from_request(request)
-        # We are diff-ing with the previous version by default
-        business_plan_ar = get_object_or_404(
-            BusinessPlan,
-            version=business_plan.version - 1,
-            agency_id=business_plan.agency_id,
-            year_start=business_plan.year_start,
-            year_end=business_plan.year_end,
-        )
-
-        return Response(self.create_diff_list([business_plan], [business_plan_ar]))
-
-
-class BPActivityDiffAllView(BPActivityDiffView):
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "year_start",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
-            ),
-            openapi.Parameter(
-                "year_end",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
-            ),
-        ],
-    )
-    def get(self, request, *args, **kwargs):
-        business_plans = BusinessPlan.objects.get_latest().filter(
-            year_start=request.query_params.get("year_start"),
-            year_end=request.query_params.get("year_end"),
-        )
-        business_plans_ar = BusinessPlan.objects.filter(
-            year_start=request.query_params.get("year_start"),
-            year_end=request.query_params.get("year_end"),
-            is_latest=False,
-        )
-
-        return Response(self.create_diff_list(business_plans, business_plans_ar))

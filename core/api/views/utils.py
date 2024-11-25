@@ -13,6 +13,7 @@ from core.api.export.replenishment import (
     StatusOfContributionsWriter,
     StatisticsStatusOfContributionsWriter,
 )
+from core.api.serializers.business_plan import BPActivityDetailSerializer
 from core.models import (
     Country,
     TriennialContributionStatus,
@@ -503,23 +504,19 @@ def get_business_plan_from_request(request):
     agency_id = request.query_params.get("agency_id")
     year_start = request.query_params.get("year_start")
     year_end = request.query_params.get("year_end")
-    version = request.query_params.get("version")
+    bp_status = request.query_params.get("bp_status")
     business_plan = None
 
     try:
         if business_plan_id:
             business_plan = BusinessPlan.objects.get(id=business_plan_id)
-        elif all([agency_id, year_start, year_end]):
-            business_plans = BusinessPlan.objects.filter(
+        elif all([agency_id, year_start, year_end, bp_status]):
+            business_plan = BusinessPlan.objects.get(
                 agency_id=agency_id,
                 year_start=year_start,
                 year_end=year_end,
+                status=bp_status,
             )
-            if version:
-                business_plan = business_plans.filter(version=version).first()
-            else:
-                business_plan = business_plans.filter(is_latest=True).first()
-
         if not business_plan:
             raise BusinessPlan.DoesNotExist
     except BusinessPlan.DoesNotExist as e:
@@ -546,6 +543,40 @@ def rename_fields(obj, fields):
 def delete_fields(obj, fields):
     for field in fields:
         obj.pop(field, None)
+
+
+def diff_activities(activities, old_activities):
+    count_new = 0
+    count_changed = 0
+    count_deleted = 0
+
+    data = BPActivityDetailSerializer(activities, many=True).data
+    data_old = BPActivityDetailSerializer(old_activities, many=True).data
+    activities_old = {activity["initial_id"]: activity for activity in data_old}
+
+    for activity in data:
+        activity_old = activities_old.pop(activity["initial_id"], None)
+
+        # Prepare data for comparison
+        delete_fields(activity, ["id", "is_updated"])
+        if activity_old:
+            delete_fields(activity_old, ["id", "is_updated"])
+            for value in activity.get("values", []) + activity_old.get("values", []):
+                delete_fields(value, ["id"])
+
+        # And now actually compare
+        if activity == activity_old:
+            # Only count newly-added or changed activities
+            continue
+        if activity_old:
+            count_changed += 1
+        else:
+            count_new += 1
+
+    for activity in activities_old.values():
+        count_deleted += 1
+
+    return count_new, count_changed, count_deleted
 
 
 class SummaryStatusOfContributionsAggregator:

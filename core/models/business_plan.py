@@ -22,11 +22,6 @@ class BPChemicalType(models.Model):
         return self.name
 
 
-class BusinessPlanManager(models.Manager):
-    def get_latest(self):
-        return self.get_queryset().filter(is_latest=True)
-
-
 class BusinessPlan(models.Model):
     class Status(models.TextChoices):
         consolidated = "Consolidated", "Consolidated"
@@ -67,10 +62,6 @@ class BusinessPlan(models.Model):
     status = models.CharField(
         max_length=32, choices=Status.choices, default=Status.endorsed
     )
-    version = models.IntegerField(default=1)
-    is_latest = models.BooleanField(default=True)  # latest version
-
-    objects = BusinessPlanManager()
 
     def __str__(self):
         return f"{self.agency_id} {self.year_start}-{self.year_end}"
@@ -96,9 +87,6 @@ class BPActivityManager(models.Manager):
                 "values",
             )
         )
-
-    def get_latest(self):
-        return self.get_queryset().filter(business_plan__is_latest=True)
 
 
 class BPActivity(models.Model):
@@ -205,7 +193,6 @@ class BPHistory(models.Model):
         help_text="User who updated the business plan",
     )
     event_description = models.TextField(blank=True)
-    bp_version = models.IntegerField(default=1)
 
     class Meta:
         ordering = ["-created_at"]
