@@ -4,7 +4,7 @@ from django.db.models import Min
 from rest_framework import status, views
 from rest_framework.response import Response
 
-from core.api.utils import PROJECT_SECTOR_TYPE_MAPPING, STATUS_TRANSITIONS
+from core.api.utils import PROJECT_SECTOR_TYPE_MAPPING
 from core.models import CPReport
 from core.models.blend import Blend
 from core.models.business_plan import BPActivity, BusinessPlan
@@ -45,7 +45,6 @@ class SettingsView(views.APIView):
             "blend_types": Blend.BlendTypes.choices,
             "business_plan_statuses": BusinessPlan.Status.choices,
             "business_plan_activity_statuses": BPActivity.Status.choices,
-            "business_plan_status_transitions": STATUS_TRANSITIONS,
             "project_sector_type_mapping": PROJECT_SECTOR_TYPE_MAPPING,
             "project_submission_categories": Project.SubmissionCategory.choices,
             "submission_amount_statuses": SubmissionAmount.SubmissionStatus.choices,

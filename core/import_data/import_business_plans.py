@@ -190,7 +190,7 @@ def get_or_create_bp(row, index_row, start_year, end_year):
         "agency": agency,
         "year_start": start_year,
         "year_end": end_year,
-        "status": BusinessPlan.Status.submitted,
+        "status": BusinessPlan.Status.endorsed,
     }
 
     bp, _ = BusinessPlan.objects.update_or_create(

@@ -41,7 +41,6 @@ from core.api.views.business_plan import (
     BPActivityViewSet,
     BPActivityDiffView,
     BPActivityDiffAllView,
-    BPStatusUpdateView,
     BusinessPlanViewSet,
 )
 from core.api.views.chemicals import (
@@ -410,11 +409,6 @@ urlpatterns = [
         "business-plan/files/<int:id>/download/",
         BPFileDownloadView.as_view(),
         name="business-plan-file-download",
-    ),
-    path(
-        "business-plan/<int:id>/status-update/",
-        BPStatusUpdateView.as_view(),
-        name="business-plan-status",
     ),
     path(
         "business-plan/activities/diff/",

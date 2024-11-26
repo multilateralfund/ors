@@ -29,13 +29,8 @@ class BusinessPlanManager(models.Manager):
 
 class BusinessPlan(models.Model):
     class Status(models.TextChoices):
-        agency_draft = "Agency Draft", "Agency Draft"
-        secretariat_draft = "Secretariat Draft", "Secretariat Draft"
-        submitted_for_review = "Submitted for review", "Submitted for review"
-        submitted = "Submitted", "Submitted"
-        need_changes = "Need Changes", "Need Changes"
-        approved = "Approved", "Approved"
-        rejected = "Rejected", "Rejected"
+        consolidated = "Consolidated", "Consolidated"
+        endorsed = "Endorsed", "Endorsed"
 
     def upload_path(self, filename):
         return f"bp_files/{self.agency}/{self.year_start}-{self.year_end}/{filename}"
@@ -70,7 +65,7 @@ class BusinessPlan(models.Model):
     )
     agency = models.ForeignKey(Agency, on_delete=models.CASCADE)
     status = models.CharField(
-        max_length=32, choices=Status.choices, default=Status.agency_draft
+        max_length=32, choices=Status.choices, default=Status.endorsed
     )
     version = models.IntegerField(default=1)
     is_latest = models.BooleanField(default=True)  # latest version
@@ -211,11 +206,6 @@ class BPHistory(models.Model):
     )
     event_description = models.TextField(blank=True)
     bp_version = models.IntegerField(default=1)
-
-    event_in_draft = models.BooleanField(
-        default=True,
-        help_text="Indicate whether history entry was created while in Draft",
-    )
 
     class Meta:
         ordering = ["-created_at"]

@@ -5,7 +5,6 @@ from datetime import datetime
 from django.db import models
 from django.db.models import Q, F
 from openpyxl.utils import get_column_letter
-from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
 from constance import config
@@ -504,44 +503,26 @@ def get_business_plan_from_request(request):
     agency_id = request.query_params.get("agency_id")
     year_start = request.query_params.get("year_start")
     year_end = request.query_params.get("year_end")
-    version = request.query_params.get("version")
+    bp_status = request.query_params.get("bp_status")
     business_plan = None
 
     try:
         if business_plan_id:
             business_plan = BusinessPlan.objects.get(id=business_plan_id)
-        elif all([agency_id, year_start, year_end]):
-            business_plans = BusinessPlan.objects.filter(
+        elif all([agency_id, year_start, year_end, bp_status]):
+            business_plan = BusinessPlan.objects.get(
                 agency_id=agency_id,
                 year_start=year_start,
                 year_end=year_end,
+                status=bp_status,
+                is_latest=True,
             )
-            if version:
-                business_plan = business_plans.filter(version=version).first()
-            else:
-                business_plan = business_plans.filter(is_latest=True).first()
-
         if not business_plan:
             raise BusinessPlan.DoesNotExist
     except BusinessPlan.DoesNotExist as e:
         raise ValidationError({"error": "Business plan not found"}) from e
 
     return business_plan
-
-
-def check_status_transition(user, initial_status, new_status, status_transitions):
-    # validate status transition
-    if (
-        initial_status not in status_transitions
-        or new_status not in status_transitions[initial_status]
-    ):
-        return status.HTTP_400_BAD_REQUEST, "Invalid status transition"
-
-    # validate user permissions
-    if user.user_type not in status_transitions[initial_status][new_status]:
-        return status.HTTP_403_FORBIDDEN, "User not allowed to update status"
-
-    return status.HTTP_200_OK, ""
 
 
 def copy_fields(obj, obj_old, fields):

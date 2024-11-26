@@ -10,8 +10,6 @@ from django.db.models import OuterRef
 from django.http import FileResponse
 from django_filters import rest_framework as filters
 
-from core.models.business_plan import BusinessPlan
-
 User = get_user_model()
 
 SECTION_ANNEX_MAPPING = {
@@ -33,67 +31,6 @@ PROJECT_SECTOR_TYPE_MAPPING = {
     # sector code: available project types
     "PMU": ["TAS"],
     "TAS": ["TAS"],
-}
-
-STATUS_TRANSITIONS = {
-    # no new version
-    BusinessPlan.Status.agency_draft: {
-        BusinessPlan.Status.agency_draft: [
-            User.UserType.AGENCY_SUBMITTER,
-            User.UserType.AGENCY_INPUTTER,
-            User.UserType.SECRETARIAT,
-        ],
-        BusinessPlan.Status.submitted_for_review: [
-            User.UserType.AGENCY_SUBMITTER,
-            User.UserType.SECRETARIAT,
-        ],
-    },
-    # new version
-    BusinessPlan.Status.submitted_for_review: {
-        BusinessPlan.Status.need_changes: [User.UserType.SECRETARIAT],
-        BusinessPlan.Status.submitted: [User.UserType.SECRETARIAT],
-    },
-    # new version
-    BusinessPlan.Status.need_changes: {
-        BusinessPlan.Status.agency_draft: [
-            User.UserType.AGENCY_SUBMITTER,
-            User.UserType.AGENCY_INPUTTER,
-            User.UserType.SECRETARIAT,
-        ],
-        BusinessPlan.Status.submitted_for_review: [
-            User.UserType.AGENCY_SUBMITTER,
-            User.UserType.AGENCY_INPUTTER,
-            User.UserType.SECRETARIAT,
-        ],
-    },
-    # new version
-    BusinessPlan.Status.submitted: {
-        BusinessPlan.Status.approved: [User.UserType.SECRETARIAT],
-        BusinessPlan.Status.rejected: [User.UserType.SECRETARIAT],
-    },
-}
-
-STATUS_TRANSITIONS_CONSOLIDATED_DATA = {
-    # new version
-    BusinessPlan.Status.submitted_for_review: {
-        BusinessPlan.Status.secretariat_draft: [User.UserType.SECRETARIAT],
-    },
-    # no new version
-    BusinessPlan.Status.secretariat_draft: {
-        BusinessPlan.Status.secretariat_draft: [User.UserType.SECRETARIAT],
-        BusinessPlan.Status.need_changes: [User.UserType.SECRETARIAT],
-        BusinessPlan.Status.submitted: [User.UserType.SECRETARIAT],
-        BusinessPlan.Status.approved: [User.UserType.SECRETARIAT],
-        BusinessPlan.Status.rejected: [User.UserType.SECRETARIAT],
-    },
-    # new version
-    BusinessPlan.Status.need_changes: {
-        BusinessPlan.Status.secretariat_draft: [User.UserType.SECRETARIAT],
-    },
-    # new version
-    BusinessPlan.Status.submitted: {
-        BusinessPlan.Status.secretariat_draft: [User.UserType.SECRETARIAT],
-    },
 }
 
 

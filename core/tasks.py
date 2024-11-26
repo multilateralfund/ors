@@ -133,33 +133,6 @@ def send_mail_bp_update(business_plan_id):
 
 
 @app.task()
-def send_mail_bp_status_update(business_plan_id):
-    business_plan = get_object_or_404(BusinessPlan, id=business_plan_id)
-    link = (
-        f"{settings.FRONTEND_HOST[0]}/business-plans/{business_plan.agency.name}/"
-        f"{business_plan.year_start}/{business_plan.year_end}"
-    )
-    recipients = User.objects.filter(
-        user_type__in=[User.UserType.AGENCY_SUBMITTER, User.UserType.AGENCY_INPUTTER],
-        agency=business_plan.agency,
-    )
-    action = business_plan.status
-
-    send_mail(
-        "MLF Knowledge Management System: Business Plan added",
-        (
-            f"This is an automated message informing you that the "
-            f"Business Plan for years: {business_plan.year_start} - "
-            f"{business_plan.year_end} has been {action}.\n\n"
-            f"The Business Plan is available at {link}"
-        ),
-        None,  # use DEFAULT_FROM_EMAIL
-        recipients.values_list("email", flat=True),
-        fail_silently=False,
-    )
-
-
-@app.task()
 def send_mail_set_password_country_user(user_emails):
     for user_email in user_emails:
         try:

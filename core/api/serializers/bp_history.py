@@ -31,6 +31,5 @@ class BPHistorySerializer(serializers.ModelSerializer):
             "updated_by_id",
             "updated_by_username",
             "event_description",
-            "event_in_draft",
             "bp_version",
         ]

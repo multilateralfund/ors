@@ -1,11 +1,9 @@
 'use client'
 
 import { ApiBP } from '@ors/types/api_bp_get'
-import { UserType, userCanEditBusinessPlan } from '@ors/types/user_types'
 
 import React, { useContext, useState } from 'react'
 
-import { Button } from '@mui/material'
 import cx from 'classnames'
 import NextLink from 'next/link'
 
@@ -13,7 +11,6 @@ import Link from '@ors/components/ui/Link/Link'
 import { Status, statusStyles } from '@ors/components/ui/StatusPill/StatusPill'
 import BPContext from '@ors/contexts/BusinessPlans/BPContext'
 import useClickOutside from '@ors/hooks/useClickOutside'
-import { useStore } from '@ors/store'
 
 import { useGetBPVersions } from './BP/useGetBPVersions'
 import { RedirectToBpList } from './RedirectToBpList'
@@ -165,51 +162,6 @@ const HeaderVersionsDropdown = ({
   )
 }
 
-const ViewHeaderActions = () => {
-  const { data } = useContext(BPContext) as any
-  const business_plan = data?.results?.business_plan
-
-  const { user_type } = useStore((state) => state.user?.data)
-
-  const isDraft = business_plan?.status === 'draft'
-
-  return (
-    <div className="flex items-center">
-      {!!business_plan && (
-        <div className="container flex w-full justify-between gap-x-4 px-0">
-          <div className="flex justify-between gap-x-4">
-            {userCanEditBusinessPlan[user_type as UserType] && (
-              <>
-                <Link
-                  className="px-4 py-2 shadow-none"
-                  color="secondary"
-                  href={`/business-plans/${business_plan?.agency.name}/${business_plan?.year_start}-${business_plan?.year_end}/edit/`}
-                  size="large"
-                  variant="contained"
-                  button
-                >
-                  {/* {isDraft ? 'Edit as draft' : 'Add new version'} */}
-                  Edit as draft
-                </Link>
-                {isDraft && (
-                  <Button
-                    color="primary"
-                    size="small"
-                    variant="contained"
-                    onClick={() => {}}
-                  >
-                    Submit final version
-                  </Button>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
 type HeaderTagProps = {
   business_plan: any
   children: React.ReactNode
@@ -287,7 +239,7 @@ const BPHeader = ({
 }
 
 const BPHeaderView = ({
-  actions = <ViewHeaderActions />,
+  actions,
   tag = <ViewHeaderTag />,
   titlePrefix,
   viewType = 'view',

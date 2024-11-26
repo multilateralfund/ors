@@ -122,9 +122,19 @@ class BPActivityListFilter(BPActivityFilter):
         queryset=Agency.objects.all(),
         widget=CSVWidget,
     )
+    bp_status = filters.MultipleChoiceFilter(
+        field_name="business_plan__status",
+        choices=BusinessPlan.Status.choices,
+        widget=CSVWidget,
+    )
 
     class Meta(BPActivityFilter.Meta):
-        fields = BPActivityFilter.Meta.fields + ["year_start", "year_end", "agency_id"]
+        fields = BPActivityFilter.Meta.fields + [
+            "year_start",
+            "year_end",
+            "agency_id",
+            "bp_status",
+        ]
 
 
 class BPFileFilter(filters.FilterSet):
