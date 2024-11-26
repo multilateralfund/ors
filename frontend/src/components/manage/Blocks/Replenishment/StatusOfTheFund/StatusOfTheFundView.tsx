@@ -269,7 +269,7 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
                         isEditing={isEditing}
                         setEditingSection={setEditingSection}
                         label={
-                          key.toString() === 'gain_loss' && provisions[key].value !== null && provisions[key].value < 0
+                          key.toString() === 'gain_loss' && (provisions[key]?.value ?? 0) < 0
                             ? provisions[key].negative_label : provisions[key].label
                         }
                         value={
