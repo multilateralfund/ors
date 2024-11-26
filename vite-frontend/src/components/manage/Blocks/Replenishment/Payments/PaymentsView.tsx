@@ -7,7 +7,7 @@ import React, { ChangeEvent, useContext, useMemo, useState } from 'react'
 import cx from 'classnames'
 import Cookies from 'js-cookie'
 import { times } from 'lodash'
-import Link from 'next/link'
+import { Link } from 'wouter'
 import { enqueueSnackbar } from 'notistack'
 
 import ConfirmDialog from '@ors/components/manage/Blocks/Replenishment/ConfirmDialog'
@@ -386,7 +386,7 @@ function PaymentsView() {
       <div className="mb-2 flex items-center gap-4 print:fixed print:left-[480px] print:top-12">
         <Link
           className="m-0 text-2xl uppercase text-primary no-underline print:hidden"
-          href="./invoices"
+          href="/invoices"
         >
           Invoices
         </Link>

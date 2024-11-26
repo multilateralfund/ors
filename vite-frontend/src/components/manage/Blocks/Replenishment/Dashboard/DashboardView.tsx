@@ -3,8 +3,7 @@
 import React, { useContext } from 'react'
 
 import cx from 'classnames'
-import Link from 'next/link'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { Link, useLocation, useSearch } from 'wouter'
 
 import BarChart from '@ors/components/manage/Blocks/Replenishment/Dashboard/BarChart'
 import TwoAreaCharts from '@ors/components/manage/Blocks/Replenishment/Dashboard/TwoAreaCharts'
@@ -540,19 +539,19 @@ const TABS: ITab[] = [
   {
     component: CummulativeTab,
     label: 'Cummulative',
-    path: '/replenishment/dashboard/cummulative',
+    path: '/cummulative',
     showPeriodSelector: false,
   },
   {
     component: TriennialTab,
     label: 'Triennial',
-    path: '/replenishment/dashboard/triennial',
+    path: '/triennial',
     showPeriodSelector: true,
   },
   {
     component: AnnualTab,
     label: 'Annual',
-    path: '/replenishment/dashboard/annual',
+    path: '/annual',
     showPeriodSelector: true,
   },
 ]
@@ -603,16 +602,14 @@ function DashboardView(props: IDashboardViewProps) {
   const { newData } = useGetDashboardData()
   const { asOfDate, charts } = newData
 
-  const searchParams = useSearchParams()
+  const searchParams = new URLSearchParams(useSearch())
   const onlyCeits = searchParams.has('ceits')
 
-  const pathname = usePathname()
+  const [pathname, setLocation] = useLocation()
   const [currentSection, navLinks] = getTabLinks(
     pathname,
     searchParams.toString(),
   )
-
-  const router = useRouter()
 
   const ctx = useContext<any>(ReplenishmentContext)
 
@@ -637,17 +634,17 @@ function DashboardView(props: IDashboardViewProps) {
 
   function handleToggleCeits() {
     if (onlyCeits) {
-      router.push(`${pathname}`)
+      setLocation(`${pathname}`)
     } else {
-      router.push(`${pathname}?ceits=yes`)
+      setLocation(`${pathname}?ceits=yes`)
     }
   }
 
   function handlePeriodChange(newPath: string) {
     if (searchParams.size) {
-      router.push(`${newPath}?${searchParams.toString()}`)
+      setLocation(`${newPath}?${searchParams.toString()}`)
     } else {
-      router.push(newPath)
+      setLocation(newPath)
     }
   }
 

@@ -345,7 +345,7 @@ export default function CPViewWrapper(props: { iso3: string; year: number }) {
     return (
       <div>
         <PageHeading>
-          {report.error._info.status} - {report.error._info.statusText}
+          {report.error._info?.status} - {report.error._info?.statusText}
         </PageHeading>
         <p>{report.error.error}</p>
       </div>

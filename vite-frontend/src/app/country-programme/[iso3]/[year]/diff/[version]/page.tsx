@@ -1,51 +1,78 @@
+import { useEffect, useState } from 'react'
+
+import { useParams } from "wouter";
+
 import { CPVersionInfo, Country } from '@ors/types/store'
-import type { Metadata } from 'next'
 
 import CPDiffViewWrapper from '@ors/components/manage/Blocks/CountryProgramme/CPViewDiff'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import api from '@ors/helpers/Api/_api'
 
-export const metadata: Metadata = {
-  title: 'Country programme diff',
-}
+// export const metadata: Metadata = {
+//   title: 'Country programme diff',
+// }
 
-export default async function CountryProgrammeReportDiff(props: {
-  params: {
-    iso3: string
-    version: string
-    year: string
-  }
-}) {
-  const { iso3, year } = props.params
-  const version = parseInt(props.params.version, 10)
+function useCountries() {
+  const [countries, setCountries] = useState([])
 
-  const countries =
-    (await api<Country[]>(
+  async function fetchCountries() {
+    const resp = (await api<Country[]>(
       'api/countries/',
       { params: { with_cp_report: true } },
       false,
     )) || []
+    setCountries(resp)
+  }
 
-  const country = countries.filter((country) => country.iso3 === iso3)[0]
+  useEffect(function(){
+    fetchCountries()
+  }, [])
 
-  const versions =
-    (await api<CPVersionInfo[]>(
+  return countries
+}
+
+function useVersions(country: Country, year: string) {
+  const [versions, setVersions] = useState([])
+
+  async function fetchVersions(country: Country, year: string) {
+    const resp = (await api<CPVersionInfo[]>(
       'api/country-programme/versions',
       { params: { country_id: country.id, year } },
       false,
     )) || []
+    setVersions(resp)
+  }
 
-  const report_id = versions.filter((ver) => ver.version == version).pop()!.id
+  useEffect(function(){
+    if (country && year) {
+      fetchVersions(country, year)
+    }
+  }, [country, year])
+
+  return versions
+}
+
+export default function CountryProgrammeReportDiff() {
+  const params = useParams()
+  const { iso3, year } = params
+  const version = parseInt(params.version, 10)
+
+  const countries = useCountries()
+  const country = countries.filter((country) => country.iso3 === iso3)[0]
+
+  const versions = useVersions(country, year)
+
+  const report_id = versions?.filter((ver) => ver.version == version).pop()?.id
   const isLastVersion = version === versions.length
 
   return (
     <PageWrapper>
-      <CPDiffViewWrapper
+      { report_id ? <CPDiffViewWrapper
         country_id={country.id}
         report_id={!isLastVersion ? report_id : undefined}
         version={version}
         year={parseInt(year, 10)}
-      />
+      /> : null }
     </PageWrapper>
   )
 }

@@ -1,4 +1,4 @@
-'use client'
+import { useParams } from "wouter";
 
 import DownloadButtons from '@ors/app/replenishment/DownloadButtons'
 import ReplenishmentHeading from '@ors/app/replenishment/ReplenishmentHeading'
@@ -6,10 +6,8 @@ import DashboardView from '@ors/components/manage/Blocks/Replenishment/Dashboard
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import { formatApiUrl } from '@ors/helpers'
 
-export default function ReplenishmentDashboard(props: {
-  params: { period: string; section: string }
-}) {
-  const { period, section } = props.params
+export default function ReplenishmentDashboard() {
+  const { period, section } = useParams()
   return (
     <>
       <title>Replenishment - Dashboard</title>

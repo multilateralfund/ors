@@ -141,8 +141,6 @@ export default function RootLayout({
   const user = useUser()
   const appState = useAppState(user)
 
-  console.log(appState, pathname)
-
   return (
         <div id="layout" className={cx("h-full")}>
           <StoreProvider

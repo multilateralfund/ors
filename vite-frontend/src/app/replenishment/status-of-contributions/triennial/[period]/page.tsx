@@ -1,14 +1,12 @@
-'use client'
+import { useParams } from 'wouter'
 
 import ReplenishmentHeading from '@ors/app/replenishment/ReplenishmentHeading'
 import SCDownload from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/SCDownload'
 import { SCView } from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/SCView'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
-export default function ReplenishmentSoCTriennial(props: {
-  params: { period: string }
-}) {
-  const { period } = props.params
+export default function ReplenishmentSoCTriennial() {
+  const { period } = useParams()
 
   return (
     <>
