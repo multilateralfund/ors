@@ -7,7 +7,6 @@ import React, { useContext, useState } from 'react'
 
 import { Button } from '@mui/material'
 import cx from 'classnames'
-import NextLink from 'next/link'
 
 import Link from '@ors/components/ui/Link/Link'
 import { Status, statusStyles } from '@ors/components/ui/StatusPill/StatusPill'
@@ -45,7 +44,6 @@ const BPDiffButton = ({
     <Link
       className="px-5"
       color="secondary"
-      prefetch={false}
       size="large"
       variant="contained"
       href={`/business-plans/${agency_name}/${year_start}-${year_end}/diff/${version}
@@ -143,7 +141,7 @@ const HeaderVersionsDropdown = ({
       >
         {versions.map((version: any, idx: number) => {
           return (
-            <NextLink
+            <Link
               key={version.id}
               className="flex items-center gap-x-2 rounded-none px-2 py-2 text-black no-underline hover:bg-primary hover:text-white"
               href={version.url}
@@ -155,7 +153,7 @@ const HeaderVersionsDropdown = ({
                   {idx === 0 && displayStatusTag(version.status)}
                 </div>
               </div>
-            </NextLink>
+            </Link>
           )
         })}
       </div>

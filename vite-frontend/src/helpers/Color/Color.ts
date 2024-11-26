@@ -4,7 +4,7 @@ import { ColorRecordType } from '@ors/types/tailwind'
 import resolveConfig from 'tailwindcss/resolveConfig'
 
 import { warning } from '@ors/helpers/Log/Log'
-import tailwindConfigModule from 'tailwind-config'
+import tailwindConfigModule from '~/tailwind.config'
 
 const tailwindConfig = resolveConfig(tailwindConfigModule)
 

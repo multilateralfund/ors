@@ -5,8 +5,8 @@ import {
 } from '@mui/material'
 import cx from 'classnames'
 
-import BackArrow from './back-arrow.svg?react'
-import NextArrow from './next-arrow.svg?react'
+import BackArrow from './back-arrow.svg?react' // @ts-ignore
+import NextArrow from './next-arrow.svg?react' // @ts-ignore
 
 type PaginationProps = {
   loading?: boolean

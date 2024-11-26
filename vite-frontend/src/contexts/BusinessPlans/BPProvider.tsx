@@ -2,7 +2,7 @@ import { ApiBPGet } from '@ors/types/api_bp_get'
 
 import { useMemo } from 'react'
 
-import { useParams } from 'next/navigation'
+import { useParams } from 'wouter'
 
 import { bpTypes } from '@ors/components/manage/Blocks/BusinessPlans/constants'
 import { getAgencyByName } from '@ors/components/manage/Blocks/BusinessPlans/utils'

@@ -1,6 +1,6 @@
 import { Button } from '@mui/material'
 import { entries, find, indexOf, isEmpty, values } from 'lodash'
-import { useParams } from 'next/navigation'
+import { useParams } from 'wouter'
 import { useSnackbar } from 'notistack'
 
 import Link from '@ors/components/ui/Link/Link'

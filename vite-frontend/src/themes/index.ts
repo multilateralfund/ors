@@ -5,7 +5,7 @@ import {
 } from '@mui/material/styles'
 import resolveConfig from 'tailwindcss/resolveConfig'
 
-import tailwindConfigModule from 'tailwind-config'
+import tailwindConfigModule from '~/tailwind.config'
 
 const tailwindConfig = resolveConfig(tailwindConfigModule)
 

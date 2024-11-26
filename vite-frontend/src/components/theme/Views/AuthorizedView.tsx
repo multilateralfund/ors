@@ -1,7 +1,6 @@
-'use client'
 import React from 'react'
 
-// import { usePathname, useRouter } from 'next/navigation'
+import { useLocation } from 'wouter'
 
 import Print from '@ors/components/manage/Utils/Print'
 import Footer from '@ors/components/theme/Footer/AuthorizedFooter'
@@ -14,17 +13,16 @@ export default function AuthorizedView({
 }: {
   children: React.ReactNode
 }) {
-  // const pathname = usePathname()
-  // const router = useRouter()
+  const [pathname, setLocation] = useLocation()
   const user = useStore((state) => state.user?.data)
 
-  // React.useEffect(() => {
-  //   if (!user) {
-  //     router.push(
-  //       pathname && pathname !== '/' ? `/login?redirect=${pathname}` : '/login',
-  //     )
-  //   }
-  // }, [user, pathname, router])
+  React.useEffect(() => {
+    if (!user) {
+      setLocation(
+        pathname && pathname !== '/' ? `/login?redirect=${pathname}` : '/login',
+      )
+    }
+  }, [user, pathname, setLocation])
 
   if (!user) {
     return <Loading className="bg-action-disabledBackground" />

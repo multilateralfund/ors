@@ -2,20 +2,22 @@
 
 import { useEffect } from 'react'
 
-import { useRouter } from 'next/navigation'
+import { useLocation } from 'wouter'
 
 import useGetBpPeriods from '@ors/components/manage/Blocks/BusinessPlans/BPList/useGetBPPeriods'
 import { useGetYearRanges } from '@ors/components/manage/Blocks/BusinessPlans/useGetYearRanges'
 
 export default function BusinessPlans() {
-  const router = useRouter()
+  const [_, setLocation] = useLocation()
 
   const { results: yearRanges } = useGetYearRanges()
   const { periodOptions } = useGetBpPeriods(yearRanges)
 
   useEffect(() => {
     if (periodOptions.length > 0) {
-      router.replace(`/business-plans/list/plans/${periodOptions[0].value}`)
+      setLocation(`/list/plans/${periodOptions[0].value}`)
     }
-  }, [periodOptions, router])
+  }, [periodOptions, setLocation])
+
+  return <></>
 }

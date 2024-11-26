@@ -1,4 +1,3 @@
-'use client'
 import type {
   ButtonProps as MuiButtonProps,
   LinkProps as MuiLinkProps,
@@ -18,7 +17,7 @@ function Link({
   children,
   className,
   ...rest
-}: ButtonProps | LinkProps) {
+}: any) {
   return button ? (
     // @ts-ignore
     <Button

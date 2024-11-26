@@ -26,11 +26,11 @@ import '../themes/styles/global.css'
 
 
 function useUser() {
-  const [userData, setUserData] = useState({loaded: false, user: null})
+  const [userData, setUserData] = useState<{loaded: boolean, user: null | ApiUser}>({loaded: false, user: null})
 
   async function fetchUser() {
     try {
-      const apiUser = await api('api/auth/user/', {})
+      const apiUser = await api<ApiUser>('api/auth/user/', {})
       setUserData({loaded: true, user: apiUser})
     } catch (error) {
       setUserData({loaded: true, user: null})
@@ -43,7 +43,7 @@ function useUser() {
 }
 
 function useAppState(user) {
-  const [ state, setState ] = useState(null)
+  const [ state, setState ] = useState<any>(null)
 
   async function fetchState(user) {
     const [
@@ -143,9 +143,11 @@ export default function RootLayout({
   const { user, loaded: userLoaded } = useUser()
   const appState = useAppState(user)
 
-  if (userLoaded && !user) {
-    setLocation("/login")
-  }
+  console.log(user, userLoaded)
+
+  // if (userLoaded && !user) {
+  //   setLocation("/login")
+  // }
 
   return (
         <div id="layout" className={cx("h-full")}>

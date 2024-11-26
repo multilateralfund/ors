@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from 'react'
 
-import { useParams } from 'next/navigation'
+import { useParams } from 'wouter'
 
 import Loading from '@ors/components/theme/Loading/Loading'
 import BPProvider from '@ors/contexts/BusinessPlans/BPProvider'

@@ -1,10 +1,11 @@
-'use client'
 import type { ByError, ByLayout } from '@ors/config/Views'
 
 import React, { useEffect, useMemo } from 'react'
 import { browserName } from 'react-device-detect'
 
 import { SnackbarProvider } from 'notistack'
+
+import { useLocation } from "wouter";
 
 import config from '@ors/config'
 
@@ -30,7 +31,7 @@ export const getErrorView = (error?: keyof ByError) => {
 export default function View({ children }: { children: React.ReactNode }) {
   const internalError = useStore((state) => state.internalError)
   const errorName = useStore((state) => state.internalError?.status)
-  const pathname = window.location.pathname
+  const [ pathname ] = useLocation()
 
   const view = getCurrentView(pathname)
 

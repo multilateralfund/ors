@@ -83,7 +83,6 @@ const ReportDiffButton = (props: any) => {
       className="px-5"
       color="secondary"
       href={`/country-programme/${report.country?.iso3}/${report.data.year}/diff/${report.data.version}`}
-      prefetch={false}
       size="large"
       variant="contained"
       button

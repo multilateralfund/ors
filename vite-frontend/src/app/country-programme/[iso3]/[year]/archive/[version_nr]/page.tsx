@@ -13,7 +13,7 @@ import api from '@ors/helpers/Api/_api'
 // }
 
 function useCountries() {
-  const [countries, setCountries] = useState([])
+  const [countries, setCountries] = useState<Country[]>([])
 
   async function fetchCountries() {
     const resp = (await api<Country[]>(
@@ -32,7 +32,7 @@ function useCountries() {
 }
 
 function useVersions(country: Country, year: string) {
-  const [versions, setVersions] = useState([])
+  const [versions, setVersions] = useState<CPVersionInfo[]>([])
 
   async function fetchVersions(country: Country, year: string) {
     const resp = (await api<CPVersionInfo[]>(

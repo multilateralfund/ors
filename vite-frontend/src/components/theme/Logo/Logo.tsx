@@ -1,8 +1,7 @@
-'use client'
-
 import cx from 'classnames'
 
-import Image from '@ors/components/ui/Image/Image'
+import logoWhiteUrl from '/logos/logo_en_white.png?url'
+import logoUrl from '/logos/logo_en.png?url'
 
 export type LogoProps = {
   className?: string
@@ -10,17 +9,14 @@ export type LogoProps = {
 }
 
 export default function Logo({ className, variant }: LogoProps) {
-  const src =
-    variant === 'white'
-      ? '/assets/logos/logo_en_white.png'
-      : '/assets/logos/logo_en.png'
+  const src = variant === 'white' ? logoWhiteUrl : logoUrl
   return (
     <div className={cx('logo relative block items-center', className)}>
-      <Image
+      <img
         id="logo"
         alt="Multilateral Fund"
-        priority={true}
-        sizes="260px"
+        width="260"
+        style={{ width: "260px"}}
         src={src}
       />
     </div>

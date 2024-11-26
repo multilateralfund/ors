@@ -28,6 +28,23 @@ import ReplenishmentStatusOfContributionsAnnualYearPage from "@ors/app/replenish
 import ReplenishmentStatusOfContributionsTriennialPage from "@ors/app/replenishment/status-of-contributions/triennial/page";
 import ReplenishmentStatusOfContributionsTriennialPeriodPage from "@ors/app/replenishment/status-of-contributions/triennial/[period]/page";
 
+import BPPage from "@ors/app/business-plans/page";
+import BPListLayout from "@ors/app/business-plans/list/layout";
+import BPListPlansPeriodPage from "@ors/app/business-plans/list/plans/[period]/page";
+import BPListActivitiesPeriodPage from "@ors/app/business-plans/list/activities/[period]/page";
+import BPListActivitiesPeriodTypeEditPage from "@ors/app/business-plans/list/activities/[period]/[type]/edit/page";
+import BPAgencyPeriodPage from "@ors/app/business-plans/[agency]/[period]/page";
+import BPAgencyPeriodEditPage from "@ors/app/business-plans/[agency]/[period]/edit/page";
+import BPAgencyPeriodDiffVersionPage from "@ors/app/business-plans/[agency]/[period]/diff/[version]/page";
+
+import ProjectsPage from "@ors/app/projects/page";
+import ProjectsProjectPage from "@ors/app/projects/[project_id]/page";
+
+import ProjectSubmissionsPage from "@ors/app/project-submissions/page";
+import ProjectSubmissionsSubmissionPage from "@ors/app/project-submissions/[submission_id]/page";
+import ProjectSubmissionsCreatePage from "@ors/app/project-submissions/create/page";
+import ProjectSubmissionsEditPage from "@ors/app/project-submissions/edit/page";
+
 import NotFoundPage from "@ors/app/not-found";
 
 import RootLayout from './app/layout'
@@ -40,6 +57,35 @@ export default function App() {
             <LoginLayout>
               <LoginPage />
             </LoginLayout>
+          </Route>
+          <Route path="/business-plans" nest>
+            <Route path="/:agency/:period">
+              <BPAgencyPeriodPage />
+            </Route>
+            <Route path="/:agency/:period/edit">
+              <BPAgencyPeriodEditPage />
+            </Route>
+            <Route path="/:agency/:period/diff/:version">
+              <BPAgencyPeriodDiffVersionPage />
+            </Route>
+            <Route path="/list/plans/:period">
+              <BPListLayout>
+                <BPListPlansPeriodPage />
+              </BPListLayout>
+            </Route>
+            <Route path="/list/activities/:period/:type/edit">
+              <BPListLayout>
+                <BPListActivitiesPeriodTypeEditPage />
+              </BPListLayout>
+            </Route>
+            <Route path="/list/activities/:period">
+              <BPListLayout>
+                <BPListActivitiesPeriodPage />
+              </BPListLayout>
+            </Route>
+            <Route path="/">
+              <BPPage />
+            </Route>
           </Route>
           <Route path="/country-programme/reports">
             <CountryProgrammePage />
@@ -122,6 +168,24 @@ export default function App() {
                 </Route>
               </Route>
             </ReplenishmentLayout>
+          </Route>
+          <Route path="/project-submissions/create">
+            <ProjectSubmissionsCreatePage />
+          </Route>
+          <Route path="/project-submissions/edit">
+            <ProjectSubmissionsEditPage />
+          </Route>
+          <Route path="/project-submissions/:submission_id">
+            <ProjectSubmissionsSubmissionPage />
+          </Route>
+          <Route path="/project-submissions/">
+            <ProjectSubmissionsPage />
+          </Route>
+          <Route path="/projects/:project_id">
+            <ProjectsProjectPage />
+          </Route>
+          <Route path="/projects">
+            <ProjectsPage />
           </Route>
           <Route>
             <NotFoundPage />

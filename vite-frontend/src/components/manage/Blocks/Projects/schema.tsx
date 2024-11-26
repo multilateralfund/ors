@@ -47,7 +47,6 @@ export function usePListingGridOptions() {
               <Link
                 className={cx(props.className)}
                 href={`/projects/${props.data.id}`}
-                prefetch={false}
               >
                 {props.value}
               </Link>
