@@ -100,7 +100,7 @@ const BPEdit = () => {
           to recover it?
         </BPRestoreEdit>
       )}
-      {!loading && (
+      {!loading && form && (
         <>
           <div className="mb-1 flex justify-end">
             <div

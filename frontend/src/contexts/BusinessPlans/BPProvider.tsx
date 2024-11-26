@@ -2,6 +2,7 @@ import { ApiBPGet } from '@ors/types/api_bp_get'
 
 import { useMemo } from 'react'
 
+import { capitalize } from 'lodash'
 import { useParams } from 'next/navigation'
 
 import { getAgencyByName } from '@ors/components/manage/Blocks/BusinessPlans/utils'
@@ -14,7 +15,7 @@ import { BPProviderProps } from './types'
 const BP_PER_PAGE = 20
 
 function BPProvider(props: BPProviderProps) {
-  const { children } = props
+  const { children, status } = props
 
   const pathParams = useParams<{ agency: string; period: string }>()
   const { agency, period } = pathParams
@@ -29,6 +30,7 @@ function BPProvider(props: BPProviderProps) {
     options: {
       params: {
         agency_id: currentAgency?.id,
+        bp_status: capitalize(status),
         limit: BP_PER_PAGE,
         offset: 0,
         year_end: period.split('-')[1],

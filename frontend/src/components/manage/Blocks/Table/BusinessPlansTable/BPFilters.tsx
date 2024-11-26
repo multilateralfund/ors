@@ -2,6 +2,7 @@
 import React, { useMemo } from 'react'
 
 import { capitalize } from 'lodash'
+import { useParams } from 'next/navigation'
 
 import DownloadButtons from '@ors/app/business-plans/DownloadButtons'
 import ActivitiesFilters from '@ors/components/manage/Blocks/BusinessPlans/ActivitiesFilters'
@@ -11,6 +12,7 @@ import { formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
 import { bpTypes } from '../../BusinessPlans/constants'
+import { BpPathParams } from '../../BusinessPlans/types'
 import { filtersToQueryParams } from '../../BusinessPlans/utils'
 import TableViewSelector from './TableViewSelector'
 
@@ -30,6 +32,8 @@ export default function BPFilters({
   setParams,
   withAgency = false,
 }: any) {
+  const { status } = useParams<BpPathParams>()
+
   const commonSlice = useStore((state) => state.common)
   const bpSlice = useStore((state) => state.businessPlans)
   const projects = useStore((state) => state.projects)
@@ -45,10 +49,13 @@ export default function BPFilters({
     setFilters((filters: any) => ({ ...filters, ...newFilters }))
   }
 
-  const exportParams = useMemo(
-    () => filtersToQueryParams(reqParams),
-    [reqParams],
-  )
+  const exportParams = useMemo(() => {
+    const currentReqParams = status
+      ? { ...reqParams, bp_status: capitalize(status) }
+      : reqParams
+
+    return filtersToQueryParams(currentReqParams)
+  }, [status, reqParams])
 
   return (
     <div className="bp-table-toolbar mb-4 flex flex-col justify-between gap-4 lg:flex-row lg:items-center">

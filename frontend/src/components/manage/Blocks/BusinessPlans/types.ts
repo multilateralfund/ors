@@ -5,6 +5,7 @@ import { Dispatch, ReactNode, SetStateAction } from 'react'
 export type BpPathParams = {
   agency: string
   period: string
+  status: string
 }
 
 export type BpDiffPathParams = {
