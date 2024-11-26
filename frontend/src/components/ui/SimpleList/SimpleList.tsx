@@ -1,4 +1,5 @@
 import { Typography } from '@mui/material'
+import { lowerCase } from 'lodash'
 
 import Link from '@ors/components/ui/Link/Link'
 
@@ -19,7 +20,7 @@ function ListItem(props: any) {
     >
       <Link
         className="flex flex-wrap items-center justify-between gap-1 text-2xl font-semibold text-typography"
-        href={`/business-plans/${item.agency.name}/${item.year_start}-${item.year_end}`}
+        href={`/business-plans/${item.agency.name}/${item.year_start}-${item.year_end}/${lowerCase(item.status)}`}
         underline="none"
       >
         <div className="flex items-center gap-2">
