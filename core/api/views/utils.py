@@ -503,23 +503,20 @@ def get_business_plan_from_request(request):
     agency_id = request.query_params.get("agency_id")
     year_start = request.query_params.get("year_start")
     year_end = request.query_params.get("year_end")
-    version = request.query_params.get("version")
+    bp_status = request.query_params.get("bp_status")
     business_plan = None
 
     try:
         if business_plan_id:
             business_plan = BusinessPlan.objects.get(id=business_plan_id)
-        elif all([agency_id, year_start, year_end]):
-            business_plans = BusinessPlan.objects.filter(
+        elif all([agency_id, year_start, year_end, bp_status]):
+            business_plan = BusinessPlan.objects.get(
                 agency_id=agency_id,
                 year_start=year_start,
                 year_end=year_end,
+                status=bp_status,
+                is_latest=True,
             )
-            if version:
-                business_plan = business_plans.filter(version=version).first()
-            else:
-                business_plan = business_plans.filter(is_latest=True).first()
-
         if not business_plan:
             raise BusinessPlan.DoesNotExist
     except BusinessPlan.DoesNotExist as e:
