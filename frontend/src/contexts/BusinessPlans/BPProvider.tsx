@@ -30,9 +30,9 @@ function BPProvider(props: BPProviderProps) {
     options: {
       params: {
         agency_id: currentAgency?.id,
+        bp_status: capitalize(status),
         limit: BP_PER_PAGE,
         offset: 0,
-        status: capitalize(status),
         year_end: period.split('-')[1],
         year_start: period.split('-')[0],
       },
