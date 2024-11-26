@@ -144,9 +144,9 @@ class BusinessPlanViewSet(
                 type=openapi.TYPE_INTEGER,
             ),
             openapi.Parameter(
-                "version",
+                "bp_status",
                 openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
+                type=openapi.TYPE_STRING,
             ),
         ],
     )

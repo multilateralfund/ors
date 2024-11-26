@@ -407,22 +407,6 @@ class TestBPUpdate:
             == "Multiple values with is_after=true found"
         )
 
-    def test_update_old_bp(
-        self, agency_user, _setup_bp_activity_create, old_business_plan
-    ):
-        self.client.force_authenticate(user=agency_user)
-
-        url = reverse("businessplan-list") + f"{old_business_plan.id}/"
-        data = {
-            "agency_id": old_business_plan.agency_id,
-            "year_start": old_business_plan.year_start,
-            "year_end": old_business_plan.year_end,
-            "status": old_business_plan.status,
-            "activities": [_setup_bp_activity_create],
-        }
-        response = self.client.put(url, data, format="json")
-        assert response.status_code == 404
-
     def test_is_updated(self, agency_user, _setup_bp_activity_create, business_plan):
         self.client.force_authenticate(user=agency_user)
 
@@ -551,7 +535,6 @@ class TestBPUpdate:
 @pytest.fixture(name="_setup_bp_activity_list")
 def setup_bp_activity_list(
     business_plan,
-    old_business_plan,
     country_ro,
     sector,
     subsector,
@@ -584,7 +567,7 @@ def setup_bp_activity_list(
         project_types.append(ProjectTypeFactory.create(name=f"Type{i}"))
         clusters.append(ProjectClusterFactory.create(name=f"Cluster{i}", code=f"CL{i}"))
 
-    for bp in [business_plan, old_business_plan, another_bp, new_bp]:
+    for bp in [business_plan, another_bp, new_bp]:
         for i in range(4):
             data = {
                 "business_plan": bp,
@@ -829,9 +812,7 @@ class TestBPGet:
         response = self.client.get(self.url, {"business_plan_id": business_plan.id})
         assert response.status_code == 403
 
-    def test_activity_list(
-        self, user, _setup_bp_activity_list, business_plan, old_business_plan
-    ):
+    def test_activity_list(self, user, _setup_bp_activity_list, business_plan):
         self.client.force_authenticate(user=user)
 
         # get by id
@@ -839,26 +820,14 @@ class TestBPGet:
         assert response.status_code == 200
         assert len(response.json()["activities"]) == 4
 
-        # get by agency, start_year, end_year, version
+        # get by agency, start_year, end_year, status
         response = self.client.get(
             self.url,
             {
                 "agency_id": business_plan.agency_id,
                 "year_start": business_plan.year_start,
                 "year_end": business_plan.year_end,
-                "version": old_business_plan.version,
-            },
-        )
-        assert response.status_code == 200
-        assert len(response.json()["activities"]) == 4
-
-        # get by agency, start_year, end_year (latest version)
-        response = self.client.get(
-            self.url,
-            {
-                "agency_id": business_plan.agency_id,
-                "year_start": business_plan.year_start,
-                "year_end": business_plan.year_end,
+                "bp_status": business_plan.status,
             },
         )
         assert response.status_code == 200
@@ -933,6 +902,7 @@ class TestBPGet:
                 "agency_id": business_plan.agency_id,
                 "year_start": 99,
                 "year_end": 999,
+                "bp_status": business_plan.status,
             },
         )
         assert response.status_code == 400
@@ -946,6 +916,21 @@ class TestBPGet:
                 "agency_id": 999,
                 "year_start": business_plan.year_start,
                 "year_end": business_plan.year_end,
+                "bp_status": business_plan.status,
+            },
+        )
+        assert response.status_code == 400
+
+    def test_invalid_bp_status(self, user, business_plan, _setup_bp_activity_list):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(
+            self.url,
+            {
+                "agency_id": business_plan.agency_id,
+                "year_start": business_plan.year_start,
+                "year_end": business_plan.year_end,
+                "bp_status": "Draft",
             },
         )
         assert response.status_code == 400
@@ -991,7 +976,6 @@ class TestUpdateAllActivities:
             agency=other_agency,
             year_start=business_plan.year_start,
             year_end=business_plan.year_end,
-            version=1,
         )
 
         activity_data_1 = _setup_bp_activity_create.copy()
