@@ -921,7 +921,7 @@ class TestBPGet:
         )
         assert response.status_code == 400
 
-    def test_invalid_status(self, user, business_plan, _setup_bp_activity_list):
+    def test_invalid_bp_status(self, user, business_plan, _setup_bp_activity_list):
         self.client.force_authenticate(user=user)
 
         response = self.client.get(

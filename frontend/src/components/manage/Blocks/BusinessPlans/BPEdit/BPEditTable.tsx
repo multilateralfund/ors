@@ -230,7 +230,7 @@ export function BPEditBaseTable(
   const addActivity = () => {
     setForm([
       {
-        lvc_status: 'LVC',
+        lvc_status: 'Undefined',
         row_id: form.length + 1,
         values: [],
       } as any,

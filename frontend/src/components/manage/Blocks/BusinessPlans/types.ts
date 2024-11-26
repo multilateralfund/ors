@@ -58,7 +58,7 @@ export interface BPTabsInterface extends BpDetails {
 }
 
 export type BPEditTableInterface = {
-  form: Array<ApiEditBPActivity>
+  form: Array<ApiEditBPActivity> | undefined
   isConsolidatedView?: boolean
   loading: boolean
   params: any

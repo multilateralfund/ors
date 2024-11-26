@@ -87,25 +87,27 @@ export default function BPFilters({
           changeHandler={(event, value) => setGridOptions(value)}
           value={gridOptions}
         />
-        <Field
-          FieldProps={{ className: 'mb-0 w-full md:w-36 BPList' }}
-          options={bpTypes}
-          value={capitalize(reqParams.version_type)}
-          widget="autocomplete"
-          isOptionEqualToValue={(option, value) =>
-            option.id === value.toLowerCase()
-          }
-          onChange={(_: any, value: any) => {
-            if (withAgency) {
-              setBPType(value.id)
+        {withAgency && (
+          <Field
+            FieldProps={{ className: 'mb-0 w-full md:w-36 BPList' }}
+            options={bpTypes}
+            value={capitalize(reqParams.bp_status)}
+            widget="autocomplete"
+            isOptionEqualToValue={(option, value) =>
+              option.id === value.toLowerCase()
             }
-            handleParamsChange({
-              offset: 0,
-              version_type: value.id,
-            })
-          }}
-          disableClearable
-        />
+            onChange={(_: any, value: any) => {
+              if (withAgency) {
+                setBPType(value.id)
+              }
+              handleParamsChange({
+                bp_status: capitalize(value.id),
+                offset: 0,
+              })
+            }}
+            disableClearable
+          />
+        )}
       </div>
     </div>
   )
