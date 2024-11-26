@@ -2,7 +2,7 @@ import { Dispatch, SetStateAction, useState } from 'react'
 
 import cx from 'classnames'
 
-import { formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils'
+import { formatAbsoluteNumberValue, formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils'
 import { CancelButton, SubmitButton } from '@ors/components/ui/Button/Button'
 
 import {
@@ -267,11 +267,17 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
                         field={key}
                         info_text={provisions[key]?.info_text}
                         isEditing={isEditing}
-                        label={provisions[key].label}
                         setEditingSection={setEditingSection}
+                        label={
+                          key.toString() === 'gain_loss' && provisions[key].value !== null && provisions[key].value < 0
+                            ? provisions[key].negative_label : provisions[key].label
+                        }
                         value={
                           provisions[key].value !== null
-                            ? formatNumberValue(provisions[key].value, 0, 0)
+                            ? (key.toString() === "gain_loss"
+                              ? formatAbsoluteNumberValue(provisions[key].value, 0, 0)
+                              : formatNumberValue(provisions[key].value, 0, 0)
+                            )
                             : 'N/A'
                         }
                       />

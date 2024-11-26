@@ -93,6 +93,7 @@ function buildProvisions(
     bilateral_assistance: { label: 'Bilateral cooperation', value: null },
     gain_loss: {
       label: 'FERM loss',
+      negative_label: 'FERM gain',
       value: null,
     },
     information_strategy: {
