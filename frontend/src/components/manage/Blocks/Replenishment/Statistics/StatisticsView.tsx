@@ -128,6 +128,8 @@ function StatisticsTable(props: { data: SoCStatistic[] }) {
       let cellValue = ''
       if (content !== null && !HEADERS[i]?.skipFormatting) {
         cellValue = formatNumberValue(content, 2, 2) || ''
+      } else if (content !== null && HEADERS[i]?.skipFormatting) {
+        cellValue = content.toString()
       } else if (HEADERS[i]?.skipFormatting) {
         cellValue = ''
       } else {
