@@ -34,7 +34,6 @@ import RootLayout from './app/layout'
 
 export default function App() {
   return (
-    <div>
       <RootLayout>
         <Switch>
           <Route path="/login">
@@ -129,6 +128,5 @@ export default function App() {
           </Route>
         </Switch>
       </RootLayout>
-    </div>
   )
 }

@@ -26,19 +26,20 @@ import '../themes/styles/global.css'
 
 
 function useUser() {
-  const [user, setUser] = useState(null)
+  const [userData, setUserData] = useState({loaded: false, user: null})
 
   async function fetchUser() {
     try {
       const apiUser = await api('api/auth/user/', {})
-      setUser(apiUser)
+      setUserData({loaded: true, user: apiUser})
     } catch (error) {
+      setUserData({loaded: true, user: null})
     }
   }
 
   useEffect(() => fetchUser, [])
 
-  return user
+  return userData
 }
 
 function useAppState(user) {
@@ -134,12 +135,17 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   // const cookies = nextCookies()
-  const [ pathname ] = useLocation()
+  const [ pathname, setLocation ] = useLocation()
+  const isLoginPath = pathname === "/login"
   const theme = { value: 'light' }
   const currentView = getCurrentView(pathname || '')
 
-  const user = useUser()
+  const { user, loaded: userLoaded } = useUser()
   const appState = useAppState(user)
+
+  if (userLoaded && !user) {
+    setLocation("/login")
+  }
 
   return (
         <div id="layout" className={cx("h-full")}>
@@ -159,7 +165,7 @@ export default function RootLayout({
                 speedy: true,
               }}
             >
-              <View>{appState ? children : null}</View>
+              <View>{(appState || isLoginPath) ? children : null}</View>
             </ThemeProvider>
           </StoreProvider>
         </div>

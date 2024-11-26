@@ -10,16 +10,16 @@ export default defineConfig({
       { find: "@ors/registry", replacement: path.join(__dirname, './src/config/base') },
       { find: "@ors/types", replacement: path.join(__dirname, './src/@types')} ,
       { find: "@ors", replacement: path.join(__dirname, './src') },
-      { find: "tailwind-config", replacement: path.join(__dirname, './tailwind.config.cjs') },
+      { find: "tailwind-config", replacement: path.join(__dirname, './tailwind.config.js') },
       { find: "~", replacement: path.join(__dirname, './') },
     ],
   },
-  build: {
-    commonjsOptions: {
-      include: ['tailwind-config.cjs', 'node_modules/**'],
-    },
-    // commonjsOptions: { transformMixedEsModules: true },
-  },
+  // build: {
+  //   commonjsOptions: {
+  //     include: ['tailwind-config.cjs', 'node_modules/**'],
+  //     transformMixedEsModules: true
+  //   },
+  // },
   optimizeDeps: {
     include: ['tailwind-config'],
   },

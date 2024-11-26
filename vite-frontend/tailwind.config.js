@@ -1,7 +1,9 @@
-const muiGrey = require('@mui/material/colors/grey')
-const { createThemes } = require('tw-colors')
+import muiGrey from '@mui/material/colors/grey'
+import { createThemes } from 'tw-colors'
 
-const colors = require('tailwindcss/colors')
+import colors from 'tailwindcss/colors'
+
+import bgPatterns from 'tailwindcss-bg-patterns'
 
 const gray = {
   ...colors.gray,
@@ -222,7 +224,7 @@ export default {
         },
       })
     },
-    require('tailwindcss-bg-patterns'),
+    bgPatterns,
   ],
   theme: {
     fontSize: {
