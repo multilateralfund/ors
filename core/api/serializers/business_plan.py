@@ -75,8 +75,6 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
             "agency",
             "updated_at",
             "updated_by",
-            "version",
-            "is_latest",
         ]
 
 
