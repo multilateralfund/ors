@@ -3,14 +3,6 @@
 from django.db import migrations
 
 
-def forwards_func(apps, schema_editor):
-    BusinessPlan = apps.get_model("core", "BusinessPlan")
-    db_alias = schema_editor.connection.alias
-
-    # Delete old BPs, keep only latest version
-    BusinessPlan.objects.using(db_alias).filter(is_latest=False).delete()
-
-
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -18,7 +10,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(forwards_func, migrations.RunPython.noop),
         migrations.RemoveField(
             model_name="bphistory",
             name="bp_version",
