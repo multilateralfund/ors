@@ -7,6 +7,7 @@ import React, { useEffect, useMemo } from 'react'
 
 import { CssBaseline } from '@mui/material'
 import MuiThemeProvider from '@mui/material/styles/ThemeProvider'
+import { StyledEngineProvider } from '@mui/material/styles';
 import { LocalizationProvider } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { prefixer } from 'stylis'
@@ -47,11 +48,13 @@ export default function ThemeProvider({
   }, [currentTheme, theme])
 
   return (
+    <StyledEngineProvider injectFirst>
       <MuiThemeProvider theme={muiTheme}>
         <CssBaseline enableColorScheme />
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           {children}
         </LocalizationProvider>
       </MuiThemeProvider>
+    </StyledEngineProvider>
   )
 }

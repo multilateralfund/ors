@@ -6,7 +6,7 @@ import type {
 
 import { Button, Link as MuiLink } from '@mui/material'
 import cx from 'classnames'
-// import NextLink, { LinkProps as NextLinkProps } from 'next/link'
+import { Link as WouterLink } from 'wouter'
 
 export type LinkProps = { button?: false; href: string } & MuiLinkProps
 
@@ -23,14 +23,14 @@ function Link({
     // @ts-ignore
     <Button
       className={cx('text-center', className)}
-      component={'a'}
+      component={WouterLink}
       {...rest}
     >
       {children}
     </Button>
   ) : (
     // @ts-ignore
-    <MuiLink className={className} component={'a'} {...rest}>
+    <MuiLink className={className} component={WouterLink} {...rest}>
       {children}
     </MuiLink>
   )

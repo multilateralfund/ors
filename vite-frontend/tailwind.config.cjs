@@ -155,6 +155,12 @@ export default {
     './src/themes/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  important: '#next-app',
+  corePlugins: {
+    container: false,
+    preflight: false,
+    transitionProperty: false,
+  },
   safelist: ['text-red-500'],
   important: '#next-app',
   originalColors,

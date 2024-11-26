@@ -1,19 +1,14 @@
-import type { Metadata } from 'next'
+import { useParams } from "wouter";
 
 import CPEdit from '@ors/components/manage/Blocks/CountryProgramme/CPEdit'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
-export const metadata: Metadata = {
-  title: 'Country programme',
-}
+// export const metadata: Metadata = {
+//   title: 'Country programme',
+// }
 
-export default async function CountryProgrammeReport(props: {
-  params: {
-    iso3: string
-    year: string
-  }
-}) {
-  const { iso3, year } = props.params
+export default function CountryProgrammeReport() {
+  const { iso3, year } = useParams()
   return (
     <PageWrapper>
       <CPEdit iso3={iso3} year={parseInt(year, 10)} />

@@ -13,8 +13,7 @@ import React, { useMemo, useState } from 'react'
 import { Button, ButtonProps, Divider, MenuProps, Tooltip } from '@mui/material'
 import cx from 'classnames'
 import { Dictionary, capitalize, orderBy } from 'lodash'
-import NextLink from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useLocation } from "wouter";
 import { useSnackbar } from 'notistack'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
@@ -152,11 +151,10 @@ const HeaderVersionsDropdown = () => {
         )}
       >
         {versions.map((info, idx) => (
-          <NextLink
+          <Link
             key={info.id}
             className="flex items-center gap-x-2 rounded-none px-2 py-2 text-black no-underline hover:bg-primary hover:text-white"
-            href={info.url}
-            prefetch={false}
+            to={info.url}
           >
             <div className="flex w-56 items-center justify-between hover:text-white">
               <div>{info.label}</div>
@@ -166,7 +164,7 @@ const HeaderVersionsDropdown = () => {
                 {info.formattedDate}
               </div>
             </div>
-          </NextLink>
+          </Link>
         ))}
       </div>
     </div>
@@ -442,7 +440,7 @@ const EditHeaderActions = ({
   setErrors,
   validation,
 }: EditHeaderActionsProps) => {
-  const router = useRouter()
+  const [_, setLocation] = useLocation()
   const { cacheInvalidateReport, fetchBundle, report } = useStore(
     (state) => state.cp_reports,
   )
@@ -518,7 +516,7 @@ const EditHeaderActions = ({
         await fetchBundle(response.country_id, response.year, false)
         localStorage.clear()
         status === 'final' &&
-          router.push(
+          setLocation(
             `/country-programme/${report.country?.iso3}/${response.year}`,
           )
       } catch (error) {
