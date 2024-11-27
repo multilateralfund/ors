@@ -88,11 +88,11 @@ export default async function api<T = any>(
   async function handleResponse(response: any) {
     try {
       const data = await response.json()
-      console.debug(
-        'API handleResponse: %s (cached: %s)',
-        fullPath,
-        withStoreCache ? id : 'no',
-      )
+      // console.debug(
+      //   'API handleResponse: %s (cached: %s)',
+      //   fullPath,
+      //   withStoreCache ? id : 'no',
+      // )
       if (state && withStoreCache) {
         debounce(
           () => {

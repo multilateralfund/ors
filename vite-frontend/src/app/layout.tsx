@@ -13,9 +13,10 @@ import View from '@ors/components/theme/Views/View'
 // import View from '../components/theme/Views/View'
 import api from '@ors/helpers/Api/_api'
 import { getInitialSliceData } from '@ors/helpers/Store/Store'
-import { getCurrentView } from '@ors/helpers/View/View'
+// import { getCurrentView } from '@ors/helpers/View/View'
 import { StoreProvider } from '@ors/store'
 import ThemeProvider from '@ors/themes/ThemeProvider'
+import useSearchParams from '@ors/hooks/useSearchParams'
 
 import '../themes/styles/global.css'
 
@@ -143,18 +144,23 @@ export default function RootLayout({
 }) {
   // const cookies = nextCookies()
   const [pathname, setLocation] = useLocation()
+  const searchParams = useSearchParams()
   const isLoginPath = pathname === '/login'
   const theme = { value: 'light' }
-  const currentView = getCurrentView(pathname || '')
+  // const currentView = getCurrentView(pathname || '')
 
   const { user, loaded: userLoaded } = useUser()
   const appState = useAppState(user)
 
-  console.log(user, userLoaded)
-
-  // if (userLoaded && !user) {
-  //   setLocation("/login")
-  // }
+  useEffect(() => {
+    if (user && isLoginPath) {
+      setTimeout(() => {
+        setLocation(searchParams.get('redirect') || '/')
+      }, 500)
+    } else if (userLoaded && !user) {
+      setLocation('/login')
+    }
+  }, [user, isLoginPath, userLoaded, setLocation, searchParams])
 
   return (
     <div id="layout" className={cx('h-full')}>
@@ -167,13 +173,7 @@ export default function RootLayout({
           user: { data: user, loaded: !!user },
         }}
       >
-        <ThemeProvider
-          options={{
-            enableCssLayer: true,
-            prepend: true,
-            speedy: true,
-          }}
-        >
+        <ThemeProvider>
           <View>{appState || isLoginPath ? children : null}</View>
         </ThemeProvider>
       </StoreProvider>

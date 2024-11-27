@@ -1,8 +1,8 @@
-'use client'
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 
 import { Alert, Button, Collapse, Paper, Typography } from '@mui/material'
-import { useRouter, useSearch} from 'wouter'
+import { useLocation } from 'wouter'
+import useSearchParams from '@ors/hooks/useSearchParams'
 
 import Field from '@ors/components/manage/Form/Field'
 import LoadingBuffer from '@ors/components/theme/Loading/LoadingBuffer'
@@ -10,17 +10,17 @@ import Link from '@ors/components/ui/Link/Link'
 import { useStore } from '@ors/store'
 
 export default function LoginForm() {
-  const router = useRouter()
-  const searchParams = new URLSearchParams(useSearch())
+  const [_, setLocation] = useLocation()
+  const searchParams = useSearchParams()
   const user = useStore((state) => state.user)
 
   useEffect(() => {
     if (user.data) {
       setTimeout(() => {
-        window.location.replace(searchParams.get('redirect') || '/')
+        setLocation(searchParams.get('redirect') || '/')
       }, 500)
     }
-  }, [user.data, router, searchParams])
+  }, [user, setLocation, searchParams])
 
   return (
     <>

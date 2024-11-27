@@ -114,6 +114,9 @@ export default function App() {
           <Route path="/country-programme/settings">
             <CPSettingsPage />
           </Route>
+          <Route path="/country-programme">
+            <Redirect to="/country-programme/reports" replace />
+          </Route>
           <Route path="/">
             <Redirect to="/country-programme/reports" replace />
           </Route>

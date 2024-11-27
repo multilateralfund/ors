@@ -1,13 +1,11 @@
-'use client'
-
-import type { Options as OptionsOfCreateCache } from '@emotion/cache'
+// import type { Options as OptionsOfCreateCache } from '@emotion/cache'
 import { ThemeSlice } from '@ors/types/store'
 
 import React, { useEffect, useMemo } from 'react'
 
 import { CssBaseline } from '@mui/material'
 import MuiThemeProvider from '@mui/material/styles/ThemeProvider'
-import { StyledEngineProvider } from '@mui/material/styles';
+import { StyledEngineProvider } from '@mui/material/styles'
 import { LocalizationProvider } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { prefixer } from 'stylis'
@@ -17,12 +15,12 @@ import { createTheme } from '@ors/themes'
 
 export default function ThemeProvider({
   children,
-  options,
+  // options,
 }: {
   children: React.ReactNode
-  options: {
-    enableCssLayer?: boolean
-  } & Partial<OptionsOfCreateCache>
+  // options: {
+  //   enableCssLayer?: boolean
+  // } & Partial<OptionsOfCreateCache>
 }) {
   const theme: ThemeSlice = useStore((state) => state.theme)
 

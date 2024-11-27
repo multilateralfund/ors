@@ -6,6 +6,7 @@ import {
 } from '@ors/types/user_types'
 
 import React, { useState } from 'react'
+import { Link } from 'wouter'
 
 import {
   Collapse,
@@ -282,9 +283,9 @@ const DesktopHeaderNavigation = ({
               )}
               onMouseEnter={() => handleShowMenu(item.label)}
             >
-              <a className="text-inherit no-underline" href={item.url}>
+              <Link className="text-inherit no-underline" href={item.url}>
                 {item.label}
-              </a>
+              </Link>
               {item.menu && (
                 <div onClick={() => handleToggleMenu(item.label)}>
                   <IoChevronDown />
@@ -307,7 +308,7 @@ const DesktopHeaderNavigation = ({
               onMouseOver={() => handleShowMenu(item.label)}
             >
               {item.menu?.map((menuItem, idx) => {
-                const Component = menuItem?.internal ? 'a' : 'a'
+                const Component = menuItem?.internal ? Link : 'a'
                 const regularSubMenuLink = !menuItem.menu ? (
                   <Component
                     key={menuItem.label + idx}
@@ -352,7 +353,7 @@ const DesktopHeaderNavigation = ({
                           {menuItem.menu &&
                             menuItem.menu.map((subMenuItem) => {
                               const Component = subMenuItem?.internal
-                                ? 'a'
+                                ? Link
                                 : 'a'
                               return (
                                 <ListItem
@@ -520,7 +521,7 @@ const MobileHeaderNavigation = ({
                                     {menuItem.menu &&
                                       menuItem.menu.map((subMenuItem) => {
                                         const Component = subMenuItem?.internal
-                                          ? 'a'
+                                          ? Link
                                           : 'a'
                                         return (
                                           <ListItem
