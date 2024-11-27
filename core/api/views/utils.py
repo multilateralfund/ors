@@ -2,6 +2,8 @@
 
 from datetime import datetime
 
+import numpy as np
+import pandas as pd
 from django.db import models
 from django.db.models import Q, F
 from openpyxl.utils import get_column_letter
@@ -15,6 +17,9 @@ from core.api.export.replenishment import (
 )
 from core.api.serializers.business_plan import BPActivityDetailSerializer
 from core.models import (
+    Agency,
+    BPChemicalType,
+    CommentType,
     Country,
     TriennialContributionStatus,
     FermGainLoss,
@@ -23,6 +28,11 @@ from core.models import (
     ExternalIncomeAnnual,
     ExternalAllocation,
     Payment,
+    ProjectCluster,
+    ProjectSector,
+    ProjectSubSector,
+    ProjectType,
+    Substance,
 )
 from core.models.business_plan import BusinessPlan
 from core.models.country_programme import CPRecord, CPReport, CPReportFormatRow
