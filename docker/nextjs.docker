@@ -9,7 +9,7 @@ COPY frontend/package-lock.json .
 RUN npm install
 
 COPY frontend/ .
-RUN rm .env.production.local && npm run build
+RUN npm run build
 
 COPY docker/entrypoint-nextjs.sh /usr/local/bin/entrypoint.sh
 
