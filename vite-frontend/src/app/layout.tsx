@@ -3,7 +3,9 @@ import { ApiBlend } from '@ors/types/api_blends'
 import { ApiSubstance } from '@ors/types/api_substances'
 import { Country } from '@ors/types/store'
 
-import React, { useState, useEffect } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
+
+import { useStore } from '@ors/store'
 
 import cx from 'classnames'
 
@@ -137,6 +139,24 @@ function useAppState(user: ApiUser | null | undefined) {
   return state
 }
 
+function LoginWrapper(props: any) {
+  const { appState, children } = props
+  const [pathname] = useLocation()
+  const user = useStore((state) => state.user)
+
+  const shouldRenderView = useMemo(
+    function () {
+      const isLoginPath = pathname === '/login'
+      const haveUser = user.loaded && user.data && appState
+      const loginRequested = user.loaded && !user.data && isLoginPath
+      return haveUser || loginRequested
+    },
+    [user.loaded, user.data, appState, pathname],
+  )
+
+  return <View>{shouldRenderView ? children : null}</View>
+}
+
 export default function RootLayout({
   children,
 }: {
@@ -145,7 +165,6 @@ export default function RootLayout({
   // const cookies = nextCookies()
   const [pathname, setLocation] = useLocation()
   const searchParams = useSearchParams()
-  const isLoginPath = pathname === '/login'
   const theme = { value: 'light' }
   // const currentView = getCurrentView(pathname || '')
 
@@ -153,14 +172,13 @@ export default function RootLayout({
   const appState = useAppState(user)
 
   useEffect(() => {
+    const isLoginPath = pathname === '/login'
     if (user && isLoginPath) {
       setTimeout(() => {
         setLocation(searchParams.get('redirect') || '/')
       }, 500)
-    } else if (userLoaded && !user) {
-      setLocation('/login')
     }
-  }, [user, isLoginPath, userLoaded, setLocation, searchParams])
+  }, [user, pathname, userLoaded, setLocation, searchParams])
 
   return (
     <div id="layout" className={cx('h-full')}>
@@ -170,11 +188,11 @@ export default function RootLayout({
           theme: {
             mode: theme.value as 'dark' | 'light' | null,
           },
-          user: { data: user, loaded: !!user },
+          user: { data: user, loaded: userLoaded },
         }}
       >
         <ThemeProvider>
-          <View>{appState || isLoginPath ? children : null}</View>
+          <LoginWrapper appState={appState}>{children}</LoginWrapper>
         </ThemeProvider>
       </StoreProvider>
     </div>

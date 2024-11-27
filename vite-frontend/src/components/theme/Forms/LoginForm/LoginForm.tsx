@@ -14,13 +14,13 @@ export default function LoginForm() {
   const searchParams = useSearchParams()
   const user = useStore((state) => state.user)
 
-  useEffect(() => {
-    if (user.data) {
-      setTimeout(() => {
-        setLocation(searchParams.get('redirect') || '/')
-      }, 500)
-    }
-  }, [user, setLocation, searchParams])
+  // useEffect(() => {
+  //   if (user.data) {
+  //     setTimeout(() => {
+  //       setLocation(searchParams.get('redirect') || '/')
+  //     }, 500)
+  //   }
+  // }, [user, setLocation, searchParams])
 
   return (
     <>
@@ -35,10 +35,11 @@ export default function LoginForm() {
         onSubmit={async (e) => {
           e.preventDefault()
           const form = new FormData(e.currentTarget)
-          user.login(
+          await user.login(
             form.get('username')?.toString() || '',
             form.get('password')?.toString() || '',
           )
+          window.location.href = searchParams.get('redirect') || '/'
         }}
       >
         <Typography
