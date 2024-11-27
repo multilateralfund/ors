@@ -9,7 +9,7 @@ server {
     gzip on;
     gzip_types text/plain text/css application/javascript application/json image/svg+xml;
 
-    location /country_programms/guide {
+    location /country-programme/guide {
         alias /.fs/static/User_Guide_Country_Programme_Data.docx;
     }
 
