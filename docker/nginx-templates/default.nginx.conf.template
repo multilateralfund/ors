@@ -11,6 +11,11 @@ server {
 
     location /country-programme/guide {
         alias /.fs/static/User_Guide_Country_Programme_Data.docx;
+        add_header Content-Disposition "attachment; filename=example.docx"; # Optional: Suggests download with the specific file name
+
+        # Ensure correct MIME type for .docx files
+        default_type application/vnd.openxmlformats-officedocument.wordprocessingml.document;
+    
     }
 
     location /static/ {
