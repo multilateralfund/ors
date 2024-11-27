@@ -1,6 +1,6 @@
-const apiPath = import.meta.env.VITE_PUBLIC_API_PATH
-const host = import.meta.env.VITE_PUBLIC_HOST
-const protocol = import.meta.env.VITE_PUBLIC_PROTOCOL
+const apiPath = import.meta.env.VITE_PUBLIC_API_PATH || window.location.origin
+const host = import.meta.env.VITE_PUBLIC_HOST || window.location.host
+const protocol = import.meta.env.VITE_PUBLIC_PROTOCOL || window.location.protocol.split(':')[0]
 
 export type BaseConfig = {
   cookies: {
