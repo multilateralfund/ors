@@ -1,7 +1,0 @@
-.ReportSelect .MuiButtonBase-root {
-  @apply rounded-none p-2;
-}
-
-.CPExport .MuiOutlinedInput-notchedOutline {
-  @apply border-primary;
-}

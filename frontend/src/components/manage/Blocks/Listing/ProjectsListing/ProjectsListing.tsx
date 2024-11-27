@@ -20,6 +20,10 @@ import {
 } from '@mui/material'
 import cx from 'classnames'
 import dayjs from 'dayjs'
+
+import dayOfYear from 'dayjs/plugin/dayOfYear'
+dayjs.extend(dayOfYear)
+
 import { AnimatePresence } from 'framer-motion'
 import { capitalize, isArray, isNumber, isUndefined, times } from 'lodash'
 
@@ -48,8 +52,7 @@ import {
   IoSearchOutline,
 } from 'react-icons/io5'
 
-const dayOfYear = require('dayjs/plugin/dayOfYear')
-dayjs.extend(dayOfYear)
+
 
 let timer: any
 

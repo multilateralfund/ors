@@ -26,7 +26,7 @@ export default function createSlices(props: CreateSliceProps) {
     cache: { ...createCacheSlice(props) },
     common: { ...createCommonSlice(props) },
     // @ts-ignore
-    connection: (__CLIENT__ && navigator?.connection?.effectiveType) || null,
+    connection: navigator?.connection?.effectiveType || null,
     cp_current_tab: { ...createCPCurrentTabSlice(props) },
     cp_reports: { ...createCPReportsSlice(props) },
     filters: { ...createFiltersSlice(props) },

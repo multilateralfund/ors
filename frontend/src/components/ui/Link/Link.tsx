@@ -1,4 +1,3 @@
-'use client'
 import type {
   ButtonProps as MuiButtonProps,
   LinkProps as MuiLinkProps,
@@ -6,31 +5,31 @@ import type {
 
 import { Button, Link as MuiLink } from '@mui/material'
 import cx from 'classnames'
-import NextLink, { LinkProps as NextLinkProps } from 'next/link'
+import { Link as WouterLink } from 'wouter'
 
-export type LinkProps = { button?: false; href: string } & MuiLinkProps &
-  NextLinkProps
-export type ButtonProps = { button: true; href: string } & MuiButtonProps &
-  NextLinkProps
+export type LinkProps = { button?: false; href: string } & MuiLinkProps
+
+export type ButtonProps = { button: true; href: string } & MuiButtonProps
+
 
 function Link({
   button,
   children,
   className,
   ...rest
-}: ButtonProps | LinkProps) {
+}: any) {
   return button ? (
     // @ts-ignore
     <Button
       className={cx('text-center', className)}
-      component={NextLink}
+      component={WouterLink}
       {...rest}
     >
       {children}
     </Button>
   ) : (
     // @ts-ignore
-    <MuiLink className={className} component={NextLink} {...rest}>
+    <MuiLink className={className} component={WouterLink} {...rest}>
       {children}
     </MuiLink>
   )

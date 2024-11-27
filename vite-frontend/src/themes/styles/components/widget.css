@@ -1,7 +1,0 @@
-.widget {
-  @apply mb-4;
-}
-
-.widget p.label {
-  @apply mt-0;
-}

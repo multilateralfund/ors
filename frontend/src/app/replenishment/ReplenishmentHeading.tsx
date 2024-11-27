@@ -1,8 +1,7 @@
 'use client'
 
 import React, { useContext, useState } from 'react'
-
-import { usePathname, useRouter } from 'next/navigation'
+import { useLocation } from "wouter";
 import { enqueueSnackbar } from 'notistack'
 
 import ConfirmDialog from '@ors/components/manage/Blocks/Replenishment/ConfirmDialog'
@@ -20,9 +19,8 @@ import { ReplenishmentHeadingProps } from './types'
 
 export default function ReplenishmentHeading(props: ReplenishmentHeadingProps) {
   const { extraPeriodOptions, showPeriodSelector } = props
-  const router = useRouter()
   const [showAddNewSOA, setShowAddNewSOA] = useState(false)
-  const pathname = usePathname()
+  const [pathname, setLocation] = useLocation()
   const period = getPathPeriod(pathname)
 
   const replenishmentContext = useContext(ReplenishmentContext)
@@ -49,7 +47,7 @@ export default function ReplenishmentHeading(props: ReplenishmentHeadingProps) {
         method: 'POST',
       })
       replenishmentContext.refetchData()
-      router.push(`/replenishment/scale-of-assessment/${newPeriod}`)
+      setLocation(`/replenishment/scale-of-assessment/${newPeriod}`)
     } catch (error) {
       error.json().then((data: Record<string, string[]>) => {
         enqueueSnackbar(

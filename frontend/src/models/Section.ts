@@ -64,7 +64,7 @@ export default class Section<DeserializedData, FormFields> {
     let localStorageData:
       | Array<DeserializedData & LocalDeserializedData>
       | string =
-      __CLIENT__ && this.localStorageKey
+      this.localStorageKey
         ? window.sessionStorage.getItem(this.localStorageKey) || []
         : []
     if (isString(localStorageData)) {

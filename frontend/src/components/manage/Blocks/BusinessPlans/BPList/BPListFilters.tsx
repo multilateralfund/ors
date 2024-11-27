@@ -17,7 +17,7 @@ const StatusFilter = (props: {
   }))
 
   return (
-    <Field
+    <Field<any>
       FieldProps={{ className: 'mb-0 w-40 BPList' }}
       options={statusOptions}
       popupIcon={<IoChevronDownCircle color="black" size={24} />}
@@ -54,7 +54,7 @@ const AgencyFilter = (props: {
   }))
 
   return (
-    <Field
+    <Field<any>
       FieldProps={{ className: 'mb-0 w-40 BPList' }}
       getOptionLabel={(option: { id: number; label: string }) => option.label}
       options={agencyOptions}

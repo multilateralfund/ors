@@ -2,7 +2,7 @@
 import React, { useMemo } from 'react'
 
 import { capitalize } from 'lodash'
-import { useParams } from 'next/navigation'
+import { useParams } from 'wouter'
 
 import DownloadButtons from '@ors/app/business-plans/DownloadButtons'
 import ActivitiesFilters from '@ors/components/manage/Blocks/BusinessPlans/ActivitiesFilters'

@@ -1,14 +1,14 @@
 import React from 'react'
 
-import { Metadata } from 'next'
+import { useParams } from 'wouter'
 
 import BPListActivitiesWrapper from '@ors/components/manage/Blocks/BusinessPlans/BPList/BPListActivities'
 
-export const metadata: Metadata = {
-  title: 'Business Plans - Activities',
-}
+// export const metadata: Metadata = {
+//   title: 'Business Plans - Activities',
+// }
 
-export default async function BusinessPlansActivities(props: any) {
-  const { period } = props.params
+export default function BusinessPlansActivities() {
+  const { period } = useParams<Record<string, string>>()
   return <BPListActivitiesWrapper period={period} />
 }

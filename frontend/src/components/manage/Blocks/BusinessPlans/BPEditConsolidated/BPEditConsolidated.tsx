@@ -5,7 +5,7 @@ import { ApiEditBPActivity } from '@ors/types/api_bp_get'
 import React, { useCallback, useEffect, useState } from 'react'
 
 import { capitalize, find, map } from 'lodash'
-import { useParams } from 'next/navigation'
+import { useParams } from 'wouter'
 
 import Loading from '@ors/components/theme/Loading/Loading'
 import BPYearRangesProvider from '@ors/contexts/BusinessPlans/BPYearRangesProvider'
