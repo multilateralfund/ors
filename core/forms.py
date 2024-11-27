@@ -1,6 +1,7 @@
 import logging
 from collections import defaultdict
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.tokens import default_token_generator
@@ -37,7 +38,7 @@ class CountryUserPasswordResetForm(PasswordResetForm):
             body,
             from_email,
             [to_email],
-            cc=["mereu.alexandra95@gmail.com"],
+            cc=settings.COUNTRY_USERS_EMAIL_CC,
         )
         if html_email_template_name:
             html_email = loader.render_to_string(html_email_template_name, context)

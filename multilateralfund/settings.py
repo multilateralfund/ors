@@ -204,7 +204,7 @@ STORAGES = {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
         "OPTIONS": {
             "location": PROTECTED_MEDIA_ROOT,
-        }
+        },
     },
     "staticfiles": {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
@@ -227,7 +227,8 @@ CONSTANCE_CONFIG = {
     "CP_NR_REPORTS": (9, "Number of reports to display in the country programme page"),
     "SEND_MAIL": (True, "Send email notifications to users?", bool),
     "DEFAULT_REPLENISHMENT_AS_OF_DATE": (
-        datetime(2024, 5, 27), "Default 'As Of Date' for replenishment"
+        datetime(2024, 5, 27),
+        "Default 'As Of Date' for replenishment",
     ),
 }
 
@@ -277,6 +278,8 @@ EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=False)
 DJANGO_DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL", default="")
 # Even if no default is set default to noreply@
 DEFAULT_FROM_EMAIL = DJANGO_DEFAULT_FROM_EMAIL or ("noreply@" + socket.gethostname())
+# Set CC for country users password reset e-mail
+COUNTRY_USERS_EMAIL_CC = env.list("COUNTRY_USERS_EMAIL_CC", default=[])
 
 # DRF Integration
 
