@@ -6,7 +6,7 @@ import {
 } from '@ors/types/user_types'
 
 import React, { useState } from 'react'
-import { Link } from 'wouter'
+import { Link, useLocation } from 'wouter'
 
 import {
   Collapse,
@@ -65,7 +65,7 @@ const makeInternalNavItem = (
 
 const useInternalNavSections = () => {
   const { user_type } = useStore((state) => state.user?.data)
-  const pathname = window.location.pathname
+  const [pathname] = useLocation()
   const nI = makeInternalNavItem.bind(null, pathname)
   const userIsViewer = user_type === 'viewer'
   const userIsAdminOrSecretariat = ['admin', 'secretariat'].includes(user_type)
@@ -307,11 +307,11 @@ const DesktopHeaderNavigation = ({
               onMouseLeave={handleHideAllMenus}
               onMouseOver={() => handleShowMenu(item.label)}
             >
-              {item.menu?.map((menuItem, idx) => {
+              {item.menu?.map((menuItem, menuItemIdx) => {
                 const Component = menuItem?.internal ? Link : 'a'
                 const regularSubMenuLink = !menuItem.menu ? (
                   <Component
-                    key={menuItem.label + idx}
+                    key={menuItem.label + menuItemIdx}
                     className={cx(
                       'flex flex-nowrap items-center gap-1 text-nowrap border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-sky-400 px-4 py-2 text-primary no-underline transition-all first:rounded-t-lg last:rounded-b-lg last:border-b-0 hover:bg-mlfs-hlYellow',
                       {
@@ -326,7 +326,11 @@ const DesktopHeaderNavigation = ({
                 ) : null
                 return (
                   regularSubMenuLink || (
-                    <List key={menuItem.label + idx} className="py-0" component="div">
+                    <List
+                      key={menuItem.label + menuItemIdx}
+                      className="py-0"
+                      component="div"
+                    >
                       <ListItemButton
                         className={cx(
                           'flex flex-nowrap items-center gap-1 text-nowrap rounded-b-none border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-sky-400 px-4 py-2 text-primary no-underline transition-all first:rounded-t-lg hover:bg-mlfs-hlYellow',

@@ -2,6 +2,8 @@
 
 import { useContext, useEffect, useRef, useState } from 'react'
 
+import { capitalize } from 'lodash'
+
 import Activities from '@ors/components/manage/Blocks/BusinessPlans/Activities'
 import useGetBpPeriods from '@ors/components/manage/Blocks/BusinessPlans/BPList/useGetBPPeriods'
 import { useGetActivities } from '@ors/components/manage/Blocks/BusinessPlans/useGetActivities'
@@ -34,9 +36,9 @@ export default function BPListActivitiesWrapper(props: any) {
   const { bpType } = useStore((state) => state.bpType)
 
   const initialFilters = {
+    bp_status: capitalize(bpType),
     limit: ACTIVITIES_PER_PAGE_TABLE,
     offset: 0,
-    version_type: bpType,
     year_end: year_end,
     year_start: year_start,
   }

@@ -10,7 +10,9 @@ export interface BPContextType {
   params: Record<string, any>
   setParams: (params: Record<string, any>) => void
 }
-export interface BPProviderProps extends PropsWithChildren {}
+export interface BPProviderProps extends PropsWithChildren {
+  status?: string
+}
 export interface BPYearRangesProviderProps extends PropsWithChildren {}
 
 export interface BPYearRangesContextType {

@@ -5,6 +5,7 @@ import { Dispatch, ReactNode, SetStateAction } from 'react'
 export type BpPathParams = {
   agency: string
   period: string
+  status: string
 }
 
 export type BpDiffPathParams = {
@@ -58,7 +59,7 @@ export interface BPTabsInterface extends BpDetails {
 }
 
 export type BPEditTableInterface = {
-  form: Array<ApiEditBPActivity>
+  form: Array<ApiEditBPActivity> | undefined
   isConsolidatedView?: boolean
   loading: boolean
   params: any

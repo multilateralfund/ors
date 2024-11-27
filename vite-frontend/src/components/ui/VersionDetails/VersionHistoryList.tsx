@@ -38,7 +38,8 @@ export default function VersionHistoryList(props: any) {
             id="business-plan-history"
             className="text-md my-1 px-4 py-3 font-medium text-gray-900"
           >
-            There is no history for this version.
+            There is no history for this{' '}
+            {type === 'bp' ? 'business plan' : 'version'}.
           </p>
         )}
         {historyList
@@ -67,7 +68,9 @@ export default function VersionHistoryList(props: any) {
                 <div
                   className={cx(
                     'px-4 py-3',
-                    isCurrentVersion ? '' : 'opacity-50',
+                    isCurrentVersion || (type === 'bp' && index === 0)
+                      ? ''
+                      : 'opacity-50',
                   )}
                 >
                   <div className="flex grow items-center justify-between gap-3 text-pretty">
@@ -82,7 +85,8 @@ export default function VersionHistoryList(props: any) {
                         id={`report_summary`}
                         className="text-md my-1 font-medium text-gray-900"
                       >
-                        {event_description} ({`Version ${data_version}`})
+                        {event_description}{' '}
+                        {type !== 'bp' && `(Version ${data_version})`}
                       </p>
                     </div>
                     <div>

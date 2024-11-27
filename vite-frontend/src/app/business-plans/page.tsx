@@ -15,7 +15,7 @@ export default function BusinessPlans() {
 
   useEffect(() => {
     if (periodOptions.length > 0) {
-      setLocation(`/list/plans/${periodOptions[0].value}`)
+      setLocation(`/business-plans/list/plans/${periodOptions[0].value}`)
     }
   }, [periodOptions, setLocation])
 

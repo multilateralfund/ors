@@ -60,6 +60,7 @@ interface IDashboardDataApiResponse {
 interface IEntry {
   info_text?: string
   label: string
+  negative_label?: string
   sub_text?: string
   value: null | number
 }

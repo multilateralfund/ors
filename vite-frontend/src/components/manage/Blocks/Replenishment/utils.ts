@@ -44,6 +44,22 @@ export function formatNumberValue(
   return formatted === '-0' ? '0' : formatted
 }
 
+export function formatAbsoluteNumberValue(
+  value: null | number | string,
+  minDigits?: number,
+  maxDigits?: number,
+) {
+  if ((typeof value === 'number' && isNaN(value)) || (!value && value !== 0)) {
+    return null
+  }
+  const absoluteValue = Math.abs(parseFloat(value as string))
+  const formatted = absoluteValue.toLocaleString('en-US', {
+    maximumFractionDigits: maxDigits ?? MAX_DECIMALS,
+    minimumFractionDigits: minDigits ?? MIN_DECIMALS,
+  })
+  return formatted === '-0' ? '0' : formatted
+}
+
 export function getDefaultFieldSorter(field: string, direction: -1 | 1) {
   return function (a: Record<string, any>, b: Record<string, any>) {
     const a_val = a[field]

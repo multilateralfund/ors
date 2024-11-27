@@ -15,17 +15,16 @@ import api from '@ors/helpers/Api/_api'
 function useCountries() {
   const [countries, setCountries] = useState<Country[]>([])
 
-  async function fetchCountries() {
-    const resp =
-      (await api<Country[]>(
-        'api/countries/',
-        { params: { with_cp_report: true } },
-        false,
-      )) || []
-    setCountries(resp)
-  }
-
   useEffect(function () {
+    async function fetchCountries() {
+      const resp =
+        (await api<Country[]>(
+          'api/countries/',
+          { params: { with_cp_report: true } },
+          false,
+        )) || []
+      setCountries(resp)
+    }
     fetchCountries()
   }, [])
 
@@ -35,18 +34,17 @@ function useCountries() {
 function useVersions(country: Country, year: string) {
   const [versions, setVersions] = useState<CPVersionInfo[]>([])
 
-  async function fetchVersions(country: Country, year: string) {
-    const resp =
-      (await api<CPVersionInfo[]>(
-        'api/country-programme/versions',
-        { params: { country_id: country.id, year } },
-        false,
-      )) || []
-    setVersions(resp)
-  }
-
   useEffect(
     function () {
+      async function fetchVersions(country: Country, year: string) {
+        const resp =
+          (await api<CPVersionInfo[]>(
+            'api/country-programme/versions',
+            { params: { country_id: country.id, year } },
+            false,
+          )) || []
+        setVersions(resp)
+      }
       if (country && year) {
         fetchVersions(country, year)
       }

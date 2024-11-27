@@ -230,13 +230,15 @@ function PaymentsView() {
       result.push({ ...(memoResults[i] as ParsedPayment) })
       const entry = result[i]
       entry.date = formatDateForDisplay(entry.date)
+      const value = getFloat(entry.ferm_gain_or_loss as string)
+      const isNegative = value !== null && value < 0
       entry.ferm_gain_or_loss = (
         <span
           className={cx({
-            'text-red-400': getFloat(entry.ferm_gain_or_loss as string) > 0,
+            'text-red-400': isNegative,
           })}
         >
-          {entry.ferm_gain_or_loss}
+          {isNegative ? `(${value * -1})` : entry.ferm_gain_or_loss}
         </span>
       )
     }

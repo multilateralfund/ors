@@ -12,12 +12,7 @@ import { useStore } from '@ors/store'
 import BPListHeader from './BPListHeader'
 import BPListTabs from './BPListTabs'
 
-type StatusFilterTypes =
-  | 'Approved'
-  | 'Draft'
-  | 'Need Changes'
-  | 'Rejected'
-  | 'Submitted'
+type StatusFilterTypes = 'Consolidated' | 'Endorsed'
 
 type FiltersType = {
   agency_id: null | number

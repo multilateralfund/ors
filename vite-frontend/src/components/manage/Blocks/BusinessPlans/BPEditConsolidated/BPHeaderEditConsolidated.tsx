@@ -1,5 +1,5 @@
 import { Button } from '@mui/material'
-import { entries, find, indexOf, isEmpty, values } from 'lodash'
+import { capitalize, entries, find, indexOf, isEmpty, values } from 'lodash'
 import { useParams } from 'wouter'
 import { useSnackbar } from 'notistack'
 
@@ -28,8 +28,7 @@ export default function BPHeaderEditConsolidated({
         data: {
           activities: form,
           ...{ year_end, year_start },
-          status: 'Secretariat Draft',
-          version_type: type,
+          status: capitalize(type),
         },
         method: 'PUT',
       })
@@ -46,44 +45,47 @@ export default function BPHeaderEditConsolidated({
         },
       )
     } catch (error) {
-      // if (error.status === 400) {
-      //   const errors = await error.json()
-      //   const firstDataError = find(errors.activities, (err) => !isEmpty(err))
-      //   const index = indexOf(errors.activities, firstDataError)
+      if (error.status === 400) {
+        //   const errors = await error.json()
+        //   const firstDataError = find(errors.activities, (err) => !isEmpty(err))
+        //   const index = indexOf(errors.activities, firstDataError)
 
-      //   if (firstDataError) {
-      //     enqueueSnackbar(
-      //       <div className="flex flex-col">
-      //         Row {index + 1}
-      //         {entries(firstDataError).map((error) => {
-      //           const headerName = tableColumns[error[0]]
-      //           const errorMessage = (error[1] as Array<string>)[0]
+        //   if (firstDataError) {
+        //     enqueueSnackbar(
+        //       <div className="flex flex-col">
+        //         Row {index + 1}
+        //         {entries(firstDataError).map((error) => {
+        //           const headerName = tableColumns[error[0]]
+        //           const errorMessage = (error[1] as Array<string>)[0]
 
-      //           return ['project_type_code', 'sector_code'].includes(
-      //             error[0],
-      //           ) ? null : headerName ? (
-      //             <div key={error[0]}>
-      //               {headerName} - {errorMessage}
-      //             </div>
-      //           ) : (
-      //             <>{errorMessage}</>
-      //           )
-      //         })}
-      //       </div>,
-      //       {
-      //         variant: 'error',
-      //       },
-      //     )
-      //   } else {
-      //     enqueueSnackbar(<>{values(errors)[0]}</>, {
-      //       variant: 'error',
-      //     })
-      //   }
-      // } else {
-      enqueueSnackbar(<>An error occurred. Please try again.</>, {
-        variant: 'error',
-      })
-      // }
+        //           return ['project_type_code', 'sector_code'].includes(
+        //             error[0],
+        //           ) ? null : headerName ? (
+        //             <div key={error[0]}>
+        //               {headerName} - {errorMessage}
+        //             </div>
+        //           ) : (
+        //             <>{errorMessage}</>
+        //           )
+        //         })}
+        //       </div>,
+        //       {
+        //         variant: 'error',
+        //       },
+        //     )
+        //   } else {
+        //     enqueueSnackbar(<>{values(errors)[0]}</>, {
+        //       variant: 'error',
+        //     })
+        //   }
+        enqueueSnackbar(<>Please make sure all the inputs are correct.</>, {
+          variant: 'error',
+        })
+      } else {
+        enqueueSnackbar(<>An error occurred. Please try again.</>, {
+          variant: 'error',
+        })
+      }
     }
   }
 
@@ -91,8 +93,7 @@ export default function BPHeaderEditConsolidated({
     <div className="flex items-center">
       <div className="container flex w-full justify-between gap-x-4 px-0">
         <Link
-          className="border border-solid border-primary bg-white px-4 py-2 text-primary
-          shadow-none hover:bg-primary hover:text-white"
+          className="border border-solid border-primary bg-white px-4 py-2 text-primary shadow-none hover:bg-primary hover:text-white"
           color="primary"
           href={`/business-plans/list/activities/${period}`}
           size="large"
