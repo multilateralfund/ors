@@ -6,7 +6,7 @@ import { SCView } from '@ors/components/manage/Blocks/Replenishment/StatusOfCont
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
 export default function ReplenishmentSoCTriennial() {
-  const { period } = useParams()
+  const { period } = useParams<Record<string, string>>()
 
   return (
     <>

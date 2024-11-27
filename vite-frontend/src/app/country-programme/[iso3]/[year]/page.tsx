@@ -1,4 +1,4 @@
-import { useParams } from "wouter";
+import { useParams } from 'wouter'
 
 import CPView from '@ors/components/manage/Blocks/CountryProgramme/CPView'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
@@ -8,7 +8,7 @@ import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 // }
 
 export default function CountryProgrammeReport() {
-  const { iso3, year } = useParams()
+  const { iso3, year } = useParams<Record<string, string>>()
 
   return (
     <PageWrapper>

@@ -27,28 +27,24 @@ import api from '@ors/helpers/Api/_api'
 function useProject(project_id: string) {
   const [projects, setProjects] = useState<ProjectType | null>(null)
 
-  async function fetchProjects() {
-    const resp = await api<ProjectType>(
-      `api/projects/${project_id}/`,
-      {},
-      false,
-    ) || null
-    setProjects(resp)
-  }
-
-  useEffect(function(){
-    fetchProjects()
-  }, [])
+  useEffect(
+    function () {
+      async function fetchProjects() {
+        const resp =
+          (await api<ProjectType>(`api/projects/${project_id}/`, {}, false)) ||
+          null
+        setProjects(resp)
+      }
+      fetchProjects()
+    },
+    [project_id],
+  )
 
   return projects
 }
 
 export default function Project() {
-  const { project_id } = useParams()
+  const { project_id } = useParams<Record<string, string>>()
   const data = useProject(project_id)
-  return (
-    <PageWrapper>
-      { data ? <PView data={data!} /> : null }
-    </PageWrapper>
-  )
+  return <PageWrapper>{data ? <PView data={data!} /> : null}</PageWrapper>
 }

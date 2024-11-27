@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { useParams } from "wouter";
+import { useParams } from 'wouter'
 
 import { CPVersionInfo, Country } from '@ors/types/store'
 
@@ -16,15 +16,16 @@ function useCountries() {
   const [countries, setCountries] = useState<Country[]>([])
 
   async function fetchCountries() {
-    const resp = (await api<Country[]>(
-      'api/countries/',
-      { params: { with_cp_report: true } },
-      false,
-    )) || []
+    const resp =
+      (await api<Country[]>(
+        'api/countries/',
+        { params: { with_cp_report: true } },
+        false,
+      )) || []
     setCountries(resp)
   }
 
-  useEffect(function(){
+  useEffect(function () {
     fetchCountries()
   }, [])
 
@@ -35,25 +36,29 @@ function useVersions(country: Country, year: string) {
   const [versions, setVersions] = useState<CPVersionInfo[]>([])
 
   async function fetchVersions(country: Country, year: string) {
-    const resp = (await api<CPVersionInfo[]>(
-      'api/country-programme/versions',
-      { params: { country_id: country.id, year } },
-      false,
-    )) || []
+    const resp =
+      (await api<CPVersionInfo[]>(
+        'api/country-programme/versions',
+        { params: { country_id: country.id, year } },
+        false,
+      )) || []
     setVersions(resp)
   }
 
-  useEffect(function(){
-    if (country && year) {
-      fetchVersions(country, year)
-    }
-  }, [country, year])
+  useEffect(
+    function () {
+      if (country && year) {
+        fetchVersions(country, year)
+      }
+    },
+    [country, year],
+  )
 
   return versions
 }
 
 export default function CountryProgrammeReport() {
-  const params = useParams()
+  const params = useParams<Record<string, string>>()
   const { iso3, year } = params
   const version_nr = parseInt(params.version_nr, 10)
 
@@ -64,8 +69,6 @@ export default function CountryProgrammeReport() {
   const id = versions.filter((ver) => ver.version == version_nr).pop()?.id
 
   return (
-    <PageWrapper>
-      { id ? <CPArchiveViewWrapper id={id} /> : null }
-    </PageWrapper>
+    <PageWrapper>{id ? <CPArchiveViewWrapper id={id} /> : null}</PageWrapper>
   )
 }

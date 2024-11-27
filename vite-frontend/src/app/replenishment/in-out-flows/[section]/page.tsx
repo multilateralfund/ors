@@ -1,6 +1,6 @@
 'use client'
 
-import { useParams } from "wouter";
+import { useParams } from 'wouter'
 
 import DownloadButtons from '@ors/app/replenishment/DownloadButtons'
 import ReplenishmentHeading from '@ors/app/replenishment/ReplenishmentHeading'
@@ -8,7 +8,7 @@ import InOutFlowsView from '@ors/components/manage/Blocks/Replenishment/InOutFlo
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
 export default function ReplenishmentInOutFlowsBySection() {
-  const { section } = useParams()
+  const { section } = useParams<Record<string, string>>()
 
   return (
     <>

@@ -6,7 +6,7 @@ import { SCView } from '@ors/components/manage/Blocks/Replenishment/StatusOfCont
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
 export default function ReplenishmentSoCAnnual() {
-  const { year } = useParams()
+  const { year } = useParams<Record<string, string>>()
   return (
     <>
       <title>Replenishment - Status of contributions</title>

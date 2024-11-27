@@ -1,4 +1,4 @@
-import { useParams } from "wouter";
+import { useParams } from 'wouter'
 
 import CPViewPrint from '@ors/components/manage/Blocks/CountryProgramme/CPViewPrint'
 
@@ -7,6 +7,6 @@ import CPViewPrint from '@ors/components/manage/Blocks/CountryProgramme/CPViewPr
 // }
 
 export default function CountryProgrammeReport() {
-  const { iso3, year } = useParams()
+  const { iso3, year } = useParams<Record<string, string>>()
   return <CPViewPrint iso3={iso3} year={parseInt(year, 10)} />
 }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { useParams } from "wouter";
+import { useParams } from 'wouter'
 
 import { CPVersionInfo, Country } from '@ors/types/store'
 
@@ -13,18 +13,19 @@ import api from '@ors/helpers/Api/_api'
 // }
 
 function useCountries() {
-  const [countries, setCountries] = useState([])
+  const [countries, setCountries] = useState<Country[]>([])
 
   async function fetchCountries() {
-    const resp = (await api<Country[]>(
-      'api/countries/',
-      { params: { with_cp_report: true } },
-      false,
-    )) || []
+    const resp =
+      (await api<Country[]>(
+        'api/countries/',
+        { params: { with_cp_report: true } },
+        false,
+      )) || []
     setCountries(resp)
   }
 
-  useEffect(function(){
+  useEffect(function () {
     fetchCountries()
   }, [])
 
@@ -32,28 +33,32 @@ function useCountries() {
 }
 
 function useVersions(country: Country, year: string) {
-  const [versions, setVersions] = useState([])
+  const [versions, setVersions] = useState<CPVersionInfo[]>([])
 
   async function fetchVersions(country: Country, year: string) {
-    const resp = (await api<CPVersionInfo[]>(
-      'api/country-programme/versions',
-      { params: { country_id: country.id, year } },
-      false,
-    )) || []
+    const resp =
+      (await api<CPVersionInfo[]>(
+        'api/country-programme/versions',
+        { params: { country_id: country.id, year } },
+        false,
+      )) || []
     setVersions(resp)
   }
 
-  useEffect(function(){
-    if (country && year) {
-      fetchVersions(country, year)
-    }
-  }, [country, year])
+  useEffect(
+    function () {
+      if (country && year) {
+        fetchVersions(country, year)
+      }
+    },
+    [country, year],
+  )
 
   return versions
 }
 
 export default function CountryProgrammeReportDiff() {
-  const params = useParams()
+  const params = useParams<Record<string, string>>()
   const { iso3, year } = params
   const version = parseInt(params.version, 10)
 
@@ -67,12 +72,14 @@ export default function CountryProgrammeReportDiff() {
 
   return (
     <PageWrapper>
-      { report_id ? <CPDiffViewWrapper
-        country_id={country.id}
-        report_id={!isLastVersion ? report_id : undefined}
-        version={version}
-        year={parseInt(year, 10)}
-      /> : null }
+      {report_id ? (
+        <CPDiffViewWrapper
+          country_id={country.id}
+          report_id={!isLastVersion ? report_id : undefined}
+          version={version}
+          year={parseInt(year, 10)}
+        />
+      ) : null}
     </PageWrapper>
   )
 }

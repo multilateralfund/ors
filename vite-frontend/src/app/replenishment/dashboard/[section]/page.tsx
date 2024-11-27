@@ -1,6 +1,6 @@
 'use client'
 
-import { useParams } from "wouter";
+import { useParams } from 'wouter'
 
 import DownloadButtons from '@ors/app/replenishment/DownloadButtons'
 import ReplenishmentHeading from '@ors/app/replenishment/ReplenishmentHeading'
@@ -9,7 +9,7 @@ import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import { formatApiUrl } from '@ors/helpers'
 
 export default function ReplenishmentDashboard() {
-  const { section } = useParams()
+  const { section } = useParams<Record<string, string>>()
   return (
     <>
       <title>Replenishment - Dashboard</title>
