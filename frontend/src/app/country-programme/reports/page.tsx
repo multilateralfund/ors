@@ -1,5 +1,3 @@
-import React from 'react'
-
 import CPListing from '@ors/components/manage/Blocks/CountryProgramme/CPListing'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'

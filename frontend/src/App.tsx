@@ -3,6 +3,12 @@ import { Switch, Route, Redirect } from 'wouter'
 import LoginLayout from '@ors/app/login/layout'
 import LoginPage from '@ors/app/login/page'
 
+import ResetPasswordLayout from '@ors/app/reset-password/layout'
+import ResetPasswordPage from '@ors/app/reset-password/page'
+
+import ForgotPasswordLayout from '@ors/app/forgot-password/layout'
+import ForgotPasswordPage from '@ors/app/forgot-password/page'
+
 import CountryProgrammePage from '@ors/app/country-programme/reports/page'
 
 import CPCreatePage from '@ors/app/country-programme/create/page'
@@ -55,6 +61,16 @@ export default function App() {
           <LoginLayout>
             <LoginPage />
           </LoginLayout>
+        </Route>
+        <Route path="/reset-password">
+          <ResetPasswordLayout>
+            <ResetPasswordPage />
+          </ResetPasswordLayout>
+        </Route>
+        <Route path="/forgot-password">
+          <ForgotPasswordLayout>
+            <ForgotPasswordPage />
+          </ForgotPasswordLayout>
         </Route>
         <Route path="/business-plans/list/plans/:period">
           <BPListLayout>

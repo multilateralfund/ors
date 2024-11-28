@@ -11,25 +11,20 @@ export type LinkProps = { button?: false; href: string } & MuiLinkProps
 
 export type ButtonProps = { button: true; href: string } & MuiButtonProps
 
-
-function Link({
-  button,
-  children,
-  className,
-  ...rest
-}: any) {
+function Link({ button, children, className, download, ...rest }: any) {
+  const component = download ? 'a' : WouterLink
   return button ? (
     // @ts-ignore
     <Button
       className={cx('text-center', className)}
-      component={WouterLink}
+      component={component}
       {...rest}
     >
       {children}
     </Button>
   ) : (
     // @ts-ignore
-    <MuiLink className={className} component={WouterLink} {...rest}>
+    <MuiLink className={className} component={component} {...rest}>
       {children}
     </MuiLink>
   )

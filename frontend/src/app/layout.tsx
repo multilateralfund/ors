@@ -15,12 +15,14 @@ import View from '@ors/components/theme/Views/View'
 // import View from '../components/theme/Views/View'
 import api from '@ors/helpers/Api/_api'
 import { getInitialSliceData } from '@ors/helpers/Store/Store'
-// import { getCurrentView } from '@ors/helpers/View/View'
+import { getCurrentView } from '@ors/helpers/View/View'
 import { StoreProvider } from '@ors/store'
 import ThemeProvider from '@ors/themes/ThemeProvider'
 import useSearchParams from '@ors/hooks/useSearchParams'
 
 import '../themes/styles/global.css'
+
+console.log(import.meta.env)
 
 // export const metadata: Metadata = {
 //   description:
@@ -143,15 +145,18 @@ function LoginWrapper(props: any) {
   const { appState, children } = props
   const [pathname] = useLocation()
   const user = useStore((state) => state.user)
+  const currentView = getCurrentView(pathname || '')
+
+  console.log(currentView)
 
   const shouldRenderView = useMemo(
     function () {
-      const isLoginPath = pathname === '/login'
+      const isAuthorized = currentView.layout === 'authorized_document'
       const haveUser = user.loaded && user.data && appState
-      const loginRequested = user.loaded && !user.data && isLoginPath
-      return haveUser || loginRequested
+      const unauthenticatedPath = user.loaded && !user.data && !isAuthorized
+      return haveUser || unauthenticatedPath
     },
-    [user.loaded, user.data, appState, pathname],
+    [user.loaded, user.data, appState, currentView.layout],
   )
 
   return <View>{shouldRenderView ? children : null}</View>
@@ -166,7 +171,6 @@ export default function RootLayout({
   const [pathname, setLocation] = useLocation()
   const searchParams = useSearchParams()
   const theme = { value: 'light' }
-  // const currentView = getCurrentView(pathname || '')
 
   const { user, loaded: userLoaded } = useUser()
   const appState = useAppState(user)
