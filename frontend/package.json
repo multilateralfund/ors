@@ -16,6 +16,7 @@
     "@emotion/styled": "^11.11.5",
     "@mui/material": "^5.16.7",
     "@mui/x-date-pickers": "^6.19.9",
+    "@sentry/react": "^8.41.0",
     "ag-grid-community": "^31.0.3",
     "ag-grid-react": "^31.3.1",
     "big.js": "^6.2.2",
