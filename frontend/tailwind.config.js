@@ -1,16 +1,16 @@
-/* eslint-disable perfectionist/sort-objects */
-import grey from '@mui/material/colors/grey'
-import { Config } from 'tailwindcss'
+import muiGrey from '@mui/material/colors/grey'
 import { createThemes } from 'tw-colors'
 
-const colors = require('tailwindcss/colors')
+import colors from 'tailwindcss/colors'
+
+import bgPatterns from 'tailwindcss-bg-patterns'
 
 const gray = {
   ...colors.gray,
-  A100: grey.A100,
-  A200: grey.A200,
-  A400: grey.A400,
-  A700: grey.A700,
+  A100: muiGrey.A100,
+  A200: muiGrey.A200,
+  A400: muiGrey.A400,
+  A700: muiGrey.A700,
   B50: '#F9FAFB',
   B100: '#F2F4F7',
   B200: '#EAECF0',
@@ -18,15 +18,15 @@ const gray = {
   B500: '#667085',
   B700: '#344054',
   B900: '#101828',
-  MUI50: grey[50],
-  MUI200: grey[200],
-  MUI300: grey[300],
-  MUI400: grey[400],
-  MUI500: grey[500],
-  MUI600: grey[600],
-  MUI700: grey[700],
-  MUI800: grey[800],
-  MUI900: grey[900],
+  MUI50: muiGrey[50],
+  MUI200: muiGrey[200],
+  MUI300: muiGrey[300],
+  MUI400: muiGrey[400],
+  MUI500: muiGrey[500],
+  MUI600: muiGrey[600],
+  MUI700: muiGrey[700],
+  MUI800: muiGrey[800],
+  MUI900: muiGrey[900],
 }
 
 const mlfs = {
@@ -150,12 +150,14 @@ const originalColors = {
   },
 }
 
+/** @type {import('tailwindcss').Config} */
 export default {
   content: [
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/themes/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  important: '#next-app',
   corePlugins: {
     container: false,
     preflight: false,
@@ -175,7 +177,7 @@ export default {
         produceThemeVariant: (themeName) => `theme-${themeName}`,
       },
     ),
-    function ({ addComponents, addUtilities }: any) {
+    function ({ addComponents, addUtilities }) {
       addComponents({
         '.container': {
           margin: '0 auto',
@@ -222,7 +224,7 @@ export default {
         },
       })
     },
-    require('tailwindcss-bg-patterns'),
+    bgPatterns,
   ],
   theme: {
     fontSize: {
@@ -315,4 +317,5 @@ export default {
       xl: '1280px',
     },
   },
-} as Config
+}
+

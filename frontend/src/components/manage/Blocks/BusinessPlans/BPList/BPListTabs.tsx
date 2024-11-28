@@ -3,8 +3,7 @@
 import React, { PropsWithChildren, useContext, useEffect } from 'react'
 
 import cx from 'classnames'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { useLocation, Link } from 'wouter'
 
 import useGetBpPeriods from '@ors/components/manage/Blocks/BusinessPlans/BPList/useGetBPPeriods'
 import PeriodSelector from '@ors/components/manage/Blocks/Replenishment/PeriodSelector'
@@ -51,7 +50,7 @@ const BPListTabs = (props: PropsWithChildren) => {
   const { periodOptions } = useGetBpPeriods(yearRanges)
   const { children } = props
 
-  const pathname = usePathname()
+  const [pathname] = useLocation()
   const period = getPathPeriod(pathname)
 
   const { setBPFilters } = useStore((state) => state.bpFilters)

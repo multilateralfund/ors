@@ -3,8 +3,7 @@
 import React, { PropsWithChildren } from 'react'
 
 import cx from 'classnames'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { Link, useLocation } from 'wouter'
 
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import ReplenishmentProvider from '@ors/contexts/Replenishment/ReplenishmentProvider'
@@ -17,27 +16,27 @@ interface Tab {
 const SECTIONS: Tab[] = [
   {
     label: 'Scale of assessment',
-    path: '/replenishment/scale-of-assessment',
+    path: '/scale-of-assessment',
   },
   {
     label: 'Status of the fund',
-    path: '/replenishment/status-of-the-fund',
+    path: '/status-of-the-fund',
   },
   {
     label: 'Statistics',
-    path: '/replenishment/statistics',
+    path: '/statistics',
   },
   {
     label: 'Status of contributions',
-    path: '/replenishment/status-of-contributions',
+    path: '/status-of-contributions',
   },
   {
     label: 'In/out flows',
-    path: '/replenishment/in-out-flows',
+    path: '/in-out-flows',
   },
   {
     label: 'Dashboard',
-    path: '/replenishment/dashboard',
+    path: '/dashboard',
   },
 ]
 
@@ -72,7 +71,7 @@ function getNavLinks(pathname: string): [Tab | undefined, React.JSX.Element[]] {
 function ReplenishmentLayoutContent(props: PropsWithChildren) {
   const { children } = props
 
-  const pathname = usePathname()
+  const [ pathname ] = useLocation()
 
   const [_, navLinks] = getNavLinks(pathname)
 

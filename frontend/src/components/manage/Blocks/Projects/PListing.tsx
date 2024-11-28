@@ -577,7 +577,6 @@ export default function PListing() {
               <Dropdown.Item>
                 <Link
                   className="flex items-center gap-x-2 text-black no-underline"
-                  prefetch={false}
                   target="_blank"
                   href={formatApiUrl(
                     `api/projects/export/?get_submission=false`,

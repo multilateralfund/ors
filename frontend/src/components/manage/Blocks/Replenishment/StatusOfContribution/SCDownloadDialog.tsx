@@ -140,7 +140,6 @@ const SCDownloadDialog = (props: SCDownloadDialogProps) => {
           { 'pointer-events-none': !url },
         )}
         href={url ? formatApiUrl(url) : '#'}
-        prefetch={false}
         target="_blank"
         onClick={handleCloseDialog}
         download

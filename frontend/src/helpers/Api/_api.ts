@@ -14,10 +14,7 @@ export default async function api<T = any>(
   options?: IApi['options'],
   throwError: IApi['throwError'] = true,
 ): Promise<T | null | undefined> {
-  const [state, setState] = __CLIENT__
-    ? [store.current.getState(), store.current.setState]
-    : [null, null]
-  const nextCookies = __SERVER__ && require('next/headers').cookies()
+  const [state, setState] = [store.current.getState(), store.current.setState]
   const {
     data = null,
     delay,
@@ -35,7 +32,7 @@ export default async function api<T = any>(
   const id = withStoreCache
     ? hash({ options: { ...omit(options, ['invalidateCache']) }, path })
     : ''
-  const csrftoken = __CLIENT__ && Cookies.get('csrftoken')
+  const csrftoken = Cookies.get('csrftoken')
   const sendRequestTime = delay ? new Date().getTime() : 0
 
   if (
@@ -91,11 +88,11 @@ export default async function api<T = any>(
   async function handleResponse(response: any) {
     try {
       const data = await response.json()
-      console.debug(
-        'API handleResponse: %s (cached: %s)',
-        fullPath,
-        withStoreCache ? id : 'no',
-      )
+      // console.debug(
+      //   'API handleResponse: %s (cached: %s)',
+      //   fullPath,
+      //   withStoreCache ? id : 'no',
+      // )
       if (state && withStoreCache) {
         debounce(
           () => {
@@ -119,7 +116,6 @@ export default async function api<T = any>(
     return await fetch(fullPath, {
       credentials: 'include',
       headers: {
-        ...(__SERVER__ ? { Cookie: nextCookies.toString() } : {}),
         ...(csrftoken ? { 'X-CSRFToken': csrftoken } : {}),
         ...defaultHeaders['common'],
         ...defaultHeaders[method.toLowerCase()],

@@ -1,8 +1,8 @@
-'use client'
-import React, { useEffect } from 'react'
+import { useEffect } from 'react'
 
 import { Alert, Button, Collapse, Paper, Typography } from '@mui/material'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useLocation } from 'wouter'
+import useSearchParams from '@ors/hooks/useSearchParams'
 
 import Field from '@ors/components/manage/Form/Field'
 import LoadingBuffer from '@ors/components/theme/Loading/LoadingBuffer'
@@ -10,17 +10,17 @@ import Link from '@ors/components/ui/Link/Link'
 import { useStore } from '@ors/store'
 
 export default function LoginForm() {
-  const router = useRouter()
+  const [_, setLocation] = useLocation()
   const searchParams = useSearchParams()
   const user = useStore((state) => state.user)
 
-  useEffect(() => {
-    if (user.data) {
-      setTimeout(() => {
-        window.location.replace(searchParams.get('redirect') || '/')
-      }, 500)
-    }
-  }, [user, router, searchParams])
+  // useEffect(() => {
+  //   if (user.data) {
+  //     setTimeout(() => {
+  //       setLocation(searchParams.get('redirect') || '/')
+  //     }, 500)
+  //   }
+  // }, [user, setLocation, searchParams])
 
   return (
     <>
@@ -35,10 +35,11 @@ export default function LoginForm() {
         onSubmit={async (e) => {
           e.preventDefault()
           const form = new FormData(e.currentTarget)
-          user.login(
+          await user.login(
             form.get('username')?.toString() || '',
             form.get('password')?.toString() || '',
           )
+          window.location.href = searchParams.get('redirect') || '/'
         }}
       >
         <Typography

@@ -1,5 +1,3 @@
-'use client'
-
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import BPYearRangesProvider from '@ors/contexts/BusinessPlans/BPYearRangesProvider'
 

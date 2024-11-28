@@ -2,25 +2,25 @@
 
 import { useContext, useEffect } from 'react'
 
-import { useRouter } from 'next/navigation'
+import { useLocation } from 'wouter'
 
 import ReplenishmentHeading from '@ors/app/replenishment/ReplenishmentHeading'
 import SAView from '@ors/components/manage/Blocks/Replenishment/SAView'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 
-export default function Replenishment() {
-  const router = useRouter()
+export default function ScaleOfAssessment() {
+  const [ loc, setLocation ] = useLocation()
   const ctxPeriods = useContext(ReplenishmentContext)
 
   // Redirect to latest period
   useEffect(() => {
     if (ctxPeriods.periodOptions.length > 0) {
-      router.replace(
-        `/replenishment/scale-of-assessment/${ctxPeriods.periodOptions[0].value}`,
+      setLocation(
+        `/${ctxPeriods.periodOptions[0].value}`,
       )
     }
-  }, [ctxPeriods.periodOptions, router])
+  }, [ctxPeriods.periodOptions, loc])
 
   // Return SAView so that there is no flicker after the redirect.
   return (
