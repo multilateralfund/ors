@@ -6,7 +6,7 @@ import React, { ChangeEvent, useContext, useMemo, useState } from 'react'
 
 import cx from 'classnames'
 import Cookies from 'js-cookie'
-import { times } from 'lodash'
+import { isNumber, times } from 'lodash'
 import { Link } from 'wouter'
 import { enqueueSnackbar } from 'notistack'
 
@@ -230,15 +230,14 @@ function PaymentsView() {
       result.push({ ...(memoResults[i] as ParsedPayment) })
       const entry = result[i]
       entry.date = formatDateForDisplay(entry.date)
-      const value = getFloat(entry.ferm_gain_or_loss as string)
-      const isNegative = value !== null && value < 0
+      const isNegative = (isNumber(entry.ferm_gain_or_loss) && entry.ferm_gain_or_loss < 0)
       entry.ferm_gain_or_loss = (
-        <span
-          className={cx({
-            'text-red-400': isNegative,
-          })}
-        >
-          {isNegative ? `(${value * -1})` : entry.ferm_gain_or_loss}
+        <span>
+          {
+            (isNumber(entry.ferm_gain_or_loss) && entry.ferm_gain_or_loss < 0)
+              ? `(${entry.ferm_gain_or_loss * (-1)})`
+              : entry.ferm_gain_or_loss
+          }
         </span>
       )
     }
