@@ -6,7 +6,8 @@ import {
 } from '@ors/types/user_types'
 
 import React, { useState } from 'react'
-import { Link, useLocation } from 'wouter'
+import { useLocation } from 'wouter'
+import Link from '@ors/components/ui/Link/Link'
 
 import {
   Collapse,
@@ -24,7 +25,7 @@ import { useStore } from '@ors/store'
 
 import { IoChevronDown, IoChevronUp, IoClose, IoMenu } from 'react-icons/io5'
 
-const EXTERNAL_BASE_URL = 'https://www.multilateralfund.org/'
+const EXTERNAL_BASE_URL = 'https://www.multilateralfund.org'
 const makeExternalUrl = (path: string) => `${EXTERNAL_BASE_URL}${path}`
 
 interface MenuItem {

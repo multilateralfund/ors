@@ -22,14 +22,6 @@ import useSearchParams from '@ors/hooks/useSearchParams'
 
 import '../themes/styles/global.css'
 
-console.log(import.meta.env)
-
-// export const metadata: Metadata = {
-//   description:
-//     'Multilateral Fund for the Implementation of the Montreal Protocol',
-//   title: 'KMS',
-// }
-
 function useUser() {
   const [userData, setUserData] = useState<{
     loaded: boolean
@@ -146,8 +138,6 @@ function LoginWrapper(props: any) {
   const [pathname] = useLocation()
   const user = useStore((state) => state.user)
   const currentView = getCurrentView(pathname || '')
-
-  console.log(currentView)
 
   const shouldRenderView = useMemo(
     function () {

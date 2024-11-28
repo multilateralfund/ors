@@ -1,3 +1,5 @@
+import { forwardRef } from 'react'
+
 import type {
   ButtonProps as MuiButtonProps,
   LinkProps as MuiLinkProps,
@@ -11,11 +13,24 @@ export type LinkProps = { button?: false; href: string } & MuiLinkProps
 
 export type ButtonProps = { button: true; href: string } & MuiButtonProps
 
-function Link({ button, children, className, download, ...rest }: any) {
-  const component = download ? 'a' : WouterLink
+function isInternalLink(url: string) {
+  return (
+    (url.startsWith('/') || url.startsWith(location.origin)) &&
+    url.indexOf('/api/') == -1
+  )
+}
+
+const Link = forwardRef<any, any>(function Link(
+  { button, children, className, download, ...rest }: any,
+  ref: any,
+) {
+  const isInternal = isInternalLink(rest.href || '')
+  const component = isInternal ? WouterLink : 'a'
+
   return button ? (
     // @ts-ignore
     <Button
+      ref={ref}
       className={cx('text-center', className)}
       component={component}
       {...rest}
@@ -24,10 +39,10 @@ function Link({ button, children, className, download, ...rest }: any) {
     </Button>
   ) : (
     // @ts-ignore
-    <MuiLink className={className} component={component} {...rest}>
+    <MuiLink ref={ref} className={className} component={component} {...rest}>
       {children}
     </MuiLink>
   )
-}
+})
 
 export default Link
