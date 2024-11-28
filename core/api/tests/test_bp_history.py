@@ -8,10 +8,9 @@ pytestmark = pytest.mark.django_db
 
 
 @pytest.fixture(name="_setup_new_business_plan_create")
-def setup_new_business_plan_create(agency):
+def setup_new_business_plan_create():
     return {
         "name": "Test BP",
-        "agency_id": agency.id,
         "year_start": 2020,
         "year_end": 2022,
         "status": BusinessPlan.Status.endorsed,
@@ -44,7 +43,6 @@ class TestBPHistory:
         self.client.force_authenticate(user=user)
         url = reverse("businessplan-list") + f"{business_plan_id}/"
         data = {
-            "agency_id": agency_user.agency_id,
             "year_start": 2020,
             "year_end": 2022,
             "status": BusinessPlan.Status.endorsed,
