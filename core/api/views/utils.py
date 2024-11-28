@@ -589,6 +589,123 @@ def diff_activities(activities, old_activities):
     return count_new, count_changed, count_deleted
 
 
+def get_bp_activity_data(
+    row,
+    year_start,
+    agencies,
+    countries,
+    project_types,
+    bp_chemical_types,
+    project_clusters,
+    sectors,
+    subsectors,
+    substances,
+    comment_types,
+):
+    agency = agencies.get(row["Agency"])
+    country = countries.get(row["Country"])
+    project_type = project_types.get(row["Type"])
+    bp_chemical_type = bp_chemical_types.get(row["Chemical"])
+    project_cluster = project_clusters.get(row["Cluster"])
+    sector = sectors.get(row["Sector"])
+    subsector = subsectors.get(row["Subsector"])
+
+    substance_names = row["HCFC Chemical Detail"].split("/") if row["HCFC Chemical Detail"] else []
+    substance_ids = [substances.get(name) for name in substance_names]
+    comment_type_names = row["Comment types"].split(",") if row["Comment types"] else []
+    comment_type_ids = [comment_types.get(name) for name in comment_type_names]
+
+    activity_data = {
+        "initial_id": 1,
+        "title": row["Title"],
+        "agency_id": agency.id,
+        "country_id": country.id,
+        "lvc_status": row["HCFC Status"],
+        "project_type_id": project_type.id,
+        "project_type_code": project_type.code,
+        "legacy_project_type": row["Legacy Type"],
+        "bp_chemical_type_id": bp_chemical_type.id,
+        "project_cluster_id": project_cluster.id if project_cluster else None,
+        "substances": substance_ids,
+        "amount_polyol": row["Amount of Polyol in Project (MT)"],
+        "sector_id": sector.id if sector else None,
+        "sector_code": sector.code if sector else "",
+        "subsector_id": subsector.id if subsector else None,
+        "legacy_sector_and_subsector": row["Legacy Sector and Subsector"],
+        "required_by_model": row["Required by Model"],
+        "status": row["A-Appr. P-Plan'd"],
+        "is_multi_year": True if row["Is Multi Year"] == "Yes" else False,
+        "reason_for_exceeding": row["Reason for exceeding 35% of baseline"],
+        "remarks": row["Remarks"],
+        "remarks_additional": row["Remarks (Additional)"],
+        "comment_secretariat": row["Comment"],
+        "comment_types": comment_type_ids,
+        "values": [
+            {
+                "year": year_start + 2,
+                "is_after": True,
+                "value_usd": row[f"Value ($000) After {year_start + 2}"],
+                "value_odp": row[f"ODP After {year_start + 2}"],
+                "value_mt": row[f"MT After {year_start + 2} for HFC"],
+            },
+        ],
+    }
+
+    for year in range(year_start, year_start + 3):
+        activity_data["values"].append(
+            {
+                "year": year,
+                "is_after": False,
+                "value_usd": row[f"Value ($000) {year}"],
+                "value_odp": row[f"ODP {year}"],
+                "value_mt": row[f"MT {year} for HFC"],
+            }
+        )
+
+    return activity_data
+
+
+def import_business_plan(request, filename):
+    df = pd.read_excel(filename, dtype=str).replace({np.nan: ""})
+
+    agencies = {agency.name: agency for agency in Agency.objects.all()}
+    countries = {country.name: country for country in Country.objects.all()}
+    project_types = {project_type.code: project_type for project_type in ProjectType.objects.all()}
+    bp_chemical_types = {bp_chemical_type.name: bp_chemical_type for bp_chemical_type in BPChemicalType.objects.all()}
+    project_clusters = {project_cluster.name: project_cluster for project_cluster in ProjectCluster.objects.all()}
+    sectors = {sector.name: sector for sector in ProjectSector.objects.all()}
+    subsectors = {subsector.name: subsector for subsector in ProjectSubSector.objects.all()}
+
+    substances = {substance.name: substance.id for substance in Substance.objects.all()}
+    comment_types = {comment_type.name: comment_type.id for comment_type in CommentType.objects.all()}
+
+    year_start = int(request.query_params.get("year_start"))
+    data = {
+        "year_start": year_start,
+        "year_end": int(request.query_params.get("year_end")),
+        "status": request.query_params.get("status"),
+        "activities": [],
+    }
+    for _, row in df.iterrows():
+        data["activities"].append(
+            get_bp_activity_data(
+                row,
+                year_start,
+                agencies,
+                countries,
+                project_types,
+                bp_chemical_types,
+                project_clusters,
+                sectors,
+                subsectors,
+                substances,
+                comment_types,
+            )
+        )
+
+    return data
+
+
 class SummaryStatusOfContributionsAggregator:
     """
     Aggregator for the summary status of contributions using the
