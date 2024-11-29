@@ -7,6 +7,7 @@ from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.db.models import F, Max, Min
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -43,7 +44,7 @@ from core.api.views.utils import (
     get_business_plan_from_request,
     BPACTIVITY_ORDERING_FIELDS,
 )
-from core.models import BusinessPlan, BPChemicalType, BPHistory, BPActivity
+from core.models import Agency, BusinessPlan, BPChemicalType, BPHistory, BPActivity
 from core.models.business_plan import BPFile
 from core.tasks import (
     send_mail_bp_create,
@@ -390,7 +391,9 @@ class BPActivityViewSet(
     def get_wb(self, method):
         year_start = int(self.request.query_params.get("year_start"))
         year_end = int(self.request.query_params.get("year_end"))
-        bp_status = self.request.query_params.get("bp_status")
+        agency_id = self.request.query_params.get("agency_id")
+        if agency_id:
+            agency = get_object_or_404(Agency, id=agency_id)
 
         # get all activities between year_start and year_end
         queryset = self.filter_queryset(self.get_queryset())
@@ -408,8 +411,8 @@ class BPActivityViewSet(
             max_year=year_end + 1,
         ).write(data)
 
-        if bp_status:
-            name = f"BusinessPlan{bp_status}-{year_start}-{year_end}"
+        if agency_id:
+            name = f"BusinessPlan{agency.name}-{year_start}-{year_end}"
         else:
             name = f"BusinessPlanActivities{year_start}-{year_end}"
 

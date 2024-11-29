@@ -121,6 +121,7 @@ class BPActivityListFilter(BPActivityFilter):
         field_name="business_plan__status",
         choices=BusinessPlan.Status.choices,
         widget=CSVWidget,
+        required=True,
     )
 
     class Meta(BPActivityFilter.Meta):

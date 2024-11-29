@@ -553,6 +553,7 @@ class TestBPActivityList:
             {
                 "year_start": business_plan.year_start,
                 "year_end": business_plan.year_end,
+                "bp_status": business_plan.status,
             },
         )
         assert response.status_code == 403
@@ -566,6 +567,7 @@ class TestBPActivityList:
             {
                 "year_start": business_plan.year_start,
                 "year_end": business_plan.year_end,
+                "bp_status": business_plan.status,
             },
         )
         assert response.status_code == 200
@@ -576,6 +578,7 @@ class TestBPActivityList:
             {
                 "year_start": business_plan.year_start - 1,
                 "year_end": business_plan.year_end,
+                "bp_status": business_plan.status,
             },
         )
         assert response.status_code == 200
@@ -591,6 +594,7 @@ class TestBPActivityList:
             {
                 "year_start": business_plan.year_start,
                 "year_end": business_plan.year_end,
+                "bp_status": business_plan.status,
                 "country_id": country_ro.id,
             },
         )
@@ -606,6 +610,7 @@ class TestBPActivityList:
             {
                 "year_start": business_plan.year_start,
                 "year_end": business_plan.year_end,
+                "bp_status": business_plan.status,
                 "country_id": 999,
             },
         )
@@ -619,6 +624,7 @@ class TestBPActivityList:
             {
                 "year_start": business_plan.year_start,
                 "year_end": business_plan.year_end,
+                "bp_status": business_plan.status,
                 "status": "A",
             },
         )
@@ -631,6 +637,7 @@ class TestBPActivityList:
             {
                 "year_start": business_plan.year_start,
                 "year_end": business_plan.year_end,
+                "bp_status": business_plan.status,
                 "status": "U",
             },
         )
@@ -645,6 +652,7 @@ class TestBPActivityList:
             {
                 "year_start": business_plan.year_start,
                 "year_end": business_plan.year_end,
+                "bp_status": business_plan.status,
                 "search": "Planu2",
             },
         )
@@ -660,27 +668,13 @@ class TestBPActivityList:
             {
                 "year_start": business_plan.year_start,
                 "year_end": business_plan.year_end,
+                "bp_status": business_plan.status,
                 "agency_id": agency.id,
             },
         )
         assert response.status_code == 200
         assert len(response.json()) == 4
         assert response.json()[0]["agency"]["name"] == agency.name
-
-    def test_bp_status_filter(self, user, business_plan, _setup_bp_activity_list):
-        self.client.force_authenticate(user=user)
-
-        response = self.client.get(
-            self.url,
-            {
-                "year_start": business_plan.year_start,
-                "year_end": business_plan.year_end,
-                "bp_status": business_plan.status,
-            },
-        )
-        assert response.status_code == 200
-        assert len(response.json()) == 4
-        assert response.json()[0]["bp_status"] == business_plan.status
 
     def test_invalid_agency(self, user, business_plan, _setup_bp_activity_list):
         self.client.force_authenticate(user=user)
@@ -690,6 +684,7 @@ class TestBPActivityList:
             {
                 "year_start": business_plan.year_start,
                 "year_end": business_plan.year_end,
+                "bp_status": business_plan.status,
                 "agency_id": 999,
             },
         )
@@ -718,6 +713,7 @@ class TestBPActivityList:
             {
                 "year_start": business_plan.year_start,
                 "year_end": business_plan.year_end,
+                "bp_status": business_plan.status,
             },
         )
         assert response.status_code == 200
@@ -734,6 +730,7 @@ class TestBPActivityList:
             {
                 "year_start": business_plan.year_start,
                 "year_end": business_plan.year_end,
+                "bp_status": business_plan.status,
                 "comment_types": f"{comment_type.id},{other_comment_type.id}",
             },
         )

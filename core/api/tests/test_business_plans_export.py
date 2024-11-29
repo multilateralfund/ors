@@ -20,6 +20,7 @@ class TestBPExport(BaseTest):
             {
                 "year_start": business_plan.year_start,
                 "year_end": business_plan.year_end,
+                "bp_status": business_plan.status,
             },
         )
         assert response.status_code == 403
@@ -32,6 +33,7 @@ class TestBPExport(BaseTest):
             {
                 "year_start": business_plan.year_start,
                 "year_end": business_plan.year_end,
+                "bp_status": business_plan.status,
             },
         )
         assert response.status_code == 200
@@ -77,6 +79,7 @@ class TestBPPrint(BaseTest):
             {
                 "year_start": business_plan.year_start,
                 "year_end": business_plan.year_end,
+                "bp_status": business_plan.status,
             },
         )
         assert response.status_code == 403
@@ -84,6 +87,7 @@ class TestBPPrint(BaseTest):
     def test_print(
         self,
         user,
+        agency,
         business_plan,
         bp_activity,
         bp_activity_values,
@@ -96,12 +100,13 @@ class TestBPPrint(BaseTest):
                 "year_start": business_plan.year_start,
                 "year_end": business_plan.year_end,
                 "bp_status": business_plan.status,
+                "agency_id": agency.id,
             },
         )
         assert response.status_code == 200
         assert (
             response.filename
-            == f"BusinessPlan{business_plan.status}-{business_plan.year_start}-{business_plan.year_end}.pdf"
+            == f"BusinessPlan{agency.name}-{business_plan.year_start}-{business_plan.year_end}.pdf"
         )
 
         text = pdf_text(io.BytesIO(response.getvalue())).replace("\n", "")
