@@ -1,5 +1,3 @@
-'use client'
-
 import { useContext, useState } from 'react'
 
 import { get, isNil, keys, omit, omitBy, pickBy, reduce, reverse } from 'lodash'

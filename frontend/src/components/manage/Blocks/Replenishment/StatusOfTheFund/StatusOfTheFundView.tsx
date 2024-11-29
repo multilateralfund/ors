@@ -15,6 +15,7 @@ import {
   IPROVISIONS,
 } from '../Dashboard/useGetDashboardDataTypes'
 import { allocationsOrder, incomeOrder, provisionsOrder } from './constants'
+import StatusOfTheFundFiles from './StatusOfTheFundFiles'
 
 import { FaEdit } from 'react-icons/fa'
 import { IoInformationCircleOutline } from 'react-icons/io5'
@@ -130,6 +131,7 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
   } = props
 
   const [isEditing, setIsEditing] = useState(false)
+  const [showFiles, setShowFiles] = useState(false)
 
   return (
     <>
@@ -140,6 +142,20 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
           </span>
         </h2>
         <div className="flex gap-2">
+          <label
+            className={cx(
+              'flex h-10 cursor-pointer items-center rounded-lg border border-solid border-primary px-2 py-1 text-lg font-bold text-gray-400',
+              { 'bg-primary font-bold text-mlfs-hlYellow': showFiles },
+            )}
+          >
+            <input
+              className="collapse hidden"
+              checked={showFiles}
+              type="checkbox"
+              onChange={() => setShowFiles((prev) => !prev)}
+            />
+            <span className="text-nowrap">Show files</span>
+          </label>
           {showEditButton && !isEditing && (
             <SubmitButton
               className="tracking-widest print:hidden"
@@ -166,6 +182,8 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
           )}
         </div>
       </div>
+
+      <StatusOfTheFundFiles show={showFiles} />
 
       <div
         style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}

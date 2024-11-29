@@ -1,6 +1,4 @@
-'use client'
-
-import { useLocation } from "wouter";
+import { useLocation } from 'wouter'
 
 import SimpleSelect from '@ors/components/ui/SimpleSelect/SimpleSelect'
 
