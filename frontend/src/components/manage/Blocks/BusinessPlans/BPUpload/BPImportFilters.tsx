@@ -12,16 +12,16 @@ import BPMainFilters from './BPMainFilters'
 import { NavigationButton } from './NavigationButton'
 import { Label } from './helpers'
 
-interface IBPUploadFilters {
+interface IBPImportFilters {
   periodOptions: PeriodSelectorOption[]
   setFilters: any
 }
 
-const BPUploadFilters = ({
+const BPImportFilters = ({
   periodOptions,
   setFilters,
   ...rest
-}: IBPUploadFilters & Omit<INavigationButton, 'direction'>) => {
+}: IBPImportFilters & Omit<INavigationButton, 'direction'>) => {
   const projectSlice = useStore((state) => state.projects)
   const meetings = projectSlice.meetings.data
   const formattedMeetings = meetings?.map((meeting: any) => ({
@@ -79,4 +79,4 @@ const BPUploadFilters = ({
   )
 }
 
-export default BPUploadFilters
+export default BPImportFilters

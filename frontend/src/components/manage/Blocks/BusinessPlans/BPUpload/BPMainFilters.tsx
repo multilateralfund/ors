@@ -1,3 +1,5 @@
+import { find, indexOf } from 'lodash'
+
 import Field from '@ors/components/manage/Form/Field'
 import SimpleSelect from '@ors/components/ui/SimpleSelect/SimpleSelect'
 
@@ -10,13 +12,23 @@ interface IStatus {
   value: string
 }
 
-interface IBPUploadFilters {
+interface IBPMainFilters {
+  filters?: any
   periodOptions: PeriodSelectorOption[]
   setFilters: any
 }
 
-const BPMainFilters = ({ periodOptions, setFilters }: IBPUploadFilters) => {
+const BPMainFilters = ({
+  filters,
+  periodOptions,
+  setFilters,
+}: IBPMainFilters) => {
   const formattedPeriodOptions = getFormattedPeridOptions(periodOptions)
+  const currentPeriod = find(
+    formattedPeriodOptions,
+    ({ year_start }) => year_start === parseInt(filters?.year_start),
+  )
+  const currentPeriodIndex = indexOf(formattedPeriodOptions, currentPeriod)
 
   const handleChangeTriennium = (triennium: PeriodSelectorOption) => {
     setFilters((prevFilters: any) => {
@@ -28,7 +40,7 @@ const BPMainFilters = ({ periodOptions, setFilters }: IBPUploadFilters) => {
   const handleChangeStatus = (status: IStatus) => {
     setFilters((prevFilters: any) => ({
       ...prevFilters,
-      status: status?.label ?? null,
+      bp_status: status?.label ?? null,
     }))
   }
 
@@ -38,7 +50,7 @@ const BPMainFilters = ({ periodOptions, setFilters }: IBPUploadFilters) => {
         <Label isRequired>Triennium</Label>
         <SimpleSelect
           className="!gap-x-0"
-          initialIndex={1}
+          initialIndex={filters ? currentPeriodIndex : 1}
           inputClassName="gap-x-4 h-10"
           label={''}
           options={formattedPeriodOptions}
@@ -50,6 +62,7 @@ const BPMainFilters = ({ periodOptions, setFilters }: IBPUploadFilters) => {
         <Field
           FieldProps={{ className: 'mb-0 w-40 BPListUpload' }}
           options={bpTypes}
+          value={filters?.bp_status}
           widget="autocomplete"
           onChange={(_: any, value: any) => handleChangeStatus(value)}
         />

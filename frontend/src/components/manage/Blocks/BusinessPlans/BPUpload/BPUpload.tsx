@@ -7,8 +7,9 @@ import BPYearRangesProvider from '@ors/contexts/BusinessPlans/BPYearRangesProvid
 
 import useGetBpPeriods from '../BPList/useGetBPPeriods'
 import { RedirectToBpList } from '../RedirectToBpList'
-import BPDownload from './BPDownload'
-import BPUploadFilters from './BPUploadFilters'
+import BPExport from './BPExport'
+import BPImport from './BPImport'
+import BPImportFilters from './BPImportFilters'
 import BPUploadSectionWrapper from './BPUploadSectionWrapper'
 
 const BPUploadHeader = ({ currentYearRange }: any) => {
@@ -29,24 +30,27 @@ const BPUpload = () => {
   const currentYearRange = periodOptions?.[0]?.value
 
   const [filters, setFilters] = useState<any>({})
+  const [downloadFilters, setDownloadFilters] = useState<any>({})
+  const [file, setFile] = useState<FileList | null>(null)
+  const [validations, setValidations] = useState<any>(null)
+
   const [currentStep, setCurrentStep] = useState(1)
 
   useEffect(() => {
     if (currentYearRange) {
-      setFilters(() => {
-        const [year_start, year_end] = currentYearRange.split('-')
-        return { year_end, year_start }
-      })
+      const [year_start, year_end] = currentYearRange.split('-')
+      setFilters({ year_end, year_start })
+      setDownloadFilters({ year_end, year_start })
     }
   }, [currentYearRange])
 
   const isFiltersNextBtnEnabled =
-    filters.year_start && filters.status && filters.meeting
+    filters.year_start && filters.bp_status && filters.meeting
 
   const steps = [
     {
       component: (
-        <BPUploadFilters
+        <BPImportFilters
           {...{
             periodOptions,
             setCurrentStep,
@@ -59,11 +63,13 @@ const BPUpload = () => {
     },
     {
       component: (
-        <BPDownload
+        <BPExport
           {...{
+            downloadFilters,
             filters,
             periodOptions,
             setCurrentStep,
+            setDownloadFilters,
           }}
         />
       ),
@@ -71,11 +77,15 @@ const BPUpload = () => {
     },
     {
       component: (
-        <></>
-        // <BPImportActivities
-        //   isCurrentStep={currentStep === 2}
-        //   setCurrentStep={setCurrentStep}
-        // />
+        <BPImport
+          {...{
+            file,
+            filters,
+            setCurrentStep,
+            setFile,
+            setValidations,
+          }}
+        />
       ),
       step: 3,
     },
