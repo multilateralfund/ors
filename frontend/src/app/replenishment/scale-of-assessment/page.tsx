@@ -1,5 +1,3 @@
-'use client'
-
 import { useContext, useEffect } from 'react'
 
 import { useLocation } from 'wouter'
@@ -10,17 +8,15 @@ import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 
 export default function ScaleOfAssessment() {
-  const [ loc, setLocation ] = useLocation()
+  const [loc, setLocation] = useLocation()
   const ctxPeriods = useContext(ReplenishmentContext)
 
   // Redirect to latest period
   useEffect(() => {
     if (ctxPeriods.periodOptions.length > 0) {
-      setLocation(
-        `/${ctxPeriods.periodOptions[0].value}`,
-      )
+      setLocation(`/${ctxPeriods.periodOptions[0].value}`)
     }
-  }, [ctxPeriods.periodOptions, loc])
+  }, [ctxPeriods.periodOptions, loc, setLocation])
 
   // Return SAView so that there is no flicker after the redirect.
   return (

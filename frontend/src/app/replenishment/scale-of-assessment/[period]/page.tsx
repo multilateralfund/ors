@@ -1,6 +1,6 @@
-'use client'
-
 import { useParams } from 'wouter'
+
+import usePageTitle from '@ors/hooks/usePageTitle'
 
 import DownloadButtons from '@ors/app/replenishment/DownloadButtons'
 import SAView from '@ors/components/manage/Blocks/Replenishment/SAView'
@@ -9,6 +9,7 @@ import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import SoAProvider from '@ors/contexts/Replenishment/SoAProvider'
 
 export default function ReplenishmentScaleOfAssessment() {
+  usePageTitle('Replenishment - Scale of assessment')
   const { period } = useParams<Record<string, string>>()
   return (
     <>

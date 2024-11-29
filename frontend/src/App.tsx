@@ -128,20 +128,23 @@ export default function App() {
         </Route>
         <Route path="/replenishment" nest>
           <ReplenishmentLayout>
-            <Redirect to="/dashboard" replace />
             <Route path="/dashboard" nest>
-              <Redirect to="/cummulative" replace />
               <Route path="/:section/:period">
                 <ReplenishmentDashboardSectionPeriodPage />
               </Route>
               <Route path="/:section">
                 <ReplenishmentDashboardSectionPage />
               </Route>
+              <Route path="/">
+                <Redirect to="/cummulative" replace />
+              </Route>
             </Route>
             <Route path="/in-out-flows" nest>
-              <Redirect to="/invoices" replace />
               <Route path="/:section">
                 <ReplenishmentInOutFlowsPage />
+              </Route>
+              <Route path="/">
+                <Redirect to="/invoices" replace />
               </Route>
             </Route>
             <Route path="/scale-of-assessment" nest>
@@ -159,7 +162,6 @@ export default function App() {
               <ReplenishmentStatusOfTheFundPage />
             </Route>
             <Route path="/status-of-contributions" nest>
-              <Redirect to="/summary" replace />
               <Route path="/summary">
                 <ReplenishmentStatusOfContributionsSummaryPage />
               </Route>
@@ -175,6 +177,12 @@ export default function App() {
               <Route path="/annual">
                 <ReplenishmentStatusOfContributionsAnnualPage />
               </Route>
+              <Route path="/">
+                <Redirect to="/summary" replace />
+              </Route>
+            </Route>
+            <Route path="/">
+              <Redirect to="/dashboard" replace />
             </Route>
           </ReplenishmentLayout>
         </Route>

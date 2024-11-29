@@ -1,5 +1,7 @@
 import { useParams } from 'wouter'
 
+import usePageTitle from '@ors/hooks/usePageTitle'
+
 import DownloadButtons from '@ors/app/replenishment/DownloadButtons'
 import ReplenishmentHeading from '@ors/app/replenishment/ReplenishmentHeading'
 import DashboardView from '@ors/components/manage/Blocks/Replenishment/Dashboard/DashboardView'
@@ -7,6 +9,7 @@ import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import { formatApiUrl } from '@ors/helpers'
 
 export default function ReplenishmentDashboard() {
+  usePageTitle('Replenishment - Dashboard')
   const { period, section } = useParams<Record<string, string>>()
   return (
     <>

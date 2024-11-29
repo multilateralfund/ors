@@ -4,13 +4,11 @@ import { useParams } from 'wouter'
 
 import { CPVersionInfo, Country } from '@ors/types/store'
 
+import usePageTitle from '@ors/hooks/usePageTitle'
+
 import { CPArchiveViewWrapper } from '@ors/components/manage/Blocks/CountryProgramme/CPView'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import api from '@ors/helpers/Api/_api'
-
-// export const metadata: Metadata = {
-//   title: 'Country programme',
-// }
 
 function useCountries() {
   const [countries, setCountries] = useState<Country[]>([])
@@ -56,6 +54,7 @@ function useVersions(country: Country, year: string) {
 }
 
 export default function CountryProgrammeReport() {
+  usePageTitle('Country programme')
   const params = useParams<Record<string, string>>()
   const { iso3, year } = params
   const version_nr = parseInt(params.version_nr, 10)
