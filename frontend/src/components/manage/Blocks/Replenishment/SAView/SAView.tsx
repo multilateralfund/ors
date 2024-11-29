@@ -701,11 +701,11 @@ function SAViewWrapper(props: SAViewWrapperProps) {
           ),
         ],
       }
-      const decisionPDF = soaCtx?.version?.decision_pdf || null
+      const decisionPDFURL = soaCtx?.version?.decision_pdf_download_url || null
 
-      if (decisionPDF) {
+      if (decisionPDFURL) {
         result.texts.push('Decision PDF')
-        result.urls.push(decisionPDF)
+        result.urls.push(formatApiUrl(decisionPDFURL))
       }
 
       return result
