@@ -1,87 +1,70 @@
-import { Dispatch, SetStateAction, useState } from 'react'
+import { useState } from 'react'
 
-import { Box, Button } from '@mui/material'
 import cx from 'classnames'
 
 import Link from '@ors/components/ui/Link/Link'
 import { formatApiUrl } from '@ors/helpers'
 
-const BPUploadFilters = ({
-  currentStep,
+import { PeriodSelectorOption } from '../../Replenishment/types'
+import { INavigationButton } from '../types'
+import BPMainFilters from './BPMainFilters'
+import { NavigationButton } from './NavigationButton'
+
+interface IBPUploadFilters {
+  filters: any
+  periodOptions: PeriodSelectorOption[]
+}
+
+const BPDownload = ({
+  filters,
   periodOptions,
-  setCurrentStep,
-  step,
-}: {
-  currentStep: number
-  periodOptions: any
-  setCurrentStep: Dispatch<SetStateAction<number>>
-  step: number
-}) => {
-  const isCurrentStep = currentStep === step
+  ...rest
+}: IBPUploadFilters & Omit<INavigationButton, 'direction'>) => {
+  const currentYearRange = periodOptions[0].value
+  const [intitial_year_start, initial_year_end] = currentYearRange.split('-')
 
-  const moveToNextStep = () => {
-    if (isCurrentStep) {
-      setCurrentStep(step + 1)
-    }
-  }
+  const [downloadFilters, setDownloadFilters] = useState<any>({
+    year_end: intitial_year_start,
+    year_start: initial_year_end,
+  })
 
-  const [downloadYearsRange, setDownloadYearsRange] = useState()
+  const { status, year_end, year_start } = downloadFilters
+  const isDownloadButtonEnabled = year_start && status
 
   return (
-    <Box
-      className={cx('flex flex-col gap-6 p-6 shadow-none', {
-        'border-black': isCurrentStep,
-      })}
-    >
-      <div>
-        <p
-          className={cx('m-0 text-base uppercase text-gray-500', {
-            'text-secondary': isCurrentStep,
-          })}
-        >
-          Step {step}
-        </p>
-        <p
-          className={cx('m-0 text-2xl', {
-            'text-gray-500': !isCurrentStep,
-          })}
-        >
-          Would you like to download the business plan from
-        </p>
+    <>
+      <p className="m-0 text-2xl">Download Business Plan</p>
+      <div className="flex gap-4">
+        <BPMainFilters {...{ periodOptions }} setFilters={setDownloadFilters} />
       </div>
+      <p className="mb-0 mt-1 text-xl">Meeting: {filters.meeting}</p>
       <div className="flex items-center gap-2.5">
-        {/* <Link
-          className={cx('h-10 border border-solid border-primary px-3 py-1', {
-            'bg-white text-primary': !isCurrentStep,
-          })}
-          disabled={!isCurrentStep}
-          // @ts-ignore
+        <Link
+          className={cx(
+            'mt-5 h-10 border border-solid border-primary px-3 py-1',
+            {
+              'border-0': !isDownloadButtonEnabled,
+            },
+          )}
+          disabled={!isDownloadButtonEnabled}
           prefetch={false}
           size="large"
+          // @ts-ignore
           target="_blank"
           variant="contained"
           href={formatApiUrl(
-            `/api/business-plan-activity/export/?year_start=${splitPeriod[0]}&year_end=${splitPeriod[1]}&agency_id=${currentAgency?.id}`,
+            `/api/business-plan-activity/export/?year_start=${year_start}&year_end=${year_end}&bp_status=${status}`,
           )}
-          onClick={moveToNextStep}
           button
           download
         >
           Download
-        </Link> */}
-        {isCurrentStep && (
-          <Button
-            className="h-10 border border-solid border-primary bg-white px-3 py-1 text-primary"
-            size="large"
-            variant="contained"
-            onClick={moveToNextStep}
-          >
-            Next
-          </Button>
-        )}
+        </Link>
+        <NavigationButton {...rest} direction={'next'} />
+        <NavigationButton {...rest} direction={'back'} />
       </div>
-    </Box>
+    </>
   )
 }
 
-export default BPUploadFilters
+export default BPDownload
