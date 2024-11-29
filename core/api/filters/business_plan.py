@@ -133,10 +133,10 @@ class BPActivityListFilter(BPActivityFilter):
 
 
 class BPFileFilter(filters.FilterSet):
-    agency_id = filters.ModelChoiceFilter(
+    status = filters.ModelChoiceFilter(
         required=True,
-        field_name="agency_id",
-        queryset=Agency.objects.all(),
+        choices=BusinessPlan.Status.choices,
+        widget=CSVWidget,
     )
     year_start = filters.NumberFilter(
         required=True,
@@ -149,4 +149,4 @@ class BPFileFilter(filters.FilterSet):
 
     class Meta:
         model = BPFile
-        fields = ["agency_id", "year_start", "year_end"]
+        fields = ["status", "year_start", "year_end"]

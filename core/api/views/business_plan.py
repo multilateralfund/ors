@@ -3,7 +3,6 @@ import urllib
 
 import openpyxl
 from constance import config
-from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.db.models import F, Max, Min
 from django.http import HttpResponse
@@ -82,9 +81,6 @@ class BusinessPlanViewSet(
 
     def get_queryset(self):
         if self.action == "get":
-            user = self.request.user
-            if "agency" in user.user_type.lower():
-                return BPActivity.objects.filter(agency=user.agency)
             return BPActivity.objects.all()
 
         if self.request.method == "PUT":
@@ -438,7 +434,7 @@ class BPFileView(
     """
 
     permission_classes = [IsSecretariat | IsAgency | IsViewer]
-    queryset = BPFile.objects.select_related("agency")
+    queryset = BPFile.objects.all()
     serializer_class = BPFileSerializer
     filter_class = BPFileFilter
 
@@ -467,17 +463,12 @@ class BPFileView(
         return super().get_permissions()
 
     def get(self, request, *args, **kwargs):
-        user = request.user
-        agency_id = request.query_params.get("agency_id")
-        if "agency" in user.user_type.lower() and user.agency_id != int(agency_id):
-            raise PermissionDenied("User represents other agency")
-
         return self.list(request, *args, **kwargs)
 
     def _file_create(self, request, *args, **kwargs):
         files = request.FILES
         bp_file_data = {
-            "agency_id": request.query_params.get("agency_id"),
+            "status": request.query_params.get("status"),
             "year_start": request.query_params.get("year_start"),
             "year_end": request.query_params.get("year_end"),
         }

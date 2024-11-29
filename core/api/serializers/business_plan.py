@@ -480,17 +480,14 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
 
 
 class BPFileSerializer(serializers.ModelSerializer):
-    agency_id = serializers.PrimaryKeyRelatedField(
-        required=True,
-        queryset=Agency.objects.all().values_list("id", flat=True),
-    )
+    status = serializers.ChoiceField(choices=BusinessPlan.Status.choices, required=True)
     download_url = serializers.SerializerMethodField()
 
     class Meta:
         model = BPFile
         fields = [
             "id",
-            "agency_id",
+            "status",
             "year_start",
             "year_end",
             "uploaded_at",

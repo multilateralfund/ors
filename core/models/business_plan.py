@@ -200,12 +200,16 @@ class BPHistory(models.Model):
 
 class BPFile(models.Model):
     def upload_path(self, filename):
-        return f"bp_files/{self.agency_id}/{self.year_start}-{self.year_end}/{filename}"
+        return f"bp_files/{self.status}/{self.year_start}-{self.year_end}/{filename}"
 
     uploaded_at = models.DateTimeField(
         auto_now_add=True, help_text="Date of file upload"
     )
-    agency = models.ForeignKey(Agency, on_delete=models.CASCADE)
+    status = models.CharField(
+        max_length=32,
+        choices=BusinessPlan.Status.choices,
+        default=BusinessPlan.Status.endorsed,
+    )
     year_start = models.IntegerField(
         validators=[MinValueValidator(settings.MIN_VALID_YEAR)]
     )
@@ -219,7 +223,7 @@ class BPFile(models.Model):
         ordering = ["-uploaded_at"]
         constraints = [
             models.UniqueConstraint(
-                fields=["agency", "year_start", "year_end", "filename"],
+                fields=["status", "year_start", "year_end", "filename"],
                 name="unique_business_plan_filename",
             )
         ]
