@@ -46,10 +46,13 @@ export default function StatusOfTheFundFiles({ show }: { show: boolean }) {
     function () {
       const result = []
 
-      for (let i = 0; i < files?.length; i++) {
-        const file = files[i]
-        result.push(<FileCard key={file.id} file={file} />)
+      if (files && files.length) {
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i]
+          result.push(<FileCard key={file.id} file={file} />)
+        }
       }
+
       return result
     },
     [files],
