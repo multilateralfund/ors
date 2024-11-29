@@ -419,6 +419,26 @@ class ScaleOfAssessmentViewSet(
         )
 
 
+class ReplenishmentScaleOfAssessmentVersionFileDownloadView(generics.RetrieveAPIView):
+    permission_classes = [IsUserAllowedReplenishment]
+    queryset = ScaleOfAssessmentVersion.objects.all()
+    lookup_field = "id"
+
+    def get(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj.decision_pdf is None:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        response = HttpResponse(
+            obj.decision_pdf.file.read(), content_type="application/octet-stream"
+        )
+        file_name = urllib.parse.quote(obj.decision_pdf_name)
+        response["Content-Disposition"] = (
+            f"attachment; filename*=UTF-8''{file_name}; filename=\"{file_name}\""
+        )
+        return response
+
+
 class AnnualStatusOfContributionsView(views.APIView):
     permission_classes = [IsUserAllowedReplenishment]
 

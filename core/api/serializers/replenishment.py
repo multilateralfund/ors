@@ -24,9 +24,16 @@ from core.models import (
 class ScaleOfAssessmentVersionSerializer(serializers.ModelSerializer):
     version = serializers.IntegerField(read_only=True)
 
+    decision_pdf_download_url = serializers.SerializerMethodField()
+
     class Meta:
         model = ScaleOfAssessmentVersion
         fields = "__all__"
+
+    def get_decision_pdf_download_url(self, obj):
+        if not obj.decision_pdf:
+            return None
+        return reverse("scale-of-assessment-version-file-download", args=(obj.id,))
 
 
 class ReplenishmentSerializer(serializers.ModelSerializer):
@@ -35,11 +42,9 @@ class ReplenishmentSerializer(serializers.ModelSerializer):
     amount = serializers.DecimalField(
         max_digits=30, decimal_places=15, coerce_to_string=False, read_only=True
     )
-    scales_of_assessment_versions = serializers.SerializerMethodField()
-
-    def get_scales_of_assessment_versions(self, obj):
-        qs = obj.scales_of_assessment_versions.all()
-        return ScaleOfAssessmentVersionSerializer(qs, many=True).data
+    scales_of_assessment_versions = ScaleOfAssessmentVersionSerializer(
+        many=True, read_only=True
+    )
 
     class Meta:
         model = Replenishment
