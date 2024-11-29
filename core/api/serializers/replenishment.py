@@ -617,4 +617,4 @@ class StatusOfTheFundFileSerializer(serializers.ModelSerializer):
         ]
 
     def get_download_url(self, obj):
-        return f"{reverse('replenishment-status-files-list')}/{obj.id}/"
+        return reverse("replenishment-status-files-detail", args=(obj.id,))
