@@ -14,7 +14,7 @@ class AgencyAdmin(admin.ModelAdmin):
         exclude = [
             "project",
             "coop_projects",
-            "businessplan",
+            "bpactivity",
             "pcrdelayexplanation",
             "pcrlearnedlessons",
             "user",

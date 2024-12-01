@@ -28,7 +28,7 @@ class BusinessPlan(models.Model):
         endorsed = "Endorsed", "Endorsed"
 
     def upload_path(self, filename):
-        return f"bp_files/{self.agency}/{self.year_start}-{self.year_end}/{filename}"
+        return f"bp_files//{self.year_start}-{self.year_end}/{self.status}/{filename}"
 
     created_at = models.DateTimeField(
         auto_now_add=True, null=True, help_text="Date of creation of the business plan"
@@ -58,13 +58,12 @@ class BusinessPlan(models.Model):
     year_end = models.IntegerField(
         validators=[MinValueValidator(settings.MIN_VALID_YEAR)]
     )
-    agency = models.ForeignKey(Agency, on_delete=models.CASCADE)
     status = models.CharField(
         max_length=32, choices=Status.choices, default=Status.endorsed
     )
 
     def __str__(self):
-        return f"{self.agency_id} {self.year_start}-{self.year_end}"
+        return f"{self.status} {self.year_start}-{self.year_end}"
 
 
 class BPActivityManager(models.Manager):
@@ -74,7 +73,7 @@ class BPActivityManager(models.Manager):
             .get_queryset()
             .select_related(
                 "business_plan",
-                "business_plan__agency",
+                "agency",
                 "country",
                 "sector",
                 "subsector",
@@ -108,6 +107,7 @@ class BPActivity(models.Model):
     title = models.CharField(max_length=255)
     required_by_model = models.CharField(max_length=255, null=True, blank=True)
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
+    agency = models.ForeignKey(Agency, on_delete=models.CASCADE, null=True, blank=True)
     lvc_status = models.CharField(max_length=32, choices=LVCStatus.choices)
     project_cluster = models.ForeignKey(
         ProjectCluster, on_delete=models.CASCADE, null=True, blank=True
@@ -200,12 +200,16 @@ class BPHistory(models.Model):
 
 class BPFile(models.Model):
     def upload_path(self, filename):
-        return f"bp_files/{self.agency_id}/{self.year_start}-{self.year_end}/{filename}"
+        return f"bp_files/{self.status}/{self.year_start}-{self.year_end}/{filename}"
 
     uploaded_at = models.DateTimeField(
         auto_now_add=True, help_text="Date of file upload"
     )
-    agency = models.ForeignKey(Agency, on_delete=models.CASCADE)
+    status = models.CharField(
+        max_length=32,
+        choices=BusinessPlan.Status.choices,
+        default=BusinessPlan.Status.endorsed,
+    )
     year_start = models.IntegerField(
         validators=[MinValueValidator(settings.MIN_VALID_YEAR)]
     )
@@ -219,7 +223,7 @@ class BPFile(models.Model):
         ordering = ["-uploaded_at"]
         constraints = [
             models.UniqueConstraint(
-                fields=["agency", "year_start", "year_end", "filename"],
+                fields=["status", "year_start", "year_end", "filename"],
                 name="unique_business_plan_filename",
             )
         ]

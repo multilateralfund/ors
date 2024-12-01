@@ -2,8 +2,6 @@ import os
 import urllib
 
 import openpyxl
-from collections import defaultdict
-from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.db.models import F, Max, Min
 from django.http import HttpResponse
@@ -74,9 +72,9 @@ class BusinessPlanViewSet(
         filters.OrderingFilter,
         filters.SearchFilter,
     ]
-    ordering = ["agency__name", "id"]
+    search_fields = []
+    ordering = ["id"]
     ordering_fields = "__all__"
-    search_fields = ["agency__name"]
 
     def get_queryset(self):
         if self.action == "get":
@@ -85,19 +83,14 @@ class BusinessPlanViewSet(
         if self.request.method == "PUT":
             return BusinessPlan.objects.select_for_update()
 
-        business_plans = BusinessPlan.objects.all()
-        # filter business plans by agency if user is agency
-        if "agency" in self.request.user.user_type.lower():
-            business_plans = business_plans.filter(agency=self.request.user.agency)
-
-        return business_plans.select_related(
-            "agency", "created_by", "updated_by"
-        ).order_by("year_start", "year_end", "id")
+        return BusinessPlan.objects.select_related("created_by", "updated_by").order_by(
+            "year_start", "year_end", "status", "id"
+        )
 
     def get_serializer_class(self):
         if self.action == "get":
             return BPActivityDetailSerializer
-        if self.action in ["create", "update", "update_all"]:
+        if self.action in ["create", "update"]:
             return BusinessPlanCreateSerializer
         return BusinessPlanSerializer
 
@@ -118,11 +111,6 @@ class BusinessPlanViewSet(
         manual_parameters=[
             openapi.Parameter(
                 "business_plan_id",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
-            ),
-            openapi.Parameter(
-                "agency_id",
                 openapi.IN_QUERY,
                 type=openapi.TYPE_INTEGER,
             ),
@@ -151,7 +139,6 @@ class BusinessPlanViewSet(
 
         # get activities and history for a specific business plan
         bp = get_business_plan_from_request(self.request)
-        self.check_object_permissions(self.request, bp)
 
         history_qs = bp.bphistory.select_related("business_plan", "updated_by")
 
@@ -195,8 +182,8 @@ class BPActivityViewSet(
         filters.SearchFilter,
     ]
     search_fields = ["title", "comment_secretariat"]
-    ordering = ["business_plan__agency__name", "country__abbr", "initial_id"]
-    ordering_fields = ["business_plan__agency__name"] + BPACTIVITY_ORDERING_FIELDS
+    ordering = ["agency__name", "country__abbr", "initial_id"]
+    ordering_fields = BPACTIVITY_ORDERING_FIELDS
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -208,7 +195,7 @@ class BPActivityViewSet(
 
         if "agency" in self.request.user.user_type.lower():
             # filter activities by agency if user is agency
-            queryset = queryset.filter(business_plan__agency=self.request.user.agency)
+            queryset = queryset.filter(agency=self.request.user.agency)
 
         return queryset
 
@@ -262,7 +249,7 @@ class BPFileView(
     """
 
     permission_classes = [IsSecretariat | IsAgency | IsViewer]
-    queryset = BPFile.objects.select_related("agency")
+    queryset = BPFile.objects.all()
     serializer_class = BPFileSerializer
     filter_class = BPFileFilter
 
@@ -291,17 +278,12 @@ class BPFileView(
         return super().get_permissions()
 
     def get(self, request, *args, **kwargs):
-        user = request.user
-        agency_id = request.query_params.get("agency_id")
-        if "agency" in user.user_type.lower() and user.agency_id != int(agency_id):
-            raise PermissionDenied("User represents other agency")
-
         return self.list(request, *args, **kwargs)
 
     def _file_create(self, request, *args, **kwargs):
         files = request.FILES
         bp_file_data = {
-            "agency_id": request.query_params.get("agency_id"),
+            "status": request.query_params.get("status"),
             "year_start": request.query_params.get("year_start"),
             "year_end": request.query_params.get("year_end"),
         }

@@ -9,6 +9,12 @@ server {
     gzip on;
     gzip_types text/plain text/css application/javascript application/json image/svg+xml;
 
+    location /country-programme/guide {
+        alias /.fs/static/User_Guide_Country_Programme_Data.docx;
+        add_header Content-Disposition "attachment; filename=User_Guide_Country_Programme_Data.docx";
+        default_type application/vnd.openxmlformats-officedocument.wordprocessingml.document;
+    }
+
     location /static/ {
         alias /.fs/static/;
         expires 365d;

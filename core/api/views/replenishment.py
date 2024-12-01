@@ -2230,6 +2230,7 @@ class ReplenishmentPaymentViewSet(
         current_obj = self.get_object()
 
         previous_amount = current_obj.amount_assessed
+        previous_ferm_gain_loss = current_obj.ferm_gain_or_loss
 
         # request.data is not mutable and we need to perform some string-bollean magic
         # for the is_ferm field, because we receive it from a forn.
@@ -2256,7 +2257,7 @@ class ReplenishmentPaymentViewSet(
         self._set_annual_triennial_contributions(
             current_obj, old_amount=previous_amount
         )
-        self._set_ferm(current_obj, old_amount=previous_amount)
+        self._set_ferm(current_obj, old_amount=previous_ferm_gain_loss)
         self._set_invoice_status(current_obj)
 
         # And finally set the ScaleOfAssessment if all needed fields are specified
