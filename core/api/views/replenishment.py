@@ -27,6 +27,7 @@ from core.api.export.replenishment import (
     StatusOfContributionsSummaryTemplateWriter,
     StatusOfContributionsTriennialTemplateWriter,
     StatusOfContributionsAnnualTemplateWriter,
+    ConsolidatedInputDataWriter,
 )
 from core.api.filters.replenishment import (
     InvoiceFilter,
@@ -2372,3 +2373,17 @@ class StatusOfTheFundFileViewSet(
             f"attachment; filename*=UTF-8''{file_name}; filename=\"{file_name}\""
         )
         return response
+
+
+class ConsolidatedInputDataExportView(views.APIView):
+    permission_classes = [IsUserAllowedReplenishment]
+
+    def get(self, request, *args, **kwargs):
+        self.check_permissions(request)
+
+        wb = openpyxl.Workbook()
+        wb.remove(wb.active)
+
+        ConsolidatedInputDataWriter(wb).write()
+
+        return workbook_response("Backend Input Data", wb)

@@ -2,10 +2,18 @@ from copy import copy
 from datetime import datetime
 from decimal import Decimal
 from openpyxl.cell import WriteOnlyCell
-from openpyxl.styles import Font, Side, Border, Alignment
+from openpyxl.styles import DEFAULT_FONT, Font, Side, Border, Alignment
 from openpyxl.utils import range_boundaries
 
-from core.api.export.base import WriteOnlyBase
+from django.db.models import F
+
+from core.api.export.base import configure_sheet_print, WriteOnlyBase
+from core.models import (
+    AnnualContributionStatus,
+    ExternalIncomeAnnual,
+    DisputedContribution,
+    ExternalAllocation,
+)
 
 EMPTY_ROW = (None, None, None)
 # pylint: disable=W0612
@@ -901,3 +909,202 @@ class StatusOfContributionsAnnualTemplateWriter(
         cell.value = value.replace(
             f"{self.start_year}-{self.start_year + 2}", f"{self.start_year}"
         )
+
+
+class ConsolidatedInputDataWriter:
+    def __init__(self, wb):
+        self.wb = wb
+
+    def write_headers(self, ws, labels):
+        for index, name in enumerate(labels):
+            cell = ws.cell(row=1, column=index + 1)
+            cell.value = name
+            cell.font = Font(name=DEFAULT_FONT.name, bold=True)
+            cell.border = Border(
+                left=Side(style="thin"),
+                right=Side(style="thin"),
+                top=Side(style="thin"),
+                bottom=Side(style="thin"),
+            )
+            cell.alignment = Alignment(
+                horizontal="center", vertical="center", wrap_text=True
+            )
+
+    def write_row(self, ws, row_index, row_data):
+        for index, value in enumerate(row_data):
+            cell = ws.cell(row=row_index, column=index + 1)
+            cell.value = value
+
+    def write_data(self, ws, queryset, expressions):
+        for index, row_data in enumerate(queryset.values_list(*expressions)):
+            self.write_row(ws, index + 2, row_data)
+
+    def write_agency_data(self, ws, queryset, expressions, agency, start_row):
+        for index, row_data in enumerate(queryset.values_list(*expressions)):
+            enhanced_row_data = (agency,) + row_data
+            self.write_row(ws, start_row + index, enhanced_row_data)
+
+    def export_bilateral(self, ws):
+        columns = [
+            "Country",
+            "Year",
+            "Meeting",
+            "Decision",
+            "Amount",
+            "Comment",
+        ]
+        expressions = [
+            "country__name",
+            "year",
+            "bilateral_assistance_meeting__number",
+            "bilateral_assistance_decision_number",
+            "bilateral_assistance",
+            "bilateral_assistance_comment",
+        ]
+
+        queryset = AnnualContributionStatus.objects.filter(
+            bilateral_assistance__gte=Decimal(5)
+        )
+        self.write_headers(ws, columns)
+        self.write_data(ws, queryset, expressions)
+
+    def export_interest(self, ws):
+        columns = [
+            "Agency",
+            "Year",
+            "Meeting",
+            "Quarter",
+            "Amount",
+            "Comment",
+        ]
+        expressions = [
+            "agency_name",
+            "year",
+            "meeting__number",
+            "quarter",
+            "interest_earned",
+            "comment",
+        ]
+
+        queryset = ExternalIncomeAnnual.objects.filter(interest_earned__gte=Decimal(5))
+        self.write_headers(ws, columns)
+        # TODO: this needs two querysets!
+        self.write_data(ws, queryset, expressions)
+
+    def export_miscellaneous_income(self, ws):
+        columns = ["Year", "Meeting", "Amount", "Comment"]
+        expressions = [
+            "year",
+            "meeting__number",
+            "miscellaneous_income",
+            "comment",
+        ]
+        queryset = ExternalIncomeAnnual.objects.filter(
+            miscellaneous_income__gte=Decimal(5)
+        )
+        self.write_headers(ws, columns)
+        # TODO: this needs to be formatted! - with start_year/end_year
+        # TODO: maybe use a write_triennial_data() method!
+        # TODO: OOOORR I could just concatenate two lists! (ma rog, querysets)
+        self.write_data(ws, queryset, expressions)
+
+    def export_disputed_contributions(self, ws):
+        columns = ["Country", "Year", "Meeting", "Decision", "Amount", "Comment"]
+        expressions = [
+            "country__name",
+            "year",
+            "meeting",
+            "decision_number",
+            "amount",
+            "comment",
+        ]
+        queryset = DisputedContribution.objects.filter(amount__gte=Decimal(5))
+
+        self.write_headers(ws, columns)
+        self.write_data(ws, queryset, expressions)
+
+    def export_allocations(self, ws):
+        columns = ["Agency", "Year", "Meeting", "Amount", "Comment"]
+        # Agency is inferred from another field
+        expressions_first = ["year", "meeting__number"]
+        expressions_second = ["comment"]
+        agencies_mapping = [
+            ("UNDP", "undp"),
+            ("UNEP", "unep"),
+            ("UNIDO", "unido"),
+            ("World Bank", "world_bank"),
+        ]
+        self.write_headers(ws, columns)
+        start_row = 2
+        for agency_name, amount_field in agencies_mapping:
+            agency_expressions = expressions_first + [amount_field] + expressions_second
+            queryset = ExternalAllocation.objects.annotate(
+                amount=F(amount_field)
+            ).filter(amount__gt=Decimal(0))
+            self.write_agency_data(
+                ws,
+                queryset,
+                agency_expressions,
+                agency=agency_name,
+                start_row=start_row,
+            )
+            start_row += queryset.count()
+
+    def export_secretariat_budget(self, ws):
+        columns = ["Meeting", "Decision", "Year", "Amount", "Comment"]
+        expressions = [
+            "meeting__number",
+            "decision_number",
+            "year",
+            "staff_contracts",
+            "comment",
+        ]
+        queryset = ExternalAllocation.objects.filter(staff_contracts__gt=Decimal(0))
+
+        self.write_headers(ws, columns)
+        self.write_data(ws, queryset, expressions)
+
+    def export_treasurer_budget(self, ws):
+        columns = ["Meeting", "Decision", "Year", "Amount", "Comment"]
+        expressions = [
+            "meeting__number",
+            "decision_number",
+            "year",
+            "treasury_fees",
+            "comment",
+        ]
+        queryset = ExternalAllocation.objects.filter(treasury_fees__gt=Decimal(0))
+
+        self.write_headers(ws, columns)
+        self.write_data(ws, queryset, expressions)
+
+    def export_evaluation_budget(self, ws):
+        columns = ["Meeting", "Decision", "Year", "Amount", "Comment"]
+        expressions = [
+            "meeting__number",
+            "decision_number",
+            "year",
+            "monitoring_fees",
+            "comment",
+        ]
+        queryset = ExternalAllocation.objects.filter(monitoring_fees__gt=Decimal(0))
+
+        self.write_headers(ws, columns)
+        self.write_data(ws, queryset, expressions)
+
+    EXPORTED_SHEETS = [
+        ("Bilateral", export_bilateral),
+        ("Interest", export_interest),
+        ("Misc Income", export_miscellaneous_income),
+        ("Disputed Contributions", export_disputed_contributions),
+        ("Allocations", export_allocations),
+        ("Secretariat Budget", export_secretariat_budget),
+        ("Treasurer Budget", export_treasurer_budget),
+        ("Evaluation Budget", export_evaluation_budget),
+    ]
+
+    def write(self):
+        for sheet_name, export_method in self.EXPORTED_SHEETS:
+            ws = self.wb.create_sheet(sheet_name)
+            configure_sheet_print(ws, "landscape")
+            export_method(self, ws)
