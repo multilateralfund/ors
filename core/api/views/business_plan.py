@@ -3,7 +3,7 @@ import urllib
 
 import openpyxl
 from django.db import transaction
-from django.db.models import F, Max, Min
+from django.db.models import Max, Min
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -28,7 +28,6 @@ from core.api.serializers.business_plan import (
     BusinessPlanSerializer,
     BPChemicalTypeSerializer,
     BPFileSerializer,
-    BPActivityCreateSerializer,
     BPActivityExportSerializer,
     BPActivityDetailSerializer,
     BPActivityListSerializer,
@@ -39,11 +38,10 @@ from core.api.utils import (
 )
 from core.api.views.business_plan_utils import BusinessPlanUtils
 from core.api.views.utils import (
-    delete_fields,
     get_business_plan_from_request,
     BPACTIVITY_ORDERING_FIELDS,
 )
-from core.models import Agency, BusinessPlan, BPChemicalType, BPHistory, BPActivity
+from core.models import Agency, BusinessPlan, BPChemicalType, BPActivity
 from core.models.business_plan import BPFile
 
 
@@ -359,41 +357,67 @@ class BPFileDownloadView(generics.RetrieveAPIView):
 class BPImportValidateView(BusinessPlanUtils, generics.GenericAPIView):
     def post(self, request, *args, **kwargs):
         files = request.FILES
-        year_start=int(request.query_params.get("year_start"))
-        year_end=int(request.query_params.get("year_end"))
-        status=request.query_params.get("status")
+        year_start = int(request.query_params.get("year_start"))
 
-        ret_code, ret_data = self.import_bp(files, year_start, year_end, status)
+        ret_code, ret_data = self.import_bp(files, year_start, from_validate=True)
         if ret_code != status.HTTP_200_OK:
-            return Response({"general_error": ret_data}, status=ret_code)
+            return Response(
+                {
+                    "error_type": "general error",
+                    "row_number": None,
+                    "activtiy_id": None,
+                    "error_message": ret_data,
+                },
+                status=ret_code,
+            )
 
-        ret_data = self.validate_bp(ret_data)
-        return Response(ret_data, status=status.HTTP_200_OK)
+        agency_ids = [activity["agency_id"] for activity in ret_data["activities"]]
+        return Response(
+            {
+                "activities_number": len(ret_data["activities"]),
+                "agencies_number": len(list(dict.fromkeys(agency_ids))),
+                "errors": ret_data["errors"],
+                "warnings": ret_data["warnings"],
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
-class BPImportView(BusinessPlanUtils, generics.GenericAPIView):
+class BPImportView(
+    BusinessPlanUtils,
+    mixins.CreateModelMixin,
+    generics.GenericAPIView,
+):
+    queryset = BusinessPlan.objects.all()
+    serializer_class = BusinessPlanCreateSerializer
+
     @transaction.atomic
     def post(self, request, *args, **kwargs):
         files = request.FILES
-        year_start=int(request.query_params.get("year_start"))
-        year_end=int(request.query_params.get("year_end"))
-        status=request.query_params.get("status")
+        year_start = int(request.query_params.get("year_start"))
+        year_end = int(request.query_params.get("year_end"))
+        bp_status = request.query_params.get("status")
 
-        ret_code, ret_data = self.import_bp(files, year_start, year_end, status)
+        ret_code, ret_data = self.import_bp(files, year_start)
         if ret_code != status.HTTP_200_OK:
-            return Response({"general_error": ret_data}, status=ret_code)
+            return Response("Data import failed", status=ret_code)
 
         current_bp = BusinessPlan.objects.filter(
             year_start=year_start,
             year_end=year_end,
-            status=status,
+            status=bp_status,
         ).first()
 
+        data = {
+            "year_start": year_start,
+            "year_end": year_end,
+            "status": bp_status,
+            "activities": ret_data["activities"],
+        }
         ret_code, _ = (
-            self.update_bp(ret_data, current_bp)
-            if current_bp
-            else self.create_bp(ret_data)
+            self.update_bp(data, current_bp) if current_bp else self.create_bp(data)
         )
+
         if ret_code == status.HTTP_400_BAD_REQUEST:
             return Response("Data import failed", status=ret_code)
         return Response("Data imported successfully", status=status.HTTP_200_OK)
