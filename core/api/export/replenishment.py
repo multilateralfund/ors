@@ -3,6 +3,7 @@
 from copy import copy
 from datetime import datetime
 from decimal import Decimal
+from itertools import chain
 from openpyxl.cell import WriteOnlyCell
 from openpyxl.styles import DEFAULT_FONT, Font, Side, Border, Alignment
 from openpyxl.utils import get_column_letter, range_boundaries
@@ -954,12 +955,12 @@ class ConsolidatedInputDataWriter:
             if type(value) in (float, Decimal):
                 cell.number_format = "###,###,##0.00###"
 
-    def write_data(self, ws, queryset, expressions):
-        for index, row_data in enumerate(queryset.values_list(*expressions)):
+    def write_data(self, ws, data):
+        for index, row_data in enumerate(data):
             self.write_row(ws, index + 2, row_data)
 
-    def write_agency_data(self, ws, queryset, expressions, agency, start_row):
-        for index, row_data in enumerate(queryset.values_list(*expressions)):
+    def write_agency_data(self, ws, data, agency, start_row):
+        for index, row_data in enumerate(data):
             enhanced_row_data = (agency,) + row_data
             self.write_row(ws, start_row + index, enhanced_row_data)
 
@@ -981,11 +982,11 @@ class ConsolidatedInputDataWriter:
             "bilateral_assistance_comment",
         ]
 
-        queryset = AnnualContributionStatus.objects.filter(
+        data = AnnualContributionStatus.objects.filter(
             bilateral_assistance__gte=Decimal(5)
-        )
+        ).values_list(*expressions)
         self.write_headers(ws, columns)
-        self.write_data(ws, queryset, expressions)
+        self.write_data(ws, data)
 
     def export_interest(self, ws):
         columns = [
@@ -1005,28 +1006,45 @@ class ConsolidatedInputDataWriter:
             "comment",
         ]
 
-        queryset = ExternalIncomeAnnual.objects.filter(
+        data = ExternalIncomeAnnual.objects.filter(
             interest_earned__gte=Decimal(5), year__isnull=False
-        )
+        ).values_list(*expressions)
         self.write_headers(ws, columns)
-        self.write_data(ws, queryset, expressions)
+        self.write_data(ws, data)
 
     def export_miscellaneous_income(self, ws):
         columns = ["Year", "Meeting", "Amount", "Comment"]
-        expressions = [
+        expressions_annual = [
             "year",
             "meeting__number",
             "miscellaneous_income",
             "comment",
         ]
-        queryset = ExternalIncomeAnnual.objects.filter(
-            miscellaneous_income__gte=Decimal(5)
+        queryset_annual = ExternalIncomeAnnual.objects.filter(
+            year__isnull=False, miscellaneous_income__gte=Decimal(5)
         )
+
+        expressions_triennial = [
+            "triennial_start_year",
+            "meeting__number",
+            "miscellaneous_income",
+            "comment",
+        ]
+        queryset_triennial = ExternalIncomeAnnual.objects.filter(
+            triennial_start_year__isnull=False, miscellaneous_income__gte=Decimal(5)
+        )
+        triennial_data = [
+            (f"{data[0]}-{data[0] + 2}", *data[1:])
+            for data in queryset_triennial.values_list(*expressions_triennial)
+        ]
+
+        data = chain(
+            queryset_annual.values_list(*expressions_annual),
+            triennial_data,
+        )
+
         self.write_headers(ws, columns)
-        # TODO: this needs to be formatted! - with start_year/end_year
-        # TODO: maybe use a write_triennial_data() method!
-        # TODO: OOOORR I could just concatenate two lists! (ma rog, querysets)
-        self.write_data(ws, queryset, expressions)
+        self.write_data(ws, data)
 
     def export_disputed_contributions(self, ws):
         columns = ["Country", "Year", "Meeting", "Decision", "Amount", "Comment"]
@@ -1038,10 +1056,12 @@ class ConsolidatedInputDataWriter:
             "amount",
             "comment",
         ]
-        queryset = DisputedContribution.objects.filter(amount__gte=Decimal(5))
+        data = DisputedContribution.objects.filter(amount__gte=Decimal(5)).values_list(
+            *expressions
+        )
 
         self.write_headers(ws, columns)
-        self.write_data(ws, queryset, expressions)
+        self.write_data(ws, data)
 
     def export_allocations(self, ws):
         columns = ["Agency", "Year", "Meeting", "Amount", "Comment"]
@@ -1061,10 +1081,10 @@ class ConsolidatedInputDataWriter:
             queryset = ExternalAllocation.objects.annotate(
                 amount=F(amount_field)
             ).filter(amount__gt=Decimal(0))
+            data = queryset.values_list(*agency_expressions)
             self.write_agency_data(
                 ws,
-                queryset,
-                agency_expressions,
+                data,
                 agency=agency_name,
                 start_row=start_row,
             )
@@ -1079,10 +1099,12 @@ class ConsolidatedInputDataWriter:
             "staff_contracts",
             "comment",
         ]
-        queryset = ExternalAllocation.objects.filter(staff_contracts__gt=Decimal(0))
+        data = ExternalAllocation.objects.filter(
+            staff_contracts__gt=Decimal(0)
+        ).values_list(*expressions)
 
         self.write_headers(ws, columns)
-        self.write_data(ws, queryset, expressions)
+        self.write_data(ws, data)
 
     def export_treasurer_budget(self, ws):
         columns = ["Meeting", "Decision", "Year", "Amount", "Comment"]
@@ -1093,10 +1115,12 @@ class ConsolidatedInputDataWriter:
             "treasury_fees",
             "comment",
         ]
-        queryset = ExternalAllocation.objects.filter(treasury_fees__gt=Decimal(0))
+        data = ExternalAllocation.objects.filter(
+            treasury_fees__gt=Decimal(0)
+        ).values_list(*expressions)
 
         self.write_headers(ws, columns)
-        self.write_data(ws, queryset, expressions)
+        self.write_data(ws, data)
 
     def export_evaluation_budget(self, ws):
         columns = ["Meeting", "Decision", "Year", "Amount", "Comment"]
@@ -1107,10 +1131,12 @@ class ConsolidatedInputDataWriter:
             "monitoring_fees",
             "comment",
         ]
-        queryset = ExternalAllocation.objects.filter(monitoring_fees__gt=Decimal(0))
+        data = ExternalAllocation.objects.filter(
+            monitoring_fees__gt=Decimal(0)
+        ).values_list(*expressions)
 
         self.write_headers(ws, columns)
-        self.write_data(ws, queryset, expressions)
+        self.write_data(ws, data)
 
     EXPORTED_SHEETS = [
         ("Bilateral", export_bilateral),
