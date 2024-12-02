@@ -4,8 +4,6 @@ import { useMemo } from 'react'
 
 import cx from 'classnames'
 
-import useApi from '@ors/hooks/useApi'
-
 import { DownloadLink } from '@ors/components/ui/Button/Button'
 import { formatApiUrl } from '@ors/helpers'
 
@@ -15,6 +13,7 @@ function Label({ children }: any) {
 
 function FileCard(props: { file: ApiReplenishmentStatusFile }) {
   const { file } = props
+  const downloadUrl = formatApiUrl(file.download_url)
   return (
     <li
       style={{ width: 'calc(32%)' }}
@@ -22,26 +21,28 @@ function FileCard(props: { file: ApiReplenishmentStatusFile }) {
     >
       <div className="flex items-center">
         <div className="grow">
-          <Label>Meeting:</Label> {file.meeting_id} ({file.year})
+          <Label>Meeting:</Label> {file.meeting_id}
         </div>
-        <DownloadLink
-          href={formatApiUrl(file.download_url)}
-          title={file.filename}
-        >
-          Download
-        </DownloadLink>
+        <div>
+          <Label>Year:</Label> {file.year}
+        </div>
+      </div>
+      <div className="my-2 flex items-center justify-between">
+        <Label>File:</Label>{' '}
+        <DownloadLink href={downloadUrl}>{file.filename}</DownloadLink>
       </div>
       <p className="m-0 mt-2">{file.comment}</p>
     </li>
   )
 }
 
-export default function StatusOfTheFundFiles({ show }: { show: boolean }) {
-  const { data: files } = useApi<ApiReplenishmentStatusFile[]>({
-    path: 'api/replenishment/status-files',
-    options: {},
-  })
-
+export default function StatusOfTheFundFiles({
+  show,
+  files,
+}: {
+  files: ApiReplenishmentStatusFile[]
+  show: boolean
+}) {
   const fileListing = useMemo(
     function () {
       const result = []

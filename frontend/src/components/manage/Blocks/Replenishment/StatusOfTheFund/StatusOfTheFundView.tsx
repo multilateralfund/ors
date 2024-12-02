@@ -2,6 +2,8 @@ import { Dispatch, SetStateAction, useState } from 'react'
 
 import cx from 'classnames'
 
+import type { ApiReplenishmentStatusFile } from '@ors/types/api_replenishment_status_files'
+
 import {
   formatAbsoluteNumberValue,
   formatNumberValue,
@@ -109,6 +111,7 @@ interface IStatusOfTheFundProps {
   allocations: IALLOCATIONS
   asOfDate: string
   editableFields: Array<string>
+  files?: null | ApiReplenishmentStatusFile[]
   income: IINCOME
   overview: IOVERVIEW
   provisions: IPROVISIONS
@@ -122,6 +125,7 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
     allocations,
     asOfDate,
     editableFields,
+    files,
     income,
     overview,
     provisions,
@@ -183,7 +187,7 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
         </div>
       </div>
 
-      <StatusOfTheFundFiles show={showFiles} />
+      <StatusOfTheFundFiles files={files ?? []} show={showFiles} />
 
       <div
         style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
