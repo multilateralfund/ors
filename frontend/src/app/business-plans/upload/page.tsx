@@ -1,13 +1,10 @@
-import { Metadata } from 'next'
+import usePageTitle from '@ors/hooks/usePageTitle'
 
 import BPUploadWrapper from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/BPUpload'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
-export const metadata: Metadata = {
-  title: 'Business Plans Upload',
-}
-
-export default async function BusinessPlans() {
+export default function BusinessPlans() {
+  usePageTitle('Business Plans Upload')
   return (
     <PageWrapper>
       <BPUploadWrapper />

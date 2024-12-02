@@ -639,25 +639,25 @@ class BPImportValidateView(generics.GenericAPIView):
 
     def post(self, request, *args, **kwargs):
         response_data = {
-            "actiovities_number": 123,
+            "activities_number": 123,
             "agencies_number": 12,
             "errors": [
                 {
                     "error_type": "general error",
                     "row_number": None,
-                    "activtiy_id": None,
+                    "activity_id": None,
                     "error_message": "Invalid file structure",
                 },
                 {
                     "error_type": "data error",
                     "row_number": 123,
-                    "activtiy_id": "UNEP_AFG_00123213",
+                    "activity_id": "UNEP_AFG_00123213",
                     "error_message": "This country does not exist in our system",
                 },
                 {
                     "error_type": "data error",
                     "row_number": 1243,
-                    "activtiy_id": None,
+                    "activity_id": None,
                     "error_message": "This agency does not exist in our system",
                 },
             ],
@@ -665,13 +665,13 @@ class BPImportValidateView(generics.GenericAPIView):
                 {
                     "warning_type": "data warning",
                     "row_number": 1223,
-                    "activtiy_id": "UNEP_AFG_00123213",
+                    "activity_id": "UNEP_AFG_00123213",
                     "warning_message": "This sector does not exist in our system and we will set the sector to be 'Other'",
                 },
                 {
                     "warning_type": "data warning",
                     "row_number": 1263,
-                    "activtiy_id": None,
+                    "activity_id": None,
                     "warning_message": "This cluster does not exist in our system and we will set the sector to be 'Other'",
                 },
             ],

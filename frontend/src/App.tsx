@@ -39,6 +39,7 @@ import BPListLayout from '@ors/app/business-plans/list/layout'
 import BPListPlansPeriodPage from '@ors/app/business-plans/list/plans/[period]/page'
 import BPListActivitiesPeriodPage from '@ors/app/business-plans/list/activities/[period]/page'
 import BPListActivitiesPeriodTypeEditPage from '@ors/app/business-plans/list/activities/[period]/[type]/edit/page'
+import BPUpload from '@ors/app/business-plans/upload/page'
 import BPAgencyPeriodStatusPage from '@ors/app/business-plans/[agency]/[period]/[status]/page'
 
 import ProjectsPage from '@ors/app/projects/page'
@@ -71,6 +72,9 @@ export default function App() {
           <ForgotPasswordLayout>
             <ForgotPasswordPage />
           </ForgotPasswordLayout>
+        </Route>
+        <Route path="/business-plans/upload">
+          <BPUpload />
         </Route>
         <Route path="/business-plans/list/plans/:period">
           <BPListLayout>

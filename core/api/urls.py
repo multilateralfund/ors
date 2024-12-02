@@ -397,12 +397,12 @@ urlpatterns = [
         name="project-files",
     ),
     path(
-        "business-plan/upload/validate",
+        "business-plan/upload/validate/",
         BPImportValidateView.as_view(),
         name="bp-upload-validate",
     ),
     path(
-        "business-plan/upload",
+        "business-plan/upload/",
         BPImportView.as_view(),
         name="bp-upload",
     ),
