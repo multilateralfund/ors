@@ -1,3 +1,5 @@
+# pylint: disable=C0302
+
 from copy import copy
 from datetime import datetime
 from decimal import Decimal
@@ -1107,4 +1109,5 @@ class ConsolidatedInputDataWriter:
         for sheet_name, export_method in self.EXPORTED_SHEETS:
             ws = self.wb.create_sheet(sheet_name)
             configure_sheet_print(ws, "landscape")
+            # pylint: : disable=E1121
             export_method(self, ws)
