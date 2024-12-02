@@ -29,7 +29,11 @@ function FileCard(props: { file: ApiReplenishmentStatusFile }) {
       </div>
       <div className="my-2 flex items-center justify-between">
         <Label>File:</Label>{' '}
-        <DownloadLink href={downloadUrl}>{file.filename}</DownloadLink>
+        <DownloadLink href={downloadUrl} className="w-2/3" iconSize={18}>
+          <span title={file.filename} className="w-[95%] truncate text-right">
+            {file.filename}
+          </span>
+        </DownloadLink>
       </div>
       <p className="m-0 mt-2">{file.comment}</p>
     </li>
