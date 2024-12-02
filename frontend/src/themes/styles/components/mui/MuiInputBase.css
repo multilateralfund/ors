@@ -4,8 +4,24 @@ textarea {
 }
 
 .BPList .MuiInputBase-root,
-.BPList .MuiAutocomplete-inputRoot {
+.BPList .MuiAutocomplete-inputRoot,
+.BPListUpload .MuiInputBase-root,
+.BPListUpload .MuiAutocomplete-inputRoot {
   @apply min-h-10 rounded-lg bg-white;
+}
+
+.BPListUpload .MuiAutocomplete-clearIndicator,
+.BPListUpload .MuiAutocomplete-clearIndicator:hover {
+  @apply bg-white;
+}
+
+.BPListUpload .MuiAutocomplete-clearIndicator svg {
+  height: 15px;
+  width: 15px;
+}
+
+.BPListUpload .MuiAutocomplete-clearIndicator svg:hover {
+  @apply text-secondary;
 }
 
 .BPList .MuiInputBase-root fieldset,
