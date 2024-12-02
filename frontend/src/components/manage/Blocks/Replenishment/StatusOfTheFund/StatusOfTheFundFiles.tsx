@@ -24,7 +24,7 @@ function FileCard(props: { file: ApiReplenishmentStatusFile }) {
           <Label>Meeting:</Label> {file.meeting_id}
         </div>
         <div>
-          <Label>Year:</Label> {file.year}
+          <Label>Year:</Label> {file.year ?? '-'}
         </div>
       </div>
       <div className="my-2 flex items-center justify-between">
