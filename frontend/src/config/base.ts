@@ -1,6 +1,6 @@
-const apiPath = process.env.NEXT_PUBLIC_API_PATH
-const host = process.env.NEXT_PUBLIC_HOST
-const protocol = process.env.NEXT_PUBLIC_PROTOCOL
+const apiPath = import.meta.env.VITE_PUBLIC_API_PATH || window.location.origin
+const host = import.meta.env.VITE_PUBLIC_HOST || window.location.host
+const protocol = import.meta.env.VITE_PUBLIC_PROTOCOL || window.location.protocol.split(':')[0]
 
 export type BaseConfig = {
   cookies: {
@@ -16,7 +16,7 @@ export type BaseConfig = {
 
 const baseConfig: BaseConfig = {
   cookies: {
-    theme: process.env.NEXT_PUBLIC_COOKIE_theme || 'theme',
+    theme: import.meta.env.VITE_PUBLIC_COOKIE_THEME || 'theme',
   },
   defaultTheme: 'light',
   settings: {

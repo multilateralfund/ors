@@ -26,7 +26,6 @@
 //   return width[0].value || defaultColDef.minWidth
 // }
 
-/* eslint-disable perfectionist/sort-objects */
 export default function getAdmsColDef() {
   return {
     type_of_action: {

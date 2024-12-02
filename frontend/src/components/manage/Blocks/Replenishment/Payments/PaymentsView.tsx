@@ -6,8 +6,8 @@ import React, { ChangeEvent, useContext, useMemo, useState } from 'react'
 
 import cx from 'classnames'
 import Cookies from 'js-cookie'
-import { times } from 'lodash'
-import Link from 'next/link'
+import { isNumber, times } from 'lodash'
+import { Link } from 'wouter'
 import { enqueueSnackbar } from 'notistack'
 
 import ConfirmDialog from '@ors/components/manage/Blocks/Replenishment/ConfirmDialog'
@@ -31,7 +31,6 @@ import { AddButton } from '@ors/components/ui/Button/Button'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { formatApiUrl } from '@ors/helpers'
-import { getFloat } from '@ors/helpers/Utils/Utils'
 
 import { SortDirection } from '../Table/types'
 import {
@@ -230,13 +229,14 @@ function PaymentsView() {
       result.push({ ...(memoResults[i] as ParsedPayment) })
       const entry = result[i]
       entry.date = formatDateForDisplay(entry.date)
+
+      const isNegative = entry.ferm_gain_or_loss.toString()[0] === "-"
+      const value = isNegative
+        ? entry.ferm_gain_or_loss.toString().substring(1)
+        : entry.ferm_gain_or_loss
       entry.ferm_gain_or_loss = (
-        <span
-          className={cx({
-            'text-red-400': getFloat(entry.ferm_gain_or_loss as string) > 0,
-          })}
-        >
-          {entry.ferm_gain_or_loss}
+        <span>
+          {isNegative ? `(${value})` : value}
         </span>
       )
     }
@@ -386,7 +386,7 @@ function PaymentsView() {
       <div className="mb-2 flex items-center gap-4 print:fixed print:left-[480px] print:top-12">
         <Link
           className="m-0 text-2xl uppercase text-primary no-underline print:hidden"
-          href="./invoices"
+          href="/invoices"
         >
           Invoices
         </Link>

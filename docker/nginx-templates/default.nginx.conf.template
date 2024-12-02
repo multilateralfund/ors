@@ -9,6 +9,12 @@ server {
     gzip on;
     gzip_types text/plain text/css application/javascript application/json image/svg+xml;
 
+    location /country-programme/guide {
+        alias /.fs/static/User_Guide_Country_Programme_Data.docx;
+        add_header Content-Disposition "attachment; filename=User_Guide_Country_Programme_Data.docx";
+        default_type application/vnd.openxmlformats-officedocument.wordprocessingml.document;
+    }
+
     location /static/ {
         alias /.fs/static/;
         expires 365d;
@@ -19,25 +25,13 @@ server {
         expires 365d;
     }
 
-    location /_next/static {
-        alias /.next/static;
-        expires 365d;
-    }
-
     location ~ ^/(admin|api|__debug__)/ {
         client_max_body_size 1m;
         include /etc/nginx/conf.d/proxy_pass_backend;
     }
 
     location / {
-        proxy_pass http://nextjs:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $http_host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Host $server_name;
-        proxy_cache_bypass $http_upgrade;
+        root /.next/;
+        try_files $uri $uri/ /index.html;
     }
 }

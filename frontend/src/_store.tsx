@@ -1,4 +1,3 @@
-'use client'
 import type { StoreState } from '@ors/types/store'
 
 import { MutableRefObject } from 'react'

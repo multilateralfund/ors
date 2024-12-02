@@ -1,22 +1,13 @@
 // Response from /api/replenishment/replenishments/
 
+import type { ApiReplenishmentSoAVersion } from './api_replenishment_scales_of_assessment'
+
 export type ApiReplenishment = {
   amount: number
   end_year: number
   id: number
-  scales_of_assessment_versions: ApiReplenishmentsSAVersion[]
+  scales_of_assessment_versions: ApiReplenishmentSoAVersion[]
   start_year: number
-}
-
-export type ApiReplenishmentsSAVersion = {
-  comment: string
-  decision_number: string
-  decision_pdf: any
-  id: number
-  is_final: boolean
-  meeting_number: string
-  replenishment: number
-  version: number
 }
 
 export type ApiReplenishments = ApiReplenishment[]

@@ -7,7 +7,7 @@ export const createSettingsSlice = ({
   const { host, protocol } = initialState.settings || {}
 
   return {
-    host: host || process.env.NEXT_PUBLIC_HOST || null,
-    protocol: protocol || process.env.NEXT_PUBLIC_PROTOCOL || null,
+    host: host || import.meta.env.VITE_PUBLIC_HOST || null,
+    protocol: protocol || import.meta.env.VITE_PUBLIC_PROTOCOL || null,
   }
 }

@@ -50,7 +50,6 @@ function DownloadCalculatedAmounts(props: { report: Report }) {
         <Link
           className="flex items-center gap-x-2 text-nowrap px-2 py-1 text-base text-black no-underline transition-all hover:bg-primary hover:text-mlfs-hlYellow"
           href={urlXLS}
-          prefetch={false}
           target="_blank"
           download
         >
@@ -60,7 +59,6 @@ function DownloadCalculatedAmounts(props: { report: Report }) {
         <Link
           className="flex items-center gap-x-2 text-nowrap px-2 py-1 text-base text-black no-underline transition-all hover:bg-primary hover:text-mlfs-hlYellow"
           href={urlPDF}
-          prefetch={false}
           target="_blank"
           download
         >

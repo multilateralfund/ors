@@ -10,7 +10,10 @@ import type {
   IOVERVIEW_INDICATORS,
   IPROVISIONS,
 } from './useGetDashboardDataTypes'
-import type { ApiBudgetYears, ApiReplenishment } from '@ors/types/api_replenishment_replenishments'
+import type {
+  ApiBudgetYears,
+  ApiReplenishment,
+} from '@ors/types/api_replenishment_replenishments'
 
 import { useContext } from 'react'
 
@@ -86,13 +89,15 @@ function buildProvisions(
   const periodEnd = period ? period.end_year : nextYear
 
   const monitoringFeesEnd = budgetYears?.monitoring_fees || currentYear
-  const staffContractsEnd = budgetYears?.secretariat_and_executive_committee || periodEnd
+  const staffContractsEnd =
+    budgetYears?.secretariat_and_executive_committee || periodEnd
   const treasuryFeesEnd = budgetYears?.treasury_fees || periodEnd
 
   const result: IPROVISIONS = {
     bilateral_assistance: { label: 'Bilateral cooperation', value: null },
     gain_loss: {
       label: 'FERM loss',
+      negative_label: 'FERM gain',
       value: null,
     },
     information_strategy: {
@@ -120,7 +125,10 @@ function buildProvisions(
       total: true,
       value: null,
     },
-    treasury_fees: { label: `Treasury fees\n (2003-${treasuryFeesEnd})`, value: null },
+    treasury_fees: {
+      label: `Treasury fees\n (2003-${treasuryFeesEnd})`,
+      value: null,
+    },
   }
 
   result.staff_contracts.value = data.allocations.staff_contracts

@@ -419,6 +419,26 @@ class ScaleOfAssessmentViewSet(
         )
 
 
+class ReplenishmentScaleOfAssessmentVersionFileDownloadView(generics.RetrieveAPIView):
+    permission_classes = [IsUserAllowedReplenishment]
+    queryset = ScaleOfAssessmentVersion.objects.all()
+    lookup_field = "id"
+
+    def get(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if obj.decision_pdf is None:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        response = HttpResponse(
+            obj.decision_pdf.file.read(), content_type="application/octet-stream"
+        )
+        file_name = urllib.parse.quote(obj.decision_pdf_name)
+        response["Content-Disposition"] = (
+            f"attachment; filename*=UTF-8''{file_name}; filename=\"{file_name}\""
+        )
+        return response
+
+
 class AnnualStatusOfContributionsView(views.APIView):
     permission_classes = [IsUserAllowedReplenishment]
 
@@ -2230,6 +2250,7 @@ class ReplenishmentPaymentViewSet(
         current_obj = self.get_object()
 
         previous_amount = current_obj.amount_assessed
+        previous_ferm_gain_loss = current_obj.ferm_gain_or_loss
 
         # request.data is not mutable and we need to perform some string-bollean magic
         # for the is_ferm field, because we receive it from a forn.
@@ -2256,7 +2277,7 @@ class ReplenishmentPaymentViewSet(
         self._set_annual_triennial_contributions(
             current_obj, old_amount=previous_amount
         )
-        self._set_ferm(current_obj, old_amount=previous_amount)
+        self._set_ferm(current_obj, old_amount=previous_ferm_gain_loss)
         self._set_invoice_status(current_obj)
 
         # And finally set the ScaleOfAssessment if all needed fields are specified
