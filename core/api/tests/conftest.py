@@ -47,6 +47,7 @@ from core.models import BPActivity
 from core.models import CPEmission
 from core.models import CPReport
 from core.models.adm import AdmRecordArchive
+from core.models.business_plan import BusinessPlan
 from core.models.country_programme_archive import CPReportArchive
 from core.utils import get_meta_project_code, get_project_sub_code
 
@@ -432,6 +433,7 @@ def business_plan():
     return BusinessPlanFactory(
         year_start=2020,
         year_end=2022,
+        status=BusinessPlan.Status.endorsed,
     )
 
 

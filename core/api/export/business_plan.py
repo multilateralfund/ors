@@ -1,10 +1,10 @@
 from core.api.export.base import BaseWriter
 
 
-class BusinessPlanWriter(BaseWriter):
+class BPActivitiesWriter(BaseWriter):
     header_row_start_idx = 1
 
-    def __init__(self, sheet, min_year=None, max_year=None):
+    def __init__(self, wb, min_year=None, max_year=None):
         year_headers = []
 
         if min_year and max_year:
@@ -30,7 +30,7 @@ class BusinessPlanWriter(BaseWriter):
                         },
                         {
                             "id": f"value_mt_{year}",
-                            "headerName": f"MT {label} for HFC",
+                            "headerName": f"MT for HFC {label}",
                             "type": "number",
                             "method": self.get_value,
                         },
@@ -55,23 +55,19 @@ class BusinessPlanWriter(BaseWriter):
             },
             {
                 "id": "lvc_status",
-                "headerName": "HCFC Status",
+                "headerName": "Country Status",
             },
             {
                 "id": "project_type",
                 "headerName": "Type",
             },
             {
-                "id": "legacy_project_type",
-                "headerName": "Legacy Type",
-            },
-            {
                 "id": "bp_chemical_type",
-                "headerName": "Chemical",
+                "headerName": "Substance",
             },
             {
                 "id": "chemical_detail",
-                "headerName": "HCFC Chemical Detail",
+                "headerName": "Substance Detail",
             },
             {
                 "id": "amount_polyol",
@@ -82,10 +78,6 @@ class BusinessPlanWriter(BaseWriter):
             {"id": "project_cluster", "headerName": "Cluster"},
             {"id": "sector", "headerName": "Sector"},
             {"id": "subsector", "headerName": "Subsector"},
-            {
-                "id": "legacy_sector_and_subsector",
-                "headerName": "Legacy Sector and Subsector",
-            },
             {
                 "id": "title",
                 "headerName": "Title",
@@ -104,11 +96,11 @@ class BusinessPlanWriter(BaseWriter):
             },
             {
                 "id": "status",
-                "headerName": "A-Appr. P-Plan'd",
+                "headerName": "Project Status (A/P)",
             },
             {
                 "id": "is_multi_year",
-                "headerName": "Is Multi Year",
+                "headerName": "Project Category (I/M)",
                 "type": "bool",
             },
             {
@@ -126,14 +118,9 @@ class BusinessPlanWriter(BaseWriter):
                 "headerName": "Comment",
                 "column_width": self.COLUMN_WIDTH * 4,
             },
-            {
-                "id": "comment_types",
-                "headerName": "Comment types",
-                "column_width": self.COLUMN_WIDTH * 4,
-                "method": self.get_comment_types,
-            },
         ]
 
+        sheet = wb.create_sheet("Activities")
         super().__init__(sheet, headers)
 
     def get_value(self, activity, header):
@@ -147,6 +134,55 @@ class BusinessPlanWriter(BaseWriter):
                 return value[attr]
         return 0
 
-    def get_comment_types(self, activity, *args):
-        comment_types = activity.get("comment_types", [])
-        return ", ".join(comment_types)
+
+class ModelNameWriter(BaseWriter):
+    header_row_start_idx = 1
+
+    def __init__(self, wb, sheet_name, column_width=2):
+        headers = [
+            {
+                "id": "name",
+                "headerName": "Name",
+                "column_width": self.COLUMN_WIDTH * column_width,
+            }
+        ]
+        sheet = wb.create_sheet(sheet_name)
+        super().__init__(sheet, headers)
+
+
+class ModelNameCodeWriter(BaseWriter):
+    header_row_start_idx = 1
+
+    def __init__(self, wb, sheet_name):
+        headers = [
+            {
+                "id": "name",
+                "headerName": "Name",
+                "column_width": self.COLUMN_WIDTH * 2,
+            },
+            {
+                "id": "acronym",
+                "headerName": "Acronym",
+            },
+        ]
+        sheet = wb.create_sheet(sheet_name)
+        super().__init__(sheet, headers)
+
+
+class ProjectSubsectorWriter(BaseWriter):
+    header_row_start_idx = 1
+
+    def __init__(self, wb):
+        headers = [
+            {
+                "id": "name",
+                "headerName": "Name",
+                "column_width": self.COLUMN_WIDTH * 2,
+            },
+            {
+                "id": "sector_code",
+                "headerName": "Subsector of following sector",
+            },
+        ]
+        sheet = wb.create_sheet("SubSectors")
+        super().__init__(sheet, headers)
