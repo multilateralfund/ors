@@ -258,6 +258,14 @@ class ExternalIncomeAnnualSerializer(serializers.ModelSerializer):
         max_digits=30, decimal_places=15, required=False, allow_null=True
     )
 
+    meeting_id = serializers.PrimaryKeyRelatedField(
+        queryset=Meeting.objects.all().values_list("id", flat=True),
+        allow_null=True,
+        required=False,
+    )
+
+    comment = serializers.CharField(required=False, allow_blank=True)
+
     class Meta:
         model = ExternalIncomeAnnual
         fields = "__all__"
