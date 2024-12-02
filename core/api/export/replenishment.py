@@ -5,7 +5,7 @@ from datetime import datetime
 from decimal import Decimal
 from openpyxl.cell import WriteOnlyCell
 from openpyxl.styles import DEFAULT_FONT, Font, Side, Border, Alignment
-from openpyxl.utils import range_boundaries
+from openpyxl.utils import get_column_letter, range_boundaries
 
 from django.db.models import F
 
@@ -914,6 +914,8 @@ class StatusOfContributionsAnnualTemplateWriter(
 
 
 class ConsolidatedInputDataWriter:
+    COLUMN_WIDTH = 15
+
     def __init__(self, wb):
         self.wb = wb
 
@@ -931,6 +933,9 @@ class ConsolidatedInputDataWriter:
             cell.alignment = Alignment(
                 horizontal="center", vertical="center", wrap_text=True
             )
+
+            column_letter = get_column_letter(index + 1)
+            ws.column_dimensions[column_letter].width = self.COLUMN_WIDTH
 
     def write_row(self, ws, row_index, row_data):
         for index, value in enumerate(row_data):
