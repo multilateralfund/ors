@@ -4,7 +4,7 @@ import { ChangeEvent, useContext, useMemo, useState } from 'react'
 
 import Cookies from 'js-cookie'
 import { times } from 'lodash'
-import Link from 'next/link'
+import { Link } from 'wouter'
 import { enqueueSnackbar } from 'notistack'
 
 import ConfirmDialog from '@ors/components/manage/Blocks/Replenishment/ConfirmDialog'
@@ -454,7 +454,7 @@ function InvoicesView() {
         <span className="print:hidden"> | </span>
         <Link
           className="m-0 text-2xl uppercase text-primary no-underline print:hidden"
-          href="./payments"
+          href="/payments"
         >
           Payments
         </Link>

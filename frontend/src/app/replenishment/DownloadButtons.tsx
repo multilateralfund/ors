@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 
-import { usePathname } from 'next/navigation'
+import { useLocation } from 'wouter'
 
 import Portal from '@ors/components/manage/Utils/Portal'
 import { DownloadLink, PrintButton } from '@ors/components/ui/Button/Button'
@@ -17,7 +17,7 @@ const PRINT_LANDSCAPE_PAGES = [
 
 export default function DownloadButtons(props: DownloadButtonsProps) {
   const { downloadTexts = [], downloadUrls = [], showPrintButton = true } = props
-  const pathname = usePathname()
+  const [pathname, _] = useLocation()
 
   useEffect(() => {
     let styleSheet = document.getElementById('dynamic-print-styles')

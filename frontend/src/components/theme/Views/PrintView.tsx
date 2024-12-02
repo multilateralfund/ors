@@ -1,24 +1,22 @@
 'use client'
 
 import React, { useEffect } from 'react'
-
-import { usePathname, useRouter } from 'next/navigation'
+import { useLocation } from 'wouter'
 
 import Loading from '@ors/components/theme/Loading/Loading'
 import { useStore } from '@ors/store'
 
 export default function PrintView({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname()
-  const router = useRouter()
+  const [pathname, setLocation] = useLocation()
   const user = useStore((state) => state.user?.data)
 
   React.useEffect(() => {
     if (!user) {
-      router.push(
+      setLocation(
         pathname && pathname !== '/' ? `/login?redirect=${pathname}` : '/login',
       )
     }
-  }, [user, pathname, router])
+  }, [user, pathname, setLocation])
 
   useEffect(() => {
     document.documentElement.setAttribute('data-printing', 'yes')

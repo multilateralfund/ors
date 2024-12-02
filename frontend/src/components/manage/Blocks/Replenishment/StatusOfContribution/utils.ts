@@ -13,7 +13,7 @@ export const SC_COLUMNS = [
   { field: 'bilateral_assistance', label: 'Bilateral Assistance' },
   { field: 'promissory_notes', label: 'Promissory Notes' },
   { field: 'outstanding_contributions', label: 'Outstanding Contribution' },
-  { field: 'gain_loss', label: 'Exchange (Gain)/Loss', subLabel: '(negative amount = Gain)' },
+  { field: 'gain_loss', label: 'Exchange (Gain)/Loss' },
 ]
 
 const FIRST_YEAR = 1991
@@ -99,10 +99,20 @@ export function formatTableRows(
       }
       switch (typeof value) {
         case 'number':
-          result[i][key] = value.toLocaleString('en-US', {
+          let isNegativeGainLoss = false;
+          if (key === 'gain_loss') {
+            if (value < 0) {
+              isNegativeGainLoss = true
+            }
+            value = Math.abs(value)
+          }
+          let localizedValue = value.toLocaleString('en-US', {
             maximumFractionDigits: maxDigits ?? 0 ?? MAX_DECIMALS,
             minimumFractionDigits: minDigits ?? 0 ?? MIN_DECIMALS,
           })
+          result[i][key] = (isNegativeGainLoss)
+            ? `(${localizedValue})`
+            : localizedValue
           break
         default:
           result[i][key] = value

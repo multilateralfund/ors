@@ -3,8 +3,7 @@
 import React, { useContext } from 'react'
 
 import cx from 'classnames'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { Link, useLocation } from 'wouter'
 
 import PeriodSelector from '@ors/components/manage/Blocks/Replenishment/PeriodSelector'
 import SCAnnual from '@ors/components/manage/Blocks/Replenishment/StatusOfContribution/SCAnnual'
@@ -29,18 +28,18 @@ const TABS: Tab[] = [
   {
     component: SCSummary,
     label: 'Summary',
-    path: '/replenishment/status-of-contributions/summary',
+    path: '/summary',
     showPeriodSelector: false,
   },
   {
     component: SCTriennial,
     label: 'Triennial',
-    path: '/replenishment/status-of-contributions/triennial',
+    path: '/triennial',
   },
   {
     component: SCAnnual,
     label: 'Annual',
-    path: '/replenishment/status-of-contributions/annual',
+    path: '/annual',
   },
 ]
 
@@ -78,7 +77,7 @@ function getTabLinks(pathname: string): [Tab | undefined, React.JSX.Element[]] {
 }
 
 function SCView(props: SCViewProps) {
-  const pathname = usePathname()
+  const [ pathname ] = useLocation()
   const period = props.year || props.period
 
   const [currentSection, navLinks] = getTabLinks(pathname)

@@ -1,6 +1,4 @@
-'use client'
-
-import { usePathname, useRouter } from 'next/navigation'
+import { useLocation } from 'wouter'
 
 import SimpleSelect from '@ors/components/ui/SimpleSelect/SimpleSelect'
 
@@ -23,8 +21,7 @@ function PeriodSelector(props: PeriodSelectorProps) {
     selectedPeriod,
   } = props
 
-  const pathname = usePathname()
-  const router = useRouter()
+  const [pathname, setLocation] = useLocation()
 
   const basePath =
     getPathPeriod(pathname) || isYear(props.period)
@@ -50,7 +47,7 @@ function PeriodSelector(props: PeriodSelectorProps) {
     if (onChange) {
       onChange(newPath, { basePath, option })
     } else {
-      router.push(newPath)
+      setLocation(newPath)
     }
   }
 

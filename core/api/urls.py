@@ -12,6 +12,7 @@ from core.api.views import (
     ReplenishmentViewSet,
     AnnualStatusOfContributionsView,
     ScaleOfAssessmentViewSet,
+    ReplenishmentScaleOfAssessmentVersionFileDownloadView,
     TriennialStatusOfContributionsView,
     SummaryStatusOfContributionsView,
     ReplenishmentDashboardView,
@@ -477,6 +478,11 @@ urlpatterns = [
         "replenishment/payment-file/<int:id>/download/",
         ReplenishmentPaymentFileDownloadView.as_view(),
         name="replenishment-payment-file-download",
+    ),
+    path(
+        "replenishment/scale-of-assessment-version/<int:id>/file/download/",
+        ReplenishmentScaleOfAssessmentVersionFileDownloadView.as_view(),
+        name="scale-of-assessment-version-file-download",
     ),
     path(
         "comment-types/",

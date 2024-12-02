@@ -11,7 +11,7 @@ import { sumMaybeNumbers } from '@ors/helpers/Utils/Utils'
 export { sumMaybeNumbers }
 
 export function extractSectionErrors(vResult: ValidateSectionResult) {
-  const result = [...vResult.global] || []
+  const result = vResult ? [...vResult.global] : []
   if (vResult.hasErrors) {
     const rowData = Object.values(
       vResult.rows,

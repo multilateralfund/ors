@@ -691,15 +691,33 @@ function SAViewWrapper(props: SAViewWrapperProps) {
     <div className="h-screen"></div>
   )
 
-  return (
-    <>
-      <DownloadButtons
-        downloadTexts={['Download']}
-        downloadUrls={[
+  const downloads = useMemo(
+    function () {
+      const result = {
+        texts: ['Download'],
+        urls: [
           formatApiUrl(
             `/api/replenishment/scales-of-assessment/export/?start_year=${soaCtx?.replenishment?.start_year}&version=${soaCtx?.version?.version}`,
           ),
-        ]}
+        ],
+      }
+      const decisionPDFURL = soaCtx?.version?.decision_pdf_download_url || null
+
+      if (decisionPDFURL) {
+        result.texts.push('Decision PDF')
+        result.urls.push(formatApiUrl(decisionPDFURL))
+      }
+
+      return result
+    },
+    [soaCtx],
+  )
+
+  return (
+    <>
+      <DownloadButtons
+        downloadTexts={downloads.texts}
+        downloadUrls={downloads.urls}
       />
       {saView}
     </>

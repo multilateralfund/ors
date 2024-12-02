@@ -1,3 +1,4 @@
+import os
 from decimal import Decimal
 
 from django.contrib.postgres import fields
@@ -55,6 +56,12 @@ class ScaleOfAssessmentVersion(models.Model):
         null=True,
         blank=True,
     )
+
+    @property
+    def decision_pdf_name(self):
+        if self.decision_pdf:
+            return os.path.basename(self.decision_pdf.name)
+        return None
 
     def __str__(self):
         return (
