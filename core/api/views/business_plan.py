@@ -666,13 +666,15 @@ class BPImportValidateView(generics.GenericAPIView):
                     "warning_type": "data warning",
                     "row_number": 1223,
                     "activity_id": "UNEP_AFG_00123213",
-                    "warning_message": "This sector does not exist in our system and we will set the sector to be 'Other'",
+                    "warning_message":
+                    "This sector does not exist in our system and we will set the sector to be 'Other'",
                 },
                 {
                     "warning_type": "data warning",
                     "row_number": 1263,
                     "activity_id": None,
-                    "warning_message": "This cluster does not exist in our system and we will set the sector to be 'Other'",
+                    "warning_message":
+                    "This cluster does not exist in our system and we will set the sector to be 'Other'",
                 },
             ],
         }
