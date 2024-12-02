@@ -88,4 +88,11 @@ export async function uploadFiles(path: string, files: File[]) {
   if (!fileUploadResponse.ok) {
     throw fileUploadResponse
   }
+
+  const response = await fileUploadResponse.json()
+
+  return {
+    response: response,
+    status: fileUploadResponse.status,
+  }
 }

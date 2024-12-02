@@ -40,6 +40,8 @@ from core.api.views.business_plan import (
     BPFileDownloadView,
     BPFileView,
     BPActivityViewSet,
+    BPImportValidateView,
+    BPImportView,
     BusinessPlanViewSet,
 )
 from core.api.views.chemicals import (
@@ -393,6 +395,16 @@ urlpatterns = [
         "^project-files/(?P<pk>[^/]+)/$",
         ProjectFileView.as_view(),
         name="project-files",
+    ),
+    path(
+        "business-plan/upload/validate/",
+        BPImportValidateView.as_view(),
+        name="bp-upload-validate",
+    ),
+    path(
+        "business-plan/upload/",
+        BPImportView.as_view(),
+        name="bp-upload",
     ),
     path(
         "business-plan/bp-chemical-types/",

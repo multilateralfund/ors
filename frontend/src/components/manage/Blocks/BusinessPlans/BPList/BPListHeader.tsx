@@ -17,15 +17,15 @@ const BPListHeader = ({ viewType }: { viewType: string }) => {
       <PageHeading>Business Plans</PageHeading>
       {userCanEditBusinessPlan[user_type as UserType] && (
         <div className="flex gap-4">
-          {/* <CustomLink
+          <CustomLink
             className="px-4 py-2 text-lg uppercase"
             color="secondary"
-            href="/business-plans/create"
+            href="/business-plans/upload"
             variant="contained"
             button
           >
-            Create
-          </CustomLink> */}
+            Upload
+          </CustomLink>
           {viewType === 'activities' && (
             <CustomLink
               className="px-4 py-2 text-lg uppercase"

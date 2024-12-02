@@ -7,7 +7,7 @@ export const RedirectToBpList = ({
 }: {
   currentYearRange: string
 }) => {
-  const bpListUrl = `/business-plans/list/plans/${currentYearRange}`
+  const bpListUrl = `/business-plans/list/activities/${currentYearRange}`
 
   return (
     <div className="w-fit">
