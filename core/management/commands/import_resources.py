@@ -12,6 +12,7 @@ from core.import_data.import_chemicals import (
     import_substances,
 )
 from core.import_data.import_usages import import_usages
+from core.import_data.import_bp_other_objects import import_bp_other_objects
 
 
 class Command(BaseCommand):
@@ -40,6 +41,7 @@ class Command(BaseCommand):
                 "adm_columns",
                 "project_resources",
                 "time_frames",
+                "bp_other_objects",
             ],
         )
 
@@ -70,3 +72,5 @@ class Command(BaseCommand):
             import_adm_columns()
         if resource in ["project_resources", "all"]:
             import_project_resources()
+        if resource in ["bp_other_objects", "all"]:
+            import_bp_other_objects()
