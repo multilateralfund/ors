@@ -1170,6 +1170,7 @@ class BilateralAssistanceViewSet(
         amount = input_data.get("amount")
         meeting_id = input_data.get("meeting_id")
         decision = input_data.get("decision_number", "")
+        comment = input_data.get("comment", "")
         if amount is None:
             raise ValidationError(
                 {"amount": "Bilateral assistance amount needs to be provided."}
@@ -1212,12 +1213,14 @@ class BilateralAssistanceViewSet(
         annual_contribution.outstanding_contributions -= Decimal(amount)
         annual_contribution.bilateral_assistance_meeting_id = meeting_id
         annual_contribution.bilateral_assistance_decision_number = decision
+        annual_contribution.bilateral_assistance_comment = comment
         annual_contribution.save(
             update_fields=[
                 "bilateral_assistance",
                 "outstanding_contributions",
                 "bilateral_assistance_meeting_id",
                 "bilateral_assistance_decision_number",
+                "bilateral_assistance_comment",
             ]
         )
 
@@ -1225,12 +1228,14 @@ class BilateralAssistanceViewSet(
         triennial_contribution.outstanding_contributions -= Decimal(amount)
         triennial_contribution.bilateral_assistance_meeting_id = meeting_id
         triennial_contribution.bilateral_assistance_decision_number = decision
+        triennial_contribution.bilateral_assistance_comment = comment
         triennial_contribution.save(
             update_fields=[
                 "bilateral_assistance",
                 "outstanding_contributions",
                 "bilateral_assistance_meeting_id",
                 "bilateral_assistance_decision_number",
+                "bilateral_assistance_comment",
             ]
         )
 
