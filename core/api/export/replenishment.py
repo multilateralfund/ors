@@ -936,6 +936,18 @@ class ConsolidatedInputDataWriter:
         for index, value in enumerate(row_data):
             cell = ws.cell(row=row_index, column=index + 1)
             cell.value = value
+            cell.font = Font(name="Times New Roman")
+            cell.border = Border(
+                top=Side(style="thin"),
+                left=Side(style="thin"),
+                right=Side(style="thin"),
+                bottom=Side(style="thin"),
+            )
+            cell.alignment = Alignment(
+                horizontal="left", vertical="center", wrap_text=True
+            )
+            if type(value) in (float, Decimal):
+                cell.number_format = "###,###,##0.00###"
 
     def write_data(self, ws, queryset, expressions):
         for index, row_data in enumerate(queryset.values_list(*expressions)):
@@ -988,9 +1000,10 @@ class ConsolidatedInputDataWriter:
             "comment",
         ]
 
-        queryset = ExternalIncomeAnnual.objects.filter(interest_earned__gte=Decimal(5))
+        queryset = ExternalIncomeAnnual.objects.filter(
+            interest_earned__gte=Decimal(5), year__isnull=False
+        )
         self.write_headers(ws, columns)
-        # TODO: this needs two querysets!
         self.write_data(ws, queryset, expressions)
 
     def export_miscellaneous_income(self, ws):
