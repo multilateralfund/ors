@@ -37,7 +37,7 @@ const BPImport = ({
     }
   }
 
-  const validateBp = async () => {
+  const validateBP = async () => {
     try {
       const baseUrl = `api/business-plan/upload/validate/?year_start=${year_start}&year_end=${year_end}&status=${bp_status}&meeting_number=${meeting}`
 
@@ -48,7 +48,7 @@ const BPImport = ({
       if (file) {
         const result = await uploadFiles(formattedUrl, [file[0]])
 
-        setValidations(result)
+        setValidations(result.response)
         setCurrentStep((step) => step + 1)
       }
     } catch (error: any) {
@@ -103,7 +103,7 @@ const BPImport = ({
         )}
       </div>
       {file && results.length > 0 && (
-        <Alert className="mt-2 w-fit border-0" severity="warning">
+        <Alert className="BPAlert mt-2 w-fit border-0" severity="warning">
           <p className="m-0 text-lg">
             You are about to overwrite the existing data from this Business
             Plan. Old versions are not kept in the system. Would you like to
@@ -120,7 +120,7 @@ const BPImport = ({
           disabled={!file}
           size="large"
           variant="contained"
-          onClick={validateBp}
+          onClick={validateBP}
         >
           Upload
         </Button>

@@ -10,6 +10,7 @@ import { RedirectToBpList } from '../RedirectToBpList'
 import BPExport from './BPExport'
 import BPImport from './BPImport'
 import BPImportFilters from './BPImportFilters'
+import BPReviewChanges from './BPReviewChanges'
 import BPUploadSectionWrapper from './BPUploadSectionWrapper'
 
 const BPUploadHeader = ({ currentYearRange }: any) => {
@@ -91,12 +92,9 @@ const BPUpload = () => {
     },
     {
       component: (
-        <></>
-        // <BPReviewChanges
-        //   {...props}
-        //   isCurrentStep={currentStep === 3}
-        //   setCurrentStep={setCurrentStep}
-        // />
+        <BPReviewChanges
+          {...{ file, filters, periodOptions, setCurrentStep, validations }}
+        />
       ),
       step: 4,
     },
