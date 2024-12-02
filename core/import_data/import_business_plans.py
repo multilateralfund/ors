@@ -230,6 +230,7 @@ def create_business_plan(row, index_row, year_start, year_end):
     # create business plan data
     bp_activity_data = {
         "business_plan": bp,
+        "agency_id": agency.id if agency else None,
         "title": row["Title"] if row["Title"] else "-",
         "required_by_model": row.get("Required by Model"),
         "country": country,
