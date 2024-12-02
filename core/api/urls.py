@@ -33,6 +33,7 @@ from core.api.views import (
     StatisticsExportView,
     StatisticsStatusOfContributionsView,
     StatusOfTheFundFileViewSet,
+    ConsolidatedInputDataExportView,
 )
 from core.api.views.agency import AgencyListView
 from core.api.views.business_plan import (
@@ -500,6 +501,11 @@ urlpatterns = [
         "comment-types/",
         CommentTypeListView.as_view(),
         name="comment-type-list",
+    ),
+    path(
+        "replenishment/input-data/export/",
+        ConsolidatedInputDataExportView.as_view(),
+        name="replenishment-input-data-export",
     ),
     *router.urls,
 ]

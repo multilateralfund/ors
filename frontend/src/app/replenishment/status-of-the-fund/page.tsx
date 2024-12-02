@@ -12,8 +12,11 @@ export default function ReplenishmentStatusOfTheFund() {
     <PageWrapper className="w-full p-4" defaultSpacing={false}>
       <ReplenishmentHeading>Status of the fund</ReplenishmentHeading>
       <DownloadButtons
-        downloadTexts={['Download']}
-        downloadUrls={[formatApiUrl('/api/replenishment/dashboard/export')]}
+        downloadTexts={['Download', 'Download Financial Data']}
+        downloadUrls={[
+          formatApiUrl('/api/replenishment/dashboard/export'),
+          formatApiUrl('/api/replenishment/input-data/export'),
+        ]}
       />
       <StatusOfTheFundWrapper />
     </PageWrapper>
