@@ -21,6 +21,7 @@ export interface ConfirmDialogProps extends PropsWithChildren {
 export interface PeriodSelectorOption {
   label: string
   value: string
+  year_start?: number
 }
 export interface PeriodSelectorProps {
   label?: string

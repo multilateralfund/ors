@@ -26,9 +26,6 @@ export default function SCSummary() {
       const Label = (
         <div className="flex flex-col">
           <span>{SC_COLUMNS[i].label}</span>
-          <span className="whitespace-nowrap text-sm font-normal">
-            {SC_COLUMNS[i].subLabel}
-          </span>
         </div>
       )
       result.push({

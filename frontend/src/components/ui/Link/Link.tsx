@@ -1,4 +1,5 @@
-'use client'
+import { forwardRef } from 'react'
+
 import type {
   ButtonProps as MuiButtonProps,
   LinkProps as MuiLinkProps,
@@ -6,34 +7,42 @@ import type {
 
 import { Button, Link as MuiLink } from '@mui/material'
 import cx from 'classnames'
-import NextLink, { LinkProps as NextLinkProps } from 'next/link'
+import { Link as WouterLink } from 'wouter'
 
-export type LinkProps = { button?: false; href: string } & MuiLinkProps &
-  NextLinkProps
-export type ButtonProps = { button: true; href: string } & MuiButtonProps &
-  NextLinkProps
+export type LinkProps = { button?: false; href: string } & MuiLinkProps
 
-function Link({
-  button,
-  children,
-  className,
-  ...rest
-}: ButtonProps | LinkProps) {
+export type ButtonProps = { button: true; href: string } & MuiButtonProps
+
+function isInternalLink(url: string) {
+  return (
+    (url.startsWith('/') || url.startsWith(location.origin)) &&
+    url.indexOf('/api/') == -1
+  )
+}
+
+const Link = forwardRef<any, any>(function Link(
+  { button, children, className, download, ...rest }: any,
+  ref: any,
+) {
+  const isInternal = isInternalLink(rest.href || '')
+  const component = isInternal ? WouterLink : 'a'
+
   return button ? (
     // @ts-ignore
     <Button
+      ref={ref}
       className={cx('text-center', className)}
-      component={NextLink}
+      component={component}
       {...rest}
     >
       {children}
     </Button>
   ) : (
     // @ts-ignore
-    <MuiLink className={className} component={NextLink} {...rest}>
+    <MuiLink ref={ref} className={className} component={component} {...rest}>
       {children}
     </MuiLink>
   )
-}
+})
 
 export default Link

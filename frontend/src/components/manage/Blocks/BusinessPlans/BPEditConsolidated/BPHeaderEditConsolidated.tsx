@@ -1,6 +1,6 @@
 import { Button } from '@mui/material'
 import { capitalize, entries, find, indexOf, isEmpty, values } from 'lodash'
-import { useParams } from 'next/navigation'
+import { useParams } from 'wouter'
 import { useSnackbar } from 'notistack'
 
 import Link from '@ors/components/ui/Link/Link'
@@ -93,8 +93,7 @@ export default function BPHeaderEditConsolidated({
     <div className="flex items-center">
       <div className="container flex w-full justify-between gap-x-4 px-0">
         <Link
-          className="border border-solid border-primary bg-white px-4 py-2 text-primary
-          shadow-none hover:bg-primary hover:text-white"
+          className="border border-solid border-primary bg-white px-4 py-2 text-primary shadow-none hover:bg-primary hover:text-white"
           color="primary"
           href={`/business-plans/list/activities/${period}`}
           size="large"

@@ -1,4 +1,3 @@
-/* eslint-disable perfectionist/sort-objects */
 import { ColDef } from 'ag-grid-community'
 
 import getAdmsColDef from './admsColDef'

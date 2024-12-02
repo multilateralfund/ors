@@ -3,7 +3,7 @@ import React, { useContext, useState } from 'react'
 
 import cx from 'classnames'
 import { capitalize } from 'lodash'
-import { useParams } from 'next/navigation'
+import { useParams } from 'wouter'
 
 import BusinessPlansTable from '@ors/components/manage/Blocks/Table/BusinessPlansTable/BusinessPlansTable'
 import Loading from '@ors/components/theme/Loading/Loading'

@@ -27,7 +27,8 @@ export type ApiReplenishmentSoAEntry = {
 export type ApiReplenishmentSoAVersion = {
   comment: string
   decision_number: string
-  decision_pdf: null
+  decision_pdf_download_url: null | string
+  decision_pdf: null | string
   id: number
   is_final: boolean
   meeting_number: string

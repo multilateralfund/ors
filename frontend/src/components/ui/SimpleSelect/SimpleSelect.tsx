@@ -10,9 +10,12 @@ interface ISimpleSelectOption {
   label: string
 }
 
-export interface SimpleSelectProps<T extends ISimpleSelectOption = ISimpleSelectOption> {
+export interface SimpleSelectProps<
+  T extends ISimpleSelectOption = ISimpleSelectOption,
+> {
   className?: string
   initialIndex?: number
+  inputClassName?: string
   label: string
   onChange: (option: T, index: number) => void
   options: T[]
@@ -21,7 +24,14 @@ export interface SimpleSelectProps<T extends ISimpleSelectOption = ISimpleSelect
 const SimpleSelect = <T extends ISimpleSelectOption = ISimpleSelectOption>(
   props: SimpleSelectProps<T>,
 ) => {
-  const { className, initialIndex = 0, label, onChange, options } = props
+  const {
+    className,
+    initialIndex = 0,
+    inputClassName,
+    label,
+    onChange,
+    options,
+  } = props
   const [selectedIndex, setSelectedIndex] = useState(initialIndex)
   const [showMenu, setShowMenu] = useState(false)
 
@@ -55,7 +65,10 @@ const SimpleSelect = <T extends ISimpleSelectOption = ISimpleSelectOption>(
       <div className="relative">
         <output
           id={idFromLabel}
-          className="flex cursor-pointer items-center justify-between gap-x-2 rounded-lg border border-solid border-primary px-2 py-2"
+          className={cx(
+            'flex cursor-pointer items-center justify-between gap-x-2 rounded-lg border border-solid border-primary px-2 py-2',
+            inputClassName,
+          )}
           ref={ref}
           onClick={toggleShowMenu}
         >

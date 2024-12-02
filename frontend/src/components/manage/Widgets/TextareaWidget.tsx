@@ -1,4 +1,3 @@
-/* eslint-disable react/display-name */
 import type { InputLabelProps, TextareaAutosizeProps } from '@mui/material'
 
 import { forwardRef } from 'react'

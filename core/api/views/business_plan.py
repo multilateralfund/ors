@@ -539,3 +539,56 @@ class BPFileDownloadView(generics.RetrieveAPIView):
         )
 
         return response
+
+
+class BPImportValidateView(generics.GenericAPIView):
+
+    def post(self, request, *args, **kwargs):
+        response_data = {
+            "activities_number": 123,
+            "agencies_number": 12,
+            "errors": [
+                {
+                    "error_type": "general error",
+                    "row_number": None,
+                    "activity_id": None,
+                    "error_message": "Invalid file structure",
+                },
+                {
+                    "error_type": "data error",
+                    "row_number": 123,
+                    "activity_id": "UNEP_AFG_00123213",
+                    "error_message": "This country does not exist in our system",
+                },
+                {
+                    "error_type": "data error",
+                    "row_number": 1243,
+                    "activity_id": None,
+                    "error_message": "This agency does not exist in our system",
+                },
+            ],
+            "warnings": [
+                {
+                    "warning_type": "data warning",
+                    "row_number": 1223,
+                    "activity_id": "UNEP_AFG_00123213",
+                    "warning_message":
+                    "This sector does not exist in our system and we will set the sector to be 'Other'",
+                },
+                {
+                    "warning_type": "data warning",
+                    "row_number": 1263,
+                    "activity_id": None,
+                    "warning_message":
+                    "This cluster does not exist in our system and we will set the sector to be 'Other'",
+                },
+            ],
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
+
+
+class BPImportView(generics.GenericAPIView):
+    def post(self, request, *args, **kwargs):
+        return Response(
+            {"message": "Data imported successfully"}, status=status.HTTP_200_OK
+        )

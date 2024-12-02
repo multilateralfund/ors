@@ -2,7 +2,7 @@
 import React, { useContext, useMemo, useRef, useState } from 'react'
 
 import { reduce } from 'lodash'
-import { useParams } from 'next/navigation'
+import { useParams } from 'wouter'
 
 import {
   BPDataInterface,

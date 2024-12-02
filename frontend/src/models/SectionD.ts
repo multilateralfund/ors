@@ -1,4 +1,4 @@
-import Section, { DeserializedSubstance, Field } from './Section'
+import Section, { Field } from './Section'
 
 export type SectionDFormFields = {
   all_uses?: null | number | string

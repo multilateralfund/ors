@@ -1,8 +1,7 @@
-'use client'
 import React from 'react'
 
 import { Alert, Button, Collapse, Paper, Typography } from '@mui/material'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useLocation, useSearch } from 'wouter'
 
 import Field from '@ors/components/manage/Form/Field'
 import api from '@ors/helpers/Api/_api'
@@ -19,8 +18,8 @@ export default function ResetPasswordForm({
 }: {
   endpoint?: string
 }) {
-  const router = useRouter()
-  const params = useSearchParams()
+  const [_, setLocation] = useLocation()
+  const params = new URLSearchParams(useSearch())
 
   const [errors, setErrors] = React.useState(emptyErrors)
 
@@ -42,7 +41,7 @@ export default function ResetPasswordForm({
             method: 'post',
           })
           setErrors(emptyErrors)
-          router.push('/login')
+          setLocation('/login')
         } catch (error) {
           if (error.status === 400) {
             setErrors({
