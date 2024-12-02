@@ -2,7 +2,7 @@
 
 import { ApiEditBPActivity } from '@ors/types/api_bp_get'
 
-import React, { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { capitalize, find, map } from 'lodash'
 import { useParams } from 'wouter'
@@ -67,8 +67,6 @@ const BPEdit = () => {
 
     return map(activities, (activity, index) => ({
       ...activity,
-      agency_id: find(agencies, (agency) => agency.name === activity.agency)
-        ?.id,
       comment_types: map(
         activity.comment_types,
         (comment_type) =>
@@ -100,7 +98,7 @@ const BPEdit = () => {
           to recover it?
         </BPRestoreEdit>
       )}
-      {!loading && form && (
+      {!loading && (
         <>
           <div className="mb-1 flex justify-end">
             <div

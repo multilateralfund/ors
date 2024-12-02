@@ -24,7 +24,7 @@ export default function BPHeaderEditConsolidated({
 
   const editBP = async () => {
     try {
-      await api(`api/business-plan/update_all/`, {
+      await api(`api/business-plan/update/`, {
         data: {
           activities: form,
           ...{ year_end, year_start },
