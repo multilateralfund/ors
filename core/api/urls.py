@@ -58,6 +58,7 @@ from core.api.views.cp_archive import (
     CPRecordsArchiveListView,
     CPReportVersionsListView,
 )
+from core.api.views.cp_emissions import CPEmissionsView
 from core.api.views.cp_files import CPFilesDownloadView, CPFilesView
 from core.api.views.cp_prices import CPPricesView
 from core.api.views.cp_records_export import (
@@ -271,6 +272,11 @@ urlpatterns = [
         "country-programme/prices/",
         CPPricesView.as_view(),
         name="country-programme-price-list",
+    ),
+    path(
+        "country-programme/emissions/",
+        CPEmissionsView.as_view(),
+        name="country-programme-emissions-list",
     ),
     path(
         "country-programme/export/",

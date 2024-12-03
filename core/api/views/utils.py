@@ -59,6 +59,25 @@ SUBSTANCE_GROUP_ID_TO_CATEGORY = {
 }
 
 
+def get_country_region_dict():
+    """
+    Get a dictionary of country regions
+
+    @return: dictionary of country regions
+    """
+    countries = Country.objects.all().select_related("parent__parent")
+    country_region_dict = {}
+    for country in countries:
+        if country.parent_id and country.parent.parent_id:
+            country_region_dict[country.id] = country.parent.parent.name
+        elif country.parent_id:
+            country_region_dict[country.id] = country.parent.name
+        else:
+            country_region_dict[country.id] = country.name
+
+    return country_region_dict
+
+
 def get_cp_report_from_request(request, cp_report_class):
     """
     Get country programme report from request query params

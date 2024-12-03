@@ -83,6 +83,7 @@ class CPPricesArchiveSerializer(CPPricesBaseSerializer):
 class CPPricesListSerializer(serializers.ModelSerializer):
     substance_name = serializers.SerializerMethodField()
     blend_name = serializers.SerializerMethodField()
+    country_id = serializers.IntegerField(source="country_programme_report.country_id")
     country_name = serializers.CharField(source="country_programme_report.country.name")
     year = serializers.IntegerField(source="country_programme_report.year")
     group = serializers.SerializerMethodField()
@@ -91,6 +92,7 @@ class CPPricesListSerializer(serializers.ModelSerializer):
     class Meta:
         model = CPPrices
         fields = [
+            "country_id",
             "country_name",
             "year",
             "substance_id",

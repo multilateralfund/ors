@@ -2,7 +2,7 @@ from django_filters import rest_framework as filters
 from django_filters.widgets import CSVWidget
 
 from core.models import Country
-from core.models.country_programme import CPFile, CPPrices
+from core.models.country_programme import CPEmission, CPFile, CPPrices
 from core.models.country_programme_archive import CPReportArchive
 
 
@@ -45,31 +45,6 @@ class CPReportArchiveFilter(filters.FilterSet):
         fields = ["country_id", "year"]
 
 
-class CPPricesFilter(filters.FilterSet):
-    """
-    Filter for CP Prices
-    """
-
-    country_id = filters.ModelChoiceFilter(
-        required=False,
-        queryset=Country.objects.all(),
-        field_name="country_programme_report__country_id",
-    )
-    year = filters.NumberFilter(
-        required=False, field_name="country_programme_report__year"
-    )
-    min_year = filters.NumberFilter(
-        required=False, field_name="country_programme_report__year", lookup_expr="gte"
-    )
-    max_year = filters.NumberFilter(
-        required=False, field_name="country_programme_report__year", lookup_expr="lte"
-    )
-
-    class Meta:
-        model = CPPrices
-        fields = ["country_id", "year", "min_year", "max_year"]
-
-
 class CPFileFilter(filters.FilterSet):
     """
     Filter for CP Files
@@ -85,3 +60,45 @@ class CPFileFilter(filters.FilterSet):
     class Meta:
         model = CPFile
         fields = ["country_id", "year"]
+
+
+class CPAttributesBaseFilter(filters.FilterSet):
+    """
+    Base filter for country programme
+    """
+
+    country_id = filters.NumberFilter(
+        required=False,
+        field_name="country_programme_report__country_id",
+    )
+    year = filters.NumberFilter(
+        required=False, field_name="country_programme_report__year"
+    )
+    min_year = filters.NumberFilter(
+        required=False, field_name="country_programme_report__year", lookup_expr="gte"
+    )
+    max_year = filters.NumberFilter(
+        required=False, field_name="country_programme_report__year", lookup_expr="lte"
+    )
+
+    class Meta:
+        fields = ["country_id", "year", "min_year", "max_year"]
+
+
+class CPPricesFilter(CPAttributesBaseFilter):
+    """
+    Filter for CP Prices
+    """
+
+    class Meta(CPAttributesBaseFilter.Meta):
+        model = CPPrices
+
+
+class CPEmissionsFilter(CPAttributesBaseFilter):
+    """
+    Filter for CP Emissions
+    """
+
+    class Meta(CPAttributesBaseFilter.Meta):
+        model = CPEmission
+        fields = CPAttributesBaseFilter.Meta.fields
