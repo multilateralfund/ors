@@ -51,17 +51,23 @@ class CPPricesFilter(filters.FilterSet):
     """
 
     country_id = filters.ModelChoiceFilter(
-        required=True,
+        required=False,
         queryset=Country.objects.all(),
         field_name="country_programme_report__country_id",
     )
     year = filters.NumberFilter(
-        required=True, field_name="country_programme_report__year"
+        required=False, field_name="country_programme_report__year"
+    )
+    min_year = filters.NumberFilter(
+        required=False, field_name="country_programme_report__year", lookup_expr="gte"
+    )
+    max_year = filters.NumberFilter(
+        required=False, field_name="country_programme_report__year", lookup_expr="lte"
     )
 
     class Meta:
         model = CPPrices
-        fields = ["country_id", "year"]
+        fields = ["country_id", "year", "min_year", "max_year"]
 
 
 class CPFileFilter(filters.FilterSet):
