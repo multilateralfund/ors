@@ -99,9 +99,8 @@ class BPActivitiesWriter(BaseWriter):
                 "headerName": "Project Status (A/P)",
             },
             {
-                "id": "is_multi_year",
+                "id": "is_multi_year_display",
                 "headerName": "Project Category (I/M)",
-                "type": "bool",
             },
             {
                 "id": "remarks",

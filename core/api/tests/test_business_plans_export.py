@@ -5,7 +5,6 @@ import pytest
 from django.urls import reverse
 
 from core.api.tests.base import BaseTest
-from core.api.tests.conftest import pdf_text
 
 pytestmark = pytest.mark.django_db
 # pylint: disable=W0613, R0913
@@ -45,11 +44,11 @@ class TestBPExport(BaseTest):
         wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
         assert wb.sheetnames == [
             "Activities",
-            "Agencies",
             "Countries",
+            "Agencies",
             "Clusters",
             "ChemicalTypes",
-            "Project Types",
+            "ProjectTypes",
             "Sectors",
             "SubSectors",
             "LVCStatuses",
