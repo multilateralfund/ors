@@ -93,6 +93,7 @@ class BaseWriter:
                     value,
                     read_only=header.get("read_only", False),
                     align=header.get("align", "left"),
+                    cell_format=header.get("cell_format"),
                 )
 
     def set_dimensions(self):
@@ -163,7 +164,14 @@ class BaseWriter:
         return cell
 
     def _write_record_cell(
-        self, row, column, value, read_only=False, align="left", can_be_clipped=False
+        self,
+        row,
+        column,
+        value,
+        read_only=False,
+        align="left",
+        can_be_clipped=False,
+        cell_format=None,
     ):
         cell = self.sheet.cell(row, column, value)
         cell.alignment = Alignment(horizontal=align, vertical="center", wrap_text=True)
@@ -183,7 +191,9 @@ class BaseWriter:
                 self.sheet.row_dimensions[row].height = (
                     self.ROW_HEIGHT * needed_rows / 2
                 )
-        if align == "right":
+        if cell_format:
+            cell.number_format = cell_format
+        elif align == "right":
             # this cell will contain a number
             cell.number_format = "###,###,##0.00#############"
         if read_only:

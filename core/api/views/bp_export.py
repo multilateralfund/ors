@@ -79,7 +79,8 @@ class BPActivityExportView(generics.GenericAPIView):
         data_validation = openpyxl.worksheet.datavalidation.DataValidation(
             type="list",
             formula1=validation_formula,
-            showDropDown=True,
+            showDropDown=False,
+            showErrorMessage=True,
             allow_blank=allow_blank,
         )
         data_validation.prompt = "Please select from the dropdown"
@@ -102,6 +103,8 @@ class BPActivityExportView(generics.GenericAPIView):
         data_validation = openpyxl.worksheet.datavalidation.DataValidation(
             type="list",
             formula1=allowed_values,
+            showDropDown=False,
+            showErrorMessage=True,
         )
         data_validation.prompt = prompt
         data_validation.error = error
@@ -187,6 +190,7 @@ class BPActivityExportView(generics.GenericAPIView):
             data_validation = openpyxl.worksheet.datavalidation.DataValidation(
                 type="decimal",
                 operator="greaterThanOrEqual",
+                showErrorMessage=True,
                 formula1="0",
             )
             data_validation.prompt = "Please enter a number"

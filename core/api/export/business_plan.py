@@ -13,26 +13,29 @@ class BPActivitiesWriter(BaseWriter):
             for year in range(min_year, max_year + 1):
                 label = str(year)
                 if year == max_year:
-                    label = f"After {year - 1}"
+                    label = f"after {year - 1}"
                 year_headers.extend(
                     [
                         {
                             "id": f"value_usd_{year}",
-                            "headerName": f"Value ($000) {label}",
+                            "headerName": f"Value {label} ($)",
                             "type": "number",
                             "method": self.get_value,
+                            "cell_format": "$###,###,##0.00#############",
                         },
                         {
                             "id": f"value_odp_{year}",
                             "headerName": f"ODP {label}",
                             "type": "number",
                             "method": self.get_value,
+                            "align": "right",
                         },
                         {
                             "id": f"value_mt_{year}",
                             "headerName": f"MT for HFC {label}",
                             "type": "number",
                             "method": self.get_value,
+                            "align": "right",
                         },
                     ]
                 )
@@ -74,6 +77,7 @@ class BPActivitiesWriter(BaseWriter):
                 "headerName": "Amount of Polyol in Project (MT)",
                 "type": "number",
                 "column_width": self.COLUMN_WIDTH * 1.5,
+                "align": "right",
             },
             {"id": "project_cluster", "headerName": "Cluster"},
             {"id": "sector", "headerName": "Sector"},
