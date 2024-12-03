@@ -1,4 +1,3 @@
-'use client'
 import React, { useContext, useMemo, useRef, useState } from 'react'
 
 import { useParams } from 'wouter'
@@ -15,7 +14,7 @@ import {
   odpColumnDefs,
   valuesColumnDefs,
 } from '@ors/components/manage/Blocks/Table/BusinessPlansTable/schema'
-import Table from '@ors/components/manage/Form/Table'
+import ViewTable from '@ors/components/manage/Form/ViewTable'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import BPContext from '@ors/contexts/BusinessPlans/BPContext'
 import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
@@ -165,7 +164,7 @@ export const BPTable = ({
   const paginationPageSizeSelectorOpts = getPaginationSelectorOpts()
 
   return (
-    <Table
+    <ViewTable
       Toolbar={displayFilters}
       columnDefs={[...columnDefs]}
       defaultColDef={defaultColDef}
@@ -181,6 +180,7 @@ export const BPTable = ({
       rowData={results}
       rowsVisible={20}
       tooltipShowDelay={200}
+      context={{ disableValidation: true }}
       components={{
         agColumnHeader: undefined,
         agTextCellRenderer: undefined,

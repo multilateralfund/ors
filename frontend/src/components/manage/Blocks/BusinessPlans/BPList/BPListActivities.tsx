@@ -19,7 +19,7 @@ import { ViewSelectorValuesType } from '../types'
 import BPListHeader from './BPListHeader'
 import BPListTabs from './BPListTabs'
 
-const ACTIVITIES_PER_PAGE_TABLE = 100
+const ACTIVITIES_PER_PAGE_TABLE = 50
 const ACTIVITIES_PER_PAGE_LIST = 20
 
 export default function BPListActivitiesWrapper(props: any) {

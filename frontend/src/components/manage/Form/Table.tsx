@@ -201,9 +201,9 @@ function Table(props: TableProps) {
   const validation = useContext(ValidationContext)
   const validationErrors = useMemo(
     () =>
-      validation?.errors[gridContext?.section.id as ValidationSchemaKeys]
+      validation?.errors[gridContext?.section?.id as ValidationSchemaKeys]
         ?.rows || ({} as Record<ValidationSchemaKeys, ValidateSectionResult>),
-    [gridContext?.section.id, validation?.errors],
+    [gridContext?.section?.id, validation?.errors],
   )
 
   // defaultColDef sets props common to all Columns

@@ -291,24 +291,29 @@ export const commentsDiffValueGetter = (params: any) => {
 const displayCommentsCellValue = (
   commentSecretariat: string,
   commentTypes: Array<string> = [],
-) => (
-  <div className="p-0.5 text-left">
-    {commentTypes.length > 0 && <CommentsTagList comments={commentTypes} />}
-    <Tooltip
-      TransitionProps={{ timeout: 0 }}
-      classes={{ tooltip: 'bp-table-tooltip' }}
-      placement={'top'}
-      title={commentSecretariat}
-    >
-      <div
-        className="block overflow-hidden text-ellipsis"
-        style={{ whiteSpace: 'nowrap' }}
+) => {
+  if (!commentSecretariat) {
+    return null
+  }
+  return (
+    <div className="p-0.5 text-left">
+      {commentTypes.length > 0 && <CommentsTagList comments={commentTypes} />}
+      <Tooltip
+        TransitionProps={{ timeout: 0 }}
+        classes={{ tooltip: 'bp-table-tooltip' }}
+        placement={'top'}
+        title={commentSecretariat}
       >
-        {commentSecretariat}
-      </div>
-    </Tooltip>
-  </div>
-)
+        <div
+          className="block overflow-hidden text-ellipsis"
+          style={{ whiteSpace: 'nowrap' }}
+        >
+          {commentSecretariat}
+        </div>
+      </Tooltip>
+    </div>
+  )
+}
 
 export const commentsCellRenderer = (props: {
   value: { commentSecretariat: string; commentTypes: Array<string> }

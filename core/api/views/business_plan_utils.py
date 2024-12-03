@@ -6,7 +6,6 @@ from django.core.exceptions import ValidationError
 from django.db.models import F
 from rest_framework import status
 
-from core.api.serializers.business_plan import BusinessPlanCreateSerializer
 from core.import_data.mapping_names_dict import COUNTRY_NAME_MAPPING
 from core.models import (
     Agency,
@@ -61,17 +60,17 @@ def get_bp_activity_data(
     if not country:
         error_messages.append(f"Country '{row['Country']}' {not_found_error}")
 
-    lvc_status = row["HCFC Status"]
-    if lvc_status not in BPActivity.LVCStatus.values:
-        error_messages.append(f"HCFC Status '{lvc_status}' {not_found_error}")
+    country_status = row["Country Status"]
+    if country_status not in BPActivity.LVCStatus.values:
+        error_messages.append(f"Country Status '{country_status}' {not_found_error}")
 
-    activity_status = row["A-Appr. P-Plan'd"]
-    if activity_status not in BPActivity.Status.values:
-        error_messages.append(f"Activity status '{activity_status}' {not_found_error}")
+    project_status = row["Project Status (A/P)"]
+    if project_status not in BPActivity.Status.values:
+        error_messages.append(f"Project status '{project_status}' {not_found_error}")
 
     for field_name, obj in [
         ("Type", project_type),
-        ("Chemical", bp_chemical_type),
+        ("Substance", bp_chemical_type),
         ("Cluster", project_cluster),
         ("Sector", sector),
         ("Subsector", subsector),
@@ -85,7 +84,7 @@ def get_bp_activity_data(
     for substance in substances:
         if substance.name == "Other substances":
             warning_messages.append(
-                "Some HCFC chemicals do not exist in our system and we will set them to be 'Other'"
+                "Some substances do not exist in our system and we will set them to be 'Other'"
             )
             break
 
@@ -98,14 +97,13 @@ def get_bp_activity_data(
     initial_id = sort_order[1].lstrip("0") if len(sort_order) > 1 else 0
 
     activity_data = {
-        "initial_id": initial_id,
+        "initial_id": initial_id if initial_id != "None" else 0,
         "title": row["Title"],
         "agency_id": agency.id if agency else None,
         "country_id": country.id if country else None,
-        "lvc_status": lvc_status,
+        "lvc_status": country_status,
         "project_type_id": project_type.id,
         "project_type_code": project_type.code,
-        "legacy_project_type": row["Legacy Type"],
         "bp_chemical_type_id": bp_chemical_type.id,
         "project_cluster_id": project_cluster.id,
         "substances": list(dict.fromkeys(substance_ids)),
@@ -113,10 +111,9 @@ def get_bp_activity_data(
         "sector_id": sector.id,
         "sector_code": sector.code,
         "subsector_id": subsector.id,
-        "legacy_sector_and_subsector": row["Legacy Sector and Subsector"],
         "required_by_model": row["Required by Model"],
-        "status": activity_status,
-        "is_multi_year": bool(row["Is Multi Year"] == "Yes"),
+        "status": project_status,
+        "is_multi_year": bool(row["Project Category (I/M)"].lower() == "m"),
         "reason_for_exceeding": row["Reason for exceeding 35% of baseline"],
         "remarks": row["Remarks"],
         "remarks_additional": row["Remarks (Additional)"],
@@ -128,15 +125,15 @@ def get_bp_activity_data(
         if year == year_start + 3:
             year_value = year - 1
             is_after = True
-            value_usd = row[f"Value ($000) After {year_value}"]
-            value_odp = row[f"ODP After {year_value}"]
-            value_mt = row[f"MT After {year_value} for HFC"]
+            value_usd = row[f"Value after {year_value} ($)"]
+            value_odp = row[f"ODP after {year_value}"]
+            value_mt = row[f"MT for HFC after {year_value}"]
         else:
             year_value = year
             is_after = False
-            value_usd = row[f"Value ($000) {year_value}"]
+            value_usd = row[f"Value {year_value} ($)"]
             value_odp = row[f"ODP {year_value}"]
-            value_mt = row[f"MT {year_value} for HFC"]
+            value_mt = row[f"MT for HFC {year_value}"]
 
         if not check_numeric_value(value_usd):
             value_usd = 0
@@ -175,7 +172,7 @@ def parse_bp_file(file, year_start, from_validate=False):
     agencies = {strip_str(agency.name): agency for agency in Agency.objects.all()}
     countries = {strip_str(country.name): country for country in Country.objects.all()}
     project_types = {
-        strip_str(project_type.code): project_type
+        strip_str(project_type.name): project_type
         for project_type in ProjectType.objects.all()
     }
     bp_chemical_types = {
@@ -203,10 +200,10 @@ def parse_bp_file(file, year_start, from_validate=False):
         country_name = COUNTRY_NAME_MAPPING.get(row["Country"], row["Country"])
         country = countries.get(strip_str(country_name))
         project_type = project_types.get(
-            strip_str(row["Type"]), project_types.get("oth")
+            strip_str(row["Type"]), project_types.get("other")
         )
         bp_chemical_type = bp_chemical_types.get(
-            strip_str(row["Chemical"]), bp_chemical_types.get("other")
+            strip_str(row["Substance"]), bp_chemical_types.get("other")
         )
         project_cluster = project_clusters.get(
             strip_str(row["Cluster"]), project_clusters.get("other")
@@ -214,9 +211,7 @@ def parse_bp_file(file, year_start, from_validate=False):
         sector = sectors.get(strip_str(row["Sector"]), sectors.get("other"))
         subsector = subsectors.get(strip_str(row["Subsector"]), subsectors.get("other"))
         substance_names = (
-            row["HCFC Chemical Detail"].split("/")
-            if row["HCFC Chemical Detail"]
-            else []
+            row["Substance Detail"].split("/") if row["Substance Detail"] else []
         )
         substances = [
             substance_dict.get(strip_str(name), substance_dict.get("other substances"))
@@ -310,7 +305,7 @@ class BusinessPlanUtils:
 
     def create_bp(self, data):
         # validate data
-        serializer = BusinessPlanCreateSerializer(data=data)
+        serializer = self.get_serializer(data=data)
         errors = self.validate_bp(serializer)
         if errors:
             return status.HTTP_400_BAD_REQUEST, errors
@@ -340,7 +335,7 @@ class BusinessPlanUtils:
 
     def update_bp(self, data, current_obj):
         # validate data
-        serializer = BusinessPlanCreateSerializer(data=data)
+        serializer = self.get_serializer(data=data)
         errors = self.validate_bp(serializer, current_obj)
         if errors:
             return status.HTTP_400_BAD_REQUEST, errors

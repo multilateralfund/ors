@@ -78,7 +78,7 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
 class BPActivityExportSerializer(serializers.ModelSerializer):
     agency = serializers.SlugRelatedField("name", read_only=True)
     lvc_status = serializers.ChoiceField(choices=BPActivity.LVCStatus.choices)
-    project_type = serializers.SlugRelatedField("code", read_only=True)
+    project_type = serializers.SlugRelatedField("name", read_only=True)
     status = serializers.ChoiceField(choices=BPActivity.Status.choices)
     bp_chemical_type = serializers.SlugRelatedField("name", read_only=True)
     chemical_detail = serializers.SerializerMethodField()
@@ -90,6 +90,7 @@ class BPActivityExportSerializer(serializers.ModelSerializer):
     subsector = serializers.SlugRelatedField("name", read_only=True)
     values = BPActivityValueSerializer(many=True)
     display_internal_id = serializers.SerializerMethodField()
+    is_multi_year_display = serializers.SerializerMethodField()
 
     class Meta:
         model = BPActivity
@@ -112,7 +113,7 @@ class BPActivityExportSerializer(serializers.ModelSerializer):
             "subsector",
             "legacy_sector_and_subsector",
             "status",
-            "is_multi_year",
+            "is_multi_year_display",
             "reason_for_exceeding",
             "remarks",
             "remarks_additional",
@@ -130,6 +131,9 @@ class BPActivityExportSerializer(serializers.ModelSerializer):
         # add 0 padding to internal_id to make it 9 digits
         internal_id = str(obj.initial_id).zfill(9)
         return f"{agency_code}-{country_code}-{internal_id}"
+
+    def get_is_multi_year_display(self, obj):
+        return "M" if obj.is_multi_year else "I"
 
 
 class BPActivityDetailSerializer(serializers.ModelSerializer):
