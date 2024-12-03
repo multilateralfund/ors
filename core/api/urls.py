@@ -400,7 +400,7 @@ urlpatterns = [
         name="bp-chemical-type-list",
     ),
     path(
-        "business-plan-activity/export",
+        "business-plan-activity/export/",
         BPActivityExportView.as_view(),
         name="bpactivity-export",
     ),
