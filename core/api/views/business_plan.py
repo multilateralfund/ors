@@ -355,18 +355,34 @@ class BPFileDownloadView(generics.RetrieveAPIView):
 
 
 class BPImportValidateView(BusinessPlanUtils, generics.GenericAPIView):
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "year_start",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+            ),
+        ],
+    )
     def post(self, request, *args, **kwargs):
         files = request.FILES
-        year_start = int(request.query_params.get("year_start"))
+        year_start = int(request.query_params.get("year_start", 0))
 
         ret_code, ret_data = self.import_bp(files, year_start, from_validate=True)
         if ret_code != status.HTTP_200_OK:
             return Response(
                 {
-                    "error_type": "general error",
-                    "row_number": None,
-                    "activtiy_id": None,
-                    "error_message": ret_data,
+                    "activities_number": None,
+                    "agencies_number": None,
+                    "errors": [
+                        {
+                            "error_type": "general error",
+                            "row_number": None,
+                            "activtiy_id": None,
+                            "error_message": ret_data,
+                        },
+                    ],
+                    "warnings": [],
                 },
                 status=ret_code,
             )
@@ -388,14 +404,40 @@ class BPImportView(
     mixins.CreateModelMixin,
     generics.GenericAPIView,
 ):
-    queryset = BusinessPlan.objects.all()
-    serializer_class = BusinessPlanCreateSerializer
-
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "year_start",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                "year_end",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                "status",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_STRING,
+            ),
+            openapi.Parameter(
+                "meeting_number",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                "decision_number",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+            ),
+        ],
+    )
     @transaction.atomic
     def post(self, request, *args, **kwargs):
         files = request.FILES
-        year_start = int(request.query_params.get("year_start"))
-        year_end = int(request.query_params.get("year_end"))
+        year_start = int(request.query_params.get("year_start", 0))
+        year_end = int(request.query_params.get("year_end", 0))
         bp_status = request.query_params.get("status")
 
         ret_code, ret_data = self.import_bp(files, year_start)

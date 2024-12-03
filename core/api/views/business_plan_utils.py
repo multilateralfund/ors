@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import F
 from rest_framework import status
 
+from core.api.serializers.business_plan import BusinessPlanCreateSerializer
 from core.import_data.mapping_names_dict import COUNTRY_NAME_MAPPING
 from core.models import (
     Agency,
@@ -21,7 +22,7 @@ from core.models import (
 )
 from core.tasks import send_mail_bp_create, send_mail_bp_update
 
-# pylint: disable=E1101, R0913, R0914, W0718
+# pylint: disable=E1101, R0913, R0914, R0915, W0718
 
 
 def strip_str(name):
@@ -50,40 +51,48 @@ def get_bp_activity_data(
 ):
     error_messages = []
     warning_messages = []
+    not_a_number_warning = "is not a number and we will set it to be '0'"
+    set_other_warning = "does not exist in our system and we will set it to be 'Other'"
+    not_found_error = "does not exist in our system"
 
     if not agency:
-        error_messages.append("This agency does not exist in our system")
+        error_messages.append(f"Agency '{row['Agency']}' {not_found_error}")
 
     if not country:
-        error_messages.append("This country does not exist in our system")
+        error_messages.append(f"Country '{row['Country']}' {not_found_error}")
 
     lvc_status = row["HCFC Status"]
     if lvc_status not in BPActivity.LVCStatus.values:
-        error_messages.append("This HCFC Status does not exist in our system")
+        error_messages.append(f"HCFC Status '{lvc_status}' {not_found_error}")
 
     activity_status = row["A-Appr. P-Plan'd"]
     if activity_status not in BPActivity.Status.values:
-        error_messages.append("This status does not exist in our system")
+        error_messages.append(f"Activity status '{activity_status}' {not_found_error}")
 
-    for obj in (project_type, bp_chemical_type, project_cluster, sector, subsector):
+    for field_name, obj in [
+        ("Type", project_type),
+        ("Chemical", bp_chemical_type),
+        ("Cluster", project_cluster),
+        ("Sector", sector),
+        ("Subsector", subsector),
+    ]:
         if obj.name == "Other":
-            name = obj.__class__.__name__
             warning_messages.append(
-                f"This {name} does not exist in our system and we will set it to be 'Other'"
+                f"{field_name} '{row[field_name]}' {set_other_warning}"
             )
 
+    substance_ids = [substance.id for substance in substances]
     for substance in substances:
         if substance.name == "Other substances":
             warning_messages.append(
-                "Some substances do not exist in our system and we will set them to be 'Other'"
+                "Some HCFC chemicals do not exist in our system and we will set them to be 'Other'"
             )
             break
-    substance_ids = [substance.id for substance in substances]
 
     amount_polyol = row["Amount of Polyol in Project (MT)"]
     if not check_numeric_value(amount_polyol):
         amount_polyol = 0
-        warning_messages.append("Amount of Polyol will be set to 0")
+        warning_messages.append(f"Amount of Polyol {not_a_number_warning}")
 
     sort_order = row["Sort Order"].rsplit("-", 1)
     initial_id = sort_order[1].lstrip("0") if len(sort_order) > 1 else 0
@@ -131,15 +140,21 @@ def get_bp_activity_data(
 
         if not check_numeric_value(value_usd):
             value_usd = 0
-            warning_messages.append(f"Value usd for year {year_value} will be set to 0")
+            warning_messages.append(
+                f"Value usd for year {year_value} (After: {is_after}) {not_a_number_warning}"
+            )
 
         if not check_numeric_value(value_odp):
             value_odp = 0
-            warning_messages.append(f"Value odp for year {year_value} will be set to 0")
+            warning_messages.append(
+                f"Value odp for year {year_value} (After: {is_after}) {not_a_number_warning}"
+            )
 
         if not check_numeric_value(value_mt):
             value_mt = 0
-            warning_messages.append(f"Value mt for year {year_value} will be set to 0")
+            warning_messages.append(
+                f"Value mt for year {year_value} (After: {is_after}) {not_a_number_warning}"
+            )
 
         activity_data["values"].append(
             {
@@ -154,8 +169,8 @@ def get_bp_activity_data(
     return activity_data, error_messages, warning_messages
 
 
-def parse_bp_file(filename, year_start, from_validate=False):
-    df = pd.read_excel(filename, dtype=str).replace({np.nan: ""})
+def parse_bp_file(file, year_start, from_validate=False):
+    df = pd.read_excel(file, dtype=str).replace({np.nan: ""})
 
     agencies = {strip_str(agency.name): agency for agency in Agency.objects.all()}
     countries = {strip_str(country.name): country for country in Country.objects.all()}
@@ -204,7 +219,7 @@ def parse_bp_file(filename, year_start, from_validate=False):
             else []
         )
         substances = [
-            substance_dict.get(strip_str(name), "other substances")
+            substance_dict.get(strip_str(name), substance_dict.get("other substances"))
             for name in substance_names
         ]
 
@@ -295,7 +310,7 @@ class BusinessPlanUtils:
 
     def create_bp(self, data):
         # validate data
-        serializer = self.get_serializer(data=data)
+        serializer = BusinessPlanCreateSerializer(data=data)
         errors = self.validate_bp(serializer)
         if errors:
             return status.HTTP_400_BAD_REQUEST, errors
@@ -325,7 +340,7 @@ class BusinessPlanUtils:
 
     def update_bp(self, data, current_obj):
         # validate data
-        serializer = self.get_serializer(data=data)
+        serializer = BusinessPlanCreateSerializer(data=data)
         errors = self.validate_bp(serializer, current_obj)
         if errors:
             return status.HTTP_400_BAD_REQUEST, errors
