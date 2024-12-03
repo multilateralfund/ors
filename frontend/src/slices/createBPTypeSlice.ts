@@ -5,7 +5,7 @@ import { produce } from 'immer'
 import { bpTypes } from '@ors/components/manage/Blocks/BusinessPlans/constants'
 
 export const createBPTypeSlice = ({ set }: CreateSliceProps): BPTypeSlice => ({
-  bpType: bpTypes[0].id,
+  bpType: bpTypes[1].id,
   setBPType: (type: string) =>
     set(
       produce((state) => {

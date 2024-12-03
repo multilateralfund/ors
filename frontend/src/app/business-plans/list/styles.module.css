@@ -35,11 +35,9 @@
 }
 
 .moreOptions {
-  @media (width <= 580px) {
-    div:first-child {
-      width: unset;
-      justify-content: start;
-    }
+  div:nth-child(2) {
+    width: unset !important;
+    justify-content: start !important;
   }
 }
 

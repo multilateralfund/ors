@@ -73,21 +73,6 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
   },
   {
     cellClass: 'ag-text-center ag-cell-wrap-text',
-    field: 'bp_chemical_type.name',
-    headerClass: 'ag-text-center',
-    headerName: 'Chemical type',
-    minWidth: 100,
-    sortable: !isDiff,
-    ...(isDiff
-      ? {
-          cellRenderer: textCellRenderer,
-          valueGetter: (params: any) =>
-            objectCellValueGetter(params, 'bp_chemical_type'),
-        }
-      : { tooltipField: 'bp_chemical_type.name' }),
-  },
-  {
-    cellClass: 'ag-text-center ag-cell-wrap-text',
     field: 'sector.code',
     headerClass: 'ag-text-center',
     headerName: 'Sector',
@@ -211,7 +196,7 @@ const valuesColumnDefs = (
   withAgency: boolean,
 ) => [
   ...getDefaultColumnDefs(isDiff, withAgency),
-  getReqByModelColumn(isDiff),
+  // getReqByModelColumn(isDiff),
   yearColumns.find(
     (column: { headerName: string }) => column.headerName === 'Value ($000)',
   ) || [],
@@ -255,7 +240,7 @@ const odpColumnDefs = (
   withAgency: boolean,
 ) => [
   ...getDefaultColumnDefs(isDiff, withAgency),
-  getReqByModelColumn(isDiff),
+  // getReqByModelColumn(isDiff),
   ...(yearColumns.filter(
     (column: { headerName: string }) =>
       column.headerName === 'ODP' || column.headerName === 'MT for HFC',
@@ -264,7 +249,7 @@ const odpColumnDefs = (
 
 const commentsColumnDefs = (isDiff: boolean, withAgency: boolean) => [
   ...getDefaultColumnDefs(isDiff, withAgency),
-  getReqByModelColumn(isDiff),
+  // getReqByModelColumn(isDiff),
   ...getCommentsColumnsDefs(isDiff),
 ]
 
@@ -274,6 +259,21 @@ const allColumnDefs = (
   withAgency: boolean,
 ) => [
   ...getDefaultColumnDefs(isDiff, withAgency),
+  {
+    cellClass: 'ag-text-center ag-cell-wrap-text',
+    field: 'bp_chemical_type.name',
+    headerClass: 'ag-text-center',
+    headerName: 'Chemical type',
+    minWidth: 100,
+    sortable: !isDiff,
+    ...(isDiff
+      ? {
+          cellRenderer: textCellRenderer,
+          valueGetter: (params: any) =>
+            objectCellValueGetter(params, 'bp_chemical_type'),
+        }
+      : { tooltipField: 'bp_chemical_type.name' }),
+  },
   {
     cellClass: !isDiff && 'ag-tags-cell-content',
     field: 'substances_display',

@@ -7,5 +7,5 @@ import BPListActivitiesWrapper from '@ors/components/manage/Blocks/BusinessPlans
 export default function BusinessPlansActivities() {
   const { period } = useParams<Record<string, string>>()
   usePageTitle('Business Plans - Activities')
-  return <BPListActivitiesWrapper period={period} />
+  return <BPListActivitiesWrapper period={period} key={period} />
 }

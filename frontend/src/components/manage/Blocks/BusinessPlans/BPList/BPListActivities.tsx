@@ -43,7 +43,7 @@ export default function BPListActivitiesWrapper(props: any) {
     year_start: year_start,
   }
   const activities = useGetActivities(initialFilters)
-  const { loading } = activities
+  const { loading, setParams, params } = activities
 
   return (
     <>
@@ -51,7 +51,7 @@ export default function BPListActivitiesWrapper(props: any) {
         className="!fixed bg-action-disabledBackground"
         active={loading}
       />
-      <BPListHeader viewType="activities" />
+      <BPListHeader viewType="activities" {...{ params, setParams }} />
       <BPListTabs />
       <BPListActivities
         {...{

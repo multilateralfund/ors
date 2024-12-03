@@ -14,6 +14,8 @@ import { useStore } from '@ors/store'
 import FileInput from '../BPEdit/FileInput'
 import { FilesViewer } from '../FilesViewer'
 import { BpDetails } from '../types'
+import BPListTabs from '../BPList/BPListTabs'
+import BPListHeader from '../BPList/BPListHeader'
 
 function BPHistory() {
   const { data } = useContext(BPContext) as any
@@ -65,12 +67,14 @@ function BPSummary(props: BpDetails) {
 
 export default function BPDetails(props: BpDetails) {
   return (
-    <section className="grid items-start gap-6 md:auto-rows-auto md:grid-cols-2">
-      <BPSummary {...props} />
+    <>
+      <section className="grid items-start gap-6 md:auto-rows-auto md:grid-cols-2">
+        <BPSummary {...props} />
 
-      <div className="flex flex-col rounded-lg bg-gray-100 p-4">
-        <BPHistory />
-      </div>
-    </section>
+        <div className="flex flex-col rounded-lg bg-gray-100 p-4">
+          <BPHistory />
+        </div>
+      </section>
+    </>
   )
 }

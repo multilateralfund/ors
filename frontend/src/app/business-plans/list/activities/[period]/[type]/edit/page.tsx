@@ -6,6 +6,7 @@ import { useStore } from '@ors/store'
 
 export default function BusinessPlansEditConsolidated() {
   usePageTitle('Business Plans Edit Consolidated')
+
   const { businessPlan } = useStore((state) => state.businessPlan)
 
   return (

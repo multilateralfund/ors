@@ -39,8 +39,6 @@ export default function BPFilters({
   const projects = useStore((state) => state.projects)
   const clusters = projects.clusters.data || []
 
-  const { setBPType } = useStore((state) => state.bpType)
-
   function handleParamsChange(params: { [key: string]: any }) {
     setParams(params)
   }
@@ -77,6 +75,10 @@ export default function BPFilters({
         withAgency={withAgency}
       />
       <div className="flex gap-4 self-start">
+        <TableDateSwitcher
+          changeHandler={(event, value) => setGridOptions(value)}
+          value={gridOptions}
+        />
         <TableViewSelector
           value={displayOptions}
           changeHandler={(_, value) => {
@@ -90,11 +92,8 @@ export default function BPFilters({
             setDisplayOptions(value)
           }}
         />
-        <TableDateSwitcher
-          changeHandler={(event, value) => setGridOptions(value)}
-          value={gridOptions}
-        />
-        {withAgency && (
+
+        {/* {withAgency && (
           <Field
             FieldProps={{ className: 'mb-0 w-full md:w-36 BPList' }}
             options={bpTypes}
@@ -114,7 +113,7 @@ export default function BPFilters({
             }}
             disableClearable
           />
-        )}
+        )} */}
       </div>
     </div>
   )

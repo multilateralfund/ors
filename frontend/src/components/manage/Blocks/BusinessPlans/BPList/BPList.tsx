@@ -24,7 +24,7 @@ type FiltersType = {
 const PLANS_PER_PAGE = 20
 
 export function useBPListApi(filters?: any) {
-  const { data, loading, setParams } = useApi({
+  const { data, loading, setParams, params } = useApi({
     options: {
       params: {
         ...filters,
@@ -37,7 +37,7 @@ export function useBPListApi(filters?: any) {
     path: 'api/business-plan/',
   })
   const { count, loaded, results } = getResults(data)
-  return { count, data, loaded, loading, results, setParams }
+  return { count, data, loaded, loading, results, setParams, params }
 }
 
 export default function BPList(props: any) {
@@ -55,7 +55,7 @@ export default function BPList(props: any) {
     year_start: period?.split('-')[0] || null,
   })
 
-  const { count, results, setParams } = useBPListApi(filters)
+  const { count, results, setParams, params } = useBPListApi(filters)
 
   const pages = Math.ceil(count / pagination.rowsPerPage)
 
@@ -73,7 +73,7 @@ export default function BPList(props: any) {
 
   return (
     <div className="m-auto max-w-screen-xl">
-      <BPListHeader viewType="plans" />
+      <BPListHeader viewType="plans" {...{ params, setParams, setFilters }} />
       <BPListTabs />
       <div className="flex flex-1 flex-col justify-start gap-6 border-0 border-t border-solid border-primary pt-6">
         <BPListFilters

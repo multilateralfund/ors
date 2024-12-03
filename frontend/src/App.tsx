@@ -53,6 +53,7 @@ import ProjectSubmissionsEditPage from '@ors/app/project-submissions/edit/page'
 import NotFoundPage from '@ors/app/not-found'
 
 import RootLayout from './app/layout'
+import BusinessPlansListDetails from './app/business-plans/list/details/page'
 
 export default function App() {
   return (
@@ -79,6 +80,11 @@ export default function App() {
         <Route path="/business-plans/list/plans/:period">
           <BPListLayout>
             <BPListPlansPeriodPage />
+          </BPListLayout>
+        </Route>
+        <Route path="/business-plans/list/details/:period">
+          <BPListLayout>
+            <BusinessPlansListDetails />
           </BPListLayout>
         </Route>
         <Route path="/business-plans/list/activities/:period/:type/edit">
