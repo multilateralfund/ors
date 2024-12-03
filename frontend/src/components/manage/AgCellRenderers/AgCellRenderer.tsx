@@ -70,7 +70,9 @@ export default function AgCellRenderer(props: any) {
         {showDiff && <DiffPill change_type={change_type} />}
       </div>
 
-      <CellValidationWidget {...props} className="cell-validation-error" />
+      {props?.context?.disableValidation ? null : (
+        <CellValidationWidget {...props} className="cell-validation-error" />
+      )}
 
       {!!error && (
         <Tooltip
