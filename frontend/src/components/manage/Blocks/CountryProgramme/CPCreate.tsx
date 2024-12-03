@@ -15,7 +15,7 @@ import { Alert, Button, Tabs, Tooltip, Typography } from '@mui/material'
 import cx from 'classnames'
 import { produce } from 'immer'
 import { filter, get, includes } from 'lodash'
-import { useRouter } from 'next/navigation'
+import { useLocation } from "wouter";
 import { useSnackbar } from 'notistack'
 
 import { defaultColDefEdit } from '@ors/config/Table/columnsDef'
@@ -171,7 +171,7 @@ const TableProps: CPCreateTableProps = {
 
 const CPCreate: React.FC = () => {
   const tabsEl = React.useRef<HTMLDivElement>(null)
-  const router = useRouter()
+  const [_, setLocation] = useLocation()
   const { enqueueSnackbar } = useSnackbar()
   const { report } = useStore((state) => state.cp_reports)
   const user = useStore((state) => state.user)
@@ -535,7 +535,7 @@ const CPCreate: React.FC = () => {
           </>,
           { variant: 'success' },
         )
-        router.push(
+        setLocation(
           `/country-programme/${currentCountry!.iso3}/${form.year}/edit`,
         )
       } catch (error) {

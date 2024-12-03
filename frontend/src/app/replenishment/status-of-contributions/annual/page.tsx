@@ -1,6 +1,4 @@
-'use client'
-
-import { useRouter } from 'next/navigation'
+import { useLocation } from 'wouter'
 
 import DownloadButtons from '@ors/app/replenishment/DownloadButtons'
 import ReplenishmentHeading from '@ors/app/replenishment/ReplenishmentHeading'
@@ -8,20 +6,17 @@ import { SCViewWrapper } from '@ors/components/manage/Blocks/Replenishment/Statu
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
 export default function ReplenishmentSoCAnnual() {
-  const router = useRouter()
+  const [_, setLocation] = useLocation()
 
   const currentYear = new Date().getFullYear()
 
-  router.replace(`/replenishment/status-of-contributions/annual/${currentYear}`)
+  setLocation(`/annual/${currentYear}`)
 
   return (
-    <>
-      <title>Replenishment - Status of contributions</title>
-      <PageWrapper className="w-full p-4" defaultSpacing={false}>
-        <ReplenishmentHeading>Status of contributions</ReplenishmentHeading>
-        <DownloadButtons />
-        <SCViewWrapper />
-      </PageWrapper>
-    </>
+    <PageWrapper className="w-full p-4" defaultSpacing={false}>
+      <ReplenishmentHeading>Status of contributions</ReplenishmentHeading>
+      <DownloadButtons />
+      <SCViewWrapper />
+    </PageWrapper>
   )
 }

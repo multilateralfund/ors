@@ -32,12 +32,12 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
     ? [
         {
           cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
-          field: 'agency',
+          field: 'agency.name',
           headerClass: 'ag-text-center',
           headerName: 'Agency',
           minWidth: 110,
           sortable: true,
-          tooltipField: 'agency',
+          tooltipField: 'agency.name',
         },
       ]
     : []),

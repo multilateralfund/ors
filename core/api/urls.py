@@ -12,6 +12,7 @@ from core.api.views import (
     ReplenishmentViewSet,
     AnnualStatusOfContributionsView,
     ScaleOfAssessmentViewSet,
+    ReplenishmentScaleOfAssessmentVersionFileDownloadView,
     TriennialStatusOfContributionsView,
     SummaryStatusOfContributionsView,
     ReplenishmentDashboardView,
@@ -32,6 +33,7 @@ from core.api.views import (
     StatisticsExportView,
     StatisticsStatusOfContributionsView,
     StatusOfTheFundFileViewSet,
+    ConsolidatedInputDataExportView,
 )
 from core.api.views.agency import AgencyListView
 from core.api.views.business_plan import (
@@ -491,9 +493,19 @@ urlpatterns = [
         name="replenishment-payment-file-download",
     ),
     path(
+        "replenishment/scale-of-assessment-version/<int:id>/file/download/",
+        ReplenishmentScaleOfAssessmentVersionFileDownloadView.as_view(),
+        name="scale-of-assessment-version-file-download",
+    ),
+    path(
         "comment-types/",
         CommentTypeListView.as_view(),
         name="comment-type-list",
+    ),
+    path(
+        "replenishment/input-data/export/",
+        ConsolidatedInputDataExportView.as_view(),
+        name="replenishment-input-data-export",
     ),
     *router.urls,
 ]

@@ -164,7 +164,7 @@ function OpenActivity({
         {period && displayAgency && (
           <span className="flex items-center gap-2">
             <span>Agency</span>
-            <h4 className="m-0">{activity.agency}</h4>
+            <h4 className="m-0">{activity.agency.name}</h4>
           </span>
         )}
         <span className="flex items-center gap-2">
@@ -311,7 +311,7 @@ function ClosedActivity({ activity, displayAgency = false, period }: any) {
         {period && displayAgency && (
           <span className="flex items-center gap-2">
             <span>Agency</span>
-            <h4 className="m-0">{activity.agency}</h4>
+            <h4 className="m-0">{activity.agency.name}</h4>
           </span>
         )}
         <span className="flex items-center gap-2">

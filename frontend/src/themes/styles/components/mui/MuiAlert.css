@@ -1,0 +1,3 @@
+.BPAlert.MuiAlert-root .MuiAlert-icon {
+  @apply pb-2.5 pt-2.5;
+}

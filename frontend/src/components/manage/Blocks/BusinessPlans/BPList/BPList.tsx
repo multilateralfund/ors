@@ -23,7 +23,7 @@ type FiltersType = {
 
 const PLANS_PER_PAGE = 20
 
-function useBPListApi(filters?: any) {
+export function useBPListApi(filters?: any) {
   const { data, loading, setParams } = useApi({
     options: {
       params: {

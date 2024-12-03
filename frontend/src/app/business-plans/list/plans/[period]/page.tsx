@@ -1,14 +1,11 @@
-import React from 'react'
+import { useParams } from 'wouter'
 
-import { Metadata } from 'next'
+import usePageTitle from '@ors/hooks/usePageTitle'
 
 import BPList from '@ors/components/manage/Blocks/BusinessPlans/BPList/BPList'
 
-export const metadata: Metadata = {
-  title: 'Business Plans',
-}
-
-export default async function BusinessPlansList(props: any) {
-  const { period } = props.params
+export default function BusinessPlansList() {
+  usePageTitle('Business Plans')
+  const { period } = useParams<Record<string, string>>()
   return <BPList period={period} />
 }

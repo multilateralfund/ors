@@ -1,7 +1,10 @@
 import React from 'react'
 
+import cx from 'classnames'
+
 const SimpleInput = ({
   id,
+  className,
   defaultValue,
   disabled = false,
   label,
@@ -9,6 +12,7 @@ const SimpleInput = ({
   type,
   value,
 }: {
+  className?: string
   defaultValue?: any
   disabled?: boolean
   id: string
@@ -19,16 +23,21 @@ const SimpleInput = ({
 }) => {
   return (
     <div className="flex h-full flex-col justify-end">
-      <label
-        className="mb-2 block text-lg font-normal text-gray-900"
-        htmlFor={id}
-      >
-        {label}
-      </label>
+      {label && (
+        <label
+          className="mb-2 block text-lg font-normal text-gray-900"
+          htmlFor={id}
+        >
+          {label}
+        </label>
+      )}
       <input
         id={id}
         name={id}
-        className="text-md block h-10 w-full rounded-lg border border-solid border-gray-400 bg-white p-2.5 text-gray-900 shadow-none focus:border-blue-500 focus:ring-blue-500 disabled:border-gray-400 disabled:bg-gray-200 disabled:text-gray-500"
+        className={cx(
+          'text-md block h-10 w-full rounded-lg border border-solid border-gray-400 bg-white p-2.5 text-gray-900 shadow-none focus:border-blue-500 focus:ring-blue-500 disabled:border-gray-400 disabled:bg-gray-200 disabled:text-gray-500',
+          className,
+        )}
         autoComplete="off"
         defaultValue={defaultValue}
         disabled={disabled}

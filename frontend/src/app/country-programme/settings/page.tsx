@@ -1,17 +1,12 @@
-import type { Metadata } from 'next'
-
-import React from 'react'
+import usePageTitle from '@ors/hooks/usePageTitle'
 
 import CPSettings from '@ors/components/manage/Blocks/CountryProgramme/CPSettings'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 
-export const metadata: Metadata = {
-  title: 'Settings',
-}
-
-export default async function CPSettingsWrapper() {
+export default function CPSettingsWrapper() {
+  usePageTitle('Settings')
   return (
     <PageWrapper className="mx-auto max-w-screen-xl">
       <HeaderTitle>

@@ -1,18 +1,16 @@
-import React from 'react'
-
-import { Metadata } from 'next'
+import usePageTitle from '@ors/hooks/usePageTitle'
 
 import BPEditConsolidated from '@ors/components/manage/Blocks/BusinessPlans/BPEditConsolidated/BPEditConsolidated'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
+import { useStore } from '@ors/store'
 
-export const metadata: Metadata = {
-  title: 'Business Plans Edit Consolidated',
-}
+export default function BusinessPlansEditConsolidated() {
+  usePageTitle('Business Plans Edit Consolidated')
+  const { businessPlan } = useStore((state) => state.businessPlan)
 
-export default async function BusinessPlansEditConsolidated() {
   return (
     <PageWrapper>
-      <BPEditConsolidated />
+      <BPEditConsolidated key={businessPlan?.id} />
     </PageWrapper>
   )
 }

@@ -1,7 +1,7 @@
 'use client'
 import React, { useContext, useMemo, useRef, useState } from 'react'
 
-import { useParams } from 'next/navigation'
+import { useParams } from 'wouter'
 
 import {
   BpPathParams,
