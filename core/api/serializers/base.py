@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from core.models.base import CommentType
 from core.models.blend import Blend
 from core.models.country_programme import CPReport
 from core.models.project import Project
@@ -142,12 +141,6 @@ class BaseProjectUtilityCreateSerializer(serializers.ModelSerializer):
     project_id = serializers.PrimaryKeyRelatedField(
         required=True, queryset=Project.objects.all().values_list("id", flat=True)
     )
-
-
-class CommentTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CommentType
-        fields = ["id", "name"]
 
 
 class Many2ManyListField(serializers.ListField):

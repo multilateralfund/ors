@@ -3,7 +3,6 @@ from django.core.validators import MinValueValidator
 from django.db import models
 
 from core.models.agency import Agency
-from core.models.base import CommentType
 from core.models.country import Country
 from core.models.project import (
     ProjectCluster,
@@ -140,10 +139,8 @@ class BPActivity(models.Model):
 
     # Secretariat comment
     comment_secretariat = models.TextField(blank=True)
-    comment_types = models.ManyToManyField(CommentType, blank=True)
 
     initial_id = models.PositiveIntegerField(null=True, blank=True)
-    is_updated = models.BooleanField(default=False)  # updated from last version
 
     objects = BPActivityManager()
 

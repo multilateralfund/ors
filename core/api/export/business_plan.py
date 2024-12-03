@@ -126,12 +126,6 @@ class BusinessPlanWriter(BaseWriter):
                 "headerName": "Comment",
                 "column_width": self.COLUMN_WIDTH * 4,
             },
-            {
-                "id": "comment_types",
-                "headerName": "Comment types",
-                "column_width": self.COLUMN_WIDTH * 4,
-                "method": self.get_comment_types,
-            },
         ]
 
         super().__init__(sheet, headers)
@@ -146,7 +140,3 @@ class BusinessPlanWriter(BaseWriter):
             if value["year"] == int(year) and value["is_after"] == is_after:
                 return value[attr]
         return 0
-
-    def get_comment_types(self, activity, *args):
-        comment_types = activity.get("comment_types", [])
-        return ", ".join(comment_types)

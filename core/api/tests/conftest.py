@@ -11,7 +11,6 @@ from core.api.tests.factories import (
     AgencyFactory,
     BPChemicalTypeFactory,
     BlendFactory,
-    CommentTypeFactory,
     CPReportFormatColumnFactory,
     CPReportFormatRowFactory,
     CPReportFactory,
@@ -745,11 +744,6 @@ def setup_old_version_2005(
     )
 
     return cp_ar
-
-
-@pytest.fixture
-def comment_type():
-    return CommentTypeFactory(name="Sector & Subsector")
 
 
 @pytest.fixture(name="_setup_bp_activity_create")

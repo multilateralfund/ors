@@ -20,7 +20,6 @@ from core.models.business_plan import (
 )
 from core.models.adm import AdmChoice, AdmColumn, AdmRecord, AdmRow
 from core.models.agency import Agency
-from core.models.base import CommentType
 from core.models.country import Country, CountryCEITStatus
 from core.models.country_programme import (
     CPEmission,
@@ -623,10 +622,3 @@ class PaymentFactory(factory.django.DjangoModelFactory):
 
     date = factory.Faker("date")
     payment_for_years = ["deferred"]
-
-
-class CommentTypeFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = CommentType
-
-    name = factory.Faker("pystr", max_chars=200, prefix="commenttype-name")
