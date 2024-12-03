@@ -20,13 +20,11 @@ function ListItem(props: any) {
     >
       <Link
         className="flex flex-wrap items-center justify-between gap-1 text-2xl font-semibold text-typography"
-        href={`/business-plans/${item.agency.name}/${item.year_start}-${item.year_end}/${lowerCase(item.status)}`}
+        // href={`/business-plans/${item.name}/${item.year_start}-${item.year_end}/${lowerCase(item.status)}`}
         underline="none"
       >
         <div className="flex items-center gap-2">
-          <span className="font-bold">
-            {item.agency.name} {item.year_start} - {item.year_end}
-          </span>
+          <span className="font-bold">{item.name}</span>
           <StatusPill status={item.status} />
         </div>
         <span className="text-lg font-normal tracking-tight">

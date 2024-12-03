@@ -1,7 +1,7 @@
 'use client'
 import React from 'react'
 
-import { useRouter } from 'next/navigation'
+import { useLocation } from 'wouter'
 
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import { formatApiUrl } from '@ors/helpers/Api/utils'
@@ -15,7 +15,7 @@ export type ProfileDropdownProps = {
 }
 
 export default function ProfileDropdown({ className }: ProfileDropdownProps) {
-  const router = useRouter()
+  const [_, setLocation] = useLocation()
   const user = useStore((state) => state.user)
 
   return (
@@ -34,14 +34,14 @@ export default function ProfileDropdown({ className }: ProfileDropdownProps) {
     >
       <Dropdown.Item
         onClick={() => {
-          router.push('/change-password')
+          setLocation('/change-password')
         }}
       >
         Change Password
       </Dropdown.Item>
       <Dropdown.Item
         onClick={() => {
-          router.push(formatApiUrl('/admin/'))
+          setLocation(formatApiUrl('/admin/'))
         }}
       >
         Admin

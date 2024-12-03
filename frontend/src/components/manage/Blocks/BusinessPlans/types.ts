@@ -83,4 +83,10 @@ export interface ILSBPDataEdit {
   form: Array<ApiEditBPActivity> | undefined
 }
 
+export interface INavigationButton {
+  direction: string
+  isBtnDisabled?: boolean
+  setCurrentStep: Dispatch<SetStateAction<number>>
+}
+
 export type ViewSelectorValuesType = 'list' | 'table'

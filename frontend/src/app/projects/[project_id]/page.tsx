@@ -1,38 +1,50 @@
+import { useState, useEffect } from 'react'
 import { ProjectType } from '@ors/types/api_projects'
 
-import { Metadata } from 'next'
+import { useParams } from 'wouter'
 
 import PView from '@ors/components/manage/Blocks/Projects/PView'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import api from '@ors/helpers/Api/_api'
 
-type ProjectProps = {
-  params: {
-    project_id: string
-  }
-}
+// type ProjectProps = {
+//   params: {
+//     project_id: string
+//   }
+// }
 
-export async function generateMetadata({
-  params,
-}: ProjectProps): Promise<Metadata> {
-  const data = await api(`api/projects/${params.project_id}/`, {}, false)
+// export function generateMetadata({
+//   params,
+// }: ProjectProps): Promise<Metadata> {
+//   const data = await api(`api/projects/${params.project_id}/`, {}, false)
+//
+//   return {
+//     description: data.description,
+//     title: data.title,
+//   }
+// }
 
-  return {
-    description: data.description,
-    title: data.title,
-  }
-}
+function useProject(project_id: string) {
+  const [projects, setProjects] = useState<ProjectType | null>(null)
 
-export default async function Project({ params }: ProjectProps) {
-  const data = await api<ProjectType>(
-    `api/projects/${params.project_id}/`,
-    {},
-    false,
+  useEffect(
+    function () {
+      async function fetchProjects() {
+        const resp =
+          (await api<ProjectType>(`api/projects/${project_id}/`, {}, false)) ||
+          null
+        setProjects(resp)
+      }
+      fetchProjects()
+    },
+    [project_id],
   )
 
-  return (
-    <PageWrapper>
-      <PView data={data!} />
-    </PageWrapper>
-  )
+  return projects
+}
+
+export default function Project() {
+  const { project_id } = useParams<Record<string, string>>()
+  const data = useProject(project_id)
+  return <PageWrapper>{data ? <PView data={data!} /> : null}</PageWrapper>
 }

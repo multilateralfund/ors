@@ -25,7 +25,7 @@ export default class SectionF {
     this.localStorageKey = localStorageKey
 
     let localStorageData: DeserializedDataF | string =
-      __CLIENT__ && this.localStorageKey
+      this.localStorageKey
         ? window.sessionStorage.getItem(this.localStorageKey) || {}
         : {}
     if (isString(localStorageData)) {

@@ -63,15 +63,6 @@ export const valueSetter = (
   return true
 }
 
-export const agencyValueSetter = (params: any, agencies: any) => {
-  const newVal = params.newValue
-
-  params.data.agency = newVal
-  params.data.agency_id = find(agencies, (agency) => agency.name === newVal)?.id
-
-  return true
-}
-
 export const substancesValueSetter = (params: any, substances: any) => {
   const newValIds = params.newValue?.map((newVal: any) =>
     isObject(newVal) ? get(newVal, 'id') : newVal,

@@ -5,7 +5,7 @@ import React, { useCallback, useContext, useMemo, useRef } from 'react'
 
 import { Button } from '@mui/material'
 import { findIndex, isNil } from 'lodash'
-import { useParams } from 'next/navigation'
+import { useParams } from 'wouter'
 
 import DownloadButtons from '@ors/app/business-plans/DownloadButtons'
 import {

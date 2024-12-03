@@ -1,12 +1,12 @@
 'use client'
 import { Button, Typography } from '@mui/material'
-import { useRouter } from 'next/router'
+// import { useRouter } from 'next/router'
 
 import FadeInOut from '@ors/components/manage/Transitions/FadeInOut'
 import Error from '@ors/components/theme/Error/Error'
 
 export default function Unauthorized() {
-  const router = useRouter()
+  // const router = useRouter()
 
   return (
     <FadeInOut className="h-full w-full">
@@ -18,9 +18,9 @@ export default function Unauthorized() {
           className="block w-full"
           href="/login"
           variant="contained"
-          onClick={() => {
-            router.back()
-          }}
+          // onClick={() => {
+          //   router.back()
+          // }}
         >
           Back
         </Button>

@@ -1,15 +1,17 @@
-'use client'
-
-import { useContext, useState } from 'react'
+import { useCallback, useContext, useState } from 'react'
 
 import { get, isNil, keys, omit, omitBy, pickBy, reduce, reverse } from 'lodash'
 import { useSnackbar } from 'notistack'
+
+import type { ApiReplenishmentStatusFile } from '@ors/types/api_replenishment_status_files'
 
 import useGetDashboardData from '@ors/components/manage/Blocks/Replenishment/Dashboard/useGetDashboardData'
 import { encodeFileForUpload } from '@ors/components/manage/Blocks/Replenishment/utils'
 import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentContext'
 import { api } from '@ors/helpers'
 import { useStore } from '@ors/store'
+
+import useApi from '@ors/hooks/useApi'
 
 import { scAnnualOptions } from '../StatusOfContribution/utils'
 import StatusOfTheFundView from '../StatusOfTheFund/StatusOfTheFundView'
@@ -22,6 +24,15 @@ import UploadFilesDialog from './editDialogs/UploadFilesDialog'
 
 function StatusOfTheFundWrapper() {
   const { invalidateDataFn, newData } = useGetDashboardData()
+  const { data: files, setParams: setFilesParams } = useApi<
+    ApiReplenishmentStatusFile[]
+  >({
+    path: 'api/replenishment/status-files',
+    options: {},
+  })
+
+  const refreshFiles = useCallback(() => setFilesParams({}), [setFilesParams])
+
   const ctx = useContext(ReplenishmentContext)
   const { agencies, allocations, asOfDate, income, overview, provisions } =
     newData
@@ -140,6 +151,7 @@ function StatusOfTheFundWrapper() {
         invalidateDataFn({
           cache_bust: crypto.randomUUID(),
         })
+        refreshFiles()
         enqueueSnackbar('Data updated successfully', { variant: 'success' })
         handleEditCancel()
       })
@@ -254,6 +266,7 @@ function StatusOfTheFundWrapper() {
         allocations={allocations}
         asOfDate={asOfDate}
         editableFields={editableFieldsLabels}
+        files={files}
         income={income}
         overview={overview}
         provisions={provisions}

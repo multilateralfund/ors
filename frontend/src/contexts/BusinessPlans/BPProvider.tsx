@@ -3,7 +3,7 @@ import { ApiBPGet } from '@ors/types/api_bp_get'
 import { useMemo } from 'react'
 
 import { capitalize } from 'lodash'
-import { useParams } from 'next/navigation'
+import { useParams } from 'wouter'
 
 import { getAgencyByName } from '@ors/components/manage/Blocks/BusinessPlans/utils'
 import useApi from '@ors/hooks/useApi'

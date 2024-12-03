@@ -17,10 +17,13 @@
 @import 'ag-grid-community/styles/ag-theme-alpine.css' layer(mui);
 @import './components/ag-grid/_index.css';
 @import './print.css';
+@import './fonts.css';
 
 @layer base {
   :root {
     @apply h-full;
+
+    font-family: "Roboto Condensed";
 
     --tw-primary: 198 100% 12%;
     --color-primary: hsl(var(--tw-primary));

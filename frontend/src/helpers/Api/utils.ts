@@ -13,12 +13,10 @@ export function formatApiUrl(path: string) {
   if (path.startsWith('http://') || path.startsWith('https://')) return path
   let adjustedPath,
     apiPath = ''
-  const settings = __CLIENT__ ? store.current.getState().settings : null
-  const headers = __SERVER__ ? require('next/headers').headers() : null
-  const protocol = (
-    __CLIENT__ ? settings?.protocol : headers?.get('x-next-protocol')
-  )?.split(',')[0]
-  const host = __CLIENT__ ? settings?.host : headers?.get('x-next-host')
+  const settings = store.current.getState().settings
+  const headers = null
+  const protocol = (settings?.protocol)?.split(',')[0]
+  const host = settings?.host
 
   if (config.settings.apiPath) {
     apiPath = config.settings.apiPath

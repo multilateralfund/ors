@@ -2,7 +2,7 @@
 
 import { useContext } from 'react'
 
-import { useRouter } from 'next/navigation'
+import { useLocation } from 'wouter'
 
 import DownloadButtons from '@ors/app/replenishment/DownloadButtons'
 import ReplenishmentHeading from '@ors/app/replenishment/ReplenishmentHeading'
@@ -12,12 +12,12 @@ import ReplenishmentContext from '@ors/contexts/Replenishment/ReplenishmentConte
 
 export default function ReplenishmentSoCTriennial() {
   const ctxPeriods = useContext(ReplenishmentContext)
-  const router = useRouter()
+  const [ _, setLocation ] = useLocation()
 
   if (ctxPeriods.periodOptions.length > 0) {
     const period = ctxPeriods.periodOptions[1].value
 
-    router.replace(`/replenishment/status-of-contributions/triennial/${period}`)
+    setLocation(`/triennial/${period}`)
   }
   return (
     <>

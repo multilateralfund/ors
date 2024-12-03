@@ -1,15 +1,10 @@
-import type { Metadata } from 'next'
-
-import React from 'react'
+import usePageTitle from '@ors/hooks/usePageTitle'
 
 import CPCreate from '@ors/components/manage/Blocks/CountryProgramme/CPCreate'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
-export const metadata: Metadata = {
-  title: 'Create report',
-}
-
-export default async function CreateReport() {
+export default function CreateReport() {
+  usePageTitle('Create report')
   return (
     <PageWrapper>
       <CPCreate />

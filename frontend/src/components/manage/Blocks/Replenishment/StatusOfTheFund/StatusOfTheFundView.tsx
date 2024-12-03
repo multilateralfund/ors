@@ -2,7 +2,12 @@ import { Dispatch, SetStateAction, useState } from 'react'
 
 import cx from 'classnames'
 
-import { formatAbsoluteNumberValue, formatNumberValue } from '@ors/components/manage/Blocks/Replenishment/utils'
+import type { ApiReplenishmentStatusFile } from '@ors/types/api_replenishment_status_files'
+
+import {
+  formatAbsoluteNumberValue,
+  formatNumberValue,
+} from '@ors/components/manage/Blocks/Replenishment/utils'
 import { CancelButton, SubmitButton } from '@ors/components/ui/Button/Button'
 
 import {
@@ -12,6 +17,7 @@ import {
   IPROVISIONS,
 } from '../Dashboard/useGetDashboardDataTypes'
 import { allocationsOrder, incomeOrder, provisionsOrder } from './constants'
+import StatusOfTheFundFiles from './StatusOfTheFundFiles'
 
 import { FaEdit } from 'react-icons/fa'
 import { IoInformationCircleOutline } from 'react-icons/io5'
@@ -105,6 +111,7 @@ interface IStatusOfTheFundProps {
   allocations: IALLOCATIONS
   asOfDate: string
   editableFields: Array<string>
+  files?: null | ApiReplenishmentStatusFile[]
   income: IINCOME
   overview: IOVERVIEW
   provisions: IPROVISIONS
@@ -118,6 +125,7 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
     allocations,
     asOfDate,
     editableFields,
+    files,
     income,
     overview,
     provisions,
@@ -127,6 +135,7 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
   } = props
 
   const [isEditing, setIsEditing] = useState(false)
+  const [showFiles, setShowFiles] = useState(false)
 
   return (
     <>
@@ -137,6 +146,20 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
           </span>
         </h2>
         <div className="flex gap-2">
+          <label
+            className={cx(
+              'flex h-10 cursor-pointer items-center rounded-lg border border-solid border-primary px-2 py-1 text-lg font-bold text-gray-400',
+              { 'bg-primary font-bold text-mlfs-hlYellow': showFiles },
+            )}
+          >
+            <input
+              className="collapse hidden"
+              checked={showFiles}
+              type="checkbox"
+              onChange={() => setShowFiles((prev) => !prev)}
+            />
+            <span className="text-nowrap">Show files</span>
+          </label>
           {showEditButton && !isEditing && (
             <SubmitButton
               className="tracking-widest print:hidden"
@@ -163,6 +186,8 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
           )}
         </div>
       </div>
+
+      <StatusOfTheFundFiles files={files ?? []} show={showFiles} />
 
       <div
         style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
@@ -269,15 +294,20 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
                         isEditing={isEditing}
                         setEditingSection={setEditingSection}
                         label={
-                          key.toString() === 'gain_loss' && (provisions[key]?.value ?? 0) < 0
-                            ? provisions[key].negative_label : provisions[key].label
+                          key.toString() === 'gain_loss' &&
+                          (provisions[key]?.value ?? 0) < 0
+                            ? provisions[key].negative_label
+                            : provisions[key].label
                         }
                         value={
                           provisions[key].value !== null
-                            ? (key.toString() === "gain_loss"
-                              ? formatAbsoluteNumberValue(provisions[key].value, 0, 0)
+                            ? key.toString() === 'gain_loss'
+                              ? formatAbsoluteNumberValue(
+                                  provisions[key].value,
+                                  0,
+                                  0,
+                                )
                               : formatNumberValue(provisions[key].value, 0, 0)
-                            )
                             : 'N/A'
                         }
                       />

@@ -1,5 +1,4 @@
-/* eslint-disable perfectionist/sort-objects */
-module.exports = {
+export default {
   plugins: {
     'postcss-import': {},
     'tailwindcss/nesting': {},

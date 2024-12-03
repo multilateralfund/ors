@@ -1,3 +1,4 @@
+import os
 from decimal import Decimal
 
 from django.contrib.postgres import fields
@@ -55,6 +56,12 @@ class ScaleOfAssessmentVersion(models.Model):
         null=True,
         blank=True,
     )
+
+    @property
+    def decision_pdf_name(self):
+        if self.decision_pdf:
+            return os.path.basename(self.decision_pdf.name)
+        return None
 
     def __str__(self):
         return (
@@ -353,6 +360,7 @@ class AbstractContributionStatus(models.Model):
     bilateral_assistance_decision_number = models.CharField(
         max_length=32, blank=True, default=""
     )
+    bilateral_assistance_comment = models.TextField(blank=True, default="")
 
     class Meta:
         abstract = True
@@ -493,6 +501,10 @@ class ExternalIncomeAnnual(models.Model):
     miscellaneous_income = models.DecimalField(
         max_digits=30, decimal_places=15, default=Decimal(0)
     )
+
+    comment = models.TextField(blank=True, default="")
+
+    meeting = models.ForeignKey(Meeting, null=True, on_delete=models.PROTECT)
 
     def __str__(self):
         agency_str = f" for agency {self.agency_name}" if self.agency_name else ""

@@ -12,6 +12,7 @@ from core.api.views import (
     ReplenishmentViewSet,
     AnnualStatusOfContributionsView,
     ScaleOfAssessmentViewSet,
+    ReplenishmentScaleOfAssessmentVersionFileDownloadView,
     TriennialStatusOfContributionsView,
     SummaryStatusOfContributionsView,
     ReplenishmentDashboardView,
@@ -32,6 +33,7 @@ from core.api.views import (
     StatisticsExportView,
     StatisticsStatusOfContributionsView,
     StatusOfTheFundFileViewSet,
+    ConsolidatedInputDataExportView,
 )
 from core.api.views.agency import AgencyListView
 from core.api.views.bp_export import BPActivityExportView
@@ -40,6 +42,8 @@ from core.api.views.business_plan import (
     BPFileDownloadView,
     BPFileView,
     BPActivityViewSet,
+    BPImportValidateView,
+    BPImportView,
     BusinessPlanViewSet,
 )
 from core.api.views.chemicals import (
@@ -395,6 +399,16 @@ urlpatterns = [
         name="project-files",
     ),
     path(
+        "business-plan/upload/validate/",
+        BPImportValidateView.as_view(),
+        name="bp-upload-validate",
+    ),
+    path(
+        "business-plan/upload/",
+        BPImportView.as_view(),
+        name="bp-upload",
+    ),
+    path(
         "business-plan/bp-chemical-types/",
         BPChemicalTypeListView.as_view(),
         name="bp-chemical-type-list",
@@ -485,9 +499,19 @@ urlpatterns = [
         name="replenishment-payment-file-download",
     ),
     path(
+        "replenishment/scale-of-assessment-version/<int:id>/file/download/",
+        ReplenishmentScaleOfAssessmentVersionFileDownloadView.as_view(),
+        name="scale-of-assessment-version-file-download",
+    ),
+    path(
         "comment-types/",
         CommentTypeListView.as_view(),
         name="comment-type-list",
+    ),
+    path(
+        "replenishment/input-data/export/",
+        ConsolidatedInputDataExportView.as_view(),
+        name="replenishment-input-data-export",
     ),
     *router.urls,
 ]
