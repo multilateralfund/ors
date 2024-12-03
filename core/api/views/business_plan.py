@@ -1,12 +1,10 @@
 import os
 import urllib
 
-import openpyxl
 from constance import config
 from django.db import transaction
 from django.db.models import F, Max, Min
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -14,8 +12,6 @@ from rest_framework import generics, viewsets, filters, mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from core.api.export.base import configure_sheet_print
-from core.api.export.business_plan import BusinessPlanWriter
 from core.api.filters.business_plan import (
     BPActivityListFilter,
     BPChemicalTypeFilter,
@@ -30,20 +26,15 @@ from core.api.serializers.business_plan import (
     BPChemicalTypeSerializer,
     BPFileSerializer,
     BPActivityCreateSerializer,
-    BPActivityExportSerializer,
     BPActivityDetailSerializer,
     BPActivityListSerializer,
-)
-from core.api.utils import (
-    workbook_response,
-    workbook_pdf_response,
 )
 from core.api.views.utils import (
     delete_fields,
     get_business_plan_from_request,
     BPACTIVITY_ORDERING_FIELDS,
 )
-from core.models import Agency, BusinessPlan, BPChemicalType, BPHistory, BPActivity
+from core.models import BusinessPlan, BPChemicalType, BPHistory, BPActivity
 from core.models.business_plan import BPFile
 from core.tasks import (
     send_mail_bp_create,
@@ -384,44 +375,6 @@ class BPActivityViewSet(
 
         return queryset
 
-    def get_wb(self, method):
-        year_start = int(self.request.query_params.get("year_start"))
-        year_end = int(self.request.query_params.get("year_end"))
-        agency_id = self.request.query_params.get("agency_id")
-        if agency_id:
-            agency = get_object_or_404(Agency, id=agency_id)
-
-        # get all activities between year_start and year_end
-        queryset = self.filter_queryset(self.get_queryset())
-
-        data = BPActivityExportSerializer(queryset, many=True).data
-
-        wb = openpyxl.Workbook()
-        sheet = wb.active
-        sheet.title = "Business Plans"
-        configure_sheet_print(sheet, sheet.ORIENTATION_LANDSCAPE)
-
-        BusinessPlanWriter(
-            sheet,
-            min_year=year_start,
-            max_year=year_end + 1,
-        ).write(data)
-
-        if agency_id:
-            name = f"BusinessPlan{agency.name}-{year_start}-{year_end}"
-        else:
-            name = f"BusinessPlanActivities{year_start}-{year_end}"
-
-        return method(name, wb)
-
-    @action(methods=["GET"], detail=False)
-    def export(self, *args, **kwargs):
-        return self.get_wb(workbook_response)
-
-    @action(methods=["GET"], detail=False)
-    def print(self, *args, **kwargs):
-        return self.get_wb(workbook_pdf_response)
-
 
 class BPFileView(
     mixins.CreateModelMixin,
@@ -572,15 +525,15 @@ class BPImportValidateView(generics.GenericAPIView):
                     "warning_type": "data warning",
                     "row_number": 1223,
                     "activity_id": "UNEP_AFG_00123213",
-                    "warning_message":
-                    "This sector does not exist in our system and we will set the sector to be 'Other'",
+                    "warning_message": "This sector does not exist in our system "
+                    "and we will set the sector to be 'Other'",
                 },
                 {
                     "warning_type": "data warning",
                     "row_number": 1263,
                     "activity_id": None,
-                    "warning_message":
-                    "This cluster does not exist in our system and we will set the sector to be 'Other'",
+                    "warning_message": "This cluster does not exist in our system"
+                    "and we will set the sector to be 'Other'",
                 },
             ],
         }
