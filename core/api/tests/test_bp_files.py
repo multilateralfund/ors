@@ -25,7 +25,7 @@ def _test_file(tmp_path):
 def _bp_files_url(business_plan):
     url = reverse("business-plan-files")
     params = (
-        f"?agency_id={business_plan.agency_id}"
+        f"?status={business_plan.status}"
         f"&year_start={business_plan.year_start}"
         f"&year_end={business_plan.year_end}"
     )
@@ -66,7 +66,7 @@ class TestBPFileUpload:
         # check file (GET)
         response = self.client.get(bp_files_url)
         assert response.status_code == 200
-        assert response.data[0]["agency_id"] == business_plan.agency_id
+        assert response.data[0]["status"] == business_plan.status
         assert response.data[0]["year_start"] == business_plan.year_start
         assert response.data[0]["year_end"] == business_plan.year_end
         assert response.data[0]["filename"] == "adrian.csv"
@@ -98,12 +98,6 @@ class TestBPFileDownload:
 
     def test_file_download_anon(self, bp_file_id):
         self.client.force_authenticate(user=None)
-        url = reverse("business-plan-file-download", kwargs={"id": bp_file_id})
-        response = self.client.get(url)
-        assert response.status_code == 403
-
-    def test_file_download_wrong_user(self, bp_file_id, new_agency_user):
-        self.client.force_authenticate(user=new_agency_user)
         url = reverse("business-plan-file-download", kwargs={"id": bp_file_id})
         response = self.client.get(url)
         assert response.status_code == 403

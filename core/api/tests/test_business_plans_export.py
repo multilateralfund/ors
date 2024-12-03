@@ -20,6 +20,7 @@ class TestBPExport(BaseTest):
             {
                 "year_start": business_plan.year_start,
                 "year_end": business_plan.year_end,
+                "bp_status": business_plan.status,
             },
         )
         assert response.status_code == 403
@@ -32,6 +33,7 @@ class TestBPExport(BaseTest):
             {
                 "year_start": business_plan.year_start,
                 "year_end": business_plan.year_end,
+                "bp_status": business_plan.status,
             },
         )
         assert response.status_code == 200
@@ -44,11 +46,11 @@ class TestBPExport(BaseTest):
         sheet = wb.active
         internal_id = str(bp_activity.initial_id).zfill(9)
         sort_order = (
-            f"{business_plan.agency.name}-{bp_activity.country.abbr}-{internal_id}"
+            f"{bp_activity.agency.name}-{bp_activity.country.abbr}-{internal_id}"
         )
         assert sheet["A2"].value == sort_order
         assert sheet["B2"].value == bp_activity.country.name
-        assert sheet["C2"].value == business_plan.agency.name
+        assert sheet["C2"].value == bp_activity.agency.name
         assert sheet["N2"].value == bp_activity.title
 
         assert sheet["P2"].value == bp_activity_values[0].value_usd
@@ -77,6 +79,7 @@ class TestBPPrint(BaseTest):
             {
                 "year_start": business_plan.year_start,
                 "year_end": business_plan.year_end,
+                "bp_status": business_plan.status,
             },
         )
         assert response.status_code == 403
@@ -96,8 +99,8 @@ class TestBPPrint(BaseTest):
             {
                 "year_start": business_plan.year_start,
                 "year_end": business_plan.year_end,
-                "agency_id": agency.id,
                 "bp_status": business_plan.status,
+                "agency_id": agency.id,
             },
         )
         assert response.status_code == 200
@@ -109,5 +112,5 @@ class TestBPPrint(BaseTest):
         text = pdf_text(io.BytesIO(response.getvalue())).replace("\n", "")
 
         assert bp_activity.country.name in text
-        assert business_plan.agency.name in text
+        assert bp_activity.agency.name in text
         assert bp_activity.title in text

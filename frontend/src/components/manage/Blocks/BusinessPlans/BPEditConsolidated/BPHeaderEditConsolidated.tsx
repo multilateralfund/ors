@@ -9,14 +9,18 @@ import { api } from '@ors/helpers'
 import { tableColumns } from '../constants'
 import { BpPathParams } from '../types'
 import { useEditLocalStorageConsolidated } from './useLocalStorageConsolidated'
+import { useStore } from '@ors/store'
 
 export default function BPHeaderEditConsolidated({
   form,
   setWarnOnClose,
   type,
+  results,
 }: any) {
   const { period } = useParams<BpPathParams>()
   const [year_start, year_end] = period.split('-')
+
+  const { setBusinessPlan } = useStore((state) => state.businessPlan)
 
   const { enqueueSnackbar } = useSnackbar()
 
@@ -24,10 +28,11 @@ export default function BPHeaderEditConsolidated({
 
   const editBP = async () => {
     try {
-      await api(`api/business-plan/update_all/`, {
+      const response = await api(`api/business-plan/${results[0].id}/`, {
         data: {
           activities: form,
-          ...{ year_end, year_start },
+          year_start: parseInt(year_start),
+          year_end: parseInt(year_end),
           status: capitalize(type),
         },
         method: 'PUT',
@@ -44,6 +49,10 @@ export default function BPHeaderEditConsolidated({
           variant: 'success',
         },
       )
+      setBusinessPlan({
+        ...results[0],
+        id: response.id,
+      })
     } catch (error) {
       if (error.status === 400) {
         //   const errors = await error.json()

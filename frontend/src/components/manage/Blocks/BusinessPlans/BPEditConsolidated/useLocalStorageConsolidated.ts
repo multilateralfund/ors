@@ -19,14 +19,12 @@ export function useEditLocalStorageConsolidated(
   )
 
   const load = useCallback(() => {
-    if (activities && activities.length > 0) {
-      const data = storage.loadLocalStorage(key)
+    const data = storage.loadLocalStorage(key)
 
-      if (data) {
-        return data.form
-      } else {
-        storage.clearLocalStorage(key)
-      }
+    if (data) {
+      return data.form
+    } else {
+      storage.clearLocalStorage(key)
     }
   }, [key, activities])
 

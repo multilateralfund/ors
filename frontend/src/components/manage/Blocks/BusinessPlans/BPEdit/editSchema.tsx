@@ -16,7 +16,6 @@ import {
   agFormatNameValue,
   agFormatValue,
   agFormatValueTags,
-  agencyValueSetter,
   commentsValueSetter,
   getOptionLabel,
   getOptions,
@@ -116,26 +115,26 @@ const useColumnsOptions = (
                 cellEditor: 'agSelectCellEditor',
                 cellEditorParams: {
                   Input: { placeholder: 'Select agency' },
-                  agFormatValue: agFormatNameValue,
+                  agFormatValue,
                   getOptionLabel: (option: any) =>
-                    getOptionLabel(agencies, option, 'name'),
-                  isOptionEqualToValue: isOptionEqualToValueByName,
+                    getOptionLabel(agencies, option),
+                  isOptionEqualToValue,
                   openOnFocus: true,
                   options: agencies,
                 },
                 cellRenderer: (props: any) => (
-                  <AgCellRenderer {...props} value={props.data.agency} />
+                  <AgCellRenderer {...props} value={props.data.agency?.name} />
                 ),
-                field: 'agency',
+                field: 'agency_id',
                 headerClass: 'ag-text-center',
                 headerComponentParams: {
                   details: <sup className="font-bold">*</sup>,
                 },
                 headerName: tableColumns.agency,
                 minWidth: 150,
-                tooltipField: 'agency',
+                tooltipField: 'agency.name',
                 valueSetter: (params: any) =>
-                  agencyValueSetter(params, agencies),
+                  valueSetter(params, 'agency', agencies),
               },
             ]
           : []),

@@ -11,10 +11,6 @@ from core.models.business_plan import (
 
 @admin.register(BusinessPlan)
 class BusinessPlanAdmin(admin.ModelAdmin):
-    search_fields = [
-        "agency",
-    ]
-
     def get_list_display(self, request):
         exclude = ["bphistory", "bpactivity", "activities"]
         return get_final_display_list(BusinessPlan, exclude)
