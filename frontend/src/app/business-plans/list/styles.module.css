@@ -34,11 +34,9 @@
   }
 }
 
-.moreOptions {
-  div div:first-child {
-    width: unset !important;
-    justify-content: start !important;
-  }
+.moreOptions div:first-child {
+  width: unset !important;
+  justify-content: start !important;
 }
 
 .page {

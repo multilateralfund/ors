@@ -1,8 +1,4 @@
-import {
-  UserType,
-  userCanUpdateFilesBusinessPlan,
-  userCanViewFilesBusinessPlan,
-} from '@ors/types/user_types'
+import { UserType, userCanViewFilesBusinessPlan } from '@ors/types/user_types'
 
 import { useEffect, useState } from 'react'
 
@@ -10,37 +6,20 @@ import SimpleField from '@ors/components/manage/Blocks/Section/ReportInfo/Simple
 import VersionHistoryList from '@ors/components/ui/VersionDetails/VersionHistoryList'
 import { useStore } from '@ors/store'
 
-import FileInput from '../BPEdit/FileInput'
 import { FilesViewer } from '../FilesViewer'
 import BPListHeader from '../BPList/BPListHeader'
 import BPListTabs from '../BPList/BPListTabs'
 import { useBPListApi } from '../BPList/BPList'
 import { bpTypes } from '../constants'
-import { Status } from '@ors/components/ui/StatusPill/StatusPill'
 import { useGetBpData } from './useGetBpData'
 
-function BPHistory({ data }: any) {
-  return (
-    <VersionHistoryList
-      currentDataVersion={1}
-      historyList={data?.history || []}
-      length={3}
-      type="bp"
-    />
-  )
-}
-
-function BPSummary(props: any) {
+const BPSummary = (props: any) => {
   const { results, bpFiles } = props
-
   const { year_end, year_start, status, meeting_number, decision_number } =
     results[0] || {}
 
   const { user_type } = useStore((state) => state.user.data)
   const canViewFiles = userCanViewFilesBusinessPlan[user_type as UserType]
-  // const { bpFiles, files, setFiles } = props
-
-  // const canUpdateFiles = userCanUpdateFilesBusinessPlan[user_type as UserType]
 
   return (
     <div className="flex flex-col gap-6 rounded-lg bg-gray-100 p-4">
@@ -60,29 +39,22 @@ function BPSummary(props: any) {
           label="Decision number"
         />
       </div>
-
-      <>{canViewFiles && <FilesViewer bpFiles={bpFiles || []} />}</>
-
-      {/* {setFiles ? (
-        <>
-          {canViewFiles && <FilesViewer {...{ bpFiles, files, setFiles }} />}
-          {canUpdateFiles && <FileInput {...{ files, setFiles }} />}
-        </>
-      ) : (
-        canViewFiles && <FilesViewer bpFiles={bpFiles} />
-      )} */}
+      {canViewFiles && <FilesViewer bpFiles={bpFiles || []} />}
     </div>
   )
 }
 
-export default function BPDetailsConsolidated(props: any) {
+export default function BPDetailsConsolidated(props: { period: string }) {
   const { period } = props
+
   const { bpType, setBPType } = useStore((state) => state.bpType)
 
+  const [year_start, year_end] = period.split('-')
+
   const [filters, setFilters] = useState({
-    status: (bpType || bpTypes[1].label) as Status,
-    year_end: period?.split('-')[1] || null,
-    year_start: period?.split('-')[0] || null,
+    status: bpType || bpTypes[1].label,
+    year_end: year_end || null,
+    year_start: year_start || null,
   })
 
   const { data: bpFiles, setParams: setParamsFiles } = useGetBpData(
@@ -91,13 +63,13 @@ export default function BPDetailsConsolidated(props: any) {
     'files',
   ) as any
 
-  const { data, setParams: setParamsBpActivities } = useGetBpData(
+  const { data, setParams: setParamsActivities } = useGetBpData(
     filters,
     'api/business-plan/get/',
     'fullData',
-  ) as any as any
+  ) as any
 
-  const { results, setParams, params, loaded } = useBPListApi(filters)
+  const { results, setParams, loaded } = useBPListApi(filters)
 
   useEffect(() => {
     if (!bpType && loaded) {
@@ -107,10 +79,10 @@ export default function BPDetailsConsolidated(props: any) {
         setBPType(defaultBpType)
         setParams({ status: defaultBpType })
         setParamsFiles({ status: defaultBpType })
-        setParamsBpActivities({ bp_status: defaultBpType })
+        setParamsActivities({ bp_status: defaultBpType })
         setFilters((filters) => ({
           ...filters,
-          status: defaultBpType as Status,
+          status: defaultBpType,
         }))
       } else {
         setBPType(bpTypes[1].label)
@@ -124,15 +96,19 @@ export default function BPDetailsConsolidated(props: any) {
         <>
           <BPListHeader
             viewType="details"
-            {...{ params, setParams, setParamsFiles, setParamsBpActivities }}
+            {...{ setParams, setParamsFiles, setParamsActivities }}
           />
           <BPListTabs />
           <div className="flex flex-1 flex-col justify-start gap-6 border-0 border-t border-solid border-primary pt-6">
             <section className="grid items-start gap-6 md:auto-rows-auto md:grid-cols-2">
               <BPSummary {...{ results, bpFiles }} />
-
               <div className="flex flex-col rounded-lg bg-gray-100 p-4">
-                <BPHistory data={data} />
+                <VersionHistoryList
+                  currentDataVersion={1}
+                  historyList={data?.history || []}
+                  length={3}
+                  type="bp"
+                />
               </div>
             </section>
           </div>

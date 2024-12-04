@@ -64,7 +64,7 @@ const BPMainFilters = ({
         <Field
           FieldProps={{ className: 'mb-0 w-40 BPListUpload' }}
           options={bpTypes}
-          defaultValue={filters?.bp_status}
+          value={filters?.bp_status}
           widget="autocomplete"
           onChange={(_: any, value: any) => handleChangeStatus(value)}
         />

@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 import { capitalize } from 'lodash'
 import { useParams } from 'wouter'
 
-import DownloadButtons from '@ors/app/business-plans/DownloadButtons'
+import BPTableToolbarButtons from '@ors/app/business-plans/BPTableToolbarButtons'
 import ActivitiesFilters from '@ors/components/manage/Blocks/BusinessPlans/ActivitiesFilters'
 import TableDateSwitcher from '@ors/components/manage/Blocks/Table/BusinessPlansTable/TableDateSwitcher'
 import { formatApiUrl } from '@ors/helpers'
@@ -55,7 +55,7 @@ export default function BPFilters({
 
   return (
     <div className="bp-table-toolbar mb-4 flex flex-col justify-between gap-4 xl:flex-row xl:items-center">
-      <DownloadButtons
+      <BPTableToolbarButtons
         downloadTexts={['Download']}
         downloadUrls={[
           formatApiUrl(`/api/business-plan-activity/export/?${exportParams}`),

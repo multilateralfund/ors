@@ -4,7 +4,7 @@ import { ApiEditBPActivity } from '@ors/types/api_bp_get'
 
 import { useCallback, useEffect, useState } from 'react'
 
-import { capitalize, find, map } from 'lodash'
+import { capitalize, map } from 'lodash'
 import { useParams } from 'wouter'
 
 import Loading from '@ors/components/theme/Loading/Loading'

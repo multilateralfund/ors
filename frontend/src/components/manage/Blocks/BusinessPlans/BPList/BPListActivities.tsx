@@ -17,7 +17,6 @@ import { ViewSelectorValuesType } from '../types'
 import BPListHeader from './BPListHeader'
 import BPListTabs from './BPListTabs'
 import { bpTypes } from '../constants'
-import { Status } from '@ors/components/ui/StatusPill/StatusPill'
 import { useBPListApi } from './BPList'
 
 const ACTIVITIES_PER_PAGE_TABLE = 50
@@ -37,21 +36,20 @@ export default function BPListActivitiesWrapper(props: any) {
   const { bpType, setBPType } = useStore((state) => state.bpType)
 
   const [initialFilters, setInitialFilters] = useState({
-    bp_status: (bpType || bpTypes[1].label) as Status,
+    bp_status: bpType || bpTypes[1].label,
     limit: ACTIVITIES_PER_PAGE_TABLE,
     offset: 0,
     year_end: year_end,
     year_start: year_start,
   })
   const activities = useGetActivities(initialFilters)
-  const { setParams, params, loaded: loadedActivities } = activities
+  const { setParams, loaded: loadedActivities } = activities
 
   const bpFilters = {
     status: bpTypes[1].label,
     year_end: year_end,
     year_start: year_start,
   }
-
   const { results, loaded } = useBPListApi(bpFilters)
 
   useEffect(() => {
@@ -63,7 +61,7 @@ export default function BPListActivitiesWrapper(props: any) {
         setParams({ bp_status: defaultBpType })
         setInitialFilters((filters) => ({
           ...filters,
-          bp_status: defaultBpType as Status,
+          bp_status: defaultBpType,
         }))
       } else {
         setBPType(bpTypes[1].label)
@@ -77,7 +75,7 @@ export default function BPListActivitiesWrapper(props: any) {
         className="!fixed bg-action-disabledBackground"
         active={!loadedActivities}
       />
-      <BPListHeader viewType="activities" {...{ params, setParams }} />
+      <BPListHeader viewType="activities" {...{ setParams }} />
       <BPListTabs />
       <BPListActivities
         {...{

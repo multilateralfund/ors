@@ -10,7 +10,7 @@ import { useStore } from '@ors/store'
 import { lowerCase } from 'lodash'
 import { userCanEditBusinessPlan, UserType } from '@ors/types/user_types'
 
-const DownloadButtons = (props: any) => {
+const BPTableToolbarButtons = (props: any) => {
   const { downloadTexts, downloadUrls } = props
 
   const [pathname] = useLocation()
@@ -54,4 +54,4 @@ const DownloadButtons = (props: any) => {
   )
 }
 
-export default DownloadButtons
+export default BPTableToolbarButtons

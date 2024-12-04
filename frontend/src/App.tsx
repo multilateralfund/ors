@@ -37,6 +37,7 @@ import ReplenishmentStatusOfContributionsTriennialPeriodPage from '@ors/app/repl
 import BPPage from '@ors/app/business-plans/page'
 import BPListLayout from '@ors/app/business-plans/list/layout'
 import BPListPlansPeriodPage from '@ors/app/business-plans/list/plans/[period]/page'
+import BusinessPlansDetailsConsolidated from './app/business-plans/list/details/[period]/page'
 import BPListActivitiesPeriodPage from '@ors/app/business-plans/list/activities/[period]/page'
 import BPListActivitiesPeriodTypeEditPage from '@ors/app/business-plans/list/activities/[period]/[type]/edit/page'
 import BPUpload from '@ors/app/business-plans/upload/page'
@@ -53,7 +54,6 @@ import ProjectSubmissionsEditPage from '@ors/app/project-submissions/edit/page'
 import NotFoundPage from '@ors/app/not-found'
 
 import RootLayout from './app/layout'
-import BusinessPlansDetailsConsolidated from './app/business-plans/list/details/[period]/page'
 
 export default function App() {
   return (

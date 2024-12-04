@@ -139,12 +139,12 @@ const getReqByModelColumn = (isDiff: boolean) => {
 
 const getAdditionalRemarksColumn = {
   cellClass: 'ag-cell-ellipsed',
+  field: 'remarks_additional',
   headerClass: 'ag-text-center',
   headerName: 'Remarks (Additional)',
   minWidth: 200,
   sortable: true,
   tooltipField: 'remarks_additional',
-  valueGetter: (params: any) => params.data.remarks_additional,
 }
 
 const getCommentsColumnsDefs = (isDiff: boolean) => [

@@ -18,38 +18,33 @@ import SimpleSelect from '@ors/components/ui/SimpleSelect/SimpleSelect'
 
 const BPListHeader = ({
   viewType,
-  params,
   setParams,
   setParamsFiles,
-  setParamsBpActivities,
+  setParamsActivities,
 }: {
   viewType: string
-  params: any
   setParams: any
   setParamsFiles?: any
-  setParamsBpActivities?: any
+  setParamsActivities?: any
 }) => {
   const { user_type } = useStore((state) => state.user?.data)
   const { setBPType, bpType } = useStore((state) => state.bpType)
 
   const [pathname] = useLocation()
   const { yearRanges } = useContext(BPYearRangesContext) as any
-  const period = getPathPeriod(pathname)
   const { periodOptions } = useGetBpPeriods(yearRanges)
+  const period = getPathPeriod(pathname)
 
-  const currentStatus = find(
-    bpTypes,
-    (type) =>
-      type.label ===
-      (viewType === 'activities' ? params.bp_status : params.status),
-  )
+  const currentStatus = find(bpTypes, (type) => type.label === bpType)
   const statusIndex = indexOf(bpTypes, currentStatus)
 
   return (
     <div className="mb-8 flex items-center justify-between gap-4">
-      <div className={cx('flex flex-row flex-wrap gap-2', styles.moreOptions)}>
+      <div className="flex flex-row flex-wrap gap-2">
         <PageHeading className="min-w-fit">Business Plan:</PageHeading>
-        <div className="flex flex-row flex-wrap gap-2">
+        <div
+          className={cx('flex flex-row flex-wrap gap-2', styles.moreOptions)}
+        >
           <PeriodSelector
             label=""
             period={period}
@@ -65,31 +60,23 @@ const BPListHeader = ({
             label={''}
             options={bpTypes}
             onChange={({ value }: any) => {
-              setBPType(capitalize(value))
+              const formattedValue = capitalize(value)
 
-              if (viewType === 'activities') {
-                setParams({
-                  bp_status: capitalize(value),
+              setBPType(formattedValue)
+              setParams({
+                ...(viewType === 'activities'
+                  ? { bp_status: formattedValue }
+                  : { status: formattedValue }),
+                offset: 0,
+              })
+
+              if (viewType === 'details') {
+                setParamsActivities({
+                  bp_status: formattedValue,
                   offset: 0,
                 })
-              } else if (viewType === 'details') {
-                setParams({
-                  status: capitalize(value),
-                  offset: 0,
-                })
-                if (setParamsBpActivities && setParamsFiles) {
-                  setParamsBpActivities({
-                    bp_status: capitalize(value),
-                    offset: 0,
-                  })
-                  setParamsFiles({
-                    status: capitalize(value),
-                    offset: 0,
-                  })
-                }
-              } else {
-                setParams({
-                  status: capitalize(value),
+                setParamsFiles({
+                  status: formattedValue,
                   offset: 0,
                 })
               }

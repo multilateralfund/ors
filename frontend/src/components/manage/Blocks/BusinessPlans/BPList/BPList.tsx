@@ -58,7 +58,7 @@ export default function BPList(props: any) {
     year_start: period?.split('-')[0] || null,
   })
 
-  const { count, results, setParams, params, loaded } = useBPListApi(filters)
+  const { count, results, setParams, loaded } = useBPListApi(filters)
 
   useEffect(() => {
     if (!bpType && loaded) {
@@ -93,7 +93,7 @@ export default function BPList(props: any) {
 
   return (
     <div className="m-auto max-w-screen-xl">
-      <BPListHeader viewType="plans" {...{ params, setParams }} />
+      <BPListHeader viewType="plans" {...{ setParams }} />
       <BPListTabs />
       <div className="flex flex-1 flex-col justify-start gap-6 border-0 border-t border-solid border-primary pt-6">
         <BPListFilters
