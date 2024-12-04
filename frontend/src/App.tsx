@@ -53,7 +53,7 @@ import ProjectSubmissionsEditPage from '@ors/app/project-submissions/edit/page'
 import NotFoundPage from '@ors/app/not-found'
 
 import RootLayout from './app/layout'
-import BusinessPlansDetailsConsolidated from './app/business-plans/list/details/page'
+import BusinessPlansDetailsConsolidated from './app/business-plans/list/details/[period]/page'
 
 export default function App() {
   return (

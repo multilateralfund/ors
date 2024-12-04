@@ -1,9 +1,7 @@
 import {
   cellValueGetter,
-  commentsCellRenderer,
   commentsDiffCellRenderer,
   commentsDiffValueGetter,
-  commentsValueGetter,
   numberCellGetter,
   numberCellRenderer,
   objectCellValueGetter,
@@ -183,7 +181,7 @@ const getCommentsColumnsDefs = (isDiff: boolean) => [
   },
   getAdditionalRemarksColumn,
   {
-    cellClass: 'ag-text-center',
+    cellClass: 'ag-cell-ellipsed',
     field: 'comment_secretariat',
     headerClass: 'ag-text-center',
     headerName: 'Comment',
@@ -195,8 +193,7 @@ const getCommentsColumnsDefs = (isDiff: boolean) => [
           valueGetter: (params: any) => commentsDiffValueGetter(params),
         }
       : {
-          cellRenderer: commentsCellRenderer,
-          valueGetter: commentsValueGetter,
+          tooltipField: 'comment_secretariat',
         }),
   },
 ]

@@ -54,9 +54,6 @@ export default function BPListActivitiesWrapper(props: any) {
 
   const { results, loaded } = useBPListApi(bpFilters)
 
-  const withUploadEndorsedButton =
-    bpType === bpTypes[0].label && loaded && results.length === 0
-
   useEffect(() => {
     if (!bpType && loaded) {
       if (results.length === 0) {
@@ -80,10 +77,7 @@ export default function BPListActivitiesWrapper(props: any) {
         className="!fixed bg-action-disabledBackground"
         active={!loadedActivities}
       />
-      <BPListHeader
-        viewType="activities"
-        {...{ params, setParams, withUploadEndorsedButton }}
-      />
+      <BPListHeader viewType="activities" {...{ params, setParams }} />
       <BPListTabs />
       <BPListActivities
         {...{

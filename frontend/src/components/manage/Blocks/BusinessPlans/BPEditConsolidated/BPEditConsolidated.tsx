@@ -42,8 +42,6 @@ const BPEdit = () => {
   } = useGetActivities(initialFiltersActivities)
   const { results, loading: bpLoading } = useBPListApi(initialFiltersBps)
 
-  const bpSlice = useStore((state) => state.businessPlans)
-  const commentTypes = bpSlice.commentTypes.data
   const agencies = useStore((state) => state?.common.agencies.data)
 
   const [form, setForm] = useState<Array<ApiEditBPActivity> | undefined>(
@@ -75,15 +73,9 @@ const BPEdit = () => {
 
     return map(activities, (activity, index) => ({
       ...activity,
-      comment_types: map(
-        activity.comment_types,
-        (comment_type) =>
-          find(commentTypes, (comm_type) => comm_type.name === comment_type)
-            ?.id,
-      ),
       row_id: index,
     }))
-  }, [commentTypes, activities, agencies])
+  }, [activities, agencies])
 
   useEffect(() => {
     const formattedActivities = getFormattedActivities()

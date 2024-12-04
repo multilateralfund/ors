@@ -124,8 +124,6 @@ export interface BPSlice {
 export interface BPTypeSlice {
   bpType: string
   setBPType: (type: string) => void
-  uploadBpType: string
-  setUploadBPType: (type: string) => void
 }
 
 export interface ProjectsSlice {

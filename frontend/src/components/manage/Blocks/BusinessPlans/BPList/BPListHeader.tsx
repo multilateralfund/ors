@@ -20,21 +20,17 @@ const BPListHeader = ({
   viewType,
   params,
   setParams,
-  withUploadEndorsedButton = false,
   setParamsFiles,
   setParamsBpActivities,
 }: {
   viewType: string
   params: any
   setParams: any
-  withUploadEndorsedButton?: boolean
   setParamsFiles?: any
   setParamsBpActivities?: any
 }) => {
   const { user_type } = useStore((state) => state.user?.data)
-  const { setBPType, setUploadBPType, bpType } = useStore(
-    (state) => state.bpType,
-  )
+  const { setBPType, bpType } = useStore((state) => state.bpType)
 
   const [pathname] = useLocation()
   const { yearRanges } = useContext(BPYearRangesContext) as any
@@ -101,34 +97,15 @@ const BPListHeader = ({
       </div>
       {userCanEditBusinessPlan[user_type as UserType] &&
         viewType === 'activities' && (
-          <div className="flex gap-4">
-            {withUploadEndorsedButton && (
-              <CustomLink
-                className="px-4 py-2 text-lg uppercase"
-                color="secondary"
-                href="/business-plans/upload"
-                variant="contained"
-                button
-                onClick={() => {
-                  setUploadBPType(bpTypes[1].label)
-                }}
-              >
-                Upload {bpTypes[1].label} Business Plan
-              </CustomLink>
-            )}
-            <CustomLink
-              className="px-4 py-2 text-lg uppercase"
-              color="secondary"
-              href="/business-plans/upload"
-              variant="contained"
-              button
-              onClick={() => {
-                setUploadBPType('')
-              }}
-            >
-              Upload {bpType} Business Plan
-            </CustomLink>
-          </div>
+          <CustomLink
+            className="px-4 py-2 text-lg uppercase"
+            color="secondary"
+            href="/business-plans/upload"
+            variant="contained"
+            button
+          >
+            Upload BP
+          </CustomLink>
         )}
     </div>
   )

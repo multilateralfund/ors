@@ -41,7 +41,7 @@ const DownloadButtons = (props: any) => {
             variant="contained"
             button
           >
-            Revise {bpType} Business Plan
+            Revise BP
           </CustomLink>
         )}
         {downloadUrls?.map((url: string, i: number) => (

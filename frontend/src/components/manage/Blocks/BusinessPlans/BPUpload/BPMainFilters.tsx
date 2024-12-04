@@ -6,7 +6,6 @@ import SimpleSelect from '@ors/components/ui/SimpleSelect/SimpleSelect'
 import { PeriodSelectorOption } from '../../Replenishment/types'
 import { bpTypes } from '../constants'
 import { Label, getFormattedPeridOptions } from './helpers'
-import { useStore } from '@ors/store'
 
 interface IStatus {
   label: string
@@ -26,8 +25,6 @@ const BPMainFilters = ({
   setFilters,
   isFirstUploadStep = false,
 }: IBPMainFilters) => {
-  const { uploadBpType } = useStore((state) => state.bpType)
-
   const formattedPeriodOptions = getFormattedPeridOptions(periodOptions)
   const currentPeriod = find(
     formattedPeriodOptions,
@@ -67,10 +64,9 @@ const BPMainFilters = ({
         <Field
           FieldProps={{ className: 'mb-0 w-40 BPListUpload' }}
           options={bpTypes}
-          defaultValue={isFirstUploadStep ? uploadBpType : filters?.bp_status}
+          defaultValue={filters?.bp_status}
           widget="autocomplete"
           onChange={(_: any, value: any) => handleChangeStatus(value)}
-          disabled={isFirstUploadStep && uploadBpType ? true : false}
         />
       </div>
     </>

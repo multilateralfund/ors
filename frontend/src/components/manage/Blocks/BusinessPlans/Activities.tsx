@@ -258,7 +258,7 @@ function OpenActivity({
             <span className="flex w-1/2 flex-col gap-2.5 pr-1.5">
               <span>Remarks</span>
               {activity.remarks ? (
-                <div className="break-words rounded-lg bg-gray-100	p-4">
+                <div className="break-words rounded-lg bg-gray-100 p-4">
                   {activity.remarks}
                 </div>
               ) : (
@@ -267,23 +267,8 @@ function OpenActivity({
             </span>
             <span className="flex w-1/2 flex-col gap-2.5 pl-1.5">
               <span>Comments</span>
-              {activity.comment_secretariat ||
-              activity.comment_types.length > 0 ? (
+              {activity.comment_secretariat ? (
                 <div className="break-words rounded-lg bg-gray-100 p-4">
-                  <div className="mb-1 flex flex-wrap gap-1">
-                    {activity.comment_types.map(
-                      (commentType: string, index: number) => (
-                        <Typography
-                          key={index}
-                          className="inline-flex items-center rounded-md border border-solid border-gray-200 bg-gray-200 px-1 text-sm font-medium"
-                          component="p"
-                          variant="h6"
-                        >
-                          {commentType}
-                        </Typography>
-                      ),
-                    )}
-                  </div>
                   {activity.comment_secretariat}
                 </div>
               ) : (

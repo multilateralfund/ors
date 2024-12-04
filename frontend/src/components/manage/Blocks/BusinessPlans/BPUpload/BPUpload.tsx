@@ -12,7 +12,6 @@ import BPImport from './BPImport'
 import BPImportFilters from './BPImportFilters'
 import BPReviewChanges from './BPReviewChanges'
 import BPUploadSectionWrapper from './BPUploadSectionWrapper'
-import { useStore } from '@ors/store'
 
 const BPUploadHeader = ({ currentYearRange }: any) => {
   return (
@@ -30,8 +29,6 @@ const BPUpload = () => {
   const { periodOptions } = useGetBpPeriods(yearRanges)
   const currentYearRange = periodOptions?.[0]?.value
 
-  const { uploadBpType } = useStore((state) => state.bpType)
-
   const [filters, setFilters] = useState<any>({})
   const [downloadFilters, setDownloadFilters] = useState<any>({})
   const [file, setFile] = useState<FileList | null>(null)
@@ -45,7 +42,6 @@ const BPUpload = () => {
       setFilters({
         year_end,
         year_start,
-        ...(uploadBpType && { bp_status: uploadBpType }),
       })
       setDownloadFilters({ year_end, year_start })
     }
