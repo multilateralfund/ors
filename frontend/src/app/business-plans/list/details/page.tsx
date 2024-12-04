@@ -1,11 +1,11 @@
 import { useParams } from 'wouter'
 
 import usePageTitle from '@ors/hooks/usePageTitle'
-import BPDetailsFull from '@ors/components/manage/Blocks/BusinessPlans/BP/BPDetailsFull'
+import BPDetailsConsolidated from '@ors/components/manage/Blocks/BusinessPlans/BP/BPDetailsConsolidated'
 
 export default function BusinessPlansListDetails() {
   usePageTitle('Business Plans')
   const { period } = useParams<Record<string, string>>()
 
-  return <BPDetailsFull period={period} key={period} />
+  return <BPDetailsConsolidated period={period} key={period} />
 }

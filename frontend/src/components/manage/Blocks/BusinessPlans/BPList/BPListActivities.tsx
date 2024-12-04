@@ -44,7 +44,7 @@ export default function BPListActivitiesWrapper(props: any) {
     year_start: year_start,
   })
   const activities = useGetActivities(initialFilters)
-  const { loading, setParams, params } = activities
+  const { setParams, params, loaded: loadedActivities } = activities
 
   const bpFilters = {
     status: bpTypes[1].label,
@@ -78,7 +78,7 @@ export default function BPListActivitiesWrapper(props: any) {
     <>
       <Loading
         className="!fixed bg-action-disabledBackground"
-        active={loading}
+        active={!loadedActivities}
       />
       <BPListHeader
         viewType="activities"

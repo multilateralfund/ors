@@ -17,7 +17,7 @@ interface IBPMainFilters {
   filters?: any
   periodOptions: PeriodSelectorOption[]
   setFilters: any
-  fromUploadFilters: boolean
+  fromUploadFilters?: boolean
 }
 
 const BPMainFilters = ({

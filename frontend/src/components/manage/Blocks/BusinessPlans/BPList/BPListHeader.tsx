@@ -21,11 +21,15 @@ const BPListHeader = ({
   params,
   setParams,
   withUploadEndorsedButton = false,
+  setParamsFiles,
+  setParamsBpActivities,
 }: {
   viewType: string
   params: any
   setParams: any
   withUploadEndorsedButton?: boolean
+  setParamsFiles?: any
+  setParamsBpActivities?: any
 }) => {
   const { user_type } = useStore((state) => state.user?.data)
   const { setBPType, setUploadBPType } = useStore((state) => state.bpType)
@@ -69,7 +73,23 @@ const BPListHeader = ({
                 bp_status: capitalize(value),
                 offset: 0,
               })
-            } else {
+            }
+            if (viewType === 'details') {
+              setParams({
+                status: capitalize(value),
+                offset: 0,
+              })
+              if (setParamsBpActivities && setParamsFiles) {
+                setParamsBpActivities({
+                  bp_status: capitalize(value),
+                  offset: 0,
+                })
+                setParamsFiles({
+                  status: capitalize(value),
+                  offset: 0,
+                })
+              }
+            } else if (viewType === 'plans') {
               setParams({
                 status: capitalize(value),
                 offset: 0,
