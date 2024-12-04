@@ -1,6 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics
-from rest_framework.response import Response
 
 from core.api.filters.country_programme import CPEmissionsFilter
 from core.api.serializers.cp_emission import (

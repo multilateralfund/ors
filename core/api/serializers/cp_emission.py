@@ -73,10 +73,10 @@ class CPEmissionListSerializer(serializers.ModelSerializer):
             "data",
         ]
 
-    def get_substance_name(self, obj):
+    def get_substance_name(self, _obj):
         return self.context["substance_name"]
 
-    def get_substance_id(self, obj):
+    def get_substance_id(self, _obj):
         return self.context["substance_id"]
 
     def get_region(self, obj):
