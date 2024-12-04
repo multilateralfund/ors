@@ -2,7 +2,7 @@ from django_filters import rest_framework as filters
 from django_filters.widgets import CSVWidget
 
 from core.models import Country
-from core.models.country_programme import CPEmission, CPFile, CPPrices
+from core.models.country_programme import CPEmission, CPFile, CPPrices, CPRecord
 from core.models.country_programme_archive import CPReportArchive
 
 
@@ -83,6 +83,15 @@ class CPAttributesBaseFilter(filters.FilterSet):
 
     class Meta:
         fields = ["country_id", "year", "min_year", "max_year"]
+
+
+class CPRecordFilter(CPAttributesBaseFilter):
+    """
+    Filter for CP Records
+    """
+
+    class Meta(CPAttributesBaseFilter.Meta):
+        model = CPRecord
 
 
 class CPPricesFilter(CPAttributesBaseFilter):

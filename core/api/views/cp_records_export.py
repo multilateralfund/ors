@@ -29,7 +29,7 @@ from core.api.serializers import BlendSerializer
 from core.api.serializers import SubstanceSerializer
 from core.api.utils import workbook_pdf_response
 from core.api.utils import workbook_response
-from core.api.views.cp_records import CPRecordListView
+from core.api.views.cp_records import CPRecordListByReportView
 from core.api.views.cp_report_empty_form import EmptyFormView
 from core.api.views.utils import (
     SUBSTANCE_GROUP_ID_TO_CATEGORY,
@@ -96,7 +96,7 @@ def get_record_chemical_category(record, set_hfc_preblended=True):
     return "HFC"
 
 
-class CPRecordExportView(CPRecordListView):
+class CPRecordExportView(CPRecordListByReportView):
     def get_usages(self, cp_report):
         empty_form = EmptyFormView.get_data(cp_report.year, cp_report)
         usages = empty_form.pop("usage_columns")
@@ -248,7 +248,7 @@ class CPReportListExportView(views.APIView):
         return workbook_response("CP Reports", wb)
 
 
-class CPCalculatedAmountExportView(CPRecordListView):
+class CPCalculatedAmountExportView(CPRecordListByReportView):
     @swagger_auto_schema(
         manual_parameters=[
             openapi.Parameter(

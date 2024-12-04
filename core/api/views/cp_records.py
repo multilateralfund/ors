@@ -1,11 +1,13 @@
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import views
+from rest_framework import views, generics
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
+from core.api.filters.country_programme import CPRecordFilter
 from core.api.serializers.adm import (
     AdmRecordSerializer,
 )
@@ -16,12 +18,14 @@ from core.api.serializers.cp_generation import CPGenerationSerializer
 from core.api.serializers.cp_history import CPHistorySerializer
 from core.api.serializers.cp_price import CPPricesSerializer
 from core.api.serializers.cp_record import (
+    CPRecordEkimetricsSerializer,
     CPRecordReadOnlySerializer,
 )
 from core.api.serializers.cp_report import CPReportSerializer, CPReportInfoSerializer
 from core.api.views.utils import (
     copy_fields,
     delete_fields,
+    get_country_region_dict,
     get_cp_prices,
     get_cp_report_from_request,
     get_displayed_records,
@@ -42,14 +46,16 @@ from core.models.country_programme_archive import (
     CPRecordArchive,
     CPReportArchive,
 )
+from core.models.usage import Usage
 from core.utils import IMPORT_DB_MAX_YEAR, IMPORT_DB_OLDEST_MAX_YEAR
 
 # pylint: disable=E1102
 
 
-class CPRecordBaseListView(views.APIView):
+class CPRecordBaseListByReportView(views.APIView):
     """
-    API endpoint that allows country programme records to be viewed.
+    API endpoint that allows country programme records to be viewed
+        (records specific to a report).
     !!!! We also use this view for CPRecordsArchiveListView
     @param cp_report_id: int - query filter for country programme id (exact)
     @param name: str - query filter for name (contains)
@@ -277,7 +283,11 @@ class CPRecordBaseListView(views.APIView):
         return Response(self.get_data(self._get_cp_report(), full_history))
 
 
-class CPRecordListView(CPRecordBaseListView):
+class CPRecordListByReportView(CPRecordBaseListByReportView):
+    """
+    API endpoint that allows country programme records specific to a report to be viewed.
+    """
+
     cp_report_class = CPReport
     cp_record_class = CPRecord
     cp_prices_class = CPPrices
@@ -295,7 +305,7 @@ class CPRecordListView(CPRecordBaseListView):
     adm_record_seri_class = AdmRecordSerializer
 
 
-class CPRecordListDiffView(CPRecordListView):
+class CPRecordListDiffView(CPRecordListByReportView):
     section_a_b_fields = [
         "imports",
         "import_quotas",
@@ -450,3 +460,26 @@ class CPRecordListDiffView(CPRecordListView):
                 "section_f": section_f_diff,
             }
         )
+
+
+class CPRecordEkimetricsView(generics.ListAPIView):
+    """
+    API endpoint that allows country programme records to be viewed.
+    """
+
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = CPRecordFilter
+    serializer_class = CPRecordEkimetricsSerializer
+    queryset = CPRecord.objects.select_related(
+        "country_programme_report__country", "substance__group", "blend"
+    ).prefetch_related("record_usages")
+
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        usages = Usage.objects.all()
+        usages_dict = {}
+        for usage in usages:
+            usages_dict[usage.id] = {"name": usage.full_name, "quantity": 0}
+        ctx["usages_dict"] = usages_dict
+        ctx["country_region_dict"] = get_country_region_dict()
+        return ctx
