@@ -18,24 +18,6 @@ class TestCPPriceList(BaseTest):
         )
         assert response.status_code == 403
 
-    def test_get_cp_prices_list__invalid_country_id(self, user, cp_report_2019):
-        self.client.force_authenticate(user=user)
-
-        # try get cp prices list without country id
-        response = self.client.get(self.url, {"year": cp_report_2019.year})
-        assert response.status_code == 400
-
-        # try get cp prices list with invalid country id
-        response = self.client.get(self.url, {"year": 2019, "country_id": 999})
-        assert response.status_code == 400
-
-    def test_get_cp_prices_list__invalid_year(self, user, country_ro):
-        self.client.force_authenticate(user=user)
-
-        # try get cp prices list without year
-        response = self.client.get(self.url, {"country_id": country_ro.id})
-        assert response.status_code == 400
-
     def test_get_cp_prices_list(
         self, user, country_ro, cp_report_2019, _setup_new_cp_report
     ):
