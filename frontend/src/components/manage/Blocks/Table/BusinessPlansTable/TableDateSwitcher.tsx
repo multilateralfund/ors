@@ -8,7 +8,7 @@ const TableDataSelectorLabels: Record<string, string | JSX.Element> = {
   all: 'View All',
   comments: 'Comments',
   odp: (
-    <span className="mt-0.5">
+    <span className="mt-1">
       ODP/MT/CO<sub>2</sub>-eq
     </span>
   ),

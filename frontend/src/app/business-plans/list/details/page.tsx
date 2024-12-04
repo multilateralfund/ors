@@ -5,6 +5,7 @@ import BPDetailsConsolidated from '@ors/components/manage/Blocks/BusinessPlans/B
 
 export default function BusinessPlansListDetails() {
   usePageTitle('Business Plans')
+
   const { period } = useParams<Record<string, string>>()
 
   return <BPDetailsConsolidated period={period} key={period} />

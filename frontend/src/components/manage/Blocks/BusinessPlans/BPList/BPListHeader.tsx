@@ -32,7 +32,9 @@ const BPListHeader = ({
   setParamsBpActivities?: any
 }) => {
   const { user_type } = useStore((state) => state.user?.data)
-  const { setBPType, setUploadBPType } = useStore((state) => state.bpType)
+  const { setBPType, setUploadBPType, bpType } = useStore(
+    (state) => state.bpType,
+  )
 
   const [pathname] = useLocation()
   const { yearRanges } = useContext(BPYearRangesContext) as any
@@ -73,8 +75,7 @@ const BPListHeader = ({
                 bp_status: capitalize(value),
                 offset: 0,
               })
-            }
-            if (viewType === 'details') {
+            } else if (viewType === 'details') {
               setParams({
                 status: capitalize(value),
                 offset: 0,
@@ -89,7 +90,7 @@ const BPListHeader = ({
                   offset: 0,
                 })
               }
-            } else if (viewType === 'plans') {
+            } else {
               setParams({
                 status: capitalize(value),
                 offset: 0,
@@ -125,7 +126,7 @@ const BPListHeader = ({
                 setUploadBPType('')
               }}
             >
-              Upload
+              Upload {bpType} Business Plan
             </CustomLink>
           </div>
         )}

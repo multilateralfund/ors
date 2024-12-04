@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { BPListFilters } from '@ors/components/manage/Blocks/BusinessPlans/BPList/BPListFilters'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'

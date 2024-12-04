@@ -2,7 +2,7 @@
 import { useMemo } from 'react'
 
 import { capitalize } from 'lodash'
-import { useLocation, useParams } from 'wouter'
+import { useParams } from 'wouter'
 
 import DownloadButtons from '@ors/app/business-plans/DownloadButtons'
 import ActivitiesFilters from '@ors/components/manage/Blocks/BusinessPlans/ActivitiesFilters'
@@ -90,28 +90,6 @@ export default function BPFilters({
             setDisplayOptions(value)
           }}
         />
-
-        {/* {withAgency && (
-          <Field
-            FieldProps={{ className: 'mb-0 w-full md:w-36 BPList' }}
-            options={bpTypes}
-            value={capitalize(reqParams.bp_status)}
-            widget="autocomplete"
-            isOptionEqualToValue={(option, value) =>
-              option.id === value.toLowerCase()
-            }
-            onChange={(_: any, value: any) => {
-              if (withAgency) {
-                setBPType(value.id)
-              }
-              handleParamsChange({
-                bp_status: capitalize(value.id),
-                offset: 0,
-              })
-            }}
-            disableClearable
-          />
-        )} */}
       </div>
     </div>
   )
