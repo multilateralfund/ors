@@ -45,7 +45,7 @@ function BPSummary(props: any) {
   return (
     <div className="flex flex-col gap-6 rounded-lg bg-gray-100 p-4">
       <p className="m-0 text-2xl font-normal">Summary</p>
-      <div className="grid w-full gap-4 md:grid-cols-2 md:grid-rows-3 lg:grid-cols-3 lg:grid-rows-2">
+      <div className="grid w-full grid-cols-2 grid-rows-3 gap-4 lg:grid-cols-3 lg:grid-rows-2">
         <SimpleField id="years" data={year_start} label="Year start" />
         <SimpleField id="years" data={year_end} label="Year end" />
         <SimpleField id="status" data={status} label="Status" />

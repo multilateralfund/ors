@@ -35,7 +35,7 @@ const getNavLinks = (pathname: string, period: null | string) => {
     return (
       <Link
         key={i}
-        className={cx({ [styles.current]: isCurrent })}
+        className={cx('text-nowrap', { [styles.current]: isCurrent })}
         href={period != null ? `${entry.path}/${period}` : entry.path}
       >
         {entry.label}
@@ -69,7 +69,7 @@ const BPListTabs = (props: PropsWithChildren) => {
         <nav className="shrink-0">{navLinks}</nav>
         <div
           id="bp-activities-export-button"
-          className="ml-4 mt-0.5 self-center"
+          className="mb-2.5 ml-4 self-end"
         />
       </div>
       <div className={styles.page}>{children}</div>

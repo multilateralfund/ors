@@ -77,7 +77,7 @@ export default function VersionHistoryList(props: any) {
                     <div className="flex items-center gap-2">
                       <p
                         id={`report_date`}
-                        className="my-1 min-w-24 text-right text-sm font-normal text-gray-500"
+                        className="my-1 min-w-24 text-sm font-normal text-gray-500"
                       >
                         {formattedDateTime}
                       </p>

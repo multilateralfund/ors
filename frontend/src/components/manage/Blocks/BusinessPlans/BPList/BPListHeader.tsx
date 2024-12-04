@@ -46,59 +46,61 @@ const BPListHeader = ({
   const statusIndex = indexOf(bpTypes, currentStatus)
 
   return (
-    <div className="mb-8 flex items-center justify-between">
+    <div className="mb-8 flex items-center justify-between gap-4">
       <div className={cx('flex flex-row flex-wrap gap-2', styles.moreOptions)}>
         <PageHeading className="min-w-fit">Business Plan:</PageHeading>
-        <PeriodSelector
-          label=""
-          period={period}
-          periodOptions={[...periodOptions]}
-          inputClassName="h-10 w-32"
-          menuClassName="w-32"
-        />
-        <SimpleSelect
-          className="capitalize"
-          initialIndex={statusIndex}
-          inputClassName="gap-x-4 h-10 w-36"
-          menuClassName="w-36"
-          label={''}
-          options={bpTypes}
-          onChange={({ value }: any) => {
-            setBPType(capitalize(value))
+        <div className="flex flex-row flex-wrap gap-2">
+          <PeriodSelector
+            label=""
+            period={period}
+            periodOptions={[...periodOptions]}
+            inputClassName="h-10 w-32"
+            menuClassName="w-32"
+          />
+          <SimpleSelect
+            className="capitalize"
+            initialIndex={statusIndex}
+            inputClassName="gap-x-4 h-10 w-36"
+            menuClassName="w-36"
+            label={''}
+            options={bpTypes}
+            onChange={({ value }: any) => {
+              setBPType(capitalize(value))
 
-            if (viewType === 'activities') {
-              setParams({
-                bp_status: capitalize(value),
-                offset: 0,
-              })
-            } else if (viewType === 'details') {
-              setParams({
-                status: capitalize(value),
-                offset: 0,
-              })
-              if (setParamsBpActivities && setParamsFiles) {
-                setParamsBpActivities({
+              if (viewType === 'activities') {
+                setParams({
                   bp_status: capitalize(value),
                   offset: 0,
                 })
-                setParamsFiles({
+              } else if (viewType === 'details') {
+                setParams({
+                  status: capitalize(value),
+                  offset: 0,
+                })
+                if (setParamsBpActivities && setParamsFiles) {
+                  setParamsBpActivities({
+                    bp_status: capitalize(value),
+                    offset: 0,
+                  })
+                  setParamsFiles({
+                    status: capitalize(value),
+                    offset: 0,
+                  })
+                }
+              } else {
+                setParams({
                   status: capitalize(value),
                   offset: 0,
                 })
               }
-            } else {
-              setParams({
-                status: capitalize(value),
-                offset: 0,
-              })
-            }
-          }}
-        />
+            }}
+          />
+        </div>
       </div>
       {userCanEditBusinessPlan[user_type as UserType] &&
         viewType === 'activities' && (
           <CustomLink
-            className="px-4 py-2 text-lg uppercase"
+            className="text-nowrap px-4 py-2 text-lg uppercase"
             color="secondary"
             href="/business-plans/upload"
             variant="contained"

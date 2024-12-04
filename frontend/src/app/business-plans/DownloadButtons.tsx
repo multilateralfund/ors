@@ -35,7 +35,7 @@ const DownloadButtons = (props: any) => {
       <div className="flex items-center gap-x-3">
         {userCanEditBusinessPlan[user_type as UserType] && (
           <CustomLink
-            className="px-4 py-2 text-lg uppercase"
+            className="text-nowrap px-4 py-2 text-lg uppercase"
             color="secondary"
             href={`${pathname}/${lowerCase(bpType)}/edit`}
             variant="contained"

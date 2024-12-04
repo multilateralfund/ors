@@ -35,7 +35,7 @@
 }
 
 .moreOptions {
-  div:nth-child(2) {
+  div div:first-child {
     width: unset !important;
     justify-content: start !important;
   }
