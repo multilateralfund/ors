@@ -111,21 +111,13 @@ const BPEdit = () => {
         </BPRestoreEdit>
       )}
       {!loading && results.length > 0 && (
-        <>
-          <div className="mb-1 flex justify-end">
-            <div
-              id="bp-consolidated-table-export-button"
-              className="mb-1.5 self-end"
-            />
-          </div>
-          <div className="relative rounded-lg border border-solid border-primary p-6">
-            <BEditTable
-              {...{ form, loading, params }}
-              isConsolidatedView={true}
-              setForm={handleSetForm}
-            />
-          </div>
-        </>
+        <div className="relative rounded-lg border border-solid border-primary p-6">
+          <BEditTable
+            {...{ form, loading, params }}
+            isConsolidatedView={true}
+            setForm={handleSetForm}
+          />
+        </div>
       )}
     </>
   )

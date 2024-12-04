@@ -207,7 +207,6 @@ const valuesColumnDefs = (
   withAgency: boolean,
 ) => [
   ...getDefaultColumnDefs(isDiff, withAgency),
-  // getReqByModelColumn(isDiff),
   yearColumns.find(
     (column: { headerName: string }) => column.headerName === 'Value ($000)',
   ) || [],
@@ -251,7 +250,6 @@ const odpColumnDefs = (
   withAgency: boolean,
 ) => [
   ...getDefaultColumnDefs(isDiff, withAgency),
-  // getReqByModelColumn(isDiff),
   ...(yearColumns.filter(
     (column: { headerName: string }) =>
       column.headerName === 'ODP' || column.headerName === 'MT for HFC',
@@ -260,7 +258,6 @@ const odpColumnDefs = (
 
 const commentsColumnDefs = (isDiff: boolean, withAgency: boolean) => [
   ...getDefaultColumnDefs(isDiff, withAgency),
-  // getReqByModelColumn(isDiff),
   ...getCommentsColumnsDefs(isDiff),
 ]
 

@@ -6,7 +6,7 @@ export function useGetBpData(filters: any, path: string, identifier: string) {
   return useApi({
     options: {
       params: {
-        ...(identifier === 'activities' ? { bp_status: status } : { status }),
+        ...(identifier === 'fullData' ? { bp_status: status } : { status }),
         year_end,
         year_start,
       },

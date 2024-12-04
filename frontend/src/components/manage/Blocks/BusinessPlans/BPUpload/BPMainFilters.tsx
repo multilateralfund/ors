@@ -17,23 +17,23 @@ interface IBPMainFilters {
   filters?: any
   periodOptions: PeriodSelectorOption[]
   setFilters: any
-  fromUploadFilters?: boolean
+  isFirstUploadStep?: boolean
 }
 
 const BPMainFilters = ({
   filters,
   periodOptions,
   setFilters,
-  fromUploadFilters = false,
+  isFirstUploadStep = false,
 }: IBPMainFilters) => {
+  const { uploadBpType } = useStore((state) => state.bpType)
+
   const formattedPeriodOptions = getFormattedPeridOptions(periodOptions)
   const currentPeriod = find(
     formattedPeriodOptions,
     ({ year_start }) => year_start === parseInt(filters?.year_start),
   )
   const currentPeriodIndex = indexOf(formattedPeriodOptions, currentPeriod)
-
-  const { uploadBpType } = useStore((state) => state.bpType)
 
   const handleChangeTriennium = (triennium: PeriodSelectorOption) => {
     setFilters((prevFilters: any) => {
@@ -43,7 +43,6 @@ const BPMainFilters = ({
   }
 
   const handleChangeStatus = (status: IStatus) => {
-    console.log(status)
     setFilters((prevFilters: any) => ({
       ...prevFilters,
       bp_status: status?.label ?? null,
@@ -68,10 +67,10 @@ const BPMainFilters = ({
         <Field
           FieldProps={{ className: 'mb-0 w-40 BPListUpload' }}
           options={bpTypes}
-          defaultValue={fromUploadFilters ? uploadBpType : filters?.bp_status}
+          defaultValue={isFirstUploadStep ? uploadBpType : filters?.bp_status}
           widget="autocomplete"
           onChange={(_: any, value: any) => handleChangeStatus(value)}
-          disabled={fromUploadFilters && uploadBpType ? true : false}
+          disabled={isFirstUploadStep && uploadBpType ? true : false}
         />
       </div>
     </>

@@ -23,8 +23,7 @@ const DownloadButtons = (props: any) => {
   useEffect(function () {
     const elTarget =
       document.getElementById('bp-activities-export-button') ||
-      document.getElementById('bp-table-export-button') ||
-      document.getElementById('bp-consolidated-table-export-button')
+      document.getElementById('bp-table-export-button')
 
     if (elTarget) {
       setDomNode(elTarget)

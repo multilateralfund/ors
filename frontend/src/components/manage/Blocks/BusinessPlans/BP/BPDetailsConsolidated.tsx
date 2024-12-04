@@ -20,9 +20,6 @@ import { Status } from '@ors/components/ui/StatusPill/StatusPill'
 import { useGetBpData } from './useGetBpData'
 
 function BPHistory({ data }: any) {
-  // const { data } = useContext(BPContext) as any
-  // const history = data?.results?.history
-  console.log(data)
   return (
     <VersionHistoryList
       currentDataVersion={1}
@@ -97,7 +94,7 @@ export default function BPDetailsConsolidated(props: any) {
   const { data, setParams: setParamsBpActivities } = useGetBpData(
     filters,
     'api/business-plan/get/',
-    'activities',
+    'fullData',
   ) as any as any
 
   const { results, setParams, params, loaded } = useBPListApi(filters)
