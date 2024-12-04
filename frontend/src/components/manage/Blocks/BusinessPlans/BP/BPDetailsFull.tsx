@@ -4,7 +4,7 @@ import {
   userCanViewFilesBusinessPlan,
 } from '@ors/types/user_types'
 
-import { useContext } from 'react'
+import { useContext, useEffect, useState } from 'react'
 
 import SimpleField from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleField'
 import VersionHistoryList from '@ors/components/ui/VersionDetails/VersionHistoryList'
@@ -18,6 +18,7 @@ import BPListHeader from '../BPList/BPListHeader'
 import BPListTabs from '../BPList/BPListTabs'
 import { useBPListApi } from '../BPList/BPList'
 import { bpTypes } from '../constants'
+import { Status } from '@ors/components/ui/StatusPill/StatusPill'
 
 function BPHistory() {
   // const { data } = useContext(BPContext) as any
@@ -82,14 +83,35 @@ function BPSummary(props: any) {
 
 export default function BPDetailsFull(props: any) {
   const { period } = props
+  const { bpType, setBPType } = useStore((state) => state.bpType)
 
-  const filters = {
-    status: bpTypes[1].label,
+  const [filters, setFilters] = useState({
+    status: (bpType || bpTypes[1].label) as Status,
     year_end: period?.split('-')[1] || null,
     year_start: period?.split('-')[0] || null,
-  }
+  })
 
-  const { results, setParams, params, loading } = useBPListApi(filters)
+  const { results, setParams, params, loading, loaded } = useBPListApi(filters)
+
+  console.log(results, bpType, loading)
+
+  useEffect(() => {
+    if (!bpType && loaded) {
+      if (results.length === 0) {
+        const defaultBpType = bpTypes[0].label
+
+        setBPType(defaultBpType)
+        setParams({ status: defaultBpType })
+        setFilters((filters) => ({
+          ...filters,
+          status: defaultBpType as Status,
+        }))
+      } else {
+        setBPType(bpTypes[1].label)
+      }
+    }
+  }, [results, loaded])
+
   return (
     <>
       {!loading && (

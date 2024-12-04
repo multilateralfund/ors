@@ -422,6 +422,14 @@ const useColumnsOptions = (
         },
         {
           cellClass: 'ag-cell-ellipsed',
+          field: 'remarks_additional',
+          headerClass: 'ag-text-center',
+          headerName: tableColumns.remarks_additional,
+          minWidth: 200,
+          tooltipField: 'remarks_additional',
+        },
+        {
+          cellClass: 'ag-cell-ellipsed',
           field: 'comment_secretariat',
           headerClass: 'ag-text-center',
           headerComponent: function (props: any) {

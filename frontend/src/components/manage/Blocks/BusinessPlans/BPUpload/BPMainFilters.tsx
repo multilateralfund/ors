@@ -6,6 +6,7 @@ import SimpleSelect from '@ors/components/ui/SimpleSelect/SimpleSelect'
 import { PeriodSelectorOption } from '../../Replenishment/types'
 import { bpTypes } from '../constants'
 import { Label, getFormattedPeridOptions } from './helpers'
+import { useStore } from '@ors/store'
 
 interface IStatus {
   label: string
@@ -16,12 +17,14 @@ interface IBPMainFilters {
   filters?: any
   periodOptions: PeriodSelectorOption[]
   setFilters: any
+  fromUploadFilters: boolean
 }
 
 const BPMainFilters = ({
   filters,
   periodOptions,
   setFilters,
+  fromUploadFilters = false,
 }: IBPMainFilters) => {
   const formattedPeriodOptions = getFormattedPeridOptions(periodOptions)
   const currentPeriod = find(
@@ -29,6 +32,8 @@ const BPMainFilters = ({
     ({ year_start }) => year_start === parseInt(filters?.year_start),
   )
   const currentPeriodIndex = indexOf(formattedPeriodOptions, currentPeriod)
+
+  const { uploadBpType } = useStore((state) => state.bpType)
 
   const handleChangeTriennium = (triennium: PeriodSelectorOption) => {
     setFilters((prevFilters: any) => {
@@ -38,6 +43,7 @@ const BPMainFilters = ({
   }
 
   const handleChangeStatus = (status: IStatus) => {
+    console.log(status)
     setFilters((prevFilters: any) => ({
       ...prevFilters,
       bp_status: status?.label ?? null,
@@ -62,9 +68,10 @@ const BPMainFilters = ({
         <Field
           FieldProps={{ className: 'mb-0 w-40 BPListUpload' }}
           options={bpTypes}
-          value={filters?.bp_status}
+          defaultValue={fromUploadFilters ? uploadBpType : filters?.bp_status}
           widget="autocomplete"
           onChange={(_: any, value: any) => handleChangeStatus(value)}
+          disabled={fromUploadFilters && uploadBpType ? true : false}
         />
       </div>
     </>

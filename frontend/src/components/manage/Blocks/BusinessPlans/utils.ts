@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+
 export const filtersToQueryParams = (filters: any) => {
   const filtersParams = Object.entries(filters).map(
     (filter: any) =>

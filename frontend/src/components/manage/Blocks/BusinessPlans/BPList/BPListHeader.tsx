@@ -12,98 +12,103 @@ import { useContext } from 'react'
 import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
 import PeriodSelector from '../../Replenishment/PeriodSelector'
 import { getPathPeriod } from '../../Replenishment/utils'
-import Field from '@ors/components/manage/Form/Field'
 import { bpTypes } from '../constants'
-import { capitalize } from 'lodash'
+import { capitalize, find, indexOf } from 'lodash'
+import SimpleSelect from '@ors/components/ui/SimpleSelect/SimpleSelect'
 
 const BPListHeader = ({
   viewType,
   params,
   setParams,
+  withUploadEndorsedButton = false,
 }: {
   viewType: string
-  params?: any
-  setParams?: any
+  params: any
+  setParams: any
+  withUploadEndorsedButton?: boolean
 }) => {
   const { user_type } = useStore((state) => state.user?.data)
-  const { bpType, setBPType } = useStore((state) => state.bpType)
+  const { setBPType, setUploadBPType } = useStore((state) => state.bpType)
 
   const [pathname] = useLocation()
   const { yearRanges } = useContext(BPYearRangesContext) as any
   const period = getPathPeriod(pathname)
   const { periodOptions } = useGetBpPeriods(yearRanges)
 
+  const currentStatus = find(
+    bpTypes,
+    (type) =>
+      type.label ===
+      (viewType === 'activities' ? params.bp_status : params.status),
+  )
+  const statusIndex = indexOf(bpTypes, currentStatus)
+
   return (
     <div className="mb-8 flex items-center justify-between">
       <div className={cx('flex flex-row flex-wrap gap-2', styles.moreOptions)}>
-        <PageHeading className="min-w-fit">Business Plan</PageHeading>
-        {params && (
-          <>
-            <PeriodSelector
-              label=""
-              period={period}
-              periodOptions={[...periodOptions]}
-            />
-            <Field
-              FieldProps={{ className: 'ml-2 mb-0 w-36 BPList' }}
-              options={bpTypes}
-              value={
-                params.bp_status || params.status
-                  ? capitalize(
-                      viewType === 'activities'
-                        ? params.bp_status
-                        : params.status,
-                    )
-                  : 'Endorsed'
-              }
-              widget="autocomplete"
-              isOptionEqualToValue={(option, value) =>
-                option.id === value.toLowerCase()
-              }
-              onChange={(_: any, value: any) => {
-                setBPType(value.id)
+        <PageHeading className="min-w-fit">Business Plan:</PageHeading>
+        <PeriodSelector
+          label=""
+          period={period}
+          periodOptions={[...periodOptions]}
+          inputClassName="h-10 w-32"
+          menuClassName="w-32"
+        />
+        <SimpleSelect
+          className="capitalize"
+          initialIndex={statusIndex}
+          inputClassName="gap-x-4 h-10 w-36"
+          menuClassName="w-36"
+          label={''}
+          options={bpTypes}
+          onChange={({ value }: any) => {
+            setBPType(capitalize(value))
 
-                if (viewType === 'activities') {
-                  setParams({
-                    bp_status: capitalize(value.id),
-                    offset: 0,
-                  })
-                } else {
-                  setParams({
-                    status: capitalize(value.id),
-                    offset: 0,
-                  })
-                }
-              }}
-              disableClearable
-            />
-          </>
-        )}
+            if (viewType === 'activities') {
+              setParams({
+                bp_status: capitalize(value),
+                offset: 0,
+              })
+            } else {
+              setParams({
+                status: capitalize(value),
+                offset: 0,
+              })
+            }
+          }}
+        />
       </div>
-      {userCanEditBusinessPlan[user_type as UserType] && (
-        <div className="flex gap-4">
-          <CustomLink
-            className="px-4 py-2 text-lg uppercase"
-            color="secondary"
-            href="/business-plans/upload"
-            variant="contained"
-            button
-          >
-            Upload
-          </CustomLink>
-          {viewType === 'activities' && (
+      {userCanEditBusinessPlan[user_type as UserType] &&
+        viewType === 'activities' && (
+          <div className="flex gap-4">
+            {withUploadEndorsedButton && (
+              <CustomLink
+                className="px-4 py-2 text-lg uppercase"
+                color="secondary"
+                href="/business-plans/upload"
+                variant="contained"
+                button
+                onClick={() => {
+                  setUploadBPType(bpTypes[1].label)
+                }}
+              >
+                Upload {bpTypes[1].label} Business Plan
+              </CustomLink>
+            )}
             <CustomLink
               className="px-4 py-2 text-lg uppercase"
               color="secondary"
-              href={`${pathname}/${bpType}/edit`}
+              href="/business-plans/upload"
               variant="contained"
               button
+              onClick={() => {
+                setUploadBPType('')
+              }}
             >
-              Revise {bpType} BP
+              Upload
             </CustomLink>
-          )}
-        </div>
-      )}
+          </div>
+        )}
     </div>
   )
 }

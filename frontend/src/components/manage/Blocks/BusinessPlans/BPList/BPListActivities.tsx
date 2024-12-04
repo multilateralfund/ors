@@ -2,8 +2,6 @@
 
 import { useContext, useEffect, useRef, useState } from 'react'
 
-import { capitalize } from 'lodash'
-
 import Activities from '@ors/components/manage/Blocks/BusinessPlans/Activities'
 import useGetBpPeriods from '@ors/components/manage/Blocks/BusinessPlans/BPList/useGetBPPeriods'
 import { useGetActivities } from '@ors/components/manage/Blocks/BusinessPlans/useGetActivities'
@@ -18,6 +16,9 @@ import { TableDataSelectorValuesType } from '../../Table/BusinessPlansTable/Tabl
 import { ViewSelectorValuesType } from '../types'
 import BPListHeader from './BPListHeader'
 import BPListTabs from './BPListTabs'
+import { bpTypes } from '../constants'
+import { Status } from '@ors/components/ui/StatusPill/StatusPill'
+import { useBPListApi } from './BPList'
 
 const ACTIVITIES_PER_PAGE_TABLE = 50
 const ACTIVITIES_PER_PAGE_LIST = 20
@@ -33,17 +34,45 @@ export default function BPListActivitiesWrapper(props: any) {
   const year_end = period?.split('-')[1] || lastPeriod.split('-')[1]
   const year_start = period?.split('-')[0] || firstPeriod.split('-')[0]
 
-  const { bpType } = useStore((state) => state.bpType)
+  const { bpType, setBPType } = useStore((state) => state.bpType)
 
-  const initialFilters = {
-    bp_status: capitalize(bpType),
+  const [initialFilters, setInitialFilters] = useState({
+    bp_status: (bpType || bpTypes[1].label) as Status,
     limit: ACTIVITIES_PER_PAGE_TABLE,
     offset: 0,
     year_end: year_end,
     year_start: year_start,
-  }
+  })
   const activities = useGetActivities(initialFilters)
   const { loading, setParams, params } = activities
+
+  const bpFilters = {
+    status: bpTypes[1].label,
+    year_end: year_end,
+    year_start: year_start,
+  }
+
+  const { results, loaded } = useBPListApi(bpFilters)
+
+  const withUploadEndorsedButton =
+    bpType === bpTypes[0].label && loaded && results.length === 0
+
+  useEffect(() => {
+    if (!bpType && loaded) {
+      if (results.length === 0) {
+        const defaultBpType = bpTypes[0].label
+
+        setBPType(defaultBpType)
+        setParams({ bp_status: defaultBpType })
+        setInitialFilters((filters) => ({
+          ...filters,
+          bp_status: defaultBpType as Status,
+        }))
+      } else {
+        setBPType(bpTypes[1].label)
+      }
+    }
+  }, [results, loaded])
 
   return (
     <>
@@ -51,7 +80,10 @@ export default function BPListActivitiesWrapper(props: any) {
         className="!fixed bg-action-disabledBackground"
         active={loading}
       />
-      <BPListHeader viewType="activities" {...{ params, setParams }} />
+      <BPListHeader
+        viewType="activities"
+        {...{ params, setParams, withUploadEndorsedButton }}
+      />
       <BPListTabs />
       <BPListActivities
         {...{

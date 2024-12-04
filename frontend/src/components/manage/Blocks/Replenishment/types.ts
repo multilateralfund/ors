@@ -35,6 +35,8 @@ export interface PeriodSelectorProps {
   period?: null | string
   periodOptions: PeriodSelectorOption[]
   selectedPeriod?: string
+  inputClassName?: string
+  menuClassName?: string
 }
 
 export interface FileForUpload {

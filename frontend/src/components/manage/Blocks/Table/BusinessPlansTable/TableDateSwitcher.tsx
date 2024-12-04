@@ -4,10 +4,14 @@ import cx from 'classnames'
 const TableDataSelectorOrder = ['values', 'odp', 'comments', 'all']
 export type TableDataSelectorValuesType = 'all' | 'comments' | 'odp' | 'values'
 
-const TableDataSelectorLabels: Record<string, string> = {
+const TableDataSelectorLabels: Record<string, string | JSX.Element> = {
   all: 'View All',
   comments: 'Comments',
-  odp: 'ODP',
+  odp: (
+    <span className="mt-0.5">
+      ODP/MT/CO<sub>2</sub>-eq
+    </span>
+  ),
   values: 'Values',
 }
 
@@ -37,7 +41,7 @@ export default function TableDateSwitcher({
       {TableDataSelectorOrder.map((key) => (
         <ToggleButton
           key={key}
-          className="rounded-none border-primary py-2 text-base tracking-wide first:rounded-l-lg last:rounded-r-lg"
+          className="h-10 whitespace-nowrap rounded-none border-primary py-2 text-base tracking-wide first:rounded-l-lg last:rounded-r-lg"
           value={key}
           classes={{
             selected: 'bg-primary text-mlfs-hlYellow',

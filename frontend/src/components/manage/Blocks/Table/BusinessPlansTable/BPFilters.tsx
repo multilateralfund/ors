@@ -1,17 +1,15 @@
 'use client'
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 
 import { capitalize } from 'lodash'
-import { useParams } from 'wouter'
+import { useLocation, useParams } from 'wouter'
 
 import DownloadButtons from '@ors/app/business-plans/DownloadButtons'
 import ActivitiesFilters from '@ors/components/manage/Blocks/BusinessPlans/ActivitiesFilters'
 import TableDateSwitcher from '@ors/components/manage/Blocks/Table/BusinessPlansTable/TableDateSwitcher'
-import Field from '@ors/components/manage/Form/Field'
 import { formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
-import { bpTypes } from '../../BusinessPlans/constants'
 import { BpPathParams } from '../../BusinessPlans/types'
 import { filtersToQueryParams } from '../../BusinessPlans/utils'
 import TableViewSelector from './TableViewSelector'
@@ -56,7 +54,7 @@ export default function BPFilters({
   }, [status, reqParams])
 
   return (
-    <div className="bp-table-toolbar mb-4 flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
+    <div className="bp-table-toolbar mb-4 flex flex-col justify-between gap-4 xl:flex-row xl:items-center">
       <DownloadButtons
         downloadTexts={['Download']}
         downloadUrls={[
