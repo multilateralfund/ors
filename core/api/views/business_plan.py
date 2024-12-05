@@ -1,9 +1,8 @@
 import os
 import urllib
 
-from constance import config
 from django.db import transaction
-from django.db.models import F, Max, Min
+from django.db.models import Max, Min
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
@@ -25,21 +24,16 @@ from core.api.serializers.business_plan import (
     BusinessPlanSerializer,
     BPChemicalTypeSerializer,
     BPFileSerializer,
-    BPActivityCreateSerializer,
     BPActivityDetailSerializer,
     BPActivityListSerializer,
 )
+from core.api.views.business_plan_utils import BusinessPlanUtils
 from core.api.views.utils import (
-    delete_fields,
     get_business_plan_from_request,
     BPACTIVITY_ORDERING_FIELDS,
 )
-from core.models import BusinessPlan, BPChemicalType, BPHistory, BPActivity
+from core.models import BusinessPlan, BPChemicalType, BPActivity
 from core.models.business_plan import BPFile
-from core.tasks import (
-    send_mail_bp_create,
-    send_mail_bp_update,
-)
 
 
 class BPChemicalTypeListView(generics.ListAPIView):
@@ -54,6 +48,7 @@ class BPChemicalTypeListView(generics.ListAPIView):
 
 
 class BusinessPlanViewSet(
+    BusinessPlanUtils,
     mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
     mixins.ListModelMixin,
@@ -150,198 +145,16 @@ class BusinessPlanViewSet(
         ret["activities"] = self.get_serializer(activities, many=True).data
         return Response(ret)
 
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        # check if the business plan already exists
-        business_plan = BusinessPlan.objects.filter(
-            year_start=request.data.get("year_start"),
-            year_end=request.data.get("year_end"),
-            status=request.data.get("status"),
-        ).first()
-
-        if business_plan:
-            return Response(
-                {
-                    "general_error": "A business plan for this status and these years already exists"
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        serializer = self.get_serializer(
-            data=request.data, context={"ignore_comment": True}
-        )
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        validated_data = serializer.validated_data.copy()
-        validated_data.pop("activities", [])
-        instance = BusinessPlan(**validated_data)
-
-        ret_code, error = self.check_activity_values(serializer.initial_data, instance)
-        if ret_code != status.HTTP_200_OK:
-            return Response({"general_error": error}, status=ret_code)
-
-        self.perform_create(serializer)
-        instance = serializer.instance
-
-        # set initial_id - used to set `is_updated` later
-        instance.activities.update(initial_id=F("id"))
-
-        # set name
-        if not instance.name:
-            instance.name = (
-                f"{instance.status} {instance.year_start} - {instance.year_end}"
-            )
-
-        # set created by user
-        user = request.user
-        instance.created_by = user
-        instance.save()
-
-        self.create_history(instance, user, "Created by user")
-
-        if config.SEND_MAIL:
-            send_mail_bp_create.delay(instance.id)  # send mail to MLFS
-
-        headers = self.get_success_headers(serializer.data)
-        return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers
-        )
-
-    def check_activity_values(self, initial_data, business_plan):
-        for activity in initial_data.get("activities", []):
-            for activity_value in activity.get("values", []):
-                if (
-                    business_plan.year_start > activity_value["year"]
-                    or activity_value["year"] > business_plan.year_end
-                ):
-                    return (
-                        status.HTTP_400_BAD_REQUEST,
-                        "BP activity values year not in business plan interval",
-                    )
-
-        return status.HTTP_200_OK, ""
-
-    def check_readonly_fields(self, initial_data, current_obj):
-        if (
-            initial_data["year_start"] != current_obj.year_start
-            or initial_data["year_end"] != current_obj.year_end
-            or initial_data["status"] != current_obj.status
-        ):
-            return status.HTTP_400_BAD_REQUEST, "Business plan readonly fields changed"
-
-        return status.HTTP_200_OK, ""
-
-    def set_is_updated_activities(self, new_instance, current_obj):
-        new_activities = []
-        updated_activities = []
-        data = BPActivityCreateSerializer(new_instance.activities.all(), many=True).data
-        data_old = BPActivityCreateSerializer(
-            current_obj.activities.all(), many=True
-        ).data
-        activities_old = {activity["initial_id"]: activity for activity in data_old}
-
-        for activity in data:
-            # match new with old activities using `initial_id`
-            activity_old = activities_old.pop(activity["initial_id"], None)
-            activity_id = activity.pop("id", None)
-
-            if not activity_old:
-                new_activities.append(activity_id)
-                continue
-
-            # delete ids to compare only actual values
-            delete_fields(activity, ["id", "business_plan_id", "is_updated"])
-            delete_fields(activity_old, ["id", "business_plan_id", "is_updated"])
-            for value in activity.get("values", []) + activity_old.get("values", []):
-                delete_fields(value, ["id"])
-
-            if activity != activity_old:
-                updated_activities.append(activity_id)
-
-        BPActivity.objects.filter(id__in=new_activities).update(
-            is_updated=True, initial_id=F("id")
-        )
-        BPActivity.objects.filter(id__in=updated_activities).update(is_updated=True)
-
-    def set_bp_data(self, user, new_instance, current_obj):
-        # inherit all history
-        BPHistory.objects.filter(business_plan=current_obj).update(
-            business_plan=new_instance
-        )
-
-        # set name
-        if not new_instance.name:
-            new_instance.name = f"{new_instance.status} {new_instance.year_start} - {new_instance.year_end}"
-
-        # set updated by user
-        new_instance.updated_by = user
-
-        # set is_updated, compare with current obj
-        self.set_is_updated_activities(new_instance, current_obj)
-
-        current_obj.delete()
-
-    def create_history(self, business_plan, user, event):
-        BPHistory.objects.create(
-            business_plan=business_plan,
-            updated_by=user,
-            event_description=event,
-        )
+        ret_code, ret_data = self.create_bp(request.data)
+        return Response(ret_data, status=ret_code)
 
     @transaction.atomic
     def update(self, request, *args, **kwargs):
-        user = request.user
         current_obj = self.get_object()
-
-        ignore_comment = bool("agency" in user.user_type.lower())
-        serializer = self.get_serializer(
-            data=request.data, context={"ignore_comment": ignore_comment}
-        )
-
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        # validate bp and activities data
-        ret_code, error = self.check_readonly_fields(
-            serializer.initial_data, current_obj
-        )
-        if ret_code != status.HTTP_200_OK:
-            return Response({"general_error": error}, status=ret_code)
-
-        ret_code, error = self.check_activity_values(
-            serializer.initial_data, current_obj
-        )
-        if ret_code != status.HTTP_200_OK:
-            return Response({"general_error": error}, status=ret_code)
-
-        # create new bp instance and activities
-        self.perform_create(serializer)
-        new_instance = serializer.instance
-
-        # set name, updated_by, is_updated
-        self.set_bp_data(user, new_instance, current_obj)
-        new_instance.save()
-
-        # create new history for update event
-        self.create_history(new_instance, user, "Updated by user")
-
-        if config.SEND_MAIL:
-            send_mail_bp_update.delay(new_instance.id)  # send mail to MLFS
-
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
+        ret_code, ret_data = self.update_bp(request.data, current_obj)
+        return Response(ret_data, status=ret_code)
 
 
 class BPActivityViewSet(
@@ -494,54 +307,114 @@ class BPFileDownloadView(generics.RetrieveAPIView):
         return response
 
 
-class BPImportValidateView(generics.GenericAPIView):
-
+class BPImportValidateView(BusinessPlanUtils, generics.GenericAPIView):
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "year_start",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+            ),
+        ],
+    )
     def post(self, request, *args, **kwargs):
-        response_data = {
-            "activities_number": 123,
-            "agencies_number": 12,
-            "errors": [
-                {
-                    "error_type": "general error",
-                    "row_number": None,
-                    "activity_id": None,
-                    "error_message": "Invalid file structure",
-                },
-                {
-                    "error_type": "data error",
-                    "row_number": 123,
-                    "activity_id": "UNEP_AFG_00123213",
-                    "error_message": "This country does not exist in our system",
-                },
-                {
-                    "error_type": "data error",
-                    "row_number": 1243,
-                    "activity_id": None,
-                    "error_message": "This agency does not exist in our system",
-                },
-            ],
-            "warnings": [
-                {
-                    "warning_type": "data warning",
-                    "row_number": 1223,
-                    "activity_id": "UNEP_AFG_00123213",
-                    "warning_message": "This sector does not exist in our system "
-                    "and we will set the sector to be 'Other'",
-                },
-                {
-                    "warning_type": "data warning",
-                    "row_number": 1263,
-                    "activity_id": None,
-                    "warning_message": "This cluster does not exist in our system"
-                    "and we will set the sector to be 'Other'",
-                },
-            ],
-        }
-        return Response(response_data, status=status.HTTP_200_OK)
+        files = request.FILES
+        year_start = int(request.query_params.get("year_start", 0))
 
+        ret_code, ret_data = self.import_bp(files, year_start, from_validate=True)
+        if ret_code != status.HTTP_200_OK:
+            return Response(
+                {
+                    "activities_number": None,
+                    "agencies_number": None,
+                    "errors": [
+                        {
+                            "error_type": "general error",
+                            "row_number": None,
+                            "activtiy_id": None,
+                            "error_message": ret_data,
+                        },
+                    ],
+                    "warnings": [],
+                },
+                status=ret_code,
+            )
 
-class BPImportView(generics.GenericAPIView):
-    def post(self, request, *args, **kwargs):
+        agency_ids = [activity["agency_id"] for activity in ret_data["activities"]]
         return Response(
-            {"message": "Data imported successfully"}, status=status.HTTP_200_OK
+            {
+                "activities_number": len(ret_data["activities"]),
+                "agencies_number": len(list(dict.fromkeys(agency_ids))),
+                "errors": ret_data["errors"],
+                "warnings": ret_data["warnings"],
+            },
+            status=status.HTTP_200_OK,
         )
+
+
+class BPImportView(
+    BusinessPlanUtils,
+    mixins.CreateModelMixin,
+    generics.GenericAPIView,
+):
+    serializer_class = BusinessPlanCreateSerializer
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "year_start",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                "year_end",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                "status",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_STRING,
+            ),
+            openapi.Parameter(
+                "meeting_number",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                "decision_number",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+            ),
+        ],
+    )
+    @transaction.atomic
+    def post(self, request, *args, **kwargs):
+        files = request.FILES
+        year_start = int(request.query_params.get("year_start", 0))
+        year_end = int(request.query_params.get("year_end", 0))
+        bp_status = request.query_params.get("status")
+
+        ret_code, ret_data = self.import_bp(files, year_start)
+        if ret_code != status.HTTP_200_OK:
+            return Response("Data import failed", status=ret_code)
+
+        current_bp = BusinessPlan.objects.filter(
+            year_start=year_start,
+            year_end=year_end,
+            status=bp_status,
+        ).first()
+
+        data = {
+            "year_start": year_start,
+            "year_end": year_end,
+            "status": bp_status,
+            "activities": ret_data["activities"],
+        }
+        ret_code, _ = (
+            self.update_bp(data, current_bp) if current_bp else self.create_bp(data)
+        )
+
+        if ret_code == status.HTTP_400_BAD_REQUEST:
+            return Response("Data import failed", status=ret_code)
+        return Response("Data imported successfully", status=status.HTTP_200_OK)
