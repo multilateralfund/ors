@@ -76,7 +76,7 @@ class TestBPChemicalTypeList(BaseTest):
 @pytest.fixture(name="_setup_bp_list")
 def setup_bp_list():
     for i in range(3):
-        for status in ["Consolidated", "Endorsed"]:
+        for status in ["Submitted", "Endorsed"]:
             data = {
                 "year_start": 2020 + i,
                 "year_end": 2022 + i,

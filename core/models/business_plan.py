@@ -23,8 +23,11 @@ class BPChemicalType(models.Model):
 
 class BusinessPlan(models.Model):
     class Status(models.TextChoices):
-        consolidated = "Consolidated", "Consolidated"
+        submitted = "Submitted", "Submitted"
         endorsed = "Endorsed", "Endorsed"
+
+    def upload_path(self, filename):
+        return f"bp_files//{self.year_start}-{self.year_end}/{self.status}/{filename}"
 
     created_at = models.DateTimeField(
         auto_now_add=True, null=True, help_text="Date of creation of the business plan"

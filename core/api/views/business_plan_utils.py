@@ -349,6 +349,11 @@ class BusinessPlanUtils:
             business_plan=new_instance
         )
 
+        # set initial_id
+        new_instance.activities.filter(initial_id__isnull=True).update(
+            initial_id=F("id")
+        )
+
         # set name
         if not new_instance.name:
             new_instance.name = f"{new_instance.status} {new_instance.year_start} - {new_instance.year_end}"
