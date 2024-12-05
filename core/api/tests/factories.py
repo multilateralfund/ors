@@ -446,7 +446,6 @@ class BusinessPlanFactory(factory.django.DjangoModelFactory):
 
     year_start = factory.Faker("random_int", min=2000, max=2009)
     year_end = factory.Faker("random_int", min=2010, max=2019)
-    agency = factory.SubFactory(AgencyFactory)
     status = BusinessPlan.Status.endorsed
 
 
@@ -466,6 +465,7 @@ class BPActivityFactory(factory.django.DjangoModelFactory):
     required_by_model = factory.Faker(
         "pystr", max_chars=200, prefix="bpactivity-required-by-model"
     )
+    agency = factory.SubFactory(AgencyFactory)
     country = factory.SubFactory(CountryFactory)
     lvc_status = factory.fuzzy.FuzzyChoice(BPActivity.LVCStatus.choices)
     project_type = factory.SubFactory(ProjectTypeFactory)

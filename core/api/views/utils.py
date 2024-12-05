@@ -30,6 +30,7 @@ from core.models.country_programme_archive import CPRecordArchive, CPReportArchi
 
 
 BPACTIVITY_ORDERING_FIELDS = [
+    "agency__name",
     "title",
     "country__iso3",
     "country__name",
@@ -501,7 +502,6 @@ def get_business_plan_from_request(request):
     @return: business plan
     """
     business_plan_id = request.query_params.get("business_plan_id")
-    agency_id = request.query_params.get("agency_id")
     year_start = request.query_params.get("year_start")
     year_end = request.query_params.get("year_end")
     bp_status = request.query_params.get("bp_status")
@@ -510,9 +510,8 @@ def get_business_plan_from_request(request):
     try:
         if business_plan_id:
             business_plan = BusinessPlan.objects.get(id=business_plan_id)
-        elif all([agency_id, year_start, year_end, bp_status]):
+        elif all([year_start, year_end, bp_status]):
             business_plan = BusinessPlan.objects.get(
-                agency_id=agency_id,
                 year_start=year_start,
                 year_end=year_end,
                 status=bp_status,

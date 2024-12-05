@@ -1,14 +1,10 @@
 import os
 import urllib
 
-import openpyxl
-from collections import defaultdict
 from constance import config
-from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.db.models import F, Max, Min
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -16,8 +12,6 @@ from rest_framework import generics, viewsets, filters, mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from core.api.export.base import configure_sheet_print
-from core.api.export.business_plan import BusinessPlanWriter
 from core.api.filters.business_plan import (
     BPActivityListFilter,
     BPChemicalTypeFilter,
@@ -32,20 +26,15 @@ from core.api.serializers.business_plan import (
     BPChemicalTypeSerializer,
     BPFileSerializer,
     BPActivityCreateSerializer,
-    BPActivityExportSerializer,
     BPActivityDetailSerializer,
     BPActivityListSerializer,
-)
-from core.api.utils import (
-    workbook_response,
-    workbook_pdf_response,
 )
 from core.api.views.utils import (
     delete_fields,
     get_business_plan_from_request,
     BPACTIVITY_ORDERING_FIELDS,
 )
-from core.models import Agency, BusinessPlan, BPChemicalType, BPHistory, BPActivity
+from core.models import BusinessPlan, BPChemicalType, BPHistory, BPActivity
 from core.models.business_plan import BPFile
 from core.tasks import (
     send_mail_bp_create,
@@ -77,9 +66,9 @@ class BusinessPlanViewSet(
         filters.OrderingFilter,
         filters.SearchFilter,
     ]
-    ordering = ["agency__name", "id"]
+    search_fields = []
+    ordering = ["id"]
     ordering_fields = "__all__"
-    search_fields = ["agency__name"]
 
     def get_queryset(self):
         if self.action == "get":
@@ -88,19 +77,14 @@ class BusinessPlanViewSet(
         if self.request.method == "PUT":
             return BusinessPlan.objects.select_for_update()
 
-        business_plans = BusinessPlan.objects.all()
-        # filter business plans by agency if user is agency
-        if "agency" in self.request.user.user_type.lower():
-            business_plans = business_plans.filter(agency=self.request.user.agency)
-
-        return business_plans.select_related(
-            "agency", "created_by", "updated_by"
-        ).order_by("year_start", "year_end", "id")
+        return BusinessPlan.objects.select_related("created_by", "updated_by").order_by(
+            "year_start", "year_end", "status", "id"
+        )
 
     def get_serializer_class(self):
         if self.action == "get":
             return BPActivityDetailSerializer
-        if self.action in ["create", "update", "update_all"]:
+        if self.action in ["create", "update"]:
             return BusinessPlanCreateSerializer
         return BusinessPlanSerializer
 
@@ -121,11 +105,6 @@ class BusinessPlanViewSet(
         manual_parameters=[
             openapi.Parameter(
                 "business_plan_id",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
-            ),
-            openapi.Parameter(
-                "agency_id",
                 openapi.IN_QUERY,
                 type=openapi.TYPE_INTEGER,
             ),
@@ -154,7 +133,6 @@ class BusinessPlanViewSet(
 
         # get activities and history for a specific business plan
         bp = get_business_plan_from_request(self.request)
-        self.check_object_permissions(self.request, bp)
 
         history_qs = bp.bphistory.select_related("business_plan", "updated_by")
 
@@ -187,7 +165,6 @@ class BusinessPlanViewSet(
     def create(self, request, *args, **kwargs):
         # check if the business plan already exists
         business_plan = BusinessPlan.objects.filter(
-            agency_id=request.data.get("agency_id"),
             year_start=request.data.get("year_start"),
             year_end=request.data.get("year_end"),
             status=request.data.get("status"),
@@ -196,7 +173,7 @@ class BusinessPlanViewSet(
         if business_plan:
             return Response(
                 {
-                    "general_error": "A business plan for this agency and these years already exists"
+                    "general_error": "A business plan for this status and these years already exists"
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -211,9 +188,6 @@ class BusinessPlanViewSet(
         validated_data.pop("activities", [])
         instance = BusinessPlan(**validated_data)
 
-        # check user permissions
-        self.check_object_permissions(request, instance)
-
         ret_code, error = self.check_activity_values(serializer.initial_data, instance)
         if ret_code != status.HTTP_200_OK:
             return Response({"general_error": error}, status=ret_code)
@@ -227,7 +201,7 @@ class BusinessPlanViewSet(
         # set name
         if not instance.name:
             instance.name = (
-                f"{instance.agency} {instance.year_start} - {instance.year_end}"
+                f"{instance.status} {instance.year_start} - {instance.year_end}"
             )
 
         # set created by user
@@ -235,7 +209,7 @@ class BusinessPlanViewSet(
         instance.created_by = user
         instance.save()
 
-        self.create_history([instance], user, "Created by user")
+        self.create_history(instance, user, "Created by user")
 
         if config.SEND_MAIL:
             send_mail_bp_create.delay(instance.id)  # send mail to MLFS
@@ -261,8 +235,7 @@ class BusinessPlanViewSet(
 
     def check_readonly_fields(self, initial_data, current_obj):
         if (
-            initial_data["agency_id"] != current_obj.agency_id
-            or initial_data["year_start"] != current_obj.year_start
+            initial_data["year_start"] != current_obj.year_start
             or initial_data["year_end"] != current_obj.year_end
             or initial_data["status"] != current_obj.status
         ):
@@ -310,7 +283,7 @@ class BusinessPlanViewSet(
 
         # set name
         if not new_instance.name:
-            new_instance.name = f"{new_instance.agency} {new_instance.year_start} - {new_instance.year_end}"
+            new_instance.name = f"{new_instance.status} {new_instance.year_start} - {new_instance.year_end}"
 
         # set updated by user
         new_instance.updated_by = user
@@ -320,17 +293,12 @@ class BusinessPlanViewSet(
 
         current_obj.delete()
 
-    def create_history(self, business_plans, user, event):
-        history_objs = []
-        for bp in business_plans:
-            history_objs.append(
-                BPHistory(
-                    business_plan=bp,
-                    updated_by=user,
-                    event_description=event,
-                )
-            )
-        BPHistory.objects.bulk_create(history_objs)
+    def create_history(self, business_plan, user, event):
+        BPHistory.objects.create(
+            business_plan=business_plan,
+            updated_by=user,
+            event_description=event,
+        )
 
     @transaction.atomic
     def update(self, request, *args, **kwargs):
@@ -367,76 +335,10 @@ class BusinessPlanViewSet(
         new_instance.save()
 
         # create new history for update event
-        self.create_history([new_instance], user, "Updated by user")
+        self.create_history(new_instance, user, "Updated by user")
 
         if config.SEND_MAIL:
             send_mail_bp_update.delay(new_instance.id)  # send mail to MLFS
-
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
-
-    # group activities by business plan
-    def group_activity_data(self, data):
-        activities_dict = defaultdict(list)
-        ret_data = []
-
-        for activity in data.get("activities", []):
-            activities_dict[activity["agency_id"]].append(activity)
-
-        for agency_id, activities in activities_dict.items():
-            ret_data.append(
-                {
-                    "agency_id": agency_id,
-                    "year_start": data["year_start"],
-                    "year_end": data["year_end"],
-                    "status": data["status"],
-                    "activities": activities,
-                }
-            )
-        return ret_data
-
-    @transaction.atomic
-    @action(methods=["PUT"], detail=False)
-    def update_all(self, request, *args, **kwargs):
-        user = request.user
-        new_instances = []
-
-        # parse data to respect serializer format
-        data = self.group_activity_data(request.data)
-        serializer = self.get_serializer(data=data, many=True)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        current_bps = {
-            str(bp.agency_id): bp
-            for bp in BusinessPlan.objects.filter(
-                year_start=request.data["year_start"],
-                year_end=request.data["year_end"],
-                status=request.data["status"],
-            )
-        }
-
-        for initial_data in serializer.initial_data:
-            current_bp = current_bps[str(initial_data.get("agency_id"))]
-            # validate activities data
-            ret_code, error = self.check_activity_values(initial_data, current_bp)
-            if ret_code != status.HTTP_200_OK:
-                return Response({"general_error": error}, status=ret_code)
-
-        # create new bp instances and activities
-        self.perform_create(serializer)
-
-        for new_instance in serializer.instance:
-            current_bp = current_bps[str(new_instance.agency_id)]
-            # set name, updated_by, is_updated
-            self.set_bp_data(user, new_instance, current_bp)
-            new_instances.append(new_instance)
-
-        # bulk create/update new bp instances and history
-        BusinessPlan.objects.bulk_update(new_instances, ["name", "updated_by"])
-        self.create_history(
-            new_instances, user, "Consolidated data updated by secretariat user"
-        )
 
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_200_OK, headers=headers)
@@ -456,8 +358,8 @@ class BPActivityViewSet(
         filters.SearchFilter,
     ]
     search_fields = ["title", "comment_secretariat"]
-    ordering = ["business_plan__agency__name", "country__abbr", "initial_id"]
-    ordering_fields = ["business_plan__agency__name"] + BPACTIVITY_ORDERING_FIELDS
+    ordering = ["agency__name", "country__abbr", "initial_id"]
+    ordering_fields = BPACTIVITY_ORDERING_FIELDS
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -469,47 +371,9 @@ class BPActivityViewSet(
 
         if "agency" in self.request.user.user_type.lower():
             # filter activities by agency if user is agency
-            queryset = queryset.filter(business_plan__agency=self.request.user.agency)
+            queryset = queryset.filter(agency=self.request.user.agency)
 
         return queryset
-
-    def get_wb(self, method):
-        year_start = int(self.request.query_params.get("year_start"))
-        year_end = int(self.request.query_params.get("year_end"))
-        agency_id = self.request.query_params.get("agency_id")
-        if agency_id:
-            agency = get_object_or_404(Agency, id=agency_id)
-
-        # get all activities between year_start and year_end
-        queryset = self.filter_queryset(self.get_queryset())
-
-        data = BPActivityExportSerializer(queryset, many=True).data
-
-        wb = openpyxl.Workbook()
-        sheet = wb.active
-        sheet.title = "Business Plans"
-        configure_sheet_print(sheet, sheet.ORIENTATION_LANDSCAPE)
-
-        BusinessPlanWriter(
-            sheet,
-            min_year=year_start,
-            max_year=year_end + 1,
-        ).write(data)
-
-        if agency_id:
-            name = f"BusinessPlan{agency.name}-{year_start}-{year_end}"
-        else:
-            name = f"BusinessPlanActivities{year_start}-{year_end}"
-
-        return method(name, wb)
-
-    @action(methods=["GET"], detail=False)
-    def export(self, *args, **kwargs):
-        return self.get_wb(workbook_response)
-
-    @action(methods=["GET"], detail=False)
-    def print(self, *args, **kwargs):
-        return self.get_wb(workbook_pdf_response)
 
 
 class BPFileView(
@@ -523,7 +387,7 @@ class BPFileView(
     """
 
     permission_classes = [IsSecretariat | IsAgency | IsViewer]
-    queryset = BPFile.objects.select_related("agency")
+    queryset = BPFile.objects.all()
     serializer_class = BPFileSerializer
     filter_class = BPFileFilter
 
@@ -552,17 +416,12 @@ class BPFileView(
         return super().get_permissions()
 
     def get(self, request, *args, **kwargs):
-        user = request.user
-        agency_id = request.query_params.get("agency_id")
-        if "agency" in user.user_type.lower() and user.agency_id != int(agency_id):
-            raise PermissionDenied("User represents other agency")
-
         return self.list(request, *args, **kwargs)
 
     def _file_create(self, request, *args, **kwargs):
         files = request.FILES
         bp_file_data = {
-            "agency_id": request.query_params.get("agency_id"),
+            "status": request.query_params.get("status"),
             "year_start": request.query_params.get("year_start"),
             "year_end": request.query_params.get("year_end"),
         }
@@ -666,15 +525,15 @@ class BPImportValidateView(generics.GenericAPIView):
                     "warning_type": "data warning",
                     "row_number": 1223,
                     "activity_id": "UNEP_AFG_00123213",
-                    "warning_message":
-                    "This sector does not exist in our system and we will set the sector to be 'Other'",
+                    "warning_message": "This sector does not exist in our system "
+                    "and we will set the sector to be 'Other'",
                 },
                 {
                     "warning_type": "data warning",
                     "row_number": 1263,
                     "activity_id": None,
-                    "warning_message":
-                    "This cluster does not exist in our system and we will set the sector to be 'Other'",
+                    "warning_message": "This cluster does not exist in our system"
+                    "and we will set the sector to be 'Other'",
                 },
             ],
         }

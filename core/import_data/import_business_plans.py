@@ -5,6 +5,7 @@ import pandas as pd
 import re
 
 from django.db import transaction
+from django.db.models import F
 from django.conf import settings
 
 from core.import_data.mapping_names_dict import (
@@ -166,35 +167,22 @@ def get_sector_subsector(sector_subsector, index_row):
     return sector, subsector
 
 
-def get_or_create_bp(row, index_row, start_year, end_year):
+def get_or_create_bp(start_year, end_year):
     """
     Get or create BusinessPlan object
 
-    @param row: dataframe row
-    @param index_row: int (row index)
     @param start_year: int (start year)
     @param end_year: int (end year)
 
     @return: BusinessPlan object or None
     """
-    agency = get_object_by_name(
-        Agency, row["Agency"], index_row, "agency", use_offset=False
-    )
-    if not agency:
-        logger.warning(
-            f"[row: {index_row}]: Missing agency: {row['Agency']} => business plan not created"
-        )
-        return None
-
     bp_data = {
-        "agency": agency,
         "year_start": start_year,
         "year_end": end_year,
         "status": BusinessPlan.Status.endorsed,
     }
 
     bp, _ = BusinessPlan.objects.update_or_create(
-        agency=agency,
         year_start=start_year,
         year_end=end_year,
         defaults=bp_data,
@@ -213,22 +201,22 @@ def create_business_plan(row, index_row, year_start, year_end):
 
     @return: BusinessPlan object or None
     """
+    agency = get_object_by_name(
+        Agency, row["Agency"], index_row, "agency", use_offset=False
+    )
     country = get_country_by_name(row["Country"], index_row, use_offset=False)
     project_type = get_project_type_by_code(row["Type"], index_row)
 
     # skip project with missing data
-    if not all([country, project_type]):
+    if not all([agency, country, project_type]):
         logger.warning(
-            f"[row: {index_row}]: Missing required data (country or project_type))"
+            f"[row: {index_row}]: Missing required data (agency, country or project_type))"
             " => business plan activity not created"
         )
         return None
 
     # get or create business plan
-    bp = get_or_create_bp(row, index_row, year_start, year_end)
-    if not bp:
-        # business plan not created
-        return None
+    bp = get_or_create_bp(year_start, year_end)
 
     bp_chemical_type = get_or_create_bp_chemical_type(row["Chemical"])
     if not bp_chemical_type:
@@ -243,6 +231,7 @@ def create_business_plan(row, index_row, year_start, year_end):
     # create business plan data
     bp_activity_data = {
         "business_plan": bp,
+        "agency_id": agency.id if agency else None,
         "title": row["Title"] if row["Title"] else "-",
         "required_by_model": row.get("Required by Model"),
         "country": country,
@@ -367,3 +356,6 @@ def import_business_plans():
             logger.info(f"⏳ importing business plan {file_name}")
             parse_file(file_path, file_name)
             logger.info(f"✔ business plan {file_name} imported")
+
+    # Set initial_id=id for all activities
+    BPActivity.objects.update(initial_id=F("id"))

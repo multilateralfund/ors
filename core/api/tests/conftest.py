@@ -46,6 +46,7 @@ from core.models import BPActivity
 from core.models import CPEmission
 from core.models import CPReport
 from core.models.adm import AdmRecordArchive
+from core.models.business_plan import BusinessPlan
 from core.models.country_programme_archive import CPReportArchive
 from core.utils import get_meta_project_code, get_project_sub_code
 
@@ -427,11 +428,11 @@ def project_ods_odp_blend(project, blend):
 
 
 @pytest.fixture
-def business_plan(agency):
+def business_plan():
     return BusinessPlanFactory(
         year_start=2020,
         year_end=2022,
-        agency=agency,
+        status=BusinessPlan.Status.endorsed,
     )
 
 
@@ -441,9 +442,10 @@ def bp_chemical_type():
 
 
 @pytest.fixture
-def bp_activity(business_plan, country_ro):
+def bp_activity(business_plan, country_ro, agency):
     return BPActivityFactory(
         business_plan=business_plan,
+        agency=agency,
         country=country_ro,
         status=BPActivity.Status.approved,
     )
@@ -748,6 +750,7 @@ def setup_old_version_2005(
 
 @pytest.fixture(name="_setup_bp_activity_create")
 def setup_bp_activity_create(
+    agency,
     country_ro,
     sector,
     subsector,
@@ -759,6 +762,7 @@ def setup_bp_activity_create(
     return {
         "initial_id": 1,
         "title": "Planu",
+        "agency_id": agency.id,
         "country_id": country_ro.id,
         "lvc_status": "LVC",
         "project_type_id": project_type.id,

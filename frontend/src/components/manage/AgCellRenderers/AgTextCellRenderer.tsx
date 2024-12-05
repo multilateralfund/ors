@@ -1,5 +1,4 @@
-'use client'
-import { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 
 import { IconButton, Typography } from '@mui/material'
 import { CustomCellRendererProps } from 'ag-grid-react'
@@ -14,7 +13,9 @@ import { scrollToElement } from '@ors/helpers/Utils/Utils'
 
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
-export default function AgTextCellRenderer(props: CustomCellRendererProps) {
+export default React.memo(function AgTextCellRenderer(
+  props: CustomCellRendererProps,
+) {
   const footnotes = useContext(FootnotesContext)
 
   const [footnote] = useState(props.footnote)
@@ -82,4 +83,4 @@ export default function AgTextCellRenderer(props: CustomCellRendererProps) {
       </Typography>
     </AgTooltipComponent>
   )
-}
+})

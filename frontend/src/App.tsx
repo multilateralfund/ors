@@ -91,9 +91,9 @@ export default function App() {
             <BPListActivitiesPeriodPage />
           </BPListLayout>
         </Route>
-        <Route path="/business-plans/:agency/:period/:status?">
+        {/* <Route path="/business-plans/:agency/:period/:status?">
           <BPAgencyPeriodStatusPage />
-        </Route>
+        </Route> */}
         <Route path="/business-plans">
           <BPPage />
         </Route>

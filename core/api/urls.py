@@ -36,6 +36,7 @@ from core.api.views import (
     ConsolidatedInputDataExportView,
 )
 from core.api.views.agency import AgencyListView
+from core.api.views.bp_export import BPActivityExportView
 from core.api.views.business_plan import (
     BPChemicalTypeListView,
     BPFileDownloadView,
@@ -410,6 +411,11 @@ urlpatterns = [
         "business-plan/bp-chemical-types/",
         BPChemicalTypeListView.as_view(),
         name="bp-chemical-type-list",
+    ),
+    path(
+        "business-plan-activity/export/",
+        BPActivityExportView.as_view(),
+        name="bpactivity-export",
     ),
     path(
         "business-plan/files/",

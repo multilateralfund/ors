@@ -36,23 +36,22 @@ class BusinessPlanFilter(filters.FilterSet):
         choices=BusinessPlan.Status.choices,
         widget=CSVWidget,
     )
-    agency_id = filters.ModelMultipleChoiceFilter(
-        field_name="agency_id",
-        queryset=Agency.objects.all(),
-        widget=CSVWidget,
-    )
 
     class Meta:
         model = BusinessPlan
         fields = [
             "status",
-            "agency_id",
             "year_start",
             "year_end",
         ]
 
 
 class BPActivityFilter(filters.FilterSet):
+    agency_id = filters.ModelMultipleChoiceFilter(
+        queryset=Agency.objects.all(),
+        widget=CSVWidget,
+        help_text="Filter by agency. Multiple values can be separated by comma.",
+    )
     country_id = filters.ModelMultipleChoiceFilter(
         queryset=Country.objects.all(),
         widget=CSVWidget,
@@ -97,6 +96,7 @@ class BPActivityFilter(filters.FilterSet):
     class Meta:
         model = BPActivity
         fields = [
+            "agency_id",
             "country_id",
             "project_type_id",
             "project_cluster_id",
@@ -117,31 +117,26 @@ class BPActivityListFilter(BPActivityFilter):
     year_end = filters.NumberFilter(
         field_name="business_plan__year_end", lookup_expr="lte", required=True
     )
-    agency_id = filters.ModelMultipleChoiceFilter(
-        field_name="business_plan__agency_id",
-        queryset=Agency.objects.all(),
-        widget=CSVWidget,
-    )
     bp_status = filters.MultipleChoiceFilter(
         field_name="business_plan__status",
         choices=BusinessPlan.Status.choices,
         widget=CSVWidget,
+        required=True,
     )
 
     class Meta(BPActivityFilter.Meta):
         fields = BPActivityFilter.Meta.fields + [
             "year_start",
             "year_end",
-            "agency_id",
             "bp_status",
         ]
 
 
 class BPFileFilter(filters.FilterSet):
-    agency_id = filters.ModelChoiceFilter(
+    status = filters.ModelChoiceFilter(
         required=True,
-        field_name="agency_id",
-        queryset=Agency.objects.all(),
+        choices=BusinessPlan.Status.choices,
+        widget=CSVWidget,
     )
     year_start = filters.NumberFilter(
         required=True,
@@ -154,4 +149,4 @@ class BPFileFilter(filters.FilterSet):
 
     class Meta:
         model = BPFile
-        fields = ["agency_id", "year_start", "year_end"]
+        fields = ["status", "year_start", "year_end"]

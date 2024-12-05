@@ -56,7 +56,6 @@ class BPActivityValueSerializer(serializers.ModelSerializer):
 
 
 class BusinessPlanSerializer(serializers.ModelSerializer):
-    agency = AgencySerializer()
     status = serializers.ChoiceField(
         choices=BusinessPlan.Status.choices, required=False
     )
@@ -72,16 +71,15 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
             "status",
             "year_start",
             "year_end",
-            "agency",
             "updated_at",
             "updated_by",
         ]
 
 
 class BPActivityExportSerializer(serializers.ModelSerializer):
-    agency = serializers.SerializerMethodField()
+    agency = serializers.SlugRelatedField("name", read_only=True)
     lvc_status = serializers.ChoiceField(choices=BPActivity.LVCStatus.choices)
-    project_type = serializers.SlugRelatedField("code", read_only=True)
+    project_type = serializers.SlugRelatedField("name", read_only=True)
     status = serializers.ChoiceField(choices=BPActivity.Status.choices)
     bp_chemical_type = serializers.SlugRelatedField("name", read_only=True)
     chemical_detail = serializers.SerializerMethodField()
@@ -92,6 +90,7 @@ class BPActivityExportSerializer(serializers.ModelSerializer):
     subsector = serializers.SlugRelatedField("name", read_only=True)
     values = BPActivityValueSerializer(many=True)
     display_internal_id = serializers.SerializerMethodField()
+    is_multi_year_display = serializers.SerializerMethodField()
 
     class Meta:
         model = BPActivity
@@ -114,7 +113,7 @@ class BPActivityExportSerializer(serializers.ModelSerializer):
             "subsector",
             "legacy_sector_and_subsector",
             "status",
-            "is_multi_year",
+            "is_multi_year_display",
             "reason_for_exceeding",
             "remarks",
             "remarks_additional",
@@ -122,21 +121,22 @@ class BPActivityExportSerializer(serializers.ModelSerializer):
             "comment_secretariat",
         ]
 
-    def get_agency(self, obj):
-        return obj.business_plan.agency.name
-
     def get_chemical_detail(self, obj):
         return "/".join(chem.name for chem in obj.substances.all())
 
     def get_display_internal_id(self, obj):
-        agency_code = obj.business_plan.agency.name
+        agency_code = obj.agency.name
         country_code = obj.country.abbr or obj.country.name
         # add 0 padding to internal_id to make it 9 digits
         internal_id = str(obj.initial_id).zfill(9)
         return f"{agency_code}-{country_code}-{internal_id}"
 
+    def get_is_multi_year_display(self, obj):
+        return "M" if obj.is_multi_year else "I"
+
 
 class BPActivityDetailSerializer(serializers.ModelSerializer):
+    agency = AgencySerializer()
     country = CountrySerializer()
     lvc_status = serializers.ChoiceField(choices=BPActivity.LVCStatus.choices)
     project_type = ProjectTypeSerializer()
@@ -177,6 +177,8 @@ class BPActivityDetailSerializer(serializers.ModelSerializer):
             "is_updated",
             "title",
             "required_by_model",
+            "agency",
+            "agency_id",
             "country",
             "country_id",
             "lvc_status",
@@ -224,25 +226,20 @@ class BPActivityDetailSerializer(serializers.ModelSerializer):
 
 
 class BPActivityListSerializer(BPActivityDetailSerializer):
-    agency = serializers.SerializerMethodField()
     bp_status = serializers.SerializerMethodField()
     display_internal_id = serializers.SerializerMethodField()
 
     class Meta(BPActivityDetailSerializer.Meta):
         fields = [
-            "agency",
             "bp_status",
             "display_internal_id",
         ] + BPActivityDetailSerializer.Meta.fields
-
-    def get_agency(self, obj):
-        return obj.business_plan.agency.name
 
     def get_bp_status(self, obj):
         return obj.business_plan.status
 
     def get_display_internal_id(self, obj):
-        agency_code = obj.business_plan.agency.name
+        agency_code = obj.agency.name
         country_code = obj.country.abbr or obj.country.name
         # add 0 padding to internal_id to make it 9 digits
         internal_id = str(obj.initial_id).zfill(9)
@@ -253,6 +250,7 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
     # don't use `PrimaryKeyRelatedField`; makes 1 query / item when `many=True`
     # FKs will be manually validated
     business_plan_id = serializers.IntegerField(required=False)
+    agency_id = serializers.IntegerField()
     country_id = serializers.IntegerField()
     lvc_status = serializers.ChoiceField(choices=BPActivity.LVCStatus.choices)
     project_type_id = serializers.IntegerField()
@@ -275,6 +273,7 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # get all related obj IDs only once for validation
+        self.agency_ids = Agency.objects.values_list("id", flat=True)
         self.country_ids = Country.objects.values_list("id", flat=True)
         self.project_type_ids = ProjectType.objects.values_list("id", flat=True)
         self.bp_chemical_type_ids = BPChemicalType.objects.values_list("id", flat=True)
@@ -294,6 +293,11 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("Invalid sector - type combination")
 
         return super().validate(attrs)
+
+    def validate_agency_id(self, agency_id):
+        if agency_id not in self.agency_ids:
+            raise serializers.ValidationError("Agency not found")
+        return agency_id
 
     def validate_country_id(self, country_id):
         if country_id not in self.country_ids:
@@ -359,6 +363,7 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
             "business_plan_id",
             "title",
             "required_by_model",
+            "agency_id",
             "country_id",
             "lvc_status",
             "project_type_id",
@@ -383,9 +388,6 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
 
 
 class BusinessPlanCreateSerializer(serializers.ModelSerializer):
-    agency_id = serializers.PrimaryKeyRelatedField(
-        queryset=Agency.objects.all().values_list("id", flat=True),
-    )
     status = serializers.ChoiceField(choices=BusinessPlan.Status.choices, required=True)
     activities = BPActivityCreateSerializer(many=True, required=False)
 
@@ -396,7 +398,6 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
             "name",
             "year_start",
             "year_end",
-            "agency_id",
             "status",
             "activities",
         ]
@@ -481,17 +482,14 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
 
 
 class BPFileSerializer(serializers.ModelSerializer):
-    agency_id = serializers.PrimaryKeyRelatedField(
-        required=True,
-        queryset=Agency.objects.all().values_list("id", flat=True),
-    )
+    status = serializers.ChoiceField(choices=BusinessPlan.Status.choices, required=True)
     download_url = serializers.SerializerMethodField()
 
     class Meta:
         model = BPFile
         fields = [
             "id",
-            "agency_id",
+            "status",
             "year_start",
             "year_end",
             "uploaded_at",
