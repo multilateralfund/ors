@@ -19,6 +19,8 @@ function PeriodSelector(props: PeriodSelectorProps) {
     period,
     periodOptions,
     selectedPeriod,
+    inputClassName,
+    menuClassName,
   } = props
 
   const [pathname, setLocation] = useLocation()
@@ -58,6 +60,8 @@ function PeriodSelector(props: PeriodSelectorProps) {
         label={label}
         options={options}
         onChange={handleChange}
+        inputClassName={inputClassName}
+        menuClassName={menuClassName}
       />
     </div>
   )

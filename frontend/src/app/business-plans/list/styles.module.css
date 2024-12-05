@@ -34,13 +34,9 @@
   }
 }
 
-.moreOptions {
-  @media (width <= 580px) {
-    div:first-child {
-      width: unset;
-      justify-content: start;
-    }
-  }
+.moreOptions div:first-child {
+  width: unset !important;
+  justify-content: start !important;
 }
 
 .page {

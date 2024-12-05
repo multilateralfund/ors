@@ -104,12 +104,3 @@ export const MYAValueSetter = (params: any, multiYearFilterOptions: any) => {
 
   return true
 }
-
-export const commentsValueSetter = (params: any) => {
-  const newValNames = params.newValue?.map((newVal: any) =>
-    isObject(newVal) ? get(newVal, 'id') : newVal,
-  )
-  params.data.comment_types = newValNames
-
-  return true
-}

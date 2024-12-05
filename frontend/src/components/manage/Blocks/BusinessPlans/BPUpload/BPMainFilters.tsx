@@ -16,12 +16,14 @@ interface IBPMainFilters {
   filters?: any
   periodOptions: PeriodSelectorOption[]
   setFilters: any
+  isFirstUploadStep?: boolean
 }
 
 const BPMainFilters = ({
   filters,
   periodOptions,
   setFilters,
+  isFirstUploadStep = false,
 }: IBPMainFilters) => {
   const formattedPeriodOptions = getFormattedPeridOptions(periodOptions)
   const currentPeriod = find(

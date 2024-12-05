@@ -86,11 +86,11 @@ function BPListFilters(props: any) {
         filters={filters}
         setFilters={setFilters}
       />
-      <StatusFilter
+      {/* <StatusFilter
         filters={filters}
         setFilters={setFilters}
         statuses={statuses}
-      />
+      /> */}
     </div>
   )
 }

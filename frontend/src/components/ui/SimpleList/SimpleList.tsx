@@ -1,5 +1,4 @@
 import { Typography } from '@mui/material'
-import { lowerCase } from 'lodash'
 
 import Link from '@ors/components/ui/Link/Link'
 

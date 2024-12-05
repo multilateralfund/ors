@@ -4,7 +4,7 @@ import { ApiEditBPActivity } from '@ors/types/api_bp_get'
 
 import { useCallback, useEffect, useState } from 'react'
 
-import { capitalize, find, map } from 'lodash'
+import { capitalize, map } from 'lodash'
 import { useParams } from 'wouter'
 
 import Loading from '@ors/components/theme/Loading/Loading'
@@ -42,8 +42,6 @@ const BPEdit = () => {
   } = useGetActivities(initialFiltersActivities)
   const { results, loading: bpLoading } = useBPListApi(initialFiltersBps)
 
-  const bpSlice = useStore((state) => state.businessPlans)
-  const commentTypes = bpSlice.commentTypes.data
   const agencies = useStore((state) => state?.common.agencies.data)
 
   const [form, setForm] = useState<Array<ApiEditBPActivity> | undefined>(
@@ -75,15 +73,9 @@ const BPEdit = () => {
 
     return map(activities, (activity, index) => ({
       ...activity,
-      comment_types: map(
-        activity.comment_types,
-        (comment_type) =>
-          find(commentTypes, (comm_type) => comm_type.name === comment_type)
-            ?.id,
-      ),
       row_id: index,
     }))
-  }, [commentTypes, activities, agencies])
+  }, [activities, agencies])
 
   useEffect(() => {
     const formattedActivities = getFormattedActivities()
@@ -111,21 +103,13 @@ const BPEdit = () => {
         </BPRestoreEdit>
       )}
       {!loading && results.length > 0 && (
-        <>
-          <div className="mb-1 flex justify-end">
-            <div
-              id="bp-consolidated-table-export-button"
-              className="mb-1.5 self-end"
-            />
-          </div>
-          <div className="relative rounded-lg border border-solid border-primary p-6">
-            <BEditTable
-              {...{ form, loading, params }}
-              isConsolidatedView={true}
-              setForm={handleSetForm}
-            />
-          </div>
-        </>
+        <div className="relative rounded-lg border border-solid border-primary p-6">
+          <BEditTable
+            {...{ form, loading, params }}
+            isConsolidatedView={true}
+            setForm={handleSetForm}
+          />
+        </div>
       )}
     </>
   )

@@ -1,17 +1,15 @@
 'use client'
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 
 import { capitalize } from 'lodash'
 import { useParams } from 'wouter'
 
-import DownloadButtons from '@ors/app/business-plans/DownloadButtons'
+import BPTableToolbarButtons from '@ors/app/business-plans/BPTableToolbarButtons'
 import ActivitiesFilters from '@ors/components/manage/Blocks/BusinessPlans/ActivitiesFilters'
 import TableDateSwitcher from '@ors/components/manage/Blocks/Table/BusinessPlansTable/TableDateSwitcher'
-import Field from '@ors/components/manage/Form/Field'
 import { formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
-import { bpTypes } from '../../BusinessPlans/constants'
 import { BpPathParams } from '../../BusinessPlans/types'
 import { filtersToQueryParams } from '../../BusinessPlans/utils'
 import TableViewSelector from './TableViewSelector'
@@ -39,8 +37,6 @@ export default function BPFilters({
   const projects = useStore((state) => state.projects)
   const clusters = projects.clusters.data || []
 
-  const { setBPType } = useStore((state) => state.bpType)
-
   function handleParamsChange(params: { [key: string]: any }) {
     setParams(params)
   }
@@ -58,8 +54,8 @@ export default function BPFilters({
   }, [status, reqParams])
 
   return (
-    <div className="bp-table-toolbar mb-4 flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
-      <DownloadButtons
+    <div className="bp-table-toolbar mb-4 flex flex-col justify-between gap-4 xl:flex-row xl:items-center">
+      <BPTableToolbarButtons
         downloadTexts={['Download']}
         downloadUrls={[
           formatApiUrl(`/api/business-plan-activity/export/?${exportParams}`),
@@ -77,6 +73,10 @@ export default function BPFilters({
         withAgency={withAgency}
       />
       <div className="flex gap-4 self-start">
+        <TableDateSwitcher
+          changeHandler={(event, value) => setGridOptions(value)}
+          value={gridOptions}
+        />
         <TableViewSelector
           value={displayOptions}
           changeHandler={(_, value) => {
@@ -90,31 +90,6 @@ export default function BPFilters({
             setDisplayOptions(value)
           }}
         />
-        <TableDateSwitcher
-          changeHandler={(event, value) => setGridOptions(value)}
-          value={gridOptions}
-        />
-        {withAgency && (
-          <Field
-            FieldProps={{ className: 'mb-0 w-full md:w-36 BPList' }}
-            options={bpTypes}
-            value={capitalize(reqParams.bp_status)}
-            widget="autocomplete"
-            isOptionEqualToValue={(option, value) =>
-              option.id === value.toLowerCase()
-            }
-            onChange={(_: any, value: any) => {
-              if (withAgency) {
-                setBPType(value.id)
-              }
-              handleParamsChange({
-                bp_status: capitalize(value.id),
-                offset: 0,
-              })
-            }}
-            disableClearable
-          />
-        )}
       </div>
     </div>
   )

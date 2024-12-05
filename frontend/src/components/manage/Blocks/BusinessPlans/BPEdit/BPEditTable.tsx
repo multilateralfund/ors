@@ -1,22 +1,20 @@
 'use client'
 import { ApiBPYearRange } from '@ors/types/api_bp_get_years'
 
-import React, { useCallback, useContext, useMemo, useRef } from 'react'
+import { useCallback, useContext, useMemo, useRef } from 'react'
 
 import { Button } from '@mui/material'
 import { findIndex, isNil } from 'lodash'
 import { useParams } from 'wouter'
 
-import DownloadButtons from '@ors/app/business-plans/DownloadButtons'
 import {
   BPEditTableInterface,
   BpPathParams,
 } from '@ors/components/manage/Blocks/BusinessPlans/types'
 import Table from '@ors/components/manage/Form/Table'
 import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
-import { applyTransaction, formatApiUrl } from '@ors/helpers'
+import { applyTransaction } from '@ors/helpers'
 
-import { filtersToQueryParams } from '../utils'
 import useColumnsOptions from './editSchema'
 import { BasePasteWrapper } from './pasteSupport'
 
@@ -322,7 +320,6 @@ export function BPEditBaseTable(
 }
 
 export default function BPEditTable(props: BPEditTableInterface) {
-  const { params } = props
   const { period } = useParams<BpPathParams>()
   const year_start = period.split('-')[0]
 
@@ -333,17 +330,7 @@ export default function BPEditTable(props: BPEditTableInterface) {
     [yearRanges, year_start],
   )
 
-  const exportParams = useMemo(() => filtersToQueryParams(params), [params])
-
   return yearRangeSelected ? (
-    <>
-      <DownloadButtons
-        downloadTexts={['Download']}
-        downloadUrls={[
-          formatApiUrl(`/api/business-plan-activity/export/?${exportParams}`),
-        ]}
-      />
-      <BPEditBaseTable yearRangeSelected={yearRangeSelected} {...props} />
-    </>
+    <BPEditBaseTable yearRangeSelected={yearRangeSelected} {...props} />
   ) : null
 }
