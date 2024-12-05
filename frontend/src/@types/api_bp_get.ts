@@ -51,7 +51,6 @@ export interface ApiBPActivity {
   bp_chemical_type: ApiBPChemicalType
   bp_chemical_type_id: number
   comment_secretariat: string
-  comment_types: string[]
   country: Country
   country_id: number
   id: number

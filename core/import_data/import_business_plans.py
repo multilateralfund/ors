@@ -5,6 +5,7 @@ import pandas as pd
 import re
 
 from django.db import transaction
+from django.db.models import F
 from django.conf import settings
 
 from core.import_data.mapping_names_dict import (
@@ -355,3 +356,6 @@ def import_business_plans():
             logger.info(f"⏳ importing business plan {file_name}")
             parse_file(file_path, file_name)
             logger.info(f"✔ business plan {file_name} imported")
+
+    # Set initial_id=id for all activities
+    BPActivity.objects.update(initial_id=F("id"))

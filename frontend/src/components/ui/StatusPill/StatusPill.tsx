@@ -1,6 +1,6 @@
 import cx from 'classnames'
 
-export type Status = 'Consolidated' | 'Endorsed'
+export type Status = 'Submitted' | 'Endorsed'
 
 interface StatusStyle {
   bgColor: string
@@ -9,7 +9,7 @@ interface StatusStyle {
 }
 
 export const statusStyles: Record<Status, StatusStyle> = {
-  Consolidated: {
+  Submitted: {
     bgColor: 'bg-white',
     border: 'border-mlfs-deepTealShade',
     textColor: 'text-mlfs-deepTealShade',

@@ -105,7 +105,6 @@ from core.api.views.sector_subsector import ProjectSectorView, ProjectSubSectorV
 from core.api.views.settings import SettingsView
 from core.api.views.usages import UsageListView
 from core.api.views.countries import CountryListView
-from core.api.views.comment_types import CommentTypeListView
 
 router = routers.SimpleRouter()
 router.register("projects", ProjectViewSet, basename="project")
@@ -517,11 +516,6 @@ urlpatterns = [
         "replenishment/scale-of-assessment-version/<int:id>/file/download/",
         ReplenishmentScaleOfAssessmentVersionFileDownloadView.as_view(),
         name="scale-of-assessment-version-file-download",
-    ),
-    path(
-        "comment-types/",
-        CommentTypeListView.as_view(),
-        name="comment-type-list",
     ),
     path(
         "replenishment/input-data/export/",

@@ -84,7 +84,6 @@ class BPActivityExportSerializer(serializers.ModelSerializer):
     chemical_detail = serializers.SerializerMethodField()
     country = serializers.SlugRelatedField("name", read_only=True)
     project_cluster = serializers.SlugRelatedField("name", read_only=True)
-    comment_types = serializers.SlugRelatedField("name", many=True, read_only=True)
 
     sector = serializers.SlugRelatedField("name", read_only=True)
     subsector = serializers.SlugRelatedField("name", read_only=True)
@@ -119,7 +118,6 @@ class BPActivityExportSerializer(serializers.ModelSerializer):
             "remarks_additional",
             "values",
             "comment_secretariat",
-            "comment_types",
         ]
 
     def get_chemical_detail(self, obj):
@@ -161,7 +159,6 @@ class BPActivityDetailSerializer(serializers.ModelSerializer):
         help_text="List of substances names",
         source="substances",
     )
-    comment_types = serializers.SlugRelatedField("name", many=True, read_only=True)
 
     sector = ProjectSectorSerializer()
     sector_code = serializers.SerializerMethodField()
@@ -205,7 +202,6 @@ class BPActivityDetailSerializer(serializers.ModelSerializer):
             "is_multi_year_display",
             "status_display",
             "comment_secretariat",
-            "comment_types",
         ]
 
     def get_is_multi_year_display(self, obj):

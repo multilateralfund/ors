@@ -3,8 +3,8 @@ from django.core.validators import MinValueValidator
 from django.db import models
 
 from core.models.agency import Agency
-from core.models.base import CommentType
 from core.models.country import Country
+from core.models.meeting import Decision, Meeting
 from core.models.project import (
     ProjectCluster,
     ProjectSector,
@@ -24,7 +24,7 @@ class BPChemicalType(models.Model):
 
 class BusinessPlan(models.Model):
     class Status(models.TextChoices):
-        consolidated = "Consolidated", "Consolidated"
+        submitted = "Submitted", "Submitted"
         endorsed = "Endorsed", "Endorsed"
 
     def upload_path(self, filename):
@@ -60,6 +60,12 @@ class BusinessPlan(models.Model):
     )
     status = models.CharField(
         max_length=32, choices=Status.choices, default=Status.endorsed
+    )
+    meeting = models.ForeignKey(
+        Meeting, on_delete=models.PROTECT, null=True, blank=True
+    )
+    decision = models.ForeignKey(
+        Decision, on_delete=models.PROTECT, null=True, blank=True
     )
 
     def __str__(self):
@@ -140,10 +146,8 @@ class BPActivity(models.Model):
 
     # Secretariat comment
     comment_secretariat = models.TextField(blank=True)
-    comment_types = models.ManyToManyField(CommentType, blank=True)
 
     initial_id = models.PositiveIntegerField(null=True, blank=True)
-    is_updated = models.BooleanField(default=False)  # updated from last version
 
     objects = BPActivityManager()
 
@@ -167,6 +171,9 @@ class BPActivityValue(models.Model):
         max_digits=25, decimal_places=15, null=True, blank=True
     )
     value_mt = models.DecimalField(
+        max_digits=25, decimal_places=15, null=True, blank=True
+    )
+    value_co2 = models.DecimalField(
         max_digits=25, decimal_places=15, null=True, blank=True
     )
 

@@ -4,7 +4,7 @@ import { Dispatch, SetStateAction, useState } from 'react'
 
 import { Tooltip } from '@mui/material'
 import { Typography } from '@mui/material'
-import { filter, find, findIndex, map } from 'lodash'
+import { filter, find, findIndex } from 'lodash'
 
 import { IoClose } from 'react-icons/io5'
 
@@ -46,11 +46,6 @@ const updateGridData = (
     )
     props.data.substances = filter(
       props.data.substances,
-      (tagId) => tagId !== optionId,
-    )
-  } else {
-    props.data.comment_types = filter(
-      props.data.comment_types,
       (tagId) => tagId !== optionId,
     )
   }
@@ -101,16 +96,10 @@ const CellTag = (propTags: Array<string>, params: any) => {
 }
 
 export const EditTagsCellRenderer = (params: any) => {
-  const { field, form, options, props, setForm } = params
-  const { comment_types = [], substances_display = [] } = props.data
+  const { field, form, props, setForm } = params
+  const { substances_display = [] } = props.data
 
-  const propsTags =
-    field === 'substances'
-      ? substances_display
-      : map(
-          comment_types,
-          (comId) => find(options, (comm) => comm.id === comId)?.name,
-        )
+  const propsTags = field === 'substances' ? substances_display : []
 
   const [tags, setTags] = useState(propsTags)
 

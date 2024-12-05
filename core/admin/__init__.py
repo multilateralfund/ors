@@ -2,7 +2,6 @@ from .adm import *
 from .agency import *
 from .blend import *
 from .business_plan import *
-from .comment_type import *
 from .country import *
 from .country_programme import *
 from .country_programme_archive import *

@@ -136,7 +136,6 @@ export interface ProjectsSlice {
 }
 
 export interface BusinessPlanSlice {
-  commentTypes: SliceData
   sectors: SliceData
   subsectors: SliceData
   types: SliceData
