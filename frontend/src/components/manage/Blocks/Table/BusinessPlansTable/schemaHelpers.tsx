@@ -2,11 +2,9 @@ import { Tooltip, Typography } from '@mui/material'
 import cx from 'classnames'
 import { isEqual } from 'lodash'
 
-import { truncateText } from '@ors/components/manage/Utils/diffUtils'
 import DiffPill from '@ors/components/ui/DiffUtils/DiffPill'
 
 import BPDiffTooltip from '../../BusinessPlans/BPDiff/BPDiffTooltip'
-import CommentsTagList from './CommentsTagList'
 
 const formatSimpleVals = (value: any, colIdentifier: string) => {
   if (colIdentifier === 'is_multi_year') {
@@ -265,32 +263,23 @@ export const commentsDiffValueGetter = (params: any) => {
   const new_comment = params.data?.['comment_secretariat']
   const old_comment = params.data?.['comment_secretariat_old']
 
-  const new_comment_types = params.data?.['comment_types']
-  const old_comment_types = params.data?.['comment_types_old']
-
   return {
     change_type: change_type,
     new_value: {
       comment: new_comment ?? '',
-      comment_types: new_comment_types ?? [],
     },
     old_value: {
       comment: old_comment ?? '',
-      comment_types: old_comment_types ?? [],
     },
   }
 }
 
-const displayCommentsCellValue = (
-  commentSecretariat: string,
-  commentTypes: Array<string> = [],
-) => {
+const displayCommentsCellValue = (commentSecretariat: string) => {
   if (!commentSecretariat) {
     return null
   }
   return (
     <div className="p-0.5 text-left">
-      {commentTypes.length > 0 && <CommentsTagList comments={commentTypes} />}
       <Tooltip
         TransitionProps={{ timeout: 0 }}
         classes={{ tooltip: 'bp-table-tooltip' }}
@@ -311,14 +300,11 @@ const displayCommentsCellValue = (
 export const commentsDiffCellRenderer = (props: any) => {
   const { change_type, new_value, old_value } = props.value
 
-  const { comment: new_comment, comment_types: new_comment_types } =
-    new_value || {}
-  const { comment: old_comment, comment_types: old_comment_types } =
-    old_value || {}
+  const { comment: new_comment } = new_value || {}
+  const { comment: old_comment } = old_value || {}
 
-  return isEqual(new_comment, old_comment) &&
-    isEqual(new_comment_types, old_comment_types) ? (
-    displayCommentsCellValue(new_comment, new_comment_types)
+  return isEqual(new_comment, old_comment) ? (
+    displayCommentsCellValue(new_comment)
   ) : (
     <Tooltip
       TransitionProps={{ timeout: 0 }}
@@ -333,21 +319,13 @@ export const commentsDiffCellRenderer = (props: any) => {
           { 'diff-cell-new': change_type !== 'deleted' },
         )}
       >
-        {new_comment || new_comment_types?.length > 0 ? (
-          <>
-            {new_comment_types?.length > 0 && (
-              <CommentsTagList
-                comments={new_comment_types}
-                withoutTooltip={true}
-              />
-            )}
-            <div
-              className="block overflow-hidden text-ellipsis"
-              style={{ whiteSpace: 'nowrap' }}
-            >
-              {new_comment}
-            </div>
-          </>
+        {new_comment ? (
+          <div
+            className="block overflow-hidden text-ellipsis"
+            style={{ whiteSpace: 'nowrap' }}
+          >
+            {new_comment}
+          </div>
         ) : (
           <>-</>
         )}

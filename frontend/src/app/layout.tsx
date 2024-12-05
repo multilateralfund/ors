@@ -64,8 +64,6 @@ function useAppState(user: ApiUser | null | undefined) {
           // Country programme data
           blends,
           substances,
-          // Business Plans
-          commentTypes,
         ] = await Promise.all([
           api('api/settings/', {}, false),
           api('api/agencies/', {}, false),
@@ -87,7 +85,6 @@ function useAppState(user: ApiUser | null | undefined) {
             false,
           ),
           // api('api/usages/', {}, false),
-          api('api/comment-types/', {}, false),
         ])
 
         const common = {
@@ -114,7 +111,6 @@ function useAppState(user: ApiUser | null | undefined) {
           substances: getInitialSliceData<ApiSubstance[]>(substances),
         }
         const businessPlans = {
-          commentTypes: getInitialSliceData(commentTypes),
           sectors: getInitialSliceData(sectors),
           subsectors: getInitialSliceData(subsectors),
           types: getInitialSliceData(types),

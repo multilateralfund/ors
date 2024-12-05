@@ -7,10 +7,6 @@ export const createBusinessPlanSlice = ({
   initialState,
 }: CreateSliceProps): BusinessPlanSlice => {
   return {
-    commentTypes: {
-      ...defaultSliceData,
-      ...(initialState?.businessPlans?.commentTypes || {}),
-    },
     sectors: {
       ...defaultSliceData,
       ...(initialState?.businessPlans?.sectors || {}),

@@ -8,7 +8,6 @@ export const tableColumns: { [key: string]: string } = {
   amount_polyol: 'Polyol Amount',
   bp_chemical_type_id: 'Chemical type',
   comment_secretariat: 'Comment',
-  comment_types: 'Comment types',
   country_id: 'Country',
   is_multi_year: 'IND/MYA',
   project_cluster_id: 'Cluster',
@@ -25,6 +24,6 @@ export const tableColumns: { [key: string]: string } = {
 }
 
 export const bpTypes = [
-  { label: 'Consolidated', value: 'consolidated' },
+  { label: 'Submitted', value: 'submitted' },
   { label: 'Endorsed', value: 'endorsed' },
 ]

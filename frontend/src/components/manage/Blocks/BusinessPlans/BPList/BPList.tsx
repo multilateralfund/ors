@@ -14,7 +14,7 @@ import BPListTabs from './BPListTabs'
 import { Status } from '@ors/components/ui/StatusPill/StatusPill'
 import { bpTypes } from '../constants'
 
-type StatusFilterTypes = 'Consolidated' | 'Endorsed'
+type StatusFilterTypes = 'Submitted' | 'Endorsed'
 
 type FiltersType = {
   agency_id: null | number

@@ -1,7 +1,6 @@
-import { Divider, Tooltip, Typography } from '@mui/material'
+import { Divider, Tooltip } from '@mui/material'
 import cx from 'classnames'
 
-import { truncateText } from '@ors/components/manage/Utils/diffUtils'
 import { useStore } from '@ors/store'
 
 const BPDiffTooltip = (props: any) => {
@@ -29,34 +28,11 @@ const BPDiffTooltip = (props: any) => {
     <span className="overflow-auto pr-1">{value}</span>
   )
 
-  const commentsTooltip = (value: {
-    comment: string
-    comment_types: Array<string>
-  }) => {
-    const { comment, comment_types } = value || {}
+  const commentsTooltip = (value: { comment: string }) => {
+    const { comment } = value || {}
 
-    return comment || comment_types?.length > 0 ? (
+    return comment ? (
       <div className="overflow-auto pr-1">
-        <div className="flex flex-wrap gap-1">
-          {comment_types?.map((commType: string, index: number) => (
-            <Tooltip
-              key={index}
-              TransitionProps={{ timeout: 0 }}
-              title={commType}
-              classes={{
-                tooltip: 'bp-table-tooltip',
-              }}
-            >
-              <Typography
-                className="inline-flex cursor-default items-center gap-2 rounded bg-gray-100 px-1 text-xs font-normal text-gray-A700"
-                component="p"
-                variant="h6"
-              >
-                {truncateText(commType, 30)}
-              </Typography>
-            </Tooltip>
-          ))}
-        </div>
         <div>{comment}</div>
       </div>
     ) : (

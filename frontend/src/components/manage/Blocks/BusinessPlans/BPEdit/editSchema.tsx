@@ -306,7 +306,6 @@ const useColumnsOptions = (
             EditTagsCellRenderer({
               ...{ form, props, setForm },
               field: 'substances',
-              options: substances,
             }),
           field: 'substances',
           headerClass: 'ag-text-center',

@@ -2,9 +2,9 @@
 
 import { ApiEditBPActivity } from '@ors/types/api_bp_get'
 
-import React, { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
-import { find, map } from 'lodash'
+import { map } from 'lodash'
 import { useParams } from 'wouter'
 
 import Loading from '@ors/components/theme/Loading/Loading'
@@ -29,9 +29,6 @@ const BPEdit = () => {
   const { data: bpFiles } = useGetFiles(pathParams) as any
 
   const { activities, business_plan } = data || {}
-
-  const bpSlice = useStore((state) => state.businessPlans)
-  const commentTypes = bpSlice.commentTypes.data
 
   const [activeTab, setActiveTab] = useState(0)
   const [form, setForm] = useState<Array<ApiEditBPActivity> | null>()
@@ -66,15 +63,9 @@ const BPEdit = () => {
 
     return map(activities, (activity, index) => ({
       ...activity,
-      comment_types: map(
-        activity.comment_types,
-        (comment_type) =>
-          find(commentTypes, (comm_type) => comm_type.name === comment_type)
-            ?.id,
-      ),
       row_id: index,
     }))
-  }, [commentTypes, activities])
+  }, [activities])
 
   useEffect(() => {
     const formattedActivities = getFormattedActivities()
