@@ -114,7 +114,6 @@ def get_bp_activity_data(
         "required_by_model": row["Required by Model"],
         "status": project_status,
         "is_multi_year": bool(row["Project Category (I/M)"].lower() == "m"),
-        "reason_for_exceeding": row["Reason for exceeding 35% of baseline"],
         "remarks": row["Remarks"],
         "remarks_additional": row["Remarks (Additional)"],
         "comment_secretariat": row["Comment"],
@@ -128,12 +127,14 @@ def get_bp_activity_data(
             value_usd = row[f"Value after {year_value} ($)"]
             value_odp = row[f"ODP after {year_value}"]
             value_mt = row[f"MT for HFC after {year_value}"]
+            value_co2 = row[f"CO₂-eq after {year_value}"]
         else:
             year_value = year
             is_after = False
             value_usd = row[f"Value {year_value} ($)"]
             value_odp = row[f"ODP {year_value}"]
             value_mt = row[f"MT for HFC {year_value}"]
+            value_co2 = row[f"CO₂-eq {year_value}"]
 
         if not check_numeric_value(value_usd):
             value_usd = 0
@@ -153,6 +154,12 @@ def get_bp_activity_data(
                 f"Value mt for year {year_value} (After: {is_after}) {not_a_number_warning}"
             )
 
+        if not check_numeric_value(value_co2):
+            value_co2 = 0
+            warning_messages.append(
+                f"Value CO₂ for year {year_value} (After: {is_after}) {not_a_number_warning}"
+            )
+
         activity_data["values"].append(
             {
                 "year": year_value,
@@ -160,6 +167,7 @@ def get_bp_activity_data(
                 "value_usd": value_usd,
                 "value_odp": value_odp,
                 "value_mt": value_mt,
+                "value_co2": value_co2,
             }
         )
 
