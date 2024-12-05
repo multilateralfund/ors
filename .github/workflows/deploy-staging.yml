@@ -48,4 +48,4 @@ jobs:
 
       - name: Update services
         run: |
-          ssh server "cd /home/ors/ && docker-compose pull && docker-compose up -d --remove-orphans && docker-compose top"
+          ssh server "cd /home/ors/ && docker compose pull && docker compose up -d --remove-orphans && docker compose top"
