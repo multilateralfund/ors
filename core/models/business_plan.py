@@ -4,6 +4,7 @@ from django.db import models
 
 from core.models.agency import Agency
 from core.models.country import Country
+from core.models.meeting import Decision, Meeting
 from core.models.project import (
     ProjectCluster,
     ProjectSector,
@@ -60,8 +61,12 @@ class BusinessPlan(models.Model):
     status = models.CharField(
         max_length=32, choices=Status.choices, default=Status.endorsed
     )
-    meeting_number = models.IntegerField(null=True, blank=True)
-    decision_number = models.IntegerField(null=True, blank=True)
+    meeting = models.ForeignKey(
+        Meeting, on_delete=models.PROTECT, null=True, blank=True
+    )
+    decision = models.ForeignKey(
+        Decision, on_delete=models.PROTECT, null=True, blank=True
+    )
 
     def __str__(self):
         return f"{self.status} {self.year_start}-{self.year_end}"
