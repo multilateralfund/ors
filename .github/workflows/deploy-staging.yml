@@ -5,6 +5,13 @@ concurrency: staging_deployment
 
 on:
   workflow_call:
+    secrets:
+      STAGING_SSH_USER:
+        required: true
+      STAGING_SSH_HOST:
+        required: true
+      STAGING_SSH_KEY:
+        required: true
 
 # env:
 #   ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
@@ -42,4 +49,3 @@ jobs:
       - name: Update services
         run: |
           ssh server "cd /home/ors/ && docker-compose pull && docker-compose up -d --remove-orphans && docker-compose top"
-

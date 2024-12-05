@@ -13,3 +13,7 @@ jobs:
   deploy-staging:
     needs: docker-build
     uses: ./.github/workflows/deploy-staging.yml
+    secrets:
+      STAGING_SSH_USER: ${{ secrets.STAGING_SSH_USER }}
+      STAGING_SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
+      STAGING_SSH_KEY: ${{ secrets.STAGING_SSH_KEY }}
