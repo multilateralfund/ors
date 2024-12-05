@@ -17,7 +17,6 @@ from core.models import (
     BPActivity,
     BPActivityValue,
     BusinessPlan,
-    CommentType,
     Country,
     ProjectCluster,
     ProjectSector,
@@ -167,14 +166,11 @@ class BPActivityDetailSerializer(serializers.ModelSerializer):
     subsector = ProjectSubSectorSerializer()
     values = BPActivityValueSerializer(many=True)
 
-    is_updated = serializers.BooleanField(read_only=True)
-
     class Meta:
         model = BPActivity
         fields = [
             "id",
             "initial_id",
-            "is_updated",
             "title",
             "required_by_model",
             "agency",
@@ -261,14 +257,11 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
 
     # Many2Many represented as list of integers and manually validated
     substances = Many2ManyListField(child=serializers.IntegerField())
-    comment_types = Many2ManyListField(child=serializers.IntegerField(), required=False)
 
     sector_id = serializers.IntegerField()
     sector_code = serializers.CharField(write_only=True)
     subsector_id = serializers.IntegerField()
     values = BPActivityValueSerializer(many=True)
-
-    is_updated = serializers.BooleanField(read_only=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -281,7 +274,6 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
         self.sector_ids = ProjectSector.objects.values_list("id", flat=True)
         self.subsector_ids = ProjectSubSector.objects.values_list("id", flat=True)
         self.substance_ids = Substance.objects.values_list("id", flat=True)
-        self.comment_type_ids = CommentType.objects.values_list("id", flat=True)
 
     def validate(self, attrs):
         sector_code = attrs.get("sector_code")
@@ -335,12 +327,6 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError("Substance not found")
         return substances
 
-    def validate_comment_types(self, comment_types):
-        for comment_type_id in comment_types:
-            if comment_type_id not in self.comment_type_ids:
-                raise serializers.ValidationError("CommentType not found")
-        return comment_types
-
     def validate_values(self, values):
         is_after_count = 0
         for value in values:
@@ -359,7 +345,6 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "initial_id",
-            "is_updated",
             "business_plan_id",
             "title",
             "required_by_model",
@@ -382,7 +367,6 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
             "remarks",
             "remarks_additional",
             "comment_secretariat",
-            "comment_types",
             "values",
         ]
 
@@ -413,19 +397,7 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
             )
         return through_objs
 
-    # don't call `save()` here
-    def create_m2m_comment_types(self, bp_activity, comment_type_ids):
-        through_objs = []
-        for comment_type_id in comment_type_ids:
-            through_objs.append(
-                BPActivity.comment_types.through(
-                    commenttype_id=comment_type_id, bpactivity_id=bp_activity.id
-                )
-            )
-        return through_objs
-
     def _create_bp_activities(self, business_plan, activities):
-        ignore_comment = self.context.get("ignore_comment", False)
         activity_objs = []
         activities_copy = copy.deepcopy(activities)
         for activity in activities_copy:
@@ -434,11 +406,8 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
             # remove Many2Many fields
             activity.pop("values", [])
             activity.pop("substances", [])
-            activity.pop("comment_types", [])
             activity.pop("project_type_code", "")
             activity.pop("sector_code", "")
-            if ignore_comment:
-                activity.pop("comment_secretariat", "")
 
             activity_objs.append(BPActivity(**activity))
 
@@ -447,16 +416,10 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
 
         activity_values = []
         m2m_substances = []
-        m2m_comment_types = []
         for instance, activity_data in zip(activity_objs, activities, strict=True):
             # set Many2Many fields after all activities are created
             substance_ids = activity_data.get("substances", [])
             m2m_substances += self.create_m2m_substances(instance, substance_ids)
-            if not ignore_comment:
-                comment_type_ids = activity_data.get("comment_types", [])
-                m2m_comment_types += self.create_m2m_comment_types(
-                    instance, comment_type_ids
-                )
 
             for activity_value in activity_data.get("values", []):
                 # set `bp_activity_id` for each value
@@ -466,9 +429,6 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
         # bulk create Many2Many relations
         BPActivity.substances.through.objects.bulk_create(
             m2m_substances, batch_size=1000
-        )
-        BPActivity.comment_types.through.objects.bulk_create(
-            m2m_comment_types, batch_size=1000
         )
         # bulk create activity values
         BPActivityValue.objects.bulk_create(activity_values, batch_size=1000)

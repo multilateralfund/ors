@@ -81,11 +81,26 @@ class CPPricesArchiveSerializer(CPPricesBaseSerializer):
 
 
 class CPPricesListSerializer(serializers.ModelSerializer):
+    substance_name = serializers.SerializerMethodField()
+    blend_name = serializers.SerializerMethodField()
+    country_id = serializers.IntegerField(source="country_programme_report.country_id")
+    country_name = serializers.CharField(source="country_programme_report.country.name")
+    year = serializers.IntegerField(source="country_programme_report.year")
+    group = serializers.SerializerMethodField()
+    group_id = serializers.SerializerMethodField()
+
     class Meta:
         model = CPPrices
         fields = [
+            "country_id",
+            "country_name",
+            "year",
             "substance_id",
+            "substance_name",
             "blend_id",
+            "blend_name",
+            "group",
+            "group_id",
             "previous_year_price",
             "current_year_price",
             "remarks",
@@ -93,3 +108,24 @@ class CPPricesListSerializer(serializers.ModelSerializer):
             "is_fob",
         ]
         read_only_fields = fields
+
+    def get_group(self, obj):
+        if obj.blend:
+            return "Blends (Mixture of Controlled Substances)"
+
+        if obj.substance and obj.substance.group:
+            return obj.substance.group.name_alt
+
+        return None
+
+    def get_group_id(self, obj):
+        if obj.substance and obj.substance.group:
+            return obj.substance.group_id
+
+        return None
+
+    def get_substance_name(self, obj):
+        return obj.substance.name if obj.substance else None
+
+    def get_blend_name(self, obj):
+        return obj.blend.name if obj.blend else None

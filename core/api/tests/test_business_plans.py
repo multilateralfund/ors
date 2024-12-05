@@ -9,7 +9,6 @@ from core.api.tests.factories import (
     BPActivityValueFactory,
     BPChemicalTypeFactory,
     BusinessPlanFactory,
-    CommentTypeFactory,
     CountryFactory,
     ProjectClusterFactory,
     ProjectSectorFactory,
@@ -223,7 +222,6 @@ class TestBPCreate:
         subsector,
         project_type,
         bp_chemical_type,
-        comment_type,
         _setup_bp_activity_create,
         _setup_new_business_plan_create,
         mock_send_mail_bp_create,
@@ -231,10 +229,7 @@ class TestBPCreate:
         self.client.force_authenticate(user=agency_user)
 
         data = _setup_new_business_plan_create
-        # comment data should be ignored
         activity_data = _setup_bp_activity_create
-        activity_data["comment_secretariat"] = "Alo, alo, Te-am sunat sa-ti spun"
-        activity_data["comment_types"] = [comment_type.id]
         data["activities"] = [activity_data]
 
         response = self.client.post(self.url, data, format="json")
@@ -258,10 +253,7 @@ class TestBPCreate:
         assert activities[0]["status"] == "A"
         assert activities[0]["is_multi_year"] is False
         assert activities[0]["remarks"] == "Merge bine, bine, bine ca aeroplanu"
-        assert activities[0]["comment_secretariat"] == ""
-        assert activities[0]["comment_types"] == []
         assert activities[0]["values"][0]["year"] == 2020
-        assert activities[0]["is_updated"] is False
 
         mock_send_mail_bp_create.assert_called_once()
 
@@ -359,43 +351,12 @@ class TestBPUpdate:
             == "Multiple values with is_after=true found"
         )
 
-    def test_is_updated(self, agency_user, _setup_bp_activity_create, business_plan):
-        self.client.force_authenticate(user=agency_user)
-
-        url = reverse("businessplan-list") + f"{business_plan.id}/"
-        data = {
-            "year_start": business_plan.year_start,
-            "year_end": business_plan.year_end,
-            "status": business_plan.status,
-            "activities": [_setup_bp_activity_create],
-        }
-        # update bp activity
-        response = self.client.put(url, data, format="json")
-        assert response.status_code == 200
-        new_id = response.data["id"]
-        activities = response.data["activities"]
-        assert activities[0]["is_updated"] is True
-
-        # get new BP by id
-        url = reverse("businessplan-get")
-        response = self.client.get(url, {"business_plan_id": new_id})
-        assert response.status_code == 200
-        data["activities"] = response.json()["activities"]
-
-        # update bp again without changes
-        url = reverse("businessplan-list") + f"{new_id}/"
-        response = self.client.put(url, data, format="json")
-        assert response.status_code == 200
-        activities = response.data["activities"]
-        assert activities[0]["is_updated"] is False
-
-    def test_bp_update_agency(
+    def test_bp_update(
         self,
         agency_user,
         _setup_bp_activity_create,
         business_plan,
         substance,
-        comment_type,
         mock_send_mail_bp_update,
     ):
         self.client.force_authenticate(user=agency_user)
@@ -410,9 +371,6 @@ class TestBPUpdate:
         activity_data["status"] = "P"
         activity_data["is_multi_year"] = True
         activity_data["remarks"] = "Merge rau"
-        # agency updates BP (comment is deleted)
-        activity_data["comment_secretariat"] = "Nu inchide telefonu"
-        activity_data["comment_types"] = [comment_type.id]
         activity_data["values"] = [
             {
                 "year": business_plan.year_end,
@@ -442,41 +400,7 @@ class TestBPUpdate:
         assert activities[0]["status"] == "P"
         assert activities[0]["is_multi_year"] is True
         assert activities[0]["remarks"] == "Merge rau"
-        assert activities[0]["comment_secretariat"] == ""
-        assert activities[0]["comment_types"] == []
         assert activities[0]["values"][0]["year"] == business_plan.year_end
-        assert activities[0]["is_updated"] is True
-
-        mock_send_mail_bp_update.assert_called_once()
-
-    def test_bp_update_secretariat(
-        self,
-        user,
-        _setup_bp_activity_create,
-        business_plan,
-        comment_type,
-        mock_send_mail_bp_update,
-    ):
-        self.client.force_authenticate(user=user)
-
-        url = reverse("businessplan-list") + f"{business_plan.id}/"
-        activity_data = _setup_bp_activity_create
-        # only secretariat can update comments
-        activity_data["comment_secretariat"] = "Nu inchide telefonu"
-        activity_data["comment_types"] = [comment_type.id]
-        data = {
-            "year_start": business_plan.year_start,
-            "year_end": business_plan.year_end,
-            "status": business_plan.status,
-            "activities": [activity_data],
-        }
-        response = self.client.put(url, data, format="json")
-
-        assert response.status_code == 200
-        activities = response.data["activities"]
-        assert activities[0]["comment_secretariat"] == "Nu inchide telefonu"
-        assert activities[0]["comment_types"] == [comment_type.id]
-        assert activities[0]["is_updated"] is True
 
         mock_send_mail_bp_update.assert_called_once()
 
@@ -492,7 +416,6 @@ def setup_bp_activity_list(
     bp_chemical_type,
     substance,
     project_cluster_kpp,
-    comment_type,
 ):
     countries = [country_ro]
     subsectors = [subsector]
@@ -532,7 +455,6 @@ def setup_bp_activity_list(
             }
             bp_activity = BPActivityFactory.create(**data)
             bp_activity.substances.set([substance])
-            bp_activity.comment_types.set([comment_type])
             for i in range(business_plan.year_start, business_plan.year_end + 1):
                 BPActivityValueFactory.create(
                     bp_activity=bp_activity,
@@ -719,25 +641,6 @@ class TestBPActivityList:
         assert response.status_code == 200
         assert len(response.json()) == 0
 
-    def test_comment_type_filter(
-        self, agency_user, business_plan, comment_type, _setup_bp_activity_list
-    ):
-        self.client.force_authenticate(user=agency_user)
-
-        other_comment_type = CommentTypeFactory()
-        response = self.client.get(
-            self.url,
-            {
-                "year_start": business_plan.year_start,
-                "year_end": business_plan.year_end,
-                "bp_status": business_plan.status,
-                "comment_types": f"{comment_type.id},{other_comment_type.id}",
-            },
-        )
-        assert response.status_code == 200
-        assert len(response.json()) == 4
-        assert response.json()[0]["comment_types"] == [comment_type.name]
-
 
 class TestBPGet:
     client = APIClient()
@@ -873,20 +776,3 @@ class TestBPGet:
             },
         )
         assert response.status_code == 400
-
-    def test_comment_type_filter(
-        self, user, business_plan, comment_type, _setup_bp_activity_list
-    ):
-        self.client.force_authenticate(user=user)
-
-        other_comment_type = CommentTypeFactory()
-        response = self.client.get(
-            self.url,
-            {
-                "business_plan_id": business_plan.id,
-                "comment_types": f"{comment_type.id},{other_comment_type.id}",
-            },
-        )
-        assert response.status_code == 200
-        assert len(response.json()["activities"]) == 4
-        assert response.json()["activities"][0]["comment_types"] == [comment_type.name]

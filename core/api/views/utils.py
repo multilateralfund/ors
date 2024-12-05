@@ -13,7 +13,6 @@ from core.api.export.replenishment import (
     StatusOfContributionsWriter,
     StatisticsStatusOfContributionsWriter,
 )
-from core.api.serializers.business_plan import BPActivityDetailSerializer
 from core.models import (
     Country,
     TriennialContributionStatus,
@@ -57,6 +56,25 @@ SUBSTANCE_GROUP_ID_TO_CATEGORY = {
     "uncontrolled": "Other",
     "legacy": "Legacy",
 }
+
+
+def get_country_region_dict():
+    """
+    Get a dictionary of country regions
+
+    @return: dictionary of country regions
+    """
+    countries = Country.objects.all().select_related("parent__parent")
+    country_region_dict = {}
+    for country in countries:
+        if country.parent_id and country.parent.parent_id:
+            country_region_dict[country.id] = country.parent.parent.name
+        elif country.parent_id:
+            country_region_dict[country.id] = country.parent.name
+        else:
+            country_region_dict[country.id] = country.name
+
+    return country_region_dict
 
 
 def get_cp_report_from_request(request, cp_report_class):
@@ -542,40 +560,6 @@ def rename_fields(obj, fields):
 def delete_fields(obj, fields):
     for field in fields:
         obj.pop(field, None)
-
-
-def diff_activities(activities, old_activities):
-    count_new = 0
-    count_changed = 0
-    count_deleted = 0
-
-    data = BPActivityDetailSerializer(activities, many=True).data
-    data_old = BPActivityDetailSerializer(old_activities, many=True).data
-    activities_old = {activity["initial_id"]: activity for activity in data_old}
-
-    for activity in data:
-        activity_old = activities_old.pop(activity["initial_id"], None)
-
-        # Prepare data for comparison
-        delete_fields(activity, ["id", "is_updated"])
-        if activity_old:
-            delete_fields(activity_old, ["id", "is_updated"])
-            for value in activity.get("values", []) + activity_old.get("values", []):
-                delete_fields(value, ["id"])
-
-        # And now actually compare
-        if activity == activity_old:
-            # Only count newly-added or changed activities
-            continue
-        if activity_old:
-            count_changed += 1
-        else:
-            count_new += 1
-
-    for activity in activities_old.values():
-        count_deleted += 1
-
-    return count_new, count_changed, count_deleted
 
 
 class SummaryStatusOfContributionsAggregator:

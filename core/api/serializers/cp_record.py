@@ -123,3 +123,107 @@ class CPRecordReadOnlySerializer(CPRecordBaseSerializer):
 class CPRecordArchiveSerializer(CPRecordBaseSerializer):
     class Meta(CPRecordBaseSerializer.Meta):
         model = CPRecordArchive
+
+
+class CPRecordEkimetricsSerializer(serializers.ModelSerializer):
+    country_name = serializers.CharField(source="country_programme_report.country.name")
+    country_id = serializers.IntegerField(source="country_programme_report.country.id")
+    year = serializers.IntegerField(source="country_programme_report.year")
+    lvc = serializers.BooleanField(source="country_programme_report.country.is_lvc")
+    group = serializers.SerializerMethodField()
+    group_id = serializers.SerializerMethodField()
+    substance_name = serializers.SerializerMethodField()
+    blend_name = serializers.SerializerMethodField()
+    data = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CPRecord
+        fields = [
+            "country_name",
+            "country_id",
+            "year",
+            "lvc",
+            "group",
+            "group_id",
+            "substance_name",
+            "substance_id",
+            "blend_name",
+            "blend_id",
+            "data",
+        ]
+
+    def get_group(self, obj):
+        if obj.blend:
+            return "Blends (Mixture of Controlled Substances)"
+
+        if obj.substance and obj.substance.group:
+            return obj.substance.group.name_alt
+
+        return None
+
+    def get_group_id(self, obj):
+        if obj.substance and obj.substance.group:
+            return obj.substance.group_id
+
+        return None
+
+    def get_substance_name(self, obj):
+        return obj.substance.name if obj.substance else None
+
+    def get_blend_name(self, obj):
+        return obj.blend.name if obj.blend else None
+
+    def _get_values_dict(self, obj, attr_key, attr_name, value):
+        return [
+            {
+                attr_key: attr_name,
+                "measurement_type": "mt",
+                "value": value,
+            },
+            {
+                attr_key: attr_name,
+                "measurement_type": "odp",
+                "value": obj.mt_convert_to_odp(value),
+            },
+            {
+                attr_key: attr_name,
+                "measurement_type": "gwp",
+                "value": obj.mt_convert_to_gwp(value),
+            },
+        ]
+
+    def _get_usages_data(self, obj):
+        usage_dict = self.context["usages_dict"]
+        for usage in obj.record_usages.all():
+            usage_dict[usage.usage_id]["quantity"] = usage.quantity
+
+        final_list = []
+        for _, usage_data in usage_dict.items():
+            final_list.extend(
+                self._get_values_dict(
+                    obj, "sector_name", usage_data["name"], usage_data["quantity"]
+                )
+            )
+        return final_list
+
+    def _get_metrics_data(self, obj):
+        metric_list = []
+        for attribute in [
+            "imports",
+            "import_quotas",
+            "exports",
+            "export_quotas",
+            "production",
+            "manufacturing_blends",
+        ]:
+            attr_value = getattr(obj, attribute)
+            metric_list.extend(
+                self._get_values_dict(obj, "data_type", attribute, attr_value)
+            )
+        return metric_list
+
+    def get_data(self, obj):
+        return {
+            "sectors": self._get_usages_data(obj),
+            "metrics": self._get_metrics_data(obj),
+        }
