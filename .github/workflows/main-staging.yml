@@ -3,7 +3,7 @@ name: "CI-staging"
 on:
   push:
     branches:
-      - "main"
+      - "update-workflow-staging"
 
   workflow_call:
 
