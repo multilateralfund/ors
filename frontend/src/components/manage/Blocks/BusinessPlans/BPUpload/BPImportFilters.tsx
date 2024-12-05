@@ -49,7 +49,7 @@ const BPImportFilters = ({
     <>
       <p className="m-0 text-2xl">Choose Business Plan</p>
       <div className="flex gap-20">
-        <BPMainFilters {...{ periodOptions, setFilters }} />
+        <BPMainFilters {...{ periodOptions, setFilters }} isFirstUploadStep />
       </div>
       <div className="flex gap-20">
         <div className="w-36">

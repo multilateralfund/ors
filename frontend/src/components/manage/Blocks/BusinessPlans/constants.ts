@@ -15,6 +15,7 @@ export const tableColumns: { [key: string]: string } = {
   project_type_id: 'Type',
   reason_for_exceeding: 'Reason for Exceeding',
   remarks: 'Remarks',
+  remarks_additional: 'Remarks (Additional)',
   required_by_model: 'Required by model',
   sector_id: 'Sector',
   status: 'Status',
@@ -24,6 +25,6 @@ export const tableColumns: { [key: string]: string } = {
 }
 
 export const bpTypes = [
-  { id: 'consolidated', label: 'Consolidated' },
-  { id: 'endorsed', label: 'Endorsed' },
+  { label: 'Consolidated', value: 'consolidated' },
+  { label: 'Endorsed', value: 'endorsed' },
 ]

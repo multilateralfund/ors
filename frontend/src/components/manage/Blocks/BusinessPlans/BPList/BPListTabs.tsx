@@ -1,14 +1,11 @@
 'use client'
 
-import React, { PropsWithChildren, useContext, useEffect } from 'react'
+import { PropsWithChildren, useEffect } from 'react'
 
 import cx from 'classnames'
 import { useLocation, Link } from 'wouter'
 
-import useGetBpPeriods from '@ors/components/manage/Blocks/BusinessPlans/BPList/useGetBPPeriods'
-import PeriodSelector from '@ors/components/manage/Blocks/Replenishment/PeriodSelector'
 import { getPathPeriod } from '@ors/components/manage/Blocks/Replenishment/utils'
-import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
 import { useStore } from '@ors/store'
 
 import styles from '@ors/app/business-plans/list/styles.module.css'
@@ -17,6 +14,10 @@ const SECTIONS = [
   {
     label: 'Activities',
     path: '/business-plans/list/activities',
+  },
+  {
+    label: 'Details',
+    path: '/business-plans/list/details',
   },
   {
     label: 'By Agency',
@@ -34,7 +35,7 @@ const getNavLinks = (pathname: string, period: null | string) => {
     return (
       <Link
         key={i}
-        className={cx({ [styles.current]: isCurrent })}
+        className={cx('text-nowrap', { [styles.current]: isCurrent })}
         href={period != null ? `${entry.path}/${period}` : entry.path}
       >
         {entry.label}
@@ -46,8 +47,6 @@ const getNavLinks = (pathname: string, period: null | string) => {
 }
 
 const BPListTabs = (props: PropsWithChildren) => {
-  const { yearRanges } = useContext(BPYearRangesContext) as any
-  const { periodOptions } = useGetBpPeriods(yearRanges)
   const { children } = props
 
   const [pathname] = useLocation()
@@ -68,17 +67,10 @@ const BPListTabs = (props: PropsWithChildren) => {
       <div className={cx('print:hidden', styles.nav)}>
         {/* @ts-ignore */}
         <nav className="shrink-0">{navLinks}</nav>
-        <div className={cx('flex flex-row', styles.moreOptions)}>
-          <PeriodSelector
-            label="Triennial"
-            period={period}
-            periodOptions={[...periodOptions]}
-          />
-          <div
-            id="bp-activities-export-button"
-            className="ml-4 mt-0.5 self-center"
-          />
-        </div>
+        <div
+          id="bp-activities-export-button"
+          className="mb-2.5 ml-4 self-end"
+        />
       </div>
       <div className={styles.page}>{children}</div>
     </>

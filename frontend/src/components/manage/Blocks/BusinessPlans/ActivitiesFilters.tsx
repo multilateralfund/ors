@@ -1,5 +1,3 @@
-import React from 'react'
-
 import { InputAdornment, IconButton as MuiIconButton } from '@mui/material'
 import { union } from 'lodash'
 
@@ -46,7 +44,7 @@ export default function ActivitiesFilters(props: any) {
   return (
     <div className="flex flex-col gap-4">
       {/* Rest of filters */}
-      <div className="grid h-full grid-cols-2 flex-wrap items-center gap-x-4 gap-y-2 border-0 border-solid md:flex ">
+      <div className="grid h-full grid-cols-2 flex-wrap items-center gap-x-4 gap-y-2 border-0 border-solid md:flex">
         <Field
           FieldProps={{ className: 'mb-0 w-full md:w-40 BPList' }}
           Input={{ placeholder: 'Country' }}

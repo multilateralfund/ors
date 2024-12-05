@@ -27,7 +27,6 @@ const BPUploadHeader = ({ currentYearRange }: any) => {
 const BPUpload = () => {
   const { yearRanges } = useContext(BPYearRangesContext) as any
   const { periodOptions } = useGetBpPeriods(yearRanges)
-
   const currentYearRange = periodOptions?.[0]?.value
 
   const [filters, setFilters] = useState<any>({})
@@ -40,7 +39,10 @@ const BPUpload = () => {
   useEffect(() => {
     if (currentYearRange) {
       const [year_start, year_end] = currentYearRange.split('-')
-      setFilters({ year_end, year_start })
+      setFilters({
+        year_end,
+        year_start,
+      })
       setDownloadFilters({ year_end, year_start })
     }
   }, [currentYearRange])

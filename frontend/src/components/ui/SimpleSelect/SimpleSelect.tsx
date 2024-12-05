@@ -16,6 +16,7 @@ export interface SimpleSelectProps<
   className?: string
   initialIndex?: number
   inputClassName?: string
+  menuClassName?: string
   label: string
   onChange: (option: T, index: number) => void
   options: T[]
@@ -31,6 +32,7 @@ const SimpleSelect = <T extends ISimpleSelectOption = ISimpleSelectOption>(
     label,
     onChange,
     options,
+    menuClassName,
   } = props
   const [selectedIndex, setSelectedIndex] = useState(initialIndex)
   const [showMenu, setShowMenu] = useState(false)
@@ -78,6 +80,7 @@ const SimpleSelect = <T extends ISimpleSelectOption = ISimpleSelectOption>(
         <menu
           className={cx(
             'absolute right-0 z-10 mt-1 flex max-h-64 origin-top list-none flex-col overflow-y-auto rounded-lg bg-white p-0 font-light opacity-0 shadow-xl transition-all',
+            menuClassName,
             {
               'collapse scale-y-0': !showMenu,
               'scale-y-100 opacity-100': showMenu,

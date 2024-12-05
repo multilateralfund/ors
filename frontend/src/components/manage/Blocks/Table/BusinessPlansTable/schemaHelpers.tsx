@@ -260,13 +260,6 @@ export const numberCellRenderer = (props: any) => {
   )
 }
 
-export const commentsValueGetter = (params: any) => {
-  return {
-    commentSecretariat: params.data.comment_secretariat,
-    commentTypes: params.data.comment_types,
-  }
-}
-
 export const commentsDiffValueGetter = (params: any) => {
   const change_type = params.data.change_type
   const new_comment = params.data?.['comment_secretariat']
@@ -313,14 +306,6 @@ const displayCommentsCellValue = (
       </Tooltip>
     </div>
   )
-}
-
-export const commentsCellRenderer = (props: {
-  value: { commentSecretariat: string; commentTypes: Array<string> }
-}) => {
-  const { commentSecretariat, commentTypes } = props.value
-
-  return displayCommentsCellValue(commentSecretariat, commentTypes)
 }
 
 export const commentsDiffCellRenderer = (props: any) => {

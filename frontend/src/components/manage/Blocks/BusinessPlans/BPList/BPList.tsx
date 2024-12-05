@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { BPListFilters } from '@ors/components/manage/Blocks/BusinessPlans/BPList/BPListFilters'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
@@ -11,6 +11,8 @@ import { useStore } from '@ors/store'
 
 import BPListHeader from './BPListHeader'
 import BPListTabs from './BPListTabs'
+import { Status } from '@ors/components/ui/StatusPill/StatusPill'
+import { bpTypes } from '../constants'
 
 type StatusFilterTypes = 'Consolidated' | 'Endorsed'
 
@@ -24,7 +26,7 @@ type FiltersType = {
 const PLANS_PER_PAGE = 20
 
 export function useBPListApi(filters?: any) {
-  const { data, loading, setParams } = useApi({
+  const { data, loading, setParams, params } = useApi({
     options: {
       params: {
         ...filters,
@@ -37,12 +39,13 @@ export function useBPListApi(filters?: any) {
     path: 'api/business-plan/',
   })
   const { count, loaded, results } = getResults(data)
-  return { count, data, loaded, loading, results, setParams }
+  return { count, data, loaded, loading, results, setParams, params }
 }
 
 export default function BPList(props: any) {
   const { period } = props
   const { agencies, settings } = useStore((state) => state.common)
+  const { bpType, setBPType } = useStore((state) => state.bpType)
 
   const [pagination, setPagination] = useState({
     page: 1,
@@ -50,12 +53,29 @@ export default function BPList(props: any) {
   })
   const [filters, setFilters] = useState<FiltersType>({
     agency_id: null,
-    status: null,
+    status: (bpType || bpTypes[1].label) as Status,
     year_end: period?.split('-')[1] || null,
     year_start: period?.split('-')[0] || null,
   })
 
-  const { count, results, setParams } = useBPListApi(filters)
+  const { count, results, setParams, loaded } = useBPListApi(filters)
+
+  useEffect(() => {
+    if (!bpType && loaded) {
+      if (results.length === 0) {
+        const defaultBpType = bpTypes[0].label
+
+        setBPType(defaultBpType)
+        setParams({ status: defaultBpType })
+        setFilters((filters) => ({
+          ...filters,
+          status: defaultBpType as Status,
+        }))
+      } else {
+        setBPType(bpTypes[1].label)
+      }
+    }
+  }, [results, loaded])
 
   const pages = Math.ceil(count / pagination.rowsPerPage)
 
@@ -73,7 +93,7 @@ export default function BPList(props: any) {
 
   return (
     <div className="m-auto max-w-screen-xl">
-      <BPListHeader viewType="plans" />
+      <BPListHeader viewType="plans" {...{ setParams }} />
       <BPListTabs />
       <div className="flex flex-1 flex-col justify-start gap-6 border-0 border-t border-solid border-primary pt-6">
         <BPListFilters

@@ -2,7 +2,6 @@ import { ApiEditBPActivity } from '@ors/types/api_bp_get'
 
 import { Dispatch, SetStateAction, useCallback, useMemo } from 'react'
 
-import { ColDef } from 'ag-grid-community'
 import { filter, isNil } from 'lodash'
 
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
@@ -16,7 +15,6 @@ import {
   agFormatNameValue,
   agFormatValue,
   agFormatValueTags,
-  commentsValueSetter,
   getOptionLabel,
   getOptions,
   isOptionEqualToValue,
@@ -27,7 +25,7 @@ import {
 } from './editSchemaHelpers'
 import { HeaderPasteWrapper } from './pasteSupport'
 
-import { IoClipboardOutline, IoTrash } from 'react-icons/io5'
+import { IoTrash } from 'react-icons/io5'
 
 const useColumnsOptions = (
   yearColumns: any[],
@@ -53,7 +51,6 @@ const useColumnsOptions = (
       id: status[0],
       name: status[1],
     }))
-  const commentTypes = bpSlice.commentTypes.data
   const chemicalTypes = useGetChemicalTypes()
   const chemicalTypesResults = chemicalTypes.results
 
@@ -422,6 +419,14 @@ const useColumnsOptions = (
         },
         {
           cellClass: 'ag-cell-ellipsed',
+          field: 'remarks_additional',
+          headerClass: 'ag-text-center',
+          headerName: tableColumns.remarks_additional,
+          minWidth: 200,
+          tooltipField: 'remarks_additional',
+        },
+        {
+          cellClass: 'ag-cell-ellipsed',
           field: 'comment_secretariat',
           headerClass: 'ag-text-center',
           headerComponent: function (props: any) {
@@ -441,33 +446,6 @@ const useColumnsOptions = (
             params.data.comment_secretariat = params.newValue ?? ''
             return true
           },
-        },
-        {
-          cellEditor: 'agSelectCellEditor',
-          cellEditorParams: {
-            Input: {
-              placeholder: 'Select comment type',
-            },
-            agFormatValue: agFormatValueTags,
-            getOptionLabel: (option: any) =>
-              getOptionLabel(commentTypes, option),
-            getOptions: (value: any) => getOptions(value, commentTypes),
-            isMultiple: true,
-            isOptionEqualToValue: isOptionEqualToValue,
-            openOnFocus: true,
-            showUnselectedOptions: true,
-          },
-          cellRenderer: (props: any) =>
-            EditTagsCellRenderer({
-              ...{ form, props, setForm },
-              field: 'comment_types',
-              options: commentTypes,
-            }),
-          field: 'comment_types',
-          headerClass: 'ag-text-center',
-          headerName: tableColumns.comment_types,
-          minWidth: 230,
-          valueSetter: commentsValueSetter,
         },
       ],
       defaultColDef: {
@@ -489,7 +467,6 @@ const useColumnsOptions = (
       sectors,
       substances,
       statuses,
-      commentTypes,
       yearColumns,
       onRemoveActivity,
       agencies,

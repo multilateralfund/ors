@@ -59,15 +59,15 @@ export const BPTable = ({
     const valuesMT = []
 
     for (
-      let year = yearRangeSelected.min_year;
-      year <= yearRangeSelected.max_year + 1;
+      let year = yearRangeSelected.year_start;
+      year <= yearRangeSelected.year_end + 1;
       year++
     ) {
-      const isAfterMaxYear = year > yearRangeSelected.max_year
+      const isAfterMaxYear = year > yearRangeSelected.year_end
 
       let label = year
       if (isAfterMaxYear) {
-        label = `After ${yearRangeSelected.max_year}`
+        label = `After ${yearRangeSelected.year_end}`
       }
 
       valuesUSD.push({
