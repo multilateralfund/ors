@@ -31,6 +31,7 @@ from core.models.project import (
 )
 
 
+# pylint: disable=R0913
 class BPActivityExportView(generics.GenericAPIView):
     permission_classes = [IsSecretariat | IsAgency | IsViewer]
     filterset_class = BPActivityListFilter
@@ -64,7 +65,13 @@ class BPActivityExportView(generics.GenericAPIView):
         return [{"name": name, "acronym": acronym} for name, acronym in queryset]
 
     def add_data_validation(
-        self, wb, column, validation_sheet, validation_range, allow_blank=False
+        self,
+        wb,
+        column,
+        validation_sheet,
+        validation_range,
+        allow_blank=False,
+        show_error=False,
     ):
         """
         Add data validation to a column in the Activities sheet
@@ -80,7 +87,7 @@ class BPActivityExportView(generics.GenericAPIView):
             type="list",
             formula1=validation_formula,
             showDropDown=False,
-            showErrorMessage=True,
+            showErrorMessage=show_error,
             allow_blank=allow_blank,
         )
         data_validation.prompt = "Please select from the dropdown"
@@ -126,17 +133,17 @@ class BPActivityExportView(generics.GenericAPIView):
         exporter = ModelNameCodeWriter(wb, "Countries")
         data = self.get_name_and_codes(Country, "abbr")
         exporter.write(data)
-        self.add_data_validation(wb, "B", "Countries", len(data))
+        self.add_data_validation(wb, "B", "Countries", len(data), show_error=True)
 
         exporter = ModelNameWriter(wb, "Agencies")
         data = self.get_names(Agency)
         exporter.write(data)
-        self.add_data_validation(wb, "C", "Agencies", len(data))
+        self.add_data_validation(wb, "C", "Agencies", len(data), show_error=True)
 
         exporter = ModelNameWriter(wb, "Clusters", 4)
         data = self.get_names(ProjectCluster)
         exporter.write(data)
-        self.add_data_validation(wb, "I", "Clusters", len(data), allow_blank=True)
+        self.add_data_validation(wb, "I", "Clusters", len(data))
 
         exporter = ModelNameWriter(wb, "ChemicalTypes")
         data = self.get_names(BPChemicalType)
@@ -170,7 +177,7 @@ class BPActivityExportView(generics.GenericAPIView):
         # project status (A/P)
         self.add_all_value_validation(
             wb,
-            "AA",
+            "AD",
             '"A,P"',
             "Enter 'A' for Approved or 'P' for Pending",
             "Invalid entry, please enter 'A' or 'P'.",
@@ -179,14 +186,32 @@ class BPActivityExportView(generics.GenericAPIView):
         # project category (I/M)
         self.add_all_value_validation(
             wb,
-            "AB",
+            "AE",
             '"I,M"',
             "Enter 'I' for Individual or 'M' for Multi-year",
             "Invalid entry, please enter 'I' or 'M'.",
         )
 
         # decimals validation
-        for col in ["H", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y"]:
+        for col in [
+            "H",  # amount_polyol
+            "N",  # value_usd_year1
+            "O",  # value_odp_year1
+            "P",  # value_mt_year1
+            "Q",  # value_co2_year1
+            "R",  # value_usd_year2
+            "S",  # value_odp_year2
+            "T",  # value_mt_year2
+            "U",  # value_co2_year2
+            "V",  # value_usd_year3
+            "W",  # value_odp_year3
+            "X",  # value_mt_year3
+            "Y",  # value_co2_year3
+            "Z",  # value_usd_after_year3
+            "AA",  # value_odp_after_year3
+            "AB",  # value_mt_after_year3
+            "AC",  # value_co2_after_year3
+        ]:
             data_validation = openpyxl.worksheet.datavalidation.DataValidation(
                 type="decimal",
                 operator="greaterThanOrEqual",
