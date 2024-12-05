@@ -159,7 +159,6 @@ class BPActivityDetailSerializer(serializers.ModelSerializer):
         help_text="List of substances names",
         source="substances",
     )
-    comment_types = serializers.SlugRelatedField("name", many=True, read_only=True)
 
     sector = ProjectSectorSerializer()
     sector_code = serializers.SerializerMethodField()
@@ -203,7 +202,6 @@ class BPActivityDetailSerializer(serializers.ModelSerializer):
             "is_multi_year_display",
             "status_display",
             "comment_secretariat",
-            "comment_types",
         ]
 
     def get_is_multi_year_display(self, obj):
