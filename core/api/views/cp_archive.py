@@ -23,7 +23,7 @@ from core.api.serializers.cp_report import (
 )
 from core.api.utils import workbook_pdf_response
 from core.api.utils import workbook_response
-from core.api.views.cp_records import CPRecordBaseListView
+from core.api.views.cp_records import CPRecordBaseListByReportView
 from core.api.views.cp_report_empty_form import EmptyFormView
 from core.models import AdmRecordArchive
 from core.models.country_programme import CPReport
@@ -74,7 +74,7 @@ class CPReportVersionsListView(generics.GenericAPIView):
         return Response(serializer.data)
 
 
-class CPRecordsArchiveListView(CPRecordBaseListView):
+class CPRecordsArchiveListView(CPRecordBaseListByReportView):
     """
     List country programme records
     """

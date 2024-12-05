@@ -13,7 +13,9 @@ class CPPricesView(generics.ListAPIView):
     """
 
     serializer_class = CPPricesListSerializer
-    queryset = CPPrices.objects.select_related("country_programme_report")
+    queryset = CPPrices.objects.select_related(
+        "country_programme_report__country", "substance__group", "blend"
+    )
     filterset_class = CPPricesFilter
     filter_backends = [
         DjangoFilterBackend,

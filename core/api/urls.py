@@ -59,6 +59,7 @@ from core.api.views.cp_archive import (
     CPRecordsArchiveListView,
     CPReportVersionsListView,
 )
+from core.api.views.cp_emissions import CPEmissionsView
 from core.api.views.cp_files import CPFilesDownloadView, CPFilesView
 from core.api.views.cp_prices import CPPricesView
 from core.api.views.cp_records_export import (
@@ -79,7 +80,11 @@ from core.api.views.cp_reports import (
     CPReportGroupByCountryView,
     CPReportCommentsView,
 )
-from core.api.views.cp_records import CPRecordListView, CPRecordListDiffView
+from core.api.views.cp_records import (
+    CPRecordEkimetricsView,
+    CPRecordListByReportView,
+    CPRecordListDiffView,
+)
 from core.api.views.cp_report_empty_form import EmptyFormView
 from core.api.views.meetings import MeetingListView
 from core.api.views.projects import (
@@ -260,7 +265,7 @@ urlpatterns = [
     ),
     path(
         "country-programme/records/",
-        CPRecordListView.as_view(),
+        CPRecordListByReportView.as_view(),
         name="country-programme-record-list",
     ),
     path(
@@ -269,9 +274,19 @@ urlpatterns = [
         name="country-programme-record-diff",
     ),
     path(
+        "country-programme-data/records/list/",
+        CPRecordEkimetricsView.as_view(),
+        name="country-programme-ekimetrics-record",
+    ),
+    path(
         "country-programme/prices/",
         CPPricesView.as_view(),
         name="country-programme-price-list",
+    ),
+    path(
+        "country-programme/emissions/",
+        CPEmissionsView.as_view(),
+        name="country-programme-emissions-list",
     ),
     path(
         "country-programme/export/",
