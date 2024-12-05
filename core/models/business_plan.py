@@ -173,6 +173,9 @@ class BPActivityValue(models.Model):
     value_mt = models.DecimalField(
         max_digits=25, decimal_places=15, null=True, blank=True
     )
+    value_co2 = models.DecimalField(
+        max_digits=25, decimal_places=15, null=True, blank=True
+    )
 
     class Meta:
         constraints = [
