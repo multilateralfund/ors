@@ -105,8 +105,8 @@ export default function BPDetailsConsolidatedEdit({
   results,
   data,
 }: {
-  data: any
-  results: any[]
+  data?: any
+  results?: any[]
   bpFiles: any[]
   setBpForm?: Dispatch<SetStateAction<any>>
   setFiles?: React.Dispatch<React.SetStateAction<BpFilesObject>>
