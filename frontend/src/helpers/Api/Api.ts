@@ -70,7 +70,11 @@ export async function fetcher({
   }
 }
 
-export async function uploadFiles(path: string, files: File[]) {
+export async function uploadFiles(
+  path: string,
+  files: File[],
+  isValidation: boolean = false,
+) {
   const formData = new FormData()
   files.forEach((file) => {
     formData.append(file.name, file)
@@ -85,7 +89,7 @@ export async function uploadFiles(path: string, files: File[]) {
     },
     method: 'POST',
   })
-  if (!fileUploadResponse.ok) {
+  if (!fileUploadResponse.ok && !isValidation) {
     throw fileUploadResponse
   }
 
