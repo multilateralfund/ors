@@ -240,7 +240,7 @@ def parse_bp_file(file, year_start, from_validate=False):
                 {
                     "error_type": "data error",
                     "row_number": index + 2,
-                    "activtiy_id": row["Sort Order"],
+                    "activity_id": row["Sort Order"],
                     "error_message": error_message,
                 }
             )
@@ -250,7 +250,7 @@ def parse_bp_file(file, year_start, from_validate=False):
                 {
                     "warning_type": "data warning",
                     "row_number": index + 2,
-                    "activtiy_id": row["Sort Order"],
+                    "activity_id": row["Sort Order"],
                     "warning_message": warning_message,
                 }
             )

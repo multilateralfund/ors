@@ -331,7 +331,7 @@ class BPImportValidateView(BusinessPlanUtils, generics.GenericAPIView):
                         {
                             "error_type": "general error",
                             "row_number": None,
-                            "activtiy_id": None,
+                            "activity_id": None,
                             "error_message": ret_data,
                         },
                     ],
