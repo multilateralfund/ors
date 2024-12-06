@@ -2,7 +2,7 @@ import { Tab, Tabs } from '@mui/material'
 
 import BPDetails from './BP/BPDetails'
 import { BPTabsInterface } from './types'
-import BPDetailsConsolidated from './BP/BPDetailsConsolidated'
+import BPDetailsConsolidatedEdit from './BPEditConsolidated/BPDetailsConsolidatedEdit'
 
 const BPTabs = ({
   activeTab,
@@ -56,7 +56,7 @@ const BPTabs = ({
         {activeTab === 0 && children}
         {activeTab === 1 &&
           (isConsolidatedBp ? (
-            <BPDetailsConsolidated {...props} isEdit />
+            <BPDetailsConsolidatedEdit {...props} />
           ) : (
             <BPDetails {...props} />
           ))}

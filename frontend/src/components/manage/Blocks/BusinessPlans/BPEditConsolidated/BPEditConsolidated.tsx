@@ -19,6 +19,8 @@ import BPHeaderEditConsolidated from './BPHeaderEditConsolidated'
 import { useEditLocalStorageConsolidated } from './useLocalStorageConsolidated'
 import { useBPListApi } from '../BPList/BPList'
 import BPTabs from '../BPTabs'
+import { BpFilesObject } from '../types'
+import { useGetBpData } from '../BP/useGetBpData'
 
 const BPEdit = () => {
   const { period, type } = useParams<{ period: string; type: string }>()
@@ -42,6 +44,16 @@ const BPEdit = () => {
     results: activities,
   } = useGetActivities(initialFiltersActivities)
   const { results, loading: bpLoading } = useBPListApi(initialFiltersBps)
+  const { data: bpFiles } = useGetBpData(
+    initialFiltersBps,
+    'api/business-plan/files/',
+    'files',
+  ) as any
+  const { data } = useGetBpData(
+    initialFiltersBps,
+    'api/business-plan/get/',
+    'fullData',
+  ) as any
 
   const agencies = useStore((state) => state?.common.agencies.data)
 
@@ -50,6 +62,10 @@ const BPEdit = () => {
     undefined,
   )
   const [bpForm, setBpForm] = useState()
+  const [files, setFiles] = useState<BpFilesObject>({
+    deletedFilesIds: [],
+    newFiles: [],
+  })
   const [warnOnClose, setWarnOnClose] = useState(false)
   useVisibilityChange(warnOnClose)
 
@@ -96,7 +112,7 @@ const BPEdit = () => {
       />
       {!bpLoading && (
         <BPHeaderEditConsolidated
-          {...{ form, setWarnOnClose, type, results, bpForm }}
+          {...{ form, setWarnOnClose, type, results, bpForm, files }}
         />
       )}
       {!loading && (
@@ -105,10 +121,17 @@ const BPEdit = () => {
           to recover it?
         </BPRestoreEdit>
       )}
-
       <BPTabs
-        {...{ activeTab, setActiveTab, setBpForm }}
-        bpFiles={[]}
+        {...{
+          activeTab,
+          setActiveTab,
+          setBpForm,
+          setFiles,
+          files,
+          bpFiles,
+          results,
+          data,
+        }}
         isConsolidatedBp
       >
         {!loading && results.length > 0 && (

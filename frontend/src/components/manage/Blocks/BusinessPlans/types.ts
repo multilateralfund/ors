@@ -49,7 +49,7 @@ export type BpFileInput = {
 }
 
 export interface BpDetails extends BpFileInput {
-  bpFiles: Array<BpFile>
+  bpFiles?: Array<BpFile>
 }
 
 export interface BPTabsInterface extends BpDetails {
