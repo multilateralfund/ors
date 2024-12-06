@@ -8,5 +8,5 @@ export default function BusinessPlansDetailsConsolidated() {
 
   const { period } = useParams<Record<string, string>>()
 
-  return <BPDetailsConsolidated period={period} key={period} />
+  return <BPDetailsConsolidated key={period} />
 }

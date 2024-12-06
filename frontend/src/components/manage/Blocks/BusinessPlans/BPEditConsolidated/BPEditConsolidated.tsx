@@ -18,6 +18,7 @@ import { useGetActivities } from '../useGetActivities'
 import BPHeaderEditConsolidated from './BPHeaderEditConsolidated'
 import { useEditLocalStorageConsolidated } from './useLocalStorageConsolidated'
 import { useBPListApi } from '../BPList/BPList'
+import BPTabs from '../BPTabs'
 
 const BPEdit = () => {
   const { period, type } = useParams<{ period: string; type: string }>()
@@ -44,9 +45,11 @@ const BPEdit = () => {
 
   const agencies = useStore((state) => state?.common.agencies.data)
 
+  const [activeTab, setActiveTab] = useState(0)
   const [form, setForm] = useState<Array<ApiEditBPActivity> | undefined>(
     undefined,
   )
+  const [bpForm, setBpForm] = useState()
   const [warnOnClose, setWarnOnClose] = useState(false)
   useVisibilityChange(warnOnClose)
 
@@ -93,7 +96,7 @@ const BPEdit = () => {
       />
       {!bpLoading && (
         <BPHeaderEditConsolidated
-          {...{ form, setWarnOnClose, type, results }}
+          {...{ form, setWarnOnClose, type, results, bpForm }}
         />
       )}
       {!loading && (
@@ -102,15 +105,20 @@ const BPEdit = () => {
           to recover it?
         </BPRestoreEdit>
       )}
-      {!loading && results.length > 0 && (
-        <div className="relative rounded-lg border border-solid border-primary p-6">
+
+      <BPTabs
+        {...{ activeTab, setActiveTab, setBpForm }}
+        bpFiles={[]}
+        isConsolidatedBp
+      >
+        {!loading && results.length > 0 && (
           <BEditTable
             {...{ form, loading, params }}
             isConsolidatedView={true}
             setForm={handleSetForm}
           />
-        </div>
-      )}
+        )}
+      </BPTabs>
     </>
   )
 }

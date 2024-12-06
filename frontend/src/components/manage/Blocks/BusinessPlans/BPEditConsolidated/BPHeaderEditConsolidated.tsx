@@ -16,6 +16,7 @@ export default function BPHeaderEditConsolidated({
   setWarnOnClose,
   type,
   results,
+  bpForm,
 }: any) {
   const { period } = useParams<BpPathParams>()
   const [year_start, year_end] = period.split('-')
@@ -34,6 +35,8 @@ export default function BPHeaderEditConsolidated({
           year_start: parseInt(year_start),
           year_end: parseInt(year_end),
           status: capitalize(type),
+          meeting: bpForm.meeting,
+          decision: bpForm.decision,
         },
         method: 'PUT',
       })
@@ -117,7 +120,7 @@ export default function BPHeaderEditConsolidated({
           variant="contained"
           onClick={editBP}
         >
-          Update
+          Save
         </Button>
       </div>
     </div>
@@ -127,7 +130,9 @@ export default function BPHeaderEditConsolidated({
     <div className="mb-4 flex min-h-[40px] flex-wrap items-center justify-between gap-x-8 gap-y-2">
       <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
         <div className="flex flex-wrap items-center gap-x-2">
-          <h1 className="m-0 text-5xl leading-normal">Editing {type} data</h1>
+          <h1 className="m-0 text-5xl leading-normal">
+            Edit Business Plan {period} {capitalize(type)}
+          </h1>
         </div>
       </div>
       <div className="ml-auto">{headerActions}</div>

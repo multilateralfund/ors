@@ -56,6 +56,7 @@ export interface BPTabsInterface extends BpDetails {
   activeTab: number
   children: ReactNode
   setActiveTab: Dispatch<SetStateAction<number>>
+  isConsolidatedBp?: boolean
 }
 
 export type BPEditTableInterface = {
