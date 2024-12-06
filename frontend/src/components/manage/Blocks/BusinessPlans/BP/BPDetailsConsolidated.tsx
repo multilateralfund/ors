@@ -44,12 +44,10 @@ const BPSummary = (props: any) => {
   )
 }
 
-export default function BPDetailsConsolidated(props: { period: string }) {
-  const { period } = props
+export default function BPDetailsConsolidated({ period }: { period: string }) {
+  const [year_start, year_end] = period.split('-')
 
   const { bpType, setBPType } = useStore((state) => state.bpType)
-
-  const [year_start, year_end] = period.split('-')
 
   const [filters, setFilters] = useState({
     status: bpType || bpTypes[1].label,
@@ -91,29 +89,27 @@ export default function BPDetailsConsolidated(props: { period: string }) {
   }, [results, loaded])
 
   return (
-    <>
-      {loaded && (
-        <>
-          <BPListHeader
-            viewType="details"
-            {...{ setParams, setParamsFiles, setParamsActivities }}
-          />
-          <BPListTabs />
-          <div className="flex flex-1 flex-col justify-start gap-6 border-0 border-t border-solid border-primary pt-6">
-            <section className="grid items-start gap-6 md:auto-rows-auto md:grid-cols-2">
-              <BPSummary {...{ results, bpFiles }} />
-              <div className="flex flex-col rounded-lg bg-gray-100 p-4">
-                <VersionHistoryList
-                  currentDataVersion={1}
-                  historyList={data?.history || []}
-                  length={3}
-                  type="bp"
-                />
-              </div>
-            </section>
-          </div>
-        </>
-      )}
-    </>
+    loaded && (
+      <>
+        <BPListHeader
+          viewType="details"
+          {...{ setParams, setParamsFiles, setParamsActivities }}
+        />
+        <BPListTabs />
+        <div className="flex flex-1 flex-col justify-start gap-6 border-0 border-t border-solid border-primary pt-6">
+          <section className="grid items-start gap-6 md:auto-rows-auto md:grid-cols-2">
+            <BPSummary {...{ results, bpFiles }} />
+            <div className="flex flex-col rounded-lg bg-gray-100 p-4">
+              <VersionHistoryList
+                currentDataVersion={1}
+                historyList={data?.history || []}
+                length={3}
+                type="bp"
+              />
+            </div>
+          </section>
+        </div>
+      </>
+    )
   )
 }
