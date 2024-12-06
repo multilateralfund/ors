@@ -64,11 +64,7 @@ def get_bp_activity_data(
     if not country:
         error_messages.append(f"Country '{row['Country']}' {not_found_error}")
 
-    country_status = row["Country Status"]
-    if country_status not in BPActivity.LVCStatus.values:
-        error_messages.append(f"Country Status '{country_status}' {not_found_error}")
-
-    project_status = row["Project Status (A/P)"]
+    project_status = row["Project Status (A/P)"].strip()
     if project_status not in BPActivity.Status.values:
         error_messages.append(f"Project status '{project_status}' {not_found_error}")
 
@@ -92,6 +88,14 @@ def get_bp_activity_data(
                 "Some substances do not exist in our system and we will set them to be 'Other'"
             )
             break
+
+    country_status = row["Country Status"].strip()
+    if country_status not in BPActivity.LVCStatus.values:
+        warning_messages.append(
+            f"Country Status '{country_status}' does not exist in our system "
+            f"and we will set it to be 'Undefined'"
+        )
+        country_status = BPActivity.LVCStatus.undefined
 
     amount_polyol = row["Amount of Polyol in Project (MT)"]
     if not check_numeric_value(amount_polyol):
