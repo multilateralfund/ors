@@ -99,6 +99,8 @@ class BPActivity(models.Model):
         lvc = "LVC", "LVC"
         non_lvc = "Non-LVC", "Non-LVC"
         regional = "Regional", "Regional"
+        status_global = "Global", "Global"
+        ndr = "NDR", "NDR"
         undefined = "Undefined", "Undefined"
 
     class Status(models.TextChoices):

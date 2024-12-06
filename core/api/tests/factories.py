@@ -493,6 +493,7 @@ class BPActivityValueFactory(factory.django.DjangoModelFactory):
     value_usd = factory.Faker("random_int", min=1, max=10000)
     value_odp = factory.Faker("random_int", min=1, max=10000)
     value_mt = factory.Faker("random_int", min=1, max=10000)
+    value_co2 = factory.Faker("random_int", min=1, max=10000)
 
 
 class ReplenishmentFactory(factory.django.DjangoModelFactory):
