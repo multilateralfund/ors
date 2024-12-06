@@ -106,11 +106,11 @@ export default function BPDetailsConsolidatedEdit({
   data,
 }: {
   data: any
-  results: []
+  results: any[]
   bpFiles: any[]
   setBpForm?: Dispatch<SetStateAction<any>>
   setFiles?: React.Dispatch<React.SetStateAction<BpFilesObject>>
-  files?: any[]
+  files?: BpFilesObject
 }) {
   return (
     <div className="flex flex-1 flex-col justify-start gap-6 border-0">
