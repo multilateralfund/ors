@@ -15,6 +15,7 @@ from core.api.tests.factories import (
     CPReportFormatRowFactory,
     CPReportFactory,
     CountryFactory,
+    DecisionFactory,
     ExcludedUsageBlendFactory,
     ExcludedUsageSubstFactory,
     GroupFactory,
@@ -330,6 +331,11 @@ def subsector(sector):
 
 
 @pytest.fixture
+def subsector_other(sector):
+    return ProjectSubSectorFactory.create(name="Other", code="OTH", sector=sector)
+
+
+@pytest.fixture
 def rbm_measure():
     return RbmMeasureFactory.create(name="RBM Measure", sort_order=1)
 
@@ -337,6 +343,11 @@ def rbm_measure():
 @pytest.fixture
 def meeting():
     return MeetingFactory.create(number=1, date="2019-03-14")
+
+
+@pytest.fixture
+def decision(meeting):
+    return DecisionFactory.create(number=1, meeting=meeting)
 
 
 @pytest.fixture
