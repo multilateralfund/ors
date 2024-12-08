@@ -25,6 +25,7 @@ from core.models import (
     Substance,
 )
 from core.models.business_plan import BPFile
+from core.models.meeting import Decision, Meeting
 
 # pylint: disable=R0902
 
@@ -71,6 +72,8 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
             "status",
             "year_start",
             "year_end",
+            "meeting_id",
+            "decision_id",
             "updated_at",
             "updated_by",
         ]
@@ -371,6 +374,15 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
 
 
 class BusinessPlanCreateSerializer(serializers.ModelSerializer):
+    meeting_id = serializers.PrimaryKeyRelatedField(
+        required=False,
+        queryset=Meeting.objects.all().values_list("id", flat=True),
+    )
+    decision_id = serializers.PrimaryKeyRelatedField(
+        required=False,
+        queryset=Decision.objects.all().values_list("id", flat=True),
+        allow_null=True,
+    )
     status = serializers.ChoiceField(choices=BusinessPlan.Status.choices, required=True)
     activities = BPActivityCreateSerializer(many=True, required=False)
 
@@ -382,6 +394,8 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
             "year_start",
             "year_end",
             "status",
+            "meeting_id",
+            "decision_id",
             "activities",
         ]
 
