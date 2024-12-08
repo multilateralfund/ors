@@ -2,18 +2,15 @@ from django_filters import rest_framework as filters
 from django_filters.widgets import CSVWidget
 from django_filters.rest_framework import DjangoFilterBackend
 
-from core.models import (
-    BPActivity,
-    BusinessPlan,
-    Country,
-    ProjectCluster,
-    ProjectSector,
-    ProjectSubSector,
-    ProjectType,
-)
+from core.models import BPActivity
+from core.models import BusinessPlan
+from core.models import Country
+from core.models import ProjectCluster
+from core.models import ProjectSector
+from core.models import ProjectSubSector
+from core.models import ProjectType
 from core.models.agency import Agency
 from core.models.business_plan import BPChemicalType, BPFile
-from core.models.meeting import Decision, Meeting
 
 
 class BPFilterBackend(DjangoFilterBackend):
@@ -145,25 +142,3 @@ class BPFileFilter(filters.FilterSet):
     class Meta:
         model = BPFile
         fields = ["status", "year_start", "year_end"]
-
-
-class BPImportFilter(filters.FilterSet):
-    year_start = filters.NumberFilter(required=True)
-    year_end = filters.NumberFilter(required=True)
-    status = filters.ChoiceFilter(choices=BusinessPlan.Status.choices, required=True)
-    meeting_id = filters.ModelChoiceFilter(
-        queryset=Meeting.objects.all(), required=True
-    )
-    decision_id = filters.ModelChoiceFilter(
-        queryset=Decision.objects.all(), required=False
-    )
-
-    class Meta:
-        model = BusinessPlan
-        fields = [
-            "year_start",
-            "year_end",
-            "status",
-            "meeting_id",
-            "decision_id",
-        ]

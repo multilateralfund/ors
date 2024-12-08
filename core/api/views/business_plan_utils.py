@@ -6,6 +6,7 @@ import traceback
 from constance import config
 from django.core.exceptions import ValidationError
 from django.db.models import F
+from drf_yasg import openapi
 from rest_framework import status
 
 from core.import_data.mapping_names_dict import COUNTRY_NAME_MAPPING
@@ -25,6 +26,38 @@ from core.tasks import send_mail_bp_create, send_mail_bp_update
 
 # pylint: disable=E1101, R0913, R0914, R0915, W0718
 logger = logging.getLogger(__name__)
+
+IMPORT_PARAMETERS = [
+    openapi.Parameter(
+        "year_start",
+        openapi.IN_QUERY,
+        type=openapi.TYPE_INTEGER,
+        required=True,
+    ),
+    openapi.Parameter(
+        "year_end",
+        openapi.IN_QUERY,
+        type=openapi.TYPE_INTEGER,
+        required=True,
+    ),
+    openapi.Parameter(
+        "status",
+        openapi.IN_QUERY,
+        type=openapi.TYPE_STRING,
+        required=True,
+    ),
+    openapi.Parameter(
+        "meeting_id",
+        openapi.IN_QUERY,
+        type=openapi.TYPE_INTEGER,
+        required=True,
+    ),
+    openapi.Parameter(
+        "decision_id",
+        openapi.IN_QUERY,
+        type=openapi.TYPE_INTEGER,
+    ),
+]
 
 
 def strip_str(name):

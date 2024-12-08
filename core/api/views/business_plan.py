@@ -17,7 +17,6 @@ from core.api.filters.business_plan import (
     BPChemicalTypeFilter,
     BPFileFilter,
     BPFilterBackend,
-    BPImportFilter,
 )
 from core.api.permissions import IsAgency, IsSecretariat, IsViewer
 from core.api.serializers.bp_history import BPHistorySerializer
@@ -29,14 +28,14 @@ from core.api.serializers.business_plan import (
     BPActivityDetailSerializer,
     BPActivityListSerializer,
 )
-from core.api.views.business_plan_utils import BusinessPlanUtils
+from core.api.views.business_plan_utils import IMPORT_PARAMETERS, BusinessPlanUtils
 from core.api.views.utils import (
     get_business_plan_from_request,
     BPACTIVITY_ORDERING_FIELDS,
 )
 from core.models import BusinessPlan, BPChemicalType, BPActivity
 from core.models.business_plan import BPFile
-from core.models.meeting import Decision
+from core.models.meeting import Decision, Meeting
 
 
 class BPChemicalTypeListView(generics.ListAPIView):
@@ -306,16 +305,16 @@ class BPFileDownloadView(generics.RetrieveAPIView):
 
 
 class BPImportValidateView(BusinessPlanUtils, generics.GenericAPIView):
-    filterset_class = BPImportFilter
-
+    @swagger_auto_schema(manual_parameters=IMPORT_PARAMETERS)
     def post(self, request, *args, **kwargs):
         files = request.FILES
         year_start = int(request.query_params.get("year_start", 0))
         meeting_id = request.query_params.get("meeting_id")
         decision_id = request.query_params.get("decision_id")
 
+        meeting = get_object_or_404(Meeting, id=meeting_id)
         if decision_id:
-            get_object_or_404(Decision, id=decision_id, meeting_id=meeting_id)
+            get_object_or_404(Decision, id=decision_id, meeting=meeting)
 
         ret_code, ret_data = self.import_bp(files, year_start, from_validate=True)
         if ret_code != status.HTTP_200_OK:
@@ -353,9 +352,9 @@ class BPImportView(
     mixins.CreateModelMixin,
     generics.GenericAPIView,
 ):
-    filterset_class = BPImportFilter
     serializer_class = BusinessPlanCreateSerializer
 
+    @swagger_auto_schema(manual_parameters=IMPORT_PARAMETERS)
     @transaction.atomic
     def post(self, request, *args, **kwargs):
         files = request.FILES

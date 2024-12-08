@@ -119,8 +119,10 @@ class TestBPList(BaseTest):
 class TestBPImportValidate:
     client = APIClient()
     file_path = "core/api/tests/files/Test_BP2025-2027.xlsx"
+    status = "Endorsed"
     year_start = 2025
-    params = f"?year_start={year_start}"
+    year_end = 2027
+    params = f"?status={status}&year_start={year_start}&year_end={year_end}"
     url = reverse("bp-upload-validate") + params
 
     def test_without_login(self):
