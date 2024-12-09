@@ -110,7 +110,7 @@ def get_bp_activity_data(
         ("Sector", sector),
         ("Subsector", subsector),
     ]:
-        if obj.name == "Other" and row[field_name] != "Other":
+        if obj.name.startswith("Other") and not row[field_name].startswith("Other"):
             warning_messages.append(
                 f"{field_name} '{row[field_name]}' {set_other_warning}"
             )
@@ -265,8 +265,11 @@ def parse_bp_file(file, year_start, from_validate=False):
         project_cluster = project_clusters.get(
             strip_str(row["Cluster"]), project_clusters.get("other")
         )
-        sector = sectors.get(strip_str(row["Sector"]), sectors.get("other"))
-        subsector = subsectors.get(strip_str(row["Subsector"]), subsectors.get("other"))
+        sector_name = strip_str(row["Sector"])
+        sector = sectors.get(sector_name, sectors.get("other"))
+        subsector = subsectors.get(
+            strip_str(row["Subsector"]), subsectors.get(f"other {sector_name}")
+        )
         substance_names = (
             row["Substance Detail"].split("/") if row["Substance Detail"] else []
         )

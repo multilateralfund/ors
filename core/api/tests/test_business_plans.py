@@ -118,7 +118,6 @@ class TestBPList(BaseTest):
 
 class TestBPImportValidate:
     client = APIClient()
-    file_path = "core/api/tests/files/Test_BP2025-2027.xlsx"
     status = "Endorsed"
     year_start = 2025
     year_end = 2027
@@ -129,13 +128,48 @@ class TestBPImportValidate:
         response = self.client.post(self.url, {}, format="multipart")
         assert response.status_code == 403
 
+    def test_bp_import_validate_invalid_template(
+        self, user, meeting, decision, subsector_other, _setup_bp_activity_create
+    ):
+        self.client.force_authenticate(user=user)
+        file_path = "core/api/tests/files/Test_BP2025-2027_invalid_template.xlsx"
+        url = f"{self.url}&meeting_id={meeting.id}&decision_id={decision.id}"
+
+        with open(file_path, "rb") as f:
+            data = {"Test_BP2025-2027.xlsx": f}
+            response = self.client.post(url, data, format="multipart")
+
+        assert response.status_code == 400
+        assert (
+            "The file you uploaded does not respect the required Excel template"
+            in response.data["errors"][0]["error_message"]
+        )
+
+    def test_bp_import_validate_invalid_agency(
+        self, user, meeting, decision, subsector_other, _setup_bp_activity_create
+    ):
+        self.client.force_authenticate(user=user)
+        file_path = "core/api/tests/files/Test_BP2025-2027_invalid_agency.xlsx"
+        url = f"{self.url}&meeting_id={meeting.id}&decision_id={decision.id}"
+
+        with open(file_path, "rb") as f:
+            data = {"Test_BP2025-2027.xlsx": f}
+            response = self.client.post(url, data, format="multipart")
+
+        assert response.status_code == 200
+        assert (
+            "Agency 'NoAgency' does not exist"
+            in response.data["errors"][0]["error_message"]
+        )
+
     def test_bp_import_validate(
         self, user, meeting, decision, subsector_other, _setup_bp_activity_create
     ):
         self.client.force_authenticate(user=user)
+        file_path = "core/api/tests/files/Test_BP2025-2027.xlsx"
         url = f"{self.url}&meeting_id={meeting.id}&decision_id={decision.id}"
 
-        with open(self.file_path, "rb") as f:
+        with open(file_path, "rb") as f:
             data = {"Test_BP2025-2027.xlsx": f}
             response = self.client.post(url, data, format="multipart")
 
@@ -210,6 +244,7 @@ class TestBPImport:
         assert activity.substances.first() == substance
         assert activity.sector == sector
         assert activity.subsector == subsector_other
+        assert activity.amount_polyol == 0
         assert activity.status == "A"
         assert activity.is_multi_year is False
         assert activity.remarks == "Merge bine, bine, bine ca aeroplanu"

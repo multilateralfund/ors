@@ -30,8 +30,13 @@ class TestBPHistory:
         status = "Endorsed"
         year_start = 2025
         year_end = 2027
-        params = f"?status={status}&year_start={year_start}&year_end={year_end}"
-        params += f"&meeting_id={meeting.id}&decision_id={decision.id}"
+        params = (
+            f"?status={status}"
+            f"&year_start={year_start}"
+            f"&year_end={year_end}"
+            f"&meeting_id={meeting.id}"
+            f"&decision_id={decision.id}"
+        )
         url = reverse("bp-upload") + params
 
         with open(file_path, "rb") as f:
