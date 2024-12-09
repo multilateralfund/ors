@@ -5,7 +5,8 @@ import SimpleSelect from '@ors/components/ui/SimpleSelect/SimpleSelect'
 
 import { PeriodSelectorOption } from '../../Replenishment/types'
 import { bpTypes } from '../constants'
-import { Label, getFormattedPeridOptions } from './helpers'
+import { Label } from './helpers'
+import { getCurrentPeriodOption } from '../utils'
 
 interface IStatus {
   label: string
@@ -16,21 +17,18 @@ interface IBPMainFilters {
   filters?: any
   periodOptions: PeriodSelectorOption[]
   setFilters: any
-  isFirstUploadStep?: boolean
 }
 
 const BPMainFilters = ({
   filters,
   periodOptions,
   setFilters,
-  isFirstUploadStep = false,
 }: IBPMainFilters) => {
-  const formattedPeriodOptions = getFormattedPeridOptions(periodOptions)
-  const currentPeriod = find(
-    formattedPeriodOptions,
-    ({ year_start }) => year_start === parseInt(filters?.year_start),
+  const currentPeriod = getCurrentPeriodOption(
+    periodOptions,
+    filters?.year_start,
   )
-  const currentPeriodIndex = indexOf(formattedPeriodOptions, currentPeriod)
+  const currentPeriodIndex = indexOf(periodOptions, currentPeriod)
 
   const handleChangeTriennium = (triennium: PeriodSelectorOption) => {
     setFilters((prevFilters: any) => {
@@ -55,7 +53,7 @@ const BPMainFilters = ({
           initialIndex={filters ? currentPeriodIndex : 1}
           inputClassName="gap-x-4 h-10"
           label={''}
-          options={formattedPeriodOptions}
+          options={periodOptions}
           onChange={handleChangeTriennium}
         />
       </div>

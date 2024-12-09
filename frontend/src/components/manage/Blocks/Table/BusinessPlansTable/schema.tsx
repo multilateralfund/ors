@@ -249,7 +249,9 @@ const odpColumnDefs = (
   ...getDefaultColumnDefs(isDiff, withAgency),
   ...(yearColumns.filter(
     (column: { headerName: string }) =>
-      column.headerName === 'ODP' || column.headerName === 'MT for HFC',
+      column.headerName === 'ODP' ||
+      column.headerName === 'MT for HFC' ||
+      column.headerName === 'CO2-EQ',
   ) || []),
 ]
 

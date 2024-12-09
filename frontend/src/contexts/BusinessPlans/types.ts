@@ -18,4 +18,5 @@ export interface BPYearRangesProviderProps extends PropsWithChildren {}
 export interface BPYearRangesContextType {
   yearRanges: ApiBPYearRange[]
   yearRangesLoading: boolean
+  yearRangesLoaded: boolean
 }

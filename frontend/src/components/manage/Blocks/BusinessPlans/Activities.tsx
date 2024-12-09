@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { ReactNode, useMemo, useState } from 'react'
 
 import { Typography } from '@mui/material'
 import cx from 'classnames'
@@ -11,6 +11,7 @@ import { IoChevronDown, IoChevronUp } from 'react-icons/io5'
 interface Value {
   id: number
   value_mt: null | string
+  value_co2: null | string
   value_odp: null | string
   value_usd: null | string
   year: number
@@ -30,9 +31,11 @@ const generateTableData = (
   const usdValues: (number | string)[] = []
   const odpValues: (number | string)[] = []
   const mtValues: (number | string)[] = []
+  const co2Values: (number | string)[] = []
 
   const afterMaxYearValues = {
     value_mt: 0,
+    value_co2: 0,
     value_odp: 0,
     value_usd: 0,
   }
@@ -56,6 +59,11 @@ const generateTableData = (
         ? parseFloat(yearData.value_mt).toFixed(2)
         : '0.00',
     )
+    co2Values.push(
+      yearData && yearData.value_co2 !== null
+        ? parseFloat(yearData.value_co2).toFixed(2)
+        : '0.00',
+    )
   }
 
   values.forEach((value) => {
@@ -66,6 +74,8 @@ const generateTableData = (
         value.value_odp !== null ? parseFloat(value.value_odp) : 0
       afterMaxYearValues.value_mt +=
         value.value_mt !== null ? parseFloat(value.value_mt) : 0
+      afterMaxYearValues.value_co2 +=
+        value.value_co2 !== null ? parseFloat(value.value_co2) : 0
     }
   })
 
@@ -73,9 +83,11 @@ const generateTableData = (
   usdValues.push(afterMaxYearValues.value_usd.toFixed(2))
   odpValues.push(afterMaxYearValues.value_odp.toFixed(2))
   mtValues.push(afterMaxYearValues.value_mt.toFixed(2))
+  co2Values.push(afterMaxYearValues.value_co2.toFixed(2))
 
   return {
     mtValues,
+    co2Values,
     odpValues,
     usdValues,
     years,
@@ -102,11 +114,23 @@ const ValuesTable: React.FC<Props> = ({
     [values, min_year, max_year],
   )
 
-  const renderTable = (header: string, data: (number | string)[]) => (
+  const renderTable = (
+    header: string,
+    data: (number | string)[],
+    isCo2?: boolean,
+  ) => (
     <table className={cx(styles.replTable, '')}>
       <thead className="text-center">
         <tr>
-          <th colSpan={tableData.years.length}>{header}</th>
+          <th colSpan={tableData.years.length}>
+            {isCo2 ? (
+              <>
+                CO<sub>2</sub>-eq
+              </>
+            ) : (
+              <div className="pb-1">{header}</div>
+            )}
+          </th>
         </tr>
         <tr>
           {tableData.years.map((year, index) => (
@@ -132,6 +156,7 @@ const ValuesTable: React.FC<Props> = ({
         <>
           {renderTable('ODP', tableData.odpValues)}
           {renderTable('MT for HFC', tableData.mtValues)}
+          {renderTable('CO2-EQ', tableData.co2Values, true)}
         </>
       )}
     </div>
