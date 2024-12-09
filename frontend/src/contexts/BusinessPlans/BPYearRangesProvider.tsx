@@ -6,13 +6,18 @@ import { BPYearRangesProviderProps } from './types'
 const BPYearRangesProvider = (props: BPYearRangesProviderProps) => {
   const { children } = props
 
-  const { loading: yearRangesLoading, results: yearRanges } = useGetYearRanges()
+  const {
+    loading: yearRangesLoading,
+    results: yearRanges,
+    loaded: yearRangesLoaded,
+  } = useGetYearRanges()
 
   return (
     <BPYearRangesContext.Provider
       value={{
         yearRanges,
         yearRangesLoading,
+        yearRangesLoaded,
       }}
     >
       {children}

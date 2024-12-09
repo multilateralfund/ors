@@ -13,8 +13,9 @@ import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext
 import PeriodSelector from '../../Replenishment/PeriodSelector'
 import { getPathPeriod } from '../../Replenishment/utils'
 import { bpTypes } from '../constants'
-import { capitalize, find, indexOf } from 'lodash'
+import { capitalize, find, indexOf, map } from 'lodash'
 import SimpleSelect from '@ors/components/ui/SimpleSelect/SimpleSelect'
+import { getCurrentPeriodOption } from '../utils'
 
 const BPListHeader = ({
   viewType,
@@ -38,6 +39,20 @@ const BPListHeader = ({
   const currentStatus = find(bpTypes, (type) => type.label === bpType)
   const statusIndex = indexOf(bpTypes, currentStatus)
 
+  const currentPeriod = getCurrentPeriodOption(
+    periodOptions,
+    period?.split('-')[0] || '',
+  )
+
+  const formattedPeriods = map(periodOptions, (period) => ({
+    ...period,
+    disabled: period.status.length === 0,
+  }))
+  const formattedBpTypes = map(bpTypes, (bpType) => ({
+    ...bpType,
+    disabled: !currentPeriod?.status.includes(bpType.label),
+  }))
+
   return (
     <div className="mb-8 flex items-center justify-between gap-4">
       <div className="flex flex-row flex-wrap gap-2">
@@ -48,17 +63,20 @@ const BPListHeader = ({
           <PeriodSelector
             label=""
             period={period}
-            periodOptions={[...periodOptions]}
+            periodOptions={formattedPeriods}
             inputClassName="h-10 w-32"
             menuClassName="w-32"
+            withDisabledOptions
           />
           <SimpleSelect
+            withDisabledOptions
             className="capitalize"
             initialIndex={statusIndex}
             inputClassName="gap-x-4 h-10 w-36"
             menuClassName="w-36"
+            placeholder="Status"
             label={''}
-            options={bpTypes}
+            options={formattedBpTypes}
             onChange={({ value }: any) => {
               const formattedValue = capitalize(value)
 

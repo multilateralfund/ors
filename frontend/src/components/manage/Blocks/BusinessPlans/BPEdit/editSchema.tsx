@@ -411,14 +411,6 @@ const useColumnsOptions = (
         },
         {
           cellClass: 'ag-cell-ellipsed',
-          field: 'reason_for_exceeding',
-          headerClass: 'ag-text-center',
-          headerName: tableColumns.reason_for_exceeding,
-          minWidth: 200,
-          tooltipField: 'reason_for_exceeding',
-        },
-        {
-          cellClass: 'ag-cell-ellipsed',
           field: 'remarks',
           headerClass: 'ag-text-center',
           headerName: tableColumns.remarks,

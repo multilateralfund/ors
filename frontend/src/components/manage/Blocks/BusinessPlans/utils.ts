@@ -1,5 +1,5 @@
 import { useStore } from '@ors/store'
-import { reverse } from 'lodash'
+import { find, reverse } from 'lodash'
 
 export const filtersToQueryParams = (filters: any) => {
   const filtersParams = Object.entries(filters).map(
@@ -24,3 +24,11 @@ export const getMeetingOptions = () => {
 
   return reverse(formattedMeetings)
 }
+
+export const getCurrentPeriodOption = (
+  periodOptions: any[],
+  yearStart: string,
+) => find(periodOptions, ({ year_start }) => year_start === parseInt(yearStart))
+
+export const getLatestBpYearRange = (periodOptions: any[]) =>
+  find(periodOptions, (option) => option.status.length > 0)

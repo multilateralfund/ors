@@ -20,6 +20,7 @@ import { PeriodSelectorOption } from '../../Replenishment/types'
 import { IoEllipse } from 'react-icons/io5'
 import { MdExpandMore } from 'react-icons/md'
 import { useStore } from '@ors/store'
+import { getLatestBpYearRange } from '../utils'
 
 interface IBPReviewChanges {
   file: FileList | null
@@ -130,8 +131,11 @@ const BPReviewChanges = ({
       <p className="m-0 text-2xl">Review changes</p>
       <p className="mb-0 mt-1 text-xl">
         You are about to replace the {capitalize(bp_status)} Business Plan for{' '}
-        {year_start}-{year_end}, meeting number {meeting}. The new version
-        contains {activities_number} activities for {agencies_number} agencies.
+        {year_start}-{year_end}, meeting number {meeting}
+        {decision ? `, decision ${decision}.` : '.'}{' '}
+        {activities_number &&
+          `The new version
+        contains ${activities_number} ${activities_number === 1 ? 'activity' : 'activities'}${agencies_number && ` for ${agencies_number} ${agencies_number === 1 ? 'agency' : 'agencies'}`}.`}
       </p>
       <div className="max-w-[800px]">
         {errors.length > 0 && <AccordionItem items={errors} type="errors" />}
@@ -165,7 +169,7 @@ const BPReviewChanges = ({
         </SubmitButton>
         <Link
           className="no-underline"
-          href={`/business-plans/list/activities/${periodOptions?.[0]?.value}`}
+          href={`/business-plans/list/activities/${getLatestBpYearRange(periodOptions)?.value}`}
         >
           <CancelButton className="h-10 !text-[15px]">Cancel</CancelButton>
         </Link>

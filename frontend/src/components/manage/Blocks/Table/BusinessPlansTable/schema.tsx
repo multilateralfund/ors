@@ -150,21 +150,6 @@ const getAdditionalRemarksColumn = {
 const getCommentsColumnsDefs = (isDiff: boolean) => [
   {
     cellClass: 'ag-cell-ellipsed',
-    field: 'reason_for_exceeding',
-    headerClass: 'ag-text-center',
-    headerName: 'Reason for Exceeding',
-    minWidth: 200,
-    sortable: !isDiff,
-    ...(isDiff
-      ? {
-          cellRenderer: textCellRenderer,
-          valueGetter: (params: any) =>
-            cellValueGetter(params, 'reason_for_exceeding'),
-        }
-      : { tooltipField: 'reason_for_exceeding' }),
-  },
-  {
-    cellClass: 'ag-cell-ellipsed',
     headerClass: 'ag-text-center',
     headerName: 'Remarks',
     minWidth: 200,
@@ -249,7 +234,9 @@ const odpColumnDefs = (
   ...getDefaultColumnDefs(isDiff, withAgency),
   ...(yearColumns.filter(
     (column: { headerName: string }) =>
-      column.headerName === 'ODP' || column.headerName === 'MT for HFC',
+      column.headerName === 'ODP' ||
+      column.headerName === 'MT for HFC' ||
+      column.headerName === 'CO2-EQ',
   ) || []),
 ]
 

@@ -3,7 +3,6 @@
 import { useContext, useEffect, useRef, useState } from 'react'
 
 import Activities from '@ors/components/manage/Blocks/BusinessPlans/Activities'
-import useGetBpPeriods from '@ors/components/manage/Blocks/BusinessPlans/BPList/useGetBPPeriods'
 import { useGetActivities } from '@ors/components/manage/Blocks/BusinessPlans/useGetActivities'
 import Loading from '@ors/components/theme/Loading/Loading'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
@@ -16,64 +15,32 @@ import { TableDataSelectorValuesType } from '../../Table/BusinessPlansTable/Tabl
 import { ViewSelectorValuesType } from '../types'
 import BPListHeader from './BPListHeader'
 import BPListTabs from './BPListTabs'
-import { bpTypes } from '../constants'
-import { useBPListApi } from './BPList'
 
 const ACTIVITIES_PER_PAGE_TABLE = 50
 const ACTIVITIES_PER_PAGE_LIST = 20
 
 export default function BPListActivitiesWrapper(props: any) {
-  const { period } = props
+  const { period, bpType } = props
+  const [year_start, year_end] = period.split('-')
+
   const { yearRanges } = useContext(BPYearRangesContext) as any
-  const { periodOptions } = useGetBpPeriods(yearRanges)
 
-  const firstPeriod = periodOptions?.[periodOptions.length - 1]?.value
-  const lastPeriod = periodOptions?.[0]?.value
-
-  const year_end = period?.split('-')[1] || lastPeriod.split('-')[1]
-  const year_start = period?.split('-')[0] || firstPeriod.split('-')[0]
-
-  const { bpType, setBPType } = useStore((state) => state.bpType)
-
-  const [initialFilters, setInitialFilters] = useState({
-    bp_status: bpType || bpTypes[1].label,
+  const initialFilters = {
+    bp_status: bpType,
     limit: ACTIVITIES_PER_PAGE_TABLE,
     offset: 0,
     year_end: year_end,
     year_start: year_start,
-  })
-  const activities = useGetActivities(initialFilters)
-  const { setParams, loaded: loadedActivities } = activities
-
-  const bpFilters = {
-    status: bpTypes[1].label,
-    year_end: year_end,
-    year_start: year_start,
   }
-  const { results, loaded } = useBPListApi(bpFilters)
 
-  useEffect(() => {
-    if (!bpType && loaded) {
-      if (results.length === 0) {
-        const defaultBpType = bpTypes[0].label
-
-        setBPType(defaultBpType)
-        setParams({ bp_status: defaultBpType })
-        setInitialFilters((filters) => ({
-          ...filters,
-          bp_status: defaultBpType,
-        }))
-      } else {
-        setBPType(bpTypes[1].label)
-      }
-    }
-  }, [results, loaded])
+  const activities = useGetActivities(initialFilters)
+  const { setParams, loading } = activities
 
   return (
     <>
       <Loading
         className="!fixed bg-action-disabledBackground"
-        active={!loadedActivities}
+        active={loading}
       />
       <BPListHeader viewType="activities" {...{ setParams }} />
       <BPListTabs />

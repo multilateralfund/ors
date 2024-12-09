@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { ReactNode, useMemo, useState } from 'react'
 
 import { Typography } from '@mui/material'
 import cx from 'classnames'
@@ -11,9 +11,11 @@ import { IoChevronDown, IoChevronUp } from 'react-icons/io5'
 interface Value {
   id: number
   value_mt: null | string
+  value_co2: null | string
   value_odp: null | string
   value_usd: null | string
   year: number
+  is_after: boolean
 }
 
 const generateYearRange = (period: string) => {
@@ -30,9 +32,11 @@ const generateTableData = (
   const usdValues: (number | string)[] = []
   const odpValues: (number | string)[] = []
   const mtValues: (number | string)[] = []
+  const co2Values: (number | string)[] = []
 
   const afterMaxYearValues = {
     value_mt: 0,
+    value_co2: 0,
     value_odp: 0,
     value_usd: 0,
   }
@@ -56,16 +60,23 @@ const generateTableData = (
         ? parseFloat(yearData.value_mt).toFixed(2)
         : '0.00',
     )
+    co2Values.push(
+      yearData && yearData.value_co2 !== null
+        ? parseFloat(yearData.value_co2).toFixed(2)
+        : '0.00',
+    )
   }
 
   values.forEach((value) => {
-    if (value.year > max_year) {
+    if (value.is_after) {
       afterMaxYearValues.value_usd +=
         value.value_usd !== null ? parseFloat(value.value_usd) : 0
       afterMaxYearValues.value_odp +=
         value.value_odp !== null ? parseFloat(value.value_odp) : 0
       afterMaxYearValues.value_mt +=
         value.value_mt !== null ? parseFloat(value.value_mt) : 0
+      afterMaxYearValues.value_co2 +=
+        value.value_co2 !== null ? parseFloat(value.value_co2) : 0
     }
   })
 
@@ -73,9 +84,11 @@ const generateTableData = (
   usdValues.push(afterMaxYearValues.value_usd.toFixed(2))
   odpValues.push(afterMaxYearValues.value_odp.toFixed(2))
   mtValues.push(afterMaxYearValues.value_mt.toFixed(2))
+  co2Values.push(afterMaxYearValues.value_co2.toFixed(2))
 
   return {
     mtValues,
+    co2Values,
     odpValues,
     usdValues,
     years,
@@ -102,11 +115,23 @@ const ValuesTable: React.FC<Props> = ({
     [values, min_year, max_year],
   )
 
-  const renderTable = (header: string, data: (number | string)[]) => (
+  const renderTable = (
+    header: string,
+    data: (number | string)[],
+    isCo2?: boolean,
+  ) => (
     <table className={cx(styles.replTable, '')}>
       <thead className="text-center">
         <tr>
-          <th colSpan={tableData.years.length}>{header}</th>
+          <th colSpan={tableData.years.length}>
+            {isCo2 ? (
+              <>
+                CO<sub>2</sub>-eq
+              </>
+            ) : (
+              <div className="pb-1">{header}</div>
+            )}
+          </th>
         </tr>
         <tr>
           {tableData.years.map((year, index) => (
@@ -132,6 +157,7 @@ const ValuesTable: React.FC<Props> = ({
         <>
           {renderTable('ODP', tableData.odpValues)}
           {renderTable('MT for HFC', tableData.mtValues)}
+          {renderTable('CO2-EQ', tableData.co2Values, true)}
         </>
       )}
     </div>
@@ -229,7 +255,11 @@ function OpenActivity({
           </span>
           <span className="flex items-center gap-4">
             <span>Polyol amount</span>
-            <h4 className="m-0">{activity.amount_polyol || '-'}</h4>
+            <h4 className="m-0">
+              {activity.amount_polyol
+                ? parseFloat(activity.amount_polyol).toFixed(2)
+                : '0.00'}
+            </h4>
           </span>
         </>
       )}
@@ -243,17 +273,6 @@ function OpenActivity({
 
       {(isAllView || isCommentsView) && (
         <>
-          <span className="flex flex-col gap-2.5">
-            <span>Reason for exceeding</span>
-            {activity.reason_for_exceeding ? (
-              <div className="break-words rounded-lg bg-gray-100 p-4">
-                {activity.reason_for_exceeding}
-              </div>
-            ) : (
-              <h4 className="m-0">-</h4>
-            )}
-          </span>
-
           <div className="flex flex-wrap">
             <span className="flex w-1/2 flex-col gap-2.5 pr-1.5">
               <span>Remarks</span>
@@ -266,16 +285,26 @@ function OpenActivity({
               )}
             </span>
             <span className="flex w-1/2 flex-col gap-2.5 pl-1.5">
-              <span>Comments</span>
-              {activity.comment_secretariat ? (
+              <span>Remarks (Additional)</span>
+              {activity.remarks_additional ? (
                 <div className="break-words rounded-lg bg-gray-100 p-4">
-                  {activity.comment_secretariat}
+                  {activity.remarks_additional}
                 </div>
               ) : (
                 <h4 className="m-0">-</h4>
               )}
             </span>
           </div>
+          <span className="flex flex-col gap-2.5">
+            <span>Comments</span>
+            {activity.comment_secretariat ? (
+              <div className="break-words rounded-lg bg-gray-100 p-4">
+                {activity.comment_secretariat}
+              </div>
+            ) : (
+              <h4 className="m-0">-</h4>
+            )}
+          </span>
         </>
       )}
     </div>

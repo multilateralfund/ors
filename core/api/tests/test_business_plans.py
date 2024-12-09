@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
@@ -75,11 +77,12 @@ class TestBPChemicalTypeList(BaseTest):
 
 @pytest.fixture(name="_setup_bp_list")
 def setup_bp_list():
-    for i in range(3):
+    start_year = datetime.now().year - 2
+    for year in range(start_year, start_year + 3):
         for status in ["Submitted", "Endorsed"]:
             data = {
-                "year_start": 2020 + i,
-                "year_end": 2022 + i,
+                "year_start": year,
+                "year_end": year + 2,
                 "status": status,
             }
             BusinessPlanFactory.create(**data)
@@ -109,16 +112,38 @@ class TestBPList(BaseTest):
 
     def test_list_year_filter(self, user, _setup_bp_list):
         self.client.force_authenticate(user=user)
-
-        response = self.client.get(self.url, {"year_start": 2021})
+        current_year = datetime.now().year
+        response = self.client.get(self.url, {"year_start": current_year})
         assert response.status_code == 200
         assert len(response.json()) == 2
-        assert all(bp["year_start"] == 2021 for bp in response.json())
+        assert all(bp["year_start"] == current_year for bp in response.json())
 
-        response = self.client.get(self.url, {"year_end": 2023})
+        response = self.client.get(self.url, {"year_end": current_year + 2})
         assert response.status_code == 200
         assert len(response.json()) == 2
-        assert all(bp["year_end"] == 2023 for bp in response.json())
+        assert all(bp["year_end"] == current_year + 2 for bp in response.json())
+
+
+class TestBPYearList(BaseTest):
+    url = reverse("businessplan-get-years")
+
+    def test_list_anon(self):
+        response = self.client.get(self.url)
+        assert response.status_code == 403
+
+    def test_list(self, user, _setup_bp_list):
+        self.client.force_authenticate(user=user)
+
+        current_year = datetime.now().year
+
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.json()) == (current_year - 2013) + 1
+        assert response.json()[1] == {
+            "year_start": current_year,
+            "year_end": current_year + 2,
+            "status": ["Endorsed", "Submitted"],
+        }
 
 
 @pytest.fixture(name="_setup_new_business_plan_create")

@@ -93,6 +93,7 @@ export function BPEditBaseTable(
     const valuesUSD = []
     const valuesODP = []
     const valuesMT = []
+    const valuesCO2 = []
 
     for (
       let year = yearRangeSelected.year_start;
@@ -207,6 +208,40 @@ export function BPEditBaseTable(
           valueSetter(params, year, isAfterMaxYear, 'value_mt'),
         wrapText: true,
       })
+
+      valuesCO2.push({
+        autoHeaderHeight: true,
+        cellClass: 'ag-text-center',
+        cellEditor: 'agNumberCellEditor',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
+        field: `value_co2_${year}`,
+        headerClass: 'ag-text-center',
+        headerComponent: function (props: any) {
+          return (
+            <BasePasteWrapper
+              label={props.displayName}
+              setForm={setForm}
+              mutator={function (row: any, value: any) {
+                valueSetter(
+                  { data: row, newValue: value },
+                  year,
+                  isAfterMaxYear,
+                  'value_co2',
+                )
+              }}
+            />
+          )
+        },
+        headerName: `${label}`,
+        minWidth: 80,
+        valueGetter: (params: any) =>
+          valueGetter(params, year, isAfterMaxYear, 'value_co2'),
+        valueSetter: (params: any) =>
+          valueSetter(params, year, isAfterMaxYear, 'value_co2'),
+        wrapText: true,
+      })
     }
 
     return [
@@ -221,6 +256,15 @@ export function BPEditBaseTable(
       {
         children: valuesMT,
         headerName: 'MT for HFC',
+      },
+      {
+        children: valuesCO2,
+        headerName: 'CO2-EQ',
+        headerGroupComponent: () => (
+          <div className="xs:text-[12px] mt-1 text-[10px]">
+            CO<sub>2</sub>-EQ
+          </div>
+        ),
       },
     ]
   }, [yearRangeSelected, valueGetter, valueSetter, setForm])

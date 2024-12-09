@@ -57,6 +57,7 @@ export const BPTable = ({
     const valuesUSD = []
     const valuesODP = []
     const valuesMT = []
+    const valuesCO2 = []
 
     for (
       let year = yearRangeSelected.year_start;
@@ -123,6 +124,24 @@ export const BPTable = ({
           return ''
         },
       })
+
+      valuesCO2.push({
+        autoHeaderHeight: true,
+        cellClass: 'ag-text-center',
+        field: `value_co2_${year}`,
+        headerClass: 'ag-text-center',
+        headerName: `${label}`,
+        minWidth: 80,
+        valueGetter: (params: any) => {
+          const value = params.data.values.find((value: any) =>
+            getYearColsValue(value, year, isAfterMaxYear),
+          )
+          if (value && value.value_co2 !== null) {
+            return parseFloat(value.value_co2).toFixed(2)
+          }
+          return ''
+        },
+      })
     }
 
     return [
@@ -137,6 +156,15 @@ export const BPTable = ({
       {
         children: valuesMT,
         headerName: 'MT for HFC',
+      },
+      {
+        children: valuesCO2,
+        headerName: 'CO2-EQ',
+        headerGroupComponent: () => (
+          <div className="xs:text-[12px] mt-1 text-[10px]">
+            CO<sub>2</sub>-EQ
+          </div>
+        ),
       },
     ]
   }, [yearRangeSelected])

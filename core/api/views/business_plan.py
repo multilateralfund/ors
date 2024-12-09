@@ -1,8 +1,8 @@
+from datetime import datetime
 import os
 import urllib
 
 from django.db import transaction
-from django.db.models import Max, Min
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
@@ -85,16 +85,28 @@ class BusinessPlanViewSet(
 
     @action(methods=["GET"], detail=False, url_path="get-years")
     def get_years(self, *args, **kwargs):
-        return Response(
-            (
-                BusinessPlan.objects.values("year_start", "year_end")
-                .annotate(
-                    min_year=Min("activities__values__year"),
-                    max_year=Max("activities__values__year"),
-                )
-                .order_by("-year_start")
-            )
+        # initialize years from 2014 to current year
+        current_year = datetime.now().year
+        final_years = {}
+        for ys in range(current_year + 1, 2013, -1):
+            final_years[ys] = {
+                "year_start": ys,
+                "year_end": ys + 2,
+                "status": [],
+            }
+        # get existing years
+        existing_years = (
+            BusinessPlan.objects.values("year_start", "year_end", "status")
+            .distinct()
+            .order_by("year_start", "year_end", "status")
+            .all()
         )
+        for bp_data in existing_years:
+            year_start = bp_data["year_start"]
+            if "status" in final_years[year_start]:
+                final_years[year_start]["status"].append(bp_data["status"])
+
+        return Response(final_years.values())
 
     @swagger_auto_schema(
         manual_parameters=[
@@ -202,7 +214,7 @@ class BPFileView(
     permission_classes = [IsSecretariat | IsAgency | IsViewer]
     queryset = BPFile.objects.all()
     serializer_class = BPFileSerializer
-    filter_class = BPFileFilter
+    filterset_class = BPFileFilter
 
     ACCEPTED_EXTENSIONS = [
         ".pdf",

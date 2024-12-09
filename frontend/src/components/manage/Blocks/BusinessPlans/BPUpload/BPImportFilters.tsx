@@ -37,19 +37,21 @@ const BPImportFilters = ({
     <>
       <p className="m-0 text-2xl">Choose Business Plan</p>
       <div className="flex flex-wrap gap-x-20 gap-y-3">
-        <BPMainFilters {...{ periodOptions, setFilters }} isFirstUploadStep />
+        <BPMainFilters {...{ periodOptions, setFilters }} isFirstStepUpload />
       </div>
       <div className="flex flex-wrap gap-x-20 gap-y-3">
-        <div className="w-36">
-          <Label isRequired>Meeting</Label>
-          <PopoverInput
-            className="!m-0 h-10 !py-1"
-            clearBtnClassName="right-1"
-            options={getMeetingOptions()}
-            withClear={true}
-            onChange={handleChangeMeeting}
-            onClear={() => handleChangeMeeting('')}
-          />
+        <div className="w-64">
+          <div className="w-36">
+            <Label isRequired>Meeting</Label>
+            <PopoverInput
+              className="!m-0 h-10 !py-1"
+              clearBtnClassName="right-1"
+              options={getMeetingOptions()}
+              withClear={true}
+              onChange={handleChangeMeeting}
+              onClear={() => handleChangeMeeting('')}
+            />
+          </div>
         </div>
         <div>
           <Label>Decision number (optional)</Label>

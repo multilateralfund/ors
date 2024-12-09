@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { BPListFilters } from '@ors/components/manage/Blocks/BusinessPlans/BPList/BPListFilters'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
@@ -12,7 +12,6 @@ import { useStore } from '@ors/store'
 import BPListHeader from './BPListHeader'
 import BPListTabs from './BPListTabs'
 import { Status } from '@ors/components/ui/StatusPill/StatusPill'
-import { bpTypes } from '../constants'
 
 type StatusFilterTypes = 'Submitted' | 'Endorsed'
 
@@ -43,9 +42,10 @@ export function useBPListApi(filters?: any) {
 }
 
 export default function BPList(props: any) {
-  const { period } = props
+  const { period, bpType } = props
+  const [year_start, year_end] = period.split('-')
+
   const { agencies, settings } = useStore((state) => state.common)
-  const { bpType, setBPType } = useStore((state) => state.bpType)
 
   const [pagination, setPagination] = useState({
     page: 1,
@@ -53,29 +53,12 @@ export default function BPList(props: any) {
   })
   const [filters, setFilters] = useState<FiltersType>({
     agency_id: null,
-    status: (bpType || bpTypes[1].label) as Status,
-    year_end: period?.split('-')[1] || null,
-    year_start: period?.split('-')[0] || null,
+    status: bpType as Status,
+    year_end: year_end,
+    year_start: year_start,
   })
 
-  const { count, results, setParams, loaded } = useBPListApi(filters)
-
-  useEffect(() => {
-    if (!bpType && loaded) {
-      if (results.length === 0) {
-        const defaultBpType = bpTypes[0].label
-
-        setBPType(defaultBpType)
-        setParams({ status: defaultBpType })
-        setFilters((filters) => ({
-          ...filters,
-          status: defaultBpType as Status,
-        }))
-      } else {
-        setBPType(bpTypes[1].label)
-      }
-    }
-  }, [results, loaded])
+  const { count, results, setParams } = useBPListApi(filters)
 
   const pages = Math.ceil(count / pagination.rowsPerPage)
 
