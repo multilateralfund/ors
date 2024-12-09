@@ -261,7 +261,7 @@ export function BPEditBaseTable(
         children: valuesCO2,
         headerName: 'CO2-EQ',
         headerGroupComponent: () => (
-          <div className="mt-1 text-[12px]">
+          <div className="xs:text-[12px] mt-1 text-[10px]">
             CO<sub>2</sub>-EQ
           </div>
         ),

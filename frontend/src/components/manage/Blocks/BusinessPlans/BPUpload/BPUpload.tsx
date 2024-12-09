@@ -14,10 +14,10 @@ import BPReviewChanges from './BPReviewChanges'
 import BPUploadSectionWrapper from './BPUploadSectionWrapper'
 import { getLatestBpYearRange } from '../utils'
 
-const BPUploadHeader = ({ currentYearRange }: any) => {
+const BPUploadHeader = () => {
   return (
     <div>
-      <RedirectToBpList {...{ currentYearRange }} />
+      <RedirectToBpList />
       <div className="mb-4 flex min-h-[40px] flex-wrap items-center justify-between gap-x-8 gap-y-2">
         <h1 className="m-0 text-5xl leading-normal">Upload Business Plan</h1>
       </div>
@@ -109,7 +109,7 @@ const BPUpload = () => {
 
   return (
     <div className="flex flex-col gap-2">
-      <BPUploadHeader {...{ currentYearRange }} />
+      <BPUploadHeader />
       <div className="flex flex-col gap-6">
         {steps
           .filter(({ step }) => step <= currentStep)

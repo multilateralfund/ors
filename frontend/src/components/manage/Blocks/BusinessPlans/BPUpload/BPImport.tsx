@@ -85,11 +85,11 @@ const BPImport = ({
               />
               <a
                 className="m-0 flex items-center gap-2 no-underline"
-                download={file[0].name}
+                download={file[0]?.name}
                 href={URL.createObjectURL(file[0])}
               >
                 <p className="mb-0 mt-0.5 text-xl text-primary">
-                  {file[0].name}
+                  {file[0]?.name}
                 </p>
               </a>
               <BiTrash
