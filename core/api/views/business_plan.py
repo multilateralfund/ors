@@ -214,7 +214,7 @@ class BPFileView(
     permission_classes = [IsSecretariat | IsAgency | IsViewer]
     queryset = BPFile.objects.all()
     serializer_class = BPFileSerializer
-    filter_class = BPFileFilter
+    filterset_class = BPFileFilter
 
     ACCEPTED_EXTENSIONS = [
         ".pdf",

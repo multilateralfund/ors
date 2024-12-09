@@ -125,10 +125,10 @@ class BPActivityListFilter(BPActivityFilter):
 
 
 class BPFileFilter(filters.FilterSet):
-    status = filters.ModelChoiceFilter(
-        required=True,
+    status = filters.ChoiceFilter(
         choices=BusinessPlan.Status.choices,
-        widget=CSVWidget,
+        required=True,
+        field_name="status",
     )
     year_start = filters.NumberFilter(
         required=True,
