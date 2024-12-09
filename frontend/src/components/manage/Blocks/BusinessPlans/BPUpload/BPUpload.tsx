@@ -12,6 +12,7 @@ import BPImport from './BPImport'
 import BPImportFilters from './BPImportFilters'
 import BPReviewChanges from './BPReviewChanges'
 import BPUploadSectionWrapper from './BPUploadSectionWrapper'
+import { getLatestBpYearRange } from '../utils'
 
 const BPUploadHeader = ({ currentYearRange }: any) => {
   return (
@@ -33,8 +34,9 @@ const BPUpload = () => {
   const [downloadFilters, setDownloadFilters] = useState<any>({})
   const [file, setFile] = useState<FileList | null>(null)
   const [validations, setValidations] = useState<any>(null)
-
   const [currentStep, setCurrentStep] = useState(1)
+
+  const latestBpYearRange = getLatestBpYearRange(periodOptions)
 
   useEffect(() => {
     if (currentYearRange) {
@@ -43,6 +45,9 @@ const BPUpload = () => {
         year_end,
         year_start,
       })
+    }
+    if (latestBpYearRange) {
+      const [year_start, year_end] = latestBpYearRange.label.split('-')
       setDownloadFilters({ year_end, year_start })
     }
   }, [currentYearRange])

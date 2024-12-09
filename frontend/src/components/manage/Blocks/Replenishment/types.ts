@@ -22,6 +22,7 @@ export interface PeriodSelectorOption {
   label: string
   value: string
   year_start?: number
+  status?: string
 }
 export interface PeriodSelectorProps {
   label?: string
@@ -37,6 +38,7 @@ export interface PeriodSelectorProps {
   selectedPeriod?: string
   inputClassName?: string
   menuClassName?: string
+  withDisabledOptions?: boolean
 }
 
 export interface FileForUpload {

@@ -32,6 +32,7 @@ const BPExport = ({
       <p className="m-0 text-2xl">Download Business Plan</p>
       <div className="flex flex-wrap gap-x-4 gap-y-3">
         <BPMainFilters
+          key={downloadFilters?.year_start}
           {...{ periodOptions }}
           filters={downloadFilters}
           setFilters={setDownloadFilters}

@@ -255,7 +255,11 @@ function OpenActivity({
           </span>
           <span className="flex items-center gap-4">
             <span>Polyol amount</span>
-            <h4 className="m-0">{activity.amount_polyol || '-'}</h4>
+            <h4 className="m-0">
+              {activity.amount_polyol
+                ? parseFloat(activity.amount_polyol).toFixed(2)
+                : '0.00'}
+            </h4>
           </span>
         </>
       )}

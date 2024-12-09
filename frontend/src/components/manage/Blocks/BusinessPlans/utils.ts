@@ -29,3 +29,6 @@ export const getCurrentPeriodOption = (
   periodOptions: any[],
   yearStart: string,
 ) => find(periodOptions, ({ year_start }) => year_start === parseInt(yearStart))
+
+export const getLatestBpYearRange = (periodOptions: any[]) =>
+  find(periodOptions, (option) => option.status.length > 0)
