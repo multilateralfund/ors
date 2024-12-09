@@ -138,7 +138,7 @@ class TestBPYearList(BaseTest):
 
         response = self.client.get(self.url)
         assert response.status_code == 200
-        assert len(response.json()) == (current_year - 2014) + 1
+        assert len(response.json()) == (current_year - 2013) + 1
         assert response.json()[1] == {
             "year_start": current_year,
             "year_end": current_year + 2,

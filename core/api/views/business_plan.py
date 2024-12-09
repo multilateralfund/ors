@@ -3,7 +3,6 @@ import os
 import urllib
 
 from django.db import transaction
-from django.db.models import Max, Min
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
