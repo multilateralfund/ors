@@ -89,7 +89,7 @@ class BusinessPlanViewSet(
         # initialize years from 2014 to current year
         current_year = datetime.now().year
         final_years = {}
-        for ys in range(current_year + 1, 2014, -1):
+        for ys in range(current_year + 1, 2013, -1):
             final_years[ys] = {
                 "year_start": ys,
                 "year_end": ys + 2,
