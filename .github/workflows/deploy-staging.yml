@@ -5,23 +5,44 @@ concurrency: staging_deployment
 
 on:
   workflow_call:
-
-env:
-  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+    secrets:
+      STAGING_SSH_USER:
+        required: true
+      STAGING_SSH_HOST:
+        required: true
+      STAGING_SSH_KEY:
+        required: true
 
 jobs:
   deploy:
     runs-on:
       - self-hosted
-      - ors-staging
+      - ors-staging-v2
     steps:
       - uses: actions/checkout@v3
+      
+      - name: 'Configure SSH'
+        run: |
+          mkdir -p ~/.ssh/
+          echo "$SSH_KEY" > ~/.ssh/server.key
+          chmod 600 ~/.ssh/server.key
+          cat > ~/.ssh/config <<END
+          Host server
+            HostName $SSH_HOST
+            User $SSH_USER
+            IdentityFile ~/.ssh/server.key
+            StrictHostKeyChecking no
+          END
+        env:
+          SSH_USER: ${{ secrets.STAGING_SSH_USER }}
+          SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
+          SSH_KEY:  ${{ secrets.STAGING_SSH_KEY }}
+        shell: bash
+
       - name: Update docker-compose.yml
         run: |
-          cp docker-compose.yml /home/ors/
+          scp docker-compose.yml server:/home/ors/
+
       - name: Update services
         run: |
-          cd /home/ors/
-          docker compose pull
-          docker compose up -d --remove-orphans
-          docker compose top
+          ssh server "cd /home/ors/ && docker compose pull && docker compose up -d --remove-orphans && docker compose top"

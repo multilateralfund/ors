@@ -37,6 +37,13 @@ class BPActivitiesWriter(BaseWriter):
                             "method": self.get_value,
                             "align": "right",
                         },
+                        {
+                            "id": f"value_co2_{year}",
+                            "headerName": f"CO₂-eq {label}",
+                            "type": "number",
+                            "method": self.get_value,
+                            "align": "right",
+                        },
                     ]
                 )
 
@@ -93,11 +100,6 @@ class BPActivitiesWriter(BaseWriter):
                 "column_width": self.COLUMN_WIDTH * 2,
             },
             *year_headers,
-            {
-                "id": "reason_for_exceeding",
-                "headerName": "Reason for exceeding 35% of baseline",
-                "column_width": self.COLUMN_WIDTH * 2,
-            },
             {
                 "id": "status",
                 "headerName": "Project Status (A/P)",

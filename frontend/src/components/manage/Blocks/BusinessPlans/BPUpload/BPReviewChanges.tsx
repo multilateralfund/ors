@@ -19,6 +19,7 @@ import { PeriodSelectorOption } from '../../Replenishment/types'
 
 import { IoEllipse } from 'react-icons/io5'
 import { MdExpandMore } from 'react-icons/md'
+import { useStore } from '@ors/store'
 
 interface IBPReviewChanges {
   file: FileList | null
@@ -35,6 +36,8 @@ const BPReviewChanges = ({
   setCurrentStep,
   validations,
 }: IBPReviewChanges) => {
+  const { setBPType } = useStore((state) => state.bpType)
+
   const [expandedItems, setExpandedItems] = useState<Array<string>>([])
   const [importResult, setImportResult] = useState<any>()
 
@@ -108,7 +111,7 @@ const BPReviewChanges = ({
 
           return (
             <div key={index} className="mb-1.5 flex items-baseline gap-1.5">
-              <IoEllipse className="min-h-2 min-w-2" size={9} />
+              <IoEllipse className="min-h-3 min-w-2" size={9} />
               <Typography className="text-lg">
                 {(error_type || warning_type).includes('data')
                   ? rowIdentifier + ' - '
@@ -172,21 +175,16 @@ const BPReviewChanges = ({
           className="BPAlert mt-4 w-fit border-0"
           severity={importResult.status === 200 ? 'success' : 'error'}
         >
-          <p className="m-0 text-xl">
-            {importResult.response.message}.
-            {importResult.status === 200 && (
-              <>
-                {' '}
-                View{' '}
-                <Link
-                  className="text-inherit no-underline"
-                  href={`/business-plans/list/activities/${year_start}-${year_end}`}
-                >
-                  Business Plan
-                </Link>
-              </>
-            )}
-          </p>
+          <Link
+            className="text-xl text-inherit no-underline"
+            href={`/business-plans/list/activities/${year_start}-${year_end}`}
+            onClick={() => {
+              setBPType(bp_status)
+            }}
+          >
+            {importResult.response}.
+            {importResult.status === 200 && <> View Business Plan</>}
+          </Link>
         </Alert>
       )}
     </>

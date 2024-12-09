@@ -81,6 +81,15 @@ const useColumnsOptions = (
           minWidth: 20,
         },
         {
+          cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
+          field: 'display_internal_id',
+          headerClass: 'ag-text-center',
+          headerName: 'Activity id',
+          minWidth: 130,
+          editable: false,
+          tooltipField: 'display_internal_id',
+        },
+        {
           cellClass: 'ag-text-center ag-cell-centered ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {

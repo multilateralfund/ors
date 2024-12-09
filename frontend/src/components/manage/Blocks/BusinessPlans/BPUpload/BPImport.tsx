@@ -45,7 +45,7 @@ const BPImport = ({
         : baseUrl
 
       if (file) {
-        const result = await uploadFiles(formattedUrl, [file[0]])
+        const result = await uploadFiles(formattedUrl, [file[0]], true)
 
         setValidations(result.response)
         setCurrentStep((step) => step + 1)
@@ -58,9 +58,9 @@ const BPImport = ({
   return (
     <>
       <p className="m-0 text-2xl">Upload file</p>
-      <div className="flex gap-5">
+      <div className="flex flex-wrap gap-5">
         <Button
-          className="h-10 w-fit border border-solid border-primary px-3 py-1 hover:text-white"
+          className="h-10 w-fit whitespace-nowrap border border-solid border-primary px-3 py-1 hover:text-white"
           aria-label="upload files"
           component="label"
           size="large"
@@ -78,7 +78,7 @@ const BPImport = ({
         </Button>
         {file && (
           <div className="flex flex-wrap items-center gap-5">
-            <div className="flex items-center gap-2.5 font-medium">
+            <div className="flex flex-wrap items-center gap-2.5 font-medium">
               <FiFileText
                 className="min-h-5 min-w-5 text-secondary"
                 size={20}

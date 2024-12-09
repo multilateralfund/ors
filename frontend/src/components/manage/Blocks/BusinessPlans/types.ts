@@ -49,13 +49,18 @@ export type BpFileInput = {
 }
 
 export interface BpDetails extends BpFileInput {
-  bpFiles: Array<BpFile>
+  bpFiles?: Array<BpFile>
 }
 
 export interface BPTabsInterface extends BpDetails {
   activeTab: number
   children: ReactNode
   setActiveTab: Dispatch<SetStateAction<number>>
+  isConsolidatedBp?: boolean
+  data?: any
+  results?: any[]
+  bpFiles: any[]
+  setBpForm?: Dispatch<any> | undefined
 }
 
 export type BPEditTableInterface = {

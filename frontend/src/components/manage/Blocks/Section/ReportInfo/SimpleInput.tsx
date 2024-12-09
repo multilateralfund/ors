@@ -11,6 +11,7 @@ const SimpleInput = ({
   onChange,
   type,
   value,
+  containerClassName,
 }: {
   className?: string
   defaultValue?: any
@@ -20,9 +21,10 @@ const SimpleInput = ({
   onChange?: (event: any) => void
   type: string
   value?: any
+  containerClassName?: string
 }) => {
   return (
-    <div className="flex h-full flex-col justify-end">
+    <div className={cx('flex h-full flex-col justify-end', containerClassName)}>
       {label && (
         <label
           className="mb-2 block text-lg font-normal text-gray-900"

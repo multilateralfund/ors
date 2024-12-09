@@ -2,11 +2,13 @@ import { Tab, Tabs } from '@mui/material'
 
 import BPDetails from './BP/BPDetails'
 import { BPTabsInterface } from './types'
+import BPDetailsConsolidatedEdit from './BPEditConsolidated/BPDetailsConsolidatedEdit'
 
 const BPTabs = ({
   activeTab,
   children,
   setActiveTab,
+  isConsolidatedBp = false,
   ...props
 }: BPTabsInterface) => {
   return (
@@ -52,7 +54,12 @@ const BPTabs = ({
       </div>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary bg-white p-6">
         {activeTab === 0 && children}
-        {activeTab === 1 && <BPDetails {...props} />}
+        {activeTab === 1 &&
+          (isConsolidatedBp ? (
+            <BPDetailsConsolidatedEdit {...props} />
+          ) : (
+            <BPDetails {...props} />
+          ))}
       </div>
     </>
   )

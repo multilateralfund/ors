@@ -1,3 +1,6 @@
+import { useStore } from '@ors/store'
+import { reverse } from 'lodash'
+
 export const filtersToQueryParams = (filters: any) => {
   const filtersParams = Object.entries(filters).map(
     (filter: any) =>
@@ -9,3 +12,15 @@ export const filtersToQueryParams = (filters: any) => {
 
 export const getAgencyByName = (commonSlice: any, agency: string) =>
   commonSlice.agencies.data.find((item: any) => item.name === agency)
+
+export const getMeetingOptions = () => {
+  const projectSlice = useStore((state) => state.projects)
+  const meetings = projectSlice.meetings.data
+  const formattedMeetings = meetings?.map((meeting: any) => ({
+    label: meeting.number,
+    value: meeting.id,
+    year: meeting.date ? new Date(meeting.date).getFullYear() : '-',
+  }))
+
+  return reverse(formattedMeetings)
+}

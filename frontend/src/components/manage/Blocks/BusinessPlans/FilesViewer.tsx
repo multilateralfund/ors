@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 
 import { filter } from 'lodash'
 
@@ -11,7 +11,7 @@ import { IoDocumentTextOutline, IoTrash } from 'react-icons/io5'
 export function FilesViewer(props: BpDetails) {
   const { bpFiles, files, setFiles } = props
 
-  const [currentFiles, setCurrentFiles] = useState(bpFiles)
+  const [currentFiles, setCurrentFiles] = useState(bpFiles || [])
 
   if (!bpFiles) {
     return null

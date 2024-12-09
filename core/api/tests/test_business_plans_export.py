@@ -67,15 +67,19 @@ class TestBPExport(BaseTest):
         assert sheet["N2"].value == bp_activity_values[0].value_usd
         assert sheet["O2"].value == bp_activity_values[0].value_odp
         assert sheet["P2"].value == bp_activity_values[0].value_mt
+        assert sheet["Q2"].value == bp_activity_values[0].value_co2
 
-        assert sheet["Q2"].value == bp_activity_values[1].value_usd
-        assert sheet["R2"].value == bp_activity_values[1].value_odp
-        assert sheet["S2"].value == bp_activity_values[1].value_mt
+        assert sheet["R2"].value == bp_activity_values[1].value_usd
+        assert sheet["S2"].value == bp_activity_values[1].value_odp
+        assert sheet["T2"].value == bp_activity_values[1].value_mt
+        assert sheet["U2"].value == bp_activity_values[1].value_co2
 
-        assert sheet["T2"].value == bp_activity_values[2].value_usd
-        assert sheet["U2"].value == bp_activity_values[2].value_odp
-        assert sheet["V2"].value == bp_activity_values[2].value_mt
+        assert sheet["V2"].value == bp_activity_values[2].value_usd
+        assert sheet["W2"].value == bp_activity_values[2].value_odp
+        assert sheet["X2"].value == bp_activity_values[2].value_mt
+        assert sheet["Y2"].value == bp_activity_values[2].value_co2
 
-        assert sheet["W2"].value == bp_activity_values[3].value_usd
-        assert sheet["X2"].value == bp_activity_values[3].value_odp
-        assert sheet["Y2"].value == bp_activity_values[3].value_mt
+        assert sheet["Z2"].value == bp_activity_values[3].value_usd
+        assert sheet["AA2"].value == bp_activity_values[3].value_odp
+        assert sheet["AB2"].value == bp_activity_values[3].value_mt
+        assert sheet["AC2"].value == bp_activity_values[3].value_co2

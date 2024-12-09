@@ -51,6 +51,7 @@ class BPActivityValueSerializer(serializers.ModelSerializer):
             "value_usd",
             "value_odp",
             "value_mt",
+            "value_co2",
         ]
 
 
