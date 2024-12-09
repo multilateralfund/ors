@@ -187,4 +187,112 @@ class Migration(migrations.Migration):
             """,
             reverse_sql="DROP VIEW all_generations_view",
         ),
+        migrations.RunSQL(
+            sql="""
+            CREATE VIEW all_records_view AS
+            WITH all_records AS (
+                    (SELECT cp_record.id,
+                            cp_record.substance_id,
+                            cp_record.blend_id,
+                            cp_record.display_name,
+                            cp_record.section,
+                            cp_record.imports,
+                            cp_record.import_quotas,
+                            cp_record.exports,
+                            cp_record.export_quotas,
+                            cp_record.production,
+                            cp_record.manufacturing_blends,
+                            cp_record.banned_date,
+                            cp_record.remarks,
+                            cp_record.source_file,
+                            cp_record.country_programme_report_id,
+                            cpr.country_id,
+                            cpr.version,
+                            cpr.created_at,
+                            cpr.year,
+                            FALSE AS is_archive
+                    FROM cp_record
+                    JOIN cp_report AS cpr ON cp_record.country_programme_report_id = cpr.id)
+                UNION
+                    (SELECT cp_record_archive.id,
+                            cp_record_archive.substance_id,
+                            cp_record_archive.blend_id,
+                            cp_record_archive.display_name,
+                            cp_record_archive.section,
+                            cp_record_archive.imports,
+                            cp_record_archive.import_quotas,
+                            cp_record_archive.exports,
+                            cp_record_archive.export_quotas,
+                            cp_record_archive.production,
+                            cp_record_archive.manufacturing_blends,
+                            cp_record_archive.banned_date,
+                            cp_record_archive.remarks,
+                            cp_record_archive.source_file,
+                            cp_record_archive.country_programme_report_id,
+                            cpr.country_id,
+                            cpr.version,
+                            cpr.created_at,
+                            cpr.year,
+                            TRUE AS is_archive
+                    FROM cp_record_archive
+                    JOIN cp_report_archive AS cpr ON cp_record_archive.country_programme_report_id = cpr.id))
+            SELECT all_records.id,
+                all_records.substance_id,
+                s.name AS substance_name,
+                s.group_id,
+                g.name AS group_name,
+                all_records.blend_id,
+                b.name AS blend_name,
+                all_records.display_name,
+                all_records.section,
+                all_records.imports,
+                all_records.import_quotas,
+                all_records.exports,
+                all_records.export_quotas,
+                all_records.production,
+                all_records.manufacturing_blends,
+                all_records.banned_date,
+                all_records.remarks,
+                all_records.source_file,
+                all_records.country_programme_report_id,
+                all_records.country_id,
+                c.name AS country_name,
+                c.is_lvc AS country_is_lvc,
+                all_records.version,
+                all_records.created_at,
+                all_records.year,
+                all_records.is_archive
+            FROM all_records
+            LEFT JOIN core_substance AS s ON all_records.substance_id = s.id
+            LEFT JOIN core_group AS g ON s.group_id = g.id
+            LEFT JOIN core_blend AS b ON all_records.blend_id = b.id
+            JOIN core_country AS c ON all_records.country_id = c.id
+            """,
+            reverse_sql="DROP VIEW all_records_view",
+        ),
+        migrations.RunSQL(
+            sql="""
+            WITH all_cp_usage AS (
+                    (SELECT "cp_usage"."id",
+                            "cp_usage"."usage_id",
+                            "cp_usage"."quantity",
+                            "cp_usage"."country_programme_record_id",
+                            FALSE AS is_archive
+                        FROM "cp_usage")
+                UNION
+                    (SELECT "cp_usage_archive"."id",
+                            "cp_usage_archive"."usage_id",
+                            "cp_usage_archive"."quantity",
+                            "cp_usage_archive"."country_programme_record_id",
+                            TRUE AS is_archive
+                        FROM "cp_usage_archive"))
+            SELECT all_cp_usage.id,
+                all_cp_usage.usage_id,
+                all_cp_usage.quantity,
+                all_cp_usage.country_programme_record_id,
+                all_cp_usage.is_archive
+            FROM all_cp_usage
+            """,
+            reverse_sql="DROP VIEW all_cp_usage",
+        ),
     ]
