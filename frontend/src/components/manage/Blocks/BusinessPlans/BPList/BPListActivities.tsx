@@ -3,7 +3,6 @@
 import { useContext, useEffect, useRef, useState } from 'react'
 
 import Activities from '@ors/components/manage/Blocks/BusinessPlans/Activities'
-import useGetBpPeriods from '@ors/components/manage/Blocks/BusinessPlans/BPList/useGetBPPeriods'
 import { useGetActivities } from '@ors/components/manage/Blocks/BusinessPlans/useGetActivities'
 import Loading from '@ors/components/theme/Loading/Loading'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
@@ -17,18 +16,14 @@ import { ViewSelectorValuesType } from '../types'
 import BPListHeader from './BPListHeader'
 import BPListTabs from './BPListTabs'
 
-import { getStartEndYears } from '../utils'
-
 const ACTIVITIES_PER_PAGE_TABLE = 50
 const ACTIVITIES_PER_PAGE_LIST = 20
 
 export default function BPListActivitiesWrapper(props: any) {
   const { period, bpType } = props
+  const [year_start, year_end] = period.split('-')
 
   const { yearRanges } = useContext(BPYearRangesContext) as any
-  const { periodOptions } = useGetBpPeriods(yearRanges)
-
-  const [year_start, year_end] = getStartEndYears(periodOptions, period)
 
   const initialFilters = {
     bp_status: bpType,
