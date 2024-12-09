@@ -15,6 +15,7 @@ interface Value {
   value_odp: null | string
   value_usd: null | string
   year: number
+  is_after: boolean
 }
 
 const generateYearRange = (period: string) => {
@@ -67,7 +68,7 @@ const generateTableData = (
   }
 
   values.forEach((value) => {
-    if (value.year > max_year) {
+    if (value.is_after) {
       afterMaxYearValues.value_usd +=
         value.value_usd !== null ? parseFloat(value.value_usd) : 0
       afterMaxYearValues.value_odp +=
@@ -268,17 +269,6 @@ function OpenActivity({
 
       {(isAllView || isCommentsView) && (
         <>
-          <span className="flex flex-col gap-2.5">
-            <span>Reason for exceeding</span>
-            {activity.reason_for_exceeding ? (
-              <div className="break-words rounded-lg bg-gray-100 p-4">
-                {activity.reason_for_exceeding}
-              </div>
-            ) : (
-              <h4 className="m-0">-</h4>
-            )}
-          </span>
-
           <div className="flex flex-wrap">
             <span className="flex w-1/2 flex-col gap-2.5 pr-1.5">
               <span>Remarks</span>
@@ -291,16 +281,26 @@ function OpenActivity({
               )}
             </span>
             <span className="flex w-1/2 flex-col gap-2.5 pl-1.5">
-              <span>Comments</span>
-              {activity.comment_secretariat ? (
+              <span>Remarks (Additional)</span>
+              {activity.remarks_additional ? (
                 <div className="break-words rounded-lg bg-gray-100 p-4">
-                  {activity.comment_secretariat}
+                  {activity.remarks_additional}
                 </div>
               ) : (
                 <h4 className="m-0">-</h4>
               )}
             </span>
           </div>
+          <span className="flex flex-col gap-2.5">
+            <span>Comments</span>
+            {activity.comment_secretariat ? (
+              <div className="break-words rounded-lg bg-gray-100 p-4">
+                {activity.comment_secretariat}
+              </div>
+            ) : (
+              <h4 className="m-0">-</h4>
+            )}
+          </span>
         </>
       )}
     </div>

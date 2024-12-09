@@ -60,8 +60,8 @@ export default function BPHeaderEditConsolidated({
           year_start: parseInt(year_start),
           year_end: parseInt(year_end),
           status: capitalize(type),
-          meeting: bpForm.meeting,
-          decision: bpForm.decision,
+          meeting: bpForm?.meeting,
+          decision: bpForm?.decision,
         },
         method: 'PUT',
       })
