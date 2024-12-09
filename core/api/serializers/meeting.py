@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from core.models.meeting import Meeting
+from core.models.meeting import Decision, Meeting
 
 
 class MeetingSerializer(serializers.ModelSerializer):
@@ -15,4 +15,19 @@ class MeetingSerializer(serializers.ModelSerializer):
             "number",
             "status",
             "date",
+        ]
+
+
+class DecisionSerializer(serializers.ModelSerializer):
+    """
+    DecisionSerializer class
+    """
+
+    class Meta:
+        model = Decision
+        fields = [
+            "id",
+            "meeting_id",
+            "number",
+            "description",
         ]

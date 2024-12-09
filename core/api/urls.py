@@ -86,7 +86,7 @@ from core.api.views.cp_records import (
     CPRecordListDiffView,
 )
 from core.api.views.cp_report_empty_form import EmptyFormView
-from core.api.views.meetings import MeetingListView
+from core.api.views.meetings import DecisionListView, MeetingListView
 from core.api.views.projects import (
     MetaProjectListView,
     ProjectClusterListView,
@@ -396,6 +396,11 @@ urlpatterns = [
         "meetings/",
         MeetingListView.as_view(),
         name="meeting-list",
+    ),
+    path(
+        "decisions/",
+        DecisionListView.as_view(),
+        name="decision-list",
     ),
     path(
         "project-clusters/",

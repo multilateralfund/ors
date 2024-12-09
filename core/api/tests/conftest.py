@@ -15,6 +15,7 @@ from core.api.tests.factories import (
     CPReportFormatRowFactory,
     CPReportFactory,
     CountryFactory,
+    DecisionFactory,
     ExcludedUsageBlendFactory,
     ExcludedUsageSubstFactory,
     GroupFactory,
@@ -330,6 +331,13 @@ def subsector(sector):
 
 
 @pytest.fixture
+def subsector_other(sector):
+    return ProjectSubSectorFactory.create(
+        name=f"Other {sector.name}", code=f"OTH{sector.code}", sector=sector
+    )
+
+
+@pytest.fixture
 def rbm_measure():
     return RbmMeasureFactory.create(name="RBM Measure", sort_order=1)
 
@@ -337,6 +345,11 @@ def rbm_measure():
 @pytest.fixture
 def meeting():
     return MeetingFactory.create(number=1, date="2019-03-14")
+
+
+@pytest.fixture
+def decision(meeting):
+    return DecisionFactory.create(number=1, meeting=meeting)
 
 
 @pytest.fixture
@@ -780,25 +793,36 @@ def setup_bp_activity_create(
         "remarks_additional": "Poate si la anu / Daca merge bine planu stau ca barosanu.",
         "values": [
             {
-                "year": 2020,
+                "year": 2025,
                 "is_after": False,
                 "value_usd": 100,
                 "value_odp": 100,
                 "value_mt": 100,
+                "value_co2": 100,
             },
             {
-                "year": 2021,
+                "year": 2026,
                 "is_after": False,
                 "value_usd": 200,
                 "value_odp": 200,
                 "value_mt": 200,
+                "value_co2": 200,
             },
             {
-                "year": 2021,
-                "is_after": True,
+                "year": 2027,
+                "is_after": False,
                 "value_usd": 300,
                 "value_odp": 300,
                 "value_mt": 300,
+                "value_co2": 300,
+            },
+            {
+                "year": 2027,
+                "is_after": True,
+                "value_usd": 400,
+                "value_odp": 400,
+                "value_mt": 400,
+                "value_co2": 400,
             },
         ],
     }

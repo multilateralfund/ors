@@ -4,6 +4,7 @@ import urllib
 
 from django.db import transaction
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -27,13 +28,14 @@ from core.api.serializers.business_plan import (
     BPActivityDetailSerializer,
     BPActivityListSerializer,
 )
-from core.api.views.business_plan_utils import BusinessPlanUtils
+from core.api.views.business_plan_utils import IMPORT_PARAMETERS, BusinessPlanUtils
 from core.api.views.utils import (
     get_business_plan_from_request,
     BPACTIVITY_ORDERING_FIELDS,
 )
 from core.models import BusinessPlan, BPChemicalType, BPActivity
 from core.models.business_plan import BPFile
+from core.models.meeting import Decision, Meeting
 
 
 class BPChemicalTypeListView(generics.ListAPIView):
@@ -79,7 +81,7 @@ class BusinessPlanViewSet(
     def get_serializer_class(self):
         if self.action == "get":
             return BPActivityDetailSerializer
-        if self.action in ["create", "update"]:
+        if self.action == "update":
             return BusinessPlanCreateSerializer
         return BusinessPlanSerializer
 
@@ -156,11 +158,6 @@ class BusinessPlanViewSet(
 
         ret["activities"] = self.get_serializer(activities, many=True).data
         return Response(ret)
-
-    @transaction.atomic
-    def create(self, request, *args, **kwargs):
-        ret_code, ret_data = self.create_bp(request.data)
-        return Response(ret_data, status=ret_code)
 
     @transaction.atomic
     def update(self, request, *args, **kwargs):
@@ -320,18 +317,16 @@ class BPFileDownloadView(generics.RetrieveAPIView):
 
 
 class BPImportValidateView(BusinessPlanUtils, generics.GenericAPIView):
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "year_start",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
-            ),
-        ],
-    )
+    @swagger_auto_schema(manual_parameters=IMPORT_PARAMETERS)
     def post(self, request, *args, **kwargs):
         files = request.FILES
         year_start = int(request.query_params.get("year_start", 0))
+        meeting_id = request.query_params.get("meeting_id")
+        decision_id = request.query_params.get("decision_id")
+
+        meeting = get_object_or_404(Meeting, id=meeting_id)
+        if decision_id:
+            get_object_or_404(Decision, id=decision_id, meeting=meeting)
 
         ret_code, ret_data = self.import_bp(files, year_start, from_validate=True)
         if ret_code != status.HTTP_200_OK:
@@ -371,41 +366,15 @@ class BPImportView(
 ):
     serializer_class = BusinessPlanCreateSerializer
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "year_start",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
-            ),
-            openapi.Parameter(
-                "year_end",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
-            ),
-            openapi.Parameter(
-                "status",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_STRING,
-            ),
-            openapi.Parameter(
-                "meeting_number",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
-            ),
-            openapi.Parameter(
-                "decision_number",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
-            ),
-        ],
-    )
+    @swagger_auto_schema(manual_parameters=IMPORT_PARAMETERS)
     @transaction.atomic
     def post(self, request, *args, **kwargs):
         files = request.FILES
         year_start = int(request.query_params.get("year_start", 0))
         year_end = int(request.query_params.get("year_end", 0))
         bp_status = request.query_params.get("status")
+        meeting_id = request.query_params.get("meeting_id")
+        decision_id = request.query_params.get("decision_id")
 
         ret_code, ret_data = self.import_bp(files, year_start)
         if ret_code != status.HTTP_200_OK:
@@ -421,6 +390,8 @@ class BPImportView(
             "year_start": year_start,
             "year_end": year_end,
             "status": bp_status,
+            "meeting_id": meeting_id,
+            "decision_id": decision_id,
             "activities": ret_data["activities"],
         }
         ret_code, _ = (

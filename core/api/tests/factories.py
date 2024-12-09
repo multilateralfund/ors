@@ -34,7 +34,7 @@ from core.models.country_programme import (
 )
 
 from core.models.group import Group
-from core.models.meeting import Meeting
+from core.models.meeting import Decision, Meeting
 from core.models.project import (
     MetaProject,
     Project,
@@ -362,6 +362,15 @@ class MeetingFactory(factory.django.DjangoModelFactory):
     number = factory.Faker("random_int", min=1, max=100)
     date = factory.Faker("date")
     status = Meeting.MeetingStatus.COMPLETED
+
+
+class DecisionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Decision
+
+    meeting = factory.SubFactory(MeetingFactory)
+    number = factory.Faker("random_int", min=1, max=100)
+    description = factory.Faker("pystr", max_chars=100)
 
 
 class ProjectClusterFactory(factory.django.DjangoModelFactory):

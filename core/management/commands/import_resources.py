@@ -13,6 +13,7 @@ from core.import_data.import_chemicals import (
 )
 from core.import_data.import_usages import import_usages
 from core.import_data.import_bp_other_objects import import_bp_other_objects
+from core.import_data.import_decisions import import_decisions
 
 
 class Command(BaseCommand):
@@ -42,6 +43,7 @@ class Command(BaseCommand):
                 "project_resources",
                 "time_frames",
                 "bp_other_objects",
+                "decisions",
             ],
         )
 
@@ -74,3 +76,5 @@ class Command(BaseCommand):
             import_project_resources()
         if resource in ["bp_other_objects", "all"]:
             import_bp_other_objects()
+        if resource in ["decisions", "all"]:
+            import_decisions()  # only for testing

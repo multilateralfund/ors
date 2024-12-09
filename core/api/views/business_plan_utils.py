@@ -2,9 +2,11 @@ import logging
 import os
 import numpy as np
 import pandas as pd
+import traceback
 from constance import config
 from django.core.exceptions import ValidationError
 from django.db.models import F
+from drf_yasg import openapi
 from rest_framework import status
 
 from core.import_data.mapping_names_dict import COUNTRY_NAME_MAPPING
@@ -24,6 +26,38 @@ from core.tasks import send_mail_bp_create, send_mail_bp_update
 
 # pylint: disable=E1101, R0913, R0914, R0915, W0718
 logger = logging.getLogger(__name__)
+
+IMPORT_PARAMETERS = [
+    openapi.Parameter(
+        "year_start",
+        openapi.IN_QUERY,
+        type=openapi.TYPE_INTEGER,
+        required=True,
+    ),
+    openapi.Parameter(
+        "year_end",
+        openapi.IN_QUERY,
+        type=openapi.TYPE_INTEGER,
+        required=True,
+    ),
+    openapi.Parameter(
+        "status",
+        openapi.IN_QUERY,
+        type=openapi.TYPE_STRING,
+        required=True,
+    ),
+    openapi.Parameter(
+        "meeting_id",
+        openapi.IN_QUERY,
+        type=openapi.TYPE_INTEGER,
+        required=True,
+    ),
+    openapi.Parameter(
+        "decision_id",
+        openapi.IN_QUERY,
+        type=openapi.TYPE_INTEGER,
+    ),
+]
 
 
 def strip_str(name):
@@ -76,7 +110,7 @@ def get_bp_activity_data(
         ("Sector", sector),
         ("Subsector", subsector),
     ]:
-        if obj.name == "Other":
+        if obj.name.startswith("Other") and not row[field_name].startswith("Other"):
             warning_messages.append(
                 f"{field_name} '{row[field_name]}' {set_other_warning}"
             )
@@ -231,8 +265,11 @@ def parse_bp_file(file, year_start, from_validate=False):
         project_cluster = project_clusters.get(
             strip_str(row["Cluster"]), project_clusters.get("other")
         )
-        sector = sectors.get(strip_str(row["Sector"]), sectors.get("other"))
-        subsector = subsectors.get(strip_str(row["Subsector"]), subsectors.get("other"))
+        sector_name = strip_str(row["Sector"])
+        sector = sectors.get(sector_name, sectors.get("other"))
+        subsector = subsectors.get(
+            strip_str(row["Subsector"]), subsectors.get(f"other {sector_name}")
+        )
         substance_names = (
             row["Substance Detail"].split("/") if row["Substance Detail"] else []
         )
@@ -413,10 +450,11 @@ class BusinessPlanUtils:
             # will be raised when `from_validate=False` and first error is found
             # to stop parsing the entire file
             return status.HTTP_400_BAD_REQUEST, "Data error"
-        except Exception as e:
+        except Exception:
             # probably only `KeyError`s when file header is incorrect
             logger.warning(
-                f"BP {year_start}-{year_start + 2} import template error: {e}"
+                f"BP {year_start}-{year_start + 2} import template error: "
+                f"{traceback.format_exc()}"
             )
             return status.HTTP_400_BAD_REQUEST, (
                 "The file you uploaded does not respect the required "
