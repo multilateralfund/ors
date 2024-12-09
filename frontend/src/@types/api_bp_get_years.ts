@@ -3,7 +3,7 @@
 export interface ApiBPYearRange {
   year_end: number
   year_start: number
-  status: string[]
+  status?: string[]
 }
 
 export type ApiBPYearRanges = ApiBPYearRange[]
