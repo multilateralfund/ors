@@ -146,11 +146,11 @@ class TestBPImportValidate:
             in response.data["errors"][0]["error_message"]
         )
 
-    def test_bp_import_validate_invalid_agency(
+    def test_bp_import_validate_multiple_errors(
         self, user, meeting, decision, subsector_other, _setup_bp_activity_create
     ):
         self.client.force_authenticate(user=user)
-        file_path = "core/api/tests/files/Test_BP2025-2027_invalid_agency.xlsx"
+        file_path = "core/api/tests/files/Test_BP2025-2027_multiple_errors.xlsx"
         url = f"{self.url}&meeting_id={meeting.id}&decision_id={decision.id}"
 
         with open(file_path, "rb") as f:
@@ -158,10 +158,58 @@ class TestBPImportValidate:
             response = self.client.post(url, data, format="multipart")
 
         assert response.status_code == 200
-        assert len(response.data["errors"]) == 1
+        assert len(response.data["warnings"]) == 0
+        assert len(response.data["errors"]) == 3
         assert (
             "Agency 'NoAgency' does not exist"
             in response.data["errors"][0]["error_message"]
+        )
+        assert (
+            "Country 'NoCountry' does not exist"
+            in response.data["errors"][1]["error_message"]
+        )
+        assert (
+            "Project status '' does not exist"
+            in response.data["errors"][2]["error_message"]
+        )
+
+    def test_bp_import_validate_multiple_warnings(
+        self, user, meeting, decision, subsector_other, _setup_bp_activity_create
+    ):
+        self.client.force_authenticate(user=user)
+        file_path = "core/api/tests/files/Test_BP2025-2027_multiple_warnings.xlsx"
+        url = f"{self.url}&meeting_id={meeting.id}&decision_id={decision.id}"
+
+        ProjectClusterFactory(name="Other", code="OTH")
+        ProjectSectorFactory(name="Other", code="OTH")
+        SubstanceFactory(name="Other substances")
+
+        with open(file_path, "rb") as f:
+            data = {"Test_BP2025-2027.xlsx": f}
+            response = self.client.post(url, data, format="multipart")
+
+        assert response.status_code == 200
+        assert len(response.data["warnings"]) == 5
+        assert len(response.data["errors"]) == 0
+        assert (
+            "Cluster 'NoCluster' does not exist"
+            in response.data["warnings"][0]["warning_message"]
+        )
+        assert (
+            "Sector 'NoSector' does not exist"
+            in response.data["warnings"][1]["warning_message"]
+        )
+        assert (
+            "Some substances do not exist"
+            in response.data["warnings"][2]["warning_message"]
+        )
+        assert (
+            "Country Status 'Other' does not exist"
+            in response.data["warnings"][3]["warning_message"]
+        )
+        assert (
+            "Value odp for year 2025 (After: False) is not a number"
+            in response.data["warnings"][4]["warning_message"]
         )
 
     def test_bp_import_validate(
@@ -177,6 +225,7 @@ class TestBPImportValidate:
 
         assert response.status_code == 200
         assert len(response.data["warnings"]) == 2
+        assert len(response.data["errors"]) == 0
         assert response.data["activities_number"] == 1
         assert response.data["agencies_number"] == 1
         assert response.data["errors"] == []

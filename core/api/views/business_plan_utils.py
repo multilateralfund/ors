@@ -92,12 +92,16 @@ def get_warning_messages(
         ("Cluster", project_cluster),
         ("Sector", sector),
     ]:
-        if obj and obj.name == "Other" and not strip_str(row[field_name]) == "other":
+        if (
+            row[field_name]
+            and obj.name == "Other"
+            and not strip_str(row[field_name]) == "other"
+        ):
             warning_messages.append(
                 f"{field_name} '{row[field_name]}' {set_other_warning}"
             )
 
-    if sector.code in PROJECT_SECTOR_TYPE_MAPPING:
+    if sector and sector.code in PROJECT_SECTOR_TYPE_MAPPING:
         if project_type.code not in PROJECT_SECTOR_TYPE_MAPPING[sector.code]:
             warning_messages.append("Type is not linked to the sector")
 
