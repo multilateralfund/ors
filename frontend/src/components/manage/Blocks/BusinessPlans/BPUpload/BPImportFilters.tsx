@@ -1,6 +1,6 @@
 import PopoverInput from '../../Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
 import { PeriodSelectorOption } from '../../Replenishment/types'
-import { INavigationButton } from '../types'
+import { IDecision, INavigationButton } from '../types'
 import BPMainFilters from './BPMainFilters'
 import { NavigationButton } from './NavigationButton'
 import { Label } from './helpers'
@@ -11,12 +11,6 @@ interface IBPImportFilters {
   periodOptions: PeriodSelectorOption[]
   filters: any
   setFilters: any
-}
-
-interface IDecision {
-  label: string
-  value: string
-  meeting: number
 }
 
 const BPImportFilters = ({
@@ -63,7 +57,7 @@ const BPImportFilters = ({
         <div>
           <Label>Decision number (optional)</Label>
           <Field
-            key={filters.meeting}
+            key={filters?.meeting}
             FieldProps={{ className: 'mb-0 w-40 BPListUpload' }}
             options={getDecisionOptions(filters?.meeting)}
             widget="autocomplete"

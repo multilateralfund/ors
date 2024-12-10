@@ -85,7 +85,7 @@ const useColumnsOptions = (
           field: 'display_internal_id',
           headerClass: 'ag-text-center',
           headerName: 'Activity id',
-          minWidth: 130,
+          minWidth: 150,
           editable: false,
           tooltipField: 'display_internal_id',
         },

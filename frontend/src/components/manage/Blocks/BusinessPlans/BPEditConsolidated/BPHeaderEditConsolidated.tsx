@@ -10,6 +10,7 @@ import { tableColumns } from '../constants'
 import { BpPathParams } from '../types'
 import { useEditLocalStorageConsolidated } from './useLocalStorageConsolidated'
 import { useStore } from '@ors/store'
+import { RedirectToBpList } from '../RedirectToBpList'
 
 export default function BPHeaderEditConsolidated({
   form,
@@ -60,8 +61,8 @@ export default function BPHeaderEditConsolidated({
           year_start: parseInt(year_start),
           year_end: parseInt(year_end),
           status: capitalize(type),
-          meeting: bpForm?.meeting,
-          decision: bpForm?.decision,
+          meeting_id: bpForm?.meeting,
+          decision_id: bpForm?.decision,
         },
         method: 'PUT',
       })
@@ -159,15 +160,18 @@ export default function BPHeaderEditConsolidated({
   )
 
   return (
-    <div className="mb-4 flex min-h-[40px] flex-wrap items-center justify-between gap-x-8 gap-y-2">
-      <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
-        <div className="flex flex-wrap items-center gap-x-2">
-          <h1 className="m-0 text-5xl leading-normal">
-            Edit Business Plan {period} {capitalize(type)}
-          </h1>
+    <>
+      <RedirectToBpList currentYearRange={period} />
+      <div className="mb-4 flex min-h-[40px] flex-wrap items-center justify-between gap-x-8 gap-y-2">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
+          <div className="flex flex-wrap items-center gap-x-2">
+            <h1 className="m-0 text-5xl leading-normal">
+              Edit Business Plan {period} {capitalize(type)}
+            </h1>
+          </div>
         </div>
+        <div className="ml-auto">{headerActions}</div>
       </div>
-      <div className="ml-auto">{headerActions}</div>
-    </div>
+    </>
   )
 }
