@@ -23,6 +23,7 @@ import { Label } from '../BPUpload/helpers'
 import { BpFilesObject, IDecision } from '../types'
 import FileInput from '../BPEdit/FileInput'
 import Field from '@ors/components/manage/Form/Field'
+import { keys } from 'lodash'
 
 const BPSummary = (props: {
   results: any[]
@@ -51,9 +52,10 @@ const BPSummary = (props: {
       decision: decision?.value,
     }))
   }
-
   useEffect(() => {
-    setBpForm({ meeting: meeting_id, decision: decision_id })
+    if (keys(bpForm).length === 0) {
+      setBpForm({ meeting: meeting_id, decision: decision_id })
+    }
   }, [results])
 
   return (
