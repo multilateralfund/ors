@@ -13,7 +13,12 @@ import { useStore } from '@ors/store'
 
 import { FilesViewer } from '../FilesViewer'
 import PopoverInput from '../../Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
-import { getDecisionOptions, getMeetingOptions } from '../utils'
+import {
+  getDecisionNr,
+  getDecisionOptions,
+  getMeetingNr,
+  getMeetingOptions,
+} from '../utils'
 import { Label } from '../BPUpload/helpers'
 import { BpFilesObject, IDecision } from '../types'
 import FileInput from '../BPEdit/FileInput'
@@ -67,6 +72,7 @@ const BPSummary = (props: {
                 className="!m-0 h-10 !py-1"
                 options={getMeetingOptions()}
                 onChange={handleChangeMeeting}
+                label={getMeetingNr(bpForm.meeting)}
                 value={bpForm.meeting}
               />
             </div>
@@ -78,7 +84,7 @@ const BPSummary = (props: {
                 options={getDecisionOptions(bpForm.meeting)}
                 widget="autocomplete"
                 onChange={(_: any, value: any) => handleChangeDecision(value)}
-                value={bpForm.decision?.toString() || null}
+                value={getDecisionNr(bpForm.decision)?.toString() || null}
               />
             </div>
           </>
@@ -86,12 +92,12 @@ const BPSummary = (props: {
           <>
             <SimpleField
               id="meeting"
-              data={meeting_id}
+              data={getMeetingNr(meeting_id)}
               label="Meeting number"
             />
             <SimpleField
               id="decision"
-              data={decision_id || '-'}
+              data={getDecisionNr(decision_id) || '-'}
               label="Decision number"
             />
           </>

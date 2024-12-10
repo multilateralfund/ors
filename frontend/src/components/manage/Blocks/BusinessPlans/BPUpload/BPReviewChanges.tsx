@@ -20,7 +20,12 @@ import { PeriodSelectorOption } from '../../Replenishment/types'
 import { IoEllipse } from 'react-icons/io5'
 import { MdExpandMore } from 'react-icons/md'
 import { useStore } from '@ors/store'
-import { getCurrentTriennium, getLatestBpYearRange } from '../utils'
+import {
+  getCurrentTriennium,
+  getDecisionNr,
+  getLatestBpYearRange,
+  getMeetingNr,
+} from '../utils'
 import { CircularProgress } from '@mui/material'
 
 interface IBPReviewChanges {
@@ -137,8 +142,8 @@ const BPReviewChanges = ({
       <p className="m-0 text-2xl">Review changes</p>
       <p className="mb-0 mt-1 text-xl">
         You are about to replace the {capitalize(bp_status)} Business Plan for{' '}
-        {year_start}-{year_end}, meeting number {meeting}
-        {decision ? `, decision ${decision}.` : '.'}{' '}
+        {year_start}-{year_end}, meeting number {getMeetingNr(meeting)}
+        {decision ? `, decision number ${getDecisionNr(decision)}.` : '.'}{' '}
         {activities_number &&
           `The new version
         contains ${activities_number} ${activities_number === 1 ? 'activity' : 'activities'}${agencies_number && ` for ${agencies_number} ${agencies_number === 1 ? 'agency' : 'agencies'}`}.`}

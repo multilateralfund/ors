@@ -51,3 +51,17 @@ export const getCurrentTriennium = () => {
   const currentYear = new Date().getFullYear()
   return currentYear + '-' + (currentYear + 2)
 }
+
+export const getMeetingNr = (meeting_id: number) => {
+  const projectSlice = useStore((state) => state.projects)
+  const meetings = projectSlice.meetings.data
+
+  return find(meetings, (option) => option.id === meeting_id)?.number
+}
+
+export const getDecisionNr = (decision_id: number) => {
+  const bpSlice = useStore((state) => state.businessPlans)
+  const decisions = bpSlice.decisions.data
+
+  return find(decisions, (option) => option.id === decision_id)?.number
+}

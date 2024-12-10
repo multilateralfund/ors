@@ -4,7 +4,7 @@ import { IDecision, INavigationButton } from '../types'
 import BPMainFilters from './BPMainFilters'
 import { NavigationButton } from './NavigationButton'
 import { Label } from './helpers'
-import { getDecisionOptions, getMeetingOptions } from '../utils'
+import { getDecisionOptions, getMeetingNr, getMeetingOptions } from '../utils'
 import Field from '@ors/components/manage/Form/Field'
 
 interface IBPImportFilters {
@@ -43,7 +43,7 @@ const BPImportFilters = ({
       <div className="flex flex-wrap gap-x-20 gap-y-3">
         <div className="w-64">
           <div className="w-36">
-            <Label isRequired>Meeting</Label>
+            <Label isRequired>Meeting number</Label>
             <PopoverInput
               className="!m-0 h-10 !py-1"
               clearBtnClassName="right-1"
@@ -51,6 +51,7 @@ const BPImportFilters = ({
               withClear={true}
               onChange={handleChangeMeeting}
               onClear={() => handleChangeMeeting('')}
+              label={getMeetingNr(filters?.meeting)}
             />
           </div>
         </div>
