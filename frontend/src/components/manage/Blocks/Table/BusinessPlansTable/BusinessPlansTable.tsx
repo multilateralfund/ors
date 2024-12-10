@@ -320,7 +320,7 @@ export default function BusinessPlansTable() {
             <Activities
               {...{
                 gridOptions,
-                loaded,
+                loading,
                 period,
                 results,
               }}

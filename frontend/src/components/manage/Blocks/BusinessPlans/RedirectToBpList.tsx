@@ -3,18 +3,20 @@ import { Link } from 'wouter'
 import { IoReturnUpBack } from 'react-icons/io5'
 import { useGetYearRanges } from './useGetYearRanges'
 import useGetBpPeriods from './BPList/useGetBPPeriods'
-import { getLatestBpYearRange } from './utils'
+import { getCurrentTriennium, getLatestBpYearRange } from './utils'
 
 export const RedirectToBpList = ({
   currentYearRange,
 }: {
   currentYearRange?: string
 }) => {
+  const currentTriennium = getCurrentTriennium()
+
   const { results: yearRanges } = useGetYearRanges()
   const { periodOptions } = useGetBpPeriods(yearRanges)
   const latestBpYearRange = getLatestBpYearRange(periodOptions)
 
-  const bpListUrl = `/business-plans/list/activities/${currentYearRange || latestBpYearRange?.value}`
+  const bpListUrl = `/business-plans/list/activities/${currentYearRange || latestBpYearRange?.value || currentTriennium}`
 
   return (
     <div className="w-fit">

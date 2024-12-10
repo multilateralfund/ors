@@ -31,26 +31,28 @@ const BPTableToolbarButtons = (props: any) => {
   }, [])
 
   return (
-    <Portal active={!!domNode} domNode={domNode}>
-      <div className="flex items-center gap-x-3">
-        {userCanEditBusinessPlan[user_type as UserType] && (
-          <CustomLink
-            className="text-nowrap px-4 py-2 text-lg uppercase"
-            color="secondary"
-            href={`${pathname}/${lowerCase(bpType)}/edit`}
-            variant="contained"
-            button
-          >
-            Revise BP
-          </CustomLink>
-        )}
-        {downloadUrls?.map((url: string, i: number) => (
-          <DownloadLink key={i} href={url ?? '#'}>
-            {downloadTexts[i]}
-          </DownloadLink>
-        ))}
-      </div>
-    </Portal>
+    bpType && (
+      <Portal active={!!domNode} domNode={domNode}>
+        <div className="flex items-center gap-x-3">
+          {userCanEditBusinessPlan[user_type as UserType] && (
+            <CustomLink
+              className="text-nowrap px-4 py-2 text-lg uppercase"
+              color="secondary"
+              href={`${pathname}/${lowerCase(bpType)}/edit`}
+              variant="contained"
+              button
+            >
+              Revise BP
+            </CustomLink>
+          )}
+          {downloadUrls?.map((url: string, i: number) => (
+            <DownloadLink key={i} href={url ?? '#'}>
+              {downloadTexts[i]}
+            </DownloadLink>
+          ))}
+        </div>
+      </Portal>
+    )
   )
 }
 

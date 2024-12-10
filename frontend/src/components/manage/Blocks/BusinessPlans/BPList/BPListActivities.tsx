@@ -136,9 +136,9 @@ function BPListActivities(props: any) {
                 displayAgency={true}
                 {...{
                   gridOptions,
-                  loaded,
                   period,
                   results,
+                  loading,
                 }}
               />
               {!!pages && pages > 1 && (

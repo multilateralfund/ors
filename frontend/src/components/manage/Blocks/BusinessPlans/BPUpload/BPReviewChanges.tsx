@@ -20,7 +20,7 @@ import { PeriodSelectorOption } from '../../Replenishment/types'
 import { IoEllipse } from 'react-icons/io5'
 import { MdExpandMore } from 'react-icons/md'
 import { useStore } from '@ors/store'
-import { getLatestBpYearRange } from '../utils'
+import { getCurrentTriennium, getLatestBpYearRange } from '../utils'
 import { CircularProgress } from '@mui/material'
 
 interface IBPReviewChanges {
@@ -43,6 +43,8 @@ const BPReviewChanges = ({
   const [expandedItems, setExpandedItems] = useState<Array<string>>([])
   const [importResult, setImportResult] = useState<any>()
   const [isLoading, setIsLoading] = useState<boolean>(false)
+
+  const currentTriennium = getCurrentTriennium()
 
   const { bp_status, decision, meeting, year_end, year_start } = filters
   const {
@@ -173,7 +175,7 @@ const BPReviewChanges = ({
         </SubmitButton>
         <Link
           className="no-underline"
-          href={`/business-plans/list/activities/${getLatestBpYearRange(periodOptions)?.value}`}
+          href={`/business-plans/list/activities/${getLatestBpYearRange(periodOptions)?.value || currentTriennium}`}
         >
           <CancelButton className="h-10 !text-[15px]">Cancel</CancelButton>
         </Link>

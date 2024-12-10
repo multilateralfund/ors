@@ -46,3 +46,8 @@ export const getCurrentPeriodOption = (
 
 export const getLatestBpYearRange = (periodOptions: any[]) =>
   find(periodOptions, (option) => option.status.length > 0)
+
+export const getCurrentTriennium = () => {
+  const currentYear = new Date().getFullYear()
+  return currentYear + '-' + (currentYear + 2)
+}
