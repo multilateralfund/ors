@@ -138,7 +138,6 @@ function BPListActivities(props: any) {
                   gridOptions,
                   period,
                   results,
-                  loading,
                 }}
               />
               {!!pages && pages > 1 && (
