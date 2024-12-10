@@ -21,6 +21,7 @@ import { IoEllipse } from 'react-icons/io5'
 import { MdExpandMore } from 'react-icons/md'
 import { useStore } from '@ors/store'
 import { getLatestBpYearRange } from '../utils'
+import { CircularProgress } from '@mui/material'
 
 interface IBPReviewChanges {
   file: FileList | null
@@ -41,6 +42,7 @@ const BPReviewChanges = ({
 
   const [expandedItems, setExpandedItems] = useState<Array<string>>([])
   const [importResult, setImportResult] = useState<any>()
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const { bp_status, decision, meeting, year_end, year_start } = filters
   const {
@@ -60,16 +62,18 @@ const BPReviewChanges = ({
     }
 
   const submitBP = async () => {
+    setIsLoading(true)
     try {
-      const baseUrl = `api/business-plan/upload/?year_start=${year_start}&year_end=${year_end}&status=${bp_status}&meeting_number=${meeting}`
+      const baseUrl = `api/business-plan/upload/?year_start=${year_start}&year_end=${year_end}&status=${bp_status}&meeting_id=${meeting}`
 
       const formattedUrl = decision
-        ? baseUrl + `&decision_number=${decision}`
+        ? baseUrl + `&decision_id=${decision}`
         : baseUrl
 
       if (file) {
         const result = await uploadFiles(formattedUrl, [file[0]])
         setImportResult(result)
+        setIsLoading(false)
       }
     } catch (error: any) {
       console.error('Error:', error)
@@ -173,8 +177,11 @@ const BPReviewChanges = ({
         >
           <CancelButton className="h-10 !text-[15px]">Cancel</CancelButton>
         </Link>
+        {isLoading && (
+          <CircularProgress color="inherit" size="30px" className="ml-1.5" />
+        )}
       </div>
-      {keys(importResult).length > 0 && (
+      {keys(importResult).length > 0 && !isLoading && (
         <Alert
           className="BPAlert mt-4 w-fit border-0"
           severity={importResult.status === 200 ? 'success' : 'error'}

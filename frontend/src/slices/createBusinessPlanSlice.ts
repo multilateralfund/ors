@@ -19,5 +19,9 @@ export const createBusinessPlanSlice = ({
       ...defaultSliceData,
       ...(initialState?.businessPlans?.types || {}),
     },
+    decisions: {
+      ...defaultSliceData,
+      ...(initialState?.businessPlans?.decisions || {}),
+    },
   }
 }

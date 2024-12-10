@@ -12,7 +12,7 @@ import { useGetBpData } from './useGetBpData'
 
 const BPSummary = (props: any) => {
   const { results, bpFiles, loadedFiles } = props
-  const { year_end, year_start, status, meeting_number, decision_number } =
+  const { year_end, year_start, status, meeting_id, decision_id } =
     results[0] || {}
 
   const { user_type } = useStore((state) => state.user.data)
@@ -25,14 +25,10 @@ const BPSummary = (props: any) => {
         <SimpleField id="years" data={year_start} label="Year start" />
         <SimpleField id="years" data={year_end} label="Year end" />
         <SimpleField id="status" data={status} label="Status" />
-        <SimpleField
-          id="meeting"
-          data={meeting_number || '-'}
-          label="Meeting number"
-        />
+        <SimpleField id="meeting" data={meeting_id} label="Meeting number" />
         <SimpleField
           id="decision"
-          data={decision_number || '-'}
+          data={decision_id || '-'}
           label="Decision number"
         />
       </div>

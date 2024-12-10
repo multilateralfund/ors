@@ -29,14 +29,13 @@ const BPUpload = () => {
   const { yearRanges } = useContext(BPYearRangesContext) as any
   const { periodOptions } = useGetBpPeriods(yearRanges)
   const currentYearRange = periodOptions?.[0]?.value
+  const latestBpYearRange = getLatestBpYearRange(periodOptions)
 
   const [filters, setFilters] = useState<any>({})
   const [downloadFilters, setDownloadFilters] = useState<any>({})
   const [file, setFile] = useState<FileList | null>(null)
   const [validations, setValidations] = useState<any>(null)
   const [currentStep, setCurrentStep] = useState(1)
-
-  const latestBpYearRange = getLatestBpYearRange(periodOptions)
 
   useEffect(() => {
     if (currentYearRange) {
@@ -62,6 +61,7 @@ const BPUpload = () => {
           {...{
             periodOptions,
             setCurrentStep,
+            filters,
             setFilters,
           }}
           isBtnDisabled={!isFiltersNextBtnEnabled}
@@ -92,6 +92,7 @@ const BPUpload = () => {
             setCurrentStep,
             setFile,
             setValidations,
+            periodOptions,
           }}
         />
       ),
