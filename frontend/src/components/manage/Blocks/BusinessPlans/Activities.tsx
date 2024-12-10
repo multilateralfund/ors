@@ -369,9 +369,9 @@ function Activity(props: any) {
 }
 
 export default function Activities(props: any) {
-  const { loaded, results, ...rest } = props
+  const { loading, results, ...rest } = props
 
-  if (!loaded) {
+  if (loading) {
     return <Loading />
   }
 
@@ -380,6 +380,11 @@ export default function Activities(props: any) {
       {results.map((activity: any) => (
         <Activity key={activity.id} activity={activity} {...rest} />
       ))}
+      {results.length === 0 && (
+        <Typography component="h1" variant="h5">
+          No data available.
+        </Typography>
+      )}
     </ul>
   )
 }

@@ -52,7 +52,6 @@ const BPImportFilters = ({
             <Label isRequired>Meeting</Label>
             <PopoverInput
               className="!m-0 h-10 !py-1"
-              value={filters?.meeting}
               clearBtnClassName="right-1"
               options={getMeetingOptions()}
               withClear={true}
@@ -67,7 +66,6 @@ const BPImportFilters = ({
             key={filters.meeting}
             FieldProps={{ className: 'mb-0 w-40 BPListUpload' }}
             options={getDecisionOptions(filters?.meeting)}
-            value={filters?.decision || null}
             widget="autocomplete"
             onChange={(_: any, value: any) => handleChangeDecision(value)}
           />
