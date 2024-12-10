@@ -288,8 +288,8 @@ def parse_bp_file(file, year_start, from_validate=False):
     }
     sectors = {strip_str(sector.name): sector for sector in ProjectSector.objects.all()}
     subsectors = {
-        strip_str(subsector.name): subsector
-        for subsector in ProjectSubSector.objects.all()
+        (subsector.sector.name, strip_str(subsector.name)): subsector
+        for subsector in ProjectSubSector.objects.select_related("sector")
     }
     substance_dict = {
         strip_str(substance.name): substance for substance in Substance.objects.all()
@@ -330,8 +330,11 @@ def parse_bp_file(file, year_start, from_validate=False):
             subsector_other_name = (
                 "other" if sector.name == "Other" else f"other {sector_name}"
             )
-            subsector_other = subsectors.get(subsector_other_name)
-            subsector = subsectors.get(strip_str(row["Subsector"]), subsector_other)
+            subsector_other = subsectors.get((sector.name, subsector_other_name))
+            subsector = subsectors.get(
+                (sector.name, strip_str(row["Subsector"])),
+                subsector_other,
+            )
 
         substance_names = (
             row["Substance Detail"].split("/") if row["Substance Detail"] else []
