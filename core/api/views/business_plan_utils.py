@@ -9,6 +9,7 @@ from django.db.models import F
 from drf_yasg import openapi
 from rest_framework import status
 
+from core.api.utils import PROJECT_SECTOR_TYPE_MAPPING
 from core.import_data.mapping_names_dict import COUNTRY_NAME_MAPPING
 from core.models import (
     Agency,
@@ -73,6 +74,55 @@ def check_numeric_value(value):
     return True
 
 
+def get_warning_messages(
+    row,
+    project_type,
+    bp_chemical_type,
+    project_cluster,
+    sector,
+    subsector,
+    substances,
+):
+    warning_messages = []
+    set_other_warning = "does not exist in our system and we will set it to be 'Other'"
+
+    for field_name, obj in [
+        ("Type", project_type),
+        ("Substance", bp_chemical_type),
+        ("Cluster", project_cluster),
+        ("Sector", sector),
+    ]:
+        if obj and obj.name == "Other" and not strip_str(row[field_name]) == "other":
+            warning_messages.append(
+                f"{field_name} '{row[field_name]}' {set_other_warning}"
+            )
+
+    if sector.code in PROJECT_SECTOR_TYPE_MAPPING:
+        if project_type.code not in PROJECT_SECTOR_TYPE_MAPPING[sector.code]:
+            warning_messages.append("Type is not linked to the sector")
+
+    if subsector:
+        if subsector.sector != sector:
+            warning_messages.append(
+                "Subsector is not linked to the sector and we will set the subsector to be 'Other'"
+            )
+        elif subsector.name.startswith("Other") and not row["Subsector"].startswith(
+            "Other"
+        ):
+            warning_messages.append(
+                f"Subsector '{row['Subsector']}' {set_other_warning}"
+            )
+
+    for substance in substances:
+        if substance.name == "Other substances":
+            warning_messages.append(
+                "Some substances do not exist in our system and we will set them to be 'Other'"
+            )
+            break
+
+    return warning_messages
+
+
 def get_bp_activity_data(
     row,
     year_start,
@@ -83,12 +133,12 @@ def get_bp_activity_data(
     project_cluster,
     sector,
     subsector,
+    subsector_other,
     substances,
 ):
     error_messages = []
     warning_messages = []
     not_a_number_warning = "is not a number and we will set it to be '0'"
-    set_other_warning = "does not exist in our system and we will set it to be 'Other'"
     not_found_error = "does not exist in our system"
 
     # set error messages
@@ -103,25 +153,18 @@ def get_bp_activity_data(
         error_messages.append(f"Project status '{project_status}' {not_found_error}")
 
     # set warning messages (check if initial value was replaced with 'Other')
-    for field_name, obj in [
-        ("Type", project_type),
-        ("Substance", bp_chemical_type),
-        ("Cluster", project_cluster),
-        ("Sector", sector),
-        ("Subsector", subsector),
-    ]:
-        if obj.name.startswith("Other") and not row[field_name].startswith("Other"):
-            warning_messages.append(
-                f"{field_name} '{row[field_name]}' {set_other_warning}"
-            )
-
-    substance_ids = [substance.id for substance in substances]
-    for substance in substances:
-        if substance.name == "Other substances":
-            warning_messages.append(
-                "Some substances do not exist in our system and we will set them to be 'Other'"
-            )
-            break
+    warning_messages += get_warning_messages(
+        row,
+        project_type,
+        bp_chemical_type,
+        project_cluster,
+        sector,
+        subsector,
+        substances,
+    )
+    # set subsector to `Other` if not linked to sector
+    if subsector and subsector.sector != sector:
+        subsector = subsector_other
 
     country_status = row["Country Status"].strip()
     if country_status not in BPActivity.LVCStatus.values:
@@ -140,6 +183,8 @@ def get_bp_activity_data(
     sort_order = row["Sort Order"].rsplit("-", 1)
     initial_id = sort_order[1].lstrip("0") if len(sort_order) > 1 else 0
 
+    substance_ids = [substance.id for substance in substances]
+
     activity_data = {
         "initial_id": initial_id if initial_id != "None" else 0,
         "title": row["Title"],
@@ -149,12 +194,12 @@ def get_bp_activity_data(
         "project_type_id": project_type.id,
         "project_type_code": project_type.code,
         "bp_chemical_type_id": bp_chemical_type.id,
-        "project_cluster_id": project_cluster.id,
+        "project_cluster_id": project_cluster.id if project_cluster else None,
         "substances": list(dict.fromkeys(substance_ids)),  # remove duplicates
         "amount_polyol": amount_polyol,
-        "sector_id": sector.id,
-        "sector_code": sector.code,
-        "subsector_id": subsector.id,
+        "sector_id": sector.id if sector else None,
+        "sector_code": sector.code if sector else "",
+        "subsector_id": subsector.id if subsector else None,
         "required_by_model": row["Required by Model"],
         "status": project_status,
         "is_multi_year": bool(strip_str(row["Project Category (I/M)"]) == "m"),
@@ -255,21 +300,35 @@ def parse_bp_file(file, year_start, from_validate=False):
         country_name = COUNTRY_NAME_MAPPING.get(row["Country"], row["Country"])
         country = countries.get(strip_str(country_name))
 
-        # get 'Other' if field is blank or value is not found in db
+        # get 'Other' if value is not found in db
         project_type = project_types.get(
             strip_str(row["Type"]), project_types.get("other")
         )
         bp_chemical_type = bp_chemical_types.get(
             strip_str(row["Substance"]), bp_chemical_types.get("other")
         )
-        project_cluster = project_clusters.get(
-            strip_str(row["Cluster"]), project_clusters.get("other")
-        )
-        sector_name = strip_str(row["Sector"])
-        sector = sectors.get(sector_name, sectors.get("other"))
-        subsector = subsectors.get(
-            strip_str(row["Subsector"]), subsectors.get(f"other {sector_name}")
-        )
+
+        # set `None` if field is blank
+        project_cluster = None
+        if row["Cluster"]:
+            project_cluster = project_clusters.get(
+                strip_str(row["Cluster"]), project_clusters.get("other")
+            )
+
+        sector = None
+        if row["Sector"]:
+            sector_name = strip_str(row["Sector"])
+            sector = sectors.get(sector_name, sectors.get("other"))
+
+        subsector = None
+        subsector_other = None
+        if row["Subsector"] and sector:
+            subsector_other_name = (
+                "other" if sector.name == "Other" else f"other {sector_name}"
+            )
+            subsector_other = subsectors.get(subsector_other_name)
+            subsector = subsectors.get(strip_str(row["Subsector"]), subsector_other)
+
         substance_names = (
             row["Substance Detail"].split("/") if row["Substance Detail"] else []
         )
@@ -289,6 +348,7 @@ def parse_bp_file(file, year_start, from_validate=False):
             project_cluster,
             sector,
             subsector,
+            subsector_other,
             substances,
         )
         activities.append(activity_data)

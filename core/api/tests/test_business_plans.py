@@ -140,6 +140,7 @@ class TestBPImportValidate:
             response = self.client.post(url, data, format="multipart")
 
         assert response.status_code == 400
+        assert len(response.data["errors"]) == 1
         assert (
             "The file you uploaded does not respect the required Excel template"
             in response.data["errors"][0]["error_message"]
@@ -157,6 +158,7 @@ class TestBPImportValidate:
             response = self.client.post(url, data, format="multipart")
 
         assert response.status_code == 200
+        assert len(response.data["errors"]) == 1
         assert (
             "Agency 'NoAgency' does not exist"
             in response.data["errors"][0]["error_message"]
@@ -174,6 +176,7 @@ class TestBPImportValidate:
             response = self.client.post(url, data, format="multipart")
 
         assert response.status_code == 200
+        assert len(response.data["warnings"]) == 2
         assert response.data["activities_number"] == 1
         assert response.data["agencies_number"] == 1
         assert response.data["errors"] == []
@@ -280,28 +283,6 @@ class TestBPUpdate:
         }
         response = self.client.put(url, data, format="json")
         assert response.status_code == 403
-
-    def test_wrong_sector_type_mapping(
-        self, user, _setup_bp_activity_create, business_plan
-    ):
-        self.client.force_authenticate(user=user)
-        url = reverse("businessplan-list") + f"{business_plan.id}/"
-
-        activity_data = _setup_bp_activity_create
-        activity_data["sector_code"] = "TAS"
-        data = {
-            "year_start": business_plan.year_start,
-            "year_end": business_plan.year_end,
-            "status": business_plan.status,
-            "activities": [activity_data],
-        }
-
-        response = self.client.put(url, data, format="json")
-        assert response.status_code == 400
-        assert (
-            response.data["activities"][0]["non_field_errors"][0]
-            == "Invalid sector - type combination"
-        )
 
     def test_update_wrong_activity_values(
         self, user, _setup_bp_activity_create, business_plan

@@ -10,7 +10,6 @@ from core.api.serializers.project import ProjectClusterSerializer
 from core.api.serializers.project import ProjectSectorSerializer
 from core.api.serializers.project import ProjectSubSectorSerializer
 from core.api.serializers.project import ProjectTypeSerializer
-from core.api.utils import PROJECT_SECTOR_TYPE_MAPPING
 from core.models import (
     Agency,
     BPChemicalType,
@@ -255,14 +254,14 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
     project_type_code = serializers.CharField(write_only=True)
     status = serializers.ChoiceField(choices=BPActivity.Status.choices)
     bp_chemical_type_id = serializers.IntegerField()
-    project_cluster_id = serializers.IntegerField()
+    project_cluster_id = serializers.IntegerField(allow_null=True)
 
     # Many2Many represented as list of integers and manually validated
     substances = Many2ManyListField(child=serializers.IntegerField())
 
-    sector_id = serializers.IntegerField()
-    sector_code = serializers.CharField(write_only=True)
-    subsector_id = serializers.IntegerField()
+    sector_id = serializers.IntegerField(allow_null=True)
+    sector_code = serializers.CharField(write_only=True, allow_blank=True)
+    subsector_id = serializers.IntegerField(allow_null=True)
     values = BPActivityValueSerializer(many=True)
 
     def __init__(self, *args, **kwargs):
@@ -276,17 +275,6 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
         self.sector_ids = ProjectSector.objects.values_list("id", flat=True)
         self.subsector_ids = ProjectSubSector.objects.values_list("id", flat=True)
         self.substance_ids = Substance.objects.values_list("id", flat=True)
-
-    def validate(self, attrs):
-        sector_code = attrs.get("sector_code")
-        if sector_code in PROJECT_SECTOR_TYPE_MAPPING:
-            if (
-                attrs.get("project_type_code")
-                not in PROJECT_SECTOR_TYPE_MAPPING[sector_code]
-            ):
-                raise serializers.ValidationError("Invalid sector - type combination")
-
-        return super().validate(attrs)
 
     def validate_agency_id(self, agency_id):
         if agency_id not in self.agency_ids:
@@ -309,17 +297,17 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
         return bp_chemical_type_id
 
     def validate_project_cluster_id(self, project_cluster_id):
-        if project_cluster_id not in self.project_cluster_ids:
+        if project_cluster_id and project_cluster_id not in self.project_cluster_ids:
             raise serializers.ValidationError("ProjectCluster not found")
         return project_cluster_id
 
     def validate_sector_id(self, sector_id):
-        if sector_id not in self.sector_ids:
+        if sector_id and sector_id not in self.sector_ids:
             raise serializers.ValidationError("Sector not found")
         return sector_id
 
     def validate_subsector_id(self, subsector_id):
-        if subsector_id not in self.subsector_ids:
+        if subsector_id and subsector_id not in self.subsector_ids:
             raise serializers.ValidationError("SubSector not found")
         return subsector_id
 
