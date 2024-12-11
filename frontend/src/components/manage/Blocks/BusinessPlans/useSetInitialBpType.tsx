@@ -24,7 +24,9 @@ export const useSetInitialBpType = (yearRanges: any[], period: string) => {
     ''
 
   useEffect(() => {
-    setBPType(initialBpType)
+    if (currentPeriod) {
+      setBPType(initialBpType)
+    }
   }, [initialBpType])
 
   return initialBpType
