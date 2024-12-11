@@ -5,16 +5,7 @@ from rest_framework.test import APIClient
 from core.models.business_plan import BusinessPlan, BPHistory
 
 pytestmark = pytest.mark.django_db
-
-
-@pytest.fixture(name="_setup_new_business_plan_create")
-def setup_new_business_plan_create():
-    return {
-        "name": "Test BP",
-        "year_start": 2020,
-        "year_end": 2022,
-        "status": BusinessPlan.Status.endorsed,
-    }
+# pylint: disable=W0613, R0914
 
 
 class TestBPHistory:
@@ -23,29 +14,51 @@ class TestBPHistory:
     def test_create_history(
         self,
         user,
-        agency_user,
-        _setup_new_business_plan_create,
+        meeting,
+        decision,
+        subsector_other,
         _setup_bp_activity_create,
     ):
+        self.client.force_authenticate(user=user)
         VALIDATION_LIST = [
-            ("created by user", 1, agency_user.username),
+            ("created by user", 1, user.username),
             ("updated by user", 0, user.username),
         ]
 
-        # create new business plan
-        self.client.force_authenticate(user=agency_user)
-        url = reverse("businessplan-list")
-        response = self.client.post(url, _setup_new_business_plan_create, format="json")
-        assert response.status_code == 201
-        business_plan_id = response.data["id"]
+        # create new business plan from import
+        file_path = "core/api/tests/files/Test_BP2025-2027.xlsx"
+        status = "Endorsed"
+        year_start = 2025
+        year_end = 2027
+        params = (
+            f"?status={status}"
+            f"&year_start={year_start}"
+            f"&year_end={year_end}"
+            f"&meeting_id={meeting.id}"
+            f"&decision_id={decision.id}"
+        )
+        url = reverse("bp-upload") + params
+
+        with open(file_path, "rb") as f:
+            data = {"Test_BP2025-2027.xlsx": f}
+            response = self.client.post(url, data, format="multipart")
+
+        assert response.status_code == 200
+        business_plan = BusinessPlan.objects.get(
+            status=status,
+            year_start=year_start,
+            year_end=year_end,
+            meeting=meeting,
+            decision=decision,
+        )
+        business_plan_id = business_plan.id
 
         # update business plan
-        self.client.force_authenticate(user=user)
         url = reverse("businessplan-list") + f"{business_plan_id}/"
         data = {
-            "year_start": 2020,
-            "year_end": 2022,
-            "status": BusinessPlan.Status.endorsed,
+            "year_start": year_start,
+            "year_end": year_end,
+            "status": status,
             "activities": [_setup_bp_activity_create],
         }
         response = self.client.put(url, data, format="json")
