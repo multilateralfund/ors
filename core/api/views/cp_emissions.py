@@ -3,21 +3,26 @@ from rest_framework import generics
 
 from core.api.filters.country_programme import CPEmissionsFilter
 from core.api.serializers.cp_emission import (
-    CPEmissionListSerializer,
+    AllCPEmissionSerializer,
 )
 from core.api.views.utils import get_country_region_dict
-from core.models.country_programme import CPEmission
+from core.model_views.country_programme import AllEmissionsView
 from core.models.substance import Substance
 
 
-class CPEmissionsView(generics.ListAPIView):
+class CPAllEmissionsView(generics.ListAPIView):
     """
-    API endpoint that allows to list CP Emissions
-    for a specific country and a specific year
+    This view is made for ekimetrics dashboards
+    This is an API endpoint that allows to list CP Emissions
+    and it will return the list of all emissions including the archive
+
+    The queryset is a db view that is a union of the cp_emissions, cp_emissions_archive tables
     """
 
-    serializer_class = CPEmissionListSerializer
-    queryset = CPEmission.objects.select_related("country_programme_report__country")
+    serializer_class = AllCPEmissionSerializer
+    queryset = AllEmissionsView.objects.order_by(
+        "-report_year", "country_name", "-report_version", "facility"
+    )
     filterset_class = CPEmissionsFilter
     filter_backends = [
         DjangoFilterBackend,

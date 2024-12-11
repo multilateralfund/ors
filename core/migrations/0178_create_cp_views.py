@@ -24,6 +24,7 @@ class Migration(migrations.Migration):
                             cp_prices.previous_year_price,
                             cp_prices.current_year_price,
                             cp_prices.country_programme_report_id,
+                            cp_prices.source_file,
                             cpr.country_id,
                             cpr.version,
                             cpr.created_at,
@@ -42,6 +43,7 @@ class Migration(migrations.Migration):
                             cp_prices_archive.previous_year_price,
                             cp_prices_archive.current_year_price,
                             cp_prices_archive.country_programme_report_id,
+                            cp_prices_archive.source_file,
                             cpr.country_id,
                             cpr.version,
                             cpr.created_at,
@@ -53,8 +55,8 @@ class Migration(migrations.Migration):
             SELECT all_prices.id,
                 all_prices.substance_id,
                 s.name AS substance_name,
-                s.group_id,
-                g.name_alt AS group_name,
+                s.group_id as substance_group_id,
+                g.name_alt AS substance_group_name,
                 all_prices.blend_id,
                 b.name AS blend_name,
                 all_prices.display_name,
@@ -64,11 +66,12 @@ class Migration(migrations.Migration):
                 all_prices.previous_year_price,
                 all_prices.current_year_price,
                 all_prices.country_programme_report_id,
+                all_prices.source_file,
                 all_prices.country_id,
                 c.name AS country_name,
-                all_prices.version,
-                all_prices.created_at,
-                all_prices.year,
+                all_prices.version as report_version,
+                all_prices.created_at as report_created_at,
+                all_prices.year as report_year,
                 all_prices.is_archive
             FROM all_prices
             LEFT JOIN core_substance AS s ON all_prices.substance_id = s.id
@@ -92,8 +95,8 @@ class Migration(migrations.Migration):
                             cp_emission.destruction_wpc,
                             cp_emission.generated_emissions,
                             cp_emission.remarks,
-                            cp_emission.source_file,
                             cp_emission.country_programme_report_id,
+                            cp_emission.source_file,
                             cpr.country_id,
                             cpr.version,
                             cpr.created_at,
@@ -112,8 +115,8 @@ class Migration(migrations.Migration):
                             cp_emission_archive.destruction_wpc,
                             cp_emission_archive.generated_emissions,
                             cp_emission_archive.remarks,
-                            cp_emission_archive.source_file,
                             cp_emission_archive.country_programme_report_id,
+                            cp_emission_archive.source_file,
                             cpr.country_id,
                             cpr.version,
                             cpr.created_at,
@@ -131,12 +134,13 @@ class Migration(migrations.Migration):
                 all_emissions.destruction_wpc,
                 all_emissions.generated_emissions,
                 all_emissions.remarks,
-                all_emissions.source_file,
                 all_emissions.country_programme_report_id,
+                all_emissions.source_file,
                 all_emissions.country_id,
                 c.name AS country_name,
-                all_emissions.version,
-                all_emissions.year,
+                all_emissions.version as report_version,
+                all_emissions.year as report_year,
+                all_emissions.created_at as report_created_at,
                 all_emissions.is_archive
             FROM all_emissions
             JOIN core_country AS c ON all_emissions.country_id = c.id
@@ -152,6 +156,7 @@ class Migration(migrations.Migration):
                             cp_generation.feedstock,
                             cp_generation.destruction,
                             cp_generation.country_programme_report_id,
+                            cp_generation.source_file,
                             cpr.country_id,
                             cpr.version,
                             cpr.created_at,
@@ -165,6 +170,7 @@ class Migration(migrations.Migration):
                             cp_generation_archive.feedstock,
                             cp_generation_archive.destruction,
                             cp_generation_archive.country_programme_report_id,
+                            cp_generation_archive.source_file,
                             cpr.country_id,
                             cpr.version,
                             cpr.created_at,
@@ -177,10 +183,12 @@ class Migration(migrations.Migration):
                 all_generations.feedstock,
                 all_generations.destruction,
                 all_generations.country_programme_report_id,
+                all_generations.source_file,
                 all_generations.country_id,
                 c.name AS country_name,
-                all_generations.version,
-                all_generations.year,
+                all_generations.version as report_version,
+                all_generations.year as report_year,
+                all_generations.created_at as report_created_at,
                 all_generations.is_archive
             FROM all_generations
             JOIN core_country AS c ON all_generations.country_id = c.id
@@ -189,7 +197,7 @@ class Migration(migrations.Migration):
         ),
         migrations.RunSQL(
             sql="""
-            CREATE VIEW all_records_view AS
+            CREATE VIEW all_cp_records_view AS
             WITH all_records AS (
                     (SELECT cp_record.id,
                             cp_record.substance_id,
@@ -204,8 +212,8 @@ class Migration(migrations.Migration):
                             cp_record.manufacturing_blends,
                             cp_record.banned_date,
                             cp_record.remarks,
-                            cp_record.source_file,
                             cp_record.country_programme_report_id,
+                            cp_record.source_file,
                             cpr.country_id,
                             cpr.version,
                             cpr.created_at,
@@ -227,8 +235,8 @@ class Migration(migrations.Migration):
                             cp_record_archive.manufacturing_blends,
                             cp_record_archive.banned_date,
                             cp_record_archive.remarks,
-                            cp_record_archive.source_file,
                             cp_record_archive.country_programme_report_id,
+                            cp_record_archive.source_file,
                             cpr.country_id,
                             cpr.version,
                             cpr.created_at,
@@ -239,8 +247,8 @@ class Migration(migrations.Migration):
             SELECT all_records.id,
                 all_records.substance_id,
                 s.name AS substance_name,
-                s.group_id,
-                g.name AS group_name,
+                s.group_id as substance_group_id,
+                g.name AS substance_group_name,
                 all_records.blend_id,
                 b.name AS blend_name,
                 all_records.display_name,
@@ -253,14 +261,14 @@ class Migration(migrations.Migration):
                 all_records.manufacturing_blends,
                 all_records.banned_date,
                 all_records.remarks,
-                all_records.source_file,
                 all_records.country_programme_report_id,
+                all_records.source_file,
                 all_records.country_id,
                 c.name AS country_name,
                 c.is_lvc AS country_is_lvc,
-                all_records.version,
-                all_records.created_at,
-                all_records.year,
+                all_records.version as report_version,
+                all_records.created_at as report_created_at,
+                all_records.year as report_year,
                 all_records.is_archive
             FROM all_records
             LEFT JOIN core_substance AS s ON all_records.substance_id = s.id
@@ -268,10 +276,11 @@ class Migration(migrations.Migration):
             LEFT JOIN core_blend AS b ON all_records.blend_id = b.id
             JOIN core_country AS c ON all_records.country_id = c.id
             """,
-            reverse_sql="DROP VIEW all_records_view",
+            reverse_sql="DROP VIEW all_cp_records_view",
         ),
         migrations.RunSQL(
             sql="""
+            CREATE VIEW all_cp_usage_view AS
             WITH all_cp_usage AS (
                     (SELECT "cp_usage"."id",
                             "cp_usage"."usage_id",
@@ -293,6 +302,6 @@ class Migration(migrations.Migration):
                 all_cp_usage.is_archive
             FROM all_cp_usage
             """,
-            reverse_sql="DROP VIEW all_cp_usage",
+            reverse_sql="DROP VIEW all_cp_usage_view",
         ),
     ]

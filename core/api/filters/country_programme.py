@@ -1,6 +1,7 @@
 from django_filters import rest_framework as filters
 from django_filters.widgets import CSVWidget
 
+from core.model_views.country_programme import AllEmissionsView, AllPricesView
 from core.models import Country
 from core.models.country_programme import CPEmission, CPFile, CPPrices, CPRecord
 from core.models.country_programme_archive import CPReportArchive
@@ -67,18 +68,13 @@ class CPAttributesBaseFilter(filters.FilterSet):
     Base filter for country programme
     """
 
-    country_id = filters.NumberFilter(
-        required=False,
-        field_name="country_programme_report__country_id",
-    )
-    year = filters.NumberFilter(
-        required=False, field_name="country_programme_report__year"
-    )
+    country_id = filters.NumberFilter()
+    year = filters.NumberFilter(required=False, field_name="report_year")
     min_year = filters.NumberFilter(
-        required=False, field_name="country_programme_report__year", lookup_expr="gte"
+        required=False, field_name="report_year", lookup_expr="gte"
     )
     max_year = filters.NumberFilter(
-        required=False, field_name="country_programme_report__year", lookup_expr="lte"
+        required=False, field_name="report_year", lookup_expr="lte"
     )
 
     class Meta:
@@ -103,11 +99,24 @@ class CPPricesFilter(CPAttributesBaseFilter):
         model = CPPrices
 
 
-class CPEmissionsFilter(CPAttributesBaseFilter):
+class CPAllPricesFilter(CPAttributesBaseFilter):
     """
-    Filter for CP Emissions
+    Filter for CP Prices View
+    CP All Prices View is a db view that is a union of the cp_prices, cp_prices_archive tables
     """
 
     class Meta(CPAttributesBaseFilter.Meta):
-        model = CPEmission
+        model = AllPricesView
+        fields = CPAttributesBaseFilter.Meta.fields
+
+
+class CPEmissionsFilter(CPAttributesBaseFilter):
+    """
+    Filter for CP Emissions View
+
+    CP All Emissions View is a db view that is a union of the cp_emissions, cp_emissions_archive tables
+    """
+
+    class Meta(CPAttributesBaseFilter.Meta):
+        model = AllEmissionsView
         fields = CPAttributesBaseFilter.Meta.fields

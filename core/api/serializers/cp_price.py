@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from core.api.serializers.base import BaseCPWChemicalSerializer
+from core.model_views.country_programme import AllPricesView
 from core.models.country_programme import CPPrices
 from core.models.country_programme_archive import CPPricesArchive
 
@@ -129,3 +130,32 @@ class CPPricesListSerializer(serializers.ModelSerializer):
 
     def get_blend_name(self, obj):
         return obj.blend.name if obj.blend else None
+
+
+class CPAllPricesSerializer(serializers.ModelSerializer):
+    year = serializers.IntegerField(source="report_year")
+    version = serializers.IntegerField(source="report_version")
+    created_at = serializers.DateTimeField(source="report_created_at")
+    group = serializers.CharField(source="substance_group_name")
+    grou_id = serializers.IntegerField(source="substance_group_id")
+
+    class Meta:
+        model = AllPricesView
+        fields = [
+            "country_id",
+            "country_name",
+            "version",
+            "created_at",
+            "year",
+            "substance_name",
+            "substance_id",
+            "blend_name",
+            "blend_id",
+            "group",
+            "grou_id",
+            "previous_year_price",
+            "current_year_price",
+            "remarks",
+            "is_retail",
+            "is_fob",
+        ]

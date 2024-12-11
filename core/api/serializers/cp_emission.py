@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from core.api.serializers.base import BaseCPRowSerializer
+from core.model_views.country_programme import AllEmissionsView
 from core.models.country_programme import CPEmission, CPReport
 from core.models.country_programme_archive import CPEmissionArchive
 
@@ -39,15 +40,15 @@ class CPEmissionArchiveSerializer(CPEmissionBaseSerializer):
         model = CPEmissionArchive
 
 
-class CPEmissionListSerializer(serializers.ModelSerializer):
-    country_id = serializers.IntegerField(source="country_programme_report.country_id")
-    country_name = serializers.CharField(source="country_programme_report.country.name")
-    year = serializers.IntegerField(source="country_programme_report.year")
+class AllCPEmissionSerializer(serializers.ModelSerializer):
+    year = serializers.IntegerField(source="report_year")
+    version = serializers.IntegerField(source="report_version")
+    created_at = serializers.DateTimeField(source="report_created_at")
     data = serializers.SerializerMethodField()
-    substance_name = serializers.SerializerMethodField()
-    substance_id = serializers.SerializerMethodField()
     facility_name = serializers.CharField(source="facility")
     region = serializers.SerializerMethodField()
+    substance_name = serializers.SerializerMethodField()
+    substance_id = serializers.SerializerMethodField()
 
     ATTRIBUTE_NAMES_MAPPING = {
         "total": "Total amount generated",
@@ -60,11 +61,13 @@ class CPEmissionListSerializer(serializers.ModelSerializer):
     }
 
     class Meta:
-        model = CPEmission
+        model = AllEmissionsView
         fields = [
             "country_id",
             "country_name",
             "region",
+            "version",
+            "created_at",
             "year",
             "substance_name",
             "substance_id",
@@ -80,8 +83,7 @@ class CPEmissionListSerializer(serializers.ModelSerializer):
         return self.context["substance_id"]
 
     def get_region(self, obj):
-        country_id = obj.country_programme_report.country_id
-        return self.context["country_region_dict"].get(country_id)
+        return self.context["country_region_dict"].get(obj.country_id)
 
     def _get_type_dict(self, attr_name, obj):
         subst_gwp = self.context["substance_gwp"]
