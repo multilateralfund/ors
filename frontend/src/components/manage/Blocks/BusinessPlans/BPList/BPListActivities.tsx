@@ -110,7 +110,10 @@ function BPListActivities(props: any) {
   return (
     yearRanges &&
     yearRanges.length > 0 && (
-      <div className="activities flex flex-1 flex-col justify-start gap-6 rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
+      <div
+        className="activities flex flex-1 flex-col justify-start gap-6 rounded-b-lg rounded-r-lg border border-solid border-primary p-6"
+        key={gridOptions + '-' + displayOptions}
+      >
         <form className="flex flex-col gap-6" ref={form}>
           {displayOptions === 'table' ? (
             <BPTable

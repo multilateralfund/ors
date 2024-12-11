@@ -85,7 +85,7 @@ const useColumnsOptions = (
           field: 'display_internal_id',
           headerClass: 'ag-text-center',
           headerName: 'Activity id',
-          minWidth: 130,
+          minWidth: 150,
           editable: false,
           tooltipField: 'display_internal_id',
         },
@@ -350,16 +350,17 @@ const useColumnsOptions = (
           cellEditorParams: {
             allowNullVals: true,
           },
+          cellRendererParams: () => ({
+            tooltipClassName: 'bp-table-tooltip',
+          }),
+          dataType: 'number',
           field: 'amount_polyol',
           headerClass: 'ag-text-center',
           headerName: tableColumns.amount_polyol,
           minWidth: 100,
           valueGetter: (params: any) => {
             const polyolAmount = params.data.amount_polyol
-
-            return !isNil(polyolAmount)
-              ? parseFloat(polyolAmount).toFixed(2)
-              : null
+            return !isNil(polyolAmount) ? parseFloat(polyolAmount) : null
           },
           wrapText: true,
         },

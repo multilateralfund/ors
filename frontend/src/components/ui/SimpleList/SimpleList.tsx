@@ -7,9 +7,16 @@ import { StatusPill } from '../StatusPill/StatusPill'
 function ListItem(props: any) {
   const { item } = props
 
-  // Mock user and random date
-  const mockUser = 'John Smith'
-  const randomDate = 'June 15, 2024 12:53'
+  const formattedDate = new Date(item.updated_at).toLocaleString([], {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+  const formattedTime = new Date(item.updated_at).toLocaleTimeString([], {
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 
   return (
     <li
@@ -27,7 +34,7 @@ function ListItem(props: any) {
           <StatusPill status={item.status} />
         </div>
         <span className="text-lg font-normal tracking-tight">
-          Modified on {randomDate} by {mockUser}
+          Modified on {formattedDate} {formattedTime} by {item.updated_by}
         </span>
       </Link>
     </li>

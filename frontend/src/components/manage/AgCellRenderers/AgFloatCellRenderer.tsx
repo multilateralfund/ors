@@ -14,7 +14,9 @@ import {
   parseNumber,
 } from '@ors/helpers/Utils/Utils'
 
-export default function AgFloatCellRenderer(props: CustomCellRendererProps) {
+export default function AgFloatCellRenderer(
+  props: CustomCellRendererProps & { tooltipClassName: string },
+) {
   if (props.data.rowType === 'skeleton') {
     return <AgSkeletonCellRenderer {...props} />
   }
@@ -101,7 +103,12 @@ export default function AgFloatCellRenderer(props: CustomCellRendererProps) {
   )
 
   return (
-    <Tooltip enterDelay={300} placement={'top-start'} title={TitleContent}>
+    <Tooltip
+      enterDelay={300}
+      placement={'top-start'}
+      title={TitleContent}
+      classes={{ tooltip: props.tooltipClassName }}
+    >
       <Typography className={props.className} component="span" lineHeight={1}>
         {formattedValue}
       </Typography>

@@ -84,6 +84,7 @@ export interface IPopoverInputProps {
   value?: string
   withClear?: boolean
   withInputPlaceholder?: boolean
+  label?: string
 }
 
 export interface IPopoverContentProps extends IPopoverInputProps {

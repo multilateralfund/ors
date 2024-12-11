@@ -9,6 +9,7 @@ import BPListHeader from '../BPList/BPListHeader'
 import BPListTabs from '../BPList/BPListTabs'
 import { useBPListApi } from '../BPList/BPList'
 import { useGetBpData } from './useGetBpData'
+import { getDecisionNr, getMeetingNr } from '../utils'
 
 const BPSummary = (props: any) => {
   const { results, bpFiles, loadedFiles } = props
@@ -27,12 +28,12 @@ const BPSummary = (props: any) => {
         <SimpleField id="status" data={status || '-'} label="Status" />
         <SimpleField
           id="meeting"
-          data={meeting_id || '-'}
+          data={getMeetingNr(meeting_id) || '-'}
           label="Meeting number"
         />
         <SimpleField
           id="decision"
-          data={decision_id || '-'}
+          data={getDecisionNr(decision_id) || '-'}
           label="Decision number"
         />
       </div>

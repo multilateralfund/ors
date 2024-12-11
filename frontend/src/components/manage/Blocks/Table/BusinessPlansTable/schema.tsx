@@ -1,3 +1,4 @@
+import { formatDecimalValue } from '@ors/helpers'
 import {
   cellValueGetter,
   commentsDiffCellRenderer,
@@ -9,6 +10,7 @@ import {
   tagsCellRenderer,
   textCellRenderer,
 } from './schemaHelpers'
+import { ITooltipParams } from 'ag-grid-community'
 
 const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
   {
@@ -298,7 +300,20 @@ const allColumnDefs = (
       : {
           valueGetter: (params: any) => {
             const polyolAmount = params.data.amount_polyol
-            return polyolAmount ? parseFloat(polyolAmount).toFixed(2) : null
+
+            return polyolAmount
+              ? formatDecimalValue(parseFloat(polyolAmount))
+              : null
+          },
+          tooltipValueGetter: (params: ITooltipParams) => {
+            const polyolAmount = params.data.amount_polyol
+
+            return polyolAmount
+              ? formatDecimalValue(parseFloat(polyolAmount), {
+                  maximumFractionDigits: 10,
+                  minimumFractionDigits: 2,
+                })
+              : null
           },
         }),
   },
