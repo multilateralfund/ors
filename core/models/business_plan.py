@@ -116,9 +116,7 @@ class BPActivity(models.Model):
     required_by_model = models.CharField(max_length=255, null=True, blank=True)
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
     agency = models.ForeignKey(Agency, on_delete=models.CASCADE, null=True, blank=True)
-    lvc_status = models.CharField(
-        max_length=32, choices=LVCStatus.choices, default=LVCStatus.undefined
-    )
+    lvc_status = models.CharField(max_length=32, choices=LVCStatus.choices, blank=True)
     project_cluster = models.ForeignKey(
         ProjectCluster, on_delete=models.CASCADE, null=True, blank=True
     )

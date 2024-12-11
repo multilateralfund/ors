@@ -169,7 +169,7 @@ def get_bp_activity_data(
             break
 
     country_status = row["Country Status"].strip()
-    if country_status not in BPActivity.LVCStatus.values:
+    if country_status and country_status not in BPActivity.LVCStatus.values:
         warning_messages.append(
             f"Country Status '{country_status}' does not exist in our system "
             f"and we will set it to be 'Undefined'"

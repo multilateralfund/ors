@@ -249,7 +249,9 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
     business_plan_id = serializers.IntegerField(required=False)
     agency_id = serializers.IntegerField()
     country_id = serializers.IntegerField()
-    lvc_status = serializers.ChoiceField(choices=BPActivity.LVCStatus.choices)
+    lvc_status = serializers.ChoiceField(
+        choices=BPActivity.LVCStatus.choices, allow_blank=True
+    )
     project_type_id = serializers.IntegerField(allow_null=True)
     project_type_code = serializers.CharField(write_only=True, allow_blank=True)
     status = serializers.ChoiceField(choices=BPActivity.Status.choices)
