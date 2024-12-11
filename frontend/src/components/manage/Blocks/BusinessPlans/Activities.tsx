@@ -125,7 +125,7 @@ const ValuesTable: React.FC<Props> = ({
           <th colSpan={tableData.years.length}>
             {isCo2 ? (
               <>
-                CO<sub>2</sub>-eq
+                CO<sub>2</sub>-EQ
               </>
             ) : (
               <div className="pb-1">{header}</div>

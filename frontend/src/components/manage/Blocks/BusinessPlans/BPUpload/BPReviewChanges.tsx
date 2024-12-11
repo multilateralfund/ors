@@ -81,6 +81,7 @@ const BPReviewChanges = ({
         const result = await uploadFiles(formattedUrl, [file[0]])
         setImportResult(result)
         setIsLoading(false)
+        setBPType(bp_status)
       }
     } catch (error: any) {
       console.error('Error:', error)
