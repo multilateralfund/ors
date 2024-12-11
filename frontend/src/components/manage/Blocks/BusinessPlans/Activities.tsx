@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from 'react'
 
-import { Typography } from '@mui/material'
+import { Tooltip, Typography } from '@mui/material'
 import cx from 'classnames'
 
 import styles from '@ors/components/manage/Blocks/Replenishment/Table/table.module.css'
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5'
+import { formatDecimalValue } from '@ors/helpers'
 
 interface Value {
   id: number
@@ -45,22 +46,22 @@ const generateTableData = (
     const yearData = values.find((value) => value.year === year)
     usdValues.push(
       yearData && yearData.value_usd !== null
-        ? parseFloat(yearData.value_usd).toFixed(2)
+        ? parseFloat(yearData.value_usd)
         : '0.00',
     )
     odpValues.push(
       yearData && yearData.value_odp !== null
-        ? parseFloat(yearData.value_odp).toFixed(2)
+        ? parseFloat(yearData.value_odp)
         : '0.00',
     )
     mtValues.push(
       yearData && yearData.value_mt !== null
-        ? parseFloat(yearData.value_mt).toFixed(2)
+        ? parseFloat(yearData.value_mt)
         : '0.00',
     )
     co2Values.push(
       yearData && yearData.value_co2 !== null
-        ? parseFloat(yearData.value_co2).toFixed(2)
+        ? parseFloat(yearData.value_co2)
         : '0.00',
     )
   }
@@ -79,10 +80,10 @@ const generateTableData = (
   })
 
   years.push(`After ${max_year}`)
-  usdValues.push(afterMaxYearValues.value_usd.toFixed(2))
-  odpValues.push(afterMaxYearValues.value_odp.toFixed(2))
-  mtValues.push(afterMaxYearValues.value_mt.toFixed(2))
-  co2Values.push(afterMaxYearValues.value_co2.toFixed(2))
+  usdValues.push(afterMaxYearValues.value_usd)
+  odpValues.push(afterMaxYearValues.value_odp)
+  mtValues.push(afterMaxYearValues.value_mt)
+  co2Values.push(afterMaxYearValues.value_co2)
 
   return {
     mtValues,
@@ -140,7 +141,18 @@ const ValuesTable: React.FC<Props> = ({
       <tbody className="text-center">
         <tr>
           {data.map((value, index) => (
-            <td key={index}>{value}</td>
+            <td key={index}>
+              <Tooltip
+                TransitionProps={{ timeout: 0 }}
+                placement={'bottom'}
+                title={formatDecimalValue(parseFloat(value.toString()), {
+                  maximumFractionDigits: 10,
+                  minimumFractionDigits: 2,
+                })}
+              >
+                <span>{formatDecimalValue(parseFloat(value.toString()))}</span>
+              </Tooltip>
+            </td>
           ))}
         </tr>
       </tbody>
@@ -255,7 +267,10 @@ function OpenActivity({
             <span>Polyol amount</span>
             <h4 className="m-0">
               {activity.amount_polyol
-                ? parseFloat(activity.amount_polyol).toFixed(2)
+                ? formatDecimalValue(parseFloat(activity.amount_polyol), {
+                    maximumFractionDigits: 10,
+                    minimumFractionDigits: 2,
+                  })
                 : '0.00'}
             </h4>
           </span>

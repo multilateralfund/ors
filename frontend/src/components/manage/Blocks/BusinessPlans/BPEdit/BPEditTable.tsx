@@ -52,7 +52,7 @@ export function BPEditBaseTable(
       )
 
       if (value && !isNil(value[colIdentifier])) {
-        return parseFloat(value[colIdentifier]).toFixed(2)
+        return parseFloat(value[colIdentifier])
       }
 
       return null
@@ -114,6 +114,10 @@ export function BPEditBaseTable(
         cellEditorParams: {
           allowNullVals: true,
         },
+        cellRendererParams: () => ({
+          tooltipClassName: 'bp-table-tooltip',
+        }),
+        dataType: 'number',
         field: `value_usd_${year}`,
         headerClass: 'ag-text-center',
         headerComponent: function (props: any) {
@@ -148,6 +152,10 @@ export function BPEditBaseTable(
         cellEditorParams: {
           allowNullVals: true,
         },
+        cellRendererParams: () => ({
+          tooltipClassName: 'bp-table-tooltip',
+        }),
+        dataType: 'number',
         field: `value_odp_${year}`,
         headerClass: 'ag-text-center',
         headerComponent: function (props: any) {
@@ -182,6 +190,10 @@ export function BPEditBaseTable(
         cellEditorParams: {
           allowNullVals: true,
         },
+        cellRendererParams: () => ({
+          tooltipClassName: 'bp-table-tooltip',
+        }),
+        dataType: 'number',
         field: `value_mt_${year}`,
         headerClass: 'ag-text-center',
         headerComponent: function (props: any) {
@@ -216,6 +228,10 @@ export function BPEditBaseTable(
         cellEditorParams: {
           allowNullVals: true,
         },
+        cellRendererParams: () => ({
+          tooltipClassName: 'bp-table-tooltip',
+        }),
+        dataType: 'number',
         field: `value_co2_${year}`,
         headerClass: 'ag-text-center',
         headerComponent: function (props: any) {
@@ -261,9 +277,9 @@ export function BPEditBaseTable(
         children: valuesCO2,
         headerName: 'CO2-EQ',
         headerGroupComponent: () => (
-          <div className="xs:text-[12px] mt-1 text-[10px]">
+          <span>
             CO<sub>2</sub>-EQ
-          </div>
+          </span>
         ),
       },
     ]

@@ -162,7 +162,7 @@ export default function BPHeaderEditConsolidated({
   return (
     <>
       <RedirectToBpList currentYearRange={period} />
-      <div className="mb-4 flex min-h-[40px] flex-wrap items-center justify-between gap-x-8 gap-y-2">
+      <div className="mb-4 flex min-h-[40px] items-center justify-between gap-x-8 gap-y-2">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
           <div className="flex flex-wrap items-center gap-x-2">
             <h1 className="m-0 text-5xl leading-normal">
