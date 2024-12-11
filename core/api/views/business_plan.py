@@ -4,7 +4,6 @@ import urllib
 from django.db import transaction
 from django.db.models import Max, Min
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -35,7 +34,6 @@ from core.api.views.utils import (
 )
 from core.models import BusinessPlan, BPChemicalType, BPActivity
 from core.models.business_plan import BPFile
-from core.models.meeting import Decision, Meeting
 
 
 class BPChemicalTypeListView(generics.ListAPIView):
@@ -305,16 +303,13 @@ class BPFileDownloadView(generics.RetrieveAPIView):
 
 
 class BPImportValidateView(BusinessPlanUtils, generics.GenericAPIView):
-    @swagger_auto_schema(manual_parameters=IMPORT_PARAMETERS)
+    @swagger_auto_schema(
+        manual_parameters=IMPORT_PARAMETERS,
+        operation_description="Check if uploaded file is valid without saving data",
+    )
     def post(self, request, *args, **kwargs):
         files = request.FILES
         year_start = int(request.query_params.get("year_start", 0))
-        meeting_id = request.query_params.get("meeting_id")
-        decision_id = request.query_params.get("decision_id")
-
-        meeting = get_object_or_404(Meeting, id=meeting_id)
-        if decision_id:
-            get_object_or_404(Decision, id=decision_id, meeting=meeting)
 
         ret_code, ret_data = self.import_bp(files, year_start, from_validate=True)
         if ret_code != status.HTTP_200_OK:
@@ -354,7 +349,10 @@ class BPImportView(
 ):
     serializer_class = BusinessPlanCreateSerializer
 
-    @swagger_auto_schema(manual_parameters=IMPORT_PARAMETERS)
+    @swagger_auto_schema(
+        manual_parameters=IMPORT_PARAMETERS,
+        operation_description="Perform Business Plan import from file",
+    )
     @transaction.atomic
     def post(self, request, *args, **kwargs):
         files = request.FILES

@@ -118,10 +118,8 @@ class TestBPList(BaseTest):
 
 class TestBPImportValidate:
     client = APIClient()
-    status = "Endorsed"
     year_start = 2025
-    year_end = 2027
-    params = f"?status={status}&year_start={year_start}&year_end={year_end}"
+    params = f"?year_start={year_start}"
     url = reverse("bp-upload-validate") + params
 
     def test_without_login(self):
@@ -129,15 +127,14 @@ class TestBPImportValidate:
         assert response.status_code == 403
 
     def test_bp_import_validate_invalid_template(
-        self, user, meeting, decision, subsector_other, _setup_bp_activity_create
+        self, user, subsector_other, _setup_bp_activity_create
     ):
         self.client.force_authenticate(user=user)
         file_path = "core/api/tests/files/Test_BP2025-2027_invalid_template.xlsx"
-        url = f"{self.url}&meeting_id={meeting.id}&decision_id={decision.id}"
 
         with open(file_path, "rb") as f:
             data = {"Test_BP2025-2027.xlsx": f}
-            response = self.client.post(url, data, format="multipart")
+            response = self.client.post(self.url, data, format="multipart")
 
         assert response.status_code == 400
         assert len(response.data["errors"]) == 1
@@ -147,15 +144,14 @@ class TestBPImportValidate:
         )
 
     def test_bp_import_validate_multiple_errors(
-        self, user, meeting, decision, subsector_other, _setup_bp_activity_create
+        self, user, subsector_other, _setup_bp_activity_create
     ):
         self.client.force_authenticate(user=user)
         file_path = "core/api/tests/files/Test_BP2025-2027_multiple_errors.xlsx"
-        url = f"{self.url}&meeting_id={meeting.id}&decision_id={decision.id}"
 
         with open(file_path, "rb") as f:
             data = {"Test_BP2025-2027.xlsx": f}
-            response = self.client.post(url, data, format="multipart")
+            response = self.client.post(self.url, data, format="multipart")
 
         assert response.status_code == 200
         assert len(response.data["warnings"]) == 0
@@ -174,11 +170,10 @@ class TestBPImportValidate:
         )
 
     def test_bp_import_validate_multiple_warnings(
-        self, user, meeting, decision, subsector_other, _setup_bp_activity_create
+        self, user, subsector_other, _setup_bp_activity_create
     ):
         self.client.force_authenticate(user=user)
         file_path = "core/api/tests/files/Test_BP2025-2027_multiple_warnings.xlsx"
-        url = f"{self.url}&meeting_id={meeting.id}&decision_id={decision.id}"
 
         ProjectClusterFactory(name="Other", code="OTH")
         ProjectSectorFactory(name="Other", code="OTH")
@@ -186,7 +181,7 @@ class TestBPImportValidate:
 
         with open(file_path, "rb") as f:
             data = {"Test_BP2025-2027.xlsx": f}
-            response = self.client.post(url, data, format="multipart")
+            response = self.client.post(self.url, data, format="multipart")
 
         assert response.status_code == 200
         assert len(response.data["warnings"]) == 5
@@ -212,16 +207,13 @@ class TestBPImportValidate:
             in response.data["warnings"][4]["warning_message"]
         )
 
-    def test_bp_import_validate(
-        self, user, meeting, decision, subsector_other, _setup_bp_activity_create
-    ):
+    def test_bp_import_validate(self, user, subsector_other, _setup_bp_activity_create):
         self.client.force_authenticate(user=user)
         file_path = "core/api/tests/files/Test_BP2025-2027.xlsx"
-        url = f"{self.url}&meeting_id={meeting.id}&decision_id={decision.id}"
 
         with open(file_path, "rb") as f:
             data = {"Test_BP2025-2027.xlsx": f}
-            response = self.client.post(url, data, format="multipart")
+            response = self.client.post(self.url, data, format="multipart")
 
         assert response.status_code == 200
         assert len(response.data["warnings"]) == 2

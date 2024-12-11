@@ -80,9 +80,9 @@ def check_year_values(value_type, value, year, is_after, warning_messages):
             f"Value {value_type} for year {year} (After: {is_after}) "
             f"is not a number and we will set it to be '0'"
         )
-        return 0, warning_messages
+        return 0
 
-    return value, warning_messages
+    return value
 
 
 def get_error_messages(row, agencies, countries):
@@ -108,11 +108,11 @@ def get_error_messages(row, agencies, countries):
 
 def get_object(row, field_name, objs_dict, warning_messages):
     if not row[field_name]:
-        return None, warning_messages
+        return None
 
     ret_obj = objs_dict.get(strip_str(row[field_name]))
     if ret_obj:
-        return ret_obj, warning_messages
+        return ret_obj
 
     ret_obj = objs_dict.get("other")
     warning_messages.append(
@@ -120,12 +120,12 @@ def get_object(row, field_name, objs_dict, warning_messages):
         f"in our system and we will set it to be 'Other'"
     )
 
-    return ret_obj, warning_messages
+    return ret_obj
 
 
 def get_subsector(row, sector, subsectors, warning_messages):
     if not row["Subsector"] or not sector:
-        return None, warning_messages
+        return None
 
     subsector = subsectors.get((sector.name, strip_str(row["Subsector"])))
     subsector_other_name = (
@@ -137,9 +137,9 @@ def get_subsector(row, sector, subsectors, warning_messages):
             f"Subsector '{row['Subsector']}' does not exist in our system "
             f"or it is not linked to the sector and we will set it to be 'Other'"
         )
-        return subsector_other, warning_messages
+        return subsector_other
 
-    return subsector, warning_messages
+    return subsector
 
 
 def get_bp_activity_data(
@@ -193,9 +193,9 @@ def get_bp_activity_data(
         "agency_id": agency.id if agency else None,
         "country_id": country.id if country else None,
         "lvc_status": country_status,
-        "project_type_id": project_type.id,
-        "project_type_code": project_type.code,
-        "bp_chemical_type_id": bp_chemical_type.id,
+        "project_type_id": project_type.id if project_type else None,
+        "project_type_code": project_type.code if project_type else "",
+        "bp_chemical_type_id": bp_chemical_type.id if bp_chemical_type else None,
         "project_cluster_id": project_cluster.id if project_cluster else None,
         "substances": list(dict.fromkeys(substance_ids)),  # remove duplicates
         "amount_polyol": amount_polyol,
@@ -228,16 +228,16 @@ def get_bp_activity_data(
             value_co2 = row[f"CO₂-eq {year_value}"]
 
         # if these values are not numbers we will set them to be '0'
-        value_usd, warning_messages = check_year_values(
+        value_usd = check_year_values(
             "usd", value_usd, year_value, is_after, warning_messages
         )
-        value_odp, warning_messages = check_year_values(
+        value_odp = check_year_values(
             "odp", value_odp, year_value, is_after, warning_messages
         )
-        value_mt, warning_messages = check_year_values(
+        value_mt = check_year_values(
             "mt", value_mt, year_value, is_after, warning_messages
         )
-        value_co2, warning_messages = check_year_values(
+        value_co2 = check_year_values(
             "CO₂", value_co2, year_value, is_after, warning_messages
         )
 
@@ -252,7 +252,7 @@ def get_bp_activity_data(
             }
         )
 
-    return activity_data, warning_messages
+    return activity_data
 
 
 def parse_bp_file(file, year_start, from_validate=False):
@@ -304,19 +304,13 @@ def parse_bp_file(file, year_start, from_validate=False):
 
         # get 'Other' if value is not found in db, set `None` if field is blank
         warning_messages = []
-        project_type, warning_messages = get_object(
-            row, "Type", project_types, warning_messages
-        )
-        bp_chemical_type, warning_messages = get_object(
+        project_type = get_object(row, "Type", project_types, warning_messages)
+        bp_chemical_type = get_object(
             row, "Substance", bp_chemical_types, warning_messages
         )
-        project_cluster, warning_messages = get_object(
-            row, "Cluster", project_clusters, warning_messages
-        )
-        sector, warning_messages = get_object(row, "Sector", sectors, warning_messages)
-        subsector, warning_messages = get_subsector(
-            row, sector, subsectors, warning_messages
-        )
+        project_cluster = get_object(row, "Cluster", project_clusters, warning_messages)
+        sector = get_object(row, "Sector", sectors, warning_messages)
+        subsector = get_subsector(row, sector, subsectors, warning_messages)
 
         substance_names = (
             row["Substance Detail"].split("/") if row["Substance Detail"] else []
@@ -327,7 +321,7 @@ def parse_bp_file(file, year_start, from_validate=False):
         ]
 
         # return activity data in serializer format (with object IDs instead of names)
-        activity_data, warning_messages = get_bp_activity_data(
+        activity_data = get_bp_activity_data(
             row,
             year_start,
             agency,

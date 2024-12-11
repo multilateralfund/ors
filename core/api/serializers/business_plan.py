@@ -250,10 +250,10 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
     agency_id = serializers.IntegerField()
     country_id = serializers.IntegerField()
     lvc_status = serializers.ChoiceField(choices=BPActivity.LVCStatus.choices)
-    project_type_id = serializers.IntegerField()
-    project_type_code = serializers.CharField(write_only=True)
+    project_type_id = serializers.IntegerField(allow_null=True)
+    project_type_code = serializers.CharField(write_only=True, allow_blank=True)
     status = serializers.ChoiceField(choices=BPActivity.Status.choices)
-    bp_chemical_type_id = serializers.IntegerField()
+    bp_chemical_type_id = serializers.IntegerField(allow_null=True)
     project_cluster_id = serializers.IntegerField(allow_null=True)
 
     # Many2Many represented as list of integers and manually validated
@@ -287,12 +287,12 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
         return country_id
 
     def validate_project_type_id(self, project_type_id):
-        if project_type_id not in self.project_type_ids:
+        if project_type_id and project_type_id not in self.project_type_ids:
             raise serializers.ValidationError("ProjectType not found")
         return project_type_id
 
     def validate_bp_chemical_type_id(self, bp_chemical_type_id):
-        if bp_chemical_type_id not in self.bp_chemical_type_ids:
+        if bp_chemical_type_id and bp_chemical_type_id not in self.bp_chemical_type_ids:
             raise serializers.ValidationError("BPChemicalType not found")
         return bp_chemical_type_id
 
@@ -365,6 +365,7 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
     meeting_id = serializers.PrimaryKeyRelatedField(
         required=False,
         queryset=Meeting.objects.all().values_list("id", flat=True),
+        allow_null=True,
     )
     decision_id = serializers.PrimaryKeyRelatedField(
         required=False,
