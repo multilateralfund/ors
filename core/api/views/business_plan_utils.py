@@ -74,57 +74,72 @@ def check_numeric_value(value):
     return True
 
 
-def get_warning_messages(
-    row,
-    project_type,
-    bp_chemical_type,
-    project_cluster,
-    sector,
-    subsector,
-    substances,
-):
-    warning_messages = []
-    set_other_warning = "does not exist in our system and we will set it to be 'Other'"
+def check_year_values(value_type, value, year, is_after, warning_messages):
+    if not check_numeric_value(value):
+        warning_messages.append(
+            f"Value {value_type} for year {year} (After: {is_after}) "
+            f"is not a number and we will set it to be '0'"
+        )
+        return 0, warning_messages
 
-    for field_name, obj in [
-        ("Type", project_type),
-        ("Substance", bp_chemical_type),
-        ("Cluster", project_cluster),
-        ("Sector", sector),
-    ]:
-        if (
-            row[field_name]
-            and obj.name == "Other"
-            and not strip_str(row[field_name]) == "other"
-        ):
-            warning_messages.append(
-                f"{field_name} '{row[field_name]}' {set_other_warning}"
-            )
+    return value, warning_messages
 
-    if sector and sector.code in PROJECT_SECTOR_TYPE_MAPPING:
-        if project_type.code not in PROJECT_SECTOR_TYPE_MAPPING[sector.code]:
-            warning_messages.append("Type is not linked to the sector")
 
-    if subsector:
-        if subsector.sector != sector:
-            warning_messages.append(
-                "Subsector is not linked to the sector and we will set the subsector to be 'Other'"
-            )
-        elif subsector.name.startswith("Other") and not row["Subsector"].startswith(
-            "Other"
-        ):
-            warning_messages.append(
-                f"Subsector '{row['Subsector']}' {set_other_warning}"
-            )
+def get_error_messages(row, agencies, countries):
+    error_messages = []
+    not_found_error = "does not exist in our system"
 
-    for substance in substances:
-        if substance.name == "Other substances":
-            warning_messages.append(
-                "Some substances do not exist in our system and we will set them to be 'Other'"
-            )
-            break
+    agency = agencies.get(strip_str(row["Agency"]))
+    country_name = COUNTRY_NAME_MAPPING.get(row["Country"], row["Country"])
+    country = countries.get(strip_str(country_name))
 
-    return warning_messages
+    if not agency:
+        error_messages.append(f"Agency '{row['Agency']}' {not_found_error}")
+
+    if not country:
+        error_messages.append(f"Country '{row['Country']}' {not_found_error}")
+
+    project_status = row["Project Status (A/P)"].strip()
+    if project_status not in BPActivity.Status.values:
+        error_messages.append(f"Project status '{project_status}' {not_found_error}")
+
+    return agency, country, error_messages
+
+
+def get_object(row, field_name, objs_dict, warning_messages):
+    if not row[field_name]:
+        return None, warning_messages
+
+    ret_obj = objs_dict.get(strip_str(row[field_name]))
+    if ret_obj:
+        return ret_obj, warning_messages
+
+    ret_obj = objs_dict.get("other")
+    warning_messages.append(
+        f"{field_name} '{row[field_name]}' does not exist "
+        f"in our system and we will set it to be 'Other'"
+    )
+
+    return ret_obj, warning_messages
+
+
+def get_subsector(row, sector, subsectors, warning_messages):
+    if not row["Subsector"] or not sector:
+        return None, warning_messages
+
+    subsector = subsectors.get((sector.name, strip_str(row["Subsector"])))
+    subsector_other_name = (
+        "other" if sector.name == "Other" else f"other {strip_str(sector.name)}"
+    )
+    subsector_other = subsectors.get((sector.name, subsector_other_name))
+    if not subsector:
+        warning_messages.append(
+            f"Subsector '{row['Subsector']}' does not exist in our system "
+            f"or it is not linked to the sector and we will set it to be 'Other'"
+        )
+        return subsector_other, warning_messages
+
+    return subsector, warning_messages
 
 
 def get_bp_activity_data(
@@ -137,38 +152,21 @@ def get_bp_activity_data(
     project_cluster,
     sector,
     subsector,
-    subsector_other,
     substances,
+    warning_messages,
 ):
-    error_messages = []
-    warning_messages = []
-    not_a_number_warning = "is not a number and we will set it to be '0'"
-    not_found_error = "does not exist in our system"
+    # set warning messages
+    if sector and sector.code in PROJECT_SECTOR_TYPE_MAPPING:
+        if project_type.code not in PROJECT_SECTOR_TYPE_MAPPING[sector.code]:
+            warning_messages.append("Type is not linked to the sector")
 
-    # set error messages
-    if not agency:
-        error_messages.append(f"Agency '{row['Agency']}' {not_found_error}")
-
-    if not country:
-        error_messages.append(f"Country '{row['Country']}' {not_found_error}")
-
-    project_status = row["Project Status (A/P)"].strip()
-    if project_status not in BPActivity.Status.values:
-        error_messages.append(f"Project status '{project_status}' {not_found_error}")
-
-    # set warning messages (check if initial value was replaced with 'Other')
-    warning_messages += get_warning_messages(
-        row,
-        project_type,
-        bp_chemical_type,
-        project_cluster,
-        sector,
-        subsector,
-        substances,
-    )
-    # set subsector to `Other` if not linked to sector
-    if subsector and subsector.sector != sector:
-        subsector = subsector_other
+    substance_ids = [substance.id for substance in substances]
+    for substance in substances:
+        if substance.name == "Other substances":
+            warning_messages.append(
+                "Some substances do not exist in our system and we will set them to be 'Other'"
+            )
+            break
 
     country_status = row["Country Status"].strip()
     if country_status not in BPActivity.LVCStatus.values:
@@ -181,13 +179,13 @@ def get_bp_activity_data(
     amount_polyol = row["Amount of Polyol in Project (MT)"]
     if not check_numeric_value(amount_polyol):
         amount_polyol = 0
-        warning_messages.append(f"Amount of Polyol {not_a_number_warning}")
+        warning_messages.append(
+            "Amount of Polyol is not a number and we will set it to be '0'"
+        )
 
     # get `initial_id` from `Sort Order` column
     sort_order = row["Sort Order"].rsplit("-", 1)
     initial_id = sort_order[1].lstrip("0") if len(sort_order) > 1 else 0
-
-    substance_ids = [substance.id for substance in substances]
 
     activity_data = {
         "initial_id": initial_id if initial_id != "None" else 0,
@@ -205,7 +203,7 @@ def get_bp_activity_data(
         "sector_code": sector.code if sector else "",
         "subsector_id": subsector.id if subsector else None,
         "required_by_model": row["Required by Model"],
-        "status": project_status,
+        "status": row["Project Status (A/P)"].strip(),
         "is_multi_year": bool(strip_str(row["Project Category (I/M)"]) == "m"),
         "remarks": row["Remarks"],
         "remarks_additional": row["Remarks (Additional)"],
@@ -230,29 +228,18 @@ def get_bp_activity_data(
             value_co2 = row[f"CO₂-eq {year_value}"]
 
         # if these values are not numbers we will set them to be '0'
-        if not check_numeric_value(value_usd):
-            value_usd = 0
-            warning_messages.append(
-                f"Value usd for year {year_value} (After: {is_after}) {not_a_number_warning}"
-            )
-
-        if not check_numeric_value(value_odp):
-            value_odp = 0
-            warning_messages.append(
-                f"Value odp for year {year_value} (After: {is_after}) {not_a_number_warning}"
-            )
-
-        if not check_numeric_value(value_mt):
-            value_mt = 0
-            warning_messages.append(
-                f"Value mt for year {year_value} (After: {is_after}) {not_a_number_warning}"
-            )
-
-        if not check_numeric_value(value_co2):
-            value_co2 = 0
-            warning_messages.append(
-                f"Value CO₂ for year {year_value} (After: {is_after}) {not_a_number_warning}"
-            )
+        value_usd, warning_messages = check_year_values(
+            "usd", value_usd, year_value, is_after, warning_messages
+        )
+        value_odp, warning_messages = check_year_values(
+            "odp", value_odp, year_value, is_after, warning_messages
+        )
+        value_mt, warning_messages = check_year_values(
+            "mt", value_mt, year_value, is_after, warning_messages
+        )
+        value_co2, warning_messages = check_year_values(
+            "CO₂", value_co2, year_value, is_after, warning_messages
+        )
 
         activity_data["values"].append(
             {
@@ -265,7 +252,7 @@ def get_bp_activity_data(
             }
         )
 
-    return activity_data, error_messages, warning_messages
+    return activity_data, warning_messages
 
 
 def parse_bp_file(file, year_start, from_validate=False):
@@ -300,41 +287,36 @@ def parse_bp_file(file, year_start, from_validate=False):
     warnings = []
     for index, row in df.iterrows():
         # parse every row in Excel, get objects by their name
-        agency = agencies.get(strip_str(row["Agency"]))
-        country_name = COUNTRY_NAME_MAPPING.get(row["Country"], row["Country"])
-        country = countries.get(strip_str(country_name))
+        # get error messages
+        agency, country, error_messages = get_error_messages(row, agencies, countries)
+        for error_message in error_messages:
+            if not from_validate:
+                # raise when first error is found and stop parsing entire file
+                raise ValidationError("Data error")
+            errors.append(
+                {
+                    "error_type": "data error",
+                    "row_number": index + 2,
+                    "activity_id": row["Sort Order"],
+                    "error_message": error_message,
+                }
+            )
 
-        # get 'Other' if value is not found in db
-        project_type = project_types.get(
-            strip_str(row["Type"]), project_types.get("other")
+        # get 'Other' if value is not found in db, set `None` if field is blank
+        warning_messages = []
+        project_type, warning_messages = get_object(
+            row, "Type", project_types, warning_messages
         )
-        bp_chemical_type = bp_chemical_types.get(
-            strip_str(row["Substance"]), bp_chemical_types.get("other")
+        bp_chemical_type, warning_messages = get_object(
+            row, "Substance", bp_chemical_types, warning_messages
         )
-
-        # set `None` if field is blank
-        project_cluster = None
-        if row["Cluster"]:
-            project_cluster = project_clusters.get(
-                strip_str(row["Cluster"]), project_clusters.get("other")
-            )
-
-        sector = None
-        if row["Sector"]:
-            sector_name = strip_str(row["Sector"])
-            sector = sectors.get(sector_name, sectors.get("other"))
-
-        subsector = None
-        subsector_other = None
-        if row["Subsector"] and sector:
-            subsector_other_name = (
-                "other" if sector.name == "Other" else f"other {sector_name}"
-            )
-            subsector_other = subsectors.get((sector.name, subsector_other_name))
-            subsector = subsectors.get(
-                (sector.name, strip_str(row["Subsector"])),
-                subsector_other,
-            )
+        project_cluster, warning_messages = get_object(
+            row, "Cluster", project_clusters, warning_messages
+        )
+        sector, warning_messages = get_object(row, "Sector", sectors, warning_messages)
+        subsector, warning_messages = get_subsector(
+            row, sector, subsectors, warning_messages
+        )
 
         substance_names = (
             row["Substance Detail"].split("/") if row["Substance Detail"] else []
@@ -345,7 +327,7 @@ def parse_bp_file(file, year_start, from_validate=False):
         ]
 
         # return activity data in serializer format (with object IDs instead of names)
-        activity_data, error_messages, warning_messages = get_bp_activity_data(
+        activity_data, warning_messages = get_bp_activity_data(
             row,
             year_start,
             agency,
@@ -355,24 +337,10 @@ def parse_bp_file(file, year_start, from_validate=False):
             project_cluster,
             sector,
             subsector,
-            subsector_other,
             substances,
+            warning_messages,
         )
         activities.append(activity_data)
-
-        for error_message in error_messages:
-            if not from_validate:
-                # raise when first error is found and stop parsing entire file
-                raise ValidationError("Data error")
-
-            errors.append(
-                {
-                    "error_type": "data error",
-                    "row_number": index + 2,
-                    "activity_id": row["Sort Order"],
-                    "error_message": error_message,
-                }
-            )
 
         for warning_message in warning_messages:
             warnings.append(
@@ -487,8 +455,13 @@ class BusinessPlanUtils:
         if not new_instance.name:
             new_instance.name = f"{new_instance.status} {new_instance.year_start} - {new_instance.year_end}"
 
-        # set updated by user
+        # set updated by user, inherit other fields
+        new_instance.updated_at = new_instance.created_at
         new_instance.updated_by = self.request.user
+        new_instance.created_at = current_obj.created_at
+        new_instance.created_by = current_obj.created_by
+        new_instance.meeting = current_obj.meeting
+        new_instance.decision = current_obj.decision
         new_instance.save()
         current_obj.delete()
 
