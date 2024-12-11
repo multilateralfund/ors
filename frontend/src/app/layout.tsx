@@ -60,6 +60,7 @@ function useAppState(user: ApiUser | null | undefined) {
           subsectors,
           types,
           meetings,
+          decisions,
           clusters,
           // Country programme data
           blends,
@@ -73,6 +74,7 @@ function useAppState(user: ApiUser | null | undefined) {
           api('api/project-subsector/', {}, false),
           api('api/project-types/', {}, false),
           api('api/meetings/', {}, false),
+          api('api/decisions/', {}, false),
           api('api/project-clusters/', {}, false),
           api(
             'api/blends/',
@@ -114,6 +116,7 @@ function useAppState(user: ApiUser | null | undefined) {
           sectors: getInitialSliceData(sectors),
           subsectors: getInitialSliceData(subsectors),
           types: getInitialSliceData(types),
+          decisions: getInitialSliceData(decisions),
         }
 
         setState({ common, projects, cp_reports, businessPlans })

@@ -1,21 +1,27 @@
-import { ChangeEvent } from 'react'
-
 import PopoverInput from '../../Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
 import { PeriodSelectorOption } from '../../Replenishment/types'
-import SimpleInput from '../../Section/ReportInfo/SimpleInput'
 import { INavigationButton } from '../types'
 import BPMainFilters from './BPMainFilters'
 import { NavigationButton } from './NavigationButton'
 import { Label } from './helpers'
-import { getMeetingOptions } from '../utils'
+import { getDecisionOptions, getMeetingOptions } from '../utils'
+import Field from '@ors/components/manage/Form/Field'
 
 interface IBPImportFilters {
   periodOptions: PeriodSelectorOption[]
+  filters: any
   setFilters: any
+}
+
+interface IDecision {
+  label: string
+  value: string
+  meeting: number
 }
 
 const BPImportFilters = ({
   periodOptions,
+  filters,
   setFilters,
   ...rest
 }: IBPImportFilters & Omit<INavigationButton, 'direction'>) => {
@@ -23,13 +29,14 @@ const BPImportFilters = ({
     setFilters((prevFilters: any) => ({
       ...prevFilters,
       meeting,
+      decision: null,
     }))
   }
 
-  const handleChangeDecision = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleChangeDecision = (decision: IDecision) => {
     setFilters((prevFilters: any) => ({
       ...prevFilters,
-      decision: event.target.value,
+      decision: decision?.value,
     }))
   }
 
@@ -55,13 +62,12 @@ const BPImportFilters = ({
         </div>
         <div>
           <Label>Decision number (optional)</Label>
-          <SimpleInput
-            id="decision"
-            className="!border-black"
-            label=""
-            type="text"
-            onChange={handleChangeDecision}
-            containerClassName="!justify-normal"
+          <Field
+            key={filters.meeting}
+            FieldProps={{ className: 'mb-0 w-40 BPListUpload' }}
+            options={getDecisionOptions(filters?.meeting)}
+            widget="autocomplete"
+            onChange={(_: any, value: any) => handleChangeDecision(value)}
           />
         </div>
       </div>

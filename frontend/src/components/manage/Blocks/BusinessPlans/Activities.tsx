@@ -1,9 +1,7 @@
-import React, { ReactNode, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 
 import { Typography } from '@mui/material'
 import cx from 'classnames'
-
-import Loading from '@ors/components/theme/Loading/Loading'
 
 import styles from '@ors/components/manage/Blocks/Replenishment/Table/table.module.css'
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5'
@@ -369,17 +367,18 @@ function Activity(props: any) {
 }
 
 export default function Activities(props: any) {
-  const { loaded, results, ...rest } = props
-
-  if (!loaded) {
-    return <Loading />
-  }
+  const { results, ...rest } = props
 
   return (
     <ul className="m-0 flex list-none flex-col gap-6 pl-0">
       {results.map((activity: any) => (
         <Activity key={activity.id} activity={activity} {...rest} />
       ))}
+      {results.length === 0 && (
+        <Typography component="h1" variant="h5">
+          No data available.
+        </Typography>
+      )}
     </ul>
   )
 }

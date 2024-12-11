@@ -25,6 +25,20 @@ export const getMeetingOptions = () => {
   return reverse(formattedMeetings)
 }
 
+export const getDecisionOptions = (meeting_id: number) => {
+  const bpSlice = useStore((state) => state.businessPlans)
+  const decisions = bpSlice.decisions.data
+  const formattedDecisions = decisions
+    ?.filter((decision: any) => decision.meeting_id === meeting_id)
+    ?.map((decision: any) => ({
+      label: decision.number.toString(),
+      value: decision.id,
+      meeting: decision.meeting_id,
+    }))
+
+  return reverse(formattedDecisions)
+}
+
 export const getCurrentPeriodOption = (
   periodOptions: any[],
   yearStart: string,
@@ -32,3 +46,8 @@ export const getCurrentPeriodOption = (
 
 export const getLatestBpYearRange = (periodOptions: any[]) =>
   find(periodOptions, (option) => option.status.length > 0)
+
+export const getCurrentTriennium = () => {
+  const currentYear = new Date().getFullYear()
+  return currentYear + '-' + (currentYear + 2)
+}
