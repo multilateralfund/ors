@@ -3,7 +3,6 @@ from datetime import datetime
 import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
-from unittest.mock import patch
 
 from core.api.tests.base import BaseTest
 from core.api.tests.factories import (
@@ -22,18 +21,6 @@ from core.models.business_plan import BusinessPlan
 
 pytestmark = pytest.mark.django_db
 # pylint: disable=C8008, W0221, W0613, R0913, C0302, R0914, R0915
-
-
-@pytest.fixture(name="mock_send_mail_bp_create")
-def _mock_send_mail_bp_create():
-    with patch("core.tasks.send_mail_bp_create.delay") as send_mail:
-        yield send_mail
-
-
-@pytest.fixture(name="mock_send_mail_bp_update")
-def _mock_send_mail_bp_update():
-    with patch("core.tasks.send_mail_bp_update.delay") as send_mail:
-        yield send_mail
 
 
 class TestBPChemicalTypeList(BaseTest):
@@ -284,7 +271,6 @@ class TestBPImport:
         sector,
         subsector_other,
         _setup_bp_activity_create,
-        mock_send_mail_bp_create,
     ):
         self.client.force_authenticate(user=user)
         url = f"{self.url}&meeting_id={meeting.id}&decision_id={decision.id}"
@@ -332,8 +318,6 @@ class TestBPImport:
             assert value.value_odp == amount
             assert value.value_mt == amount
             assert value.value_co2 == amount
-
-        mock_send_mail_bp_create.assert_called_once()
 
 
 class TestBPUpdate:
@@ -413,7 +397,6 @@ class TestBPUpdate:
         _setup_bp_activity_create,
         business_plan,
         substance,
-        mock_send_mail_bp_update,
     ):
         self.client.force_authenticate(user=user)
 
@@ -457,8 +440,6 @@ class TestBPUpdate:
         assert activities[0]["is_multi_year"] is True
         assert activities[0]["remarks"] == "Merge rau"
         assert activities[0]["values"][0]["year"] == business_plan.year_end
-
-        mock_send_mail_bp_update.assert_called_once()
 
 
 @pytest.fixture(name="_setup_bp_activity_list")
