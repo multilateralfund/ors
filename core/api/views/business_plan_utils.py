@@ -3,7 +3,6 @@ import os
 import numpy as np
 import pandas as pd
 import traceback
-from constance import config
 from django.core.exceptions import ValidationError
 from django.db.models import F
 from drf_yasg import openapi
@@ -23,7 +22,6 @@ from core.models import (
     ProjectType,
     Substance,
 )
-from core.tasks import send_mail_bp_create, send_mail_bp_update
 
 # pylint: disable=E1101, R0913, R0914, R0915, W0718
 logger = logging.getLogger(__name__)
@@ -419,9 +417,6 @@ class BusinessPlanUtils:
 
         self.create_history(instance, "Created by user")
 
-        if config.SEND_MAIL:
-            send_mail_bp_create.delay(instance.id)  # send mail to MLFS
-
         return status.HTTP_201_CREATED, serializer.data
 
     def update_bp(self, data, current_obj):
@@ -454,16 +449,11 @@ class BusinessPlanUtils:
         new_instance.updated_by = self.request.user
         new_instance.created_at = current_obj.created_at
         new_instance.created_by = current_obj.created_by
-        new_instance.meeting = current_obj.meeting
-        new_instance.decision = current_obj.decision
         new_instance.save()
         current_obj.delete()
 
         # create new history for update event
         self.create_history(new_instance, "Updated by user")
-
-        if config.SEND_MAIL:
-            send_mail_bp_update.delay(new_instance.id)  # send mail to MLFS
 
         return status.HTTP_200_OK, serializer.data
 

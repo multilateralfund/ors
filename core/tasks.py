@@ -5,7 +5,6 @@ from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 
 from core.forms import CountryUserPasswordResetForm
-from core.models.business_plan import BusinessPlan
 from core.models.country_programme import CPComment, CPReport
 from multilateralfund.celery import app
 
@@ -77,54 +76,6 @@ def send_mail_report_update(cp_report_id):
             f"version ({cp_report.version}) has been added for the CP report "
             f"for country: {cp_report.country} and year: {cp_report.year}.\n\n"
             f"The CP report is available at {link}"
-        ),
-        None,  # use DEFAULT_FROM_EMAIL
-        recipients.values_list("email", flat=True),
-        fail_silently=False,
-    )
-
-
-# Business Plan
-@app.task()
-def send_mail_bp_create(business_plan_id):
-    business_plan = get_object_or_404(BusinessPlan, id=business_plan_id)
-    link = (
-        f"{settings.FRONTEND_HOST[0]}/business-plans/{business_plan.agency.name}/"
-        f"{business_plan.year_start}/{business_plan.year_end}"
-    )
-    recipients = User.objects.filter(user_type=User.UserType.SECRETARIAT)
-
-    send_mail(
-        "MLF Knowledge Management System: Business Plan added",
-        (
-            f"This is an automated message informing you that a new "
-            f"Business Plan has been added for agency: {business_plan.agency} "
-            f"and years: {business_plan.year_start} - {business_plan.year_end}.\n\n"
-            f"The Business Plan is available at {link}"
-        ),
-        None,  # use DEFAULT_FROM_EMAIL
-        recipients.values_list("email", flat=True),
-        fail_silently=False,
-    )
-
-
-@app.task()
-def send_mail_bp_update(business_plan_id):
-    business_plan = get_object_or_404(BusinessPlan, id=business_plan_id)
-    link = (
-        f"{settings.FRONTEND_HOST[0]}/business-plans/{business_plan.agency.name}/"
-        f"{business_plan.year_start}/{business_plan.year_end}"
-    )
-    recipients = User.objects.filter(user_type=User.UserType.SECRETARIAT)
-
-    send_mail(
-        "MLF Knowledge Management System: New version of Business Plan added",
-        (
-            f"This is an automated message informing you that a new "
-            f"version ({business_plan.version}) has been added for the Business Plan "
-            f"for agency: {business_plan.agency} and years: "
-            f"{business_plan.year_start} - {business_plan.year_end}.\n\n"
-            f"The Business Plan is available at {link}"
         ),
         None,  # use DEFAULT_FROM_EMAIL
         recipients.values_list("email", flat=True),
