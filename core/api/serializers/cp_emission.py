@@ -49,6 +49,7 @@ class AllCPEmissionSerializer(serializers.ModelSerializer):
     region = serializers.SerializerMethodField()
     substance_name = serializers.SerializerMethodField()
     substance_id = serializers.SerializerMethodField()
+    object_type = serializers.SerializerMethodField()
 
     ATTRIBUTE_NAMES_MAPPING = {
         "total": "Total amount generated",
@@ -72,9 +73,12 @@ class AllCPEmissionSerializer(serializers.ModelSerializer):
             "substance_name",
             "substance_id",
             "facility_name",
-            "remarks",
+            "object_type",
             "data",
         ]
+
+    def get_object_type(self, _obj):
+        return "emission"
 
     def get_substance_name(self, _obj):
         return self.context["substance_name"]
