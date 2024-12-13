@@ -1,11 +1,14 @@
-import { find, indexOf } from 'lodash'
+import { find, indexOf, map } from 'lodash'
 
 import Field from '@ors/components/manage/Form/Field'
 import SimpleSelect from '@ors/components/ui/SimpleSelect/SimpleSelect'
 
 import { PeriodSelectorOption } from '../../Replenishment/types'
 import { bpTypes } from '../constants'
-import { Label, getFormattedPeridOptions } from './helpers'
+import { Label } from './helpers'
+import { getCurrentPeriodOption } from '../utils'
+import cx from 'classnames'
+import { useEffect } from 'react'
 
 interface IStatus {
   label: string
@@ -16,21 +19,51 @@ interface IBPMainFilters {
   filters?: any
   periodOptions: PeriodSelectorOption[]
   setFilters: any
-  isFirstUploadStep?: boolean
+  isFirstStepUpload?: boolean
 }
 
 const BPMainFilters = ({
   filters,
   periodOptions,
   setFilters,
-  isFirstUploadStep = false,
+  isFirstStepUpload,
 }: IBPMainFilters) => {
-  const formattedPeriodOptions = getFormattedPeridOptions(periodOptions)
-  const currentPeriod = find(
-    formattedPeriodOptions,
-    ({ year_start }) => year_start === parseInt(filters?.year_start),
+  const step1PeriodOptions = map(periodOptions, (period) => {
+    const nrBps = period.status?.length
+
+    return {
+      ...period,
+      label:
+        period.label + ` (${nrBps} ${nrBps === 1 ? 'bp' : 'bps'} available)`,
+    }
+  })
+  const step2PeriodOptions = map(periodOptions, (period) => ({
+    ...period,
+    disabled: period.status?.length === 0,
+  }))
+
+  const currentPeriod = getCurrentPeriodOption(
+    periodOptions,
+    filters?.year_start,
   )
-  const currentPeriodIndex = indexOf(formattedPeriodOptions, currentPeriod)
+  const currentPeriodIndex = indexOf(periodOptions, currentPeriod)
+  const formattedBpTypes = map(bpTypes, (bpType) => ({
+    ...bpType,
+    disabled: !currentPeriod?.status.includes(bpType.label),
+  }))
+
+  useEffect(() => {
+    if (
+      filters?.bp_status &&
+      !currentPeriod?.status.includes(filters?.bp_status)
+    ) {
+      const availableBpType = find(
+        currentPeriod?.status,
+        (status) => status !== filters.bp_status,
+      )
+      setFilters((filters: any) => ({ ...filters, bp_status: availableBpType }))
+    }
+  }, [currentPeriod])
 
   const handleChangeTriennium = (triennium: PeriodSelectorOption) => {
     setFilters((prevFilters: any) => {
@@ -48,25 +81,31 @@ const BPMainFilters = ({
 
   return (
     <>
-      <div className="w-36 justify-items-start">
+      <div
+        className={cx('w-36 justify-items-start', {
+          'w-64': isFirstStepUpload,
+        })}
+      >
         <Label isRequired>Triennium</Label>
         <SimpleSelect
           className="!gap-x-0"
-          initialIndex={filters ? currentPeriodIndex : 1}
+          initialIndex={filters ? Math.max(currentPeriodIndex, 0) : 0}
           inputClassName="gap-x-4 h-10"
           label={''}
-          options={formattedPeriodOptions}
+          options={isFirstStepUpload ? step1PeriodOptions : step2PeriodOptions}
           onChange={handleChangeTriennium}
+          withDisabledOptions
         />
       </div>
       <div>
         <Label isRequired>Status</Label>
         <Field
           FieldProps={{ className: 'mb-0 w-40 BPListUpload' }}
-          options={bpTypes}
+          options={isFirstStepUpload ? bpTypes : formattedBpTypes}
           value={filters?.bp_status}
           widget="autocomplete"
           onChange={(_: any, value: any) => handleChangeStatus(value)}
+          withDisabledOptions
         />
       </div>
     </>

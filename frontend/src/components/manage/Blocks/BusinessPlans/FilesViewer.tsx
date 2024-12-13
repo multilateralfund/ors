@@ -11,7 +11,11 @@ import { IoDocumentTextOutline, IoTrash } from 'react-icons/io5'
 export function FilesViewer(props: BpDetails) {
   const { bpFiles, files, setFiles } = props
 
-  const [currentFiles, setCurrentFiles] = useState(bpFiles || [])
+  const currentBpFiles = filter(
+    bpFiles,
+    (file) => !files?.deletedFilesIds?.includes(file.id),
+  )
+  const [currentFiles, setCurrentFiles] = useState(currentBpFiles || [])
 
   if (!bpFiles) {
     return null

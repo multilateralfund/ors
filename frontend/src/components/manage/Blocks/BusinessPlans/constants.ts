@@ -12,7 +12,6 @@ export const tableColumns: { [key: string]: string } = {
   is_multi_year: 'IND/MYA',
   project_cluster_id: 'Cluster',
   project_type_id: 'Type',
-  reason_for_exceeding: 'Reason for Exceeding',
   remarks: 'Remarks',
   remarks_additional: 'Remarks (Additional)',
   required_by_model: 'Required by model',

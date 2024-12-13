@@ -9,6 +9,7 @@ import { PeriodSelectorOption } from '../../Replenishment/types'
 import { INavigationButton } from '../types'
 import BPMainFilters from './BPMainFilters'
 import { NavigationButton } from './NavigationButton'
+import { getMeetingNr } from '../utils'
 
 interface IBPExport {
   downloadFilters: any
@@ -32,12 +33,15 @@ const BPExport = ({
       <p className="m-0 text-2xl">Download Business Plan</p>
       <div className="flex flex-wrap gap-x-4 gap-y-3">
         <BPMainFilters
+          key={downloadFilters?.year_start}
           {...{ periodOptions }}
           filters={downloadFilters}
           setFilters={setDownloadFilters}
         />
       </div>
-      <p className="mb-0 mt-1 text-xl">Meeting: {filters.meeting}</p>
+      <p className="mb-0 mt-1 text-xl">
+        Meeting number: {getMeetingNr(filters.meeting)}
+      </p>
       <div className="flex items-center gap-2.5">
         <Link
           className={cx(

@@ -94,4 +94,10 @@ export interface INavigationButton {
   setCurrentStep: Dispatch<SetStateAction<number>>
 }
 
+export interface IDecision {
+  label: string
+  value: string
+  meeting: number
+}
+
 export type ViewSelectorValuesType = 'list' | 'table'

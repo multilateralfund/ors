@@ -8,6 +8,7 @@ import { IoChevronDownCircle } from 'react-icons/io5'
 
 interface ISimpleSelectOption {
   label: string
+  disabled?: boolean
 }
 
 export interface SimpleSelectProps<
@@ -20,6 +21,8 @@ export interface SimpleSelectProps<
   label: string
   onChange: (option: T, index: number) => void
   options: T[]
+  withDisabledOptions?: boolean
+  placeholder?: string
 }
 
 const SimpleSelect = <T extends ISimpleSelectOption = ISimpleSelectOption>(
@@ -33,6 +36,8 @@ const SimpleSelect = <T extends ISimpleSelectOption = ISimpleSelectOption>(
     onChange,
     options,
     menuClassName,
+    withDisabledOptions,
+    placeholder,
   } = props
   const [selectedIndex, setSelectedIndex] = useState(initialIndex)
   const [showMenu, setShowMenu] = useState(false)
@@ -74,7 +79,7 @@ const SimpleSelect = <T extends ISimpleSelectOption = ISimpleSelectOption>(
           ref={ref}
           onClick={toggleShowMenu}
         >
-          <div>{options[selectedIndex]?.label}</div>
+          <div>{options[selectedIndex]?.label || placeholder}</div>
           <IoChevronDownCircle className="text-xl" />
         </output>
         <menu
@@ -96,6 +101,8 @@ const SimpleSelect = <T extends ISimpleSelectOption = ISimpleSelectOption>(
                   {
                     'bg-mlfs-hlYellowTint': index == selectedIndex,
                     'hover:bg-gray-200': index != selectedIndex,
+                    'pointer-events-none opacity-40':
+                      option.disabled && withDisabledOptions,
                   },
                 )}
                 onClick={handleClickOption(index)}

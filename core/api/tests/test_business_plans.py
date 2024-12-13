@@ -1,7 +1,8 @@
+from datetime import datetime
+
 import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
-from unittest.mock import patch
 
 from core.api.tests.base import BaseTest
 from core.api.tests.factories import (
@@ -15,28 +16,11 @@ from core.api.tests.factories import (
     ProjectSubSectorFactory,
     ProjectTypeFactory,
     SubstanceFactory,
-    UserFactory,
 )
+from core.models.business_plan import BusinessPlan
 
 pytestmark = pytest.mark.django_db
-# pylint: disable=C8008, W0221, R0913, C0302, R0914, R0915
-
-
-@pytest.fixture(name="new_agency_user")
-def _new_agency_user(new_agency):
-    return UserFactory.create(agency=new_agency, user_type="agency_submitter")
-
-
-@pytest.fixture(name="mock_send_mail_bp_create")
-def _mock_send_mail_bp_create():
-    with patch("core.tasks.send_mail_bp_create.delay") as send_mail:
-        yield send_mail
-
-
-@pytest.fixture(name="mock_send_mail_bp_update")
-def _mock_send_mail_bp_update():
-    with patch("core.tasks.send_mail_bp_update.delay") as send_mail:
-        yield send_mail
+# pylint: disable=C8008, W0221, W0613, R0913, C0302, R0914, R0915
 
 
 class TestBPChemicalTypeList(BaseTest):
@@ -75,11 +59,12 @@ class TestBPChemicalTypeList(BaseTest):
 
 @pytest.fixture(name="_setup_bp_list")
 def setup_bp_list():
-    for i in range(3):
+    start_year = datetime.now().year - 2
+    for year in range(start_year, start_year + 3):
         for status in ["Submitted", "Endorsed"]:
             data = {
-                "year_start": 2020 + i,
-                "year_end": 2022 + i,
+                "year_start": year,
+                "year_end": year + 2,
                 "status": status,
             }
             BusinessPlanFactory.create(**data)
@@ -109,153 +94,230 @@ class TestBPList(BaseTest):
 
     def test_list_year_filter(self, user, _setup_bp_list):
         self.client.force_authenticate(user=user)
-
-        response = self.client.get(self.url, {"year_start": 2021})
+        current_year = datetime.now().year
+        response = self.client.get(self.url, {"year_start": current_year})
         assert response.status_code == 200
         assert len(response.json()) == 2
-        assert all(bp["year_start"] == 2021 for bp in response.json())
+        assert all(bp["year_start"] == current_year for bp in response.json())
 
-        response = self.client.get(self.url, {"year_end": 2023})
+        response = self.client.get(self.url, {"year_end": current_year + 2})
         assert response.status_code == 200
         assert len(response.json()) == 2
-        assert all(bp["year_end"] == 2023 for bp in response.json())
+        assert all(bp["year_end"] == current_year + 2 for bp in response.json())
 
 
-@pytest.fixture(name="_setup_new_business_plan_create")
-def setup_new_business_plan_create():
-    return {
-        "name": "Test BP",
-        "year_start": 2020,
-        "year_end": 2023,
-        "status": "Endorsed",
-    }
+class TestBPYearList(BaseTest):
+    url = reverse("businessplan-get-years")
 
-
-class TestBPCreate:
-    client = APIClient()
-    url = reverse("businessplan-list")
-
-    def test_without_login(
-        self, _setup_bp_activity_create, _setup_new_business_plan_create
-    ):
-        data = _setup_new_business_plan_create
-        data["activities"] = [_setup_bp_activity_create]
-        response = self.client.post(self.url, data, format="json")
+    def test_list_anon(self):
+        response = self.client.get(self.url)
         assert response.status_code == 403
 
-    def test_wrong_sector_type_mapping(
-        self, agency_user, _setup_bp_activity_create, _setup_new_business_plan_create
+    def test_list(self, user, _setup_bp_list):
+        self.client.force_authenticate(user=user)
+
+        current_year = datetime.now().year
+
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.json()) == (current_year - 2013) + 1
+        assert response.json()[1] == {
+            "year_start": current_year,
+            "year_end": current_year + 2,
+            "status": ["Endorsed", "Submitted"],
+        }
+
+
+class TestBPImportValidate:
+    client = APIClient()
+    year_start = 2025
+    params = f"?year_start={year_start}"
+    url = reverse("bp-upload-validate") + params
+
+    def test_without_login(self):
+        response = self.client.post(self.url, {}, format="multipart")
+        assert response.status_code == 403
+
+    def test_bp_import_validate_invalid_template(
+        self, user, subsector_other, _setup_bp_activity_create
     ):
-        self.client.force_authenticate(user=agency_user)
+        self.client.force_authenticate(user=user)
+        file_path = "core/api/tests/files/Test_BP2025-2027_invalid_template.xlsx"
 
-        data = _setup_new_business_plan_create
-        activity_data = _setup_bp_activity_create
-        activity_data["sector_code"] = "TAS"
-        data["activities"] = [activity_data]
+        with open(file_path, "rb") as f:
+            data = {"Test_BP2025-2027.xlsx": f}
+            response = self.client.post(self.url, data, format="multipart")
 
-        response = self.client.post(self.url, data, format="json")
         assert response.status_code == 400
+        assert len(response.data["errors"]) == 1
         assert (
-            response.data["activities"][0]["non_field_errors"][0]
-            == "Invalid sector - type combination"
+            "The file you uploaded does not respect the required Excel template"
+            in response.data["errors"][0]["error_message"]
         )
 
-    def test_create_wrong_activity_values(
-        self, agency_user, _setup_bp_activity_create, _setup_new_business_plan_create
+    def test_bp_import_validate_multiple_errors(
+        self, user, subsector_other, _setup_bp_activity_create
     ):
-        self.client.force_authenticate(user=agency_user)
+        self.client.force_authenticate(user=user)
+        file_path = "core/api/tests/files/Test_BP2025-2027_multiple_errors.xlsx"
 
-        # year not in business plan interval
-        data = _setup_new_business_plan_create
-        activity_data = _setup_bp_activity_create
-        activity_data["values"] = [
-            {
-                "year": 2025,  # wrong year
-                "is_after": False,
-                "value_usd": 100,
-                "value_odp": 100,
-                "value_mt": 100,
-            }
-        ]
-        data["activities"] = [activity_data]
-        response = self.client.post(self.url, data, format="json")
+        with open(file_path, "rb") as f:
+            data = {"Test_BP2025-2027.xlsx": f}
+            response = self.client.post(self.url, data, format="multipart")
 
-        assert response.status_code == 400
+        assert response.status_code == 200
+        assert len(response.data["warnings"]) == 0
+        assert len(response.data["errors"]) == 3
         assert (
-            response.data["general_error"]
-            == "BP activity values year not in business plan interval"
+            "Agency 'NoAgency' does not exist"
+            in response.data["errors"][0]["error_message"]
+        )
+        assert (
+            "Country 'NoCountry' does not exist"
+            in response.data["errors"][1]["error_message"]
+        )
+        assert (
+            "Project status '' does not exist"
+            in response.data["errors"][2]["error_message"]
         )
 
-        # multiple values with `is_after=true`
-        activity_data["values"] = [
-            {
-                "year": 2020,
-                "is_after": True,
-                "value_usd": 100,
-                "value_odp": 100,
-                "value_mt": 100,
-            },
-            {
-                "year": 2021,
-                "is_after": True,
-                "value_usd": 200,
-                "value_odp": 200,
-                "value_mt": 200,
-            },
-        ]
-        data["activities"] = [activity_data]
-        response = self.client.post(self.url, data, format="json")
+    def test_bp_import_validate_multiple_warnings(
+        self, user, subsector_other, _setup_bp_activity_create
+    ):
+        self.client.force_authenticate(user=user)
+        file_path = "core/api/tests/files/Test_BP2025-2027_multiple_warnings.xlsx"
 
-        assert response.status_code == 400
+        ProjectClusterFactory(name="Other", code="OTH")
+        ProjectSectorFactory(name="Other", code="OTH")
+        SubstanceFactory(name="Other substances")
+
+        with open(file_path, "rb") as f:
+            data = {"Test_BP2025-2027.xlsx": f}
+            response = self.client.post(self.url, data, format="multipart")
+
+        assert response.status_code == 200
+        assert len(response.data["warnings"]) == 5
+        assert len(response.data["errors"]) == 0
         assert (
-            response.data["activities"][0]["values"][0]
-            == "Multiple values with is_after=true found"
+            "Cluster 'NoCluster' does not exist"
+            in response.data["warnings"][0]["warning_message"]
+        )
+        assert (
+            "Sector 'NoSector' does not exist"
+            in response.data["warnings"][1]["warning_message"]
+        )
+        assert (
+            "Some substances do not exist"
+            in response.data["warnings"][2]["warning_message"]
+        )
+        assert (
+            "Country Status 'Other' does not exist"
+            in response.data["warnings"][3]["warning_message"]
+        )
+        assert (
+            "Value odp for year 2025 (After: False) is not a number"
+            in response.data["warnings"][4]["warning_message"]
         )
 
-    def test_bp_create(
+    def test_bp_import_validate(self, user, subsector_other, _setup_bp_activity_create):
+        self.client.force_authenticate(user=user)
+        file_path = "core/api/tests/files/Test_BP2025-2027.xlsx"
+
+        with open(file_path, "rb") as f:
+            data = {"Test_BP2025-2027.xlsx": f}
+            response = self.client.post(self.url, data, format="multipart")
+
+        assert response.status_code == 200
+        assert len(response.data["warnings"]) == 2
+        assert len(response.data["errors"]) == 0
+        assert response.data["activities_number"] == 1
+        assert response.data["agencies_number"] == 1
+        assert response.data["errors"] == []
+        assert response.data["warnings"][0]["activity_id"] == "Agency-ROU-000000001"
+        assert response.data["warnings"][0]["row_number"] == 2
+        assert (
+            "Subsector 'Not found' does not exist"
+            in response.data["warnings"][0]["warning_message"]
+        )
+        assert (
+            "Amount of Polyol is not a number"
+            in response.data["warnings"][1]["warning_message"]
+        )
+
+
+class TestBPImport:
+    client = APIClient()
+    file_path = "core/api/tests/files/Test_BP2025-2027.xlsx"
+    status = "Endorsed"
+    year_start = 2025
+    year_end = 2027
+    params = f"?status={status}&year_start={year_start}&year_end={year_end}"
+    url = reverse("bp-upload") + params
+
+    def test_without_login(self):
+        response = self.client.post(self.url, {}, format="multipart")
+        assert response.status_code == 403
+
+    def test_bp_import(
         self,
-        agency_user,
+        user,
+        meeting,
+        decision,
         agency,
         country_ro,
-        substance,
-        sector,
-        subsector,
         project_type,
         bp_chemical_type,
+        substance,
+        sector,
+        subsector_other,
         _setup_bp_activity_create,
-        _setup_new_business_plan_create,
-        mock_send_mail_bp_create,
     ):
-        self.client.force_authenticate(user=agency_user)
+        self.client.force_authenticate(user=user)
+        url = f"{self.url}&meeting_id={meeting.id}&decision_id={decision.id}"
 
-        data = _setup_new_business_plan_create
-        activity_data = _setup_bp_activity_create
-        data["activities"] = [activity_data]
+        with open(self.file_path, "rb") as f:
+            data = {"Test_BP2025-2027.xlsx": f}
+            response = self.client.post(url, data, format="multipart")
 
-        response = self.client.post(self.url, data, format="json")
-        assert response.status_code == 201
-        assert response.data["name"] == "Test BP"
-        assert response.data["status"] == "Endorsed"
-        assert response.data["year_start"] == 2020
-        assert response.data["year_end"] == 2023
+        assert response.status_code == 200
+        assert response.data == "Data imported successfully"
 
-        activities = response.data["activities"]
-        assert activities[0]["business_plan_id"] == response.data["id"]
-        assert activities[0]["title"] == "Planu"
-        assert activities[0]["agency_id"] == agency.id
-        assert activities[0]["country_id"] == country_ro.id
-        assert activities[0]["lvc_status"] == "LVC"
-        assert activities[0]["project_type_id"] == project_type.id
-        assert activities[0]["bp_chemical_type_id"] == bp_chemical_type.id
-        assert activities[0]["substances"] == [substance.id]
-        assert activities[0]["sector_id"] == sector.id
-        assert activities[0]["subsector_id"] == subsector.id
-        assert activities[0]["status"] == "A"
-        assert activities[0]["is_multi_year"] is False
-        assert activities[0]["remarks"] == "Merge bine, bine, bine ca aeroplanu"
-        assert activities[0]["values"][0]["year"] == 2020
+        business_plan = BusinessPlan.objects.get(
+            status=self.status,
+            year_start=self.year_start,
+            year_end=self.year_end,
+            meeting=meeting,
+            decision=decision,
+        )
+        activity = business_plan.activities.first()
+        assert activity.title == "Planu"
+        assert activity.agency == agency
+        assert activity.country == country_ro
+        assert activity.lvc_status == "LVC"
+        assert activity.project_type == project_type
+        assert activity.bp_chemical_type == bp_chemical_type
+        assert activity.substances.first() == substance
+        assert activity.sector == sector
+        assert activity.subsector == subsector_other
+        assert activity.amount_polyol == 0
+        assert activity.status == "A"
+        assert activity.is_multi_year is False
+        assert activity.remarks == "Merge bine, bine, bine ca aeroplanu"
+        for index, value in enumerate(activity.values.all()):
+            amount = 100 * (index + 1)
+            if index == 3:
+                year = self.year_start + 2
+                is_after = True
+            else:
+                year = self.year_start + index
+                is_after = False
 
-        mock_send_mail_bp_create.assert_called_once()
+            assert value.year == year
+            assert value.is_after == is_after
+            assert value.value_usd == amount
+            assert value.value_odp == amount
+            assert value.value_mt == amount
+            assert value.value_co2 == amount
 
 
 class TestBPUpdate:
@@ -272,32 +334,10 @@ class TestBPUpdate:
         response = self.client.put(url, data, format="json")
         assert response.status_code == 403
 
-    def test_wrong_sector_type_mapping(
-        self, agency_user, _setup_bp_activity_create, business_plan
-    ):
-        self.client.force_authenticate(user=agency_user)
-        url = reverse("businessplan-list") + f"{business_plan.id}/"
-
-        activity_data = _setup_bp_activity_create
-        activity_data["sector_code"] = "TAS"
-        data = {
-            "year_start": business_plan.year_start,
-            "year_end": business_plan.year_end,
-            "status": business_plan.status,
-            "activities": [activity_data],
-        }
-
-        response = self.client.put(url, data, format="json")
-        assert response.status_code == 400
-        assert (
-            response.data["activities"][0]["non_field_errors"][0]
-            == "Invalid sector - type combination"
-        )
-
     def test_update_wrong_activity_values(
-        self, agency_user, _setup_bp_activity_create, business_plan
+        self, user, _setup_bp_activity_create, business_plan
     ):
-        self.client.force_authenticate(user=agency_user)
+        self.client.force_authenticate(user=user)
         url = reverse("businessplan-list") + f"{business_plan.id}/"
 
         # year not in business plan interval
@@ -353,13 +393,12 @@ class TestBPUpdate:
 
     def test_bp_update(
         self,
-        agency_user,
+        user,
         _setup_bp_activity_create,
         business_plan,
         substance,
-        mock_send_mail_bp_update,
     ):
-        self.client.force_authenticate(user=agency_user)
+        self.client.force_authenticate(user=user)
 
         url = reverse("businessplan-list") + f"{business_plan.id}/"
         other_business_plan = BusinessPlanFactory()
@@ -401,8 +440,6 @@ class TestBPUpdate:
         assert activities[0]["is_multi_year"] is True
         assert activities[0]["remarks"] == "Merge rau"
         assert activities[0]["values"][0]["year"] == business_plan.year_end
-
-        mock_send_mail_bp_update.assert_called_once()
 
 
 @pytest.fixture(name="_setup_bp_activity_list")
@@ -507,9 +544,9 @@ class TestBPActivityList:
         assert len(response.json()) == 8
 
     def test_country_filter(
-        self, agency_user, business_plan, country_ro, _setup_bp_activity_list
+        self, user, business_plan, country_ro, _setup_bp_activity_list
     ):
-        self.client.force_authenticate(user=agency_user)
+        self.client.force_authenticate(user=user)
 
         response = self.client.get(
             self.url,
@@ -538,8 +575,8 @@ class TestBPActivityList:
         )
         assert response.status_code == 400
 
-    def test_status_filter(self, agency_user, business_plan, _setup_bp_activity_list):
-        self.client.force_authenticate(user=agency_user)
+    def test_status_filter(self, user, business_plan, _setup_bp_activity_list):
+        self.client.force_authenticate(user=user)
 
         response = self.client.get(
             self.url,
@@ -566,8 +603,8 @@ class TestBPActivityList:
         assert response.status_code == 200
         assert len(response.json()) == 0
 
-    def test_search_filter(self, agency_user, business_plan, _setup_bp_activity_list):
-        self.client.force_authenticate(user=agency_user)
+    def test_search_filter(self, user, business_plan, _setup_bp_activity_list):
+        self.client.force_authenticate(user=user)
 
         response = self.client.get(
             self.url,
@@ -625,22 +662,6 @@ class TestBPActivityList:
         )
         assert response.status_code == 400
 
-    def test_all_for_new_user(
-        self, new_agency_user, business_plan, _setup_bp_activity_list
-    ):
-        self.client.force_authenticate(user=new_agency_user)
-
-        response = self.client.get(
-            self.url,
-            {
-                "year_start": business_plan.year_start,
-                "year_end": business_plan.year_end,
-                "bp_status": business_plan.status,
-            },
-        )
-        assert response.status_code == 200
-        assert len(response.json()) == 0
-
 
 class TestBPGet:
     client = APIClient()
@@ -649,13 +670,6 @@ class TestBPGet:
     def test_list_anon(self, business_plan):
         response = self.client.get(self.url, {"business_plan_id": business_plan.id})
         assert response.status_code == 403
-
-    def test_without_permission(self, new_agency_user, business_plan):
-        self.client.force_authenticate(user=new_agency_user)
-
-        response = self.client.get(self.url, {"business_plan_id": business_plan.id})
-        assert response.status_code == 200
-        assert len(response.json()["activities"]) == 0
 
     def test_activity_list(self, user, _setup_bp_activity_list, business_plan):
         self.client.force_authenticate(user=user)

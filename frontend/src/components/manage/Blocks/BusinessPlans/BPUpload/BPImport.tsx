@@ -2,15 +2,14 @@ import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
 import { Button, Alert } from '@mui/material'
 import cx from 'classnames'
-import { omit } from 'lodash'
 
 import { uploadFiles } from '@ors/helpers'
 
-import { useBPListApi } from '../BPList/BPList'
 import { NavigationButton } from './NavigationButton'
 
 import { BiTrash } from 'react-icons/bi'
 import { FiFileText } from 'react-icons/fi'
+import { getCurrentPeriodOption } from '../utils'
 
 interface IBPImport {
   file: FileList | null
@@ -18,6 +17,7 @@ interface IBPImport {
   setCurrentStep: Dispatch<SetStateAction<number>>
   setFile: Dispatch<SetStateAction<FileList | null>>
   setValidations: Dispatch<SetStateAction<any>>
+  periodOptions: any[]
 }
 
 const BPImport = ({
@@ -26,8 +26,12 @@ const BPImport = ({
   setCurrentStep,
   setFile,
   setValidations,
+  periodOptions,
 }: IBPImport) => {
-  const { results } = useBPListApi(omit(filters, 'meeting', 'decision'))
+  const currentPeriod = getCurrentPeriodOption(
+    periodOptions,
+    filters?.year_start,
+  )
   const { bp_status, decision, meeting, year_end, year_start } = filters
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -38,10 +42,10 @@ const BPImport = ({
 
   const validateBP = async () => {
     try {
-      const baseUrl = `api/business-plan/upload/validate/?year_start=${year_start}&year_end=${year_end}&status=${bp_status}&meeting_number=${meeting}`
+      const baseUrl = `api/business-plan/upload/validate/?year_start=${year_start}&year_end=${year_end}&status=${bp_status}&meeting_id=${meeting}`
 
       const formattedUrl = decision
-        ? baseUrl + `&decision_number=${decision}`
+        ? baseUrl + `&decision_id=${decision}`
         : baseUrl
 
       if (file) {
@@ -85,11 +89,11 @@ const BPImport = ({
               />
               <a
                 className="m-0 flex items-center gap-2 no-underline"
-                download={file[0].name}
+                download={file[0]?.name}
                 href={URL.createObjectURL(file[0])}
               >
                 <p className="mb-0 mt-0.5 text-xl text-primary">
-                  {file[0].name}
+                  {file[0]?.name}
                 </p>
               </a>
               <BiTrash
@@ -101,7 +105,7 @@ const BPImport = ({
           </div>
         )}
       </div>
-      {file && results.length > 0 && (
+      {file && currentPeriod?.status.includes(filters?.bp_status) && (
         <Alert className="BPAlert mt-2 w-fit border-0" severity="warning">
           <p className="m-0 text-lg">
             You are about to overwrite the existing data from this Business

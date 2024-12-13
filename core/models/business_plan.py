@@ -116,15 +116,17 @@ class BPActivity(models.Model):
     required_by_model = models.CharField(max_length=255, null=True, blank=True)
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
     agency = models.ForeignKey(Agency, on_delete=models.CASCADE, null=True, blank=True)
-    lvc_status = models.CharField(max_length=32, choices=LVCStatus.choices)
+    lvc_status = models.CharField(max_length=32, choices=LVCStatus.choices, blank=True)
     project_cluster = models.ForeignKey(
         ProjectCluster, on_delete=models.CASCADE, null=True, blank=True
     )
-    project_type = models.ForeignKey(ProjectType, on_delete=models.CASCADE)
+    project_type = models.ForeignKey(
+        ProjectType, on_delete=models.CASCADE, null=True, blank=True
+    )
     legacy_project_type = models.CharField(max_length=255, null=True, blank=True)
     bp_chemical_type = models.ForeignKey(
-        BPChemicalType, on_delete=models.CASCADE
-    )  # cluster
+        BPChemicalType, on_delete=models.CASCADE, null=True, blank=True
+    )
     substances = models.ManyToManyField(Substance)
     amount_polyol = models.DecimalField(
         max_digits=25, decimal_places=15, null=True, blank=True

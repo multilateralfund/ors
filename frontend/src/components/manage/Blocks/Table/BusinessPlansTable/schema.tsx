@@ -1,3 +1,4 @@
+import { formatDecimalValue } from '@ors/helpers'
 import {
   cellValueGetter,
   commentsDiffCellRenderer,
@@ -9,6 +10,7 @@ import {
   tagsCellRenderer,
   textCellRenderer,
 } from './schemaHelpers'
+import { ITooltipParams } from 'ag-grid-community'
 
 const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
   {
@@ -150,21 +152,6 @@ const getAdditionalRemarksColumn = {
 const getCommentsColumnsDefs = (isDiff: boolean) => [
   {
     cellClass: 'ag-cell-ellipsed',
-    field: 'reason_for_exceeding',
-    headerClass: 'ag-text-center',
-    headerName: 'Reason for Exceeding',
-    minWidth: 200,
-    sortable: !isDiff,
-    ...(isDiff
-      ? {
-          cellRenderer: textCellRenderer,
-          valueGetter: (params: any) =>
-            cellValueGetter(params, 'reason_for_exceeding'),
-        }
-      : { tooltipField: 'reason_for_exceeding' }),
-  },
-  {
-    cellClass: 'ag-cell-ellipsed',
     headerClass: 'ag-text-center',
     headerName: 'Remarks',
     minWidth: 200,
@@ -249,7 +236,9 @@ const odpColumnDefs = (
   ...getDefaultColumnDefs(isDiff, withAgency),
   ...(yearColumns.filter(
     (column: { headerName: string }) =>
-      column.headerName === 'ODP' || column.headerName === 'MT for HFC',
+      column.headerName === 'ODP' ||
+      column.headerName === 'MT for HFC' ||
+      column.headerName === 'CO2-EQ',
   ) || []),
 ]
 
@@ -311,7 +300,20 @@ const allColumnDefs = (
       : {
           valueGetter: (params: any) => {
             const polyolAmount = params.data.amount_polyol
-            return polyolAmount ? parseFloat(polyolAmount).toFixed(2) : null
+
+            return polyolAmount
+              ? formatDecimalValue(parseFloat(polyolAmount))
+              : null
+          },
+          tooltipValueGetter: (params: ITooltipParams) => {
+            const polyolAmount = params.data.amount_polyol
+
+            return polyolAmount
+              ? formatDecimalValue(parseFloat(polyolAmount), {
+                  maximumFractionDigits: 10,
+                  minimumFractionDigits: 2,
+                })
+              : null
           },
         }),
   },

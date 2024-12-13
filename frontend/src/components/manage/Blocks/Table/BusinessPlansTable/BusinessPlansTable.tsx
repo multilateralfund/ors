@@ -18,11 +18,12 @@ import ViewTable from '@ors/components/manage/Form/ViewTable'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import BPContext from '@ors/contexts/BusinessPlans/BPContext'
 import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
-import { getResults } from '@ors/helpers'
+import { formatDecimalValue, getResults } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
 import Activities from '../../BusinessPlans/Activities'
 import BPFilters from './BPFilters'
+import { ITooltipParams } from 'ag-grid-community'
 
 const BP_PER_PAGE = 20
 
@@ -44,6 +45,30 @@ export const BPTable = ({
     [yearRanges, filters.year_start],
   )
 
+  const valueGetter = (
+    params: any,
+    year: number,
+    isAfterMaxYear: boolean,
+    field: string,
+    isTooltip?: boolean,
+  ) => {
+    const value = params.data.values.find((value: any) =>
+      getYearColsValue(value, year, isAfterMaxYear),
+    )
+    if (value && value[field] !== null) {
+      return formatDecimalValue(
+        parseFloat(value[field]),
+        isTooltip
+          ? {
+              maximumFractionDigits: 10,
+              minimumFractionDigits: 2,
+            }
+          : undefined,
+      )
+    }
+    return ''
+  }
+
   const getYearColsValue = (
     value: any,
     year: number,
@@ -57,6 +82,7 @@ export const BPTable = ({
     const valuesUSD = []
     const valuesODP = []
     const valuesMT = []
+    const valuesCO2 = []
 
     for (
       let year = yearRangeSelected.year_start;
@@ -77,15 +103,10 @@ export const BPTable = ({
         headerClass: 'ag-text-center',
         headerName: `${label}`,
         minWidth: 80,
-        valueGetter: (params: any) => {
-          const value = params.data.values.find((value: any) =>
-            getYearColsValue(value, year, isAfterMaxYear),
-          )
-          if (value && value.value_usd !== null) {
-            return parseFloat(value.value_usd).toFixed(2)
-          }
-          return ''
-        },
+        valueGetter: (params: any) =>
+          valueGetter(params, year, isAfterMaxYear, 'value_usd'),
+        tooltipValueGetter: (params: ITooltipParams) =>
+          valueGetter(params, year, isAfterMaxYear, 'value_usd', true),
       })
 
       valuesODP.push({
@@ -95,15 +116,10 @@ export const BPTable = ({
         headerClass: 'ag-text-center',
         headerName: `${label}`,
         minWidth: 80,
-        valueGetter: (params: any) => {
-          const value = params.data.values.find((value: any) =>
-            getYearColsValue(value, year, isAfterMaxYear),
-          )
-          if (value && value.value_odp !== null) {
-            return parseFloat(value.value_odp).toFixed(2)
-          }
-          return ''
-        },
+        valueGetter: (params: any) =>
+          valueGetter(params, year, isAfterMaxYear, 'value_odp'),
+        tooltipValueGetter: (params: ITooltipParams) =>
+          valueGetter(params, year, isAfterMaxYear, 'value_odp', true),
       })
 
       valuesMT.push({
@@ -113,15 +129,23 @@ export const BPTable = ({
         headerClass: 'ag-text-center',
         headerName: `${label}`,
         minWidth: 80,
-        valueGetter: (params: any) => {
-          const value = params.data.values.find((value: any) =>
-            getYearColsValue(value, year, isAfterMaxYear),
-          )
-          if (value && value.value_mt !== null) {
-            return parseFloat(value.value_mt).toFixed(2)
-          }
-          return ''
-        },
+        valueGetter: (params: any) =>
+          valueGetter(params, year, isAfterMaxYear, 'value_mt'),
+        tooltipValueGetter: (params: ITooltipParams) =>
+          valueGetter(params, year, isAfterMaxYear, 'value_mt', true),
+      })
+
+      valuesCO2.push({
+        autoHeaderHeight: true,
+        cellClass: 'ag-text-center',
+        field: `value_co2_${year}`,
+        headerClass: 'ag-text-center',
+        headerName: `${label}`,
+        minWidth: 80,
+        valueGetter: (params: any) =>
+          valueGetter(params, year, isAfterMaxYear, 'value_co2'),
+        tooltipValueGetter: (params: ITooltipParams) =>
+          valueGetter(params, year, isAfterMaxYear, 'value_co2', true),
       })
     }
 
@@ -137,6 +161,15 @@ export const BPTable = ({
       {
         children: valuesMT,
         headerName: 'MT for HFC',
+      },
+      {
+        children: valuesCO2,
+        headerName: 'CO2-EQ',
+        headerGroupComponent: () => (
+          <span>
+            CO<sub>2</sub>-EQ
+          </span>
+        ),
       },
     ]
   }, [yearRangeSelected])
@@ -292,7 +325,6 @@ export default function BusinessPlansTable() {
             <Activities
               {...{
                 gridOptions,
-                loaded,
                 period,
                 results,
               }}

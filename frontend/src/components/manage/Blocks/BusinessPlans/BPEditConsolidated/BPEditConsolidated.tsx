@@ -10,7 +10,6 @@ import { useParams } from 'wouter'
 import Loading from '@ors/components/theme/Loading/Loading'
 import BPYearRangesProvider from '@ors/contexts/BusinessPlans/BPYearRangesProvider'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
-import { useStore } from '@ors/store'
 
 import BEditTable from '../BPEdit/BPEditTable'
 import BPRestoreEdit from '../BPEdit/BPRestoreEdit'
@@ -25,37 +24,33 @@ import { useGetBpData } from '../BP/useGetBpData'
 const BPEdit = () => {
   const { period, type } = useParams<{ period: string; type: string }>()
   const [year_start, year_end] = period.split('-')
+  const formattedType = capitalize(type)
 
-  const initialFiltersActivities = {
-    bp_status: capitalize(type),
+  const getFilters = (reqType: string) => ({
+    ...(reqType === 'activities'
+      ? { bp_status: formattedType }
+      : { status: formattedType }),
     year_end: year_end,
     year_start: year_start,
-  }
-
-  const initialFiltersBps = {
-    status: capitalize(type),
-    year_end: year_end,
-    year_start: year_start,
-  }
+  })
+  const bpFilters = getFilters('bp')
 
   const {
     loading,
     params,
     results: activities,
-  } = useGetActivities(initialFiltersActivities)
-  const { results, loading: bpLoading } = useBPListApi(initialFiltersBps)
+  } = useGetActivities(getFilters('activities'))
+  const { results, loading: bpLoading } = useBPListApi(bpFilters)
   const { data: bpFiles } = useGetBpData(
-    initialFiltersBps,
+    bpFilters,
     'api/business-plan/files/',
     'files',
   ) as any
   const { data } = useGetBpData(
-    initialFiltersBps,
+    bpFilters,
     'api/business-plan/get/',
     'fullData',
   ) as any
-
-  const agencies = useStore((state) => state?.common.agencies.data)
 
   const [activeTab, setActiveTab] = useState(0)
   const [form, setForm] = useState<Array<ApiEditBPActivity> | undefined>(
@@ -94,7 +89,7 @@ const BPEdit = () => {
       ...activity,
       row_id: index,
     }))
-  }, [activities, agencies])
+  }, [activities])
 
   useEffect(() => {
     const formattedActivities = getFormattedActivities()
@@ -123,6 +118,7 @@ const BPEdit = () => {
       )}
       <BPTabs
         {...{
+          bpForm,
           activeTab,
           setActiveTab,
           setBpForm,

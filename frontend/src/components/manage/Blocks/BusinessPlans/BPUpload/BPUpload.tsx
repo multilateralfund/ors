@@ -12,11 +12,12 @@ import BPImport from './BPImport'
 import BPImportFilters from './BPImportFilters'
 import BPReviewChanges from './BPReviewChanges'
 import BPUploadSectionWrapper from './BPUploadSectionWrapper'
+import { getLatestBpYearRange } from '../utils'
 
-const BPUploadHeader = ({ currentYearRange }: any) => {
+const BPUploadHeader = () => {
   return (
     <div>
-      <RedirectToBpList {...{ currentYearRange }} />
+      <RedirectToBpList />
       <div className="mb-4 flex min-h-[40px] flex-wrap items-center justify-between gap-x-8 gap-y-2">
         <h1 className="m-0 text-5xl leading-normal">Upload Business Plan</h1>
       </div>
@@ -28,12 +29,12 @@ const BPUpload = () => {
   const { yearRanges } = useContext(BPYearRangesContext) as any
   const { periodOptions } = useGetBpPeriods(yearRanges)
   const currentYearRange = periodOptions?.[0]?.value
+  const latestBpYearRange = getLatestBpYearRange(periodOptions)
 
   const [filters, setFilters] = useState<any>({})
   const [downloadFilters, setDownloadFilters] = useState<any>({})
   const [file, setFile] = useState<FileList | null>(null)
   const [validations, setValidations] = useState<any>(null)
-
   const [currentStep, setCurrentStep] = useState(1)
 
   useEffect(() => {
@@ -43,6 +44,9 @@ const BPUpload = () => {
         year_end,
         year_start,
       })
+    }
+    if (latestBpYearRange) {
+      const [year_start, year_end] = latestBpYearRange.label.split('-')
       setDownloadFilters({ year_end, year_start })
     }
   }, [currentYearRange])
@@ -57,6 +61,7 @@ const BPUpload = () => {
           {...{
             periodOptions,
             setCurrentStep,
+            filters,
             setFilters,
           }}
           isBtnDisabled={!isFiltersNextBtnEnabled}
@@ -87,6 +92,7 @@ const BPUpload = () => {
             setCurrentStep,
             setFile,
             setValidations,
+            periodOptions,
           }}
         />
       ),
@@ -104,7 +110,7 @@ const BPUpload = () => {
 
   return (
     <div className="flex flex-col gap-2">
-      <BPUploadHeader {...{ currentYearRange }} />
+      <BPUploadHeader />
       <div className="flex flex-col gap-6">
         {steps
           .filter(({ step }) => step <= currentStep)

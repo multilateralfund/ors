@@ -64,7 +64,6 @@ export interface ApiBPActivity {
   project_cluster_id: number
   project_type: ApiBPProjectType
   project_type_id: number
-  reason_for_exceeding: string
   remarks: string
   remarks_additional: string
   required_by_model: string

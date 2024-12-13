@@ -1,8 +1,8 @@
+from datetime import datetime
 import os
 import urllib
 
 from django.db import transaction
-from django.db.models import Max, Min
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
@@ -27,7 +27,7 @@ from core.api.serializers.business_plan import (
     BPActivityDetailSerializer,
     BPActivityListSerializer,
 )
-from core.api.views.business_plan_utils import BusinessPlanUtils
+from core.api.views.business_plan_utils import IMPORT_PARAMETERS, BusinessPlanUtils
 from core.api.views.utils import (
     get_business_plan_from_request,
     BPACTIVITY_ORDERING_FIELDS,
@@ -79,22 +79,34 @@ class BusinessPlanViewSet(
     def get_serializer_class(self):
         if self.action == "get":
             return BPActivityDetailSerializer
-        if self.action in ["create", "update"]:
+        if self.action == "update":
             return BusinessPlanCreateSerializer
         return BusinessPlanSerializer
 
     @action(methods=["GET"], detail=False, url_path="get-years")
     def get_years(self, *args, **kwargs):
-        return Response(
-            (
-                BusinessPlan.objects.values("year_start", "year_end")
-                .annotate(
-                    min_year=Min("activities__values__year"),
-                    max_year=Max("activities__values__year"),
-                )
-                .order_by("-year_start")
-            )
+        # initialize years from 2014 to current year
+        current_year = datetime.now().year
+        final_years = {}
+        for ys in range(current_year + 1, 2013, -1):
+            final_years[ys] = {
+                "year_start": ys,
+                "year_end": ys + 2,
+                "status": [],
+            }
+        # get existing years
+        existing_years = (
+            BusinessPlan.objects.values("year_start", "year_end", "status")
+            .distinct()
+            .order_by("year_start", "year_end", "status")
+            .all()
         )
+        for bp_data in existing_years:
+            year_start = bp_data["year_start"]
+            if "status" in final_years[year_start]:
+                final_years[year_start]["status"].append(bp_data["status"])
+
+        return Response(final_years.values())
 
     @swagger_auto_schema(
         manual_parameters=[
@@ -144,11 +156,6 @@ class BusinessPlanViewSet(
 
         ret["activities"] = self.get_serializer(activities, many=True).data
         return Response(ret)
-
-    @transaction.atomic
-    def create(self, request, *args, **kwargs):
-        ret_code, ret_data = self.create_bp(request.data)
-        return Response(ret_data, status=ret_code)
 
     @transaction.atomic
     def update(self, request, *args, **kwargs):
@@ -202,7 +209,7 @@ class BPFileView(
     permission_classes = [IsSecretariat | IsAgency | IsViewer]
     queryset = BPFile.objects.all()
     serializer_class = BPFileSerializer
-    filter_class = BPFileFilter
+    filterset_class = BPFileFilter
 
     ACCEPTED_EXTENSIONS = [
         ".pdf",
@@ -309,13 +316,8 @@ class BPFileDownloadView(generics.RetrieveAPIView):
 
 class BPImportValidateView(BusinessPlanUtils, generics.GenericAPIView):
     @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "year_start",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
-            ),
-        ],
+        manual_parameters=IMPORT_PARAMETERS,
+        operation_description="Check if uploaded file is valid without saving data",
     )
     def post(self, request, *args, **kwargs):
         files = request.FILES
@@ -360,33 +362,8 @@ class BPImportView(
     serializer_class = BusinessPlanCreateSerializer
 
     @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "year_start",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
-            ),
-            openapi.Parameter(
-                "year_end",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
-            ),
-            openapi.Parameter(
-                "status",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_STRING,
-            ),
-            openapi.Parameter(
-                "meeting_number",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
-            ),
-            openapi.Parameter(
-                "decision_number",
-                openapi.IN_QUERY,
-                type=openapi.TYPE_INTEGER,
-            ),
-        ],
+        manual_parameters=IMPORT_PARAMETERS,
+        operation_description="Perform Business Plan import from file",
     )
     @transaction.atomic
     def post(self, request, *args, **kwargs):
@@ -394,6 +371,8 @@ class BPImportView(
         year_start = int(request.query_params.get("year_start", 0))
         year_end = int(request.query_params.get("year_end", 0))
         bp_status = request.query_params.get("status")
+        meeting_id = request.query_params.get("meeting_id")
+        decision_id = request.query_params.get("decision_id")
 
         ret_code, ret_data = self.import_bp(files, year_start)
         if ret_code != status.HTTP_200_OK:
@@ -409,6 +388,8 @@ class BPImportView(
             "year_start": year_start,
             "year_end": year_end,
             "status": bp_status,
+            "meeting_id": meeting_id,
+            "decision_id": decision_id,
             "activities": ret_data["activities"],
         }
         ret_code, _ = (

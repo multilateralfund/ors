@@ -52,7 +52,7 @@ export function BPEditBaseTable(
       )
 
       if (value && !isNil(value[colIdentifier])) {
-        return parseFloat(value[colIdentifier]).toFixed(2)
+        return parseFloat(value[colIdentifier])
       }
 
       return null
@@ -93,6 +93,7 @@ export function BPEditBaseTable(
     const valuesUSD = []
     const valuesODP = []
     const valuesMT = []
+    const valuesCO2 = []
 
     for (
       let year = yearRangeSelected.year_start;
@@ -113,6 +114,10 @@ export function BPEditBaseTable(
         cellEditorParams: {
           allowNullVals: true,
         },
+        cellRendererParams: () => ({
+          tooltipClassName: 'bp-table-tooltip',
+        }),
+        dataType: 'number',
         field: `value_usd_${year}`,
         headerClass: 'ag-text-center',
         headerComponent: function (props: any) {
@@ -147,6 +152,10 @@ export function BPEditBaseTable(
         cellEditorParams: {
           allowNullVals: true,
         },
+        cellRendererParams: () => ({
+          tooltipClassName: 'bp-table-tooltip',
+        }),
+        dataType: 'number',
         field: `value_odp_${year}`,
         headerClass: 'ag-text-center',
         headerComponent: function (props: any) {
@@ -181,6 +190,10 @@ export function BPEditBaseTable(
         cellEditorParams: {
           allowNullVals: true,
         },
+        cellRendererParams: () => ({
+          tooltipClassName: 'bp-table-tooltip',
+        }),
+        dataType: 'number',
         field: `value_mt_${year}`,
         headerClass: 'ag-text-center',
         headerComponent: function (props: any) {
@@ -207,6 +220,44 @@ export function BPEditBaseTable(
           valueSetter(params, year, isAfterMaxYear, 'value_mt'),
         wrapText: true,
       })
+
+      valuesCO2.push({
+        autoHeaderHeight: true,
+        cellClass: 'ag-text-center',
+        cellEditor: 'agNumberCellEditor',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
+        cellRendererParams: () => ({
+          tooltipClassName: 'bp-table-tooltip',
+        }),
+        dataType: 'number',
+        field: `value_co2_${year}`,
+        headerClass: 'ag-text-center',
+        headerComponent: function (props: any) {
+          return (
+            <BasePasteWrapper
+              label={props.displayName}
+              setForm={setForm}
+              mutator={function (row: any, value: any) {
+                valueSetter(
+                  { data: row, newValue: value },
+                  year,
+                  isAfterMaxYear,
+                  'value_co2',
+                )
+              }}
+            />
+          )
+        },
+        headerName: `${label}`,
+        minWidth: 80,
+        valueGetter: (params: any) =>
+          valueGetter(params, year, isAfterMaxYear, 'value_co2'),
+        valueSetter: (params: any) =>
+          valueSetter(params, year, isAfterMaxYear, 'value_co2'),
+        wrapText: true,
+      })
     }
 
     return [
@@ -221,6 +272,15 @@ export function BPEditBaseTable(
       {
         children: valuesMT,
         headerName: 'MT for HFC',
+      },
+      {
+        children: valuesCO2,
+        headerName: 'CO2-EQ',
+        headerGroupComponent: () => (
+          <span>
+            CO<sub>2</sub>-EQ
+          </span>
+        ),
       },
     ]
   }, [yearRangeSelected, valueGetter, valueSetter, setForm])
