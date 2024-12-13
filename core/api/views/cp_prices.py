@@ -2,8 +2,11 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics
 
-from core.api.filters.country_programme import CPAllPricesFilter, CPPricesFilter
-from core.api.serializers.cp_price import CPAllPricesSerializer, CPPricesListSerializer
+from core.api.filters.country_programme import DashboardsCPPricesFilter, CPPricesFilter
+from core.api.serializers.cp_price import (
+    DashboardsCPPricesSerializer,
+    CPPricesListSerializer,
+)
 from core.model_views.country_programme import AllPricesView
 from core.models.country_programme import CPPrices
 
@@ -31,7 +34,7 @@ class CPPricesView(generics.ListAPIView):
         return self.list(request, *args, **kwargs)
 
 
-class CPAllPricessView(generics.ListAPIView):
+class DashboardsCPPricesView(generics.ListAPIView):
     """
     This view is made for ekimetrics dashboards
     This is an API endpoint that allows to list CP Prices
@@ -41,7 +44,7 @@ class CPAllPricessView(generics.ListAPIView):
 
     """
 
-    serializer_class = CPAllPricesSerializer
+    serializer_class = DashboardsCPPricesSerializer
     queryset = AllPricesView.objects.order_by(
         "-report_year",
         "country_name",
@@ -49,7 +52,7 @@ class CPAllPricessView(generics.ListAPIView):
         "substance_name",
         "blend_name",
     )
-    filterset_class = CPAllPricesFilter
+    filterset_class = DashboardsCPPricesFilter
     filter_backends = [
         DjangoFilterBackend,
     ]

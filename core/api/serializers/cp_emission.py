@@ -40,7 +40,7 @@ class CPEmissionArchiveSerializer(CPEmissionBaseSerializer):
         model = CPEmissionArchive
 
 
-class AllCPEmissionSerializer(serializers.ModelSerializer):
+class DashboardsCPEmissionSerializer(serializers.ModelSerializer):
     year = serializers.IntegerField(source="report_year")
     version = serializers.IntegerField(source="report_version")
     created_at = serializers.DateTimeField(source="report_created_at")
@@ -70,6 +70,7 @@ class AllCPEmissionSerializer(serializers.ModelSerializer):
             "version",
             "created_at",
             "year",
+            "report_status",
             "substance_name",
             "substance_id",
             "facility_name",

@@ -127,7 +127,7 @@ class CPRecordArchiveSerializer(CPRecordBaseSerializer):
         model = CPRecordArchive
 
 
-class CPRecordEkimetricsSerializer(serializers.ModelSerializer):
+class DashboardsCPRecordSerializer(serializers.ModelSerializer):
     year = serializers.IntegerField(source="report_year")
     version = serializers.IntegerField(source="report_version")
     created_at = serializers.DateTimeField(source="report_created_at")
@@ -147,6 +147,7 @@ class CPRecordEkimetricsSerializer(serializers.ModelSerializer):
             "version",
             "created_at",
             "year",
+            "report_status",
             "substance_name",
             "substance_id",
             "group",
@@ -155,7 +156,6 @@ class CPRecordEkimetricsSerializer(serializers.ModelSerializer):
             "blend_id",
             "data",
             "remarks",
-            "report_status",
         ]
 
     def get_region(self, obj):

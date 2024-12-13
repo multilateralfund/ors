@@ -3,14 +3,14 @@ from rest_framework.response import Response
 from rest_framework import generics
 
 from core.api.filters.country_programme import CPAttributesBaseFilter
-from core.api.serializers.cp_emission import AllCPEmissionSerializer
-from core.api.serializers.cp_generation import AllCPGenerationSerializer
+from core.api.serializers.cp_emission import DashboardsCPEmissionSerializer
+from core.api.serializers.cp_generation import DashboardsCPGenerationSerializer
 from core.api.views.utils import get_country_region_dict
 from core.model_views.country_programme import AllEmissionsView, AllGenerationsView
 from core.models.substance import Substance
 
 
-class CPEmissionsGenerationsView(generics.GenericAPIView):
+class DashboardsCPEmissionsView(generics.GenericAPIView):
     """
     This view is made for ekimetrics dashboards
     This is an API endpoint that allows to list CP Emissions
@@ -26,7 +26,7 @@ class CPEmissionsGenerationsView(generics.GenericAPIView):
     filter_backends = [
         DjangoFilterBackend,
     ]
-    serializer_class = AllCPEmissionSerializer
+    serializer_class = DashboardsCPEmissionSerializer
 
     def get(self, request, *args, **kwargs):
         all_emissions = self.filter_queryset(self.get_queryset())
@@ -45,10 +45,10 @@ class CPEmissionsGenerationsView(generics.GenericAPIView):
         }
 
         final_list = (
-            AllCPEmissionSerializer(
+            DashboardsCPEmissionSerializer(
                 all_emissions, many=True, context=serializer_context
             ).data
-            + AllCPGenerationSerializer(
+            + DashboardsCPGenerationSerializer(
                 all_generations, many=True, context=serializer_context
             ).data
         )

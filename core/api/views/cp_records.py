@@ -7,7 +7,7 @@ from rest_framework import views, generics
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
-from core.api.filters.country_programme import CPAllRecordFilter
+from core.api.filters.country_programme import DashboardsCPRecordFilter
 from core.api.serializers.adm import (
     AdmRecordSerializer,
 )
@@ -18,7 +18,7 @@ from core.api.serializers.cp_generation import CPGenerationSerializer
 from core.api.serializers.cp_history import CPHistorySerializer
 from core.api.serializers.cp_price import CPPricesSerializer
 from core.api.serializers.cp_record import (
-    CPRecordEkimetricsSerializer,
+    DashboardsCPRecordSerializer,
     CPRecordReadOnlySerializer,
 )
 from core.api.serializers.cp_report import CPReportSerializer, CPReportInfoSerializer
@@ -463,14 +463,14 @@ class CPRecordListDiffView(CPRecordListByReportView):
         )
 
 
-class CPRecordEkimetricsView(generics.ListAPIView):
+class DashboardsCPRecordView(generics.ListAPIView):
     """
     API endpoint that allows country programme records to be viewed.
     """
 
     filter_backends = [DjangoFilterBackend]
-    filterset_class = CPAllRecordFilter
-    serializer_class = CPRecordEkimetricsSerializer
+    filterset_class = DashboardsCPRecordFilter
+    serializer_class = DashboardsCPRecordSerializer
     queryset = AllCPRecordsView.objects.order_by(
         "-report_year",
         "country_name",

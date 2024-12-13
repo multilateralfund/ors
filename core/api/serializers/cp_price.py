@@ -132,7 +132,7 @@ class CPPricesListSerializer(serializers.ModelSerializer):
         return obj.blend.name if obj.blend else None
 
 
-class CPAllPricesSerializer(serializers.ModelSerializer):
+class DashboardsCPPricesSerializer(serializers.ModelSerializer):
     year = serializers.IntegerField(source="report_year")
     version = serializers.IntegerField(source="report_version")
     created_at = serializers.DateTimeField(source="report_created_at")
@@ -147,6 +147,7 @@ class CPAllPricesSerializer(serializers.ModelSerializer):
             "version",
             "created_at",
             "year",
+            "report_status",
             "substance_name",
             "substance_id",
             "blend_name",

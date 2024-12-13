@@ -97,15 +97,6 @@ class CPAttributesBaseFilter(filters.FilterSet):
         fields = ["country_id", "year", "min_year", "max_year"]
 
 
-class CPAllRecordFilter(CPAttributesBaseFilter):
-    """
-    Filter for CP Records
-    """
-
-    class Meta(CPAttributesBaseFilter.Meta):
-        model = AllCPRecordsView
-
-
 class CPPricesFilter(CPAttributesBaseFilter):
     """
     Filter for CP Prices
@@ -115,7 +106,16 @@ class CPPricesFilter(CPAttributesBaseFilter):
         model = CPPrices
 
 
-class CPAllPricesFilter(CPAttributesBaseFilter):
+class DashboardsCPRecordFilter(CPAttributesBaseFilter):
+    """
+    Filter for CP Records
+    """
+
+    class Meta(CPAttributesBaseFilter.Meta):
+        model = AllCPRecordsView
+
+
+class DashboardsCPPricesFilter(CPAttributesBaseFilter):
     """
     Filter for CP Prices View
     CP All Prices View is a db view that is a union of the cp_prices, cp_prices_archive tables
@@ -123,16 +123,4 @@ class CPAllPricesFilter(CPAttributesBaseFilter):
 
     class Meta(CPAttributesBaseFilter.Meta):
         model = AllPricesView
-        fields = CPAttributesBaseFilter.Meta.fields
-
-
-class CPEmissionsFilter(CPAttributesBaseFilter):
-    """
-    Filter for CP Emissions View
-
-    CP All Emissions View is a db view that is a union of the cp_emissions, cp_emissions_archive tables
-    """
-
-    class Meta(CPAttributesBaseFilter.Meta):
-        model = AllEmissionsView
         fields = CPAttributesBaseFilter.Meta.fields

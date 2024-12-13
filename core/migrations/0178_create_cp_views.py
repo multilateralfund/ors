@@ -29,6 +29,7 @@ class Migration(migrations.Migration):
                             cpr.version,
                             cpr.created_at,
                             cpr.year,
+                            cpr.status,
                             FALSE AS is_archive
                     FROM cp_prices
                     JOIN cp_report AS cpr ON cp_prices.country_programme_report_id = cpr.id)
@@ -48,6 +49,7 @@ class Migration(migrations.Migration):
                             cpr.version,
                             cpr.created_at,
                             cpr.year,
+                            cpr.status,
                             TRUE AS is_archive
                     FROM cp_prices_archive
                     JOIN cp_report_archive AS cpr ON cp_prices_archive.country_programme_report_id = cpr.id)
@@ -72,6 +74,7 @@ class Migration(migrations.Migration):
                 all_prices.version as report_version,
                 all_prices.created_at as report_created_at,
                 all_prices.year as report_year,
+                all_prices.status as report_status,
                 all_prices.is_archive
             FROM all_prices
             LEFT JOIN core_substance AS s ON all_prices.substance_id = s.id
