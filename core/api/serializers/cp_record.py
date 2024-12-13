@@ -1,8 +1,10 @@
+import copy
 from django.db import transaction
 from rest_framework import serializers
 
 from core.api.serializers.base import BaseCPWChemicalSerializer
 from core.api.serializers.cp_usage import CPUsageSerializer
+from core.model_views.country_programme import AllCPRecordsView
 from core.models.country_programme import (
     CPRecord,
     CPUsage,
@@ -125,53 +127,39 @@ class CPRecordArchiveSerializer(CPRecordBaseSerializer):
         model = CPRecordArchive
 
 
-class CPRecordEkimetricsSerializer(serializers.ModelSerializer):
-    country_name = serializers.CharField(source="country_programme_report.country.name")
-    country_id = serializers.IntegerField(source="country_programme_report.country.id")
-    year = serializers.IntegerField(source="country_programme_report.year")
-    lvc = serializers.BooleanField(source="country_programme_report.country.is_lvc")
-    group = serializers.SerializerMethodField()
-    group_id = serializers.SerializerMethodField()
-    substance_name = serializers.SerializerMethodField()
-    blend_name = serializers.SerializerMethodField()
+class DashboardsCPRecordSerializer(serializers.ModelSerializer):
+    year = serializers.IntegerField(source="report_year")
+    version = serializers.IntegerField(source="report_version")
+    created_at = serializers.DateTimeField(source="report_created_at")
+    lvc = serializers.BooleanField(source="country_is_lvc")
+    group = serializers.CharField(source="substance_group_name")
+    grou_id = serializers.IntegerField(source="substance_group_id")
+    region = serializers.SerializerMethodField()
     data = serializers.SerializerMethodField()
 
     class Meta:
-        model = CPRecord
+        model = AllCPRecordsView
         fields = [
-            "country_name",
             "country_id",
-            "year",
+            "country_name",
+            "region",
             "lvc",
-            "group",
-            "group_id",
+            "version",
+            "created_at",
+            "year",
+            "report_status",
             "substance_name",
             "substance_id",
+            "group",
+            "grou_id",
             "blend_name",
             "blend_id",
             "data",
+            "remarks",
         ]
 
-    def get_group(self, obj):
-        if obj.blend:
-            return "Blends (Mixture of Controlled Substances)"
-
-        if obj.substance and obj.substance.group:
-            return obj.substance.group.name_alt
-
-        return None
-
-    def get_group_id(self, obj):
-        if obj.substance and obj.substance.group:
-            return obj.substance.group_id
-
-        return None
-
-    def get_substance_name(self, obj):
-        return obj.substance.name if obj.substance else None
-
-    def get_blend_name(self, obj):
-        return obj.blend.name if obj.blend else None
+    def get_region(self, obj):
+        return self.context["country_region_dict"].get(obj.country_id)
 
     def _get_values_dict(self, obj, attr_key, attr_name, value):
         return [
@@ -193,8 +181,11 @@ class CPRecordEkimetricsSerializer(serializers.ModelSerializer):
         ]
 
     def _get_usages_data(self, obj):
-        usage_dict = self.context["usages_dict"]
-        for usage in obj.record_usages.all():
+        usage_dict = copy.deepcopy(self.context["usages_dict"])
+        existent_usages = self.context["existing_usages_dict"].get(
+            (obj.id, obj.is_archive), []
+        )
+        for usage in existent_usages:
             usage_dict[usage.usage_id]["quantity"] = usage.quantity
 
         final_list = []

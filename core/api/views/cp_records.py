@@ -7,7 +7,7 @@ from rest_framework import views, generics
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
-from core.api.filters.country_programme import CPRecordFilter
+from core.api.filters.country_programme import DashboardsCPRecordFilter
 from core.api.serializers.adm import (
     AdmRecordSerializer,
 )
@@ -18,7 +18,7 @@ from core.api.serializers.cp_generation import CPGenerationSerializer
 from core.api.serializers.cp_history import CPHistorySerializer
 from core.api.serializers.cp_price import CPPricesSerializer
 from core.api.serializers.cp_record import (
-    CPRecordEkimetricsSerializer,
+    DashboardsCPRecordSerializer,
     CPRecordReadOnlySerializer,
 )
 from core.api.serializers.cp_report import CPReportSerializer, CPReportInfoSerializer
@@ -31,6 +31,7 @@ from core.api.views.utils import (
     get_displayed_records,
     rename_fields,
 )
+from core.model_views.country_programme import AllCPRecordsView, AllCPUsagesView
 from core.models.adm import AdmRecord
 from core.models.country_programme import (
     CPEmission,
@@ -462,17 +463,21 @@ class CPRecordListDiffView(CPRecordListByReportView):
         )
 
 
-class CPRecordEkimetricsView(generics.ListAPIView):
+class DashboardsCPRecordView(generics.ListAPIView):
     """
     API endpoint that allows country programme records to be viewed.
     """
 
     filter_backends = [DjangoFilterBackend]
-    filterset_class = CPRecordFilter
-    serializer_class = CPRecordEkimetricsSerializer
-    queryset = CPRecord.objects.select_related(
-        "country_programme_report__country", "substance__group", "blend"
-    ).prefetch_related("record_usages")
+    filterset_class = DashboardsCPRecordFilter
+    serializer_class = DashboardsCPRecordSerializer
+    queryset = AllCPRecordsView.objects.order_by(
+        "-report_year",
+        "country_name",
+        "-report_version",
+        "substance_sort_order",
+        "blend_sort_order",
+    )
 
     def get_serializer_context(self):
         ctx = super().get_serializer_context()
@@ -483,3 +488,52 @@ class CPRecordEkimetricsView(generics.ListAPIView):
         ctx["usages_dict"] = usages_dict
         ctx["country_region_dict"] = get_country_region_dict()
         return ctx
+
+    def get_context_with_existing_usages(self, records_qs):
+        """
+        Get the serializer context with the existing usages for the records
+        In other words, add the existing usages to the serializer context
+
+        :param records_qs: the queryset of the records
+
+        """
+        # create filters list in order to get all usages for the records
+        records_pairs = records_qs.values_list("id", "is_archive")
+        filters = Q()
+        for record_id, is_archive in records_pairs:
+            filters |= Q(country_programme_record_id=record_id, is_archive=is_archive)
+
+        # get all usages for the records
+        usages = AllCPUsagesView.objects.filter(filters)
+        usages_dict = {}
+        # create a dictionary with the usages for each record
+        for usage in usages:
+            if usage.country_programme_record_id not in usages_dict:
+                usages_dict[usage.country_programme_record_id] = {}
+            usages_dict[usage.country_programme_record_id][usage.is_archive] = {
+                "quantity": usage.quantity,
+                "usage_id": usage.usage_id,
+            }
+
+        # create the serializer context
+        serializer_context = self.get_serializer_context()
+        serializer_context["existing_usages_dict"] = usages_dict
+
+        return serializer_context
+
+    def get(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer_context = self.get_context_with_existing_usages(page)
+            serializer = self.get_serializer(
+                page, many=True, context=serializer_context
+            )
+            return self.get_paginated_response(serializer.data)
+
+        serializer_context = self.get_context_with_existing_usages(queryset)
+        serializer = self.get_serializer(
+            queryset, many=True, context=serializer_context
+        )
+        return Response(serializer.data)

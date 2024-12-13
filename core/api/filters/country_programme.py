@@ -1,8 +1,12 @@
 from django_filters import rest_framework as filters
 from django_filters.widgets import CSVWidget
 
+from core.model_views.country_programme import (
+    AllCPRecordsView,
+    AllPricesView,
+)
 from core.models import Country
-from core.models.country_programme import CPEmission, CPFile, CPPrices, CPRecord
+from core.models.country_programme import CPFile, CPPrices, CPReport
 from core.models.country_programme_archive import CPReportArchive
 
 
@@ -62,9 +66,9 @@ class CPFileFilter(filters.FilterSet):
         fields = ["country_id", "year"]
 
 
-class CPAttributesBaseFilter(filters.FilterSet):
+class CPPricesFilter(filters.FilterSet):
     """
-    Base filter for country programme
+    Filter for CP Prices
     """
 
     country_id = filters.NumberFilter(
@@ -82,32 +86,55 @@ class CPAttributesBaseFilter(filters.FilterSet):
     )
 
     class Meta:
+        model = CPPrices
         fields = ["country_id", "year", "min_year", "max_year"]
 
 
-class CPRecordFilter(CPAttributesBaseFilter):
+class DashboardsCPBaseFilter(filters.FilterSet):
+    """
+    Base filter for country programme
+    """
+
+    country_id = filters.NumberFilter()
+    year = filters.NumberFilter(required=False, field_name="report_year")
+    min_year = filters.NumberFilter(
+        required=False, field_name="report_year", lookup_expr="gte"
+    )
+    max_year = filters.NumberFilter(
+        required=False, field_name="report_year", lookup_expr="lte"
+    )
+    status = filters.CharFilter(
+        field_name="report_status",
+        lookup_expr="exact",
+        help_text="Filter by report status (Draft / Final)",
+    )
+
+    def __init__(self, data=None, queryset=None, *, request=None, prefix=None):
+        # set default value for status filter
+        data = data.copy() if data else {}
+        if "status" not in data:
+            data["status"] = CPReport.CPReportStatus.FINAL
+        super().__init__(data, queryset, request=request, prefix=prefix)
+
+    class Meta:
+        fields = ["country_id", "year", "min_year", "max_year"]
+
+
+class DashboardsCPRecordFilter(DashboardsCPBaseFilter):
     """
     Filter for CP Records
     """
 
-    class Meta(CPAttributesBaseFilter.Meta):
-        model = CPRecord
+    class Meta(DashboardsCPBaseFilter.Meta):
+        model = AllCPRecordsView
 
 
-class CPPricesFilter(CPAttributesBaseFilter):
+class DashboardsCPPricesFilter(DashboardsCPBaseFilter):
     """
-    Filter for CP Prices
-    """
-
-    class Meta(CPAttributesBaseFilter.Meta):
-        model = CPPrices
-
-
-class CPEmissionsFilter(CPAttributesBaseFilter):
-    """
-    Filter for CP Emissions
+    Filter for CP Prices View
+    CP All Prices View is a db view that is a union of the cp_prices, cp_prices_archive tables
     """
 
-    class Meta(CPAttributesBaseFilter.Meta):
-        model = CPEmission
-        fields = CPAttributesBaseFilter.Meta.fields
+    class Meta(DashboardsCPBaseFilter.Meta):
+        model = AllPricesView
+        fields = DashboardsCPBaseFilter.Meta.fields
