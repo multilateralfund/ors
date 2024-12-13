@@ -289,7 +289,7 @@ export function BPEditBaseTable(
     setForm([
       {
         lvc_status: 'Undefined',
-        row_id: form.length + 1,
+        row_id: form.length,
         values: [],
       } as any,
       ...form,

@@ -4,11 +4,13 @@ import { Dispatch, SetStateAction, useState } from 'react'
 
 import { Tooltip } from '@mui/material'
 import { Typography } from '@mui/material'
-import { filter, find, findIndex } from 'lodash'
+import { filter, find, findIndex, keys } from 'lodash'
 
 import { IoClose } from 'react-icons/io5'
-
-//edit
+import CellValidationWidget2 from '@ors/components/manage/AgWidgets/CellValidationWidget/CellValidationWidget2'
+import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
+import { useStore } from '@ors/store'
+import cx from 'classnames'
 
 const Tag = (tags: Array<string>, onDelete: (tag: string) => void) =>
   tags.map((tag: string) => (
@@ -95,13 +97,23 @@ const CellTag = (propTags: Array<string>, params: any) => {
   return Tag(propTags, deleteTag)
 }
 
+const hasErrors = (props: any) => {
+  const { rowErrors } = useStore((state) => state.bpErrors)
+  const currentErrors = find(
+    rowErrors,
+    (error) => error.rowIndex === props.data.row_id,
+  )
+
+  return currentErrors && keys(currentErrors).includes(props.colDef.field)
+}
+
 export const EditTagsCellRenderer = (params: any) => {
   const { field, form, props, setForm } = params
   const { substances_display = [] } = props.data
 
   const propsTags = field === 'substances' ? substances_display : []
 
-  const [tags, setTags] = useState(propsTags)
+  const [tags, setTags] = useState(propsTags || [])
 
   const onTooltipClose = () => {
     updateFormData(form, setForm, props)
@@ -115,9 +127,36 @@ export const EditTagsCellRenderer = (params: any) => {
       title={tags.length > 0 && TooltipTag(tags, setTags, params)}
       onClose={onTooltipClose}
     >
-      <Typography className="diff-cell content-normal" component="span">
-        {CellTag(propsTags, params)}
-      </Typography>
+      <span className="flex items-center">
+        <Typography className="diff-cell content-normal" component="span">
+          {CellTag(propsTags, params)}
+        </Typography>
+        {hasErrors(params.props) && <CellValidationWidget2 {...params.props} />}
+      </span>
     </Tooltip>
+  )
+}
+
+export const editCellRenderer = (
+  props: any,
+  value: string,
+  isLongText?: boolean,
+) => {
+  const displayError = hasErrors(props)
+
+  return displayError ? (
+    <div className="flex justify-between">
+      <div
+        className={cx({
+          'w-full': displayError && !isLongText,
+          'w-[90%]': displayError && isLongText,
+        })}
+      >
+        <AgCellRenderer {...props} value={value} />
+      </div>
+      {displayError && <CellValidationWidget2 {...props} />}
+    </div>
+  ) : (
+    <AgCellRenderer {...props} value={value} />
   )
 }

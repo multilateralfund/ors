@@ -20,7 +20,7 @@
     }
 
     &.ag-cell-centered .inline {
-      min-width: 120px;
+      min-width: 100px;
     }
 
     &.ag-tags-cell-content {
@@ -104,8 +104,7 @@
   }
 
   .ag-cell-hashed {
-    @apply pattern-diagonal-lines pattern-bg-transparent pattern-slate-300
-    pattern-opacity-80 pattern-size-1;
+    @apply pattern-diagonal-lines pattern-bg-transparent pattern-slate-300 pattern-opacity-80 pattern-size-1;
   }
 
   .ag-cell-ellipsed .cell-renderer .inline span {

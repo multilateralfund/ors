@@ -1,5 +1,5 @@
 import { Button } from '@mui/material'
-import { capitalize, entries, find, indexOf, isEmpty, values } from 'lodash'
+import { capitalize, filter, indexOf, isEmpty, map, reverse } from 'lodash'
 import { useParams } from 'wouter'
 import { useSnackbar } from 'notistack'
 
@@ -24,6 +24,7 @@ export default function BPHeaderEditConsolidated({
   const [year_start, year_end] = period.split('-')
 
   const { setBusinessPlan } = useStore((state) => state.businessPlan)
+  const { setGeneralErrors, setRowErrors } = useStore((state) => state.bpErrors)
 
   const { enqueueSnackbar } = useSnackbar()
 
@@ -89,7 +90,7 @@ export default function BPHeaderEditConsolidated({
           enqueueSnackbar(errors.files, {
             variant: 'error',
           })
-          //   const errors = await error.json()
+        } else {
           //   const firstDataError = find(errors.activities, (err) => !isEmpty(err))
           //   const index = indexOf(errors.activities, firstDataError)
 
@@ -121,7 +122,18 @@ export default function BPHeaderEditConsolidated({
           //       variant: 'error',
           //     })
           //   }
-        } else {
+          const filteredRowErrors = filter(
+            errors.activities,
+            (error) => !isEmpty(error),
+          )
+
+          const formattedRowErrors = map(filteredRowErrors, (error) => ({
+            ...error,
+            rowIndex: indexOf(reverse(errors.activities), error),
+          }))
+
+          setRowErrors(formattedRowErrors)
+
           enqueueSnackbar(<>Please make sure all the inputs are correct.</>, {
             variant: 'error',
           })

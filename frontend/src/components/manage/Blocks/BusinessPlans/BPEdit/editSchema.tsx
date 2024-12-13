@@ -4,10 +4,12 @@ import { Dispatch, SetStateAction, useCallback, useMemo } from 'react'
 
 import { filter, isNil } from 'lodash'
 
-import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import { useStore } from '@ors/store'
 
-import { EditTagsCellRenderer } from '../BPTableHelpers/cellRenderers'
+import {
+  editCellRenderer,
+  EditTagsCellRenderer,
+} from '../BPTableHelpers/cellRenderers'
 import { multiYearFilterOptions, tableColumns } from '../constants'
 import { useGetChemicalTypes } from '../useGetChemicalTypes'
 import {
@@ -100,9 +102,8 @@ const useColumnsOptions = (
             openOnFocus: true,
             options: countries,
           },
-          cellRenderer: (props: any) => (
-            <AgCellRenderer {...props} value={props.data.country?.name} />
-          ),
+          cellRenderer: (props: any) =>
+            editCellRenderer(props, props.data.country?.name),
           field: 'country_id',
           headerClass: 'ag-text-center',
           headerComponentParams: {
@@ -128,9 +129,8 @@ const useColumnsOptions = (
                   openOnFocus: true,
                   options: agencies,
                 },
-                cellRenderer: (props: any) => (
-                  <AgCellRenderer {...props} value={props.data.agency?.name} />
-                ),
+                cellRenderer: (props: any) =>
+                  editCellRenderer(props, props.data.agency?.name),
                 field: 'agency_id',
                 headerClass: 'ag-text-center',
                 headerComponentParams: {
@@ -155,12 +155,8 @@ const useColumnsOptions = (
             openOnFocus: true,
             options: clusters,
           },
-          cellRenderer: (props: any) => (
-            <AgCellRenderer
-              {...props}
-              value={props.data.project_cluster?.code}
-            />
-          ),
+          cellRenderer: (props: any) =>
+            editCellRenderer(props, props.data.project_cluster?.code),
           field: 'project_cluster_id',
           headerClass: 'ag-text-center',
           headerComponentParams: {
@@ -183,9 +179,8 @@ const useColumnsOptions = (
             openOnFocus: true,
             options: types,
           },
-          cellRenderer: (props: any) => (
-            <AgCellRenderer {...props} value={props.data.project_type?.code} />
-          ),
+          cellRenderer: (props: any) =>
+            editCellRenderer(props, props.data.project_type?.code),
           field: 'project_type_id',
           headerClass: 'ag-text-center',
           headerComponentParams: {
@@ -209,12 +204,8 @@ const useColumnsOptions = (
             openOnFocus: true,
             options: chemicalTypesResults,
           },
-          cellRenderer: (props: any) => (
-            <AgCellRenderer
-              {...props}
-              value={props.data.bp_chemical_type?.name}
-            />
-          ),
+          cellRenderer: (props: any) =>
+            editCellRenderer(props, props.data.bp_chemical_type?.name),
           field: 'bp_chemical_type_id',
           headerClass: 'ag-text-center',
           headerComponentParams: {
@@ -237,9 +228,8 @@ const useColumnsOptions = (
             openOnFocus: true,
             options: sectors,
           },
-          cellRenderer: (props: any) => (
-            <AgCellRenderer {...props} value={props.data.sector?.code} />
-          ),
+          cellRenderer: (props: any) =>
+            editCellRenderer(props, props.data.sector?.code),
           field: 'sector_id',
           headerClass: 'ag-text-center',
           headerComponentParams: {
@@ -272,9 +262,9 @@ const useColumnsOptions = (
               options: subsectorsOfSector,
             }
           },
-          cellRenderer: (props: any) => (
-            <AgCellRenderer {...props} value={props.data.subsector?.code} />
-          ),
+          cellRenderer: (props: any) =>
+            editCellRenderer(props, props.data.subsector?.code),
+
           field: 'subsector_id',
           headerClass: 'ag-text-center',
           headerComponentParams: {
@@ -295,6 +285,8 @@ const useColumnsOptions = (
           },
           headerName: tableColumns.title,
           minWidth: 200,
+          cellRenderer: (props: any) =>
+            editCellRenderer(props, props.data.title, true),
           tooltipField: 'title',
         },
         {
@@ -314,6 +306,7 @@ const useColumnsOptions = (
           cellRenderer: (props: any) =>
             EditTagsCellRenderer({
               ...{ form, props, setForm },
+              options: substances,
               field: 'substances',
             }),
           field: 'substances',
@@ -340,6 +333,8 @@ const useColumnsOptions = (
               />
             )
           },
+          cellRenderer: (props: any) =>
+            editCellRenderer(props, props.data.required_by_model),
           headerName: tableColumns.required_by_model,
           minWidth: 150,
           tooltipField: 'required_by_model',
@@ -358,6 +353,8 @@ const useColumnsOptions = (
           headerClass: 'ag-text-center',
           headerName: tableColumns.amount_polyol,
           minWidth: 100,
+          cellRenderer: (props: any) =>
+            editCellRenderer(props, props.data.amount_polyol),
           valueGetter: (params: any) => {
             const polyolAmount = params.data.amount_polyol
             return !isNil(polyolAmount) ? parseFloat(polyolAmount) : null
@@ -376,9 +373,8 @@ const useColumnsOptions = (
             openOnFocus: true,
             options: statuses,
           },
-          cellRenderer: (props: any) => (
-            <AgCellRenderer {...props} value={props.data.status} />
-          ),
+          cellRenderer: (props: any) =>
+            editCellRenderer(props, props.data.status),
           field: 'status',
           headerClass: 'ag-text-center',
           headerComponentParams: {
@@ -416,6 +412,12 @@ const useColumnsOptions = (
           headerClass: 'ag-text-center',
           headerName: tableColumns.remarks,
           minWidth: 200,
+          cellRenderer: (props: any) =>
+            editCellRenderer(
+              { ...props, withoutTruncation: true },
+              props.data.remarks,
+              true,
+            ),
           tooltipField: 'remarks',
         },
         {
@@ -424,6 +426,8 @@ const useColumnsOptions = (
           headerClass: 'ag-text-center',
           headerName: tableColumns.remarks_additional,
           minWidth: 200,
+          cellRenderer: (props: any) =>
+            editCellRenderer(props, props.data.remarks_additional, true),
           tooltipField: 'remarks_additional',
         },
         {
@@ -442,6 +446,8 @@ const useColumnsOptions = (
           },
           headerName: tableColumns.comment_secretariat,
           minWidth: 200,
+          cellRenderer: (props: any) =>
+            editCellRenderer(props, props.data.comment_secretariat, true),
           tooltipField: 'comment_secretariat',
           valueSetter: (params: any) => {
             params.data.comment_secretariat = params.newValue ?? ''

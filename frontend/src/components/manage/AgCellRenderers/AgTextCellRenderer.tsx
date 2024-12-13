@@ -14,7 +14,7 @@ import { scrollToElement } from '@ors/helpers/Utils/Utils'
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
 export default React.memo(function AgTextCellRenderer(
-  props: CustomCellRendererProps,
+  props: CustomCellRendererProps & { withoutTruncation: boolean },
 ) {
   const footnotes = useContext(FootnotesContext)
 
@@ -43,7 +43,10 @@ export default React.memo(function AgTextCellRenderer(
 
   const remarks = props.column?.getColId() === 'remarks' && props.value
 
-  const textValue = remarks ? truncateText(props.value, 30) : props.value
+  const textValue =
+    remarks && !props.withoutTruncation
+      ? truncateText(props.value, 30)
+      : props.value
 
   return (
     <AgTooltipComponent {...props} remarks={remarks}>

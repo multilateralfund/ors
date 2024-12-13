@@ -1,0 +1,6 @@
+body:has(.tooltip-visible) {
+  .ag-tooltip,
+  .bp-table-tooltip {
+    display: none;
+  }
+}

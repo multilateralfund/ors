@@ -5,6 +5,7 @@
 @import './row.css';
 @import './cell.css';
 @import './diff.css';
+@import './tooltip.css';
 
 .ag-table .ag-root-wrapper {
   @apply rounded;

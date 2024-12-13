@@ -126,6 +126,15 @@ export interface BPTypeSlice {
   setBPType: (type: string) => void
 }
 
+type ErrorTemplate = { [key: string]: Array<string> }
+
+export interface BPErrorsSlice {
+  generalErrors: ErrorTemplate[]
+  setGeneralErrors: (errors: ErrorTemplate[]) => void
+  rowErrors: ErrorTemplate[]
+  setRowErrors: (errors: ErrorTemplate[]) => void
+}
+
 export interface ProjectsSlice {
   clusters: SliceData
   meetings: SliceData
@@ -199,6 +208,7 @@ export type StoreState = {
   bpType: BPTypeSlice
   businessPlan: BPSlice
   businessPlans: BusinessPlanSlice
+  bpErrors: BPErrorsSlice
   cache: CacheSlice
   common: CommonSlice
   connection: null | string
