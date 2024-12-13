@@ -3,7 +3,6 @@ from django_filters.widgets import CSVWidget
 
 from core.model_views.country_programme import (
     AllCPRecordsView,
-    AllEmissionsView,
     AllPricesView,
 )
 from core.models import Country
@@ -67,7 +66,31 @@ class CPFileFilter(filters.FilterSet):
         fields = ["country_id", "year"]
 
 
-class CPAttributesBaseFilter(filters.FilterSet):
+class CPPricesFilter(filters.FilterSet):
+    """
+    Filter for CP Prices
+    """
+
+    country_id = filters.NumberFilter(
+        required=False,
+        field_name="country_programme_report__country_id",
+    )
+    year = filters.NumberFilter(
+        required=False, field_name="country_programme_report__year"
+    )
+    min_year = filters.NumberFilter(
+        required=False, field_name="country_programme_report__year", lookup_expr="gte"
+    )
+    max_year = filters.NumberFilter(
+        required=False, field_name="country_programme_report__year", lookup_expr="lte"
+    )
+
+    class Meta:
+        model = CPPrices
+        fields = ["country_id", "year", "min_year", "max_year"]
+
+
+class DashboardsCPBaseFilter(filters.FilterSet):
     """
     Base filter for country programme
     """
@@ -97,30 +120,21 @@ class CPAttributesBaseFilter(filters.FilterSet):
         fields = ["country_id", "year", "min_year", "max_year"]
 
 
-class CPPricesFilter(CPAttributesBaseFilter):
-    """
-    Filter for CP Prices
-    """
-
-    class Meta(CPAttributesBaseFilter.Meta):
-        model = CPPrices
-
-
-class DashboardsCPRecordFilter(CPAttributesBaseFilter):
+class DashboardsCPRecordFilter(DashboardsCPBaseFilter):
     """
     Filter for CP Records
     """
 
-    class Meta(CPAttributesBaseFilter.Meta):
+    class Meta(DashboardsCPBaseFilter.Meta):
         model = AllCPRecordsView
 
 
-class DashboardsCPPricesFilter(CPAttributesBaseFilter):
+class DashboardsCPPricesFilter(DashboardsCPBaseFilter):
     """
     Filter for CP Prices View
     CP All Prices View is a db view that is a union of the cp_prices, cp_prices_archive tables
     """
 
-    class Meta(CPAttributesBaseFilter.Meta):
+    class Meta(DashboardsCPBaseFilter.Meta):
         model = AllPricesView
-        fields = CPAttributesBaseFilter.Meta.fields
+        fields = DashboardsCPBaseFilter.Meta.fields

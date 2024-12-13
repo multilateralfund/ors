@@ -81,7 +81,7 @@ class DashboardsCPGenerationSerializer(serializers.ModelSerializer):
     def get_object_type(self, _obj):
         return "generation"
 
-    def get_facility_name(self, obj):
+    def get_facility_name(self, _obj):
         return ""
 
     def get_substance_name(self, _obj):

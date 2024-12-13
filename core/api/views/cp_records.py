@@ -510,7 +510,7 @@ class DashboardsCPRecordView(generics.ListAPIView):
         for usage in usages:
             if usage.country_programme_record_id not in usages_dict:
                 usages_dict[usage.country_programme_record_id] = {}
-            usages_dict[usage.country_programme_record_id][is_archive] = {
+            usages_dict[usage.country_programme_record_id][usage.is_archive] = {
                 "quantity": usage.quantity,
                 "usage_id": usage.usage_id,
             }

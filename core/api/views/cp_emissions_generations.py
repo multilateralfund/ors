@@ -2,7 +2,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
 from rest_framework import generics
 
-from core.api.filters.country_programme import CPAttributesBaseFilter
+from core.api.filters.country_programme import DashboardsCPBaseFilter
 from core.api.serializers.cp_emission import DashboardsCPEmissionSerializer
 from core.api.serializers.cp_generation import DashboardsCPGenerationSerializer
 from core.api.views.utils import get_country_region_dict
@@ -22,7 +22,7 @@ class DashboardsCPEmissionsView(generics.GenericAPIView):
     queryset = AllEmissionsView.objects.order_by(
         "-report_year", "country_name", "-report_version", "facility"
     )
-    filterset_class = CPAttributesBaseFilter
+    filterset_class = DashboardsCPBaseFilter
     filter_backends = [
         DjangoFilterBackend,
     ]
