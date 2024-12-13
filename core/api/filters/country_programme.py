@@ -1,9 +1,13 @@
 from django_filters import rest_framework as filters
 from django_filters.widgets import CSVWidget
 
-from core.model_views.country_programme import AllEmissionsView, AllPricesView
+from core.model_views.country_programme import (
+    AllCPRecordsView,
+    AllEmissionsView,
+    AllPricesView,
+)
 from core.models import Country
-from core.models.country_programme import CPEmission, CPFile, CPPrices, CPRecord
+from core.models.country_programme import CPFile, CPPrices, CPReport
 from core.models.country_programme_archive import CPReportArchive
 
 
@@ -76,18 +80,30 @@ class CPAttributesBaseFilter(filters.FilterSet):
     max_year = filters.NumberFilter(
         required=False, field_name="report_year", lookup_expr="lte"
     )
+    status = filters.CharFilter(
+        field_name="report_status",
+        lookup_expr="exact",
+        help_text="Filter by report status (Draft / Final)",
+    )
+
+    def __init__(self, data=None, queryset=None, *, request=None, prefix=None):
+        # set default value for status filter
+        data = data.copy() if data else {}
+        if "status" not in data:
+            data["status"] = CPReport.CPReportStatus.FINAL
+        super().__init__(data, queryset, request=request, prefix=prefix)
 
     class Meta:
         fields = ["country_id", "year", "min_year", "max_year"]
 
 
-class CPRecordFilter(CPAttributesBaseFilter):
+class CPAllRecordFilter(CPAttributesBaseFilter):
     """
     Filter for CP Records
     """
 
     class Meta(CPAttributesBaseFilter.Meta):
-        model = CPRecord
+        model = AllCPRecordsView
 
 
 class CPPricesFilter(CPAttributesBaseFilter):

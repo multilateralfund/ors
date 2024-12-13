@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 
+from core.models.base import AbstractWChemical
 from core.models.base_country_programme import (
     AbstractCPEmission,
     AbstractCPGeneration,
@@ -39,7 +40,7 @@ class FinalReportsView(AbstractCPReport):
         db_table = "final_reports_view"
 
 
-class AllCPRecordsView(models.Model):
+class AllCPRecordsView(AbstractWChemical):
     """
     All CP Records database view
 
@@ -49,12 +50,12 @@ class AllCPRecordsView(models.Model):
     containing information about records, reports and chemicals
     """
 
-    substance_id = models.IntegerField()
     substance_name = models.CharField(max_length=255)
     substance_group_id = models.IntegerField()
     substance_group_name = models.CharField(max_length=255)
-    blend_id = models.IntegerField()
+    substance_sort_order = models.FloatField(null=True, blank=True)
     blend_name = models.CharField(max_length=255)
+    blend_sort_order = models.FloatField(null=True, blank=True)
     display_name = models.CharField(max_length=255)
 
     section = models.CharField(max_length=255)
@@ -88,6 +89,7 @@ class AllCPRecordsView(models.Model):
     report_version = models.IntegerField()
     report_created_at = models.DateTimeField()
     report_year = models.IntegerField()
+    report_status = models.CharField(max_length=255)
     is_archive = models.BooleanField()
 
     class Meta:
@@ -95,7 +97,7 @@ class AllCPRecordsView(models.Model):
         db_table = "all_cp_records_view"
 
 
-class AllCPUSagesView(models.Model):
+class AllCPUsagesView(models.Model):
     """
     All CP Usages database view
 
@@ -149,6 +151,7 @@ class AllPricesView(models.Model):
     report_version = models.IntegerField()
     report_created_at = models.DateTimeField()
     report_year = models.IntegerField()
+    report_status = models.CharField(max_length=255)
     is_archive = models.BooleanField()
 
     class Meta:
@@ -172,6 +175,7 @@ class AllGenerationsView(AbstractCPGeneration):
     report_version = models.IntegerField()
     report_created_at = models.DateTimeField()
     report_year = models.IntegerField()
+    report_status = models.CharField(max_length=255)
     is_archive = models.BooleanField()
 
     class Meta:
@@ -195,6 +199,7 @@ class AllEmissionsView(AbstractCPEmission):
     report_version = models.IntegerField()
     report_created_at = models.DateTimeField()
     report_year = models.IntegerField()
+    report_status = models.CharField(max_length=255)
     is_archive = models.BooleanField()
 
     class Meta:

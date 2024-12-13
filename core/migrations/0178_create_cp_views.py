@@ -101,6 +101,7 @@ class Migration(migrations.Migration):
                             cpr.version,
                             cpr.created_at,
                             cpr.year,
+                            cpr.status,
                             FALSE AS is_archive
                     FROM cp_emission
                     JOIN cp_report AS cpr ON cp_emission.country_programme_report_id = cpr.id)
@@ -121,6 +122,7 @@ class Migration(migrations.Migration):
                             cpr.version,
                             cpr.created_at,
                             cpr.year,
+                            cpr.status,
                             TRUE AS is_archive
                     FROM cp_emission_archive
                     JOIN cp_report_archive AS cpr ON cp_emission_archive.country_programme_report_id = cpr.id))
@@ -141,6 +143,7 @@ class Migration(migrations.Migration):
                 all_emissions.version as report_version,
                 all_emissions.year as report_year,
                 all_emissions.created_at as report_created_at,
+                all_emissions.status as report_status,
                 all_emissions.is_archive
             FROM all_emissions
             JOIN core_country AS c ON all_emissions.country_id = c.id
@@ -161,6 +164,7 @@ class Migration(migrations.Migration):
                             cpr.version,
                             cpr.created_at,
                             cpr.year,
+                            cpr.status,
                             FALSE AS is_archive
                     FROM cp_generation
                     JOIN cp_report AS cpr ON cp_generation.country_programme_report_id = cpr.id)
@@ -175,6 +179,7 @@ class Migration(migrations.Migration):
                             cpr.version,
                             cpr.created_at,
                             cpr.year,
+                            cpr.status,
                             TRUE AS is_archive
                     FROM cp_generation_archive
                     JOIN cp_report_archive AS cpr ON cp_generation_archive.country_programme_report_id = cpr.id))
@@ -189,6 +194,7 @@ class Migration(migrations.Migration):
                 all_generations.version as report_version,
                 all_generations.year as report_year,
                 all_generations.created_at as report_created_at,
+                all_generations.status as report_status,
                 all_generations.is_archive
             FROM all_generations
             JOIN core_country AS c ON all_generations.country_id = c.id
@@ -218,6 +224,7 @@ class Migration(migrations.Migration):
                             cpr.version,
                             cpr.created_at,
                             cpr.year,
+                            cpr.status,
                             FALSE AS is_archive
                     FROM cp_record
                     JOIN cp_report AS cpr ON cp_record.country_programme_report_id = cpr.id)
@@ -241,6 +248,7 @@ class Migration(migrations.Migration):
                             cpr.version,
                             cpr.created_at,
                             cpr.year,
+                            cpr.status,
                             TRUE AS is_archive
                     FROM cp_record_archive
                     JOIN cp_report_archive AS cpr ON cp_record_archive.country_programme_report_id = cpr.id))
@@ -248,9 +256,11 @@ class Migration(migrations.Migration):
                 all_records.substance_id,
                 s.name AS substance_name,
                 s.group_id as substance_group_id,
+                s.sort_order as substance_sort_order,
                 g.name AS substance_group_name,
                 all_records.blend_id,
                 b.name AS blend_name,
+                b.sort_order as blend_sort_order,
                 all_records.display_name,
                 all_records.section,
                 all_records.imports,
@@ -269,6 +279,7 @@ class Migration(migrations.Migration):
                 all_records.version as report_version,
                 all_records.created_at as report_created_at,
                 all_records.year as report_year,
+                all_records.status as report_status,
                 all_records.is_archive
             FROM all_records
             LEFT JOIN core_substance AS s ON all_records.substance_id = s.id
