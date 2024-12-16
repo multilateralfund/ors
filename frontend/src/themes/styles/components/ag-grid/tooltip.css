@@ -1,6 +1,7 @@
 body:has(.tooltip-visible) {
-  .ag-tooltip,
-  .MuiPopover-root:has(.bp-table-tooltip) {
+  .ag-popup .ag-tooltip,
+  .MuiPopover-root:has(.bp-table-tooltip),
+  .bp-table-tooltip {
     display: none;
   }
 }

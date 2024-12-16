@@ -87,7 +87,7 @@ const BPEdit = () => {
 
     return map(activities, (activity, index) => ({
       ...activity,
-      row_id: index,
+      row_id: index - 1,
     }))
   }, [activities])
 

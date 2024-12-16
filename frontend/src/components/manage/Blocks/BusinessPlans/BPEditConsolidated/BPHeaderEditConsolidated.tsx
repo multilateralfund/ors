@@ -1,5 +1,5 @@
 import { Button } from '@mui/material'
-import { capitalize, filter, indexOf, isEmpty, map, reverse } from 'lodash'
+import { capitalize, filter, keys, map } from 'lodash'
 import { useParams } from 'wouter'
 import { useSnackbar } from 'notistack'
 
@@ -128,17 +128,16 @@ export default function BPHeaderEditConsolidated({
           //       variant: 'error',
           //     })
           //   }
-          const filteredRowErrors = filter(
-            errors.activities,
-            (error) => !isEmpty(error),
-          )
 
-          const formattedRowErrors = map(filteredRowErrors, (error) => ({
+          const formattedRowErrors = map(errors.activities, (error, index) => ({
             ...error,
-            rowIndex: indexOf(reverse(errors.activities), error),
+            rowIndex: errors.activities.length - index - 1,
           }))
-
-          setRowErrors(formattedRowErrors)
+          const filteredRowErrors = filter(
+            formattedRowErrors,
+            (error) => keys(error).length > 1,
+          )
+          setRowErrors(filteredRowErrors)
 
           enqueueSnackbar(<>Please make sure all the inputs are correct.</>, {
             variant: 'error',

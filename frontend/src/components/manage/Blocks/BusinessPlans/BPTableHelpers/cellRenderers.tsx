@@ -7,7 +7,7 @@ import { Typography } from '@mui/material'
 import { filter, find, findIndex, keys } from 'lodash'
 
 import { IoClose } from 'react-icons/io5'
-import CellValidationWidget2 from '@ors/components/manage/AgWidgets/CellValidationWidget/CellValidationWidget2'
+import CellValidation from '@ors/components/manage/Blocks/BusinessPlans/BPTableHelpers/CellValidation'
 import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import { useStore } from '@ors/store'
 import cx from 'classnames'
@@ -131,7 +131,7 @@ export const EditTagsCellRenderer = (params: any) => {
         <Typography className="diff-cell content-normal" component="span">
           {CellTag(propsTags, params)}
         </Typography>
-        {hasErrors(params.props) && <CellValidationWidget2 {...params.props} />}
+        {hasErrors(params.props) && <CellValidation {...params.props} />}
       </span>
     </Tooltip>
   )
@@ -154,7 +154,7 @@ export const editCellRenderer = (
       >
         <AgCellRenderer {...props} value={value} />
       </div>
-      {displayError && <CellValidationWidget2 {...props} />}
+      {displayError && <CellValidation {...props} />}
     </div>
   ) : (
     <AgCellRenderer {...props} value={value} />
