@@ -289,6 +289,14 @@ export function BPEditBaseTable(
     setForm([
       {
         lvc_status: 'Undefined',
+        bp_chemical_type_id: null,
+        project_cluster_id: null,
+        project_type_code: null,
+        project_type_id: null,
+        sector_code: null,
+        sector_id: null,
+        status: null,
+        subsector_id: null,
         row_id: form.length,
         values: [],
       } as any,

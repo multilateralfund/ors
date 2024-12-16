@@ -56,9 +56,15 @@ export default function BPHeaderEditConsolidated({
         )
       }
 
+      const formattedForm = map(form, (formItem) => ({
+        ...formItem,
+        substances:
+          formItem?.substances?.length === 0 ? null : formItem?.substances,
+      }))
+
       const response = await api(`api/business-plan/${results[0].id}/`, {
         data: {
-          activities: form,
+          activities: formattedForm,
           year_start: parseInt(year_start),
           year_end: parseInt(year_end),
           status: capitalize(type),

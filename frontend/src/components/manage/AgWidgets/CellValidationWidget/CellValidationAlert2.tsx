@@ -44,7 +44,7 @@ export default function CellValidationAlert2({
         <IoAlertCircle
           className="rounded-full bg-[#002A3C]"
           color="#EBFF00"
-          size={24}
+          size={14}
         />
       </div>
       <Popover

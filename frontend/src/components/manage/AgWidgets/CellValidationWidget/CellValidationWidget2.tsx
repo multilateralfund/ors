@@ -12,9 +12,6 @@ export default function CellValidationWidget2(props: any) {
     (error) => error.rowIndex === props.data.row_id,
   )
 
-  const display = true
-  // currentErrors && keys(currentErrors).includes(props.colDef.field)
-
   return (
     <div
       className={cx(

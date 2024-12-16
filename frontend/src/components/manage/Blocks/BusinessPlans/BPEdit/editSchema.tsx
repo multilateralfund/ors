@@ -401,8 +401,9 @@ const useColumnsOptions = (
           headerClass: 'ag-text-center',
           headerName: tableColumns.is_multi_year,
           minWidth: 120,
+          cellRenderer: (props: any) =>
+            editCellRenderer(props, props.data.is_multi_year ? 'MYA' : 'IND'),
           tooltipField: 'is_multi_year_display',
-          valueGetter: ({ data }: any) => (data.is_multi_year ? 'MYA' : 'IND'),
           valueSetter: (params: any) =>
             MYAValueSetter(params, multiYearFilterOptions),
         },
