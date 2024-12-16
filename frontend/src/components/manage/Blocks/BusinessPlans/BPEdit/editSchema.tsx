@@ -28,6 +28,7 @@ import {
 import { HeaderPasteWrapper } from './pasteSupport'
 
 import { IoTrash } from 'react-icons/io5'
+import { ITooltipParams } from 'ag-grid-community'
 
 const useColumnsOptions = (
   yearColumns: any[],
@@ -145,7 +146,7 @@ const useColumnsOptions = (
             ]
           : []),
         {
-          cellClass: 'ag-text-center ag-cell-wrap-text',
+          cellClass: 'ag-text-center ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select cluster' },
@@ -156,7 +157,11 @@ const useColumnsOptions = (
             options: clusters,
           },
           cellRenderer: (props: any) =>
-            editCellRenderer(props, props.data.project_cluster?.code),
+            editCellRenderer(
+              props,
+              props.data.project_cluster?.code ??
+                props.data.project_cluster?.name,
+            ),
           field: 'project_cluster_id',
           headerClass: 'ag-text-center',
           headerComponentParams: {
@@ -169,7 +174,7 @@ const useColumnsOptions = (
             valueSetter(params, 'project_cluster', clusters),
         },
         {
-          cellClass: 'ag-text-center ag-cell-wrap-text',
+          cellClass: 'ag-text-center ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select type' },
@@ -180,7 +185,10 @@ const useColumnsOptions = (
             options: types,
           },
           cellRenderer: (props: any) =>
-            editCellRenderer(props, props.data.project_type?.code),
+            editCellRenderer(
+              props,
+              props.data.project_type?.code ?? props.data.project_type?.name,
+            ),
           field: 'project_type_id',
           headerClass: 'ag-text-center',
           headerComponentParams: {
@@ -193,7 +201,7 @@ const useColumnsOptions = (
             valueSetter(params, 'project_type', types),
         },
         {
-          cellClass: 'ag-text-center ag-cell-wrap-text',
+          cellClass: 'ag-text-center ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select chemical type' },
@@ -218,7 +226,7 @@ const useColumnsOptions = (
             valueSetter(params, 'bp_chemical_type', chemicalTypesResults),
         },
         {
-          cellClass: 'ag-text-center ag-cell-wrap-text',
+          cellClass: 'ag-text-center ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select sector' },
@@ -229,7 +237,10 @@ const useColumnsOptions = (
             options: sectors,
           },
           cellRenderer: (props: any) =>
-            editCellRenderer(props, props.data.sector?.code),
+            editCellRenderer(
+              props,
+              props.data.sector?.code ?? props.data.sector?.name,
+            ),
           field: 'sector_id',
           headerClass: 'ag-text-center',
           headerComponentParams: {
@@ -247,7 +258,7 @@ const useColumnsOptions = (
             ),
         },
         {
-          cellClass: 'ag-text-center ag-cell-wrap-text',
+          cellClass: 'ag-text-center ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: (params: any) => {
             const subsectorsOfSector = getSubsectorsOfSector(params)
@@ -263,8 +274,10 @@ const useColumnsOptions = (
             }
           },
           cellRenderer: (props: any) =>
-            editCellRenderer(props, props.data.subsector?.code),
-
+            editCellRenderer(
+              props,
+              props.data.subsector?.code ?? props.data.subsector?.name,
+            ),
           field: 'subsector_id',
           headerClass: 'ag-text-center',
           headerComponentParams: {
@@ -403,7 +416,9 @@ const useColumnsOptions = (
           minWidth: 120,
           cellRenderer: (props: any) =>
             editCellRenderer(props, props.data.is_multi_year ? 'MYA' : 'IND'),
-          tooltipField: 'is_multi_year_display',
+          tooltipValueGetter: (params: ITooltipParams) =>
+            params.data.is_multi_year_display ??
+            multiYearFilterOptions[1].fullName,
           valueSetter: (params: any) =>
             MYAValueSetter(params, multiYearFilterOptions),
         },

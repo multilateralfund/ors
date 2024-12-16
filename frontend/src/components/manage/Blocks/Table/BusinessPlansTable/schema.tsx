@@ -42,7 +42,7 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
       ]
     : []),
   {
-    cellClass: 'ag-text-center ag-cell-wrap-text',
+    cellClass: 'ag-text-center ag-cell-ellipsed',
     field: 'project_cluster.code',
     headerClass: 'ag-text-center',
     headerName: 'Cluster',
@@ -54,10 +54,15 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
           valueGetter: (params: any) =>
             objectCellValueGetter(params, 'project_cluster'),
         }
-      : { tooltipField: 'project_cluster.name' }),
+      : {
+          tooltipField: 'project_cluster.name',
+          valueGetter: (params: any) =>
+            params.data.project_cluster?.code ??
+            params.data.project_cluster?.name,
+        }),
   },
   {
-    cellClass: 'ag-text-center ag-cell-wrap-text',
+    cellClass: 'ag-text-center ag-cell-ellipsed',
     field: 'project_type.code',
     headerClass: 'ag-text-center',
     headerName: 'Type',
@@ -69,10 +74,14 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
           valueGetter: (params: any) =>
             objectCellValueGetter(params, 'project_type'),
         }
-      : { tooltipField: 'project_type.name' }),
+      : {
+          tooltipField: 'project_type.name',
+          valueGetter: (params: any) =>
+            params.data.project_type?.code ?? params.data.project_type?.name,
+        }),
   },
   {
-    cellClass: 'ag-text-center ag-cell-wrap-text',
+    cellClass: 'ag-text-center ag-cell-ellipsed',
     field: 'sector.code',
     headerClass: 'ag-text-center',
     headerName: 'Sector',
@@ -83,10 +92,14 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
           cellRenderer: textCellRenderer,
           valueGetter: (params: any) => objectCellValueGetter(params, 'sector'),
         }
-      : { tooltipField: 'sector.name' }),
+      : {
+          tooltipField: 'sector.name',
+          valueGetter: (params: any) =>
+            params.data.sector?.code ?? params.data.sector?.name,
+        }),
   },
   {
-    cellClass: 'ag-text-center ag-cell-wrap-text',
+    cellClass: 'ag-text-center ag-cell-ellipsed',
     field: 'subsector.code',
     headerClass: 'ag-text-center',
     headerName: 'Subsector',
@@ -98,14 +111,13 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
           valueGetter: (params: any) =>
             objectCellValueGetter(params, 'subsector'),
         }
-      : { tooltipField: 'subsector.name' }),
+      : {
+          tooltipField: 'subsector.name',
+          valueGetter: (params: any) =>
+            params.data.subsector?.code ?? params.data.subsector?.name,
+        }),
   },
   {
-    // cellRenderer: (params: any) => (
-    //   <Link href={`/business-plans/${params.data.id}`}>
-    //     {params.data.title}
-    //   </Link>
-    // ),
     cellClass: 'ag-cell-ellipsed',
     field: 'title',
     headerClass: 'ag-text-center',
@@ -121,33 +133,54 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
   },
 ]
 
-const getReqByModelColumn = (isDiff: boolean) => {
-  return {
-    cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
-    field: 'required_by_model',
-    headerClass: 'ag-text-center',
-    headerName: 'Required by model',
-    minWidth: 150,
-    sortable: !isDiff,
-    ...(isDiff
-      ? {
-          cellRenderer: textCellRenderer,
-          valueGetter: (params: any) =>
-            cellValueGetter(params, 'required_by_model'),
-        }
-      : { tooltipField: 'required_by_model' }),
-  }
-}
-
-const getAdditionalRemarksColumn = {
-  cellClass: 'ag-cell-ellipsed',
-  field: 'remarks_additional',
+const getReqByModelColumn = (isDiff: boolean) => ({
+  cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
+  field: 'required_by_model',
   headerClass: 'ag-text-center',
-  headerName: 'Remarks (Additional)',
-  minWidth: 200,
-  sortable: true,
-  tooltipField: 'remarks_additional',
-}
+  headerName: 'Required by model',
+  minWidth: 150,
+  sortable: !isDiff,
+  ...(isDiff
+    ? {
+        cellRenderer: textCellRenderer,
+        valueGetter: (params: any) =>
+          cellValueGetter(params, 'required_by_model'),
+      }
+    : { tooltipField: 'required_by_model' }),
+})
+
+const getStatusColumn = (isDiff: boolean) => ({
+  cellClass: 'ag-text-center',
+  field: 'status',
+  headerClass: 'ag-text-center',
+  headerName: 'Status',
+  minWidth: 100,
+  sortable: !isDiff,
+  ...(isDiff
+    ? {
+        cellRenderer: textCellRenderer,
+        valueGetter: (params: any) => cellValueGetter(params, 'status'),
+      }
+    : { tooltipField: 'status_display' }),
+})
+
+const getIsMultiYearColumn = (isDiff: boolean) => ({
+  cellClass: 'ag-text-center',
+  field: 'is_multi_year',
+  headerClass: 'ag-text-center',
+  headerName: 'IND/MYA',
+  minWidth: 100,
+  sortable: !isDiff,
+  ...(isDiff
+    ? {
+        cellRenderer: textCellRenderer,
+        valueGetter: (params: any) => cellValueGetter(params, 'is_multi_year'),
+      }
+    : {
+        tooltipField: 'is_multi_year_display',
+        valueGetter: ({ data }: any) => (data.is_multi_year ? 'MYA' : 'IND'),
+      }),
+})
 
 const getCommentsColumnsDefs = (isDiff: boolean) => [
   {
@@ -166,7 +199,15 @@ const getCommentsColumnsDefs = (isDiff: boolean) => [
           valueGetter: (params: any) => params.data.remarks,
         }),
   },
-  getAdditionalRemarksColumn,
+  {
+    cellClass: 'ag-cell-ellipsed',
+    field: 'remarks_additional',
+    headerClass: 'ag-text-center',
+    headerName: 'Remarks (Additional)',
+    minWidth: 200,
+    sortable: true,
+    tooltipField: 'remarks_additional',
+  },
   {
     cellClass: 'ag-cell-ellipsed',
     field: 'comment_secretariat',
@@ -194,38 +235,8 @@ const valuesColumnDefs = (
   yearColumns.find(
     (column: { headerName: string }) => column.headerName === 'Value ($000)',
   ) || [],
-  {
-    cellClass: 'ag-text-center',
-    field: 'status_display',
-    headerClass: 'ag-text-center',
-    headerName: 'Status',
-    minWidth: 100,
-    sortable: !isDiff,
-    ...(isDiff
-      ? {
-          cellRenderer: textCellRenderer,
-          valueGetter: (params: any) => cellValueGetter(params, 'status'),
-        }
-      : { tooltipField: 'status_display' }),
-  },
-  {
-    cellClass: 'ag-text-center',
-    field: 'is_multi_year',
-    headerClass: 'ag-text-center',
-    headerName: 'IND/MYA',
-    minWidth: 100,
-    sortable: !isDiff,
-    ...(isDiff
-      ? {
-          cellRenderer: textCellRenderer,
-          valueGetter: (params: any) =>
-            cellValueGetter(params, 'is_multi_year'),
-        }
-      : {
-          tooltipField: 'is_multi_year_display',
-          valueGetter: ({ data }: any) => (data.is_multi_year ? 'MYA' : 'IND'),
-        }),
-  },
+  getStatusColumn(isDiff),
+  getIsMultiYearColumn(isDiff),
 ]
 
 const odpColumnDefs = (
@@ -254,7 +265,7 @@ const allColumnDefs = (
 ) => [
   ...getDefaultColumnDefs(isDiff, withAgency),
   {
-    cellClass: 'ag-text-center ag-cell-wrap-text',
+    cellClass: 'ag-text-center ag-cell-ellipsed',
     field: 'bp_chemical_type.name',
     headerClass: 'ag-text-center',
     headerName: 'Chemical type',
@@ -318,38 +329,8 @@ const allColumnDefs = (
         }),
   },
   ...yearColumns,
-  {
-    cellClass: 'ag-text-center',
-    field: 'status',
-    headerClass: 'ag-text-center',
-    headerName: 'Status',
-    minWidth: 100,
-    sortable: !isDiff,
-    ...(isDiff
-      ? {
-          cellRenderer: textCellRenderer,
-          valueGetter: (params: any) => cellValueGetter(params, 'status'),
-        }
-      : { tooltipField: 'status_display' }),
-  },
-  {
-    cellClass: 'ag-text-center',
-    field: 'is_multi_year',
-    headerClass: 'ag-text-center',
-    headerName: 'IND/MYA',
-    minWidth: 100,
-    sortable: !isDiff,
-    ...(isDiff
-      ? {
-          cellRenderer: textCellRenderer,
-          valueGetter: (params: any) =>
-            cellValueGetter(params, 'is_multi_year'),
-        }
-      : {
-          tooltipField: 'is_multi_year_display',
-          valueGetter: ({ data }: any) => (data.is_multi_year ? 'MYA' : 'IND'),
-        }),
-  },
+  getStatusColumn(isDiff),
+  getIsMultiYearColumn(isDiff),
   ...getCommentsColumnsDefs(isDiff),
 ]
 

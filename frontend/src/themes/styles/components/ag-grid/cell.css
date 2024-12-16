@@ -23,14 +23,6 @@
       min-width: 100px;
     }
 
-    &.ag-tags-cell-content {
-      align-items: flex-start;
-
-      .ag-cell-value {
-        display: flex;
-      }
-    }
-
     .ag-cell-options {
       padding-right: 2px !important;
       margin-top: -4px;
