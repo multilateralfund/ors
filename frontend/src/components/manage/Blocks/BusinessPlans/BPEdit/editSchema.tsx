@@ -137,7 +137,7 @@ const useColumnsOptions = (
                 headerComponentParams: {
                   details: <sup className="font-bold">*</sup>,
                 },
-                headerName: tableColumns.agency,
+                headerName: tableColumns.agency_id,
                 minWidth: 150,
                 tooltipField: 'agency.name',
                 valueSetter: (params: any) =>
@@ -164,9 +164,6 @@ const useColumnsOptions = (
             ),
           field: 'project_cluster_id',
           headerClass: 'ag-text-center',
-          headerComponentParams: {
-            details: <sup className="font-bold">*</sup>,
-          },
           headerName: tableColumns.project_cluster_id,
           minWidth: 120,
           tooltipField: 'project_cluster.name',
@@ -191,9 +188,6 @@ const useColumnsOptions = (
             ),
           field: 'project_type_id',
           headerClass: 'ag-text-center',
-          headerComponentParams: {
-            details: <sup className="font-bold">*</sup>,
-          },
           headerName: tableColumns.project_type_id,
           minWidth: 120,
           tooltipField: 'project_type.name',
@@ -216,9 +210,6 @@ const useColumnsOptions = (
             editCellRenderer(props, props.data.bp_chemical_type?.name),
           field: 'bp_chemical_type_id',
           headerClass: 'ag-text-center',
-          headerComponentParams: {
-            details: <sup className="font-bold">*</sup>,
-          },
           headerName: tableColumns.bp_chemical_type_id,
           minWidth: 120,
           tooltipField: 'bp_chemical_type.name',
@@ -243,9 +234,6 @@ const useColumnsOptions = (
             ),
           field: 'sector_id',
           headerClass: 'ag-text-center',
-          headerComponentParams: {
-            details: <sup className="font-bold">*</sup>,
-          },
           headerName: tableColumns.sector_id,
           minWidth: 120,
           tooltipField: 'sector.name',
@@ -280,9 +268,6 @@ const useColumnsOptions = (
             ),
           field: 'subsector_id',
           headerClass: 'ag-text-center',
-          headerComponentParams: {
-            details: <sup className="font-bold">*</sup>,
-          },
           headerName: tableColumns.subsector_id,
           minWidth: 120,
           tooltipField: 'subsector.name',
@@ -293,9 +278,6 @@ const useColumnsOptions = (
           cellClass: 'ag-cell-ellipsed',
           field: 'title',
           headerClass: 'ag-text-center',
-          headerComponentParams: {
-            details: <sup className="font-bold">*</sup>,
-          },
           headerName: tableColumns.title,
           minWidth: 200,
           cellRenderer: (props: any) =>
@@ -324,9 +306,6 @@ const useColumnsOptions = (
             }),
           field: 'substances',
           headerClass: 'ag-text-center',
-          headerComponentParams: {
-            details: <sup className="font-bold">*</sup>,
-          },
           headerName: tableColumns.substances,
           minWidth: 230,
           valueSetter: (params: any) =>
@@ -390,9 +369,6 @@ const useColumnsOptions = (
             editCellRenderer(props, props.data.status),
           field: 'status',
           headerClass: 'ag-text-center',
-          headerComponentParams: {
-            details: <sup className="font-bold">*</sup>,
-          },
           headerName: tableColumns.status,
           minWidth: 120,
           tooltipField: 'status_display',

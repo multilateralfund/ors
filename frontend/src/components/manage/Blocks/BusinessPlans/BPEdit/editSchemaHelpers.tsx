@@ -51,7 +51,7 @@ export const valueSetter = (
   params.data[colIdentifier + '_id'] = newVal
 
   if (['project_type', 'sector'].includes(colIdentifier)) {
-    params.data[colIdentifier + '_code'] = currentDataObj?.code
+    params.data[colIdentifier + '_code'] = currentDataObj?.code || ''
   }
 
   if (colIdentifier === 'sector') {

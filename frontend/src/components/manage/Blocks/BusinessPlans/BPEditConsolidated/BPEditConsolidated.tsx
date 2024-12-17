@@ -87,7 +87,7 @@ const BPEdit = () => {
 
     return map(activities, (activity, index) => ({
       ...activity,
-      row_id: index - 1,
+      row_id: activities.length - index - 1,
     }))
   }, [activities])
 
@@ -107,7 +107,7 @@ const BPEdit = () => {
       />
       {!bpLoading && (
         <BPHeaderEditConsolidated
-          {...{ form, setWarnOnClose, type, results, bpForm, files }}
+          {...{ form, setWarnOnClose, type, results, bpForm, files, setForm }}
         />
       )}
       {!loading && (

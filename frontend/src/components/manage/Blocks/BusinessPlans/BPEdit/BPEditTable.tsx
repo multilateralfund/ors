@@ -288,15 +288,17 @@ export function BPEditBaseTable(
   const addActivity = () => {
     setForm([
       {
-        lvc_status: 'Undefined',
+        lvc_status: '',
         bp_chemical_type_id: null,
         project_cluster_id: null,
-        project_type_code: null,
+        project_type_code: '',
         project_type_id: null,
-        sector_code: null,
+        sector_code: '',
         sector_id: null,
         status: null,
         subsector_id: null,
+        title: '',
+        substances: [],
         row_id: form.length,
         values: [],
       } as any,
