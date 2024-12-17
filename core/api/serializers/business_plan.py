@@ -54,6 +54,24 @@ class BPActivityValueSerializer(serializers.ModelSerializer):
             "value_co2",
         ]
 
+    def to_internal_value(self, data):
+        try:
+            internal_value = super().to_internal_value(data)
+        except serializers.ValidationError as e:
+            # add `year` and `is_after` to error message
+            error_dict = {}
+            year = data["year"]
+            is_after = data["is_after"]
+            for field, errors in e.detail.items():
+                if is_after:
+                    error_dict[f"{field}_{year}_after"] = errors
+                else:
+                    error_dict[f"{field}_{year}"] = errors
+
+            raise serializers.ValidationError(error_dict) from e
+
+        return internal_value
+
 
 class BusinessPlanSerializer(serializers.ModelSerializer):
     status = serializers.ChoiceField(
@@ -216,7 +234,7 @@ class BPActivityDetailSerializer(serializers.ModelSerializer):
         return obj.get_status_display()
 
     def get_project_type_code(self, obj):
-        return obj.project_type.code
+        return obj.project_type.code if obj.project_type else ""
 
     def get_sector_code(self, obj):
         return obj.sector.code if obj.sector else ""
@@ -247,6 +265,7 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
     # don't use `PrimaryKeyRelatedField`; makes 1 query / item when `many=True`
     # FKs will be manually validated
     business_plan_id = serializers.IntegerField(required=False)
+    title = serializers.CharField(allow_blank=True)
     agency_id = serializers.IntegerField()
     country_id = serializers.IntegerField()
     lvc_status = serializers.ChoiceField(
@@ -254,7 +273,9 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
     )
     project_type_id = serializers.IntegerField(allow_null=True)
     project_type_code = serializers.CharField(write_only=True, allow_blank=True)
-    status = serializers.ChoiceField(choices=BPActivity.Status.choices)
+    status = serializers.ChoiceField(
+        choices=BPActivity.Status.choices, allow_blank=True
+    )
     bp_chemical_type_id = serializers.IntegerField(allow_null=True)
     project_cluster_id = serializers.IntegerField(allow_null=True)
 
