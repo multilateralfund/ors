@@ -25,7 +25,7 @@ export default function BPHeaderEditConsolidated({
   const [year_start, year_end] = period.split('-')
 
   const { setBusinessPlan } = useStore((state) => state.businessPlan)
-  const { setGeneralErrors, setRowErrors } = useStore((state) => state.bpErrors)
+  const { setRowErrors } = useStore((state) => state.bpErrors)
 
   const { enqueueSnackbar } = useSnackbar()
 

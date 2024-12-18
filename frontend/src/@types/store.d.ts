@@ -129,8 +129,6 @@ export interface BPTypeSlice {
 type ErrorTemplate = { [key: string]: Array<string> }
 
 export interface BPErrorsSlice {
-  generalErrors: ErrorTemplate[]
-  setGeneralErrors: (errors: ErrorTemplate[]) => void
   rowErrors: ErrorTemplate[]
   setRowErrors: (errors: ErrorTemplate[]) => void
 }
