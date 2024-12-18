@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("core", "0178_alter_bpactivity_bp_chemical_type_and_more"),
+        ("core", "0180_allcprecordsview_allcpusagesview_allemissionsview_and_more"),
     ]
 
     operations = [
