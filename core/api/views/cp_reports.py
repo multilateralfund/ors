@@ -28,7 +28,7 @@ from core.api.serializers.cp_report import (
     CPReportNoRelatedSerializer,
     CPReportSerializer,
 )
-from core.model_views.cp_report import FinalReportsView
+from core.model_views.country_programme import FinalReportsView
 from core.models.adm import AdmRecord, AdmRecordArchive
 from core.models.country_programme import (
     CPComment,

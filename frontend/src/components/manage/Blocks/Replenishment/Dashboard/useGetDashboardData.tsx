@@ -144,7 +144,6 @@ function buildProvisions(
     data.allocations.unep,
     data.allocations.unido,
     data.allocations.world_bank,
-    data.overview.gain_loss,
   ])
   return result
 }
