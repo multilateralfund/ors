@@ -14,7 +14,7 @@ import { scrollToElement } from '@ors/helpers/Utils/Utils'
 import { IoInformationCircleOutline } from 'react-icons/io5'
 
 export default React.memo(function AgTextCellRenderer(
-  props: CustomCellRendererProps & { withoutTruncation: boolean },
+  props: CustomCellRendererProps & { withoutTruncation?: boolean },
 ) {
   const footnotes = useContext(FootnotesContext)
 
