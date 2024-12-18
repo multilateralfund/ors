@@ -122,21 +122,13 @@ export function HeaderPasteWrapper(props: any) {
     [field],
   )
 
-  return <BasePasteWrapper addTopMargin={true} mutator={mutateRow} {...rest} />
+  return <BasePasteWrapper mutator={mutateRow} {...rest} />
 }
 
 export function BasePasteWrapper(props: any) {
-  const { addTopMargin = false, label, mutator, setForm } = props
+  const { label, mutator, setForm } = props
   const { enqueueSnackbar } = useSnackbar()
   const [pasting, setPasting] = useState(false)
-
-  const styles: Record<string, string> = {
-    fontSize: '0.75rem',
-  }
-
-  if (addTopMargin) {
-    styles.marginTop = '2.9em'
-  }
 
   async function handlePaste() {
     setPasting(true)
@@ -187,14 +179,15 @@ export function BasePasteWrapper(props: any) {
     }
   }
   return (
-    <div
+    <span
       className="flex h-full w-full items-center justify-center gap-x-2 hover:text-red-500"
-      style={styles}
       title="Click for paste."
       onClick={pasting ? () => {} : handlePaste}
     >
-      <div>{label}</div>
-      <div>{pasting ? <IoHourglassOutline /> : <IoClipboardOutline />}</div>
-    </div>
+      <span>{label}</span>
+      <div className="pb-1">
+        {pasting ? <IoHourglassOutline /> : <IoClipboardOutline />}
+      </div>
+    </span>
   )
 }

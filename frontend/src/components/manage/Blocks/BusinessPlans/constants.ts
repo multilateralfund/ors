@@ -20,6 +20,7 @@ export const tableColumns: { [key: string]: string } = {
   subsector_id: 'Subsector',
   substances: 'Substances',
   title: 'Title',
+  values: 'Values',
 }
 
 export const bpTypes = [

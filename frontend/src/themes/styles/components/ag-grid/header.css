@@ -13,8 +13,7 @@
     font-weight: bold;
   } */
 
-
-  @media(width <= 1680px) {
+  @media (width <= 1680px) {
     .ag-header-cell,
     .ag-header-group-cell {
       span {
@@ -23,7 +22,7 @@
     }
   }
 
-  @media(width >= 1680px) {
+  @media (width >= 1680px) {
     .ag-header-cell,
     .ag-header-group-cell {
       span {
@@ -31,7 +30,6 @@
       }
     }
   }
-
 
   .ag-header-cell {
     padding-left: calc(var(--x-ag-header-cell-horizontal-padding) - 1px);
@@ -90,6 +88,10 @@
     > div.ag-header-cell-comp-wrapper
     > span {
     margin-top: 2.9em;
+
+    &:has(sup) {
+      margin-top: 2.3em;
+    }
   }
 
   .ag-header-cell-resize::after {

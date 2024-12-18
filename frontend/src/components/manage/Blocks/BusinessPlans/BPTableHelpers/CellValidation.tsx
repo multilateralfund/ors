@@ -1,23 +1,11 @@
-import { useState, useMemo } from 'react'
-import { find } from 'lodash'
-import { useStore } from '@ors/store'
+import { useState } from 'react'
 
 import Popover from '@mui/material/Popover/Popover'
 import cx from 'classnames'
 
 import { IoAlertCircle } from 'react-icons/io5'
 
-export default function CellValidation(props: any) {
-  const { rowErrors } = useStore((state) => state.bpErrors)
-  const currentErrors = find(
-    rowErrors,
-    (error) => error.rowIndex === props.data.row_id,
-  )
-  const errors = useMemo(
-    () => currentErrors?.[props.colDef.field] || [],
-    [currentErrors],
-  )
-
+export default function CellValidation({ errors }: { errors: string[] }) {
   const [showTooltip, setShowTooltip] = useState(false)
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
 
@@ -65,7 +53,7 @@ export default function CellValidation(props: any) {
           disableRestoreFocus
         >
           <div className="bg-mlfs-bannerColor px-4 py-2">
-            {errors.map((err, idx) => (
+            {errors.map((err: string, idx: number) => (
               <div key={idx}>
                 {'\u2022'} {err}
               </div>

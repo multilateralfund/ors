@@ -37,6 +37,7 @@ export default function BPHeaderEditConsolidated({
     const formattedData = map(form, (dataItem, index) => ({
       ...dataItem,
       row_id: form.length - index - 1,
+      title: dataItem.title ?? '',
     }))
 
     try {

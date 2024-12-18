@@ -4,7 +4,7 @@ import { Dispatch, SetStateAction, useState } from 'react'
 
 import { Tooltip } from '@mui/material'
 import { Typography } from '@mui/material'
-import { filter, find, findIndex, keys } from 'lodash'
+import { filter, find, findIndex, keys, map } from 'lodash'
 
 import { IoClose } from 'react-icons/io5'
 import CellValidation from '@ors/components/manage/Blocks/BusinessPlans/BPTableHelpers/CellValidation'
@@ -97,22 +97,29 @@ const CellTag = (propTags: Array<string>, params: any) => {
   return Tag(propTags, deleteTag)
 }
 
-const hasErrors = (props: any) => {
+const getErrors = (props: any) => {
   const { rowErrors } = useStore((state) => state.bpErrors)
-  const currentErrors = find(
+  let currentErrors = find(
     rowErrors,
     (error) => error.rowIndex === props.data.row_id,
   )
 
-  return currentErrors && keys(currentErrors).includes(props.colDef.field)
+  if (currentErrors?.values) {
+    map(currentErrors.values, (value: object) => {
+      currentErrors = { ...currentErrors, ...value }
+    })
+  }
+
+  return currentErrors?.[props.colDef.field] || []
 }
 
 export const EditTagsCellRenderer = (params: any) => {
   const { field, form, props, setForm } = params
   const { substances_display = [] } = props.data
 
-  const propsTags = field === 'substances' ? substances_display : []
+  const errors = getErrors(params.props)
 
+  const propsTags = field === 'substances' ? substances_display : []
   const [tags, setTags] = useState(propsTags || [])
 
   const onTooltipClose = () => {
@@ -131,7 +138,7 @@ export const EditTagsCellRenderer = (params: any) => {
         <Typography className="diff-cell content-normal" component="span">
           {CellTag(propsTags, params)}
         </Typography>
-        {hasErrors(params.props) && <CellValidation {...params.props} />}
+        {errors.length > 0 && <CellValidation errors={errors} />}
       </span>
     </Tooltip>
   )
@@ -142,7 +149,8 @@ export const editCellRenderer = (
   value: string,
   isLongText?: boolean,
 ) => {
-  const displayError = hasErrors(props)
+  const errors = getErrors(props)
+  const displayError = errors.length > 0
 
   return displayError ? (
     <div className="flex justify-between">
@@ -154,7 +162,7 @@ export const editCellRenderer = (
       >
         <AgCellRenderer {...props} value={value} />
       </div>
-      {displayError && <CellValidation {...props} />}
+      {displayError && <CellValidation {...{ errors }} />}
     </div>
   ) : (
     <AgCellRenderer {...props} value={value} />

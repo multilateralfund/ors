@@ -86,8 +86,8 @@ export const statusValueSetter = (params: any, statuses: any) => {
     id: newVal,
   })
 
-  params.data.status = currentDataObj?.id
-  params.data.status_display = currentDataObj?.name
+  params.data.status = currentDataObj?.id || ''
+  params.data.status_display = currentDataObj?.name || ''
 
   return true
 }
