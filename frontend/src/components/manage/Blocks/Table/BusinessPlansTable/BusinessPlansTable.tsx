@@ -256,12 +256,7 @@ export default function BusinessPlansTable() {
   }
 
   const [filters, setFilters] = useState({ ...initialFilters })
-  const {
-    data,
-    loading,
-    params: reqParams,
-    setParams,
-  } = useContext(BPContext) as any
+  const { data, loading, setParams } = useContext(BPContext) as any
   const { yearRanges } = useContext(BPYearRangesContext) as any
 
   const count = data?.count || 0
@@ -291,7 +286,6 @@ export default function BusinessPlansTable() {
         form,
         gridOptions,
         initialFilters,
-        reqParams,
         setDisplayOptions,
         setFilters,
         setGridOptions,

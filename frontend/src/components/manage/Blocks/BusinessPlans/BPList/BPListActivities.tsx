@@ -1,6 +1,6 @@
 'use client'
 
-import { useContext, useEffect, useRef, useState } from 'react'
+import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import Activities from '@ors/components/manage/Blocks/BusinessPlans/Activities'
 import { useGetActivities } from '@ors/components/manage/Blocks/BusinessPlans/useGetActivities'
@@ -15,6 +15,9 @@ import { TableDataSelectorValuesType } from '../../Table/BusinessPlansTable/Tabl
 import { ViewSelectorValuesType } from '../types'
 import BPListHeader from './BPListHeader'
 import BPListTabs from './BPListTabs'
+import BPTableToolbarButtons from '@ors/app/business-plans/BPTableToolbarButtons'
+import { formatApiUrl } from '@ors/helpers'
+import { filtersToQueryParams } from '../utils'
 
 const ACTIVITIES_PER_PAGE_TABLE = 50
 const ACTIVITIES_PER_PAGE_LIST = 20
@@ -34,13 +37,21 @@ export default function BPListActivitiesWrapper(props: any) {
   }
 
   const activities = useGetActivities(initialFilters)
-  const { setParams, loading } = activities
+  const { setParams, loading, params } = activities
+
+  const exportParams = useMemo(() => filtersToQueryParams(params), [params])
 
   return (
     <>
       <Loading
         className="!fixed bg-action-disabledBackground"
         active={loading}
+      />
+      <BPTableToolbarButtons
+        downloadTexts={['Download']}
+        downloadUrls={[
+          formatApiUrl(`/api/business-plan-activity/export/?${exportParams}`),
+        ]}
       />
       <BPListHeader viewType="activities" {...{ setParams }} />
       <BPListTabs />
@@ -91,7 +102,6 @@ function BPListActivities(props: any) {
         form,
         gridOptions,
         initialFilters,
-        reqParams,
         setDisplayOptions,
         setFilters,
         setGridOptions,

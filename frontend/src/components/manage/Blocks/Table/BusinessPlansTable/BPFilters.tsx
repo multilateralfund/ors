@@ -1,17 +1,9 @@
 'use client'
-import { useMemo } from 'react'
 
-import { capitalize } from 'lodash'
-import { useParams } from 'wouter'
-
-import BPTableToolbarButtons from '@ors/app/business-plans/BPTableToolbarButtons'
 import ActivitiesFilters from '@ors/components/manage/Blocks/BusinessPlans/ActivitiesFilters'
 import TableDateSwitcher from '@ors/components/manage/Blocks/Table/BusinessPlansTable/TableDateSwitcher'
-import { formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
-import { BpPathParams } from '../../BusinessPlans/types'
-import { filtersToQueryParams } from '../../BusinessPlans/utils'
 import TableViewSelector from './TableViewSelector'
 
 const ACTIVITIES_PER_PAGE_TABLE = 100
@@ -23,15 +15,12 @@ export default function BPFilters({
   form,
   gridOptions,
   initialFilters,
-  reqParams,
   setDisplayOptions,
   setFilters,
   setGridOptions,
   setParams,
   withAgency = false,
 }: any) {
-  const { status } = useParams<BpPathParams>()
-
   const commonSlice = useStore((state) => state.common)
   const bpSlice = useStore((state) => state.businessPlans)
   const projects = useStore((state) => state.projects)
@@ -45,22 +34,8 @@ export default function BPFilters({
     setFilters((filters: any) => ({ ...filters, ...newFilters }))
   }
 
-  const exportParams = useMemo(() => {
-    const currentReqParams = status
-      ? { ...reqParams, bp_status: capitalize(status) }
-      : reqParams
-
-    return filtersToQueryParams(currentReqParams)
-  }, [status, reqParams])
-
   return (
     <div className="bp-table-toolbar mb-4 flex flex-col justify-between gap-4 xl:flex-row xl:items-center">
-      <BPTableToolbarButtons
-        downloadTexts={['Download']}
-        downloadUrls={[
-          formatApiUrl(`/api/business-plan-activity/export/?${exportParams}`),
-        ]}
-      />
       <ActivitiesFilters
         bpSlice={bpSlice}
         clusters={clusters}

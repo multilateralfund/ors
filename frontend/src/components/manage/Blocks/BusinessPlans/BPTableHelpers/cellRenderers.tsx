@@ -4,7 +4,7 @@ import { Dispatch, SetStateAction, useState } from 'react'
 
 import { Tooltip } from '@mui/material'
 import { Typography } from '@mui/material'
-import { filter, find, findIndex, keys, map } from 'lodash'
+import { filter, find, findIndex, map } from 'lodash'
 
 import { IoClose } from 'react-icons/io5'
 import CellValidation from '@ors/components/manage/Blocks/BusinessPlans/BPTableHelpers/CellValidation'
@@ -150,19 +150,18 @@ export const editCellRenderer = (
   isLongText?: boolean,
 ) => {
   const errors = getErrors(props)
-  const displayError = errors.length > 0
 
-  return displayError ? (
+  return errors.length > 0 ? (
     <div className="flex justify-between">
       <div
         className={cx({
-          'w-full': displayError && !isLongText,
-          'w-[90%]': displayError && isLongText,
+          'w-full': !isLongText,
+          'w-[90%]': isLongText,
         })}
       >
         <AgCellRenderer {...props} value={value} />
       </div>
-      {displayError && <CellValidation {...{ errors }} />}
+      <CellValidation {...{ errors }} />
     </div>
   ) : (
     <AgCellRenderer {...props} value={value} />
