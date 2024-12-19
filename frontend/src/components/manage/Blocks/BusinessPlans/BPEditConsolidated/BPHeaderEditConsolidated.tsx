@@ -1,5 +1,5 @@
 import { Button } from '@mui/material'
-import { capitalize, entries, find, indexOf, isEmpty, values } from 'lodash'
+import { capitalize, filter, keys, map, some } from 'lodash'
 import { useParams } from 'wouter'
 import { useSnackbar } from 'notistack'
 
@@ -19,11 +19,13 @@ export default function BPHeaderEditConsolidated({
   results,
   bpForm,
   files,
+  setForm,
 }: any) {
   const { period } = useParams<BpPathParams>()
   const [year_start, year_end] = period.split('-')
 
   const { setBusinessPlan } = useStore((state) => state.businessPlan)
+  const { setRowErrors } = useStore((state) => state.bpErrors)
 
   const { enqueueSnackbar } = useSnackbar()
 
@@ -32,6 +34,12 @@ export default function BPHeaderEditConsolidated({
   const { deletedFilesIds = [], newFiles = [] } = files || {}
 
   const editBP = async () => {
+    const formattedData = map(form, (dataItem, index) => ({
+      ...dataItem,
+      row_id: form.length - index - 1,
+      title: dataItem.title ?? '',
+    }))
+
     try {
       if (newFiles.length > 0) {
         await uploadFiles(
@@ -57,7 +65,7 @@ export default function BPHeaderEditConsolidated({
 
       const response = await api(`api/business-plan/${results[0].id}/`, {
         data: {
-          activities: form,
+          activities: formattedData,
           year_start: parseInt(year_start),
           year_end: parseInt(year_end),
           status: capitalize(type),
@@ -69,6 +77,7 @@ export default function BPHeaderEditConsolidated({
 
       localStorage.clear()
       setWarnOnClose(false)
+      setRowErrors([])
 
       enqueueSnackbar(
         <>
@@ -89,42 +98,39 @@ export default function BPHeaderEditConsolidated({
           enqueueSnackbar(errors.files, {
             variant: 'error',
           })
-          //   const errors = await error.json()
-          //   const firstDataError = find(errors.activities, (err) => !isEmpty(err))
-          //   const index = indexOf(errors.activities, firstDataError)
-
-          //   if (firstDataError) {
-          //     enqueueSnackbar(
-          //       <div className="flex flex-col">
-          //         Row {index + 1}
-          //         {entries(firstDataError).map((error) => {
-          //           const headerName = tableColumns[error[0]]
-          //           const errorMessage = (error[1] as Array<string>)[0]
-
-          //           return ['project_type_code', 'sector_code'].includes(
-          //             error[0],
-          //           ) ? null : headerName ? (
-          //             <div key={error[0]}>
-          //               {headerName} - {errorMessage}
-          //             </div>
-          //           ) : (
-          //             <>{errorMessage}</>
-          //           )
-          //         })}
-          //       </div>,
-          //       {
-          //         variant: 'error',
-          //       },
-          //     )
-          //   } else {
-          //     enqueueSnackbar(<>{values(errors)[0]}</>, {
-          //       variant: 'error',
-          //     })
-          //   }
         } else {
-          enqueueSnackbar(<>Please make sure all the inputs are correct.</>, {
-            variant: 'error',
-          })
+          const formattedRowErrors = map(errors.activities, (error, index) => ({
+            ...error,
+            rowIndex: errors.activities.length - index - 1,
+          }))
+          const filteredRowErrors = filter(
+            formattedRowErrors,
+            (error) => keys(error).length > 1,
+          )
+
+          setForm(formattedData)
+          setRowErrors(filteredRowErrors)
+
+          const hasTableColsErrors = some(filteredRowErrors, (error) =>
+            some(keys(tableColumns), (key) => keys(error).includes(key)),
+          )
+
+          if (errors?.general_error) {
+            enqueueSnackbar(<>{errors.general_error}</>, {
+              variant: 'error',
+            })
+          } else {
+            enqueueSnackbar(
+              <>
+                {hasTableColsErrors
+                  ? 'Please make sure all the inputs are correct.'
+                  : 'An error occurred. Please try again.'}
+              </>,
+              {
+                variant: 'error',
+              },
+            )
+          }
         }
       } else {
         enqueueSnackbar(<>An error occurred. Please try again.</>, {

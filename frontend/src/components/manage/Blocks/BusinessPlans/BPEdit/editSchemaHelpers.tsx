@@ -51,7 +51,7 @@ export const valueSetter = (
   params.data[colIdentifier + '_id'] = newVal
 
   if (['project_type', 'sector'].includes(colIdentifier)) {
-    params.data[colIdentifier + '_code'] = currentDataObj?.code
+    params.data[colIdentifier + '_code'] = currentDataObj?.code || ''
   }
 
   if (colIdentifier === 'sector') {
@@ -86,8 +86,8 @@ export const statusValueSetter = (params: any, statuses: any) => {
     id: newVal,
   })
 
-  params.data.status = currentDataObj?.id
-  params.data.status_display = currentDataObj?.name
+  params.data.status = currentDataObj?.id || ''
+  params.data.status_display = currentDataObj?.name || ''
 
   return true
 }

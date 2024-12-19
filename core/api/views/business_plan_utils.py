@@ -97,10 +97,6 @@ def get_error_messages(row, agencies, countries):
     if not country:
         error_messages.append(f"Country '{row['Country']}' {not_found_error}")
 
-    project_status = row["Project Status (A/P)"].strip()
-    if project_status not in BPActivity.Status.values:
-        error_messages.append(f"Project status '{project_status}' {not_found_error}")
-
     return agency, country, error_messages
 
 
@@ -166,6 +162,14 @@ def get_bp_activity_data(
             )
             break
 
+    project_status = row["Project Status (A/P)"].strip()
+    if project_status and project_status not in BPActivity.Status.values:
+        warning_messages.append(
+            f"Project Status '{project_status}' does not exist in our system "
+            f"and we will set it to be 'Undefined'"
+        )
+        project_status = BPActivity.Status.undefined
+
     country_status = row["Country Status"].strip()
     if country_status and country_status not in BPActivity.LVCStatus.values:
         warning_messages.append(
@@ -201,7 +205,7 @@ def get_bp_activity_data(
         "sector_code": sector.code if sector else "",
         "subsector_id": subsector.id if subsector else None,
         "required_by_model": row["Required by Model"],
-        "status": row["Project Status (A/P)"].strip(),
+        "status": project_status,
         "is_multi_year": bool(strip_str(row["Project Category (I/M)"]) == "m"),
         "remarks": row["Remarks"],
         "remarks_additional": row["Remarks (Additional)"],

@@ -1,0 +1,7 @@
+body:has(.tooltip-visible) {
+  .ag-popup .ag-tooltip,
+  .MuiPopover-root:has(.bp-table-tooltip),
+  .bp-table-tooltip {
+    display: none;
+  }
+}

@@ -4,10 +4,12 @@ import { Dispatch, SetStateAction, useCallback, useMemo } from 'react'
 
 import { filter, isNil } from 'lodash'
 
-import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import { useStore } from '@ors/store'
 
-import { EditTagsCellRenderer } from '../BPTableHelpers/cellRenderers'
+import {
+  editCellRenderer,
+  EditTagsCellRenderer,
+} from '../BPTableHelpers/cellRenderers'
 import { multiYearFilterOptions, tableColumns } from '../constants'
 import { useGetChemicalTypes } from '../useGetChemicalTypes'
 import {
@@ -26,6 +28,7 @@ import {
 import { HeaderPasteWrapper } from './pasteSupport'
 
 import { IoTrash } from 'react-icons/io5'
+import { ITooltipParams } from 'ag-grid-community'
 
 const useColumnsOptions = (
   yearColumns: any[],
@@ -100,9 +103,8 @@ const useColumnsOptions = (
             openOnFocus: true,
             options: countries,
           },
-          cellRenderer: (props: any) => (
-            <AgCellRenderer {...props} value={props.data.country?.name} />
-          ),
+          cellRenderer: (props: any) =>
+            editCellRenderer(props, props.data.country?.name),
           field: 'country_id',
           headerClass: 'ag-text-center',
           headerComponentParams: {
@@ -128,15 +130,14 @@ const useColumnsOptions = (
                   openOnFocus: true,
                   options: agencies,
                 },
-                cellRenderer: (props: any) => (
-                  <AgCellRenderer {...props} value={props.data.agency?.name} />
-                ),
+                cellRenderer: (props: any) =>
+                  editCellRenderer(props, props.data.agency?.name),
                 field: 'agency_id',
                 headerClass: 'ag-text-center',
                 headerComponentParams: {
                   details: <sup className="font-bold">*</sup>,
                 },
-                headerName: tableColumns.agency,
+                headerName: tableColumns.agency_id,
                 minWidth: 150,
                 tooltipField: 'agency.name',
                 valueSetter: (params: any) =>
@@ -145,7 +146,7 @@ const useColumnsOptions = (
             ]
           : []),
         {
-          cellClass: 'ag-text-center ag-cell-wrap-text',
+          cellClass: 'ag-text-center ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select cluster' },
@@ -155,17 +156,14 @@ const useColumnsOptions = (
             openOnFocus: true,
             options: clusters,
           },
-          cellRenderer: (props: any) => (
-            <AgCellRenderer
-              {...props}
-              value={props.data.project_cluster?.code}
-            />
-          ),
+          cellRenderer: (props: any) =>
+            editCellRenderer(
+              props,
+              props.data.project_cluster?.code ??
+                props.data.project_cluster?.name,
+            ),
           field: 'project_cluster_id',
           headerClass: 'ag-text-center',
-          headerComponentParams: {
-            details: <sup className="font-bold">*</sup>,
-          },
           headerName: tableColumns.project_cluster_id,
           minWidth: 120,
           tooltipField: 'project_cluster.name',
@@ -173,7 +171,7 @@ const useColumnsOptions = (
             valueSetter(params, 'project_cluster', clusters),
         },
         {
-          cellClass: 'ag-text-center ag-cell-wrap-text',
+          cellClass: 'ag-text-center ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select type' },
@@ -183,14 +181,13 @@ const useColumnsOptions = (
             openOnFocus: true,
             options: types,
           },
-          cellRenderer: (props: any) => (
-            <AgCellRenderer {...props} value={props.data.project_type?.code} />
-          ),
+          cellRenderer: (props: any) =>
+            editCellRenderer(
+              props,
+              props.data.project_type?.code ?? props.data.project_type?.name,
+            ),
           field: 'project_type_id',
           headerClass: 'ag-text-center',
-          headerComponentParams: {
-            details: <sup className="font-bold">*</sup>,
-          },
           headerName: tableColumns.project_type_id,
           minWidth: 120,
           tooltipField: 'project_type.name',
@@ -198,7 +195,7 @@ const useColumnsOptions = (
             valueSetter(params, 'project_type', types),
         },
         {
-          cellClass: 'ag-text-center ag-cell-wrap-text',
+          cellClass: 'ag-text-center ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select chemical type' },
@@ -209,17 +206,10 @@ const useColumnsOptions = (
             openOnFocus: true,
             options: chemicalTypesResults,
           },
-          cellRenderer: (props: any) => (
-            <AgCellRenderer
-              {...props}
-              value={props.data.bp_chemical_type?.name}
-            />
-          ),
+          cellRenderer: (props: any) =>
+            editCellRenderer(props, props.data.bp_chemical_type?.name),
           field: 'bp_chemical_type_id',
           headerClass: 'ag-text-center',
-          headerComponentParams: {
-            details: <sup className="font-bold">*</sup>,
-          },
           headerName: tableColumns.bp_chemical_type_id,
           minWidth: 120,
           tooltipField: 'bp_chemical_type.name',
@@ -227,7 +217,7 @@ const useColumnsOptions = (
             valueSetter(params, 'bp_chemical_type', chemicalTypesResults),
         },
         {
-          cellClass: 'ag-text-center ag-cell-wrap-text',
+          cellClass: 'ag-text-center ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select sector' },
@@ -237,14 +227,13 @@ const useColumnsOptions = (
             openOnFocus: true,
             options: sectors,
           },
-          cellRenderer: (props: any) => (
-            <AgCellRenderer {...props} value={props.data.sector?.code} />
-          ),
+          cellRenderer: (props: any) =>
+            editCellRenderer(
+              props,
+              props.data.sector?.code ?? props.data.sector?.name,
+            ),
           field: 'sector_id',
           headerClass: 'ag-text-center',
-          headerComponentParams: {
-            details: <sup className="font-bold">*</sup>,
-          },
           headerName: tableColumns.sector_id,
           minWidth: 120,
           tooltipField: 'sector.name',
@@ -257,7 +246,7 @@ const useColumnsOptions = (
             ),
         },
         {
-          cellClass: 'ag-text-center ag-cell-wrap-text',
+          cellClass: 'ag-text-center ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: (params: any) => {
             const subsectorsOfSector = getSubsectorsOfSector(params)
@@ -272,14 +261,13 @@ const useColumnsOptions = (
               options: subsectorsOfSector,
             }
           },
-          cellRenderer: (props: any) => (
-            <AgCellRenderer {...props} value={props.data.subsector?.code} />
-          ),
+          cellRenderer: (props: any) =>
+            editCellRenderer(
+              props,
+              props.data.subsector?.code ?? props.data.subsector?.name,
+            ),
           field: 'subsector_id',
           headerClass: 'ag-text-center',
-          headerComponentParams: {
-            details: <sup className="font-bold">*</sup>,
-          },
           headerName: tableColumns.subsector_id,
           minWidth: 120,
           tooltipField: 'subsector.name',
@@ -290,11 +278,10 @@ const useColumnsOptions = (
           cellClass: 'ag-cell-ellipsed',
           field: 'title',
           headerClass: 'ag-text-center',
-          headerComponentParams: {
-            details: <sup className="font-bold">*</sup>,
-          },
           headerName: tableColumns.title,
           minWidth: 200,
+          cellRenderer: (props: any) =>
+            editCellRenderer(props, props.data.title, true),
           tooltipField: 'title',
         },
         {
@@ -314,13 +301,11 @@ const useColumnsOptions = (
           cellRenderer: (props: any) =>
             EditTagsCellRenderer({
               ...{ form, props, setForm },
+              options: substances,
               field: 'substances',
             }),
           field: 'substances',
           headerClass: 'ag-text-center',
-          headerComponentParams: {
-            details: <sup className="font-bold">*</sup>,
-          },
           headerName: tableColumns.substances,
           minWidth: 230,
           valueSetter: (params: any) =>
@@ -340,6 +325,8 @@ const useColumnsOptions = (
               />
             )
           },
+          cellRenderer: (props: any) =>
+            editCellRenderer(props, props.data.required_by_model),
           headerName: tableColumns.required_by_model,
           minWidth: 150,
           tooltipField: 'required_by_model',
@@ -358,6 +345,8 @@ const useColumnsOptions = (
           headerClass: 'ag-text-center',
           headerName: tableColumns.amount_polyol,
           minWidth: 100,
+          cellRenderer: (props: any) =>
+            editCellRenderer(props, props.data.amount_polyol),
           valueGetter: (params: any) => {
             const polyolAmount = params.data.amount_polyol
             return !isNil(polyolAmount) ? parseFloat(polyolAmount) : null
@@ -376,14 +365,10 @@ const useColumnsOptions = (
             openOnFocus: true,
             options: statuses,
           },
-          cellRenderer: (props: any) => (
-            <AgCellRenderer {...props} value={props.data.status} />
-          ),
+          cellRenderer: (props: any) =>
+            editCellRenderer(props, props.data.status),
           field: 'status',
           headerClass: 'ag-text-center',
-          headerComponentParams: {
-            details: <sup className="font-bold">*</sup>,
-          },
           headerName: tableColumns.status,
           minWidth: 120,
           tooltipField: 'status_display',
@@ -405,8 +390,11 @@ const useColumnsOptions = (
           headerClass: 'ag-text-center',
           headerName: tableColumns.is_multi_year,
           minWidth: 120,
-          tooltipField: 'is_multi_year_display',
-          valueGetter: ({ data }: any) => (data.is_multi_year ? 'MYA' : 'IND'),
+          cellRenderer: (props: any) =>
+            editCellRenderer(props, props.data.is_multi_year ? 'MYA' : 'IND'),
+          tooltipValueGetter: (params: ITooltipParams) =>
+            params.data.is_multi_year_display ??
+            multiYearFilterOptions[1].fullName,
           valueSetter: (params: any) =>
             MYAValueSetter(params, multiYearFilterOptions),
         },
@@ -416,6 +404,12 @@ const useColumnsOptions = (
           headerClass: 'ag-text-center',
           headerName: tableColumns.remarks,
           minWidth: 200,
+          cellRenderer: (props: any) =>
+            editCellRenderer(
+              { ...props, withoutTruncation: true },
+              props.data.remarks,
+              true,
+            ),
           tooltipField: 'remarks',
         },
         {
@@ -424,6 +418,8 @@ const useColumnsOptions = (
           headerClass: 'ag-text-center',
           headerName: tableColumns.remarks_additional,
           minWidth: 200,
+          cellRenderer: (props: any) =>
+            editCellRenderer(props, props.data.remarks_additional, true),
           tooltipField: 'remarks_additional',
         },
         {
@@ -442,6 +438,8 @@ const useColumnsOptions = (
           },
           headerName: tableColumns.comment_secretariat,
           minWidth: 200,
+          cellRenderer: (props: any) =>
+            editCellRenderer(props, props.data.comment_secretariat, true),
           tooltipField: 'comment_secretariat',
           valueSetter: (params: any) => {
             params.data.comment_secretariat = params.newValue ?? ''

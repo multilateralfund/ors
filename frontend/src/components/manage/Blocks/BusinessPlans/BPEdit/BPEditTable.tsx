@@ -19,6 +19,7 @@ import useColumnsOptions from './editSchema'
 import { BasePasteWrapper } from './pasteSupport'
 
 import { IoAddCircle } from 'react-icons/io5'
+import { editCellRenderer } from '../BPTableHelpers/cellRenderers'
 
 export function BPEditBaseTable(
   props: { yearRangeSelected: ApiBPYearRange } & BPEditTableInterface,
@@ -118,7 +119,11 @@ export function BPEditBaseTable(
           tooltipClassName: 'bp-table-tooltip',
         }),
         dataType: 'number',
-        field: `value_usd_${year}`,
+        field: `value_usd_${isAfterMaxYear ? `${yearRangeSelected.year_end}_after` : year}`,
+        cellRenderer: (props: any) => {
+          const value = valueGetter(props, year, isAfterMaxYear, 'value_usd')
+          return editCellRenderer(props, value?.toString() || '')
+        },
         headerClass: 'ag-text-center',
         headerComponent: function (props: any) {
           return (
@@ -156,7 +161,11 @@ export function BPEditBaseTable(
           tooltipClassName: 'bp-table-tooltip',
         }),
         dataType: 'number',
-        field: `value_odp_${year}`,
+        field: `value_odp_${isAfterMaxYear ? `${yearRangeSelected.year_end}_after` : year}`,
+        cellRenderer: (props: any) => {
+          const value = valueGetter(props, year, isAfterMaxYear, 'value_odp')
+          return editCellRenderer(props, value?.toString() || '')
+        },
         headerClass: 'ag-text-center',
         headerComponent: function (props: any) {
           return (
@@ -194,7 +203,11 @@ export function BPEditBaseTable(
           tooltipClassName: 'bp-table-tooltip',
         }),
         dataType: 'number',
-        field: `value_mt_${year}`,
+        field: `value_mt_${isAfterMaxYear ? `${yearRangeSelected.year_end}_after` : year}`,
+        cellRenderer: (props: any) => {
+          const value = valueGetter(props, year, isAfterMaxYear, 'value_mt')
+          return editCellRenderer(props, value?.toString() || '')
+        },
         headerClass: 'ag-text-center',
         headerComponent: function (props: any) {
           return (
@@ -232,8 +245,12 @@ export function BPEditBaseTable(
           tooltipClassName: 'bp-table-tooltip',
         }),
         dataType: 'number',
-        field: `value_co2_${year}`,
+        field: `value_co2_${isAfterMaxYear ? `${yearRangeSelected.year_end}_after` : year}`,
         headerClass: 'ag-text-center',
+        cellRenderer: (props: any) => {
+          const value = valueGetter(props, year, isAfterMaxYear, 'value_co2')
+          return editCellRenderer(props, value?.toString() || '')
+        },
         headerComponent: function (props: any) {
           return (
             <BasePasteWrapper
@@ -288,8 +305,18 @@ export function BPEditBaseTable(
   const addActivity = () => {
     setForm([
       {
-        lvc_status: 'Undefined',
-        row_id: form.length + 1,
+        lvc_status: '',
+        bp_chemical_type_id: null,
+        project_cluster_id: null,
+        project_type_code: '',
+        project_type_id: null,
+        sector_code: '',
+        sector_id: null,
+        status: '',
+        subsector_id: null,
+        title: '',
+        substances: [],
+        row_id: form.length,
         values: [],
       } as any,
       ...form,

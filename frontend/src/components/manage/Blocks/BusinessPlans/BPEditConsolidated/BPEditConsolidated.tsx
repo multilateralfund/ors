@@ -20,11 +20,15 @@ import { useBPListApi } from '../BPList/BPList'
 import BPTabs from '../BPTabs'
 import { BpFilesObject } from '../types'
 import { useGetBpData } from '../BP/useGetBpData'
+import { useStore } from '@ors/store'
+import NotFoundPage from '@ors/app/not-found'
 
 const BPEdit = () => {
   const { period, type } = useParams<{ period: string; type: string }>()
   const [year_start, year_end] = period.split('-')
   const formattedType = capitalize(type)
+
+  const { setBPType } = useStore((state) => state.bpType)
 
   const getFilters = (reqType: string) => ({
     ...(reqType === 'activities'
@@ -46,7 +50,7 @@ const BPEdit = () => {
     'api/business-plan/files/',
     'files',
   ) as any
-  const { data } = useGetBpData(
+  const { data, error } = useGetBpData(
     bpFilters,
     'api/business-plan/get/',
     'fullData',
@@ -87,7 +91,7 @@ const BPEdit = () => {
 
     return map(activities, (activity, index) => ({
       ...activity,
-      row_id: index,
+      row_id: activities.length - index - 1,
     }))
   }, [activities])
 
@@ -99,15 +103,21 @@ const BPEdit = () => {
     }
   }, [getFormattedActivities, handleSetForm])
 
-  return (
+  useEffect(() => {
+    setBPType(formattedType)
+  }, [])
+
+  return error ? (
+    <NotFoundPage />
+  ) : (
     <>
       <Loading
         className="!fixed bg-action-disabledBackground"
         active={loading}
       />
-      {!bpLoading && (
+      {!bpLoading && results.length > 0 && (
         <BPHeaderEditConsolidated
-          {...{ form, setWarnOnClose, type, results, bpForm, files }}
+          {...{ form, setWarnOnClose, type, results, bpForm, files, setForm }}
         />
       )}
       {!loading && (
@@ -116,28 +126,28 @@ const BPEdit = () => {
           to recover it?
         </BPRestoreEdit>
       )}
-      <BPTabs
-        {...{
-          bpForm,
-          activeTab,
-          setActiveTab,
-          setBpForm,
-          setFiles,
-          files,
-          bpFiles,
-          results,
-          data,
-        }}
-        isConsolidatedBp
-      >
-        {!loading && results.length > 0 && (
+      {!loading && results.length > 0 && (
+        <BPTabs
+          {...{
+            bpForm,
+            activeTab,
+            setActiveTab,
+            setBpForm,
+            setFiles,
+            files,
+            bpFiles,
+            results,
+            data,
+          }}
+          isConsolidatedBp
+        >
           <BEditTable
             {...{ form, loading, params }}
             isConsolidatedView={true}
             setForm={handleSetForm}
           />
-        )}
-      </BPTabs>
+        </BPTabs>
+      )}
     </>
   )
 }

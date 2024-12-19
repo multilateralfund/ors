@@ -112,7 +112,7 @@ class BPActivity(models.Model):
     business_plan = models.ForeignKey(
         BusinessPlan, on_delete=models.CASCADE, related_name="activities"
     )
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, blank=True)
     required_by_model = models.CharField(max_length=255, null=True, blank=True)
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
     agency = models.ForeignKey(Agency, on_delete=models.CASCADE, null=True, blank=True)
@@ -140,9 +140,7 @@ class BPActivity(models.Model):
     legacy_sector_and_subsector = models.CharField(
         max_length=255, null=True, blank=True
     )
-    status = models.CharField(
-        max_length=16, choices=Status.choices, default=Status.undefined
-    )
+    status = models.CharField(max_length=16, choices=Status.choices, blank=True)
     is_multi_year = models.BooleanField(default=False)
     reason_for_exceeding = models.TextField(null=True, blank=True)
     remarks = models.TextField(null=True, blank=True)

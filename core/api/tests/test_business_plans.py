@@ -167,7 +167,7 @@ class TestBPImportValidate:
 
         assert response.status_code == 200
         assert len(response.data["warnings"]) == 0
-        assert len(response.data["errors"]) == 3
+        assert len(response.data["errors"]) == 2
         assert (
             "Agency 'NoAgency' does not exist"
             in response.data["errors"][0]["error_message"]
@@ -175,10 +175,6 @@ class TestBPImportValidate:
         assert (
             "Country 'NoCountry' does not exist"
             in response.data["errors"][1]["error_message"]
-        )
-        assert (
-            "Project status '' does not exist"
-            in response.data["errors"][2]["error_message"]
         )
 
     def test_bp_import_validate_multiple_warnings(
