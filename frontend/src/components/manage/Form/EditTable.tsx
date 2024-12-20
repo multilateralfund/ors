@@ -1,13 +1,6 @@
 'use client'
 
-import React, {
-  useCallback,
-  useEffect,
-  useId,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import React, { useCallback, useEffect, useId, useRef, useState } from 'react'
 
 import styled from '@emotion/styled'
 import { TablePagination, Typography } from '@mui/material'
@@ -22,9 +15,6 @@ import {
   defaultColGroupDef as globalColGroupDef,
 } from '@ors/config/Table/columnsDef'
 
-import DefaultFadeInOut from '@ors/components/manage/Transitions/FadeInOut'
-import { KEY_BACKSPACE } from '@ors/constants'
-
 import { debounce } from '@ors/helpers/Utils/Utils'
 
 type Pagination = {
@@ -35,7 +25,6 @@ type Pagination = {
 
 export type TableProps = {
   Toolbar?: React.FC<any>
-  fadeInOut?: boolean
   headerDepth?: number
   paginationPageSizeSelector?: Array<number>
   resizeGridOnRowUpdate?: boolean
@@ -128,7 +117,6 @@ function EditTable(props: TableProps) {
     columnDefs,
     domLayout = 'normal',
     enablePagination = false,
-    fadeInOut = true,
     gridRef,
     headerDepth = 1,
     loading,
@@ -181,10 +169,6 @@ function EditTable(props: TableProps) {
     filter: false,
     sortable: false,
     sortingOrder: ['asc', 'desc', null],
-    suppressKeyboardEvent: (props) => {
-      const key = props.event.key
-      return key === KEY_BACKSPACE
-    },
     tooltip: false,
     wrapHeaderText: true,
     ...omit(props.defaultColDef, ['cellClass']),
@@ -210,11 +194,6 @@ function EditTable(props: TableProps) {
     getInitialRowData({ rowData: props.rowData, rowsVisible, withSkeleton }),
   )
   const [initialPinnedBottomRowData] = useState(pinnedBottomRowData)
-
-  const FadeInOut = useMemo(
-    () => (fadeInOut ? DefaultFadeInOut : 'div'),
-    [fadeInOut],
-  )
 
   function updatePagination(newPagination: any, triggerEvent = false) {
     const currentPagination = {
@@ -312,274 +291,270 @@ function EditTable(props: TableProps) {
   }, [])
 
   return (
-    <>
-      <FadeInOut className="ag-table-root flex flex-col" ref={tableEl}>
-        {Toolbar && (
-          <div className="ag-toolbar">
-            <Toolbar
-              {...props}
-              gridContext={gridContext}
-              onUnitSelectionChange={props.handleUnitSelectionChange}
-            />
-          </div>
-        )}
-        <AgGridWrapper
-          id={id || `table-${uniqueId}`}
-          className={cx(
-            'ag-table ag-theme-ors relative w-full',
-            {
-              'with-separators': withSeparators,
-            },
-            className,
-          )}
-          headerDepth={headerDepth}
-          rowHeight={rowHeight}
-        >
-          <AgGridReact
-            alwaysShowHorizontalScroll={true}
-            animateRows={false}
-            components={components}
-            context={gridContext}
-            defaultColDef={defaultColDef}
-            defaultColGroupDef={props?.defaultColGroupDef || globalColGroupDef}
-            enableCellTextSelection={true}
-            ensureDomOrder={true}
-            pagination={false}
-            pinnedBottomRowData={initialPinnedBottomRowData}
-            rowBuffer={rowBuffer}
-            rowClassRules={rowClassRules}
-            rowData={initialRowData}
-            sortingOrder={['asc']}
-            stopEditingWhenCellsLoseFocus={true}
-            suppressCellFocus={true}
-            suppressColumnMoveAnimation={true}
-            suppressDragLeaveHidesColumns={true}
-            suppressMovableColumns={true}
-            suppressMultiSort={true}
-            suppressPaginationPanel={true}
-            suppressPropertyNamesCheck={true}
-            suppressRowClickSelection={true}
-            suppressRowHoverHighlight={true}
-            columnDefs={[
-              ...(columnDefs || []),
-              ...(withFluidEmptyColumn
-                ? [
-                    {
-                      category: 'expand',
-                      field: 'none',
-                      flex: 1,
-                      headerName: '',
-                    },
-                  ]
-                : []),
-            ]}
-            noRowsOverlayComponent={(props: any) => {
-              return (
-                <Typography id="no-rows" component="span">
-                  {props.label || 'No Rows To Show'}
-                </Typography>
-              )
-            }}
-            ref={(agGrid) => {
-              grid.current = agGrid
-              if (gridRef) {
-                gridRef.current = agGrid
-              }
-              if (!gridRef || !agGrid) return
-              gridRef.current.paginationGoToPage = (
-                page: number,
-                triggerEvent = false,
-              ) => {
-                updatePagination({ page }, triggerEvent)
-              }
-            }}
-            onColumnResized={(props) => {
-              onColumnResized(props)
-              debounce(updateTableHeight)
-            }}
-            onFirstDataRendered={(agGrid) => {
-              onFirstDataRendered(agGrid)
-              updateTableHeight()
-            }}
-            onGridReady={(props) => {
-              onGridReady(props)
-              updateTableHeight()
-
-              if (!tableEl.current) return
-              const tableRoot = tableEl.current.querySelector('.ag-root')
-              // Get original scroll
-              const agScroll = tableRoot?.querySelector(
-                '.ag-body-horizontal-scroll',
-              )
-              const agLeftSpacer = agScroll?.querySelector(
-                '.ag-horizontal-left-spacer',
-              )
-              const agRightSpacer = agScroll?.querySelector(
-                '.ag-horizontal-right-spacer',
-              )
-              const agScrollViewport = agScroll?.querySelector(
-                '.ag-body-horizontal-scroll-viewport',
-              )
-              const agScrollContainer = agScroll?.querySelector(
-                '.ag-body-horizontal-scroll-container',
-              )
-              // Get clone scroll
-              const cloneAgScroll = agScroll?.cloneNode(true) as Element
-              const cloneAgLeftSpacer = cloneAgScroll?.querySelector(
-                '.ag-horizontal-left-spacer',
-              )
-              const cloneAgRightSpacer = cloneAgScroll?.querySelector(
-                '.ag-horizontal-right-spacer',
-              )
-              const cloneAgScrollViewport = cloneAgScroll?.querySelector(
-                '.ag-body-horizontal-scroll-viewport',
-              )
-              const cloneAgScrollContainer = cloneAgScroll?.querySelector(
-                '.ag-body-horizontal-scroll-container',
-              )
-              if (
-                !tableRoot ||
-                !agScroll ||
-                !agLeftSpacer ||
-                !agRightSpacer ||
-                !agScrollViewport ||
-                !agScrollContainer ||
-                !cloneAgScroll ||
-                !cloneAgLeftSpacer ||
-                !cloneAgRightSpacer ||
-                !cloneAgScrollViewport ||
-                !cloneAgScrollContainer
-              ) {
-                return
-              }
-              // Insert clone scroll
-              tableRoot.insertBefore(cloneAgScroll, tableRoot.firstChild)
-              // add event listeners to keep scroll position synchronized
-              agScrollViewport.addEventListener('scroll', () => {
-                cloneAgScrollViewport.scrollTo({
-                  left: agScrollViewport.scrollLeft,
-                })
-              })
-              cloneAgScrollViewport.addEventListener('scroll', () => {
-                agScrollViewport.scrollTo({
-                  left: cloneAgScrollViewport.scrollLeft,
-                })
-              })
-              // scroll mutation observer to keep size sync
-              const scrollElements = [
-                agScroll,
-                agLeftSpacer,
-                agRightSpacer,
-                agScrollViewport,
-                agScrollContainer,
-              ]
-              const cloneScrollElements = [
-                cloneAgScroll,
-                cloneAgLeftSpacer,
-                cloneAgRightSpacer,
-                cloneAgScrollViewport,
-                cloneAgScrollContainer,
-              ]
-              scrollMutationObserver.current = new MutationObserver(
-                (mutationList) => {
-                  forEach(mutationList, (mutation) => {
-                    const element = indexOf(scrollElements, mutation.target)
-                    if (element > -1) {
-                      cloneStyle(
-                        scrollElements[element],
-                        cloneScrollElements[element],
-                      )
-                      cloneClass(
-                        scrollElements[element],
-                        cloneScrollElements[element],
-                      )
-                    }
-                  })
-                },
-              )
-              // start observing the scroll elements for `style` attribute changes
-              scrollMutationObserver.current.observe(agScroll, {
-                attributeFilter: ['style', 'class'],
-                subtree: true,
-              })
-
-              const agHeader =
-                tableEl.current?.querySelector<HTMLDivElement>('.ag-header')
-              if (agHeader) {
-                headerIntersectionObserver.current =
-                  setupFixedHeaderObserver(agHeader)
-              }
-            }}
-            onGridSizeChanged={(props) => {
-              onGridSizeChanged(props)
-              debounce(updateTableHeight)
-            }}
-            onRowDataUpdated={(props) => {
-              onRowDataUpdated(props)
-
-              if (resizeGridOnRowUpdate) {
-                updateTableHeight()
-              }
-            }}
-            {...omit(props, [
-              'pagination',
-              'paginationPageSize',
-              'suppressPaginationPanel',
-              'gridRef',
-              'components',
-              'defaultColDef',
-              'defaultColGroupDef',
-              'pinnedBottomRowData',
-              'rowBuffer',
-              'rowClassRules',
-              'rowData',
-              'columnDefs',
-              'ref',
-              'onCellKeyDown',
-              'onColumnResized',
-              'onFirstDataRendered',
-              'onGridReady',
-              'onGridSizeChanged',
-              'onPaginationChanged',
-              'onRowDataUpdated',
-              'style',
-              'context',
-            ])}
+    <div className="ag-table-root flex flex-col" ref={tableEl}>
+      {Toolbar && (
+        <div className="ag-toolbar">
+          <Toolbar
+            {...props}
+            gridContext={gridContext}
+            onUnitSelectionChange={props.handleUnitSelectionChange}
           />
-        </AgGridWrapper>
-        {enablePagination && (
-          <TablePagination
-            className="pr-2"
-            component="div"
-            count={rowCount}
-            disabled={loading}
-            page={pagination.page}
-            rowsPerPage={pagination.rowsPerPage}
-            rowsPerPageOptions={paginationPageSizeSelector || [10, 25, 50, 100]}
-            onPageChange={(_, page) => {
-              updatePagination(
-                {
-                  page,
-                  rowsPerPage: pagination.rowsPerPage,
-                },
-                true,
-              )
-            }}
-            onRowsPerPageChange={(
-              event: React.ChangeEvent<HTMLInputElement>,
+        </div>
+      )}
+      <AgGridWrapper
+        id={id || `table-${uniqueId}`}
+        className={cx(
+          'ag-table ag-theme-ors ag-theme-alpine relative w-full',
+          {
+            'with-separators': withSeparators,
+          },
+          className,
+        )}
+        headerDepth={headerDepth}
+        rowHeight={rowHeight}
+      >
+        <AgGridReact
+          alwaysShowHorizontalScroll={true}
+          animateRows={false}
+          components={components}
+          context={gridContext}
+          defaultColDef={defaultColDef}
+          defaultColGroupDef={props?.defaultColGroupDef || globalColGroupDef}
+          enableCellTextSelection={true}
+          ensureDomOrder={false}
+          pagination={false}
+          pinnedBottomRowData={initialPinnedBottomRowData}
+          rowBuffer={rowBuffer}
+          rowClassRules={rowClassRules}
+          rowData={initialRowData}
+          sortingOrder={['asc']}
+          stopEditingWhenCellsLoseFocus={true}
+          suppressCellFocus={true}
+          suppressColumnMoveAnimation={true}
+          suppressDragLeaveHidesColumns={true}
+          suppressMovableColumns={true}
+          suppressMultiSort={true}
+          suppressPaginationPanel={true}
+          suppressPropertyNamesCheck={true}
+          suppressRowClickSelection={true}
+          suppressRowHoverHighlight={true}
+          columnDefs={[
+            ...(columnDefs || []),
+            ...(withFluidEmptyColumn
+              ? [
+                  {
+                    category: 'expand',
+                    field: 'none',
+                    flex: 1,
+                    headerName: '',
+                  },
+                ]
+              : []),
+          ]}
+          noRowsOverlayComponent={(props: any) => {
+            return (
+              <Typography id="no-rows" component="span">
+                {props.label || 'No Rows To Show'}
+              </Typography>
+            )
+          }}
+          ref={(agGrid) => {
+            grid.current = agGrid
+            if (gridRef) {
+              gridRef.current = agGrid
+            }
+            if (!gridRef || !agGrid) return
+            gridRef.current.paginationGoToPage = (
+              page: number,
+              triggerEvent = false,
             ) => {
-              updatePagination(
-                {
-                  page: pagination.page,
-                  rowsPerPage: event.target.value,
-                },
-                true,
-              )
-            }}
-          />
-        )}
-      </FadeInOut>
-    </>
+              updatePagination({ page }, triggerEvent)
+            }
+          }}
+          onColumnResized={(props) => {
+            onColumnResized(props)
+            debounce(updateTableHeight)
+          }}
+          onFirstDataRendered={(agGrid) => {
+            onFirstDataRendered(agGrid)
+            updateTableHeight()
+          }}
+          onGridReady={(props) => {
+            onGridReady(props)
+            updateTableHeight()
+
+            if (!tableEl.current) return
+            const tableRoot = tableEl.current.querySelector('.ag-root')
+            // Get original scroll
+            const agScroll = tableRoot?.querySelector(
+              '.ag-body-horizontal-scroll',
+            )
+            const agLeftSpacer = agScroll?.querySelector(
+              '.ag-horizontal-left-spacer',
+            )
+            const agRightSpacer = agScroll?.querySelector(
+              '.ag-horizontal-right-spacer',
+            )
+            const agScrollViewport = agScroll?.querySelector(
+              '.ag-body-horizontal-scroll-viewport',
+            )
+            const agScrollContainer = agScroll?.querySelector(
+              '.ag-body-horizontal-scroll-container',
+            )
+            // Get clone scroll
+            const cloneAgScroll = agScroll?.cloneNode(true) as Element
+            const cloneAgLeftSpacer = cloneAgScroll?.querySelector(
+              '.ag-horizontal-left-spacer',
+            )
+            const cloneAgRightSpacer = cloneAgScroll?.querySelector(
+              '.ag-horizontal-right-spacer',
+            )
+            const cloneAgScrollViewport = cloneAgScroll?.querySelector(
+              '.ag-body-horizontal-scroll-viewport',
+            )
+            const cloneAgScrollContainer = cloneAgScroll?.querySelector(
+              '.ag-body-horizontal-scroll-container',
+            )
+            if (
+              !tableRoot ||
+              !agScroll ||
+              !agLeftSpacer ||
+              !agRightSpacer ||
+              !agScrollViewport ||
+              !agScrollContainer ||
+              !cloneAgScroll ||
+              !cloneAgLeftSpacer ||
+              !cloneAgRightSpacer ||
+              !cloneAgScrollViewport ||
+              !cloneAgScrollContainer
+            ) {
+              return
+            }
+            // Insert clone scroll
+            tableRoot.insertBefore(cloneAgScroll, tableRoot.firstChild)
+            // add event listeners to keep scroll position synchronized
+            agScrollViewport.addEventListener('scroll', () => {
+              cloneAgScrollViewport.scrollTo({
+                left: agScrollViewport.scrollLeft,
+              })
+            })
+            cloneAgScrollViewport.addEventListener('scroll', () => {
+              agScrollViewport.scrollTo({
+                left: cloneAgScrollViewport.scrollLeft,
+              })
+            })
+            // scroll mutation observer to keep size sync
+            const scrollElements = [
+              agScroll,
+              agLeftSpacer,
+              agRightSpacer,
+              agScrollViewport,
+              agScrollContainer,
+            ]
+            const cloneScrollElements = [
+              cloneAgScroll,
+              cloneAgLeftSpacer,
+              cloneAgRightSpacer,
+              cloneAgScrollViewport,
+              cloneAgScrollContainer,
+            ]
+            scrollMutationObserver.current = new MutationObserver(
+              (mutationList) => {
+                forEach(mutationList, (mutation) => {
+                  const element = indexOf(scrollElements, mutation.target)
+                  if (element > -1) {
+                    cloneStyle(
+                      scrollElements[element],
+                      cloneScrollElements[element],
+                    )
+                    cloneClass(
+                      scrollElements[element],
+                      cloneScrollElements[element],
+                    )
+                  }
+                })
+              },
+            )
+            // start observing the scroll elements for `style` attribute changes
+            scrollMutationObserver.current.observe(agScroll, {
+              attributeFilter: ['style', 'class'],
+              subtree: true,
+            })
+
+            const agHeader =
+              tableEl.current?.querySelector<HTMLDivElement>('.ag-header')
+            if (agHeader) {
+              headerIntersectionObserver.current =
+                setupFixedHeaderObserver(agHeader)
+            }
+          }}
+          onGridSizeChanged={(props) => {
+            onGridSizeChanged(props)
+            debounce(updateTableHeight)
+          }}
+          onRowDataUpdated={(props) => {
+            onRowDataUpdated(props)
+
+            if (resizeGridOnRowUpdate) {
+              updateTableHeight()
+            }
+          }}
+          {...omit(props, [
+            'pagination',
+            'paginationPageSize',
+            'suppressPaginationPanel',
+            'gridRef',
+            'components',
+            'defaultColDef',
+            'defaultColGroupDef',
+            'pinnedBottomRowData',
+            'rowBuffer',
+            'rowClassRules',
+            'rowData',
+            'columnDefs',
+            'ref',
+            'onCellKeyDown',
+            'onColumnResized',
+            'onFirstDataRendered',
+            'onGridReady',
+            'onGridSizeChanged',
+            'onPaginationChanged',
+            'onRowDataUpdated',
+            'style',
+            'context',
+          ])}
+        />
+      </AgGridWrapper>
+      {enablePagination && (
+        <TablePagination
+          className="pr-2"
+          component="div"
+          count={rowCount}
+          disabled={loading}
+          page={pagination.page}
+          rowsPerPage={pagination.rowsPerPage}
+          rowsPerPageOptions={paginationPageSizeSelector || [10, 25, 50, 100]}
+          onPageChange={(_, page) => {
+            updatePagination(
+              {
+                page,
+                rowsPerPage: pagination.rowsPerPage,
+              },
+              true,
+            )
+          }}
+          onRowsPerPageChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+            updatePagination(
+              {
+                page: pagination.page,
+                rowsPerPage: event.target.value,
+              },
+              true,
+            )
+          }}
+        />
+      )}
+    </div>
   )
 }
 

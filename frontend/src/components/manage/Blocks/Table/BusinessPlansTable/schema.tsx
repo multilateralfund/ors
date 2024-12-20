@@ -335,7 +335,6 @@ const allColumnDefs = (
 ]
 
 const defaultColDef = {
-  autoHeight: true,
   resizable: true,
 }
 

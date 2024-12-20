@@ -185,9 +185,7 @@ export function BasePasteWrapper(props: any) {
       onClick={pasting ? () => {} : handlePaste}
     >
       <span>{label}</span>
-      <div className="pb-1">
-        {pasting ? <IoHourglassOutline /> : <IoClipboardOutline />}
-      </div>
+      <div>{pasting ? <IoHourglassOutline /> : <IoClipboardOutline />}</div>
     </span>
   )
 }
