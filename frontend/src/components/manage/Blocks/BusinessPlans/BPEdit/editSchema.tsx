@@ -29,6 +29,7 @@ import { HeaderPasteWrapper } from './pasteSupport'
 
 import { IoTrash } from 'react-icons/io5'
 import { ITooltipParams } from 'ag-grid-community'
+import { hasErrors } from '../utils'
 
 const useColumnsOptions = (
   yearColumns: any[],
@@ -56,6 +57,7 @@ const useColumnsOptions = (
     }))
   const chemicalTypes = useGetChemicalTypes()
   const chemicalTypesResults = chemicalTypes.results
+  const { rowErrors } = useStore((state) => state.bpErrors)
 
   const getSubsectorsOfSector = useCallback(
     (params: any) =>
@@ -103,8 +105,10 @@ const useColumnsOptions = (
             openOnFocus: true,
             options: countries,
           },
-          cellRenderer: (props: any) =>
-            editCellRenderer(props, props.data.country?.name),
+          ...(hasErrors(rowErrors, 'country_id') && {
+            cellRenderer: (props: any) =>
+              editCellRenderer(props, props.data.country?.name),
+          }),
           field: 'country_id',
           headerClass: 'ag-text-center',
           headerComponentParams: {
@@ -113,6 +117,7 @@ const useColumnsOptions = (
           headerName: tableColumns.country_id,
           minWidth: 150,
           tooltipField: 'country.name',
+          valueGetter: (params: any) => params.data.country?.name,
           valueSetter: (params: any) =>
             valueSetter(params, 'country', countries),
         },
@@ -130,8 +135,10 @@ const useColumnsOptions = (
                   openOnFocus: true,
                   options: agencies,
                 },
-                cellRenderer: (props: any) =>
-                  editCellRenderer(props, props.data.agency?.name),
+                ...(hasErrors(rowErrors, 'agency_id') && {
+                  cellRenderer: (props: any) =>
+                    editCellRenderer(props, props.data.agency?.name),
+                }),
                 field: 'agency_id',
                 headerClass: 'ag-text-center',
                 headerComponentParams: {
@@ -140,6 +147,7 @@ const useColumnsOptions = (
                 headerName: tableColumns.agency_id,
                 minWidth: 150,
                 tooltipField: 'agency.name',
+                valueGetter: (params: any) => params.data.agency?.name,
                 valueSetter: (params: any) =>
                   valueSetter(params, 'agency', agencies),
               },
@@ -156,17 +164,22 @@ const useColumnsOptions = (
             openOnFocus: true,
             options: clusters,
           },
-          cellRenderer: (props: any) =>
-            editCellRenderer(
-              props,
-              props.data.project_cluster?.code ??
-                props.data.project_cluster?.name,
-            ),
+          ...(hasErrors(rowErrors, 'project_cluster_id') && {
+            cellRenderer: (props: any) =>
+              editCellRenderer(
+                props,
+                props.data.project_cluster?.code ??
+                  props.data.project_cluster?.name,
+              ),
+          }),
           field: 'project_cluster_id',
           headerClass: 'ag-text-center',
           headerName: tableColumns.project_cluster_id,
           minWidth: 120,
           tooltipField: 'project_cluster.name',
+          valueGetter: (params: any) =>
+            params.data.project_cluster?.code ??
+            params.data.project_cluster?.name,
           valueSetter: (params: any) =>
             valueSetter(params, 'project_cluster', clusters),
         },
@@ -181,16 +194,20 @@ const useColumnsOptions = (
             openOnFocus: true,
             options: types,
           },
-          cellRenderer: (props: any) =>
-            editCellRenderer(
-              props,
-              props.data.project_type?.code ?? props.data.project_type?.name,
-            ),
+          ...(hasErrors(rowErrors, 'project_type_id') && {
+            cellRenderer: (props: any) =>
+              editCellRenderer(
+                props,
+                props.data.project_type?.code ?? props.data.project_type?.name,
+              ),
+          }),
           field: 'project_type_id',
           headerClass: 'ag-text-center',
           headerName: tableColumns.project_type_id,
           minWidth: 120,
           tooltipField: 'project_type.name',
+          valueGetter: (params: any) =>
+            params.data.project_type?.code ?? params.data.project_type?.name,
           valueSetter: (params: any) =>
             valueSetter(params, 'project_type', types),
         },
@@ -206,13 +223,16 @@ const useColumnsOptions = (
             openOnFocus: true,
             options: chemicalTypesResults,
           },
-          cellRenderer: (props: any) =>
-            editCellRenderer(props, props.data.bp_chemical_type?.name),
+          ...(hasErrors(rowErrors, 'bp_chemical_type_id') && {
+            cellRenderer: (props: any) =>
+              editCellRenderer(props, props.data.bp_chemical_type?.name),
+          }),
           field: 'bp_chemical_type_id',
           headerClass: 'ag-text-center',
           headerName: tableColumns.bp_chemical_type_id,
           minWidth: 120,
           tooltipField: 'bp_chemical_type.name',
+          valueGetter: (params: any) => params.data.bp_chemical_type?.name,
           valueSetter: (params: any) =>
             valueSetter(params, 'bp_chemical_type', chemicalTypesResults),
         },
@@ -227,16 +247,20 @@ const useColumnsOptions = (
             openOnFocus: true,
             options: sectors,
           },
-          cellRenderer: (props: any) =>
-            editCellRenderer(
-              props,
-              props.data.sector?.code ?? props.data.sector?.name,
-            ),
+          ...(hasErrors(rowErrors, 'sector_id') && {
+            cellRenderer: (props: any) =>
+              editCellRenderer(
+                props,
+                props.data.sector?.code ?? props.data.sector?.name,
+              ),
+          }),
           field: 'sector_id',
           headerClass: 'ag-text-center',
           headerName: tableColumns.sector_id,
           minWidth: 120,
           tooltipField: 'sector.name',
+          valueGetter: (params: any) =>
+            params.data.sector?.code ?? params.data.sector?.name,
           valueSetter: (params: any) =>
             valueSetter(
               params,
@@ -261,16 +285,20 @@ const useColumnsOptions = (
               options: subsectorsOfSector,
             }
           },
-          cellRenderer: (props: any) =>
-            editCellRenderer(
-              props,
-              props.data.subsector?.code ?? props.data.subsector?.name,
-            ),
+          ...(hasErrors(rowErrors, 'subsector_id') && {
+            cellRenderer: (props: any) =>
+              editCellRenderer(
+                props,
+                props.data.subsector?.code ?? props.data.subsector?.name,
+              ),
+          }),
           field: 'subsector_id',
           headerClass: 'ag-text-center',
           headerName: tableColumns.subsector_id,
           minWidth: 120,
           tooltipField: 'subsector.name',
+          valueGetter: (params: any) =>
+            params.data.subsector?.code ?? params.data.subsector?.name,
           valueSetter: (params: any) =>
             valueSetter(params, 'subsector', getSubsectorsOfSector(params)),
         },
@@ -280,8 +308,10 @@ const useColumnsOptions = (
           headerClass: 'ag-text-center',
           headerName: tableColumns.title,
           minWidth: 200,
-          cellRenderer: (props: any) =>
-            editCellRenderer(props, props.data.title, true),
+          ...(hasErrors(rowErrors, 'title') && {
+            cellRenderer: (props: any) =>
+              editCellRenderer(props, props.data.title, true),
+          }),
           tooltipField: 'title',
         },
         {
@@ -325,8 +355,10 @@ const useColumnsOptions = (
               />
             )
           },
-          cellRenderer: (props: any) =>
-            editCellRenderer(props, props.data.required_by_model),
+          ...(hasErrors(rowErrors, 'required_by_model') && {
+            cellRenderer: (props: any) =>
+              editCellRenderer(props, props.data.required_by_model),
+          }),
           headerName: tableColumns.required_by_model,
           minWidth: 150,
           tooltipField: 'required_by_model',
@@ -365,8 +397,10 @@ const useColumnsOptions = (
             openOnFocus: true,
             options: statuses,
           },
-          cellRenderer: (props: any) =>
-            editCellRenderer(props, props.data.status),
+          ...(hasErrors(rowErrors, 'status') && {
+            cellRenderer: (props: any) =>
+              editCellRenderer(props, props.data.status),
+          }),
           field: 'status',
           headerClass: 'ag-text-center',
           headerName: tableColumns.status,
@@ -390,11 +424,15 @@ const useColumnsOptions = (
           headerClass: 'ag-text-center',
           headerName: tableColumns.is_multi_year,
           minWidth: 120,
-          cellRenderer: (props: any) =>
-            editCellRenderer(props, props.data.is_multi_year ? 'MYA' : 'IND'),
+          ...(hasErrors(rowErrors, 'is_multi_year') && {
+            cellRenderer: (props: any) =>
+              editCellRenderer(props, props.data.is_multi_year ? 'MYA' : 'IND'),
+          }),
           tooltipValueGetter: (params: ITooltipParams) =>
             params.data.is_multi_year_display ??
             multiYearFilterOptions[1].fullName,
+          valueGetter: (params: any) =>
+            params.data.is_multi_year ? 'MYA' : 'IND',
           valueSetter: (params: any) =>
             MYAValueSetter(params, multiYearFilterOptions),
         },
@@ -404,12 +442,14 @@ const useColumnsOptions = (
           headerClass: 'ag-text-center',
           headerName: tableColumns.remarks,
           minWidth: 200,
-          cellRenderer: (props: any) =>
-            editCellRenderer(
-              { ...props, withoutTruncation: true },
-              props.data.remarks,
-              true,
-            ),
+          ...(hasErrors(rowErrors, 'remarks') && {
+            cellRenderer: (props: any) =>
+              editCellRenderer(
+                { ...props, withoutTruncation: true },
+                props.data.remarks,
+                true,
+              ),
+          }),
           tooltipField: 'remarks',
         },
         {
@@ -418,8 +458,10 @@ const useColumnsOptions = (
           headerClass: 'ag-text-center',
           headerName: tableColumns.remarks_additional,
           minWidth: 200,
-          cellRenderer: (props: any) =>
-            editCellRenderer(props, props.data.remarks_additional, true),
+          ...(hasErrors(rowErrors, 'remarks_additional') && {
+            cellRenderer: (props: any) =>
+              editCellRenderer(props, props.data.remarks_additional, true),
+          }),
           tooltipField: 'remarks_additional',
         },
         {
@@ -438,8 +480,10 @@ const useColumnsOptions = (
           },
           headerName: tableColumns.comment_secretariat,
           minWidth: 200,
-          cellRenderer: (props: any) =>
-            editCellRenderer(props, props.data.comment_secretariat, true),
+          ...(hasErrors(rowErrors, 'comment_secretariat') && {
+            cellRenderer: (props: any) =>
+              editCellRenderer(props, props.data.comment_secretariat, true),
+          }),
           tooltipField: 'comment_secretariat',
           valueSetter: (params: any) => {
             params.data.comment_secretariat = params.newValue ?? ''
@@ -448,7 +492,6 @@ const useColumnsOptions = (
         },
       ],
       defaultColDef: {
-        autoHeight: true,
         editable: true,
         enableCellChangeFlash: false,
         resizable: true,

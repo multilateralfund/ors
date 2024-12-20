@@ -1,5 +1,5 @@
 import { useStore } from '@ors/store'
-import { find, reverse } from 'lodash'
+import { find, keys, reduce, reverse, uniq } from 'lodash'
 
 export const filtersToQueryParams = (filters: any) => {
   const filtersParams = Object.entries(filters).map(
@@ -64,4 +64,14 @@ export const getDecisionNr = (decision_id: number) => {
   const decisions = bpSlice.decisions.data
 
   return find(decisions, (option) => option.id === decision_id)?.number
+}
+
+export const hasErrors = (rowErrors: any, column: string) => {
+  const colsWithErrors = reduce(
+    rowErrors,
+    (acc: string[], error: any) => [...acc, ...keys(error)],
+    [],
+  )
+
+  return uniq(colsWithErrors).includes(column)
 }

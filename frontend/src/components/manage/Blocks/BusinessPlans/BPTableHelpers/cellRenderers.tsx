@@ -8,9 +8,9 @@ import { filter, find, findIndex, map } from 'lodash'
 
 import { IoClose } from 'react-icons/io5'
 import CellValidation from '@ors/components/manage/Blocks/BusinessPlans/BPTableHelpers/CellValidation'
-import AgCellRenderer from '@ors/components/manage/AgCellRenderers/AgCellRenderer'
 import { useStore } from '@ors/store'
 import cx from 'classnames'
+import AgBpCellRenderer from './AgBpCellRenderer'
 
 const Tag = (tags: Array<string>, onDelete: (tag: string) => void) =>
   tags.map((tag: string) => (
@@ -159,11 +159,11 @@ export const editCellRenderer = (
           'w-[90%]': isLongText,
         })}
       >
-        <AgCellRenderer {...props} value={value} />
+        <AgBpCellRenderer {...props} value={value} />
       </div>
       <CellValidation {...{ errors }} />
     </div>
   ) : (
-    <AgCellRenderer {...props} value={value} />
+    <AgBpCellRenderer {...props} value={value} />
   )
 }
