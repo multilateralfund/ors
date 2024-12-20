@@ -11,6 +11,8 @@ import { BpPathParams } from '../types'
 import { useEditLocalStorageConsolidated } from './useLocalStorageConsolidated'
 import { useStore } from '@ors/store'
 import { RedirectToBpList } from '../RedirectToBpList'
+import { useState } from 'react'
+import Loading from '@ors/components/theme/Loading/Loading'
 
 export default function BPHeaderEditConsolidated({
   form,
@@ -24,6 +26,8 @@ export default function BPHeaderEditConsolidated({
   const { period } = useParams<BpPathParams>()
   const [year_start, year_end] = period.split('-')
 
+  const [isSaving, setIsSaving] = useState(false)
+
   const { setBusinessPlan } = useStore((state) => state.businessPlan)
   const { setRowErrors } = useStore((state) => state.bpErrors)
 
@@ -34,6 +38,8 @@ export default function BPHeaderEditConsolidated({
   const { deletedFilesIds = [], newFiles = [] } = files || {}
 
   const editBP = async () => {
+    setIsSaving(true)
+
     const formattedData = map(form, (dataItem, index) => ({
       ...dataItem,
       row_id: form.length - index - 1,
@@ -76,6 +82,7 @@ export default function BPHeaderEditConsolidated({
       })
 
       localStorage.clear()
+      setIsSaving(false)
       setWarnOnClose(false)
       setRowErrors([])
 
@@ -92,6 +99,8 @@ export default function BPHeaderEditConsolidated({
         id: response.id,
       })
     } catch (error) {
+      setIsSaving(false)
+
       if (error.status === 400) {
         const errors = await error.json()
         if (errors?.files) {
@@ -161,6 +170,10 @@ export default function BPHeaderEditConsolidated({
         >
           Save
         </Button>
+        <Loading
+          className="!fixed bg-action-disabledBackground"
+          active={isSaving}
+        />
       </div>
     </div>
   )

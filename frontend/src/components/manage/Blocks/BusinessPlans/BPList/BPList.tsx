@@ -75,7 +75,7 @@ export default function BPList(props: any) {
   }
 
   return (
-    <div className="m-auto min-h-[420px] max-w-screen-xl">
+    <div className="m-auto max-w-screen-xl">
       <BPListHeader viewType="plans" {...{ setParams }} />
       <BPListTabs />
       <div className="flex flex-1 flex-col justify-start gap-6 border-0 border-t border-solid border-primary pt-6">

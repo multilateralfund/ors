@@ -11,7 +11,6 @@ import {
   BPEditTableInterface,
   BpPathParams,
 } from '@ors/components/manage/Blocks/BusinessPlans/types'
-import Table from '@ors/components/manage/Form/Table'
 import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
 import { applyTransaction } from '@ors/helpers'
 
@@ -20,6 +19,7 @@ import { BasePasteWrapper } from './pasteSupport'
 
 import { IoAddCircle } from 'react-icons/io5'
 import { editCellRenderer } from '../BPTableHelpers/cellRenderers'
+import EditTable from '@ors/components/manage/Form/EditTable'
 
 export function BPEditBaseTable(
   props: { yearRangeSelected: ApiBPYearRange } & BPEditTableInterface,
@@ -368,7 +368,7 @@ export function BPEditBaseTable(
   return (
     <>
       <form>
-        <Table
+        <EditTable
           className="bp-edit-table"
           Toolbar={AddActivityButton}
           columnDefs={columnOptions.columnDefs}

@@ -69,14 +69,7 @@ export default function BPListActivitiesWrapper(props: any) {
 
 function BPListActivities(props: any) {
   const { activities, initialFilters, period, yearRanges } = props
-  const {
-    count,
-    loaded,
-    loading,
-    params: reqParams,
-    results,
-    setParams,
-  } = activities
+  const { count, loaded, loading, results, setParams } = activities
 
   const form = useRef<any>()
 
