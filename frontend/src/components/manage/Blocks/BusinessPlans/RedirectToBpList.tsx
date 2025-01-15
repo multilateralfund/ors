@@ -1,9 +1,11 @@
+import { useContext } from 'react'
+
 import { Link } from 'wouter'
 
 import { IoReturnUpBack } from 'react-icons/io5'
-import { useGetYearRanges } from './useGetYearRanges'
 import useGetBpPeriods from './BPList/useGetBPPeriods'
 import { getCurrentTriennium, getLatestBpYearRange } from './utils'
+import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
 
 export const RedirectToBpList = ({
   currentYearRange,
@@ -12,7 +14,7 @@ export const RedirectToBpList = ({
 }) => {
   const currentTriennium = getCurrentTriennium()
 
-  const { results: yearRanges } = useGetYearRanges()
+  const { yearRanges } = useContext(BPYearRangesContext)
   const { periodOptions } = useGetBpPeriods(yearRanges)
   const latestBpYearRange = getLatestBpYearRange(periodOptions)
 

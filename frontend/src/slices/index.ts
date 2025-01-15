@@ -16,9 +16,11 @@ import { createBPDiffVersionsSlice } from './createBPDiffVersionsSlice'
 import { createBPSlice } from './createBPSlice'
 import { createBPTypeSlice } from './createBPTypeSlice'
 import { createBPErrorsSlice } from './createBPErrorsSlice'
+import { createYearRangesSlice } from './createYearRangesSlice'
 
 export default function createSlices(props: CreateSliceProps) {
   return {
+    yearRanges: { ...createYearRangesSlice(props) },
     bp_diff_versions: { ...createBPDiffVersionsSlice(props) },
     bpFilters: { ...createBPFiltersSlice(props) },
     bpType: { ...createBPTypeSlice(props) },

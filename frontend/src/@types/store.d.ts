@@ -11,6 +11,7 @@ import { StoreApi } from 'zustand'
 import { ApiAgency } from './api_agencies'
 import { ApiBP } from './api_bp_get'
 import { ReportVariant } from './variants'
+import { ApiBPYearRanges } from './api_bp_get_years'
 
 type StoreProviderProps = {
   children: React.ReactNode
@@ -126,6 +127,11 @@ export interface BPTypeSlice {
   setBPType: (type: string) => void
 }
 
+export interface BPYearRangesSlice {
+  yearRanges: { loading: boolean; loaded: boolean; data: ApiBPYearRanges }
+  fetchYearRanges: () => void
+}
+
 type ErrorTemplate = { [key: string]: Array<string> }
 
 export interface BPErrorsSlice {
@@ -201,6 +207,7 @@ export interface HistoryListItem {
 
 // Store state
 export type StoreState = {
+  yearRanges: BPYearRangesSlice
   bp_diff_versions: BPDiffVersionsSlice
   bpFilters: BPFiltersSlice
   bpType: BPTypeSlice
