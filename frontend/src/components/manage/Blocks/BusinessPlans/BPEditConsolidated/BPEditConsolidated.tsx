@@ -55,7 +55,11 @@ const BPEditConsolidated = () => {
     'fullData',
   ) as any
 
-  const [activeTab, setActiveTab] = useState(0)
+  const { activeTab: storeActiveTab } = useStore(
+    (state) => state.bp_current_tab,
+  )
+
+  const [activeTab, setActiveTab] = useState(storeActiveTab)
   const [form, setForm] = useState<Array<ApiEditBPActivity> | undefined>(
     undefined,
   )

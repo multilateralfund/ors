@@ -3,6 +3,7 @@ import { Tab, Tabs } from '@mui/material'
 import BPDetails from './BP/BPDetails'
 import { BPTabsInterface } from './types'
 import BPDetailsConsolidatedEdit from './BPEditConsolidated/BPDetailsConsolidatedEdit'
+import { useStore } from '@ors/store'
 
 const BPTabs = ({
   activeTab,
@@ -11,6 +12,10 @@ const BPTabs = ({
   isConsolidatedBp = false,
   ...props
 }: BPTabsInterface) => {
+  const { setActiveTab: setActiveTabStore } = useStore(
+    (state) => state.bp_current_tab,
+  )
+
   return (
     <>
       <div className="flex items-center justify-between gap-2 lg:flex-nowrap print:hidden">
@@ -26,6 +31,7 @@ const BPTabs = ({
           }}
           onChange={(event, newValue) => {
             setActiveTab(newValue)
+            setActiveTabStore(newValue)
           }}
           allowScrollButtonsMobile
         >

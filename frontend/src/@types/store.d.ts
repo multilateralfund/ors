@@ -132,6 +132,11 @@ export interface BPYearRangesSlice {
   fetchYearRanges: () => void
 }
 
+export interface BPCurrentTabSlice {
+  activeTab: number
+  setActiveTab: (nr: number) => void
+}
+
 type ErrorTemplate = { [key: string]: Array<string> }
 
 export interface BPErrorsSlice {
@@ -213,6 +218,7 @@ export type StoreState = {
   bpType: BPTypeSlice
   businessPlan: BPSlice
   businessPlans: BusinessPlanSlice
+  bp_current_tab: BPCurrentTabSlice
   bpErrors: BPErrorsSlice
   cache: CacheSlice
   common: CommonSlice

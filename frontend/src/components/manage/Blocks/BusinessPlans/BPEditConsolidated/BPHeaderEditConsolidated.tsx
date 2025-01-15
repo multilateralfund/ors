@@ -29,6 +29,7 @@ export default function BPHeaderEditConsolidated({
   const [isSaving, setIsSaving] = useState(false)
 
   const { setBusinessPlan } = useStore((state) => state.businessPlan)
+  const { activeTab } = useStore((state) => state.bp_current_tab)
   const { setRowErrors } = useStore((state) => state.bpErrors)
 
   const { enqueueSnackbar } = useSnackbar()
@@ -155,7 +156,7 @@ export default function BPHeaderEditConsolidated({
         <Link
           className="border border-solid border-primary bg-white px-4 py-2 text-primary shadow-none hover:bg-primary hover:text-white"
           color="primary"
-          href={`/business-plans/list/activities/${period}`}
+          href={`/business-plans/list/${activeTab === 0 ? 'activities' : 'details'}/${period}`}
           size="large"
           variant="contained"
           button

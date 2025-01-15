@@ -17,13 +17,15 @@ import { createBPSlice } from './createBPSlice'
 import { createBPTypeSlice } from './createBPTypeSlice'
 import { createBPErrorsSlice } from './createBPErrorsSlice'
 import { createYearRangesSlice } from './createYearRangesSlice'
+import { createBpCurrentTabSlice } from './createBpCurrentTabSlice'
 
 export default function createSlices(props: CreateSliceProps) {
   return {
-    yearRanges: { ...createYearRangesSlice(props) },
+    yearRanges: { ...createYearRangesSlice() },
     bp_diff_versions: { ...createBPDiffVersionsSlice(props) },
     bpFilters: { ...createBPFiltersSlice(props) },
     bpType: { ...createBPTypeSlice(props) },
+    bp_current_tab: { ...createBpCurrentTabSlice(props) },
     bpErrors: { ...createBPErrorsSlice(props) },
     businessPlan: { ...createBPSlice(props) },
     businessPlans: { ...createBusinessPlanSlice(props) },
