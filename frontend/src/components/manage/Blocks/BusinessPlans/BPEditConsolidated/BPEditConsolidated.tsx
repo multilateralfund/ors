@@ -63,7 +63,16 @@ const BPEditConsolidated = () => {
   const [form, setForm] = useState<Array<ApiEditBPActivity> | undefined>(
     undefined,
   )
-  const [bpForm, setBpForm] = useState()
+  const [bpForm, setBpForm] = useState<any>()
+
+  useEffect(() => {
+    if (!bpForm && results[0])
+      setBpForm({
+        meeting: results[0].meeting_id,
+        decision: results[0].decision_id,
+      })
+  }, [results])
+
   const [files, setFiles] = useState<BpFilesObject>({
     deletedFilesIds: [],
     newFiles: [],

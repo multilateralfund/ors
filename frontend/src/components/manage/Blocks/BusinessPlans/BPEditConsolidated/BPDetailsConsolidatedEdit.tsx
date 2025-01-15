@@ -5,7 +5,7 @@ import {
   userCanViewFilesBusinessPlan,
 } from '@ors/types/user_types'
 
-import { Dispatch, SetStateAction, useEffect } from 'react'
+import { Dispatch, SetStateAction } from 'react'
 
 import SimpleField from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleField'
 import VersionHistoryList from '@ors/components/ui/VersionDetails/VersionHistoryList'
@@ -23,7 +23,6 @@ import { Label } from '../BPUpload/helpers'
 import { BpFilesObject, IDecision } from '../types'
 import FileInput from '../BPEdit/FileInput'
 import Field from '@ors/components/manage/Form/Field'
-import { keys } from 'lodash'
 
 const BPSummary = (props: {
   results: any[]
@@ -52,11 +51,6 @@ const BPSummary = (props: {
       decision: decision?.value,
     }))
   }
-  useEffect(() => {
-    if (keys(bpForm).length === 0) {
-      setBpForm({ meeting: meeting_id, decision: decision_id })
-    }
-  }, [results])
 
   return (
     <div className="flex flex-col gap-6 rounded-lg bg-gray-100 p-4">
