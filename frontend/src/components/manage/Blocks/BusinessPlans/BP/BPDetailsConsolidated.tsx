@@ -10,6 +10,7 @@ import BPListTabs from '../BPList/BPListTabs'
 import { useBPListApi } from '../BPList/BPList'
 import { useGetBpData } from './useGetBpData'
 import { getDecisionNr, getMeetingNr } from '../utils'
+import BPTableToolbarButtons from '../BPTableToolbarButtons'
 
 const BPSummary = (props: any) => {
   const { results, bpFiles, loadedFiles } = props
@@ -74,6 +75,7 @@ export default function BPDetailsConsolidated({
   return (
     loaded && (
       <>
+        <BPTableToolbarButtons />
         <BPListHeader
           viewType="details"
           {...{ setParams, setParamsFiles, setParamsActivities }}

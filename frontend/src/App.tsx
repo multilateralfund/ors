@@ -39,9 +39,8 @@ import BPListLayout from '@ors/app/business-plans/list/layout'
 import BPListPlansPeriodPage from '@ors/app/business-plans/list/plans/[period]/page'
 import BusinessPlansDetailsConsolidated from './app/business-plans/list/details/[period]/page'
 import BPListActivitiesPeriodPage from '@ors/app/business-plans/list/activities/[period]/page'
-import BPListActivitiesPeriodTypeEditPage from '@ors/app/business-plans/list/activities/[period]/[type]/edit/page'
+import BPListActivitiesPeriodTypeEditPage from '@ors/app/business-plans/list/[period]/[type]/edit/page'
 import BPUpload from '@ors/app/business-plans/upload/page'
-import BPAgencyPeriodStatusPage from '@ors/app/business-plans/[agency]/[period]/[status]/page'
 
 import ProjectsPage from '@ors/app/projects/page'
 import ProjectsProjectPage from '@ors/app/projects/[project_id]/page'
@@ -75,7 +74,9 @@ export default function App() {
           </ForgotPasswordLayout>
         </Route>
         <Route path="/business-plans/upload">
-          <BPUpload />
+          <BPListLayout>
+            <BPUpload />
+          </BPListLayout>
         </Route>
         <Route path="/business-plans/list/plans/:period">
           <BPListLayout>
@@ -87,7 +88,7 @@ export default function App() {
             <BusinessPlansDetailsConsolidated />
           </BPListLayout>
         </Route>
-        <Route path="/business-plans/list/activities/:period/:type/edit">
+        <Route path="/business-plans/list/:period/:type/edit">
           <BPListLayout>
             <BPListActivitiesPeriodTypeEditPage />
           </BPListLayout>
@@ -101,7 +102,9 @@ export default function App() {
           <BPAgencyPeriodStatusPage />
         </Route> */}
         <Route path="/business-plans">
-          <BPPage />
+          <BPListLayout>
+            <BPPage />
+          </BPListLayout>
         </Route>
         <Route path="/country-programme/reports">
           <CountryProgrammePage />

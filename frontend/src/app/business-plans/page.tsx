@@ -14,13 +14,9 @@ export default function BusinessPlans() {
 
   const currentTriennium = getCurrentTriennium()
 
-  const { fetchYearRanges, yearRanges } = useStore((state) => state.yearRanges)
+  const { yearRanges } = useStore((state) => state.yearRanges)
   const { periodOptions } = useGetBpPeriods(yearRanges.data)
   const latestBpYearRange = getLatestBpYearRange(periodOptions)
-
-  useEffect(() => {
-    fetchYearRanges()
-  }, [])
 
   useEffect(() => {
     if (periodOptions.length > 0) {

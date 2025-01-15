@@ -8,7 +8,6 @@ import { capitalize, map } from 'lodash'
 import { useParams } from 'wouter'
 
 import Loading from '@ors/components/theme/Loading/Loading'
-import BPYearRangesProvider from '@ors/contexts/BusinessPlans/BPYearRangesProvider'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 
 import BEditTable from '../BPEdit/BPEditTable'
@@ -23,7 +22,7 @@ import { useGetBpData } from '../BP/useGetBpData'
 import { useStore } from '@ors/store'
 import NotFoundPage from '@ors/app/not-found'
 
-const BPEdit = () => {
+const BPEditConsolidated = () => {
   const { period, type } = useParams<{ period: string; type: string }>()
   const [year_start, year_end] = period.split('-')
   const formattedType = capitalize(type)
@@ -152,10 +151,4 @@ const BPEdit = () => {
   )
 }
 
-export default function BPEditConsolidated() {
-  return (
-    <BPYearRangesProvider>
-      <BPEdit />
-    </BPYearRangesProvider>
-  )
-}
+export default BPEditConsolidated
