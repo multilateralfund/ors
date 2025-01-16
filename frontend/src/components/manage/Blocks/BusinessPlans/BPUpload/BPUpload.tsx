@@ -3,7 +3,6 @@
 import { useContext, useEffect, useState } from 'react'
 
 import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
-import BPYearRangesProvider from '@ors/contexts/BusinessPlans/BPYearRangesProvider'
 
 import useGetBpPeriods from '../BPList/useGetBPPeriods'
 import { RedirectToBpList } from '../RedirectToBpList'
@@ -129,10 +128,4 @@ const BPUpload = () => {
   )
 }
 
-export default function BPUploadWrapper() {
-  return (
-    <BPYearRangesProvider>
-      <BPUpload />
-    </BPYearRangesProvider>
-  )
-}
+export default BPUpload

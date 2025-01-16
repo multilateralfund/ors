@@ -30,6 +30,7 @@ export function BPEditBaseTable(
     loading,
     setForm,
     yearRangeSelected,
+    chemicalTypes,
   } = props
 
   const grid = useRef<any>()
@@ -347,6 +348,7 @@ export function BPEditBaseTable(
     onRemoveActivity,
     form,
     setForm,
+    chemicalTypes,
     isConsolidatedView,
   )
 

@@ -21,6 +21,7 @@ import { BpFilesObject } from '../types'
 import { useGetBpData } from '../BP/useGetBpData'
 import { useStore } from '@ors/store'
 import NotFoundPage from '@ors/app/not-found'
+import { useGetChemicalTypes } from '../useGetChemicalTypes'
 
 const BPEditConsolidated = () => {
   const { period, type } = useParams<{ period: string; type: string }>()
@@ -54,6 +55,7 @@ const BPEditConsolidated = () => {
     'api/business-plan/get/',
     'fullData',
   ) as any
+  const chemicalTypes = useGetChemicalTypes()
 
   const { activeTab: storeActiveTab } = useStore(
     (state) => state.bp_current_tab,
@@ -64,15 +66,6 @@ const BPEditConsolidated = () => {
     undefined,
   )
   const [bpForm, setBpForm] = useState<any>()
-
-  useEffect(() => {
-    if (!bpForm && results[0])
-      setBpForm({
-        meeting: results[0].meeting_id,
-        decision: results[0].decision_id,
-      })
-  }, [results])
-
   const [files, setFiles] = useState<BpFilesObject>({
     deletedFilesIds: [],
     newFiles: [],
@@ -106,6 +99,14 @@ const BPEditConsolidated = () => {
       row_id: activities.length - index - 1,
     }))
   }, [activities])
+
+  useEffect(() => {
+    if (!bpForm && results[0])
+      setBpForm({
+        meeting: results[0].meeting_id,
+        decision: results[0].decision_id,
+      })
+  }, [results])
 
   useEffect(() => {
     const formattedActivities = getFormattedActivities()
@@ -154,7 +155,7 @@ const BPEditConsolidated = () => {
           isConsolidatedBp
         >
           <BEditTable
-            {...{ form, loading, params }}
+            {...{ form, loading, params, chemicalTypes }}
             isConsolidatedView={true}
             setForm={handleSetForm}
           />

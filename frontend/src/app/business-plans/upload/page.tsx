@@ -1,6 +1,6 @@
 import usePageTitle from '@ors/hooks/usePageTitle'
 
-import BPUploadWrapper from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/BPUpload'
+import BPUpload from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/BPUpload'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
 export default function BusinessPlans() {
@@ -8,7 +8,7 @@ export default function BusinessPlans() {
 
   return (
     <PageWrapper>
-      <BPUploadWrapper />
+      <BPUpload />
     </PageWrapper>
   )
 }

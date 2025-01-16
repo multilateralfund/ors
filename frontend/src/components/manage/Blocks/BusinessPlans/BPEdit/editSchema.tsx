@@ -11,7 +11,6 @@ import {
   EditTagsCellRenderer,
 } from '../BPTableHelpers/cellRenderers'
 import { multiYearFilterOptions, tableColumns } from '../constants'
-import { useGetChemicalTypes } from '../useGetChemicalTypes'
 import {
   MYAValueSetter,
   agFormatNameValue,
@@ -30,12 +29,14 @@ import { HeaderPasteWrapper } from './pasteSupport'
 import { IoTrash } from 'react-icons/io5'
 import { ITooltipParams } from 'ag-grid-community'
 import { hasErrors } from '../utils'
+import { chemicalTypesType } from '../types'
 
 const useColumnsOptions = (
   yearColumns: any[],
   onRemoveActivity: (props: any) => void,
   form: Array<ApiEditBPActivity>,
   setForm: Dispatch<SetStateAction<ApiEditBPActivity[] | null | undefined>>,
+  chemicalTypes: chemicalTypesType,
   isConsolidatedView?: boolean,
 ) => {
   const commonSlice = useStore((state) => state.common)
@@ -55,7 +56,6 @@ const useColumnsOptions = (
       id: status[0],
       name: status[1],
     }))
-  const chemicalTypes = useGetChemicalTypes()
   const chemicalTypesResults = chemicalTypes.results
   const { rowErrors } = useStore((state) => state.bpErrors)
 

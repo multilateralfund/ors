@@ -1,9 +1,9 @@
-import usePageTitle from '@ors/hooks/usePageTitle'
+import { useEffect } from 'react'
+import { useStore } from '@ors/store'
 
+import usePageTitle from '@ors/hooks/usePageTitle'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import BPYearRangesProvider from '@ors/contexts/BusinessPlans/BPYearRangesProvider'
-import { useStore } from '@ors/store'
-import { useEffect } from 'react'
 
 export default function BusinessPlansListLayout({ children }: any) {
   usePageTitle('Business Plans')
