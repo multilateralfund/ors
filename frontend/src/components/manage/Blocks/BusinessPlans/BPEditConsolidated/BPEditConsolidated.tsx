@@ -67,6 +67,7 @@ const BPEditConsolidated = () => {
     deletedFilesIds: [],
     newFiles: [],
   })
+  const [isDataFormatted, setIsDataFormatted] = useState(false)
   const [warnOnClose, setWarnOnClose] = useState(false)
   useVisibilityChange(warnOnClose)
 
@@ -109,6 +110,7 @@ const BPEditConsolidated = () => {
     const formattedActivities = getFormattedActivities()
 
     if (formattedActivities && formattedActivities.length > 0) {
+      setIsDataFormatted(true)
       handleSetForm(formattedActivities, false)
     }
   }, [getFormattedActivities, handleSetForm])
@@ -160,7 +162,14 @@ const BPEditConsolidated = () => {
           isConsolidatedBp
         >
           <BEditTable
-            {...{ form, loading, params, chemicalTypes }}
+            {...{
+              form,
+              loading,
+              params,
+              chemicalTypes,
+              results,
+              isDataFormatted,
+            }}
             isConsolidatedView={true}
             setForm={handleSetForm}
           />

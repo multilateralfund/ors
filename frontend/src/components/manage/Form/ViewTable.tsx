@@ -264,7 +264,7 @@ function ViewTable(props: TableProps) {
         gridApi?.setGridOption('domLayout', domLayout)
       }
     }
-  }, [domLayout, headerDepth, rowHeight, rowsVisible, grid])
+  }, [domLayout, headerDepth, rowHeight, rowsVisible, grid, props.rowData])
 
   function enterFullScreen() {
     if (grid.current) {

@@ -104,8 +104,7 @@ function BPListActivities(props: any) {
   )
 
   const { bpType } = useStore((state) => state.bpType)
-  const key =
-    JSON.stringify(filters) + '-' + bpType + '-' + JSON.stringify(results)
+  const key = JSON.stringify(filters) + '-' + bpType
 
   useEffect(() => {
     setPagination({ page: 1, rowsPerPage: ACTIVITIES_PER_PAGE_LIST })

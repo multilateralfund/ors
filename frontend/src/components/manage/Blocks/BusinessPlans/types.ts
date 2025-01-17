@@ -76,6 +76,8 @@ export type BPEditTableInterface = {
   params: any
   setForm: Dispatch<SetStateAction<Array<ApiEditBPActivity> | null | undefined>>
   chemicalTypes: chemicalTypesType
+  isDataFormatted?: boolean
+  results?: any[]
 }
 
 export interface EditBPLocalStorageType {

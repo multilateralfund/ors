@@ -31,6 +31,8 @@ export function BPEditBaseTable(
     setForm,
     yearRangeSelected,
     chemicalTypes,
+    isDataFormatted,
+    results,
   } = props
 
   const grid = useRef<any>()
@@ -384,6 +386,8 @@ export function BPEditBaseTable(
           rowData={form}
           singleClickEdit={true}
           suppressScrollOnNewData={true}
+          results={results}
+          isDataFormatted={isDataFormatted}
           tooltipShowDelay={200}
           onCellValueChanged={(event) => {
             const eventData = event.data
