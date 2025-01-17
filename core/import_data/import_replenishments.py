@@ -106,7 +106,7 @@ def import_replenishments(countries):
             version=1,
             is_final=True,
         )
-        logger.info(f"Crated version 0 for Replenishment {start_year} - {end_year}")
+        logger.info(f"Created version 0 for Replenishment {start_year} - {end_year}")
         scales_of_assessment = []
         for _, row in scale_of_assessment_df.iterrows():
             country_name = row.iloc[COUNTRY_COLUMN].replace("\n", " ").strip()
@@ -149,5 +149,6 @@ def import_replenishments(countries):
         ScaleOfAssessment.objects.bulk_create(scales_of_assessment)
 
         logger.info(
-            f"Imported {len(scales_of_assessment)} scales of assessment for Replenishment {start_year} - {end_year}"
+            f"Imported {len(scales_of_assessment)} scales of assessment "
+            f"for Replenishment {start_year} - {end_year}"
         )

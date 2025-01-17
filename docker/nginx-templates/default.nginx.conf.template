@@ -33,5 +33,11 @@ server {
     location / {
         root /.next/;
         try_files $uri $uri/ /index.html;
+        # Disable caching for index.html specifically
+        if ($uri = "/index.html") {
+            add_header Cache-Control "no-cache, no-store, must-revalidate";
+            add_header Pragma "no-cache";
+            expires 0;
+        }
     }
 }

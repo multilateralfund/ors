@@ -70,8 +70,6 @@ const useInternalNavSections = () => {
   const nI = makeInternalNavItem.bind(null, pathname)
   const userIsViewer = user_type === 'viewer'
   const userIsAdminOrSecretariat = ['admin', 'secretariat'].includes(user_type)
-  const userCanAccessReplenishment =
-    userIsAdminOrSecretariat || ['treasurer'].includes(user_type)
   return [
     {
       label: 'Online CP Reporting',
@@ -91,31 +89,6 @@ const useInternalNavSections = () => {
       ].filter(Boolean),
       url: '/country-programme/reports',
     },
-    ...(userCanAccessReplenishment
-      ? [
-          {
-            label: 'Replenishment',
-            menu: [
-              {
-                label: 'Scale of assessment',
-                url: '/replenishment/scale-of-assessment',
-              },
-              {
-                label: 'Status of the fund',
-                url: '/replenishment/status-of-the-fund',
-              },
-              { label: 'Statistics', url: '/replenishment/statistics' },
-              {
-                label: 'Status of contributions',
-                url: '/replenishment/status-of-contributions',
-              },
-              { label: 'In/out flows', url: '/replenishment/in-out-flows' },
-              { label: 'Dashboard', url: '/replenishment/dashboard' },
-            ],
-            url: '/replenishment',
-          },
-        ]
-      : []),
     ...(userIsAdminOrSecretariat || userIsViewer
       ? [{ label: 'Business plans', url: '/business-plans' }]
       : []),
@@ -127,6 +100,42 @@ const useInternalNavSections = () => {
       : []),
     // @ts-ignore
   ].map((item) => nI(item))
+}
+
+const useInternalNavSectionsReplenishment = () => {
+  const { user_type } = useStore((state) => state.user?.data)
+  const [pathname] = useLocation()
+  const nI = makeInternalNavItem.bind(null, pathname)
+  const userIsAdminOrSecretariat = ['admin', 'secretariat'].includes(user_type)
+  const userCanAccessReplenishment =
+    userIsAdminOrSecretariat || ['treasurer'].includes(user_type)
+  return userCanAccessReplenishment
+    ? [
+        {
+          label: 'Contributions',
+          menu: [
+            {
+              label: 'Scale of assessment',
+              url: '/replenishment/scale-of-assessment',
+            },
+            {
+              label: 'Status of the fund',
+              url: '/replenishment/status-of-the-fund',
+            },
+            { label: 'Statistics', url: '/replenishment/statistics' },
+            {
+              label: 'Status of contributions',
+              url: '/replenishment/status-of-contributions',
+            },
+            { label: 'In/out flows', url: '/replenishment/in-out-flows' },
+            { label: 'Dashboard', url: '/replenishment/dashboard' },
+          ],
+          url: '/replenishment',
+        },
+      ]
+    : []
+  // @ts-ignore
+  .map((item) => nI(item))
 }
 
 interface navItem {
@@ -168,10 +177,7 @@ const useMenuItems = () => {
     makeExternalNavItem('Our impact', '/our-impact'),
     makeExternalNavItem('Projects & Data', '/projects-data', [
       makeExternalNavItem('Projects', '/projects-data/dashboards'),
-      makeExternalNavItem(
-        'Contributions',
-        '/projects-data/countries-dashboard',
-      ),
+      ...useInternalNavSectionsReplenishment(),
       makeExternalNavItem('Countries', '/projects-data/funding-dashboard'),
       makeExternalNavItem('Our impact', '/projects-data/people-environment'),
       makeExternalNavItem(

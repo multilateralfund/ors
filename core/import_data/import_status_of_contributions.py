@@ -579,6 +579,7 @@ def import_status_of_contributions(countries):
     # Import annual contributions
     for year, info in ANNUAL_STATUS_OF_CONTRIBUTIONS_SHEET_INFO.items():
         contributions_status_objects = []
+        default_contributions_status_objects = []
         status_of_contributions_df = soc_file.parse(
             sheet_name=f"YR{year}",
             usecols=info["cols"],
@@ -625,7 +626,29 @@ def import_status_of_contributions(countries):
 
             contributions_status_objects.append(contribution_status)
 
+            if year == 2024:
+                # Create basic contributions for 2025 and 2026. Only create annual ones,
+                # as the triennial ones are created at contribution import time.
+                annual_contribution_2025 = AnnualContributionStatus(
+                    country=country,
+                    year=2025,
+                    agreed_contributions=contribution_status.agreed_contributions,
+                )
+                annual_contribution_2026 = AnnualContributionStatus(
+                    country=country,
+                    year=2026,
+                    agreed_contributions=contribution_status.agreed_contributions,
+                )
+                default_contributions_status_objects.append(annual_contribution_2025)
+                default_contributions_status_objects.append(annual_contribution_2026)
+
         AnnualContributionStatus.objects.bulk_create(contributions_status_objects)
+
+        if default_contributions_status_objects:
+            # If contributions for 2025/2026 were already created, do not overwrite them
+            AnnualContributionStatus.objects.bulk_create(
+                default_contributions_status_objects, ignore_conflicts=False
+            )
 
         logger.info(
             f"Imported ({len(contributions_status_objects)}) Annual Status of Contributions for {year}"
