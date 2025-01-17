@@ -14,7 +14,7 @@ import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 import { useStore } from '@ors/store'
 
 import BPTabs from '../BPTabs'
-import { BpFilesObject } from '../types'
+import { BpFilesObject, chemicalTypesType } from '../types'
 import { useEditLocalStorage } from '../useLocalStorage'
 import BEditTable from './BPEditTable'
 import BPHeaderEdit from './BPHeaderEdit'
@@ -94,7 +94,11 @@ const BPEdit = () => {
         {...{ activeTab, bpFiles, files, setActiveTab, setFiles }}
       >
         {form && (
-          <BEditTable {...{ form, loading, params }} setForm={handleSetForm} />
+          <BEditTable
+            {...{ form, loading, params }}
+            setForm={handleSetForm}
+            chemicalTypes={{} as chemicalTypesType}
+          />
         )}
       </BPTabs>
     </>

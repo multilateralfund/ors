@@ -25,16 +25,23 @@ import FileInput from '../BPEdit/FileInput'
 import Field from '@ors/components/manage/Form/Field'
 
 const BPSummary = (props: {
-  results: any[]
+  business_plan: any
   bpFiles: any[]
   files: BpFilesObject
   bpForm: any
   setBpForm: Dispatch<SetStateAction<any>>
   setFiles: React.Dispatch<React.SetStateAction<BpFilesObject>>
 }) => {
-  const { results, bpFiles, files, bpForm = {}, setBpForm, setFiles } = props
+  const {
+    business_plan,
+    bpFiles,
+    files,
+    bpForm = {},
+    setBpForm,
+    setFiles,
+  } = props
   const { year_end, year_start, status, meeting_id, decision_id } =
-    results[0] || {}
+    business_plan || {}
 
   const { user_type } = useStore((state) => state.user.data)
   const canViewFiles = userCanViewFilesBusinessPlan[user_type as UserType]

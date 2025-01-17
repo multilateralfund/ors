@@ -15,7 +15,6 @@ import BPRestoreEdit from '../BPEdit/BPRestoreEdit'
 import { useGetActivities } from '../useGetActivities'
 import BPHeaderEditConsolidated from './BPHeaderEditConsolidated'
 import { useEditLocalStorageConsolidated } from './useLocalStorageConsolidated'
-import { useBPListApi } from '../BPList/BPList'
 import BPTabs from '../BPTabs'
 import { BpFilesObject } from '../types'
 import { useGetBpData } from '../BP/useGetBpData'
@@ -39,22 +38,20 @@ const BPEditConsolidated = () => {
   })
   const bpFilters = getFilters('bp')
 
-  const {
-    loading,
-    params,
-    results: activities,
-  } = useGetActivities(getFilters('activities'))
-  const { results, loading: bpLoading } = useBPListApi(bpFilters)
+  const { loading, params, results } = useGetActivities(
+    getFilters('activities'),
+  )
   const { data: bpFiles } = useGetBpData(
     bpFilters,
     'api/business-plan/files/',
     'files',
   ) as any
-  const { data, error } = useGetBpData(
-    bpFilters,
-    'api/business-plan/get/',
-    'fullData',
-  ) as any
+  const {
+    data,
+    error,
+    loading: bpLoading,
+  } = useGetBpData(bpFilters, 'api/business-plan/get/', 'fullData') as any
+  const { business_plan } = data || {}
   const chemicalTypes = useGetChemicalTypes()
 
   const { activeTab: storeActiveTab } = useStore(
@@ -73,7 +70,7 @@ const BPEditConsolidated = () => {
   const [warnOnClose, setWarnOnClose] = useState(false)
   useVisibilityChange(warnOnClose)
 
-  const localStorage = useEditLocalStorageConsolidated(activities, type, period)
+  const localStorage = useEditLocalStorageConsolidated(results, type, period)
 
   const handleSetForm = useCallback(
     (value: any, updateLocalStorage: boolean = true) => {
@@ -90,23 +87,23 @@ const BPEditConsolidated = () => {
   )
 
   const getFormattedActivities = useCallback(() => {
-    if (!activities) {
+    if (!results) {
       return null
     }
 
-    return map(activities, (activity, index) => ({
+    return map(results, (activity, index) => ({
       ...activity,
-      row_id: activities.length - index - 1,
+      row_id: results.length - index - 1,
     }))
-  }, [activities])
+  }, [results])
 
   useEffect(() => {
-    if (!bpForm && results[0])
+    if (!bpForm && business_plan)
       setBpForm({
-        meeting: results[0].meeting_id,
-        decision: results[0].decision_id,
+        meeting: business_plan.meeting_id,
+        decision: business_plan.decision_id,
       })
-  }, [results])
+  }, [business_plan])
 
   useEffect(() => {
     const formattedActivities = getFormattedActivities()
@@ -128,9 +125,17 @@ const BPEditConsolidated = () => {
         className="!fixed bg-action-disabledBackground"
         active={loading}
       />
-      {!bpLoading && results.length > 0 && (
+      {!bpLoading && business_plan && (
         <BPHeaderEditConsolidated
-          {...{ form, setWarnOnClose, type, results, bpForm, files, setForm }}
+          {...{
+            form,
+            setWarnOnClose,
+            type,
+            business_plan,
+            bpForm,
+            files,
+            setForm,
+          }}
         />
       )}
       {!loading && (
@@ -139,7 +144,7 @@ const BPEditConsolidated = () => {
           to recover it?
         </BPRestoreEdit>
       )}
-      {!loading && results.length > 0 && (
+      {!loading && business_plan && (
         <BPTabs
           {...{
             bpForm,
@@ -149,7 +154,7 @@ const BPEditConsolidated = () => {
             setFiles,
             files,
             bpFiles,
-            results,
+            business_plan,
             data,
           }}
           isConsolidatedBp

@@ -18,7 +18,7 @@ export default function BPHeaderEditConsolidated({
   form,
   setWarnOnClose,
   type,
-  results,
+  business_plan,
   bpForm,
   files,
   setForm,
@@ -70,7 +70,7 @@ export default function BPHeaderEditConsolidated({
         )
       }
 
-      const response = await api(`api/business-plan/${results[0].id}/`, {
+      const response = await api(`api/business-plan/${business_plan.id}/`, {
         data: {
           activities: formattedData,
           year_start: parseInt(year_start),
@@ -96,7 +96,7 @@ export default function BPHeaderEditConsolidated({
         },
       )
       setBusinessPlan({
-        ...results[0],
+        ...business_plan,
         id: response.id,
       })
     } catch (error) {

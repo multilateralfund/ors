@@ -197,46 +197,48 @@ export const BPTable = ({
   const paginationPageSizeSelectorOpts = getPaginationSelectorOpts()
 
   return (
-    <ViewTable
-      Toolbar={displayFilters}
-      columnDefs={[...columnDefs]}
-      defaultColDef={defaultColDef}
-      domLayout="normal"
-      enablePagination={true}
-      loaded={loaded}
-      loading={loading}
-      paginationPageSize={bpPerPage || BP_PER_PAGE}
-      paginationPageSizeSelector={paginationPageSizeSelectorOpts}
-      resizeGridOnRowUpdate={true}
-      rowBuffer={50}
-      rowCount={count}
-      rowData={results}
-      rowsVisible={20}
-      tooltipShowDelay={200}
-      context={{ disableValidation: true }}
-      components={{
-        agColumnHeader: undefined,
-        agTextCellRenderer: undefined,
-      }}
-      onPaginationChanged={({ page, rowsPerPage }) => {
-        setParams({
-          limit: rowsPerPage,
-          offset: page * rowsPerPage,
-        })
-      }}
-      onSortChanged={({ api }) => {
-        const ordering = api
-          .getColumnState()
-          .filter((column) => !!column.sort)
-          .map(
-            (column) =>
-              (column.sort === 'asc' ? '' : '-') +
-              column.colId.replaceAll('.', '__'),
-          )
-          .join(',')
-        setParams({ offset: 0, ordering })
-      }}
-    />
+    loaded && (
+      <ViewTable
+        Toolbar={displayFilters}
+        columnDefs={[...columnDefs]}
+        defaultColDef={defaultColDef}
+        domLayout="normal"
+        enablePagination={true}
+        loaded={loaded}
+        loading={loading}
+        paginationPageSize={bpPerPage || BP_PER_PAGE}
+        paginationPageSizeSelector={paginationPageSizeSelectorOpts}
+        resizeGridOnRowUpdate={true}
+        rowBuffer={50}
+        rowCount={count}
+        rowData={results}
+        rowsVisible={20}
+        tooltipShowDelay={200}
+        context={{ disableValidation: true }}
+        components={{
+          agColumnHeader: undefined,
+          agTextCellRenderer: undefined,
+        }}
+        onPaginationChanged={({ page, rowsPerPage }) => {
+          setParams({
+            limit: rowsPerPage,
+            offset: page * rowsPerPage,
+          })
+        }}
+        onSortChanged={({ api }) => {
+          const ordering = api
+            .getColumnState()
+            .filter((column) => !!column.sort)
+            .map(
+              (column) =>
+                (column.sort === 'asc' ? '' : '-') +
+                column.colId.replaceAll('.', '__'),
+            )
+            .join(',')
+          setParams({ offset: 0, ordering })
+        }}
+      />
+    )
   )
 }
 
