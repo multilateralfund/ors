@@ -97,6 +97,9 @@ class DashboardsCPGenerationSerializer(serializers.ModelSerializer):
         subst_gwp = self.context["substance_gwp"]
         type_name = self.ATTRIBUTE_NAMES_MAPPING[attr_name]
         value = getattr(obj, attr_name) or 0
+        if not value:
+            return []
+
         return [
             {
                 "type_name": type_name,

@@ -137,7 +137,10 @@ class DashboardsCPPricesSerializer(serializers.ModelSerializer):
     version = serializers.IntegerField(source="report_version")
     created_at = serializers.DateTimeField(source="report_created_at")
     group = serializers.CharField(source="substance_group_name")
-    grou_id = serializers.IntegerField(source="substance_group_id")
+    group_id = serializers.IntegerField(source="substance_group_id")
+    chemical_id = serializers.SerializerMethodField()
+    chemical_name = serializers.SerializerMethodField()
+    is_blend = serializers.SerializerMethodField()
 
     class Meta:
         model = AllPricesView
@@ -148,15 +151,27 @@ class DashboardsCPPricesSerializer(serializers.ModelSerializer):
             "created_at",
             "year",
             "report_status",
-            "substance_name",
-            "substance_id",
-            "blend_name",
-            "blend_id",
             "group",
-            "grou_id",
-            "previous_year_price",
+            "group_id",
+            "chemical_id",
+            "chemical_name",
+            "is_blend",
             "current_year_price",
-            "remarks",
             "is_retail",
             "is_fob",
         ]
+
+    def get_chemical_id(self, obj):
+        if obj.blend_id:
+            return obj.blend_id
+        return obj.substance_id
+
+    def get_chemical_name(self, obj):
+        if obj.blend_name:
+            return obj.blend_name
+        return obj.substance_name
+
+    def get_is_blend(self, obj):
+        if obj.blend_id:
+            return True
+        return False

@@ -8,7 +8,7 @@ from core.api.serializers.cp_price import (
     CPPricesListSerializer,
 )
 from core.model_views.country_programme import AllPricesView
-from core.models.country_programme import CPPrices
+from core.models.country_programme import CPPrices, CPReport
 
 
 class CPPricesView(generics.ListAPIView):
@@ -45,7 +45,9 @@ class DashboardsCPPricesView(generics.ListAPIView):
     """
 
     serializer_class = DashboardsCPPricesSerializer
-    queryset = AllPricesView.objects.order_by(
+    queryset = AllPricesView.objects.filter(
+        report_status=CPReport.CPReportStatus.FINAL
+    ).order_by(
         "-report_year",
         "country_name",
         "-report_version",

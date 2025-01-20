@@ -133,7 +133,10 @@ class DashboardsCPRecordSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(source="report_created_at")
     lvc = serializers.BooleanField(source="country_is_lvc")
     group = serializers.CharField(source="substance_group_name")
-    grou_id = serializers.IntegerField(source="substance_group_id")
+    group_id = serializers.IntegerField(source="substance_group_id")
+    chemical_id = serializers.SerializerMethodField()
+    chemical_name = serializers.SerializerMethodField()
+    is_blend = serializers.SerializerMethodField()
     region = serializers.SerializerMethodField()
     data = serializers.SerializerMethodField()
 
@@ -148,37 +151,63 @@ class DashboardsCPRecordSerializer(serializers.ModelSerializer):
             "created_at",
             "year",
             "report_status",
-            "substance_name",
-            "substance_id",
             "group",
-            "grou_id",
-            "blend_name",
-            "blend_id",
+            "group_id",
+            "chemical_id",
+            "chemical_name",
+            "is_blend",
             "data",
             "remarks",
         ]
+
+    def get_chemical_id(self, obj):
+        if obj.blend_id:
+            return obj.blend_id
+        return obj.substance_id
+
+    def get_chemical_name(self, obj):
+        if obj.blend_name:
+            return obj.blend_name
+        return obj.substance_name
+
+    def get_is_blend(self, obj):
+        if obj.blend_id:
+            return True
+        return False
 
     def get_region(self, obj):
         return self.context["country_region_dict"].get(obj.country_id)
 
     def _get_values_dict(self, obj, attr_key, attr_name, value):
-        return [
+        if not value:
+            return []
+
+        ret_data = [
             {
                 attr_key: attr_name,
                 "measurement_type": "mt",
                 "value": value,
-            },
-            {
-                attr_key: attr_name,
-                "measurement_type": "odp",
-                "value": obj.mt_convert_to_odp(value),
-            },
-            {
-                attr_key: attr_name,
-                "measurement_type": "gwp",
-                "value": obj.mt_convert_to_gwp(value),
-            },
+            }
         ]
+
+        if obj.section == "A":
+            ret_data.append(
+                {
+                    attr_key: attr_name,
+                    "measurement_type": "odp",
+                    "value": obj.mt_convert_to_odp(value),
+                }
+            )
+        else:
+            ret_data.append(
+                {
+                    attr_key: attr_name,
+                    "measurement_type": "gwp",
+                    "value": obj.mt_convert_to_gwp(value),
+                }
+            )
+
+        return ret_data
 
     def _get_usages_data(self, obj):
         usage_dict = copy.deepcopy(self.context["usages_dict"])

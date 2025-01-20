@@ -1,3 +1,4 @@
+from collections import defaultdict
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -471,7 +472,9 @@ class DashboardsCPRecordView(generics.ListAPIView):
     filter_backends = [DjangoFilterBackend]
     filterset_class = DashboardsCPRecordFilter
     serializer_class = DashboardsCPRecordSerializer
-    queryset = AllCPRecordsView.objects.order_by(
+    queryset = AllCPRecordsView.objects.filter(
+        report_status=CPReport.CPReportStatus.FINAL
+    ).order_by(
         "-report_year",
         "country_name",
         "-report_version",
@@ -505,15 +508,13 @@ class DashboardsCPRecordView(generics.ListAPIView):
 
         # get all usages for the records
         usages = AllCPUsagesView.objects.filter(filters)
-        usages_dict = {}
+
         # create a dictionary with the usages for each record
+        usages_dict = defaultdict(list)
         for usage in usages:
-            if usage.country_programme_record_id not in usages_dict:
-                usages_dict[usage.country_programme_record_id] = {}
-            usages_dict[usage.country_programme_record_id][usage.is_archive] = {
-                "quantity": usage.quantity,
-                "usage_id": usage.usage_id,
-            }
+            usages_dict[(usage.country_programme_record_id, usage.is_archive)].append(
+                usage
+            )
 
         # create the serializer context
         serializer_context = self.get_serializer_context()
