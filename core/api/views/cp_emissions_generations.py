@@ -7,6 +7,7 @@ from core.api.serializers.cp_emission import DashboardsCPEmissionSerializer
 from core.api.serializers.cp_generation import DashboardsCPGenerationSerializer
 from core.api.views.utils import get_country_region_dict
 from core.model_views.country_programme import AllEmissionsView, AllGenerationsView
+from core.models.country_programme import CPReport
 from core.models.substance import Substance
 
 
@@ -19,9 +20,9 @@ class DashboardsCPEmissionsView(generics.GenericAPIView):
     The queryset is a db view that is a union of the cp_emissions, cp_emissions_archive tables
     """
 
-    queryset = AllEmissionsView.objects.order_by(
-        "-report_year", "country_name", "-report_version", "facility"
-    )
+    queryset = AllEmissionsView.objects.filter(
+        report_status=CPReport.CPReportStatus.FINAL
+    ).order_by("-report_year", "country_name", "-report_version", "facility")
     filterset_class = DashboardsCPBaseFilter
     filter_backends = [
         DjangoFilterBackend,
@@ -31,9 +32,9 @@ class DashboardsCPEmissionsView(generics.GenericAPIView):
     def get(self, request, *args, **kwargs):
         all_emissions = self.filter_queryset(self.get_queryset())
 
-        all_generations = AllGenerationsView.objects.order_by(
-            "-report_year", "country_name", "-report_version"
-        )
+        all_generations = AllGenerationsView.objects.filter(
+            report_status=CPReport.CPReportStatus.FINAL
+        ).order_by("-report_year", "country_name", "-report_version")
         all_generations = self.filter_queryset(all_generations)
 
         substance = Substance.objects.get(name="HFC-23")

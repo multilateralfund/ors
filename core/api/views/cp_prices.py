@@ -1,6 +1,7 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics
+from rest_framework.response import Response
 
 from core.api.filters.country_programme import DashboardsCPPricesFilter, CPPricesFilter
 from core.api.serializers.cp_price import (
@@ -8,7 +9,8 @@ from core.api.serializers.cp_price import (
     CPPricesListSerializer,
 )
 from core.model_views.country_programme import AllPricesView
-from core.models.country_programme import CPPrices
+from core.models.country_programme import CPPrices, CPReport
+from core.models.group import Group
 
 
 class CPPricesView(generics.ListAPIView):
@@ -45,7 +47,9 @@ class DashboardsCPPricesView(generics.ListAPIView):
     """
 
     serializer_class = DashboardsCPPricesSerializer
-    queryset = AllPricesView.objects.order_by(
+    queryset = AllPricesView.objects.filter(
+        report_status=CPReport.CPReportStatus.FINAL
+    ).order_by(
         "-report_year",
         "country_name",
         "-report_version",
@@ -61,4 +65,18 @@ class DashboardsCPPricesView(generics.ListAPIView):
         operation_description="Get all CP Prices including the archive data",
     )
     def get(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer_context = self.get_serializer_context()
+        serializer_context["annex_f"] = Group.objects.get(name="F")
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(
+                page, many=True, context=serializer_context
+            )
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(
+            queryset, many=True, context=serializer_context
+        )
+        return Response(serializer.data)

@@ -2,7 +2,10 @@ import copy
 from django.db import transaction
 from rest_framework import serializers
 
-from core.api.serializers.base import BaseCPWChemicalSerializer
+from core.api.serializers.base import (
+    BaseCPWChemicalSerializer,
+    BaseDashboardsSerializer,
+)
 from core.api.serializers.cp_usage import CPUsageSerializer
 from core.model_views.country_programme import AllCPRecordsView
 from core.models.country_programme import (
@@ -127,33 +130,16 @@ class CPRecordArchiveSerializer(CPRecordBaseSerializer):
         model = CPRecordArchive
 
 
-class DashboardsCPRecordSerializer(serializers.ModelSerializer):
-    year = serializers.IntegerField(source="report_year")
-    version = serializers.IntegerField(source="report_version")
-    created_at = serializers.DateTimeField(source="report_created_at")
+class DashboardsCPRecordSerializer(BaseDashboardsSerializer):
     lvc = serializers.BooleanField(source="country_is_lvc")
-    group = serializers.CharField(source="substance_group_name")
-    grou_id = serializers.IntegerField(source="substance_group_id")
     region = serializers.SerializerMethodField()
     data = serializers.SerializerMethodField()
 
     class Meta:
         model = AllCPRecordsView
-        fields = [
-            "country_id",
-            "country_name",
+        fields = BaseDashboardsSerializer.Meta.fields + [
             "region",
             "lvc",
-            "version",
-            "created_at",
-            "year",
-            "report_status",
-            "substance_name",
-            "substance_id",
-            "group",
-            "grou_id",
-            "blend_name",
-            "blend_id",
             "data",
             "remarks",
         ]
@@ -162,23 +148,35 @@ class DashboardsCPRecordSerializer(serializers.ModelSerializer):
         return self.context["country_region_dict"].get(obj.country_id)
 
     def _get_values_dict(self, obj, attr_key, attr_name, value):
-        return [
+        if not value:
+            return []
+
+        ret_data = [
             {
                 attr_key: attr_name,
                 "measurement_type": "mt",
                 "value": value,
-            },
-            {
-                attr_key: attr_name,
-                "measurement_type": "odp",
-                "value": obj.mt_convert_to_odp(value),
-            },
-            {
-                attr_key: attr_name,
-                "measurement_type": "gwp",
-                "value": obj.mt_convert_to_gwp(value),
-            },
+            }
         ]
+
+        if obj.section == "A":
+            ret_data.append(
+                {
+                    attr_key: attr_name,
+                    "measurement_type": "odp",
+                    "value": obj.mt_convert_to_odp(value),
+                }
+            )
+        else:
+            ret_data.append(
+                {
+                    attr_key: attr_name,
+                    "measurement_type": "gwp",
+                    "value": obj.mt_convert_to_gwp(value),
+                }
+            )
+
+        return ret_data
 
     def _get_usages_data(self, obj):
         usage_dict = copy.deepcopy(self.context["usages_dict"])

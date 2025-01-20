@@ -1,3 +1,4 @@
+from collections import defaultdict
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -47,6 +48,7 @@ from core.models.country_programme_archive import (
     CPRecordArchive,
     CPReportArchive,
 )
+from core.models.group import Group
 from core.models.usage import Usage
 from core.utils import IMPORT_DB_MAX_YEAR, IMPORT_DB_OLDEST_MAX_YEAR
 
@@ -471,7 +473,9 @@ class DashboardsCPRecordView(generics.ListAPIView):
     filter_backends = [DjangoFilterBackend]
     filterset_class = DashboardsCPRecordFilter
     serializer_class = DashboardsCPRecordSerializer
-    queryset = AllCPRecordsView.objects.order_by(
+    queryset = AllCPRecordsView.objects.filter(
+        report_status=CPReport.CPReportStatus.FINAL
+    ).order_by(
         "-report_year",
         "country_name",
         "-report_version",
@@ -487,6 +491,7 @@ class DashboardsCPRecordView(generics.ListAPIView):
             usages_dict[usage.id] = {"name": usage.full_name, "quantity": 0}
         ctx["usages_dict"] = usages_dict
         ctx["country_region_dict"] = get_country_region_dict()
+        ctx["annex_f"] = Group.objects.get(name="F")
         return ctx
 
     def get_context_with_existing_usages(self, records_qs):
@@ -505,15 +510,13 @@ class DashboardsCPRecordView(generics.ListAPIView):
 
         # get all usages for the records
         usages = AllCPUsagesView.objects.filter(filters)
-        usages_dict = {}
+
         # create a dictionary with the usages for each record
+        usages_dict = defaultdict(list)
         for usage in usages:
-            if usage.country_programme_record_id not in usages_dict:
-                usages_dict[usage.country_programme_record_id] = {}
-            usages_dict[usage.country_programme_record_id][usage.is_archive] = {
-                "quantity": usage.quantity,
-                "usage_id": usage.usage_id,
-            }
+            usages_dict[(usage.country_programme_record_id, usage.is_archive)].append(
+                usage
+            )
 
         # create the serializer context
         serializer_context = self.get_serializer_context()
