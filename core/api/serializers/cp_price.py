@@ -1,6 +1,9 @@
 from rest_framework import serializers
 
-from core.api.serializers.base import BaseCPWChemicalSerializer
+from core.api.serializers.base import (
+    BaseCPWChemicalSerializer,
+    BaseDashboardsSerializer,
+)
 from core.model_views.country_programme import AllPricesView
 from core.models.country_programme import CPPrices
 from core.models.country_programme_archive import CPPricesArchive
@@ -132,56 +135,11 @@ class CPPricesListSerializer(serializers.ModelSerializer):
         return obj.blend.name if obj.blend else None
 
 
-class DashboardsCPPricesSerializer(serializers.ModelSerializer):
-    year = serializers.IntegerField(source="report_year")
-    version = serializers.IntegerField(source="report_version")
-    created_at = serializers.DateTimeField(source="report_created_at")
-    group = serializers.SerializerMethodField()
-    group_id = serializers.SerializerMethodField()
-    chemical_id = serializers.SerializerMethodField()
-    chemical_name = serializers.SerializerMethodField()
-    is_blend = serializers.SerializerMethodField()
-
+class DashboardsCPPricesSerializer(BaseDashboardsSerializer):
     class Meta:
         model = AllPricesView
-        fields = [
-            "country_id",
-            "country_name",
-            "version",
-            "created_at",
-            "year",
-            "report_status",
-            "group",
-            "group_id",
-            "chemical_id",
-            "chemical_name",
-            "is_blend",
+        fields = BaseDashboardsSerializer.Meta.fields + [
             "current_year_price",
             "is_retail",
             "is_fob",
         ]
-
-    def get_group(self, obj):
-        if obj.blend_id:
-            return self.context["annex_f"].name
-        return obj.substance_group_name
-
-    def get_group_id(self, obj):
-        if obj.blend_id:
-            return self.context["annex_f"].id
-        return obj.substance_group_id
-
-    def get_chemical_id(self, obj):
-        if obj.blend_id:
-            return obj.blend_id
-        return obj.substance_id
-
-    def get_chemical_name(self, obj):
-        if obj.blend_name:
-            return obj.blend_name
-        return obj.substance_name
-
-    def get_is_blend(self, obj):
-        if obj.blend_id:
-            return True
-        return False

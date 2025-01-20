@@ -143,6 +143,119 @@ class BaseProjectUtilityCreateSerializer(serializers.ModelSerializer):
     )
 
 
+class BaseDashboardsSerializer(serializers.ModelSerializer):
+    year = serializers.IntegerField(source="report_year")
+    version = serializers.IntegerField(source="report_version")
+    created_at = serializers.DateTimeField(source="report_created_at")
+    group = serializers.SerializerMethodField()
+    group_id = serializers.SerializerMethodField()
+    chemical_id = serializers.SerializerMethodField()
+    chemical_name = serializers.SerializerMethodField()
+    is_blend = serializers.SerializerMethodField()
+
+    class Meta:
+        fields = [
+            "country_id",
+            "country_name",
+            "version",
+            "created_at",
+            "year",
+            "report_status",
+            "group",
+            "group_id",
+            "chemical_id",
+            "chemical_name",
+            "is_blend",
+        ]
+
+    def get_group(self, obj):
+        if obj.blend_id:
+            return self.context["annex_f"].name
+        return obj.substance_group_name
+
+    def get_group_id(self, obj):
+        if obj.blend_id:
+            return self.context["annex_f"].id
+        return obj.substance_group_id
+
+    def get_chemical_id(self, obj):
+        if obj.blend_id:
+            return obj.blend_id
+        return obj.substance_id
+
+    def get_chemical_name(self, obj):
+        if obj.blend_name:
+            return obj.blend_name
+        return obj.substance_name
+
+    def get_is_blend(self, obj):
+        return bool(obj.blend_id)
+
+
+class BaseDashboardsEmissionsSerializer(serializers.ModelSerializer):
+    year = serializers.IntegerField(source="report_year")
+    version = serializers.IntegerField(source="report_version")
+    created_at = serializers.DateTimeField(source="report_created_at")
+    data = serializers.SerializerMethodField()
+    region = serializers.SerializerMethodField()
+    substance_name = serializers.SerializerMethodField()
+    substance_id = serializers.SerializerMethodField()
+    object_type = serializers.SerializerMethodField()
+
+    ATTRIBUTE_NAMES_MAPPING = {}
+
+    class Meta:
+        fields = [
+            "country_id",
+            "country_name",
+            "region",
+            "version",
+            "created_at",
+            "year",
+            "report_status",
+            "substance_name",
+            "substance_id",
+            "facility_name",
+            "object_type",
+            "data",
+        ]
+
+    def get_substance_name(self, _obj):
+        return self.context["substance_name"]
+
+    def get_substance_id(self, _obj):
+        return self.context["substance_id"]
+
+    def get_region(self, obj):
+        return self.context["country_region_dict"].get(obj.country_id)
+
+    def _get_type_dict(self, attr_name, obj):
+        subst_gwp = self.context["substance_gwp"]
+        type_name = self.ATTRIBUTE_NAMES_MAPPING[attr_name]
+        value = getattr(obj, attr_name) or 0
+        if not value:
+            return []
+
+        return [
+            {
+                "type_name": type_name,
+                "measurement_type": "mt",
+                "value": value,
+            },
+            {
+                "type_name": type_name,
+                "measurement_type": "gwp",
+                "value": value * subst_gwp,
+            },
+        ]
+
+    def get_data(self, obj):
+        type_data = []
+        for attr_name in self.ATTRIBUTE_NAMES_MAPPING:
+            type_data.extend(self._get_type_dict(attr_name, obj))
+        return {"type": type_data}
+
+
 class Many2ManyListField(serializers.ListField):
     # make ListField allow `ManyRelatedManager` data
     def to_representation(self, data):

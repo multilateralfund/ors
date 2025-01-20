@@ -2,7 +2,10 @@ import copy
 from django.db import transaction
 from rest_framework import serializers
 
-from core.api.serializers.base import BaseCPWChemicalSerializer
+from core.api.serializers.base import (
+    BaseCPWChemicalSerializer,
+    BaseDashboardsSerializer,
+)
 from core.api.serializers.cp_usage import CPUsageSerializer
 from core.model_views.country_programme import AllCPRecordsView
 from core.models.country_programme import (
@@ -127,63 +130,19 @@ class CPRecordArchiveSerializer(CPRecordBaseSerializer):
         model = CPRecordArchive
 
 
-class DashboardsCPRecordSerializer(serializers.ModelSerializer):
-    year = serializers.IntegerField(source="report_year")
-    version = serializers.IntegerField(source="report_version")
-    created_at = serializers.DateTimeField(source="report_created_at")
+class DashboardsCPRecordSerializer(BaseDashboardsSerializer):
     lvc = serializers.BooleanField(source="country_is_lvc")
-    group = serializers.SerializerMethodField()
-    group_id = serializers.SerializerMethodField()
-    chemical_id = serializers.SerializerMethodField()
-    chemical_name = serializers.SerializerMethodField()
-    is_blend = serializers.SerializerMethodField()
     region = serializers.SerializerMethodField()
     data = serializers.SerializerMethodField()
 
     class Meta:
         model = AllCPRecordsView
-        fields = [
-            "country_id",
-            "country_name",
+        fields = BaseDashboardsSerializer.Meta.fields + [
             "region",
             "lvc",
-            "version",
-            "created_at",
-            "year",
-            "report_status",
-            "group",
-            "group_id",
-            "chemical_id",
-            "chemical_name",
-            "is_blend",
             "data",
             "remarks",
         ]
-
-    def get_group(self, obj):
-        if obj.blend_id:
-            return self.context["annex_f"].name
-        return obj.substance_group_name
-
-    def get_group_id(self, obj):
-        if obj.blend_id:
-            return self.context["annex_f"].id
-        return obj.substance_group_id
-
-    def get_chemical_id(self, obj):
-        if obj.blend_id:
-            return obj.blend_id
-        return obj.substance_id
-
-    def get_chemical_name(self, obj):
-        if obj.blend_name:
-            return obj.blend_name
-        return obj.substance_name
-
-    def get_is_blend(self, obj):
-        if obj.blend_id:
-            return True
-        return False
 
     def get_region(self, obj):
         return self.context["country_region_dict"].get(obj.country_id)
