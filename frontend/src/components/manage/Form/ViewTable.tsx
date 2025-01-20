@@ -257,14 +257,14 @@ function ViewTable(props: TableProps) {
           rowsVisible * rowHeight + offsetHeight + headerDepth + 1
         }px`
       }
-      if (!rows) {
+      if (!rows && props.rowData?.length === 0) {
         agTable.style.height = 'auto'
         gridApi?.setGridOption('domLayout', 'autoHeight')
       } else if (domLayout !== gridApi?.getGridOption('domLayout')) {
         gridApi?.setGridOption('domLayout', domLayout)
       }
     }
-  }, [domLayout, headerDepth, rowHeight, rowsVisible, grid])
+  }, [domLayout, headerDepth, rowHeight, rowsVisible, grid, props.rowData])
 
   function enterFullScreen() {
     if (grid.current) {

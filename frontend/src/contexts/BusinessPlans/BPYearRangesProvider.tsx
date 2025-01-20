@@ -1,5 +1,4 @@
-import { useGetYearRanges } from '@ors/components/manage/Blocks/BusinessPlans/useGetYearRanges'
-
+import { useStore } from '@ors/store'
 import BPYearRangesContext from './BPYearRangesContext'
 import { BPYearRangesProviderProps } from './types'
 
@@ -8,9 +7,9 @@ const BPYearRangesProvider = (props: BPYearRangesProviderProps) => {
 
   const {
     loading: yearRangesLoading,
-    results: yearRanges,
+    data: yearRanges,
     loaded: yearRangesLoaded,
-  } = useGetYearRanges()
+  } = useStore((state) => state.yearRanges.yearRanges)
 
   return (
     <BPYearRangesContext.Provider

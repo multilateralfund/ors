@@ -120,6 +120,9 @@ function EditTable(props: TableProps) {
     gridRef,
     headerDepth = 1,
     loading,
+    results,
+    rowData,
+    isDataFormatted,
     onColumnResized = noop,
     onFirstDataRendered = noop,
     onGridReady = noop,
@@ -191,7 +194,7 @@ function EditTable(props: TableProps) {
 
   // Define row data with skeleton
   const [initialRowData] = useState(
-    getInitialRowData({ rowData: props.rowData, rowsVisible, withSkeleton }),
+    getInitialRowData({ rowData, rowsVisible, withSkeleton }),
   )
   const [initialPinnedBottomRowData] = useState(pinnedBottomRowData)
 
@@ -231,30 +234,33 @@ function EditTable(props: TableProps) {
           rowsVisible * rowHeight + offsetHeight + headerDepth + 1
         }px`
       }
-      if (!rows) {
+      if (
+        !rows &&
+        ((rowData?.length === 0 && isDataFormatted) || results.length === 0)
+      ) {
         agTable.style.height = 'auto'
         gridApi?.setGridOption('domLayout', 'autoHeight')
       } else if (domLayout !== gridApi?.getGridOption('domLayout')) {
         gridApi?.setGridOption('domLayout', domLayout)
       }
     }
-  }, [domLayout, headerDepth, rowHeight, rowsVisible, grid])
+  }, [domLayout, headerDepth, rowHeight, rowsVisible, grid, rowData])
 
   useEffect(() => {
     if (grid.current) {
-      grid.current.api?.setGridOption('rowData', props.rowData)
+      grid.current.api?.setGridOption('rowData', rowData)
     }
-  }, [props.rowData])
+  }, [rowData])
 
   useEffect(() => {
     if (grid.current) {
       if (loading) {
         grid.current.api?.showLoadingOverlay()
-      } else if (!loading && props.rowData?.length) {
+      } else if (!loading && rowData?.length) {
         grid.current.api?.hideOverlay()
       }
     }
-  }, [loading, props.rowData])
+  }, [loading, rowData])
 
   useEffect(() => {
     /**

@@ -15,7 +15,7 @@ import { TableDataSelectorValuesType } from '../../Table/BusinessPlansTable/Tabl
 import { ViewSelectorValuesType } from '../types'
 import BPListHeader from './BPListHeader'
 import BPListTabs from './BPListTabs'
-import BPTableToolbarButtons from '@ors/app/business-plans/BPTableToolbarButtons'
+import BPTableToolbarButtons from '@ors/components/manage/Blocks/BusinessPlans/BPTableToolbarButtons'
 import { formatApiUrl } from '@ors/helpers'
 import { filtersToQueryParams } from '../utils'
 

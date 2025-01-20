@@ -8,7 +8,6 @@ import { capitalize, map } from 'lodash'
 import { useParams } from 'wouter'
 
 import Loading from '@ors/components/theme/Loading/Loading'
-import BPYearRangesProvider from '@ors/contexts/BusinessPlans/BPYearRangesProvider'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 
 import BEditTable from '../BPEdit/BPEditTable'
@@ -16,14 +15,14 @@ import BPRestoreEdit from '../BPEdit/BPRestoreEdit'
 import { useGetActivities } from '../useGetActivities'
 import BPHeaderEditConsolidated from './BPHeaderEditConsolidated'
 import { useEditLocalStorageConsolidated } from './useLocalStorageConsolidated'
-import { useBPListApi } from '../BPList/BPList'
 import BPTabs from '../BPTabs'
 import { BpFilesObject } from '../types'
 import { useGetBpData } from '../BP/useGetBpData'
 import { useStore } from '@ors/store'
 import NotFoundPage from '@ors/app/not-found'
+import { useGetChemicalTypes } from '../useGetChemicalTypes'
 
-const BPEdit = () => {
+const BPEditConsolidated = () => {
   const { period, type } = useParams<{ period: string; type: string }>()
   const [year_start, year_end] = period.split('-')
   const formattedType = capitalize(type)
@@ -39,36 +38,40 @@ const BPEdit = () => {
   })
   const bpFilters = getFilters('bp')
 
-  const {
-    loading,
-    params,
-    results: activities,
-  } = useGetActivities(getFilters('activities'))
-  const { results, loading: bpLoading } = useBPListApi(bpFilters)
+  const { loading, params, results } = useGetActivities(
+    getFilters('activities'),
+  )
   const { data: bpFiles } = useGetBpData(
     bpFilters,
     'api/business-plan/files/',
     'files',
   ) as any
-  const { data, error } = useGetBpData(
-    bpFilters,
-    'api/business-plan/get/',
-    'fullData',
-  ) as any
+  const {
+    data,
+    error,
+    loading: bpLoading,
+  } = useGetBpData(bpFilters, 'api/business-plan/get/', 'fullData') as any
+  const { business_plan } = data || {}
+  const chemicalTypes = useGetChemicalTypes()
 
-  const [activeTab, setActiveTab] = useState(0)
+  const { activeTab: storeActiveTab } = useStore(
+    (state) => state.bp_current_tab,
+  )
+
+  const [activeTab, setActiveTab] = useState(storeActiveTab)
   const [form, setForm] = useState<Array<ApiEditBPActivity> | undefined>(
     undefined,
   )
-  const [bpForm, setBpForm] = useState()
+  const [bpForm, setBpForm] = useState<any>()
   const [files, setFiles] = useState<BpFilesObject>({
     deletedFilesIds: [],
     newFiles: [],
   })
+  const [isDataFormatted, setIsDataFormatted] = useState(false)
   const [warnOnClose, setWarnOnClose] = useState(false)
   useVisibilityChange(warnOnClose)
 
-  const localStorage = useEditLocalStorageConsolidated(activities, type, period)
+  const localStorage = useEditLocalStorageConsolidated(results, type, period)
 
   const handleSetForm = useCallback(
     (value: any, updateLocalStorage: boolean = true) => {
@@ -85,20 +88,29 @@ const BPEdit = () => {
   )
 
   const getFormattedActivities = useCallback(() => {
-    if (!activities) {
+    if (!results) {
       return null
     }
 
-    return map(activities, (activity, index) => ({
+    return map(results, (activity, index) => ({
       ...activity,
-      row_id: activities.length - index - 1,
+      row_id: results.length - index - 1,
     }))
-  }, [activities])
+  }, [results])
+
+  useEffect(() => {
+    if (!bpForm && business_plan)
+      setBpForm({
+        meeting: business_plan.meeting_id,
+        decision: business_plan.decision_id,
+      })
+  }, [business_plan])
 
   useEffect(() => {
     const formattedActivities = getFormattedActivities()
 
     if (formattedActivities && formattedActivities.length > 0) {
+      setIsDataFormatted(true)
       handleSetForm(formattedActivities, false)
     }
   }, [getFormattedActivities, handleSetForm])
@@ -115,9 +127,17 @@ const BPEdit = () => {
         className="!fixed bg-action-disabledBackground"
         active={loading}
       />
-      {!bpLoading && results.length > 0 && (
+      {!bpLoading && business_plan && (
         <BPHeaderEditConsolidated
-          {...{ form, setWarnOnClose, type, results, bpForm, files, setForm }}
+          {...{
+            form,
+            setWarnOnClose,
+            type,
+            business_plan,
+            bpForm,
+            files,
+            setForm,
+          }}
         />
       )}
       {!loading && (
@@ -126,7 +146,7 @@ const BPEdit = () => {
           to recover it?
         </BPRestoreEdit>
       )}
-      {!loading && results.length > 0 && (
+      {!loading && business_plan && (
         <BPTabs
           {...{
             bpForm,
@@ -136,13 +156,20 @@ const BPEdit = () => {
             setFiles,
             files,
             bpFiles,
-            results,
+            business_plan,
             data,
           }}
           isConsolidatedBp
         >
           <BEditTable
-            {...{ form, loading, params }}
+            {...{
+              form,
+              loading,
+              params,
+              chemicalTypes,
+              results,
+              isDataFormatted,
+            }}
             isConsolidatedView={true}
             setForm={handleSetForm}
           />
@@ -152,10 +179,4 @@ const BPEdit = () => {
   )
 }
 
-export default function BPEditConsolidated() {
-  return (
-    <BPYearRangesProvider>
-      <BPEdit />
-    </BPYearRangesProvider>
-  )
-}
+export default BPEditConsolidated

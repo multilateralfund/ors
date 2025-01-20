@@ -5,7 +5,7 @@ import {
   userCanViewFilesBusinessPlan,
 } from '@ors/types/user_types'
 
-import { Dispatch, SetStateAction, useEffect } from 'react'
+import { Dispatch, SetStateAction } from 'react'
 
 import SimpleField from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleField'
 import VersionHistoryList from '@ors/components/ui/VersionDetails/VersionHistoryList'
@@ -23,19 +23,25 @@ import { Label } from '../BPUpload/helpers'
 import { BpFilesObject, IDecision } from '../types'
 import FileInput from '../BPEdit/FileInput'
 import Field from '@ors/components/manage/Form/Field'
-import { keys } from 'lodash'
 
 const BPSummary = (props: {
-  results: any[]
+  business_plan: any
   bpFiles: any[]
   files: BpFilesObject
   bpForm: any
   setBpForm: Dispatch<SetStateAction<any>>
   setFiles: React.Dispatch<React.SetStateAction<BpFilesObject>>
 }) => {
-  const { results, bpFiles, files, bpForm = {}, setBpForm, setFiles } = props
+  const {
+    business_plan,
+    bpFiles,
+    files,
+    bpForm = {},
+    setBpForm,
+    setFiles,
+  } = props
   const { year_end, year_start, status, meeting_id, decision_id } =
-    results[0] || {}
+    business_plan || {}
 
   const { user_type } = useStore((state) => state.user.data)
   const canViewFiles = userCanViewFilesBusinessPlan[user_type as UserType]
@@ -52,11 +58,6 @@ const BPSummary = (props: {
       decision: decision?.value,
     }))
   }
-  useEffect(() => {
-    if (keys(bpForm).length === 0) {
-      setBpForm({ meeting: meeting_id, decision: decision_id })
-    }
-  }, [results])
 
   return (
     <div className="flex flex-col gap-6 rounded-lg bg-gray-100 p-4">

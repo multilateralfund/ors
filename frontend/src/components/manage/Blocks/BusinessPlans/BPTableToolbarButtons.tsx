@@ -14,11 +14,19 @@ const BPTableToolbarButtons = (props: any) => {
   const { downloadTexts, downloadUrls } = props
 
   const [pathname] = useLocation()
+  const splitPathName = pathname.split('/')
+  const currentPage = splitPathName.splice(splitPathName.length - 2, 1)
+  const formattedPathname = splitPathName.join('/')
 
   const { bpType } = useStore((state) => state.bpType)
   const { user_type } = useStore((state) => state.user?.data)
+  const { setActiveTab } = useStore((state) => state.bp_current_tab)
 
   const [domNode, setDomNode] = useState<Element>()
+
+  const setCurrentTab = () => {
+    setActiveTab(currentPage[0] === 'activities' ? 0 : 1)
+  }
 
   useEffect(function () {
     const elTarget =
@@ -38,9 +46,10 @@ const BPTableToolbarButtons = (props: any) => {
             <CustomLink
               className="text-nowrap px-4 py-2 text-lg uppercase"
               color="secondary"
-              href={`${pathname}/${lowerCase(bpType)}/edit`}
+              href={`${formattedPathname}/${lowerCase(bpType)}/edit`}
               variant="contained"
               button
+              onClick={setCurrentTab}
             >
               Revise BP
             </CustomLink>

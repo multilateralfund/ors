@@ -44,6 +44,7 @@ const BPReviewChanges = ({
   validations,
 }: IBPReviewChanges) => {
   const { setBPType } = useStore((state) => state.bpType)
+  const { fetchYearRanges } = useStore((state) => state.yearRanges)
 
   const [expandedItems, setExpandedItems] = useState<Array<string>>([])
   const [importResult, setImportResult] = useState<any>()
@@ -82,6 +83,7 @@ const BPReviewChanges = ({
         setImportResult(result)
         setIsLoading(false)
         setBPType(bp_status)
+        fetchYearRanges()
       }
     } catch (error: any) {
       console.error('Error:', error)

@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 
 import { useLocation } from 'wouter'
+import { useStore } from '@ors/store'
 
 import useGetBpPeriods from '@ors/components/manage/Blocks/BusinessPlans/BPList/useGetBPPeriods'
-import { useGetYearRanges } from '@ors/components/manage/Blocks/BusinessPlans/useGetYearRanges'
 import {
   getCurrentTriennium,
   getLatestBpYearRange,
@@ -14,8 +14,8 @@ export default function BusinessPlans() {
 
   const currentTriennium = getCurrentTriennium()
 
-  const { results: yearRanges } = useGetYearRanges()
-  const { periodOptions } = useGetBpPeriods(yearRanges)
+  const { yearRanges } = useStore((state) => state.yearRanges)
+  const { periodOptions } = useGetBpPeriods(yearRanges.data)
   const latestBpYearRange = getLatestBpYearRange(periodOptions)
 
   useEffect(() => {

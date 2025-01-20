@@ -18,7 +18,7 @@ export default function BPHeaderEditConsolidated({
   form,
   setWarnOnClose,
   type,
-  results,
+  business_plan,
   bpForm,
   files,
   setForm,
@@ -29,6 +29,7 @@ export default function BPHeaderEditConsolidated({
   const [isSaving, setIsSaving] = useState(false)
 
   const { setBusinessPlan } = useStore((state) => state.businessPlan)
+  const { activeTab } = useStore((state) => state.bp_current_tab)
   const { setRowErrors } = useStore((state) => state.bpErrors)
 
   const { enqueueSnackbar } = useSnackbar()
@@ -69,7 +70,7 @@ export default function BPHeaderEditConsolidated({
         )
       }
 
-      const response = await api(`api/business-plan/${results[0].id}/`, {
+      const response = await api(`api/business-plan/${business_plan.id}/`, {
         data: {
           activities: formattedData,
           year_start: parseInt(year_start),
@@ -95,7 +96,7 @@ export default function BPHeaderEditConsolidated({
         },
       )
       setBusinessPlan({
-        ...results[0],
+        ...business_plan,
         id: response.id,
       })
     } catch (error) {
@@ -155,7 +156,7 @@ export default function BPHeaderEditConsolidated({
         <Link
           className="border border-solid border-primary bg-white px-4 py-2 text-primary shadow-none hover:bg-primary hover:text-white"
           color="primary"
-          href={`/business-plans/list/activities/${period}`}
+          href={`/business-plans/list/${activeTab === 0 ? 'activities' : 'details'}/${period}`}
           size="large"
           variant="contained"
           button

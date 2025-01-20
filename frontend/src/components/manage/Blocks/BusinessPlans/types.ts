@@ -63,12 +63,21 @@ export interface BPTabsInterface extends BpDetails {
   setBpForm?: Dispatch<any> | undefined
 }
 
+export type chemicalTypesType = {
+  loading: boolean
+  loaded: boolean
+  results: { id: number; name: string }[]
+}
+
 export type BPEditTableInterface = {
   form: Array<ApiEditBPActivity> | undefined
   isConsolidatedView?: boolean
   loading: boolean
   params: any
   setForm: Dispatch<SetStateAction<Array<ApiEditBPActivity> | null | undefined>>
+  chemicalTypes: chemicalTypesType
+  isDataFormatted?: boolean
+  results?: any[]
 }
 
 export interface EditBPLocalStorageType {

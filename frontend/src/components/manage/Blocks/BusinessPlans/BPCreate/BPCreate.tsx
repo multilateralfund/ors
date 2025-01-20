@@ -28,6 +28,7 @@ import useGetBpPeriods from '../BPList/useGetBPPeriods'
 import { RedirectToBpList } from '../RedirectToBpList'
 import { tableColumns } from '../constants'
 import { useGetYearRanges } from '../useGetYearRanges'
+import { chemicalTypesType } from '../types'
 
 function BPCreateHeader(props: PropsWithChildren) {
   const ctx = useBPCreate()
@@ -104,8 +105,7 @@ function BPCreateHeader(props: PropsWithChildren) {
         <div className="flex items-center">
           <div className="container flex w-full justify-between gap-x-4 px-0">
             <Link
-              className="border border-solid border-primary bg-white px-4 py-2 text-primary
-                shadow-none hover:bg-primary hover:text-white"
+              className="border border-solid border-primary bg-white px-4 py-2 text-primary shadow-none hover:bg-primary hover:text-white"
               color="primary"
               href={`/business-plans/`}
               size="large"
@@ -243,6 +243,7 @@ function BPCreateContentActivities() {
       loading={false}
       params={[]}
       yearRangeSelected={ctx.yearRange}
+      chemicalTypes={{} as chemicalTypesType}
       setForm={(form) =>
         dispatch({
           payload: form as ApiEditBPActivity[],
