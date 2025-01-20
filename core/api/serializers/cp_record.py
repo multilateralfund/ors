@@ -132,8 +132,8 @@ class DashboardsCPRecordSerializer(serializers.ModelSerializer):
     version = serializers.IntegerField(source="report_version")
     created_at = serializers.DateTimeField(source="report_created_at")
     lvc = serializers.BooleanField(source="country_is_lvc")
-    group = serializers.CharField(source="substance_group_name")
-    group_id = serializers.IntegerField(source="substance_group_id")
+    group = serializers.SerializerMethodField()
+    group_id = serializers.SerializerMethodField()
     chemical_id = serializers.SerializerMethodField()
     chemical_name = serializers.SerializerMethodField()
     is_blend = serializers.SerializerMethodField()
@@ -159,6 +159,16 @@ class DashboardsCPRecordSerializer(serializers.ModelSerializer):
             "data",
             "remarks",
         ]
+
+    def get_group(self, obj):
+        if obj.blend_id:
+            return self.context["annex_f"].name
+        return obj.substance_group_name
+
+    def get_group_id(self, obj):
+        if obj.blend_id:
+            return self.context["annex_f"].id
+        return obj.substance_group_id
 
     def get_chemical_id(self, obj):
         if obj.blend_id:

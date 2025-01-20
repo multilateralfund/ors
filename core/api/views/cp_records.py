@@ -48,6 +48,7 @@ from core.models.country_programme_archive import (
     CPRecordArchive,
     CPReportArchive,
 )
+from core.models.group import Group
 from core.models.usage import Usage
 from core.utils import IMPORT_DB_MAX_YEAR, IMPORT_DB_OLDEST_MAX_YEAR
 
@@ -490,6 +491,7 @@ class DashboardsCPRecordView(generics.ListAPIView):
             usages_dict[usage.id] = {"name": usage.full_name, "quantity": 0}
         ctx["usages_dict"] = usages_dict
         ctx["country_region_dict"] = get_country_region_dict()
+        ctx["annex_f"] = Group.objects.get(name="F")
         return ctx
 
     def get_context_with_existing_usages(self, records_qs):

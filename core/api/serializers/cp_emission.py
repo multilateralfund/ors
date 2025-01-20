@@ -52,13 +52,13 @@ class DashboardsCPEmissionSerializer(serializers.ModelSerializer):
     object_type = serializers.SerializerMethodField()
 
     ATTRIBUTE_NAMES_MAPPING = {
-        "total": "Total amount generated",
+        "total": "Amount generated and captured - Total amount generated",
         "all_uses": "Amount generated and captured - For all uses",
         "feedstock_gc": "Amount generated and captured - For feedstock use in your country",
         "destruction": "Amount generated and captured - For destruction",
-        "feedstock_wpc": "Captured for feedstock uses within your country",
-        "destruction_wpc": "Amount used for feedstock without prior capture",
-        "generated_emissions": "Captured for destruction",
+        "feedstock_wpc": "Amount used for feedstock without prior capture",
+        "destruction_wpc": "Amount destroyed without prior capture",
+        "generated_emissions": "Amount of generated emissions",
     }
 
     class Meta:

@@ -56,9 +56,9 @@ class DashboardsCPGenerationSerializer(serializers.ModelSerializer):
     facility_name = serializers.SerializerMethodField()
 
     ATTRIBUTE_NAMES_MAPPING = {
-        "all_uses": "Amount generated and captured - For all uses",
-        "feedstock": "Amount generated and captured - For feedstock use in your country",
-        "destruction": "Amount generated and captured - For destruction",
+        "all_uses": "Captured for all uses",
+        "feedstock": "Captured for feedstock uses within your country",
+        "destruction": "Captured for destruction",
     }
 
     class Meta:
