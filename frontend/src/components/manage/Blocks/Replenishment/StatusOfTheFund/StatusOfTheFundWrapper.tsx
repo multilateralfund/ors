@@ -1,6 +1,17 @@
-import { useCallback, useContext, useState } from 'react'
+import { useCallback, useContext, useMemo, useState } from 'react'
 
-import { get, isNil, keys, omit, omitBy, pickBy, reduce, reverse } from 'lodash'
+import {
+  entries,
+  get,
+  groupBy,
+  isNil,
+  keys,
+  omitBy,
+  pickBy,
+  reduce,
+  reverse,
+  sortBy,
+} from 'lodash'
 import { useSnackbar } from 'notistack'
 
 import type { ApiReplenishmentStatusFile } from '@ors/types/api_replenishment_status_files'
@@ -30,6 +41,21 @@ function StatusOfTheFundWrapper() {
     path: 'api/replenishment/status-files',
     options: {},
   })
+  const formattedFiles = useMemo(() => {
+    const groupedFiles = groupBy(
+      files,
+      (filesData) =>
+        `${Number(filesData.meeting_id)}-${Number(filesData.year)}`,
+    )
+    const sortedFiles = sortBy(entries(groupedFiles), [
+      (filesData) => {
+        const splitFileKey = filesData[0].split('-')
+        return splitFileKey[0] + '-' + splitFileKey[1]
+      },
+    ])
+
+    return sortedFiles.reverse()
+  }, [files])
 
   const refreshFiles = useCallback(() => setFilesParams({}), [setFilesParams])
 
@@ -266,7 +292,7 @@ function StatusOfTheFundWrapper() {
         allocations={allocations}
         asOfDate={asOfDate}
         editableFields={editableFieldsLabels}
-        files={files}
+        files={formattedFiles}
         income={income}
         overview={overview}
         provisions={provisions}
