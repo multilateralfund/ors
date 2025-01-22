@@ -100,10 +100,11 @@ function PrintButton(props: PrintButtonProps) {
 
 interface DownloadLinkProps extends LinkProps {
   iconSize?: number
+  iconClassname?: string
 }
 
 function DownloadLink(props: DownloadLinkProps) {
-  const { children, className, iconSize, ...rest } = props
+  const { children, className, iconSize, iconClassname, ...rest } = props
   return (
     <Link
       className={cx(
@@ -115,7 +116,10 @@ function DownloadLink(props: DownloadLinkProps) {
       {...rest}
     >
       {children}
-      <IoDownloadOutline className="text-secondary" size={iconSize || 18} />
+      <IoDownloadOutline
+        className={cx('text-secondary', iconClassname)}
+        size={iconSize || 18}
+      />
     </Link>
   )
 }

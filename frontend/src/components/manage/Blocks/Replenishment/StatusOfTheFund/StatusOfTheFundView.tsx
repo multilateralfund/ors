@@ -111,7 +111,7 @@ interface IStatusOfTheFundProps {
   allocations: IALLOCATIONS
   asOfDate: string
   editableFields: Array<string>
-  files?: null | ApiReplenishmentStatusFile[]
+  files?: [string, ApiReplenishmentStatusFile[]][]
   income: IINCOME
   overview: IOVERVIEW
   provisions: IPROVISIONS
@@ -145,7 +145,7 @@ function StatusOfTheFundView(props: IStatusOfTheFundProps) {
             Status of the fund as of {asOfDate} (USD)
           </span>
         </h2>
-        <div className="flex gap-2">
+        <div className="flex h-10 gap-2">
           <label
             className={cx(
               'flex h-10 cursor-pointer items-center rounded-lg border border-solid border-primary px-2 py-1 text-lg font-bold text-gray-400',
