@@ -23,7 +23,7 @@ import {
   Typography,
 } from '@mui/material'
 import cx from 'classnames'
-import { filter, times, union } from 'lodash'
+import { entries, filter, isEmpty, split, times, union } from 'lodash'
 
 import Field from '@ors/components/manage/Form/Field'
 import Loading from '@ors/components/theme/Loading/Loading'
@@ -31,13 +31,14 @@ import Link from '@ors/components/ui/Link/Link'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import SimpleSelect from '@ors/components/ui/SimpleSelect/SimpleSelect'
 import SimpleTable from '@ors/components/ui/SimpleTable/SimpleTable'
-import { getResults } from '@ors/helpers'
+import { formatApiUrl, getResults } from '@ors/helpers'
 import useApi from '@ors/hooks/useApi'
 import { useStore } from '@ors/store'
 
 import Portal from '../../Utils/Portal'
 
 import { IoChevronDownCircle, IoClose, IoEllipse } from 'react-icons/io5'
+import { DownloadLink } from '@ors/components/ui/Button/Button'
 
 interface SectionProps {
   filters: any
@@ -611,7 +612,7 @@ function CPFilters(props: any) {
   return (
     <Box
       id="filters"
-      className="sticky top-2 flex h-fit flex-col gap-6 rounded-lg p-8 print:hidden"
+      className="sticky top-2 order-1 flex h-fit flex-col gap-6 rounded-lg p-8 lg:order-none print:hidden"
     >
       <div className="flex justify-end text-3xl font-light">
         <StatusLegend className="mb-0" />
@@ -629,6 +630,44 @@ function CPFilters(props: any) {
         }}
       />
       <div id="portalDisplayAll" className="flex flex-1"></div>
+    </Box>
+  )
+}
+
+const CPResources = ({ resources }: any) => {
+  const { data, loading } = resources
+
+  return (
+    <Box
+      id="resources"
+      className="flex flex-col gap-6 rounded-lg p-8 print:hidden"
+    >
+      <Typography className="text-2xl font-medium">Resources</Typography>
+      {!loading &&
+        (!isEmpty(data) ? (
+          <div className="flex max-h-56 flex-col overflow-y-auto">
+            {entries(data).map((file) => {
+              const formattedPath = split(file[1] as string, '.fs')[1]
+
+              return (
+                <DownloadLink
+                  href={formatApiUrl(formattedPath)}
+                  iconSize={18}
+                  iconClassname="min-w-[18px] mb-1"
+                >
+                  <span
+                    title={file[0]}
+                    className="w-0 max-w-fit grow truncate text-[15px]"
+                  >
+                    {file[0]}
+                  </span>
+                </DownloadLink>
+              )
+            })}
+          </div>
+        ) : (
+          <Typography className="text-lg">No resources available</Typography>
+        ))}
     </Box>
   )
 }
@@ -683,6 +722,19 @@ function useLogSectionApi(filters: FiltersType) {
   return { count, data, loaded, loading, results, setParams }
 }
 
+const useGetResourcesApi = () => {
+  const { data, loading, setParams } = useApi({
+    options: {
+      params: {
+        offset: 0,
+      },
+      withStoreCache: false,
+    },
+    path: '/api/country-programme/resources/',
+  })
+  return { data, loading, setParams }
+}
+
 export default function CPListing() {
   const { setActiveTab: setCpActiveTab } = useStore(
     (state) => state.cp_current_tab,
@@ -700,6 +752,7 @@ export default function CPListing() {
   const { filters, setFilters } = useStore((state) => state.filters)
   const submissionApi = useSubmissionSectionApi(filters)
   const logApi = useLogSectionApi(filters)
+  const resources = useGetResourcesApi()
 
   const handleFiltersChange = (newFilters: FiltersType) => {
     const newFilterState = { ...filters, ...newFilters }
@@ -758,9 +811,9 @@ export default function CPListing() {
       </div>
       <div
         id="cp-listing-sections"
-        className="container relative flex flex-col-reverse gap-6 lg:flex-row lg:gap-4 xl:px-0 print:px-0"
+        className="container relative flex flex-col-reverse gap-6 lg:grid lg:grid-cols-[auto_1fr] lg:gap-4 xl:px-0 print:px-0"
       >
-        <div className="flex-1">
+        <div className="flex-1 lg:row-span-3">
           <div className="flex flex-wrap-reverse items-center justify-between gap-2 border-0 border-b border-solid border-primary lg:flex-nowrap print:hidden">
             <Tabs
               className="scrollable w-96"
@@ -831,6 +884,7 @@ export default function CPListing() {
           setFilters={handleFiltersChange}
           submissionApi={submissionApi}
         />
+        <CPResources resources={resources} />
       </div>
     </>
   )
