@@ -7,6 +7,7 @@ from django.db.models import Q, F
 from openpyxl.utils import get_column_letter
 from rest_framework.exceptions import ValidationError
 
+from collections import defaultdict
 from constance import config
 from core.api.export.base import configure_sheet_print
 from core.api.export.replenishment import (
@@ -236,44 +237,46 @@ def get_final_records_for_years(min_year, max_year, filter_list=None):
     # get the max version for each archive report that does not have a final report
     archive_reports = get_archive_reports_final_for_years(min_year, max_year)
 
-    if not archive_reports:
-        return list(final_records)
-
     # get all the records for the archive reports
-    archive_records = (
-        CPRecordArchive.objects.get_for_years(min_year, max_year)
-        .filter(
-            *filter_list,
+    archive_records = []
+    if archive_reports:
+        archive_records = (
+            CPRecordArchive.objects.get_for_years(min_year, max_year)
+            .filter(
+                *filter_list,
+            )
+            .filter(
+                # get the records for the max version of the archive reports
+                *[
+                    models.Q(
+                        country_programme_report__country_id=c,
+                        country_programme_report__year=y,
+                        country_programme_report__version=v,
+                    )
+                    for c, y, v in archive_reports
+                ],
+                _connector=models.Q.OR,
+            )
         )
-        .filter(
-            # get the records for the max version of the archive reports
-            *[
-                models.Q(
-                    country_programme_report__country_id=c,
-                    country_programme_report__year=y,
-                    country_programme_report__version=v,
-                )
-                for c, y, v in archive_reports
-            ],
-            _connector=models.Q.OR,
-        )
-    )
 
     # union the final records with the archive records
     reported_list = list(final_records) + list(archive_records)
     # set dict (country, year)
-    existent_records = {}
+    existent_records = defaultdict(dict)
+    custom_chemicals = defaultdict(list)
     for r in reported_list:
         country_year = (
             r.country_programme_report.country_id,
             r.country_programme_report.year,
         )
-        if country_year not in existent_records:
-            existent_records[country_year] = {}
-        chemical = (
+        chemical_key = (
             f"substance_{r.substance_id}" if r.substance else f"blend_{r.blend_id}"
         )
-        existent_records[country_year][chemical] = r
+        existent_records[country_year][chemical_key] = r
+
+        chemical = r.substance or r.blend
+        if chemical.created_by:
+            custom_chemicals[country_year].append(chemical_key)
 
     # get display_substance for years
     displayed_rows = {}
@@ -287,7 +290,7 @@ def get_final_records_for_years(min_year, max_year, filter_list=None):
 
     # set the final list of records
     # if the country does not have the display_substance for the year,
-    # then include an 0 value record
+    # then include a 0 value record
     final_list = []
     for country, year in existent_records:
         for row in displayed_rows[year]:
@@ -307,6 +310,9 @@ def get_final_records_for_years(min_year, max_year, filter_list=None):
                 final_list.append(CPRecord(**cp_record_data))
             else:
                 final_list.append(existent_records[(country, year)][chemical_key])
+
+        for chemical_key in custom_chemicals.get((country, year), []):
+            final_list.append(existent_records[(country, year)][chemical_key])
 
     # sort the final list
     final_list.sort(
