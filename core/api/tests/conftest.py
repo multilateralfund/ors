@@ -481,7 +481,7 @@ def pdf_text(pdf_file):
 
 
 @pytest.fixture(name="_setup_new_cp_report")
-def setup_new_cp_report(cp_report_2019, blend, substance, time_frames, groupA):
+def setup_new_cp_report(cp_report_2019, blend, substance, time_frames, groupA, user):
     # create prev year cp report
     prev_report = CPReportFactory.create(
         country=cp_report_2019.country,
@@ -519,7 +519,9 @@ def setup_new_cp_report(cp_report_2019, blend, substance, time_frames, groupA):
 
     blend2inform = BlendFactory.create(name="blend2inform")  # 211
     blend3noform = BlendFactory.create(name="blend2noform", sort_order=234)  # inf, 234
-    blend4noform = BlendFactory.create(name="AddedByUser", sort_order=None)  # inf, inf
+    blend4noform = BlendFactory.create(
+        name="AddedByUser", sort_order=None, created_by=user
+    )  # inf, inf
 
     for i, subst in enumerate([substance, substAinform, substBinform]):
         for sect in ["A", "C"]:

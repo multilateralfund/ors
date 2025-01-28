@@ -225,7 +225,7 @@ class TestCPHCFCExtractionExport(BaseTest):
         wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
         assert wb.sheetnames == ["2019", "2020"]
         # check number of rows
-        assert wb["2019"].max_row == 3
+        assert wb["2019"].max_row == 4
         assert wb["2020"].max_row == 1
 
         # check number of columns
@@ -247,7 +247,7 @@ class TestCPHFCExtractionExport(BaseTest):
         wb = openpyxl.load_workbook(io.BytesIO(response.getvalue()))
         assert wb.sheetnames == ["2019", "2020"]
         # check number of rows
-        assert wb["2019"].max_row == 6
+        assert wb["2019"].max_row == 7
         assert wb["2020"].max_row == 1
 
         # check number of columns
@@ -280,7 +280,7 @@ class TestCPExtractionALLExport(BaseTest):
         ]
         # check number of rows
         assert wb["ODSPrice"].max_row == 8
-        assert wb["CP-Details"].max_row == 8
+        assert wb["CP-Details"].max_row == 10
         assert wb["CPConsumption(ODP)"].max_row == 2
         assert wb["HFC-Consumption(MTvsCO₂Equi)"].max_row == 2
         assert wb["HFC-23Generation"].max_row == 2
