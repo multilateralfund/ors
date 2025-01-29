@@ -263,7 +263,6 @@ def get_final_records_for_years(min_year, max_year, filter_list=None):
     reported_list = list(final_records) + list(archive_records)
     # set dict (country, year)
     existent_records = defaultdict(dict)
-    custom_chemicals = defaultdict(list)
     for r in reported_list:
         country_year = (
             r.country_programme_report.country_id,
@@ -273,10 +272,6 @@ def get_final_records_for_years(min_year, max_year, filter_list=None):
             f"substance_{r.substance_id}" if r.substance else f"blend_{r.blend_id}"
         )
         existent_records[country_year][chemical_key] = r
-
-        chemical = r.substance or r.blend
-        if chemical.created_by:
-            custom_chemicals[country_year].append(chemical_key)
 
     # get display_substance for years
     displayed_rows = {}
@@ -310,9 +305,11 @@ def get_final_records_for_years(min_year, max_year, filter_list=None):
                 final_list.append(CPRecord(**cp_record_data))
             else:
                 final_list.append(existent_records[(country, year)][chemical_key])
+                del existent_records[(country, year)][chemical_key]
 
-        for chemical_key in custom_chemicals.get((country, year), []):
-            final_list.append(existent_records[(country, year)][chemical_key])
+    for country, year in existent_records:
+        for record in existent_records[(country, year)].values():
+            final_list.append(record)
 
     # sort the final list
     final_list.sort(
