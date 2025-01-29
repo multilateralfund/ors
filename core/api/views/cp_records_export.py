@@ -873,6 +873,7 @@ class CPDataExtractionAllExport(views.APIView):
             ...
         }
         """
+        group_hcfc_141b = "HCFC-141b in imported pre-blended polyol"
         filters = [
             models.Q(substance__isnull=False),
             models.Q(section="A"),
@@ -885,7 +886,7 @@ class CPDataExtractionAllExport(views.APIView):
                 record.substance.name.lower()
                 == "hcfc-141b in imported pre-blended polyol"
             ):
-                group = "HCFC-141b in imported pre-blended polyol"
+                group = group_hcfc_141b
             else:
                 group = SUBSTANCE_GROUP_ID_TO_CATEGORY.get(
                     record.substance.group.group_id
@@ -909,6 +910,18 @@ class CPDataExtractionAllExport(views.APIView):
             consumption_value *= record.substance.odp
 
             country_records[key][f"record_value_{year}"] += consumption_value
+
+        all_groups = list(set(SUBSTANCE_GROUP_ID_TO_CATEGORY.values()))
+        all_groups.append(group_hcfc_141b)
+        for country_name in existent_reports:
+            for group in all_groups:
+                key = (country_name, group)
+                if key in country_records:
+                    continue
+
+                country_records[key] = {}
+                for data_year in existent_reports[country_name]:
+                    country_records[key][f"record_value_{data_year}"] = 0
 
         return dict(sorted(country_records.items(), key=lambda x: x[0]))
 
