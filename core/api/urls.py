@@ -86,6 +86,7 @@ from core.api.views.cp_records import (
     CPRecordListDiffView,
 )
 from core.api.views.cp_report_empty_form import EmptyFormView
+from core.api.views.cp_resources import CPResourcesView
 from core.api.views.meetings import DecisionListView, MeetingListView
 from core.api.views.projects import (
     MetaProjectListView,
@@ -356,6 +357,11 @@ urlpatterns = [
         "country-programme/files/<int:id>/download/",
         CPFilesDownloadView.as_view(),
         name="country-programme-files-download",
+    ),
+    path(
+        "country-programme/resources/",
+        CPResourcesView.as_view(),
+        name="country-programme-resources",
     ),
     path(
         "country-programme-archive/records/",
