@@ -375,7 +375,54 @@ class CPHFCHCFCExportBaseView(views.APIView):
             filter_list = []
         filter_list.append(models.Q(section=section))
 
-        return get_final_records_for_years(year, year, filter_list)
+        final_list = get_final_records_for_years(
+            year, year, filter_list, list_sort=False
+        )
+        displayed_rows = (
+            CPReportFormatRow.objects.get_for_year(year)
+            .filter(*filter_list)
+            .select_related("substance__group", "blend")
+            .all()
+        )
+        existent_reports = (
+            CPReport.objects.filter(year=year, status=CPReport.CPReportStatus.FINAL)
+            .select_related("country")
+            .all()
+        )
+        final_list_countries = [
+            record.country_programme_report.country for record in final_list
+        ]
+
+        for report in existent_reports:
+            if report.country in final_list_countries:
+                continue
+
+            for row in displayed_rows:
+                chemical = row.substance or row.blend
+                cp_record_data = {
+                    "country_programme_report": report,
+                    "substance": chemical if row.substance else None,
+                    "blend": chemical if row.blend else None,
+                    "id": 0,
+                }
+                final_list.append(CPRecord(**cp_record_data))
+
+        # sort the final list
+        final_list.sort(
+            key=lambda x: (
+                (
+                    x.country_programme_report.year,
+                    x.country_programme_report.country.name,
+                    (
+                        x.substance.sort_order or float("inf")
+                        if x.substance
+                        else x.blend.sort_order or float("inf")
+                    ),
+                )
+            )
+        )
+
+        return final_list
 
     def get_response(self, name, wb):
         return workbook_response(name, wb)
