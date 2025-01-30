@@ -209,7 +209,7 @@ def get_archive_reports_final_for_years(min_year, max_year):
     )
 
 
-def get_final_records_for_years(min_year, max_year, filter_list=None):
+def get_final_records_for_years(min_year, max_year, filter_list=None, list_sort=True):
     """
     Get all the final records for the years in the range [min_year, max_year]
      - first get the final records for the countries that have a final report (CPReport)
@@ -310,6 +310,9 @@ def get_final_records_for_years(min_year, max_year, filter_list=None):
     for country, year in existent_records:
         for record in existent_records[(country, year)].values():
             final_list.append(record)
+
+    if not list_sort:
+        return final_list
 
     # sort the final list
     final_list.sort(
