@@ -147,13 +147,14 @@ class DashboardsCPRecordSerializer(BaseDashboardsSerializer):
     def get_region(self, obj):
         return self.context["country_region_dict"].get(obj.country_id)
 
-    def _get_values_dict(self, obj, attr_key, attr_name, value):
+    def _get_values_dict(self, obj, data_type, sector_name, value):
         if not value:
             return []
 
         ret_data = [
             {
-                attr_key: attr_name,
+                "data_type": data_type,
+                "sector_name": sector_name,
                 "measurement_type": "mt",
                 "value": value,
             }
@@ -162,7 +163,8 @@ class DashboardsCPRecordSerializer(BaseDashboardsSerializer):
         if obj.section == "A":
             ret_data.append(
                 {
-                    attr_key: attr_name,
+                    "data_type": data_type,
+                    "sector_name": sector_name,
                     "measurement_type": "odp",
                     "value": obj.mt_convert_to_odp(value),
                 }
@@ -170,7 +172,8 @@ class DashboardsCPRecordSerializer(BaseDashboardsSerializer):
         else:
             ret_data.append(
                 {
-                    attr_key: attr_name,
+                    "data_type": data_type,
+                    "sector_name": sector_name,
                     "measurement_type": "gwp",
                     "value": obj.mt_convert_to_gwp(value),
                 }
@@ -190,7 +193,7 @@ class DashboardsCPRecordSerializer(BaseDashboardsSerializer):
         for _, usage_data in usage_dict.items():
             final_list.extend(
                 self._get_values_dict(
-                    obj, "sector_name", usage_data["name"], usage_data["quantity"]
+                    obj, "sector", usage_data["name"], usage_data["quantity"]
                 )
             )
         return final_list
@@ -206,13 +209,8 @@ class DashboardsCPRecordSerializer(BaseDashboardsSerializer):
             "manufacturing_blends",
         ]:
             attr_value = getattr(obj, attribute)
-            metric_list.extend(
-                self._get_values_dict(obj, "data_type", attribute, attr_value)
-            )
+            metric_list.extend(self._get_values_dict(obj, attribute, "", attr_value))
         return metric_list
 
     def get_data(self, obj):
-        return {
-            "sectors": self._get_usages_data(obj),
-            "metrics": self._get_metrics_data(obj),
-        }
+        return self._get_usages_data(obj) + self._get_metrics_data(obj)
