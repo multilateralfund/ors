@@ -88,7 +88,7 @@ docker-compose exec app ./manage.py import_records cp_db
 
 - cp_db_records
 : download folders from nexcloud
-    - **nextcloud path** OzoneMlf/Data/1. Country Programme/data/json
+    - **EdW nextcloud path** Ozone MLF\94. Data\1. Country Programme\data\json
     - **local path** .fs/import_files/databases
 
     |nextcloud name | local name |
@@ -99,7 +99,7 @@ docker-compose exec app ./manage.py import_records cp_db
 
 - cp_format
 : download folders from nextcloud
-    - **nextcloud path** OzoneMlf/3. Country programmes specs and documentation/CP Format/
+    - **nextcloud path** Ozone MLF\3. Country programmes\CP Format\
     - **local path** .fs/import_files/cp_format
 
     |nextcloud name | local name |
