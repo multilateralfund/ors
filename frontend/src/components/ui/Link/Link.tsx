@@ -16,7 +16,8 @@ export type ButtonProps = { button: true; href: string } & MuiButtonProps
 function isInternalLink(url: string) {
   return (
     (url.startsWith('/') || url.startsWith(location.origin)) &&
-    url.indexOf('/api/') == -1
+    url.indexOf('/api/') == -1 &&
+    url.indexOf('/static/') == -1
   )
 }
 

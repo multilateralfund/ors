@@ -654,6 +654,7 @@ const CPResources = ({ resources }: any) => {
                 <DownloadLink
                   href={formattedPath}
                   iconSize={18}
+                  target="_self"
                   className="mb-[5px] mr-1"
                   iconClassname="min-w-[18px] mb-1"
                 >
