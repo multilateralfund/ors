@@ -31,7 +31,7 @@ import Link from '@ors/components/ui/Link/Link'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import SimpleSelect from '@ors/components/ui/SimpleSelect/SimpleSelect'
 import SimpleTable from '@ors/components/ui/SimpleTable/SimpleTable'
-import { formatApiUrl, getResults } from '@ors/helpers'
+import { formatApiUrl, getResults, removeTrailingSlash } from '@ors/helpers'
 import useApi from '@ors/hooks/useApi'
 import { useStore } from '@ors/store'
 
@@ -647,13 +647,16 @@ const CPResources = ({ resources }: any) => {
         (!isEmpty(data) ? (
           <div className="flex max-h-56 flex-col overflow-y-auto">
             {entries(data).map((file) => {
-              const formattedPath = split(file[1] as string, '.fs')[1]
+              const filePath = split(file[1] as string, '.fs')[1]
+              const formattedPath = removeTrailingSlash(formatApiUrl(filePath))
 
               return (
                 <DownloadLink
-                  href={formatApiUrl(formattedPath)}
+                  href={formattedPath}
                   iconSize={18}
+                  className="mb-[5px] mr-1"
                   iconClassname="min-w-[18px] mb-1"
+                  target="_self"
                 >
                   <span
                     title={file[0]}
