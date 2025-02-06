@@ -656,7 +656,6 @@ const CPResources = ({ resources }: any) => {
                   iconSize={18}
                   className="mb-[5px] mr-1"
                   iconClassname="min-w-[18px] mb-1"
-                  target="_self"
                 >
                   <span
                     title={file[0]}
