@@ -13,7 +13,7 @@ import React, { useMemo, useState } from 'react'
 import { Button, ButtonProps, Divider, MenuProps, Tooltip } from '@mui/material'
 import cx from 'classnames'
 import { Dictionary, capitalize, orderBy } from 'lodash'
-import { useLocation } from "wouter";
+import { useLocation } from 'wouter'
 import { useSnackbar } from 'notistack'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
@@ -153,7 +153,7 @@ const HeaderVersionsDropdown = () => {
           <Link
             key={info.id}
             className="flex items-center gap-x-2 rounded-none px-2 py-2 text-black no-underline hover:bg-primary hover:text-white"
-            to={info.url}
+            href={info.url}
           >
             <div className="flex w-56 items-center justify-between hover:text-white">
               <div>{info.label}</div>
