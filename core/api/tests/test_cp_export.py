@@ -281,7 +281,7 @@ class TestCPExtractionALLExport(BaseTest):
         # check number of rows
         assert wb["ODSPrice"].max_row == 8
         assert wb["CP-Details"].max_row == 13
-        assert wb["CPConsumption(ODP)"].max_row == 12
+        assert wb["CPConsumption(ODP)"].max_row == 8
         assert wb["HFC-Consumption(MTvsCO₂Equi)"].max_row == 2
         assert wb["HFC-23Generation"].max_row == 2
         assert wb["HFC-23Emission"].max_row == 3

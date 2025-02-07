@@ -617,7 +617,11 @@ class CPDataExtractionAllExport(views.APIView):
 
     def get_existent_reports(self, min_year, max_year):
         reports = (
-            CPReport.objects.filter(year__gte=min_year, year__lte=max_year)
+            CPReport.objects.filter(
+                year__gte=min_year,
+                year__lte=max_year,
+                status=CPReport.CPReportStatus.FINAL,
+            )
             .select_related("country")
             .all()
         )
@@ -863,7 +867,8 @@ class CPDataExtractionAllExport(views.APIView):
         }
 
         """
-        records = get_final_records_for_years(min_year, max_year)
+        filters = [models.Q(section__in=("A", "B"))]
+        records = get_final_records_for_years(min_year, max_year, filters)
         cp_details = {}
 
         for record in records:
@@ -958,7 +963,7 @@ class CPDataExtractionAllExport(views.APIView):
 
             country_records[key][f"record_value_{year}"] += consumption_value
 
-        all_groups = list(set(SUBSTANCE_GROUP_ID_TO_CATEGORY.values()))
+        all_groups = ["CFC", "Halon", "CTC", "TCA", "HCFC", "MBR"]
         all_groups.append(group_hcfc_141b)
         for country_name in existent_reports:
             for group in all_groups:
