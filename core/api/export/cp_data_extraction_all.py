@@ -4,13 +4,13 @@ from core.api.export.base import BaseWriter
 class BaseExtractionAllWriter(BaseWriter):
     header_row_start_idx = 1
 
-    def get_record_value_year_headers(self, min_year, max_year):
+    def get_record_value_year_headers(self, min_year, max_year, metric="MT"):
         value_headers = []
         for year in range(min_year, max_year + 1):
             value_headers.append(
                 {
                     "id": f"record_value_{year}",
-                    "headerName": f"Value {year} (MT)",
+                    "headerName": f"Value {year} ({metric})",
                     "align": "right",
                     "type": "number",
                 },
@@ -149,7 +149,7 @@ class CPDetailsExtractionWriter(BaseExtractionAllWriter):
 class CPConsumptionODPWriter(BaseExtractionAllWriter):
 
     def __init__(self, wb, min_year, max_year):
-        value_headers = self.get_record_value_year_headers(min_year, max_year)
+        value_headers = self.get_record_value_year_headers(min_year, max_year, "ODP")
         headers = [
             {
                 "id": "country_name",

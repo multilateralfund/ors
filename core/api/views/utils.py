@@ -1,4 +1,4 @@
-# pylint: disable=C0302
+# pylint: disable=C0302,R0914
 
 from datetime import datetime
 
@@ -288,12 +288,17 @@ def get_final_records_for_years(min_year, max_year, filter_list=None, list_sort=
     # then include a 0 value record
     final_list = []
     for country, year in existent_records:
+        added_chemical_keys = set()
+        for chemical_key, record in existent_records[(country, year)].items():
+            added_chemical_keys.add(chemical_key)
+            final_list.append(record)
+
         for row in displayed_rows[year]:
             chemical = row.substance or row.blend
             chemical_key = (
                 f"blend_{chemical.id}" if row.blend else f"substance_{chemical.id}"
             )
-            if chemical_key not in existent_records[(country, year)]:
+            if chemical_key not in added_chemical_keys:
                 cp_record_data = {
                     "country_programme_report": CPReport(
                         country_id=country, year=year, version=0
@@ -303,13 +308,6 @@ def get_final_records_for_years(min_year, max_year, filter_list=None, list_sort=
                     "id": 0,
                 }
                 final_list.append(CPRecord(**cp_record_data))
-            else:
-                final_list.append(existent_records[(country, year)][chemical_key])
-                del existent_records[(country, year)][chemical_key]
-
-    for country, year in existent_records:
-        for record in existent_records[(country, year)].values():
-            final_list.append(record)
 
     if not list_sort:
         return final_list

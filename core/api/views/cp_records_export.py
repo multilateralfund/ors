@@ -54,6 +54,7 @@ from core.models.country_programme_archive import (
     CPGenerationArchive,
     CPPricesArchive,
     CPRecordArchive,
+    CPReportArchive,
 )
 from core.utils import IMPORT_DB_MAX_YEAR
 
@@ -616,16 +617,28 @@ class CPDataExtractionAllExport(views.APIView):
         return workbook_response("CP Data Extraction-All", wb)
 
     def get_existent_reports(self, min_year, max_year):
-        reports = (
-            CPReport.objects.filter(year__gte=min_year, year__lte=max_year)
+        final_reports = (
+            CPReport.objects.filter(
+                year__gte=min_year,
+                year__lte=max_year,
+                status=CPReport.CPReportStatus.FINAL,
+            )
             .select_related("country")
             .all()
         )
+        archive_reports = (
+            CPReportArchive.objects.filter(year__gte=min_year, year__lte=max_year)
+            .select_related("country")
+            .all()
+        )
+
         existent_reports = {}
-        for report in reports:
+        for report in list(final_reports) + list(archive_reports):
             if report.country.name not in existent_reports:
                 existent_reports[report.country.name] = []
-            existent_reports[report.country.name].append(report.year)
+
+            if report.year not in existent_reports[report.country.name]:
+                existent_reports[report.country.name].append(report.year)
 
         return existent_reports
 
@@ -863,7 +876,8 @@ class CPDataExtractionAllExport(views.APIView):
         }
 
         """
-        records = get_final_records_for_years(min_year, max_year)
+        filters = [models.Q(section__in=("A", "B"))]
+        records = get_final_records_for_years(min_year, max_year, filters)
         cp_details = {}
 
         for record in records:
@@ -960,6 +974,9 @@ class CPDataExtractionAllExport(views.APIView):
 
         all_groups = list(set(SUBSTANCE_GROUP_ID_TO_CATEGORY.values()))
         all_groups.append(group_hcfc_141b)
+        for group in ("HFC", "HBFC", "Other", "Legacy"):
+            all_groups.remove(group)
+
         for country_name in existent_reports:
             for group in all_groups:
                 key = (country_name, group)
