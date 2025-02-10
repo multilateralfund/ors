@@ -634,6 +634,12 @@ function CPFilters(props: any) {
   )
 }
 
+const isFileUserGuide = (fileName: string) =>
+  fileName
+    .toLowerCase()
+    .replace(/[^a-zA-Z0-9]/g, ' ')
+    .includes('user guide')
+
 const CPResources = ({ resources }: any) => {
   const { data, loading } = resources
 
@@ -646,27 +652,39 @@ const CPResources = ({ resources }: any) => {
       {!loading &&
         (!isEmpty(data) ? (
           <div className="flex max-h-56 flex-col overflow-y-auto">
-            {entries(data).map((file) => {
-              const filePath = split(file[1] as string, '.fs')[1]
-              const formattedPath = removeTrailingSlash(formatApiUrl(filePath))
+            {entries(data)
+              .sort(([keyA], [keyB]) => {
+                const isKeyAUserGuide = isFileUserGuide(keyA)
+                const isKeyBUserGuide = isFileUserGuide(keyB)
 
-              return (
-                <DownloadLink
-                  href={formattedPath}
-                  iconSize={18}
-                  target="_self"
-                  className="mb-[5px] mr-1"
-                  iconClassname="min-w-[18px] mb-1"
-                >
-                  <span
-                    title={file[0]}
-                    className="w-0 max-w-fit grow truncate text-[15px]"
+                if (isKeyAUserGuide && !isKeyBUserGuide) return -1
+                if (!isKeyAUserGuide && isKeyBUserGuide) return 1
+
+                return keyA.localeCompare(keyB)
+              })
+              .map((file) => {
+                const filePath = split(file[1] as string, '.fs')[1]
+                const formattedPath = removeTrailingSlash(
+                  formatApiUrl(filePath),
+                )
+
+                return (
+                  <DownloadLink
+                    href={formattedPath}
+                    iconSize={18}
+                    target="_self"
+                    className="mb-[5px] mr-1"
+                    iconClassname="min-w-[18px] mb-1"
                   >
-                    {file[0]}
-                  </span>
-                </DownloadLink>
-              )
-            })}
+                    <span
+                      title={file[0]}
+                      className="w-0 max-w-fit grow truncate text-[15px]"
+                    >
+                      {file[0]}
+                    </span>
+                  </DownloadLink>
+                )
+              })}
           </div>
         ) : (
           <Typography className="text-lg">No resources available</Typography>
