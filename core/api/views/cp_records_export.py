@@ -54,6 +54,7 @@ from core.models.country_programme_archive import (
     CPGenerationArchive,
     CPPricesArchive,
     CPRecordArchive,
+    CPReportArchive,
 )
 from core.utils import IMPORT_DB_MAX_YEAR
 
@@ -616,7 +617,7 @@ class CPDataExtractionAllExport(views.APIView):
         return workbook_response("CP Data Extraction-All", wb)
 
     def get_existent_reports(self, min_year, max_year):
-        reports = (
+        final_reports = (
             CPReport.objects.filter(
                 year__gte=min_year,
                 year__lte=max_year,
@@ -625,11 +626,19 @@ class CPDataExtractionAllExport(views.APIView):
             .select_related("country")
             .all()
         )
+        archive_reports = (
+            CPReportArchive.objects.filter(year__gte=min_year, year__lte=max_year)
+            .select_related("country")
+            .all()
+        )
+
         existent_reports = {}
-        for report in reports:
+        for report in list(final_reports) + list(archive_reports):
             if report.country.name not in existent_reports:
                 existent_reports[report.country.name] = []
-            existent_reports[report.country.name].append(report.year)
+
+            if report.year not in existent_reports[report.country.name]:
+                existent_reports[report.country.name].append(report.year)
 
         return existent_reports
 
@@ -963,8 +972,11 @@ class CPDataExtractionAllExport(views.APIView):
 
             country_records[key][f"record_value_{year}"] += consumption_value
 
-        all_groups = ["CFC", "Halon", "CTC", "TCA", "HCFC", "MBR"]
+        all_groups = list(set(SUBSTANCE_GROUP_ID_TO_CATEGORY.values()))
         all_groups.append(group_hcfc_141b)
+        for group in ("HFC", "HBFC", "Other", "Legacy"):
+            all_groups.remove(group)
+
         for country_name in existent_reports:
             for group in all_groups:
                 key = (country_name, group)

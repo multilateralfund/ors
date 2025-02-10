@@ -243,7 +243,6 @@ def get_final_records_for_years(min_year, max_year, filter_list=None, list_sort=
         archive_records = (
             CPRecordArchive.objects.get_for_years(min_year, max_year)
             .filter(
-                country_programme_report__status=CPReport.CPReportStatus.FINAL,
                 *filter_list,
             )
             .filter(
@@ -289,9 +288,9 @@ def get_final_records_for_years(min_year, max_year, filter_list=None, list_sort=
     # then include a 0 value record
     final_list = []
     for country, year in existent_records:
-        added_chemical_keys = []
+        added_chemical_keys = set()
         for chemical_key, record in existent_records[(country, year)].items():
-            added_chemical_keys.append(chemical_key)
+            added_chemical_keys.add(chemical_key)
             final_list.append(record)
 
         for row in displayed_rows[year]:
