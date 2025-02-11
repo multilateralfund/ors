@@ -19,10 +19,6 @@ const SECTIONS = [
     label: 'Details',
     path: '/business-plans/list/details',
   },
-  {
-    label: 'By Agency',
-    path: '/business-plans/list/plans',
-  },
 ]
 
 const getNavLinks = (pathname: string, period: null | string) => {

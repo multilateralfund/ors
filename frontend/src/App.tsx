@@ -36,7 +36,6 @@ import ReplenishmentStatusOfContributionsTriennialPeriodPage from '@ors/app/repl
 
 import BPPage from '@ors/app/business-plans/page'
 import BPListLayout from '@ors/app/business-plans/list/layout'
-import BPListPlansPeriodPage from '@ors/app/business-plans/list/plans/[period]/page'
 import BusinessPlansDetailsConsolidated from './app/business-plans/list/details/[period]/page'
 import BPListActivitiesPeriodPage from '@ors/app/business-plans/list/activities/[period]/page'
 import BPListActivitiesPeriodTypeEditPage from '@ors/app/business-plans/list/[period]/[type]/edit/page'
@@ -89,11 +88,6 @@ export default function App() {
         <Route path="/business-plans/upload">
           <BPListLayout>
             <BPUpload />
-          </BPListLayout>
-        </Route>
-        <Route path="/business-plans/list/plans/:period">
-          <BPListLayout>
-            <BPListPlansPeriodPage />
           </BPListLayout>
         </Route>
         <Route path="/business-plans/list/details/:period">
