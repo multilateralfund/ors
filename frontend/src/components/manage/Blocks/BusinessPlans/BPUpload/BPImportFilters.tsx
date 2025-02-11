@@ -6,6 +6,7 @@ import { NavigationButton } from './NavigationButton'
 import { Label } from './helpers'
 import { getDecisionOptions, getMeetingNr, getMeetingOptions } from '../utils'
 import Field from '@ors/components/manage/Form/Field'
+import SimpleInput from '../../Section/ReportInfo/SimpleInput'
 
 interface IBPImportFilters {
   periodOptions: PeriodSelectorOption[]
@@ -23,14 +24,13 @@ const BPImportFilters = ({
     setFilters((prevFilters: any) => ({
       ...prevFilters,
       meeting,
-      decision: null,
     }))
   }
 
-  const handleChangeDecision = (decision: IDecision) => {
+  const handleChangeDecision = (event: any) => {
     setFilters((prevFilters: any) => ({
       ...prevFilters,
-      decision: decision?.value,
+      decision: event.target.value,
     }))
   }
 
@@ -57,12 +57,21 @@ const BPImportFilters = ({
         </div>
         <div>
           <Label>Decision number (optional)</Label>
-          <Field
+          {/* <Field
             key={filters?.meeting}
             FieldProps={{ className: 'mb-0 w-40 BPListUpload' }}
             options={getDecisionOptions(filters?.meeting)}
             widget="autocomplete"
             onChange={(_: any, value: any) => handleChangeDecision(value)}
+          /> */}
+          <SimpleInput
+            id={filters?.meeting}
+            // key={filters?.meeting}
+            className="BPListUpload mb-0 w-40"
+            containerClassName="!h-fit"
+            type="text"
+            label=""
+            onChange={handleChangeDecision}
           />
         </div>
       </div>

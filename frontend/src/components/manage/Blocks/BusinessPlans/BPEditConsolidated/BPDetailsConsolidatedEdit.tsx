@@ -23,6 +23,7 @@ import { Label } from '../BPUpload/helpers'
 import { BpFilesObject, IDecision } from '../types'
 import FileInput from '../BPEdit/FileInput'
 import Field from '@ors/components/manage/Form/Field'
+import SimpleInput from '../../Section/ReportInfo/SimpleInput'
 
 const BPSummary = (props: {
   business_plan: any
@@ -49,13 +50,13 @@ const BPSummary = (props: {
   const canUpdateFiles = userCanUpdateFilesBusinessPlan[user_type as UserType]
 
   const handleChangeMeeting = (meeting: string) => {
-    setBpForm((form: any) => ({ ...form, meeting, decision: null }))
+    setBpForm((form: any) => ({ ...form, meeting }))
   }
 
-  const handleChangeDecision = (decision: IDecision) => {
+  const handleChangeDecision = (event: any) => {
     setBpForm((form: any) => ({
       ...form,
-      decision: decision?.value,
+      decision: event.target.value,
     }))
   }
 
@@ -81,13 +82,23 @@ const BPSummary = (props: {
             </div>
             <div>
               <Label>Decision (optional)</Label>
-              <Field
+              {/* <Field
                 key={bpForm.meeting + '-' + bpForm.decision}
                 FieldProps={{ className: 'mb-0 w-40 BPListUpload' }}
                 options={getDecisionOptions(bpForm.meeting)}
                 widget="autocomplete"
                 onChange={(_: any, value: any) => handleChangeDecision(value)}
                 value={getDecisionNr(bpForm.decision)?.toString() || null}
+              /> */}
+              <SimpleInput
+                id={bpForm.meeting + '-' + bpForm.decision}
+                // key={bpForm.meeting + '-' + bpForm.decision}
+                className="BPListUpload mb-0 w-40"
+                containerClassName="!h-fit"
+                type="text"
+                label=""
+                value={bpForm?.decision}
+                onChange={handleChangeDecision}
               />
             </div>
           </>
@@ -100,7 +111,7 @@ const BPSummary = (props: {
             />
             <SimpleField
               id="decision"
-              data={getDecisionNr(decision_id) || '-'}
+              data={decision_id || '-'}
               label="Decision number"
             />
           </>

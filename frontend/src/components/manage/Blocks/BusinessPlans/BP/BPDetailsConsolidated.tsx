@@ -34,7 +34,7 @@ const BPSummary = (props: any) => {
         />
         <SimpleField
           id="decision"
-          data={getDecisionNr(decision_id) || '-'}
+          data={decision_id || '-'}
           label="Decision number"
         />
       </div>
