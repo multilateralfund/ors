@@ -64,7 +64,7 @@ const BPExport = ({
         >
           Download
         </Link>
-        <NavigationButton {...rest} direction={'next'} />
+        <NavigationButton {...rest} direction={'next'} title={'Next / Skip'} />
         <NavigationButton {...rest} direction={'back'} />
       </div>
     </>

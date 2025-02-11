@@ -100,7 +100,14 @@ const BPUpload = () => {
     {
       component: (
         <BPReviewChanges
-          {...{ file, filters, periodOptions, setCurrentStep, validations }}
+          {...{
+            file,
+            filters,
+            periodOptions,
+            setCurrentStep,
+            validations,
+            setFile,
+          }}
         />
       ),
       step: 4,
