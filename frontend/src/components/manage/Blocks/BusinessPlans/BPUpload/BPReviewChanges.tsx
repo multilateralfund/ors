@@ -146,7 +146,7 @@ const BPReviewChanges = ({
       <p className="mb-0 mt-1 text-xl">
         You are about to replace the {capitalize(bp_status)} Business Plan for{' '}
         {year_start}-{year_end}, meeting number {getMeetingNr(meeting)}
-        {decision ? `, decision number ${getDecisionNr(decision)}.` : '.'}{' '}
+        {decision ? `, decision number ${decision}.` : '.'}{' '}
         {activities_number &&
           `The new version
         contains ${activities_number} ${activities_number === 1 ? 'activity' : 'activities'}${agencies_number && ` for ${agencies_number} ${agencies_number === 1 ? 'agency' : 'agencies'}`}.`}

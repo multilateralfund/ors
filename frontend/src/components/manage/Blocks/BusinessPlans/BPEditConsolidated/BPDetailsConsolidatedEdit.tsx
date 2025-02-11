@@ -50,7 +50,7 @@ const BPSummary = (props: {
   const canUpdateFiles = userCanUpdateFilesBusinessPlan[user_type as UserType]
 
   const handleChangeMeeting = (meeting: string) => {
-    setBpForm((form: any) => ({ ...form, meeting, decision: null }))
+    setBpForm((form: any) => ({ ...form, meeting }))
   }
 
   const handleChangeDecision = (event: any) => {
@@ -111,7 +111,7 @@ const BPSummary = (props: {
             />
             <SimpleField
               id="decision"
-              data={getDecisionNr(decision_id) || '-'}
+              data={decision_id || '-'}
               label="Decision number"
             />
           </>

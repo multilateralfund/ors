@@ -24,7 +24,6 @@ const BPImportFilters = ({
     setFilters((prevFilters: any) => ({
       ...prevFilters,
       meeting,
-      decision: null,
     }))
   }
 
