@@ -7,6 +7,7 @@ export const NavigationButton = ({
   direction,
   isBtnDisabled = false,
   setCurrentStep,
+  title,
 }: INavigationButton) => {
   const moveToNextStep = () => {
     setCurrentStep((step) => (direction === 'next' ? step + 1 : step - 1))
@@ -16,7 +17,7 @@ export const NavigationButton = ({
     <div className="mt-5">
       <Button
         className={cx('h-10 px-3 py-1', {
-          'border border-solid border-primary bg-white text-primary ':
+          'border border-solid border-primary bg-white text-primary':
             !isBtnDisabled,
         })}
         disabled={isBtnDisabled}
@@ -24,7 +25,7 @@ export const NavigationButton = ({
         variant="contained"
         onClick={moveToNextStep}
       >
-        {direction}
+        {title || direction}
       </Button>
     </div>
   )

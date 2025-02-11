@@ -60,7 +60,7 @@ const BPImport = ({
   }
 
   return (
-    <>
+    <div key={JSON.stringify(file)}>
       <p className="m-0 text-2xl">Upload file</p>
       <div className="flex flex-wrap gap-5">
         <Button
@@ -129,7 +129,7 @@ const BPImport = ({
         </Button>
         <NavigationButton {...{ setCurrentStep }} direction={'back'} />
       </div>
-    </>
+    </div>
   )
 }
 

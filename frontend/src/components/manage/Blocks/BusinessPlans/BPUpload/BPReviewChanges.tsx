@@ -22,7 +22,6 @@ import { MdExpandMore } from 'react-icons/md'
 import { useStore } from '@ors/store'
 import {
   getCurrentTriennium,
-  getDecisionNr,
   getLatestBpYearRange,
   getMeetingNr,
 } from '../utils'
@@ -33,6 +32,7 @@ interface IBPReviewChanges {
   filters: any
   periodOptions: PeriodSelectorOption[]
   setCurrentStep: Dispatch<SetStateAction<number>>
+  setFile: Dispatch<SetStateAction<FileList | null>>
   validations: any
 }
 
@@ -42,6 +42,7 @@ const BPReviewChanges = ({
   periodOptions,
   setCurrentStep,
   validations,
+  setFile,
 }: IBPReviewChanges) => {
   const { setBPType } = useStore((state) => state.bpType)
   const { fetchYearRanges } = useStore((state) => state.yearRanges)
@@ -177,7 +178,10 @@ const BPReviewChanges = ({
         </Button>
         <SubmitButton
           className="h-10 !text-[15px]"
-          onClick={() => setCurrentStep((step) => step - 1)}
+          onClick={() => {
+            setFile(null)
+            setCurrentStep((step) => step - 1)
+          }}
         >
           Change file
         </SubmitButton>

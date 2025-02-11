@@ -86,7 +86,7 @@ const BPMainFilters = ({
           'w-64': isFirstStepUpload,
         })}
       >
-        <Label isRequired>Triennium</Label>
+        <Label isRequired={isFirstStepUpload}>Triennium</Label>
         <SimpleSelect
           className="!gap-x-0"
           initialIndex={filters ? Math.max(currentPeriodIndex, 0) : 0}
@@ -98,7 +98,7 @@ const BPMainFilters = ({
         />
       </div>
       <div>
-        <Label isRequired>Status</Label>
+        <Label isRequired={isFirstStepUpload}>Status</Label>
         <Field
           FieldProps={{ className: 'mb-0 w-40 BPListUpload' }}
           options={isFirstStepUpload ? bpTypes : formattedBpTypes}

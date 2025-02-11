@@ -9,7 +9,7 @@ import BPListHeader from '../BPList/BPListHeader'
 import BPListTabs from '../BPList/BPListTabs'
 import { useBPListApi } from '../BPList/BPList'
 import { useGetBpData } from './useGetBpData'
-import { getDecisionNr, getMeetingNr } from '../utils'
+import { getMeetingNr } from '../utils'
 import BPTableToolbarButtons from '../BPTableToolbarButtons'
 
 const BPSummary = (props: any) => {

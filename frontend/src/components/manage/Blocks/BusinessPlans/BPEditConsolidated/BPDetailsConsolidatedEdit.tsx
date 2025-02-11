@@ -13,16 +13,10 @@ import { useStore } from '@ors/store'
 
 import { FilesViewer } from '../FilesViewer'
 import PopoverInput from '../../Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
-import {
-  getDecisionNr,
-  getDecisionOptions,
-  getMeetingNr,
-  getMeetingOptions,
-} from '../utils'
+import { getMeetingNr, getMeetingOptions } from '../utils'
 import { Label } from '../BPUpload/helpers'
-import { BpFilesObject, IDecision } from '../types'
+import { BpFilesObject } from '../types'
 import FileInput from '../BPEdit/FileInput'
-import Field from '@ors/components/manage/Form/Field'
 import SimpleInput from '../../Section/ReportInfo/SimpleInput'
 
 const BPSummary = (props: {
@@ -92,9 +86,8 @@ const BPSummary = (props: {
               /> */}
               <SimpleInput
                 id={bpForm.meeting + '-' + bpForm.decision}
-                // key={bpForm.meeting + '-' + bpForm.decision}
-                className="BPListUpload mb-0 w-40"
                 containerClassName="!h-fit"
+                className="BPListUpload mb-0 w-40"
                 type="text"
                 label=""
                 value={bpForm?.decision}
