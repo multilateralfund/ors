@@ -2,7 +2,6 @@ import { useState } from 'react'
 
 import Tooltip from '@mui/material/Tooltip'
 import cx from 'classnames'
-import { Link } from 'wouter'
 
 import { formatApiUrl } from '@ors/helpers'
 import useClickOutside from '@ors/hooks/useClickOutside'
@@ -11,6 +10,7 @@ import { IDownloadReportProps } from './typesDownloadReport'
 
 import { AiFillFileExcel, AiFillFilePdf } from 'react-icons/ai'
 import { IoDownloadOutline } from 'react-icons/io5'
+import Link from '@ors/components/ui/Link/Link'
 
 function DownloadReport(props: IDownloadReportProps) {
   const { archive, convertData, report } = props
