@@ -301,12 +301,15 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
 }
 
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=4),
+}
+
 REST_AUTH = {
     "USE_JWT": True,
     "JWT_AUTH_HTTPONLY": False,
     "JWT_AUTH_COOKIE": "orsauth",
     "JWT_AUTH_REFRESH_COOKIE": "orsrefresh",
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     "PASSWORD_RESET_USE_SITES_DOMAIN": True,
     "PASSWORD_RESET_SERIALIZER": "core.api.serializers.CustomPasswordResetSerializer",
     "USER_DETAILS_SERIALIZER": "core.api.serializers.CustomUserDetailsSerializer",
