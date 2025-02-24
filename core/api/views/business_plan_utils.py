@@ -190,7 +190,7 @@ def get_bp_activity_data(
     initial_id = sort_order[1].lstrip("0") if len(sort_order) > 1 else 0
 
     activity_data = {
-        "initial_id": initial_id if initial_id != "None" else 0,
+        "initial_id": initial_id if initial_id else 0,
         "title": row["Title"],
         "agency_id": agency.id if agency else None,
         "country_id": country.id if country else None,
@@ -382,6 +382,7 @@ class BusinessPlanUtils:
 
     def validate_bp(self, serializer, current_obj=None):
         if not serializer.is_valid():
+            logger.warning(serializer.errors)
             return serializer.errors
 
         # validate bp and activities data
