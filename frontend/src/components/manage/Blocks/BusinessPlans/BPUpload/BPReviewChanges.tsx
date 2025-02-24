@@ -163,7 +163,7 @@ const BPReviewChanges = ({
           The imported file contains errors. Please go back and correct them!
         </p>
       )}
-      <div className="mt-5 flex flex-wrap items-center justify-between">
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-2.5">
         <div className="flex flex-wrap items-center gap-2.5">
           <Button
             className={cx('h-10 px-3 py-1', {
