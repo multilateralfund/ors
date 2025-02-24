@@ -163,37 +163,41 @@ const BPReviewChanges = ({
           The imported file contains errors. Please go back and correct them!
         </p>
       )}
-      <div className="mt-5 flex flex-wrap items-center gap-2.5">
-        <Button
-          className={cx('h-10 px-3 py-1', {
-            'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
-              errors.length === 0,
-          })}
-          disabled={errors.length > 0}
-          size="large"
-          variant="contained"
-          onClick={submitBP}
-        >
-          Submit
-        </Button>
-        <SubmitButton
-          className="h-10 !text-[15px]"
-          onClick={() => {
-            setFile(null)
-            setCurrentStep((step) => step - 1)
-          }}
-        >
-          Change file
-        </SubmitButton>
+      <div className="mt-5 flex flex-wrap items-center justify-between">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Button
+            className={cx('h-10 px-3 py-1', {
+              'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
+                errors.length === 0,
+            })}
+            disabled={errors.length > 0}
+            size="large"
+            variant="contained"
+            onClick={submitBP}
+          >
+            Submit
+          </Button>
+          <Button
+            className="h-10 border border-solid border-primary bg-white px-3 py-1 !text-[15px] text-primary"
+            onClick={() => {
+              setFile(null)
+              setCurrentStep((step) => step - 1)
+            }}
+          >
+            Back
+          </Button>
+          {isLoading && (
+            <CircularProgress color="inherit" size="30px" className="ml-1.5" />
+          )}
+        </div>
         <Link
           className="no-underline"
           href={`/business-plans/list/activities/${getLatestBpYearRange(periodOptions)?.value || currentTriennium}`}
         >
-          <CancelButton className="h-10 !text-[15px]">Cancel</CancelButton>
+          <CancelButton className="h-10 !text-[15px]">
+            Cancel Upload
+          </CancelButton>
         </Link>
-        {isLoading && (
-          <CircularProgress color="inherit" size="30px" className="ml-1.5" />
-        )}
       </div>
       {keys(importResult).length > 0 && !isLoading && (
         <Alert

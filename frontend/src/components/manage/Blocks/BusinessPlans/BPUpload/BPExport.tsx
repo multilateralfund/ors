@@ -9,7 +9,6 @@ import { PeriodSelectorOption } from '../../Replenishment/types'
 import { INavigationButton } from '../types'
 import BPMainFilters from './BPMainFilters'
 import { NavigationButton } from './NavigationButton'
-import { getMeetingNr } from '../utils'
 
 interface IBPExport {
   downloadFilters: any
@@ -39,9 +38,6 @@ const BPExport = ({
           setFilters={setDownloadFilters}
         />
       </div>
-      <p className="mb-0 mt-1 text-xl">
-        Meeting number: {getMeetingNr(filters.meeting)}
-      </p>
       <div className="flex items-center gap-2.5">
         <Link
           className={cx(
