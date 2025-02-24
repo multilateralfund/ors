@@ -6,6 +6,23 @@ import { EnqueueSnackbar, useSnackbar } from 'notistack'
 
 import { IoClipboardOutline, IoHourglassOutline } from 'react-icons/io5'
 
+function cleanValue(value: string) {
+  const toParse = value.trim().split('$').reverse()[0].trim()
+  const isNumber = !isNaN(parseFloat(toParse))
+  if (isNumber) {
+    const decimalSeparator = Intl.NumberFormat(navigator.language)
+      .format(1.1)
+      .replaceAll('1', '')
+    const thousandSeparator = Intl.NumberFormat(navigator.language)
+      .format(1111)
+      .replaceAll('1', '')
+    return toParse
+      .replaceAll(thousandSeparator, '')
+      .replace(decimalSeparator, '.')
+  }
+  return value
+}
+
 export function parsePastedText(text: string) {
   let result: any
 
@@ -161,7 +178,7 @@ export function BasePasteWrapper(props: any) {
         for (let i = 0; i < next.length && pendingIds.length; i++) {
           const rowId = next[i].display_internal_id
           if (pendingIds.includes(rowId)) {
-            mutator(next[i], newValues[rowId])
+            mutator(next[i], cleanValue(newValues[rowId]))
             pendingIds = pendingIds.filter((v) => v != rowId)
             numInserted++
           }
