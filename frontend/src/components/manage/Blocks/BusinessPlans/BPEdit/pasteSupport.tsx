@@ -9,8 +9,14 @@ import { IoClipboardOutline, IoHourglassOutline } from 'react-icons/io5'
 export function parsePastedText(text: string) {
   let result: any
 
-  if (text.endsWith('\n')) {
-    result = text.split('\n')
+  if (text.endsWith('\r')) {
+    text = `${text}\n`
+  }
+
+  const lineEnd = text.endsWith('\r\n') ? '\r\n' : '\n'
+
+  if (text.endsWith(lineEnd)) {
+    result = text.split(lineEnd)
     for (let i = 0; i < result.length; i++) {
       result[i] = result[i].split('\t')
     }
@@ -44,6 +50,10 @@ function removeEmptyRowsAndColumns(matrix: string[][]) {
   return transposeMatrix(
     removeEmptyRows(transposeMatrix(removeEmptyRows(matrix))),
   )
+}
+
+function getOnlyFirstAndLastColumns(matrix: string[][]) {
+  return matrix.map((cols) => [cols[0], cols[cols.length - 1]])
 }
 
 function removeEmptyRows(matrix: string[][]) {
@@ -88,7 +98,7 @@ export async function readPastedTableFromNavigator(
       : parsePastedText(textContent)
 
     const cleanTable = removeEmptyRowsAndColumns(pastedTable)
-    result = cleanTable
+    result = getOnlyFirstAndLastColumns(cleanTable)
   } catch (error) {
     if (error.name === 'NotFoundError') {
       throwError(
