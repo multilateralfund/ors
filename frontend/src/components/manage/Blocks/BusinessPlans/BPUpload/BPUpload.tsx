@@ -25,7 +25,7 @@ const BPUploadHeader = () => {
 }
 
 const BPUpload = () => {
-  const { yearRanges } = useContext(BPYearRangesContext) as any
+  const { yearRanges } = useContext(BPYearRangesContext)
   const { periodOptions } = useGetBpPeriods(yearRanges)
   const currentYearRange = periodOptions?.[0]?.value
   const latestBpYearRange = getLatestBpYearRange(periodOptions)

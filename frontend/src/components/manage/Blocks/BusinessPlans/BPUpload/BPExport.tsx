@@ -25,7 +25,12 @@ const BPExport = ({
   ...rest
 }: IBPExport & Omit<INavigationButton, 'direction'>) => {
   const { bp_status, year_end, year_start } = downloadFilters
+  const { year_end: headerYearEnd, year_start: headerYearStart } = filters
   const isDownloadButtonEnabled = year_start && bp_status
+
+  const downloadUrl = formatApiUrl(
+    `/api/business-plan-activity/export/?year_start=${year_start}&year_end=${year_end}&bp_status=${bp_status}&header_year_start=${headerYearStart}&header_year_end=${headerYearEnd}`,
+  )
 
   return (
     <>
@@ -52,9 +57,7 @@ const BPExport = ({
           // @ts-ignore
           target="_blank"
           variant="contained"
-          href={formatApiUrl(
-            `/api/business-plan-activity/export/?year_start=${year_start}&year_end=${year_end}&bp_status=${bp_status}`,
-          )}
+          href={downloadUrl}
           button
           download
         >

@@ -1,8 +1,10 @@
 import openpyxl
 
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics, filters
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
+from rest_framework import generics, filters
 
 from core.api.export.business_plan import (
     BPActivitiesWriter,
@@ -65,13 +67,13 @@ class BPActivityExportView(generics.GenericAPIView):
         return [{"name": name, "acronym": acronym} for name, acronym in queryset]
 
     def add_data_validation(
-        self,
-        wb,
-        column,
-        validation_sheet,
-        validation_range,
-        allow_blank=False,
-        show_error=False,
+            self,
+            wb,
+            column,
+            validation_sheet,
+            validation_range,
+            allow_blank=False,
+            show_error=False,
     ):
         """
         Add data validation to a column in the Activities sheet
@@ -121,12 +123,16 @@ class BPActivityExportView(generics.GenericAPIView):
     def get_wb(self, method):
         year_start = int(self.request.query_params.get("year_start"))
         year_end = int(self.request.query_params.get("year_end"))
+
+        header_year_start = int(self.request.query_params.get("header_year_start", year_start))
+        header_year_end = int(self.request.query_params.get("header_year_end", year_end))
+
         status = self.request.query_params.get("bp_status")
 
         # get all activities between year_start and year_end
         wb = openpyxl.Workbook()
 
-        exporter = BPActivitiesWriter(wb, min_year=year_start, max_year=year_end + 1)
+        exporter = BPActivitiesWriter(wb, min_year=header_year_start, max_year=header_year_end + 1)
         data = self.get_activities()
         exporter.write(data)
 
@@ -224,7 +230,29 @@ class BPActivityExportView(generics.GenericAPIView):
             data_validation.add(f"{col}2:{col}104857")
 
         name = f"{status}_BusinessPlan{year_start}-{year_end}"
+
+        has_custom_header = all([header_year_start, header_year_end])
+        header_differs = has_custom_header and (header_year_start, header_year_end) != (year_start, year_end)
+        if header_differs:
+            name = f"{name}_for_{header_year_start}-{header_year_end}_import"
+
         return method(name, wb)
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "header_year_start",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+                description="The start year of the export header",
+            ),
+            openapi.Parameter(
+                "header_year_end",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+                description="The end year of the export header",
+            ),
+        ],
+    )
     def get(self, *args, **kwargs):
         return self.get_wb(workbook_response)
