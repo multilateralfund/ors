@@ -46,7 +46,7 @@ const BPListHeader = ({
 
   const formattedPeriods = map(periodOptions, (period) => ({
     ...period,
-    disabled: period.status.length === 0,
+    disabled: period.status?.length === 0,
   }))
   const formattedBpTypes = map(bpTypes, (bpType) => ({
     ...bpType,

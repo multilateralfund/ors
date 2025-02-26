@@ -1,5 +1,4 @@
 import { PropsWithChildren } from 'react'
-import { ApiBPYearRange } from '@ors/types/api_bp_get_years.ts'
 
 export interface FormDialogProps extends PropsWithChildren {
   className?: string
@@ -19,9 +18,11 @@ export interface ConfirmDialogProps extends PropsWithChildren {
   onSubmit: () => void
   title?: string
 }
-export interface PeriodSelectorOption extends Omit<ApiBPYearRange, 'year_end'> {
+export interface PeriodSelectorOption {
   label: string
   value: string
+  year_start?: number
+  status?: string[]
 }
 export interface PeriodSelectorProps {
   label?: string

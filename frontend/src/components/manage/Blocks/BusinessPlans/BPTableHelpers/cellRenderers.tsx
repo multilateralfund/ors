@@ -1,6 +1,6 @@
 import { ApiEditBPActivity } from '@ors/types/api_bp_get'
 
-import { Dispatch, SetStateAction, useState } from 'react'
+import { Dispatch, SetStateAction, useMemo, useState } from 'react'
 
 import { Tooltip } from '@mui/material'
 import { Typography } from '@mui/material'
@@ -97,27 +97,29 @@ const CellTag = (propTags: Array<string>, params: any) => {
   return Tag(propTags, deleteTag)
 }
 
-const getErrors = (props: any) => {
+const useErrors = (props: any) => {
   const { rowErrors } = useStore((state) => state.bpErrors)
-  let currentErrors = find(
-    rowErrors,
-    (error) => error.rowIndex === props.data.row_id,
-  )
+  return useMemo(() => {
+    let currentErrors = find(
+      rowErrors,
+      (error) => error.rowIndex === props.data.row_id,
+    )
 
-  if (currentErrors?.values) {
-    map(currentErrors.values, (value: object) => {
-      currentErrors = { ...currentErrors, ...value }
-    })
-  }
+    if (currentErrors?.values) {
+      map(currentErrors.values, (value: object) => {
+        currentErrors = { ...currentErrors, ...value }
+      })
+    }
 
-  return currentErrors?.[props.colDef.field] || []
+    return currentErrors?.[props.colDef.field] || []
+  }, [props.colDef.field, props.data.row_id, rowErrors])
 }
 
 export const EditTagsCellRenderer = (params: any) => {
   const { field, form, props, setForm } = params
   const { substances_display = [] } = props.data
 
-  const errors = getErrors(params.props)
+  const errors = useErrors(params.props)
 
   const propsTags = field === 'substances' ? substances_display : []
   const [tags, setTags] = useState(propsTags || [])
@@ -149,7 +151,7 @@ export const editCellRenderer = (
   value: string,
   isLongText?: boolean,
 ) => {
-  const errors = getErrors(props)
+  const errors = useErrors(props)
 
   return errors.length > 0 ? (
     <div className="flex justify-between">

@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import { reduce } from 'lodash'
 import { ApiBPYearRange } from '@ors/types/api_bp_get_years.ts'
-import { BPPeriod } from '@ors/components/manage/Blocks/BusinessPlans/BPList/types.ts'
 import { PeriodSelectorOption } from '@ors/components/manage/Blocks/Replenishment/types.ts'
 
 export default function useGetBpPeriods(yearRanges: ApiBPYearRange[]) {
