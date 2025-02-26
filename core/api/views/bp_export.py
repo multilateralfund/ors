@@ -120,12 +120,36 @@ class BPActivityExportView(generics.GenericAPIView):
         wb["Activities"].add_data_validation(data_validation)
         data_validation.add(f"{column}2:{column}1048576")
 
+    def get_year_range(self):
+        year_start = int(self.request.query_params.get("year_start"))
+        year_end = int(self.request.query_params.get("year_end"))
+
+        return year_start, year_end
+
+    def get_header_range(self, year_start, year_end):
+        header_year_start = int(self.request.query_params.get("header_year_start", year_start))
+        header_year_end = int(self.request.query_params.get("header_year_end", year_end))
+
+        return header_year_start, header_year_end
+
+    def get_filename(self, default):
+        result = default
+
+        year_start, year_end = self.get_year_range()
+        header_year_start, header_year_end = self.get_header_range(year_start, year_end)
+
+        has_custom_header = all([header_year_start, header_year_end])
+        header_differs = has_custom_header and (header_year_start, header_year_end) != (year_start, year_end)
+        if header_differs:
+            result = f"{result}_for_{header_year_start}-{header_year_end}_import"
+
+        return result
+
     def get_wb(self, method):
         year_start = int(self.request.query_params.get("year_start"))
         year_end = int(self.request.query_params.get("year_end"))
 
-        header_year_start = int(self.request.query_params.get("header_year_start", year_start))
-        header_year_end = int(self.request.query_params.get("header_year_end", year_end))
+        header_year_start, header_year_end = self.get_header_range(year_start, year_end)
 
         status = self.request.query_params.get("bp_status")
 
@@ -229,12 +253,7 @@ class BPActivityExportView(generics.GenericAPIView):
             wb["Activities"].add_data_validation(data_validation)
             data_validation.add(f"{col}2:{col}104857")
 
-        name = f"{status}_BusinessPlan{year_start}-{year_end}"
-
-        has_custom_header = all([header_year_start, header_year_end])
-        header_differs = has_custom_header and (header_year_start, header_year_end) != (year_start, year_end)
-        if header_differs:
-            name = f"{name}_for_{header_year_start}-{header_year_end}_import"
+        name = self.get_filename(f"{status}_BusinessPlan{year_start}-{year_end}")
 
         return method(name, wb)
 
