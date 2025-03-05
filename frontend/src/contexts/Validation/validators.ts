@@ -10,6 +10,7 @@ import type {
 import { fixFloat, getFloat } from '@ors/helpers/Utils/Utils'
 
 import { sumMaybeNumbers, sumNumbers, sumRowColumns, sumUsages } from './utils'
+import { find, toNumber } from 'lodash'
 
 function rowHasDataSectionA(row: IRow): boolean {
   const hasUsages =
@@ -68,9 +69,22 @@ export function validateAnnexEQPS(
   const isAnnexESubstance =
     row.group.startsWith('Annex E') && (row.substance_id || row.blend_id)
 
+  const recordUsagesValueQPS = find(
+    row.record_usages,
+    (usage) => usage.usage_id === usageQPS,
+  )
+  const recordUsagesValueNonQPS = find(
+    row.record_usages,
+    (usage) => usage.usage_id === usageNonQPS,
+  )
+
   const anyRow = row as unknown as Record<string, number>
-  const valueQPS = anyRow[`usage_${usageQPS}`] || 0
-  const valueNonQPS = anyRow[`usage_${usageNonQPS}`] || 0
+  const valueQPS =
+    anyRow[`usage_${usageQPS}`] || toNumber(recordUsagesValueQPS?.quantity) || 0
+  const valueNonQPS =
+    anyRow[`usage_${usageNonQPS}`] ||
+    toNumber(recordUsagesValueNonQPS?.quantity) ||
+    0
   const valueImport = row.imports
 
   if (isAnnexESubstance) {

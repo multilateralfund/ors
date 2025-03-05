@@ -3,6 +3,7 @@ import type { ApiUsage } from '@ors/types/api_usages'
 
 export interface IUsage {
   quantity: number
+  usage_id?: number
 }
 
 export interface IRow {
