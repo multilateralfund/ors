@@ -133,9 +133,14 @@ function useAppState(user: ApiUser | null | undefined) {
 }
 
 function LoginWrapper(props: any) {
-  const { appState, children } = props
+  const { appState, children, setCurrentUser } = props
   const [pathname] = useLocation()
   const user = useStore((state) => state.user)
+
+  useEffect(() => {
+    setCurrentUser(user)
+  }, [user])
+
   const currentView = getCurrentView(pathname || '')
 
   const shouldRenderView = useMemo(
@@ -163,15 +168,16 @@ export default function RootLayout({
 
   const { user, loaded: userLoaded } = useUser()
   const appState = useAppState(user)
+  const [currentUser, setCurrentUser] = useState<any>()
 
   useEffect(() => {
     const isLoginPath = pathname === '/login'
-    if (user && isLoginPath) {
+    if (user && currentUser?.data && currentUser?.loaded && isLoginPath) {
       setTimeout(() => {
         setLocation(searchParams.get('redirect') || '/')
       }, 500)
     }
-  }, [user, pathname, userLoaded, setLocation, searchParams])
+  }, [user, pathname, userLoaded, setLocation, searchParams, currentUser])
 
   return (
     <div id="layout" className={cx('h-full')}>
@@ -185,7 +191,9 @@ export default function RootLayout({
         }}
       >
         <ThemeProvider>
-          <LoginWrapper appState={appState}>{children}</LoginWrapper>
+          <LoginWrapper appState={appState} setCurrentUser={setCurrentUser}>
+            {children}
+          </LoginWrapper>
         </ThemeProvider>
       </StoreProvider>
     </div>

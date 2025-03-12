@@ -13,7 +13,10 @@ import { useStore } from '@ors/store'
 
 import HeaderNavigation from './HeaderNavigation'
 
+import { AiOutlineUser } from 'react-icons/ai'
+
 export default function Header() {
+  const user = useStore((state) => state.user)
 
   return (
     <FadeInOut className="header-motion">
@@ -26,7 +29,18 @@ export default function Header() {
             <UnstyledLink href="/">
               <Logo className="min-w-[240px]" />
             </UnstyledLink>
-            <HeaderNavigation />
+            <div className="relative flex flex-col">
+              <HeaderNavigation />
+              <div
+                className="absolute right-[-12px] top-[70px] z-50 flex cursor-pointer gap-2.5 whitespace-nowrap text-xl lg:right-9 lg:top-20"
+                onClick={async () => {
+                  await user.logout()
+                }}
+              >
+                Log out
+                <AiOutlineUser className="mt-[5px]" />
+              </div>
+            </div>
           </div>
         </div>
         <div className="container relative print:absolute print:-top-8 print:left-[300px]">
