@@ -226,6 +226,11 @@ CONSTANCE_BACKEND = "constance.backends.database.DatabaseBackend"
 CONSTANCE_CONFIG = {
     "CP_NR_REPORTS": (9, "Number of reports to display in the country programme page"),
     "SEND_MAIL": (True, "Send email notifications to users?", bool),
+    "CP_NOTIFICATION_EMAILS": (
+        [],
+        "Email addresses that receive email notifications (comma-separated)",
+        list,
+    ),
     "DEFAULT_REPLENISHMENT_AS_OF_DATE": (
         datetime(2024, 5, 27),
         "Default 'As Of Date' for replenishment",

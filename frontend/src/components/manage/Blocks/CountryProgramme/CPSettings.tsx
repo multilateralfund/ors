@@ -4,6 +4,7 @@ import { useState } from 'react'
 
 import {
   Box,
+  Button,
   Checkbox,
   FormControl,
   FormControlLabel,
@@ -11,6 +12,7 @@ import {
   FormHelperText,
   FormLabel,
   Typography,
+  TextField,
 } from '@mui/material'
 import { useSnackbar } from 'notistack'
 
@@ -22,6 +24,9 @@ const CPSettings: React.FC = () => {
   const { setSettings, settings } = useStore((state) => state.common)
 
   const [sendEmail, setSendEmail] = useState(settings.data?.send_mail || false)
+  const [notificationEmails, setNotificationEmails] = useState(
+    settings.data?.cp_notification_emails || ''
+  )
 
   const [error, setError] = useState(false) // State to track input error
 
@@ -60,26 +65,68 @@ const CPSettings: React.FC = () => {
     }
   }
 
+  const handleNotificationEmailsChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setNotificationEmails(event.target.value)
+  }
+
+  const handleSaveEmails = async () => {
+    try {
+      const newSettings = {
+        ...settings.data,
+        cp_notification_emails: notificationEmails,
+      }
+
+      await api(`api/settings`, {
+        data: newSettings,
+        method: 'POST',
+      })
+
+      setNotificationEmails(newSettings.cp_notification_emails)
+      setSettings({
+        // @ts-ignore
+        data: newSettings,
+      })
+      setError(false)
+      enqueueSnackbar('Notification emails updated successfully', {
+        variant: 'success',
+      })
+    } catch (error) {
+      console.error('Error updating notification emails:', error)
+      setError(true)
+      const errors = await error.json()
+      errors.detail &&
+        enqueueSnackbar(errors.detail, {
+          variant: 'error',
+        })
+    }
+  }
+
   return (
     <Box
       alignItems="center"
       display="flex"
-      height="100" // Adjust this value as needed
+      height="100"
       justifyContent="start"
     >
-      <form>
+      <form style={{ width: '100%' }}>
         <FormControl
           className="flex w-full flex-col"
           component="fieldset"
           error={error}
-          fullWidth={false}
+          fullWidth
           variant="standard"
         >
           <FormLabel component="legend">Email:</FormLabel>
-          <FormGroup row>
+          <FormGroup>
             <FormControlLabel
               className="text-lg"
-              labelPlacement="start"
+              labelPlacement="end"
+              sx={{
+                marginLeft: 0,
+                '.MuiFormControlLabel-label': { flex: 1 }
+              }}
               control={
                 <Checkbox
                   name="send_mail"
@@ -95,6 +142,23 @@ const CPSettings: React.FC = () => {
                 </Typography>
               }
             />
+            <Box sx={{ display: 'flex', gap: 2, ml: 3, mt: 2 }}>
+              <TextField
+                label="Notified emails"
+                variant="outlined"
+                sx={{ width: '60%' }}
+                value={notificationEmails}
+                onChange={handleNotificationEmailsChange}
+                helperText="Enter email addresses separated by commas"
+              />
+              <Button
+                variant="contained"
+                onClick={handleSaveEmails}
+                sx={{ height: 'fit-content', alignSelf: 'start', mt: 1 }}
+              >
+                Save Emails
+              </Button>
+            </Box>
           </FormGroup>
           {error && (
             <FormHelperText>

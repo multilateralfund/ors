@@ -266,6 +266,7 @@ export type Settings = {
   blend_types: [string, string][]
   business_plan_activity_statuses: [string, string][]
   business_plan_statuses: [string, string][]
+  cp_notification_emails: string
   cp_reports: {
     max_year: number
     min_year: number

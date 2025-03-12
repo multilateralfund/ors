@@ -1,4 +1,5 @@
 from celery.utils.log import get_task_logger
+from constance import config
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
@@ -22,12 +23,14 @@ def send_mail_comment_submit(cp_comment_id):
     comment_section = CPComment.CPCommentSection(cp_comment.section).label
 
     if cp_comment.comment_type == CPComment.CPCommentType.COMMENT_COUNTRY:
-        recipients = User.objects.filter(user_type=User.UserType.SECRETARIAT)
+        recipients = config.CP_NOTIFICATION_EMAILS
     else:
         recipients = User.objects.filter(
             user_type__in=[User.UserType.COUNTRY_USER, User.UserType.COUNTRY_SUBMITTER],
             country=cp_report.country,
-        )
+        ).values_list("email", flat=True)
+    if not recipients:
+        return
 
     send_mail(
         "MLF Knowledge Management System: New comment added for CP report",
@@ -38,7 +41,7 @@ def send_mail_comment_submit(cp_comment_id):
             f"The CP report is available at {link}"
         ),
         None,  # use DEFAULT_FROM_EMAIL
-        recipients.values_list("email", flat=True),
+        recipients,
         fail_silently=False,
     )
 
@@ -47,7 +50,9 @@ def send_mail_comment_submit(cp_comment_id):
 def send_mail_report_create(cp_report_id):
     cp_report = get_object_or_404(CPReport, id=cp_report_id)
     link = f"{settings.FRONTEND_HOST[0]}/country-programme/{cp_report.country.iso3}/{cp_report.year}"
-    recipients = User.objects.filter(user_type=User.UserType.SECRETARIAT)
+    recipients = config.CP_NOTIFICATION_EMAILS
+    if not recipients:
+        return
 
     send_mail(
         "MLF Knowledge Management System: CP report added",
@@ -58,7 +63,7 @@ def send_mail_report_create(cp_report_id):
             f"The CP report is available at {link}"
         ),
         None,  # use DEFAULT_FROM_EMAIL
-        recipients.values_list("email", flat=True),
+        recipients,
         fail_silently=False,
     )
 
@@ -67,7 +72,9 @@ def send_mail_report_create(cp_report_id):
 def send_mail_report_update(cp_report_id):
     cp_report = get_object_or_404(CPReport, id=cp_report_id)
     link = f"{settings.FRONTEND_HOST[0]}/country-programme/{cp_report.country.iso3}/{cp_report.year}"
-    recipients = User.objects.filter(user_type=User.UserType.SECRETARIAT)
+    recipients = config.CP_NOTIFICATION_EMAILS
+    if not recipients:
+        return
 
     send_mail(
         "MLF Knowledge Management System: New version of CP report added",
@@ -78,7 +85,7 @@ def send_mail_report_update(cp_report_id):
             f"The CP report is available at {link}"
         ),
         None,  # use DEFAULT_FROM_EMAIL
-        recipients.values_list("email", flat=True),
+        recipients,
         fail_silently=False,
     )
 

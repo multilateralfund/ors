@@ -58,16 +58,31 @@ class SettingsView(views.APIView):
                 ),
             },
             "send_mail": config.SEND_MAIL,
+            "cp_notification_emails": ",".join(config.CP_NOTIFICATION_EMAILS),
         }
         return Response(settings)
 
     def post(self, request, *args, **kwargs):
         send_mail = request.data.get("send_mail")
+        cp_notification_emails = request.data.get("cp_notification_emails")
         if not isinstance(send_mail, bool):
             return Response(
                 {"send_mail": send_mail}, status=status.HTTP_422_UNPROCESSABLE_ENTITY
             )
+        if not cp_notification_emails:
+            cp_notification_emails = []
+        else:
+            cp_notification_emails = [
+                elem.strip() for elem in cp_notification_emails.split(",")
+            ]
 
         config.SEND_MAIL = send_mail
+        config.CP_NOTIFICATION_EMAILS = cp_notification_emails
 
-        return Response({"send_mail": config.SEND_MAIL}, status=status.HTTP_200_OK)
+        return Response(
+            {
+                "send_mail": config.SEND_MAIL,
+                "cp_notification_emails": ",".join(config.CP_NOTIFICATION_EMAILS),
+            },
+            status=status.HTTP_200_OK,
+        )

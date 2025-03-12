@@ -21,8 +21,15 @@ class TestSettings(BaseTest):
     def test_update_settings(self, user):
         self.client.force_authenticate(user=user)
         assert config.SEND_MAIL is True
+        assert len(config.CP_NOTIFICATION_EMAILS) is 0
 
-        data = {"send_mail": False}
+        data = {
+            "send_mail": False,
+            "cp_notification_emails": "test@ors.org,test2@ors.org",
+        }
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 200
         assert config.SEND_MAIL is False
+        assert set(config.CP_NOTIFICATION_EMAILS) == set(
+            ["test@ors.org", "test2@ors.org"]
+        )
