@@ -19,6 +19,7 @@ from core.api.permissions import (
     IsCountryUser,
     IsSecretariat,
     IsViewer,
+    IsCPViewer,
 )
 from core.api.serializers import CPReportGroupSerializer
 from core.api.serializers.cp_comment import CPCommentSerializer
@@ -59,7 +60,7 @@ User = get_user_model()
 
 
 class BaseCPReportListView(generics.ListAPIView):
-    permission_classes = [IsSecretariat | IsCountryUser | IsViewer]
+    permission_classes = [IsSecretariat | IsCountryUser | IsViewer | IsCPViewer]
     filterset_class = CPReportFilter
     filter_backends = [
         DjangoFilterBackend,

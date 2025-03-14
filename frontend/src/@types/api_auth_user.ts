@@ -6,6 +6,7 @@ export type ApiUserType =
   | 'agency_submitter'
   | 'country_submitter'
   | 'country_user'
+  | 'cp_viewer'
   | 'secretariat'
   | 'stakeholder'
   | 'treasurer'

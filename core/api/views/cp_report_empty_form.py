@@ -7,7 +7,7 @@ from rest_framework import views
 from rest_framework.response import Response
 
 
-from core.api.permissions import IsCountryUser, IsSecretariat, IsViewer
+from core.api.permissions import IsCountryUser, IsSecretariat, IsViewer, IsCPViewer
 from core.api.serializers.adm import (
     AdmColumnSerializer,
     AdmRowSerializer,
@@ -34,7 +34,7 @@ class EmptyFormView(views.APIView):
     API endpoint that allows to get empty form
     """
 
-    permission_classes = [IsSecretariat | IsCountryUser | IsViewer]
+    permission_classes = [IsSecretariat | IsCountryUser | IsViewer | IsCPViewer]
 
     @classmethod
     def get_usages_tree(cls, usage_id_dict):
