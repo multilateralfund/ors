@@ -7,7 +7,7 @@ from rest_framework import generics, mixins, status
 from rest_framework.response import Response
 
 from core.api.filters.country_programme import CPFileFilter
-from core.api.permissions import IsCountryUser, IsSecretariat, IsViewer
+from core.api.permissions import IsCountryUser, IsSecretariat, IsViewer, IsCPViewer
 from core.api.serializers.cp_file import CPFileSerializer
 from core.models.country_programme import CPFile
 
@@ -22,7 +22,7 @@ class CPFilesView(
     API endpoint that allows uploading country programme files.
     """
 
-    permission_classes = [IsSecretariat | IsCountryUser | IsViewer]
+    permission_classes = [IsSecretariat | IsCountryUser | IsViewer | IsCPViewer]
     queryset = CPFile.objects.select_related("country")
     serializer_class = CPFileSerializer
     filterset_class = CPFileFilter
@@ -117,7 +117,7 @@ class CPFilesView(
 
 
 class CPFilesDownloadView(generics.RetrieveAPIView):
-    permission_classes = [IsSecretariat | IsCountryUser | IsViewer]
+    permission_classes = [IsSecretariat | IsCountryUser | IsViewer | IsCPViewer]
     queryset = CPFile.objects.all()
     lookup_field = "id"
 

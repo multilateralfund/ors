@@ -13,6 +13,8 @@ class User(AbstractUser):
         VIEWER = "viewer", _("Viewer")
         STAKEHOLDER = "stakeholder", _("Stakeholder")
         TREASURER = "treasurer", _("Treasurer")
+        # Can only view CP data & download reports
+        CP_VIEWER = "cp_viewer", _("Country Programme Viewer")
 
     country = models.ForeignKey(
         "Country", null=True, blank=True, on_delete=models.CASCADE
