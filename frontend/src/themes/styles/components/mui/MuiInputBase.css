@@ -47,3 +47,18 @@ textarea {
   -webkit-text-fill-color: #fff;
   caret-color: #fff;
 }
+
+.login-form {
+  .MuiInputBase-root {
+    fieldset {
+      border: 0;
+    }
+
+    &:has(input:-webkit-autofill),
+    input:-webkit-autofill {
+      box-shadow: 0 0 0px 1000px white inset;
+      -webkit-text-fill-color: black;
+      caret-color: black;
+    }
+  }
+}

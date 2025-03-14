@@ -3,5 +3,9 @@ export default function LoginLayout({
 }: {
   children: React.ReactNode
 }) {
-  return <div className="h-full bg-mlfs-deepTealShade">{children}</div>
+  return (
+    <div className="h-full bg-[url('/images/green.jpg')] bg-cover">
+      {children}
+    </div>
+  )
 }

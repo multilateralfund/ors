@@ -8,11 +8,14 @@ import TextWidget from '@ors/components/manage/Widgets/TextWidget'
 
 import { IoEye, IoEyeOff } from 'react-icons/io5'
 
-export type PasswordWidgetProps = TextWidgetProps
+export type PasswordWidgetProps = TextWidgetProps & { isLoginInput: boolean }
 
 export default function PasswordWidget(
   props: PasswordWidgetProps,
 ): JSX.Element {
+  const { InputProps, isLoginInput } = props
+  const color = isLoginInput ? '#000000a6' : ''
+
   const [showPassword, setShowPassword] = React.useState(false)
 
   function handleClickShowPassword() {
@@ -24,6 +27,7 @@ export default function PasswordWidget(
       {...props}
       type={showPassword ? 'text' : 'password'}
       InputProps={{
+        ...InputProps,
         endAdornment: (
           <InputAdornment position="end">
             <IconButton
@@ -32,7 +36,11 @@ export default function PasswordWidget(
               tabIndex={-1}
               onClick={handleClickShowPassword}
             >
-              {showPassword ? <IoEyeOff /> : <IoEye />}
+              {showPassword ? (
+                <IoEyeOff color={color} />
+              ) : (
+                <IoEye color={color} />
+              )}
             </IconButton>
           </InputAdornment>
         ),

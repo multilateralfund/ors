@@ -2,8 +2,11 @@
   font-family: 'Roboto Condensed';
   font-style: normal;
   font-display: swap;
-  src: url('/fonts/RobotoCondensed-VariableFont_wght.ttf') format('truetype supports variations'),
-       url('/fonts/RobotoCondensed-VariableFont_wght.ttf') format('truetype-variations');
+  src:
+    url('/fonts/RobotoCondensed-VariableFont_wght.ttf')
+      format('truetype supports variations'),
+    url('/fonts/RobotoCondensed-VariableFont_wght.ttf')
+      format('truetype-variations');
   font-weight: 100 1000;
 }
 
@@ -11,7 +14,20 @@
   font-family: 'Roboto Condensed';
   font-style: italic;
   font-display: swap;
-  src: url('/fonts/RobotoCondensed-Italic-VariableFont_wght.ttf') format('truetype supports variations'),
-       url('/fonts/RobotoCondensed-Italic-VariableFont_wght.ttf') format('truetype-variations');
+  src:
+    url('/fonts/RobotoCondensed-Italic-VariableFont_wght.ttf')
+      format('truetype supports variations'),
+    url('/fonts/RobotoCondensed-Italic-VariableFont_wght.ttf')
+      format('truetype-variations');
   font-weight: 100 1000;
+}
+
+@font-face {
+  font-family: 'Roboto Bold';
+  font-style: normal;
+  font-display: swap;
+  src:
+    url('/fonts/Roboto-Bold.ttf') format('truetype supports variations'),
+    url('/fonts/Roboto-Bold.ttf') format('truetype-variations');
+  font-weight: 700;
 }

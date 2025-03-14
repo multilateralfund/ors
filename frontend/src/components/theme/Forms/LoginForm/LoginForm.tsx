@@ -30,7 +30,7 @@ export default function LoginForm() {
         text="Stay tuned"
       />
       <Paper
-        className="flex w-full flex-col rounded-lg p-6"
+        className="login-form flex w-full flex-col rounded-[22px] bg-white/85 p-6"
         component="form"
         onSubmit={async (e) => {
           e.preventDefault()
@@ -43,7 +43,7 @@ export default function LoginForm() {
         }}
       >
         <Typography
-          className="mb-4 font-medium leading-tight tracking-tight"
+          className="font-roboto-bold mb-4 text-[21px] leading-tight tracking-tight text-black"
           component="h1"
           variant="h4"
         >
@@ -55,9 +55,13 @@ export default function LoginForm() {
           autoComplete="username"
           error={!!user.error?.username}
           helperText={user.error?.username}
+          className="rounded-md"
           InputLabel={{
-            className: 'text-lg font-medium',
+            className: 'text-[15px] text-black font-roboto-bold',
             label: 'Username',
+          }}
+          InputProps={{
+            className: 'rounded-md bg-white',
           }}
         />
         <Field
@@ -67,14 +71,19 @@ export default function LoginForm() {
           error={!!user.error?.password}
           helperText={user.error?.password}
           type="password"
+          className="rounded-md"
           InputLabel={{
-            className: 'text-lg font-medium',
+            className: 'text-[15px] text-black font-roboto-bold',
             label: 'Password',
           }}
+          InputProps={{
+            className: 'rounded-md bg-white',
+          }}
+          isLoginInput
         />
         <Typography className="mb-4 text-right">
           <Link
-            className="font-medium text-secondary"
+            className="font-roboto-bold text-[#000000a6]"
             href="forgot-password"
             underline="hover"
           >
@@ -87,7 +96,7 @@ export default function LoginForm() {
           </Alert>
         </Collapse>
         <Button
-          className="bg-secondary text-lg font-semibold shadow-none"
+          className="bg-black text-lg text-white shadow-none"
           type="submit"
           variant="contained"
         >
