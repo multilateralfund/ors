@@ -21,7 +21,7 @@ class TestSettings(BaseTest):
     def test_update_settings(self, user):
         self.client.force_authenticate(user=user)
         assert config.SEND_MAIL is True
-        assert len(config.CP_NOTIFICATION_EMAILS) is 0
+        assert len(config.CP_NOTIFICATION_EMAILS) == 0
 
         data = {
             "send_mail": False,
