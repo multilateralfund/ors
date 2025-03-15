@@ -13,7 +13,7 @@ export type PasswordWidgetProps = TextWidgetProps & { isLoginInput: boolean }
 export default function PasswordWidget(
   props: PasswordWidgetProps,
 ): JSX.Element {
-  const { InputProps, isLoginInput } = props
+  const { InputProps, isLoginInput, ...rest } = props
   const color = isLoginInput ? '#000000a6' : ''
 
   const [showPassword, setShowPassword] = React.useState(false)
@@ -24,7 +24,7 @@ export default function PasswordWidget(
 
   return (
     <TextWidget
-      {...props}
+      {...rest}
       type={showPassword ? 'text' : 'password'}
       InputProps={{
         ...InputProps,
