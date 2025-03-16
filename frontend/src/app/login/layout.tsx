@@ -5,25 +5,15 @@ import 'slick-carousel/slick/slick.css'
 import 'slick-carousel/slick/slick-theme.css'
 
 const images = [
+  '/images/blue_mobile.jpg',
+  '/images/green_mobile.jpg',
+  '/images/orange_mobile.jpg',
+  '/images/red_mobile.jpg',
   '/images/blue.jpg',
   '/images/green.jpg',
   '/images/orange.jpg',
   '/images/red.jpg',
 ]
-
-const settings = {
-  infinite: true,
-  speed: 1000,
-  slidesToShow: 1,
-  slidesToScroll: 1,
-  useTransform: false,
-  accessibility: false,
-  swipe: false,
-  adaptiveHeight: true,
-  easing: 'ease-in-out',
-  touchMove: false,
-  fade: true,
-}
 
 export default function LoginLayout({
   children,
@@ -32,8 +22,21 @@ export default function LoginLayout({
 }) {
   const sliderRef = useRef<any>(null)
 
+  const initialSlide = window.innerWidth < 768 ? 0 : 4
+  const [currentSlide, setCurrentSlide] = useState(initialSlide)
   const [loaded, setLoaded] = useState(false)
-  const [currentSlide, setCurrentSlide] = useState(0)
+
+  const settings = {
+    infinite: true,
+    speed: 1000,
+    initialSlide: initialSlide,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    useTransform: false,
+    adaptiveHeight: true,
+    easing: 'ease-in-out',
+    fade: true,
+  }
 
   useEffect(() => {
     const preloadImages = async () => {
@@ -54,7 +57,15 @@ export default function LoginLayout({
     if (loaded) {
       const interval = setInterval(() => {
         if (sliderRef.current) {
-          const nextSlide = (currentSlide + 1) % images.length
+          const validSlides =
+            window.innerWidth < 768
+              ? [...Array(4)].map((_, i) => i)
+              : [...Array(4)].map((_, i) => i + 4)
+
+          const nextIndex =
+            (validSlides.indexOf(currentSlide) + 1) % validSlides.length
+          const nextSlide = validSlides[nextIndex]
+
           sliderRef.current.slickGoTo(nextSlide)
           setCurrentSlide(nextSlide)
         }
@@ -74,12 +85,13 @@ export default function LoginLayout({
             <div
               className="h-screen w-screen bg-cover"
               style={{ backgroundImage: `url(${image})` }}
-            >
-              {children}
-            </div>
+            />
           </div>
         ))}
       </Slider>
+      <div className="fixed left-1/2 top-[40%] w-[90%] -translate-x-1/2 -translate-y-1/2 transform md:top-1/2">
+        {children}
+      </div>
     </div>
   )
 }
