@@ -19,6 +19,7 @@ import { useStore } from '@ors/store'
 
 import { FiEdit, FiEye } from 'react-icons/fi'
 import { IoEllipse } from 'react-icons/io5'
+import { userCanSubmitReport, UserType } from '@ors/types/user_types'
 
 interface Data {
   country: string
@@ -194,6 +195,10 @@ export default function SimpleTable(props: any) {
   const [order, setOrder] = React.useState<Order>('desc')
   const [orderBy, setOrderBy] = React.useState<keyof Data>('created_at')
   const [loading, setLoading] = React.useState(false)
+
+  const { user_type } = useStore((state) => state.user.data)
+  const canEditReport = userCanSubmitReport[user_type as UserType]
+
   const rows = data.map((item: any) => {
     return createData(
       item.id,
@@ -293,14 +298,18 @@ export default function SimpleTable(props: any) {
                         >
                           <FiEye size={16} />
                         </Link>
-                        <span>/</span>
-                        <Link
-                          className="text-pretty border-0 p-2 hover:text-secondary"
-                          href={`/country-programme/${country?.iso3}/${row.year}/edit`}
-                          underline="none"
-                        >
-                          <FiEdit size={16} />
-                        </Link>
+                        {canEditReport && (
+                          <>
+                            <span>/</span>
+                            <Link
+                              className="text-pretty border-0 p-2 hover:text-secondary"
+                              href={`/country-programme/${country?.iso3}/${row.year}/edit`}
+                              underline="none"
+                            >
+                              <FiEdit size={16} />
+                            </Link>
+                          </>
+                        )}
                       </Typography>
                     </TableCell>
                   </TableRow>

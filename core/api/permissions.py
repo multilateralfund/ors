@@ -27,6 +27,21 @@ class IsViewer(permissions.BasePermission):
         return False
 
 
+class IsCPViewer(permissions.BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+        if user.is_authenticated:
+            if user.is_superuser:
+                return True
+            if (
+                user.user_type == user.UserType.CP_VIEWER
+                and request.method in permissions.SAFE_METHODS
+            ):
+                return True
+
+        return False
+
+
 class IsUserAllowedReplenishment(permissions.BasePermission):
     def has_permission(self, request, view):
         user = request.user

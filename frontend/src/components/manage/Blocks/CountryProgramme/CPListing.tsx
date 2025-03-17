@@ -179,6 +179,8 @@ const CountryYearFilterPills = (props: any) => {
 
 const SubmissionItem = (props: any) => {
   const { filters, group, reports, user_type } = props
+  const canEditReport = userCanSubmitReport[user_type as UserType]
+
   const countries = useStore((state) => state.common.countries_for_listing.data)
   const countriesById = new Map<number, any>(
     countries.map((country: any) => [country.id, country]),
@@ -222,7 +224,7 @@ const SubmissionItem = (props: any) => {
           let reportURL = `/country-programme/${country?.iso3}/${report.year}`
           if (report.is_archive) {
             reportURL = `${reportURL}/archive/${report.version}`
-          } else if (report.status === 'draft') {
+          } else if (report.status === 'draft' && canEditReport) {
             reportURL = `${reportURL}/edit`
           }
 

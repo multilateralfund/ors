@@ -1,7 +1,11 @@
 'use client'
 
 import { Country } from '@ors/types/store'
-import { UserType, isCountryUserType } from '@ors/types/user_types'
+import {
+  UserType,
+  isCountryUserType,
+  userCanSubmitReport,
+} from '@ors/types/user_types'
 
 import React, {
   ChangeEvent,
@@ -15,7 +19,7 @@ import { Alert, Button, Tabs, Tooltip, Typography } from '@mui/material'
 import cx from 'classnames'
 import { produce } from 'immer'
 import { filter, get, includes } from 'lodash'
-import { useLocation } from "wouter";
+import { useLocation } from 'wouter'
 import { useSnackbar } from 'notistack'
 
 import { defaultColDefEdit } from '@ors/config/Table/columnsDef'
@@ -50,6 +54,8 @@ import CPRestoreCreate from './CPRestoreCreate'
 import CPSectionWrapper from './CPSectionWrapper'
 import ConfirmSubmission from './ConfirmSubmission'
 import SubmissionExistsDialog from './SubmissionExistsDialog'
+import NotFoundPage from '@ors/app/not-found'
+
 import {
   CPBaseForm,
   CPCreateTableProps,
@@ -174,7 +180,11 @@ const CPCreate: React.FC = () => {
   const [_, setLocation] = useLocation()
   const { enqueueSnackbar } = useSnackbar()
   const { report } = useStore((state) => state.cp_reports)
+
   const user = useStore((state) => state.user)
+  const { user_type } = user.data
+  const canCreateReport = userCanSubmitReport[user_type as UserType]
+
   const all_countries = useStore(
     (state) => state.common.countries_for_listing.data,
   )
@@ -570,6 +580,10 @@ const CPCreate: React.FC = () => {
   function handleRestoreData(storedData: any) {
     setUsedRestore(true)
     handleSetForm(storedData)
+  }
+
+  if (!canCreateReport) {
+    return <NotFoundPage />
   }
 
   return (
