@@ -8,7 +8,7 @@ export default function Login() {
   usePageTitle('Login')
   return (
     <PageWrapper
-      className="mx-auto flex w-96 max-w-screen-sm flex-col items-center justify-center"
+      className="mx-auto flex max-w-[22rem] flex-col items-center justify-center sm:w-96 sm:max-w-screen-sm"
       defaultSpacing={false}
       fill
     >

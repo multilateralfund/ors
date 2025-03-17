@@ -23,7 +23,7 @@
   :root {
     @apply h-full;
 
-    font-family: "Roboto Condensed";
+    font-family: 'Roboto Condensed';
 
     --tw-primary: 198 100% 12%;
     --color-primary: hsl(var(--tw-primary));
@@ -89,6 +89,10 @@
 
   body {
     @apply h-full transition;
+
+    .font-roboto-bold {
+      font-family: 'Roboto Bold';
+    }
   }
 
   main {
