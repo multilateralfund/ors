@@ -330,8 +330,6 @@ const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
     }
   }
 
-  if (!userCanSubmitReport[user_type as UserType]) return null
-
   const EditButton = ({ title }: { title: string }) => (
     <Link
       className="px-4 py-2 shadow-none"
@@ -350,45 +348,49 @@ const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
       {!!report.data && (
         <div className="container flex w-full justify-between gap-x-4 px-0">
           <div className="flex justify-between gap-x-4">
-            {isDraft && userCanSeeEditButton && (
-              <Dropdown
-                className="px-4 py-2 shadow-none"
-                ButtonProps={DropDownButtonProps}
-                MenuProps={DropDownMenuProps}
-                color="secondary"
-                label={<>Edit report</>}
-              >
-                <Dropdown.Item className="bg-transparent normal-case text-primary">
-                  <Link
-                    className="no-underline"
-                    href={`/country-programme/${report.country?.iso3}/${report.data?.year}/edit/`}
+            {userCanSubmitReport[user_type as UserType] && (
+              <>
+                {isDraft && userCanSeeEditButton && (
+                  <Dropdown
+                    className="px-4 py-2 shadow-none"
+                    ButtonProps={DropDownButtonProps}
+                    MenuProps={DropDownMenuProps}
+                    color="secondary"
+                    label={<>Edit report</>}
                   >
-                    Edit report
-                  </Link>
-                </Dropdown.Item>
-                <Divider className="m-0" />
-                <Dropdown.Item
-                  className="bg-transparent font-medium normal-case text-red-900"
-                  onClick={handleShowDeleteConfirmation}
-                >
-                  Delete version
-                </Dropdown.Item>
-              </Dropdown>
-            )}
-            {isDraft && !userCanSeeEditButton && (
-              <EditButton title={'Edit report'} />
-            )}
-            {!isDraft && <EditButton title={'Submit revised data'} />}
-            {isDraft && (
-              <Button
-                color="primary"
-                disabled={!userCanSubmitFinalReport[user_type as UserType]}
-                size="small"
-                variant="contained"
-                onClick={handleShowConfirmation}
-              >
-                Submit final version
-              </Button>
+                    <Dropdown.Item className="bg-transparent normal-case text-primary">
+                      <Link
+                        className="no-underline"
+                        href={`/country-programme/${report.country?.iso3}/${report.data?.year}/edit/`}
+                      >
+                        Edit report
+                      </Link>
+                    </Dropdown.Item>
+                    <Divider className="m-0" />
+                    <Dropdown.Item
+                      className="bg-transparent font-medium normal-case text-red-900"
+                      onClick={handleShowDeleteConfirmation}
+                    >
+                      Delete version
+                    </Dropdown.Item>
+                  </Dropdown>
+                )}
+                {isDraft && !userCanSeeEditButton && (
+                  <EditButton title={'Edit report'} />
+                )}
+                {!isDraft && <EditButton title={'Submit revised data'} />}
+                {isDraft && (
+                  <Button
+                    color="primary"
+                    disabled={!userCanSubmitFinalReport[user_type as UserType]}
+                    size="small"
+                    variant="contained"
+                    onClick={handleShowConfirmation}
+                  >
+                    Submit final version
+                  </Button>
+                )}
+              </>
             )}
             <Link
               className="btn-close bg-gray-600 px-4 py-2 shadow-none"
