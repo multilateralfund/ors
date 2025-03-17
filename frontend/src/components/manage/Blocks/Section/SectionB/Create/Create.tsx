@@ -150,7 +150,7 @@ export default function SectionBCreate(props: SectionBCreateProps) {
   )
 
   const grid = useRef<AgGridReact>()
-  const rowData = getRowData(form.section_b, variant).toSorted(
+  const rowData = [...getRowData(form.section_b, variant)].sort(
     (a, b) => a.group?.localeCompare(b.group || 'zzz') || 0,
   )
   const pinnedRowData = getInitialPinnedBottomRowData(variant.model)

@@ -110,8 +110,9 @@ export default function SectionACreate(props: SectionACreateProps) {
     getInitialPinnedBottomRowData(variant.model),
   )
   const [addSubstanceModal, setAddSubstanceModal] = useState(false)
+
   const rowData = useMemo(() => {
-    return getRowData(form.section_a, variant.model).toSorted(
+    return [...getRowData(form.section_a, variant.model)].sort(
       (a, b) => a.group?.localeCompare(b.group || 'zzz') || 0,
     )
   }, [form.section_a, variant.model])

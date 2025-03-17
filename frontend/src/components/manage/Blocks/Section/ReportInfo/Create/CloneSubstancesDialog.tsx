@@ -100,7 +100,7 @@ const getPreviousSubstances = (
     }
   })
 
-  return data.toSorted((a, b) => {
+  return [...data].sort((a, b) => {
     if (a.group === b.group) {
       return a.sort_order - b.sort_order
     }
