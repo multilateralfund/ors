@@ -477,12 +477,12 @@ const CPCreate: React.FC = () => {
   }, [])
 
   const [sectionsChecked, setSectionsChecked] = useState({
-    reported_section_a: form.report_info.reported_section_a ?? true,
-    reported_section_b: form.report_info.reported_section_b ?? true,
-    reported_section_c: form.report_info.reported_section_c ?? true,
-    reported_section_d: form.report_info.reported_section_d ?? true,
-    reported_section_e: form.report_info.reported_section_e ?? true,
-    reported_section_f: form.report_info.reported_section_f ?? true,
+    reported_section_a: form.report_info?.reported_section_a ?? true,
+    reported_section_b: form.report_info?.reported_section_b ?? true,
+    reported_section_c: form.report_info?.reported_section_c ?? true,
+    reported_section_d: form.report_info?.reported_section_d ?? true,
+    reported_section_e: form.report_info?.reported_section_e ?? true,
+    reported_section_f: form.report_info?.reported_section_f ?? true,
   })
   const onSectionCheckChange = (section: string, isChecked: boolean) => {
     setSectionsChecked((prevState: any) => ({
