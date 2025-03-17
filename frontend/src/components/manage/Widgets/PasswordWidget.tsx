@@ -8,7 +8,7 @@ import TextWidget from '@ors/components/manage/Widgets/TextWidget'
 
 import { IoEye, IoEyeOff } from 'react-icons/io5'
 
-export type PasswordWidgetProps = TextWidgetProps & { isLoginInput: boolean }
+export type PasswordWidgetProps = TextWidgetProps & { isLoginInput?: boolean }
 
 export default function PasswordWidget(
   props: PasswordWidgetProps,
