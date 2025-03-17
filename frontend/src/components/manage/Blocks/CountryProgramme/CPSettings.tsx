@@ -25,7 +25,7 @@ const CPSettings: React.FC = () => {
 
   const [sendEmail, setSendEmail] = useState(settings.data?.send_mail || false)
   const [notificationEmails, setNotificationEmails] = useState(
-    settings.data?.cp_notification_emails || ''
+    settings.data?.cp_notification_emails || '',
   )
 
   const [error, setError] = useState(false) // State to track input error
@@ -66,7 +66,7 @@ const CPSettings: React.FC = () => {
   }
 
   const handleNotificationEmailsChange = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     setNotificationEmails(event.target.value)
   }
@@ -104,12 +104,7 @@ const CPSettings: React.FC = () => {
   }
 
   return (
-    <Box
-      alignItems="center"
-      display="flex"
-      height="100"
-      justifyContent="start"
-    >
+    <Box alignItems="center" display="flex" height="100" justifyContent="start">
       <form style={{ width: '100%' }}>
         <FormControl
           className="flex w-full flex-col"
@@ -125,7 +120,7 @@ const CPSettings: React.FC = () => {
               labelPlacement="end"
               sx={{
                 marginLeft: 0,
-                '.MuiFormControlLabel-label': { flex: 1 }
+                '.MuiFormControlLabel-label': { flex: 1 },
               }}
               control={
                 <Checkbox
@@ -142,24 +137,24 @@ const CPSettings: React.FC = () => {
                 </Typography>
               }
             />
-            <Box sx={{ display: 'flex', gap: 2, ml: 3, mt: 2 }}>
-              <TextField
-                label="Notified emails"
-                variant="outlined"
-                sx={{ width: '60%' }}
-                value={notificationEmails}
-                onChange={handleNotificationEmailsChange}
-                helperText="Enter email addresses separated by commas"
-              />
-              <Button
-                variant="contained"
-                onClick={handleSaveEmails}
-                sx={{ height: 'fit-content', alignSelf: 'start', mt: 1 }}
-              >
-                Save Emails
-              </Button>
-            </Box>
           </FormGroup>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <TextField
+              className="min-w-48 flex-1"
+              label="Notified emails"
+              variant="outlined"
+              value={notificationEmails}
+              onChange={handleNotificationEmailsChange}
+              helperText="Enter email addresses separated by commas"
+            />
+            <Button
+              variant="contained"
+              onClick={handleSaveEmails}
+              sx={{ height: 'fit-content', alignSelf: 'start', mt: 1 }}
+            >
+              Save Emails
+            </Button>
+          </div>
           {error && (
             <FormHelperText>
               Something went wrong. Please try again.
