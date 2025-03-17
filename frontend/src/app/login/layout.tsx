@@ -5,14 +5,14 @@ import 'slick-carousel/slick/slick.css'
 import 'slick-carousel/slick/slick-theme.css'
 
 const images = [
-  '/images/blue_mobile.jpg',
-  '/images/green_mobile.jpg',
-  '/images/orange_mobile.jpg',
-  '/images/red_mobile.jpg',
-  '/images/blue.jpg',
-  '/images/green.jpg',
-  '/images/orange.jpg',
-  '/images/red.jpg',
+  '/images/mountains_mobile.jpg',
+  '/images/river_mobile.jpg',
+  '/images/corals_mobile.jpg',
+  '/images/cave_mobile.jpg',
+  '/images/mountains.jpg',
+  '/images/river.jpg',
+  '/images/corals.jpg',
+  '/images/cave.jpg',
 ]
 
 export default function LoginLayout({
@@ -55,15 +55,22 @@ export default function LoginLayout({
 
   useEffect(() => {
     if (loaded) {
+      const isMobile = window.innerWidth < 768
+
       const interval = setInterval(() => {
         if (sliderRef.current) {
-          const validSlides =
-            window.innerWidth < 768
-              ? [...Array(4)].map((_, i) => i)
-              : [...Array(4)].map((_, i) => i + 4)
+          const validSlides = isMobile
+            ? [...Array(4)].map((_, i) => i)
+            : [...Array(4)].map((_, i) => i + 4)
+
+          const realCurrentSlide = !validSlides.includes(currentSlide)
+            ? isMobile
+              ? currentSlide - 4
+              : currentSlide + 4
+            : currentSlide
 
           const nextIndex =
-            (validSlides.indexOf(currentSlide) + 1) % validSlides.length
+            (validSlides.indexOf(realCurrentSlide) + 1) % validSlides.length
           const nextSlide = validSlides[nextIndex]
 
           sliderRef.current.slickGoTo(nextSlide)
