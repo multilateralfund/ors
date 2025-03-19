@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 
+import { useStore } from '@ors/store'
+
+import Cookies from 'js-cookie'
 import Slider from 'react-slick'
 import 'slick-carousel/slick/slick.css'
 import 'slick-carousel/slick/slick-theme.css'
@@ -21,15 +24,48 @@ export default function LoginLayout({
   children: React.ReactNode
 }) {
   const sliderRef = useRef<any>(null)
+  const isFirstRenderRef = useRef<boolean>(false)
+  const user = useStore((state) => state.user)
 
-  const initialSlide = window.innerWidth < 768 ? 0 : 4
+  const isMobile = window.innerWidth < 768
+
+  const getNextSlide = (slide: number) => {
+    const validSlides = isMobile
+      ? [...Array(4)].map((_, i) => i)
+      : [...Array(4)].map((_, i) => i + 4)
+
+    const crtSlide = !validSlides.includes(slide)
+      ? isMobile
+        ? slide - 4
+        : slide + 4
+      : slide
+    const nextSlideIndex =
+      (validSlides.indexOf(crtSlide) + 1) % validSlides.length
+
+    return validSlides[nextSlideIndex]
+  }
+
+  const crtSlide = Cookies.get('slide')
+  const initialSlide = crtSlide
+    ? getNextSlide(parseInt(crtSlide))
+    : isMobile
+      ? 0
+      : 4
+
   const [currentSlide, setCurrentSlide] = useState(initialSlide)
   const [loaded, setLoaded] = useState(false)
+
+  useEffect(() => {
+    if (isFirstRenderRef.current || user.data) return
+
+    isFirstRenderRef.current = true
+    Cookies.set('slide', initialSlide.toString())
+  }, [])
 
   const settings = {
     infinite: true,
     speed: 1000,
-    initialSlide: initialSlide,
+    initialSlide: currentSlide,
     slidesToShow: 1,
     slidesToScroll: 1,
     useTransform: false,
@@ -55,25 +91,12 @@ export default function LoginLayout({
 
   useEffect(() => {
     if (loaded) {
-      const isMobile = window.innerWidth < 768
-
       const interval = setInterval(() => {
         if (sliderRef.current) {
-          const validSlides = isMobile
-            ? [...Array(4)].map((_, i) => i)
-            : [...Array(4)].map((_, i) => i + 4)
-
-          const realCurrentSlide = !validSlides.includes(currentSlide)
-            ? isMobile
-              ? currentSlide - 4
-              : currentSlide + 4
-            : currentSlide
-
-          const nextIndex =
-            (validSlides.indexOf(realCurrentSlide) + 1) % validSlides.length
-          const nextSlide = validSlides[nextIndex]
+          const nextSlide = getNextSlide(currentSlide)
 
           sliderRef.current.slickGoTo(nextSlide)
+          Cookies.set('slide', nextSlide.toString())
           setCurrentSlide(nextSlide)
         }
       }, 10000)
