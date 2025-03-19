@@ -5,7 +5,9 @@ import useSearchParams from '@ors/hooks/useSearchParams'
 import Field from '@ors/components/manage/Form/Field'
 import LoadingBuffer from '@ors/components/theme/Loading/LoadingBuffer'
 import Link from '@ors/components/ui/Link/Link'
+
 import { useStore } from '@ors/store'
+import { store } from '@ors/_store'
 
 export default function LoginForm() {
   const [_, setLocation] = useLocation()
@@ -37,7 +39,12 @@ export default function LoginForm() {
             form.get('username')?.toString() || '',
             form.get('password')?.toString() || '',
           )
-          window.location.href = searchParams.get('redirect') || '/'
+
+          const { data, error } = store.current.getState().user
+
+          if (data && !error) {
+            window.location.href = searchParams.get('redirect') || '/'
+          }
         }}
       >
         <Typography

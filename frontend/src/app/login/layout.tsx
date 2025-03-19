@@ -26,14 +26,44 @@ export default function LoginLayout({
 }) {
   const sliderRef = useRef<any>(null)
   const isFirstRenderRef = useRef<boolean>(false)
+  const resizeTimerRef = useRef<NodeJS.Timeout | null>(null)
+
   const user = useStore((state) => state.user)
   const [pathname] = useLocation()
 
-  const isMobile = window.innerWidth < 768
+  const getIsMobile = () => window.innerWidth < 768
+  const [isMobile, setIsMobile] = useState(getIsMobile())
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (resizeTimerRef.current) {
+        clearTimeout(resizeTimerRef.current)
+      }
+
+      resizeTimerRef.current = setTimeout(() => {
+        setIsMobile(getIsMobile())
+      }, 500)
+    }
+
+    window.addEventListener('resize', handleResize)
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current)
+    }
+  }, [])
+
+  useEffect(() => {
+    const nextSlide = getNextSlide(currentSlide)
+
+    if (sliderRef.current) {
+      sliderRef.current.slickGoTo(nextSlide)
+      Cookies.set('slide', nextSlide.toString())
+      setCurrentSlide(nextSlide)
+    }
+  }, [isMobile])
 
   const getNextSlide = (slide: number) => {
-    const isMobile = window.innerWidth < 768
-
     const validSlides = isMobile
       ? [...Array(4)].map((_, i) => i)
       : [...Array(4)].map((_, i) => i + 4)
@@ -76,6 +106,7 @@ export default function LoginLayout({
     useTransform: false,
     adaptiveHeight: true,
     easing: 'ease-in-out',
+    accessibility: false,
     fade: true,
   }
 
