@@ -25,7 +25,9 @@ export default function ForgotPasswordForm() {
   if (isSuccess) {
     return (
       <Alert className="mb-2" severity="success">
-        <AlertTitle>Password reset successfully requested</AlertTitle>
+        <AlertTitle className="font-roboto-bold">
+          Password reset successfully requested
+        </AlertTitle>
         We have emailed you instructions for setting your password, if an
         account exists with the email you entered. You should receive them
         shortly.
@@ -35,7 +37,7 @@ export default function ForgotPasswordForm() {
 
   return (
     <Paper
-      className="flex w-full flex-col rounded-lg p-8"
+      className="reset-pass-form flex w-full flex-col rounded-[22px] bg-white/85 p-8"
       component="form"
       onSubmit={async (e) => {
         e.preventDefault()
@@ -58,13 +60,13 @@ export default function ForgotPasswordForm() {
       }}
     >
       <Typography
-        className="mb-4 leading-tight tracking-tight"
+        className="font-roboto-bold mb-4 text-[21px] leading-tight tracking-tight text-black"
         component="h1"
         variant="h4"
       >
         Reset password
       </Typography>
-      <Typography className="mb-4">
+      <Typography className="mb-4 text-black">
         Forgotten your password? Enter your email address below, and we&apos;ll
         email instructions for setting a new one.
       </Typography>
@@ -76,14 +78,23 @@ export default function ForgotPasswordForm() {
         helperText={errors.email}
         placeholder="user@example.com"
         type="email"
+        className="rounded-md"
         InputLabel={{
+          className: 'text-black font-roboto-bold',
           label: 'Email',
+        }}
+        InputProps={{
+          className: 'rounded-md bg-white',
         }}
       />
       <Collapse in={!!errors.non_field_errors}>
         <Alert severity="error">{errors.non_field_errors}</Alert>
       </Collapse>
-      <Button type="submit" variant="contained">
+      <Button
+        className="bg-black text-lg text-white shadow-none"
+        type="submit"
+        variant="contained"
+      >
         Submit
       </Button>
     </Paper>

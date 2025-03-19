@@ -1,12 +1,9 @@
 import { Switch, Route, Redirect, useLocation } from 'wouter'
 
 import LoginLayout from '@ors/app/login/layout'
+
 import LoginPage from '@ors/app/login/page'
-
-import ResetPasswordLayout from '@ors/app/reset-password/layout'
 import ResetPasswordPage from '@ors/app/reset-password/page'
-
-import ForgotPasswordLayout from '@ors/app/forgot-password/layout'
 import ForgotPasswordPage from '@ors/app/forgot-password/page'
 
 import CountryProgrammePage from '@ors/app/country-programme/reports/page'
@@ -76,14 +73,14 @@ export default function App() {
           </LoginLayout>
         </Route>
         <Route path="/reset-password">
-          <ResetPasswordLayout>
+          <LoginLayout>
             <ResetPasswordPage />
-          </ResetPasswordLayout>
+          </LoginLayout>
         </Route>
         <Route path="/forgot-password">
-          <ForgotPasswordLayout>
+          <LoginLayout>
             <ForgotPasswordPage />
-          </ForgotPasswordLayout>
+          </LoginLayout>
         </Route>
         <Route path="/business-plans/upload">
           <BPListLayout>
