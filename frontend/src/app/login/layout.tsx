@@ -32,6 +32,8 @@ export default function LoginLayout({
   const isMobile = window.innerWidth < 768
 
   const getNextSlide = (slide: number) => {
+    const isMobile = window.innerWidth < 768
+
     const validSlides = isMobile
       ? [...Array(4)].map((_, i) => i)
       : [...Array(4)].map((_, i) => i + 4)
