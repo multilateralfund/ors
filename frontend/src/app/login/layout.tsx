@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { useStore } from '@ors/store'
+import { useLocation } from 'wouter'
 
 import Cookies from 'js-cookie'
 import Slider from 'react-slick'
@@ -26,6 +27,7 @@ export default function LoginLayout({
   const sliderRef = useRef<any>(null)
   const isFirstRenderRef = useRef<boolean>(false)
   const user = useStore((state) => state.user)
+  const [pathname] = useLocation()
 
   const isMobile = window.innerWidth < 768
 
@@ -56,7 +58,8 @@ export default function LoginLayout({
   const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
-    if (isFirstRenderRef.current || user.data) return
+    if (isFirstRenderRef.current || (user.data && pathname.includes('login')))
+      return
 
     isFirstRenderRef.current = true
     Cookies.set('slide', initialSlide.toString())
@@ -109,7 +112,7 @@ export default function LoginLayout({
 
   return (
     <div className="max-w-screen m-auto h-screen w-screen overflow-hidden">
-      {!user.data && (
+      {(!user.data || (user.data && !pathname.includes('login'))) && (
         <Slider {...settings} ref={sliderRef}>
           {images.map((image) => (
             <div key={image}>
