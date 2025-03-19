@@ -48,7 +48,8 @@ textarea {
   caret-color: #fff;
 }
 
-.login-form {
+.login-form,
+.reset-pass-form {
   .MuiInputBase-root {
     fieldset {
       border: 0;

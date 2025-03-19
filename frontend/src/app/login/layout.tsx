@@ -109,16 +109,18 @@ export default function LoginLayout({
 
   return (
     <div className="max-w-screen m-auto h-screen w-screen overflow-hidden">
-      <Slider {...settings} ref={sliderRef}>
-        {images.map((image) => (
-          <div key={image}>
-            <div
-              className="h-screen w-screen bg-cover"
-              style={{ backgroundImage: `url(${image})` }}
-            />
-          </div>
-        ))}
-      </Slider>
+      {!user.data && (
+        <Slider {...settings} ref={sliderRef}>
+          {images.map((image) => (
+            <div key={image}>
+              <div
+                className="h-screen w-screen bg-cover"
+                style={{ backgroundImage: `url(${image})` }}
+              />
+            </div>
+          ))}
+        </Slider>
+      )}
       <div className="fixed left-1/2 top-[40%] w-[90%] -translate-x-1/2 -translate-y-1/2 transform md:top-1/2">
         {children}
       </div>

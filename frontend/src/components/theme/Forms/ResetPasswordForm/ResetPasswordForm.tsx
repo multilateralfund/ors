@@ -25,7 +25,7 @@ export default function ResetPasswordForm({
 
   return (
     <Paper
-      className="flex w-full flex-col rounded-lg p-8"
+      className="reset-pass-form flex w-full flex-col rounded-[22px] bg-white/85 p-8"
       component="form"
       onSubmit={async (e) => {
         e.preventDefault()
@@ -53,13 +53,13 @@ export default function ResetPasswordForm({
       }}
     >
       <Typography
-        className="mb-4 leading-tight tracking-tight"
+        className="font-roboto-bold mb-4 text-[21px] leading-tight tracking-tight text-black"
         component="h1"
         variant="h4"
       >
         Change password
       </Typography>
-      <Typography className="mb-4">
+      <Typography className="mb-4 text-black">
         Please enter your new password twice so we can verify you typed it in
         correctly.
       </Typography>
@@ -70,9 +70,15 @@ export default function ResetPasswordForm({
         error={!!errors.new_password1}
         helperText={errors.new_password1}
         type="password"
+        className="rounded-md"
         InputLabel={{
+          className: 'text-black font-roboto-bold',
           label: 'New Password',
         }}
+        InputProps={{
+          className: 'rounded-md bg-white',
+        }}
+        isLoginInput
       />
       <Field
         id="new-password2"
@@ -81,16 +87,26 @@ export default function ResetPasswordForm({
         error={!!errors.new_password2}
         helperText={errors.new_password2}
         type="password"
+        className="rounded-md"
         InputLabel={{
+          className: 'text-black font-roboto-bold',
           label: 'Confirm Password',
         }}
+        InputProps={{
+          className: 'rounded-md bg-white',
+        }}
+        isLoginInput
       />
       <Collapse in={!!(errors.non_field_errors || errors.token)}>
         <Alert className="mb-4" severity="error">
           {errors.non_field_errors || errors.token}
         </Alert>
       </Collapse>
-      <Button type="submit" variant="contained">
+      <Button
+        className="bg-black text-lg text-white shadow-none"
+        type="submit"
+        variant="contained"
+      >
         Submit
       </Button>
     </Paper>

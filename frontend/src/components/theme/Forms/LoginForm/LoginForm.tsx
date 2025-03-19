@@ -1,5 +1,3 @@
-import { useEffect } from 'react'
-
 import { Alert, Button, Collapse, Paper, Typography } from '@mui/material'
 import { useLocation } from 'wouter'
 import useSearchParams from '@ors/hooks/useSearchParams'
