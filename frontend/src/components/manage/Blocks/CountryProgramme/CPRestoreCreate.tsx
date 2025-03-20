@@ -8,6 +8,7 @@ import {
   DialogContentText,
   DialogTitle,
 } from '@mui/material'
+import { isEmpty } from 'lodash'
 
 import { CreateLocalStorageType } from './useLocalStorage'
 
@@ -21,7 +22,7 @@ function CPRestoreCreate(props: CPRestoreCreateProps) {
 
   const storedData = localStorage.load()
 
-  const [show, setShow] = useState(!!storedData)
+  const [show, setShow] = useState(!isEmpty(storedData))
 
   function handleCancel() {
     localStorage.clear()
