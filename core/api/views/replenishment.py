@@ -340,6 +340,9 @@ class ScaleOfAssessmentViewSet(
                             agreed_contributions=(
                                 scale_of_assessment.amount / Decimal("3")
                             ),
+                            outstanding_contributions=(
+                                scale_of_assessment.amount / Decimal("3")
+                            ),
                         ),
                         AnnualContributionStatus(
                             year=replenishment.start_year + 1,
@@ -347,11 +350,17 @@ class ScaleOfAssessmentViewSet(
                             agreed_contributions=(
                                 scale_of_assessment.amount / Decimal("3")
                             ),
+                            outstanding_contributions=(
+                                scale_of_assessment.amount / Decimal("3")
+                            ),
                         ),
                         AnnualContributionStatus(
                             year=replenishment.start_year + 2,
                             country=scale_of_assessment.country,
                             agreed_contributions=(
+                                scale_of_assessment.amount / Decimal("3")
+                            ),
+                            outstanding_contributions=(
                                 scale_of_assessment.amount / Decimal("3")
                             ),
                         ),
@@ -363,6 +372,7 @@ class ScaleOfAssessmentViewSet(
                         end_year=replenishment.end_year,
                         country=scale_of_assessment.country,
                         agreed_contributions=scale_of_assessment.amount,
+                        outstanding_contributions=scale_of_assessment.amount,
                     )
                 )
 
