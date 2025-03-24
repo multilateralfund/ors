@@ -80,8 +80,10 @@ class ProjectType(models.Model):
             for sector, types in PROJECT_SECTOR_TO_TYPE_MAPPINGS.items()
             if self.code in types
         ]
-        return ProjectSector.objects.filter(code__in=sector_codes).values_list(
-            "id", flat=True
+        return list(
+            ProjectSector.objects.filter(code__in=sector_codes).values_list(
+                "id", flat=True
+            )
         )
 
 
@@ -139,8 +141,8 @@ class ProjectSector(models.Model):
     @property
     def allowed_types(self):
         type_codes = PROJECT_SECTOR_TO_TYPE_MAPPINGS.get(self.code, [])
-        return ProjectType.objects.filter(code__in=type_codes).values_list(
-            "id", flat=True
+        return list(
+            ProjectType.objects.filter(code__in=type_codes).values_list("id", flat=True)
         )
 
 
