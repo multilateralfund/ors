@@ -74,6 +74,7 @@ class ProjectSectorSerializer(serializers.ModelSerializer):
             "sort_order",
             "allowed_types",
         ]
+        read_only_fields = ["id", "allowed_types"]
 
 
 class ProjectSubSectorSerializer(serializers.ModelSerializer):
@@ -111,6 +112,7 @@ class ProjectTypeSerializer(serializers.ModelSerializer):
             "sort_order",
             "allowed_sectors",
         ]
+        read_only_fields = ["id", "allowed_sectors"]
 
 
 class ProjectFundListSerializer(serializers.ModelSerializer):
