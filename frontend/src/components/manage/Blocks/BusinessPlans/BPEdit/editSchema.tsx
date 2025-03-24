@@ -59,6 +59,28 @@ const useColumnsOptions = (
   const chemicalTypesResults = chemicalTypes.results
   const { rowErrors } = useStore((state) => state.bpErrors)
 
+  const getSectorOfProjectType = useCallback(
+    (params: any) =>
+      filter(sectors, (sector) => {
+        return (
+          !params.data.project_type?.id ||
+          params.data.project_type.allowed_sectors.includes(sector.id)
+        )
+      }),
+    [sectors],
+  )
+
+  const getProjectTypeOfSector = useCallback(
+    (params: any) =>
+      filter(types, (type) => {
+        return (
+          !params.data.sector?.id ||
+          params.data.sector.allowed_types.includes(type.id)
+        )
+      }),
+    [types],
+  )
+
   const getSubsectorsOfSector = useCallback(
     (params: any) =>
       filter(
@@ -186,13 +208,17 @@ const useColumnsOptions = (
         {
           cellClass: 'ag-text-center ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
-          cellEditorParams: {
-            Input: { placeholder: 'Select type' },
-            agFormatValue,
-            getOptionLabel: (option: any) => getOptionLabel(types, option),
-            isOptionEqualToValue,
-            openOnFocus: true,
-            options: types,
+          cellEditorParams: (params: any) => {
+            const projectTypeOfSector = getProjectTypeOfSector(params)
+            return {
+              Input: { placeholder: 'Select type' },
+              agFormatValue,
+              getOptionLabel: (option: any) =>
+                getOptionLabel(projectTypeOfSector, option),
+              isOptionEqualToValue,
+              openOnFocus: true,
+              options: projectTypeOfSector,
+            }
           },
           ...(hasErrors(rowErrors, 'project_type_id') && {
             cellRenderer: (props: any) =>
@@ -209,7 +235,7 @@ const useColumnsOptions = (
           valueGetter: (params: any) =>
             params.data.project_type?.code ?? params.data.project_type?.name,
           valueSetter: (params: any) =>
-            valueSetter(params, 'project_type', types),
+            valueSetter(params, 'project_type', getProjectTypeOfSector(params)),
         },
         {
           cellClass: 'ag-text-center ag-cell-ellipsed',
@@ -239,13 +265,18 @@ const useColumnsOptions = (
         {
           cellClass: 'ag-text-center ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
-          cellEditorParams: {
-            Input: { placeholder: 'Select sector' },
-            agFormatValue,
-            getOptionLabel: (option: any) => getOptionLabel(sectors, option),
-            isOptionEqualToValue,
-            openOnFocus: true,
-            options: sectors,
+          cellEditorParams: (params: any) => {
+            const sectorOfProjectType = getSectorOfProjectType(params)
+
+            return {
+              Input: { placeholder: 'Select sector' },
+              agFormatValue,
+              getOptionLabel: (option: any) =>
+                getOptionLabel(sectorOfProjectType, option),
+              isOptionEqualToValue,
+              openOnFocus: true,
+              options: sectorOfProjectType,
+            }
           },
           ...(hasErrors(rowErrors, 'sector_id') && {
             cellRenderer: (props: any) =>
@@ -265,7 +296,7 @@ const useColumnsOptions = (
             valueSetter(
               params,
               'sector',
-              sectors,
+              getSectorOfProjectType(params),
               getSubsectorsOfSector(params),
             ),
         },
@@ -505,6 +536,8 @@ const useColumnsOptions = (
       setForm,
       types,
       getSubsectorsOfSector,
+      getSectorOfProjectType,
+      getProjectTypeOfSector,
       chemicalTypesResults,
       sectors,
       substances,
