@@ -72,6 +72,7 @@ class ProjectSectorSerializer(serializers.ModelSerializer):
             "name",
             "code",
             "sort_order",
+            "allowed_types",
         ]
 
 
@@ -108,6 +109,7 @@ class ProjectTypeSerializer(serializers.ModelSerializer):
             "name",
             "code",
             "sort_order",
+            "allowed_sectors",
         ]
 
 

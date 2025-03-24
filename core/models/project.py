@@ -13,6 +13,35 @@ from core.models.substance import Substance
 from core.models.utils import SubstancesType, get_protected_storage
 
 
+ALL_TYPE_CODES = ["CPG", "DEM", "INS", "INV", "PRP", "TAS", "TRA", "DOC", "PS", "PHA"]
+
+# project type code - project sector code
+PROJECT_SECTOR_TO_TYPE_MAPPINGS = {
+    "ARS": ALL_TYPE_CODES,
+    "DES": ALL_TYPE_CODES,
+    "FOA": ALL_TYPE_CODES,
+    "FUM": ALL_TYPE_CODES,
+    "FFI": ALL_TYPE_CODES,
+    "PAG": ALL_TYPE_CODES,
+    "PRO": ALL_TYPE_CODES,
+    "REF": ALL_TYPE_CODES,
+    "SOL": ALL_TYPE_CODES,
+    "STE": ALL_TYPE_CODES,
+    "SRV": ALL_TYPE_CODES,
+    "PMU": ["TAS"],
+    "AC": ALL_TYPE_CODES,
+    "EMS": ALL_TYPE_CODES,
+    "ELM": ALL_TYPE_CODES,
+    "CAP": ALL_TYPE_CODES,
+    "CU": ALL_TYPE_CODES,
+    "PCAP": ALL_TYPE_CODES,
+    "NOU": ALL_TYPE_CODES,
+    "CA": ALL_TYPE_CODES,
+    # this one is only present in the KM consolidated data v2 file
+    "TAS": ["TAS"],
+}
+
+
 class MetaProject(models.Model):
     class MetaProjectType(models.TextChoices):
         MYA = "Multi-year agreement", "Multi-year agreement"
@@ -43,6 +72,17 @@ class ProjectType(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def allowed_sectors(self):
+        sector_codes = [
+            sector
+            for sector, types in PROJECT_SECTOR_TO_TYPE_MAPPINGS.items()
+            if self.code in types
+        ]
+        return ProjectSector.objects.filter(code__in=sector_codes).values_list(
+            "id", flat=True
+        )
 
 
 class ProjectStatusManager(models.Manager):
@@ -95,6 +135,13 @@ class ProjectSector(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def allowed_types(self):
+        type_codes = PROJECT_SECTOR_TO_TYPE_MAPPINGS.get(self.code, [])
+        return ProjectType.objects.filter(code__in=type_codes).values_list(
+            "id", flat=True
+        )
 
 
 class ProjectSubSectorManager(models.Manager):
