@@ -1,12 +1,15 @@
 from celery.utils.log import get_task_logger
 from constance import config
+from datetime import datetime
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
+from django.db.models import F
 from django.shortcuts import get_object_or_404
 
 from core.forms import CountryUserPasswordResetForm
 from core.models.country_programme import CPComment, CPReport
+from core.models.replenishment import TriennialContributionStatus
 from multilateralfund.celery import app
 
 logger = get_task_logger(__name__)
@@ -129,3 +132,24 @@ def send_mail_set_password_country_user(user_emails):
             logger.info(f"Password reset mail sent successfully to {user_email}!")
         except Exception as e:
             logger.error(f"Could not send password email to {user_email} - {str(e)}")
+
+
+@app.task()
+def update_triennial_status_of_contributions():
+    """
+    Executed annualy to updat the triennial status of contributions.
+    The outstanding_contributions field should only be based on the agreed contributions
+    up to the current year.
+
+    If we are at the start of a new triennial period, the status of contributions
+    has been automatically populated when marking the SoA as final and doesn't need
+    updating.
+    """
+    current_year = datetime.now().year
+    TriennialContributionStatus.objects.filter(
+        start_year__lt=current_year, end_year__gte=current_year
+    ).update(
+        # Add a third of the agreed contributions to the outstanding ones
+        outstanding_contributions=F("outstanding_contributions")
+        + F("agreed_contributions") / 3
+    )
