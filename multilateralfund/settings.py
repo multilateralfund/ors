@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import environ
 import socket
 import os
+from celery.schedules import crontab
 from pathlib import Path
 from datetime import datetime, timedelta
 
@@ -82,6 +83,7 @@ INSTALLED_APPS = [
     "constance.backends.database",
     "explorer",
     "mptt",
+    "django_celery_beat",
     "core",
 ]
 
@@ -324,6 +326,14 @@ CSRF_COOKIE_HTTPONLY = False
 
 CELERY_BROKER_URL = env("RABBITMQ_HOST", default="amqp://rabbitmq:5672")
 CELERY_RESULT_BACKEND = env("REDIS_HOST", default="redis://redis:6379")
+
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+CELERY_BEAT_SCHEDULE = {
+    "update_triennial_status_of_contributions": {
+        "task": "core.tasks.update_triennial_status_of_contributions",
+        "schedule": crontab(month_of_year=1, day_of_month=2, hour=11, minute=0),
+    },
+}
 
 if DEBUG:
     SECRET_KEY = "secret"

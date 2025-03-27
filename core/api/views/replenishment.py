@@ -372,7 +372,9 @@ class ScaleOfAssessmentViewSet(
                         end_year=replenishment.end_year,
                         country=scale_of_assessment.country,
                         agreed_contributions=scale_of_assessment.amount,
-                        outstanding_contributions=scale_of_assessment.amount,
+                        # Only populating the first year's outstanding contributions
+                        outstanding_contributions=scale_of_assessment.amount
+                        / Decimal("3"),
                     )
                 )
 
