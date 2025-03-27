@@ -1,3 +1,4 @@
+import requests
 from celery.utils.log import get_task_logger
 from constance import config
 from datetime import datetime
@@ -8,7 +9,9 @@ from django.db.models import F
 from django.shortcuts import get_object_or_404
 
 from core.forms import CountryUserPasswordResetForm
+from core.import_data.utils import parse_date
 from core.models.country_programme import CPComment, CPReport
+from core.models.meeting import Decision, Meeting
 from core.models.replenishment import TriennialContributionStatus
 from multilateralfund.celery import app
 
@@ -152,4 +155,91 @@ def update_triennial_status_of_contributions():
         # Add a third of the agreed contributions to the outstanding ones
         outstanding_contributions=F("outstanding_contributions")
         + F("agreed_contributions") / 3
+    )
+
+
+@app.task()
+def synchronize_meetings():
+    if not settings.DRUPAL_MEETINGS_API:
+        return
+
+    def get_meetings(json_data):
+        """
+        Extract start/end dates and other attrs for all node--events in the
+        meetings API JSON data.
+        """
+        meetings = []
+
+        for item in json_data.get("data", []):
+            if item.get("type") == "node--event":
+                attributes = item.get("attributes", {})
+                date_range = attributes.get("field_date_range")
+                number = attributes.get("field_number")
+                title = attributes.get("title")
+                if date_range and number and title:
+                    start_date = date_range.get("value")
+                    end_date = date_range.get("end_value")
+                    if start_date and end_date:
+                        start_date = parse_date(start_date)
+                        end_date = parse_date(end_date)
+                        meetings.append(
+                            Meeting(
+                                date=start_date,
+                                end_date=end_date,
+                                number=number,
+                                title=title,
+                            )
+                        )
+        return meetings
+
+    meetings_response = requests.get(settings.DRUPAL_MEETINGS_API)
+    meetings_response.raise_for_status()
+    meetings_json = meetings_response.json()
+    meeting_objects = get_meetings(meetings_json)
+
+    Meeting.objects.bulk_create(
+        meeting_objects,
+        update_conflicts=True,
+        unique_fields=["number"],
+        update_fields=["date", "end_date", "title"],
+    )
+
+
+@app.task()
+def synchronize_decisions():
+    if not settings.DRUPAL_DECISIONS_API:
+        return
+
+    def get_decisions(json_data):
+        """
+        Extract Decisions attributes for all node--decision items in the JSON data.
+        """
+        decisions = []
+
+        for item in json_data.get("data", []):
+            if item.get("type") == "node--decision":
+                attributes = item.get("attributes", {})
+                title = attributes.get("title")
+                number = attributes.get("field_decision_number")
+                number = number.split(" ")[1] if number else ""
+                # TODO: is there any usable meeting reference in the JSON?
+                if number and title:
+                    decisions.append(
+                        Decision(
+                            number=number,
+                            title=title,
+                        )
+                    )
+        return decisions
+
+    decisions_response = requests.get(settings.DRUPAL_DECISIONS_API)
+    decisions_response.raise_for_status()
+    decisions_json = decisions_response.json()
+    decisions_objects = get_decisions(decisions_json)
+
+    Decision.objects.bulk_create(
+        decisions_objects,
+        update_conflicts=True,
+        unique_fields=["number"],
+        update_fields=["title"],
     )
