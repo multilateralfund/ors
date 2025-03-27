@@ -192,7 +192,9 @@ def synchronize_meetings():
                         )
         return meetings
 
-    meetings_response = requests.get(settings.DRUPAL_MEETINGS_API)
+    meetings_response = requests.get(
+        settings.DRUPAL_MEETINGS_API, timeout=settings.DRUPAL_API_TIMEOUT
+    )
     meetings_response.raise_for_status()
     meetings_json = meetings_response.json()
     meeting_objects = get_meetings(meetings_json)
@@ -232,7 +234,9 @@ def synchronize_decisions():
                     )
         return decisions
 
-    decisions_response = requests.get(settings.DRUPAL_DECISIONS_API)
+    decisions_response = requests.get(
+        settings.DRUPAL_DECISIONS_API, timeout=settings.DRUPAL_API_TIMEOUT
+    )
     decisions_response.raise_for_status()
     decisions_json = decisions_response.json()
     decisions_objects = get_decisions(decisions_json)
