@@ -181,6 +181,7 @@ def synchronize_meetings():
                 if date_range and number and title:
                     start_date = date_range.get("value")
                     end_date = date_range.get("end_value")
+                    internal_api_id = attributes.get("drupal_internal__nid")
                     if start_date and end_date:
                         start_date = parse_date(start_date)
                         end_date = parse_date(end_date)
@@ -190,10 +191,12 @@ def synchronize_meetings():
                                 end_date=end_date,
                                 number=number,
                                 title=title,
+                                internal_api_id=internal_api_id,
                             )
                         )
         return meetings
 
+    logger.info("Synchronizing meetings...")
     meetings_response = requests.get(
         settings.DRUPAL_MEETINGS_API, timeout=settings.DRUPAL_API_TIMEOUT
     )
@@ -205,8 +208,9 @@ def synchronize_meetings():
         meeting_objects,
         update_conflicts=True,
         unique_fields=["number"],
-        update_fields=["date", "end_date", "title"],
+        update_fields=["date", "end_date", "title", "internal_api_id"],
     )
+    logger.info("Meetings synchronized successfully")
 
 
 @app.task()
@@ -225,16 +229,32 @@ def synchronize_decisions():
                 attributes = item.get("attributes", {})
                 title = attributes.get("title")
                 number = attributes.get("field_decision_number")
-                number = number.split(" ")[1] if number else ""
+                title = attributes.get("field_decision_number")
+
+                relationships = item.get("relationships", {})
+                meeting_internal_api_id = (
+                    relationships.get("field_event", {})
+                    .get("data", {})
+                    .get("meta", {})
+                    .get("drupal_internal__target_id")
+                )
+                meeting_id = None
+                if meeting_internal_api_id:
+                    meeting = Meeting.objects.filter(
+                        internal_api_id=meeting_internal_api_id
+                    ).first()
+                    meeting_id = meeting.id if meeting else None
                 if number and title:
                     decisions.append(
                         Decision(
                             number=number,
                             title=title,
+                            meeting_id=meeting_id,
                         )
                     )
         return decisions
 
+    logger.info("Synchronizing decisions...")
     decisions_response = requests.get(
         settings.DRUPAL_DECISIONS_API, timeout=settings.DRUPAL_API_TIMEOUT
     )
@@ -248,3 +268,4 @@ def synchronize_decisions():
         unique_fields=["number"],
         update_fields=["title"],
     )
+    logger.info("Decisions synchronized successfully")
