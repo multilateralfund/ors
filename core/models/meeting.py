@@ -9,8 +9,10 @@ class Meeting(models.Model):
         CANCELLED = "cancelled", "Cancelled"
 
     number = models.IntegerField()
+    title = models.CharField(max_length=255, blank=True, default="")
     status = models.CharField(max_length=20, choices=MeetingStatus.choices)
     date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
 
     class Meta:
         verbose_name_plural = "Meetings"
@@ -20,12 +22,15 @@ class Meeting(models.Model):
 
 
 class Decision(models.Model):
-    meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE)
-    number = models.IntegerField()
-    description = models.TextField()
+    meeting = models.ForeignKey(
+        Meeting, null=True, default=None, on_delete=models.CASCADE
+    )
+    number = models.CharField(max_length=16)
+    title = models.CharField(max_length=255, blank=True, default="")
+    description = models.TextField(blank=True, default="")
 
     class Meta:
         verbose_name_plural = "Decisions"
 
     def __str__(self):
-        return f"Meeting {self.meeting.number} - decision {self.number}"
+        return f"Meeting {self.meeting.number} - Decision {self.number}"

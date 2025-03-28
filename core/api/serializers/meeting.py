@@ -13,8 +13,10 @@ class MeetingSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "number",
+            "title",
             "status",
             "date",
+            "end_date",
         ]
 
 
@@ -28,6 +30,7 @@ class DecisionSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "meeting_id",
+            "title",
             "number",
             "description",
         ]

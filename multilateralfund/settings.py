@@ -331,9 +331,23 @@ CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 CELERY_BEAT_SCHEDULE = {
     "update_triennial_status_of_contributions": {
         "task": "core.tasks.update_triennial_status_of_contributions",
-        "schedule": crontab(month_of_year=1, day_of_month=2, hour=11, minute=0),
+        "schedule": crontab(month_of_year="1", day_of_month="2", hour="11", minute="0"),
+    },
+    # First synchronize meetings, then decisions. Both happen daily.
+    "synchronize_meetings": {
+        "task": "core.tasks.synchronize_meetings",
+        "schedule": crontab(minute="0", hour="0"),
+    },
+    "synchronize_decisions": {
+        "task": "core.tasks.synchronize_decisions",
+        "schedule": crontab(minute="10", hour="0"),
     },
 }
+
+# URLs for automatically retrieving Decisions and Meetings
+# For now it looks like meetings_others and decisions_others are not used
+DRUPAL_MEETINGS_API = "https://admin.multilateralfund.org/jsonapi/index/meetings"
+DRUPAL_DECISIONS_API = "https://admin.multilateralfund.org/jsonapi/index/decisions"
 
 if DEBUG:
     SECRET_KEY = "secret"
