@@ -1,19 +1,15 @@
 import requests
 from celery.utils.log import get_task_logger
 from constance import config
-from datetime import datetime
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
-from django.db import transaction
-from django.db.models import F
 from django.shortcuts import get_object_or_404
 
 from core.forms import CountryUserPasswordResetForm
 from core.import_data.utils import parse_date
 from core.models.country_programme import CPComment, CPReport
 from core.models.meeting import Decision, Meeting
-from core.models.replenishment import TriennialContributionStatus
 from multilateralfund.celery import app
 
 logger = get_task_logger(__name__)
