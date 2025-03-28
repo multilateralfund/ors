@@ -421,11 +421,19 @@ class TriennialContributionView(AbstractContributionStatus):
     """
 
     # TriennialContributionStatus specific fields
-    country = models.ForeignKey("Country", on_delete=models.DO_NOTHING)
+    country = models.ForeignKey(
+        "Country",
+        # This is just a database view, so DO_NOTHING is fine
+        on_delete=models.DO_NOTHING,
+        related_name="triennialcontributionview",
+    )
     start_year = models.IntegerField()
     end_year = models.IntegerField()
 
     # Newly-added calculated fields based on DB view
+    # These reflect the values adjusted for the current year inside the triennium;
+    # for example, if we are in the first year of the triennium, the agreed contribution
+    # is equal to 1/3 of the total triennium agreed contribution.
     current_agreed_contributions = models.DecimalField(max_digits=30, decimal_places=15)
     current_outstanding_contributions = models.DecimalField(
         max_digits=30, decimal_places=15
