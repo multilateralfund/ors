@@ -411,6 +411,31 @@ class TriennialContributionStatus(AbstractContributionStatus):
         ]
 
 
+class TriennialContributionView(AbstractContributionStatus):
+    """
+    A database view model that provides calculated fields for triennial contributions
+    based on the current year.
+
+    This allows us to dynamically calculate the current agreed and outstanding contributions
+    without modifying the underlying data each year.
+    """
+
+    # TriennialContributionStatus specific fields
+    country = models.ForeignKey("Country", on_delete=models.DO_NOTHING)
+    start_year = models.IntegerField()
+    end_year = models.IntegerField()
+
+    # Newly-added calculated fields based on DB view
+    current_agreed_contributions = models.DecimalField(max_digits=30, decimal_places=15)
+    current_outstanding_contributions = models.DecimalField(
+        max_digits=30, decimal_places=15
+    )
+
+    class Meta:
+        managed = False
+        db_table = "triennial_contributions_view"
+
+
 class DisputedContribution(models.Model):
     country = models.ForeignKey(
         Country,
