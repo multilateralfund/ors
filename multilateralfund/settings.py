@@ -348,6 +348,7 @@ CELERY_BEAT_SCHEDULE = {
 # For now it looks like meetings_others and decisions_others are not used
 DRUPAL_MEETINGS_API = "https://admin.multilateralfund.org/jsonapi/index/meetings"
 DRUPAL_DECISIONS_API = "https://admin.multilateralfund.org/jsonapi/index/decisions"
+DRUPAL_API_TIMEOUT = 10
 
 if DEBUG:
     SECRET_KEY = "secret"
