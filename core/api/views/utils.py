@@ -17,6 +17,7 @@ from core.api.export.replenishment import (
 from core.models import (
     Country,
     TriennialContributionStatus,
+    TriennialContributionView,
     FermGainLoss,
     DisputedContribution,
     AnnualContributionStatus,
@@ -569,7 +570,7 @@ def delete_fields(obj, fields):
 class SummaryStatusOfContributionsAggregator:
     """
     Aggregator for the summary status of contributions using the
-    TriennialContributionStatus data.
+    TriennialContributionView data.
     """
 
     def get_status_of_contributions_qs(self):
@@ -578,23 +579,23 @@ class SummaryStatusOfContributionsAggregator:
         to the Excel sheets YR91_XX.
         """
         return (
-            Country.objects.filter(triennial_contributions_status__isnull=False)
-            .prefetch_related("triennial_contributions_status", "ferm_gain_loss")
+            Country.objects.filter(triennialcontributionview__isnull=False)
+            .prefetch_related("triennialcontributionview", "ferm_gain_loss")
             .annotate(
                 agreed_contributions=models.Sum(
-                    "triennial_contributions_status__agreed_contributions", default=0
+                    "triennialcontributionview__current_agreed_contributions", default=0
                 ),
                 cash_payments=models.Sum(
-                    "triennial_contributions_status__cash_payments", default=0
+                    "triennialcontributionview__cash_payments", default=0
                 ),
                 bilateral_assistance=models.Sum(
-                    "triennial_contributions_status__bilateral_assistance", default=0
+                    "triennialcontributionview__bilateral_assistance", default=0
                 ),
                 promissory_notes=models.Sum(
-                    "triennial_contributions_status__promissory_notes", default=0
+                    "triennialcontributionview__promissory_notes", default=0
                 ),
                 outstanding_contributions=models.Sum(
-                    "triennial_contributions_status__outstanding_contributions",
+                    "triennialcontributionview__current_outstanding_contributions",
                     default=0,
                 ),
                 gain_loss=models.Subquery(
@@ -627,20 +628,20 @@ class SummaryStatusOfContributionsAggregator:
             )
         )
 
-        ret = TriennialContributionStatus.objects.filter(
+        ret = TriennialContributionView.objects.filter(
             ceit_countries_triennial_filter
         ).aggregate(
-            agreed_contributions=models.Sum("agreed_contributions", default=0),
+            agreed_contributions=models.Sum("current_agreed_contributions", default=0),
             cash_payments=models.Sum("cash_payments", default=0),
             bilateral_assistance=models.Sum("bilateral_assistance", default=0),
             promissory_notes=models.Sum("promissory_notes", default=0),
             outstanding_contributions=models.Sum(
-                "outstanding_contributions", default=0
+                "current_outstanding_contributions", default=0
             ),
         )
 
         # Populate gain_loss and disputed_contributions fields; these do not have
-        # a direct relationship with TriennialContributionStatus
+        # a direct relationship with TriennialContributionStatus/View
         ret["gain_loss"] = FermGainLoss.objects.filter(
             ceit_countries_annual_filter
         ).aggregate(total=models.Sum("amount", default=0))["total"]
@@ -652,13 +653,13 @@ class SummaryStatusOfContributionsAggregator:
         return ret
 
     def get_total(self):
-        return TriennialContributionStatus.objects.aggregate(
-            agreed_contributions=models.Sum("agreed_contributions", default=0),
+        return TriennialContributionView.objects.aggregate(
+            agreed_contributions=models.Sum("current_agreed_contributions", default=0),
             cash_payments=models.Sum("cash_payments", default=0),
             bilateral_assistance=models.Sum("bilateral_assistance", default=0),
             promissory_notes=models.Sum("promissory_notes", default=0),
             outstanding_contributions=models.Sum(
-                "outstanding_contributions", default=0
+                "current_outstanding_contributions", default=0
             ),
         )
 
@@ -681,7 +682,7 @@ class SummaryStatusOfContributionsAggregator:
 class TriennialStatusOfContributionsAggregator:
     """
     Aggregator for the triennial status of contributions using the
-    TriennialContributionStatus data.
+    TriennialContributionView data.
     """
 
     def __init__(self, start_year, end_year):
@@ -695,25 +696,25 @@ class TriennialStatusOfContributionsAggregator:
         """
         return (
             Country.objects.filter(
-                triennial_contributions_status__start_year=self.start_year,
-                triennial_contributions_status__end_year=self.end_year,
+                triennialcontributionview__start_year=self.start_year,
+                triennialcontributionview__end_year=self.end_year,
             )
-            .prefetch_related("triennial_contributions_status", "ferm_gain_loss")
+            .prefetch_related("triennialcontributionview", "ferm_gain_loss")
             .annotate(
                 agreed_contributions=models.Sum(
-                    "triennial_contributions_status__agreed_contributions", default=0
+                    "triennialcontributionview__current_agreed_contributions", default=0
                 ),
                 cash_payments=models.Sum(
-                    "triennial_contributions_status__cash_payments", default=0
+                    "triennialcontributionview__cash_payments", default=0
                 ),
                 bilateral_assistance=models.Sum(
-                    "triennial_contributions_status__bilateral_assistance", default=0
+                    "triennialcontributionview__bilateral_assistance", default=0
                 ),
                 promissory_notes=models.Sum(
-                    "triennial_contributions_status__promissory_notes", default=0
+                    "triennialcontributionview__promissory_notes", default=0
                 ),
                 outstanding_contributions=models.Sum(
-                    "triennial_contributions_status__outstanding_contributions",
+                    "triennialcontributionview__current_outstanding_contributions",
                     default=0,
                 ),
                 gain_loss=models.Subquery(
@@ -741,17 +742,17 @@ class TriennialStatusOfContributionsAggregator:
         )
 
     def get_ceit_data(self, ceit_countries_qs):
-        ret = TriennialContributionStatus.objects.filter(
+        ret = TriennialContributionView.objects.filter(
             start_year=self.start_year,
             end_year=self.end_year,
             country_id__in=ceit_countries_qs.values_list("id", flat=True),
         ).aggregate(
-            agreed_contributions=models.Sum("agreed_contributions", default=0),
+            agreed_contributions=models.Sum("current_agreed_contributions", default=0),
             cash_payments=models.Sum("cash_payments", default=0),
             bilateral_assistance=models.Sum("bilateral_assistance", default=0),
             promissory_notes=models.Sum("promissory_notes", default=0),
             outstanding_contributions=models.Sum(
-                "outstanding_contributions", default=0
+                "current_outstanding_contributions", default=0
             ),
         )
         # Add gain/loss & disputed for CEIT countries
@@ -770,15 +771,15 @@ class TriennialStatusOfContributionsAggregator:
         return ret
 
     def get_total(self):
-        ret = TriennialContributionStatus.objects.filter(
+        ret = TriennialContributionView.objects.filter(
             start_year=self.start_year, end_year=self.end_year
         ).aggregate(
-            agreed_contributions=models.Sum("agreed_contributions", default=0),
+            agreed_contributions=models.Sum("current_agreed_contributions", default=0),
             cash_payments=models.Sum("cash_payments", default=0),
             bilateral_assistance=models.Sum("bilateral_assistance", default=0),
             promissory_notes=models.Sum("promissory_notes", default=0),
             outstanding_contributions=models.Sum(
-                "outstanding_contributions", default=0
+                "current_outstanding_contributions", default=0
             ),
         )
         # Adding gain/loss totals
@@ -914,19 +915,21 @@ class AnnualStatusOfContributionsAggregator:
 class StatisticsStatusOfContributionsAggregator:
     """
     Aggregator for the statistics status of contributions using the
-    TriennialContributionStatus data.
+    TriennialContributionView data.
     """
 
     def get_soc_data(self):
         return (
-            TriennialContributionStatus.objects.values("start_year", "end_year")
+            TriennialContributionView.objects.values("start_year", "end_year")
             .annotate(
-                agreed_contributions_sum=models.Sum("agreed_contributions", default=0),
+                agreed_contributions_sum=models.Sum(
+                    "current_agreed_contributions", default=0
+                ),
                 cash_payments_sum=models.Sum("cash_payments", default=0),
                 bilateral_assistance_sum=models.Sum("bilateral_assistance", default=0),
                 promissory_notes_sum=models.Sum("promissory_notes", default=0),
                 outstanding_contributions_sum=models.Sum(
-                    "outstanding_contributions", default=0
+                    "current_outstanding_contributions", default=0
                 ),
                 disputed_contributions=models.Subquery(
                     DisputedContribution.objects.filter(
@@ -940,7 +943,7 @@ class StatisticsStatusOfContributionsAggregator:
                     .values("total")[:1]
                 ),
                 outstanding_ceit=models.Sum(
-                    "outstanding_contributions",
+                    "current_outstanding_contributions",
                     default=0,
                     filter=Q(country__ceit_statuses__is_ceit=True)
                     & Q(country__ceit_statuses__start_year__lte=F("start_year"))
