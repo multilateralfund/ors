@@ -139,28 +139,6 @@ def send_mail_set_password_country_user(user_emails):
 
 
 @app.task()
-def update_triennial_status_of_contributions():
-    """
-    Executed annualy to updat the triennial status of contributions.
-    The outstanding_contributions field should only be based on the agreed contributions
-    up to the current year.
-
-    If we are at the start of a new triennial period, the status of contributions
-    has been automatically populated when marking the SoA as final and doesn't need
-    updating.
-    """
-    current_year = datetime.now().year
-    with transaction.atomic():
-        TriennialContributionStatus.objects.filter(
-            start_year__lt=current_year, end_year__gte=current_year
-        ).update(
-            # Add a third of the agreed contributions to the outstanding ones
-            outstanding_contributions=F("outstanding_contributions")
-            + F("agreed_contributions") / 3
-        )
-
-
-@app.task()
 def synchronize_meetings():
     if not settings.DRUPAL_MEETINGS_API:
         return
