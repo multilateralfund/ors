@@ -5,6 +5,7 @@ from datetime import datetime
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
+from django.db import transaction
 from django.db.models import F
 from django.shortcuts import get_object_or_404
 
@@ -149,13 +150,14 @@ def update_triennial_status_of_contributions():
     updating.
     """
     current_year = datetime.now().year
-    TriennialContributionStatus.objects.filter(
-        start_year__lt=current_year, end_year__gte=current_year
-    ).update(
-        # Add a third of the agreed contributions to the outstanding ones
-        outstanding_contributions=F("outstanding_contributions")
-        + F("agreed_contributions") / 3
-    )
+    with transaction.atomic():
+        TriennialContributionStatus.objects.filter(
+            start_year__lt=current_year, end_year__gte=current_year
+        ).update(
+            # Add a third of the agreed contributions to the outstanding ones
+            outstanding_contributions=F("outstanding_contributions")
+            + F("agreed_contributions") / 3
+        )
 
 
 @app.task()
@@ -224,7 +226,6 @@ def synchronize_decisions():
                 title = attributes.get("title")
                 number = attributes.get("field_decision_number")
                 number = number.split(" ")[1] if number else ""
-                # TODO: is there any usable meeting reference in the JSON?
                 if number and title:
                     decisions.append(
                         Decision(
