@@ -13,3 +13,27 @@
 .image-container img {
   @apply !relative !h-full !w-full !object-contain;
 }
+
+.coverImg {
+  object-fit: cover;
+}
+
+.leftPosImg {
+  object-fit: cover;
+  object-position: left;
+}
+
+.respLeftPostImg {
+  @media (width <= 1250px) or (width >= 3200px) {
+    object-fit: cover;
+    object-position: left;
+  }
+}
+
+.leftBottomPosImg {
+  object-position: left bottom;
+
+  @media (width <= 1800px) or (width >= 3200px) {
+    object-fit: cover;
+  }
+}

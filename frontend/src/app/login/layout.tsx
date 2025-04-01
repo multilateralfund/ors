@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { useStore } from '@ors/store'
 import { useLocation } from 'wouter'
+
+import cx from 'classnames'
 
 import Cookies from 'js-cookie'
 import Slider from 'react-slick'
@@ -9,14 +11,14 @@ import 'slick-carousel/slick/slick.css'
 import 'slick-carousel/slick/slick-theme.css'
 
 const images = [
-  '/images/mountains_mobile.jpg',
-  '/images/river_mobile.jpg',
-  '/images/corals_mobile.jpg',
-  '/images/cave_mobile.jpg',
-  '/images/mountains.jpg',
-  '/images/river.jpg',
-  '/images/corals.jpg',
-  '/images/cave.jpg',
+  { name: '/images/mountains_mobile.jpg', classname: 'leftPosImg' },
+  { name: '/images/river_mobile.jpg', classname: 'coverImg' },
+  { name: '/images/corals_mobile.jpg', classname: 'coverImg' },
+  { name: '/images/cave_mobile.jpg', classname: 'leftPosImg' },
+  { name: '/images/mountains.jpg', classname: 'coverImg' },
+  { name: '/images/river.jpg', classname: 'respLeftPostImg' },
+  { name: '/images/corals.jpg', classname: 'coverImg' },
+  { name: '/images/cave.jpg', classname: 'leftBottomPosImg' },
 ]
 
 export default function LoginLayout({
@@ -59,32 +61,36 @@ export default function LoginLayout({
     if (sliderRef.current) {
       sliderRef.current.slickGoTo(nextSlide)
       Cookies.set('slide', nextSlide.toString())
+      Cookies.set('recentSlides', JSON.stringify([...usedSlides, nextSlide]))
       setCurrentSlide(nextSlide)
     }
   }, [isMobile])
 
-  const getNextSlide = (slide: number) => {
+  const getNextSlide = (currentSlide: number) => {
     const validSlides = isMobile
       ? [...Array(4)].map((_, i) => i)
       : [...Array(4)].map((_, i) => i + 4)
 
-    const crtSlide = !validSlides.includes(slide)
-      ? isMobile
-        ? slide - 4
-        : slide + 4
-      : slide
-    const nextSlideIndex =
-      (validSlides.indexOf(crtSlide) + 1) % validSlides.length
-
-    return validSlides[nextSlideIndex]
+    const filteredSlides = validSlides.filter(
+      (slide) => slide != currentSlide && !usedSlides.includes(slide),
+    )
+    return filteredSlides[Math.floor(Math.random() * filteredSlides.length)]
   }
 
   const crtSlide = Cookies.get('slide')
+  const recentSlides = Cookies.get('recentSlides')
+
+  const usedSlides = useMemo(() => {
+    const parsedSlides = recentSlides ? JSON.parse(recentSlides) : []
+
+    return parsedSlides.length === 4 ? [] : parsedSlides
+  }, [recentSlides])
+
   const initialSlide = crtSlide
     ? getNextSlide(parseInt(crtSlide))
     : isMobile
-      ? 0
-      : 4
+      ? Math.floor(Math.random() * 4)
+      : Math.floor(Math.random() * 4) + 4
 
   const [currentSlide, setCurrentSlide] = useState(initialSlide)
   const [loaded, setLoaded] = useState(false)
@@ -95,6 +101,7 @@ export default function LoginLayout({
 
     isFirstRenderRef.current = true
     Cookies.set('slide', initialSlide.toString())
+    Cookies.set('recentSlides', JSON.stringify([...usedSlides, initialSlide]))
   }, [])
 
   const settings = {
@@ -112,10 +119,10 @@ export default function LoginLayout({
 
   useEffect(() => {
     const preloadImages = async () => {
-      const promises = images.map((src) => {
+      const promises = images.map(({ name }) => {
         return new Promise((resolve) => {
           const img = new Image()
-          img.src = src
+          img.src = name
           img.onload = resolve
         })
       })
@@ -133,6 +140,10 @@ export default function LoginLayout({
 
           sliderRef.current.slickGoTo(nextSlide)
           Cookies.set('slide', nextSlide.toString())
+          Cookies.set(
+            'recentSlides',
+            JSON.stringify([...usedSlides, nextSlide]),
+          )
           setCurrentSlide(nextSlide)
         }
       }, 10000)
@@ -147,11 +158,14 @@ export default function LoginLayout({
     <div className="max-w-screen m-auto h-screen w-screen overflow-hidden">
       {(!user.data || (user.data && !pathname.includes('login'))) && (
         <Slider {...settings} ref={sliderRef}>
-          {images.map((image) => (
-            <div key={image}>
-              <div
-                className="h-screen w-screen bg-cover"
-                style={{ backgroundImage: `url(${image})` }}
+          {images.map(({ name, classname }) => (
+            <div key={name} className="h-screen">
+              <img
+                src={name}
+                className={cx(
+                  'h-screen w-full min-w-full max-w-none',
+                  classname,
+                )}
               />
             </div>
           ))}
