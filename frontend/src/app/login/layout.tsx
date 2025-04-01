@@ -18,7 +18,7 @@ const images = [
   { name: '/images/mountains.jpg', classname: 'coverImg' },
   { name: '/images/river.jpg', classname: 'respLeftPostImg' },
   { name: '/images/corals.jpg', classname: 'coverImg' },
-  { name: '/images/cave.jpg', classname: 'leftBottomPosImg' },
+  { name: '/images/canyon.jpg', classname: 'leftBottomPosImg' },
 ]
 
 export default function LoginLayout({
