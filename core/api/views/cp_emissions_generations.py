@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.response import Response
 from rest_framework import generics
@@ -13,16 +14,28 @@ from core.models.substance import Substance
 
 class DashboardsCPEmissionsView(generics.GenericAPIView):
     """
-    This view is made for ekimetrics dashboards
+    This view is made for ekimetrics dashboards.
     This is an API endpoint that allows to list CP Emissions
-    and it will return the list of all emissions including the archive
+    and it will return the list of all emissions including the archive.
 
-    The queryset is a db view that is a union of the cp_emissions, cp_emissions_archive tables
+    The queryset is a db view that is a union of the
+    cp_emissions and cp_emissions_archive tables.
     """
 
-    queryset = AllEmissionsView.objects.filter(
-        report_status=CPReport.CPReportStatus.FINAL
-    ).order_by("-report_year", "country_name", "-report_version", "facility")
+    # Also removing any emissions that have no values
+    queryset = (
+        AllEmissionsView.objects.filter(report_status=CPReport.CPReportStatus.FINAL)
+        .filter(
+            Q(total__gt=0)
+            | Q(all_uses__gt=0)
+            | Q(feedstock_gc__gt=0)
+            | Q(destruction__gt=0)
+            | Q(feedstock_wpc__gt=0)
+            | Q(destruction_wpc__gt=0)
+            | Q(generated_emissions__gt=0)
+        )
+        .order_by("-report_year", "country_name", "-report_version", "facility")
+    )
     filterset_class = DashboardsCPBaseFilter
     filter_backends = [
         DjangoFilterBackend,
@@ -32,9 +45,14 @@ class DashboardsCPEmissionsView(generics.GenericAPIView):
     def get(self, request, *args, **kwargs):
         all_emissions = self.filter_queryset(self.get_queryset())
 
-        all_generations = AllGenerationsView.objects.filter(
-            report_status=CPReport.CPReportStatus.FINAL
-        ).order_by("-report_year", "country_name", "-report_version")
+        # Also removing any generations that have no values
+        all_generations = (
+            AllGenerationsView.objects.filter(
+                report_status=CPReport.CPReportStatus.FINAL
+            )
+            .filter(Q(all_uses__gt=0) | Q(feedstock__gt=0) | Q(destruction__gt=0))
+            .order_by("-report_year", "country_name", "-report_version")
+        )
         all_generations = self.filter_queryset(all_generations)
 
         substance = Substance.objects.get(name="HFC-23")

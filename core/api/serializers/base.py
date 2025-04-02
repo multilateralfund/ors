@@ -170,7 +170,7 @@ class BaseDashboardsSerializer(serializers.ModelSerializer):
 
     def get_group(self, obj):
         if obj.blend_id:
-            return self.context["annex_f"].name
+            return self.context["annex_f"].name_alt
         return obj.substance_group_name
 
     def get_group_id(self, obj):
