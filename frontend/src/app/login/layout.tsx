@@ -74,7 +74,9 @@ export default function LoginLayout({
     const filteredSlides = validSlides.filter(
       (slide) => slide != currentSlide && !usedSlides.includes(slide),
     )
-    return filteredSlides[Math.floor(Math.random() * filteredSlides.length)]
+    return filteredSlides.length > 0
+      ? filteredSlides[Math.floor(Math.random() * filteredSlides.length)]
+      : validSlides[Math.floor(Math.random() * validSlides.length)]
   }
 
   const crtSlide = Cookies.get('slide')
