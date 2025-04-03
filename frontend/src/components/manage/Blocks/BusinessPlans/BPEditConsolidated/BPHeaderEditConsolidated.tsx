@@ -22,6 +22,7 @@ export default function BPHeaderEditConsolidated({
   bpForm,
   files,
   setForm,
+  isFirstRender,
 }: any) {
   const { period } = useParams<BpPathParams>()
   const [year_start, year_end] = period.split('-')
@@ -82,6 +83,7 @@ export default function BPHeaderEditConsolidated({
         method: 'PUT',
       })
 
+      isFirstRender.current = false
       localStorage.clear()
       setIsSaving(false)
       setWarnOnClose(false)
