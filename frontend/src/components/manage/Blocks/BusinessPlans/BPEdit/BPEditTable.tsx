@@ -4,7 +4,7 @@ import { ApiBPYearRange } from '@ors/types/api_bp_get_years'
 import { useCallback, useContext, useMemo, useRef } from 'react'
 
 import { Button } from '@mui/material'
-import { findIndex, isNil } from 'lodash'
+import { findIndex, isNil, map } from 'lodash'
 import { useParams } from 'wouter'
 
 import {
@@ -337,8 +337,13 @@ export function BPEditBaseTable(
 
     if (index > -1) {
       newData.splice(index, 1)
-      setForm(newData)
 
+      const formattedData = map(newData, (dataItem, index) => ({
+        ...dataItem,
+        row_id: newData.length - index - 1,
+      }))
+
+      setForm(formattedData)
       applyTransaction(grid.current.api, {
         remove: [removedActivity],
       })

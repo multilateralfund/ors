@@ -4,7 +4,7 @@ import { ApiEditBPActivity } from '@ors/types/api_bp_get'
 
 import { useCallback, useEffect, useState } from 'react'
 
-import { capitalize, map } from 'lodash'
+import { capitalize, map, filter } from 'lodash'
 import { useParams } from 'wouter'
 
 import Loading from '@ors/components/theme/Loading/Loading'
@@ -22,7 +22,7 @@ import { useStore } from '@ors/store'
 import NotFoundPage from '@ors/app/not-found'
 import { useGetChemicalTypes } from '../useGetChemicalTypes'
 
-const BPEditConsolidated = () => {
+const BPEditConsolidated = ({ newActivities, isFirstRender }: any) => {
   const { period, type } = useParams<{ period: string; type: string }>()
   const [year_start, year_end] = period.split('-')
   const formattedType = capitalize(type)
@@ -92,9 +92,30 @@ const BPEditConsolidated = () => {
       return null
     }
 
-    return map(results, (activity, index) => ({
+    const addedActivities = filter(
+      results,
+      (activity) => activity.id === activity.initial_id,
+    )
+      .map((activity) => activity.initial_id)
+      .sort((activId1, activId2) => activId2 - activId1)
+
+    newActivities.current = isFirstRender.current
+      ? [...newActivities.current]
+      : [...newActivities.current, ...addedActivities]
+
+    const sortedActivities = [...results].sort(
+      (activ1, activ2) =>
+        newActivities.current.findIndex(
+          (activId: number) => activId === activ2.initial_id,
+        ) -
+        newActivities.current.findIndex(
+          (activId: number) => activId === activ1.initial_id,
+        ),
+    )
+
+    return map(sortedActivities, (activity, index) => ({
       ...activity,
-      row_id: results.length - index - 1,
+      row_id: sortedActivities.length - index - 1,
     }))
   }, [results])
 
@@ -137,6 +158,7 @@ const BPEditConsolidated = () => {
             bpForm,
             files,
             setForm,
+            isFirstRender,
           }}
         />
       )}
