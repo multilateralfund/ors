@@ -485,18 +485,6 @@ const useColumnsOptions = (
         },
         {
           cellClass: 'ag-cell-ellipsed',
-          field: 'remarks_additional',
-          headerClass: 'ag-text-center',
-          headerName: tableColumns.remarks_additional,
-          minWidth: 200,
-          ...(hasErrors(rowErrors, 'remarks_additional') && {
-            cellRenderer: (props: any) =>
-              editCellRenderer(props, props.data.remarks_additional, true),
-          }),
-          tooltipField: 'remarks_additional',
-        },
-        {
-          cellClass: 'ag-cell-ellipsed',
           field: 'comment_secretariat',
           headerClass: 'ag-text-center',
           headerComponent: function (props: any) {

@@ -24,11 +24,11 @@ interface IBPMainFilters {
 
 const BPMainFilters = ({
   filters,
-  periodOptions,
+  periodOptions = [],
   setFilters,
   isFirstStepUpload,
 }: IBPMainFilters) => {
-  const step1PeriodOptions = map(periodOptions, (period) => {
+  const step1PeriodOptions = map(periodOptions.slice(0, 2), (period) => {
     const nrBps = period.status?.length
 
     return {
@@ -37,7 +37,7 @@ const BPMainFilters = ({
         period.label + ` (${nrBps} ${nrBps === 1 ? 'bp' : 'bps'} available)`,
     }
   })
-  const step2PeriodOptions = map(periodOptions, (period) => ({
+  const step2PeriodOptions = map(periodOptions.slice(0, 2), (period) => ({
     ...period,
     disabled: period.status?.length === 0,
   }))
@@ -89,6 +89,7 @@ const BPMainFilters = ({
         <Label isRequired={isFirstStepUpload}>Triennium</Label>
         <SimpleSelect
           className="!gap-x-0"
+          menuClassName="min-w-full"
           initialIndex={filters ? Math.max(currentPeriodIndex, 0) : 0}
           inputClassName="gap-x-4 h-10"
           label={''}

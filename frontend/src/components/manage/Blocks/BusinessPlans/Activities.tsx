@@ -298,26 +298,16 @@ function OpenActivity({
               )}
             </span>
             <span className="flex w-1/2 flex-col gap-2.5 pl-1.5">
-              <span>Remarks (Additional)</span>
-              {activity.remarks_additional ? (
+              <span>Comment</span>
+              {activity.comment_secretariat ? (
                 <div className="break-words rounded-lg bg-gray-100 p-4">
-                  {activity.remarks_additional}
+                  {activity.comment_secretariat}
                 </div>
               ) : (
                 <h4 className="m-0">-</h4>
               )}
             </span>
           </div>
-          <span className="flex flex-col gap-2.5">
-            <span>Comments</span>
-            {activity.comment_secretariat ? (
-              <div className="break-words rounded-lg bg-gray-100 p-4">
-                {activity.comment_secretariat}
-              </div>
-            ) : (
-              <h4 className="m-0">-</h4>
-            )}
-          </span>
         </>
       )}
     </div>

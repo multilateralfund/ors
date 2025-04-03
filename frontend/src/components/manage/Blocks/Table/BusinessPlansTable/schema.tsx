@@ -201,15 +201,6 @@ const getCommentsColumnsDefs = (isDiff: boolean) => [
   },
   {
     cellClass: 'ag-cell-ellipsed',
-    field: 'remarks_additional',
-    headerClass: 'ag-text-center',
-    headerName: 'Remarks (Additional)',
-    minWidth: 200,
-    sortable: true,
-    tooltipField: 'remarks_additional',
-  },
-  {
-    cellClass: 'ag-cell-ellipsed',
     field: 'comment_secretariat',
     headerClass: 'ag-text-center',
     headerName: 'Comment',

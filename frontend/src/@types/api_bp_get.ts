@@ -65,7 +65,6 @@ export interface ApiBPActivity {
   project_type: ApiBPProjectType
   project_type_id: number
   remarks: string
-  remarks_additional: string
   required_by_model: string
   sector: null
   sector_id: null

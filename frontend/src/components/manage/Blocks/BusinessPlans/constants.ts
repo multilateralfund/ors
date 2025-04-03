@@ -13,7 +13,6 @@ export const tableColumns: { [key: string]: string } = {
   project_cluster_id: 'Cluster',
   project_type_id: 'Type',
   remarks: 'Remarks',
-  remarks_additional: 'Remarks (Additional)',
   required_by_model: 'Required by model',
   sector_id: 'Sector',
   status: 'Status',
