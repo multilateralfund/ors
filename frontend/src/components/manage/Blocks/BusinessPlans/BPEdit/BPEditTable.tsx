@@ -283,22 +283,22 @@ export function BPEditBaseTable(
     return [
       {
         children: valuesUSD,
-        headerName: 'Value ($000)',
+        headerName: 'Value ($000) Adjusted',
       },
       {
         children: valuesODP,
-        headerName: 'ODP',
+        headerName: 'ODP Adjusted',
       },
       {
         children: valuesMT,
-        headerName: 'MT for HFC',
+        headerName: 'MT for HFC Adjusted',
       },
       {
         children: valuesCO2,
         headerName: 'CO2-EQ',
         headerGroupComponent: () => (
           <span>
-            CO<sub>2</sub>-EQ
+            CO<sub>2</sub>-EQ Adjusted
           </span>
         ),
       },

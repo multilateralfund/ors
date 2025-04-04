@@ -6,6 +6,7 @@ import cx from 'classnames'
 import styles from '@ors/components/manage/Blocks/Replenishment/Table/table.module.css'
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5'
 import { formatDecimalValue } from '@ors/helpers'
+import { tableColumns } from './constants'
 
 interface Value {
   id: number
@@ -125,7 +126,7 @@ const ValuesTable: React.FC<Props> = ({
           <th colSpan={tableData.years.length}>
             {isCo2 ? (
               <>
-                CO<sub>2</sub>-EQ
+                CO<sub>2</sub>-EQ Adjusted
               </>
             ) : (
               <div className="pb-1">{header}</div>
@@ -162,12 +163,12 @@ const ValuesTable: React.FC<Props> = ({
   return (
     <div className="grid grid-cols-1 gap-4 border-0 border-b border-solid border-gray-200 pb-4 md:grid-cols-2 lg:grid-cols-3">
       {(isAllView || isValuesView) &&
-        renderTable('Value ($000)', tableData.usdValues)}
+        renderTable('Value ($000) Adjusted', tableData.usdValues)}
       {(isAllView || !isValuesView) && (
         <>
-          {renderTable('ODP', tableData.odpValues)}
-          {renderTable('MT for HFC', tableData.mtValues)}
-          {renderTable('CO2-EQ', tableData.co2Values, true)}
+          {renderTable('ODP Adjusted', tableData.odpValues)}
+          {renderTable('MT for HFC Adjusted', tableData.mtValues)}
+          {renderTable('CO2-EQ Adjusted', tableData.co2Values, true)}
         </>
       )}
     </div>
@@ -192,50 +193,62 @@ function OpenActivity({
         </div>
         {activity.title}
       </h4>
-      <div className="grid grid-cols-2 gap-y-4 border-0 border-b border-solid border-gray-200 pb-4 md:grid-cols-3 lg:grid-cols-4">
+      <div
+        className={cx(
+          'grid grid-cols-2 gap-y-4 border-0 pb-4 md:grid-cols-3 lg:grid-cols-4',
+          {
+            'border-b border-solid border-gray-200':
+              isAllView || isCommentsView,
+          },
+        )}
+      >
         <span className="flex items-center gap-2">
-          <span>Country</span>
+          <span>{tableColumns.country_id}</span>
           <h4 className="m-0">{activity.country.name}</h4>
         </span>
         {period && displayAgency && (
           <span className="flex items-center gap-2">
-            <span>Agency</span>
+            <span>{tableColumns.agency_id}</span>
             <h4 className="m-0">{activity.agency.name}</h4>
           </span>
         )}
         <span className="flex items-center gap-2">
-          <span>Cluster</span>
+          <span>{tableColumns.project_type_id}</span>
+          <h4 className="m-0">{activity.project_type?.code || '-'}</h4>
+        </span>
+        {isAllView && (
+          <span className="flex items-center gap-2">
+            <span>{tableColumns.bp_chemical_type_id}</span>
+            <h4 className="m-0">{activity.bp_chemical_type?.name || '-'}</h4>
+          </span>
+        )}
+        <span className="flex items-center gap-2">
+          <span>{tableColumns.project_cluster_id}</span>
           <h4 className="m-0">{activity.project_cluster?.code || '-'}</h4>
         </span>
         <span className="flex items-center gap-2">
-          <span>Type</span>
-          <h4 className="m-0">{activity.project_type?.code || '-'}</h4>
-        </span>
-        <span className="flex items-center gap-2">
-          <span>Chemical Type</span>
-          <h4 className="m-0">{activity.bp_chemical_type?.name || '-'}</h4>
-        </span>
-        <span className="flex items-center gap-2">
-          <span>Sector</span>
+          <span>{tableColumns.sector_id}</span>
           <h4 className="m-0">{activity.sector?.code || '-'}</h4>
         </span>
         <span className="flex items-center gap-2">
-          <span>Subsector</span>
+          <span>{tableColumns.subsector_id}</span>
           <h4 className="m-0">{activity.subsector?.code || '-'}</h4>
         </span>
-        <span className="flex items-center gap-2">
-          <span>Required by model</span>
-          <h4 className="m-0">{activity.required_by_model || '-'}</h4>
-        </span>
+        {isAllView && (
+          <span className="flex items-center gap-2">
+            <span>{tableColumns.required_by_model}</span>
+            <h4 className="m-0">{activity.required_by_model || '-'}</h4>
+          </span>
+        )}
         {(isAllView || isValuesView) && (
           <>
             <span className="flex items-center gap-2">
-              <span>Status</span>
+              <span>{tableColumns.status}</span>
               <h4 className="m-0">{activity.status_display}</h4>
             </span>
 
             <span className="flex items-center gap-2">
-              <span>IND/MYA</span>
+              <span>{tableColumns.is_multi_year}</span>
               <h4 className="m-0">
                 {activity.is_multi_year ? 'Multi-Year' : 'Individual'}
               </h4>
@@ -247,7 +260,7 @@ function OpenActivity({
       {isAllView && (
         <>
           <span className="flex flex-wrap items-center gap-2">
-            <span className="mr-5">Substances</span>
+            <span className="mr-5">{tableColumns.substances}</span>
             {activity.substances_display.length > 0
               ? activity.substances_display.map(
                   (substance: string, index: number) => (
@@ -264,7 +277,7 @@ function OpenActivity({
               : '-'}
           </span>
           <span className="flex items-center gap-4">
-            <span>Polyol amount</span>
+            <span>{tableColumns.amount_polyol}</span>
             <h4 className="m-0">
               {activity.amount_polyol
                 ? formatDecimalValue(parseFloat(activity.amount_polyol), {
@@ -288,7 +301,7 @@ function OpenActivity({
         <>
           <div className="flex flex-wrap">
             <span className="flex w-1/2 flex-col gap-2.5 pr-1.5">
-              <span>Remarks</span>
+              <span>{tableColumns.remarks}</span>
               {activity.remarks ? (
                 <div className="break-words rounded-lg bg-gray-100 p-4">
                   {activity.remarks}
@@ -298,7 +311,7 @@ function OpenActivity({
               )}
             </span>
             <span className="flex w-1/2 flex-col gap-2.5 pl-1.5">
-              <span>Comment</span>
+              <span>{tableColumns.comment_secretariat}</span>
               {activity.comment_secretariat ? (
                 <div className="break-words rounded-lg bg-gray-100 p-4">
                   {activity.comment_secretariat}
@@ -314,7 +327,14 @@ function OpenActivity({
   )
 }
 
-function ClosedActivity({ activity, displayAgency = false, period }: any) {
+function ClosedActivity({
+  activity,
+  displayAgency = false,
+  gridOptions,
+  period,
+}: any) {
+  const isAllView = gridOptions === 'all' || !gridOptions
+
   return (
     <div className="transition-opacity flex w-full flex-col-reverse justify-between gap-4 opacity-100 duration-300 ease-in-out lg:flex-row">
       <div className="flex flex-wrap items-center gap-4">
@@ -322,33 +342,35 @@ function ClosedActivity({ activity, displayAgency = false, period }: any) {
           <IoChevronUp className="text-primary" size={14} />
         </div>
         <span className="flex items-center gap-2">
-          <span>Country</span>
+          <span>{tableColumns.country_id}</span>
           <h4 className="m-0">{activity.country.name}</h4>
         </span>
         {period && displayAgency && (
           <span className="flex items-center gap-2">
-            <span>Agency</span>
+            <span>{tableColumns.agency_id}</span>
             <h4 className="m-0">{activity.agency.name}</h4>
           </span>
         )}
         <span className="flex items-center gap-2">
-          <span>Cluster</span>
+          <span>{tableColumns.project_type_id}</span>
+          <h4 className="m-0">{activity.project_type?.code || '-'}</h4>
+        </span>
+        {isAllView && (
+          <span className="flex items-center gap-2">
+            <span>{tableColumns.bp_chemical_type_id}</span>
+            <h4 className="m-0">{activity.bp_chemical_type?.name || '-'}</h4>
+          </span>
+        )}
+        <span className="flex items-center gap-2">
+          <span>{tableColumns.project_cluster_id}</span>
           <h4 className="m-0">{activity.project_cluster?.code || '-'}</h4>
         </span>
         <span className="flex items-center gap-2">
-          <span>Type</span>
-          <h4 className="m-0">{activity.project_type?.code || '-'}</h4>
-        </span>
-        <span className="flex items-center gap-2">
-          <span>Chemical Type</span>
-          <h4 className="m-0">{activity.bp_chemical_type?.name || '-'}</h4>
-        </span>
-        <span className="flex items-center gap-2">
-          <span>Sector</span>
+          <span>{tableColumns.sector_id}</span>
           <h4 className="m-0">{activity.sector?.code || '-'}</h4>
         </span>
         <span className="flex items-center gap-2">
-          <span>Subsector</span>
+          <span>{tableColumns.subsector_id}</span>
           <h4 className="m-0">{activity.subsector?.code || '-'}</h4>
         </span>
       </div>
