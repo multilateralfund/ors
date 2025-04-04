@@ -87,7 +87,7 @@ const BPListHeader = ({
                 offset: 0,
               })
 
-              if (viewType === 'details') {
+              if (viewType === 'report_info') {
                 setParamsActivities({
                   bp_status: formattedValue,
                   offset: 0,
@@ -101,18 +101,17 @@ const BPListHeader = ({
           />
         </div>
       </div>
-      {userCanEditBusinessPlan[user_type as UserType] &&
-        viewType === 'activities' && (
-          <CustomLink
-            className="text-nowrap px-4 py-2 text-lg uppercase"
-            color="secondary"
-            href="/business-plans/upload"
-            variant="contained"
-            button
-          >
-            Upload BP
-          </CustomLink>
-        )}
+      {userCanEditBusinessPlan[user_type as UserType] && (
+        <CustomLink
+          className="text-nowrap px-4 py-2 text-lg uppercase"
+          color="secondary"
+          href="/business-plans/upload"
+          variant="contained"
+          button
+        >
+          Upload BP
+        </CustomLink>
+      )}
     </div>
   )
 }

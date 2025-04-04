@@ -21,7 +21,7 @@ export default function BusinessPlans() {
   useEffect(() => {
     if (periodOptions.length > 0) {
       setLocation(
-        `/business-plans/list/activities/${latestBpYearRange?.value || currentTriennium}`,
+        `/business-plans/list/report-info/${latestBpYearRange?.value || currentTriennium}`,
       )
     }
   }, [periodOptions, setLocation])
