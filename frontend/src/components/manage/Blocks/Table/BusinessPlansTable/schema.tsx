@@ -179,7 +179,7 @@ const getIsMultiYearColumn = (isDiff: boolean) => ({
       }
     : {
         tooltipField: 'is_multi_year_display',
-        valueGetter: ({ data }: any) => (data.is_multi_year ? 'MYA' : 'IND'),
+        valueGetter: ({ data }: any) => (data.is_multi_year ? 'M' : 'I'),
       }),
 })
 

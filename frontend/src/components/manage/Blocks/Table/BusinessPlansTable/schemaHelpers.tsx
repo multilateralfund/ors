@@ -8,7 +8,7 @@ import BPDiffTooltip from '../../BusinessPlans/BPDiff/BPDiffTooltip'
 
 const formatSimpleVals = (value: any, colIdentifier: string) => {
   if (colIdentifier === 'is_multi_year') {
-    return value ? 'MYA' : 'IND'
+    return value ? 'M' : 'I'
   }
 
   if (colIdentifier === 'substances_display') {

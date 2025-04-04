@@ -1,6 +1,6 @@
 export const multiYearFilterOptions = [
-  { id: true, fullName: 'Multi-Year', name: 'MYA' },
-  { id: false, fullName: 'Individual', name: 'IND' },
+  { id: false, fullName: 'Individual', name: 'I' },
+  { id: true, fullName: 'Multi-Year', name: 'M' },
 ]
 
 export const tableColumns: { [key: string]: string } = {

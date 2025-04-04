@@ -458,7 +458,7 @@ const useColumnsOptions = (
             Input: { placeholder: 'Select I/M' },
             agFormatValue: agFormatNameValue,
             getOptionLabel: (option: any) =>
-              getOptionLabel(multiYearFilterOptions, option, 'name'),
+              getOptionLabel(multiYearFilterOptions, option),
             isOptionEqualToValue: isOptionEqualToValueByName,
             openOnFocus: true,
             options: multiYearFilterOptions,
@@ -469,13 +469,12 @@ const useColumnsOptions = (
           minWidth: 120,
           ...(hasErrors(rowErrors, 'is_multi_year') && {
             cellRenderer: (props: any) =>
-              editCellRenderer(props, props.data.is_multi_year ? 'MYA' : 'IND'),
+              editCellRenderer(props, props.data.is_multi_year ? 'M' : 'I'),
           }),
           tooltipValueGetter: (params: ITooltipParams) =>
             params.data.is_multi_year_display ??
             multiYearFilterOptions[1].fullName,
-          valueGetter: (params: any) =>
-            params.data.is_multi_year ? 'MYA' : 'IND',
+          valueGetter: (params: any) => (params.data.is_multi_year ? 'M' : 'I'),
           valueSetter: (params: any) =>
             MYAValueSetter(params, multiYearFilterOptions),
         },

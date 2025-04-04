@@ -74,12 +74,13 @@ export function BPEditBaseTable(
       const value = params.data.values.find((value: any) =>
         getYearColsValue(value, year, isAfterMaxYear),
       )
+      const newVal = params.newValue > 0 ? params.newValue : 0
 
       if (value) {
-        value[colIdentifier] = params.newValue > 0 ? params.newValue : 0
+        value[colIdentifier] = newVal
       } else {
         const newValueObj = {
-          [colIdentifier]: params.newValue > 0 ? params.newValue : 0,
+          [colIdentifier]: newVal,
           is_after: year > yearRangeSelected.year_end,
           year: Math.min(year, yearRangeSelected.year_end),
         }
