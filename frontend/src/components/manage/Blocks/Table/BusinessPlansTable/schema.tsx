@@ -308,7 +308,7 @@ const allColumnDefs = (
 
               return polyolAmount
                 ? formatDecimalValue(parseFloat(polyolAmount))
-                : null
+                : '0.00'
             },
             tooltipValueGetter: (params: ITooltipParams) => {
               const polyolAmount = params.data.amount_polyol
@@ -318,7 +318,7 @@ const allColumnDefs = (
                     maximumFractionDigits: 10,
                     minimumFractionDigits: 2,
                   })
-                : null
+                : '0.00'
             },
           }),
     },

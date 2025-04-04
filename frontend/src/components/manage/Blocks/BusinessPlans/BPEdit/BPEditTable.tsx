@@ -55,11 +55,11 @@ export function BPEditBaseTable(
         getYearColsValue(value, year, isAfterMaxYear),
       )
 
-      if (value && !isNil(value[colIdentifier])) {
+      if (value && !isNil(value[colIdentifier]) && value[colIdentifier] > 0) {
         return parseFloat(value[colIdentifier])
       }
 
-      return null
+      return 0
     },
     [],
   )
@@ -76,10 +76,10 @@ export function BPEditBaseTable(
       )
 
       if (value) {
-        value[colIdentifier] = params.newValue
+        value[colIdentifier] = params.newValue > 0 ? params.newValue : 0
       } else {
         const newValueObj = {
-          [colIdentifier]: params.newValue,
+          [colIdentifier]: params.newValue > 0 ? params.newValue : 0,
           is_after: year > yearRangeSelected.year_end,
           year: Math.min(year, yearRangeSelected.year_end),
         }

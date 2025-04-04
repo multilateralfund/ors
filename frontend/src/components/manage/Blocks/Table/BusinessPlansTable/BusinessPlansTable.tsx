@@ -66,7 +66,7 @@ export const BPTable = ({
           : undefined,
       )
     }
-    return ''
+    return '0.00'
   }
 
   const getYearColsValue = (

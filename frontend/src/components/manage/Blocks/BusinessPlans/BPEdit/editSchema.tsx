@@ -274,10 +274,22 @@ const useColumnsOptions = (
           headerName: tableColumns.amount_polyol,
           minWidth: 120,
           cellRenderer: (props: any) =>
-            editCellRenderer(props, props.data.amount_polyol),
+            editCellRenderer(
+              props,
+              props.data.amount_polyol > 0 ? props.data.amount_polyol : 0,
+            ),
           valueGetter: (params: any) => {
-            const polyolAmount = params.data.amount_polyol
-            return !isNil(polyolAmount) ? parseFloat(polyolAmount) : null
+            const polyolAmount =
+              params.data.amount_polyol > 0 ? params.data.amount_polyol : 0
+            return !isNil(polyolAmount) ? parseFloat(polyolAmount) : 0
+          },
+          valueSetter: (params: any) => {
+            const polyolAmount = params.newValue > 0 ? params.newValue : 0
+            params.data.amount_polyol = !isNil(polyolAmount)
+              ? parseFloat(polyolAmount)
+              : 0
+
+            return true
           },
           wrapText: true,
         },
