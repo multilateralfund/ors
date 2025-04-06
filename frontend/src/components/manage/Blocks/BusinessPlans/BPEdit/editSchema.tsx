@@ -459,8 +459,8 @@ const useColumnsOptions = (
             Input: { placeholder: 'Select I/M' },
             agFormatValue: agFormatNameValue,
             getOptionLabel: (option: any) =>
-              getOptionLabel(multiYearFilterOptions, option),
-            isOptionEqualToValue,
+              getOptionLabel(multiYearFilterOptions, option, 'name'),
+            isOptionEqualToValue: isOptionEqualToValueByName,
             openOnFocus: true,
             options: multiYearFilterOptions,
           },
