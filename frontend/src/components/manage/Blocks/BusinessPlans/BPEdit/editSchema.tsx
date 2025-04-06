@@ -19,6 +19,7 @@ import {
   getOptionLabel,
   getOptions,
   isOptionEqualToValue,
+  isOptionEqualToValueByCode,
   isOptionEqualToValueByName,
   statusValueSetter,
   substancesValueSetter,
@@ -123,7 +124,7 @@ const useColumnsOptions = (
             Input: { placeholder: 'Select country' },
             agFormatValue,
             getOptionLabel: (option: any) => getOptionLabel(countries, option),
-            isOptionEqualToValue,
+            isOptionEqualToValue: isOptionEqualToValueByName,
             openOnFocus: true,
             options: countries,
           },
@@ -153,7 +154,7 @@ const useColumnsOptions = (
                   agFormatValue,
                   getOptionLabel: (option: any) =>
                     getOptionLabel(agencies, option),
-                  isOptionEqualToValue,
+                  isOptionEqualToValue: isOptionEqualToValueByName,
                   openOnFocus: true,
                   options: agencies,
                 },
@@ -185,7 +186,7 @@ const useColumnsOptions = (
               agFormatValue,
               getOptionLabel: (option: any) =>
                 getOptionLabel(projectTypeOfSector, option),
-              isOptionEqualToValue,
+              isOptionEqualToValue: isOptionEqualToValueByCode,
               openOnFocus: true,
               options: projectTypeOfSector,
             }
@@ -215,7 +216,7 @@ const useColumnsOptions = (
             agFormatValue,
             getOptionLabel: (option: any) =>
               getOptionLabel(chemicalTypesResults, option),
-            isOptionEqualToValue,
+            isOptionEqualToValue: isOptionEqualToValueByName,
             openOnFocus: true,
             options: chemicalTypesResults,
           },
@@ -300,7 +301,7 @@ const useColumnsOptions = (
             Input: { placeholder: 'Select cluster' },
             agFormatValue,
             getOptionLabel: (option: any) => getOptionLabel(clusters, option),
-            isOptionEqualToValue,
+            isOptionEqualToValue: isOptionEqualToValueByCode,
             openOnFocus: true,
             options: clusters,
           },
@@ -334,7 +335,7 @@ const useColumnsOptions = (
               agFormatValue,
               getOptionLabel: (option: any) =>
                 getOptionLabel(sectorOfProjectType, option),
-              isOptionEqualToValue,
+              isOptionEqualToValue: isOptionEqualToValueByCode,
               openOnFocus: true,
               options: sectorOfProjectType,
             }
@@ -372,7 +373,7 @@ const useColumnsOptions = (
               agFormatValue,
               getOptionLabel: (option: any) =>
                 getOptionLabel(subsectorsOfSector, option),
-              isOptionEqualToValue,
+              isOptionEqualToValue: isOptionEqualToValueByCode,
               openOnFocus: true,
               options: subsectorsOfSector,
             }
@@ -459,7 +460,7 @@ const useColumnsOptions = (
             agFormatValue: agFormatNameValue,
             getOptionLabel: (option: any) =>
               getOptionLabel(multiYearFilterOptions, option),
-            isOptionEqualToValue: isOptionEqualToValueByName,
+            isOptionEqualToValue,
             openOnFocus: true,
             options: multiYearFilterOptions,
           },
