@@ -13,7 +13,7 @@ import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext
 import PeriodSelector from '../../Replenishment/PeriodSelector'
 import { getPathPeriod } from '../../Replenishment/utils'
 import { bpTypes } from '../constants'
-import { capitalize, find, indexOf, map } from 'lodash'
+import { capitalize, filter, find, indexOf, map } from 'lodash'
 import SimpleSelect from '@ors/components/ui/SimpleSelect/SimpleSelect'
 import { getCurrentPeriodOption } from '../utils'
 
@@ -44,10 +44,10 @@ const BPListHeader = ({
     period?.split('-')[0] || '',
   )
 
-  const formattedPeriods = map(periodOptions, (period) => ({
-    ...period,
-    disabled: period.status?.length === 0,
-  }))
+  const filteredPeriods = filter(
+    periodOptions,
+    (period) => period.status?.length !== 0,
+  )
   const formattedBpTypes = map(bpTypes, (bpType) => ({
     ...bpType,
     disabled: !currentPeriod?.status.includes(bpType.label),
@@ -63,10 +63,9 @@ const BPListHeader = ({
           <PeriodSelector
             label=""
             period={period}
-            periodOptions={formattedPeriods}
+            periodOptions={filteredPeriods}
             inputClassName="h-10 w-32"
             menuClassName="w-32"
-            withDisabledOptions
           />
           <SimpleSelect
             withDisabledOptions
@@ -88,7 +87,7 @@ const BPListHeader = ({
                 offset: 0,
               })
 
-              if (viewType === 'details') {
+              if (viewType === 'report_info') {
                 setParamsActivities({
                   bp_status: formattedValue,
                   offset: 0,
@@ -102,18 +101,17 @@ const BPListHeader = ({
           />
         </div>
       </div>
-      {userCanEditBusinessPlan[user_type as UserType] &&
-        viewType === 'activities' && (
-          <CustomLink
-            className="text-nowrap px-4 py-2 text-lg uppercase"
-            color="secondary"
-            href="/business-plans/upload"
-            variant="contained"
-            button
-          >
-            Upload BP
-          </CustomLink>
-        )}
+      {userCanEditBusinessPlan[user_type as UserType] && (
+        <CustomLink
+          className="text-nowrap px-4 py-2 text-lg uppercase"
+          color="secondary"
+          href="/business-plans/upload"
+          variant="contained"
+          button
+        >
+          Upload BP
+        </CustomLink>
+      )}
     </div>
   )
 }

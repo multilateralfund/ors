@@ -77,7 +77,7 @@ export default function BPDetailsConsolidated({
       <>
         <BPTableToolbarButtons />
         <BPListHeader
-          viewType="details"
+          viewType="report_info"
           {...{ setParams, setParamsFiles, setParamsActivities }}
         />
         <BPListTabs />

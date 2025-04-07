@@ -25,7 +25,7 @@ const BPTableToolbarButtons = (props: any) => {
   const [domNode, setDomNode] = useState<Element>()
 
   const setCurrentTab = () => {
-    setActiveTab(currentPage[0] === 'activities' ? 0 : 1)
+    setActiveTab(currentPage[0] === 'report-info' ? 0 : 1)
   }
 
   useEffect(function () {

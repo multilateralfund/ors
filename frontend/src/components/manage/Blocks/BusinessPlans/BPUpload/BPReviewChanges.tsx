@@ -192,7 +192,7 @@ const BPReviewChanges = ({
         </div>
         <Link
           className="no-underline"
-          href={`/business-plans/list/activities/${getLatestBpYearRange(periodOptions)?.value || currentTriennium}`}
+          href={`/business-plans/list/report-info/${getLatestBpYearRange(periodOptions)?.value || currentTriennium}`}
         >
           <CancelButton className="h-10 !text-[15px]">
             Cancel Upload
@@ -206,7 +206,7 @@ const BPReviewChanges = ({
         >
           <Link
             className="text-xl text-inherit no-underline"
-            href={`/business-plans/list/activities/${year_start}-${year_end}`}
+            href={`/business-plans/list/report-info/${year_start}-${year_end}`}
             onClick={() => {
               setBPType(bp_status)
             }}

@@ -55,11 +55,11 @@ export function BPEditBaseTable(
         getYearColsValue(value, year, isAfterMaxYear),
       )
 
-      if (value && !isNil(value[colIdentifier])) {
+      if (value && !isNil(value[colIdentifier]) && value[colIdentifier] > 0) {
         return parseFloat(value[colIdentifier])
       }
 
-      return null
+      return 0
     },
     [],
   )
@@ -74,12 +74,13 @@ export function BPEditBaseTable(
       const value = params.data.values.find((value: any) =>
         getYearColsValue(value, year, isAfterMaxYear),
       )
+      const newVal = params.newValue > 0 ? params.newValue : 0
 
       if (value) {
-        value[colIdentifier] = params.newValue
+        value[colIdentifier] = newVal
       } else {
         const newValueObj = {
-          [colIdentifier]: params.newValue,
+          [colIdentifier]: newVal,
           is_after: year > yearRangeSelected.year_end,
           year: Math.min(year, yearRangeSelected.year_end),
         }
@@ -283,22 +284,22 @@ export function BPEditBaseTable(
     return [
       {
         children: valuesUSD,
-        headerName: 'Value ($000)',
+        headerName: 'Value ($000) Adjusted',
       },
       {
         children: valuesODP,
-        headerName: 'ODP',
+        headerName: 'ODP Adjusted',
       },
       {
         children: valuesMT,
-        headerName: 'MT for HFC',
+        headerName: 'MT for HFC Adjusted',
       },
       {
         children: valuesCO2,
         headerName: 'CO2-EQ',
         headerGroupComponent: () => (
           <span>
-            CO<sub>2</sub>-EQ
+            CO<sub>2</sub>-EQ Adjusted
           </span>
         ),
       },

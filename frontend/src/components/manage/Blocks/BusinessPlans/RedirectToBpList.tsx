@@ -18,7 +18,7 @@ export const RedirectToBpList = ({
   const { periodOptions } = useGetBpPeriods(yearRanges)
   const latestBpYearRange = getLatestBpYearRange(periodOptions)
 
-  const bpListUrl = `/business-plans/list/activities/${currentYearRange || latestBpYearRange?.value || currentTriennium}`
+  const bpListUrl = `/business-plans/list/report-info/${currentYearRange || latestBpYearRange?.value || currentTriennium}`
 
   return (
     <div className="w-fit">

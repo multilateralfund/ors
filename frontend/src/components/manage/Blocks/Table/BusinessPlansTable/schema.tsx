@@ -11,13 +11,14 @@ import {
   textCellRenderer,
 } from './schemaHelpers'
 import { ITooltipParams } from 'ag-grid-community'
+import { tableColumns } from '../../BusinessPlans/constants'
 
 const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
   {
     cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
     field: 'country.name',
     headerClass: 'ag-text-center',
-    headerName: 'Country',
+    headerName: tableColumns.country_id,
     minWidth: 150,
     sortable: !isDiff,
     ...(isDiff
@@ -34,7 +35,7 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
           cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
           field: 'agency.name',
           headerClass: 'ag-text-center',
-          headerName: 'Agency',
+          headerName: tableColumns.agency_id,
           minWidth: 110,
           sortable: true,
           tooltipField: 'agency.name',
@@ -43,9 +44,28 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
     : []),
   {
     cellClass: 'ag-text-center ag-cell-ellipsed',
+    field: 'project_type.code',
+    headerClass: 'ag-text-center',
+    headerName: tableColumns.project_type_id,
+    minWidth: 70,
+    sortable: !isDiff,
+    ...(isDiff
+      ? {
+          cellRenderer: textCellRenderer,
+          valueGetter: (params: any) =>
+            objectCellValueGetter(params, 'project_type'),
+        }
+      : {
+          tooltipField: 'project_type.name',
+          valueGetter: (params: any) =>
+            params.data.project_type?.code ?? params.data.project_type?.name,
+        }),
+  },
+  {
+    cellClass: 'ag-text-center ag-cell-ellipsed',
     field: 'project_cluster.code',
     headerClass: 'ag-text-center',
-    headerName: 'Cluster',
+    headerName: tableColumns.project_cluster_id,
     minWidth: 70,
     sortable: !isDiff,
     ...(isDiff
@@ -63,28 +83,9 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
   },
   {
     cellClass: 'ag-text-center ag-cell-ellipsed',
-    field: 'project_type.code',
-    headerClass: 'ag-text-center',
-    headerName: 'Type',
-    minWidth: 70,
-    sortable: !isDiff,
-    ...(isDiff
-      ? {
-          cellRenderer: textCellRenderer,
-          valueGetter: (params: any) =>
-            objectCellValueGetter(params, 'project_type'),
-        }
-      : {
-          tooltipField: 'project_type.name',
-          valueGetter: (params: any) =>
-            params.data.project_type?.code ?? params.data.project_type?.name,
-        }),
-  },
-  {
-    cellClass: 'ag-text-center ag-cell-ellipsed',
     field: 'sector.code',
     headerClass: 'ag-text-center',
-    headerName: 'Sector',
+    headerName: tableColumns.sector_id,
     minWidth: 70,
     sortable: !isDiff,
     ...(isDiff
@@ -102,7 +103,7 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
     cellClass: 'ag-text-center ag-cell-ellipsed',
     field: 'subsector.code',
     headerClass: 'ag-text-center',
-    headerName: 'Subsector',
+    headerName: tableColumns.subsector_id,
     minWidth: 100,
     sortable: !isDiff,
     ...(isDiff
@@ -121,7 +122,7 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
     cellClass: 'ag-cell-ellipsed',
     field: 'title',
     headerClass: 'ag-text-center',
-    headerName: 'Title',
+    headerName: tableColumns.title,
     minWidth: 200,
     sortable: !isDiff,
     ...(isDiff
@@ -137,7 +138,7 @@ const getReqByModelColumn = (isDiff: boolean) => ({
   cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
   field: 'required_by_model',
   headerClass: 'ag-text-center',
-  headerName: 'Required by model',
+  headerName: tableColumns.required_by_model,
   minWidth: 150,
   sortable: !isDiff,
   ...(isDiff
@@ -153,7 +154,7 @@ const getStatusColumn = (isDiff: boolean) => ({
   cellClass: 'ag-text-center',
   field: 'status',
   headerClass: 'ag-text-center',
-  headerName: 'Status',
+  headerName: tableColumns.status,
   minWidth: 100,
   sortable: !isDiff,
   ...(isDiff
@@ -168,7 +169,7 @@ const getIsMultiYearColumn = (isDiff: boolean) => ({
   cellClass: 'ag-text-center',
   field: 'is_multi_year',
   headerClass: 'ag-text-center',
-  headerName: 'IND/MYA',
+  headerName: tableColumns.is_multi_year,
   minWidth: 100,
   sortable: !isDiff,
   ...(isDiff
@@ -178,7 +179,7 @@ const getIsMultiYearColumn = (isDiff: boolean) => ({
       }
     : {
         tooltipField: 'is_multi_year_display',
-        valueGetter: ({ data }: any) => (data.is_multi_year ? 'MYA' : 'IND'),
+        valueGetter: ({ data }: any) => (data.is_multi_year ? 'M' : 'I'),
       }),
 })
 
@@ -186,7 +187,7 @@ const getCommentsColumnsDefs = (isDiff: boolean) => [
   {
     cellClass: 'ag-cell-ellipsed',
     headerClass: 'ag-text-center',
-    headerName: 'Remarks',
+    headerName: tableColumns.remarks,
     minWidth: 200,
     sortable: !isDiff,
     ...(isDiff
@@ -201,18 +202,9 @@ const getCommentsColumnsDefs = (isDiff: boolean) => [
   },
   {
     cellClass: 'ag-cell-ellipsed',
-    field: 'remarks_additional',
-    headerClass: 'ag-text-center',
-    headerName: 'Remarks (Additional)',
-    minWidth: 200,
-    sortable: true,
-    tooltipField: 'remarks_additional',
-  },
-  {
-    cellClass: 'ag-cell-ellipsed',
     field: 'comment_secretariat',
     headerClass: 'ag-text-center',
-    headerName: 'Comment',
+    headerName: tableColumns.comment_secretariat,
     minWidth: 200,
     sortable: !isDiff,
     ...(isDiff
@@ -233,7 +225,8 @@ const valuesColumnDefs = (
 ) => [
   ...getDefaultColumnDefs(isDiff, withAgency),
   yearColumns.find(
-    (column: { headerName: string }) => column.headerName === 'Value ($000)',
+    (column: { headerName: string }) =>
+      column.headerName === 'Value ($000) Adjusted',
   ) || [],
   getStatusColumn(isDiff),
   getIsMultiYearColumn(isDiff),
@@ -247,9 +240,9 @@ const odpColumnDefs = (
   ...getDefaultColumnDefs(isDiff, withAgency),
   ...(yearColumns.filter(
     (column: { headerName: string }) =>
-      column.headerName === 'ODP' ||
-      column.headerName === 'MT for HFC' ||
-      column.headerName === 'CO2-EQ',
+      column.headerName === 'ODP Adjusted' ||
+      column.headerName === 'MT for HFC Adjusted' ||
+      column.headerName === 'CO2-EQ Adjusted',
   ) || []),
 ]
 
@@ -262,77 +255,81 @@ const allColumnDefs = (
   yearColumns: any[],
   isDiff: boolean,
   withAgency: boolean,
-) => [
-  ...getDefaultColumnDefs(isDiff, withAgency),
-  {
-    cellClass: 'ag-text-center ag-cell-ellipsed',
-    field: 'bp_chemical_type.name',
-    headerClass: 'ag-text-center',
-    headerName: 'Chemical type',
-    minWidth: 100,
-    sortable: !isDiff,
-    ...(isDiff
-      ? {
-          cellRenderer: textCellRenderer,
-          valueGetter: (params: any) =>
-            objectCellValueGetter(params, 'bp_chemical_type'),
-        }
-      : { tooltipField: 'bp_chemical_type.name' }),
-  },
-  {
-    cellClass: !isDiff && 'ag-tags-cell-content',
-    field: 'substances_display',
-    headerClass: 'ag-text-center',
-    headerName: 'Substances',
-    minWidth: 230,
-    sortable: !isDiff,
-    ...(isDiff
-      ? {
-          cellRenderer: substancesDiffCellRenderer,
-          valueGetter: (params: any) =>
-            cellValueGetter(params, 'substances_display'),
-        }
-      : { cellRenderer: tagsCellRenderer }),
-  },
-  getReqByModelColumn(isDiff),
-  {
-    cellClass: 'ag-text-center',
-    field: 'amount_polyol',
-    headerClass: 'ag-text-center',
-    headerName: 'Polyol Amount',
-    minWidth: 100,
-    sortable: !isDiff,
-    ...(isDiff
-      ? {
-          cellRenderer: numberCellRenderer,
-          valueGetter: (params: any) =>
-            numberCellGetter(params, 'amount_polyol'),
-        }
-      : {
-          valueGetter: (params: any) => {
-            const polyolAmount = params.data.amount_polyol
+) => {
+  const defaultColDef = getDefaultColumnDefs(isDiff, withAgency)
+  return [
+    ...defaultColDef.slice(0, 3),
+    {
+      cellClass: 'ag-text-center ag-cell-ellipsed',
+      field: 'bp_chemical_type.name',
+      headerClass: 'ag-text-center',
+      headerName: tableColumns.bp_chemical_type_id,
+      minWidth: 100,
+      sortable: !isDiff,
+      ...(isDiff
+        ? {
+            cellRenderer: textCellRenderer,
+            valueGetter: (params: any) =>
+              objectCellValueGetter(params, 'bp_chemical_type'),
+          }
+        : { tooltipField: 'bp_chemical_type.name' }),
+    },
+    {
+      cellClass: !isDiff && 'ag-tags-cell-content',
+      field: 'substances_display',
+      headerClass: 'ag-text-center',
+      headerName: tableColumns.substances,
+      minWidth: 230,
+      sortable: !isDiff,
+      ...(isDiff
+        ? {
+            cellRenderer: substancesDiffCellRenderer,
+            valueGetter: (params: any) =>
+              cellValueGetter(params, 'substances_display'),
+          }
+        : { cellRenderer: tagsCellRenderer }),
+    },
+    {
+      cellClass: 'ag-text-center',
+      field: 'amount_polyol',
+      headerClass: 'ag-text-center',
+      headerName: tableColumns.amount_polyol,
+      minWidth: 120,
+      sortable: !isDiff,
+      ...(isDiff
+        ? {
+            cellRenderer: numberCellRenderer,
+            valueGetter: (params: any) =>
+              numberCellGetter(params, 'amount_polyol'),
+          }
+        : {
+            valueGetter: (params: any) => {
+              const polyolAmount = params.data.amount_polyol
 
-            return polyolAmount
-              ? formatDecimalValue(parseFloat(polyolAmount))
-              : null
-          },
-          tooltipValueGetter: (params: ITooltipParams) => {
-            const polyolAmount = params.data.amount_polyol
+              return polyolAmount
+                ? formatDecimalValue(parseFloat(polyolAmount))
+                : '0.00'
+            },
+            tooltipValueGetter: (params: ITooltipParams) => {
+              const polyolAmount = params.data.amount_polyol
 
-            return polyolAmount
-              ? formatDecimalValue(parseFloat(polyolAmount), {
-                  maximumFractionDigits: 10,
-                  minimumFractionDigits: 2,
-                })
-              : null
-          },
-        }),
-  },
-  ...yearColumns,
-  getStatusColumn(isDiff),
-  getIsMultiYearColumn(isDiff),
-  ...getCommentsColumnsDefs(isDiff),
-]
+              return polyolAmount
+                ? formatDecimalValue(parseFloat(polyolAmount), {
+                    maximumFractionDigits: 10,
+                    minimumFractionDigits: 2,
+                  })
+                : '0.00'
+            },
+          }),
+    },
+    ...defaultColDef.slice(3),
+    getReqByModelColumn(isDiff),
+    ...yearColumns,
+    getStatusColumn(isDiff),
+    getIsMultiYearColumn(isDiff),
+    ...getCommentsColumnsDefs(isDiff),
+  ]
+}
 
 const defaultColDef = {
   resizable: true,

@@ -9,7 +9,7 @@ import { useStore } from '@ors/store'
 export default function BusinessPlansEditConsolidated() {
   usePageTitle('Business Plans Edit')
 
-  const newActivities = useRef([])
+  const activitiesRef = useRef({})
   const isFirstRender = useRef(true)
 
   const { businessPlan } = useStore((state) => state.businessPlan)
@@ -18,7 +18,7 @@ export default function BusinessPlansEditConsolidated() {
     <PageWrapper>
       <BPEditConsolidated
         key={businessPlan?.id}
-        {...{ newActivities, isFirstRender }}
+        {...{ activitiesRef, isFirstRender }}
       />
     </PageWrapper>
   )
