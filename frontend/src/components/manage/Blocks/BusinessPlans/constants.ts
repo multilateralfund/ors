@@ -1,24 +1,23 @@
 export const multiYearFilterOptions = [
-  { id: true, fullName: 'Multi-Year', name: 'MYA' },
-  { id: false, fullName: 'Individual', name: 'IND' },
+  { id: false, fullName: 'Individual', name: 'I' },
+  { id: true, fullName: 'Multi-Year', name: 'M' },
 ]
 
 export const tableColumns: { [key: string]: string } = {
   agency_id: 'Agency',
-  amount_polyol: 'Polyol Amount',
-  bp_chemical_type_id: 'Chemical type',
+  amount_polyol: 'Amount of Polyol in Project (MT)',
+  bp_chemical_type_id: 'Chemical',
   comment_secretariat: 'Comment',
   country_id: 'Country',
-  is_multi_year: 'IND/MYA',
+  is_multi_year: 'I-Indiv M-MY',
   project_cluster_id: 'Cluster',
   project_type_id: 'Type',
   remarks: 'Remarks',
-  remarks_additional: 'Remarks (Additional)',
-  required_by_model: 'Required by model',
+  required_by_model: 'Required by Model',
   sector_id: 'Sector',
-  status: 'Status',
+  status: "A-Appr. P-Plan'd",
   subsector_id: 'Subsector',
-  substances: 'Substances',
+  substances: 'Chemical Detail',
   title: 'Title',
   values: 'Values',
 }

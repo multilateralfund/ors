@@ -19,6 +19,7 @@ import {
   getOptionLabel,
   getOptions,
   isOptionEqualToValue,
+  isOptionEqualToValueByCode,
   isOptionEqualToValueByName,
   statusValueSetter,
   substancesValueSetter,
@@ -111,7 +112,7 @@ const useColumnsOptions = (
           cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
           field: 'display_internal_id',
           headerClass: 'ag-text-center',
-          headerName: 'Activity id',
+          headerName: 'Activity ID',
           minWidth: 150,
           editable: false,
           tooltipField: 'display_internal_id',
@@ -123,7 +124,7 @@ const useColumnsOptions = (
             Input: { placeholder: 'Select country' },
             agFormatValue,
             getOptionLabel: (option: any) => getOptionLabel(countries, option),
-            isOptionEqualToValue,
+            isOptionEqualToValue: isOptionEqualToValueByName,
             openOnFocus: true,
             options: countries,
           },
@@ -153,7 +154,7 @@ const useColumnsOptions = (
                   agFormatValue,
                   getOptionLabel: (option: any) =>
                     getOptionLabel(agencies, option),
-                  isOptionEqualToValue,
+                  isOptionEqualToValue: isOptionEqualToValueByName,
                   openOnFocus: true,
                   options: agencies,
                 },
@@ -178,11 +179,129 @@ const useColumnsOptions = (
         {
           cellClass: 'ag-text-center ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
+          cellEditorParams: (params: any) => {
+            const projectTypeOfSector = getProjectTypeOfSector(params)
+            return {
+              Input: { placeholder: 'Select type' },
+              agFormatValue,
+              getOptionLabel: (option: any) =>
+                getOptionLabel(projectTypeOfSector, option),
+              isOptionEqualToValue: isOptionEqualToValueByCode,
+              openOnFocus: true,
+              options: projectTypeOfSector,
+            }
+          },
+          ...(hasErrors(rowErrors, 'project_type_id') && {
+            cellRenderer: (props: any) =>
+              editCellRenderer(
+                props,
+                props.data.project_type?.code ?? props.data.project_type?.name,
+              ),
+          }),
+          field: 'project_type_id',
+          headerClass: 'ag-text-center',
+          headerName: tableColumns.project_type_id,
+          minWidth: 120,
+          tooltipField: 'project_type.name',
+          valueGetter: (params: any) =>
+            params.data.project_type?.code ?? params.data.project_type?.name,
+          valueSetter: (params: any) =>
+            valueSetter(params, 'project_type', getProjectTypeOfSector(params)),
+        },
+        {
+          cellClass: 'ag-text-center ag-cell-ellipsed',
+          cellEditor: 'agSelectCellEditor',
+          cellEditorParams: {
+            Input: { placeholder: 'Select chemical' },
+            agFormatValue,
+            getOptionLabel: (option: any) =>
+              getOptionLabel(chemicalTypesResults, option),
+            isOptionEqualToValue: isOptionEqualToValueByName,
+            openOnFocus: true,
+            options: chemicalTypesResults,
+          },
+          ...(hasErrors(rowErrors, 'bp_chemical_type_id') && {
+            cellRenderer: (props: any) =>
+              editCellRenderer(props, props.data.bp_chemical_type?.name),
+          }),
+          field: 'bp_chemical_type_id',
+          headerClass: 'ag-text-center',
+          headerName: tableColumns.bp_chemical_type_id,
+          minWidth: 120,
+          tooltipField: 'bp_chemical_type.name',
+          valueGetter: (params: any) => params.data.bp_chemical_type?.name,
+          valueSetter: (params: any) =>
+            valueSetter(params, 'bp_chemical_type', chemicalTypesResults),
+        },
+        {
+          cellEditor: 'agSelectCellEditor',
+          cellEditorParams: {
+            Input: {
+              placeholder: 'Select chemical detail',
+            },
+            agFormatValue: agFormatValueTags,
+            getOptionLabel: (option: any) => getOptionLabel(substances, option),
+            getOptions: (value: any) => getOptions(value, substances),
+            isMultiple: true,
+            isOptionEqualToValue,
+            openOnFocus: true,
+            showUnselectedOptions: true,
+          },
+          cellRenderer: (props: any) =>
+            EditTagsCellRenderer({
+              ...{ form, props, setForm },
+              options: substances,
+              field: 'substances',
+            }),
+          field: 'substances',
+          headerClass: 'ag-text-center',
+          headerName: tableColumns.substances,
+          minWidth: 230,
+          valueSetter: (params: any) =>
+            substancesValueSetter(params, substances),
+        },
+        {
+          cellClass: 'ag-text-center',
+          cellEditor: 'agNumberCellEditor',
+          cellEditorParams: {
+            allowNullVals: true,
+          },
+          cellRendererParams: () => ({
+            tooltipClassName: 'bp-table-tooltip',
+          }),
+          dataType: 'number',
+          field: 'amount_polyol',
+          headerClass: 'ag-text-center',
+          headerName: tableColumns.amount_polyol,
+          minWidth: 120,
+          cellRenderer: (props: any) =>
+            editCellRenderer(
+              props,
+              props.data.amount_polyol > 0 ? props.data.amount_polyol : 0,
+            ),
+          valueGetter: (params: any) => {
+            const polyolAmount =
+              params.data.amount_polyol > 0 ? params.data.amount_polyol : 0
+            return !isNil(polyolAmount) ? parseFloat(polyolAmount) : 0
+          },
+          valueSetter: (params: any) => {
+            const polyolAmount = params.newValue > 0 ? params.newValue : 0
+            params.data.amount_polyol = !isNil(polyolAmount)
+              ? parseFloat(polyolAmount)
+              : 0
+
+            return true
+          },
+          wrapText: true,
+        },
+        {
+          cellClass: 'ag-text-center ag-cell-ellipsed',
+          cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select cluster' },
             agFormatValue,
             getOptionLabel: (option: any) => getOptionLabel(clusters, option),
-            isOptionEqualToValue,
+            isOptionEqualToValue: isOptionEqualToValueByCode,
             openOnFocus: true,
             options: clusters,
           },
@@ -209,63 +328,6 @@ const useColumnsOptions = (
           cellClass: 'ag-text-center ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: (params: any) => {
-            const projectTypeOfSector = getProjectTypeOfSector(params)
-            return {
-              Input: { placeholder: 'Select type' },
-              agFormatValue,
-              getOptionLabel: (option: any) =>
-                getOptionLabel(projectTypeOfSector, option),
-              isOptionEqualToValue,
-              openOnFocus: true,
-              options: projectTypeOfSector,
-            }
-          },
-          ...(hasErrors(rowErrors, 'project_type_id') && {
-            cellRenderer: (props: any) =>
-              editCellRenderer(
-                props,
-                props.data.project_type?.code ?? props.data.project_type?.name,
-              ),
-          }),
-          field: 'project_type_id',
-          headerClass: 'ag-text-center',
-          headerName: tableColumns.project_type_id,
-          minWidth: 120,
-          tooltipField: 'project_type.name',
-          valueGetter: (params: any) =>
-            params.data.project_type?.code ?? params.data.project_type?.name,
-          valueSetter: (params: any) =>
-            valueSetter(params, 'project_type', getProjectTypeOfSector(params)),
-        },
-        {
-          cellClass: 'ag-text-center ag-cell-ellipsed',
-          cellEditor: 'agSelectCellEditor',
-          cellEditorParams: {
-            Input: { placeholder: 'Select chemical type' },
-            agFormatValue,
-            getOptionLabel: (option: any) =>
-              getOptionLabel(chemicalTypesResults, option),
-            isOptionEqualToValue,
-            openOnFocus: true,
-            options: chemicalTypesResults,
-          },
-          ...(hasErrors(rowErrors, 'bp_chemical_type_id') && {
-            cellRenderer: (props: any) =>
-              editCellRenderer(props, props.data.bp_chemical_type?.name),
-          }),
-          field: 'bp_chemical_type_id',
-          headerClass: 'ag-text-center',
-          headerName: tableColumns.bp_chemical_type_id,
-          minWidth: 120,
-          tooltipField: 'bp_chemical_type.name',
-          valueGetter: (params: any) => params.data.bp_chemical_type?.name,
-          valueSetter: (params: any) =>
-            valueSetter(params, 'bp_chemical_type', chemicalTypesResults),
-        },
-        {
-          cellClass: 'ag-text-center ag-cell-ellipsed',
-          cellEditor: 'agSelectCellEditor',
-          cellEditorParams: (params: any) => {
             const sectorOfProjectType = getSectorOfProjectType(params)
 
             return {
@@ -273,7 +335,7 @@ const useColumnsOptions = (
               agFormatValue,
               getOptionLabel: (option: any) =>
                 getOptionLabel(sectorOfProjectType, option),
-              isOptionEqualToValue,
+              isOptionEqualToValue: isOptionEqualToValueByCode,
               openOnFocus: true,
               options: sectorOfProjectType,
             }
@@ -311,7 +373,7 @@ const useColumnsOptions = (
               agFormatValue,
               getOptionLabel: (option: any) =>
                 getOptionLabel(subsectorsOfSector, option),
-              isOptionEqualToValue,
+              isOptionEqualToValue: isOptionEqualToValueByCode,
               openOnFocus: true,
               options: subsectorsOfSector,
             }
@@ -346,33 +408,6 @@ const useColumnsOptions = (
           tooltipField: 'title',
         },
         {
-          cellEditor: 'agSelectCellEditor',
-          cellEditorParams: {
-            Input: {
-              placeholder: 'Select substances',
-            },
-            agFormatValue: agFormatValueTags,
-            getOptionLabel: (option: any) => getOptionLabel(substances, option),
-            getOptions: (value: any) => getOptions(value, substances),
-            isMultiple: true,
-            isOptionEqualToValue,
-            openOnFocus: true,
-            showUnselectedOptions: true,
-          },
-          cellRenderer: (props: any) =>
-            EditTagsCellRenderer({
-              ...{ form, props, setForm },
-              options: substances,
-              field: 'substances',
-            }),
-          field: 'substances',
-          headerClass: 'ag-text-center',
-          headerName: tableColumns.substances,
-          minWidth: 230,
-          valueSetter: (params: any) =>
-            substancesValueSetter(params, substances),
-        },
-        {
           cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
           field: 'required_by_model',
           headerClass: 'ag-text-center',
@@ -394,34 +429,12 @@ const useColumnsOptions = (
           minWidth: 150,
           tooltipField: 'required_by_model',
         },
-        {
-          cellClass: 'ag-text-center',
-          cellEditor: 'agNumberCellEditor',
-          cellEditorParams: {
-            allowNullVals: true,
-          },
-          cellRendererParams: () => ({
-            tooltipClassName: 'bp-table-tooltip',
-          }),
-          dataType: 'number',
-          field: 'amount_polyol',
-          headerClass: 'ag-text-center',
-          headerName: tableColumns.amount_polyol,
-          minWidth: 100,
-          cellRenderer: (props: any) =>
-            editCellRenderer(props, props.data.amount_polyol),
-          valueGetter: (params: any) => {
-            const polyolAmount = params.data.amount_polyol
-            return !isNil(polyolAmount) ? parseFloat(polyolAmount) : null
-          },
-          wrapText: true,
-        },
         ...yearColumns,
         {
           cellClass: 'ag-text-center',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
-            Input: { placeholder: 'Select status' },
+            Input: { placeholder: 'Select A/P' },
             agFormatValue,
             getOptionLabel: (option: any) => getOptionLabel(statuses, option),
             isOptionEqualToValue,
@@ -443,7 +456,7 @@ const useColumnsOptions = (
           cellClass: 'ag-text-center',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
-            Input: { placeholder: 'Select IND/MYA' },
+            Input: { placeholder: 'Select I/M' },
             agFormatValue: agFormatNameValue,
             getOptionLabel: (option: any) =>
               getOptionLabel(multiYearFilterOptions, option, 'name'),
@@ -457,13 +470,12 @@ const useColumnsOptions = (
           minWidth: 120,
           ...(hasErrors(rowErrors, 'is_multi_year') && {
             cellRenderer: (props: any) =>
-              editCellRenderer(props, props.data.is_multi_year ? 'MYA' : 'IND'),
+              editCellRenderer(props, props.data.is_multi_year ? 'M' : 'I'),
           }),
           tooltipValueGetter: (params: ITooltipParams) =>
             params.data.is_multi_year_display ??
             multiYearFilterOptions[1].fullName,
-          valueGetter: (params: any) =>
-            params.data.is_multi_year ? 'MYA' : 'IND',
+          valueGetter: (params: any) => (params.data.is_multi_year ? 'M' : 'I'),
           valueSetter: (params: any) =>
             MYAValueSetter(params, multiYearFilterOptions),
         },
@@ -482,18 +494,6 @@ const useColumnsOptions = (
               ),
           }),
           tooltipField: 'remarks',
-        },
-        {
-          cellClass: 'ag-cell-ellipsed',
-          field: 'remarks_additional',
-          headerClass: 'ag-text-center',
-          headerName: tableColumns.remarks_additional,
-          minWidth: 200,
-          ...(hasErrors(rowErrors, 'remarks_additional') && {
-            cellRenderer: (props: any) =>
-              editCellRenderer(props, props.data.remarks_additional, true),
-          }),
-          tooltipField: 'remarks_additional',
         },
         {
           cellClass: 'ag-cell-ellipsed',

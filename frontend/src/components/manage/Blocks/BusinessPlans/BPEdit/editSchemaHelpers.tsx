@@ -24,6 +24,9 @@ export const isOptionEqualToValue = (option: any, value: any) =>
 export const isOptionEqualToValueByName = (option: any, value: any) =>
   isObject(value) ? isEqual(option, value) : option.name === value
 
+export const isOptionEqualToValueByCode = (option: any, value: any) =>
+  isObject(value) ? isEqual(option, value) : option.code === value
+
 const updateSubsector = (params: any, value: any, subsectors: any) => {
   const subsectorsSectorIds = map(
     subsectors,

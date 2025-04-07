@@ -87,7 +87,7 @@ export default function App() {
             <BPUpload />
           </BPListLayout>
         </Route>
-        <Route path="/business-plans/list/details/:period">
+        <Route path="/business-plans/list/report-info/:period">
           <BPListLayout>
             <BusinessPlansDetailsConsolidated />
           </BPListLayout>

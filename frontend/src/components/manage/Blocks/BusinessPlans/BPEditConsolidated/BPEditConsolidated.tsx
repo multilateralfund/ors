@@ -4,7 +4,7 @@ import { ApiEditBPActivity } from '@ors/types/api_bp_get'
 
 import { useCallback, useEffect, useState } from 'react'
 
-import { capitalize, map, filter } from 'lodash'
+import { capitalize, map, filter, uniq } from 'lodash'
 import { useParams } from 'wouter'
 
 import Loading from '@ors/components/theme/Loading/Loading'
@@ -22,7 +22,7 @@ import { useStore } from '@ors/store'
 import NotFoundPage from '@ors/app/not-found'
 import { useGetChemicalTypes } from '../useGetChemicalTypes'
 
-const BPEditConsolidated = ({ newActivities, isFirstRender }: any) => {
+const BPEditConsolidated = ({ activitiesRef, isFirstRender }: any) => {
   const { period, type } = useParams<{ period: string; type: string }>()
   const [year_start, year_end] = period.split('-')
   const formattedType = capitalize(type)
@@ -92,24 +92,40 @@ const BPEditConsolidated = ({ newActivities, isFirstRender }: any) => {
       return null
     }
 
+    if (isFirstRender.current) {
+      activitiesRef.current.oldActivities = filter(
+        results,
+        (activity) => activity.id !== activity.initial_id,
+      ).map((activity) => activity.initial_id)
+    }
+
     const addedActivities = filter(
       results,
       (activity) => activity.id === activity.initial_id,
     )
       .map((activity) => activity.initial_id)
-      .sort((activId1, activId2) => activId2 - activId1)
+      .sort((activId1, activId2) => activId1 - activId2)
 
-    newActivities.current = isFirstRender.current
-      ? [...newActivities.current]
-      : [...newActivities.current, ...addedActivities]
+    activitiesRef.current.newActivities =
+      uniq([
+        ...addedActivities,
+        ...(activitiesRef.current.newActivities || []),
+      ]) || []
+
+    activitiesRef.current.allActivities = isFirstRender.current
+      ? [...(activitiesRef.current.allActivities || [])]
+      : uniq([
+          ...activitiesRef.current.newActivities,
+          ...activitiesRef.current.oldActivities,
+        ])
 
     const sortedActivities = [...results].sort(
       (activ1, activ2) =>
-        newActivities.current.findIndex(
-          (activId: number) => activId === activ2.initial_id,
-        ) -
-        newActivities.current.findIndex(
+        activitiesRef.current.allActivities.findIndex(
           (activId: number) => activId === activ1.initial_id,
+        ) -
+        activitiesRef.current.allActivities.findIndex(
+          (activId: number) => activId === activ2.initial_id,
         ),
     )
 

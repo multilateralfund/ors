@@ -66,7 +66,7 @@ export const BPTable = ({
           : undefined,
       )
     }
-    return ''
+    return '0.00'
   }
 
   const getYearColsValue = (
@@ -152,22 +152,22 @@ export const BPTable = ({
     return [
       {
         children: valuesUSD,
-        headerName: 'Value ($000)',
+        headerName: 'Value ($000) Adjusted',
       },
       {
         children: valuesODP,
-        headerName: 'ODP',
+        headerName: 'ODP Adjusted',
       },
       {
         children: valuesMT,
-        headerName: 'MT for HFC',
+        headerName: 'MT for HFC Adjusted',
       },
       {
         children: valuesCO2,
-        headerName: 'CO2-EQ',
+        headerName: 'CO2-EQ Adjusted',
         headerGroupComponent: () => (
           <span>
-            CO<sub>2</sub>-EQ
+            CO<sub>2</sub>-EQ Adjusted
           </span>
         ),
       },

@@ -158,7 +158,7 @@ export default function BPHeaderEditConsolidated({
         <Link
           className="border border-solid border-primary bg-white px-4 py-2 text-primary shadow-none hover:bg-primary hover:text-white"
           color="primary"
-          href={`/business-plans/list/${activeTab === 0 ? 'activities' : 'details'}/${period}`}
+          href={`/business-plans/list/${activeTab === 0 ? 'report-info' : 'activities'}/${period}`}
           size="large"
           variant="contained"
           button
