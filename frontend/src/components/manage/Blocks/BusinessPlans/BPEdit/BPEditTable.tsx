@@ -145,7 +145,7 @@ export function BPEditBaseTable(
           )
         },
         headerName: `${label}`,
-        minWidth: 80,
+        minWidth: 90,
         valueGetter: (params: any) =>
           valueGetter(params, year, isAfterMaxYear, 'value_usd'),
         valueSetter: (params: any) =>
@@ -187,7 +187,7 @@ export function BPEditBaseTable(
           )
         },
         headerName: `${label}`,
-        minWidth: 80,
+        minWidth: 90,
         valueGetter: (params: any) =>
           valueGetter(params, year, isAfterMaxYear, 'value_odp'),
         valueSetter: (params: any) =>
@@ -229,7 +229,7 @@ export function BPEditBaseTable(
           )
         },
         headerName: `${label}`,
-        minWidth: 80,
+        minWidth: 90,
         valueGetter: (params: any) =>
           valueGetter(params, year, isAfterMaxYear, 'value_mt'),
         valueSetter: (params: any) =>
@@ -271,7 +271,7 @@ export function BPEditBaseTable(
           )
         },
         headerName: `${label}`,
-        minWidth: 80,
+        minWidth: 90,
         valueGetter: (params: any) =>
           valueGetter(params, year, isAfterMaxYear, 'value_co2'),
         valueSetter: (params: any) =>
