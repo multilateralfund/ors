@@ -9,8 +9,7 @@
 }
 
 .ag-table .ag-row-hashed {
-    @apply pattern-diagonal-lines pattern-bg-transparent pattern-slate-300
-    pattern-opacity-80 pattern-size-1;
+  @apply pattern-diagonal-lines pattern-bg-transparent pattern-slate-300 pattern-opacity-80 pattern-size-1;
 }
 
 .ag-table .ag-row-sub-total {
@@ -19,6 +18,10 @@
 
 .ag-table .ag-row-total {
   @apply bg-yellow-50 theme-dark:bg-gray-900/40;
+}
+
+.ag-table .edited-activity {
+  @apply bg-gray-100/65;
 }
 
 .ag-table .ag-row-group::after,

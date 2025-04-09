@@ -4,7 +4,7 @@ import { ApiBPYearRange } from '@ors/types/api_bp_get_years'
 import { useCallback, useContext, useMemo, useRef } from 'react'
 
 import { Button } from '@mui/material'
-import { findIndex, isNil, map } from 'lodash'
+import { findIndex, isNil, map, uniq } from 'lodash'
 import { useParams } from 'wouter'
 
 import {
@@ -33,6 +33,7 @@ export function BPEditBaseTable(
     chemicalTypes,
     isDataFormatted,
     results,
+    activitiesRef,
   } = props
 
   const grid = useRef<any>()
@@ -375,6 +376,11 @@ export function BPEditBaseTable(
     </div>
   )
 
+  const rowClassRules = {
+    'edited-activity': (props: any) =>
+      activitiesRef.current.all.includes(props.data.initial_id),
+  }
+
   return (
     <>
       <form>
@@ -389,6 +395,7 @@ export function BPEditBaseTable(
           loaded={!loading}
           loading={loading}
           resizeGridOnRowUpdate={true}
+          rowClassRules={rowClassRules}
           rowData={form}
           singleClickEdit={true}
           suppressScrollOnNewData={true}
@@ -410,6 +417,11 @@ export function BPEditBaseTable(
               })
 
               setForm(newData)
+
+              activitiesRef.current.edited = uniq([
+                eventData.initial_id,
+                ...(activitiesRef.current.edited || []),
+              ]).filter(Boolean)
             }
           }}
         />

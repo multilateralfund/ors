@@ -92,13 +92,6 @@ const BPEditConsolidated = ({ activitiesRef, isFirstRender }: any) => {
       return null
     }
 
-    if (isFirstRender.current) {
-      activitiesRef.current.oldActivities = filter(
-        results,
-        (activity) => activity.id !== activity.initial_id,
-      ).map((activity) => activity.initial_id)
-    }
-
     const addedActivities = filter(
       results,
       (activity) => activity.id === activity.initial_id,
@@ -106,28 +99,27 @@ const BPEditConsolidated = ({ activitiesRef, isFirstRender }: any) => {
       .map((activity) => activity.initial_id)
       .sort((activId1, activId2) => activId1 - activId2)
 
-    activitiesRef.current.newActivities =
-      uniq([
-        ...addedActivities,
-        ...(activitiesRef.current.newActivities || []),
-      ]) || []
-
-    activitiesRef.current.allActivities = isFirstRender.current
-      ? [...(activitiesRef.current.allActivities || [])]
+    activitiesRef.current.all = isFirstRender.current
+      ? [...(activitiesRef.current.all || [])]
       : uniq([
-          ...activitiesRef.current.newActivities,
-          ...activitiesRef.current.oldActivities,
+          ...addedActivities,
+          ...(activitiesRef.current.edited || []),
+          ...(activitiesRef.current.all || []),
         ])
 
-    const sortedActivities = [...results].sort(
-      (activ1, activ2) =>
-        activitiesRef.current.allActivities.findIndex(
-          (activId: number) => activId === activ1.initial_id,
-        ) -
-        activitiesRef.current.allActivities.findIndex(
-          (activId: number) => activId === activ2.initial_id,
-        ),
-    )
+    const sortedActivities = [...results].sort((activ1, activ2) => {
+      const index1 = activitiesRef.current.all.indexOf(activ1.initial_id)
+      const index2 = activitiesRef.current.all.indexOf(activ2.initial_id)
+
+      if (index1 !== -1 && index2 !== -1) return index1 - index2
+
+      if (index1 !== -1) return -1
+      if (index2 !== -1) return 1
+
+      return 0
+    })
+
+    activitiesRef.current.edited = []
 
     return map(sortedActivities, (activity, index) => ({
       ...activity,
@@ -207,6 +199,7 @@ const BPEditConsolidated = ({ activitiesRef, isFirstRender }: any) => {
               chemicalTypes,
               results,
               isDataFormatted,
+              activitiesRef,
             }}
             isConsolidatedView={true}
             setForm={handleSetForm}
