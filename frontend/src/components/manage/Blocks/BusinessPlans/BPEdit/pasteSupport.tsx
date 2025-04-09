@@ -5,6 +5,7 @@ import { useCallback, useState } from 'react'
 import { EnqueueSnackbar, useSnackbar } from 'notistack'
 
 import { IoClipboardOutline, IoHourglassOutline } from 'react-icons/io5'
+import { uniq } from 'lodash'
 
 function cleanValue(value: string) {
   const toParse = value.trim().split('$').reverse()[0].trim()
@@ -153,7 +154,7 @@ export function HeaderPasteWrapper(props: any) {
 }
 
 export function BasePasteWrapper(props: any) {
-  const { label, mutator, setForm } = props
+  const { label, mutator, setForm, activitiesRef } = props
   const { enqueueSnackbar } = useSnackbar()
   const [pasting, setPasting] = useState(false)
 
@@ -181,6 +182,11 @@ export function BasePasteWrapper(props: any) {
             mutator(next[i], cleanValue(newValues[rowId]))
             pendingIds = pendingIds.filter((v) => v != rowId)
             numInserted++
+
+            activitiesRef.current.edited = uniq([
+              next[i].initial_id,
+              ...(activitiesRef.current.edited || []),
+            ]).filter(Boolean)
           }
         }
         setPasting(false)

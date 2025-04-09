@@ -171,7 +171,12 @@ const BPEditConsolidated = ({ activitiesRef, isFirstRender }: any) => {
         />
       )}
       {!loading && (
-        <BPRestoreEdit localStorage={localStorage} setForm={handleSetForm}>
+        <BPRestoreEdit
+          localStorage={localStorage}
+          setForm={handleSetForm}
+          activitiesRef={activitiesRef}
+          results={results}
+        >
           Unsaved {type} data exists for {year_start}-{year_end}, would you like
           to recover it?
         </BPRestoreEdit>
