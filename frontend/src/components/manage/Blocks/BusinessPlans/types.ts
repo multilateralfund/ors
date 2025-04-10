@@ -91,8 +91,8 @@ export interface BPRestoreEditProps {
   children: any
   localStorage: EditBPLocalStorageType
   setForm: (form: Array<ApiEditBPActivity> | undefined) => void
-  activitiesRef: any
-  results: any[]
+  activitiesRef?: any
+  results?: any[]
 }
 
 export interface ILSBPDataEdit {
