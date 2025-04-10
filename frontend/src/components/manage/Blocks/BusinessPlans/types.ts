@@ -76,6 +76,7 @@ export type BPEditTableInterface = {
   params: any
   setForm: Dispatch<SetStateAction<Array<ApiEditBPActivity> | null | undefined>>
   chemicalTypes: chemicalTypesType
+  activitiesRef?: any
   isDataFormatted?: boolean
   results?: any[]
 }
@@ -90,6 +91,8 @@ export interface BPRestoreEditProps {
   children: any
   localStorage: EditBPLocalStorageType
   setForm: (form: Array<ApiEditBPActivity> | undefined) => void
+  activitiesRef?: any
+  results?: any[]
 }
 
 export interface ILSBPDataEdit {

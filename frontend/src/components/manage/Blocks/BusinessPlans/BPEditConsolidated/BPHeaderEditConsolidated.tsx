@@ -188,7 +188,7 @@ export default function BPHeaderEditConsolidated({
         <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
           <div className="flex flex-wrap items-center gap-x-2">
             <h1 className="m-0 text-5xl leading-normal">
-              Edit Business Plan {period} {capitalize(type)}
+              Edit Business Plan {period} ({capitalize(type)})
             </h1>
           </div>
         </div>

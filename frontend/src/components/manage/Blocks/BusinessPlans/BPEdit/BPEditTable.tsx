@@ -3,8 +3,8 @@ import { ApiBPYearRange } from '@ors/types/api_bp_get_years'
 
 import { useCallback, useContext, useMemo, useRef } from 'react'
 
-import { Button } from '@mui/material'
-import { findIndex, isNil, map } from 'lodash'
+import { Button, Alert } from '@mui/material'
+import { findIndex, isNil, map, uniq } from 'lodash'
 import { useParams } from 'wouter'
 
 import {
@@ -17,7 +17,11 @@ import { applyTransaction } from '@ors/helpers'
 import useColumnsOptions from './editSchema'
 import { BasePasteWrapper } from './pasteSupport'
 
-import { IoAddCircle } from 'react-icons/io5'
+import {
+  IoAddCircle,
+  IoInformationCircleOutline,
+  IoClipboardOutline,
+} from 'react-icons/io5'
 import { editCellRenderer } from '../BPTableHelpers/cellRenderers'
 import EditTable from '@ors/components/manage/Form/EditTable'
 
@@ -33,6 +37,7 @@ export function BPEditBaseTable(
     chemicalTypes,
     isDataFormatted,
     results,
+    activitiesRef,
   } = props
 
   const grid = useRef<any>()
@@ -360,11 +365,64 @@ export function BPEditBaseTable(
     isConsolidatedView,
   )
 
+  const InfoBox = () => (
+    <Alert
+      className="flex-1 bg-mlfs-bannerColor"
+      icon={<IoInformationCircleOutline size={24} />}
+      severity="info"
+    >
+      <div className="pt-[3px]">
+        <b className="mt-1">Info:</b>
+        <br />
+        <ul className="mt-1 list-inside space-y-1 pl-0">
+          <li>
+            Use this page to edit individual activities of this Business Plan by
+            clicking on the desired cell and choosing one of the permitted
+            values or typing text or numbers in the appropriate fields.
+          </li>
+          <li>
+            By default, the activities listed below are sorted alphabetically.
+            However, newly added or edited activities will temporarily appear at
+            the top of the list until the page is refreshed or navigated away
+            from.
+          </li>
+          <li>
+            Columns containing the{' '}
+            <span className="inline-flex align-middle">
+              <IoClipboardOutline />
+            </span>{' '}
+            icon allow pasting of values onto multiple rows when these values
+            have been copied from an Excel file downloaded from this system.
+            Follow these steps to do this:
+            <ol className="mt-1 space-y-1 pl-4">
+              <li>
+                In the Excel file, select the desired cells from the first
+                column (Activity ID), and while holding down the CTRL key,
+                continue selecting the corresponding cells from the target
+                column where you intend to paste the data (e.g. Required by
+                Model).
+              </li>
+              <li>
+                Return to this screen and click the{' '}
+                <span className="inline-flex align-middle">
+                  <IoClipboardOutline />
+                </span>{' '}
+                icon from the desired header column (e.g. Required by Model).
+                The system will paste the values in the correct activities,
+                regardless of how the Excel rows were sorted.
+              </li>
+            </ol>
+          </li>
+        </ul>
+      </div>
+    </Alert>
+  )
+
   const AddActivityButton = () => (
     <div className="bp-table-toolbar mb-4 flex">
       <div className="ml-auto flex">
         <Button
-          className="border border-solid border-primary bg-white px-3 py-1 normal-case text-primary shadow-none"
+          className="h-fit border border-solid border-primary bg-white px-3 py-1 normal-case text-primary shadow-none"
           size="large"
           variant="contained"
           onClick={addActivity}
@@ -375,12 +433,24 @@ export function BPEditBaseTable(
     </div>
   )
 
+  const TableToolbar = () => (
+    <div className="flex justify-between gap-2.5">
+      <InfoBox />
+      <AddActivityButton />
+    </div>
+  )
+
+  const rowClassRules = {
+    'edited-activity': (props: any) =>
+      activitiesRef.current.all.includes(props.data.initial_id),
+  }
+
   return (
     <>
       <form>
         <EditTable
           className="bp-edit-table"
-          Toolbar={AddActivityButton}
+          Toolbar={TableToolbar}
           columnDefs={columnOptions.columnDefs}
           defaultColDef={columnOptions.defaultColDef}
           domLayout="normal"
@@ -389,6 +459,7 @@ export function BPEditBaseTable(
           loaded={!loading}
           loading={loading}
           resizeGridOnRowUpdate={true}
+          rowClassRules={rowClassRules}
           rowData={form}
           singleClickEdit={true}
           suppressScrollOnNewData={true}
@@ -410,6 +481,11 @@ export function BPEditBaseTable(
               })
 
               setForm(newData)
+
+              activitiesRef.current.edited = uniq([
+                eventData.initial_id,
+                ...(activitiesRef.current.edited || []),
+              ]).filter(Boolean)
             }
           }}
         />

@@ -38,6 +38,7 @@ const useColumnsOptions = (
   form: Array<ApiEditBPActivity>,
   setForm: Dispatch<SetStateAction<ApiEditBPActivity[] | null | undefined>>,
   chemicalTypes: chemicalTypesType,
+  activitiesRef: any,
   isConsolidatedView?: boolean,
 ) => {
   const commonSlice = useStore((state) => state.common)
@@ -418,6 +419,7 @@ const useColumnsOptions = (
                 field={props.column.colDef.field}
                 label={props.displayName}
                 setForm={setForm}
+                activitiesRef={activitiesRef}
               />
             )
           },
@@ -506,6 +508,7 @@ const useColumnsOptions = (
                 field={props.column.colDef.field}
                 label={props.displayName}
                 setForm={setForm}
+                activitiesRef={activitiesRef}
               />
             )
           },
@@ -532,6 +535,7 @@ const useColumnsOptions = (
       countries,
       clusters,
       isConsolidatedView,
+      activitiesRef,
       form,
       setForm,
       types,
