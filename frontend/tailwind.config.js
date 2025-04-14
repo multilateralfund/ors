@@ -32,7 +32,9 @@ const gray = {
 const mlfs = {
   hlYellow: 'hsl(var(--tw-mlfs-hlYellow) / <alpha-value>)',
   hlYellowTint: 'hsl(var(--tw-mlfs-hlYellowTint) / <alpha-value>)',
+  hlerYellowTint: 'hsl(var(--tw-mlfs-hlerYellowTint) / <alpha-value>)',
   deepTealShade: 'hsl(var(--tw-mlfs-deepTealShade) / <alpha-value>)',
+  deepTealTint: 'hsl(var(--tw-mlfs-deepTealTint) / <alpha-value>)',
   bannerColor: 'hsl(var(--tw-mlfs-bannerColor) / <alpha-value>)',
   purple: 'hsl(var(--tw-mlfs-purple) / <alpha-value>)',
 }
@@ -318,4 +320,3 @@ export default {
     },
   },
 }
-
