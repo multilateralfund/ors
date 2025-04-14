@@ -362,6 +362,7 @@ export function BPEditBaseTable(
     form,
     setForm,
     chemicalTypes,
+    activitiesRef,
     isConsolidatedView,
   )
 
