@@ -10,7 +10,7 @@ import {
   editCellRenderer,
   EditTagsCellRenderer,
 } from '../BPTableHelpers/cellRenderers'
-import { multiYearFilterOptions, tableColumns } from '../constants'
+import { lvcStatuses, multiYearFilterOptions, tableColumns } from '../constants'
 import {
   MYAValueSetter,
   agFormatNameValue,
@@ -21,6 +21,7 @@ import {
   isOptionEqualToValue,
   isOptionEqualToValueByCode,
   isOptionEqualToValueByName,
+  lvcValueSetter,
   statusValueSetter,
   substancesValueSetter,
   valueSetter,
@@ -59,6 +60,7 @@ const useColumnsOptions = (
       name: status[1],
     }))
   const chemicalTypesResults = chemicalTypes.results
+
   const { rowErrors } = useStore((state) => state.bpErrors)
 
   const getSectorOfProjectType = useCallback(
@@ -178,6 +180,30 @@ const useColumnsOptions = (
             ]
           : []),
         {
+          cellClass: 'ag-text-center ag-cell-centered ag-cell-ellipsed',
+          cellEditor: 'agSelectCellEditor',
+          cellEditorParams: {
+            Input: { placeholder: 'Select HCFC status' },
+            agFormatValue,
+            getOptionLabel: (option: any) =>
+              getOptionLabel(lvcStatuses, option),
+            isOptionEqualToValue,
+            openOnFocus: true,
+            options: lvcStatuses,
+          },
+          ...(hasErrors(rowErrors, 'lvc_status') && {
+            cellRenderer: (props: any) =>
+              editCellRenderer(props, props.data.lvc_status),
+          }),
+          field: 'lvc_status',
+          headerClass: 'ag-text-center',
+          headerName: tableColumns.lvc_status,
+          minWidth: 100,
+          tooltipField: 'lvc_status',
+          valueGetter: (params: any) => params.data.lvc_status,
+          valueSetter: (params: any) => lvcValueSetter(params, 'lvc_status'),
+        },
+        {
           cellClass: 'ag-text-center ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: (params: any) => {
@@ -257,7 +283,7 @@ const useColumnsOptions = (
           field: 'substances',
           headerClass: 'ag-text-center',
           headerName: tableColumns.substances,
-          minWidth: 230,
+          minWidth: 150,
           valueSetter: (params: any) =>
             substancesValueSetter(params, substances),
         },

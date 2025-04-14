@@ -10,6 +10,7 @@ export const tableColumns: { [key: string]: string } = {
   comment_secretariat: 'Comment',
   country_id: 'Country',
   is_multi_year: 'I-Indiv M-MY',
+  lvc_status: 'HCFC Status',
   project_cluster_id: 'Cluster',
   project_type_id: 'Type',
   remarks: 'Remarks',
@@ -25,4 +26,13 @@ export const tableColumns: { [key: string]: string } = {
 export const bpTypes = [
   { label: 'Submitted', value: 'submitted' },
   { label: 'Endorsed', value: 'endorsed' },
+]
+
+export const lvcStatuses = [
+  { id: 'LVC', name: 'LVC' },
+  { id: 'Non-LVC', name: 'Non-LVC' },
+  { id: 'Regional', name: 'Regional' },
+  { id: 'Global', name: 'Global' },
+  { id: 'NDR', name: 'NDR' },
+  { id: 'Undefined', name: 'Undefined' },
 ]

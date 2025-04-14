@@ -43,6 +43,15 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
       ]
     : []),
   {
+    cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
+    field: 'lvc_status',
+    headerClass: 'ag-text-center',
+    headerName: tableColumns.lvc_status,
+    minWidth: 90,
+    sortable: false,
+    tooltipField: 'lvc_status',
+  },
+  {
     cellClass: 'ag-text-center ag-cell-ellipsed',
     field: 'project_type.code',
     headerClass: 'ag-text-center',
@@ -258,7 +267,7 @@ const allColumnDefs = (
 ) => {
   const defaultColDef = getDefaultColumnDefs(isDiff, withAgency)
   return [
-    ...defaultColDef.slice(0, 3),
+    ...defaultColDef.slice(0, 4),
     {
       cellClass: 'ag-text-center ag-cell-ellipsed',
       field: 'bp_chemical_type.name',
@@ -279,7 +288,7 @@ const allColumnDefs = (
       field: 'substances_display',
       headerClass: 'ag-text-center',
       headerName: tableColumns.substances,
-      minWidth: 230,
+      minWidth: 130,
       sortable: !isDiff,
       ...(isDiff
         ? {
@@ -322,7 +331,7 @@ const allColumnDefs = (
             },
           }),
     },
-    ...defaultColDef.slice(3),
+    ...defaultColDef.slice(4),
     getReqByModelColumn(isDiff),
     ...yearColumns,
     getStatusColumn(isDiff),
