@@ -66,6 +66,12 @@ export const valueSetter = (
   return true
 }
 
+export const lvcValueSetter = (params: any, colIdentifier: string) => {
+  params.data[colIdentifier] = params.newValue
+
+  return true
+}
+
 export const substancesValueSetter = (params: any, substances: any) => {
   const newValIds = params.newValue?.map((newVal: any) =>
     isObject(newVal) ? get(newVal, 'id') : newVal,
