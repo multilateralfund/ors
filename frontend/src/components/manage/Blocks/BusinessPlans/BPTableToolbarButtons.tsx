@@ -55,7 +55,7 @@ const BPTableToolbarButtons = (props: any) => {
             </CustomLink>
           )}
           {downloadUrls?.map((url: string, i: number) => (
-            <DownloadLink key={i} href={url ?? '#'}>
+            <DownloadLink key={i} href={url ?? '#'} iconClassname="mb-1">
               {downloadTexts[i]}
             </DownloadLink>
           ))}

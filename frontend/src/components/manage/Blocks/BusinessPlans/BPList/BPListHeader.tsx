@@ -56,7 +56,7 @@ const BPListHeader = ({
   return (
     <div className="mb-8 flex items-center justify-between gap-4">
       <div className="flex flex-row flex-wrap gap-2">
-        <PageHeading className="min-w-fit">Business Plan:</PageHeading>
+        <PageHeading className="min-w-fit">Business Plan</PageHeading>
         <div
           className={cx('flex flex-row flex-wrap gap-2', styles.moreOptions)}
         >
