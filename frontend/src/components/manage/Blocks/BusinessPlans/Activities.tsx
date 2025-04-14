@@ -213,6 +213,10 @@ function OpenActivity({
           </span>
         )}
         <span className="flex items-center gap-2">
+          <span>{tableColumns.lvc_status}</span>
+          <h4 className="m-0">{activity.lvc_status || '-'}</h4>
+        </span>
+        <span className="flex items-center gap-2">
           <span>{tableColumns.project_type_id}</span>
           <h4 className="m-0">{activity.project_type?.code || '-'}</h4>
         </span>
@@ -351,6 +355,10 @@ function ClosedActivity({
             <h4 className="m-0">{activity.agency.name}</h4>
           </span>
         )}
+        <span className="flex items-center gap-2">
+          <span>{tableColumns.lvc_status}</span>
+          <h4 className="m-0">{activity.lvc_status || '-'} </h4>
+        </span>
         <span className="flex items-center gap-2">
           <span>{tableColumns.project_type_id}</span>
           <h4 className="m-0">{activity.project_type?.code || '-'}</h4>
