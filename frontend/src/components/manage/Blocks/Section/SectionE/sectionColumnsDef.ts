@@ -2,7 +2,8 @@ import { ColDef, ColGroupDef } from 'ag-grid-community'
 
 import { colDefById, defaultColGroupDef } from '@ors/config/Table/columnsDef'
 
-const VOLUNTARY_CLASS = 'bg-gray-200 theme-dark:bg-gray-900/40 ag-text-center'
+const VOLUNTARY_CLASS =
+  'bg-gray-200 theme-dark:bg-gray-900/40 text-inherit ag-text-center'
 
 const sectionColDefById: Record<string, ColDef> = {
   ...colDefById,

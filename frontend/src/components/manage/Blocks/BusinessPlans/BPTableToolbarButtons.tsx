@@ -44,7 +44,7 @@ const BPTableToolbarButtons = (props: any) => {
         <div className="flex items-center gap-x-3">
           {userCanEditBusinessPlan[user_type as UserType] && (
             <CustomLink
-              className="text-nowrap px-4 py-2 text-lg uppercase"
+              className="h-10 text-nowrap px-4 py-2 text-lg uppercase"
               color="secondary"
               href={`${formattedPathname}/${lowerCase(bpType)}/edit`}
               variant="contained"
@@ -55,7 +55,12 @@ const BPTableToolbarButtons = (props: any) => {
             </CustomLink>
           )}
           {downloadUrls?.map((url: string, i: number) => (
-            <DownloadLink key={i} href={url ?? '#'} iconClassname="mb-1">
+            <DownloadLink
+              key={i}
+              href={url ?? '#'}
+              iconClassname="mb-1"
+              className="text-lg text-[#344054]"
+            >
               {downloadTexts[i]}
             </DownloadLink>
           ))}
