@@ -10,6 +10,10 @@ textarea {
   @apply min-h-10 rounded-lg bg-white;
 }
 
+.BPList.BPGridSwitcher .MuiAutocomplete-inputRoot input {
+  @apply uppercase;
+  caret-color: transparent;
+}
 .BPListUpload .MuiAutocomplete-clearIndicator,
 .BPListUpload .MuiAutocomplete-clearIndicator:hover {
   @apply bg-white;

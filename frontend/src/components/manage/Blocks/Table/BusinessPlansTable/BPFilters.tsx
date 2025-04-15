@@ -48,10 +48,7 @@ export default function BPFilters({
         withAgency={withAgency}
       />
       <div className="flex gap-4 self-start">
-        <TableDateSwitcher
-          changeHandler={(event, value) => setGridOptions(value)}
-          value={gridOptions}
-        />
+        <TableDateSwitcher changeHandler={setGridOptions} value={gridOptions} />
         <TableViewSelector
           value={displayOptions}
           changeHandler={(_, value) => {
