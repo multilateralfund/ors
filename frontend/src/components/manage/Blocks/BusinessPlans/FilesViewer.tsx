@@ -4,9 +4,11 @@ import { filter } from 'lodash'
 
 import { formatApiUrl } from '@ors/helpers'
 
+import { HeaderWithIcon } from './HelperComponents'
 import { BpDetails } from './types'
 
-import { IoDocumentTextOutline, IoTrash } from 'react-icons/io5'
+import { IoDownloadOutline, IoTrash } from 'react-icons/io5'
+import { TbFiles } from 'react-icons/tb'
 
 export function FilesViewer(props: BpDetails) {
   const { bpFiles, files, setFiles } = props
@@ -35,26 +37,27 @@ export function FilesViewer(props: BpDetails) {
 
   return (
     <div className="flex flex-col gap-2">
-      <p className="m-0 text-2xl font-normal">File attachments</p>
-      <div className="flex flex-col gap-3">
+      <HeaderWithIcon title="File attachments" Icon={TbFiles} />
+      <div className="mt-3 flex flex-col gap-2.5">
         {currentFiles.length === 0 ? (
-          <p className="m-1 text-lg font-normal text-gray-500">
+          <p className="m-1 ml-0 text-lg font-normal text-gray-500">
             No files available
           </p>
         ) : (
           currentFiles.map((file, index: number) => (
             <div key={index} className="flex items-center gap-2">
               <a
-                className="m-0 flex items-center gap-2 no-underline"
+                className="m-0 flex items-center gap-2.5 no-underline"
                 href={formatApiUrl(file.download_url)}
               >
-                <IoDocumentTextOutline color="#0086C9" size="20" />
-                <span className="text-lg text-gray-900">{file.filename}</span>
+                <IoDownloadOutline className="mb-1 min-h-[20px] min-w-[20px] text-secondary" />
+                <span className="text-lg font-medium text-secondary">
+                  {file.filename}
+                </span>
               </a>
               {setFiles && (
                 <IoTrash
-                  className="transition-colors ease-in-out hover:cursor-pointer hover:text-mlfs-purple"
-                  size={20}
+                  className="transition-colors mb-1 min-h-[20px] min-w-[20px] text-[#666] ease-in-out hover:cursor-pointer hover:text-inherit"
                   onClick={() => handleDelete(file.id)}
                 />
               )}

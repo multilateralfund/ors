@@ -4,6 +4,9 @@ import React, { useState } from 'react'
 
 import cx from 'classnames'
 
+import { FaClockRotateLeft } from 'react-icons/fa6'
+import { HeaderWithIcon } from '@ors/components/manage/Blocks/BusinessPlans/HelperComponents'
+
 export default function VersionHistoryList(props: any) {
   const { currentDataVersion, historyList, length, type } = props
   const initialItemsToShow = length || 3
@@ -31,12 +34,23 @@ export default function VersionHistoryList(props: any) {
 
   return (
     <div className="flex flex-col gap-3">
-      <p className="m-0 text-2xl font-normal">History</p>
-      <div className="flex flex-col flex-wrap justify-center rounded-lg bg-white shadow-lg transition-all">
+      {type === 'bp' ? (
+        <HeaderWithIcon title="History" Icon={FaClockRotateLeft} />
+      ) : (
+        <p className="m-0 text-2xl font-normal">History</p>
+      )}
+      <div
+        className={cx(
+          'flex flex-col flex-wrap justify-center rounded-lg bg-white transition-all',
+          { 'shadow-lg': type !== 'bp' },
+        )}
+      >
         {historyList?.length === 0 && (
           <p
             id="business-plan-history"
-            className="text-md my-1 px-4 py-3 font-medium text-gray-900"
+            className={cx('text-md my-1 px-4 py-3 font-medium text-gray-900', {
+              'pl-0': type === 'bp',
+            })}
           >
             There is no history for this{' '}
             {type === 'bp' ? 'business plan' : 'version'}.
@@ -68,9 +82,11 @@ export default function VersionHistoryList(props: any) {
                 <div
                   className={cx(
                     'px-4 py-3',
-                    isCurrentVersion || (type === 'bp' && index === 0)
+                    isCurrentVersion ||
+                      (type === 'bp' && [0, 1].includes(index))
                       ? ''
                       : 'opacity-50',
+                    { 'pl-0': type === 'bp' },
                   )}
                 >
                   <div className="flex grow items-center justify-between gap-3 text-pretty">
@@ -107,14 +123,18 @@ export default function VersionHistoryList(props: any) {
                   </div>
                 </div>
                 {displayHR && (
-                  <hr className="my-0 h-px w-[95%] border-0 bg-gray-200" />
+                  <hr
+                    className={cx('my-0 h-px w-[95%] border-0 bg-gray-200', {
+                      'mx-0 !w-[98%]': type === 'bp',
+                    })}
+                  />
                 )}
               </React.Fragment>
             )
           })}
         <div className="flex items-center justify-start">
           {itemsToShow < historyList.length && (
-            <div className="px-4 py-3">
+            <div className={cx('px-4 py-3', { 'pl-0': type === 'bp' })}>
               <span
                 className="font-medium text-secondary hover:cursor-pointer"
                 onClick={showMoreItems}

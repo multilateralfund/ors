@@ -58,7 +58,7 @@ const BPTabs = ({
         </Tabs>
         <div id="bp-table-export-button" className="mb-1.5 self-end" />
       </div>
-      <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary bg-white p-6">
+      <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {activeTab === 0 &&
           (isConsolidatedBp ? (
             <BPDetailsConsolidatedEdit {...props} />

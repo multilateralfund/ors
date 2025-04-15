@@ -12,6 +12,10 @@ import { useGetBpData } from './useGetBpData'
 import { getMeetingNr } from '../utils'
 import BPTableToolbarButtons from '../BPTableToolbarButtons'
 
+import { BsFilesAlt } from 'react-icons/bs'
+import { Divider } from '@mui/material'
+import { HeaderWithIcon } from '../HelperComponents'
+
 const BPSummary = (props: any) => {
   const { results, bpFiles, loadedFiles } = props
   const { year_end, year_start, status, meeting_id, decision_id } =
@@ -21,23 +25,41 @@ const BPSummary = (props: any) => {
   const canViewFiles = userCanViewFilesBusinessPlan[user_type as UserType]
 
   return (
-    <div className="flex flex-col gap-6 rounded-lg bg-gray-100 p-4">
-      <p className="m-0 text-2xl font-normal">Summary</p>
+    <div className="flex flex-col gap-6 rounded-lg bg-white p-6">
+      <HeaderWithIcon title="Summary" Icon={BsFilesAlt} />
       <div className="grid w-full grid-cols-2 grid-rows-3 gap-4 lg:grid-cols-3 lg:grid-rows-2">
-        <SimpleField id="years" data={year_start || '-'} label="Year start" />
-        <SimpleField id="years" data={year_end || '-'} label="Year end" />
-        <SimpleField id="status" data={status || '-'} label="Status" />
+        <SimpleField
+          id="years"
+          data={year_start || '-'}
+          label="Year start"
+          textClassName="text-[1.25rem]"
+        />
+        <SimpleField
+          id="years"
+          data={year_end || '-'}
+          label="Year end"
+          textClassName="text-[1.25rem]"
+        />
+        <SimpleField
+          id="status"
+          data={status || '-'}
+          label="Status"
+          textClassName="text-[1.25rem]"
+        />
         <SimpleField
           id="meeting"
           data={getMeetingNr(meeting_id) || '-'}
           label="Meeting number"
+          textClassName="text-[1.25rem]"
         />
         <SimpleField
           id="decision"
           data={decision_id || '-'}
           label="Decision number"
+          textClassName="text-[1.25rem]"
         />
       </div>
+      <Divider />
       {canViewFiles && loadedFiles && <FilesViewer bpFiles={bpFiles || []} />}
     </div>
   )
@@ -84,7 +106,7 @@ export default function BPDetailsConsolidated({
         <div className="flex flex-1 flex-col justify-start gap-6 border-0 border-t border-solid border-primary pt-6">
           <section className="grid items-start gap-6 md:auto-rows-auto md:grid-cols-2">
             <BPSummary {...{ results, bpFiles, loadedFiles }} />
-            <div className="flex flex-col rounded-lg bg-gray-100 p-4">
+            <div className="flex flex-col rounded-lg bg-white p-6">
               <VersionHistoryList
                 currentDataVersion={1}
                 historyList={data?.history || []}
