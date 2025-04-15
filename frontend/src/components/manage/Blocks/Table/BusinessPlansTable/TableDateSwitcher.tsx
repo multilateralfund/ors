@@ -30,7 +30,9 @@ export default function TableDateSwitcher({
 
   return (
     <Field
-      FieldProps={{ className: 'mb-0 w-full md:w-40 BPList BPGridSwitcher' }}
+      FieldProps={{
+        className: 'mb-0 w-full md:w-[8.13rem] BPList BPGridSwitcher',
+      }}
       widget="autocomplete"
       disableClearable
       options={TableDataSelectorLabels}
@@ -47,7 +49,7 @@ export default function TableDateSwitcher({
         </li>
       )}
       onKeyDown={handleKeyDown}
-      popupIcon={<IoChevronDown />}
+      popupIcon={<IoChevronDown size="18" color="#2F2F38" />}
       componentsProps={{
         popupIndicator: {
           sx: {

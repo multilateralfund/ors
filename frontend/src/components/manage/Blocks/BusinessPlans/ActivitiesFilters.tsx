@@ -8,7 +8,7 @@ import useFocusOnCtrlF from '@ors/hooks/useFocusOnCtrlF'
 import ActivitiesFiltersSelectedOpts from './BPList/ActivitiesFiltersSelectedOpts'
 import { multiYearFilterOptions, tableColumns } from './constants'
 
-import { IoSearchOutline } from 'react-icons/io5'
+import { IoChevronDown, IoSearchOutline } from 'react-icons/io5'
 
 export default function ActivitiesFilters(props: any) {
   const {
@@ -41,12 +41,23 @@ export default function ActivitiesFilters(props: any) {
     )
   }
 
+  const defaultProps = {
+    FieldProps: { className: 'mb-0 w-full md:w-[7.1875rem] BPList' },
+    popupIcon: <IoChevronDown size="18" color="#2F2F38" />,
+    componentsProps: {
+      popupIndicator: {
+        sx: {
+          transform: 'none !important',
+        },
+      },
+    },
+  }
+
   return (
     <div className="flex flex-col gap-4">
       {/* Rest of filters */}
       <div className="grid h-full grid-cols-2 flex-wrap items-center gap-x-4 gap-y-2 border-0 border-solid md:flex">
         <Field
-          FieldProps={{ className: 'mb-0 w-full md:w-40 BPList' }}
           Input={{ placeholder: tableColumns.country_id }}
           getOptionLabel={(option: any) => option?.name}
           options={getFilterOptions(commonSlice.countries.data, 'country_id')}
@@ -63,10 +74,10 @@ export default function ActivitiesFilters(props: any) {
             })
           }}
           multiple
+          {...defaultProps}
         />
         {withAgency && (
           <Field
-            FieldProps={{ className: 'mb-0 w-full md:w-40 BPList' }}
             Input={{ placeholder: tableColumns.agency_id }}
             getOptionLabel={(option: any) => option?.name}
             options={getFilterOptions(commonSlice.agencies.data, 'agency_id')}
@@ -83,10 +94,10 @@ export default function ActivitiesFilters(props: any) {
               })
             }}
             multiple
+            {...defaultProps}
           />
         )}
         <Field
-          FieldProps={{ className: 'mb-0 w-full md:w-40 BPList' }}
           Input={{ placeholder: tableColumns.project_type_id }}
           getOptionLabel={(option: any) => option?.name}
           options={getFilterOptions(bpSlice.types.data, 'project_type_id')}
@@ -106,9 +117,9 @@ export default function ActivitiesFilters(props: any) {
             })
           }}
           multiple
+          {...defaultProps}
         />
         <Field
-          FieldProps={{ className: 'mb-0 w-full md:w-40 BPList' }}
           Input={{ placeholder: tableColumns.project_cluster_id }}
           getOptionLabel={(option: any) => option?.name}
           options={getFilterOptions(clusters, 'project_cluster_id')}
@@ -127,9 +138,9 @@ export default function ActivitiesFilters(props: any) {
             })
           }}
           multiple
+          {...defaultProps}
         />
         <Field
-          FieldProps={{ className: 'mb-0 w-full md:w-40 BPList' }}
           Input={{ placeholder: tableColumns.sector_id }}
           getOptionLabel={(option: any) => option?.name}
           options={getFilterOptions(bpSlice.sectors.data, 'sector_id')}
@@ -146,9 +157,9 @@ export default function ActivitiesFilters(props: any) {
             })
           }}
           multiple
+          {...defaultProps}
         />
         <Field
-          FieldProps={{ className: 'mb-0 w-full md:w-40 BPList' }}
           Input={{ placeholder: tableColumns.subsector_id }}
           getOptionLabel={(option: any) => option?.name}
           options={getFilterOptions(bpSlice.subsectors.data, 'subsector_id')}
@@ -165,9 +176,9 @@ export default function ActivitiesFilters(props: any) {
             })
           }}
           multiple
+          {...defaultProps}
         />
         <Field
-          FieldProps={{ className: 'mb-0 w-full md:w-40 BPList' }}
           Input={{ placeholder: 'I/M' }}
           getOptionLabel={(option: any) => option?.name}
           options={getFilterOptions(multiYearFilterOptions, 'is_multi_year')}
@@ -189,6 +200,7 @@ export default function ActivitiesFilters(props: any) {
             })
           }}
           multiple
+          {...defaultProps}
         />
       </div>
       <div className="bp-search-container flex w-full flex-col gap-4 md:flex-row lg:items-start">

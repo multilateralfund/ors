@@ -35,7 +35,7 @@ export default function TableViewSelector({
       {viewOptions.map((viewOpt) => (
         <ToggleButton
           key={viewOpt}
-          className="h-10 rounded-none border-primary bg-white py-[11px] text-base tracking-wide text-primary first:rounded-l-lg last:rounded-r-lg"
+          className="h-[2.25rem] rounded-none border-primary bg-white py-[11px] text-base tracking-wide text-primary first:rounded-l-lg last:rounded-r-lg"
           value={viewOpt}
           classes={{
             selected: '!bg-primary !text-mlfs-hlYellow',
