@@ -35,7 +35,7 @@ export default function BPFilters({
   }
 
   return (
-    <div className="bp-table-toolbar mb-4 flex flex-col justify-between gap-4 xl:flex-row xl:items-center">
+    <div className="bp-table-toolbar mb-6 flex flex-col justify-between gap-x-[7rem] gap-y-4 md:flex-row md:items-center">
       <ActivitiesFilters
         bpSlice={bpSlice}
         clusters={clusters}
@@ -48,10 +48,7 @@ export default function BPFilters({
         withAgency={withAgency}
       />
       <div className="flex gap-4 self-start">
-        <TableDateSwitcher
-          changeHandler={(event, value) => setGridOptions(value)}
-          value={gridOptions}
-        />
+        <TableDateSwitcher changeHandler={setGridOptions} value={gridOptions} />
         <TableViewSelector
           value={displayOptions}
           changeHandler={(_, value) => {

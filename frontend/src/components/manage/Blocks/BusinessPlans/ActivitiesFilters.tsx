@@ -8,7 +8,7 @@ import useFocusOnCtrlF from '@ors/hooks/useFocusOnCtrlF'
 import ActivitiesFiltersSelectedOpts from './BPList/ActivitiesFiltersSelectedOpts'
 import { multiYearFilterOptions, tableColumns } from './constants'
 
-import { IoSearchOutline } from 'react-icons/io5'
+import { IoChevronDown, IoSearchOutline } from 'react-icons/io5'
 
 export default function ActivitiesFilters(props: any) {
   const {
@@ -41,166 +41,29 @@ export default function ActivitiesFilters(props: any) {
     )
   }
 
+  const defaultProps = {
+    FieldProps: { className: 'mb-0 w-full md:w-[7.76rem] BPList' },
+    popupIcon: <IoChevronDown size="18" color="#2F2F38" />,
+    componentsProps: {
+      popupIndicator: {
+        sx: {
+          transform: 'none !important',
+        },
+      },
+    },
+  }
+
   return (
-    <div className="flex flex-col gap-4">
-      {/* Rest of filters */}
-      <div className="grid h-full grid-cols-2 flex-wrap items-center gap-x-4 gap-y-2 border-0 border-solid md:flex">
-        <Field
-          FieldProps={{ className: 'mb-0 w-full md:w-40 BPList' }}
-          Input={{ placeholder: tableColumns.country_id }}
-          getOptionLabel={(option: any) => option?.name}
-          options={getFilterOptions(commonSlice.countries.data, 'country_id')}
-          value={[]}
-          widget="autocomplete"
-          onChange={(_: any, value: any) => {
-            const country = filters.country_id || []
-            const newValue = union(country, value)
-
-            handleFilterChange({ country_id: newValue })
-            handleParamsChange({
-              country_id: newValue.map((item: any) => item.id).join(','),
-              offset: 0,
-            })
-          }}
-          multiple
-        />
-        {withAgency && (
-          <Field
-            FieldProps={{ className: 'mb-0 w-full md:w-40 BPList' }}
-            Input={{ placeholder: tableColumns.agency_id }}
-            getOptionLabel={(option: any) => option?.name}
-            options={getFilterOptions(commonSlice.agencies.data, 'agency_id')}
-            value={[]}
-            widget="autocomplete"
-            onChange={(_: any, value: any) => {
-              const agency = filters.agency_id || []
-              const newValue = union(agency, value)
-
-              handleFilterChange({ agency_id: newValue })
-              handleParamsChange({
-                agency_id: newValue.map((item: any) => item.id).join(','),
-                offset: 0,
-              })
-            }}
-            multiple
-          />
-        )}
-        <Field
-          FieldProps={{ className: 'mb-0 w-full md:w-40 BPList' }}
-          Input={{ placeholder: tableColumns.project_type_id }}
-          getOptionLabel={(option: any) => option?.name}
-          options={getFilterOptions(bpSlice.types.data, 'project_type_id')}
-          value={[]}
-          widget="autocomplete"
-          isOptionEqualToValue={(option: any, value: any) =>
-            option.id === value
-          }
-          onChange={(_: any, value: any) => {
-            const projectType = filters.project_type_id || []
-            const newValue = union(projectType, value)
-
-            handleFilterChange({ project_type_id: newValue })
-            handleParamsChange({
-              offset: 0,
-              project_type_id: newValue.map((item: any) => item.id).join(','),
-            })
-          }}
-          multiple
-        />
-        <Field
-          FieldProps={{ className: 'mb-0 w-full md:w-40 BPList' }}
-          Input={{ placeholder: tableColumns.project_cluster_id }}
-          getOptionLabel={(option: any) => option?.name}
-          options={getFilterOptions(clusters, 'project_cluster_id')}
-          value={[]}
-          widget="autocomplete"
-          onChange={(_: any, value: any) => {
-            const projectCluster = filters.project_cluster_id || []
-            const newValue = union(projectCluster, value)
-
-            handleFilterChange({ project_cluster_id: newValue })
-            handleParamsChange({
-              offset: 0,
-              project_cluster_id: newValue
-                .map((item: any) => item.id)
-                .join(','),
-            })
-          }}
-          multiple
-        />
-        <Field
-          FieldProps={{ className: 'mb-0 w-full md:w-40 BPList' }}
-          Input={{ placeholder: tableColumns.sector_id }}
-          getOptionLabel={(option: any) => option?.name}
-          options={getFilterOptions(bpSlice.sectors.data, 'sector_id')}
-          value={[]}
-          widget="autocomplete"
-          onChange={(_: any, value: any) => {
-            const sector = filters.sector_id || []
-            const newValue = union(sector, value)
-
-            handleFilterChange({ sector_id: newValue })
-            handleParamsChange({
-              offset: 0,
-              sector_id: newValue.map((item: any) => item.id).join(','),
-            })
-          }}
-          multiple
-        />
-        <Field
-          FieldProps={{ className: 'mb-0 w-full md:w-40 BPList' }}
-          Input={{ placeholder: tableColumns.subsector_id }}
-          getOptionLabel={(option: any) => option?.name}
-          options={getFilterOptions(bpSlice.subsectors.data, 'subsector_id')}
-          value={[]}
-          widget="autocomplete"
-          onChange={(_: any, value: any) => {
-            const subsector = filters.subsector_id || []
-            const newValue = union(subsector, value)
-
-            handleFilterChange({ subsector_id: newValue })
-            handleParamsChange({
-              offset: 0,
-              subsector_id: newValue.map((item: any) => item.id).join(','),
-            })
-          }}
-          multiple
-        />
-        <Field
-          FieldProps={{ className: 'mb-0 w-full md:w-40 BPList' }}
-          Input={{ placeholder: 'I/M' }}
-          getOptionLabel={(option: any) => option?.name}
-          options={getFilterOptions(multiYearFilterOptions, 'is_multi_year')}
-          value={[]}
-          widget="autocomplete"
-          isOptionEqualToValue={(option: any, value: any) =>
-            option.id === value
-          }
-          onChange={(_: any, value: any) => {
-            const isMultiYear = filters.is_multi_year || []
-            const newValue = union(isMultiYear, value)
-
-            handleFilterChange({
-              is_multi_year: newValue,
-            })
-            handleParamsChange({
-              is_multi_year: newValue.map((item: any) => item.id).join(','),
-              offset: 0,
-            })
-          }}
-          multiple
-        />
-      </div>
-      <div className="bp-search-container flex w-full flex-col gap-4 md:flex-row lg:items-start">
-        {/* Search Input */}
+    <div className="flex flex-col gap-2.5">
+      <div className="grid h-full grid-cols-2 flex-wrap items-center gap-x-2 gap-y-2 border-0 border-solid md:flex">
         <Field
           name="search"
           defaultValue={filters.search}
           inputRef={searchRef}
-          placeholder="Search by keyword..."
+          placeholder="Search in activities..."
+          className="placeholder:text-sm sm:placeholder:text-base"
           FieldProps={{
-            className:
-              'mb-0 w-full md:w-60 md:min-w-60 lg:w-60 lg:min-w-60 BPList',
+            className: 'mb-0 w-full md:w-[14.375rem] BPList',
           }}
           InputProps={{
             startAdornment: (
@@ -242,20 +105,165 @@ export default function ActivitiesFilters(props: any) {
             )
           }}
         />
-        <ActivitiesFiltersSelectedOpts
-          {...{
-            bpSlice,
-            clusters,
-            commonSlice,
-            filters,
-            form,
-            handleFilterChange,
-            handleParamsChange,
-            initialFilters,
-            withAgency,
+        <Field
+          Input={{ placeholder: tableColumns.country_id }}
+          getOptionLabel={(option: any) => option?.name}
+          options={getFilterOptions(commonSlice.countries.data, 'country_id')}
+          value={[]}
+          widget="autocomplete"
+          onChange={(_: any, value: any) => {
+            const country = filters.country_id || []
+            const newValue = union(country, value)
+
+            handleFilterChange({ country_id: newValue })
+            handleParamsChange({
+              country_id: newValue.map((item: any) => item.id).join(','),
+              offset: 0,
+            })
           }}
+          multiple
+          {...defaultProps}
+        />
+        {withAgency && (
+          <Field
+            Input={{ placeholder: tableColumns.agency_id }}
+            getOptionLabel={(option: any) => option?.name}
+            options={getFilterOptions(commonSlice.agencies.data, 'agency_id')}
+            value={[]}
+            widget="autocomplete"
+            onChange={(_: any, value: any) => {
+              const agency = filters.agency_id || []
+              const newValue = union(agency, value)
+
+              handleFilterChange({ agency_id: newValue })
+              handleParamsChange({
+                agency_id: newValue.map((item: any) => item.id).join(','),
+                offset: 0,
+              })
+            }}
+            multiple
+            {...defaultProps}
+          />
+        )}
+        <Field
+          Input={{ placeholder: tableColumns.project_type_id }}
+          getOptionLabel={(option: any) => option?.name}
+          options={getFilterOptions(bpSlice.types.data, 'project_type_id')}
+          value={[]}
+          widget="autocomplete"
+          isOptionEqualToValue={(option: any, value: any) =>
+            option.id === value
+          }
+          onChange={(_: any, value: any) => {
+            const projectType = filters.project_type_id || []
+            const newValue = union(projectType, value)
+
+            handleFilterChange({ project_type_id: newValue })
+            handleParamsChange({
+              offset: 0,
+              project_type_id: newValue.map((item: any) => item.id).join(','),
+            })
+          }}
+          multiple
+          {...defaultProps}
+        />
+        <Field
+          Input={{ placeholder: tableColumns.project_cluster_id }}
+          getOptionLabel={(option: any) => option?.name}
+          options={getFilterOptions(clusters, 'project_cluster_id')}
+          value={[]}
+          widget="autocomplete"
+          onChange={(_: any, value: any) => {
+            const projectCluster = filters.project_cluster_id || []
+            const newValue = union(projectCluster, value)
+
+            handleFilterChange({ project_cluster_id: newValue })
+            handleParamsChange({
+              offset: 0,
+              project_cluster_id: newValue
+                .map((item: any) => item.id)
+                .join(','),
+            })
+          }}
+          multiple
+          {...defaultProps}
+        />
+        <Field
+          Input={{ placeholder: tableColumns.sector_id }}
+          getOptionLabel={(option: any) => option?.name}
+          options={getFilterOptions(bpSlice.sectors.data, 'sector_id')}
+          value={[]}
+          widget="autocomplete"
+          onChange={(_: any, value: any) => {
+            const sector = filters.sector_id || []
+            const newValue = union(sector, value)
+
+            handleFilterChange({ sector_id: newValue })
+            handleParamsChange({
+              offset: 0,
+              sector_id: newValue.map((item: any) => item.id).join(','),
+            })
+          }}
+          multiple
+          {...defaultProps}
+        />
+        <Field
+          Input={{ placeholder: tableColumns.subsector_id }}
+          getOptionLabel={(option: any) => option?.name}
+          options={getFilterOptions(bpSlice.subsectors.data, 'subsector_id')}
+          value={[]}
+          widget="autocomplete"
+          onChange={(_: any, value: any) => {
+            const subsector = filters.subsector_id || []
+            const newValue = union(subsector, value)
+
+            handleFilterChange({ subsector_id: newValue })
+            handleParamsChange({
+              offset: 0,
+              subsector_id: newValue.map((item: any) => item.id).join(','),
+            })
+          }}
+          multiple
+          {...defaultProps}
+        />
+        <Field
+          Input={{ placeholder: 'I/M' }}
+          getOptionLabel={(option: any) => option?.name}
+          options={getFilterOptions(multiYearFilterOptions, 'is_multi_year')}
+          value={[]}
+          widget="autocomplete"
+          isOptionEqualToValue={(option: any, value: any) =>
+            option.id === value
+          }
+          onChange={(_: any, value: any) => {
+            const isMultiYear = filters.is_multi_year || []
+            const newValue = union(isMultiYear, value)
+
+            handleFilterChange({
+              is_multi_year: newValue,
+            })
+            handleParamsChange({
+              is_multi_year: newValue.map((item: any) => item.id).join(','),
+              offset: 0,
+            })
+          }}
+          multiple
+          {...defaultProps}
         />
       </div>
+      <ActivitiesFiltersSelectedOpts
+        {...{
+          bpSlice,
+          clusters,
+          commonSlice,
+          filters,
+          form,
+          handleFilterChange,
+          handleParamsChange,
+          initialFilters,
+          withAgency,
+        }}
+      />
     </div>
   )
 }

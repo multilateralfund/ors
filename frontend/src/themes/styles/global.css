@@ -63,8 +63,12 @@
     --color-mlfs-hlYellow: hsl(var(--tw-mlfs-hlYellow));
     --tw-mlfs-hlYellowTint: 65 100% 75%;
     --color-mlfs-hlYellowTint: hsl(var(--tw-mlfs-hlYellowTint));
+    --tw-mlfs-hlerYellowTint: 65 100% 75%;
+    --color-mlfs-hlerYellowTint: hsl(var(--tw-mlfs-hlerYellowTint));
     --tw-mlfs-deepTealShade: 199 100% 8%;
     --color-mlfs-deepTealShade: hsl(var(--tw-mlfs-deepTealShade));
+    --tw-mlfs-deepTealTint: 199 90% 20%;
+    --color-mlfs-deepTealTint: hsl(var(--tw-mlfs-deepTealTint));
     --tw-mlfs-bannerColor: 200 72.4% 94.3%;
     --color-mlfs-bannerColor: hsl(var(--tw-mlfs-bannerColor));
     --tw-mlfs-purple: 266 93.2% 71.4%;

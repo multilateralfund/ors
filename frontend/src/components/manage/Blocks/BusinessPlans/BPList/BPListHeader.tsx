@@ -56,7 +56,7 @@ const BPListHeader = ({
   return (
     <div className="mb-8 flex items-center justify-between gap-4">
       <div className="flex flex-row flex-wrap gap-2">
-        <PageHeading className="min-w-fit">Business Plan:</PageHeading>
+        <PageHeading className="min-w-fit">Business Plan</PageHeading>
         <div
           className={cx('flex flex-row flex-wrap gap-2', styles.moreOptions)}
         >
@@ -71,8 +71,8 @@ const BPListHeader = ({
             withDisabledOptions
             className="capitalize"
             initialIndex={statusIndex}
-            inputClassName="gap-x-4 h-10 w-36"
-            menuClassName="w-36"
+            inputClassName="gap-x-4 h-10 w-36 uppercase"
+            menuClassName="w-36 uppercase"
             placeholder="Status"
             label={''}
             options={formattedBpTypes}
@@ -103,9 +103,9 @@ const BPListHeader = ({
       </div>
       {userCanEditBusinessPlan[user_type as UserType] && (
         <CustomLink
-          className="text-nowrap px-4 py-2 text-lg uppercase"
-          color="secondary"
+          className="h-10 min-w-[6.25rem] text-nowrap px-4 py-2 text-lg uppercase"
           href="/business-plans/upload"
+          color="secondary"
           variant="contained"
           button
         >

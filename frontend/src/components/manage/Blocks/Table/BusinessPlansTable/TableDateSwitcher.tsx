@@ -1,56 +1,63 @@
-import { ToggleButton, ToggleButtonGroup } from '@mui/material'
-import cx from 'classnames'
+import Field from '@ors/components/manage/Form/Field'
+import { KeyboardEvent } from 'react'
+import { IoChevronDown } from 'react-icons/io5'
 
-const TableDataSelectorOrder = ['values', 'odp', 'comments', 'all']
 export type TableDataSelectorValuesType = 'all' | 'comments' | 'odp' | 'values'
 
-const TableDataSelectorLabels: Record<string, string | JSX.Element> = {
-  all: 'View All',
-  comments: 'Comments',
-  odp: (
-    <span className="mt-1">
-      ODP/MT/CO<sub>2</sub>-eq
-    </span>
-  ),
-  values: 'Values',
-}
+const TableDataSelectorLabels = [
+  { value: 'all', label: 'View All' },
+  { value: 'comments', label: 'Comments' },
+  {
+    value: 'odp',
+    label: 'ODP/MT/CO₂-eq',
+  },
+  { value: 'values', label: 'Values' },
+]
 
 interface TableDataSelectorProps {
-  changeHandler: (
-    event: React.MouseEvent<HTMLElement>,
-    value: TableDataSelectorValuesType,
-  ) => void
+  changeHandler: (value: TableDataSelectorValuesType) => void
   className?: string
   value: TableDataSelectorValuesType
 }
 
 export default function TableDateSwitcher({
   changeHandler,
-  className = '',
   value,
 }: TableDataSelectorProps) {
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    event.preventDefault()
+  }
+
   return (
-    <ToggleButtonGroup
-      className={cx('table-date-switcher', className)}
-      aria-label="Platform"
-      color="primary"
-      value={value}
-      onChange={changeHandler}
-      exclusive
-    >
-      {TableDataSelectorOrder.map((key) => (
-        <ToggleButton
-          key={key}
-          className="h-10 whitespace-nowrap rounded-none border-primary py-2 text-base tracking-wide first:rounded-l-lg last:rounded-r-lg"
-          value={key}
-          classes={{
-            selected: 'bg-primary text-mlfs-hlYellow',
-            standard: 'bg-white text-primary',
-          }}
-        >
-          {TableDataSelectorLabels[key]}
-        </ToggleButton>
-      ))}
-    </ToggleButtonGroup>
+    <Field
+      FieldProps={{
+        className:
+          'mb-0 w-full md:w-[8.13rem] min-w-[8.13rem] BPList BPGridSwitcher',
+      }}
+      widget="autocomplete"
+      disableClearable
+      options={TableDataSelectorLabels}
+      value={
+        TableDataSelectorLabels.find((opt) => opt.value === value) ??
+        TableDataSelectorLabels[0]
+      }
+      onChange={(_: any, { value }: any) => {
+        changeHandler(value)
+      }}
+      renderOption={(props, option) => (
+        <li {...props} style={{ textTransform: 'uppercase' }}>
+          {option.label}
+        </li>
+      )}
+      onKeyDown={handleKeyDown}
+      popupIcon={<IoChevronDown size="18" color="#2F2F38" />}
+      componentsProps={{
+        popupIndicator: {
+          sx: {
+            transform: 'none !important',
+          },
+        },
+      }}
+    />
   )
 }

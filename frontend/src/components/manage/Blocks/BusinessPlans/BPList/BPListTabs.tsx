@@ -63,10 +63,7 @@ const BPListTabs = (props: PropsWithChildren) => {
       <div className={cx('print:hidden', styles.nav)}>
         {/* @ts-ignore */}
         <nav className="shrink-0">{navLinks}</nav>
-        <div
-          id="bp-activities-export-button"
-          className="mb-2.5 ml-4 self-end"
-        />
+        <div id="bp-activities-export-button" className="mb-1 ml-4 self-end" />
       </div>
       <div className={styles.page}>{children}</div>
     </>
