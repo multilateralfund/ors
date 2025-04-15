@@ -4,6 +4,7 @@ import { filter } from 'lodash'
 
 import { formatApiUrl } from '@ors/helpers'
 
+import { HeaderWithIcon } from './HelperComponents'
 import { BpDetails } from './types'
 
 import { IoDownloadOutline, IoTrash } from 'react-icons/io5'
@@ -36,12 +37,7 @@ export function FilesViewer(props: BpDetails) {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex gap-2.5">
-        <div className="flex h-[28px] w-[28px] items-center justify-center rounded-[14px] bg-primary">
-          <TbFiles className="text-mlfs-hlerYellowTint" size={16} />
-        </div>
-        <p className="m-0 mt-[1px] text-2xl font-normal">File attachments</p>
-      </div>
+      <HeaderWithIcon title="File attachments" Icon={TbFiles} />
       <div className="mt-3 flex flex-col gap-2.5">
         {currentFiles.length === 0 ? (
           <p className="m-1 ml-0 text-lg font-normal text-gray-500">

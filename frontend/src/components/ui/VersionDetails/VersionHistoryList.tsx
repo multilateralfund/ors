@@ -5,6 +5,7 @@ import React, { useState } from 'react'
 import cx from 'classnames'
 
 import { FaClockRotateLeft } from 'react-icons/fa6'
+import { HeaderWithIcon } from '@ors/components/manage/Blocks/BusinessPlans/HelperComponents'
 
 export default function VersionHistoryList(props: any) {
   const { currentDataVersion, historyList, length, type } = props
@@ -34,12 +35,7 @@ export default function VersionHistoryList(props: any) {
   return (
     <div className="flex flex-col gap-3">
       {type === 'bp' ? (
-        <div className="flex gap-2.5">
-          <div className="flex h-[28px] w-[28px] items-center justify-center rounded-[14px] bg-primary">
-            <FaClockRotateLeft className="text-mlfs-hlerYellowTint" size={16} />
-          </div>
-          <p className="m-0 mt-[1px] text-2xl font-normal">History</p>
-        </div>
+        <HeaderWithIcon title="History" Icon={FaClockRotateLeft} />
       ) : (
         <p className="m-0 text-2xl font-normal">History</p>
       )}

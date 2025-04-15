@@ -14,6 +14,7 @@ import BPTableToolbarButtons from '../BPTableToolbarButtons'
 
 import { BsFilesAlt } from 'react-icons/bs'
 import { Divider } from '@mui/material'
+import { HeaderWithIcon } from '../HelperComponents'
 
 const BPSummary = (props: any) => {
   const { results, bpFiles, loadedFiles } = props
@@ -25,12 +26,7 @@ const BPSummary = (props: any) => {
 
   return (
     <div className="flex flex-col gap-6 rounded-lg bg-white p-6">
-      <div className="flex gap-2.5">
-        <div className="flex h-[28px] w-[28px] items-center justify-center rounded-[14px] bg-primary">
-          <BsFilesAlt className="text-mlfs-hlerYellowTint" size={16} />
-        </div>
-        <p className="m-0 mt-[1px] text-2xl font-normal">Summary</p>
-      </div>
+      <HeaderWithIcon title="Summary" Icon={BsFilesAlt} />
       <div className="grid w-full grid-cols-2 grid-rows-3 gap-4 lg:grid-cols-3 lg:grid-rows-2">
         <SimpleField
           id="years"
