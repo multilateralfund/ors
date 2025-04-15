@@ -31,7 +31,8 @@ export default function TableDateSwitcher({
   return (
     <Field
       FieldProps={{
-        className: 'mb-0 w-full md:w-[8.13rem] BPList BPGridSwitcher',
+        className:
+          'mb-0 w-full md:w-[8.13rem] min-w-[8.13rem] BPList BPGridSwitcher',
       }}
       widget="autocomplete"
       disableClearable

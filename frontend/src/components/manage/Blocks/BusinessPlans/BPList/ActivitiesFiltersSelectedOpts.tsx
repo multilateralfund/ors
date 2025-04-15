@@ -50,14 +50,15 @@ export default function ActivitiesFiltersSelectedOpts(props: any) {
       return (
         <Typography
           key={entityId}
-          className="inline-flex items-center gap-2 rounded bg-gray-200 px-4 font-normal theme-dark:bg-gray-700/20"
+          className="inline-flex items-center gap-2 rounded-lg bg-gray-200 px-2 py-1 text-lg font-normal text-black theme-dark:bg-gray-700/20"
           component="p"
           variant="h6"
         >
           {entities?.get(entityId)?.name}
           <IoClose
             className="cursor-pointer"
-            size={20}
+            size={18}
+            color="#666"
             onClick={() => {
               const values = filters[entityIdentifier] || []
               const newValue = filter(values, (value) => value.id !== entityId)
@@ -82,14 +83,15 @@ export default function ActivitiesFiltersSelectedOpts(props: any) {
     return (
       !!filters.search && (
         <Typography
-          className="inline-flex items-center gap-2 rounded bg-gray-200 px-4 font-normal theme-dark:bg-gray-700/20"
+          className="inline-flex items-center gap-2 rounded-lg bg-gray-200 px-2 py-1 text-lg font-normal text-black theme-dark:bg-gray-700/20"
           component="p"
           variant="h6"
         >
           {filters.search}
           <IoClose
             className="cursor-pointer"
-            size={20}
+            size={18}
+            color="#666"
             onClick={() => {
               form.current.search.value = ''
               handleParamsChange({ offset: 0, search: '' })
@@ -102,22 +104,22 @@ export default function ActivitiesFiltersSelectedOpts(props: any) {
   }
 
   return (
-    <div className="mt-[6px] flex flex-wrap gap-4">
-      {displaySearchTerm()}
-      {displaySelectedOption(formatEntity(countries.data), 'country_id')}
-      {displaySelectedOption(formatEntity(agencies.data), 'agency_id')}
-      {displaySelectedOption(formatEntity(clusters), 'project_cluster_id')}
-      {displaySelectedOption(formatEntity(sectors.data), 'sector_id')}
-      {displaySelectedOption(formatEntity(subsectors.data), 'subsector_id')}
-      {displaySelectedOption(formatEntity(types.data), 'project_type_id')}
-      {displaySelectedOption(
-        formatEntity(multiYearFilterOptions),
-        'is_multi_year',
-      )}
+    (areFiltersApplied || filters?.search) && (
+      <div className="mt-[6px] flex flex-wrap gap-2">
+        {displaySearchTerm()}
+        {displaySelectedOption(formatEntity(countries.data), 'country_id')}
+        {displaySelectedOption(formatEntity(agencies.data), 'agency_id')}
+        {displaySelectedOption(formatEntity(clusters), 'project_cluster_id')}
+        {displaySelectedOption(formatEntity(sectors.data), 'sector_id')}
+        {displaySelectedOption(formatEntity(subsectors.data), 'subsector_id')}
+        {displaySelectedOption(formatEntity(types.data), 'project_type_id')}
+        {displaySelectedOption(
+          formatEntity(multiYearFilterOptions),
+          'is_multi_year',
+        )}
 
-      {(areFiltersApplied || filters?.search) && (
         <Typography
-          className="cursor-pointer content-center"
+          className="cursor-pointer content-center text-lg font-medium"
           color="secondary"
           component="span"
           onClick={() => {
@@ -128,7 +130,7 @@ export default function ActivitiesFiltersSelectedOpts(props: any) {
         >
           Clear All
         </Typography>
-      )}
-    </div>
+      </div>
+    )
   )
 }

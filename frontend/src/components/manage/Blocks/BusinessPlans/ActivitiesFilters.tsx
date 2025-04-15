@@ -42,7 +42,7 @@ export default function ActivitiesFilters(props: any) {
   }
 
   const defaultProps = {
-    FieldProps: { className: 'mb-0 w-full md:w-[7.1875rem] BPList' },
+    FieldProps: { className: 'mb-0 w-full md:w-[7.76rem] BPList' },
     popupIcon: <IoChevronDown size="18" color="#2F2F38" />,
     componentsProps: {
       popupIndicator: {
@@ -54,9 +54,57 @@ export default function ActivitiesFilters(props: any) {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* Rest of filters */}
-      <div className="grid h-full grid-cols-2 flex-wrap items-center gap-x-4 gap-y-2 border-0 border-solid md:flex">
+    <div className="flex flex-col gap-2.5">
+      <div className="grid h-full grid-cols-2 flex-wrap items-center gap-x-2 gap-y-2 border-0 border-solid md:flex">
+        <Field
+          name="search"
+          defaultValue={filters.search}
+          inputRef={searchRef}
+          placeholder="Search in activities..."
+          className="placeholder:text-sm sm:placeholder:text-base"
+          FieldProps={{
+            className: 'mb-0 w-full md:w-[14.375rem] BPList',
+          }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <MuiIconButton
+                  aria-label="search table"
+                  edge="start"
+                  tabIndex={-1}
+                  onClick={() => {
+                    const search = form.current.search.value
+                    handleParamsChange({
+                      offset: 0,
+                      search,
+                    })
+                    handleFilterChange({ search })
+                  }}
+                  disableRipple
+                >
+                  <IoSearchOutline />
+                </MuiIconButton>
+              </InputAdornment>
+            ),
+          }}
+          onKeyDown={(event: any) => {
+            debounce(
+              () => {
+                const search = form.current.search.value
+                handleParamsChange({
+                  offset: 0,
+                  search,
+                })
+                handleFilterChange({ search })
+                if (searchRef.current) {
+                  searchRef.current.select()
+                }
+              },
+              1000,
+              'BPFilterSearch',
+            )
+          }}
+        />
         <Field
           Input={{ placeholder: tableColumns.country_id }}
           getOptionLabel={(option: any) => option?.name}
@@ -203,71 +251,19 @@ export default function ActivitiesFilters(props: any) {
           {...defaultProps}
         />
       </div>
-      <div className="bp-search-container flex w-full flex-col gap-4 md:flex-row lg:items-start">
-        {/* Search Input */}
-        <Field
-          name="search"
-          defaultValue={filters.search}
-          inputRef={searchRef}
-          placeholder="Search by keyword..."
-          FieldProps={{
-            className:
-              'mb-0 w-full md:w-60 md:min-w-60 lg:w-60 lg:min-w-60 BPList',
-          }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <MuiIconButton
-                  aria-label="search table"
-                  edge="start"
-                  tabIndex={-1}
-                  onClick={() => {
-                    const search = form.current.search.value
-                    handleParamsChange({
-                      offset: 0,
-                      search,
-                    })
-                    handleFilterChange({ search })
-                  }}
-                  disableRipple
-                >
-                  <IoSearchOutline />
-                </MuiIconButton>
-              </InputAdornment>
-            ),
-          }}
-          onKeyDown={(event: any) => {
-            debounce(
-              () => {
-                const search = form.current.search.value
-                handleParamsChange({
-                  offset: 0,
-                  search,
-                })
-                handleFilterChange({ search })
-                if (searchRef.current) {
-                  searchRef.current.select()
-                }
-              },
-              1000,
-              'BPFilterSearch',
-            )
-          }}
-        />
-        <ActivitiesFiltersSelectedOpts
-          {...{
-            bpSlice,
-            clusters,
-            commonSlice,
-            filters,
-            form,
-            handleFilterChange,
-            handleParamsChange,
-            initialFilters,
-            withAgency,
-          }}
-        />
-      </div>
+      <ActivitiesFiltersSelectedOpts
+        {...{
+          bpSlice,
+          clusters,
+          commonSlice,
+          filters,
+          form,
+          handleFilterChange,
+          handleParamsChange,
+          initialFilters,
+          withAgency,
+        }}
+      />
     </div>
   )
 }

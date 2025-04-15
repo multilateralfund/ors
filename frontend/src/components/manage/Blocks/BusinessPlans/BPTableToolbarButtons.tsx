@@ -58,7 +58,7 @@ const BPTableToolbarButtons = (props: any) => {
             <DownloadLink
               key={i}
               href={url ?? '#'}
-              iconClassname="mb-1"
+              iconClassname="mb-0.5"
               className="text-lg text-[#344054]"
             >
               {downloadTexts[i]}

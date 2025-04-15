@@ -17,6 +17,10 @@ textarea {
   input {
     @apply text-[13px];
   }
+
+  .MuiButtonBase-root {
+    @apply pr-1;
+  }
 }
 
 .BPList.BPGridSwitcher .MuiAutocomplete-inputRoot input {

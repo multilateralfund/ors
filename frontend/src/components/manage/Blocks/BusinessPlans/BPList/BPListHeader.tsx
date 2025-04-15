@@ -103,7 +103,7 @@ const BPListHeader = ({
       </div>
       {userCanEditBusinessPlan[user_type as UserType] && (
         <CustomLink
-          className="h-10 text-nowrap px-4 py-2 text-lg uppercase"
+          className="h-10 min-w-[6.25rem] text-nowrap px-4 py-2 text-lg uppercase"
           href="/business-plans/upload"
           color="secondary"
           variant="contained"
