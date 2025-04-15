@@ -15,7 +15,8 @@ textarea {
   @apply h-[2.25rem] min-h-[2.25rem] !pr-0;
 
   input {
-    @apply text-[13px];
+    @apply truncate text-[13px];
+    line-height: 1;
   }
 
   .MuiButtonBase-root {

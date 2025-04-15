@@ -61,7 +61,6 @@ export default function ActivitiesFilters(props: any) {
           defaultValue={filters.search}
           inputRef={searchRef}
           placeholder="Search in activities..."
-          className="placeholder:text-sm sm:placeholder:text-base"
           FieldProps={{
             className: 'mb-0 w-full md:w-[14.375rem] BPList',
           }}
