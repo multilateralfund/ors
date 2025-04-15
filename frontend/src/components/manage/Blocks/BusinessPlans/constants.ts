@@ -14,7 +14,7 @@ export const tableColumns: { [key: string]: string } = {
   project_cluster_id: 'Cluster',
   project_type_id: 'Type',
   remarks: 'Remarks',
-  required_by_model: 'Required by Model',
+  required_by_model: 'Description of activities',
   sector_id: 'Sector',
   status: "A-Appr. P-Plan'd",
   subsector_id: 'Subsector',

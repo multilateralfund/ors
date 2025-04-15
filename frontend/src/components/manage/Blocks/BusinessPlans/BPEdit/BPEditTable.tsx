@@ -400,17 +400,17 @@ export function BPEditBaseTable(
                 In the Excel file, select the desired cells from the first
                 column (Activity ID), and while holding down the CTRL key,
                 continue selecting the corresponding cells from the target
-                column where you intend to paste the data (e.g. Required by
-                Model).
+                column where you intend to paste the data (e.g. Description of
+                activities).
               </li>
               <li>
                 Return to this screen and click the{' '}
                 <span className="inline-flex align-middle">
                   <IoClipboardOutline />
                 </span>{' '}
-                icon from the desired header column (e.g. Required by Model).
-                The system will paste the values in the correct activities,
-                regardless of how the Excel rows were sorted.
+                icon from the desired header column (e.g. Description of
+                activities). The system will paste the values in the correct
+                activities, regardless of how the Excel rows were sorted.
               </li>
             </ol>
           </li>
