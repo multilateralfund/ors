@@ -164,7 +164,7 @@ export default function BPDiffTable({
       <div className="bp-table-toolbar mb-4 flex flex-col gap-4 lg:flex-row lg:items-center">
         <div className="ml-auto flex gap-4">
           <TableDateSwitcher
-            changeHandler={(event, value) => setGridOptions(value)}
+            changeHandler={setGridOptions}
             value={gridOptions}
           />
         </div>
