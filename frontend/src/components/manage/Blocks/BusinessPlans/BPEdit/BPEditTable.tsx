@@ -372,50 +372,45 @@ export function BPEditBaseTable(
       icon={<IoInformationCircleOutline size={24} />}
       severity="info"
     >
-      <div className="pt-[3px]">
-        <b className="mt-1">Info:</b>
-        <br />
-        <ul className="mt-1 list-inside space-y-1 pl-0">
-          <li>
-            Use this page to edit individual activities of this Business Plan by
-            clicking on the desired cell and choosing one of the permitted
-            values or typing text or numbers in the appropriate fields.
-          </li>
-          <li>
-            By default, the activities listed below are sorted alphabetically.
-            However, newly added or edited activities will temporarily appear at
-            the top of the list until the page is refreshed or navigated away
-            from.
-          </li>
-          <li>
-            Columns containing the{' '}
-            <span className="inline-flex align-middle">
-              <IoClipboardOutline />
-            </span>{' '}
-            icon allow pasting of values onto multiple rows when these values
-            have been copied from an Excel file downloaded from this system.
-            Follow these steps to do this:
-            <ol className="mt-1 space-y-1 pl-4">
-              <li>
-                In the Excel file, select the desired cells from the first
-                column (Activity ID), and while holding down the CTRL key,
-                continue selecting the corresponding cells from the target
-                column where you intend to paste the data (e.g. Description of
-                activities).
-              </li>
-              <li>
-                Return to this screen and click the{' '}
-                <span className="inline-flex align-middle">
-                  <IoClipboardOutline />
-                </span>{' '}
-                icon from the desired header column (e.g. Description of
-                activities). The system will paste the values in the correct
-                activities, regardless of how the Excel rows were sorted.
-              </li>
-            </ol>
-          </li>
-        </ul>
-      </div>
+      <ul className="mt-0.5 list-inside space-y-1 pl-0">
+        <li>
+          Use this page to edit individual activities of this Business Plan by
+          clicking on the desired cell and choosing one of the permitted values
+          or typing text or numbers in the appropriate fields.
+        </li>
+        <li>
+          By default, the activities listed below are sorted alphabetically.
+          However, newly added or edited activities will temporarily appear at
+          the top of the list until the page is refreshed or navigated away
+          from.
+        </li>
+        <li>
+          Columns containing the{' '}
+          <span className="inline-flex align-middle">
+            <IoClipboardOutline />
+          </span>{' '}
+          icon allow pasting of values onto multiple rows when these values have
+          been copied from an Excel file downloaded from this system. Follow
+          these steps to do this:
+          <ol className="mt-1 space-y-1 pl-4">
+            <li>
+              In the Excel file, select the desired cells from the first column
+              (Activity ID), and while holding down the CTRL key, continue
+              selecting the corresponding cells from the target column where you
+              intend to paste the data (e.g. Description of activities).
+            </li>
+            <li>
+              Return to this screen and click the{' '}
+              <span className="inline-flex align-middle">
+                <IoClipboardOutline />
+              </span>{' '}
+              icon from the desired header column (e.g. Description of
+              activities). The system will paste the values in the correct
+              activities, regardless of how the Excel rows were sorted.
+            </li>
+          </ol>
+        </li>
+      </ul>
     </Alert>
   )
 

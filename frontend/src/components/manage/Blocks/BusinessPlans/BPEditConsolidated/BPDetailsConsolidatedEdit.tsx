@@ -18,6 +18,8 @@ import { Label } from '../BPUpload/helpers'
 import { BpFilesObject } from '../types'
 import FileInput from '../BPEdit/FileInput'
 import SimpleInput from '../../Section/ReportInfo/SimpleInput'
+import { BsFilesAlt } from 'react-icons/bs'
+import { Divider } from '@mui/material'
 
 const BPSummary = (props: {
   business_plan: any
@@ -55,12 +57,32 @@ const BPSummary = (props: {
   }
 
   return (
-    <div className="flex flex-col gap-6 rounded-lg bg-gray-100 p-4">
-      <p className="m-0 text-2xl font-normal">Summary</p>
+    <div className="flex flex-col gap-6 rounded-lg bg-white p-6">
+      <div className="flex gap-2.5">
+        <div className="flex h-[28px] w-[28px] items-center justify-center rounded-[14px] bg-primary">
+          <BsFilesAlt className="text-mlfs-hlerYellowTint" size={16} />
+        </div>
+        <p className="m-0 mt-[1px] text-2xl font-normal">Summary</p>
+      </div>
       <div className="grid w-full grid-cols-2 grid-rows-3 gap-4 lg:grid-cols-3 lg:grid-rows-2">
-        <SimpleField id="years" data={year_start} label="Year start" />
-        <SimpleField id="years" data={year_end} label="Year end" />
-        <SimpleField id="status" data={status} label="Status" />
+        <SimpleField
+          id="years"
+          data={year_start}
+          label="Year start"
+          textClassName="text-[1.25rem]"
+        />
+        <SimpleField
+          id="years"
+          data={year_end}
+          label="Year end"
+          textClassName="text-[1.25rem]"
+        />
+        <SimpleField
+          id="status"
+          data={status}
+          label="Status"
+          textClassName="text-[1.25rem]"
+        />
         {canEditBp ? (
           <>
             <div>
@@ -101,15 +123,18 @@ const BPSummary = (props: {
               id="meeting"
               data={getMeetingNr(meeting_id)}
               label="Meeting number"
+              textClassName="text-[1.25rem]"
             />
             <SimpleField
               id="decision"
               data={decision_id || '-'}
               label="Decision number"
+              textClassName="text-[1.25rem]"
             />
           </>
         )}
       </div>
+      <Divider />
       {canViewFiles && (
         <FilesViewer {...{ files, setFiles }} bpFiles={bpFiles || []} />
       )}
@@ -123,7 +148,7 @@ export default function BPDetailsConsolidatedEdit({ data, ...props }: any) {
     <div className="flex flex-1 flex-col justify-start gap-6 border-0">
       <section className="grid items-start gap-6 md:auto-rows-auto md:grid-cols-2">
         <BPSummary {...props} />
-        <div className="flex flex-col rounded-lg bg-gray-100 p-4">
+        <div className="flex flex-col rounded-lg bg-white p-6">
           <VersionHistoryList
             currentDataVersion={1}
             historyList={data?.history || []}

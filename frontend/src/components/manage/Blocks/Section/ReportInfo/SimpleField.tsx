@@ -1,11 +1,15 @@
+import cx from 'classnames'
+
 const SimpleField = ({
   id,
   className,
+  textClassName,
   data,
   hasName,
   label,
 }: {
   className?: string
+  textClassName?: string
   data: string
   hasName?: boolean
   id: string
@@ -19,7 +23,7 @@ const SimpleField = ({
       >
         {label}
       </label>
-      <p className="my-0 text-xl font-semibold">{data}</p>
+      <p className={cx('my-0 text-xl font-semibold', textClassName)}>{data}</p>
       {hasName && (
         <input id={id} name={id} type="text" value={data} hidden readOnly />
       )}
