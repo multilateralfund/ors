@@ -614,7 +614,7 @@ function CPFilters(props: any) {
   return (
     <Box
       id="filters"
-      className="sticky top-2 order-1 flex h-fit flex-col gap-6 rounded-lg p-8 lg:order-none print:hidden"
+      className="sticky top-2 z-[1] order-1 flex h-fit flex-col gap-6 rounded-lg p-8 lg:order-none print:hidden"
     >
       <div className="flex justify-end text-3xl font-light">
         <StatusLegend className="mb-0" />
@@ -651,46 +651,50 @@ const CPResources = ({ resources }: any) => {
       className="flex flex-col gap-6 rounded-lg p-8 print:hidden"
     >
       <Typography className="text-2xl font-medium">Resources</Typography>
-      {!loading &&
-        (!isEmpty(data) ? (
-          <div className="flex max-h-56 flex-col overflow-y-auto">
-            {entries(data)
-              .sort(([keyA], [keyB]) => {
-                const isKeyAUserGuide = isFileUserGuide(keyA)
-                const isKeyBUserGuide = isFileUserGuide(keyB)
+      {!loading && !isEmpty(data) && (
+        <div className="flex max-h-56 flex-col overflow-y-auto">
+          {entries(data)
+            .sort(([keyA], [keyB]) => {
+              const isKeyAUserGuide = isFileUserGuide(keyA)
+              const isKeyBUserGuide = isFileUserGuide(keyB)
 
-                if (isKeyAUserGuide && !isKeyBUserGuide) return -1
-                if (!isKeyAUserGuide && isKeyBUserGuide) return 1
+              if (isKeyAUserGuide && !isKeyBUserGuide) return -1
+              if (!isKeyAUserGuide && isKeyBUserGuide) return 1
 
-                return keyA.localeCompare(keyB)
-              })
-              .map((file) => {
-                const filePath = split(file[1] as string, '.fs')[1]
-                const formattedPath = removeTrailingSlash(
-                  formatApiUrl(filePath),
-                )
+              return keyA.localeCompare(keyB)
+            })
+            .map((file) => {
+              const filePath = split(file[1] as string, '.fs')[1]
+              const formattedPath = removeTrailingSlash(formatApiUrl(filePath))
 
-                return (
-                  <DownloadLink
-                    href={formattedPath}
-                    iconSize={18}
-                    target="_self"
-                    className="mb-[5px] mr-1"
-                    iconClassname="min-w-[18px] mb-1"
+              return (
+                <DownloadLink
+                  href={formattedPath}
+                  iconSize={18}
+                  target="_self"
+                  className="mb-[5px] mr-1"
+                  iconClassname="min-w-[18px] mb-1"
+                >
+                  <span
+                    title={file[0]}
+                    className="w-0 max-w-fit grow truncate text-[15px]"
                   >
-                    <span
-                      title={file[0]}
-                      className="w-0 max-w-fit grow truncate text-[15px]"
-                    >
-                      {file[0]}
-                    </span>
-                  </DownloadLink>
-                )
-              })}
-          </div>
-        ) : (
-          <Typography className="text-lg">No resources available</Typography>
-        ))}
+                    {file[0]}
+                  </span>
+                </DownloadLink>
+              )
+            })}
+        </div>
+      )}
+      <div className="relative aspect-video max-h-[296px] w-full max-w-[526px]">
+        <iframe
+          src="https://www.youtube.com/embed/1RCXRcD_TKY?si=qgRdgSLvEPtv0luJ"
+          title="CP Demonstration"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          className="absolute left-0 top-0 h-full w-full"
+        ></iframe>
+      </div>
     </Box>
   )
 }
