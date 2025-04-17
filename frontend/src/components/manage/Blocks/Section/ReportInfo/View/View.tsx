@@ -4,8 +4,8 @@ import { FilesViewer } from '@ors/components/manage/Blocks/Section/ReportInfo/Fi
 import ReportHistory from '@ors/components/manage/Blocks/Section/ReportInfo/ReportHistory'
 import ReportStatus from '@ors/components/manage/Blocks/Section/ReportInfo/ReportStatus'
 import SimpleField from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleField'
+import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
 import { useStore } from '@ors/store'
-import { HeaderWithIcon } from '../../../BusinessPlans/HelperComponents'
 import { BsFilesAlt } from 'react-icons/bs'
 import { Divider } from '@mui/material'
 

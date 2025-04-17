@@ -1,3 +1,4 @@
+import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
 import { HistoryListItem } from '@ors/types/store'
 
 import React, { useState } from 'react'
@@ -5,7 +6,6 @@ import React, { useState } from 'react'
 import cx from 'classnames'
 
 import { FaClockRotateLeft } from 'react-icons/fa6'
-import { HeaderWithIcon } from '@ors/components/manage/Blocks/BusinessPlans/HelperComponents'
 
 export default function VersionHistoryList(props: any) {
   const { currentDataVersion, historyList, length, type } = props

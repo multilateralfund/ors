@@ -14,11 +14,11 @@ import SimpleField from '@ors/components/manage/Blocks/Section/ReportInfo/Simple
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import Field from '@ors/components/manage/Form/Field'
 import IconButton from '@ors/components/ui/IconButton/IconButton'
+import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
 import { useStore } from '@ors/store'
 
 import { IoTrash } from 'react-icons/io5'
 import { BsFilesAlt } from 'react-icons/bs'
-import { HeaderWithIcon } from '../../../BusinessPlans/HelperComponents'
 
 function FileInput(props: {
   form: CPBaseForm

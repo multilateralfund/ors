@@ -9,6 +9,7 @@ import { Dispatch, SetStateAction } from 'react'
 
 import SimpleField from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleField'
 import VersionHistoryList from '@ors/components/ui/VersionDetails/VersionHistoryList'
+import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
 import { useStore } from '@ors/store'
 
 import { FilesViewer } from '../FilesViewer'
@@ -20,7 +21,6 @@ import FileInput from '../BPEdit/FileInput'
 import SimpleInput from '../../Section/ReportInfo/SimpleInput'
 import { BsFilesAlt } from 'react-icons/bs'
 import { Divider } from '@mui/material'
-import { HeaderWithIcon } from '../HelperComponents'
 
 const BPSummary = (props: {
   business_plan: any

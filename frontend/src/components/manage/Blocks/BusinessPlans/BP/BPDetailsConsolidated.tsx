@@ -2,6 +2,7 @@ import { UserType, userCanViewFilesBusinessPlan } from '@ors/types/user_types'
 
 import SimpleField from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleField'
 import VersionHistoryList from '@ors/components/ui/VersionDetails/VersionHistoryList'
+import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
 import { useStore } from '@ors/store'
 
 import { FilesViewer } from '../FilesViewer'
@@ -14,7 +15,6 @@ import BPTableToolbarButtons from '../BPTableToolbarButtons'
 
 import { BsFilesAlt } from 'react-icons/bs'
 import { Divider } from '@mui/material'
-import { HeaderWithIcon } from '../HelperComponents'
 
 const BPSummary = (props: any) => {
   const { results, bpFiles, loadedFiles } = props

@@ -2,9 +2,8 @@ import { useState } from 'react'
 
 import { filter } from 'lodash'
 
+import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
 import { formatApiUrl } from '@ors/helpers'
-
-import { HeaderWithIcon } from './HelperComponents'
 import { BpDetails } from './types'
 
 import { IoDownloadOutline, IoTrash } from 'react-icons/io5'

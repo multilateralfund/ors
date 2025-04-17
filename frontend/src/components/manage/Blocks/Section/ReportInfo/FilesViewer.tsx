@@ -2,12 +2,12 @@ import { ApiFile } from '@ors/types/api_files'
 
 import { useSnackbar } from 'notistack'
 
+import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
 import { api, formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
 import { IoDownloadOutline, IoTrash } from 'react-icons/io5'
 import { TbFiles } from 'react-icons/tb'
-import { HeaderWithIcon } from '../../BusinessPlans/HelperComponents'
 
 export function FilesViewer(props: {
   files?: ApiFile[]
