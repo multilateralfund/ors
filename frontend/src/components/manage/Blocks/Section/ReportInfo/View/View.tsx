@@ -50,7 +50,7 @@ const ReportInfoView = (props: any) => {
             id="email_reporting_officer"
             data={report.report_info?.reporting_email || ''}
             label="Email of reporting officer"
-            textClassName="text-[1.25rem]"
+            textClassName="break-words text-[1.25rem]"
           />
           <SimpleField
             id="country"
