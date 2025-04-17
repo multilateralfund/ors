@@ -260,7 +260,11 @@ function CPView(props: { archive?: boolean }) {
         <div id="sectionToolbar"></div>
       </div>
 
-      <CPSectionWrapper>
+      <CPSectionWrapper
+        {...(sections[activeTab].id !== 'report_info' && {
+          className: 'bg-white',
+        })}
+      >
         {report.emptyForm.loaded &&
           sections.map((section, index) => {
             const isSectionChecked =

@@ -1,8 +1,8 @@
 import { UserType, isCountryUserType } from '@ors/types/user_types'
 
-import React, { ChangeEvent, useEffect } from 'react'
+import React, { ChangeEvent } from 'react'
 
-import { TextField } from '@mui/material'
+import { TextField, Divider } from '@mui/material'
 import Typography from '@mui/material/Typography'
 
 import { CPBaseForm } from '@ors/components/manage/Blocks/CountryProgramme/typesCPCreate'
@@ -17,6 +17,8 @@ import IconButton from '@ors/components/ui/IconButton/IconButton'
 import { useStore } from '@ors/store'
 
 import { IoTrash } from 'react-icons/io5'
+import { BsFilesAlt } from 'react-icons/bs'
+import { HeaderWithIcon } from '../../../BusinessPlans/HelperComponents'
 
 function FileInput(props: {
   form: CPBaseForm
@@ -180,9 +182,14 @@ const ReportInfoCreate = (props: any) => {
         {section.title}
       </Typography>
 
-      <div className="flex flex-col gap-4 rounded-lg bg-gray-100 p-4">
-        <legend className="mb-2 text-2xl font-normal">Summary</legend>
-        <SimpleField id="username" data={username} label="Username" />
+      <div className="flex flex-col gap-6 rounded-lg bg-white p-6">
+        <HeaderWithIcon title="Summary" Icon={BsFilesAlt} />
+        <SimpleField
+          id="username"
+          data={username}
+          label="Username"
+          textClassName="text-[1.25rem]"
+        />
         <div className="grid gap-6 md:grid-cols-2">
           <SimpleInput
             id="name_reporting_officer"
@@ -240,15 +247,18 @@ const ReportInfoCreate = (props: any) => {
         </div>
         <FileInput form={form} setForm={setForm} />
         {isEdit && (
-          <FilesViewer
-            files={alreadyUploadedFiles}
-            heading={'Already uploaded files'}
-            isEdit={isEdit}
-          />
+          <>
+            <Divider />
+            <FilesViewer
+              files={alreadyUploadedFiles}
+              heading={'Already uploaded files'}
+              isEdit={isEdit}
+            />
+          </>
         )}
       </div>
 
-      <div className="flex flex-col gap-5 rounded-lg bg-gray-100 p-4">
+      <div className="flex flex-col gap-6 rounded-lg bg-white p-6">
         <ReportStatus
           isCreate={isCreate}
           isEdit={isEdit}
@@ -256,7 +266,12 @@ const ReportInfoCreate = (props: any) => {
           sectionsChecked={sectionsChecked}
           onSectionCheckChange={onSectionCheckChange}
         />
-        {isEdit && <ReportHistory />}
+        {isEdit && (
+          <>
+            <Divider />
+            <ReportHistory />
+          </>
+        )}
       </div>
     </section>
   )
