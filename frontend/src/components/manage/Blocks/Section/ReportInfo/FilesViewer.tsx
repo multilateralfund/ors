@@ -1,13 +1,13 @@
 import { ApiFile } from '@ors/types/api_files'
 
-import React from 'react'
-
 import { useSnackbar } from 'notistack'
 
 import { api, formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
-import { IoDocumentTextOutline, IoTrash } from 'react-icons/io5'
+import { IoDownloadOutline, IoTrash } from 'react-icons/io5'
+import { TbFiles } from 'react-icons/tb'
+import { HeaderWithIcon } from '../../BusinessPlans/HelperComponents'
 
 export function FilesViewer(props: {
   files?: ApiFile[]
@@ -25,26 +25,27 @@ export function FilesViewer(props: {
 
   return (
     <div className="flex flex-col gap-2">
-      <p className="m-0 text-2xl font-normal">{props.heading}</p>
-      <div className="flex flex-col gap-3">
+      <HeaderWithIcon title={props.heading} Icon={TbFiles} />
+      <div className="mt-3 flex flex-col gap-2.5">
         {props.files.length === 0 ? (
-          <p className="m-1 text-lg font-normal text-gray-500">
+          <p className="m-1 ml-0 text-lg font-normal text-gray-500">
             No files available
           </p>
         ) : (
           props.files.map((file, index) => (
             <div key={index} className="flex items-center gap-2">
               <a
-                className="m-0 flex w-min items-center gap-2"
+                className="m-0 flex items-center gap-2.5 no-underline"
                 href={formatApiUrl(file.download_url)}
               >
-                <IoDocumentTextOutline color="#0086C9" size="20" />
-                <span className="text-lg text-gray-900">{file.filename}</span>
+                <IoDownloadOutline className="mb-1 min-h-[20px] min-w-[20px] text-secondary" />
+                <span className="text-lg font-medium text-secondary">
+                  {file.filename}
+                </span>
               </a>
               {props.isEdit && (
                 <IoTrash
-                  className="transition-colors ease-in-out hover:cursor-pointer hover:text-mlfs-purple"
-                  size={20}
+                  className="transition-colors mb-1 min-h-[20px] min-w-[20px] text-[#666] ease-in-out hover:cursor-pointer hover:text-inherit"
                   onClick={async () => {
                     try {
                       await api(

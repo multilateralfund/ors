@@ -5,6 +5,9 @@ import ReportHistory from '@ors/components/manage/Blocks/Section/ReportInfo/Repo
 import ReportStatus from '@ors/components/manage/Blocks/Section/ReportInfo/ReportStatus'
 import SimpleField from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleField'
 import { useStore } from '@ors/store'
+import { HeaderWithIcon } from '../../../BusinessPlans/HelperComponents'
+import { BsFilesAlt } from 'react-icons/bs'
+import { Divider } from '@mui/material'
 
 const ReportInfoView = (props: any) => {
   const { report, section } = props
@@ -27,29 +30,42 @@ const ReportInfoView = (props: any) => {
         {section.title}
       </Typography>
 
-      <div className="flex flex-col gap-6 rounded-lg bg-gray-100 p-4">
-        <p className="m-0 text-2xl font-normal">Summary</p>
+      <div className="flex flex-col gap-6 rounded-lg bg-white p-6">
+        <HeaderWithIcon title="Summary" Icon={BsFilesAlt} />
         <div className="grid w-full gap-4 md:grid-cols-2 md:grid-rows-3 lg:grid-cols-3 lg:grid-rows-2">
           <SimpleField
             id="username"
             className="col-span-2 lg:col-span-1"
             data={username}
             label="Username"
+            textClassName="text-[1.25rem]"
           />
           <SimpleField
             id="name_reporting_officer"
             data={report.report_info?.reporting_entry || ''}
             label="Name of reporting officer"
+            textClassName="text-[1.25rem]"
           />
           <SimpleField
             id="email_reporting_officer"
             data={report.report_info?.reporting_email || ''}
             label="Email of reporting officer"
+            textClassName="text-[1.25rem]"
           />
-          <SimpleField id="country" data={report.country} label="Country" />
-          <SimpleField id="year" data={report.year} label="Year" />
+          <SimpleField
+            id="country"
+            data={report.country}
+            label="Country"
+            textClassName="text-[1.25rem]"
+          />
+          <SimpleField
+            id="year"
+            data={report.year}
+            label="Year"
+            textClassName="text-[1.25rem]"
+          />
         </div>
-
+        <Divider />
         <FilesViewer
           files={files}
           heading={'File attachments'}
@@ -57,8 +73,9 @@ const ReportInfoView = (props: any) => {
         />
       </div>
 
-      <div className="flex flex-col rounded-lg bg-gray-100 p-4 gap-5">
+      <div className="flex flex-col gap-6 rounded-lg bg-white p-6">
         <ReportStatus report={report} sectionsChecked={sectionsChecked} />
+        <Divider />
         <ReportHistory />
       </div>
     </section>

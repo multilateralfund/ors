@@ -421,7 +421,11 @@ function CPEdit() {
           </Tabs>
           <div id="sectionToolbar"></div>
         </div>
-        <CPSectionWrapper>
+        <CPSectionWrapper
+          {...(sections[activeTab].id !== 'report_info' && {
+            className: 'bg-white',
+          })}
+        >
           {!!report.data &&
             sections.map((section, index) => {
               if (!includes(renderedSections, index)) return null

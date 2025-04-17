@@ -684,7 +684,11 @@ const CPCreate: React.FC = () => {
           </Tabs>
           <div id="sectionToolbar"></div>
         </div>
-        <CPSectionWrapper>
+        <CPSectionWrapper
+          {...(sections[activeTab].id !== 'report_info' && {
+            className: 'bg-white',
+          })}
+        >
           {!!existingReports.data?.length && currentCountry && (
             <SubmissionExistsDialog
               existingReportTitle={existingReports.data[0].name}
