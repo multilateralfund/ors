@@ -13,7 +13,6 @@ from core.api.tests.factories import (
     ProjectTypeFactory,
     UserFactory,
 )
-from core.models.project import Project
 from core.models.project import ProjectFile
 from core.utils import get_project_sub_code
 

@@ -241,7 +241,7 @@ class ProjectV2ViewSet(
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
-    """ """
+    """V2 ViewSet for Project model."""
 
     permission_classes = [IsSecretariat | IsAgency | IsCountryUser | IsViewer]
     filterset_class = ProjectFilter
