@@ -8,22 +8,23 @@ def forwards_func(apps, schema_editor):
     ExternalIncomeAnnual = apps.get_model("core", "ExternalIncomeAnnual")
 
     agencies = []
-    external_income_agencies_set = (
-        set(ExternalIncomeAnnual.objects.values_list("agency_name", flat=True))
-        - set([""])
-    )
+    external_income_agencies_set = set(
+        ExternalIncomeAnnual.objects.values_list("agency_name", flat=True)
+    ) - set([""])
     # Update agencies that exist
-    Agency.objects.filter(name__in=external_income_agencies_set).update(is_for_replenishment=True)
+    Agency.objects.filter(name__in=external_income_agencies_set).update(
+        is_for_replenishment=True
+    )
 
     existing_agencies_set = set(Agency.objects.values_list("name", flat=True))
 
     # Create agencies that don't exist
-    for name in (external_income_agencies_set - existing_agencies_set):
+    for name in external_income_agencies_set - existing_agencies_set:
         agency_type = "National"
         is_for_replenishment = True
         if name in ["Treasurer (Cash Pool)", "UNIDO", "UNDP", "UNEP", "World Bank"]:
             agency_type = "Agency"
-        
+
         agencies.append(
             Agency(
                 name=name,

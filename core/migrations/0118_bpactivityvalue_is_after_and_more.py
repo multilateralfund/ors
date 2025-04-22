@@ -18,9 +18,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(
-            forwards_func, migrations.RunPython.noop
-        ),
+        migrations.RunPython(forwards_func, migrations.RunPython.noop),
         migrations.AddField(
             model_name="bpactivityvalue",
             name="is_after",

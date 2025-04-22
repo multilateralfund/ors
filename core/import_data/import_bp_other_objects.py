@@ -23,6 +23,8 @@ def import_bp_other_objects():
         ProjectSubSector.objects.get_or_create(
             name=f"Other {sector.name}", sector=sector, code=f"OTH{sector.code}"
         )
-    ProjectSubSector.objects.get_or_create(name="Other", sector=sector_other, code="OTH")
+    ProjectSubSector.objects.get_or_create(
+        name="Other", sector=sector_other, code="OTH"
+    )
 
     logger.info("✔ BP 'Other' objects imported")

@@ -241,8 +241,7 @@ class ProjectV2ViewSet(
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
-    """
-    """
+    """ """
 
     permission_classes = [IsSecretariat | IsAgency | IsCountryUser | IsViewer]
     filterset_class = ProjectFilter
@@ -319,10 +318,11 @@ class ProjectV2ViewSet(
                 format=openapi.FORMAT_DATE,
             ),
         ],
-        operation_description="V2 API endpoints that allow CRUD operations on projects."
+        operation_description="V2 API endpoints that allow CRUD operations on projects.",
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
+
 
 class ProjectFileView(APIView):
     """

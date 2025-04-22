@@ -170,7 +170,6 @@ def setup_project_list(
     return new_agency, new_project_status, new_sector, new_meeting
 
 
-
 class TestProjectV2List(BaseTest):
     url = reverse("project-v2-list")
 
