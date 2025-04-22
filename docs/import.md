@@ -82,7 +82,7 @@ docker-compose exec app ./manage.py import_records cp_db
     | SectionB(MetricTonnes)-Datafor2019-2022(February1,2024).xlsx | SectionB.xlsx |
     | SectionB(MetricTonnes)-Missing2022(August26,2024).xlsx| SectionB-Missing2022.xlsx |
     | SectionC,D,E-2019-2022(February1,2024).xlsx | SectionCDE.xlsx |
-    | SectionC,D,E-2019-2022(February1,2024).xlsx | SectionCDE-Missing2022.xlsx |
+    | SectionC,D,E-Missing2022(August26,2024).xlsx | SectionCDE-Missing2022.xlsx |
     | 1995-2004 CP Data Submitted[38].xlsx | CPDataSubmitted_94_04.xlsx |
 
 

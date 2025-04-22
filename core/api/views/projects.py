@@ -182,6 +182,7 @@ class ProjectViewSet(
                 format=openapi.FORMAT_DATE,
             ),
         ],
+        deprecated=True,
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
@@ -235,6 +236,93 @@ class ProjectViewSet(
 
         return super().update(request, *args, **kwargs)
 
+
+class ProjectV2ViewSet(
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
+    """
+    """
+
+    permission_classes = [IsSecretariat | IsAgency | IsCountryUser | IsViewer]
+    filterset_class = ProjectFilter
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.OrderingFilter,
+        filters.SearchFilter,
+    ]
+    ordering_fields = [
+        "title",
+        "country__name",
+        "agency__name",
+        "sector__name",
+        "subsector__name",
+        "project_type__name",
+        "substance_type",
+    ]
+    search_fields = ["code", "legacy_code", "meta_project__code", "title"]
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Project.objects.select_related(
+            "country",
+            "agency",
+            "subsector__sector",
+            "project_type",
+            "status",
+            "cluster",
+            "approval_meeting",
+            "meeting_transf",
+            "meta_project",
+        ).prefetch_related(
+            "coop_agencies__agency",
+            "submission_amounts",
+            "rbm_measures__measure",
+            "ods_odp",
+        )
+
+        if "agency" in user.user_type.lower():
+            # filter projects by agency if user is agency
+            queryset = queryset.filter(agency=user.agency)
+
+        if "country" in user.user_type.lower():
+            # filter projects by country if user is country
+            queryset = queryset.filter(country=user.country)
+
+        return queryset
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return ProjectListSerializer
+        return ProjectDetailsSerializer
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "get_submission",
+                openapi.IN_QUERY,
+                description="True: Return only submissions; False: Return only projects",
+                type=openapi.TYPE_BOOLEAN,
+            ),
+            openapi.Parameter(
+                "date_received_after",
+                openapi.IN_QUERY,
+                description="Returns the projects with date_received equal or after this date",
+                type=openapi.TYPE_STRING,
+                format=openapi.FORMAT_DATE,
+            ),
+            openapi.Parameter(
+                "date_received_before",
+                openapi.IN_QUERY,
+                description="Returns the projects with date_received equal or before this date",
+                type=openapi.TYPE_STRING,
+                format=openapi.FORMAT_DATE,
+            ),
+        ],
+        operation_description="V2 API endpoints that allow CRUD operations on projects."
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 class ProjectFileView(APIView):
     """

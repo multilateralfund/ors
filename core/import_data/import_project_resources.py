@@ -261,7 +261,7 @@ def import_subsector(file_path):
         sector = ProjectSector.objects.filter(code=sector_code).first()
         if not sector:
             logger.warning(
-                f"⚠️ {subsector_json['SEC']} sector not fount => {subsector_json['SUBSECTOR']} not imported"
+                f"⚠️ {subsector_json['SEC']} sector not found => {subsector_json['SUBSECTOR']} not imported"
             )
             continue
 
