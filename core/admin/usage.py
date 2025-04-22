@@ -22,7 +22,7 @@ class UsageAdmin(admin.ModelAdmin):
             "excludedusage",
             "children",
             "cpusagearchive",
-            "cpreportformatcolumn"
+            "cpreportformatcolumn",
         ]
         return get_final_display_list(Usage, exclude)
 

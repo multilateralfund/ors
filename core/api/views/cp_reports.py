@@ -218,9 +218,9 @@ class CPReportView(
         custom_errors = {}
         for section, section_errors in error_dict.items():
             if (
-                not "adm" in section
-                and not "section" in section
-                and not "record_usages" in section
+                "adm" not in section
+                and "section" not in section
+                and "record_usages" not in section
                 or section.startswith("comments_")
             ):
                 # this is a general error

@@ -96,6 +96,7 @@ from core.api.views.projects import (
     ProjectStatisticsView,
     ProjectSubmissionAmountViewSet,
     ProjectViewSet,
+    ProjectV2ViewSet,
     ProjectStatusListView,
     ProjectTypeListView,
     ProjectCommentViewSet,
@@ -108,6 +109,7 @@ from core.api.views.usages import UsageListView
 from core.api.views.countries import CountryListView
 
 router = routers.SimpleRouter()
+router.register("projects/v2", ProjectV2ViewSet, basename="project-v2")
 router.register("projects", ProjectViewSet, basename="project")
 router.register("project-fund", ProjectFundViewSet)
 router.register("project-ods-odp", ProjectOdsOdpViewSet)

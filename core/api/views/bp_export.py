@@ -67,13 +67,13 @@ class BPActivityExportView(generics.GenericAPIView):
         return [{"name": name, "acronym": acronym} for name, acronym in queryset]
 
     def add_data_validation(
-            self,
-            wb,
-            column,
-            validation_sheet,
-            validation_range,
-            allow_blank=False,
-            show_error=False,
+        self,
+        wb,
+        column,
+        validation_sheet,
+        validation_range,
+        allow_blank=False,
+        show_error=False,
     ):
         """
         Add data validation to a column in the Activities sheet
@@ -127,8 +127,12 @@ class BPActivityExportView(generics.GenericAPIView):
         return year_start, year_end
 
     def get_header_range(self, year_start, year_end):
-        header_year_start = int(self.request.query_params.get("header_year_start", year_start))
-        header_year_end = int(self.request.query_params.get("header_year_end", year_end))
+        header_year_start = int(
+            self.request.query_params.get("header_year_start", year_start)
+        )
+        header_year_end = int(
+            self.request.query_params.get("header_year_end", year_end)
+        )
 
         return header_year_start, header_year_end
 
@@ -139,7 +143,10 @@ class BPActivityExportView(generics.GenericAPIView):
         header_year_start, header_year_end = self.get_header_range(year_start, year_end)
 
         has_custom_header = all([header_year_start, header_year_end])
-        header_differs = has_custom_header and (header_year_start, header_year_end) != (year_start, year_end)
+        header_differs = has_custom_header and (header_year_start, header_year_end) != (
+            year_start,
+            year_end,
+        )
         if header_differs:
             result = f"{result}_for_{header_year_start}-{header_year_end}_import"
 
@@ -156,7 +163,9 @@ class BPActivityExportView(generics.GenericAPIView):
         # get all activities between year_start and year_end
         wb = openpyxl.Workbook()
 
-        exporter = BPActivitiesWriter(wb, min_year=header_year_start, max_year=header_year_end + 1)
+        exporter = BPActivitiesWriter(
+            wb, min_year=header_year_start, max_year=header_year_end + 1
+        )
         data = self.get_activities()
         exporter.write(data)
 

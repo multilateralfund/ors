@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-      migrations.RunSQL(
+        migrations.RunSQL(
             sql="""
             CREATE VIEW triennial_contributions_view AS
             SELECT 
@@ -31,6 +31,6 @@ class Migration(migrations.Migration):
                 END as current_outstanding_contributions
             FROM core_triennialcontributionstatus tcs;
             """,
-            reverse_sql="DROP VIEW IF EXISTS triennial_contributions_view;"
+            reverse_sql="DROP VIEW IF EXISTS triennial_contributions_view;",
         )
     ]

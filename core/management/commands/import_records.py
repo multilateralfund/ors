@@ -76,5 +76,12 @@ class Command(BaseCommand):
             import_admde_items()
         if rec_type in ["records_95_04", "xlsx_files", "all"]:
             import_records_95_04()
-        if rec_type in ["cp_format", "cp_db_records", "xlsx_files", "admb_items", "admc_items", "all"]:
+        if rec_type in [
+            "cp_format",
+            "cp_db_records",
+            "xlsx_files",
+            "admb_items",
+            "admc_items",
+            "all",
+        ]:
             import_cp_format()
