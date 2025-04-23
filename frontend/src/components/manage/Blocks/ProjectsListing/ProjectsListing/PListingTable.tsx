@@ -22,6 +22,7 @@ const PListingTable = ({ projects }: any) => {
   return (
     loaded && (
       <ViewTable
+        key={JSON.stringify(results)}
         columnDefs={columnDefs}
         defaultColDef={defaultColDef}
         domLayout="normal"
@@ -50,9 +51,9 @@ const PListingTable = ({ projects }: any) => {
             .getColumnState()
             .filter((column) => !!column.sort)
             .map(
-              (column) =>
-                (column.sort === 'asc' ? '' : '-') +
-                column.colId.replaceAll('.', '__'),
+              ({ sort, colId }) =>
+                (sort === 'asc' ? '' : '-') +
+                (colId === 'title' ? colId : colId.split('.')[0] + '__name'),
             )
             .join(',')
           setParams({ offset: 0, ordering })

@@ -13,15 +13,18 @@ const ProjectsFiltersSelectedOpts = ({
   handleParamsChange,
 }: any) => {
   const { agencies, countries } = commonSlice
-  const { types, clusters, submission_statuses } = projectSlice
+  const { types, clusters, submission_statuses, sectors, statuses } =
+    projectSlice
 
   const initialParams = {
     country_id: [],
     agency_id: [],
     cluster_id: [],
     project_type_id: [],
+    sector_id: [],
     meeting_id: [],
     submission_status_id: [],
+    status_id: [],
     search: '',
   }
 
@@ -105,6 +108,7 @@ const ProjectsFiltersSelectedOpts = ({
         {displaySelectedOption(formatEntity(agencies.data), 'agency_id')}
         {displaySelectedOption(formatEntity(clusters.data), 'cluster_id')}
         {displaySelectedOption(formatEntity(types.data), 'project_type_id')}
+        {displaySelectedOption(formatEntity(sectors.data), 'sector_id')}
         {displaySelectedOption(
           formatEntity(meetings, 'value'),
           'meeting_id',
@@ -114,6 +118,7 @@ const ProjectsFiltersSelectedOpts = ({
           formatEntity(submission_statuses.data),
           'submission_status_id',
         )}
+        {displaySelectedOption(formatEntity(statuses.data), 'status_id')}
 
         <Typography
           className="cursor-pointer content-center text-lg font-medium"

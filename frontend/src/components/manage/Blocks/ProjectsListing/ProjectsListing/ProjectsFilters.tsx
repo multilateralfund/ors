@@ -155,7 +155,6 @@ const ProjectsFilters = ({
           'project_type_id',
         )}
         widget="autocomplete"
-        isOptionEqualToValue={(option: any, value: any) => option.id === value}
         onChange={(_: any, value: any) => {
           const projectType = filters.project_type_id || []
           const newValue = union(projectType, value)
@@ -168,9 +167,29 @@ const ProjectsFilters = ({
         }}
         {...defaultProps}
       />
+      <Field
+        Input={{ placeholder: tableColumns.sector }}
+        options={getFilterOptions(
+          filters,
+          projectSlice.sectors.data,
+          'sector_id',
+        )}
+        widget="autocomplete"
+        onChange={(_: any, value: any) => {
+          const sector = filters.sector_id || []
+          const newValue = union(sector, value)
+
+          handleFilterChange({ sector_id: newValue })
+          handleParamsChange({
+            offset: 0,
+            sector_id: newValue.map((item: any) => item.id).join(','),
+          })
+        }}
+        {...defaultProps}
+      />
       <div className="w-full md:w-[7.76rem]">
         <PopoverInput
-          className="!m-0 mb-0 h-[2.25rem] min-h-[2.25rem] w-full truncate !py-1 !pr-0 text-[15px] md:w-[7.76rem]"
+          className="!m-0 mb-0 h-[2.25rem] min-h-[2.25rem] w-full truncate border-2 !py-1 !pr-0 text-[15px] md:w-[7.76rem]"
           label="Meeting"
           options={meetings}
           onChange={(value: any) => {
@@ -209,7 +228,32 @@ const ProjectsFilters = ({
           })
         }}
         {...defaultProps}
-        FieldProps={{ className: 'mb-0 w-full md:w-[10.5rem] BPList' }}
+        FieldProps={{
+          className: defaultProps.FieldProps.className + ' md:w-[10.3rem]',
+        }}
+      />
+      <Field
+        Input={{ placeholder: tableColumns.project_status }}
+        options={getFilterOptions(
+          filters,
+          projectSlice.statuses.data,
+          'status_id',
+        )}
+        widget="autocomplete"
+        onChange={(_: any, value: any) => {
+          const projectStatus = filters.status_id || []
+          const newValue = union(projectStatus, value)
+
+          handleFilterChange({ status_id: newValue })
+          handleParamsChange({
+            offset: 0,
+            status_id: newValue.map((item: any) => item.id).join(','),
+          })
+        }}
+        {...defaultProps}
+        FieldProps={{
+          className: defaultProps.FieldProps.className + ' md:w-[9rem]',
+        }}
       />
     </div>
   )
