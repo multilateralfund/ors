@@ -46,6 +46,11 @@
     @apply text-mlfs-hlerYellowTint;
   }
 
+  .ag-header-container .ag-sort-indicator-container .ag-icon {
+    @apply text-mlfs-hlerYellowTint;
+    line-height: 1rem;
+  }
+
   .ag-header-cell.ag-text-left .ag-header-cell-label,
   .ag-header-group-cell.ag-text-left,
   .ag-header-cell.ag-text-left .ag-header-cell-comp-wrapper {
