@@ -73,7 +73,7 @@ def parse_file(file_path, file_name, meeting):
 
         project_data.update(
             {
-                "approval_meeting": meeting,
+                "meeting": meeting,
                 "project_duration": row["PROJECT_DURATION"],
                 "substance_type": substance_type,
                 "capital_cost": row["CAPITAL_COST"],

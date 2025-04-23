@@ -11,6 +11,7 @@ from core.models.project import (
     ProjectOdsOdp,
     ProjectSector,
     ProjectStatus,
+    ProjectSubmissionStatus,
     ProjectSubSector,
     ProjectType,
     SubmissionAmount,
@@ -83,6 +84,17 @@ class ProjectStatusAdmin(admin.ModelAdmin):
         return get_final_display_list(ProjectStatus, exclude)
 
 
+@admin.register(ProjectSubmissionStatus)
+class ProjectSubmissionStatusAdmin(admin.ModelAdmin):
+    search_fields = [
+        "name",
+    ]
+
+    def get_list_display(self, request):
+        exclude = ["project"]
+        return get_final_display_list(ProjectSubmissionStatus, exclude)
+
+
 class ProjectFileInline(admin.TabularInline):
     model = ProjectFile
     extra = 1
@@ -104,6 +116,7 @@ class ProjectAdmin(admin.ModelAdmin):
         "substance_type",
         "meta_project__type",
         "status",
+        "submission_status",
     ]
     autocomplete_fields = ["country", "sector", "subsector", "agency", "project_type"]
 
@@ -204,7 +217,7 @@ class MeetingAdmin(admin.ModelAdmin):
             "project",
             "decision",
             "projectfund",
-            "approved_projects",
+            "projects",
             "transferred_projects",
             "projectcomment",
             "annualcontributionstatus",

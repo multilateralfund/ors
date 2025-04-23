@@ -37,4 +37,4 @@ class Decision(models.Model):
         verbose_name_plural = "Decisions"
 
     def __str__(self):
-        return f"Meeting {self.meeting.number} - Decision {self.number}"
+        return f"Meeting {getattr(self.meeting, 'number', '')} - Decision {self.number}"

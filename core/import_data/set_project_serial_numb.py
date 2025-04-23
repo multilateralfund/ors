@@ -21,9 +21,9 @@ def set_serial_number():
     countries = Country.objects.all()
     for country in countries:
         projects = (
-            Project.objects.select_related("approval_meeting", "cluster")
+            Project.objects.select_related("meeting", "cluster")
             .filter(country_id=country.id, legacy_code__isnull=False)
-            .order_by("approval_meeting__number", "serial_number_legacy")
+            .order_by("meeting__number", "serial_number_legacy")
         )
         for i, project in enumerate(projects):
             project.code = get_project_sub_code(
@@ -32,7 +32,7 @@ def set_serial_number():
                 project.agency,
                 project.project_type,
                 project.sector,
-                project.approval_meeting,
+                project.meeting,
                 project.meeting_transf,
                 i + 1,
             )

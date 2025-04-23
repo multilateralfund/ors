@@ -265,7 +265,7 @@ def setup_project_meeting(country_ro, agency, project_type, project_status, subs
     ProjectFactory.create(
         title="Valoare",
         description="Hai sa vedem, sa vedem, sa vedem/ cine-i as in smecherie / ma cunoasteti dintr-o mie",
-        approval_meeting=meeting,
+        meeting=meeting,
         **project_data,
     )
     for i in range(1, 3):
@@ -273,7 +273,7 @@ def setup_project_meeting(country_ro, agency, project_type, project_status, subs
         ProjectFactory.create(
             title=f"Smecherie{i}",
             description="E talent si e vrajeala ce nu se-nvata la scoala",
-            approval_meeting=meeting,
+            meeting=meeting,
             **project_data,
         )
 
