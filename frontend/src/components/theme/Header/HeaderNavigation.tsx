@@ -98,6 +98,9 @@ const useInternalNavSections = () => {
     ...(userIsAdminOrSecretariat || userIsViewer
       ? [{ label: 'Projects', url: '/projects' }]
       : []),
+    ...(userIsAdminOrSecretariat || userIsViewer
+      ? [{ label: 'Projects Listing', url: '/projects-listing' }]
+      : []),
     // @ts-ignore
   ].map((item) => nI(item))
 }
@@ -134,8 +137,8 @@ const useInternalNavSectionsReplenishment = () => {
         },
       ]
     : []
-  // @ts-ignore
-  .map((item) => nI(item))
+        // @ts-ignore
+        .map((item) => nI(item))
 }
 
 interface navItem {
