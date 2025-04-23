@@ -27,6 +27,7 @@ from core.api.tests.factories import (
     ProjectRBMMeasureFactory,
     ProjectSectorFactory,
     ProjectStatusFactory,
+    ProjectSubmissionStatusFactory,
     ProjectSubSectorFactory,
     ProjectTypeFactory,
     RbmMeasureFactory,
@@ -319,6 +320,13 @@ def project_status():
 
 
 @pytest.fixture
+def project_submission_status():
+    return ProjectSubmissionStatusFactory.create(
+        name="Draft", code="draft", color="#FF0000"
+    )
+
+
+@pytest.fixture
 def sector():
     return ProjectSectorFactory.create(name="Sector", code="SEC", sort_order=1)
 
@@ -382,6 +390,7 @@ def project(
     agency,
     project_type,
     project_status,
+    project_submission_status,
     sector,
     subsector,
     meeting,
@@ -398,9 +407,10 @@ def project(
         agency=agency,
         project_type=project_type,
         status=project_status,
+        submission_status=project_submission_status,
         sector=sector,
         subsector=subsector,
-        approval_meeting=meeting,
+        meeting=meeting,
         substance_type="HCFC",
         cluster=project_cluster_kpp,
         fund_disbursed=123.1,

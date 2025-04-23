@@ -242,7 +242,7 @@ def create_project(project_json):
             "serial_number_legacy": serial_number_legacy,
             "additional_funding": additional_funding,
             "legacy_code": project_json["CODE"],
-            "approval_meeting": meeting,
+            "meeting": meeting,
             "substance_type": substance_type,
             "application": project_json.get("APPLICATION"),
             "technology": project_json.get("TECHNOLOGY"),

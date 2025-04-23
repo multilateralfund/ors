@@ -95,6 +95,28 @@ class ProjectStatusManager(models.Manager):
         ).first()
 
 
+class ProjectSubmissionStatusManager(models.Manager):
+    def find_by_name(self, name):
+        name_str = name.strip()
+        return self.filter(
+            models.Q(name__iexact=name_str) | models.Q(code__iexact=name_str)
+        ).first()
+
+
+class ProjectSubmissionStatus(models.Model):
+    name = models.CharField(max_length=255)
+    code = models.CharField(max_length=10, null=True, blank=True)
+    color = ColorField(default="#CCCCCC")
+
+    objects = ProjectSubmissionStatusManager()
+
+    class Meta:
+        verbose_name_plural = "Project submission statuses"
+
+    def __str__(self):
+        return self.name
+
+
 class ProjectStatus(models.Model):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=10, null=True, blank=True)
@@ -274,10 +296,12 @@ class Project(models.Model):
     cluster = models.ForeignKey(
         ProjectCluster, on_delete=models.CASCADE, null=True, blank=True
     )
+    submission_status = models.ForeignKey(
+        ProjectSubmissionStatus, on_delete=models.CASCADE
+    )
     status = models.ForeignKey(ProjectStatus, on_delete=models.CASCADE)
-
-    approval_meeting = models.ForeignKey(
-        Meeting, on_delete=models.CASCADE, null=True, related_name="approved_projects"
+    meeting = models.ForeignKey(
+        Meeting, on_delete=models.CASCADE, null=True, related_name="projects"
     )
     meeting_transf = models.ForeignKey(
         Meeting,
@@ -316,6 +340,7 @@ class Project(models.Model):
     operating_cost = models.FloatField(null=True, blank=True)
     contingency_cost = models.FloatField(null=True, blank=True)
     effectiveness_cost = models.FloatField(null=True, blank=True)
+    total_fund = models.FloatField(null=True, blank=True)
     total_fund_transferred = models.FloatField(null=True, blank=True)
     total_psc_transferred = models.FloatField(null=True, blank=True)
     total_fund_approved = models.FloatField(null=True, blank=True)

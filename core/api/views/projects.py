@@ -34,6 +34,7 @@ from core.api.serializers.project import (
     ProjectDetailsSerializer,
     ProjectListSerializer,
     ProjectStatusSerializer,
+    ProjectSubmissionStatusSerializer,
     ProjectTypeSerializer,
 )
 from core.api.utils import workbook_pdf_response, workbook_response
@@ -49,7 +50,7 @@ from core.models.project import (
     SubmissionAmount,
 )
 from core.models.project import ProjectComment
-from core.models.project import ProjectStatus, ProjectFund
+from core.models.project import ProjectStatus, ProjectSubmissionStatus, ProjectFund
 
 
 class MetaProjectListView(generics.ListAPIView):
@@ -71,6 +72,16 @@ class ProjectStatusListView(generics.ListAPIView):
     permission_classes = [IsSecretariat | IsAgency | IsCountryUser | IsViewer]
     queryset = ProjectStatus.objects.all()
     serializer_class = ProjectStatusSerializer
+
+
+class ProjectSubmissionStatusListView(generics.ListAPIView):
+    """
+    List project submission status
+    """
+
+    permission_classes = [IsSecretariat | IsAgency | IsCountryUser | IsViewer]
+    queryset = ProjectSubmissionStatus.objects.all()
+    serializer_class = ProjectSubmissionStatusSerializer
 
 
 class ProjectTypeListView(generics.ListAPIView):
@@ -133,8 +144,9 @@ class ProjectViewSet(
             "subsector__sector",
             "project_type",
             "status",
+            "submission_status",
             "cluster",
-            "approval_meeting",
+            "meeting",
             "meeting_transf",
             "meta_project",
         ).prefetch_related(
@@ -269,12 +281,13 @@ class ProjectV2ViewSet(
             "subsector__sector",
             "project_type",
             "status",
+            "submission_status",
             "cluster",
-            "approval_meeting",
+            "meeting",
             "meeting_transf",
             "meta_project",
         ).prefetch_related(
-            "coop_agencies__agency",
+            "coop_agencies",
             "submission_amounts",
             "rbm_measures__measure",
             "ods_odp",
@@ -297,12 +310,6 @@ class ProjectV2ViewSet(
 
     @swagger_auto_schema(
         manual_parameters=[
-            openapi.Parameter(
-                "get_submission",
-                openapi.IN_QUERY,
-                description="True: Return only submissions; False: Return only projects",
-                type=openapi.TYPE_BOOLEAN,
-            ),
             openapi.Parameter(
                 "date_received_after",
                 openapi.IN_QUERY,

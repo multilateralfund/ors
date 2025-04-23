@@ -1140,7 +1140,7 @@ def update_or_create_project(project_data, update_status=True):
             agency=project_data["agency"],
             project_type=project_data["project_type"],
             serial_number_legacy=project_data["serial_number_legacy"],
-            approval_meeting=project_data["approval_meeting"],
+            meeting=project_data["meeting"],
         )
         if project_data.get("subsector"):
             fields_filter &= models.Q(subsector=project_data["subsector"])

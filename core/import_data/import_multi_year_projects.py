@@ -96,7 +96,7 @@ def parse_file(file_path):
             "stage": stage,
             "date_per_agreement": parse(date_agree) if date_agree else None,
             "date_per_decision": parse(date_decision) if date_decision else None,
-            "approval_meeting": meeting,
+            "meeting": meeting,
             "status": unk_status,
         }
 

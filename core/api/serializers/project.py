@@ -16,6 +16,7 @@ from core.models.project import (
     ProjectRBMMeasure,
     ProjectSector,
     ProjectStatus,
+    ProjectSubmissionStatus,
     ProjectSubSector,
     ProjectType,
     SubmissionAmount,
@@ -50,6 +51,21 @@ class ProjectStatusSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProjectStatus
+        fields = [
+            "id",
+            "code",
+            "name",
+            "color",
+        ]
+
+
+class ProjectSubmissionStatusSerializer(serializers.ModelSerializer):
+    """
+    ProjectSubmissionStatusSerializer class
+    """
+
+    class Meta:
+        model = ProjectSubmissionStatus
         fields = [
             "id",
             "code",
@@ -351,7 +367,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
         required=True, queryset=Agency.objects.all().values_list("id", flat=True)
     )
     coop_agencies = AgencySerializer(many=True, read_only=True)
-    sector = serializers.SlugRelatedField("name", read_only=True)
+    sector = ProjectSectorSerializer(read_only=True)
     sector_id = serializers.PrimaryKeyRelatedField(
         required=True,
         queryset=ProjectSector.objects.all().values_list("id", flat=True),
@@ -363,18 +379,23 @@ class ProjectListSerializer(serializers.ModelSerializer):
         queryset=ProjectSubSector.objects.all().values_list("id", flat=True),
     )
     subsector_legacy = serializers.CharField(read_only=True)
-    project_type = serializers.SlugRelatedField("name", read_only=True)
+    project_type = ProjectTypeSerializer(read_only=True)
     project_type_id = serializers.PrimaryKeyRelatedField(
         required=True, queryset=ProjectType.objects.all().values_list("id", flat=True)
     )
     project_type_legacy = serializers.CharField(read_only=True)
     status = serializers.SlugRelatedField("name", read_only=True)
+    submission_status = serializers.SlugRelatedField("name", read_only=True)
     status_id = serializers.PrimaryKeyRelatedField(
         required=True, queryset=ProjectStatus.objects.all().values_list("id", flat=True)
     )
-    cluster = serializers.SlugRelatedField("name", read_only=True)
+    submission_status_id = serializers.PrimaryKeyRelatedField(
+        required=True,
+        queryset=ProjectSubmissionStatus.objects.all().values_list("id", flat=True),
+    )
+    cluster = ProjectClusterSerializer(read_only=True)
     title = serializers.CharField(required=True)
-    approval_meeting = serializers.SerializerMethodField()
+    meeting = serializers.SerializerMethodField()
     meeting_transf = serializers.SerializerMethodField()
     decision = serializers.SlugField(source="number", read_only=True)
     substance_category = serializers.SerializerMethodField()
@@ -416,9 +437,11 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "compliance",
             "status",
             "status_id",
+            "submission_status",
+            "submission_status_id",
             "substance_type",
             "substance_category",
-            "approval_meeting",
+            "meeting",
             "meeting_transf",
             "decision",
             "project_duration",
@@ -439,6 +462,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "effectiveness_cost",
             "contingency_cost",
             "total_fund_transferred",
+            "total_fund",
             "total_psc_transferred",
             "total_fund_approved",
             "total_psc_cost",
@@ -482,9 +506,9 @@ class ProjectListSerializer(serializers.ModelSerializer):
     def get_code_legacy(self, obj):
         return obj.legacy_code
 
-    def get_approval_meeting(self, obj):
-        if obj.approval_meeting:
-            return obj.approval_meeting.number
+    def get_meeting(self, obj):
+        if obj.meeting:
+            return obj.meeting.number
         return None
 
     def get_meeting_transf(self, obj):
@@ -521,6 +545,9 @@ class ProjectListSerializer(serializers.ModelSerializer):
 
 
 class ProjectExportSerializer(ProjectListSerializer):
+    sector = serializers.SlugRelatedField("name", read_only=True)
+    project_type = serializers.SlugRelatedField("name", read_only=True)
+    cluster = serializers.SlugRelatedField("name", read_only=True)
     substances_list = serializers.SerializerMethodField()
 
     class Meta(ProjectListSerializer.Meta):
@@ -562,7 +589,7 @@ class ProjectDetailsSerializer(ProjectListSerializer):
         write_only=True,
     )
     latest_file = ProjectFileSerializer(many=False, read_only=True)
-    approval_meeting_id = serializers.PrimaryKeyRelatedField(
+    meeting_id = serializers.PrimaryKeyRelatedField(
         required=True, queryset=Meeting.objects.all().values_list("id", flat=True)
     )
     meeting_transf_id = serializers.PrimaryKeyRelatedField(
@@ -578,7 +605,7 @@ class ProjectDetailsSerializer(ProjectListSerializer):
         fields = ProjectListSerializer.Meta.fields + [
             "country_id",
             "coop_agencies_id",
-            "approval_meeting_id",
+            "meeting_id",
             "meeting_transf_id",
             "cluster_id",
             "ods_odp",
@@ -615,6 +642,9 @@ class ProjectDetailsSerializer(ProjectListSerializer):
         # a new project = new submission ?
         status = ProjectStatus.objects.get(code="NEWSUB")
         validated_data["status_id"] = status.id
+        # set submission status
+        submission_status = ProjectSubmissionStatus.objects.get(code="draft")
+        validated_data["submission_status_id"] = submission_status.id
 
         # create project
         # we should generate this fo submissions?
@@ -629,7 +659,7 @@ class ProjectDetailsSerializer(ProjectListSerializer):
             project.agency,
             project.project_type,
             project.sector,
-            project.approval_meeting,
+            project.meeting,
             project.meeting_transf,
             project.serial_number,
         )
@@ -674,7 +704,7 @@ class ProjectDetailsSerializer(ProjectListSerializer):
             instance.agency,
             instance.project_type,
             instance.sector,
-            instance.approval_meeting,
+            instance.meeting,
             instance.meeting_transf,
             instance.serial_number,
         )
