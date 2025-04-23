@@ -43,6 +43,7 @@ from core.models.project import (
     ProjectRBMMeasure,
     ProjectSector,
     ProjectStatus,
+    ProjectSubmissionStatus,
     ProjectSubSector,
     ProjectType,
     SubmissionAmount,
@@ -336,6 +337,14 @@ class ProjectStatusFactory(factory.django.DjangoModelFactory):
     code = factory.Faker("pystr", max_chars=10)
 
 
+class ProjectSubmissionStatusFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ProjectSubmissionStatus
+
+    name = factory.Faker("pystr", max_chars=100)
+    code = factory.Faker("pystr", max_chars=10)
+
+
 class ProjectSectorFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ProjectSector
@@ -399,11 +408,12 @@ class ProjectFactory(factory.django.DjangoModelFactory):
     description = factory.Faker("pystr", max_chars=200)
     project_type = factory.SubFactory(ProjectTypeFactory)
     status = factory.SubFactory(ProjectStatusFactory)
+    submission_status = factory.SubFactory(ProjectSubmissionStatusFactory)
     sector = factory.SubFactory(ProjectSectorFactory)
     subsector = factory.SubFactory(ProjectSubSectorFactory)
     agency = factory.SubFactory(AgencyFactory)
     country = factory.SubFactory(CountryFactory)
-    approval_meeting = factory.SubFactory(MeetingFactory)
+    meeting = factory.SubFactory(MeetingFactory)
     submission_category = "bilateral cooperation"
     submission_number = factory.Faker("random_int", min=1, max=100)
 

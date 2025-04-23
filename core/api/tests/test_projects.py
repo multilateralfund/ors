@@ -14,6 +14,7 @@ from core.api.tests.factories import (
     ProjectFactory,
     ProjectSectorFactory,
     ProjectStatusFactory,
+    ProjectSubmissionStatusFactory,
     ProjectSubSectorFactory,
     ProjectTypeFactory,
     RbmMeasureFactory,
@@ -195,7 +196,7 @@ class TestProjectsUpdate:
             new_agency,
             project.project_type,
             project.sector,
-            project.approval_meeting,
+            project.meeting,
             None,
             project.serial_number,
         )
@@ -278,7 +279,7 @@ def setup_project_list(
             "sector": sector,
             "subsector": subsector,
             "substance_type": "HCFC",
-            "approval_meeting": meeting,
+            "meeting": meeting,
             "cluster": project_cluster_kpp,
         },
         {
@@ -289,7 +290,7 @@ def setup_project_list(
             "sector": new_sector,
             "subsector": new_subsector,
             "substance_type": "CFC",
-            "approval_meeting": new_meeting,
+            "meeting": new_meeting,
             "cluster": project_cluster_kip,
         },
     ]
@@ -302,8 +303,8 @@ def setup_project_list(
                 project_data["agency"],
                 project_data["project_type"],
                 project_data["sector"],
-                project_data["approval_meeting"],
-                project_data["approval_meeting"],
+                project_data["meeting"],
+                project_data["meeting"],
                 i + 1,
             )
             ProjectFactory.create(
@@ -322,8 +323,8 @@ def setup_project_list(
         project_data["agency"],
         project_data["project_type"],
         project_data["sector"],
-        project_data["approval_meeting"],
-        project_data["approval_meeting"],
+        project_data["meeting"],
+        project_data["meeting"],
         25,
     )
     ProjectFactory.create(
@@ -342,8 +343,8 @@ def setup_project_list(
         project_data["agency"],
         project_data["project_type"],
         project_data["sector"],
-        project_data["approval_meeting"],
-        project_data["approval_meeting"],
+        project_data["meeting"],
+        project_data["meeting"],
         26,
     )
     ProjectFactory.create(
@@ -387,20 +388,6 @@ class TestProjectList(BaseTest):
         for project in response.data:
             assert project["country"] == country_user.country.name
 
-    def test_project_list_w_submission(self, user, _setup_project_list):
-        self.client.force_authenticate(user=user)
-
-        response = self.client.get(self.url, {"get_submission": True})
-        assert response.status_code == 200
-        assert len(response.data) == 4
-
-    def test_project_list_wout_submission(self, user, _setup_project_list):
-        self.client.force_authenticate(user=user)
-
-        response = self.client.get(self.url, {"get_submission": False})
-        assert response.status_code == 200
-        assert len(response.data) == 6
-
     def test_project_list_agency_filter(self, user, agency, _setup_project_list):
         new_agency, _, _, _ = _setup_project_list
         self.client.force_authenticate(user=user)
@@ -424,7 +411,9 @@ class TestProjectList(BaseTest):
         assert response.status_code == 200
         assert len(response.data) == 6
         for project in response.data:
-            assert project["project_type"] == project_type.name
+            assert project["project_type"]["id"] == project_type.id
+            assert project["project_type"]["name"] == project_type.name
+            assert project["project_type"]["code"] == project_type.code
 
     def test_project_list_status_filter(
         self, user, project_status, _setup_project_list
@@ -452,7 +441,9 @@ class TestProjectList(BaseTest):
         assert response.status_code == 200
         assert len(response.data) == 5
         for project in response.data:
-            assert project["sector"] == sector.name
+            assert project["sector"]["id"] == sector.id
+            assert project["sector"]["name"] == sector.name
+            assert project["sector"]["code"] == sector.code
 
         response = self.client.get(
             self.url, {"sector_id": f"{sector.id},{new_sector.id}"}
@@ -482,14 +473,14 @@ class TestProjectList(BaseTest):
         _, _, _, new_meeting = _setup_project_list
         self.client.force_authenticate(user=user)
 
-        response = self.client.get(self.url, {"approval_meeting_id": meeting.id})
+        response = self.client.get(self.url, {"meeting_id": meeting.id})
         assert response.status_code == 200
         assert len(response.data) == 6
         for project in response.data:
-            assert project["approval_meeting"] == meeting.number
+            assert project["meeting"] == meeting.number
 
         response = self.client.get(
-            self.url, {"approval_meeting_id": f"{new_meeting.id},{meeting.id}"}
+            self.url, {"meeting_id": f"{new_meeting.id},{meeting.id}"}
         )
         assert response.status_code == 200
         assert len(response.data) == 10
@@ -589,9 +580,16 @@ def setup_project_create(
         {"name": "New Submission", "code": "NEWSUB"},
         {"name": "New", "code": "NEW"},
     ]
+
+    submission_statuses_dict = [
+        {"name": "Draft", "code": "draft"},
+    ]
     statuses = []
     for status in statuses_dict:
         statuses.append(ProjectStatusFactory.create(**status))
+    submission_statuses = []
+    for status in submission_statuses_dict:
+        submission_statuses.append(ProjectSubmissionStatusFactory.create(**status))
     new_rbm_measure = RbmMeasureFactory.create(name="new_measure")
 
     # create coop agencies
@@ -608,8 +606,9 @@ def setup_project_create(
         "subsector_id": subsector.id,
         "project_type_id": project_type.id,
         "status_id": statuses[0].id,
+        "submission_status_id": submission_statuses[0].id,
         "substance_type": "HCFC",
-        "approval_meeting_id": meeting.id,
+        "meeting_id": meeting.id,
         "cluster_id": project_cluster_kip.id,
         "national_agency": "National Agency",
         "submission_category": "bilateral cooperation",
@@ -717,9 +716,13 @@ class TestCreateProjects(BaseTest):
         assert response.data["country"] == country_ro.name
         assert response.data["agency"] == agency.name
         assert len(response.data["coop_agencies"]) == 2
-        assert response.data["sector"] == subsector.sector.name
+        assert response.data["sector"]["id"] == subsector.sector.id
+        assert response.data["sector"]["name"] == subsector.sector.name
+        assert response.data["sector"]["code"] == subsector.sector.code
         assert response.data["subsector"] == subsector.name
-        assert response.data["project_type"] == project_type.name
+        assert response.data["project_type"]["id"] == project_type.id
+        assert response.data["project_type"]["name"] == project_type.name
+        assert response.data["project_type"]["code"] == project_type.code
         assert response.data["status"] == "New Submission"
         assert response.data["substance_type"] == "HCFC"
         assert response.data["national_agency"] == "National Agency"

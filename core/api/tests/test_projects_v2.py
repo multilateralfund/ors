@@ -9,6 +9,7 @@ from core.api.tests.factories import (
     ProjectFactory,
     ProjectSectorFactory,
     ProjectStatusFactory,
+    ProjectSubmissionStatusFactory,
     ProjectSubSectorFactory,
     ProjectTypeFactory,
     UserFactory,
@@ -68,6 +69,7 @@ def setup_project_list(
     agency,
     project_type,
     project_status,
+    project_submission_status,
     subsector,
     meeting,
     sector,
@@ -78,6 +80,9 @@ def setup_project_list(
     new_agency = AgencyFactory.create(code="NewAg")
     new_project_type = ProjectTypeFactory.create(code="NewType")
     new_project_status = ProjectStatusFactory.create(code="NEWSUB")
+    new_project_submission_status = ProjectSubmissionStatusFactory.create(
+        code="submitted", name="Submitted"
+    )
     new_sector = ProjectSectorFactory.create(name="New Sector")
     new_subsector = ProjectSubSectorFactory.create(sector=new_sector)
     new_meeting = MeetingFactory.create(number=3, date="2020-03-14")
@@ -88,10 +93,11 @@ def setup_project_list(
             "agency": agency,
             "project_type": project_type,
             "status": project_status,
+            "submission_status": project_submission_status,
             "sector": sector,
             "subsector": subsector,
             "substance_type": "HCFC",
-            "approval_meeting": meeting,
+            "meeting": meeting,
             "cluster": project_cluster_kpp,
         },
         {
@@ -99,10 +105,11 @@ def setup_project_list(
             "agency": new_agency,
             "project_type": new_project_type,
             "status": new_project_status,
+            "submission_status": new_project_submission_status,
             "sector": new_sector,
             "subsector": new_subsector,
             "substance_type": "CFC",
-            "approval_meeting": new_meeting,
+            "meeting": new_meeting,
             "cluster": project_cluster_kip,
         },
     ]
@@ -115,8 +122,8 @@ def setup_project_list(
                 project_data["agency"],
                 project_data["project_type"],
                 project_data["sector"],
-                project_data["approval_meeting"],
-                project_data["approval_meeting"],
+                project_data["meeting"],
+                project_data["meeting"],
                 i + 1,
             )
             ProjectFactory.create(
@@ -135,8 +142,8 @@ def setup_project_list(
         project_data["agency"],
         project_data["project_type"],
         project_data["sector"],
-        project_data["approval_meeting"],
-        project_data["approval_meeting"],
+        project_data["meeting"],
+        project_data["meeting"],
         25,
     )
     ProjectFactory.create(
@@ -155,8 +162,8 @@ def setup_project_list(
         project_data["agency"],
         project_data["project_type"],
         project_data["sector"],
-        project_data["approval_meeting"],
-        project_data["approval_meeting"],
+        project_data["meeting"],
+        project_data["meeting"],
         26,
     )
     ProjectFactory.create(
@@ -166,7 +173,13 @@ def setup_project_list(
         **proj_data,
     )
 
-    return new_agency, new_project_status, new_sector, new_meeting
+    return (
+        new_agency,
+        new_project_status,
+        new_project_submission_status,
+        new_sector,
+        new_meeting,
+    )
 
 
 class TestProjectV2List(BaseTest):
@@ -200,22 +213,8 @@ class TestProjectV2List(BaseTest):
         for project in response.data:
             assert project["country"] == country_user.country.name
 
-    def test_project_list_w_submission(self, user, _setup_project_list):
-        self.client.force_authenticate(user=user)
-
-        response = self.client.get(self.url, {"get_submission": True})
-        assert response.status_code == 200
-        assert len(response.data) == 4
-
-    def test_project_list_wout_submission(self, user, _setup_project_list):
-        self.client.force_authenticate(user=user)
-
-        response = self.client.get(self.url, {"get_submission": False})
-        assert response.status_code == 200
-        assert len(response.data) == 6
-
     def test_project_list_agency_filter(self, user, agency, _setup_project_list):
-        new_agency, _, _, _ = _setup_project_list
+        new_agency, _, _, _, _ = _setup_project_list
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url, {"agency_id": agency.id})
@@ -237,12 +236,14 @@ class TestProjectV2List(BaseTest):
         assert response.status_code == 200
         assert len(response.data) == 6
         for project in response.data:
-            assert project["project_type"] == project_type.name
+            assert project["project_type"]["id"] == project_type.id
+            assert project["project_type"]["name"] == project_type.name
+            assert project["project_type"]["code"] == project_type.code
 
     def test_project_list_status_filter(
         self, user, project_status, _setup_project_list
     ):
-        _, new_project_status, _, _ = _setup_project_list
+        _, new_project_status, _, _, _ = _setup_project_list
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url, {"status_id": project_status.id})
@@ -257,15 +258,40 @@ class TestProjectV2List(BaseTest):
         assert response.status_code == 200
         assert len(response.data) == 10
 
+    def test_project_list_submission_status_filter(
+        self, user, project_submission_status, _setup_project_list
+    ):
+        _, _, new_project_submission_status, _, _ = _setup_project_list
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(
+            self.url, {"submission_status_id": project_submission_status.id}
+        )
+        assert response.status_code == 200
+        assert len(response.data) == 6
+        for project in response.data:
+            assert project["submission_status"] == project_submission_status.name
+
+        response = self.client.get(
+            self.url,
+            {
+                "submission_status_id": f"{project_submission_status.id},{new_project_submission_status.id}"
+            },
+        )
+        assert response.status_code == 200
+        assert len(response.data) == 10
+
     def test_project_list_sector_filter(self, user, sector, _setup_project_list):
-        _, _, new_sector, _ = _setup_project_list
+        _, _, _, new_sector, _ = _setup_project_list
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.url, {"sector_id": sector.id})
         assert response.status_code == 200
         assert len(response.data) == 5
         for project in response.data:
-            assert project["sector"] == sector.name
+            assert project["sector"]["id"] == sector.id
+            assert project["sector"]["name"] == sector.name
+            assert project["sector"]["code"] == sector.code
 
         response = self.client.get(
             self.url, {"sector_id": f"{sector.id},{new_sector.id}"}
@@ -292,17 +318,17 @@ class TestProjectV2List(BaseTest):
             assert project["substance_type"] == "HCFC"
 
     def test_project_list_meet_filter(self, user, _setup_project_list, meeting):
-        _, _, _, new_meeting = _setup_project_list
+        _, _, _, _, new_meeting = _setup_project_list
         self.client.force_authenticate(user=user)
 
-        response = self.client.get(self.url, {"approval_meeting_id": meeting.id})
+        response = self.client.get(self.url, {"meeting_id": meeting.id})
         assert response.status_code == 200
         assert len(response.data) == 6
         for project in response.data:
-            assert project["approval_meeting"] == meeting.number
+            assert project["meeting"] == meeting.number
 
         response = self.client.get(
-            self.url, {"approval_meeting_id": f"{new_meeting.id},{meeting.id}"}
+            self.url, {"meeting_id": f"{new_meeting.id},{meeting.id}"}
         )
         assert response.status_code == 200
         assert len(response.data) == 10

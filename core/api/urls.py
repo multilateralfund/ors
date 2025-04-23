@@ -98,6 +98,7 @@ from core.api.views.projects import (
     ProjectViewSet,
     ProjectV2ViewSet,
     ProjectStatusListView,
+    ProjectSubmissionStatusListView,
     ProjectTypeListView,
     ProjectCommentViewSet,
     ProjectFileView,
@@ -394,6 +395,11 @@ urlpatterns = [
         "project-statuses/",
         ProjectStatusListView.as_view(),
         name="project-status-list",
+    ),
+    path(
+        "project-submission-statuses/",
+        ProjectSubmissionStatusListView.as_view(),
+        name="project-submission-status-list",
     ),
     path(
         "project-types/",
