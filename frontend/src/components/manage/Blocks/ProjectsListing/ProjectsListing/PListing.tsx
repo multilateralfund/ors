@@ -2,13 +2,12 @@
 
 import { useMemo, useRef, useState } from 'react'
 
+import Loading from '@ors/components/theme/Loading/Loading'
 import PListingFilters from './PListingFilters'
 import PListingTable from './PListingTable'
-import Loading from '@ors/components/theme/Loading/Loading'
 
 import { useGetProjects } from '../hooks/useGetProjects'
-
-const PROJECTS_PER_PAGE = 25
+import { PROJECTS_PER_PAGE } from '../constants'
 
 export default function PListing() {
   const form = useRef<any>()
@@ -22,7 +21,6 @@ export default function PListing() {
   const { loading, setParams } = projects
 
   const [filters, setFilters] = useState({ ...initialFilters })
-
   const key = useMemo(() => JSON.stringify(filters), [filters])
 
   return (
@@ -31,11 +29,11 @@ export default function PListing() {
         className="!fixed bg-action-disabledBackground"
         active={loading}
       />
-      <form className="flex flex-col gap-6" ref={form}>
+      <form className="flex flex-col gap-6" ref={form} key={key}>
         <PListingFilters
           {...{ form, filters, initialFilters, setFilters, setParams }}
         />
-        <PListingTable key={key} {...{ projects, PROJECTS_PER_PAGE }} />
+        <PListingTable {...{ projects }} />
       </form>
     </>
   )

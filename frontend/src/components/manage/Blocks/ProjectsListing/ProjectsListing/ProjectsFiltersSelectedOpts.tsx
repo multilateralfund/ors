@@ -1,12 +1,10 @@
 import { Typography } from '@mui/material'
-import { filter } from 'lodash'
-
 import { IoClose } from 'react-icons/io5'
+import { filter } from 'lodash'
 
 const ProjectsFiltersSelectedOpts = ({
   commonSlice,
   projectSlice,
-  clusters,
   meetings,
   form,
   initialFilters,
@@ -15,7 +13,7 @@ const ProjectsFiltersSelectedOpts = ({
   handleParamsChange,
 }: any) => {
   const { agencies, countries } = commonSlice
-  const { types } = projectSlice
+  const { types, clusters, submission_statuses } = projectSlice
 
   const initialParams = {
     country_id: [],
@@ -23,25 +21,46 @@ const ProjectsFiltersSelectedOpts = ({
     cluster_id: [],
     project_type_id: [],
     meeting_id: [],
+    submission_status_id: [],
     search: '',
-  }
-
-  const formatEntity = (currentEntity: any = [], field: string = 'id') => {
-    return new Map<number, any>(
-      currentEntity.map((entity: any) => [entity[field], entity]),
-    )
   }
 
   const areFiltersApplied = Object.values(filters).find(
     (filter) => Array.isArray(filter) && filter.length > 0,
   )
 
+  const formatEntity = (currentEntity: any = [], field: string = 'id') =>
+    new Map<number, any>(
+      currentEntity.map((entity: any) => [entity[field], entity]),
+    )
+
+  const displaySearchTerm = () =>
+    !!filters.search && (
+      <Typography
+        className="inline-flex items-center gap-2 rounded-lg bg-gray-200 px-2 py-1 text-lg font-normal text-black theme-dark:bg-gray-700/20"
+        component="p"
+        variant="h6"
+      >
+        {filters.search}
+        <IoClose
+          className="cursor-pointer"
+          size={18}
+          color="#666"
+          onClick={() => {
+            form.current.search.value = ''
+            handleParamsChange({ offset: 0, search: '' })
+            handleFilterChange({ search: '' })
+          }}
+        />
+      </Typography>
+    )
+
   const displaySelectedOption = (
     entities: any,
     entityIdentifier: string,
     field: string = 'id',
-  ) => {
-    return filters?.[entityIdentifier]?.map((entity: any) => {
+  ) =>
+    filters?.[entityIdentifier]?.map((entity: any) => {
       const entityId = entity[field]
 
       return (
@@ -77,31 +96,6 @@ const ProjectsFiltersSelectedOpts = ({
         </Typography>
       )
     })
-  }
-
-  const displaySearchTerm = () => {
-    return (
-      !!filters.search && (
-        <Typography
-          className="inline-flex items-center gap-2 rounded-lg bg-gray-200 px-2 py-1 text-lg font-normal text-black theme-dark:bg-gray-700/20"
-          component="p"
-          variant="h6"
-        >
-          {filters.search}
-          <IoClose
-            className="cursor-pointer"
-            size={18}
-            color="#666"
-            onClick={() => {
-              form.current.search.value = ''
-              handleParamsChange({ offset: 0, search: '' })
-              handleFilterChange({ search: '' })
-            }}
-          />
-        </Typography>
-      )
-    )
-  }
 
   return (
     (areFiltersApplied || filters?.search) && (
@@ -109,12 +103,16 @@ const ProjectsFiltersSelectedOpts = ({
         {displaySearchTerm()}
         {displaySelectedOption(formatEntity(countries.data), 'country_id')}
         {displaySelectedOption(formatEntity(agencies.data), 'agency_id')}
-        {displaySelectedOption(formatEntity(clusters), 'cluster_id')}
+        {displaySelectedOption(formatEntity(clusters.data), 'cluster_id')}
         {displaySelectedOption(formatEntity(types.data), 'project_type_id')}
         {displaySelectedOption(
           formatEntity(meetings, 'value'),
           'meeting_id',
           'value',
+        )}
+        {displaySelectedOption(
+          formatEntity(submission_statuses.data),
+          'submission_status_id',
         )}
 
         <Typography

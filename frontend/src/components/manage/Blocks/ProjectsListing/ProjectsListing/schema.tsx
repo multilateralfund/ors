@@ -1,46 +1,33 @@
 import { useMemo } from 'react'
 
-import { formatDecimalValue } from '@ors/helpers/Utils/Utils'
 import { tableColumns } from '../constants'
-import { ITooltipParams } from 'ag-grid-community'
+import { formatNumberColumns } from '../utils'
+
 import { Checkbox } from '@mui/material'
+import { ITooltipParams } from 'ag-grid-community'
 
-const formatNumberColumns = (
-  params: any,
-  field: string,
-  valueFormatter?: {},
-) => {
-  const value = params.data[field]
-
-  return (
-    '$' +
-    (value
-      ? valueFormatter
-        ? formatDecimalValue(parseFloat(value), valueFormatter)
-        : formatDecimalValue(parseFloat(value))
-      : '0.00')
-  )
-}
-
-const getColumnDefs = () => {
-  const gridOptions = useMemo(
+const getColumnDefs = () =>
+  useMemo(
     () => ({
       columnDefs: [
         {
           headerName: 'Select',
-          cellClass: 'ag-text-center ag-cell-ellipsed',
+          field: '',
+          cellClass: 'ag-text-center',
           sortable: false,
           minWidth: 70,
-          cellRenderer: (props: any) => <Checkbox />,
-          editable: false,
-          field: '',
+          cellRenderer: () => (
+            <Checkbox
+              sx={{
+                color: 'black',
+              }}
+            />
+          ),
         },
         {
           headerName: tableColumns.submission_status,
           field: 'submission_status',
           tooltipField: 'submission_status',
-          cellClass: 'ag-text-center ag-cell-ellipsed',
-          minWidth: 90,
         },
         {
           headerName: tableColumns.status,
@@ -60,28 +47,21 @@ const getColumnDefs = () => {
           headerName: tableColumns.metacode,
           field: 'metaproject_code',
           tooltipField: 'metaproject_code',
-          cellClass: 'ag-text-center ag-cell-ellipsed',
-          minWidth: 90,
         },
         {
           headerName: tableColumns.code,
           field: 'code',
           tooltipField: 'code',
-          cellClass: 'ag-text-center ag-cell-ellipsed',
-          minWidth: 90,
         },
         {
           headerName: tableColumns.cluster,
           field: 'cluster.code',
           tooltipField: 'cluster.name',
-          cellClass: 'ag-text-center ag-cell-ellipsed',
-          minWidth: 70,
         },
         {
           headerName: tableColumns.tranche,
           field: 'tranche',
           tooltipField: 'tranche',
-          cellClass: 'ag-text-center ag-cell-ellipsed',
           minWidth: 70,
         },
         {
@@ -93,35 +73,29 @@ const getColumnDefs = () => {
         },
         {
           headerName: tableColumns.title,
-          cellClass: 'ag-cell-ellipsed',
           field: 'title',
-          headerClass: 'ag-text-center',
-          minWidth: 200,
           tooltipField: 'title',
+          cellClass: 'ag-cell-ellipsed',
+          minWidth: 300,
         },
         {
           headerName: tableColumns.type,
           field: 'project_type.code',
           tooltipField: 'project_type.name',
-          cellClass: 'ag-text-center ag-cell-ellipsed',
-          minWidth: 70,
         },
         {
           headerName: tableColumns.sector,
           field: 'sector.code',
           tooltipField: 'sector.name',
-          cellClass: 'ag-text-center ag-cell-ellipsed',
-          minWidth: 70,
         },
         {
-          headerName: tableColumns.total_funding,
-          field: 'total_funding',
-          cellClass: 'ag-text-center ag-cell-ellipsed',
+          headerName: tableColumns.total_fund,
+          field: 'total_fund',
           minWidth: 120,
           valueGetter: (params: any) =>
-            formatNumberColumns(params, 'total_funding'),
+            formatNumberColumns(params, 'total_fund'),
           tooltipValueGetter: (params: ITooltipParams) =>
-            formatNumberColumns(params, 'total_funding', {
+            formatNumberColumns(params, 'total_fund', {
               maximumFractionDigits: 10,
               minimumFractionDigits: 2,
             }),
@@ -129,15 +103,13 @@ const getColumnDefs = () => {
       ],
       defaultColDef: {
         headerClass: 'ag-text-center',
-        minWidth: 100,
+        cellClass: 'ag-text-center ag-cell-ellipsed',
+        minWidth: 90,
         resizable: true,
         sortable: true,
       },
     }),
     [],
   )
-
-  return gridOptions
-}
 
 export default getColumnDefs

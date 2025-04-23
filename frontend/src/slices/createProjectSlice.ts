@@ -23,6 +23,10 @@ export const createProjectSlice = ({
       ...defaultSliceData,
       ...(initialState?.projects?.statuses || {}),
     },
+    submission_statuses: {
+      ...defaultSliceData,
+      ...(initialState?.projects?.submission_statuses || {}),
+    },
     subsectors: {
       ...defaultSliceData,
       ...(initialState?.projects?.subsectors || {}),

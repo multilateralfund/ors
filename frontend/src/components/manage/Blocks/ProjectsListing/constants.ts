@@ -1,3 +1,5 @@
+export const PROJECTS_PER_PAGE = 25
+
 export const tableColumns: { [key: string]: string } = {
   submission_status: 'Submission Status',
   project_status: 'Project Status',
@@ -10,5 +12,5 @@ export const tableColumns: { [key: string]: string } = {
   title: 'Title',
   type: 'Type',
   sector: 'Sector',
-  total_funding: 'Total Funding',
+  total_fund: 'Total Funding',
 }

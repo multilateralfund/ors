@@ -149,6 +149,7 @@ export interface ProjectsSlice {
   meetings: SliceData
   sectors: SliceData
   statuses: SliceData
+  submission_statuses: SliceData
   subsectors: SliceData
   types: SliceData
 }
