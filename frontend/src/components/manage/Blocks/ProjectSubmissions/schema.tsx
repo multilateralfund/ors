@@ -62,7 +62,7 @@ export function usePSListingGridOptions() {
         },
         {
           editable: false,
-          field: 'cluster',
+          field: 'cluster.name',
           headerName: 'Cluster',
         },
         {
@@ -88,7 +88,12 @@ export function usePSListingGridOptions() {
             options: projectSlice.types.data,
           },
           cellRenderer: (props: any) => {
-            return <AgCellRenderer {...props} value={props.data.project_type} />
+            return (
+              <AgCellRenderer
+                {...props}
+                value={props.data?.project_type?.name}
+              />
+            )
           },
           field: 'project_type_id',
           headerComponentParams: {
@@ -165,7 +170,9 @@ export function usePSListingGridOptions() {
             options: projectSlice.sectors.data,
           },
           cellRenderer: (props: any) => {
-            return <AgCellRenderer {...props} value={props.data.sector} />
+            return (
+              <AgCellRenderer {...props} value={props.data?.sector?.name} />
+            )
           },
           field: 'sector_id',
           headerComponentParams: {
