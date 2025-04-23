@@ -46,6 +46,8 @@ import ProjectSubmissionsSubmissionPage from '@ors/app/project-submissions/[subm
 import ProjectSubmissionsCreatePage from '@ors/app/project-submissions/create/page'
 import ProjectSubmissionsEditPage from '@ors/app/project-submissions/edit/page'
 
+import ProjectsPageListing from '@ors/app/projects_listing/page'
+
 import NotFoundPage from '@ors/app/not-found'
 
 import RootLayout from './app/layout'
@@ -220,6 +222,9 @@ export default function App() {
         </Route>
         <Route path="/projects">
           <ProjectsPage />
+        </Route>
+        <Route path="/projects-listing">
+          <ProjectsPageListing />
         </Route>
         <Route>
           <NotFoundPage />

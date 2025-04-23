@@ -1,10 +1,11 @@
 import PopoverInput from '../../Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
+import { getMeetingOptions } from '@ors/components/manage/Utils/utilFunctions'
 import { PeriodSelectorOption } from '../../Replenishment/types'
 import { INavigationButton } from '../types'
 import BPMainFilters from './BPMainFilters'
 import { NavigationButton } from './NavigationButton'
 import { Label } from './helpers'
-import { getMeetingNr, getMeetingOptions } from '../utils'
+import { getMeetingNr } from '../utils'
 import SimpleInput from '../../Section/ReportInfo/SimpleInput'
 
 interface IBPImportFilters {

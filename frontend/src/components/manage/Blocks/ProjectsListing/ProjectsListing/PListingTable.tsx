@@ -1,0 +1,63 @@
+'use client'
+
+import ViewTable from '@ors/components/manage/Form/ViewTable'
+import getColumnDefs from './schema'
+
+const PListingTable = ({ projects, PROJECTS_PER_PAGE }: any) => {
+  const { count, loaded, loading, results, setParams } = projects
+  const { columnDefs, defaultColDef } = getColumnDefs()
+
+  const getPaginationSelectorOpts = (): number[] => {
+    const nrResultsOpts = [10, 25, 50, 100]
+    const filteredNrResultsOptions = nrResultsOpts.filter(
+      (option) => option < count,
+    )
+    return [...filteredNrResultsOptions, count]
+  }
+
+  const paginationPageSizeSelectorOpts = getPaginationSelectorOpts()
+
+  return (
+    loaded && (
+      <ViewTable
+        columnDefs={columnDefs}
+        defaultColDef={defaultColDef}
+        domLayout="normal"
+        enablePagination={true}
+        loaded={loaded}
+        loading={loading}
+        paginationPageSize={PROJECTS_PER_PAGE}
+        paginationPageSizeSelector={paginationPageSizeSelectorOpts}
+        rowBuffer={50}
+        rowCount={count}
+        rowData={results}
+        rowsVisible={25}
+        tooltipShowDelay={200}
+        components={{
+          agColumnHeader: undefined,
+          agTextCellRenderer: undefined,
+        }}
+        onPaginationChanged={({ page, rowsPerPage }) => {
+          setParams({
+            limit: rowsPerPage,
+            offset: page * rowsPerPage,
+          })
+        }}
+        onSortChanged={({ api }) => {
+          const ordering = api
+            .getColumnState()
+            .filter((column) => !!column.sort)
+            .map(
+              (column) =>
+                (column.sort === 'asc' ? '' : '-') +
+                column.colId.replaceAll('.', '__'),
+            )
+            .join(',')
+          setParams({ offset: 0, ordering })
+        }}
+      />
+    )
+  )
+}
+
+export default PListingTable

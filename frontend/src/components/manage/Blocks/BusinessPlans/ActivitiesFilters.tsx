@@ -2,6 +2,7 @@ import { InputAdornment, IconButton as MuiIconButton } from '@mui/material'
 import { union } from 'lodash'
 
 import Field from '@ors/components/manage/Form/Field'
+import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions'
 import { debounce } from '@ors/helpers'
 import useFocusOnCtrlF from '@ors/hooks/useFocusOnCtrlF'
 
@@ -24,22 +25,6 @@ export default function ActivitiesFilters(props: any) {
   } = props
 
   const searchRef = useFocusOnCtrlF()
-
-  const getFilterOptions = (options: any = [], filterIdentifier: string) => {
-    const selectedOptions = filters[filterIdentifier]
-
-    if (!selectedOptions) {
-      return options
-    }
-
-    const selectedOptionsIds = selectedOptions.map(
-      (selectedOption: any) => selectedOption.id,
-    )
-
-    return options.filter(
-      (option: any) => !selectedOptionsIds.includes(option.id),
-    )
-  }
 
   const defaultProps = {
     FieldProps: { className: 'mb-0 w-full md:w-[7.76rem] BPList' },
@@ -107,7 +92,11 @@ export default function ActivitiesFilters(props: any) {
         <Field
           Input={{ placeholder: tableColumns.country_id }}
           getOptionLabel={(option: any) => option?.name}
-          options={getFilterOptions(commonSlice.countries.data, 'country_id')}
+          options={getFilterOptions(
+            filters,
+            commonSlice.countries.data,
+            'country_id',
+          )}
           value={[]}
           widget="autocomplete"
           onChange={(_: any, value: any) => {
@@ -127,7 +116,11 @@ export default function ActivitiesFilters(props: any) {
           <Field
             Input={{ placeholder: tableColumns.agency_id }}
             getOptionLabel={(option: any) => option?.name}
-            options={getFilterOptions(commonSlice.agencies.data, 'agency_id')}
+            options={getFilterOptions(
+              filters,
+              commonSlice.agencies.data,
+              'agency_id',
+            )}
             value={[]}
             widget="autocomplete"
             onChange={(_: any, value: any) => {
@@ -147,7 +140,11 @@ export default function ActivitiesFilters(props: any) {
         <Field
           Input={{ placeholder: tableColumns.project_type_id }}
           getOptionLabel={(option: any) => option?.name}
-          options={getFilterOptions(bpSlice.types.data, 'project_type_id')}
+          options={getFilterOptions(
+            filters,
+            bpSlice.types.data,
+            'project_type_id',
+          )}
           value={[]}
           widget="autocomplete"
           isOptionEqualToValue={(option: any, value: any) =>
@@ -169,7 +166,7 @@ export default function ActivitiesFilters(props: any) {
         <Field
           Input={{ placeholder: tableColumns.project_cluster_id }}
           getOptionLabel={(option: any) => option?.name}
-          options={getFilterOptions(clusters, 'project_cluster_id')}
+          options={getFilterOptions(filters, clusters, 'project_cluster_id')}
           value={[]}
           widget="autocomplete"
           onChange={(_: any, value: any) => {
@@ -190,7 +187,7 @@ export default function ActivitiesFilters(props: any) {
         <Field
           Input={{ placeholder: tableColumns.sector_id }}
           getOptionLabel={(option: any) => option?.name}
-          options={getFilterOptions(bpSlice.sectors.data, 'sector_id')}
+          options={getFilterOptions(filters, bpSlice.sectors.data, 'sector_id')}
           value={[]}
           widget="autocomplete"
           onChange={(_: any, value: any) => {
@@ -209,7 +206,11 @@ export default function ActivitiesFilters(props: any) {
         <Field
           Input={{ placeholder: tableColumns.subsector_id }}
           getOptionLabel={(option: any) => option?.name}
-          options={getFilterOptions(bpSlice.subsectors.data, 'subsector_id')}
+          options={getFilterOptions(
+            filters,
+            bpSlice.subsectors.data,
+            'subsector_id',
+          )}
           value={[]}
           widget="autocomplete"
           onChange={(_: any, value: any) => {
@@ -228,7 +229,11 @@ export default function ActivitiesFilters(props: any) {
         <Field
           Input={{ placeholder: 'I/M' }}
           getOptionLabel={(option: any) => option?.name}
-          options={getFilterOptions(multiYearFilterOptions, 'is_multi_year')}
+          options={getFilterOptions(
+            filters,
+            multiYearFilterOptions,
+            'is_multi_year',
+          )}
           value={[]}
           widget="autocomplete"
           isOptionEqualToValue={(option: any, value: any) =>
