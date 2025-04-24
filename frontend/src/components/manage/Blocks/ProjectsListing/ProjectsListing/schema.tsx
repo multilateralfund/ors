@@ -14,7 +14,6 @@ const getColumnDefs = () =>
           headerName: 'Select',
           field: '',
           cellClass: 'ag-text-center',
-          sortable: false,
           minWidth: 70,
           cellRenderer: () => (
             <Checkbox
@@ -42,7 +41,6 @@ const getColumnDefs = () =>
           tooltipField: 'country',
           cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
           minWidth: 150,
-          sortable: true,
         },
         {
           headerName: tableColumns.metacode,
@@ -71,7 +69,6 @@ const getColumnDefs = () =>
           tooltipField: 'agency',
           cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
           minWidth: 110,
-          sortable: true,
         },
         {
           headerName: tableColumns.title,
@@ -79,19 +76,16 @@ const getColumnDefs = () =>
           tooltipField: 'title',
           cellClass: 'ag-cell-ellipsed',
           minWidth: 300,
-          sortable: true,
         },
         {
           headerName: tableColumns.type,
           field: 'project_type.code',
           tooltipField: 'project_type.name',
-          sortable: true,
         },
         {
           headerName: tableColumns.sector,
           field: 'sector.code',
           tooltipField: 'sector.name',
-          sortable: true,
         },
         {
           headerName: tableColumns.total_fund,
@@ -111,6 +105,7 @@ const getColumnDefs = () =>
         cellClass: 'ag-text-center ag-cell-ellipsed',
         minWidth: 90,
         resizable: true,
+        sortable: false,
       },
     }),
     [],

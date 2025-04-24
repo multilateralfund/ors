@@ -152,22 +152,22 @@ export const BPTable = ({
     return [
       {
         children: valuesUSD,
-        headerName: 'Value ($000) Adjusted',
+        headerName: 'Value ($000) adjusted',
       },
       {
         children: valuesODP,
-        headerName: 'ODP Adjusted',
+        headerName: 'ODP adjusted',
       },
       {
         children: valuesMT,
-        headerName: 'MT for HFC Adjusted',
+        headerName: 'MT for HFC adjusted',
       },
       {
         children: valuesCO2,
-        headerName: 'CO2-EQ Adjusted',
+        headerName: 'CO2-EQ adjusted',
         headerGroupComponent: () => (
           <span>
-            CO<sub>2</sub>-EQ Adjusted
+            CO<sub>2</sub>-EQ adjusted
           </span>
         ),
       },

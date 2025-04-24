@@ -10,7 +10,7 @@ const PListingTable = ({ projects, filters }: any) => {
   const { columnDefs, defaultColDef } = getColumnDefs()
 
   const getPaginationSelectorOpts = (): number[] => {
-    const nrResultsOpts = [10, 25, 50, 100]
+    const nrResultsOpts = [100, 250, 500, 1000]
     const filteredNrResultsOptions = nrResultsOpts.filter(
       (option) => option < count,
     )

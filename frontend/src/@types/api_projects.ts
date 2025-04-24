@@ -6,7 +6,7 @@ export type ProjectType = {
   approval_meeting: number
   approval_meeting_id: number
   capital_cost: number
-  cluster: string
+  cluster: any
   cluster_id: number
   code: string
   code_legacy: string
@@ -91,7 +91,7 @@ export type ProjectType = {
   programme_officer: any
   project_cost: any
   project_duration: any
-  project_type: string
+  project_type: any
   project_type_id: 4
   project_type_legacy: string
   rbm_measures: any[]
@@ -99,7 +99,7 @@ export type ProjectType = {
   retroactive_finance: boolean
   reviewed_mfs: boolean
   revision_number: any
-  sector: string
+  sector: any
   sector_id: number
   sector_legacy: string
   serial_number: number
