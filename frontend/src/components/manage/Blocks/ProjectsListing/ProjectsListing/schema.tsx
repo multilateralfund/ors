@@ -1,20 +1,38 @@
 import { useMemo } from 'react'
 
+import Link from '@ors/components/ui/Link/Link'
 import { tableColumns } from '../constants'
 import { formatNumberColumns } from '../utils'
 
 import { Checkbox } from '@mui/material'
 import { ITooltipParams } from 'ag-grid-community'
+import { FiEye } from 'react-icons/fi'
 
 const getColumnDefs = () =>
   useMemo(
     () => ({
       columnDefs: [
         {
+          cellRenderer: (props: any) => (
+            <Link
+              className="flex justify-center"
+              href={`/projects-listing/${props.data.id}`}
+            >
+              <FiEye size={16} />
+            </Link>
+          ),
+          field: '',
+          minWidth: 50,
+          maxWidth: 50,
+          resizable: false,
+        },
+        {
           headerName: 'Select',
           field: '',
           cellClass: 'ag-text-center',
-          minWidth: 70,
+          minWidth: 90,
+          maxWidth: 90,
+          resizable: false,
           cellRenderer: () => (
             <Checkbox
               sx={{
@@ -51,6 +69,8 @@ const getColumnDefs = () =>
           headerName: tableColumns.code,
           field: 'code',
           tooltipField: 'code',
+          cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
+          minWidth: 120,
         },
         {
           headerName: tableColumns.cluster,
@@ -76,6 +96,11 @@ const getColumnDefs = () =>
           tooltipField: 'title',
           cellClass: 'ag-cell-ellipsed',
           minWidth: 300,
+          cellRenderer: (props: any) => (
+            <Link href={`/projects-listing/${props.data.id}`}>
+              {props.value}
+            </Link>
+          ),
         },
         {
           headerName: tableColumns.type,

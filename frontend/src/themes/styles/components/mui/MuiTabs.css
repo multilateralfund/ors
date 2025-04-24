@@ -44,3 +44,19 @@
   pointer-events: none;
   border-bottom: 2px solid theme(colors.error);
 }
+
+.sectionsTabs {
+  @apply scrollable min-h-[unset];
+
+  .MuiTabs-flexContainer {
+    @apply gap-[0.15rem];
+  }
+
+  .MuiTab-root {
+    @apply h-[2.813rem] min-h-[unset] rounded-b-none px-[1rem] pb-0 pt-[0.125rem] text-[1.25rem] font-medium;
+  }
+
+  .MuiTab-root.Mui-selected {
+    @apply rounded-b-none bg-primary px-3 py-2 text-mlfs-hlYellow;
+  }
+}
