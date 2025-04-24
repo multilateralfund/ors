@@ -5,7 +5,7 @@ import ViewTable from '@ors/components/manage/Form/ViewTable'
 import getColumnDefs from './schema'
 import { PROJECTS_PER_PAGE } from '../constants'
 
-const PListingTable = ({ projects }: any) => {
+const PListingTable = ({ projects, filters }: any) => {
   const { count, loaded, loading, results, setParams } = projects
   const { columnDefs, defaultColDef } = getColumnDefs()
 
@@ -22,7 +22,7 @@ const PListingTable = ({ projects }: any) => {
   return (
     loaded && (
       <ViewTable
-        key={JSON.stringify(results)}
+        key={JSON.stringify(filters)}
         columnDefs={columnDefs}
         defaultColDef={defaultColDef}
         domLayout="normal"

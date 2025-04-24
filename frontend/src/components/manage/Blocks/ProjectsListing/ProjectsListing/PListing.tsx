@@ -33,7 +33,7 @@ export default function PListing() {
         <PListingFilters
           {...{ form, filters, initialFilters, setFilters, setParams }}
         />
-        <PListingTable {...{ projects }} />
+        <PListingTable {...{ projects, filters }} />
       </form>
     </>
   )
