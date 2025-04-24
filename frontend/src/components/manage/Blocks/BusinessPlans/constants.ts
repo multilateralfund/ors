@@ -5,12 +5,12 @@ export const multiYearFilterOptions = [
 
 export const tableColumns: { [key: string]: string } = {
   agency_id: 'Agency',
-  amount_polyol: 'Amount of Polyol in Project (MT)',
+  amount_polyol: 'Amount of polyol in project (MT)',
   bp_chemical_type_id: 'Chemical',
   comment_secretariat: 'Comment',
   country_id: 'Country',
   is_multi_year: 'I-Indiv M-MY',
-  lvc_status: 'HCFC Status',
+  lvc_status: 'HCFC status',
   project_cluster_id: 'Cluster',
   project_type_id: 'Type',
   remarks: 'Remarks',
@@ -18,7 +18,7 @@ export const tableColumns: { [key: string]: string } = {
   sector_id: 'Sector',
   status: "A-Appr. P-Plan'd",
   subsector_id: 'Subsector',
-  substances: 'Chemical Detail',
+  substances: 'Chemical detail',
   title: 'Title',
   values: 'Values',
 }

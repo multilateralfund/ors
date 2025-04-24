@@ -235,7 +235,7 @@ const valuesColumnDefs = (
   ...getDefaultColumnDefs(isDiff, withAgency),
   yearColumns.find(
     (column: { headerName: string }) =>
-      column.headerName === 'Value ($000) Adjusted',
+      column.headerName === 'Value ($000) adjusted',
   ) || [],
   getStatusColumn(isDiff),
   getIsMultiYearColumn(isDiff),
@@ -249,9 +249,9 @@ const odpColumnDefs = (
   ...getDefaultColumnDefs(isDiff, withAgency),
   ...(yearColumns.filter(
     (column: { headerName: string }) =>
-      column.headerName === 'ODP Adjusted' ||
-      column.headerName === 'MT for HFC Adjusted' ||
-      column.headerName === 'CO2-EQ Adjusted',
+      column.headerName === 'ODP adjusted' ||
+      column.headerName === 'MT for HFC adjusted' ||
+      column.headerName === 'CO2-EQ adjusted',
   ) || []),
 ]
 

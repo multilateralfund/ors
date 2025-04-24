@@ -112,7 +112,7 @@ export default function PSView({ data }: ProjectProps) {
               <div>
                 <Label>Sector</Label>
                 <Typography className="text-lg font-bold">
-                  {data.sector || '-'}
+                  {data.sector?.name || '-'}
                 </Typography>
               </div>
               <div>
@@ -130,7 +130,7 @@ export default function PSView({ data }: ProjectProps) {
               <div>
                 <Label>Type</Label>
                 <Typography className="text-lg font-bold">
-                  {data.project_type || '-'}
+                  {data.project_type?.name || '-'}
                 </Typography>
               </div>
               <div>
@@ -176,7 +176,7 @@ export default function PSView({ data }: ProjectProps) {
               <div>
                 <Label>Cluster</Label>
                 <Typography className="text-lg font-bold">
-                  {data.cluster || '-'}
+                  {data.cluster?.name || '-'}
                 </Typography>
               </div>
               <div>
