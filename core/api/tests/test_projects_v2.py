@@ -1,7 +1,8 @@
 import pytest
 from django.urls import reverse
-from core.api.tests.base import BaseTest
+from rest_framework.test import APIClient
 
+from core.api.tests.base import BaseTest
 from core.api.tests.factories import (
     AgencyFactory,
     CountryFactory,
@@ -35,7 +36,7 @@ def _other_country_user():
 
 @pytest.fixture(name="project_url")
 def _project_url(project):
-    return reverse("project-detail", args=(project.id,))
+    return reverse("project-v2-detail", args=(project.id,))
 
 
 @pytest.fixture(name="project_upload_url")
@@ -367,3 +368,36 @@ class TestProjectV2List(BaseTest):
         assert response.status_code == 200
         assert len(response.data) == 1
         assert response.data[0]["title"] == "Project 26"
+
+
+class TestProjectsRetrieve:
+    client = APIClient()
+
+    def test_project_get_anon(self, project_url):
+        response = self.client.get(project_url)
+        assert response.status_code == 403
+
+    def test_without_permission_wrong_agency(self, other_agency_user, project_url):
+        self.client.force_authenticate(user=other_agency_user)
+        response = self.client.get(project_url)
+        assert response.status_code == 404
+
+    def test_without_permission_wrong_country(self, other_country_user, project_url):
+        self.client.force_authenticate(user=other_country_user)
+        response = self.client.get(project_url)
+        assert response.status_code == 404
+
+    def test_project_get(self, viewer_user, project_url, project):
+        self.client.force_authenticate(user=viewer_user)
+        response = self.client.get(project_url)
+        assert response.status_code == 200
+        assert response.data["id"] == project.id
+        assert response.data["substance_category"] == "Production"
+        assert response.data["latest_file"] is None
+
+    def test_project_files_get(self, viewer_user, project_url, project_file):
+        self.client.force_authenticate(user=viewer_user)
+        response = self.client.get(project_url)
+        assert response.status_code == 200
+        assert response.data["latest_file"]["id"] == project_file.id
+        assert response.data["latest_file"]["name"] == project_file.file.name

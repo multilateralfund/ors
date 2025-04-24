@@ -150,7 +150,7 @@ class ProjectViewSet(
             "meeting_transf",
             "meta_project",
         ).prefetch_related(
-            "coop_agencies__agency",
+            "coop_agencies",
             "submission_amounts",
             "rbm_measures__measure",
             "ods_odp",
@@ -252,6 +252,7 @@ class ProjectViewSet(
 class ProjectV2ViewSet(
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
+    mixins.RetrieveModelMixin,
 ):
     """V2 ViewSet for Project model."""
 
@@ -325,10 +326,17 @@ class ProjectV2ViewSet(
                 format=openapi.FORMAT_DATE,
             ),
         ],
-        operation_description="V2 API endpoints that allow CRUD operations on projects.",
+        operation_description="V2 listing endpoint that allow listing, filtering and ordering the projects.",
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_description="V2 retrieve endpoint that allows retrieving a project.",
+    )
+    def retrieve(self, request, *args, **kwargs):
+        """Retrieve project details"""
+        return super().retrieve(request, *args, **kwargs)
 
 
 class ProjectFileView(APIView):
