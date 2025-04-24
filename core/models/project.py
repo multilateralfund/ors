@@ -395,6 +395,10 @@ class Project(models.Model):
 
     objects = ProjectManager()
 
+    class Meta:
+        ordering = ["country__name", "serial_number"]
+        get_latest_by = "-date_actual"
+
     def __str__(self):
         return self.title
 
