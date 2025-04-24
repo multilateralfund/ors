@@ -228,9 +228,7 @@ const ProjectsFilters = ({
           })
         }}
         {...defaultProps}
-        FieldProps={{
-          className: defaultProps.FieldProps.className + ' md:w-[10.3rem]',
-        }}
+        FieldProps={{ className: 'mb-0 w-full md:w-[10.5rem] BPList' }}
       />
       <Field
         Input={{ placeholder: tableColumns.project_status }}
