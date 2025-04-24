@@ -1,9 +1,11 @@
 'use client'
 
 import ViewTable from '@ors/components/manage/Form/ViewTable'
-import getColumnDefs from './schema'
 
-const PListingTable = ({ projects, PROJECTS_PER_PAGE }: any) => {
+import getColumnDefs from './schema'
+import { PROJECTS_PER_PAGE } from '../constants'
+
+const PListingTable = ({ projects }: any) => {
   const { count, loaded, loading, results, setParams } = projects
   const { columnDefs, defaultColDef } = getColumnDefs()
 
@@ -20,6 +22,7 @@ const PListingTable = ({ projects, PROJECTS_PER_PAGE }: any) => {
   return (
     loaded && (
       <ViewTable
+        key={JSON.stringify(results)}
         columnDefs={columnDefs}
         defaultColDef={defaultColDef}
         domLayout="normal"
@@ -48,9 +51,9 @@ const PListingTable = ({ projects, PROJECTS_PER_PAGE }: any) => {
             .getColumnState()
             .filter((column) => !!column.sort)
             .map(
-              (column) =>
-                (column.sort === 'asc' ? '' : '-') +
-                column.colId.replaceAll('.', '__'),
+              ({ sort, colId }) =>
+                (sort === 'asc' ? '' : '-') +
+                (colId === 'title' ? colId : colId.split('.')[0] + '__name'),
             )
             .join(',')
           setParams({ offset: 0, ordering })

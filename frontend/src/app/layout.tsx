@@ -56,6 +56,7 @@ function useAppState(user: ApiUser | null | undefined) {
           countries,
           // Projects data
           statuses,
+          submission_statuses,
           sectors,
           subsectors,
           types,
@@ -70,6 +71,7 @@ function useAppState(user: ApiUser | null | undefined) {
           api('api/agencies/', {}, false),
           api('api/countries/', {}, false),
           api('api/project-statuses/', {}, false),
+          api('api/project-submission-statuses/', {}, false),
           api('api/project-sector/', {}, false),
           api('api/project-subsector/', {}, false),
           api('api/project-types/', {}, false),
@@ -105,6 +107,7 @@ function useAppState(user: ApiUser | null | undefined) {
           meetings: getInitialSliceData(meetings),
           sectors: getInitialSliceData(sectors),
           statuses: getInitialSliceData(statuses),
+          submission_statuses: getInitialSliceData(submission_statuses),
           subsectors: getInitialSliceData(subsectors),
           types: getInitialSliceData(types),
         }

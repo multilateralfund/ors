@@ -1,21 +1,19 @@
 'use client'
 
-import { InputAdornment, IconButton as MuiIconButton } from '@mui/material'
-import { union } from 'lodash'
-
 import Field from '@ors/components/manage/Form/Field'
-import { debounce } from '@ors/helpers/Utils/Utils'
-
-import { IoChevronDown, IoSearchOutline } from 'react-icons/io5'
-import useFocusOnCtrlF from '@ors/hooks/useFocusOnCtrlF'
-import { tableColumns } from '../constants'
 import PopoverInput from '../../Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions'
+import { debounce } from '@ors/helpers/Utils/Utils'
+import useFocusOnCtrlF from '@ors/hooks/useFocusOnCtrlF'
+import { tableColumns } from '../constants'
+
+import { InputAdornment, IconButton as MuiIconButton } from '@mui/material'
+import { IoChevronDown, IoSearchOutline } from 'react-icons/io5'
+import { union } from 'lodash'
 
 const ProjectsFilters = ({
   commonSlice,
   projectSlice,
-  clusters,
   meetings,
   form,
   filters,
@@ -25,6 +23,9 @@ const ProjectsFilters = ({
   const searchRef = useFocusOnCtrlF()
 
   const defaultProps = {
+    multiple: true,
+    value: [],
+    getOptionLabel: (option: any) => option?.name,
     FieldProps: { className: 'mb-0 w-full md:w-[7.76rem] BPList' },
     popupIcon: <IoChevronDown size="18" color="#2F2F38" />,
     componentsProps: {
@@ -88,13 +89,11 @@ const ProjectsFilters = ({
       />
       <Field
         Input={{ placeholder: tableColumns.country }}
-        getOptionLabel={(option: any) => option?.name}
         options={getFilterOptions(
           filters,
           commonSlice.countries.data,
           'country_id',
         )}
-        value={[]}
         widget="autocomplete"
         onChange={(_: any, value: any) => {
           const country = filters.country_id || []
@@ -106,18 +105,15 @@ const ProjectsFilters = ({
             offset: 0,
           })
         }}
-        multiple
         {...defaultProps}
       />
       <Field
         Input={{ placeholder: tableColumns.agency }}
-        getOptionLabel={(option: any) => option?.name}
         options={getFilterOptions(
           filters,
           commonSlice.agencies.data,
           'agency_id',
         )}
-        value={[]}
         widget="autocomplete"
         onChange={(_: any, value: any) => {
           const agency = filters.agency_id || []
@@ -129,14 +125,15 @@ const ProjectsFilters = ({
             offset: 0,
           })
         }}
-        multiple
         {...defaultProps}
       />
       <Field
         Input={{ placeholder: tableColumns.cluster }}
-        getOptionLabel={(option: any) => option?.name}
-        options={getFilterOptions(filters, clusters, 'cluster_id')}
-        value={[]}
+        options={getFilterOptions(
+          filters,
+          projectSlice.clusters.data,
+          'cluster_id',
+        )}
         widget="autocomplete"
         onChange={(_: any, value: any) => {
           const projectCluster = filters.cluster_id || []
@@ -148,20 +145,16 @@ const ProjectsFilters = ({
             cluster_id: newValue.map((item: any) => item.id).join(','),
           })
         }}
-        multiple
         {...defaultProps}
       />
       <Field
         Input={{ placeholder: tableColumns.type }}
-        getOptionLabel={(option: any) => option?.name}
         options={getFilterOptions(
           filters,
           projectSlice.types.data,
           'project_type_id',
         )}
-        value={[]}
         widget="autocomplete"
-        isOptionEqualToValue={(option: any, value: any) => option.id === value}
         onChange={(_: any, value: any) => {
           const projectType = filters.project_type_id || []
           const newValue = union(projectType, value)
@@ -172,12 +165,32 @@ const ProjectsFilters = ({
             project_type_id: newValue.map((item: any) => item.id).join(','),
           })
         }}
-        multiple
+        {...defaultProps}
+      />
+      <Field
+        Input={{ placeholder: tableColumns.sector }}
+        options={getFilterOptions(
+          filters,
+          projectSlice.sectors.data,
+          'sector_id',
+        )}
+        widget="autocomplete"
+        onChange={(_: any, value: any) => {
+          const sector = filters.sector_id || []
+          const newValue = union(sector, value)
+
+          handleFilterChange({ sector_id: newValue })
+          handleParamsChange({
+            offset: 0,
+            sector_id: newValue.map((item: any) => item.id).join(','),
+          })
+        }}
         {...defaultProps}
       />
       <div className="w-full md:w-[7.76rem]">
         <PopoverInput
-          className="!m-0 mb-0 h-[2.25rem] min-h-[2.25rem] w-full truncate !py-1 !pr-0 text-[15px] md:w-[7.76rem]"
+          className="!m-0 mb-0 h-[2.25rem] min-h-[2.25rem] w-full truncate border-2 !py-1 !pr-0 text-[15px] md:w-[7.76rem]"
+          label="Meeting"
           options={meetings}
           onChange={(value: any) => {
             const meetingId = filters.meeting_id || []
@@ -192,9 +205,56 @@ const ProjectsFilters = ({
               meeting_id: newValue.map((item: any) => item.value).join(','),
             })
           }}
-          label="Meeting"
         />
       </div>
+      <Field
+        Input={{ placeholder: tableColumns.submission_status }}
+        options={getFilterOptions(
+          filters,
+          projectSlice.submission_statuses.data,
+          'submission_status_id',
+        )}
+        widget="autocomplete"
+        onChange={(_: any, value: any) => {
+          const submissionStatus = filters.submission_status_id || []
+          const newValue = union(submissionStatus, value)
+
+          handleFilterChange({ submission_status_id: newValue })
+          handleParamsChange({
+            submission_status_id: newValue
+              .map((item: any) => item.id)
+              .join(','),
+            offset: 0,
+          })
+        }}
+        {...defaultProps}
+        FieldProps={{
+          className: defaultProps.FieldProps.className + ' md:w-[10.3rem]',
+        }}
+      />
+      <Field
+        Input={{ placeholder: tableColumns.project_status }}
+        options={getFilterOptions(
+          filters,
+          projectSlice.statuses.data,
+          'status_id',
+        )}
+        widget="autocomplete"
+        onChange={(_: any, value: any) => {
+          const projectStatus = filters.status_id || []
+          const newValue = union(projectStatus, value)
+
+          handleFilterChange({ status_id: newValue })
+          handleParamsChange({
+            offset: 0,
+            status_id: newValue.map((item: any) => item.id).join(','),
+          })
+        }}
+        {...defaultProps}
+        FieldProps={{
+          className: defaultProps.FieldProps.className + ' md:w-[9rem]',
+        }}
+      />
     </div>
   )
 }
