@@ -628,7 +628,10 @@ class ProjectDetailsSerializer(ProjectListSerializer):
             "rbm_measures",
         ):
             # set ods odps read only for PUT, PATCH, DELETE
-            self.fields[field].read_only = request.method not in ["GET", "POST"]
+            self.fields[field].read_only = getattr(request, "method", None) not in [
+                "GET",
+                "POST",
+            ]
 
     @transaction.atomic
     def create(self, validated_data):
@@ -643,7 +646,7 @@ class ProjectDetailsSerializer(ProjectListSerializer):
         status = ProjectStatus.objects.get(code="NEWSUB")
         validated_data["status_id"] = status.id
         # set submission status
-        submission_status = ProjectSubmissionStatus.objects.get(code="draft")
+        submission_status = ProjectSubmissionStatus.objects.get(name="Draft")
         validated_data["submission_status_id"] = submission_status.id
 
         # create project
@@ -711,3 +714,51 @@ class ProjectDetailsSerializer(ProjectListSerializer):
         instance.save()
 
         return instance
+
+
+class ProjectV2CreateSerializer(serializers.ModelSerializer):
+    """
+    ProjectSerializer class
+    """
+
+    class Meta:
+        model = Project
+        fields = [
+            "title",
+            "description",
+            "country",
+            "agency",
+            "sector",
+            "project_type",
+            "cluster",
+            # "status_id",
+            # "submission_status_id",
+            "meeting",
+            "decision",
+        ]
+
+    def to_representation(self, instance):
+        return ProjectDetailsSerializer(context=self.context).to_representation(
+            instance
+        )
+
+    @transaction.atomic
+    def create(self, validated_data):
+        status = ProjectStatus.objects.get(code="NA")
+        submission_status = ProjectSubmissionStatus.objects.get(name="Draft")
+        validated_data["status_id"] = status.id
+        validated_data["submission_status_id"] = submission_status.id
+        project = Project.objects.create(**validated_data)
+        # set subcode
+        project.code = get_project_sub_code(
+            project.country,
+            project.cluster,
+            project.agency,
+            project.project_type,
+            project.sector,
+            project.meeting,
+            project.meeting_transf,
+            project.serial_number,
+        )
+        project.save()
+        return project

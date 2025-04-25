@@ -26,10 +26,12 @@ def forward_modify_project_submission_status_and_status(apps, schema_editor):
     ]
 
     # Create new N/A project status
-    na_status = ProjectStatus.objects.create(
-        name="N/A",
+    na_status, _ = ProjectStatus.objects.get_or_create(
         code="NA",
-        color="#CCCCCC",
+        defaults={
+            "name": "N/A",
+            "color": "#CCCCCC",
+        },
     )
 
     # Replace old submission statuses in project status with N/A

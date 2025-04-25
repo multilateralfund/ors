@@ -15,7 +15,7 @@ from core.api.tests.factories import (
     ProjectTypeFactory,
     UserFactory,
 )
-from core.models.project import ProjectFile
+from core.models.project import Project, ProjectFile
 from core.utils import get_project_sub_code
 
 pytestmark = pytest.mark.django_db
@@ -181,6 +181,41 @@ def setup_project_list(
         new_sector,
         new_meeting,
     )
+
+
+@pytest.fixture(name="_setup_project_create")
+def setup_project_create(
+    country_ro,
+    agency,
+    project_type,
+    meeting,
+    subsector,
+    project_cluster_kip,
+):
+    statuses_dict = [
+        {"name": "N/A", "code": "NA"},
+    ]
+
+    submission_statuses_dict = [
+        {"name": "Draft", "code": "draft"},
+    ]
+    statuses = []
+    for status in statuses_dict:
+        statuses.append(ProjectStatusFactory.create(**status))
+    submission_statuses = []
+    for status in submission_statuses_dict:
+        submission_statuses.append(ProjectSubmissionStatusFactory.create(**status))
+
+    return {
+        "title": "Project",
+        "description": "Description",
+        "country": country_ro.id,
+        "agency": agency.id,
+        "sector": subsector.sector_id,
+        "project_type": project_type.id,
+        "meeting": meeting.id,
+        "cluster": project_cluster_kip.id,
+    }
 
 
 class TestProjectV2List(BaseTest):
@@ -401,3 +436,82 @@ class TestProjectsRetrieve:
         assert response.status_code == 200
         assert response.data["latest_file"]["id"] == project_file.id
         assert response.data["latest_file"]["name"] == project_file.file.name
+
+
+class TestCreateProjects(BaseTest):
+    url = reverse("project-v2-list")
+
+    def test_without_login(self, _setup_project_create):
+        data = _setup_project_create
+        self.client.force_authenticate(user=None)
+
+        response = self.client.post(self.url, data, format="json")
+        assert response.status_code == 403
+
+    def test_as_viewer(self, viewer_user, _setup_project_create):
+        data = _setup_project_create
+        self.client.force_authenticate(user=viewer_user)
+
+        response = self.client.post(self.url, data, format="json")
+        assert response.status_code == 403
+
+    def test_create_project(
+        self,
+        user,
+        country_ro,
+        agency,
+        project_type,
+        subsector,
+        meeting,
+        project_cluster_kip,
+        _setup_project_create,
+    ):
+        data = _setup_project_create
+        self.client.force_authenticate(user=user)
+
+        # create project
+        response = self.client.post(self.url, data, format="json")
+        assert response.status_code == 201
+        assert response.data["title"] == data["title"]
+        assert response.data["country"] == country_ro.name
+        assert response.data["agency"] == agency.name
+        assert response.data["sector"]["id"] == subsector.sector.id
+        assert response.data["sector"]["name"] == subsector.sector.name
+        assert response.data["sector"]["code"] == subsector.sector.code
+        assert response.data["project_type"]["id"] == project_type.id
+        assert response.data["project_type"]["name"] == project_type.name
+        assert response.data["project_type"]["code"] == project_type.code
+        assert response.data["status"] == "N/A"
+        assert response.data["submission_status"] == "Draft"
+        assert response.data["code"] == get_project_sub_code(
+            country_ro,
+            project_cluster_kip,
+            agency,
+            project_type,
+            subsector.sector,
+            meeting,
+            None,
+            2,
+        )
+
+    def test_create_project_project_fk(self, user, _setup_project_create):
+        data = _setup_project_create
+        self.client.force_authenticate(user=user)
+        # invalid country, agency, sector, project_type ids
+        for field in [
+            "agency",
+            "sector",
+            "project_type",
+            "country",
+            "cluster",
+        ]:
+            initial_value = data[field]
+            data[field] = 999
+            # test with invalid id
+            response = self.client.post(self.url, data, format="json")
+            assert response.status_code == 400
+            assert field in response.data
+            data[field] = initial_value
+
+        # check project count
+        assert Project.objects.count() == 0

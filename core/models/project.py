@@ -280,7 +280,9 @@ class Project(models.Model):
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
     agency = models.ForeignKey(Agency, on_delete=models.CASCADE)
     national_agency = models.CharField(max_length=255, null=True, blank=True)
-    coop_agencies = models.ManyToManyField(Agency, related_name="coop_projects")
+    coop_agencies = models.ManyToManyField(
+        Agency, related_name="coop_projects", blank=True
+    )
 
     legacy_code = models.CharField(max_length=128, unique=True, null=True, blank=True)
     code = models.CharField(max_length=128, null=True, blank=True)
@@ -301,7 +303,7 @@ class Project(models.Model):
     )
     status = models.ForeignKey(ProjectStatus, on_delete=models.CASCADE)
     meeting = models.ForeignKey(
-        Meeting, on_delete=models.CASCADE, null=True, related_name="projects"
+        Meeting, on_delete=models.CASCADE, related_name="projects"
     )
     meeting_transf = models.ForeignKey(
         Meeting,
@@ -328,7 +330,9 @@ class Project(models.Model):
     subsector_legacy = models.CharField(max_length=256, null=True, blank=True)
     mya_subsector = models.CharField(max_length=256, null=True, blank=True)
 
-    substance_type = models.CharField(max_length=256, choices=SubstancesType.choices)
+    substance_type = models.CharField(
+        max_length=256, choices=SubstancesType.choices, null=True, blank=True
+    )
 
     impact = models.FloatField(null=True, blank=True)
     impact_production = models.FloatField(null=True, blank=True)
@@ -376,7 +380,7 @@ class Project(models.Model):
     local_ownership = models.FloatField(null=True, blank=True)
     export_to = models.FloatField(null=True, blank=True)
     submission_category = models.CharField(
-        max_length=164, choices=SubmissionCategory.choices, null=True
+        max_length=164, choices=SubmissionCategory.choices, null=True, blank=True
     )
     submission_number = models.IntegerField(null=True, blank=True)
     programme_officer = models.CharField(max_length=255, null=True, blank=True)
@@ -396,8 +400,7 @@ class Project(models.Model):
     objects = ProjectManager()
 
     class Meta:
-        ordering = ["country__name", "serial_number"]
-        get_latest_by = "-date_actual"
+        ordering = ["-date_actual", "country__name", "serial_number"]
 
     def __str__(self):
         return self.title
