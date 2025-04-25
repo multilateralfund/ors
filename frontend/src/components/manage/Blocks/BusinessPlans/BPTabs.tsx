@@ -1,9 +1,9 @@
-import { Tab, Tabs } from '@mui/material'
-
-import BPDetails from './BP/BPDetails'
-import { BPTabsInterface } from './types'
 import BPDetailsConsolidatedEdit from './BPEditConsolidated/BPDetailsConsolidatedEdit'
+import BPDetails from './BP/BPDetails'
 import { useStore } from '@ors/store'
+import { BPTabsInterface } from './types'
+
+import { Tab, Tabs } from '@mui/material'
 
 const BPTabs = ({
   activeTab,
@@ -20,40 +20,30 @@ const BPTabs = ({
     <>
       <div className="flex items-center justify-between gap-2 lg:flex-nowrap print:hidden">
         <Tabs
-          className="scrollable w-96"
-          aria-label="view country programme report"
-          scrollButtons="auto"
+          aria-label="view bp"
           value={activeTab}
+          className="sectionsTabs w-96"
           variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
           TabIndicatorProps={{
             className: 'h-0',
             style: { transitionDuration: '150ms' },
           }}
-          onChange={(event, newValue) => {
+          onChange={(_, newValue) => {
             setActiveTab(newValue)
             setActiveTabStore(newValue)
           }}
-          allowScrollButtonsMobile
         >
           <Tab
             id="business-plan-details"
-            className="rounded-b-none px-3 py-2"
             aria-controls="business-plan-details"
             label="Report Info"
-            classes={{
-              selected:
-                'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',
-            }}
           />
           <Tab
             id="business-plan-activities"
-            className="rounded-b-none px-3 py-2"
             aria-controls="business-plan-activities"
             label="Activities"
-            classes={{
-              selected:
-                'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',
-            }}
           />
         </Tabs>
         <div id="bp-table-export-button" className="mb-1.5 self-end" />
