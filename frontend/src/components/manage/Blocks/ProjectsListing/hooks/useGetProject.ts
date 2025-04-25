@@ -5,6 +5,6 @@ export function useGetProject(project_id: string) {
     options: {
       withStoreCache: false,
     },
-    path: `api/projects/${project_id}/`,
+    path: `api/projects/v2/${project_id}/`,
   })
 }
