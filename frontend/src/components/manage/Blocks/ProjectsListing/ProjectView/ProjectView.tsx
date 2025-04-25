@@ -3,14 +3,14 @@
 import { useState } from 'react'
 
 import ProjectOverview from './ProjectOverview'
+import ProjectSubmissionDetails from './ProjectSubmissionDetails'
+import ProjectSubstanceDetails from './ProjectSubstanceDetails'
+import ProjectCostsDetails from './ProjectCostsDetails'
 import ProjectFundingDetails from './ProjectFundingDetails'
 import ProjectPhaseOutDetails from './ProjectPhaseOutDetails'
 import ProjectImpact from './ProjectImpact'
 
 import { Tab, Tabs } from '@mui/material'
-import ProjectSubstanceDetails from './ProjectSubstanceDetails'
-import ProjectCostsDetails from './ProjectCostsDetails'
-import ProjectSubmissionDetails from './ProjectSubmissionDetails'
 
 const ProjectView = (props: any) => {
   const [activeTab, setActiveTab] = useState(0)

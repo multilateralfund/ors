@@ -1,3 +1,4 @@
+import Table from '@ors/components/manage/Form/Table'
 import {
   booleanDetailItem,
   dateDetailItem,
@@ -5,6 +6,7 @@ import {
   numberDetailItem,
 } from './ViewHelperComponents'
 import { tableColumns } from '../constants'
+
 import { Divider, Typography } from '@mui/material'
 
 const ProjectOverview = ({ project }: any) => {
@@ -34,7 +36,7 @@ const ProjectOverview = ({ project }: any) => {
         {detailItem('Compliance', data.compliance)}
         {detailItem('MYA code', data.mya_code)}
         {detailItem('MYA subsector', data.mya_subsector)}
-        {detailItem('Local ownership', data.local_ownership)}
+        {numberDetailItem('Local ownership', data.local_ownership)}
         {numberDetailItem('Export to', data.export_to)}
         {numberDetailItem('Total PSC transferred', data.total_psc_transferred)}
       </div>
@@ -89,6 +91,31 @@ const ProjectOverview = ({ project }: any) => {
       {detailItem('Technology', data.technology)}
       {detailItem('Application', data.application)}
       {detailItem('Products manufactured', data.products_manufactured)}
+      <span>RBM measures</span>
+      <Table
+        className="mb-4"
+        enablePagination={false}
+        rowData={data.rbm_measures}
+        suppressCellFocus={false}
+        withSeparators={true}
+        columnDefs={[
+          {
+            field: 'measure_name',
+            headerName: 'Measure',
+            initialWidth: 140,
+            minWidth: 140,
+          },
+          {
+            field: 'value',
+            headerName: 'Unit',
+            initialWidth: 120,
+            minWidth: 120,
+          },
+        ]}
+        getRowId={(props: any) => {
+          return props.data.id
+        }}
+      />
       <Divider />
       <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
         {detailItem('Project duration', data.project_duration)}
