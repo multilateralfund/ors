@@ -332,6 +332,7 @@ class ProjectTypeFactory(factory.django.DjangoModelFactory):
 class ProjectStatusFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ProjectStatus
+        django_get_or_create = ("code",)
 
     name = factory.Faker("pystr", max_chars=100)
     code = factory.Faker("pystr", max_chars=10)
@@ -340,6 +341,7 @@ class ProjectStatusFactory(factory.django.DjangoModelFactory):
 class ProjectSubmissionStatusFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ProjectSubmissionStatus
+        django_get_or_create = ("name",)
 
     name = factory.Faker("pystr", max_chars=100)
     code = factory.Faker("pystr", max_chars=10)

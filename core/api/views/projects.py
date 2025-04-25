@@ -36,6 +36,7 @@ from core.api.serializers.project import (
     ProjectStatusSerializer,
     ProjectSubmissionStatusSerializer,
     ProjectTypeSerializer,
+    ProjectV2CreateSerializer,
 )
 from core.api.utils import workbook_pdf_response, workbook_response
 from core.models.meeting import Meeting
@@ -230,6 +231,16 @@ class ProjectViewSet(
     def print(self, *args, **kwargs):
         return self.get_wb(workbook_pdf_response)
 
+    @swagger_auto_schema(
+        deprecated=True,
+    )
+    def retrieve(self, request, *args, **kwargs):
+        """Retrieve project details"""
+        return super().retrieve(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        deprecated=True,
+    )
     def create(self, request, *args, **kwargs):
         if "country" in request.user.user_type.lower():
             raise PermissionDenied("Country users not allowed")
@@ -250,9 +261,10 @@ class ProjectViewSet(
 
 
 class ProjectV2ViewSet(
-    mixins.ListModelMixin,
     viewsets.GenericViewSet,
+    mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
 ):
     """V2 ViewSet for Project model."""
 
@@ -307,6 +319,8 @@ class ProjectV2ViewSet(
     def get_serializer_class(self):
         if self.action == "list":
             return ProjectListSerializer
+        if self.action == "create":
+            return ProjectV2CreateSerializer
         return ProjectDetailsSerializer
 
     @swagger_auto_schema(
@@ -337,6 +351,20 @@ class ProjectV2ViewSet(
     def retrieve(self, request, *args, **kwargs):
         """Retrieve project details"""
         return super().retrieve(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_description="""
+        V2 projects endpoint for creating a project. This endpoint should be used in the first step of the
+        project creation workflow.
+        """,
+        request_body=ProjectV2CreateSerializer,
+        responses={
+            status.HTTP_201_CREATED: ProjectDetailsSerializer,
+            status.HTTP_400_BAD_REQUEST: "Bad request",
+        },
+    )
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
 
 
 class ProjectFileView(APIView):
