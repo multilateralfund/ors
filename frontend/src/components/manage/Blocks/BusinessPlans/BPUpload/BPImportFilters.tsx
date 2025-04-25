@@ -1,11 +1,13 @@
 import PopoverInput from '../../Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
-import { getMeetingOptions } from '@ors/components/manage/Utils/utilFunctions'
+import {
+  getMeetingNr,
+  getMeetingOptions,
+} from '@ors/components/manage/Utils/utilFunctions'
 import { PeriodSelectorOption } from '../../Replenishment/types'
 import { INavigationButton } from '../types'
 import BPMainFilters from './BPMainFilters'
 import { NavigationButton } from './NavigationButton'
 import { Label } from './helpers'
-import { getMeetingNr } from '../utils'
 import SimpleInput from '../../Section/ReportInfo/SimpleInput'
 
 interface IBPImportFilters {
@@ -67,7 +69,7 @@ const BPImportFilters = ({
           <SimpleInput
             id={filters?.meeting}
             containerClassName="!h-fit"
-            className="BPListUpload mb-0 w-40"
+            className="BPListUpload mb-0 w-40 border-primary"
             type="text"
             label=""
             onChange={handleChangeDecision}

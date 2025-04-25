@@ -47,6 +47,7 @@ import ProjectSubmissionsCreatePage from '@ors/app/project-submissions/create/pa
 import ProjectSubmissionsEditPage from '@ors/app/project-submissions/edit/page'
 
 import ProjectsListingPage from '@ors/app/projects_listing/page'
+import ProjectsCreatePage from '@ors/app/projects_listing/create/page'
 import ProjectsListingProjectPage from '@ors/app/projects_listing/[project_id]/page'
 
 import NotFoundPage from '@ors/app/not-found'
@@ -226,6 +227,9 @@ export default function App() {
         </Route>
         <Route path="/projects-listing">
           <ProjectsListingPage />
+        </Route>
+        <Route path="/projects-listing/create">
+          <ProjectsCreatePage />
         </Route>
         <Route path="/projects-listing/:project_id">
           <ProjectsListingProjectPage />

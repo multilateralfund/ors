@@ -11,7 +11,8 @@ import {
 import cx from 'classnames'
 import { capitalize, keys } from 'lodash'
 
-import { CancelButton, SubmitButton } from '@ors/components/ui/Button/Button'
+import { CancelButton } from '@ors/components/ui/Button/Button'
+import { getMeetingNr } from '@ors/components/manage/Utils/utilFunctions'
 import Link from '@ors/components/ui/Link/Link'
 import { uploadFiles } from '@ors/helpers'
 
@@ -20,11 +21,7 @@ import { PeriodSelectorOption } from '../../Replenishment/types'
 import { IoEllipse } from 'react-icons/io5'
 import { MdExpandMore } from 'react-icons/md'
 import { useStore } from '@ors/store'
-import {
-  getCurrentTriennium,
-  getLatestBpYearRange,
-  getMeetingNr,
-} from '../utils'
+import { getCurrentTriennium, getLatestBpYearRange } from '../utils'
 import { CircularProgress } from '@mui/material'
 
 interface IBPReviewChanges {

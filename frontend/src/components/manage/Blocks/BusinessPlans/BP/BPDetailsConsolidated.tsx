@@ -3,15 +3,16 @@ import { UserType, userCanViewFilesBusinessPlan } from '@ors/types/user_types'
 import SimpleField from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleField'
 import VersionHistoryList from '@ors/components/ui/VersionDetails/VersionHistoryList'
 import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
-import { useStore } from '@ors/store'
+import { getMeetingNr } from '@ors/components/manage/Utils/utilFunctions'
 
 import { FilesViewer } from '../FilesViewer'
 import BPListHeader from '../BPList/BPListHeader'
 import BPListTabs from '../BPList/BPListTabs'
 import { useBPListApi } from '../BPList/BPList'
 import { useGetBpData } from './useGetBpData'
-import { getMeetingNr } from '../utils'
 import BPTableToolbarButtons from '../BPTableToolbarButtons'
+
+import { useStore } from '@ors/store'
 
 import { BsFilesAlt } from 'react-icons/bs'
 import { Divider } from '@mui/material'
