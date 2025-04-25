@@ -1,5 +1,5 @@
 import { useStore } from '@ors/store'
-import { reverse } from 'lodash'
+import { find, reverse } from 'lodash'
 
 export const getMeetingOptions = () => {
   const projectSlice = useStore((state) => state.projects)
@@ -31,4 +31,11 @@ export const getFilterOptions = (
   return options.filter(
     (option: any) => !selectedOptionsIds.includes(option.id),
   )
+}
+
+export const getMeetingNr = (meeting_id: number) => {
+  const projectSlice = useStore((state) => state.projects)
+  const meetings = projectSlice.meetings.data
+
+  return find(meetings, (option) => option.id === meeting_id)?.number
 }

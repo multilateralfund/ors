@@ -1,7 +1,5 @@
 import { ReactNode } from 'react'
 
-import { PeriodSelectorOption } from '../../Replenishment/types'
-
 interface ILabel {
   children: ReactNode
   isRequired?: boolean

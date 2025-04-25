@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from 'react'
 
 import Loading from '@ors/components/theme/Loading/Loading'
+import CustomLink from '@ors/components/ui/Link/Link'
 import PListingFilters from './PListingFilters'
 import PListingTable from './PListingTable'
 
@@ -29,6 +30,15 @@ export default function PListing() {
         className="!fixed bg-action-disabledBackground"
         active={loading}
       />
+      <CustomLink
+        className="mb-4 h-10 min-w-[6.25rem] text-nowrap px-4 py-2 text-lg uppercase"
+        href="/projects-listing/create"
+        color="secondary"
+        variant="contained"
+        button
+      >
+        New Project Submission
+      </CustomLink>
       <form className="flex flex-col gap-6" ref={form} key={key}>
         <PListingFilters
           {...{ form, filters, initialFilters, setFilters, setParams }}

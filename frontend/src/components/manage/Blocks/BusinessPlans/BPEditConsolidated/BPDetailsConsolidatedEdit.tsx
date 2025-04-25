@@ -8,14 +8,16 @@ import {
 import { Dispatch, SetStateAction } from 'react'
 
 import SimpleField from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleField'
-import { getMeetingOptions } from '@ors/components/manage/Utils/utilFunctions'
+import {
+  getMeetingNr,
+  getMeetingOptions,
+} from '@ors/components/manage/Utils/utilFunctions'
 import VersionHistoryList from '@ors/components/ui/VersionDetails/VersionHistoryList'
 import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
 import { useStore } from '@ors/store'
 
 import { FilesViewer } from '../FilesViewer'
 import PopoverInput from '../../Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
-import { getMeetingNr } from '../utils'
 import { Label } from '../BPUpload/helpers'
 import { BpFilesObject } from '../types'
 import FileInput from '../BPEdit/FileInput'
