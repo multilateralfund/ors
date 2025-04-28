@@ -278,6 +278,13 @@ class Project(models.Model):
     )
 
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
+    lead_agency = models.ForeignKey(
+        Agency,
+        on_delete=models.PROTECT,
+        related_name="lead_projects",
+        null=True,
+        blank=True,
+    )
     agency = models.ForeignKey(Agency, on_delete=models.CASCADE)
     national_agency = models.CharField(max_length=255, null=True, blank=True)
     coop_agencies = models.ManyToManyField(
@@ -312,7 +319,9 @@ class Project(models.Model):
         blank=True,
         related_name="transferred_projects",
     )
-    decision = models.ForeignKey(Decision, on_delete=models.CASCADE, null=True)
+    decision = models.ForeignKey(
+        Decision, on_delete=models.CASCADE, null=True, blank=True
+    )
     project_duration = models.IntegerField(null=True, blank=True)
     stage = models.IntegerField(null=True, blank=True)
     tranche = models.TextField(null=True, blank=True)  # impact_tranche
