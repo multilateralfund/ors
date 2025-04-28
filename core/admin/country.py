@@ -31,6 +31,7 @@ class CountryAdmin(admin.ModelAdmin):
             "payments",
             "annual_contributions_status",
             "triennial_contributions_status",
+            "triennialcontributionview",
             "ferm_gain_loss",
             "disputed_contributions",
             "finalreportsview",
