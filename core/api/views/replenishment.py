@@ -1144,19 +1144,17 @@ class DisputedContributionViewSet(
         except TriennialContributionStatus.DoesNotExist:
             return ret
 
-        annual_contribution.agreed_contributions -= Decimal(amount)
-        # It may seem wrong to substract from outstanding_contributions as well,
+        # It may seem wrong to substract from outstanding_contributions,
         # but because outstanding_contributions is not calculated on the fly, and
-        # its value depends on agreed_contributions, we need to update it as well.
+        # its value depends on agreed_contributions, we need to update it.
         annual_contribution.outstanding_contributions -= Decimal(amount)
         annual_contribution.save(
-            update_fields=["agreed_contributions", "outstanding_contributions"]
+            update_fields=["outstanding_contributions"]
         )
 
-        triennial_contribution.agreed_contributions -= Decimal(amount)
         triennial_contribution.outstanding_contributions -= Decimal(amount)
         triennial_contribution.save(
-            update_fields=["agreed_contributions", "outstanding_contributions"]
+            update_fields=["outstanding_contributions"]
         )
 
         return ret
