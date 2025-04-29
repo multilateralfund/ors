@@ -59,9 +59,25 @@ def _project_file(project, test_file):
     return project_file
 
 
-@pytest.fixture(name="project_file_url")
-def _project_file_url(project_file):
-    return reverse("project-files", args=(project_file.id,))
+@pytest.fixture(name="test_file1")
+def _test_file1(tmp_path):
+    p = tmp_path / "project_file1.docx"
+    p.write_text("This is the first project test file")
+    return p
+
+
+@pytest.fixture(name="test_file2")
+def _test_file2(tmp_path):
+    p = tmp_path / "project_file2.pdf"
+    p.write_text("This is the second project test file")
+    return p
+
+
+@pytest.fixture(name="wrong_format_file3")
+def _wrong_format_file3(tmp_path):
+    p = tmp_path / "project_file3.csv"
+    p.write_text("This is the third project test file")
+    return p
 
 
 @pytest.fixture(name="_setup_project_list")
@@ -181,6 +197,11 @@ def setup_project_list(
         new_sector,
         new_meeting,
     )
+
+
+@pytest.fixture(name="project_file_url")
+def _project_file_url(project_file):
+    return reverse("project-files", args=(project_file.id,))
 
 
 @pytest.fixture(name="_setup_project_create")
@@ -515,3 +536,90 @@ class TestCreateProjects(BaseTest):
 
         # check project count
         assert Project.objects.count() == 0
+
+
+class TestCPFiles:
+    client = APIClient()
+
+    def test_file_upload_anon(self, project):
+        url = reverse("project-files-v2", args=(project.id,))
+        response = self.client.post(url, {})
+        assert response.status_code == 403
+
+    def test_file_upload_wrong_extension(
+        self, user, project, test_file1, test_file2, wrong_format_file3
+    ):
+        self.client.force_authenticate(user=user)
+        url = reverse("project-files-v2", args=(project.id,))
+
+        # upload file with wrong extension
+        data = {
+            "files": [test_file1.open(), test_file2.open(), wrong_format_file3.open()]
+        }
+        response = self.client.post(url, data, format="multipart")
+        assert response.status_code == 400
+        assert response.data == {"file": "File extension .csv is not valid"}
+
+    def test_file_upload_duplicate(self, user, project, test_file1, test_file2):
+        self.client.force_authenticate(user=user)
+        url = reverse("project-files-v2", args=(project.id,))
+
+        # upload file
+        data = {"files": [test_file1.open(), test_file2.open()]}
+        response = self.client.post(url, data, format="multipart")
+        assert response.status_code == 201
+        assert project.files.all().count() == 2
+        assert project.files.first().filename == test_file1.name
+        assert project.files.last().filename == test_file2.name
+
+        # upload same file again
+        response = self.client.post(url, data, format="multipart")
+        assert response.status_code == 400
+        assert response.data == {
+            "files": f"Some files already exist: {test_file1.name}, {test_file2.name}"
+        }
+
+    def test_file_upload(self, user, project, test_file1, test_file2):
+        self.client.force_authenticate(user=user)
+        url = reverse("project-files-v2", args=(project.id,))
+
+        # upload file
+        data = {"files": [test_file1.open(), test_file2.open()]}
+        response = self.client.post(url, data, format="multipart")
+        assert response.status_code == 201
+
+        # check upload (GET)
+        response = self.client.get(url)
+        assert response.status_code == 200
+        assert response.data[0]["project_id"] == project.id
+        assert response.data[0]["filename"] == test_file1.name
+        assert response.data[1]["project_id"] == project.id
+        assert response.data[1]["filename"] == test_file2.name
+
+        # delete file (DELETE)
+        file_ids = [response.data[0]["id"], response.data[1]["id"]]
+        data = {"file_ids": file_ids}
+        response = self.client.delete(url, data, format="json")
+        assert response.status_code == 204
+
+        # check delete (GET)
+        response = self.client.get(url)
+        assert response.status_code == 200
+        assert response.data == []
+
+    def test_file_download(self, user, project, test_file1):
+        self.client.force_authenticate(user=user)
+        url = reverse("project-files-v2", args=(project.id,))
+
+        # upload file
+        data = {"files": [test_file1.open()]}
+        response = self.client.post(url, data, format="multipart")
+        assert response.status_code == 201
+
+        # download file
+        my_file = ProjectFile.objects.get(filename=test_file1.name)
+        url = reverse("project-files-v2-download", args=(my_file.id,))
+        response = self.client.get(url)
+
+        assert response.status_code == 200
+        assert response.content == my_file.file.read()

@@ -430,6 +430,7 @@ class ProjectFile(models.Model):
     project = models.ForeignKey(
         "core.Project", on_delete=models.CASCADE, related_name="files"
     )
+    filename = models.CharField(max_length=100)
     date_created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
