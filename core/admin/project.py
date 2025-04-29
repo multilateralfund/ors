@@ -227,6 +227,7 @@ class MeetingAdmin(admin.ModelAdmin):
             "externalincomeannual",
             "statusofthefundfile",
             "businessplan",
+            "triennialcontributionview",
         ]
         return get_final_display_list(Meeting, exclude)
 

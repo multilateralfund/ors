@@ -22,11 +22,15 @@ class CPReportArchiveAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         exclude = [
             "cppricesarchive",
+            "cpgenerations",
+            "cpemissions",
             "cpgenerationarchive",
             "cpemissionarchive",
+            "cpreportedsections",
             "cprecords",
             "adm_records",
             "cpcomments",
+            "prices",
         ]
         return get_final_display_list(CPReportArchive, exclude)
 

@@ -15,6 +15,7 @@ class AgencyAdmin(admin.ModelAdmin):
             "project",
             "coop_projects",
             "bpactivity",
+            "lead_projects",
             "pcrdelayexplanation",
             "pcrlearnedlessons",
             "user",
