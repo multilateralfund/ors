@@ -4,13 +4,7 @@ import LinkedBPTableWrapper from './LinkedBPTable'
 
 import { Checkbox, FormControlLabel } from '@mui/material'
 
-const ProjectBPLinking = ({
-  setCurrentStep,
-  setCurrentTab,
-  isLinkedToBP,
-  setIsLinkedToBP,
-  ...rest
-}: any) => {
+const ProjectBPLinking = ({ isLinkedToBP, setIsLinkedToBP, ...rest }: any) => {
   const handleChangeBPLink = (event: ChangeEvent<HTMLInputElement>) => {
     setIsLinkedToBP(event.target.checked)
   }

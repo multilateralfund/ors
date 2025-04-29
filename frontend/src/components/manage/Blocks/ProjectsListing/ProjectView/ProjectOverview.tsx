@@ -32,6 +32,7 @@ const ProjectOverview = ({ project }: any) => {
       <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
         {detailItem('Serial number', data.serial_number)}
         {detailItem('Correspondance number', data.correspondance_no)}
+        {detailItem('Business plan activity id', data.bp_activity)}
         {detailItem('Stage', data.stage)}
         {detailItem('Compliance', data.compliance)}
         {detailItem('MYA code', data.mya_code)}
@@ -55,7 +56,7 @@ const ProjectOverview = ({ project }: any) => {
         {booleanDetailItem('Plus', data.plus)}
       </div>
       <Divider />
-      {detailItem('Implementing agency', data.agency)}
+      {detailItem('Implementing agency', data.lead_agency)}
       {detailItem(
         'Cooperating agencies',
         data.coop_agencies.map((agency: any) => agency.name)?.join(', ') || '-',
