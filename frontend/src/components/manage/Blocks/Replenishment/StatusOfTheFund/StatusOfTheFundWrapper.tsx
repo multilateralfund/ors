@@ -182,7 +182,7 @@ function StatusOfTheFundWrapper() {
         enqueueSnackbar('Data updated successfully', { variant: 'success' })
         handleEditCancel()
       })
-      .catch(async (error) => {
+      .catch(async (error: Response) => {
         const errors = await error.json()
         if (errors.validation_error) {
           handleFileValidationErrors(errors)

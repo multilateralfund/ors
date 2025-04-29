@@ -6,14 +6,14 @@ from typing import TypedDict
 
 import django.core.exceptions
 from django.core.files.base import ContentFile
-from django_clamd.validators import validate_file_infection
-from openpyxl.worksheet.page import PageMargins
-
 from django.contrib.auth import get_user_model
 from django.db.models import Exists
 from django.db.models import OuterRef
 from django.http import FileResponse
 from django_filters import rest_framework as filters
+
+from django_clamd.validators import validate_file_infection
+from openpyxl.worksheet.page import PageMargins
 
 User = get_user_model()
 
