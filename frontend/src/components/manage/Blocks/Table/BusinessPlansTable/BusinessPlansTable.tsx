@@ -14,6 +14,10 @@ import {
   odpColumnDefs,
   valuesColumnDefs,
 } from '@ors/components/manage/Blocks/Table/BusinessPlansTable/schema'
+import {
+  defaultColDefBpLink,
+  bpLinkColumnDefs,
+} from '@ors/components/manage/Blocks/ProjectsListing/ProjectsCreate/schema'
 import ViewTable from '@ors/components/manage/Form/ViewTable'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import BPContext from '@ors/contexts/BusinessPlans/BPContext'
@@ -39,6 +43,8 @@ export const BPTable = ({
   setParams,
   withAgency = false,
   yearRanges,
+  isProjectsSection,
+  setBpId,
 }: any) => {
   const yearRangeSelected = useMemo(
     () => yearRanges.find((item: any) => item.year_start == filters.year_start),
@@ -175,6 +181,10 @@ export const BPTable = ({
   }, [yearRangeSelected])
 
   const columnDefs = useMemo(() => {
+    if (isProjectsSection) {
+      return bpLinkColumnDefs(yearColumns, setBpId)
+    }
+
     switch (gridOptions) {
       case 'values':
         return valuesColumnDefs(yearColumns, false, withAgency)
@@ -201,7 +211,7 @@ export const BPTable = ({
       <ViewTable
         Toolbar={displayFilters}
         columnDefs={[...columnDefs]}
-        defaultColDef={defaultColDef}
+        defaultColDef={isProjectsSection ? defaultColDefBpLink : defaultColDef}
         domLayout="normal"
         enablePagination={true}
         loaded={loaded}

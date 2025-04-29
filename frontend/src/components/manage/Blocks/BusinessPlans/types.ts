@@ -104,6 +104,7 @@ export interface INavigationButton {
   direction: string
   isBtnDisabled?: boolean
   setCurrentStep: Dispatch<SetStateAction<number>>
+  setCurrentTab?: Dispatch<SetStateAction<number>>
   title?: string
 }
 

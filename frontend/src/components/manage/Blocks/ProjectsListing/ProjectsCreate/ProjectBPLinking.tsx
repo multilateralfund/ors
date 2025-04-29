@@ -1,18 +1,18 @@
-import { useState, ChangeEvent } from 'react'
+import { ChangeEvent } from 'react'
 
-import { NavigationButton } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/NavigationButton'
+import LinkedBPTableWrapper from './LinkedBPTable'
 
 import { Checkbox, FormControlLabel } from '@mui/material'
 
 const ProjectBPLinking = ({
-  projIdentifiers,
-  setProjIdentifiers,
+  setCurrentStep,
+  setCurrentTab,
+  isLinkedToBP,
+  setIsLinkedToBP,
   ...rest
 }: any) => {
-  const [isLinkedToBP, setIsLinkedToBP] = useState(false)
-
   const handleChangeBPLink = (event: ChangeEvent<HTMLInputElement>) => {
-    // setIsLinkedToBP(event.target.checked)
+    setIsLinkedToBP(event.target.checked)
   }
 
   return (
@@ -33,10 +33,7 @@ const ProjectBPLinking = ({
           typography: { fontSize: '1.05rem' },
         }}
       />
-      <div className="flex items-center gap-2.5">
-        <NavigationButton direction={'next'} {...rest} />
-        <NavigationButton direction={'back'} {...rest} />
-      </div>
+      {isLinkedToBP && <LinkedBPTableWrapper {...rest} />}
     </>
   )
 }
