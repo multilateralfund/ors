@@ -36,7 +36,6 @@ from core.api.serializers.project import (
     ProjectStatusSerializer,
     ProjectSubmissionStatusSerializer,
     ProjectTypeSerializer,
-    ProjectV2CreateSerializer,
 )
 from core.api.utils import workbook_pdf_response, workbook_response
 from core.models.meeting import Meeting
@@ -200,6 +199,9 @@ class ProjectViewSet(
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
+    @swagger_auto_schema(
+        deprecated=True,
+    )
     @action(methods=["POST"], detail=True)
     def upload(self, request, *args, **kwargs):
         project = self.get_object()
@@ -260,118 +262,14 @@ class ProjectViewSet(
         return super().update(request, *args, **kwargs)
 
 
-class ProjectV2ViewSet(
-    viewsets.GenericViewSet,
-    mixins.ListModelMixin,
-    mixins.RetrieveModelMixin,
-    mixins.CreateModelMixin,
-):
-    """V2 ViewSet for Project model."""
-
-    permission_classes = [IsSecretariat | IsAgency | IsCountryUser | IsViewer]
-    filterset_class = ProjectFilter
-    filter_backends = [
-        DjangoFilterBackend,
-        filters.OrderingFilter,
-        filters.SearchFilter,
-    ]
-    ordering_fields = [
-        "title",
-        "country__name",
-        "agency__name",
-        "sector__name",
-        "subsector__name",
-        "project_type__name",
-        "substance_type",
-    ]
-    search_fields = ["code", "legacy_code", "meta_project__code", "title"]
-
-    def get_queryset(self):
-        user = self.request.user
-        queryset = Project.objects.select_related(
-            "country",
-            "agency",
-            "subsector__sector",
-            "project_type",
-            "status",
-            "submission_status",
-            "cluster",
-            "meeting",
-            "meeting_transf",
-            "meta_project",
-        ).prefetch_related(
-            "coop_agencies",
-            "submission_amounts",
-            "rbm_measures__measure",
-            "ods_odp",
-        )
-
-        if "agency" in user.user_type.lower():
-            # filter projects by agency if user is agency
-            queryset = queryset.filter(agency=user.agency)
-
-        if "country" in user.user_type.lower():
-            # filter projects by country if user is country
-            queryset = queryset.filter(country=user.country)
-
-        return queryset
-
-    def get_serializer_class(self):
-        if self.action == "list":
-            return ProjectListSerializer
-        if self.action == "create":
-            return ProjectV2CreateSerializer
-        return ProjectDetailsSerializer
-
-    @swagger_auto_schema(
-        manual_parameters=[
-            openapi.Parameter(
-                "date_received_after",
-                openapi.IN_QUERY,
-                description="Returns the projects with date_received equal or after this date",
-                type=openapi.TYPE_STRING,
-                format=openapi.FORMAT_DATE,
-            ),
-            openapi.Parameter(
-                "date_received_before",
-                openapi.IN_QUERY,
-                description="Returns the projects with date_received equal or before this date",
-                type=openapi.TYPE_STRING,
-                format=openapi.FORMAT_DATE,
-            ),
-        ],
-        operation_description="V2 listing endpoint that allow listing, filtering and ordering the projects.",
-    )
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
-
-    @swagger_auto_schema(
-        operation_description="V2 retrieve endpoint that allows retrieving a project.",
-    )
-    def retrieve(self, request, *args, **kwargs):
-        """Retrieve project details"""
-        return super().retrieve(request, *args, **kwargs)
-
-    @swagger_auto_schema(
-        operation_description="""
-        V2 projects endpoint for creating a project. This endpoint should be used in the first step of the
-        project creation workflow.
-        """,
-        request_body=ProjectV2CreateSerializer,
-        responses={
-            status.HTTP_201_CREATED: ProjectDetailsSerializer,
-            status.HTTP_400_BAD_REQUEST: "Bad request",
-        },
-    )
-    def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
-
-
 class ProjectFileView(APIView):
     """
     API endpoint for managing project files
     """
 
+    @swagger_auto_schema(
+        deprecated=True,
+    )
     def get(self, request, pk):
         """Get project file"""
         project_file = get_object_or_404(ProjectFile, pk=pk)
@@ -379,6 +277,9 @@ class ProjectFileView(APIView):
             request, project_file.file.name, document_root=settings.PROTECTED_MEDIA_ROOT
         )
 
+    @swagger_auto_schema(
+        deprecated=True,
+    )
     def delete(self, request, pk):
         """Delete project file"""
         project_file = get_object_or_404(ProjectFile, pk=pk)

@@ -96,12 +96,16 @@ from core.api.views.projects import (
     ProjectStatisticsView,
     ProjectSubmissionAmountViewSet,
     ProjectViewSet,
-    ProjectV2ViewSet,
     ProjectStatusListView,
     ProjectSubmissionStatusListView,
     ProjectTypeListView,
     ProjectCommentViewSet,
     ProjectFileView,
+)
+from core.api.views.projects_v2 import (
+    ProjectV2ViewSet,
+    ProjectV2FileView,
+    ProjectFilesDownloadView,
 )
 from core.api.views.rbm_measures import RBMMeasureListView
 from core.api.views.sector_subsector import ProjectSectorView, ProjectSubSectorView
@@ -435,6 +439,16 @@ urlpatterns = [
         "^project-files/(?P<pk>[^/]+)/$",
         ProjectFileView.as_view(),
         name="project-files",
+    ),
+    path(
+        "project/<int:project_id>/files/v2/",
+        ProjectV2FileView.as_view(),
+        name="project-files-v2",
+    ),
+    path(
+        "project/files/<int:id>/download/v2/",
+        ProjectFilesDownloadView.as_view(),
+        name="project-files-v2-download",
     ),
     path(
         "business-plan/upload/validate/",

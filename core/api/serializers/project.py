@@ -1,4 +1,6 @@
 from django.db import transaction
+from django.urls import reverse
+
 from rest_framework import serializers
 from rest_framework.fields import empty
 
@@ -356,6 +358,32 @@ class ProjectFileSerializer(serializers.ModelSerializer):
         return obj.file.name
 
 
+class ProjectV2FileSerializer(serializers.ModelSerializer):
+    download_url = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+    project_id = serializers.PrimaryKeyRelatedField(
+        required=True,
+        queryset=Project.objects.all().values_list("id", flat=True),
+    )
+
+    class Meta:
+        model = ProjectFile
+        fields = [
+            "id",
+            "name",
+            "filename",
+            "date_created",
+            "download_url",
+            "project_id",
+        ]
+
+    def get_name(self, obj):
+        return obj.file.name
+
+    def get_download_url(self, obj):
+        return reverse("project-files-v2-download", args=(obj.id,))
+
+
 class ProjectListSerializer(serializers.ModelSerializer):
     """
     ProjectSerializer class
@@ -366,6 +394,12 @@ class ProjectListSerializer(serializers.ModelSerializer):
     agency_id = serializers.PrimaryKeyRelatedField(
         required=True, queryset=Agency.objects.all().values_list("id", flat=True)
     )
+    lead_agency = serializers.SlugRelatedField("name", read_only=True)
+    lead_agency_id = serializers.PrimaryKeyRelatedField(
+        required=False,
+        queryset=Agency.objects.all().values_list("id", flat=True),
+    )
+    latest_file = ProjectV2FileSerializer(many=False, read_only=True)
     coop_agencies = AgencySerializer(many=True, read_only=True)
     sector = ProjectSectorSerializer(read_only=True)
     sector_id = serializers.PrimaryKeyRelatedField(
@@ -452,6 +486,8 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "issue_description",
             "hcfc_stage",
             "latest_file",
+            "lead_agency",
+            "lead_agency_id",
             "loan",
             "local_ownership",
             "metaproject_code",
@@ -744,7 +780,9 @@ class ProjectV2CreateSerializer(serializers.ModelSerializer):
             "lead_agency",
             "project_type",
             "sector",
+            "support_cost_psc",
             "title",
+            "total_fund",
         ]
 
     def to_representation(self, instance):

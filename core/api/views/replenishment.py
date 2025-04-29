@@ -1148,14 +1148,10 @@ class DisputedContributionViewSet(
         # but because outstanding_contributions is not calculated on the fly, and
         # its value depends on agreed_contributions, we need to update it.
         annual_contribution.outstanding_contributions -= Decimal(amount)
-        annual_contribution.save(
-            update_fields=["outstanding_contributions"]
-        )
+        annual_contribution.save(update_fields=["outstanding_contributions"])
 
         triennial_contribution.outstanding_contributions -= Decimal(amount)
-        triennial_contribution.save(
-            update_fields=["outstanding_contributions"]
-        )
+        triennial_contribution.save(update_fields=["outstanding_contributions"])
 
         return ret
 
