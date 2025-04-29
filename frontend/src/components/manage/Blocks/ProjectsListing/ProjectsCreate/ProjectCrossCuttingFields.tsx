@@ -2,7 +2,6 @@ import { ChangeEvent } from 'react'
 
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
-import { NavigationButton } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/NavigationButton'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import { tableColumns } from '../constants'
@@ -14,16 +13,12 @@ import { TextareaAutosize } from '@mui/material'
 const ProjectCrossCuttingFields = ({
   crossCuttingFields,
   setCrossCuttingFields,
-  ...rest
 }: any) => {
   const projectSlice = useStore((state) => state.projects)
 
   const defaultProps = {
     FieldProps: { className: 'mb-0 w-40 BPListUpload' },
   }
-
-  const isNextBtnEnabled =
-    crossCuttingFields.title && crossCuttingFields.project_type
 
   const handleChangeTitle = (event: ChangeEvent<HTMLTextAreaElement>) => {
     setCrossCuttingFields((prevFilters: any) => ({
@@ -108,15 +103,6 @@ const ProjectCrossCuttingFields = ({
           />
         </div>
       </div>
-
-      {/* <div className="flex flex-wrap items-center gap-2.5">
-        <NavigationButton
-          isBtnDisabled={!isNextBtnEnabled}
-          direction={'next'}
-          {...rest}
-        />
-        <NavigationButton direction={'back'} {...rest} />
-      </div> */}
     </>
   )
 }

@@ -2,7 +2,9 @@
 
 import { useState } from 'react'
 
+import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Link from '@ors/components/ui/Link/Link'
+import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import ProjectIdentifiersSection from './ProjectIdentifiersSection'
 import ProjectBPLinking from './ProjectBPLinking'
 import ProjectCrossCuttingFields from './ProjectCrossCuttingFields'
@@ -64,8 +66,6 @@ const ProjectsCreate = () => {
       component: (
         <ProjectBPLinking
           {...{
-            setCurrentStep,
-            setCurrentTab,
             projIdentifiers,
             isLinkedToBP,
             setIsLinkedToBP,
@@ -84,7 +84,6 @@ const ProjectsCreate = () => {
       component: (
         <ProjectCrossCuttingFields
           {...{
-            setCurrentStep,
             crossCuttingFields,
             setCrossCuttingFields,
           }}
@@ -124,23 +123,33 @@ const ProjectsCreate = () => {
 
   return (
     <>
-      <div className="flex flex-wrap items-center gap-2.5">
-        <Button
-          className={cx('ml-auto mr-0 h-10 px-3 py-1', {
-            'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
-              !isSubmitDisabled,
-          })}
-          size="large"
-          variant="contained"
-          onClick={submitProject}
-          disabled={isSubmitDisabled}
-        >
-          Submit
-        </Button>
-        {isLoading && (
-          <CircularProgress color="inherit" size="30px" className="ml-1.5" />
-        )}
-      </div>
+      <HeaderTitle>
+        <div className="align-center flex justify-between">
+          <PageHeading>New submission</PageHeading>
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Button
+              className={cx('ml-auto mr-0 h-10 px-3 py-1', {
+                'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
+                  !isSubmitDisabled,
+              })}
+              size="large"
+              variant="contained"
+              onClick={submitProject}
+              disabled={isSubmitDisabled}
+            >
+              Submit
+            </Button>
+            {isLoading && (
+              <CircularProgress
+                color="inherit"
+                size="30px"
+                className="ml-1.5"
+              />
+            )}
+          </div>
+        </div>
+      </HeaderTitle>
+
       <div className="flex flex-col gap-6">
         <div>
           <Tabs
