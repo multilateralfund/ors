@@ -24,7 +24,6 @@ const getColumnDefs = () =>
           field: '',
           minWidth: 50,
           maxWidth: 50,
-          resizable: false,
         },
         {
           headerName: 'Select',
@@ -32,7 +31,6 @@ const getColumnDefs = () =>
           cellClass: 'ag-text-center',
           minWidth: 90,
           maxWidth: 90,
-          resizable: false,
           cellRenderer: () => (
             <Checkbox
               sx={{

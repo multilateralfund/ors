@@ -109,14 +109,14 @@ const ProjectCrossCuttingFields = ({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2.5">
-        {/* <NavigationButton
+      {/* <div className="flex flex-wrap items-center gap-2.5">
+        <NavigationButton
           isBtnDisabled={!isNextBtnEnabled}
           direction={'next'}
           {...rest}
-        /> */}
+        />
         <NavigationButton direction={'back'} {...rest} />
-      </div>
+      </div> */}
     </>
   )
 }

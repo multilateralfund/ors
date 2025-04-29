@@ -1,7 +1,6 @@
 import { ChangeEvent } from 'react'
 
 import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
-import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { NavigationButton } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/NavigationButton'
@@ -14,26 +13,23 @@ import { tableColumns } from '../constants'
 
 import { useStore } from '@ors/store'
 
-import { Checkbox, FormControlLabel } from '@mui/material'
+import { Button, Checkbox, FormControlLabel } from '@mui/material'
 
 const ProjectIdentifiersSection = ({
   projIdentifiers,
   setProjIdentifiers,
-  ...rest
+  isNextBtnEnabled,
+  areNextSectionsDisabled,
+  isSubmitSuccessful,
+  setCurrentStep,
+  setCurrentTab,
 }: any) => {
   const commonSlice = useStore((state) => state.common)
   const projectSlice = useStore((state) => state.projects)
 
   const defaultProps = {
     FieldProps: { className: 'mb-0 w-40 BPListUpload' },
-    getOptionLabel: (option: any) => option?.name,
   }
-
-  const isNextBtnEnabled =
-    projIdentifiers.country &&
-    ((projIdentifiers.is_lead_agency && projIdentifiers.current_agency) ||
-      (!projIdentifiers.is_lead_agency && projIdentifiers.side_agency)) &&
-    projIdentifiers.meeting
 
   const handleChangeCountry = (country: any) => {
     setProjIdentifiers((prevFilters: any) => ({
@@ -77,13 +73,6 @@ const ProjectIdentifiersSection = ({
     }))
   }
 
-  const handleChangeDecision = (event: ChangeEvent<HTMLInputElement>) => {
-    setProjIdentifiers((prevFilters: any) => ({
-      ...prevFilters,
-      decision: event.target.value,
-    }))
-  }
-
   return (
     <>
       <div className="flex flex-wrap gap-x-20 gap-y-3">
@@ -94,6 +83,10 @@ const ProjectIdentifiersSection = ({
             options={commonSlice.countries.data}
             value={projIdentifiers?.country}
             onChange={(_: any, value: any) => handleChangeCountry(value)}
+            getOptionLabel={(option: any) =>
+              getOptionLabel(commonSlice.countries.data, option)
+            }
+            disabled={!areNextSectionsDisabled}
             {...defaultProps}
           />
         </div>
@@ -104,6 +97,10 @@ const ProjectIdentifiersSection = ({
             options={commonSlice.agencies.data}
             value={projIdentifiers?.current_agency}
             onChange={(_: any, value: any) => handleChangeCurrentAgency(value)}
+            getOptionLabel={(option: any) =>
+              getOptionLabel(commonSlice.agencies.data, option)
+            }
+            disabled={!areNextSectionsDisabled}
             {...defaultProps}
           />
         </div>
@@ -113,6 +110,7 @@ const ProjectIdentifiersSection = ({
         control={
           <Checkbox
             checked={projIdentifiers?.is_lead_agency}
+            disabled={!areNextSectionsDisabled}
             onChange={handleChangeIsLeadAgency}
             size="small"
             sx={{
@@ -132,10 +130,11 @@ const ProjectIdentifiersSection = ({
             options={commonSlice.agencies.data}
             value={projIdentifiers?.side_agency}
             onChange={(_: any, value: any) => handleChangeSideAgency(value)}
-            {...defaultProps}
             getOptionLabel={(option: any) =>
               getOptionLabel(commonSlice.agencies.data, option)
             }
+            disabled={!areNextSectionsDisabled}
+            {...defaultProps}
           />
         </>
       )}
@@ -147,11 +146,13 @@ const ProjectIdentifiersSection = ({
             options={projectSlice.clusters.data}
             value={projIdentifiers?.cluster}
             onChange={(_: any, value: any) => handleChangeCluster(value)}
+            getOptionLabel={(option: any) =>
+              getOptionLabel(projectSlice.clusters.data, option)
+            }
+            disabled={!areNextSectionsDisabled}
             {...defaultProps}
           />
         </div>
-      </div>
-      <div className="flex flex-wrap gap-x-20 gap-y-3">
         <div className="w-40">
           <Label isRequired>Meeting number</Label>
           <PopoverInput
@@ -164,23 +165,30 @@ const ProjectIdentifiersSection = ({
             withClear={true}
           />
         </div>
-        <div>
-          <Label>Decision number</Label>
-          <SimpleInput
-            id={projIdentifiers?.decision}
-            onChange={handleChangeDecision}
-            type="number"
-            label=""
-            className="BPListUpload mb-0 border-primary"
-            containerClassName="!h-fit w-40"
-          />
-        </div>
       </div>
-      <NavigationButton
-        isBtnDisabled={!isNextBtnEnabled}
-        direction={'next'}
-        {...rest}
-      />
+      <div className="flex flex-wrap items-center gap-2.5">
+        <NavigationButton
+          isBtnDisabled={!isNextBtnEnabled}
+          direction={'next'}
+          setCurrentStep={setCurrentStep}
+          setCurrentTab={setCurrentTab}
+        />
+        {!isSubmitSuccessful && !areNextSectionsDisabled && (
+          <div className="mt-5">
+            <Button
+              className="h-10 border border-solid border-primary bg-white px-3 py-1 text-primary"
+              size="large"
+              variant="contained"
+              onClick={() => {
+                setCurrentStep(0)
+                setCurrentTab(0)
+              }}
+            >
+              Update fields
+            </Button>
+          </div>
+        )}
+      </div>
     </>
   )
 }

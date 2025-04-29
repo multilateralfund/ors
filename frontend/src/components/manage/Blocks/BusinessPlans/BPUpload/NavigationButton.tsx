@@ -7,10 +7,15 @@ export const NavigationButton = ({
   direction,
   isBtnDisabled = false,
   setCurrentStep,
+  setCurrentTab,
   title,
 }: INavigationButton) => {
   const moveToNextStep = () => {
     setCurrentStep((step) => (direction === 'next' ? step + 1 : step - 1))
+
+    if (setCurrentTab) {
+      setCurrentTab((tab) => (direction === 'next' ? tab + 1 : tab - 1))
+    }
   }
 
   return (
