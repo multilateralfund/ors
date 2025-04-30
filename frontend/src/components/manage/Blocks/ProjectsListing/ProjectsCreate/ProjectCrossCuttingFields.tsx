@@ -52,6 +52,34 @@ const ProjectCrossCuttingFields = ({
     <>
       <div className="flex flex-wrap gap-x-20 gap-y-3">
         <div>
+          <Label>{tableColumns.sector}</Label>
+          <Field
+            widget="autocomplete"
+            options={projectSlice.sectors.data}
+            value={crossCuttingFields?.sector}
+            onChange={(_: any, value: any) => handleChangeSector(value)}
+            getOptionLabel={(option: any) =>
+              getOptionLabel(projectSlice.sectors.data, option)
+            }
+            {...defaultProps}
+          />
+        </div>
+        <div>
+          <Label isRequired>{tableColumns.type}</Label>
+          <Field
+            widget="autocomplete"
+            options={projectSlice.types.data}
+            value={crossCuttingFields?.project_type}
+            onChange={(_: any, value: any) => handleChangeProjectType(value)}
+            getOptionLabel={(option: any) =>
+              getOptionLabel(projectSlice.types.data, option)
+            }
+            {...defaultProps}
+          />
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-x-20 gap-y-3">
+        <div>
           <Label isRequired>{tableColumns.title}</Label>
           <SimpleInput
             id={crossCuttingFields?.title}
@@ -72,34 +100,6 @@ const ProjectCrossCuttingFields = ({
             minRows={3}
             tabIndex={-1}
             className="min-h-[30px] w-full min-w-[350px] rounded-lg border bg-white p-2 pb-10 shadow-none"
-          />
-        </div>
-      </div>
-      <div className="flex flex-wrap gap-x-20 gap-y-3">
-        <div>
-          <Label isRequired>{tableColumns.type}</Label>
-          <Field
-            widget="autocomplete"
-            options={projectSlice.types.data}
-            value={crossCuttingFields?.project_type}
-            onChange={(_: any, value: any) => handleChangeProjectType(value)}
-            getOptionLabel={(option: any) =>
-              getOptionLabel(projectSlice.types.data, option)
-            }
-            {...defaultProps}
-          />
-        </div>
-        <div>
-          <Label>{tableColumns.sector}</Label>
-          <Field
-            widget="autocomplete"
-            options={projectSlice.sectors.data}
-            value={crossCuttingFields?.sector}
-            onChange={(_: any, value: any) => handleChangeSector(value)}
-            getOptionLabel={(option: any) =>
-              getOptionLabel(projectSlice.sectors.data, option)
-            }
-            {...defaultProps}
           />
         </div>
       </div>

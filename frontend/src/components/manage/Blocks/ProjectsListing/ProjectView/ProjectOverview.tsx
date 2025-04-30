@@ -15,17 +15,24 @@ const ProjectOverview = ({ project }: any) => {
   return (
     <div className="flex w-full flex-col gap-4">
       <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
+        {detailItem(tableColumns.country, data.country)}
+        {detailItem(tableColumns.agency, data.lead_agency)}
+        {detailItem(tableColumns.cluster, data.cluster?.name)}
+        {detailItem('Meeting', data.meeting)}
+        {detailItem(tableColumns.sector, data.sector?.name)}
+        {detailItem(tableColumns.type, data.project_type?.name)}
+      </div>
+      <Divider />
+      <Divider />
+      <Divider />
+
+      <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
         {detailItem(tableColumns.submission_status, data.submission_status)}
         {detailItem(tableColumns.project_status, data.status)}
-        {detailItem(tableColumns.country, data.country)}
         {detailItem(tableColumns.metacode, data.metaproject_code)}
         {detailItem('Metaproject category', data.metaproject_category)}
-        {detailItem(tableColumns.cluster, data.cluster?.name)}
         {detailItem(tableColumns.tranche, data.tranche)}
-        {detailItem(tableColumns.type, data.project_type?.name)}
-        {detailItem(tableColumns.sector, data.sector?.name)}
         {detailItem('Subsector', data.subsector)}
-        {detailItem('Meeting', data.meeting)}
         {detailItem('Transfer meeting', data.meeting_transf)}
       </div>
       <Divider />
@@ -56,7 +63,6 @@ const ProjectOverview = ({ project }: any) => {
         {booleanDetailItem('Plus', data.plus)}
       </div>
       <Divider />
-      {detailItem('Implementing agency', data.lead_agency)}
       {detailItem(
         'Cooperating agencies',
         data.coop_agencies.map((agency: any) => agency.name)?.join(', ') || '-',

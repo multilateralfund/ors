@@ -15,7 +15,7 @@ import { useStore } from '@ors/store'
 
 import { Button, Checkbox, FormControlLabel } from '@mui/material'
 
-const ProjectIdentifiersSection = ({
+const ProjectOverviewSection = ({
   projIdentifiers,
   setProjIdentifiers,
   isNextBtnEnabled,
@@ -140,7 +140,7 @@ const ProjectIdentifiersSection = ({
       )}
       <div className="flex flex-wrap gap-x-20 gap-y-3">
         <div>
-          <Label>{tableColumns.cluster}</Label>
+          <Label isRequired>{tableColumns.cluster}</Label>
           <Field
             widget="autocomplete"
             options={projectSlice.clusters.data}
@@ -193,4 +193,4 @@ const ProjectIdentifiersSection = ({
   )
 }
 
-export default ProjectIdentifiersSection
+export default ProjectOverviewSection

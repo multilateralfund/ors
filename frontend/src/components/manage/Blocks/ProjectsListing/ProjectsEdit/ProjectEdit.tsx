@@ -3,6 +3,7 @@
 import { useState } from 'react'
 
 import ProjectOverview from '../ProjectView/ProjectOverview'
+import ProjectDescription from '../ProjectView/ProjectDescription'
 import ProjectSubmissionDetails from '../ProjectView/ProjectSubmissionDetails'
 import ProjectSubstanceDetails from '../ProjectView/ProjectSubstanceDetails'
 import ProjectCostsDetails from '../ProjectView/ProjectCostsDetails'
@@ -39,6 +40,11 @@ const ProjectEdit = (props: any) => {
           id="project-overview"
           aria-controls="project-overview"
           label="Overview"
+        />
+        <Tab
+          id="project-description"
+          aria-controls="project-description"
+          label="Description"
         />
         <Tab
           id="project-submission"
@@ -78,13 +84,14 @@ const ProjectEdit = (props: any) => {
       </Tabs>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {activeTab === 0 && <ProjectOverview {...{ project }} />}
-        {activeTab === 1 && <ProjectSubmissionDetails {...{ project }} />}
-        {activeTab === 2 && <ProjectSubstanceDetails {...{ project }} />}
-        {activeTab === 3 && <ProjectCostsDetails {...{ project }} />}
-        {activeTab === 4 && <ProjectFundingDetails {...{ project }} />}
-        {activeTab === 5 && <ProjectPhaseOutDetails {...{ project }} />}
-        {activeTab === 6 && <ProjectImpact {...{ project }} />}
-        {activeTab === 7 && <ProjectDocumentation mode="edit" {...rest} />}
+        {activeTab === 1 && <ProjectDescription {...props} />}
+        {activeTab === 2 && <ProjectSubmissionDetails {...{ project }} />}
+        {activeTab === 3 && <ProjectSubstanceDetails {...{ project }} />}
+        {activeTab === 4 && <ProjectCostsDetails {...{ project }} />}
+        {activeTab === 5 && <ProjectFundingDetails {...{ project }} />}
+        {activeTab === 6 && <ProjectPhaseOutDetails {...{ project }} />}
+        {activeTab === 7 && <ProjectImpact {...{ project }} />}
+        {activeTab === 8 && <ProjectDocumentation mode="edit" {...rest} />}
       </div>
     </>
   )

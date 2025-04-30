@@ -3,6 +3,7 @@
 import { useState } from 'react'
 
 import ProjectOverview from './ProjectOverview'
+import ProjectDescription from './ProjectDescription'
 import ProjectSubmissionDetails from './ProjectSubmissionDetails'
 import ProjectSubstanceDetails from './ProjectSubstanceDetails'
 import ProjectCostsDetails from './ProjectCostsDetails'
@@ -37,6 +38,11 @@ const ProjectView = (props: any) => {
           id="project-overview"
           aria-controls="project-overview"
           label="Overview"
+        />
+        <Tab
+          id="project-description"
+          aria-controls="project-description"
+          label="Description"
         />
         <Tab
           id="project-submission"
@@ -76,13 +82,14 @@ const ProjectView = (props: any) => {
       </Tabs>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {activeTab === 0 && <ProjectOverview {...props} />}
-        {activeTab === 1 && <ProjectSubmissionDetails {...props} />}
-        {activeTab === 2 && <ProjectSubstanceDetails {...props} />}
-        {activeTab === 3 && <ProjectCostsDetails {...props} />}
-        {activeTab === 4 && <ProjectFundingDetails {...props} />}
-        {activeTab === 5 && <ProjectPhaseOutDetails {...props} />}
-        {activeTab === 6 && <ProjectImpact {...props} />}
-        {activeTab === 7 && (
+        {activeTab === 1 && <ProjectDescription {...props} />}
+        {activeTab === 2 && <ProjectSubmissionDetails {...props} />}
+        {activeTab === 3 && <ProjectSubstanceDetails {...props} />}
+        {activeTab === 4 && <ProjectCostsDetails {...props} />}
+        {activeTab === 5 && <ProjectFundingDetails {...props} />}
+        {activeTab === 6 && <ProjectPhaseOutDetails {...props} />}
+        {activeTab === 7 && <ProjectImpact {...props} />}
+        {activeTab === 8 && (
           <ProjectDocumentation projectFiles={props.projectFiles} />
         )}
       </div>

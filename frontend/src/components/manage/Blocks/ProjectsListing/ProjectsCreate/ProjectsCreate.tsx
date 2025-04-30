@@ -5,7 +5,7 @@ import { useState } from 'react'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Link from '@ors/components/ui/Link/Link'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
-import ProjectIdentifiersSection from './ProjectIdentifiersSection'
+import ProjectOverviewSection from './ProjectOverviewSection'
 import ProjectBPLinking from './ProjectBPLinking'
 import ProjectCrossCuttingFields from './ProjectCrossCuttingFields'
 import { api } from '@ors/helpers'
@@ -40,11 +40,11 @@ const ProjectsCreate = () => {
   const steps = [
     {
       step: 0,
-      id: 'project-identifier-section',
-      ariaControls: 'project-identifier-section',
-      label: 'Project identifiers',
+      id: 'project-overview',
+      ariaControls: 'project-overview',
+      label: 'Overview',
       component: (
-        <ProjectIdentifiersSection
+        <ProjectOverviewSection
           {...{
             setCurrentStep,
             setCurrentTab,
@@ -77,9 +77,9 @@ const ProjectsCreate = () => {
     },
     {
       step: 2,
-      id: 'project-cross-cutting-fields-section',
-      ariaControls: 'project-cross-cutting-fields-section',
-      label: 'Cross-Cutting Fields',
+      id: 'project-cross-cutting-section',
+      ariaControls: 'project-cross-cutting-section',
+      label: 'Cross-Cutting',
       disabled: areNextSectionsDisabled,
       component: (
         <ProjectCrossCuttingFields
