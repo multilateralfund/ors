@@ -48,6 +48,7 @@ class CPFilesView(
     def _check_country_user(self):
         user = self.request.user
         country_id = self.request.query_params.get("country_id")
+        country_id = int(country_id) if country_id else None
         if (
             user.user_type
             in (user.UserType.COUNTRY_USER, user.UserType.COUNTRY_SUBMITTER)
