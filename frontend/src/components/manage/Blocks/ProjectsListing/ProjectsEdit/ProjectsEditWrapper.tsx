@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
@@ -9,7 +9,6 @@ import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import ProjectEdit from './ProjectEdit'
 
 import { useGetProject } from '../hooks/useGetProject'
-import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { api, uploadFiles } from '@ors/helpers'
 
 import { Button } from '@mui/material'
@@ -21,8 +20,8 @@ const ProjectsEditWrapper = () => {
 
   const project = useGetProject(project_id)
   const { data, loading } = project
-  const { data: projectFiles } = useGetProjectFiles(project_id) as any
 
+  const [projectFiles, setProjectFiles] = useState([])
   const [files, setFiles] = useState({
     deletedFilesIds: [],
     newFiles: [],
@@ -30,6 +29,22 @@ const ProjectsEditWrapper = () => {
   const { deletedFilesIds = [], newFiles = [] } = files || {}
 
   const [isSaving, setIsSaving] = useState(false)
+
+  const fetchProjectFiles = async () => {
+    try {
+      const res = await api(`/api/project/${project_id}/files/v2`)
+      setProjectFiles(res || [])
+      setFiles({ newFiles: [], deletedFilesIds: [] })
+    } catch (e) {
+      console.error('Error at loading project files')
+    }
+  }
+
+  useEffect(() => {
+    if (project_id) {
+      fetchProjectFiles()
+    }
+  }, [project_id])
 
   const editProject = async () => {
     setIsSaving(true)
@@ -57,6 +72,7 @@ const ProjectsEditWrapper = () => {
       }
 
       setIsSaving(false)
+      await fetchProjectFiles()
       enqueueSnackbar(<>Updated {data.code}.</>, {
         variant: 'success',
       })

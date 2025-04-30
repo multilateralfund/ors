@@ -3,7 +3,10 @@ import { FilesViewer } from '@ors/components/manage/Blocks/BusinessPlans/FilesVi
 
 const ProjectDocumentation = ({ files, setFiles, projectFiles, mode }: any) => {
   return (
-    <div className="flex w-full flex-col gap-4">
+    <div
+      key={JSON.stringify(projectFiles)}
+      className="flex w-full flex-col gap-4"
+    >
       <FilesViewer {...{ files, setFiles }} bpFiles={projectFiles || []} />
       {mode === 'edit' && (
         <FileInput
