@@ -251,11 +251,19 @@ class ExternalIncomeAnnualSerializer(serializers.ModelSerializer):
     agency_name = serializers.CharField(required=False, allow_null=True)
 
     interest_earned = serializers.DecimalField(
-        max_digits=30, decimal_places=15, required=False, allow_null=True
+        max_digits=30,
+        decimal_places=15,
+        required=False,
+        allow_null=True,
+        coerce_to_string=False,
     )
 
     miscellaneous_income = serializers.DecimalField(
-        max_digits=30, decimal_places=15, required=False, allow_null=True
+        max_digits=30,
+        decimal_places=15,
+        required=False,
+        allow_null=True,
+        coerce_to_string=False,
     )
 
     meeting_id = serializers.PrimaryKeyRelatedField(
