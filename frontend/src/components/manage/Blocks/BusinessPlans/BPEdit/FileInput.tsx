@@ -1,20 +1,25 @@
 import { ChangeEvent } from 'react'
 
-import { TextField } from '@mui/material'
-
 import IconButton from '@ors/components/ui/IconButton/IconButton'
-
 import { BpFileInput } from '../types'
 
+import { TextField } from '@mui/material'
 import { IoTrash } from 'react-icons/io5'
 
 const FileInput = (props: BpFileInput) => {
-  const { files, setFiles } = props
+  const { files, setFiles, extensionsList } = props
   const { newFiles = [] } = files || {}
+
+  const extensionsListText =
+    extensionsList ||
+    'Allowed files extensions: .pdf, .doc, .docx, .xls, .xlsx, .csv, .ppt, .pptx, .jpg, .jpeg, .png, .gif, .zip, .rar, .7z'
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     if (setFiles && event.target.files && event.target.files.length > 0) {
-      setFiles({ ...files, newFiles: Array.from(event.target.files) })
+      setFiles({
+        ...files,
+        newFiles: [...(newFiles || []), ...Array.from(event.target.files)],
+      })
     }
   }
 
@@ -81,8 +86,7 @@ const FileInput = (props: BpFileInput) => {
         id="file_input_help"
         className="mt-1 text-pretty text-sm text-gray-900"
       >
-        Allowed files extensions: .pdf, .doc, .docx, .xls, .xlsx, .csv, .ppt,
-        .pptx, .jpg, .jpeg, .png, .gif, .zip, .rar, .7z
+        {extensionsListText}
       </p>
     </div>
   )

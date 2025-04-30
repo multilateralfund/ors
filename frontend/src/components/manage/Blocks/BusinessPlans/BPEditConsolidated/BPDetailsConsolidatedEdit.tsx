@@ -108,7 +108,7 @@ const BPSummary = (props: {
               <SimpleInput
                 id={bpForm.meeting + '-' + bpForm.decision}
                 containerClassName="!h-fit"
-                className="BPListUpload mb-0 w-40"
+                className="BPListUpload mb-0 w-40 !border-primary"
                 type="text"
                 label=""
                 value={bpForm?.decision}

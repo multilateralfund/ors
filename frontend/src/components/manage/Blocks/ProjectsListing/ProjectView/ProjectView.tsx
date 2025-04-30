@@ -9,6 +9,7 @@ import ProjectCostsDetails from './ProjectCostsDetails'
 import ProjectFundingDetails from './ProjectFundingDetails'
 import ProjectPhaseOutDetails from './ProjectPhaseOutDetails'
 import ProjectImpact from './ProjectImpact'
+import ProjectDocumentation from '../Project/ProjectDocumentation'
 
 import { Tab, Tabs } from '@mui/material'
 
@@ -67,6 +68,11 @@ const ProjectView = (props: any) => {
           aria-controls="project-impact"
           label="Impact"
         />
+        <Tab
+          id="project-documentation"
+          aria-controls="project-documentation"
+          label="Documentation"
+        />
       </Tabs>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {activeTab === 0 && <ProjectOverview {...props} />}
@@ -76,6 +82,9 @@ const ProjectView = (props: any) => {
         {activeTab === 4 && <ProjectFundingDetails {...props} />}
         {activeTab === 5 && <ProjectPhaseOutDetails {...props} />}
         {activeTab === 6 && <ProjectImpact {...props} />}
+        {activeTab === 7 && (
+          <ProjectDocumentation projectFiles={props.projectFiles} />
+        )}
       </div>
     </>
   )

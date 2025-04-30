@@ -74,11 +74,19 @@ export async function uploadFiles(
   path: string,
   files: File[],
   isValidation: boolean = false,
+  formDataType?: string,
 ) {
   const formData = new FormData()
-  files.forEach((file) => {
-    formData.append(file.name, file)
-  })
+
+  if (formDataType === 'list') {
+    files.forEach((file) => {
+      formData.append('files', file)
+    })
+  } else {
+    files.forEach((file) => {
+      formData.append(file.name, file)
+    })
+  }
 
   const csrftoken = Cookies.get('csrftoken')
   const fileUploadResponse = await fetch(formatApiUrl(path), {
