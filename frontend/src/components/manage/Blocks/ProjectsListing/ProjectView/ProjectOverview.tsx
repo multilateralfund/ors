@@ -23,9 +23,6 @@ const ProjectOverview = ({ project }: any) => {
         {detailItem(tableColumns.type, data.project_type?.name)}
       </div>
       <Divider />
-      <Divider />
-      <Divider />
-
       <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
         {detailItem(tableColumns.submission_status, data.submission_status)}
         {detailItem(tableColumns.project_status, data.status)}
@@ -70,8 +67,6 @@ const ProjectOverview = ({ project }: any) => {
       {detailItem('National agency', data.national_agency)}
       {detailItem('Programme officer', data.programme_officer)}
       <Divider />
-      {detailItem(tableColumns.title, data.title)}
-      {detailItem('Description', data.description, 'self-start')}
       {detailItem('Excom provision', data.excom_provision, 'self-start')}
       {detailItem('Remarks', data.remarks)}
       {detailItem('Agency remarks', data.agency_remarks)}

@@ -1,11 +1,18 @@
 import Table from '@ors/components/manage/Form/Table'
 import { numberDetailItem } from './ViewHelperComponents'
 
-const ProjectFundingDetails = ({ project }: any) => {
+import { Divider } from '@mui/material'
+
+const ProjectFinancial = ({ project }: any) => {
   const { data } = project
 
   return (
     <div className="flex w-full flex-col gap-4">
+      <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
+        {numberDetailItem('Project funding', data.project_funding)}
+        {numberDetailItem('Project support cost', data.project_support_cost)}
+      </div>
+      <Divider />
       <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
         {numberDetailItem('Total fund', data.total_fund)}
         {numberDetailItem('Total fund approved', data.total_fund_approved)}
@@ -73,4 +80,4 @@ const ProjectFundingDetails = ({ project }: any) => {
   )
 }
 
-export default ProjectFundingDetails
+export default ProjectFinancial

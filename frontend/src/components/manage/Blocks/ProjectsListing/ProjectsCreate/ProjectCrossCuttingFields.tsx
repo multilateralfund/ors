@@ -16,8 +16,32 @@ const ProjectCrossCuttingFields = ({
 }: any) => {
   const projectSlice = useStore((state) => state.projects)
 
+  const blanketOrIndConsiderationOpts = [
+    { name: 'Blanket', id: 'blanket' },
+    { name: 'Individual', id: 'individual' },
+  ]
   const defaultProps = {
     FieldProps: { className: 'mb-0 w-40 BPListUpload' },
+  }
+
+  const defaultPropsSimpleField = {
+    label: '',
+    className: 'BPListUpload mb-0 w-40 border-primary project-input',
+    containerClassName: '!h-fit w-40',
+  }
+
+  const handleChangeSector = (sector: any) => {
+    setCrossCuttingFields((prevFilters: any) => ({
+      ...prevFilters,
+      sector: sector?.id ?? null,
+    }))
+  }
+
+  const handleChangeProjectType = (type: any) => {
+    setCrossCuttingFields((prevFilters: any) => ({
+      ...prevFilters,
+      project_type: type?.id ?? null,
+    }))
   }
 
   const handleChangeTitle = (event: ChangeEvent<HTMLTextAreaElement>) => {
@@ -34,22 +58,45 @@ const ProjectCrossCuttingFields = ({
     }))
   }
 
-  const handleChangeProjectType = (type: any) => {
-    setCrossCuttingFields((prevFilters: any) => ({
-      ...prevFilters,
-      project_type: type?.id ?? null,
-    }))
+  const handleChangeProjectFunding = (
+    event: ChangeEvent<HTMLTextAreaElement>,
+  ) => {
+    const value = event.target.value
+
+    if (value.trim() !== '' && !isNaN(Number(value))) {
+      setCrossCuttingFields((prevFilters: any) => ({
+        ...prevFilters,
+        project_funding: Number(event.target.value),
+      }))
+    } else {
+      event.preventDefault()
+    }
   }
 
-  const handleChangeSector = (sector: any) => {
+  const handleChangeProjectSupportCost = (
+    event: ChangeEvent<HTMLTextAreaElement>,
+  ) => {
+    const value = event.target.value
+
+    if (value.trim() !== '' && !isNaN(Number(value))) {
+      setCrossCuttingFields((prevFilters: any) => ({
+        ...prevFilters,
+        project_support_cost: Number(event.target.value),
+      }))
+    } else {
+      event.preventDefault()
+    }
+  }
+
+  const handleChangeBlanketConsideration = (consideration: any) => {
     setCrossCuttingFields((prevFilters: any) => ({
       ...prevFilters,
-      sector: sector?.id ?? null,
+      blanket_consideration: consideration?.id ?? null,
     }))
   }
 
   return (
-    <>
+    <div className="flex flex-col gap-y-2">
       <div className="flex flex-wrap gap-x-20 gap-y-3">
         <div>
           <Label>{tableColumns.sector}</Label>
@@ -85,10 +132,8 @@ const ProjectCrossCuttingFields = ({
             id={crossCuttingFields?.title}
             value={crossCuttingFields?.title}
             onChange={handleChangeTitle}
-            className="BPListUpload mb-0 w-40 border-primary"
-            label=""
             type="text"
-            containerClassName="!h-fit w-40"
+            {...defaultPropsSimpleField}
           />
         </div>
         <div>
@@ -103,7 +148,44 @@ const ProjectCrossCuttingFields = ({
           />
         </div>
       </div>
-    </>
+      <div className="flex flex-wrap gap-x-20 gap-y-3">
+        <div>
+          <Label>Project funding</Label>
+          <SimpleInput
+            id={crossCuttingFields?.project_funding}
+            value={crossCuttingFields?.project_funding}
+            onChange={handleChangeProjectFunding}
+            type="number"
+            {...defaultPropsSimpleField}
+          />
+        </div>
+        <div>
+          <Label>Project support cost</Label>
+          <SimpleInput
+            id={crossCuttingFields?.project_support_cost}
+            value={crossCuttingFields?.project_support_cost}
+            onChange={handleChangeProjectSupportCost}
+            type="number"
+            {...defaultPropsSimpleField}
+          />
+        </div>
+      </div>
+      <div>
+        <Label>Blanket or individual consideration</Label>
+        <Field
+          widget="autocomplete"
+          options={blanketOrIndConsiderationOpts}
+          value={crossCuttingFields?.blanket_consideration}
+          onChange={(_: any, value: any) =>
+            handleChangeBlanketConsideration(value)
+          }
+          getOptionLabel={(option: any) =>
+            getOptionLabel(blanketOrIndConsiderationOpts, option)
+          }
+          {...defaultProps}
+        />
+      </div>
+    </div>
   )
 }
 

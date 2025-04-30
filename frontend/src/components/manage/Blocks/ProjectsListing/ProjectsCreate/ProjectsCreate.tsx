@@ -30,6 +30,7 @@ const ProjectsCreate = () => {
     projIdentifiers.country &&
     ((projIdentifiers.is_lead_agency && projIdentifiers.current_agency) ||
       (!projIdentifiers.is_lead_agency && projIdentifiers.side_agency)) &&
+    projIdentifiers.cluster &&
     projIdentifiers.meeting
 
   const areNextSectionsDisabled = !canLinkToBp || currentStep < 1
@@ -108,7 +109,11 @@ const ProjectsCreate = () => {
             'side_agency',
             'is_lead_agency',
           ]),
-          ...crossCuttingFields,
+          ...omit(crossCuttingFields, ['blanket_consideration']),
+          blanket_consideration:
+            crossCuttingFields?.blanket_consideration === 'blanket'
+              ? true
+              : false,
         },
         method: 'POST',
       })

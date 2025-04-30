@@ -4,10 +4,11 @@ import { useState } from 'react'
 
 import ProjectOverview from './ProjectOverview'
 import ProjectDescription from './ProjectDescription'
+import ProjectFinancial from './ProjectFinancial'
+import ProjectDate from './ProjectDate'
 import ProjectSubmissionDetails from './ProjectSubmissionDetails'
 import ProjectSubstanceDetails from './ProjectSubstanceDetails'
 import ProjectCostsDetails from './ProjectCostsDetails'
-import ProjectFundingDetails from './ProjectFundingDetails'
 import ProjectPhaseOutDetails from './ProjectPhaseOutDetails'
 import ProjectImpact from './ProjectImpact'
 import ProjectDocumentation from '../Project/ProjectDocumentation'
@@ -45,6 +46,12 @@ const ProjectView = (props: any) => {
           label="Description"
         />
         <Tab
+          id="project-financial"
+          aria-controls="project-financial"
+          label="Financial"
+        />
+        <Tab id="project-date" aria-controls="project-date" label="Date" />
+        <Tab
           id="project-submission"
           aria-controls="project-submission"
           label="Submission details"
@@ -58,11 +65,6 @@ const ProjectView = (props: any) => {
           id="project-costs"
           aria-controls="project-costs"
           label="Costs details"
-        />
-        <Tab
-          id="project-funding"
-          aria-controls="project-funding"
-          label="Funding details"
         />
         <Tab
           id="project-phase-out"
@@ -83,13 +85,14 @@ const ProjectView = (props: any) => {
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {activeTab === 0 && <ProjectOverview {...props} />}
         {activeTab === 1 && <ProjectDescription {...props} />}
-        {activeTab === 2 && <ProjectSubmissionDetails {...props} />}
-        {activeTab === 3 && <ProjectSubstanceDetails {...props} />}
-        {activeTab === 4 && <ProjectCostsDetails {...props} />}
-        {activeTab === 5 && <ProjectFundingDetails {...props} />}
-        {activeTab === 6 && <ProjectPhaseOutDetails {...props} />}
-        {activeTab === 7 && <ProjectImpact {...props} />}
-        {activeTab === 8 && (
+        {activeTab === 2 && <ProjectFinancial {...props} />}
+        {activeTab === 3 && <ProjectDate {...props} />}
+        {activeTab === 4 && <ProjectSubmissionDetails {...props} />}
+        {activeTab === 5 && <ProjectSubstanceDetails {...props} />}
+        {activeTab === 6 && <ProjectCostsDetails {...props} />}
+        {activeTab === 7 && <ProjectPhaseOutDetails {...props} />}
+        {activeTab === 8 && <ProjectImpact {...props} />}
+        {activeTab === 9 && (
           <ProjectDocumentation projectFiles={props.projectFiles} />
         )}
       </div>

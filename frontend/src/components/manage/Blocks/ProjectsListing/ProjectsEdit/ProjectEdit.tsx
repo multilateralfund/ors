@@ -4,10 +4,11 @@ import { useState } from 'react'
 
 import ProjectOverview from '../ProjectView/ProjectOverview'
 import ProjectDescription from '../ProjectView/ProjectDescription'
+import ProjectFinancial from '../ProjectView/ProjectFinancial'
+import ProjectDate from '../ProjectView/ProjectDate'
 import ProjectSubmissionDetails from '../ProjectView/ProjectSubmissionDetails'
 import ProjectSubstanceDetails from '../ProjectView/ProjectSubstanceDetails'
 import ProjectCostsDetails from '../ProjectView/ProjectCostsDetails'
-import ProjectFundingDetails from '../ProjectView/ProjectFundingDetails'
 import ProjectPhaseOutDetails from '../ProjectView/ProjectPhaseOutDetails'
 import ProjectImpact from '../ProjectView/ProjectImpact'
 import ProjectDocumentation from '../Project/ProjectDocumentation'
@@ -47,6 +48,12 @@ const ProjectEdit = (props: any) => {
           label="Description"
         />
         <Tab
+          id="project-financial"
+          aria-controls="project-financial"
+          label="Financial"
+        />
+        <Tab id="project-date" aria-controls="project-date" label="Date" />
+        <Tab
           id="project-submission"
           aria-controls="project-submission"
           label="Submission details"
@@ -85,13 +92,14 @@ const ProjectEdit = (props: any) => {
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {activeTab === 0 && <ProjectOverview {...{ project }} />}
         {activeTab === 1 && <ProjectDescription {...props} />}
-        {activeTab === 2 && <ProjectSubmissionDetails {...{ project }} />}
-        {activeTab === 3 && <ProjectSubstanceDetails {...{ project }} />}
-        {activeTab === 4 && <ProjectCostsDetails {...{ project }} />}
-        {activeTab === 5 && <ProjectFundingDetails {...{ project }} />}
-        {activeTab === 6 && <ProjectPhaseOutDetails {...{ project }} />}
-        {activeTab === 7 && <ProjectImpact {...{ project }} />}
-        {activeTab === 8 && <ProjectDocumentation mode="edit" {...rest} />}
+        {activeTab === 2 && <ProjectFinancial {...{ project }} />}
+        {activeTab === 3 && <ProjectDate {...{ project }} />}
+        {activeTab === 4 && <ProjectSubmissionDetails {...{ project }} />}
+        {activeTab === 5 && <ProjectSubstanceDetails {...{ project }} />}
+        {activeTab === 6 && <ProjectCostsDetails {...{ project }} />}
+        {activeTab === 7 && <ProjectPhaseOutDetails {...{ project }} />}
+        {activeTab === 8 && <ProjectImpact {...{ project }} />}
+        {activeTab === 9 && <ProjectDocumentation mode="edit" {...rest} />}
       </div>
     </>
   )
