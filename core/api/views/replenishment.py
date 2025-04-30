@@ -97,8 +97,8 @@ class ReplenishmentCountriesViewSet(viewsets.GenericViewSet, mixins.ListModelMix
         user = self.request.user
         queryset = Country.objects.all()
         if user.user_type in (
-                user.UserType.COUNTRY_USER,
-                user.UserType.COUNTRY_SUBMITTER,
+            user.UserType.COUNTRY_USER,
+            user.UserType.COUNTRY_SUBMITTER,
         ):
             queryset = queryset.filter(id=user.country_id)
         return queryset.order_by("name")
@@ -197,7 +197,7 @@ class ReplenishmentViewSet(
         # Copy scales of assessment from previous replenishment
         new_scales_of_assessment = []
         for (
-                previous_scale_of_assessment
+            previous_scale_of_assessment
         ) in previous_replenishment_final_version.scales_of_assessment.values(
             "country", "currency"
         ):
@@ -338,30 +338,30 @@ class ScaleOfAssessmentViewSet(
                             year=replenishment.start_year,
                             country=scale_of_assessment.country,
                             agreed_contributions=(
-                                    scale_of_assessment.amount / Decimal("3")
+                                scale_of_assessment.amount / Decimal("3")
                             ),
                             outstanding_contributions=(
-                                    scale_of_assessment.amount / Decimal("3")
+                                scale_of_assessment.amount / Decimal("3")
                             ),
                         ),
                         AnnualContributionStatus(
                             year=replenishment.start_year + 1,
                             country=scale_of_assessment.country,
                             agreed_contributions=(
-                                    scale_of_assessment.amount / Decimal("3")
+                                scale_of_assessment.amount / Decimal("3")
                             ),
                             outstanding_contributions=(
-                                    scale_of_assessment.amount / Decimal("3")
+                                scale_of_assessment.amount / Decimal("3")
                             ),
                         ),
                         AnnualContributionStatus(
                             year=replenishment.start_year + 2,
                             country=scale_of_assessment.country,
                             agreed_contributions=(
-                                    scale_of_assessment.amount / Decimal("3")
+                                scale_of_assessment.amount / Decimal("3")
                             ),
                             outstanding_contributions=(
-                                    scale_of_assessment.amount / Decimal("3")
+                                scale_of_assessment.amount / Decimal("3")
                             ),
                         ),
                     ]
@@ -485,10 +485,10 @@ class AnnualStatusOfContributionsView(views.APIView):
         disputed_contribution_amount = agg.get_disputed_contribution_amount()
 
         data["total"]["agreed_contributions_with_disputed"] = (
-                data["total"]["agreed_contributions"] + disputed_contribution_amount
+            data["total"]["agreed_contributions"] + disputed_contribution_amount
         )
         data["total"]["outstanding_contributions_with_disputed"] = (
-                data["total"]["outstanding_contributions"] + disputed_contribution_amount
+            data["total"]["outstanding_contributions"] + disputed_contribution_amount
         )
         data["disputed_contributions"] = disputed_contribution_amount
         data["disputed_contributions_per_country"] = DisputedContributionReadSerializer(
@@ -697,10 +697,10 @@ class TriennialStatusOfContributionsView(views.APIView):
 
         disputed_contribution_amount = agg.get_disputed_contribution_amount()
         data["total"]["agreed_contributions_with_disputed"] = (
-                data["total"]["agreed_contributions"] + disputed_contribution_amount
+            data["total"]["agreed_contributions"] + disputed_contribution_amount
         )
         data["total"]["outstanding_contributions_with_disputed"] = (
-                data["total"]["outstanding_contributions"] + disputed_contribution_amount
+            data["total"]["outstanding_contributions"] + disputed_contribution_amount
         )
         data["disputed_contributions"] = disputed_contribution_amount
         data["disputed_contributions_per_country"] = DisputedContributionReadSerializer(
@@ -811,13 +811,13 @@ class SummaryStatusOfContributionsView(views.APIView):
             "agreed_contributions"
         ]
         data["percentage_total_paid_current_year"] = (
-                (
-                        data_current_year["cash_payments"]
-                        + data_current_year["bilateral_assistance"]
-                        + data_current_year["promissory_notes"]
-                )
-                / data_current_year["agreed_contributions"]
-                * Decimal("100")
+            (
+                data_current_year["cash_payments"]
+                + data_current_year["bilateral_assistance"]
+                + data_current_year["promissory_notes"]
+            )
+            / data_current_year["agreed_contributions"]
+            * Decimal("100")
         )
         data["total"] = agg.get_total()
         data["total"]["gain_loss"] = agg.get_gain_loss()
@@ -825,10 +825,10 @@ class SummaryStatusOfContributionsView(views.APIView):
 
         disputed_contribution_amount = agg.get_disputed_contribution_amount()
         data["total"]["agreed_contributions_with_disputed"] = (
-                data["total"]["agreed_contributions"] + disputed_contribution_amount
+            data["total"]["agreed_contributions"] + disputed_contribution_amount
         )
         data["total"]["outstanding_contributions_with_disputed"] = (
-                data["total"]["outstanding_contributions"] + disputed_contribution_amount
+            data["total"]["outstanding_contributions"] + disputed_contribution_amount
         )
         data["disputed_contributions"] = disputed_contribution_amount
         data["disputed_contributions_per_country"] = DisputedContributionReadSerializer(
@@ -875,9 +875,9 @@ class StatisticsStatusOfContributionsView(views.APIView):
         # readable.
         for soc, income in zip_longest(soc_data, external_income):
             total_payments = (
-                    soc["cash_payments_sum"]
-                    + soc["bilateral_assistance_sum"]
-                    + soc["promissory_notes_sum"]
+                soc["cash_payments_sum"]
+                + soc["bilateral_assistance_sum"]
+                + soc["promissory_notes_sum"]
             )
             response.append(
                 {
@@ -891,27 +891,27 @@ class StatisticsStatusOfContributionsView(views.APIView):
                     "disputed_contributions": soc["disputed_contributions"],
                     "outstanding_contributions": soc["outstanding_contributions_sum"],
                     "payment_pledge_percentage": (
-                            total_payments
-                            / soc["agreed_contributions_sum"]
-                            * Decimal("100")
+                        total_payments
+                        / soc["agreed_contributions_sum"]
+                        * Decimal("100")
                     ),
                     "interest_earned": income["interest_earned"],
                     "miscellaneous_income": income["miscellaneous_income"],
                     "total_income": (
-                            total_payments
-                            + income["interest_earned"]
-                            + income["miscellaneous_income"]
+                        total_payments
+                        + income["interest_earned"]
+                        + income["miscellaneous_income"]
                     ),
                     "percentage_outstanding_agreed": (
-                            soc["outstanding_contributions_sum"]
-                            / soc["agreed_contributions_sum"]
-                            * Decimal("100")
+                        soc["outstanding_contributions_sum"]
+                        / soc["agreed_contributions_sum"]
+                        * Decimal("100")
                     ),
                     "outstanding_ceit": soc["outstanding_ceit"],
                     "percentage_outstanding_ceit": (
-                            soc["outstanding_ceit"]
-                            / soc["agreed_contributions_sum"]
-                            * Decimal("100")
+                        soc["outstanding_ceit"]
+                        / soc["agreed_contributions_sum"]
+                        * Decimal("100")
                     ),
                 }
             )
@@ -935,25 +935,25 @@ class StatisticsStatusOfContributionsView(views.APIView):
         }
 
         totals["total_payments"] = (
-                totals["cash_payments"]
-                + totals["bilateral_assistance"]
-                + totals["promissory_notes"]
+            totals["cash_payments"]
+            + totals["bilateral_assistance"]
+            + totals["promissory_notes"]
         )
         totals["payment_pledge_percentage"] = (
-                totals["total_payments"] / totals["agreed_contributions"] * Decimal("100")
+            totals["total_payments"] / totals["agreed_contributions"] * Decimal("100")
         )
         totals["total_income"] = (
-                totals["total_payments"]
-                + totals["interest_earned"]
-                + totals["miscellaneous_income"]
+            totals["total_payments"]
+            + totals["interest_earned"]
+            + totals["miscellaneous_income"]
         )
         totals["percentage_outstanding_agreed"] = (
-                totals["outstanding_contributions"]
-                / totals["agreed_contributions"]
-                * Decimal("100")
+            totals["outstanding_contributions"]
+            / totals["agreed_contributions"]
+            * Decimal("100")
         )
         totals["percentage_outstanding_ceit"] = (
-                totals["outstanding_ceit"] / totals["agreed_contributions"] * Decimal("100")
+            totals["outstanding_ceit"] / totals["agreed_contributions"] * Decimal("100")
         )
         response.append(totals)
 
@@ -973,9 +973,9 @@ class StatisticsExportView(views.APIView):
         statistics_data = []
         for soc, income in zip_longest(soc_data, external_income):
             total_payments = (
-                    soc["cash_payments_sum"]
-                    + soc["bilateral_assistance_sum"]
-                    + soc["promissory_notes_sum"]
+                soc["cash_payments_sum"]
+                + soc["bilateral_assistance_sum"]
+                + soc["promissory_notes_sum"]
             )
             statistics_data.append(
                 {
@@ -994,9 +994,9 @@ class StatisticsExportView(views.APIView):
                     12: income["miscellaneous_income"],
                     # One empty row in between
                     14: (
-                            total_payments
-                            + income["interest_earned"]
-                            + income["miscellaneous_income"]
+                        total_payments
+                        + income["interest_earned"]
+                        + income["miscellaneous_income"]
                     ),
                     # One empty row in between
                     16: f"{soc['start_year']}-{soc['end_year']}",
@@ -1005,14 +1005,14 @@ class StatisticsExportView(views.APIView):
                     19: (total_payments / soc["agreed_contributions_sum"]),
                     # Total income
                     20: (
-                            total_payments
-                            + income["interest_earned"]
-                            + income["miscellaneous_income"]
+                        total_payments
+                        + income["interest_earned"]
+                        + income["miscellaneous_income"]
                     ),
                     21: soc["outstanding_contributions_sum"],
                     22: (
-                            soc["outstanding_contributions_sum"]
-                            / soc["agreed_contributions_sum"]
+                        soc["outstanding_contributions_sum"]
+                        / soc["agreed_contributions_sum"]
                     ),
                     23: soc["outstanding_ceit"],
                     24: (soc["outstanding_ceit"] / soc["agreed_contributions_sum"]),
@@ -1111,8 +1111,8 @@ class DisputedContributionViewSet(
         user = self.request.user
         queryset = DisputedContribution.objects.all()
         if user.user_type in (
-                user.UserType.COUNTRY_USER,
-                user.UserType.COUNTRY_SUBMITTER,
+            user.UserType.COUNTRY_USER,
+            user.UserType.COUNTRY_SUBMITTER,
         ):
             queryset = queryset.filter(country_id=user.country_id)
 
@@ -1173,8 +1173,8 @@ class BilateralAssistanceViewSet(
         user = self.request.user
         queryset = AnnualContributionStatus.objects.all()
         if user.user_type in (
-                user.UserType.COUNTRY_USER,
-                user.UserType.COUNTRY_SUBMITTER,
+            user.UserType.COUNTRY_USER,
+            user.UserType.COUNTRY_SUBMITTER,
         ):
             queryset = queryset.filter(country_id=user.country_id)
 
@@ -1339,13 +1339,13 @@ class ReplenishmentDashboardView(views.APIView):
             )
         )
         payment_pledge_percentage_latest_closed_triennial = (
-                (
-                        computed_summary_data_latest_closed_triennial["cash_payments"]
-                        + computed_summary_data_latest_closed_triennial["bilateral_assistance"]
-                        + computed_summary_data_latest_closed_triennial["promissory_notes"]
-                )
-                / computed_summary_data_latest_closed_triennial["agreed_contributions"]
-                * Decimal("100")
+            (
+                computed_summary_data_latest_closed_triennial["cash_payments"]
+                + computed_summary_data_latest_closed_triennial["bilateral_assistance"]
+                + computed_summary_data_latest_closed_triennial["promissory_notes"]
+            )
+            / computed_summary_data_latest_closed_triennial["agreed_contributions"]
+            * Decimal("100")
         )
 
         pledges = (
@@ -1752,8 +1752,8 @@ class ReplenishmentInvoiceViewSet(
         user = self.request.user
         queryset = Invoice.objects.all()
         if user.user_type in (
-                user.UserType.COUNTRY_USER,
-                user.UserType.COUNTRY_SUBMITTER,
+            user.UserType.COUNTRY_USER,
+            user.UserType.COUNTRY_SUBMITTER,
         ):
             queryset = queryset.filter(country_id=user.country_id)
 
@@ -1778,7 +1778,7 @@ class ReplenishmentInvoiceViewSet(
         year_min = request.query_params.get("year_min")
         year_max = request.query_params.get("year_max")
         if (year_min is None or year_max is None) and request.query_params.get(
-                "hide_no_invoice"
+            "hide_no_invoice"
         ) != "true":
             raise ValueError(
                 "year_min and year_max parameters are mandatory "
@@ -1789,15 +1789,15 @@ class ReplenishmentInvoiceViewSet(
         invoice_data = InvoiceSerializer(invoice_qs, many=True).data
         # pylint: disable=too-many-boolean-expressions
         if (
-                "search" in request.query_params
-                or "country_id" in request.query_params
-                or "date_of_issuance" in request.query_params.get("ordering", "")
-                or request.query_params.get("hide_no_invoice") == "true"
-                or (
+            "search" in request.query_params
+            or "country_id" in request.query_params
+            or "date_of_issuance" in request.query_params.get("ordering", "")
+            or request.query_params.get("hide_no_invoice") == "true"
+            or (
                 request.query_params.get("status", None) is not None
                 and request.query_params.get("status") != "not_issued"
-        )
-                or request.user.user_type == request.user.UserType.COUNTRY_USER
+            )
+            or request.user.user_type == request.user.UserType.COUNTRY_USER
         ):
             # If filtered, we should not send the empty invoices
             return Response(
@@ -1964,8 +1964,8 @@ class ReplenishmentInvoiceFileDownloadView(generics.RetrieveAPIView):
         user = self.request.user
         queryset = InvoiceFile.objects.all()
         if user.user_type in (
-                user.UserType.COUNTRY_USER,
-                user.UserType.COUNTRY_SUBMITTER,
+            user.UserType.COUNTRY_USER,
+            user.UserType.COUNTRY_SUBMITTER,
         ):
             queryset = queryset.filter(invoice__country_id=user.country_id)
 
@@ -2025,8 +2025,8 @@ class ReplenishmentPaymentViewSet(
         user = self.request.user
         queryset = Payment.objects.all()
         if user.user_type in (
-                user.UserType.COUNTRY_USER,
-                user.UserType.COUNTRY_SUBMITTER,
+            user.UserType.COUNTRY_USER,
+            user.UserType.COUNTRY_SUBMITTER,
         ):
             queryset = queryset.filter(country_id=user.country_id)
 
@@ -2108,7 +2108,7 @@ class ReplenishmentPaymentViewSet(
         ).update(
             cash_payments=models.F("cash_payments") + amount_to_add,
             outstanding_contributions=models.F("outstanding_contributions")
-                                      - amount_to_add,
+            - amount_to_add,
         )
         for year in years_list:
             # Updating objects one by one to avoid race conditions
@@ -2118,7 +2118,7 @@ class ReplenishmentPaymentViewSet(
             ).update(
                 cash_payments=models.F("cash_payments") + amount_to_add,
                 outstanding_contributions=models.F("outstanding_contributions")
-                                          - amount_to_add,
+                - amount_to_add,
             )
 
     def _unset_annual_triennial_contributions(self, payment):
@@ -2142,7 +2142,7 @@ class ReplenishmentPaymentViewSet(
         ).update(
             cash_payments=models.F("cash_payments") - payment.amount_assessed,
             outstanding_contributions=models.F("outstanding_contributions")
-                                      + payment.amount_assessed,
+            + payment.amount_assessed,
         )
         for year in years_list:
             # Updating objects one by one to avoid race conditions
@@ -2152,7 +2152,7 @@ class ReplenishmentPaymentViewSet(
             ).update(
                 cash_payments=models.F("cash_payments") - payment.amount_assessed,
                 outstanding_contributions=models.F("outstanding_contributions")
-                                          + payment.amount_assessed,
+                + payment.amount_assessed,
             )
 
     def _set_ferm(self, payment, old_amount=None):
@@ -2338,8 +2338,8 @@ class ReplenishmentPaymentFileDownloadView(generics.RetrieveAPIView):
         user = self.request.user
         queryset = PaymentFile.objects.all()
         if user.user_type in (
-                user.UserType.COUNTRY_USER,
-                user.UserType.COUNTRY_SUBMITTER,
+            user.UserType.COUNTRY_USER,
+            user.UserType.COUNTRY_SUBMITTER,
         ):
             queryset = queryset.filter(invoice__country_id=user.country_id)
 
@@ -2375,7 +2375,9 @@ class StatusOfTheFundFileViewSet(
         if file is None:
             raise ValidationError({"file": "File contents must be uploaded."})
 
-        file_to_save = ContentFile(b64decode(file.get("data")), name=file.get("filename"))
+        file_to_save = ContentFile(
+            b64decode(file.get("data")), name=file.get("filename")
+        )
 
         if file_errors := validate_files([file_to_save]):
             return Response(file_errors, status=status.HTTP_400_BAD_REQUEST)
