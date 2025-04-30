@@ -18,6 +18,7 @@ services:
     environment:
       - DJANGO_MIGRATE=yes
       - CLAMD_TCP_ADDR=clamav
+      - CLAMD_ENABLED=yes
     volumes:
       - app_data:/app/.fs
     expose:

@@ -325,7 +325,7 @@ REST_AUTH = {
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = False
 
-CLAMD_ENABLED = env.bool("CLAMD_ENABLED", default=True)
+CLAMD_ENABLED = env.bool("CLAMD_ENABLED", default=False)
 CLAMD_USE_TCP = env.bool("CLAMD_USE_TCP", default=True)
 CLAMD_TCP_ADDR = env.str("CLAMD_TCP_ADDR", default="localhost")
 

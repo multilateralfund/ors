@@ -146,6 +146,6 @@ def validate_files(files: list[ContentFile]) -> FilesValidatorError | None:
 
     for entry in files:
         validation_result = validate_file(entry)
-        if validation_result is not None:
+        if validation_result:
             errors.append(validation_result)
     return {"validation_error": "Virus found!", "files": errors} if errors else None
