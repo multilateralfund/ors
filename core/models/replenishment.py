@@ -557,9 +557,20 @@ class ExternalIncomeAnnual(models.Model):
         )
 
 
+class ExternalAllocationManager(models.Manager):
+    def get_queryset(self):
+        # We almost never use the data marked as is_dashboard_only in the KMS,
+        # so we should ignore it by default.
+        return super().get_queryset().filter(is_dashboard_only=False)
+
+
 class ExternalAllocation(models.Model):
     # This one will be set to True only for initially-imported data!
     is_legacy = models.BooleanField(default=False)
+
+    # There is a need for some data to be shown in the Ekimetrics dashboards, but not
+    # in the KMS (dashboard, excel export etc).
+    is_dashboard_only = models.BooleanField(default=False)
 
     undp = models.DecimalField(max_digits=30, decimal_places=15, default=Decimal(0))
     unep = models.DecimalField(max_digits=30, decimal_places=15, default=Decimal(0))
@@ -592,6 +603,9 @@ class ExternalAllocation(models.Model):
     decision_number = models.CharField(max_length=32, default="")
 
     comment = models.TextField(blank=True, default="")
+
+    objects = ExternalAllocationManager()
+    all_objects = models.Manager()
 
 
 class StatusOfTheFundFile(models.Model):
