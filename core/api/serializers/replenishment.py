@@ -182,6 +182,7 @@ class ScaleOfAssessmentExcelExportSerializer(serializers.ModelSerializer):
 
 class ExternalAllocationSerializer(serializers.ModelSerializer):
     is_legacy = serializers.BooleanField(required=False, allow_null=True)
+    is_dashboard_only = serializers.BooleanField(required=False, allow_null=True)
 
     undp = serializers.DecimalField(
         max_digits=30, decimal_places=15, required=False, allow_null=True
@@ -226,6 +227,7 @@ class ExternalAllocationSerializer(serializers.ModelSerializer):
         model = ExternalAllocation
         fields = [
             "is_legacy",
+            "is_dashboard_only",
             "undp",
             "unep",
             "unido",

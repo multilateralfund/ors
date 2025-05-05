@@ -1639,7 +1639,8 @@ class ReplenishmentExternalAllocationViewSet(
     ordering_fields = ["year"]
 
     def get_queryset(self):
-        return ExternalAllocation.objects.all()
+        # Including the is_dashboard_only objects as well
+        return ExternalAllocation.all_objects.all()
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
