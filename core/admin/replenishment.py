@@ -9,6 +9,7 @@ from core.models import (
     Payment,
     ExternalAllocation,
     ExternalIncomeAnnual,
+    BilateralAssistance,
     DisputedContribution,
     AnnualContributionStatus,
     TriennialContributionStatus,
@@ -193,8 +194,20 @@ class TriennialContributionStatusAdmin(admin.ModelAdmin):
             "bilateral_assistance",
             "promissory_notes",
             "outstanding_contributions",
-            "bilateral_assistance_meeting",
-            "bilateral_assistance_decision_number",
+        ]
+
+
+@admin.register(BilateralAssistance)
+class BilateralAssistanceAdmin(admin.ModelAdmin):
+    def get_list_display(self, request):
+        return [
+            "id",
+            "country",
+            "year",
+            "amount",
+            "meeting",
+            "decision_number",
+            "comment",
         ]
 
 

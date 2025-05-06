@@ -17,6 +17,7 @@ from core.models import (
     DisputedContribution,
     ExternalAllocation,
     ExternalIncomeAnnual,
+    BilateralAssistance,
     StatusOfTheFundFile,
 )
 
@@ -279,6 +280,66 @@ class ExternalIncomeAnnualSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExternalIncomeAnnual
         fields = "__all__"
+
+
+class BilateralAssistanceCreateSerializer(serializers.ModelSerializer):
+    country_id = serializers.PrimaryKeyRelatedField(
+        queryset=Country.objects.all().values_list("id", flat=True),
+        write_only=True,
+    )
+    year = serializers.IntegerField()
+    amount = serializers.DecimalField(
+        max_digits=30, decimal_places=15, coerce_to_string=False
+    )
+    meeting_id = serializers.PrimaryKeyRelatedField(
+        queryset=Meeting.objects.all().values_list("id", flat=True),
+        allow_null=True,
+        required=False,
+    )
+    decision_number = serializers.CharField(
+        allow_null=True, allow_blank=True, required=False
+    )
+    comment = serializers.CharField(allow_blank=True, required=False)
+
+    class Meta:
+        model = BilateralAssistance
+        fields = [
+            "country_id",
+            "year",
+            "amount",
+            "meeting_id",
+            "decision_number",
+            "comment",
+        ]
+
+
+class BilateralAssistanceReadSerializer(serializers.ModelSerializer):
+    country = CountrySerializer(read_only=True)
+    year = serializers.IntegerField()
+    amount = serializers.DecimalField(
+        max_digits=30, decimal_places=15, coerce_to_string=False
+    )
+    meeting_id = serializers.PrimaryKeyRelatedField(
+        queryset=Meeting.objects.all().values_list("id", flat=True),
+        allow_null=True,
+        required=False,
+    )
+    decision_number = serializers.CharField(
+        allow_null=True, allow_blank=True, required=False
+    )
+    comment = serializers.CharField()
+
+    class Meta:
+        model = BilateralAssistance
+        fields = [
+            "id",
+            "country",
+            "year",
+            "amount",
+            "meeting_id",
+            "decision_number",
+            "comment",
+        ]
 
 
 class InvoiceFileSerializer(serializers.ModelSerializer):

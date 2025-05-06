@@ -50,6 +50,8 @@ from core.api.serializers import (
     EmptyInvoiceSerializer,
     ExternalAllocationSerializer,
     ExternalIncomeAnnualSerializer,
+    BilateralAssistanceCreateSerializer,
+    BilateralAssistanceReadSerializer,
     StatusOfTheFundFileSerializer,
 )
 from core.api.utils import workbook_response, validate_files
@@ -72,6 +74,7 @@ from core.models import (
     ExternalIncomeAnnual,
     ExternalAllocation,
     FermGainLoss,
+    BilateralAssistance,
     Invoice,
     InvoiceFile,
     Payment,
@@ -763,41 +766,57 @@ class SummaryStatusOfContributionsView(views.APIView):
         data_current_year = TriennialContributionStatus.objects.filter(
             end_year__lt=current_year
         ).aggregate(
-            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
             promissory_notes=models.Sum("promissory_notes", default=0),
             cash_payments=models.Sum("cash_payments", default=0),
             agreed_contributions=models.Sum("agreed_contributions", default=0),
         )
+        # Add bilateral assistance separately from the new model
+        data_current_year["bilateral_assistance"] = BilateralAssistance.objects.filter(
+            year__lt=current_year
+        ).aggregate(total=models.Sum("amount", default=0))["total"]
 
         if current_year % 3 == 2:
             # Current year is the start year of a triennial period
             current_triennial_data = AnnualContributionStatus.objects.filter(
                 year=current_year
             ).aggregate(
-                bilateral_assistance=models.Sum("bilateral_assistance", default=0),
                 promissory_notes=models.Sum("promissory_notes", default=0),
                 cash_payments=models.Sum("cash_payments", default=0),
                 agreed_contributions=models.Sum("agreed_contributions", default=0),
+            )
+            current_triennial_data["bilateral_assistance"] = (
+                BilateralAssistance.objects.filter(year=current_year).aggregate(
+                    total=models.Sum("amount", default=0)
+                )["total"]
             )
         elif current_year % 3 == 0:
             # Current year is in the middle of a triennial period
             current_triennial_data = AnnualContributionStatus.objects.filter(
                 year__in=[current_year - 1, current_year]
             ).aggregate(
-                bilateral_assistance=models.Sum("bilateral_assistance", default=0),
                 promissory_notes=models.Sum("promissory_notes", default=0),
                 cash_payments=models.Sum("cash_payments", default=0),
                 agreed_contributions=models.Sum("agreed_contributions", default=0),
+            )
+            current_triennial_data["bilateral_assistance"] = (
+                BilateralAssistance.objects.filter(
+                    year__in=[current_year - 1, current_year]
+                ).aggregate(total=models.Sum("amount", default=0))["total"]
             )
         else:
             # Current year is the end year of a triennial period
             current_triennial_data = TriennialContributionStatus.objects.filter(
                 end_year=current_year
             ).aggregate(
-                bilateral_assistance=models.Sum("bilateral_assistance", default=0),
                 promissory_notes=models.Sum("promissory_notes", default=0),
                 cash_payments=models.Sum("cash_payments", default=0),
                 agreed_contributions=models.Sum("agreed_contributions", default=0),
+            )
+            current_triennial_data["bilateral_assistance"] = (
+                BilateralAssistance.objects.filter(
+                    year__gte=current_year - 2,
+                    year__lte=current_year,
+                ).aggregate(total=models.Sum("amount", default=0))["total"]
             )
 
         data_current_year["bilateral_assistance"] += current_triennial_data[
@@ -1164,21 +1183,28 @@ class DisputedContributionViewSet(
 
 class BilateralAssistanceViewSet(
     viewsets.GenericViewSet,
+    mixins.RetrieveModelMixin,
+    mixins.ListModelMixin,
     mixins.CreateModelMixin,
 ):
-    model = AnnualContributionStatus
+    model = BilateralAssistance
     permission_classes = [IsUserAllowedReplenishment]
 
     def get_queryset(self):
         user = self.request.user
-        queryset = AnnualContributionStatus.objects.all()
+        queryset = BilateralAssistance.objects.all()
         if user.user_type in (
             user.UserType.COUNTRY_USER,
             user.UserType.COUNTRY_SUBMITTER,
         ):
             queryset = queryset.filter(country_id=user.country_id)
 
-        return queryset.select_related("country")
+        return queryset.select_related("country", "meeting")
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return BilateralAssistanceCreateSerializer
+        return BilateralAssistanceReadSerializer
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
@@ -1186,30 +1212,21 @@ class BilateralAssistanceViewSet(
         This viewset actually only updates the bilateral_assistance-related
         fields on Annual/Triennial contribution statuses.
         """
-        # pylint: disable=too-many-locals
-        input_data = request.data
-        amount = input_data.get("amount")
-        meeting_id = input_data.get("meeting_id")
-        decision = input_data.get("decision_number", "")
-        comment = input_data.get("comment", "")
-        if amount is None:
-            raise ValidationError(
-                {"amount": "Bilateral assistance amount needs to be provided."}
-            )
-        if meeting_id is None:
-            raise ValidationError(
-                {"meeting": "Bilateral assistance meeting needs to be provided."}
-            )
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # First create the bilateral assistance entry
+        bilateral_assistance = serializer.save()
 
         try:
             annual_contribution = AnnualContributionStatus.objects.get(
-                country_id=input_data["country_id"],
-                year=input_data["year"],
+                country_id=bilateral_assistance.country_id,
+                year=bilateral_assistance.year,
             )
             triennial_contribution = TriennialContributionStatus.objects.get(
-                country_id=input_data["country_id"],
-                start_year__lte=input_data["year"],
-                end_year__gte=input_data["year"],
+                country_id=bilateral_assistance.country_id,
+                start_year__lte=bilateral_assistance.year,
+                end_year__gte=bilateral_assistance.year,
             )
         except AnnualContributionStatus.DoesNotExist as exc:
             raise ValidationError(
@@ -1230,11 +1247,14 @@ class BilateralAssistanceViewSet(
                 }
             ) from exc
 
-        annual_contribution.bilateral_assistance += Decimal(amount)
-        annual_contribution.outstanding_contributions -= Decimal(amount)
-        annual_contribution.bilateral_assistance_meeting_id = meeting_id
-        annual_contribution.bilateral_assistance_decision_number = decision
-        annual_contribution.bilateral_assistance_comment = comment
+        # Update annual contribution
+        annual_contribution.bilateral_assistance += bilateral_assistance.amount
+        annual_contribution.outstanding_contributions -= bilateral_assistance.amount
+        annual_contribution.bilateral_assistance_meeting = bilateral_assistance.meeting
+        annual_contribution.bilateral_assistance_decision_number = (
+            bilateral_assistance.decision_number
+        )
+        annual_contribution.bilateral_assistance_comment = bilateral_assistance.comment
         annual_contribution.save(
             update_fields=[
                 "bilateral_assistance",
@@ -1245,11 +1265,18 @@ class BilateralAssistanceViewSet(
             ]
         )
 
-        triennial_contribution.bilateral_assistance += Decimal(amount)
-        triennial_contribution.outstanding_contributions -= Decimal(amount)
-        triennial_contribution.bilateral_assistance_meeting_id = meeting_id
-        triennial_contribution.bilateral_assistance_decision_number = decision
-        triennial_contribution.bilateral_assistance_comment = comment
+        # Update triennial contribution
+        triennial_contribution.bilateral_assistance += bilateral_assistance.amount
+        triennial_contribution.outstanding_contributions -= bilateral_assistance.amount
+        triennial_contribution.bilateral_assistance_meeting_id = (
+            bilateral_assistance.meeting
+        )
+        triennial_contribution.bilateral_assistance_decision_number = (
+            bilateral_assistance.decision_number
+        )
+        triennial_contribution.bilateral_assistance_comment = (
+            bilateral_assistance.comment
+        )
         triennial_contribution.save(
             update_fields=[
                 "bilateral_assistance",
@@ -1260,7 +1287,10 @@ class BilateralAssistanceViewSet(
             ]
         )
 
-        return Response(status=status.HTTP_200_OK, data=[])
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
 
 
 class ReplenishmentDashboardView(views.APIView):
@@ -1290,10 +1320,12 @@ class ReplenishmentDashboardView(views.APIView):
             technical_audit=models.Sum("technical_audit", default=0),
             information_strategy=models.Sum("information_strategy", default=0),
         )
+        bilateral_assistance = BilateralAssistance.objects.aggregate(
+            total=models.Sum("amount", default=0)
+        )["total"]
 
         computed_summary_data = TriennialContributionStatus.objects.aggregate(
             cash_payments=models.Sum("cash_payments", default=0),
-            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
             promissory_notes=models.Sum("promissory_notes", default=0),
         )
         computed_party_data = (
@@ -1327,6 +1359,7 @@ class ReplenishmentDashboardView(views.APIView):
             total=models.Sum("amount", default=0)
         )["total"]
 
+        # For closed triennial, use bilateral_assistance from the contribution status
         computed_summary_data_latest_closed_triennial = (
             TriennialContributionStatus.objects.filter(
                 start_year=latest_closed_triennial.start_year,
@@ -1388,14 +1421,14 @@ class ReplenishmentDashboardView(views.APIView):
             },
             "income": {
                 "cash_payments": computed_summary_data["cash_payments"],
-                "bilateral_assistance": computed_summary_data["bilateral_assistance"],
+                "bilateral_assistance": bilateral_assistance,
                 "interest_earned": income_interest["interest_earned"],
                 "promissory_notes": computed_summary_data["promissory_notes"],
                 "miscellaneous_income": income_interest["miscellaneous_income"],
             },
             "allocations": {
                 **allocations,
-                "bilateral_assistance": computed_summary_data["bilateral_assistance"],
+                "bilateral_assistance": bilateral_assistance,
                 "gain_loss": gain_loss,
             },
             "charts": {
@@ -1458,10 +1491,12 @@ class ReplenishmentDashboardExportView(views.APIView):
 
         computed_summary_data = TriennialContributionStatus.objects.aggregate(
             cash_payments=models.Sum("cash_payments", default=0),
-            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
             promissory_notes=models.Sum("promissory_notes", default=0),
         )
         gain_loss = FermGainLoss.objects.aggregate(
+            total=models.Sum("amount", default=0)
+        )["total"]
+        bilateral_assistance = BilateralAssistance.objects.aggregate(
             total=models.Sum("amount", default=0)
         )["total"]
 
@@ -1469,7 +1504,7 @@ class ReplenishmentDashboardExportView(views.APIView):
             [
                 computed_summary_data["cash_payments"],
                 computed_summary_data["promissory_notes"],
-                computed_summary_data["bilateral_assistance"],
+                bilateral_assistance,
                 income_interest["interest_earned"],
                 income_interest["miscellaneous_income"],
             ]
@@ -1492,7 +1527,7 @@ class ReplenishmentDashboardExportView(views.APIView):
                 allocations["monitoring_fees"],
                 allocations["technical_audit"],
                 allocations["information_strategy"],
-                computed_summary_data["bilateral_assistance"],
+                bilateral_assistance,
                 gain_loss,
             ]
         )
@@ -1518,7 +1553,7 @@ class ReplenishmentDashboardExportView(views.APIView):
             (
                 None,
                 None,
-                computed_summary_data["bilateral_assistance"],
+                bilateral_assistance,
             ),
             (
                 None,
@@ -1572,7 +1607,7 @@ class ReplenishmentDashboardExportView(views.APIView):
             (
                 None,
                 None,
-                computed_summary_data["bilateral_assistance"],
+                bilateral_assistance,
             ),
             EMPTY_ROW,
             (None, None, gain_loss),

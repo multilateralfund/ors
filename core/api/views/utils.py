@@ -19,6 +19,7 @@ from core.models import (
     TriennialContributionStatus,
     TriennialContributionView,
     FermGainLoss,
+    BilateralAssistance,
     DisputedContribution,
     AnnualContributionStatus,
     ExternalIncomeAnnual,
@@ -588,8 +589,11 @@ class SummaryStatusOfContributionsAggregator:
                 cash_payments=models.Sum(
                     "triennialcontributionview__cash_payments", default=0
                 ),
-                bilateral_assistance=models.Sum(
-                    "triennialcontributionview__bilateral_assistance", default=0
+                bilateral_assistance=models.Subquery(
+                    BilateralAssistance.objects.filter(country=models.OuterRef("pk"))
+                    .values("country__pk")
+                    .annotate(total=models.Sum("amount", default=0))
+                    .values("total")[:1]
                 ),
                 promissory_notes=models.Sum(
                     "triennialcontributionview__promissory_notes", default=0
@@ -633,15 +637,14 @@ class SummaryStatusOfContributionsAggregator:
         ).aggregate(
             agreed_contributions=models.Sum("current_agreed_contributions", default=0),
             cash_payments=models.Sum("cash_payments", default=0),
-            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
             promissory_notes=models.Sum("promissory_notes", default=0),
             outstanding_contributions=models.Sum(
                 "current_outstanding_contributions", default=0
             ),
         )
 
-        # Populate gain_loss and disputed_contributions fields; these do not have
-        # a direct relationship with TriennialContributionStatus/View
+        # Populate gain_loss, bilateral_assistance and disputed_contributions fields;
+        # these do not have a direct relationship with TriennialContributionStatus/View
         ret["gain_loss"] = FermGainLoss.objects.filter(
             ceit_countries_annual_filter
         ).aggregate(total=models.Sum("amount", default=0))["total"]
@@ -650,18 +653,25 @@ class SummaryStatusOfContributionsAggregator:
             ceit_countries_annual_filter
         ).aggregate(total=models.Sum("amount", default=0))["total"]
 
+        ret["bilateral_assistance"] = BilateralAssistance.objects.filter(
+            ceit_countries_annual_filter
+        ).aggregate(total=models.Sum("amount", default=0))["total"]
+
         return ret
 
     def get_total(self):
-        return TriennialContributionView.objects.aggregate(
+        ret = TriennialContributionView.objects.aggregate(
             agreed_contributions=models.Sum("current_agreed_contributions", default=0),
             cash_payments=models.Sum("cash_payments", default=0),
-            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
             promissory_notes=models.Sum("promissory_notes", default=0),
             outstanding_contributions=models.Sum(
                 "current_outstanding_contributions", default=0
             ),
         )
+        ret["bilateral_assistance"] = BilateralAssistance.objects.aggregate(
+            total=models.Sum("amount", default=0)
+        )["total"]
+        return ret
 
     def get_gain_loss(self):
         return FermGainLoss.objects.aggregate(total=models.Sum("amount", default=0))[
@@ -707,8 +717,15 @@ class TriennialStatusOfContributionsAggregator:
                 cash_payments=models.Sum(
                     "triennialcontributionview__cash_payments", default=0
                 ),
-                bilateral_assistance=models.Sum(
-                    "triennialcontributionview__bilateral_assistance", default=0
+                bilateral_assistance=models.Subquery(
+                    BilateralAssistance.objects.filter(
+                        country=models.OuterRef("pk"),
+                        year__gte=self.start_year,
+                        year__lte=self.end_year,
+                    )
+                    .values("country__pk")
+                    .annotate(total=models.Sum("amount", default=0))
+                    .values("total")[:1]
                 ),
                 promissory_notes=models.Sum(
                     "triennialcontributionview__promissory_notes", default=0
@@ -749,13 +766,12 @@ class TriennialStatusOfContributionsAggregator:
         ).aggregate(
             agreed_contributions=models.Sum("current_agreed_contributions", default=0),
             cash_payments=models.Sum("cash_payments", default=0),
-            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
             promissory_notes=models.Sum("promissory_notes", default=0),
             outstanding_contributions=models.Sum(
                 "current_outstanding_contributions", default=0
             ),
         )
-        # Add gain/loss & disputed for CEIT countries
+        # Add gain/loss & disputed & bilateral for CEIT countries
         ret["gain_loss"] = FermGainLoss.objects.filter(
             year__gte=self.start_year,
             year__lte=self.end_year,
@@ -763,6 +779,12 @@ class TriennialStatusOfContributionsAggregator:
         ).aggregate(total=models.Sum("amount", default=0))["total"]
 
         ret["disputed_contributions"] = DisputedContribution.objects.filter(
+            year__gte=self.start_year,
+            year__lte=self.end_year,
+            country_id__in=ceit_countries_qs.values_list("id", flat=True),
+        ).aggregate(total=models.Sum("amount", default=0))["total"]
+
+        ret["bilateral_assistance"] = BilateralAssistance.objects.filter(
             year__gte=self.start_year,
             year__lte=self.end_year,
             country_id__in=ceit_countries_qs.values_list("id", flat=True),
@@ -776,7 +798,6 @@ class TriennialStatusOfContributionsAggregator:
         ).aggregate(
             agreed_contributions=models.Sum("current_agreed_contributions", default=0),
             cash_payments=models.Sum("cash_payments", default=0),
-            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
             promissory_notes=models.Sum("promissory_notes", default=0),
             outstanding_contributions=models.Sum(
                 "current_outstanding_contributions", default=0
@@ -784,6 +805,11 @@ class TriennialStatusOfContributionsAggregator:
         )
         # Adding gain/loss totals
         ret["gain_loss"] = FermGainLoss.objects.filter(
+            year__gte=self.start_year, year__lte=self.end_year
+        ).aggregate(total=models.Sum("amount", default=0))["total"]
+
+        # Adding bilateral assistance totals
+        ret["bilateral_assistance"] = BilateralAssistance.objects.filter(
             year__gte=self.start_year, year__lte=self.end_year
         ).aggregate(total=models.Sum("amount", default=0))["total"]
 
@@ -829,8 +855,14 @@ class AnnualStatusOfContributionsAggregator:
                 cash_payments=models.Sum(
                     "annual_contributions_status__cash_payments", default=0
                 ),
-                bilateral_assistance=models.Sum(
-                    "annual_contributions_status__bilateral_assistance", default=0
+                bilateral_assistance=models.Subquery(
+                    BilateralAssistance.objects.filter(
+                        country=models.OuterRef("pk"),
+                        year=self.year,
+                    )
+                    .values("country__pk")
+                    .annotate(total=models.Sum("amount", default=0))
+                    .values("total")[:1]
                 ),
                 promissory_notes=models.Sum(
                     "annual_contributions_status__promissory_notes", default=0
@@ -869,7 +901,6 @@ class AnnualStatusOfContributionsAggregator:
         ).aggregate(
             agreed_contributions=models.Sum("agreed_contributions", default=0),
             cash_payments=models.Sum("cash_payments", default=0),
-            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
             promissory_notes=models.Sum("promissory_notes", default=0),
             outstanding_contributions=models.Sum(
                 "outstanding_contributions", default=0
@@ -881,6 +912,9 @@ class AnnualStatusOfContributionsAggregator:
         ret["disputed_contributions"] = DisputedContribution.objects.filter(
             year=self.year, country_id__in=ceit_country_ids
         ).aggregate(total=models.Sum("amount", default=0))["total"]
+        ret["bilateral_assistance"] = BilateralAssistance.objects.filter(
+            year=self.year, country_id__in=ceit_country_ids
+        ).aggregate(total=models.Sum("amount", default=0))["total"]
 
         return ret
 
@@ -888,7 +922,6 @@ class AnnualStatusOfContributionsAggregator:
         ret = AnnualContributionStatus.objects.filter(year=self.year).aggregate(
             agreed_contributions=models.Sum("agreed_contributions", default=0),
             cash_payments=models.Sum("cash_payments", default=0),
-            bilateral_assistance=models.Sum("bilateral_assistance", default=0),
             promissory_notes=models.Sum("promissory_notes", default=0),
             outstanding_contributions=models.Sum(
                 "outstanding_contributions", default=0
@@ -897,6 +930,9 @@ class AnnualStatusOfContributionsAggregator:
         ret["gain_loss"] = FermGainLoss.objects.filter(year=self.year).aggregate(
             total=models.Sum("amount", default=0)
         )["total"]
+        ret["bilateral_assistance"] = BilateralAssistance.objects.filter(
+            year=self.year
+        ).aggregate(total=models.Sum("amount", default=0))["total"]
         ret["interest_earned"] = ExternalIncomeAnnual.objects.filter(
             year__isnull=False, year=self.year
         ).aggregate(total=models.Sum("interest_earned", default=0))["total"]
@@ -926,7 +962,17 @@ class StatisticsStatusOfContributionsAggregator:
                     "current_agreed_contributions", default=0
                 ),
                 cash_payments_sum=models.Sum("cash_payments", default=0),
-                bilateral_assistance_sum=models.Sum("bilateral_assistance", default=0),
+                bilateral_assistance_sum=models.Subquery(
+                    BilateralAssistance.objects.filter(
+                        year__gte=models.OuterRef("start_year"),
+                        year__lte=models.OuterRef("end_year"),
+                    )
+                    # Group by replenishment start year
+                    .annotate(start_year_replenishment=models.OuterRef("start_year"))
+                    .values("start_year_replenishment")
+                    .annotate(total=models.Sum("amount", default=0))
+                    .values("total")[:1]
+                ),
                 promissory_notes_sum=models.Sum("promissory_notes", default=0),
                 outstanding_contributions_sum=models.Sum(
                     "current_outstanding_contributions", default=0

@@ -7,6 +7,7 @@ from core.models import (
     AnnualContributionStatus,
     DisputedContribution,
     FermGainLoss,
+    BilateralAssistance,
     TriennialContributionStatus,
     Invoice,
     Payment,
@@ -372,6 +373,7 @@ class ProjectSubSectorFactory(factory.django.DjangoModelFactory):
 class MeetingFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Meeting
+        django_get_or_create = ("number",)
 
     number = factory.Faker("random_int", min=1, max=100)
     date = factory.Faker("date")
@@ -626,6 +628,18 @@ class FermGainLossFactory(factory.django.DjangoModelFactory):
 
     country = factory.SubFactory(CountryFactory)
     amount = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+
+
+class BilateralAssistanceFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = BilateralAssistance
+
+    country = factory.SubFactory(CountryFactory)
+    year = factory.Faker("random_int", min=2000, max=2024)
+    amount = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    meeting = factory.SubFactory(MeetingFactory)
+    decision_number = factory.Faker("pystr", max_chars=32)
+    comment = factory.Faker("pystr", max_chars=100)
 
 
 class InvoiceFactory(factory.django.DjangoModelFactory):
