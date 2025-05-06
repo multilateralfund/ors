@@ -6,19 +6,14 @@ from core.models.meeting import Decision, Meeting
 from core.models.project import (
     MetaProject,
     Project,
-    ProjectCluster,
+    ProjectComment,
+    ProjectFile,
     ProjectFund,
     ProjectOdsOdp,
-    ProjectSector,
-    ProjectStatus,
-    ProjectSubmissionStatus,
-    ProjectSubSector,
-    ProjectType,
+    ProjectProgressReport,
+    ProjectRBMMeasure,
     SubmissionAmount,
 )
-from core.models.project import ProjectComment
-from core.models.project import ProjectFile
-from core.models.project import ProjectProgressReport
 from core.models.rbm_measures import RBMMeasure
 
 
@@ -34,65 +29,6 @@ class MetaProjectAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         exclude = ["project", "pcractivity", "pcrlearnedlessons", "pcrdelayexplanation"]
         return get_final_display_list(MetaProject, exclude)
-
-
-@admin.register(ProjectSector)
-class ProjectSectorAdmin(admin.ModelAdmin):
-    search_fields = [
-        "name",
-    ]
-
-    def get_list_display(self, request):
-        exclude = ["projectsubsector", "bpactivity", "project"]
-        return get_final_display_list(ProjectSector, exclude)
-
-
-@admin.register(ProjectSubSector)
-class ProjectSubSectorAdmin(admin.ModelAdmin):
-    search_fields = [
-        "name",
-    ]
-    list_filter = [
-        "sector",
-    ]
-    autocomplete_fields = ["sector"]
-
-    def get_list_display(self, request):
-        exclude = ["project", "bpactivity"]
-        return get_final_display_list(ProjectSubSector, exclude)
-
-
-@admin.register(ProjectType)
-class ProjectTypeAdmin(admin.ModelAdmin):
-    search_fields = [
-        "name",
-    ]
-
-    def get_list_display(self, request):
-        exclude = ["project", "businessplan", "bpactivity"]
-        return get_final_display_list(ProjectType, exclude)
-
-
-@admin.register(ProjectStatus)
-class ProjectStatusAdmin(admin.ModelAdmin):
-    search_fields = [
-        "name",
-    ]
-
-    def get_list_display(self, request):
-        exclude = ["project"]
-        return get_final_display_list(ProjectStatus, exclude)
-
-
-@admin.register(ProjectSubmissionStatus)
-class ProjectSubmissionStatusAdmin(admin.ModelAdmin):
-    search_fields = [
-        "name",
-    ]
-
-    def get_list_display(self, request):
-        exclude = ["project"]
-        return get_final_display_list(ProjectSubmissionStatus, exclude)
 
 
 class ProjectFileInline(admin.TabularInline):
@@ -244,15 +180,6 @@ class DecisionAdmin(admin.ModelAdmin):
         return get_final_display_list(Decision, exclude)
 
 
-@admin.register(ProjectCluster)
-class ProjectClusterAdmin(admin.ModelAdmin):
-    search_fields = ["name", "code"]
-
-    def get_list_display(self, request):
-        exclude = ["project", "bpactivity"]
-        return get_final_display_list(ProjectCluster, exclude)
-
-
 @admin.register(RBMMeasure)
 class RBMMeasureAdmin(admin.ModelAdmin):
     search_fields = ["name"]
@@ -260,3 +187,13 @@ class RBMMeasureAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         exclude = ["project_measures"]
         return get_final_display_list(RBMMeasure, exclude)
+
+
+@admin.register(ProjectRBMMeasure)
+class ProjectRbmMeasureAdmin(admin.ModelAdmin):
+    search_fields = ["project__title", "measure__name"]
+    list_filter = ["measure"]
+
+    def get_list_display(self, request):
+        exclude = ["project"]
+        return get_final_display_list(ProjectRBMMeasure, exclude)

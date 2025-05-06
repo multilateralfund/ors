@@ -14,10 +14,12 @@ from core.import_data.utils import (
 
 from core.models.project import (
     Project,
-    ProjectCluster,
     ProjectOdsOdp,
-    ProjectSector,
+)
+from core.models.project_metadata import (
+    ProjectCluster,
     ProjectType,
+    ProjectSector,
 )
 
 # pylint: disable=R0915

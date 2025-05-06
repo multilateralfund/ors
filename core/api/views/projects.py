@@ -22,6 +22,7 @@ from core.api.permissions import IsAgency, IsCountryUser, IsSecretariat, IsViewe
 from core.api.serializers.meeting import MeetingSerializer
 from core.api.serializers.project import (
     ProjectClusterSerializer,
+    ProjectClusterTypeSectorFieldsSerializer,
     ProjectCommentCreateSerializer,
     ProjectExportSerializer,
     ProjectFundCreateSerializer,
@@ -42,15 +43,20 @@ from core.models.meeting import Meeting
 from core.models.project import (
     MetaProject,
     Project,
-    ProjectCluster,
+    ProjectComment,
+    ProjectFund,
     ProjectOdsOdp,
     ProjectRBMMeasure,
-    ProjectType,
     ProjectFile,
     SubmissionAmount,
 )
-from core.models.project import ProjectComment
-from core.models.project import ProjectStatus, ProjectSubmissionStatus, ProjectFund
+from core.models.project_metadata import (
+    ProjectCluster,
+    ProjectClusterTypeSectorFields,
+    ProjectStatus,
+    ProjectSubmissionStatus,
+    ProjectType,
+)
 
 
 class MetaProjectListView(generics.ListAPIView):
@@ -104,6 +110,30 @@ class ProjectClusterListView(generics.ListAPIView):
     permission_classes = [IsSecretariat | IsAgency | IsCountryUser | IsViewer]
     queryset = ProjectCluster.objects.order_by("sort_order").all()
     serializer_class = ProjectClusterSerializer
+
+
+class ProjectClusterTypeSectorListView(generics.ListAPIView):
+    """
+        Get a tree structure of project cluster types and sectors
+        *and the list of required fields for each combination* *to be implemented*.
+    """
+    permission_classes = [IsSecretariat | IsAgency | IsCountryUser | IsViewer]
+    serializer_class = ProjectClusterTypeSectorFieldsSerializer
+
+    def get_queryset(self):
+        return (
+            ProjectCluster.objects.prefetch_related(
+                models.Prefetch(
+                    "cluster_type_sector_fields",
+                    queryset=ProjectClusterTypeSectorFields.objects.select_related(
+                        "type", "sector"
+                    ),
+                    to_attr="prefetched_cluster_type_sector_fields",
+                )
+            )
+            .order_by("sort_order")
+            .all()
+        )
 
 
 # pylint: disable-next=R0901

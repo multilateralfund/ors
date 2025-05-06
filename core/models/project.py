@@ -1,4 +1,3 @@
-from colorfield.fields import ColorField
 from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
@@ -9,37 +8,16 @@ from core.models.blend import Blend
 from core.models.country import Country
 from core.models.meeting import Decision, Meeting
 from core.models.rbm_measures import RBMMeasure
+from core.models.project_metadata import (
+    ProjectCluster,
+    ProjectSector,
+    ProjectStatus,
+    ProjectSubmissionStatus,
+    ProjectSubSector,
+    ProjectType,
+)
 from core.models.substance import Substance
 from core.models.utils import SubstancesType, get_protected_storage
-
-
-ALL_TYPE_CODES = ["CPG", "DEM", "INS", "INV", "PRP", "TAS", "TRA", "DOC", "PS", "PHA"]
-
-# project type code - project sector code
-PROJECT_SECTOR_TO_TYPE_MAPPINGS = {
-    "ARS": ALL_TYPE_CODES,
-    "DES": ALL_TYPE_CODES,
-    "FOA": ALL_TYPE_CODES,
-    "FUM": ALL_TYPE_CODES,
-    "FFI": ALL_TYPE_CODES,
-    "PAG": ALL_TYPE_CODES,
-    "PRO": ALL_TYPE_CODES,
-    "REF": ALL_TYPE_CODES,
-    "SOL": ALL_TYPE_CODES,
-    "STE": ALL_TYPE_CODES,
-    "SRV": ALL_TYPE_CODES,
-    "PMU": ["TAS"],
-    "AC": ALL_TYPE_CODES,
-    "EMS": ALL_TYPE_CODES,
-    "ELM": ALL_TYPE_CODES,
-    "CAP": ALL_TYPE_CODES,
-    "CU": ALL_TYPE_CODES,
-    "PCAP": ALL_TYPE_CODES,
-    "NOU": ALL_TYPE_CODES,
-    "CA": ALL_TYPE_CODES,
-    # this one is only present in the KM consolidated data v2 file
-    "TAS": ["TAS"],
-}
 
 
 class MetaProject(models.Model):
@@ -53,191 +31,6 @@ class MetaProject(models.Model):
 
     def __str__(self):
         return f"{self.type} {self.pcr_project_id}"
-
-
-class ProjectTypeManager(models.Manager):
-    def find_by_name(self, name):
-        name_str = name.strip()
-        return self.filter(
-            models.Q(name__iexact=name_str) | models.Q(code__iexact=name_str)
-        ).first()
-
-
-class ProjectType(models.Model):
-    name = models.CharField(max_length=255)
-    code = models.CharField(max_length=10, null=True, blank=True)
-    sort_order = models.FloatField(null=True, blank=True)
-
-    objects = ProjectTypeManager()
-
-    def __str__(self):
-        return self.name
-
-    @property
-    def allowed_sectors(self):
-        sector_codes = [
-            sector
-            for sector, types in PROJECT_SECTOR_TO_TYPE_MAPPINGS.items()
-            if self.code in types
-        ]
-        return list(
-            ProjectSector.objects.filter(code__in=sector_codes).values_list(
-                "id", flat=True
-            )
-        )
-
-
-class ProjectStatusManager(models.Manager):
-    def find_by_name(self, name):
-        name_str = name.strip()
-        return self.filter(
-            models.Q(name__iexact=name_str) | models.Q(code__iexact=name_str)
-        ).first()
-
-
-class ProjectSubmissionStatusManager(models.Manager):
-    def find_by_name(self, name):
-        name_str = name.strip()
-        return self.filter(
-            models.Q(name__iexact=name_str) | models.Q(code__iexact=name_str)
-        ).first()
-
-
-class ProjectSubmissionStatus(models.Model):
-    name = models.CharField(max_length=255)
-    code = models.CharField(max_length=10, null=True, blank=True)
-    color = ColorField(default="#CCCCCC")
-
-    objects = ProjectSubmissionStatusManager()
-
-    class Meta:
-        verbose_name_plural = "Project submission statuses"
-
-    def __str__(self):
-        return self.name
-
-
-class ProjectStatus(models.Model):
-    name = models.CharField(max_length=255)
-    code = models.CharField(max_length=10, null=True, blank=True)
-    color = ColorField(default="#CCCCCC")
-
-    objects = ProjectStatusManager()
-
-    class Meta:
-        verbose_name_plural = "Project statuses"
-
-    def __str__(self):
-        return self.name
-
-
-class ProjectSectorManager(models.Manager):
-    def find_by_name(self, name):
-        name_str = name.strip()
-        return self.filter(
-            models.Q(name__iexact=name_str) | models.Q(code__iexact=name_str)
-        ).first()
-
-
-class ProjectSector(models.Model):
-    name = models.CharField(max_length=255)
-    code = models.CharField(max_length=10, null=True, blank=True)
-    sort_order = models.FloatField(null=True, blank=True)
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        null=True,
-        related_name="created_sectors",
-        help_text="User who created the sector",
-    )
-    is_custom = models.BooleanField(
-        default=False,
-        help_text="Custom sector created by user, not from the official list.",
-    )
-
-    objects = ProjectSectorManager()
-
-    def __str__(self):
-        return self.name
-
-    @property
-    def allowed_types(self):
-        type_codes = PROJECT_SECTOR_TO_TYPE_MAPPINGS.get(self.code, [])
-        return list(
-            ProjectType.objects.filter(code__in=type_codes).values_list("id", flat=True)
-        )
-
-
-class ProjectSubSectorManager(models.Manager):
-    def find_by_name(self, name):
-        name_str = name.strip()
-        return self.filter(
-            models.Q(name__iexact=name_str) | models.Q(code__iexact=name_str)
-        ).first()
-
-    def get_all_by_name_or_code(self, search_str):
-        return self.filter(
-            models.Q(name__icontains=search_str) | models.Q(code__icontains=search_str)
-        ).all()
-
-    def find_by_name_and_sector(self, name, sector_id):
-        name_str = name.strip()
-        return self.filter(
-            models.Q(name__iexact=name_str) | models.Q(code__iexact=name_str),
-            sector_id=sector_id,
-        ).first()
-
-
-class ProjectSubSector(models.Model):
-    name = models.CharField(max_length=255)
-    code = models.CharField(max_length=10, null=True, blank=True)
-    sector = models.ForeignKey(ProjectSector, on_delete=models.CASCADE)
-    sort_order = models.FloatField(null=True, blank=True)
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.PROTECT,
-        null=True,
-        related_name="created_subsectors",
-        help_text="User who created the subsector",
-    )
-    is_custom = models.BooleanField(
-        default=False,
-        help_text="Custom sector created by user, not from the official list.",
-    )
-
-    objects = ProjectSubSectorManager()
-
-    def __str__(self):
-        return self.name
-
-
-class ProjectClusterManager(models.Manager):
-    def find_by_name_or_code(self, name):
-        name_str = name.strip()
-        return self.filter(
-            models.Q(name__iexact=name_str) | models.Q(code__iexact=name_str)
-        ).first()
-
-
-class ProjectCluster(models.Model):
-    class ProjectClusterCategory(models.TextChoices):
-        MYA = "MYA", "Multi-year agreement"
-        IND = "IND", "Individual"
-        BOTH = "BOTH", "Both"
-
-    name = models.CharField(max_length=255)
-    code = models.CharField(max_length=10, null=True, blank=True)
-    category = models.CharField(
-        max_length=255,
-        choices=ProjectClusterCategory.choices,
-        default=ProjectClusterCategory.BOTH,
-    )
-    sort_order = models.FloatField(null=True, blank=True)
-
-    objects = ProjectClusterManager()
-
-    def __str__(self):
-        return self.name
 
 
 class ProjectManager(models.Manager):
@@ -364,7 +157,6 @@ class Project(models.Model):
     date_completion = models.DateField(null=True, blank=True)
     date_actual = models.DateField(null=True, blank=True)
     date_per_agreement = models.DateField(null=True, blank=True)
-
     remarks = models.TextField(null=True, blank=True)
 
     # other fields
@@ -523,7 +315,10 @@ class ProjectRBMMeasure(models.Model):
         Project, on_delete=models.CASCADE, related_name="rbm_measures"
     )
     measure = models.ForeignKey(
-        RBMMeasure, on_delete=models.CASCADE, related_name="project_measures"
+        RBMMeasure,
+        on_delete=models.CASCADE,
+        related_name="project_measures",
+        help_text="Results-Based Management measure to be used for this project",
     )
     value = models.FloatField(null=True, blank=True)
 

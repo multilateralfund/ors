@@ -6,7 +6,7 @@ from core.api.serializers.project import (
     ProjectSectorSerializer,
     ProjectSubSectorSerializer,
 )
-from core.models.project import ProjectSector, ProjectSubSector
+from core.models.project_metadata import ProjectSector, ProjectSubSector
 
 # please make sure to use only this endpoint for sector and subsector list
 # we need to make sure that we filter out the custom sectors and subsectors

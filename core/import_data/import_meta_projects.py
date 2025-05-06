@@ -12,7 +12,8 @@ from core.import_data.utils import (
     get_serial_number_from_code,
 )
 
-from core.models.project import MetaProject, Project, ProjectStatus
+from core.models.project import MetaProject, Project
+from core.models.project_metadata import ProjectStatus
 from core.utils import get_meta_project_code
 
 
