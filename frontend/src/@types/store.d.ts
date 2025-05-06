@@ -12,6 +12,11 @@ import { ApiAgency } from './api_agencies'
 import { ApiBP } from './api_bp_get'
 import { ReportVariant } from './variants'
 import { ApiBPYearRanges } from './api_bp_get_years'
+import { ProjectSectorType } from '@ors/types/api_project_sector.ts'
+import { ProjectStatusType } from '@ors/types/api_project_statuses.ts'
+import { ProjectSubmissionStatusType } from '@ors/types/api_project_submission_statuses.ts'
+import { ProjectSubSectorType } from '@ors/types/api_project_subsector.ts'
+import { ProjectTypeType } from '@ors/types/api_project_types.ts'
 
 type StoreProviderProps = {
   children: React.ReactNode
@@ -147,11 +152,11 @@ export interface BPErrorsSlice {
 export interface ProjectsSlice {
   clusters: SliceData
   meetings: SliceData
-  sectors: SliceData
-  statuses: SliceData
-  submission_statuses: SliceData
-  subsectors: SliceData
-  types: SliceData
+  sectors: SliceData<ProjectSectorType[]>
+  statuses: SliceData<ProjectStatusType[]>
+  submission_statuses: SliceData<ProjectSubmissionStatusType[]>
+  subsectors: SliceData<ProjectSubSectorType[]>
+  types: SliceData<ProjectTypeType[]>
 }
 
 export interface BusinessPlanSlice {
