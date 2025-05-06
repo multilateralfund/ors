@@ -619,6 +619,25 @@ class ExternalAllocation(models.Model):
     all_objects = models.Manager()
 
 
+class BilateralAssistance(models.Model):
+    country = models.ForeignKey(
+        Country, on_delete=models.PROTECT, related_name="bilateral_assistances"
+    )
+    year = models.IntegerField()
+    amount = models.DecimalField(max_digits=30, decimal_places=15)
+    meeting = models.ForeignKey(Meeting, null=True, on_delete=models.PROTECT)
+    decision_number = models.CharField(max_length=32, blank=True)
+    comment = models.TextField(blank=True)
+
+    class Meta:
+        indexes = [models.Index(fields=["country", "year"])]
+
+    def __str__(self):
+        return (
+            f"Bilateral Assistance - {self.country.name} - {self.year} - {self.amount}"
+        )
+
+
 class StatusOfTheFundFile(models.Model):
     """
     Files uploaded via the Status of the Fund interface.
