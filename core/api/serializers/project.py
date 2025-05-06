@@ -13,19 +13,21 @@ from core.models.meeting import Meeting
 from core.models.project import (
     MetaProject,
     Project,
-    ProjectCluster,
+    ProjectComment,
+    ProjectFile,
+    ProjectFund,
     ProjectOdsOdp,
     ProjectRBMMeasure,
+    SubmissionAmount,
+)
+from core.models.project_metadata import (
+    ProjectCluster,
     ProjectSector,
     ProjectStatus,
     ProjectSubmissionStatus,
     ProjectSubSector,
     ProjectType,
-    SubmissionAmount,
 )
-from core.models.project import ProjectComment
-from core.models.project import ProjectFund
-from core.models.project import ProjectFile
 from core.models.rbm_measures import RBMMeasure
 from core.models.substance import Substance
 from core.utils import get_project_sub_code
@@ -341,6 +343,35 @@ class ProjectClusterSerializer(serializers.ModelSerializer):
             "category",
             "sort_order",
         ]
+
+
+class ProjectClusterTypeSectorFieldsSerializer(serializers.ModelSerializer):
+    types = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProjectCluster
+        fields = ["id", "name", "code", "types"]
+
+    def get_types(self, obj):
+        types = {}
+        for field in obj.prefetched_cluster_type_sector_fields:
+            type_id = field.type.id
+            if type_id not in types:
+                types[type_id] = {
+                    "name": field.type.name,
+                    "id": type_id,
+                    "code": field.type.code,
+                    "sectors": [],
+                }
+            types[type_id]["sectors"].append(
+                {
+                    "name": field.sector.name,
+                    "code": field.sector.code,
+                    "id": field.sector.id,
+                }
+            )
+
+        return list(types.values())
 
 
 class ProjectFileSerializer(serializers.ModelSerializer):

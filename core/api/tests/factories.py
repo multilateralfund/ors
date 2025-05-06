@@ -38,15 +38,18 @@ from core.models.meeting import Decision, Meeting
 from core.models.project import (
     MetaProject,
     Project,
-    ProjectCluster,
     ProjectOdsOdp,
     ProjectRBMMeasure,
+    SubmissionAmount,
+)
+from core.models.project_metadata import (
+    ProjectCluster,
+    ProjectClusterTypeSectorFields,
     ProjectSector,
     ProjectStatus,
     ProjectSubmissionStatus,
     ProjectSubSector,
     ProjectType,
-    SubmissionAmount,
 )
 from core.models.rbm_measures import RBMMeasure
 from core.models.substance import Substance, SubstanceAltName
@@ -392,6 +395,15 @@ class ProjectClusterFactory(factory.django.DjangoModelFactory):
     code = factory.Faker("pystr", max_chars=10)
     category = ProjectCluster.ProjectClusterCategory.BOTH
     sort_order = factory.Faker("random_int", min=1, max=100)
+
+
+class ProjectClusterTypeSectorFieldsFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ProjectClusterTypeSectorFields
+
+    cluster = factory.SubFactory(ProjectClusterFactory)
+    type = factory.SubFactory(ProjectTypeFactory)
+    sector = factory.SubFactory(ProjectSectorFactory)
 
 
 class MetaProjectFactory(factory.django.DjangoModelFactory):

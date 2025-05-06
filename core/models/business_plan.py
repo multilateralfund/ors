@@ -9,8 +9,8 @@ from core.models.project import (
     ProjectCluster,
     ProjectSector,
     ProjectSubSector,
-    ProjectType,
 )
+from core.models.project_metadata import ProjectType
 from core.models.substance import Substance
 from core.models.utils import get_protected_storage
 

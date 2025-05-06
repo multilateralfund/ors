@@ -10,9 +10,8 @@ from core.import_data.utils import delete_old_data
 from core.import_data.utils import get_object_by_code
 from core.import_data.utils import parse_date
 from core.import_data.utils import parse_noop
-from core.models import Project
-from core.models.project import ProjectProgressReport
-from core.models.project import ProjectStatus
+from core.models.project import Project, ProjectProgressReport
+from core.models.project_metadata import ProjectStatus
 
 logger = logging.getLogger(__name__)
 

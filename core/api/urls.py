@@ -91,6 +91,7 @@ from core.api.views.meetings import DecisionListView, MeetingListView
 from core.api.views.projects import (
     MetaProjectListView,
     ProjectClusterListView,
+    ProjectClusterTypeSectorListView,
     ProjectOdsOdpViewSet,
     ProjectRbmMeasureViewSet,
     ProjectStatisticsView,
@@ -429,6 +430,11 @@ urlpatterns = [
         "project-clusters/",
         ProjectClusterListView.as_view(),
         name="project-cluster-list",
+    ),
+    path(
+        "project-cluster-type-sector/",
+        ProjectClusterTypeSectorListView.as_view(),
+        name="project-cluster-type-sector-fields-list",
     ),
     path(
         "rbm-measures/",

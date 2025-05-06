@@ -16,7 +16,7 @@ from core.import_data.utils import (
     update_or_create_project,
 )
 from core.models.agency import Agency
-from core.models.project import ProjectStatus
+from core.models.project_metadata import ProjectStatus
 
 logger = logging.getLogger(__name__)
 

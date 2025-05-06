@@ -5,12 +5,12 @@ from django.db.models import Q
 
 
 from core.import_data.mapping_names_dict import MYASECTOR_CLUSTER_MAPPING
-from core.models.project import (
+from core.models.business_plan import BPActivity
+from core.models.project_metadata import (
     ProjectCluster,
     ProjectSector,
     ProjectType,
 )
-from core.models.business_plan import BPActivity
 
 logger = logging.getLogger(__name__)
 

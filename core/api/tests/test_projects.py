@@ -20,8 +20,12 @@ from core.api.tests.factories import (
     RbmMeasureFactory,
     UserFactory,
 )
-from core.models.project import MetaProject, Project, ProjectOdsOdp
-from core.models.project import ProjectFile
+from core.models.project import (
+    MetaProject,
+    Project,
+    ProjectFile,
+    ProjectOdsOdp,
+)
 from core.utils import get_project_sub_code
 
 pytestmark = pytest.mark.django_db
