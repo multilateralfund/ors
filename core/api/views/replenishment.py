@@ -52,7 +52,7 @@ from core.api.serializers import (
     ExternalIncomeAnnualSerializer,
     StatusOfTheFundFileSerializer,
 )
-from core.api.utils import workbook_response
+from core.api.utils import workbook_response, validate_files
 from core.api.views.utils import (
     TriennialStatusOfContributionsAggregator,
     AnnualStatusOfContributionsAggregator,
@@ -2242,6 +2242,8 @@ class ReplenishmentPaymentViewSet(
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         files = self._parse_payment_new_files(request)
+        if file_errors := validate_files([f["contents"] for f in files]):
+            return Response(file_errors, status=status.HTTP_400_BAD_REQUEST)
         # request.data is not mutable and we need to perform some boolean-string magic
         # for the is_ferm field, because we receive it from a forn.
         request_data = request.data.copy()
@@ -2287,6 +2289,8 @@ class ReplenishmentPaymentViewSet(
         request_data["is_ferm"] = is_ferm
 
         new_files = self._parse_payment_new_files(request)
+        if file_errors := validate_files([f["contents"] for f in new_files]):
+            return Response(file_errors, status=status.HTTP_400_BAD_REQUEST)
         files_to_delete = json.loads(request.data.get("deleted_files", "[]"))
 
         # First perform the update for the Payment fields
@@ -2372,13 +2376,16 @@ class StatusOfTheFundFileViewSet(
         if file is None:
             raise ValidationError({"file": "File contents must be uploaded."})
 
+        file_to_save = ContentFile(
+            b64decode(file.get("data")), name=file.get("filename")
+        )
+
+        if file_errors := validate_files([file_to_save]):
+            return Response(file_errors, status=status.HTTP_400_BAD_REQUEST)
+
         serializer = StatusOfTheFundFileSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         created_obj = serializer.save()
-
-        file_to_save = ContentFile(
-            b64decode(file.get("data")), name=created_obj.filename
-        )
 
         created_obj.file = file_to_save
         created_obj.save(update_fields=["file"])

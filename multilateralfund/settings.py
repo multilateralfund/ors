@@ -74,6 +74,7 @@ INSTALLED_APPS = [
     "dj_rest_auth",
     "django_filters",
     "corsheaders",
+    "django_clamd",
     "colorfield",
     "rest_framework.authtoken",
     "rest_framework_simplejwt",
@@ -323,6 +324,10 @@ REST_AUTH = {
 }
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = False
+
+CLAMD_ENABLED = env.bool("CLAMD_ENABLED", default=False)
+CLAMD_USE_TCP = env.bool("CLAMD_USE_TCP", default=True)
+CLAMD_TCP_ADDR = env.str("CLAMD_TCP_ADDR", default="localhost")
 
 CELERY_BROKER_URL = env("RABBITMQ_HOST", default="amqp://rabbitmq:5672")
 CELERY_RESULT_BACKEND = env("REDIS_HOST", default="redis://redis:6379")

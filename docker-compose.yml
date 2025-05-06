@@ -17,12 +17,15 @@ services:
       - .env
     environment:
       - DJANGO_MIGRATE=yes
+      - CLAMD_TCP_ADDR=clamav
+      - CLAMD_ENABLED=yes
     volumes:
       - app_data:/app/.fs
     expose:
       - 8000
     depends_on:
       - postgres
+      - clamav
 
   nextjs:
     image: ghcr.io/multilateralfund/multilateralfund-nextjs:${DOCKER_TAG:-latest}
@@ -62,10 +65,17 @@ services:
       - redis
       - rabbitmq
 
+  clamav:
+    image: clamav/clamav:latest
+    volumes:
+      - clam_db:/var/lib/clamav
+
 volumes:
   pg-data:
     driver: local
   app_data:
     driver: local
   nextjs_data:
+    driver: local
+  clam_db:
     driver: local

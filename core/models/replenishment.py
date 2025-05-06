@@ -11,6 +11,8 @@ from core.models.country import Country
 from core.models.meeting import Meeting
 from core.models.utils import get_protected_storage
 
+from django_clamd.validators import validate_file_infection
+
 US_SCALE_OF_ASSESSMENT = Decimal("22")
 
 # Scale of Assessment
@@ -55,6 +57,7 @@ class ScaleOfAssessmentVersion(models.Model):
         upload_to=upload_path,
         null=True,
         blank=True,
+        validators=[validate_file_infection],
     )
 
     @property
@@ -244,7 +247,11 @@ class InvoiceFile(models.Model):
         Invoice, on_delete=models.CASCADE, related_name="invoice_files"
     )
     filename = models.CharField(max_length=128)
-    file = models.FileField(storage=get_protected_storage, upload_to=upload_path)
+    file = models.FileField(
+        storage=get_protected_storage,
+        upload_to=upload_path,
+        validators=[validate_file_infection],
+    )
     file_type = models.CharField(
         max_length=16, choices=InvoiceFileType.choices, default=InvoiceFileType.INVOICE
     )
@@ -322,7 +329,11 @@ class PaymentFile(models.Model):
         Payment, on_delete=models.CASCADE, related_name="payment_files"
     )
     filename = models.CharField(max_length=128)
-    file = models.FileField(storage=get_protected_storage, upload_to=upload_path)
+    file = models.FileField(
+        storage=get_protected_storage,
+        upload_to=upload_path,
+        validators=[validate_file_infection],
+    )
     file_type = models.CharField(
         max_length=32,
         choices=PaymentFileType.choices,
@@ -626,7 +637,11 @@ class StatusOfTheFundFile(models.Model):
         auto_now_add=True, help_text="Date of file upload"
     )
     filename = models.CharField(max_length=128)
-    file = models.FileField(storage=get_protected_storage, upload_to=upload_path)
+    file = models.FileField(
+        storage=get_protected_storage,
+        upload_to=upload_path,
+        validators=[validate_file_infection],
+    )
 
     def file_link(self):
         if self.file:

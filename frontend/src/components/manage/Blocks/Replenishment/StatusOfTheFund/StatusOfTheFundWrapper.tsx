@@ -32,6 +32,7 @@ import EditInterestEarnedDialog from './editDialogs/EditInterestEarnedDialog'
 import EditMiscellaneousIncomeDialog from './editDialogs/EditMiscellaneousIncomeDialog'
 import EditSecretariatDialog from './editDialogs/EditSecretariatDialog'
 import UploadFilesDialog from './editDialogs/UploadFilesDialog'
+import handleFileValidationErrors from '@ors/components/manage/Utils/handleFileValidationErrors.tsx'
 
 function StatusOfTheFundWrapper() {
   const { invalidateDataFn, newData } = useGetDashboardData()
@@ -181,8 +182,13 @@ function StatusOfTheFundWrapper() {
         enqueueSnackbar('Data updated successfully', { variant: 'success' })
         handleEditCancel()
       })
-      .catch(() => {
-        enqueueSnackbar('Failed to update data', { variant: 'error' })
+      .catch(async (error: Response) => {
+        const errors = await error.json()
+        if (errors.validation_error) {
+          handleFileValidationErrors(errors)
+        } else {
+          enqueueSnackbar('Failed to update data', { variant: 'error' })
+        }
       })
   }
 
