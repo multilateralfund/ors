@@ -44,6 +44,7 @@ import { useEditLocalStorage } from './useLocalStorage'
 
 import { IoClose, IoExpand } from 'react-icons/io5'
 import { userCanSubmitReport, UserType } from '@ors/types/user_types'
+import parseComments from '@ors/components/manage/Blocks/CountryProgramme/parseComments.ts'
 
 function defaults(arr: Array<any>, value: any) {
   if (arr?.length > 0) return arr
@@ -248,6 +249,12 @@ function CPEdit() {
     section_d: Sections.section_d.getData(),
     section_e: Sections.section_e.getData(),
     section_f: Sections.section_f.getData(),
+    comments_section_a: parseComments('section_a', report),
+    comments_section_b: parseComments('section_b', report),
+    comments_section_c: parseComments('section_c', report),
+    comments_section_d: parseComments('section_d', report),
+    comments_section_e: parseComments('section_e', report),
+    comments_section_f: parseComments('section_f', report),
   })
   const { activeTab, setActiveTab } = useStore((state) => state.cp_current_tab)
   const [renderedSections, setRenderedSections] = useState<number[]>([])

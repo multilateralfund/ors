@@ -36,7 +36,7 @@ export type BPFiltersType = {
   range: string
 }
 
-type Report = {
+export type Report = {
   country?: Country
   emptyForm: SliceData<EmptyFormType, Record<string, any> | null>
   files: SliceData<File[]>
