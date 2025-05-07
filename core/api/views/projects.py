@@ -98,8 +98,31 @@ class ProjectTypeListView(generics.ListAPIView):
     """
 
     permission_classes = [IsSecretariat | IsAgency | IsCountryUser | IsViewer]
-    queryset = ProjectType.objects.order_by("sort_order").all()
     serializer_class = ProjectTypeSerializer
+
+    def get_queryset(self):
+        queryset = ProjectType.objects.order_by("sort_order").all()
+        cluster_id = self.request.query_params.get("cluster_id")
+        if cluster_id:
+            queryset = queryset.filter(
+                id__in=ProjectClusterTypeSectorFields.objects.filter(
+                    cluster_id=cluster_id
+                ).values_list("type_id", flat=True)
+            )
+        return queryset
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "cluster_id",
+                openapi.IN_QUERY,
+                description="Filter project types by cluster ID",
+                type=openapi.TYPE_INTEGER,
+            ),
+        ]
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
 
 class ProjectMeetingListView(generics.ListAPIView):

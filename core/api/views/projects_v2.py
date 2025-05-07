@@ -13,11 +13,11 @@ from rest_framework import parsers
 
 from core.api.filters.project import ProjectFilter
 from core.api.permissions import IsAgency, IsCountryUser, IsSecretariat, IsViewer
-from core.api.serializers.project import (
+from core.api.serializers.project_v2 import (
+    ProjectV2FileSerializer,
     ProjectDetailsV2Serializer,
     ProjectListV2Serializer,
     ProjectV2CreateSerializer,
-    ProjectV2FileSerializer,
 )
 from core.api.swagger import FileUploadAutoSchema
 from core.models.project import (
