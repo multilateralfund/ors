@@ -2,7 +2,7 @@ from rest_framework import mixins, viewsets, status
 from rest_framework.response import Response
 
 from core.api.permissions import IsAgency, IsSecretariat, IsViewer
-from core.api.serializers.project import (
+from core.api.serializers.project_metadata import (
     ProjectSectorSerializer,
     ProjectSubSectorSerializer,
 )

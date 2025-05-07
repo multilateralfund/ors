@@ -21,8 +21,6 @@ from core.api.filters.project import MetaProjectFilter, ProjectFilter
 from core.api.permissions import IsAgency, IsCountryUser, IsSecretariat, IsViewer
 from core.api.serializers.meeting import MeetingSerializer
 from core.api.serializers.project import (
-    ProjectClusterSerializer,
-    ProjectClusterTypeSectorFieldsSerializer,
     ProjectCommentCreateSerializer,
     ProjectExportSerializer,
     ProjectFundCreateSerializer,
@@ -30,13 +28,17 @@ from core.api.serializers.project import (
     ProjectRbmMeasureCreateSerializer,
     SubmissionAmountCreateSerializer,
 )
+from core.api.serializers.project_metadata import (
+    ProjectClusterSerializer,
+    ProjectClusterTypeSectorFieldsSerializer,
+    ProjectStatusSerializer,
+    ProjectSubmissionStatusSerializer,
+    ProjectTypeSerializer,
+)
 from core.api.serializers.project import (
     MetaProjectSerializer,
     ProjectDetailsSerializer,
     ProjectListSerializer,
-    ProjectStatusSerializer,
-    ProjectSubmissionStatusSerializer,
-    ProjectTypeSerializer,
 )
 from core.api.utils import workbook_pdf_response, workbook_response
 from core.models.meeting import Meeting
@@ -114,9 +116,10 @@ class ProjectClusterListView(generics.ListAPIView):
 
 class ProjectClusterTypeSectorListView(generics.ListAPIView):
     """
-        Get a tree structure of project cluster types and sectors
-        *and the list of required fields for each combination* *to be implemented*.
+    Get a tree structure of project cluster types and sectors
+    *and the list of required fields for each combination* *to be implemented*.
     """
+
     permission_classes = [IsSecretariat | IsAgency | IsCountryUser | IsViewer]
     serializer_class = ProjectClusterTypeSectorFieldsSerializer
 

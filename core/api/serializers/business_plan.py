@@ -6,10 +6,12 @@ from rest_framework import serializers
 from core.api.serializers import CountrySerializer
 from core.api.serializers.agency import AgencySerializer
 from core.api.serializers.base import Many2ManyListField
-from core.api.serializers.project import ProjectClusterSerializer
-from core.api.serializers.project import ProjectSectorSerializer
-from core.api.serializers.project import ProjectSubSectorSerializer
-from core.api.serializers.project import ProjectTypeSerializer
+from core.api.serializers.project_metadata import (
+    ProjectClusterSerializer,
+    ProjectSectorSerializer,
+    ProjectSubSectorSerializer,
+    ProjectTypeSerializer,
+)
 from core.models import (
     Agency,
     BPChemicalType,

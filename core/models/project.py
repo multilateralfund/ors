@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
 from core.models.agency import Agency
@@ -117,7 +117,11 @@ class Project(models.Model):
     )
     project_duration = models.IntegerField(null=True, blank=True)
     stage = models.IntegerField(null=True, blank=True)
-    tranche = models.TextField(null=True, blank=True)  # impact_tranche
+    tranche = models.IntegerField(
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+    )
     compliance = models.CharField(
         max_length=256, choices=ProjectCompliance.choices, null=True, blank=True
     )
@@ -198,6 +202,100 @@ class Project(models.Model):
     plus = models.BooleanField(default=False)
     source_file = models.CharField(max_length=255, null=True, blank=True)
 
+    # new fields
+    is_lvc = models.BooleanField(
+        help_text="The field to be derived but with the option change the value for the KIP (As an example).",
+        null=True,
+        blank=True,
+    )
+    individual_consideration = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="""
+            Blanket or Individual consideration.
+            This field is needed for analyses at the recommendation stage for QA unit.
+            And it is for MLFS users to select at the review stage.
+        """,
+    )
+    project_start_date = models.DateField(null=True, blank=True)
+    project_end_date = models.DateField(null=True, blank=True)
+    group = models.ForeignKey(
+        "core.Group",
+        on_delete=models.CASCADE,
+        related_name="projects",
+        null=True,
+        blank=True,
+        help_text="Annex group of substances",
+    )
+    destruction_tehnology = models.CharField(max_length=256, null=True, blank=True)
+    production_control_type = models.CharField(
+        max_length=256,
+        null=True,
+        blank=True,
+    )
+    is_sme = models.BooleanField(null=True, blank=True)
+
+    # new MYA fields
+    mya_start_date = models.DateField(
+        null=True, blank=True, help_text="Start date (MYA)"
+    )
+    mya_end_date = models.DateField(null=True, blank=True, help_text="End date (MYA)")
+    mya_project_funding = models.FloatField(
+        null=True, blank=True, help_text="Project Funding (MYA)"
+    )
+    mya_support_cost = models.FloatField(
+        null=True, blank=True, help_text="Support Cost (MYA)"
+    )
+    aggregated_consumption = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="The field is the aggregated consumption of all enterprises",
+    )
+    targets = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Targets for the MYA project. The field is the aggregated consumption of all enterprises",
+    )
+    starting_point = models.FloatField(null=True, blank=True)
+    baseline = models.FloatField(null=True, blank=True)
+    mya_phase_out_co2_eq_t = models.FloatField(
+        null=True, blank=True, help_text="Phase out (CO2-eq t) (MYA)"
+    )
+    mya_phase_out_odp_t = models.FloatField(
+        null=True, blank=True, help_text="Phase out (ODP t) (MYA)"
+    )
+    mya_phase_out_mt = models.FloatField(
+        null=True, blank=True, help_text="Phase out (Mt) (MYA)"
+    )
+    cost_effectiveness = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Cost effectiveness (US$/ Kg) (MYA)",
+    )
+    cost_effectiveness_co2 = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Cost effectiveness (US$/ CO2-ep) (MYA)",
+    )
+
+    # new approval fields
+    funding_window = models.CharField(
+        max_length=256,
+        null=True,
+        blank=True,
+        help_text="Funding window",
+    )
+    ad_hoc_pcr = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="Ad-hoc PCR",
+    )
+    pcr_waived = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="PCR waived",
+    )
+
     objects = ProjectManager()
 
     class Meta:
@@ -252,7 +350,9 @@ class ProjectOdsOdp(models.Model):
 
     ods_display_name = models.CharField(max_length=256, null=True, blank=True)
     odp = models.FloatField(null=True, blank=True)
-    ods_replacement = models.CharField(max_length=256, null=True, blank=True)
+    ods_replacement = models.CharField(
+        max_length=256, null=True, blank=True, help_text="Replacement technology/ies"
+    )
     co2_mt = models.FloatField(null=True, blank=True)
     ods_type = models.CharField(
         max_length=256,
