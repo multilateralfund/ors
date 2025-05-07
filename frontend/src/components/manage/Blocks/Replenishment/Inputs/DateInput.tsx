@@ -9,7 +9,8 @@ import { IDateInputProps } from './types'
 import { refocusMaskedInput } from './utils'
 
 export default function DateInput(props: IDateInputProps) {
-  const { id, className, name, onChange, type, value, ...rest } = props
+  const { id, className, name, onChange, type, value, formatValue, ...rest } =
+    props
 
   const [inputMode, setInputMode] = useState(false)
 
@@ -34,7 +35,11 @@ export default function DateInput(props: IDateInputProps) {
 
   const maskDate = useMemo(
     function () {
-      return value ? formatIso8601DateString(value) : ''
+      return value
+        ? formatValue
+          ? formatValue(value)
+          : formatIso8601DateString(value)
+        : ''
     },
     [value],
   )

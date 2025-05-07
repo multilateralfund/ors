@@ -21,10 +21,10 @@ export interface CrossCuttingFields {
   is_lvc: boolean | null
   title: string
   description: string
-  start_date: string
-  end_date: string
-  project_funding: string
-  project_support_cost: string
+  project_start_date: string
+  project_end_date: string
+  total_fund: string
+  support_cost_psc: string
   psc: string
   blanket_consideration: string
 }
@@ -37,10 +37,10 @@ const initialCrossCuttingFields = (): CrossCuttingFields => {
     is_lvc: null,
     title: '',
     description: '',
-    start_date: '',
-    end_date: '',
-    project_funding: '',
-    project_support_cost: '',
+    project_start_date: '',
+    project_end_date: '',
+    total_fund: '',
+    support_cost_psc: '',
     psc: '',
     blanket_consideration: '',
   }
@@ -72,8 +72,9 @@ const ProjectsCreate = () => {
     !(
       crossCuttingFields.project_type &&
       crossCuttingFields.sector &&
-      !isNil(crossCuttingFields.is_lvc) &&
-      crossCuttingFields.title
+      crossCuttingFields.title &&
+      crossCuttingFields.total_fund &&
+      crossCuttingFields.support_cost_psc
     )
 
   const steps = [

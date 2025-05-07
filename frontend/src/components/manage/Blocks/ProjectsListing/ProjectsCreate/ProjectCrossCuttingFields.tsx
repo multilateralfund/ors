@@ -4,6 +4,7 @@ import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
+import { DateInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { ProjectTypeType } from '@ors/types/api_project_types.ts'
 import { ProjectSectorType } from '@ors/types/api_project_sector.ts'
 import { ProjectSubSectorType } from '@ors/types/api_project_subsector.ts'
@@ -17,6 +18,7 @@ import { useStore } from '@ors/store'
 
 import { TextareaAutosize } from '@mui/material'
 import { find, isNil } from 'lodash'
+import dayjs from 'dayjs'
 
 export type LvcNonLvcType = {
   name: string
@@ -42,6 +44,10 @@ const ProjectCrossCuttingFields = ({
     label: '',
     className: 'BPListUpload mb-0 w-40 border-primary project-input',
     containerClassName: '!h-fit w-40',
+  }
+
+  const defaultPropsDateInput = {
+    className: 'BPListUpload !ml-0 h-10 w-40',
   }
 
   const handleChangeProjectType = (type: ProjectTypeType | null) => {
@@ -78,7 +84,7 @@ const ProjectCrossCuttingFields = ({
     }))
   }
 
-  const handleChangeTitle = (event: ChangeEvent<HTMLTextAreaElement>) => {
+  const handleChangeTitle = (event: ChangeEvent<HTMLInputElement>) => {
     setCrossCuttingFields((prevFilters) => ({
       ...prevFilters,
       title: event.target.value,
@@ -92,15 +98,13 @@ const ProjectCrossCuttingFields = ({
     }))
   }
 
-  const handleChangeProjectFunding = (
-    event: ChangeEvent<HTMLTextAreaElement>,
-  ) => {
+  const handleChangeProjectFunding = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value
 
     if (value.trim() !== '' && !isNaN(Number(value))) {
       setCrossCuttingFields((prevFilters: any) => ({
         ...prevFilters,
-        project_funding: Number(event.target.value),
+        total_fund: Number(event.target.value),
       }))
     } else {
       event.preventDefault()
@@ -108,14 +112,14 @@ const ProjectCrossCuttingFields = ({
   }
 
   const handleChangeProjectSupportCost = (
-    event: ChangeEvent<HTMLTextAreaElement>,
+    event: ChangeEvent<HTMLInputElement>,
   ) => {
     const value = event.target.value
 
     if (value.trim() !== '' && !isNaN(Number(value))) {
       setCrossCuttingFields((prevFilters: any) => ({
         ...prevFilters,
-        project_support_cost: Number(event.target.value),
+        support_cost_psc: Number(event.target.value),
       }))
     } else {
       event.preventDefault()
@@ -126,6 +130,22 @@ const ProjectCrossCuttingFields = ({
     setCrossCuttingFields((prevFilters) => ({
       ...prevFilters,
       blanket_consideration: consideration?.id ?? null,
+    }))
+  }
+
+  const handleChangeProjectStartDate = (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
+    setCrossCuttingFields((prevFilters) => ({
+      ...prevFilters,
+      project_start_date: event.target.value,
+    }))
+  }
+
+  const handleChangeProjectEndDate = (event: ChangeEvent<HTMLInputElement>) => {
+    setCrossCuttingFields((prevFilters) => ({
+      ...prevFilters,
+      project_end_date: event.target.value,
     }))
   }
 
@@ -213,37 +233,59 @@ const ProjectCrossCuttingFields = ({
             {...defaultPropsSimpleField}
           />
         </div>
-        <div>
-          <Label>Description</Label>
-          <TextareaAutosize
-            value={crossCuttingFields?.description}
-            onChange={handleChangeDescription}
-            placeholder="Type project description here..."
-            minRows={3}
-            tabIndex={-1}
-            className="min-h-[30px] w-full min-w-[350px] rounded-lg border bg-white p-2 pb-10 shadow-none"
-          />
-        </div>
+      </div>
+      <div>
+        <Label>Description</Label>
+        <TextareaAutosize
+          value={crossCuttingFields?.description}
+          onChange={handleChangeDescription}
+          placeholder="Type project description here..."
+          minRows={3}
+          tabIndex={-1}
+          className="min-h-[30px] w-[400px] min-w-[350px] rounded-lg border bg-white p-2 pb-10 shadow-none"
+        />
       </div>
       <div className="flex flex-wrap gap-x-20 gap-y-3">
         <div>
-          <Label>Project funding</Label>
+          <Label>{tableColumns.total_fund}</Label>
           <SimpleInput
-            id={crossCuttingFields?.project_funding}
-            value={crossCuttingFields?.project_funding}
+            id={crossCuttingFields?.total_fund}
+            value={crossCuttingFields?.total_fund}
             onChange={handleChangeProjectFunding}
             type="number"
             {...defaultPropsSimpleField}
           />
         </div>
         <div>
-          <Label>Project support cost</Label>
+          <Label>{tableColumns.support_cost_psc}</Label>
           <SimpleInput
-            id={crossCuttingFields?.project_support_cost}
-            value={crossCuttingFields?.project_support_cost}
+            id={crossCuttingFields?.support_cost_psc}
+            value={crossCuttingFields?.support_cost_psc}
             onChange={handleChangeProjectSupportCost}
             type="number"
             {...defaultPropsSimpleField}
+          />
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-x-20 gap-y-3">
+        <div>
+          <Label>{tableColumns.project_start_date}</Label>
+          <DateInput
+            id="project_start_date"
+            value={crossCuttingFields?.project_start_date}
+            onChange={handleChangeProjectStartDate}
+            formatValue={(value) => dayjs(value).format('MM/DD/YYYY')}
+            {...defaultPropsDateInput}
+          />
+        </div>
+        <div>
+          <Label>{tableColumns.project_end_date}</Label>
+          <DateInput
+            id="project_end_date"
+            value={crossCuttingFields?.project_end_date}
+            onChange={handleChangeProjectEndDate}
+            formatValue={(value) => dayjs(value).format('MM/DD/YYYY')}
+            {...defaultPropsDateInput}
           />
         </div>
       </div>

@@ -45,6 +45,7 @@ export interface IClearButtonProps {
 export interface IDateInputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   value: string
+  formatValue?: (event: string) => string
 }
 
 export interface INumberInputProps

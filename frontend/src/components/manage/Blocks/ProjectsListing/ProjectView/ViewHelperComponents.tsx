@@ -37,7 +37,7 @@ export const dateDetailItem = (fieldName: string, fieldValue: string) => (
   <span className="flex items-center gap-2">
     <span>{fieldName}</span>
     <h4 className="m-0">
-      {(fieldValue && dayjs(fieldValue).format('ll')) || '-'}
+      {(fieldValue && dayjs(fieldValue).format('MM/DD/YYYY')) || '-'}
     </h4>
   </span>
 )

@@ -14,9 +14,10 @@ export const tableColumns: { [key: string]: string } = {
   sector: 'Sector',
   subsector: 'Sub-Sector',
   is_lvc: 'LVC/non-LVC',
-  start_date: 'Project Start Date',
-  end_date: 'Project End Date',
-  total_fund: 'Total funding',
+  project_start_date: 'Project start date',
+  project_end_date: 'Project end date',
+  total_fund: 'Project funding',
+  support_cost_psc: 'Project support cost',
 }
 
 export const blanketOrIndConsiderationOpts = [

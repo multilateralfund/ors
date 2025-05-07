@@ -1,5 +1,6 @@
 import Table from '@ors/components/manage/Form/Table'
 import { numberDetailItem } from './ViewHelperComponents'
+import { tableColumns } from '../constants'
 
 import { Divider } from '@mui/material'
 
@@ -9,8 +10,8 @@ const ProjectFinancial = ({ project }: any) => {
   return (
     <div className="flex w-full flex-col gap-4">
       <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
-        {numberDetailItem('Project funding', data.project_funding)}
-        {numberDetailItem('Project support cost', data.project_support_cost)}
+        {numberDetailItem(tableColumns.total_fund, data.total_fund)}
+        {numberDetailItem(tableColumns.support_cost_psc, data.support_cost_psc)}
       </div>
       <Divider />
       <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
