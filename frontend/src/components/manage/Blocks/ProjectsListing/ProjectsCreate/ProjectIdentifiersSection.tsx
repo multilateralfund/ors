@@ -15,7 +15,7 @@ import { useStore } from '@ors/store'
 
 import { Button, Checkbox, FormControlLabel } from '@mui/material'
 
-const ProjectOverviewSection = ({
+const ProjectIdentifiersSection = ({
   projIdentifiers,
   setProjIdentifiers,
   isNextBtnEnabled,
@@ -77,7 +77,7 @@ const ProjectOverviewSection = ({
     <div className="flex flex-col gap-y-2">
       <div className="flex flex-wrap gap-x-20 gap-y-3">
         <div>
-          <Label isRequired>{tableColumns.country}</Label>
+          <Label isRequired={false}>{tableColumns.country}</Label>
           <Field
             widget="autocomplete"
             options={commonSlice.countries.data}
@@ -91,7 +91,7 @@ const ProjectOverviewSection = ({
           />
         </div>
         <div>
-          <Label isRequired>{tableColumns.agency}</Label>
+          <Label isRequired={false}>{tableColumns.agency}</Label>
           <Field
             widget="autocomplete"
             options={commonSlice.agencies.data}
@@ -124,7 +124,7 @@ const ProjectOverviewSection = ({
       />
       {!projIdentifiers.is_lead_agency && (
         <>
-          <Label isRequired>Lead agency</Label>
+          <Label isRequired={false}>Lead agency</Label>
           <Field
             widget="autocomplete"
             options={commonSlice.agencies.data}
@@ -140,7 +140,7 @@ const ProjectOverviewSection = ({
       )}
       <div className="flex flex-wrap gap-x-20 gap-y-3">
         <div>
-          <Label isRequired>{tableColumns.cluster}</Label>
+          <Label isRequired={false}>{tableColumns.cluster}</Label>
           <Field
             widget="autocomplete"
             options={projectSlice.clusters.data}
@@ -154,7 +154,7 @@ const ProjectOverviewSection = ({
           />
         </div>
         <div className="w-40">
-          <Label isRequired>Meeting number</Label>
+          <Label isRequired={false}>Meeting number</Label>
           <PopoverInput
             label={getMeetingNr(projIdentifiers?.meeting)}
             options={getMeetingOptions()}
@@ -193,4 +193,4 @@ const ProjectOverviewSection = ({
   )
 }
 
-export default ProjectOverviewSection
+export default ProjectIdentifiersSection

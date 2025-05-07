@@ -12,5 +12,9 @@ export const tableColumns: { [key: string]: string } = {
   title: 'Title',
   type: 'Type',
   sector: 'Sector',
+  subsector: 'Sub-Sector',
+  lvc_non_lvc: 'LVC/non-LVC',
+  start_date: 'Project Start Date',
+  end_date: 'Project End Date',
   total_fund: 'Total funding',
 }

@@ -1,5 +1,5 @@
 import { ChangeEvent } from 'react'
-
+import type { CrossCuttingFields } from '@ors/components/manage/Blocks/ProjectsListing/ProjectsCreate/ProjectsCreate.tsx'
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
@@ -9,11 +9,19 @@ import { tableColumns } from '../constants'
 import { useStore } from '@ors/store'
 
 import { TextareaAutosize } from '@mui/material'
+import { ProjectTypeType } from '@ors/types/api_project_types.ts'
+import { ProjectSectorType } from '@ors/types/api_project_sector.ts'
+import { ProjectSubSectorType } from '@ors/types/api_project_subsector.ts'
 
 const ProjectCrossCuttingFields = ({
   crossCuttingFields,
   setCrossCuttingFields,
-}: any) => {
+}: {
+  crossCuttingFields: CrossCuttingFields
+  setCrossCuttingFields: React.Dispatch<
+    React.SetStateAction<CrossCuttingFields>
+  >
+}) => {
   const projectSlice = useStore((state) => state.projects)
 
   const blanketOrIndConsiderationOpts = [
@@ -30,29 +38,41 @@ const ProjectCrossCuttingFields = ({
     containerClassName: '!h-fit w-40',
   }
 
-  const handleChangeSector = (sector: any) => {
-    setCrossCuttingFields((prevFilters: any) => ({
+  const handleChangeSector = (sector: ProjectSectorType | null) => {
+    setCrossCuttingFields((prevFilters) => ({
       ...prevFilters,
-      sector: sector?.id ?? null,
+      sector: sector?.id.toString() ?? '',
+    }))
+  }
+  const handleChangeSubSector = (
+    subsectors: (ProjectSubSectorType | string)[] | null,
+  ) => {
+    setCrossCuttingFields((prevFilters) => ({
+      ...prevFilters,
+      subsector: subsectors
+        ? subsectors.map((subsector) =>
+            typeof subsector === 'string' ? subsector : subsector.id.toString(),
+          )
+        : [],
     }))
   }
 
-  const handleChangeProjectType = (type: any) => {
-    setCrossCuttingFields((prevFilters: any) => ({
+  const handleChangeProjectType = (type: ProjectTypeType | null) => {
+    setCrossCuttingFields((prevFilters) => ({
       ...prevFilters,
-      project_type: type?.id ?? null,
+      project_type: type?.code ?? '',
     }))
   }
 
   const handleChangeTitle = (event: ChangeEvent<HTMLTextAreaElement>) => {
-    setCrossCuttingFields((prevFilters: any) => ({
+    setCrossCuttingFields((prevFilters) => ({
       ...prevFilters,
       title: event.target.value,
     }))
   }
 
   const handleChangeDescription = (event: ChangeEvent<HTMLTextAreaElement>) => {
-    setCrossCuttingFields((prevFilters: any) => ({
+    setCrossCuttingFields((prevFilters) => ({
       ...prevFilters,
       description: event.target.value,
     }))
@@ -99,35 +119,59 @@ const ProjectCrossCuttingFields = ({
     <div className="flex flex-col gap-y-2">
       <div className="flex flex-wrap gap-x-20 gap-y-3">
         <div>
-          <Label>{tableColumns.sector}</Label>
-          <Field
-            widget="autocomplete"
-            options={projectSlice.sectors.data}
-            value={crossCuttingFields?.sector}
-            onChange={(_: any, value: any) => handleChangeSector(value)}
-            getOptionLabel={(option: any) =>
-              getOptionLabel(projectSlice.sectors.data, option)
-            }
-            {...defaultProps}
-          />
-        </div>
-        <div>
-          <Label isRequired>{tableColumns.type}</Label>
-          <Field
+          <Label isRequired={false}>{tableColumns.type}</Label>
+          <Field<ProjectTypeType>
             widget="autocomplete"
             options={projectSlice.types.data}
             value={crossCuttingFields?.project_type}
-            onChange={(_: any, value: any) => handleChangeProjectType(value)}
+            onChange={(_: React.SyntheticEvent, value) =>
+              handleChangeProjectType(value as ProjectTypeType | null)
+            }
             getOptionLabel={(option: any) =>
               getOptionLabel(projectSlice.types.data, option)
             }
             {...defaultProps}
           />
         </div>
+        <div>
+          <Label>{tableColumns.sector}</Label>
+          <Field<ProjectSectorType>
+            widget="autocomplete"
+            options={projectSlice.sectors.data}
+            value={crossCuttingFields?.sector}
+            onChange={(_: any, value) =>
+              handleChangeSector(value as ProjectSectorType | null)
+            }
+            getOptionLabel={(option) =>
+              getOptionLabel(projectSlice.sectors.data, option)
+            }
+            {...defaultProps}
+          />
+        </div>
+        <div>
+          <Label>Sub-Sector</Label>
+          <Field<ProjectSubSectorType>
+            widget="autocomplete"
+            multiple={true}
+            options={projectSlice.subsectors.data}
+            value={crossCuttingFields?.subsector}
+            onChange={(_: any, value) =>
+              handleChangeSubSector(
+                value as (ProjectSubSectorType | string)[] | null,
+              )
+            }
+            getOptionLabel={(option) => {
+              const value =
+                typeof option === 'string' ? parseInt(option, 10) : option
+              return getOptionLabel(projectSlice.subsectors.data, value)
+            }}
+            {...defaultProps}
+          />
+        </div>
       </div>
       <div className="flex flex-wrap gap-x-20 gap-y-3">
         <div>
-          <Label isRequired>{tableColumns.title}</Label>
+          <Label isRequired={false}>{tableColumns.title}</Label>
           <SimpleInput
             id={crossCuttingFields?.title}
             value={crossCuttingFields?.title}

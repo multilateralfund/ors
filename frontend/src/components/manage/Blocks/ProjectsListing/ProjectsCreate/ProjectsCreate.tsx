@@ -5,7 +5,7 @@ import { useState } from 'react'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Link from '@ors/components/ui/Link/Link'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
-import ProjectOverviewSection from './ProjectOverviewSection'
+import ProjectIdentifiersSection from './ProjectIdentifiersSection.tsx'
 import ProjectBPLinking from './ProjectBPLinking'
 import ProjectCrossCuttingFields from './ProjectCrossCuttingFields'
 import { api } from '@ors/helpers'
@@ -13,6 +13,38 @@ import { api } from '@ors/helpers'
 import { Alert, Button, CircularProgress, Tabs, Tab } from '@mui/material'
 import { isNil, omit } from 'lodash'
 import cx from 'classnames'
+
+export interface CrossCuttingFields {
+  project_type: string
+  sector: string
+  subsector: string[]
+  lvc_non_lvc: string
+  title: string
+  description: string
+  start_date: string
+  end_date: string
+  project_funding: string
+  project_support_cost: string
+  psc: string
+  blanket_consideration: string
+}
+
+const initialCrossCuttingFields = (): CrossCuttingFields => {
+  return {
+    project_type: '',
+    sector: '',
+    subsector: [],
+    lvc_non_lvc: '',
+    title: '',
+    description: '',
+    start_date: '',
+    end_date: '',
+    project_funding: '',
+    project_support_cost: '',
+    psc: '',
+    blanket_consideration: '',
+  }
+}
 
 const ProjectsCreate = () => {
   const [currentStep, setCurrentStep] = useState<number>(0)
@@ -22,7 +54,8 @@ const ProjectsCreate = () => {
   })
   const [isLinkedToBP, setIsLinkedToBP] = useState<boolean>(false)
   const [bpId, setBpId] = useState<number>()
-  const [crossCuttingFields, setCrossCuttingFields] = useState<any>({})
+  const [crossCuttingFields, setCrossCuttingFields] =
+    useState<CrossCuttingFields>(initialCrossCuttingFields)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isSubmitSuccessful, setIsSubmitSuccessful] = useState<boolean>()
 
@@ -41,11 +74,11 @@ const ProjectsCreate = () => {
   const steps = [
     {
       step: 0,
-      id: 'project-overview',
-      ariaControls: 'project-overview',
-      label: 'Overview',
+      id: 'project-identifiers',
+      ariaControls: 'project-identifiers',
+      label: 'Identifiers',
       component: (
-        <ProjectOverviewSection
+        <ProjectIdentifiersSection
           {...{
             setCurrentStep,
             setCurrentTab,
@@ -62,7 +95,7 @@ const ProjectsCreate = () => {
       step: 1,
       id: 'project-bp-link-section',
       ariaControls: 'project-bp-link-section',
-      label: 'Link to BP',
+      label: 'Business Plan',
       disabled: areNextSectionsDisabled,
       component: (
         <ProjectBPLinking
@@ -130,7 +163,7 @@ const ProjectsCreate = () => {
     <>
       <HeaderTitle>
         <div className="align-center flex justify-between">
-          <PageHeading>New submission</PageHeading>
+          <PageHeading>New project submission</PageHeading>
           <div className="flex flex-wrap items-center gap-2.5">
             <Button
               className={cx('ml-auto mr-0 h-10 px-3 py-1', {
