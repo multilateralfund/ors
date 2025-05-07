@@ -114,9 +114,10 @@ class ProjectClusterListView(generics.ListAPIView):
 
 class ProjectClusterTypeSectorListView(generics.ListAPIView):
     """
-        Get a tree structure of project cluster types and sectors
-        *and the list of required fields for each combination* *to be implemented*.
+    Get a tree structure of project cluster types and sectors
+    *and the list of required fields for each combination* *to be implemented*.
     """
+
     permission_classes = [IsSecretariat | IsAgency | IsCountryUser | IsViewer]
     serializer_class = ProjectClusterTypeSectorFieldsSerializer
 
