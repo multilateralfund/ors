@@ -18,6 +18,7 @@ from core.api.tests.factories import (
     AnnualContributionStatusFactory,
     DisputedContributionsFactory,
     FermGainLossFactory,
+    BilateralAssistanceFactory,
     InvoiceFactory,
     PaymentFactory,
     TriennialContributionStatusFactory,
@@ -33,6 +34,7 @@ from core.models import (
     Replenishment,
     Country,
     DisputedContribution,
+    BilateralAssistance,
     Invoice,
     Payment,
 )
@@ -283,6 +285,15 @@ class TestStatusOfContributions:
         FermGainLossFactory.create(country=country_1)
         FermGainLossFactory.create(country=country_2)
 
+        # for contribution_1
+        BilateralAssistanceFactory.create(
+            country=country_1, year=year_1, amount=contribution_1.bilateral_assistance
+        )
+        # for contribution_3
+        BilateralAssistanceFactory.create(
+            country=country_2, year=year_1, amount=contribution_3.bilateral_assistance
+        )
+
         self.client.force_authenticate(user=user)
 
         response = self.client.get(
@@ -444,6 +455,15 @@ class TestStatusOfContributions:
         disputed_1 = DisputedContributionsFactory.create(year=year_1, country=None)
         DisputedContributionsFactory.create(year=year_3, country=None)
 
+        # for contribution_1
+        BilateralAssistanceFactory.create(
+            country=country_1, year=year_1, amount=contribution_1.bilateral_assistance
+        )
+        # for contribution_3
+        BilateralAssistanceFactory.create(
+            country=country_2, year=year_1, amount=contribution_3.bilateral_assistance
+        )
+
         self.client.force_authenticate(user=user)
 
         response = self.client.get(
@@ -599,6 +619,23 @@ class TestStatusOfContributions:
 
         ferm_gain_loss_1 = FermGainLossFactory.create(country=country_1)
         ferm_gain_loss_2 = FermGainLossFactory.create(country=country_2)
+
+        # for contribution_1
+        BilateralAssistanceFactory.create(
+            country=country_1, year=year_1, amount=contribution_1.bilateral_assistance
+        )
+        # for contribution_2
+        BilateralAssistanceFactory.create(
+            country=country_1, year=year_3, amount=contribution_2.bilateral_assistance
+        )
+        # for contribution_3
+        BilateralAssistanceFactory.create(
+            country=country_2, year=year_1, amount=contribution_3.bilateral_assistance
+        )
+        # for contribution_4
+        BilateralAssistanceFactory.create(
+            country=country_2, year=year_3, amount=contribution_4.bilateral_assistance
+        )
 
         self.client.force_authenticate(user=user)
 
@@ -963,7 +1000,27 @@ class TestDisputedContributions(BaseTest):
 class TestBilateralAssistance(BaseTest):
     url = reverse("replenishment-bilateral-assistance-list")
 
-    def test_bilateral_assistance(self, treasurer_user):
+    def test_bilateral_assistance_list(self, treasurer_user):
+        country = CountryFactory.create(name="Country 1", iso3="XYZ")
+
+        meeting = MeetingFactory.create(number=3, date="2020-03-14")
+
+        BilateralAssistanceFactory.create(
+            country=country,
+            year=2020,
+            amount=Decimal("100"),
+            meeting=meeting,
+        )
+
+        self.client.force_authenticate(user=treasurer_user)
+        response = self.client.get(reverse("replenishment-bilateral-assistance-list"))
+        assert response.status_code == 200
+        assert len(response.data) == 1
+        assert response.data[0]["country"]["id"] == country.id
+        assert response.data[0]["meeting_id"] == meeting.id
+        assert response.data[0]["amount"] == Decimal("100")
+
+    def test_bilateral_assistance_create(self, treasurer_user):
         country = CountryFactory.create(name="Country 1", iso3="XYZ")
 
         meeting = MeetingFactory.create(number=3, date="2020-03-14")
@@ -1000,7 +1057,7 @@ class TestBilateralAssistance(BaseTest):
             reverse("replenishment-bilateral-assistance-list"),
             data=post_data,
         )
-        assert response.status_code == 200
+        assert response.status_code == 201
 
         contribution_annual.refresh_from_db()
         assert (
@@ -1014,6 +1071,12 @@ class TestBilateralAssistance(BaseTest):
             == initial_bilateral_assistance + amount
         )
         assert contribution_triennial.bilateral_assistance_meeting_id == meeting.id
+
+        assistance = BilateralAssistance.objects.filter(
+            country_id=country.id, year=year_1, meeting_id=meeting.id
+        ).first()
+        assert assistance is not None
+        assert assistance.amount == amount
 
 
 class TestReplenishmentDashboard(BaseTest):
@@ -1053,6 +1116,31 @@ class TestReplenishmentDashboard(BaseTest):
             triennial_start_year=self.year_1,
             interest_earned=decimal.Decimal("100"),
             miscellaneous_income=decimal.Decimal("200"),
+        )
+
+        # for contribution_1
+        BilateralAssistanceFactory.create(
+            country=country_1,
+            year=self.year_1,
+            amount=contribution_1.bilateral_assistance,
+        )
+        # for contribution_2
+        BilateralAssistanceFactory.create(
+            country=country_1,
+            year=self.year_3,
+            amount=contribution_2.bilateral_assistance,
+        )
+        # for contribution_3
+        BilateralAssistanceFactory.create(
+            country=country_2,
+            year=self.year_1,
+            amount=contribution_3.bilateral_assistance,
+        )
+        # for contribution_4
+        BilateralAssistanceFactory.create(
+            country=country_2,
+            year=self.year_3,
+            amount=contribution_4.bilateral_assistance,
         )
 
         external_allocation = ExternalAllocation.objects.create(
@@ -1316,6 +1404,31 @@ class TestReplenishmentDashboardStatistics(BaseTest):
             triennial_start_year=self.year_3,
             interest_earned=decimal.Decimal("300"),
             miscellaneous_income=decimal.Decimal("400"),
+        )
+
+        # for contribution_1
+        BilateralAssistanceFactory.create(
+            country=country_1,
+            year=self.year_1,
+            amount=contribution_1.bilateral_assistance,
+        )
+        # for contribution_2
+        BilateralAssistanceFactory.create(
+            country=country_1,
+            year=self.year_3,
+            amount=contribution_2.bilateral_assistance,
+        )
+        # for contribution_3
+        BilateralAssistanceFactory.create(
+            country=country_2,
+            year=self.year_1,
+            amount=contribution_3.bilateral_assistance,
+        )
+        # for contribution_4
+        BilateralAssistanceFactory.create(
+            country=country_2,
+            year=self.year_3,
+            amount=contribution_4.bilateral_assistance,
         )
 
         self.client.force_authenticate(user=user)

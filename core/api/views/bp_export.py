@@ -25,11 +25,11 @@ from core.api.views.utils import (
 from core.models.agency import Agency
 from core.models.business_plan import BPActivity, BPChemicalType
 from core.models.country import Country
-from core.models.project import (
+from core.models.project_metadata import (
     ProjectCluster,
-    ProjectType,
     ProjectSector,
     ProjectSubSector,
+    ProjectType,
 )
 
 

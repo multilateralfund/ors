@@ -2,11 +2,11 @@ from rest_framework import mixins, viewsets, status
 from rest_framework.response import Response
 
 from core.api.permissions import IsAgency, IsSecretariat, IsViewer
-from core.api.serializers.project import (
+from core.api.serializers.project_metadata import (
     ProjectSectorSerializer,
     ProjectSubSectorSerializer,
 )
-from core.models.project import ProjectSector, ProjectSubSector
+from core.models.project_metadata import ProjectSector, ProjectSubSector
 
 # please make sure to use only this endpoint for sector and subsector list
 # we need to make sure that we filter out the custom sectors and subsectors

@@ -7,6 +7,8 @@ from core.models.meeting import Meeting
 from core.models.project import (
     MetaProject,
     Project,
+)
+from core.models.project_metadata import (
     ProjectCluster,
     ProjectSector,
     ProjectStatus,

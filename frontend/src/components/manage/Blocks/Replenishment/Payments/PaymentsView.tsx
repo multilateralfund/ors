@@ -43,6 +43,7 @@ import {
 } from './types'
 
 import { IoSearchSharp } from 'react-icons/io5'
+import handleFileValidationErrors from '@ors/components/manage/Utils/handleFileValidationErrors.tsx'
 
 const COLUMNS: PaymentColumn[] = [
   { field: 'invoice_number', label: 'Invoice Number' },
@@ -191,6 +192,8 @@ async function handleErrors(error: any) {
         'Please make sure all the inputs are correct.',
       { variant: 'error' },
     )
+  } else if (error?.message?.validation_error) {
+    handleFileValidationErrors(error.message)
   } else {
     enqueueSnackbar(<>An error occurred. Please try again.</>, {
       variant: 'error',
@@ -230,15 +233,11 @@ function PaymentsView() {
       const entry = result[i]
       entry.date = formatDateForDisplay(entry.date)
 
-      const isNegative = entry.ferm_gain_or_loss.toString()[0] === "-"
+      const isNegative = entry.ferm_gain_or_loss.toString()[0] === '-'
       const value = isNegative
         ? entry.ferm_gain_or_loss.toString().substring(1)
         : entry.ferm_gain_or_loss
-      entry.ferm_gain_or_loss = (
-        <span>
-          {isNegative ? `(${value})` : value}
-        </span>
-      )
+      entry.ferm_gain_or_loss = <span>{isNegative ? `(${value})` : value}</span>
     }
     return result
   }, [loaded, memoResults])
@@ -379,6 +378,7 @@ function PaymentsView() {
   function handleYearFilter(evt: ChangeEvent<HTMLSelectElement>) {
     setParams({ year: evt.target.value })
   }
+
   const yearOptions = scAnnualOptions(ctx.periods)
 
   const ViewPicker = () => {

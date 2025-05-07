@@ -2,13 +2,18 @@ import shutil
 import subprocess
 import tempfile
 from pathlib import Path
-from openpyxl.worksheet.page import PageMargins
+from typing import TypedDict
 
+import django.core.exceptions
+from django.core.files.base import ContentFile
 from django.contrib.auth import get_user_model
 from django.db.models import Exists
 from django.db.models import OuterRef
 from django.http import FileResponse
 from django_filters import rest_framework as filters
+
+from django_clamd.validators import validate_file_infection
+from openpyxl.worksheet.page import PageMargins
 
 User = get_user_model()
 
@@ -114,3 +119,33 @@ def workbook_pdf_response(name, wb, orientation=None):
             as_attachment=True,
             filename=name + ".pdf",
         )
+
+
+FileValidationError = TypedDict("FileValidationError", {"name": str, "error": str})
+FilesValidatorError = TypedDict(
+    "FilesValidatorError", {"validation_error": str, "files": list[FileValidationError]}
+)
+
+
+def validate_file(obj: ContentFile) -> FileValidationError | None:
+    result = None
+
+    try:
+        validate_file_infection(obj)
+    except django.core.exceptions.ValidationError as err:
+        result = {
+            "name": obj.name,
+            "error": err.message,
+        }
+
+    return result
+
+
+def validate_files(files: list[ContentFile]) -> FilesValidatorError | None:
+    errors = []
+
+    for entry in files:
+        validation_result = validate_file(entry)
+        if validation_result:
+            errors.append(validation_result)
+    return {"validation_error": "Virus found!", "files": errors} if errors else None

@@ -27,6 +27,8 @@ from core.models.country_programme_archive import CPReportArchive
 from core.models.meeting import Meeting
 from core.models.project import (
     Project,
+)
+from core.models.project_metadata import (
     ProjectCluster,
     ProjectSector,
     ProjectStatus,

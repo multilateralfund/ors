@@ -11,6 +11,8 @@ from core.models.country import Country
 from core.models.meeting import Meeting
 from core.models.utils import get_protected_storage
 
+from django_clamd.validators import validate_file_infection
+
 US_SCALE_OF_ASSESSMENT = Decimal("22")
 
 # Scale of Assessment
@@ -55,6 +57,7 @@ class ScaleOfAssessmentVersion(models.Model):
         upload_to=upload_path,
         null=True,
         blank=True,
+        validators=[validate_file_infection],
     )
 
     @property
@@ -244,7 +247,11 @@ class InvoiceFile(models.Model):
         Invoice, on_delete=models.CASCADE, related_name="invoice_files"
     )
     filename = models.CharField(max_length=128)
-    file = models.FileField(storage=get_protected_storage, upload_to=upload_path)
+    file = models.FileField(
+        storage=get_protected_storage,
+        upload_to=upload_path,
+        validators=[validate_file_infection],
+    )
     file_type = models.CharField(
         max_length=16, choices=InvoiceFileType.choices, default=InvoiceFileType.INVOICE
     )
@@ -322,7 +329,11 @@ class PaymentFile(models.Model):
         Payment, on_delete=models.CASCADE, related_name="payment_files"
     )
     filename = models.CharField(max_length=128)
-    file = models.FileField(storage=get_protected_storage, upload_to=upload_path)
+    file = models.FileField(
+        storage=get_protected_storage,
+        upload_to=upload_path,
+        validators=[validate_file_infection],
+    )
     file_type = models.CharField(
         max_length=32,
         choices=PaymentFileType.choices,
@@ -557,9 +568,20 @@ class ExternalIncomeAnnual(models.Model):
         )
 
 
+class ExternalAllocationManager(models.Manager):
+    def get_queryset(self):
+        # We almost never use the data marked as is_dashboard_only in the KMS,
+        # so we should ignore it by default.
+        return super().get_queryset().filter(is_dashboard_only=False)
+
+
 class ExternalAllocation(models.Model):
     # This one will be set to True only for initially-imported data!
     is_legacy = models.BooleanField(default=False)
+
+    # There is a need for some data to be shown in the Ekimetrics dashboards, but not
+    # in the KMS (dashboard, excel export etc).
+    is_dashboard_only = models.BooleanField(default=False)
 
     undp = models.DecimalField(max_digits=30, decimal_places=15, default=Decimal(0))
     unep = models.DecimalField(max_digits=30, decimal_places=15, default=Decimal(0))
@@ -593,6 +615,28 @@ class ExternalAllocation(models.Model):
 
     comment = models.TextField(blank=True, default="")
 
+    objects = ExternalAllocationManager()
+    all_objects = models.Manager()
+
+
+class BilateralAssistance(models.Model):
+    country = models.ForeignKey(
+        Country, on_delete=models.PROTECT, related_name="bilateral_assistances"
+    )
+    year = models.IntegerField()
+    amount = models.DecimalField(max_digits=30, decimal_places=15)
+    meeting = models.ForeignKey(Meeting, null=True, on_delete=models.PROTECT)
+    decision_number = models.CharField(max_length=32, blank=True)
+    comment = models.TextField(blank=True)
+
+    class Meta:
+        indexes = [models.Index(fields=["country", "year"])]
+
+    def __str__(self):
+        return (
+            f"Bilateral Assistance - {self.country.name} - {self.year} - {self.amount}"
+        )
+
 
 class StatusOfTheFundFile(models.Model):
     """
@@ -612,7 +656,11 @@ class StatusOfTheFundFile(models.Model):
         auto_now_add=True, help_text="Date of file upload"
     )
     filename = models.CharField(max_length=128)
-    file = models.FileField(storage=get_protected_storage, upload_to=upload_path)
+    file = models.FileField(
+        storage=get_protected_storage,
+        upload_to=upload_path,
+        validators=[validate_file_infection],
+    )
 
     def file_link(self):
         if self.file:

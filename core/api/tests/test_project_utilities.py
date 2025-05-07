@@ -3,6 +3,8 @@ from django.urls import reverse
 from core.api.tests.base import BaseTest
 
 from core.api.tests.factories import (
+    ProjectClusterFactory,
+    ProjectClusterTypeSectorFieldsFactory,
     MeetingFactory,
     ProjectFactory,
     ProjectSectorFactory,
@@ -10,7 +12,7 @@ from core.api.tests.factories import (
     ProjectTypeFactory,
     RbmMeasureFactory,
 )
-from core.models.project import ProjectSector, ProjectSubSector
+from core.models.project_metadata import ProjectSector, ProjectSubSector
 
 
 pytestmark = pytest.mark.django_db
@@ -304,6 +306,86 @@ class TestProjectCluster(BaseTest):
         assert response.data[0]["name"] == project_cluster_kpp.name
         assert response.data[1]["name"] == project_cluster_kip.name
         assert response.data[1]["code"] == project_cluster_kip.code
+
+
+@pytest.fixture(name="_setup_cluster_type_sector_fields")
+def setup_cluster_type_sector_fields():
+    cluster1 = ProjectClusterFactory.create(name="Cluster1", code="CL1", sort_order=1)
+    cluster2 = ProjectClusterFactory.create(name="Cluster2", code="CL2", sort_order=2)
+    project_type1 = ProjectTypeFactory.create(name="Type1", code="TYP1")
+    project_type2 = ProjectTypeFactory.create(name="Type2", code="TYP2")
+    sector1 = ProjectSectorFactory.create(name="Sector1", code="SEC1")
+    sector2 = ProjectSectorFactory.create(name="Sector2", code="SEC2")
+
+    ProjectClusterTypeSectorFieldsFactory.create(
+        cluster=cluster1,
+        type=project_type1,
+        sector=sector1,
+    )
+    ProjectClusterTypeSectorFieldsFactory.create(
+        cluster=cluster1,
+        type=project_type1,
+        sector=sector2,
+    )
+    ProjectClusterTypeSectorFieldsFactory.create(
+        cluster=cluster1,
+        type=project_type2,
+        sector=sector2,
+    )
+    ProjectClusterTypeSectorFieldsFactory.create(
+        cluster=cluster2,
+        type=project_type1,
+        sector=sector1,
+    )
+
+    return cluster1, cluster2, project_type1, project_type2, sector1, sector2
+
+
+class TestProjectClusterTypeSectorFields(BaseTest):
+    url = reverse("project-cluster-type-sector-fields-list")
+
+    def test_project_cluster_type_sector_fields_list(
+        self, viewer_user, _setup_cluster_type_sector_fields
+    ):
+        cluster1, cluster2, project_type1, project_type2, sector1, sector2 = (
+            _setup_cluster_type_sector_fields
+        )
+        self.client.force_authenticate(user=viewer_user)
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.data) == 2
+        assert response.data[0]["name"] == cluster1.name
+        assert response.data[0]["code"] == cluster1.code
+        assert response.data[0]["id"] == cluster1.id
+        assert response.data[0]["types"][0]["name"] == project_type1.name
+        assert response.data[0]["types"][0]["code"] == project_type1.code
+        assert response.data[0]["types"][0]["id"] == project_type1.id
+        assert len(response.data[0]["types"][0]["sectors"]) == 2
+        assert response.data[0]["types"][0]["sectors"][0]["name"] == sector1.name
+        assert response.data[0]["types"][0]["sectors"][0]["code"] == sector1.code
+        assert response.data[0]["types"][0]["sectors"][0]["id"] == sector1.id
+        assert response.data[0]["types"][0]["sectors"][1]["name"] == sector2.name
+        assert response.data[0]["types"][0]["sectors"][1]["code"] == sector2.code
+        assert response.data[0]["types"][0]["sectors"][1]["id"] == sector2.id
+        assert response.data[0]["types"][1]["name"] == project_type2.name
+        assert response.data[0]["types"][1]["code"] == project_type2.code
+        assert response.data[0]["types"][1]["id"] == project_type2.id
+        assert len(response.data[0]["types"][1]["sectors"]) == 1
+        assert response.data[0]["types"][1]["sectors"][0]["name"] == sector2.name
+        assert response.data[0]["types"][1]["sectors"][0]["code"] == sector2.code
+        assert response.data[0]["types"][1]["sectors"][0]["id"] == sector2.id
+
+        assert response.data[1]["name"] == cluster2.name
+        assert response.data[1]["code"] == cluster2.code
+        assert response.data[1]["id"] == cluster2.id
+        assert len(response.data[1]["types"]) == 1
+        assert response.data[1]["types"][0]["name"] == project_type1.name
+        assert response.data[1]["types"][0]["code"] == project_type1.code
+        assert response.data[1]["types"][0]["id"] == project_type1.id
+        assert len(response.data[1]["types"][0]["sectors"]) == 1
+        assert response.data[1]["types"][0]["sectors"][0]["name"] == sector1.name
+        assert response.data[1]["types"][0]["sectors"][0]["code"] == sector1.code
+        assert response.data[1]["types"][0]["sectors"][0]["id"] == sector1.id
 
 
 @pytest.fixture(name="_setup_rbm_measures")

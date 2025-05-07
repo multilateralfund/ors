@@ -7,6 +7,7 @@ from core.models import (
     AnnualContributionStatus,
     DisputedContribution,
     FermGainLoss,
+    BilateralAssistance,
     TriennialContributionStatus,
     Invoice,
     Payment,
@@ -38,15 +39,18 @@ from core.models.meeting import Decision, Meeting
 from core.models.project import (
     MetaProject,
     Project,
-    ProjectCluster,
     ProjectOdsOdp,
     ProjectRBMMeasure,
+    SubmissionAmount,
+)
+from core.models.project_metadata import (
+    ProjectCluster,
+    ProjectClusterTypeSectorFields,
     ProjectSector,
     ProjectStatus,
     ProjectSubmissionStatus,
     ProjectSubSector,
     ProjectType,
-    SubmissionAmount,
 )
 from core.models.rbm_measures import RBMMeasure
 from core.models.substance import Substance, SubstanceAltName
@@ -369,6 +373,7 @@ class ProjectSubSectorFactory(factory.django.DjangoModelFactory):
 class MeetingFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Meeting
+        django_get_or_create = ("number",)
 
     number = factory.Faker("random_int", min=1, max=100)
     date = factory.Faker("date")
@@ -392,6 +397,15 @@ class ProjectClusterFactory(factory.django.DjangoModelFactory):
     code = factory.Faker("pystr", max_chars=10)
     category = ProjectCluster.ProjectClusterCategory.BOTH
     sort_order = factory.Faker("random_int", min=1, max=100)
+
+
+class ProjectClusterTypeSectorFieldsFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ProjectClusterTypeSectorFields
+
+    cluster = factory.SubFactory(ProjectClusterFactory)
+    type = factory.SubFactory(ProjectTypeFactory)
+    sector = factory.SubFactory(ProjectSectorFactory)
 
 
 class MetaProjectFactory(factory.django.DjangoModelFactory):
@@ -614,6 +628,18 @@ class FermGainLossFactory(factory.django.DjangoModelFactory):
 
     country = factory.SubFactory(CountryFactory)
     amount = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+
+
+class BilateralAssistanceFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = BilateralAssistance
+
+    country = factory.SubFactory(CountryFactory)
+    year = factory.Faker("random_int", min=2000, max=2024)
+    amount = factory.Faker("pydecimal", left_digits=10, right_digits=2)
+    meeting = factory.SubFactory(MeetingFactory)
+    decision_number = factory.Faker("pystr", max_chars=32)
+    comment = factory.Faker("pystr", max_chars=100)
 
 
 class InvoiceFactory(factory.django.DjangoModelFactory):

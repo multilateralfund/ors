@@ -12,7 +12,7 @@ from django.db.models import F
 
 from core.api.export.base import configure_sheet_print, WriteOnlyBase
 from core.models import (
-    AnnualContributionStatus,
+    BilateralAssistance,
     ExternalIncomeAnnual,
     DisputedContribution,
     ExternalAllocation,
@@ -976,15 +976,15 @@ class ConsolidatedInputDataWriter:
         expressions = [
             "country__name",
             "year",
-            "bilateral_assistance_meeting__number",
-            "bilateral_assistance_decision_number",
-            "bilateral_assistance",
-            "bilateral_assistance_comment",
+            "meeting__number",
+            "decision_number",
+            "amount",
+            "comment",
         ]
 
-        data = AnnualContributionStatus.objects.filter(
-            bilateral_assistance__gte=Decimal(5)
-        ).values_list(*expressions)
+        data = BilateralAssistance.objects.filter(amount__gte=Decimal(5)).values_list(
+            *expressions
+        )
         self.write_headers(ws, columns)
         self.write_data(ws, data)
 

@@ -14,8 +14,8 @@ from rest_framework import parsers
 from core.api.filters.project import ProjectFilter
 from core.api.permissions import IsAgency, IsCountryUser, IsSecretariat, IsViewer
 from core.api.serializers.project import (
-    ProjectDetailsSerializer,
-    ProjectListSerializer,
+    ProjectDetailsV2Serializer,
+    ProjectListV2Serializer,
     ProjectV2CreateSerializer,
     ProjectV2FileSerializer,
 )
@@ -86,10 +86,10 @@ class ProjectV2ViewSet(
 
     def get_serializer_class(self):
         if self.action == "list":
-            return ProjectListSerializer
+            return ProjectListV2Serializer
         if self.action == "create":
             return ProjectV2CreateSerializer
-        return ProjectDetailsSerializer
+        return ProjectDetailsV2Serializer
 
     @swagger_auto_schema(
         manual_parameters=[
@@ -127,7 +127,7 @@ class ProjectV2ViewSet(
         """,
         request_body=ProjectV2CreateSerializer,
         responses={
-            status.HTTP_201_CREATED: ProjectDetailsSerializer,
+            status.HTTP_201_CREATED: ProjectDetailsV2Serializer,
             status.HTTP_400_BAD_REQUEST: "Bad request",
         },
     )

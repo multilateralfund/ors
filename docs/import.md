@@ -125,7 +125,7 @@ docker-compose exec app ./manage.py import_projects proposals
 - proposals -> project proposals xlsx files
 - projects -> projects from tbInventory
 - multi_year_projects -> multi year projects from MultiYear-Projects
-- set_project_clusters -> set project clusters (make sure that the projectare imported)
+- set_project_clusters -> set project clusters (make sure that the project are imported)
 - progress -> progress reports from tbProgress 
 - comments -> project comments
 - meta_projects -> project meta projects (make sure that the clusters are set)
