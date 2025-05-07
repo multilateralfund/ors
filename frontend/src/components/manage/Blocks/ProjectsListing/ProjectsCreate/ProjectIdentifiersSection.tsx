@@ -14,10 +14,12 @@ import { tableColumns } from '../constants'
 import { useStore } from '@ors/store'
 
 import { Button, Checkbox, FormControlLabel } from '@mui/material'
+import { find } from 'lodash'
 
 const ProjectIdentifiersSection = ({
   projIdentifiers,
   setProjIdentifiers,
+  setCrossCuttingFields,
   isNextBtnEnabled,
   areNextSectionsDisabled,
   isSubmitSuccessful,
@@ -35,6 +37,25 @@ const ProjectIdentifiersSection = ({
     setProjIdentifiers((prevFilters: any) => ({
       ...prevFilters,
       country: country?.id ?? null,
+    }))
+
+    setCrossCuttingFields((prevFilters: any) => ({
+      ...prevFilters,
+      is_lvc: find(commonSlice.countries.data, { id: country?.id })?.is_lvc,
+    }))
+  }
+
+  const handleChangeMeeting = (meeting: string) => {
+    setProjIdentifiers((prevFilters: any) => ({
+      ...prevFilters,
+      meeting,
+    }))
+  }
+
+  const handleChangeCluster = (cluster: any) => {
+    setProjIdentifiers((prevFilters: any) => ({
+      ...prevFilters,
+      cluster: cluster?.id ?? null,
     }))
   }
 
@@ -59,20 +80,6 @@ const ProjectIdentifiersSection = ({
     }))
   }
 
-  const handleChangeCluster = (cluster: any) => {
-    setProjIdentifiers((prevFilters: any) => ({
-      ...prevFilters,
-      cluster: cluster?.id ?? null,
-    }))
-  }
-
-  const handleChangeMeeting = (meeting: string) => {
-    setProjIdentifiers((prevFilters: any) => ({
-      ...prevFilters,
-      meeting,
-    }))
-  }
-
   return (
     <div className="flex flex-col gap-y-2">
       <div className="flex flex-wrap gap-x-20 gap-y-3">
@@ -90,6 +97,20 @@ const ProjectIdentifiersSection = ({
             {...defaultProps}
           />
         </div>
+        <div className="w-40">
+          <Label isRequired={false}>Meeting number</Label>
+          <PopoverInput
+            label={getMeetingNr(projIdentifiers?.meeting)}
+            options={getMeetingOptions()}
+            onChange={handleChangeMeeting}
+            onClear={() => handleChangeMeeting('')}
+            className="!m-0 h-10 !py-1"
+            clearBtnClassName="right-1"
+            withClear={true}
+          />
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-x-20 gap-y-3">
         <div>
           <Label isRequired={false}>{tableColumns.agency}</Label>
           <Field
@@ -99,6 +120,20 @@ const ProjectIdentifiersSection = ({
             onChange={(_: any, value: any) => handleChangeCurrentAgency(value)}
             getOptionLabel={(option: any) =>
               getOptionLabel(commonSlice.agencies.data, option)
+            }
+            disabled={!areNextSectionsDisabled}
+            {...defaultProps}
+          />
+        </div>
+        <div>
+          <Label isRequired={false}>{tableColumns.cluster}</Label>
+          <Field
+            widget="autocomplete"
+            options={projectSlice.clusters.data}
+            value={projIdentifiers?.cluster}
+            onChange={(_: any, value: any) => handleChangeCluster(value)}
+            getOptionLabel={(option: any) =>
+              getOptionLabel(projectSlice.clusters.data, option)
             }
             disabled={!areNextSectionsDisabled}
             {...defaultProps}
@@ -138,34 +173,6 @@ const ProjectIdentifiersSection = ({
           />
         </>
       )}
-      <div className="flex flex-wrap gap-x-20 gap-y-3">
-        <div>
-          <Label isRequired={false}>{tableColumns.cluster}</Label>
-          <Field
-            widget="autocomplete"
-            options={projectSlice.clusters.data}
-            value={projIdentifiers?.cluster}
-            onChange={(_: any, value: any) => handleChangeCluster(value)}
-            getOptionLabel={(option: any) =>
-              getOptionLabel(projectSlice.clusters.data, option)
-            }
-            disabled={!areNextSectionsDisabled}
-            {...defaultProps}
-          />
-        </div>
-        <div className="w-40">
-          <Label isRequired={false}>Meeting number</Label>
-          <PopoverInput
-            label={getMeetingNr(projIdentifiers?.meeting)}
-            options={getMeetingOptions()}
-            onChange={handleChangeMeeting}
-            onClear={() => handleChangeMeeting('')}
-            className="!m-0 h-10 !py-1"
-            clearBtnClassName="right-1"
-            withClear={true}
-          />
-        </div>
-      </div>
       <div className="flex flex-wrap items-center gap-2.5">
         <NavigationButton
           isBtnDisabled={!isNextBtnEnabled}

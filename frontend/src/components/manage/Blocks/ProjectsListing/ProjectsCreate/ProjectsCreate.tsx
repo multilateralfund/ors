@@ -15,10 +15,10 @@ import { isNil, omit } from 'lodash'
 import cx from 'classnames'
 
 export interface CrossCuttingFields {
-  project_type: string
-  sector: string
+  project_type: number | null
+  sector: number | null
   subsector: string[]
-  lvc_non_lvc: string
+  is_lvc: boolean | null
   title: string
   description: string
   start_date: string
@@ -31,10 +31,10 @@ export interface CrossCuttingFields {
 
 const initialCrossCuttingFields = (): CrossCuttingFields => {
   return {
-    project_type: '',
-    sector: '',
+    project_type: null,
+    sector: null,
     subsector: [],
-    lvc_non_lvc: '',
+    is_lvc: null,
     title: '',
     description: '',
     start_date: '',
@@ -61,15 +61,20 @@ const ProjectsCreate = () => {
 
   const canLinkToBp =
     projIdentifiers.country &&
-    ((projIdentifiers.is_lead_agency && projIdentifiers.current_agency) ||
-      (!projIdentifiers.is_lead_agency && projIdentifiers.side_agency)) &&
+    projIdentifiers.meeting &&
     projIdentifiers.cluster &&
-    projIdentifiers.meeting
+    ((projIdentifiers.is_lead_agency && projIdentifiers.current_agency) ||
+      (!projIdentifiers.is_lead_agency && projIdentifiers.side_agency))
 
   const areNextSectionsDisabled = !canLinkToBp || currentStep < 1
   const isSubmitDisabled =
     areNextSectionsDisabled ||
-    !(crossCuttingFields.title && crossCuttingFields.project_type)
+    !(
+      crossCuttingFields.project_type &&
+      crossCuttingFields.sector &&
+      !isNil(crossCuttingFields.is_lvc) &&
+      crossCuttingFields.title
+    )
 
   const steps = [
     {
@@ -84,6 +89,7 @@ const ProjectsCreate = () => {
             setCurrentTab,
             projIdentifiers,
             setProjIdentifiers,
+            setCrossCuttingFields,
             areNextSectionsDisabled,
             isSubmitSuccessful,
           }}

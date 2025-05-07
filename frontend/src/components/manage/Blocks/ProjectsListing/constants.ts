@@ -13,8 +13,18 @@ export const tableColumns: { [key: string]: string } = {
   type: 'Type',
   sector: 'Sector',
   subsector: 'Sub-Sector',
-  lvc_non_lvc: 'LVC/non-LVC',
+  is_lvc: 'LVC/non-LVC',
   start_date: 'Project Start Date',
   end_date: 'Project End Date',
   total_fund: 'Total funding',
 }
+
+export const blanketOrIndConsiderationOpts = [
+  { name: 'Blanket', id: 'blanket' },
+  { name: 'Individual', id: 'individual' },
+]
+
+export const lvcNonLvcOpts = [
+  { name: 'LVC', value: true },
+  { name: 'Non-LVC', value: false },
+]

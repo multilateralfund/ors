@@ -252,6 +252,7 @@ export type Country = {
   iso3: string
   name: string
   name_alt: string
+  is_lvc: boolean
 }
 
 export type CPVersionInfo = {

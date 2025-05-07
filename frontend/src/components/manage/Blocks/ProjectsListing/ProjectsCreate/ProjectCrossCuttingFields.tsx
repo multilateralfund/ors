@@ -4,14 +4,24 @@ import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
-import { tableColumns } from '../constants'
-
-import { useStore } from '@ors/store'
-
-import { TextareaAutosize } from '@mui/material'
 import { ProjectTypeType } from '@ors/types/api_project_types.ts'
 import { ProjectSectorType } from '@ors/types/api_project_sector.ts'
 import { ProjectSubSectorType } from '@ors/types/api_project_subsector.ts'
+import {
+  tableColumns,
+  blanketOrIndConsiderationOpts,
+  lvcNonLvcOpts,
+} from '../constants'
+import { isOptionEqualToValueByValue } from '../utils'
+import { useStore } from '@ors/store'
+
+import { TextareaAutosize } from '@mui/material'
+import { find, isNil } from 'lodash'
+
+export type LvcNonLvcType = {
+  name: string
+  value: boolean
+}
 
 const ProjectCrossCuttingFields = ({
   crossCuttingFields,
@@ -24,10 +34,6 @@ const ProjectCrossCuttingFields = ({
 }) => {
   const projectSlice = useStore((state) => state.projects)
 
-  const blanketOrIndConsiderationOpts = [
-    { name: 'Blanket', id: 'blanket' },
-    { name: 'Individual', id: 'individual' },
-  ]
   const defaultProps = {
     FieldProps: { className: 'mb-0 w-40 BPListUpload' },
   }
@@ -38,12 +44,20 @@ const ProjectCrossCuttingFields = ({
     containerClassName: '!h-fit w-40',
   }
 
+  const handleChangeProjectType = (type: ProjectTypeType | null) => {
+    setCrossCuttingFields((prevFilters) => ({
+      ...prevFilters,
+      project_type: type?.id ?? null,
+    }))
+  }
+
   const handleChangeSector = (sector: ProjectSectorType | null) => {
     setCrossCuttingFields((prevFilters) => ({
       ...prevFilters,
-      sector: sector?.id.toString() ?? '',
+      sector: sector?.id ?? null,
     }))
   }
+
   const handleChangeSubSector = (
     subsectors: (ProjectSubSectorType | string)[] | null,
   ) => {
@@ -57,10 +71,10 @@ const ProjectCrossCuttingFields = ({
     }))
   }
 
-  const handleChangeProjectType = (type: ProjectTypeType | null) => {
+  const handleChangeLvcNonLvc = (is_lvc: LvcNonLvcType | null) => {
     setCrossCuttingFields((prevFilters) => ({
       ...prevFilters,
-      project_type: type?.code ?? '',
+      is_lvc: !isNil(is_lvc?.value) ? is_lvc?.value : null,
     }))
   }
 
@@ -109,7 +123,7 @@ const ProjectCrossCuttingFields = ({
   }
 
   const handleChangeBlanketConsideration = (consideration: any) => {
-    setCrossCuttingFields((prevFilters: any) => ({
+    setCrossCuttingFields((prevFilters) => ({
       ...prevFilters,
       blanket_consideration: consideration?.id ?? null,
     }))
@@ -119,11 +133,11 @@ const ProjectCrossCuttingFields = ({
     <div className="flex flex-col gap-y-2">
       <div className="flex flex-wrap gap-x-20 gap-y-3">
         <div>
-          <Label isRequired={false}>{tableColumns.type}</Label>
+          <Label>{tableColumns.type}</Label>
           <Field<ProjectTypeType>
             widget="autocomplete"
             options={projectSlice.types.data}
-            value={crossCuttingFields?.project_type}
+            value={crossCuttingFields?.project_type as ProjectTypeType | null}
             onChange={(_: React.SyntheticEvent, value) =>
               handleChangeProjectType(value as ProjectTypeType | null)
             }
@@ -138,7 +152,7 @@ const ProjectCrossCuttingFields = ({
           <Field<ProjectSectorType>
             widget="autocomplete"
             options={projectSlice.sectors.data}
-            value={crossCuttingFields?.sector}
+            value={crossCuttingFields?.sector as ProjectSectorType | null}
             onChange={(_: any, value) =>
               handleChangeSector(value as ProjectSectorType | null)
             }
@@ -171,7 +185,26 @@ const ProjectCrossCuttingFields = ({
       </div>
       <div className="flex flex-wrap gap-x-20 gap-y-3">
         <div>
-          <Label isRequired={false}>{tableColumns.title}</Label>
+          <Label>{tableColumns.is_lvc}</Label>
+          <Field<LvcNonLvcType>
+            widget="autocomplete"
+            options={lvcNonLvcOpts}
+            value={
+              (find(lvcNonLvcOpts, { value: crossCuttingFields?.is_lvc }) ||
+                null) as LvcNonLvcType | null
+            }
+            onChange={(_: any, value: any) =>
+              handleChangeLvcNonLvc(value as LvcNonLvcType | null)
+            }
+            getOptionLabel={(option: any) =>
+              getOptionLabel(lvcNonLvcOpts, option, 'value')
+            }
+            isOptionEqualToValue={isOptionEqualToValueByValue}
+            {...defaultProps}
+          />
+        </div>
+        <div>
+          <Label>{tableColumns.title}</Label>
           <SimpleInput
             id={crossCuttingFields?.title}
             value={crossCuttingFields?.title}

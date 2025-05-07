@@ -1,5 +1,7 @@
 import { formatDecimalValue } from '@ors/helpers'
 
+import { isEqual, isObject } from 'lodash'
+
 export const formatNumberColumns = (
   params: any,
   field: string,
@@ -16,3 +18,6 @@ export const formatNumberColumns = (
       : '0.00')
   )
 }
+
+export const isOptionEqualToValueByValue = (option: any, value: any) =>
+  isObject(value) ? isEqual(option, value) : option.value === value

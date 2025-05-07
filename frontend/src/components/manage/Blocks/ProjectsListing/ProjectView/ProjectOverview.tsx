@@ -16,11 +16,12 @@ const ProjectOverview = ({ project }: any) => {
     <div className="flex w-full flex-col gap-4">
       <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
         {detailItem(tableColumns.country, data.country)}
+        {detailItem('Meeting', data.meeting)}
         {detailItem(tableColumns.agency, data.lead_agency)}
         {detailItem(tableColumns.cluster, data.cluster?.name)}
-        {detailItem('Meeting', data.meeting)}
-        {detailItem(tableColumns.sector, data.sector?.name)}
         {detailItem(tableColumns.type, data.project_type?.name)}
+        {detailItem(tableColumns.sector, data.sector?.name)}
+        {detailItem(tableColumns.is_lvc, data.is_lvc ? 'LVC' : 'Non-LVC')}
       </div>
       <Divider />
       <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
