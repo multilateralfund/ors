@@ -6,6 +6,11 @@ from rest_framework.fields import empty
 
 from core.api.serializers.agency import AgencySerializer
 from core.api.serializers.base import BaseProjectUtilityCreateSerializer
+from core.api.serializers.project_metadata import (
+    ProjectClusterSerializer,
+    ProjectSectorSerializer,
+    ProjectTypeSerializer,
+)
 from core.models.agency import Agency
 from core.models.blend import Blend
 from core.models.country import Country
@@ -47,93 +52,6 @@ class MetaProjectSerializer(serializers.ModelSerializer):
             "code",
             "pcr_project_id",
         ]
-
-
-class ProjectStatusSerializer(serializers.ModelSerializer):
-    """
-    ProjectStatusSerializer class
-    """
-
-    class Meta:
-        model = ProjectStatus
-        fields = [
-            "id",
-            "code",
-            "name",
-            "color",
-        ]
-
-
-class ProjectSubmissionStatusSerializer(serializers.ModelSerializer):
-    """
-    ProjectSubmissionStatusSerializer class
-    """
-
-    class Meta:
-        model = ProjectSubmissionStatus
-        fields = [
-            "id",
-            "code",
-            "name",
-            "color",
-        ]
-
-
-class ProjectSectorSerializer(serializers.ModelSerializer):
-    """
-    ProjectSectorSerializer class
-    """
-
-    name = serializers.CharField(required=True)
-
-    class Meta:
-        model = ProjectSector
-        fields = [
-            "id",
-            "name",
-            "code",
-            "sort_order",
-            "allowed_types",
-        ]
-        read_only_fields = ["id", "allowed_types"]
-
-
-class ProjectSubSectorSerializer(serializers.ModelSerializer):
-    """
-    ProjectSubSectorSerializer class
-    """
-
-    sector_id = serializers.PrimaryKeyRelatedField(
-        required=True, queryset=ProjectSector.objects.all().values_list("id", flat=True)
-    )
-    name = serializers.CharField(required=True)
-
-    class Meta:
-        model = ProjectSubSector
-        fields = [
-            "id",
-            "name",
-            "code",
-            "sort_order",
-            "sector_id",
-        ]
-
-
-class ProjectTypeSerializer(serializers.ModelSerializer):
-    """
-    ProjectTypeSerializer class
-    """
-
-    class Meta:
-        model = ProjectType
-        fields = [
-            "id",
-            "name",
-            "code",
-            "sort_order",
-            "allowed_sectors",
-        ]
-        read_only_fields = ["id", "allowed_sectors"]
 
 
 class ProjectFundListSerializer(serializers.ModelSerializer):
@@ -328,51 +246,6 @@ class ProjectRbmMeasureCreateSerializer(
 ):
     class Meta(ProjectRbmMeasureListSerializer.Meta):
         fields = ProjectRbmMeasureListSerializer.Meta.fields
-
-
-class ProjectClusterSerializer(serializers.ModelSerializer):
-    """
-    ProjectClusterSerializer class
-    """
-
-    class Meta:
-        model = ProjectCluster
-        fields = [
-            "id",
-            "name",
-            "code",
-            "category",
-            "sort_order",
-        ]
-
-
-class ProjectClusterTypeSectorFieldsSerializer(serializers.ModelSerializer):
-    types = serializers.SerializerMethodField()
-
-    class Meta:
-        model = ProjectCluster
-        fields = ["id", "name", "code", "types"]
-
-    def get_types(self, obj):
-        types = {}
-        for field in obj.prefetched_cluster_type_sector_fields:
-            type_id = field.type.id
-            if type_id not in types:
-                types[type_id] = {
-                    "name": field.type.name,
-                    "id": type_id,
-                    "code": field.type.code,
-                    "sectors": [],
-                }
-            types[type_id]["sectors"].append(
-                {
-                    "name": field.sector.name,
-                    "code": field.sector.code,
-                    "id": field.sector.id,
-                }
-            )
-
-        return list(types.values())
 
 
 class ProjectFileSerializer(serializers.ModelSerializer):

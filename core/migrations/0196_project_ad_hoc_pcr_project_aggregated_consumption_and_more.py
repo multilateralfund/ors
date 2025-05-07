@@ -4,6 +4,7 @@ import django.core.validators
 from django.db import migrations, models
 import django.db.models.deletion
 
+
 def process_tranche_field(apps, schema_editor):
     Project = apps.get_model("core", "Project")
     projects_with_null_tranche = Project.objects.filter(tranche="")
@@ -11,6 +12,7 @@ def process_tranche_field(apps, schema_editor):
         project.tranche = None
 
     Project.objects.bulk_update(projects_with_null_tranche, ["tranche"])
+
 
 class Migration(migrations.Migration):
 

@@ -211,7 +211,11 @@ class Project(models.Model):
     individual_consideration = models.BooleanField(
         null=True,
         blank=True,
-        help_text="Blanket or Individual consideration. This field is needed for analyses at the recommendation stage for QA unit. And it is for MLFS users to select at the review stage.",
+        help_text="""
+            Blanket or Individual consideration.
+            This field is needed for analyses at the recommendation stage for QA unit.
+            And it is for MLFS users to select at the review stage.
+        """,
     )
     project_start_date = models.DateField(null=True, blank=True)
     project_end_date = models.DateField(null=True, blank=True)
