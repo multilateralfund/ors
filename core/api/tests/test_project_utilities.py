@@ -259,7 +259,7 @@ def setup_project_meeting(country_ro, agency, project_type, project_status, subs
         "agency": agency,
         "project_type": project_type,
         "status": project_status,
-        "subsector": subsector,
+        "subsectors": [subsector],
         "substance_type": "HCFC",
     }
 
