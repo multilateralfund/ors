@@ -41,10 +41,10 @@ class Migration(migrations.Migration):
                 CASE 
                     WHEN EXTRACT(YEAR FROM CURRENT_DATE) - tcs.start_year = 0 
                         THEN tcs.outstanding_contributions - (tcs.agreed_contributions * 2/3)
-                             - COALESCE(ds.disputed_total, 0) * 1/3
+                             - COALESCE(ds.disputed_total, 0) * 2/3
                     WHEN EXTRACT(YEAR FROM CURRENT_DATE) - tcs.start_year = 1 
                         THEN tcs.outstanding_contributions - (tcs.agreed_contributions / 3)
-                             - COALESCE(ds.disputed_total, 0) * 2/3
+                             - COALESCE(ds.disputed_total, 0) * 1/3
                     ELSE tcs.outstanding_contributions
                 END as current_outstanding_contributions
             FROM core_triennialcontributionstatus tcs
