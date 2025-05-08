@@ -54,8 +54,8 @@ class ProjectFilter(filters.FilterSet):
         queryset=ProjectSector.objects.all(),
         widget=CSVWidget,
     )
-    subsector_id = filters.ModelMultipleChoiceFilter(
-        field_name="subsector",
+    subsectors = filters.ModelMultipleChoiceFilter(
+        field_name="subsectors",
         queryset=ProjectSubSector.objects.all(),
         widget=CSVWidget,
     )
@@ -92,7 +92,7 @@ class ProjectFilter(filters.FilterSet):
             "status_id",
             "submission_status_id",
             "sector_id",
-            "subsector_id",
+            "subsectors",
             "project_type_id",
             "substance_type",
             "agency_id",

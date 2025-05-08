@@ -51,8 +51,8 @@ class ProjectWriter(WriteOnlyBase):
                 "headerName": "Legacy sector",
             },
             {
-                "id": "subsector",
-                "headerName": "Subsector",
+                "id": "subsectors_list",
+                "headerName": "Subsectors",
                 "column_width": self.COLUMN_WIDTH * 1.5,
             },
             {

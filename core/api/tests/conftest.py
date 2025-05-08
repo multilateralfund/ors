@@ -337,7 +337,6 @@ def subsector(sector):
         name="Subsector", code="SUB", sector=sector, sort_order=1
     )
 
-
 @pytest.fixture
 def subsector_other(sector):
     return ProjectSubSectorFactory.create(
@@ -409,7 +408,7 @@ def project(
         status=project_status,
         submission_status=project_submission_status,
         sector=sector,
-        subsector=subsector,
+        subsectors=[subsector],
         meeting=meeting,
         substance_type="HCFC",
         cluster=project_cluster_kpp,
