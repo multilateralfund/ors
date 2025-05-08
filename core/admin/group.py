@@ -15,5 +15,5 @@ class GroupAdmin(admin.ModelAdmin):
     ]
 
     def get_list_display(self, request):
-        exclude = ["substances"]
+        exclude = ["substances", "projects"]
         return get_final_display_list(Group, exclude)

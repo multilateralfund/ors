@@ -73,6 +73,15 @@ def setup_substances_list(time_frames, user):
     return usages
 
 
+@pytest.fixture(name="_setup_groups_list")
+def setup_groups_list():
+    groups = []
+    for gr_name in ["A", "B", "C"]:
+        group = GroupFactory.create(name=gr_name, annex=gr_name, name_alt=gr_name)
+        groups.append(group)
+    return groups
+
+
 class TestSubstancesList(BaseTest):
     group_list = ["A", "B", "C", "D", "E", "F", "unknown"]
     url = reverse("substances-list")
@@ -145,6 +154,22 @@ class TestSubstancesList(BaseTest):
         response = self.client.get(self.url, {"include_user_substances": True})
         assert response.status_code == 200
         assert len(response.data) == 15
+
+
+class TestGroupList(BaseTest):
+    group_list = ["A", "B", "C"]
+    url = reverse("group-list")
+
+    def test_group_list(self, user, _setup_groups_list):
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.data) == len(self.group_list)
+        for index, entry in enumerate(response.data):
+            assert entry["annex"] in self.group_list[index]
+            assert entry["name"] in self.group_list[index]
+            assert entry["name_alt"] in self.group_list[index]
 
 
 class TestSubstanceCreate:

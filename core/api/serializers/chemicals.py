@@ -2,8 +2,28 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from core.api.utils import SECTION_ANNEX_MAPPING
 
-from core.models import Substance
-from core.models import Blend
+from core.models import (
+    Blend,
+    Group,
+    Substance,
+)
+
+
+class GroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = [
+            "id",
+            "group_id",
+            "annex",
+            "name",
+            "name_alt",
+            "description",
+            "description_alt",
+            "is_odp",
+            "is_gwp",
+            "ozone_id",
+        ]
 
 
 # pylint: disable=W0223
