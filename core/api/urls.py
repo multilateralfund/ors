@@ -50,6 +50,7 @@ from core.api.views.chemicals import (
     BlendCreateView,
     BlendNextCustNameView,
     BlendsListView,
+    GroupListView,
     SimilarBlendsListView,
     SubstancesListView,
 )
@@ -227,6 +228,11 @@ urlpatterns = [
         "usages/",
         UsageListView.as_view(),
         name="usages-list",
+    ),
+    path(
+        "groups/",
+        GroupListView.as_view(),
+        name="group-list",
     ),
     path(
         "substances/",
