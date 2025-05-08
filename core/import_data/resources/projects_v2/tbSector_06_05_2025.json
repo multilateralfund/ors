@@ -1,0 +1,112 @@
+[
+  {
+    "SEC": "ARS",
+    "SECTOR": "Aerosol",
+    "SORT_SECTOR": 1
+  },
+  {
+    "SEC": "DES",
+    "SECTOR": "Disposal",
+    "SORT_SECTOR": 2
+  },
+  {
+    "SEC": "FOA",
+    "SECTOR": "Foam",
+    "SORT_SECTOR": 3
+  },
+  {
+    "SEC": "PRO",
+    "SECTOR": "Production",
+    "SORT_SECTOR": 4
+  },
+  {
+    "SEC": "REF",
+    "SECTOR": "Refrigeration",
+    "SORT_SECTOR": 5
+  },
+  {
+    "SEC": "SRV",
+    "SECTOR": "Servicing",
+    "SORT_SECTOR": 6
+  },
+  {
+    "SEC": "SOL",
+    "SECTOR": "Solvent",
+    "SORT_SECTOR": 7
+  },
+  {
+    "SEC": "FFI",
+    "SECTOR": "Firefighting",
+    "SORT_SECTOR": 8
+  },
+  {
+    "SEC": "ENA",
+    "SECTOR": "Enabling activities",
+    "SORT_SECTOR": 9,
+    "ACTION": "RENAME",
+    "OLD_NAME": "Enabling Activities"
+  },
+  {
+    "SEC": "PMU",
+    "SECTOR": "Project monitoring and coordination",
+    "SORT_SECTOR": 10
+  },
+  {
+    "SEC": "AC",
+    "SECTOR": "Air-Conditioning",
+    "SORT_SECTOR": 11
+  },
+  {
+    "SEC": "TAS",
+    "SECTOR": "Technical Assistance",
+    "SORT_SECTOR": 12
+  },
+  {
+    "SEC": "EMS",
+    "SECTOR": "Emissions",
+    "SORT_SECTOR": 13
+  },
+  {
+    "SEC": "ELM",
+    "SECTOR": "Electronics Manufacturing",
+    "SORT_SECTOR": 14
+  },
+  {
+    "SEC": "",
+    "SECTOR": "Compliance Assistance Programme",
+    "SORT_SECTOR": 15,
+    "ACTION": "RENAME",
+    "OLD_NAME": "Compliance Assistance Program"
+  },
+  {
+    "SEC": "CU",
+    "SECTOR": "Core Unit",
+    "SORT_SECTOR": 16
+  },
+  {
+    "SEC": "NOU",
+    "SECTOR": "National Ozone Unit",
+    "SORT_SECTOR": 17
+  },
+  {
+    "SEC": "SRVEE",
+    "SECTOR": "SERVCEE-89/6",
+    "SORT_SECTOR": 18
+  },
+  {
+    "SEC": "VER",
+    "SECTOR": "Verification",
+    "SORT_SECTOR": 19
+  }, 
+  {
+    "SEC": "CSM",
+    "SECTOR": "Control Substance Monitoring",
+    "SORT_SECTOR": 20
+  }, 
+  {
+    "SEC": "EERF",
+    "SECTOR": "Energy Efficiency End-user Revolving fund",
+    "SORT_SECTOR": 21
+    
+  }
+]

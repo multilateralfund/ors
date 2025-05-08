@@ -1,0 +1,172 @@
+[
+  {
+    "SEC": "ARS",
+    "SUBSECTOR": "Metered dose inhalers",
+    "CODE_SUBSECTOR": "INH",
+    "SORT_SUBSECTOR": 1
+  },
+  {
+    "SEC": "ARS",
+    "SUBSECTOR": "Other Aeresols",
+    "CODE_SUBSECTOR": "OTHARS",
+    "SORT_SUBSECTOR": 2
+  },
+  {
+    "SEC": "FFI",
+    "SUBSECTOR": "Assembly Fire Protections Systems",
+    "CODE_SUBSECTOR": "EXT",
+    "SORT_SUBSECTOR": 3
+  },
+  {
+    "SEC": "FFI",
+    "SUBSECTOR": "Servicing Fire Protections Systems",
+    "SORT_SUBSECTOR": 4
+  },
+  {
+    "SEC": "FFI",
+    "SUBSECTOR": "Banking",
+    "CODE_SUBSECTOR": "BNK",
+    "SORT_SUBSECTOR": 5
+  },
+  {
+    "SEC": "FOA",
+    "SUBSECTOR": "Rigid PU",
+    "SORT_SUBSECTOR": 6
+  },
+  {
+    "SEC": "FOA",
+    "SUBSECTOR": "Spray PU",
+    "SORT_SUBSECTOR": 7
+  },
+  {
+    "SEC": "FOA",
+    "SUBSECTOR": "Integral skin PU",
+    "SORT_SUBSECTOR": 8
+  },
+  {
+    "SEC": "FOA",
+    "SUBSECTOR": "Extruded polystyrene (XPS)",
+    "SORT_SUBSECTOR": 9
+  },
+  {
+    "SEC": "EMS",
+    "SUBSECTOR": "HFC-23 emission control",
+    "SORT_SUBSECTOR": 10
+  },
+  {
+    "SEC": "REF",
+    "SUBSECTOR": "Domestic Refrigeration",
+    "SORT_SUBSECTOR": 11,
+    "ACTION": "RENAME",
+    "OLD_NAME": "Domesitic Refrigeration"
+  },
+  {
+    "SEC": "REF",
+    "SUBSECTOR": "Commercial Refrigeration",
+    "SORT_SUBSECTOR": 12,
+    "ACTION": "RENAME",
+    "OLD_NAME": "Commerical Refrigeration"
+  },
+  {
+    "SEC": "REF",
+    "SUBSECTOR": "Industrial refrigeration",
+    "SORT_SUBSECTOR": 13
+  },
+  {
+    "SEC": "REF",
+    "SUBSECTOR": "Transport refrigeration",
+    "SORT_SUBSECTOR": 14
+  },
+  {
+    "SEC": "AC",
+    "SUBSECTOR": "Residential air-conditioning",
+    "SORT_SUBSECTOR": 15
+  },
+  {
+    "SEC": "AC",
+    "SUBSECTOR": "Commercial air-conditioning",
+    "SORT_SUBSECTOR": 16
+  },
+  {
+    "SEC": "REF",
+    "SUBSECTOR": "Industrial and commercial refrigeration (ICR)",
+    "SORT_SUBSECTOR": 17,
+    "ACTION": "RENAME",
+    "OLD_NAME": "Industrial and commercial refrigeration and AC (ICR)"
+  },
+  {
+    "SEC": "AC",
+    "SUBSECTOR": "Industrial and commercial AC (ICR)",
+    "SORT_SUBSECTOR": 18,
+    "ACTION": "RENAME",
+    "OLD_NAME": "Industrial and commercial refrigeration and AC (ICR)"
+  },
+  {
+    "SEC": "AC",
+    "SUBSECTOR": "Chiller",
+    "CODE_SUBSECTOR": "CHL",
+    "SORT_SUBSECTOR": 19
+  },
+  {
+    "SEC": "AC",
+    "SUBSECTOR": "MAC",
+    "CODE_SUBSECTOR": "MAC",
+    "SORT_SUBSECTOR": 20
+  },
+  {
+    "SEC": "AC",
+    "SUBSECTOR": "MAC compressor",
+    "CODE_SUBSECTOR": "MCC",
+    "SORT_SUBSECTOR": 21
+  },
+  {
+    "SEC": "AC",
+    "SUBSECTOR": "AC Compressor",
+    "SORT_SUBSECTOR": 22,
+    "ACTION": "RENAME",
+    "OLD_NAME": "Compressor",
+    "OLD_SEC": "AC"
+  },
+  {
+    "SEC": "REF",
+    "SUBSECTOR": "Refrigeration Compressor",
+    "SORT_SUBSECTOR": 23,
+    "CODE_SUBSECTOR": "CMP",
+    "ACTION": "RENAME",
+    "OLD_NAME": "Compressor",
+    "OLD_SEC": "REF"
+  },
+  {
+    "SEC": "REF",
+    "SUBSECTOR": "Local installation and assembly",
+    "SORT_SUBSECTOR": 24
+  },
+  {
+    "SEC": "SRV",
+    "SUBSECTOR": "Servicing",
+    "SORT_SUBSECTOR": 25,
+    "OLD_NAME": "Recovery/recycling"
+  },
+  {
+    "SEC": "SRV",
+    "SUBSECTOR": "Servicing",
+    "SORT_SUBSECTOR": 26,
+    "OLD_NAME": "Refrigerant management plan"
+  },
+  {
+    "SEC": "SRV",
+    "SUBSECTOR": "Servicing",
+    "SORT_SUBSECTOR": 27,
+    "OLD_NAME": "Refrigeration servicing sector"
+  },
+  {
+    "SEC": "SRVEE",
+    "SUBSECTOR": "Additional Activities for Energy Efficiency",
+    "SORT_SUBSECTOR": 28
+  },
+  {
+    "SEC": "SRV",
+    "SUBSECTOR": "End User",
+    "SORT_SUBSECTOR": 29
+  }
+]

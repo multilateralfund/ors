@@ -9,7 +9,11 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 
-from core.api.serializers.chemicals import BlendSerializer, SubstanceSerializer
+from core.api.serializers.chemicals import (
+    BlendSerializer,
+    GroupSerializer,
+    SubstanceSerializer,
+)
 from core.api.utils import SECTION_ANNEX_MAPPING
 from core.models.blend import Blend, BlendComponents
 from core.models.group import Group
@@ -57,6 +61,23 @@ class ChemicalBaseListView(mixins.ListModelMixin, generics.GenericAPIView):
         if pref_related_fields:
             queryset = queryset.prefetch_related(*pref_related_fields)
         return queryset
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+
+class GroupListView(mixins.ListModelMixin, generics.GenericAPIView):
+    """
+    API endpoint that allows groups to be viewed.
+    """
+
+    serializer_class = GroupSerializer
+    queryset = Group.objects.all()
+    select_related_string = "substances"
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        return queryset.order_by("name")
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)

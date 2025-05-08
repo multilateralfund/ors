@@ -1,12 +1,19 @@
 from rest_framework import mixins, viewsets, status
 from rest_framework.response import Response
 
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+
 from core.api.permissions import IsAgency, IsSecretariat, IsViewer
 from core.api.serializers.project_metadata import (
     ProjectSectorSerializer,
     ProjectSubSectorSerializer,
 )
-from core.models.project_metadata import ProjectSector, ProjectSubSector
+from core.models.project_metadata import (
+    ProjectClusterTypeSectorFields,
+    ProjectSector,
+    ProjectSubSector,
+)
 
 # please make sure to use only this endpoint for sector and subsector list
 # we need to make sure that we filter out the custom sectors and subsectors
@@ -72,6 +79,48 @@ class ProjectSectorView(SectorSubsectorBaseView):
 
     def get_existing_object(self, request):
         return ProjectSector.objects.find_by_name(request.data["name"])
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.request.method == "GET":
+            cluster_id = self.request.query_params.get("cluster_id")
+            type_id = self.request.query_params.get("type_id")
+
+            if cluster_id and type_id:
+                queryset = queryset.filter(
+                    id__in=ProjectClusterTypeSectorFields.objects.filter(
+                        cluster_id=cluster_id, type_id=type_id
+                    ).values_list("sector_id", flat=True)
+                ).order_by("sort_order")
+        return queryset
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "cluster_id",
+                openapi.IN_QUERY,
+                description="Filter sector by cluster ID. Must be used with type_id.",
+                type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                "type_id",
+                openapi.IN_QUERY,
+                description="Filter sector by type ID. Must be used with cluster_id.",
+                type=openapi.TYPE_INTEGER,
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        cluster_id = request.query_params.get("cluster_id")
+        type_id = request.query_params.get("type_id")
+
+        if any([cluster_id, type_id]) and not all([cluster_id, type_id]):
+            return Response(
+                {"error": "Both cluster_id and type_id must be provided together."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return super().list(request, *args, **kwargs)
 
 
 class ProjectSubSectorView(SectorSubsectorBaseView):

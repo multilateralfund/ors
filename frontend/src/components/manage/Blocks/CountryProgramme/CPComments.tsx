@@ -24,6 +24,7 @@ import {
   CPCommentsForEditProps,
   CPCommentsProps,
 } from './CPCommentsTypes'
+import parseComments from '@ors/components/manage/Blocks/CountryProgramme/parseComments.ts'
 
 type Label = keyof CPCommentState
 
@@ -62,19 +63,7 @@ const CPComments = (props: CPCommentsProps) => {
 
   useEffect(() => {
     if (report?.data?.comments) {
-      const commentsForSection = report.data.comments.filter(
-        (comment) => comment.section === section,
-      )
-      const texts: CPCommentState = {
-        country:
-          commentsForSection.find(
-            (comment) => comment.comment_type === 'comment_country',
-          )?.comment || '',
-        mlfs:
-          commentsForSection.find(
-            (comment) => comment.comment_type === 'comment_secretariat',
-          )?.comment || '',
-      }
+      const texts = parseComments(section, report)
       setInitialTexts(texts)
       setTexts(texts)
     }

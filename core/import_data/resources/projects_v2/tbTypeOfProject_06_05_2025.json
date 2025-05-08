@@ -1,0 +1,46 @@
+[
+  {
+    "TYPE": "DEM",
+    "TYPE_PRO": "Demonstration",
+    "SORT_TYPE": 1,
+    "OUTDATED": false
+  },
+  {
+    "TYPE": "INV",
+    "TYPE_PRO": "Investment",
+    "SORT_TYPE": 2,
+    "OUTDATED": false
+  },
+  {
+    "TYPE": "PRP",
+    "TYPE_PRO": "Preparation",
+    "SORT_TYPE": 3,
+    "OUTDATED": false,
+    "ACTION": "RENAME",
+    "OLD_NAME": "Project preparation"
+  },
+  {
+    "TYPE": "TAS",
+    "TYPE_PRO": "Technical assistance",
+    "SORT_TYPE": 4,
+    "OUTDATED": false
+  },
+  {
+    "TYPE": "PS",
+    "TYPE_PRO": "Project support",
+    "SORT_TYPE": 5,
+    "OUTDATED": false
+  },
+  {
+    "TYPE": "INS",
+    "TYPE_PRO": "Institutional strengthening",
+    "SORT_TYPE": 6,
+    "OUTDATED": false
+  },
+  {
+    "TYPE": "REV",
+    "TYPE_PRO": "Revolving Fund",
+    "SORT_TYPE": 7,
+    "OUTDATED": false
+  }
+]
