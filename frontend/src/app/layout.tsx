@@ -25,6 +25,7 @@ import { ProjectStatusType } from '@ors/types/api_project_statuses.ts'
 import { ProjectSectorType } from '@ors/types/api_project_sector.ts'
 import { ProjectSubSectorType } from '@ors/types/api_project_subsector.ts'
 import { ProjectSubmissionStatusType } from '@ors/types/api_project_submission_statuses.ts'
+import { ProjectSubstancesGroupsType } from '@ors/types/api_project_substances_groups'
 
 function useUser() {
   const [userData, setUserData] = useState<{
@@ -67,6 +68,7 @@ function useAppState(user: ApiUser | null | undefined) {
           meetings,
           decisions,
           clusters,
+          substances_groups,
           // Country programme data
           blends,
           substances,
@@ -82,6 +84,7 @@ function useAppState(user: ApiUser | null | undefined) {
           api('api/meetings/', {}, false),
           api('api/decisions/', {}, false),
           api('api/project-clusters/', {}, false),
+          api('api/groups/', {}, false),
           api(
             'api/blends/',
             { params: { with_alt_names: true, with_usages: true } },
@@ -117,6 +120,10 @@ function useAppState(user: ApiUser | null | undefined) {
             ),
           subsectors: getInitialSliceData<ProjectSubSectorType[]>(subsectors),
           types: getInitialSliceData(types),
+          substances_groups:
+            getInitialSliceData<ProjectSubstancesGroupsType[]>(
+              substances_groups,
+            ),
         }
         const cp_reports = {
           blends: getInitialSliceData<ApiBlend[]>(blends),

@@ -5,6 +5,8 @@ import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/help
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { SpecificFields } from './ProjectsCreate'
 import { BooleanFieldType } from './ProjectCrossCuttingFields'
+import { ProjectSubstancesGroupsType } from '@ors/types/api_project_substances_groups'
+import { useStore } from '@ors/store'
 import {
   tableColumns,
   trancheOpts,
@@ -29,6 +31,17 @@ const ProjectSpecificFields = ({
   projectSpecificFields: SpecificFields
   setProjectSpecificFields: React.Dispatch<React.SetStateAction<SpecificFields>>
 }) => {
+  const projectSlice = useStore((state) => state.projects)
+
+  const handleChangeSubstancesGroups = (
+    group: ProjectSubstancesGroupsType | null,
+  ) => {
+    setProjectSpecificFields((prevFilters) => ({
+      ...prevFilters,
+      group: group?.id ?? null,
+    }))
+  }
+
   const handleChangeTranche = (tranche: TrancheType | null) => {
     setProjectSpecificFields((prevFilters) => ({
       ...prevFilters,
@@ -55,6 +68,25 @@ const ProjectSpecificFields = ({
   return (
     <div className="flex flex-col gap-y-2">
       <div className="flex flex-wrap gap-x-20 gap-y-3">
+        <div>
+          <Label>{tableColumns.group}</Label>
+          <Field<ProjectSubstancesGroupsType>
+            widget="autocomplete"
+            options={projectSlice.substances_groups.data}
+            value={
+              projectSpecificFields?.group as ProjectSubstancesGroupsType | null
+            }
+            onChange={(_: React.SyntheticEvent, value) =>
+              handleChangeSubstancesGroups(
+                value as ProjectSubstancesGroupsType | null,
+              )
+            }
+            getOptionLabel={(option: any) =>
+              getOptionLabel(projectSlice.substances_groups.data, option)
+            }
+            {...defaultProps}
+          />
+        </div>
         <div>
           <Label>{tableColumns.tranche}</Label>
           <Field<TrancheType>
@@ -95,7 +127,7 @@ const ProjectSpecificFields = ({
         <TextareaAutosize
           value={projectSpecificFields?.products_manufactured}
           onChange={handleChangeProductsManufactured}
-          className={textAreaClassname + ' !min-h-[20px]'}
+          className={textAreaClassname + ' !min-h-[20px] !w-[415px]'}
           minRows={2}
           tabIndex={-1}
         />

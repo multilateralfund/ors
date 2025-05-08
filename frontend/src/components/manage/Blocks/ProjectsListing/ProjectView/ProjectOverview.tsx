@@ -23,9 +23,10 @@ const ProjectOverview = ({ project }: any) => {
         {detailItem(tableColumns.meeting, data.meeting)}
         {detailItem(tableColumns.agency, data.lead_agency)}
         {detailItem(tableColumns.cluster, data.cluster?.name)}
+        {detailItem(tableColumns.is_lvc, is_lvc)}
         {detailItem(tableColumns.type, data.project_type?.name)}
         {detailItem(tableColumns.sector, data.sector?.name)}
-        {detailItem(tableColumns.is_lvc, is_lvc)}
+        {detailItem(tableColumns.group, data.group)}
         {detailItem(tableColumns.tranche, data.tranche)}
         {detailItem(tableColumns.is_sme, is_sme)}
       </div>

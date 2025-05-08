@@ -34,6 +34,7 @@ export interface SpecificFields {
   tranche: number | null
   is_sme: boolean | null
   products_manufactured: string
+  group: number | null
 }
 
 const initialCrossCuttingFields = (): CrossCuttingFields => {
@@ -58,6 +59,7 @@ const initialProjectSpecificFields = (): SpecificFields => {
     tranche: null,
     is_sme: null,
     products_manufactured: '',
+    group: null,
   }
 }
 

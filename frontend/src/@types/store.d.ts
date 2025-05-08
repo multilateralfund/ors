@@ -17,6 +17,7 @@ import { ProjectStatusType } from '@ors/types/api_project_statuses.ts'
 import { ProjectSubmissionStatusType } from '@ors/types/api_project_submission_statuses.ts'
 import { ProjectSubSectorType } from '@ors/types/api_project_subsector.ts'
 import { ProjectTypeType } from '@ors/types/api_project_types.ts'
+import { ProjectSubstancesGroupsType } from '@ors/types/api_project_substances_groups'
 
 type StoreProviderProps = {
   children: React.ReactNode
@@ -157,6 +158,7 @@ export interface ProjectsSlice {
   submission_statuses: SliceData<ProjectSubmissionStatusType[]>
   subsectors: SliceData<ProjectSubSectorType[]>
   types: SliceData<ProjectTypeType[]>
+  substances_groups: SliceData<ProjectSubstancesGroupsType[]>
 }
 
 export interface BusinessPlanSlice {

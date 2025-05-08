@@ -25,6 +25,7 @@ export const tableColumns: { [key: string]: string } = {
   description: 'Description',
   is_sme: 'SME/non-SME',
   products_manufactured: 'Products manufactured',
+  group: 'Annex group of substances',
 }
 
 export const defaultProps = {
