@@ -46,7 +46,7 @@ class ProjectAdmin(admin.ModelAdmin):
     list_filter = [
         AutocompleteFilterFactory("agency", "agency"),
         AutocompleteFilterFactory("sector", "sector"),
-        AutocompleteFilterFactory("subsector", "subsector"),
+        AutocompleteFilterFactory("subsectors", "subsectors"),
         AutocompleteFilterFactory("project_type", "project_type"),
         AutocompleteFilterFactory("cluster", "cluster"),
         "substance_type",
@@ -54,7 +54,7 @@ class ProjectAdmin(admin.ModelAdmin):
         "status",
         "submission_status",
     ]
-    autocomplete_fields = ["country", "sector", "subsector", "agency", "project_type"]
+    autocomplete_fields = ["country", "sector", "subsectors", "agency", "project_type"]
 
     def get_list_display(self, request):
         exclude = [
