@@ -9,7 +9,7 @@ import {
   getMeetingNr,
   getMeetingOptions,
 } from '@ors/components/manage/Utils/utilFunctions'
-import { tableColumns } from '../constants'
+import { defaultProps, tableColumns } from '../constants'
 
 import { useStore } from '@ors/store'
 
@@ -28,10 +28,6 @@ const ProjectIdentifiersSection = ({
 }: any) => {
   const commonSlice = useStore((state) => state.common)
   const projectSlice = useStore((state) => state.projects)
-
-  const defaultProps = {
-    FieldProps: { className: 'mb-0 w-40 BPListUpload' },
-  }
 
   const handleChangeCountry = (country: any) => {
     setProjIdentifiers((prevFilters: any) => ({
@@ -84,7 +80,7 @@ const ProjectIdentifiersSection = ({
     <div className="flex flex-col gap-y-2">
       <div className="flex flex-wrap gap-x-20 gap-y-3">
         <div>
-          <Label isRequired={false}>{tableColumns.country}</Label>
+          <Label>{tableColumns.country}</Label>
           <Field
             widget="autocomplete"
             options={commonSlice.countries.data}
@@ -98,7 +94,7 @@ const ProjectIdentifiersSection = ({
           />
         </div>
         <div className="w-40">
-          <Label isRequired={false}>Meeting number</Label>
+          <Label>{tableColumns.meeting}</Label>
           <PopoverInput
             label={getMeetingNr(projIdentifiers?.meeting)}
             options={getMeetingOptions()}
@@ -112,7 +108,7 @@ const ProjectIdentifiersSection = ({
       </div>
       <div className="flex flex-wrap gap-x-20 gap-y-3">
         <div>
-          <Label isRequired={false}>{tableColumns.agency}</Label>
+          <Label>{tableColumns.agency}</Label>
           <Field
             widget="autocomplete"
             options={commonSlice.agencies.data}
@@ -126,7 +122,7 @@ const ProjectIdentifiersSection = ({
           />
         </div>
         <div>
-          <Label isRequired={false}>{tableColumns.cluster}</Label>
+          <Label>{tableColumns.cluster}</Label>
           <Field
             widget="autocomplete"
             options={projectSlice.clusters.data}
@@ -159,7 +155,7 @@ const ProjectIdentifiersSection = ({
       />
       {!projIdentifiers.is_lead_agency && (
         <>
-          <Label isRequired={false}>Lead agency</Label>
+          <Label>Lead agency</Label>
           <Field
             widget="autocomplete"
             options={commonSlice.agencies.data}

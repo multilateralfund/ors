@@ -16,12 +16,13 @@ const ProjectOverview = ({ project }: any) => {
     <div className="flex w-full flex-col gap-4">
       <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
         {detailItem(tableColumns.country, data.country)}
-        {detailItem('Meeting', data.meeting)}
+        {detailItem(tableColumns.meeting, data.meeting)}
         {detailItem(tableColumns.agency, data.lead_agency)}
         {detailItem(tableColumns.cluster, data.cluster?.name)}
         {detailItem(tableColumns.type, data.project_type?.name)}
         {detailItem(tableColumns.sector, data.sector?.name)}
         {detailItem(tableColumns.is_lvc, data.is_lvc ? 'LVC' : 'Non-LVC')}
+        {detailItem(tableColumns.tranche, data.tranche)}
       </div>
       <Divider />
       <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
@@ -29,7 +30,6 @@ const ProjectOverview = ({ project }: any) => {
         {detailItem(tableColumns.project_status, data.status)}
         {detailItem(tableColumns.metacode, data.metaproject_code)}
         {detailItem('Metaproject category', data.metaproject_category)}
-        {detailItem(tableColumns.tranche, data.tranche)}
         {detailItem('Subsector', data.subsector)}
         {detailItem('Transfer meeting', data.meeting_transf)}
       </div>

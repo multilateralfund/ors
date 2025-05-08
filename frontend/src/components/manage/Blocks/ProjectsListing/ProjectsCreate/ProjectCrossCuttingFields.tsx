@@ -12,6 +12,7 @@ import {
   tableColumns,
   blanketOrIndConsiderationOpts,
   lvcNonLvcOpts,
+  defaultProps,
 } from '../constants'
 import { isOptionEqualToValueByValue } from '../utils'
 import { useStore } from '@ors/store'
@@ -20,7 +21,7 @@ import { TextareaAutosize } from '@mui/material'
 import { find, isNil } from 'lodash'
 import dayjs from 'dayjs'
 
-export type LvcNonLvcType = {
+export type BooleanFieldType = {
   name: string
   value: boolean
 }
@@ -35,10 +36,6 @@ const ProjectCrossCuttingFields = ({
   >
 }) => {
   const projectSlice = useStore((state) => state.projects)
-
-  const defaultProps = {
-    FieldProps: { className: 'mb-0 w-40 BPListUpload' },
-  }
 
   const defaultPropsSimpleField = {
     label: '',
@@ -77,7 +74,7 @@ const ProjectCrossCuttingFields = ({
     }))
   }
 
-  const handleChangeLvcNonLvc = (is_lvc: LvcNonLvcType | null) => {
+  const handleChangeLvcNonLvc = (is_lvc: BooleanFieldType | null) => {
     setCrossCuttingFields((prevFilters) => ({
       ...prevFilters,
       is_lvc: !isNil(is_lvc?.value) ? is_lvc?.value : null,
@@ -126,10 +123,14 @@ const ProjectCrossCuttingFields = ({
     }
   }
 
-  const handleChangeBlanketConsideration = (consideration: any) => {
+  const handleChangeBlanketConsideration = (
+    consideration: BooleanFieldType | null,
+  ) => {
     setCrossCuttingFields((prevFilters) => ({
       ...prevFilters,
-      blanket_consideration: consideration?.id ?? null,
+      individual_consideration: !isNil(consideration?.value)
+        ? consideration?.value
+        : null,
     }))
   }
 
@@ -206,15 +207,15 @@ const ProjectCrossCuttingFields = ({
       <div className="flex flex-wrap gap-x-20 gap-y-3">
         <div>
           <Label>{tableColumns.is_lvc}</Label>
-          <Field<LvcNonLvcType>
+          <Field<BooleanFieldType>
             widget="autocomplete"
             options={lvcNonLvcOpts}
             value={
               (find(lvcNonLvcOpts, { value: crossCuttingFields?.is_lvc }) ||
-                null) as LvcNonLvcType | null
+                null) as BooleanFieldType | null
             }
             onChange={(_: any, value: any) =>
-              handleChangeLvcNonLvc(value as LvcNonLvcType | null)
+              handleChangeLvcNonLvc(value as BooleanFieldType | null)
             }
             getOptionLabel={(option: any) =>
               getOptionLabel(lvcNonLvcOpts, option, 'value')
@@ -235,7 +236,7 @@ const ProjectCrossCuttingFields = ({
         </div>
       </div>
       <div>
-        <Label>Description</Label>
+        <Label>{tableColumns.description}</Label>
         <TextareaAutosize
           value={crossCuttingFields?.description}
           onChange={handleChangeDescription}
@@ -290,17 +291,22 @@ const ProjectCrossCuttingFields = ({
         </div>
       </div>
       <div>
-        <Label>Blanket or individual consideration</Label>
-        <Field
+        <Label>{tableColumns.individual_consideration}</Label>
+        <Field<BooleanFieldType>
           widget="autocomplete"
           options={blanketOrIndConsiderationOpts}
-          value={crossCuttingFields?.blanket_consideration}
+          value={
+            (find(blanketOrIndConsiderationOpts, {
+              value: crossCuttingFields?.individual_consideration,
+            }) || null) as BooleanFieldType | null
+          }
           onChange={(_: any, value: any) =>
-            handleChangeBlanketConsideration(value)
+            handleChangeBlanketConsideration(value as BooleanFieldType | null)
           }
           getOptionLabel={(option: any) =>
-            getOptionLabel(blanketOrIndConsiderationOpts, option)
+            getOptionLabel(blanketOrIndConsiderationOpts, option, 'value')
           }
+          isOptionEqualToValue={isOptionEqualToValueByValue}
           {...defaultProps}
         />
       </div>

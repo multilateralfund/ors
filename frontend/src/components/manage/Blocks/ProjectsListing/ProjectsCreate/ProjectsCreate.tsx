@@ -8,10 +8,11 @@ import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import ProjectIdentifiersSection from './ProjectIdentifiersSection.tsx'
 import ProjectBPLinking from './ProjectBPLinking'
 import ProjectCrossCuttingFields from './ProjectCrossCuttingFields'
+import ProjectSpecificFields from './ProjectSpecificFields.tsx'
 import { api } from '@ors/helpers'
 
 import { Alert, Button, CircularProgress, Tabs, Tab } from '@mui/material'
-import { isNil, omit } from 'lodash'
+import { isNil, omit, pickBy } from 'lodash'
 import cx from 'classnames'
 
 export interface CrossCuttingFields {
@@ -26,7 +27,11 @@ export interface CrossCuttingFields {
   total_fund: string
   support_cost_psc: string
   psc: string
-  blanket_consideration: string
+  individual_consideration: boolean | null
+}
+
+export interface SpecificFields {
+  tranche: number | null
 }
 
 const initialCrossCuttingFields = (): CrossCuttingFields => {
@@ -42,7 +47,13 @@ const initialCrossCuttingFields = (): CrossCuttingFields => {
     total_fund: '',
     support_cost_psc: '',
     psc: '',
-    blanket_consideration: '',
+    individual_consideration: null,
+  }
+}
+
+const initialProjectSpecificFields = (): SpecificFields => {
+  return {
+    tranche: null,
   }
 }
 
@@ -56,6 +67,8 @@ const ProjectsCreate = () => {
   const [bpId, setBpId] = useState<number>()
   const [crossCuttingFields, setCrossCuttingFields] =
     useState<CrossCuttingFields>(initialCrossCuttingFields)
+  const [projectSpecificFields, setProjectSpecificFields] =
+    useState<SpecificFields>(initialProjectSpecificFields)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isSubmitSuccessful, setIsSubmitSuccessful] = useState<boolean>()
 
@@ -72,9 +85,7 @@ const ProjectsCreate = () => {
     !(
       crossCuttingFields.project_type &&
       crossCuttingFields.sector &&
-      crossCuttingFields.title &&
-      crossCuttingFields.total_fund &&
-      crossCuttingFields.support_cost_psc
+      crossCuttingFields.title
     )
 
   const steps = [
@@ -131,6 +142,24 @@ const ProjectsCreate = () => {
         />
       ),
     },
+    {
+      step: 3,
+      id: 'project-specific-section',
+      ariaControls: 'project-specific-section',
+      label: 'Project specific',
+      disabled:
+        areNextSectionsDisabled ||
+        !crossCuttingFields.project_type ||
+        !crossCuttingFields.sector,
+      component: (
+        <ProjectSpecificFields
+          {...{
+            projectSpecificFields,
+            setProjectSpecificFields,
+          }}
+        />
+      ),
+    },
   ]
 
   const submitProject = async () => {
@@ -149,11 +178,11 @@ const ProjectsCreate = () => {
             'side_agency',
             'is_lead_agency',
           ]),
-          ...omit(crossCuttingFields, ['blanket_consideration']),
-          blanket_consideration:
-            crossCuttingFields?.blanket_consideration === 'blanket'
-              ? true
-              : false,
+          ...pickBy(
+            crossCuttingFields,
+            (value) => !isNil(value) && value !== '',
+          ),
+          ...pickBy(projectSpecificFields, (value) => value),
         },
         method: 'POST',
       })
