@@ -9,13 +9,12 @@
                     "Air-Conditioning",
                     "Aerosol",
                     "Solvent",
-                    "Electronics manufacturing",
+                    "Electronics Manufacturing",
                     "Firefighting",
                     "Refrigeration",
                     "Servicing",
                     "Foam",
-                    "Other Sector",
-                    "Sector"
+                    "Other Sector"
                 ]
             },
             {
@@ -25,7 +24,7 @@
                     "Air-Conditioning",
                     "Aerosol",
                     "Solvent",
-                    "Electronics manufacturing",
+                    "Electronics Manufacturing",
                     "Firefighting",
                     "Refrigeration",
                     "Foam"
@@ -35,7 +34,7 @@
                 "type": "Investment",
                 "sectors": [
                     "Other Sector",
-                    "Electronics manufacturing",
+                    "Electronics Manufacturing",
                     "Firefighting",
                     "Air-Conditioning",
                     "Solvent",
@@ -56,7 +55,7 @@
                     "Servicing",
                     "Aerosol",
                     "Solvent",
-                    "Electronics manufacturing",
+                    "Electronics Manufacturing",
                     "Firefighting",
                     "Air-Conditioning",
                     "Refrigeration",
@@ -71,7 +70,7 @@
                     "Air-Conditioning",
                     "Aerosol",
                     "Solvent",
-                    "Electronics manufacturing",
+                    "Electronics Manufacturing",
                     "Firefighting",
                     "Refrigeration",
                     "Foam"
@@ -85,7 +84,7 @@
                     "Air-Conditioning",
                     "Aerosol",
                     "Solvent",
-                    "Electronics manufacturing",
+                    "Electronics Manufacturing",
                     "Firefighting",
                     "Refrigeration",
                     "Foam"
@@ -103,7 +102,7 @@
                     "Servicing",
                     "Aerosol",
                     "Solvent",
-                    "Electronics manufacturing",
+                    "Electronics Manufacturing",
                     "Firefighting",
                     "Foam",
                     "Air-Conditioning",
@@ -118,7 +117,7 @@
                     "Air-Conditioning",
                     "Aerosol",
                     "Solvent",
-                    "Electronics manufacturing",
+                    "Electronics Manufacturing",
                     "Firefighting",
                     "Refrigeration",
                     "Foam"
@@ -128,7 +127,7 @@
                 "type": "Investment",
                 "sectors": [
                     "Other Sector",
-                    "Electronics manufacturing",
+                    "Electronics Manufacturing",
                     "Firefighting",
                     "Air-Conditioning",
                     "Solvent",
@@ -197,7 +196,7 @@
                 "type": "Investment",
                 "sectors": [
                     "Aerosol",
-                    "Electronics manufacturing",
+                    "Electronics Manufacturing",
                     "Firefighting",
                     "Air-Conditioning",
                     "Foam",
@@ -212,7 +211,7 @@
                     "Air-Conditioning",
                     "Aerosol",
                     "Solvent",
-                    "Electronics manufacturing",
+                    "Electronics Manufacturing",
                     "Firefighting",
                     "Foam",
                     "Project monitoring and coordination",
@@ -230,7 +229,7 @@
                     "Refrigeration",
                     "Aerosol",
                     "Solvent",
-                    "Electronics manufacturing",
+                    "Electronics Manufacturing",
                     "Foam",
                     "Air-Conditioning"
                 ]
@@ -243,7 +242,7 @@
             {
                 "type": "Investment",
                 "sectors": [
-                    "Electronics manufacturing",
+                    "Electronics Manufacturing",
                     "Firefighting",
                     "Air-Conditioning",
                     "Foam",
@@ -259,7 +258,7 @@
                     "Air-Conditioning",
                     "Aerosol",
                     "Solvent",
-                    "Electronics manufacturing",
+                    "Electronics Manufacturing",
                     "Firefighting",
                     "Refrigeration",
                     "Project monitoring and coordination",
@@ -276,7 +275,7 @@
                     "Refrigeration",
                     "Aerosol",
                     "Solvent",
-                    "Electronics manufacturing",
+                    "Electronics Manufacturing",
                     "Foam",
                     "Air-Conditioning",
                     "Other Sector"
@@ -290,7 +289,7 @@
             {
                 "type": "Investment",
                 "sectors": [
-                    "Electronics manufacturing",
+                    "Electronics Manufacturing",
                     "Firefighting",
                     "Air-Conditioning",
                     "Aerosol",
@@ -306,7 +305,7 @@
                     "Refrigeration",
                     "Aerosol",
                     "Solvent",
-                    "Electronics manufacturing",
+                    "Electronics Manufacturing",
                     "Firefighting",
                     "Servicing",
                     "Project monitoring and coordination",
@@ -323,7 +322,7 @@
                     "Refrigeration",
                     "Aerosol",
                     "Solvent",
-                    "Electronics manufacturing",
+                    "Electronics Manufacturing",
                     "Foam",
                     "Air-Conditioning",
                     "Other Sector"
@@ -337,7 +336,7 @@
             {
                 "type": "Investment",
                 "sectors": [
-                    "Electronics manufacturing",
+                    "Electronics Manufacturing",
                     "Firefighting",
                     "Air-Conditioning",
                     "Aerosol",
@@ -356,7 +355,7 @@
                     "Servicing",
                     "Aerosol",
                     "Solvent",
-                    "Electronics manufacturing",
+                    "Electronics Manufacturing",
                     "Firefighting",
                     "Air-Conditioning",
                     "Foam",
@@ -370,7 +369,7 @@
                     "Refrigeration",
                     "Aerosol",
                     "Solvent",
-                    "Electronics manufacturing",
+                    "Electronics Manufacturing",
                     "Foam",
                     "Air-Conditioning",
                     "Other Sector"
@@ -388,7 +387,7 @@
                 ]
             },
             {
-                "type": "Project preparation",
+                "type": "Preparation",
                 "sectors": [
                     "Emissions"
                 ]
@@ -396,7 +395,7 @@
         ]
     },
     {
-        "cluster": "HFC phase-out management plan stage 1",
+        "cluster": "HCFC production phase-out management plan stage 1",
         "types": [
             {
                 "type": "Investment",
@@ -413,7 +412,7 @@
         ]
     },
     {
-        "cluster": "HFC phase-out management plan stage 2",
+        "cluster": "HCFC production phase-out management plan stage 2",
         "types": [
             {
                 "type": "Investment",
@@ -430,7 +429,7 @@
         ]
     },
     {
-        "cluster": "HFC phase-out management plan stage 3",
+        "cluster": "HCFC production phase-out management plan stage 3",
         "types": [
             {
                 "type": "Investment",
@@ -471,7 +470,7 @@
                 ]
             },
             {
-                "type": "Project preparation",
+                "type": "Preparation",
                 "sectors": [
                     "Aerosol",
                     "Air-Conditioning",
@@ -494,7 +493,7 @@
                     "Other Sector",
                     "Aerosol",
                     "Solvent",
-                    "Electronics manufacturing",
+                    "Electronics Manufacturing",
                     "Firefighting",
                     "Foam",
                     "Refrigeration",
@@ -510,7 +509,7 @@
                     "Foam",
                     "Aerosol",
                     "Solvent",
-                    "Electronics manufacturing",
+                    "Electronics Manufacturing",
                     "Firefighting",
                     "Servicing",
                     "Refrigeration",
@@ -522,7 +521,7 @@
                 "sectors": [
                     "Other Sector",
                     "Aerosol",
-                    "Electronics manufacturing",
+                    "Electronics Manufacturing",
                     "Firefighting",
                     "Air-Conditioning",
                     "Foam",
@@ -531,7 +530,7 @@
                 ]
             },
             {
-                "type": "Project preparation",
+                "type": "Preparation",
                 "sectors": [
                     "Aerosol",
                     "Air-Conditioning",
@@ -554,7 +553,7 @@
                     "Project monitoring and coordination",
                     "Aerosol",
                     "Solvent",
-                    "Electronics manufacturing",
+                    "Electronics Manufacturing",
                     "Firefighting",
                     "Foam",
                     "Air-Conditioning",
@@ -568,7 +567,7 @@
                     "Air-Conditioning",
                     "Aerosol",
                     "Solvent",
-                    "Electronics manufacturing",
+                    "Electronics Manufacturing",
                     "Firefighting",
                     "Foam",
                     "Refrigeration"
@@ -580,19 +579,19 @@
                     "Refrigeration",
                     "Aerosol",
                     "Solvent",
-                    "Electronics manufacturing",
+                    "Electronics Manufacturing",
                     "Firefighting",
                     "Foam",
                     "Air-Conditioning"
                 ]
             },
             {
-                "type": "Project preparation",
+                "type": "Preparation",
                 "sectors": [
                     "Refrigeration",
                     "Aerosol",
                     "Solvent",
-                    "Electronics manufacturing",
+                    "Electronics Manufacturing",
                     "Firefighting",
                     "Foam",
                     "Servicing",
@@ -625,7 +624,7 @@
 
             },
             {
-                "type": "Project preparation",
+                "type": "Preparation",
                 "sectors": [
                     "Disposal"
                 ]
