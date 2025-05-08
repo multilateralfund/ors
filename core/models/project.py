@@ -130,8 +130,8 @@ class Project(models.Model):
         ProjectSector, on_delete=models.CASCADE, null=True, blank=True
     )
     sector_legacy = models.CharField(max_length=256, null=True, blank=True)
-    subsector = models.ForeignKey(
-        ProjectSubSector, on_delete=models.CASCADE, null=True, blank=True
+    subsectors = models.ManyToManyField(
+        ProjectSubSector, related_name="projects", blank=True
     )
     subsector_legacy = models.CharField(max_length=256, null=True, blank=True)
     mya_subsector = models.CharField(max_length=256, null=True, blank=True)
