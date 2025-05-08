@@ -284,10 +284,17 @@ class ProjectListSerializer(serializers.ModelSerializer):
         queryset=ProjectSector.objects.all().values_list("id", flat=True),
     )
     sector_legacy = serializers.CharField(read_only=True)
-    subsector = serializers.SlugRelatedField("name", read_only=True)
-    subsector_id = serializers.PrimaryKeyRelatedField(
+    subsector_names = serializers.SlugRelatedField(
+        "name", many=True, read_only=True, source="subsectors"
+    )
+    subsector_ids = serializers.PrimaryKeyRelatedField(
+        many=True, read_only=True, source="subsectors"
+    )
+    subsectors = serializers.PrimaryKeyRelatedField(
         allow_null=True,
-        queryset=ProjectSubSector.objects.all().values_list("id", flat=True),
+        many=True,
+        write_only=True,
+        queryset=ProjectSubSector.objects.all(),
     )
     subsector_legacy = serializers.CharField(read_only=True)
     project_type = ProjectTypeSerializer(read_only=True)
@@ -407,8 +414,9 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "substance_type",
             "substance_category",
             "substance_phasedout",
-            "subsector",
-            "subsector_id",
+            "subsector_names",
+            "subsector_ids",
+            "subsectors",
             "subsector_legacy",
             "support_cost_psc",
             "rbm_measures",
@@ -467,16 +475,33 @@ class ProjectListSerializer(serializers.ModelSerializer):
             return None
         return obj.meta_project.type
 
+    def create(self, validated_data):
+        subsectors_data = validated_data.pop("subsectors", [])
+        project = Project.objects.create(**validated_data)
+        project.subsectors.set(subsectors_data)
+        return project
+
+    def update(self, instance, validated_data):
+        subsectors_data = validated_data.pop("subsectors", None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        if subsectors_data is not None:
+            instance.subsectors.set(subsectors_data)
+        return instance
+
 
 class ProjectExportSerializer(ProjectListSerializer):
     sector = serializers.SlugRelatedField("name", read_only=True)
     project_type = serializers.SlugRelatedField("name", read_only=True)
     cluster = serializers.SlugRelatedField("name", read_only=True)
     substances_list = serializers.SerializerMethodField()
+    subsectors_list = serializers.SerializerMethodField()
 
     class Meta(ProjectListSerializer.Meta):
         fields = ProjectListSerializer.Meta.fields + [
             "substances_list",
+            "subsectors_list",
             "serial_number_legacy",
         ]
 
@@ -492,6 +517,10 @@ class ProjectExportSerializer(ProjectListSerializer):
             elif ods_odp.ods_blend:
                 substances.append(ods_odp.ods_blend.name)
         return ", ".join(substances)
+
+    def get_subsectors_list(self, obj):
+        "subsector names separated by comma for project list export"
+        return ", ".join([s.name for s in obj.subsectors.all()])
 
 
 class ProjectDetailsSerializer(ProjectListSerializer):
@@ -565,6 +594,7 @@ class ProjectDetailsSerializer(ProjectListSerializer):
         funds = validated_data.pop("funds", [])
         comments = validated_data.pop("comments", [])
         coop_agencies_id = validated_data.pop("coop_agencies_id")
+        subsectors_data = validated_data.pop("subsectors", [])
 
         # a new project = new submission ?
         status = ProjectStatus.objects.get(code="NEWSUB")
@@ -591,6 +621,8 @@ class ProjectDetailsSerializer(ProjectListSerializer):
             project.serial_number,
         )
         project.save()
+
+        project.subsectors.set(subsectors_data)
 
         # create ods_odp
         for ods_odp in ods_odp_data:
