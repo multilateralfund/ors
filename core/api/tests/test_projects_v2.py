@@ -5,6 +5,8 @@ from rest_framework.test import APIClient
 from core.api.tests.base import BaseTest
 from core.api.tests.factories import (
     AgencyFactory,
+    BusinessPlanFactory,
+    BPActivityFactory,
     CountryFactory,
     MeetingFactory,
     ProjectFactory,
@@ -13,13 +15,16 @@ from core.api.tests.factories import (
     ProjectSubmissionStatusFactory,
     ProjectSubSectorFactory,
     ProjectTypeFactory,
+    SubstanceFactory,
     UserFactory,
 )
+from core.models import BPActivity
+
 from core.models.project import Project, ProjectFile
 from core.utils import get_project_sub_code
 
 pytestmark = pytest.mark.django_db
-# pylint: disable=C8008,W0221,R0913,R0914
+# pylint: disable=C8008,W0221,R0913,R0914,R0915
 
 
 @pytest.fixture(name="other_agency_user")
@@ -212,6 +217,8 @@ def setup_project_create(
     meeting,
     subsector,
     project_cluster_kip,
+    groupA,
+    decision,
 ):
     statuses_dict = [
         {"name": "N/A", "code": "NA"},
@@ -227,15 +234,84 @@ def setup_project_create(
     for status in submission_statuses_dict:
         submission_statuses.append(ProjectSubmissionStatusFactory.create(**status))
 
+    bp = BusinessPlanFactory.create()
+    bp_activity = BPActivityFactory.create(
+        business_plan=bp,
+        agency=agency,
+        country=country_ro,
+        status=BPActivity.Status.approved,
+    )
+
+    substA = SubstanceFactory.create(
+        name="SubstanceA", odp=0.02, gwp=0.05, group=groupA
+    )
+    substB = SubstanceFactory.create(
+        name="Substanceb", odp=0.03, gwp=0.02, group=groupA
+    )
+
     return {
-        "title": "Project",
-        "description": "Description",
-        "country": country_ro.id,
+        "ad_hoc_pcr": True,
         "agency": agency.id,
-        "sector": subsector.sector_id,
-        "project_type": project_type.id,
-        "meeting": meeting.id,
+        "aggregated_consumption": 943.3,
+        "baseline": 43.4,
+        "bp_activity": bp_activity.id,
+        "cost_effectiveness": 43.3,
+        "cost_effectiveness_co2": 54.3,
         "cluster": project_cluster_kip.id,
+        "country": country_ro.id,
+        "description": "Description",
+        "date_completion": "2020-01-01",
+        "date_approved": "2023-10-01",
+        "decision": decision.id,
+        "destruction_tehnology": "destruction tehnology test",
+        "excom_provision": "test excom provision",
+        "funding_window": "test funding window",
+        "group": groupA.id,
+        "individual_consideration": False,
+        "is_lvc": True,
+        "is_sme": False,
+        "lead_agency": agency.id,
+        "meeting": meeting.id,
+        "mya_start_date": "2023-10-01",
+        "mya_end_date": "2024-09-30",
+        "mya_project_funding": 1234.4,
+        "mya_support_cost": 434.2,
+        "mya_phase_out_co2_eq_t": 948.3,
+        "mya_phase_out_odp_t": 23.2,
+        "mya_phase_out_mt": 3.53,
+        "pcr_waived": False,
+        "production_control_type": "test production control type",
+        "products_manufactured": "test products manufactured",
+        "programme_officer": "Officer",
+        "project_end_date": "2024-09-30",
+        "project_start_date": "2023-10-01",
+        "project_type": project_type.id,
+        "sector": subsector.sector.id,
+        "starting_point": 543.4,
+        "subsector": subsector.id,
+        "support_cost_psc": 23,
+        "tranche": 2,
+        "targets": 543.4,
+        "title": "test title",
+        "total_fund": 2340000,
+        "ods_odp": [
+            {
+                "ods_substance_id": substA.id,
+                "odp": 11.11,
+                "ods_replacement": "ods replacement test",
+                "co2_mt": 323.23,
+                "ods_type": "production",
+                "sort_order": 1,
+            },
+            {
+                "ods_substance_id": substB.id,
+                "odp": 41.41,
+                "ods_replacement": "ods replacement test 2",
+                "co2_mt": 543.23,
+                "ods_type": "general",
+                "sort_order": 2,
+            },
+        ],
     }
 
 
@@ -486,6 +562,7 @@ class TestCreateProjects(BaseTest):
         meeting,
         project_cluster_kip,
         _setup_project_create,
+        decision,
     ):
         data = _setup_project_create
         self.client.force_authenticate(user=user)
@@ -493,15 +570,91 @@ class TestCreateProjects(BaseTest):
         # create project
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 201
-        assert response.data["title"] == data["title"]
-        assert response.data["country"] == country_ro.name
+        assert response.data["ad_hoc_pcr"] is True
         assert response.data["agency"] == agency.name
-        assert response.data["sector"]["id"] == subsector.sector.id
-        assert response.data["sector"]["name"] == subsector.sector.name
-        assert response.data["sector"]["code"] == subsector.sector.code
+        assert response.data["aggregated_consumption"] == data["aggregated_consumption"]
+        assert response.data["baseline"] == data["baseline"]
+        assert response.data["bp_activity"] == data["bp_activity"]
+        assert response.data["cost_effectiveness"] == data["cost_effectiveness"]
+        assert response.data["cost_effectiveness_co2"] == data["cost_effectiveness_co2"]
+        assert response.data["cluster"]["id"] == data["cluster"]
+        assert response.data["country"] == country_ro.name
+        assert response.data["description"] == data["description"]
+        assert response.data["date_completion"] == data["date_completion"]
+        assert response.data["date_approved"] == data["date_approved"]
+        assert response.data["decision_id"] == decision.id
+        assert response.data["destruction_tehnology"] == data["destruction_tehnology"]
+        assert response.data["excom_provision"] == data["excom_provision"]
+        assert response.data["funding_window"] == data["funding_window"]
+        assert response.data["group_id"] == data["group"]
+        assert (
+            response.data["individual_consideration"]
+            == data["individual_consideration"]
+        )
+        assert response.data["is_lvc"] == data["is_lvc"]
+        assert response.data["is_sme"] == data["is_sme"]
+        assert response.data["lead_agency"] == agency.name
+        assert response.data["meeting_id"] == data["meeting"]
+        assert response.data["mya_start_date"] == data["mya_start_date"]
+        assert response.data["mya_end_date"] == data["mya_end_date"]
+        assert response.data["mya_project_funding"] == data["mya_project_funding"]
+        assert response.data["mya_support_cost"] == data["mya_support_cost"]
+        assert response.data["mya_phase_out_co2_eq_t"] == data["mya_phase_out_co2_eq_t"]
+        assert response.data["mya_phase_out_odp_t"] == data["mya_phase_out_odp_t"]
+        assert response.data["mya_phase_out_mt"] == data["mya_phase_out_mt"]
+        assert response.data["pcr_waived"] == data["pcr_waived"]
+        assert (
+            response.data["production_control_type"] == data["production_control_type"]
+        )
+        assert response.data["products_manufactured"] == data["products_manufactured"]
+        assert response.data["programme_officer"] == data["programme_officer"]
+        assert response.data["project_end_date"] == data["project_end_date"]
+        assert response.data["project_start_date"] == data["project_start_date"]
+        assert response.data["project_type"]["id"] == data["project_type"]
         assert response.data["project_type"]["id"] == project_type.id
         assert response.data["project_type"]["name"] == project_type.name
         assert response.data["project_type"]["code"] == project_type.code
+        assert response.data["sector_id"] == data["sector"]
+        assert response.data["sector"]["id"] == subsector.sector.id
+        assert response.data["sector"]["name"] == subsector.sector.name
+        assert response.data["sector"]["code"] == subsector.sector.code
+        assert response.data["starting_point"] == data["starting_point"]
+        assert response.data["subsector_id"] == data["subsector"]
+        assert response.data["support_cost_psc"] == data["support_cost_psc"]
+        assert response.data["tranche"] == data["tranche"]
+        assert response.data["targets"] == data["targets"]
+        assert response.data["title"] == data["title"]
+        assert response.data["total_fund"] == data["total_fund"]
+        assert (
+            response.data["ods_odp"][0]["ods_substance_id"]
+            == data["ods_odp"][0]["ods_substance_id"]
+        )
+        assert response.data["ods_odp"][0]["odp"] == data["ods_odp"][0]["odp"]
+        assert (
+            response.data["ods_odp"][0]["ods_replacement"]
+            == data["ods_odp"][0]["ods_replacement"]
+        )
+        assert response.data["ods_odp"][0]["co2_mt"] == data["ods_odp"][0]["co2_mt"]
+        assert response.data["ods_odp"][0]["ods_type"] == data["ods_odp"][0]["ods_type"]
+        assert (
+            response.data["ods_odp"][0]["sort_order"]
+            == data["ods_odp"][0]["sort_order"]
+        )
+        assert (
+            response.data["ods_odp"][1]["ods_substance_id"]
+            == data["ods_odp"][1]["ods_substance_id"]
+        )
+        assert response.data["ods_odp"][1]["odp"] == data["ods_odp"][1]["odp"]
+        assert (
+            response.data["ods_odp"][1]["ods_replacement"]
+            == data["ods_odp"][1]["ods_replacement"]
+        )
+        assert response.data["ods_odp"][1]["co2_mt"] == data["ods_odp"][1]["co2_mt"]
+        assert response.data["ods_odp"][1]["ods_type"] == data["ods_odp"][1]["ods_type"]
+        assert (
+            response.data["ods_odp"][1]["sort_order"]
+            == data["ods_odp"][1]["sort_order"]
+        )
         assert response.data["status"] == "N/A"
         assert response.data["submission_status"] == "Draft"
         assert response.data["code"] == get_project_sub_code(

@@ -3,7 +3,10 @@ from django.urls import reverse
 
 from rest_framework import serializers
 
-from core.api.serializers.project import ProjectListSerializer
+from core.api.serializers.project import (
+    ProjectListSerializer,
+    ProjectOdsOdpListSerializer,
+)
 from core.models.agency import Agency
 from core.models.country import Country
 from core.models.group import Group
@@ -11,6 +14,7 @@ from core.models.meeting import Meeting, Decision
 from core.models.project import (
     Project,
     ProjectFile,
+    ProjectOdsOdp,
 )
 from core.models.project_metadata import (
     ProjectCluster,
@@ -203,6 +207,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
     ProjectSerializer class
     """
 
+    ods_odp = ProjectOdsOdpListSerializer(many=True, read_only=True)
     country_id = serializers.PrimaryKeyRelatedField(
         required=True, queryset=Country.objects.all().values_list("id", flat=True)
     )
@@ -232,6 +237,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
             "meeting_transf_id",
             "cluster_id",
             "latest_file",
+            "ods_odp",
         ]
 
 
@@ -239,6 +245,8 @@ class ProjectV2CreateSerializer(serializers.ModelSerializer):
     """
     ProjectSerializer class
     """
+
+    ods_odp = ProjectOdsOdpListSerializer(many=True, required=False)
 
     class Meta:
         model = Project
@@ -272,6 +280,7 @@ class ProjectV2CreateSerializer(serializers.ModelSerializer):
             "mya_phase_out_mt",
             "mya_project_funding",
             "mya_support_cost",
+            "ods_odp",
             "pcr_waived",
             "production_control_type",
             "products_manufactured",
@@ -300,6 +309,7 @@ class ProjectV2CreateSerializer(serializers.ModelSerializer):
         submission_status = ProjectSubmissionStatus.objects.get(name="Draft")
         validated_data["status_id"] = status.id
         validated_data["submission_status_id"] = submission_status.id
+        ods_odp_data = validated_data.pop("ods_odp", [])
         project = Project.objects.create(**validated_data)
         # set subcode
         project.code = get_project_sub_code(
@@ -313,4 +323,9 @@ class ProjectV2CreateSerializer(serializers.ModelSerializer):
             project.serial_number,
         )
         project.save()
+
+        # create ods_odp
+        for ods_odp in ods_odp_data:
+            ProjectOdsOdp.objects.create(project=project, **ods_odp)
+
         return project
