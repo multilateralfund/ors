@@ -15,6 +15,14 @@ import { Alert, Button, CircularProgress, Tabs, Tab } from '@mui/material'
 import { isNil, omit, pickBy } from 'lodash'
 import cx from 'classnames'
 
+export interface ProjIdentifiers {
+  country: number | null
+  meeting: number | null
+  current_agency: number | null
+  side_agency: number | null
+  is_lead_agency: boolean
+  cluster: number | null
+}
 export interface CrossCuttingFields {
   project_type: number | null
   sector: number | null
@@ -142,6 +150,7 @@ const ProjectsCreate = () => {
       component: (
         <ProjectCrossCuttingFields
           {...{
+            projIdentifiers,
             crossCuttingFields,
             setCrossCuttingFields,
           }}

@@ -1,5 +1,8 @@
-import { ChangeEvent } from 'react'
-import type { CrossCuttingFields } from '@ors/components/manage/Blocks/ProjectsListing/ProjectsCreate/ProjectsCreate.tsx'
+import { useEffect, useState, ChangeEvent } from 'react'
+import type {
+  ProjIdentifiers,
+  CrossCuttingFields,
+} from '@ors/components/manage/Blocks/ProjectsListing/ProjectsCreate/ProjectsCreate.tsx'
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
@@ -18,9 +21,10 @@ import {
 } from '../constants'
 import { isOptionEqualToValueByValue } from '../utils'
 import { useStore } from '@ors/store'
+import { api } from '@ors/helpers'
 
 import { TextareaAutosize } from '@mui/material'
-import { find, isNil } from 'lodash'
+import { debounce, find, isNil } from 'lodash'
 import dayjs from 'dayjs'
 
 export type BooleanFieldType = {
@@ -29,15 +33,95 @@ export type BooleanFieldType = {
 }
 
 const ProjectCrossCuttingFields = ({
+  projIdentifiers,
   crossCuttingFields,
   setCrossCuttingFields,
 }: {
+  projIdentifiers: ProjIdentifiers
   crossCuttingFields: CrossCuttingFields
   setCrossCuttingFields: React.Dispatch<
     React.SetStateAction<CrossCuttingFields>
   >
 }) => {
   const projectSlice = useStore((state) => state.projects)
+
+  const [projectTypesOpts, setProjectTypesOpts] = useState([])
+  const [sectorsOpts, setSectorsOpts] = useState([])
+
+  const fetchProjectTypes = async () => {
+    try {
+      const res = await api(
+        'api/project-types/',
+        {
+          params: { cluster_id: projIdentifiers.cluster },
+          withStoreCache: true,
+        },
+        false,
+      )
+      setProjectTypesOpts(res || [])
+    } catch (e) {
+      console.error('Error at loading project types')
+    }
+  }
+
+  const debouncedFetchProjectTypes = debounce(fetchProjectTypes, 0)
+
+  useEffect(() => {
+    debouncedFetchProjectTypes()
+  }, [projIdentifiers.cluster])
+
+  const fetchProjectSectors = async () => {
+    try {
+      const res = await api(
+        'api/project-sector/',
+        {
+          params: {
+            cluster_id: projIdentifiers.cluster,
+            type_id: crossCuttingFields.project_type,
+          },
+          withStoreCache: true,
+        },
+        false,
+      )
+      setSectorsOpts(res || [])
+    } catch (e) {
+      console.error('Error at loading project sectors')
+    }
+  }
+
+  const debouncedFetchProjectSectors = debounce(fetchProjectSectors, 0)
+
+  useEffect(() => {
+    if (crossCuttingFields.project_type) {
+      debouncedFetchProjectSectors()
+    } else {
+      setSectorsOpts([])
+    }
+  }, [projIdentifiers.cluster, crossCuttingFields.project_type])
+
+  useEffect(() => {
+    if (projectTypesOpts.length > 0) {
+      if (!find(projectTypesOpts, { id: crossCuttingFields?.project_type })) {
+        setCrossCuttingFields((prevFilters) => ({
+          ...prevFilters,
+          project_type: null,
+        }))
+      }
+    }
+  }, [projectTypesOpts])
+
+  useEffect(() => {
+    if (
+      !crossCuttingFields?.project_type ||
+      (sectorsOpts.length > 0 &&
+        !find(sectorsOpts, { id: crossCuttingFields?.sector }))
+    ) {
+      setCrossCuttingFields((prevFilters) => ({
+        ...prevFilters,
+        sector: null,
+      }))
+    }
+  }, [sectorsOpts, crossCuttingFields?.project_type])
 
   const defaultPropsDateInput = {
     className: 'BPListUpload !ml-0 h-10 w-40',
@@ -153,13 +237,13 @@ const ProjectCrossCuttingFields = ({
           <Label>{tableColumns.type}</Label>
           <Field<ProjectTypeType>
             widget="autocomplete"
-            options={projectSlice.types.data}
+            options={projectTypesOpts}
             value={crossCuttingFields?.project_type as ProjectTypeType | null}
             onChange={(_: React.SyntheticEvent, value) =>
               handleChangeProjectType(value as ProjectTypeType | null)
             }
             getOptionLabel={(option: any) =>
-              getOptionLabel(projectSlice.types.data, option)
+              getOptionLabel(projectTypesOpts, option)
             }
             {...defaultProps}
           />
@@ -168,14 +252,12 @@ const ProjectCrossCuttingFields = ({
           <Label>{tableColumns.sector}</Label>
           <Field<ProjectSectorType>
             widget="autocomplete"
-            options={projectSlice.sectors.data}
+            options={sectorsOpts}
             value={crossCuttingFields?.sector as ProjectSectorType | null}
             onChange={(_: any, value) =>
               handleChangeSector(value as ProjectSectorType | null)
             }
-            getOptionLabel={(option) =>
-              getOptionLabel(projectSlice.sectors.data, option)
-            }
+            getOptionLabel={(option) => getOptionLabel(sectorsOpts, option)}
             {...defaultProps}
           />
         </div>
