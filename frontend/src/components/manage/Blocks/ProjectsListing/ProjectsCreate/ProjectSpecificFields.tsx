@@ -1,8 +1,21 @@
+import { ChangeEvent } from 'react'
+
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { SpecificFields } from './ProjectsCreate'
-import { defaultProps, tableColumns, trancheOpts } from '../constants'
+import { BooleanFieldType } from './ProjectCrossCuttingFields'
+import {
+  tableColumns,
+  trancheOpts,
+  isSmeOpts,
+  defaultProps,
+  textAreaClassname,
+} from '../constants'
+import { isOptionEqualToValueByValue } from '../utils'
+
+import { TextareaAutosize } from '@mui/material'
+import { find, isNil } from 'lodash'
 
 export type TrancheType = {
   name: number
@@ -20,6 +33,22 @@ const ProjectSpecificFields = ({
     setProjectSpecificFields((prevFilters) => ({
       ...prevFilters,
       tranche: tranche?.id ?? null,
+    }))
+  }
+
+  const handleChangeSmeNonSme = (is_sme: BooleanFieldType | null) => {
+    setProjectSpecificFields((prevFilters) => ({
+      ...prevFilters,
+      is_sme: !isNil(is_sme?.value) ? is_sme?.value : null,
+    }))
+  }
+
+  const handleChangeProductsManufactured = (
+    event: ChangeEvent<HTMLTextAreaElement>,
+  ) => {
+    setProjectSpecificFields((prevFilters) => ({
+      ...prevFilters,
+      products_manufactured: event.target.value,
     }))
   }
 
@@ -41,6 +70,35 @@ const ProjectSpecificFields = ({
             {...defaultProps}
           />
         </div>
+        <div>
+          <Label>{tableColumns.is_sme}</Label>
+          <Field<BooleanFieldType>
+            widget="autocomplete"
+            options={isSmeOpts}
+            value={
+              (find(isSmeOpts, { value: projectSpecificFields?.is_sme }) ||
+                null) as BooleanFieldType | null
+            }
+            onChange={(_: any, value: any) =>
+              handleChangeSmeNonSme(value as BooleanFieldType | null)
+            }
+            getOptionLabel={(option: any) =>
+              getOptionLabel(isSmeOpts, option, 'value')
+            }
+            isOptionEqualToValue={isOptionEqualToValueByValue}
+            {...defaultProps}
+          />
+        </div>
+      </div>
+      <div>
+        <Label>{tableColumns.products_manufactured}</Label>
+        <TextareaAutosize
+          value={projectSpecificFields?.products_manufactured}
+          onChange={handleChangeProductsManufactured}
+          className={textAreaClassname + ' !min-h-[20px]'}
+          minRows={2}
+          tabIndex={-1}
+        />
       </div>
     </div>
   )

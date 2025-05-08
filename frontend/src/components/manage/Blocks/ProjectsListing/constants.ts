@@ -23,11 +23,22 @@ export const tableColumns: { [key: string]: string } = {
   individual_consideration: 'Blanket or individual consideration',
   meeting: 'Meeting number',
   description: 'Description',
+  is_sme: 'SME/non-SME',
+  products_manufactured: 'Products manufactured',
 }
 
 export const defaultProps = {
   FieldProps: { className: 'mb-0 w-40 BPListUpload' },
 }
+
+export const defaultPropsSimpleField = {
+  label: '',
+  className: 'BPListUpload mb-0 w-40 border-primary project-input',
+  containerClassName: '!h-fit w-40',
+}
+
+export const textAreaClassname =
+  'min-h-[30px] w-[400px] min-w-[350px] rounded-lg border bg-white p-2 pb-10 shadow-none'
 
 export const blanketOrIndConsiderationOpts = [
   { name: 'Individual', value: true },
@@ -37,6 +48,11 @@ export const blanketOrIndConsiderationOpts = [
 export const lvcNonLvcOpts = [
   { name: 'LVC', value: true },
   { name: 'Non-LVC', value: false },
+]
+
+export const isSmeOpts = [
+  { name: 'SME', value: true },
+  { name: 'Non-SME', value: false },
 ]
 
 export const trancheOpts = map(range(1, 11), (n) => ({ id: n, name: n }))

@@ -13,6 +13,8 @@ import {
   blanketOrIndConsiderationOpts,
   lvcNonLvcOpts,
   defaultProps,
+  defaultPropsSimpleField,
+  textAreaClassname,
 } from '../constants'
 import { isOptionEqualToValueByValue } from '../utils'
 import { useStore } from '@ors/store'
@@ -36,12 +38,6 @@ const ProjectCrossCuttingFields = ({
   >
 }) => {
   const projectSlice = useStore((state) => state.projects)
-
-  const defaultPropsSimpleField = {
-    label: '',
-    className: 'BPListUpload mb-0 w-40 border-primary project-input',
-    containerClassName: '!h-fit w-40',
-  }
 
   const defaultPropsDateInput = {
     className: 'BPListUpload !ml-0 h-10 w-40',
@@ -241,9 +237,9 @@ const ProjectCrossCuttingFields = ({
           value={crossCuttingFields?.description}
           onChange={handleChangeDescription}
           placeholder="Type project description here..."
+          className={textAreaClassname}
           minRows={3}
           tabIndex={-1}
-          className="min-h-[30px] w-[400px] min-w-[350px] rounded-lg border bg-white p-2 pb-10 shadow-none"
         />
       </div>
       <div className="flex flex-wrap gap-x-20 gap-y-3">

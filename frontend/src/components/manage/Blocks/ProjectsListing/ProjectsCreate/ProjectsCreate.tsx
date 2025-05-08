@@ -32,6 +32,8 @@ export interface CrossCuttingFields {
 
 export interface SpecificFields {
   tranche: number | null
+  is_sme: boolean | null
+  products_manufactured: string
 }
 
 const initialCrossCuttingFields = (): CrossCuttingFields => {
@@ -54,6 +56,8 @@ const initialCrossCuttingFields = (): CrossCuttingFields => {
 const initialProjectSpecificFields = (): SpecificFields => {
   return {
     tranche: null,
+    is_sme: null,
+    products_manufactured: '',
   }
 }
 
@@ -182,7 +186,10 @@ const ProjectsCreate = () => {
             crossCuttingFields,
             (value) => !isNil(value) && value !== '',
           ),
-          ...pickBy(projectSpecificFields, (value) => value),
+          ...pickBy(
+            projectSpecificFields,
+            (value) => !isNil(value) && value !== '',
+          ),
         },
         method: 'POST',
       })

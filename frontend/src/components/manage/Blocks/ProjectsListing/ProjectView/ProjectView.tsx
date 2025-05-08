@@ -52,14 +52,14 @@ const ProjectView = (props: any) => {
         />
         <Tab id="project-date" aria-controls="project-date" label="Date" />
         <Tab
-          id="project-submission"
-          aria-controls="project-submission"
-          label="Submission details"
-        />
-        <Tab
           id="project-substance-details"
           aria-controls="project-substance-details"
           label="Substance details"
+        />
+        <Tab
+          id="project-submission"
+          aria-controls="project-submission"
+          label="Submission details"
         />
         <Tab
           id="project-costs"
@@ -87,8 +87,8 @@ const ProjectView = (props: any) => {
         {activeTab === 1 && <ProjectDescription {...props} />}
         {activeTab === 2 && <ProjectFinancial {...props} />}
         {activeTab === 3 && <ProjectDate {...props} />}
-        {activeTab === 4 && <ProjectSubmissionDetails {...props} />}
-        {activeTab === 5 && <ProjectSubstanceDetails {...props} />}
+        {activeTab === 4 && <ProjectSubstanceDetails {...props} />}
+        {activeTab === 5 && <ProjectSubmissionDetails {...props} />}
         {activeTab === 6 && <ProjectCostsDetails {...props} />}
         {activeTab === 7 && <ProjectPhaseOutDetails {...props} />}
         {activeTab === 8 && <ProjectImpact {...props} />}

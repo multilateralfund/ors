@@ -54,14 +54,14 @@ const ProjectEdit = (props: any) => {
         />
         <Tab id="project-date" aria-controls="project-date" label="Date" />
         <Tab
-          id="project-submission"
-          aria-controls="project-submission"
-          label="Submission details"
-        />
-        <Tab
           id="project-substance-details"
           aria-controls="project-substance-details"
           label="Substance details"
+        />
+        <Tab
+          id="project-submission"
+          aria-controls="project-submission"
+          label="Submission details"
         />
         <Tab
           id="project-costs"
@@ -94,8 +94,8 @@ const ProjectEdit = (props: any) => {
         {activeTab === 1 && <ProjectDescription {...props} />}
         {activeTab === 2 && <ProjectFinancial {...{ project }} />}
         {activeTab === 3 && <ProjectDate {...{ project }} />}
-        {activeTab === 4 && <ProjectSubmissionDetails {...{ project }} />}
-        {activeTab === 5 && <ProjectSubstanceDetails {...{ project }} />}
+        {activeTab === 4 && <ProjectSubstanceDetails {...{ project }} />}
+        {activeTab === 5 && <ProjectSubmissionDetails {...{ project }} />}
         {activeTab === 6 && <ProjectCostsDetails {...{ project }} />}
         {activeTab === 7 && <ProjectPhaseOutDetails {...{ project }} />}
         {activeTab === 8 && <ProjectImpact {...{ project }} />}
