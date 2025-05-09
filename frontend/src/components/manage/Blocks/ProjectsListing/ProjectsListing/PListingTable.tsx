@@ -23,6 +23,7 @@ const PListingTable = ({ projects, filters }: any) => {
     loaded && (
       <ViewTable
         key={JSON.stringify(filters)}
+        className="projects-table"
         columnDefs={columnDefs}
         defaultColDef={defaultColDef}
         domLayout="normal"

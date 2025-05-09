@@ -1,8 +1,8 @@
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
-import { SpecificFields } from './ProjectsCreate'
 import { BooleanFieldType } from './ProjectCrossCuttingFields'
+import { SpecificFieldsSectionProps } from '../interfaces'
 import { ProjectSubstancesGroupsType } from '@ors/types/api_project_substances_groups'
 import { useStore } from '@ors/store'
 import {
@@ -23,10 +23,7 @@ export type TrancheType = {
 const ProjectOverview = ({
   projectSpecificFields,
   setProjectSpecificFields,
-}: {
-  projectSpecificFields: SpecificFields
-  setProjectSpecificFields: React.Dispatch<React.SetStateAction<SpecificFields>>
-}) => {
+}: SpecificFieldsSectionProps) => {
   const projectSlice = useStore((state) => state.projects)
 
   const handleChangeSubstancesGroups = (

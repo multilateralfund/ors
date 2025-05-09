@@ -1,8 +1,5 @@
 import { useEffect, useState, ChangeEvent } from 'react'
-import type {
-  ProjIdentifiers,
-  CrossCuttingFields,
-} from '@ors/components/manage/Blocks/ProjectsListing/ProjectsCreate/ProjectsCreate.tsx'
+
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
@@ -19,6 +16,7 @@ import {
   defaultPropsSimpleField,
   textAreaClassname,
 } from '../constants'
+import { CrossCuttingFields, ProjIdentifiers } from '../interfaces'
 import { isOptionEqualToValueByValue } from '../utils'
 import { useStore } from '@ors/store'
 import { api } from '@ors/helpers'

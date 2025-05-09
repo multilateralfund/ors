@@ -11,41 +11,12 @@ import ProjectCrossCuttingFields from './ProjectCrossCuttingFields'
 import ProjectOverview from './ProjectOverview.tsx'
 import ProjectSubstanceDetails from './ProjectSubstanceDetails.tsx'
 import ProjectImpact from './ProjectImpact.tsx'
+import { CrossCuttingFields, SpecificFields } from '../interfaces.ts'
 import { api } from '@ors/helpers'
 
 import { Alert, Button, CircularProgress, Tabs, Tab } from '@mui/material'
 import { isNil, omit, pickBy } from 'lodash'
 import cx from 'classnames'
-
-export interface ProjIdentifiers {
-  country: number | null
-  meeting: number | null
-  current_agency: number | null
-  side_agency: number | null
-  is_lead_agency: boolean
-  cluster: number | null
-}
-export interface CrossCuttingFields {
-  project_type: number | null
-  sector: number | null
-  subsector: string[]
-  is_lvc: boolean | null
-  title: string
-  description: string
-  project_start_date: string
-  project_end_date: string
-  total_fund: string
-  support_cost_psc: string
-  psc: string
-  individual_consideration: boolean | null
-}
-
-export interface SpecificFields {
-  tranche: number | null
-  is_sme: boolean | null
-  products_manufactured: string
-  group: number | null
-}
 
 const initialCrossCuttingFields = (): CrossCuttingFields => {
   return {
@@ -70,6 +41,7 @@ const initialProjectSpecificFields = (): SpecificFields => {
     is_sme: null,
     products_manufactured: '',
     group: null,
+    ods_odp: [],
   }
 }
 
@@ -193,21 +165,21 @@ const ProjectsCreate = () => {
         />
       ),
     },
-    // {
-    //   step: 5,
-    //   id: 'project-impact-section',
-    //   ariaControls: 'project-impact-section',
-    //   label: 'Impact',
-    //   disabled: areProjectSpecificTabsDisabled,
-    //   component: (
-    //     <ProjectImpact
-    //       {...{
-    //         projectSpecificFields,
-    //         setProjectSpecificFields,
-    //       }}
-    //     />
-    //   ),
-    // },
+    {
+      step: 5,
+      id: 'project-impact-section',
+      ariaControls: 'project-impact-section',
+      label: 'Impact',
+      disabled: areProjectSpecificTabsDisabled,
+      component: (
+        <ProjectImpact
+          {...{
+            projectSpecificFields,
+            setProjectSpecificFields,
+          }}
+        />
+      ),
+    },
   ]
 
   const submitProject = async () => {
