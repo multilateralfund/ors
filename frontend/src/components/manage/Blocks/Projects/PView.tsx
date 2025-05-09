@@ -116,9 +116,9 @@ export default function PView({ data }: ProjectProps) {
                 </Typography>
               </div>
               <div>
-                <Label>Subsector</Label>
+                <Label>Subsectors</Label>
                 <Typography className="text-lg font-bold">
-                  {data.subsector || '-'}
+                  {data.subsectors.map((ss) => ss.name).join(', ') || '-'}
                 </Typography>
               </div>
               <div>

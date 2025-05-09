@@ -225,7 +225,7 @@ export function usePSListingGridOptions() {
           cellRenderer: (props: any) => {
             return <AgCellRenderer {...props} value={props.data.subsector} />
           },
-          field: 'subsector_id',
+          field: 'subsectors',
           headerComponentParams: {
             className: 'flex justify-center gap-2',
             details: (
