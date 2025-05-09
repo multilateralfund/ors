@@ -14,7 +14,7 @@ export const tableColumns: { [key: string]: string } = {
   title: 'Title',
   type: 'Type',
   sector: 'Sector',
-  subsector: 'Sub-Sector',
+  subsector: 'Sub-sector(s)',
   is_lvc: 'LVC/non-LVC',
   project_start_date: 'Project start date',
   project_end_date: 'Project end date',
@@ -26,6 +26,13 @@ export const tableColumns: { [key: string]: string } = {
   is_sme: 'SME/non-SME',
   products_manufactured: 'Products manufactured',
   group: 'Annex group of substances',
+  ods_odp: 'ODS ODP',
+  ods_substance_id: 'Substance - baseline technology',
+  ods_replacement: 'Replacement technology/ies',
+  co2_mt: 'Phase out (CO₂-eq t)',
+  odp: 'Phase out (ODP t)',
+  phase_out_mt: 'Phase out (Mt)',
+  ods_type: 'ODS type',
 }
 
 export const defaultProps = {
@@ -57,3 +64,9 @@ export const isSmeOpts = [
 ]
 
 export const trancheOpts = map(range(1, 11), (n) => ({ id: n, name: n }))
+
+export const odsTypeOpts = [
+  { name: 'General', id: 1 },
+  { name: 'Production', id: 2 },
+  { name: 'Indirect', id: 3 },
+]

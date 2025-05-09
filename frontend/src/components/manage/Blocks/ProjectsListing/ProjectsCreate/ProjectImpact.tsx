@@ -1,12 +1,9 @@
-import { SpecificFields } from './ProjectsCreate'
+import { SpecificFieldsSectionProps } from '../interfaces'
 
 const ProjectImpact = ({
   projectSpecificFields,
   setProjectSpecificFields,
-}: {
-  projectSpecificFields: SpecificFields
-  setProjectSpecificFields: React.Dispatch<React.SetStateAction<SpecificFields>>
-}) => {
+}: SpecificFieldsSectionProps) => {
   return <div className="flex flex-col gap-y-2"></div>
 }
 

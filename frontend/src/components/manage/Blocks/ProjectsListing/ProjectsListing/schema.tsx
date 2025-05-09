@@ -115,7 +115,7 @@ const getColumnDefs = () =>
           field: 'total_fund',
           minWidth: 120,
           valueGetter: (params: any) =>
-            formatNumberColumns(params, 'total_fund'),
+            '$' + formatNumberColumns(params, 'total_fund'),
           tooltipValueGetter: (params: ITooltipParams) =>
             formatNumberColumns(params, 'total_fund', {
               maximumFractionDigits: 10,

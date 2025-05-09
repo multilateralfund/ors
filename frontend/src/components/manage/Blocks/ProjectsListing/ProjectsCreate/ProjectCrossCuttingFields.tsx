@@ -1,8 +1,4 @@
 import { useEffect, useState, ChangeEvent } from 'react'
-import type {
-  ProjIdentifiers,
-  CrossCuttingFields,
-} from '@ors/components/manage/Blocks/ProjectsListing/ProjectsCreate/ProjectsCreate.tsx'
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
@@ -19,12 +15,13 @@ import {
   defaultPropsSimpleField,
   textAreaClassname,
 } from '../constants'
+import { CrossCuttingFields, ProjIdentifiers } from '../interfaces'
 import { isOptionEqualToValueByValue } from '../utils'
 import { useStore } from '@ors/store'
 import { api } from '@ors/helpers'
 
 import { TextareaAutosize } from '@mui/material'
-import { debounce, find, isNil } from 'lodash'
+import { debounce, filter, find, includes, isNil } from 'lodash'
 import dayjs from 'dayjs'
 
 export type BooleanFieldType = {
@@ -44,6 +41,7 @@ const ProjectCrossCuttingFields = ({
   >
 }) => {
   const projectSlice = useStore((state) => state.projects)
+  const subsectors = projectSlice.subsectors.data
 
   const [projectTypesOpts, setProjectTypesOpts] = useState([])
   const [sectorsOpts, setSectorsOpts] = useState([])
@@ -141,16 +139,10 @@ const ProjectCrossCuttingFields = ({
     }))
   }
 
-  const handleChangeSubSector = (
-    subsectors: (ProjectSubSectorType | string)[] | null,
-  ) => {
+  const handleChangeSubSector = (subsectors: ProjectSubSectorType[]) => {
     setCrossCuttingFields((prevFilters) => ({
       ...prevFilters,
-      subsector: subsectors
-        ? subsectors.map((subsector) =>
-            typeof subsector === 'string' ? subsector : subsector.id.toString(),
-          )
-        : [],
+      subsector: subsectors.map((subsector) => subsector.id) ?? [],
     }))
   }
 
@@ -262,23 +254,21 @@ const ProjectCrossCuttingFields = ({
           />
         </div>
         <div>
-          <Label>Sub-Sector</Label>
+          <Label>{tableColumns.subsector}</Label>
           <Field<ProjectSubSectorType>
             widget="autocomplete"
             multiple={true}
-            options={projectSlice.subsectors.data}
-            value={crossCuttingFields?.subsector}
-            onChange={(_: any, value) =>
-              handleChangeSubSector(
-                value as (ProjectSubSectorType | string)[] | null,
-              )
+            options={subsectors}
+            value={
+              filter(subsectors, (subsector) =>
+                includes(crossCuttingFields.subsector, subsector.id),
+              ) as ProjectSubSectorType[]
             }
-            getOptionLabel={(option) => {
-              const value =
-                typeof option === 'string' ? parseInt(option, 10) : option
-              return getOptionLabel(projectSlice.subsectors.data, value)
-            }}
-            {...defaultProps}
+            onChange={(_: any, value) =>
+              handleChangeSubSector(value as ProjectSubSectorType[])
+            }
+            getOptionLabel={(option) => getOptionLabel(subsectors, option)}
+            FieldProps={{ className: 'mb-0 w-[640px] BPListUpload' }}
           />
         </div>
       </div>

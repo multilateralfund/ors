@@ -85,7 +85,7 @@
     .ag-header-cell:not(.ag-header-span-height.ag-header-span-total),
   .ag-header-row:not(:first-child)
     .ag-header-group-cell.ag-header-group-cell-with-group {
-    @apply border-mlfs-deepTealTint border-b;
+    @apply border-b border-mlfs-deepTealTint;
   }
 
   .ag-header-group-cell-with-group {
@@ -131,5 +131,11 @@
     > div.ag-header-cell-comp-wrapper
     > span {
     @apply mt-0;
+  }
+}
+
+.projects-table.ag-table {
+  div.ag-header-row.ag-header-row-column .ag-cell-label-container {
+    @apply py-0;
   }
 }
