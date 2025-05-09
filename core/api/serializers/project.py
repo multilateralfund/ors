@@ -140,6 +140,7 @@ class ProjectOdsOdpListSerializer(serializers.ModelSerializer):
             "odp",
             "ods_replacement",
             "co2_mt",
+            "phase_out_mt",
             "ods_type",
             "ods_substance_id",
             "ods_blend_id",

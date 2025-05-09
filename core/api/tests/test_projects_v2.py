@@ -258,13 +258,14 @@ def setup_project_create(
         "bp_activity": bp_activity.id,
         "cost_effectiveness": 43.3,
         "cost_effectiveness_co2": 54.3,
+        "number_of_production_lines_assisted": 3,
         "cluster": project_cluster_kip.id,
         "country": country_ro.id,
         "description": "Description",
         "date_completion": "2020-01-01",
         "date_approved": "2023-10-01",
         "decision": decision.id,
-        "destruction_tehnology": "destruction tehnology test",
+        "destruction_tehnology": "D1",
         "excom_provision": "test excom provision",
         "funding_window": "test funding window",
         "group": groupA.id,
@@ -277,11 +278,45 @@ def setup_project_create(
         "mya_end_date": "2024-09-30",
         "mya_project_funding": 1234.4,
         "mya_support_cost": 434.2,
+        "number_of_enterprises": 2,
         "mya_phase_out_co2_eq_t": 948.3,
         "mya_phase_out_odp_t": 23.2,
         "mya_phase_out_mt": 3.53,
         "pcr_waived": False,
-        "production_control_type": "test production control type",
+        "total_number_of_technicians_trained": 32,
+        "number_of_female_technicians_trained": 12,
+        "total_number_of_trainers_trained": 2,
+        "number_of_female_trainers_trained": 4,
+        "total_number_of_technicians_certified": 3,
+        "number_of_female_technicians_certified": 65,
+        "number_of_training_institutions_newly_assisted": 34,
+        "number_of_tools_sets_distributed": 4,
+        "total_number_of_customs_officers_trained": 23,
+        "number_of_female_customs_officers_trained": 2,
+        "total_number_of_nou_personnnel_supported": 2,
+        "number_of_female_nou_personnel_supported": 43,
+        "number_of_enterprises_assisted": 43,
+        "certification_system_for_technicians": True,
+        "operation_of_recovery_and_recycling_scheme": False,
+        "operation_of_reclamation_scheme": True,
+        "establishment_of_imp_exp_licensing": False,
+        "establishment_of_quota_systems": True,
+        "ban_of_equipment": 2,
+        "ban_of_substances": 3,
+        "kwh_year_saved": 23.4,
+        "meps_developed_domestic_refrigeration": True,
+        "meps_developed_commercial_refrigeration": False,
+        "meps_developed_residential_ac": False,
+        "meps_developed_commercial_ac": True,
+        "capacity_building_programmes": True,
+        "ee_demonstration_project": False,
+        "quantity_controlled_substances_destroyed_mt": 23.3,
+        "quantity_controlled_substances_destroyed_co2_eq_t": 25.43,
+        "quantity_hfc_23_by_product_generated": 23.43,
+        "quantity_hfc_23_by_product_generation_rate": 12.32,
+        "quantity_hfc_23_by_product_destroyed": 2.31,
+        "quantity_hfc_23_by_product_emitted": 23.32,
+        "production_control_type": "reduction",
         "products_manufactured": "test products manufactured",
         "programme_officer": "Officer",
         "project_end_date": "2024-09-30",
@@ -301,6 +336,7 @@ def setup_project_create(
                 "odp": 11.11,
                 "ods_replacement": "ods replacement test",
                 "co2_mt": 323.23,
+                "phase_out_mt": 123.23,
                 "ods_type": "production",
                 "sort_order": 1,
             },
@@ -309,6 +345,7 @@ def setup_project_create(
                 "odp": 41.41,
                 "ods_replacement": "ods replacement test 2",
                 "co2_mt": 543.23,
+                "phase_out_mt": 223.23,
                 "ods_type": "general",
                 "sort_order": 2,
             },
@@ -553,6 +590,81 @@ class TestCreateProjects(BaseTest):
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 403
 
+    def _test_response_data(self, response, data):
+        fields = [
+            "ad_hoc_pcr",
+            "aggregated_consumption",
+            "baseline",
+            "bp_activity",
+            "cost_effectiveness",
+            "cost_effectiveness_co2",
+            "number_of_production_lines_assisted",
+            "description",
+            "date_completion",
+            "date_approved",
+            "destruction_tehnology",
+            "excom_provision",
+            "funding_window",
+            "individual_consideration",
+            "is_lvc",
+            "is_sme",
+            "mya_start_date",
+            "mya_end_date",
+            "mya_project_funding",
+            "mya_support_cost",
+            "number_of_enterprises",
+            "mya_phase_out_co2_eq_t",
+            "mya_phase_out_odp_t",
+            "mya_phase_out_mt",
+            "pcr_waived",
+            "total_number_of_technicians_trained",
+            "number_of_female_technicians_trained",
+            "total_number_of_trainers_trained",
+            "number_of_female_trainers_trained",
+            "total_number_of_technicians_certified",
+            "number_of_female_technicians_certified",
+            "number_of_training_institutions_newly_assisted",
+            "number_of_tools_sets_distributed",
+            "total_number_of_customs_officers_trained",
+            "number_of_female_customs_officers_trained",
+            "total_number_of_nou_personnnel_supported",
+            "number_of_female_nou_personnel_supported",
+            "number_of_enterprises_assisted",
+            "certification_system_for_technicians",
+            "operation_of_recovery_and_recycling_scheme",
+            "operation_of_reclamation_scheme",
+            "establishment_of_imp_exp_licensing",
+            "establishment_of_quota_systems",
+            "ban_of_equipment",
+            "ban_of_substances",
+            "kwh_year_saved",
+            "meps_developed_domestic_refrigeration",
+            "meps_developed_commercial_refrigeration",
+            "meps_developed_residential_ac",
+            "meps_developed_commercial_ac",
+            "capacity_building_programmes",
+            "ee_demonstration_project",
+            "quantity_controlled_substances_destroyed_mt",
+            "quantity_controlled_substances_destroyed_co2_eq_t",
+            "quantity_hfc_23_by_product_generated",
+            "quantity_hfc_23_by_product_generation_rate",
+            "quantity_hfc_23_by_product_destroyed",
+            "quantity_hfc_23_by_product_emitted",
+            "production_control_type",
+            "products_manufactured",
+            "programme_officer",
+            "project_end_date",
+            "project_start_date",
+            "starting_point",
+            "support_cost_psc",
+            "tranche",
+            "targets",
+            "title",
+            "total_fund",
+        ]
+        for field in fields:
+            assert response.data[field] == data[field]
+
     def test_create_project(
         self,
         user,
@@ -571,46 +683,14 @@ class TestCreateProjects(BaseTest):
         # create project
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 201
-        assert response.data["ad_hoc_pcr"] is True
+        self._test_response_data(response, data)
         assert response.data["agency"] == agency.name
-        assert response.data["aggregated_consumption"] == data["aggregated_consumption"]
-        assert response.data["baseline"] == data["baseline"]
-        assert response.data["bp_activity"] == data["bp_activity"]
-        assert response.data["cost_effectiveness"] == data["cost_effectiveness"]
-        assert response.data["cost_effectiveness_co2"] == data["cost_effectiveness_co2"]
         assert response.data["cluster"]["id"] == data["cluster"]
         assert response.data["country"] == country_ro.name
-        assert response.data["description"] == data["description"]
-        assert response.data["date_completion"] == data["date_completion"]
-        assert response.data["date_approved"] == data["date_approved"]
         assert response.data["decision_id"] == decision.id
-        assert response.data["destruction_tehnology"] == data["destruction_tehnology"]
-        assert response.data["excom_provision"] == data["excom_provision"]
-        assert response.data["funding_window"] == data["funding_window"]
-        assert response.data["group_id"] == data["group"]
-        assert (
-            response.data["individual_consideration"]
-            == data["individual_consideration"]
-        )
-        assert response.data["is_lvc"] == data["is_lvc"]
-        assert response.data["is_sme"] == data["is_sme"]
         assert response.data["lead_agency"] == agency.name
+        assert response.data["group_id"] == data["group"]
         assert response.data["meeting_id"] == data["meeting"]
-        assert response.data["mya_start_date"] == data["mya_start_date"]
-        assert response.data["mya_end_date"] == data["mya_end_date"]
-        assert response.data["mya_project_funding"] == data["mya_project_funding"]
-        assert response.data["mya_support_cost"] == data["mya_support_cost"]
-        assert response.data["mya_phase_out_co2_eq_t"] == data["mya_phase_out_co2_eq_t"]
-        assert response.data["mya_phase_out_odp_t"] == data["mya_phase_out_odp_t"]
-        assert response.data["mya_phase_out_mt"] == data["mya_phase_out_mt"]
-        assert response.data["pcr_waived"] == data["pcr_waived"]
-        assert (
-            response.data["production_control_type"] == data["production_control_type"]
-        )
-        assert response.data["products_manufactured"] == data["products_manufactured"]
-        assert response.data["programme_officer"] == data["programme_officer"]
-        assert response.data["project_end_date"] == data["project_end_date"]
-        assert response.data["project_start_date"] == data["project_start_date"]
         assert response.data["project_type"]["id"] == data["project_type"]
         assert response.data["project_type"]["id"] == project_type.id
         assert response.data["project_type"]["name"] == project_type.name
@@ -638,6 +718,10 @@ class TestCreateProjects(BaseTest):
             == data["ods_odp"][0]["ods_replacement"]
         )
         assert response.data["ods_odp"][0]["co2_mt"] == data["ods_odp"][0]["co2_mt"]
+        assert (
+            response.data["ods_odp"][0]["phase_out_mt"]
+            == data["ods_odp"][0]["phase_out_mt"]
+        )
         assert response.data["ods_odp"][0]["ods_type"] == data["ods_odp"][0]["ods_type"]
         assert (
             response.data["ods_odp"][0]["sort_order"]
@@ -653,6 +737,10 @@ class TestCreateProjects(BaseTest):
             == data["ods_odp"][1]["ods_replacement"]
         )
         assert response.data["ods_odp"][1]["co2_mt"] == data["ods_odp"][1]["co2_mt"]
+        assert (
+            response.data["ods_odp"][1]["phase_out_mt"]
+            == data["ods_odp"][1]["phase_out_mt"]
+        )
         assert response.data["ods_odp"][1]["ods_type"] == data["ods_odp"][1]["ods_type"]
         assert (
             response.data["ods_odp"][1]["sort_order"]
