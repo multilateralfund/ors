@@ -11,7 +11,7 @@ export interface ProjIdentifiers {
 export interface CrossCuttingFields {
   project_type: number | null
   sector: number | null
-  subsector: string[]
+  subsector: number[]
   is_lvc: boolean | null
   title: string
   description: string
