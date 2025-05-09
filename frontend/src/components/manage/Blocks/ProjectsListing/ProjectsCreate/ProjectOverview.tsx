@@ -1,5 +1,3 @@
-import { ChangeEvent } from 'react'
-
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
@@ -12,11 +10,9 @@ import {
   trancheOpts,
   isSmeOpts,
   defaultProps,
-  textAreaClassname,
 } from '../constants'
 import { isOptionEqualToValueByValue } from '../utils'
 
-import { TextareaAutosize } from '@mui/material'
 import { find, isNil } from 'lodash'
 
 export type TrancheType = {
@@ -24,7 +20,7 @@ export type TrancheType = {
   id: number
 }
 
-const ProjectSpecificFields = ({
+const ProjectOverview = ({
   projectSpecificFields,
   setProjectSpecificFields,
 }: {
@@ -53,15 +49,6 @@ const ProjectSpecificFields = ({
     setProjectSpecificFields((prevFilters) => ({
       ...prevFilters,
       is_sme: !isNil(is_sme?.value) ? is_sme?.value : null,
-    }))
-  }
-
-  const handleChangeProductsManufactured = (
-    event: ChangeEvent<HTMLTextAreaElement>,
-  ) => {
-    setProjectSpecificFields((prevFilters) => ({
-      ...prevFilters,
-      products_manufactured: event.target.value,
     }))
   }
 
@@ -122,18 +109,8 @@ const ProjectSpecificFields = ({
           />
         </div>
       </div>
-      <div>
-        <Label>{tableColumns.products_manufactured}</Label>
-        <TextareaAutosize
-          value={projectSpecificFields?.products_manufactured}
-          onChange={handleChangeProductsManufactured}
-          className={textAreaClassname + ' !min-h-[20px] !w-[415px]'}
-          minRows={2}
-          tabIndex={-1}
-        />
-      </div>
     </div>
   )
 }
 
-export default ProjectSpecificFields
+export default ProjectOverview

@@ -8,7 +8,9 @@ import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import ProjectIdentifiersSection from './ProjectIdentifiersSection.tsx'
 import ProjectBPLinking from './ProjectBPLinking'
 import ProjectCrossCuttingFields from './ProjectCrossCuttingFields'
-import ProjectSpecificFields from './ProjectSpecificFields.tsx'
+import ProjectOverview from './ProjectOverview.tsx'
+import ProjectSubstanceDetails from './ProjectSubstanceDetails.tsx'
+import ProjectImpact from './ProjectImpact.tsx'
 import { api } from '@ors/helpers'
 
 import { Alert, Button, CircularProgress, Tabs, Tab } from '@mui/material'
@@ -101,6 +103,10 @@ const ProjectsCreate = () => {
       crossCuttingFields.sector &&
       crossCuttingFields.title
     )
+  const areProjectSpecificTabsDisabled =
+    areNextSectionsDisabled ||
+    !crossCuttingFields.project_type ||
+    !crossCuttingFields.sector
 
   const steps = [
     {
@@ -159,15 +165,12 @@ const ProjectsCreate = () => {
     },
     {
       step: 3,
-      id: 'project-specific-section',
-      ariaControls: 'project-specific-section',
-      label: 'Project specific',
-      disabled:
-        areNextSectionsDisabled ||
-        !crossCuttingFields.project_type ||
-        !crossCuttingFields.sector,
+      id: 'project-specific-overview-section',
+      ariaControls: 'project-specific-overview-section',
+      label: 'Overview',
+      disabled: areProjectSpecificTabsDisabled,
       component: (
-        <ProjectSpecificFields
+        <ProjectOverview
           {...{
             projectSpecificFields,
             setProjectSpecificFields,
@@ -175,6 +178,36 @@ const ProjectsCreate = () => {
         />
       ),
     },
+    {
+      step: 4,
+      id: 'project-substance-details-section',
+      ariaControls: 'project-substance-details-section',
+      label: 'Substance details',
+      disabled: areProjectSpecificTabsDisabled,
+      component: (
+        <ProjectSubstanceDetails
+          {...{
+            projectSpecificFields,
+            setProjectSpecificFields,
+          }}
+        />
+      ),
+    },
+    // {
+    //   step: 5,
+    //   id: 'project-impact-section',
+    //   ariaControls: 'project-impact-section',
+    //   label: 'Impact',
+    //   disabled: areProjectSpecificTabsDisabled,
+    //   component: (
+    //     <ProjectImpact
+    //       {...{
+    //         projectSpecificFields,
+    //         setProjectSpecificFields,
+    //       }}
+    //     />
+    //   ),
+    // },
   ]
 
   const submitProject = async () => {
