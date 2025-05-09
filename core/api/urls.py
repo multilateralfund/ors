@@ -107,6 +107,7 @@ from core.api.views.projects import (
 from core.api.views.projects_v2 import (
     ProjectDestructionTechnologyView,
     ProjectProductionControlTypeView,
+    ProjectOdsOdpTypeView,
     ProjectV2ViewSet,
     ProjectV2FileView,
     ProjectFilesDownloadView,
@@ -443,6 +444,11 @@ urlpatterns = [
         "project-production-control-type/",
         ProjectProductionControlTypeView.as_view(),
         name="project-production-control-type",
+    ),
+    path(
+        "project-ods-odp-type/",
+        ProjectOdsOdpTypeView.as_view(),
+        name="project-ods-odp-type",
     ),
     path(
         "project-clusters/",

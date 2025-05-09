@@ -23,6 +23,7 @@ from core.api.serializers.project_v2 import (
 from core.api.swagger import FileUploadAutoSchema
 from core.models.project import (
     Project,
+    ProjectOdsOdp,
     ProjectFile,
 )
 
@@ -44,6 +45,16 @@ class ProjectProductionControlTypeView(APIView):
 
     def get(self, request, *args, **kwargs):
         choices = Project.ProductionControlType.choices
+        return Response(choices)
+
+
+class ProjectOdsOdpTypeView(APIView):
+    """
+    View to return a list of all Project OdsOdpType choices
+    """
+
+    def get(self, request, *args, **kwargs):
+        choices = ProjectOdsOdp.ProjectOdsOdpType.choices
         return Response(choices)
 
 
