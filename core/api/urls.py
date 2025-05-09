@@ -105,6 +105,8 @@ from core.api.views.projects import (
     ProjectFileView,
 )
 from core.api.views.projects_v2 import (
+    ProjectDestructionTehnologyView,
+    ProjectProductionControlTypeView,
     ProjectV2ViewSet,
     ProjectV2FileView,
     ProjectFilesDownloadView,
@@ -431,6 +433,16 @@ urlpatterns = [
         "decisions/",
         DecisionListView.as_view(),
         name="decision-list",
+    ),
+    path(
+        "project-destruction-tehnology/",
+        ProjectDestructionTehnologyView.as_view(),
+        name="project-destruction-tehnology",
+    ),
+    path(
+        "project-production-control-type/",
+        ProjectProductionControlTypeView.as_view(),
+        name="project-production-control-type",
     ),
     path(
         "project-clusters/",
