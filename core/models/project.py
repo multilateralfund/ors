@@ -243,7 +243,7 @@ class Project(models.Model):
         blank=True,
         help_text="Annex group of substances",
     )
-    destruction_tehnology = models.CharField(
+    destruction_technology = models.CharField(
         max_length=256, choices=DestructionTechnology.choices, null=True, blank=True
     )
 

@@ -27,9 +27,9 @@ from core.models.project import (
 )
 
 
-class ProjectDestructionTehnologyView(APIView):
+class ProjectDestructionTechnologyView(APIView):
     """
-    View to return a list of all Project DestructionTehnology choices
+    View to return a list of all Project DestructionTechnology choices
     """
 
     def get(self, request, *args, **kwargs):
