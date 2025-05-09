@@ -1,0 +1,10 @@
+.project-input::-webkit-outer-spin-button,
+.project-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.project-input {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}

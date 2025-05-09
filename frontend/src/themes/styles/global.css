@@ -8,6 +8,7 @@
 @import './components/image';
 @import './components/widget';
 @import './components/pagination';
+@import './components/input';
 
 /* Material ui components */
 @import './components/mui/_index.css';

@@ -5,27 +5,38 @@ import {
   detailItem,
   numberDetailItem,
 } from './ViewHelperComponents'
-import { tableColumns } from '../constants'
+import { isSmeOpts, lvcNonLvcOpts, tableColumns } from '../constants'
 
 import { Divider, Typography } from '@mui/material'
+import { find } from 'lodash'
 
 const ProjectOverview = ({ project }: any) => {
   const { data } = project
 
+  const is_lvc = find(lvcNonLvcOpts, { value: data.is_lvc })?.name || '-'
+  const is_sme = find(isSmeOpts, { value: data.is_sme })?.name || '-'
+
   return (
     <div className="flex w-full flex-col gap-4">
       <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
-        {detailItem(tableColumns.submission_status, data.submission_status)}
-        {detailItem(tableColumns.project_status, data.status)}
         {detailItem(tableColumns.country, data.country)}
-        {detailItem(tableColumns.metacode, data.metaproject_code)}
-        {detailItem('Metaproject category', data.metaproject_category)}
+        {detailItem(tableColumns.meeting, data.meeting)}
+        {detailItem(tableColumns.agency, data.lead_agency)}
         {detailItem(tableColumns.cluster, data.cluster?.name)}
-        {detailItem(tableColumns.tranche, data.tranche)}
+        {detailItem(tableColumns.is_lvc, is_lvc)}
         {detailItem(tableColumns.type, data.project_type?.name)}
         {detailItem(tableColumns.sector, data.sector?.name)}
+        {detailItem(tableColumns.group, data.group)}
+        {detailItem(tableColumns.tranche, data.tranche)}
+        {detailItem(tableColumns.is_sme, is_sme)}
+      </div>
+      <Divider />
+      <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
+        {detailItem(tableColumns.submission_status, data.submission_status)}
+        {detailItem(tableColumns.project_status, data.status)}
+        {detailItem(tableColumns.metacode, data.metaproject_code)}
+        {detailItem('Metaproject category', data.metaproject_category)}
         {detailItem('Subsector', data.subsector)}
-        {detailItem('Meeting', data.meeting)}
         {detailItem('Transfer meeting', data.meeting_transf)}
       </div>
       <Divider />
@@ -56,7 +67,6 @@ const ProjectOverview = ({ project }: any) => {
         {booleanDetailItem('Plus', data.plus)}
       </div>
       <Divider />
-      {detailItem('Implementing agency', data.lead_agency)}
       {detailItem(
         'Cooperating agencies',
         data.coop_agencies.map((agency: any) => agency.name)?.join(', ') || '-',
@@ -64,8 +74,6 @@ const ProjectOverview = ({ project }: any) => {
       {detailItem('National agency', data.national_agency)}
       {detailItem('Programme officer', data.programme_officer)}
       <Divider />
-      {detailItem(tableColumns.title, data.title)}
-      {detailItem('Description', data.description, 'self-start')}
       {detailItem('Excom provision', data.excom_provision, 'self-start')}
       {detailItem('Remarks', data.remarks)}
       {detailItem('Agency remarks', data.agency_remarks)}
@@ -91,7 +99,6 @@ const ProjectOverview = ({ project }: any) => {
       {detailItem('Plan', data.plan, 'self-start')}
       {detailItem('Technology', data.technology)}
       {detailItem('Application', data.application)}
-      {detailItem('Products manufactured', data.products_manufactured)}
       <span>RBM measures</span>
       <Table
         className="mb-4"

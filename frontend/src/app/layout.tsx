@@ -21,6 +21,11 @@ import ThemeProvider from '@ors/themes/ThemeProvider'
 import useSearchParams from '@ors/hooks/useSearchParams'
 
 import '../themes/styles/global.css'
+import { ProjectStatusType } from '@ors/types/api_project_statuses.ts'
+import { ProjectSectorType } from '@ors/types/api_project_sector.ts'
+import { ProjectSubSectorType } from '@ors/types/api_project_subsector.ts'
+import { ProjectSubmissionStatusType } from '@ors/types/api_project_submission_statuses.ts'
+import { ProjectSubstancesGroupsType } from '@ors/types/api_project_substances_groups'
 
 function useUser() {
   const [userData, setUserData] = useState<{
@@ -63,6 +68,7 @@ function useAppState(user: ApiUser | null | undefined) {
           meetings,
           decisions,
           clusters,
+          substances_groups,
           // Country programme data
           blends,
           substances,
@@ -78,6 +84,7 @@ function useAppState(user: ApiUser | null | undefined) {
           api('api/meetings/', {}, false),
           api('api/decisions/', {}, false),
           api('api/project-clusters/', {}, false),
+          api('api/groups/', {}, false),
           api(
             'api/blends/',
             { params: { with_alt_names: true, with_usages: true } },
@@ -105,11 +112,18 @@ function useAppState(user: ApiUser | null | undefined) {
         const projects = {
           clusters: getInitialSliceData(clusters),
           meetings: getInitialSliceData(meetings),
-          sectors: getInitialSliceData(sectors),
-          statuses: getInitialSliceData(statuses),
-          submission_statuses: getInitialSliceData(submission_statuses),
-          subsectors: getInitialSliceData(subsectors),
+          sectors: getInitialSliceData<ProjectSectorType[]>(sectors),
+          statuses: getInitialSliceData<ProjectStatusType[]>(statuses),
+          submission_statuses:
+            getInitialSliceData<ProjectSubmissionStatusType[]>(
+              submission_statuses,
+            ),
+          subsectors: getInitialSliceData<ProjectSubSectorType[]>(subsectors),
           types: getInitialSliceData(types),
+          substances_groups:
+            getInitialSliceData<ProjectSubstancesGroupsType[]>(
+              substances_groups,
+            ),
         }
         const cp_reports = {
           blends: getInitialSliceData<ApiBlend[]>(blends),

@@ -35,5 +35,9 @@ export const createProjectSlice = ({
       ...defaultSliceData,
       ...(initialState?.projects?.types || {}),
     },
+    substances_groups: {
+      ...defaultSliceData,
+      ...(initialState?.projects?.substances_groups || {}),
+    },
   }
 }

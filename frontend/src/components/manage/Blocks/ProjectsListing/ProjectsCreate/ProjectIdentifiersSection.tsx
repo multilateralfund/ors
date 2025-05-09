@@ -9,15 +9,17 @@ import {
   getMeetingNr,
   getMeetingOptions,
 } from '@ors/components/manage/Utils/utilFunctions'
-import { tableColumns } from '../constants'
+import { defaultProps, tableColumns } from '../constants'
 
 import { useStore } from '@ors/store'
 
 import { Button, Checkbox, FormControlLabel } from '@mui/material'
+import { find } from 'lodash'
 
 const ProjectIdentifiersSection = ({
   projIdentifiers,
   setProjIdentifiers,
+  setCrossCuttingFields,
   isNextBtnEnabled,
   areNextSectionsDisabled,
   isSubmitSuccessful,
@@ -27,14 +29,29 @@ const ProjectIdentifiersSection = ({
   const commonSlice = useStore((state) => state.common)
   const projectSlice = useStore((state) => state.projects)
 
-  const defaultProps = {
-    FieldProps: { className: 'mb-0 w-40 BPListUpload' },
-  }
-
   const handleChangeCountry = (country: any) => {
     setProjIdentifiers((prevFilters: any) => ({
       ...prevFilters,
       country: country?.id ?? null,
+    }))
+
+    setCrossCuttingFields((prevFilters: any) => ({
+      ...prevFilters,
+      is_lvc: find(commonSlice.countries.data, { id: country?.id })?.is_lvc,
+    }))
+  }
+
+  const handleChangeMeeting = (meeting: string) => {
+    setProjIdentifiers((prevFilters: any) => ({
+      ...prevFilters,
+      meeting,
+    }))
+  }
+
+  const handleChangeCluster = (cluster: any) => {
+    setProjIdentifiers((prevFilters: any) => ({
+      ...prevFilters,
+      cluster: cluster?.id ?? null,
     }))
   }
 
@@ -59,25 +76,11 @@ const ProjectIdentifiersSection = ({
     }))
   }
 
-  const handleChangeCluster = (cluster: any) => {
-    setProjIdentifiers((prevFilters: any) => ({
-      ...prevFilters,
-      cluster: cluster?.id ?? null,
-    }))
-  }
-
-  const handleChangeMeeting = (meeting: string) => {
-    setProjIdentifiers((prevFilters: any) => ({
-      ...prevFilters,
-      meeting,
-    }))
-  }
-
   return (
-    <>
+    <div className="flex flex-col gap-y-2">
       <div className="flex flex-wrap gap-x-20 gap-y-3">
         <div>
-          <Label isRequired>{tableColumns.country}</Label>
+          <Label>{tableColumns.country}</Label>
           <Field
             widget="autocomplete"
             options={commonSlice.countries.data}
@@ -90,8 +93,22 @@ const ProjectIdentifiersSection = ({
             {...defaultProps}
           />
         </div>
+        <div className="w-40">
+          <Label>{tableColumns.meeting}</Label>
+          <PopoverInput
+            label={getMeetingNr(projIdentifiers?.meeting)}
+            options={getMeetingOptions()}
+            onChange={handleChangeMeeting}
+            onClear={() => handleChangeMeeting('')}
+            className="!m-0 h-10 !py-1"
+            clearBtnClassName="right-1"
+            withClear={true}
+          />
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-x-20 gap-y-3">
         <div>
-          <Label isRequired>{tableColumns.agency}</Label>
+          <Label>{tableColumns.agency}</Label>
           <Field
             widget="autocomplete"
             options={commonSlice.agencies.data}
@@ -99,6 +116,20 @@ const ProjectIdentifiersSection = ({
             onChange={(_: any, value: any) => handleChangeCurrentAgency(value)}
             getOptionLabel={(option: any) =>
               getOptionLabel(commonSlice.agencies.data, option)
+            }
+            disabled={!areNextSectionsDisabled}
+            {...defaultProps}
+          />
+        </div>
+        <div>
+          <Label>{tableColumns.cluster}</Label>
+          <Field
+            widget="autocomplete"
+            options={projectSlice.clusters.data}
+            value={projIdentifiers?.cluster}
+            onChange={(_: any, value: any) => handleChangeCluster(value)}
+            getOptionLabel={(option: any) =>
+              getOptionLabel(projectSlice.clusters.data, option)
             }
             disabled={!areNextSectionsDisabled}
             {...defaultProps}
@@ -124,7 +155,7 @@ const ProjectIdentifiersSection = ({
       />
       {!projIdentifiers.is_lead_agency && (
         <>
-          <Label isRequired>Lead agency</Label>
+          <Label>Lead agency</Label>
           <Field
             widget="autocomplete"
             options={commonSlice.agencies.data}
@@ -138,34 +169,6 @@ const ProjectIdentifiersSection = ({
           />
         </>
       )}
-      <div className="flex flex-wrap gap-x-20 gap-y-3">
-        <div>
-          <Label>{tableColumns.cluster}</Label>
-          <Field
-            widget="autocomplete"
-            options={projectSlice.clusters.data}
-            value={projIdentifiers?.cluster}
-            onChange={(_: any, value: any) => handleChangeCluster(value)}
-            getOptionLabel={(option: any) =>
-              getOptionLabel(projectSlice.clusters.data, option)
-            }
-            disabled={!areNextSectionsDisabled}
-            {...defaultProps}
-          />
-        </div>
-        <div className="w-40">
-          <Label isRequired>Meeting number</Label>
-          <PopoverInput
-            label={getMeetingNr(projIdentifiers?.meeting)}
-            options={getMeetingOptions()}
-            onChange={handleChangeMeeting}
-            onClear={() => handleChangeMeeting('')}
-            className="!m-0 h-10 !py-1"
-            clearBtnClassName="right-1"
-            withClear={true}
-          />
-        </div>
-      </div>
       <div className="flex flex-wrap items-center gap-2.5">
         <NavigationButton
           isBtnDisabled={!isNextBtnEnabled}
@@ -189,7 +192,7 @@ const ProjectIdentifiersSection = ({
           </div>
         )}
       </div>
-    </>
+    </div>
   )
 }
 

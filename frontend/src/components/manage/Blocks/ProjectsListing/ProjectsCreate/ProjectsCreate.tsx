@@ -5,14 +5,73 @@ import { useState } from 'react'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Link from '@ors/components/ui/Link/Link'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
-import ProjectIdentifiersSection from './ProjectIdentifiersSection'
+import ProjectIdentifiersSection from './ProjectIdentifiersSection.tsx'
 import ProjectBPLinking from './ProjectBPLinking'
 import ProjectCrossCuttingFields from './ProjectCrossCuttingFields'
+import ProjectOverview from './ProjectOverview.tsx'
+import ProjectSubstanceDetails from './ProjectSubstanceDetails.tsx'
+import ProjectImpact from './ProjectImpact.tsx'
 import { api } from '@ors/helpers'
 
 import { Alert, Button, CircularProgress, Tabs, Tab } from '@mui/material'
-import { isNil, omit } from 'lodash'
+import { isNil, omit, pickBy } from 'lodash'
 import cx from 'classnames'
+
+export interface ProjIdentifiers {
+  country: number | null
+  meeting: number | null
+  current_agency: number | null
+  side_agency: number | null
+  is_lead_agency: boolean
+  cluster: number | null
+}
+export interface CrossCuttingFields {
+  project_type: number | null
+  sector: number | null
+  subsector: string[]
+  is_lvc: boolean | null
+  title: string
+  description: string
+  project_start_date: string
+  project_end_date: string
+  total_fund: string
+  support_cost_psc: string
+  psc: string
+  individual_consideration: boolean | null
+}
+
+export interface SpecificFields {
+  tranche: number | null
+  is_sme: boolean | null
+  products_manufactured: string
+  group: number | null
+}
+
+const initialCrossCuttingFields = (): CrossCuttingFields => {
+  return {
+    project_type: null,
+    sector: null,
+    subsector: [],
+    is_lvc: null,
+    title: '',
+    description: '',
+    project_start_date: '',
+    project_end_date: '',
+    total_fund: '',
+    support_cost_psc: '',
+    psc: '',
+    individual_consideration: null,
+  }
+}
+
+const initialProjectSpecificFields = (): SpecificFields => {
+  return {
+    tranche: null,
+    is_sme: null,
+    products_manufactured: '',
+    group: null,
+  }
+}
 
 const ProjectsCreate = () => {
   const [currentStep, setCurrentStep] = useState<number>(0)
@@ -22,27 +81,39 @@ const ProjectsCreate = () => {
   })
   const [isLinkedToBP, setIsLinkedToBP] = useState<boolean>(false)
   const [bpId, setBpId] = useState<number>()
-  const [crossCuttingFields, setCrossCuttingFields] = useState<any>({})
+  const [crossCuttingFields, setCrossCuttingFields] =
+    useState<CrossCuttingFields>(initialCrossCuttingFields)
+  const [projectSpecificFields, setProjectSpecificFields] =
+    useState<SpecificFields>(initialProjectSpecificFields)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isSubmitSuccessful, setIsSubmitSuccessful] = useState<boolean>()
 
   const canLinkToBp =
     projIdentifiers.country &&
+    projIdentifiers.meeting &&
+    projIdentifiers.cluster &&
     ((projIdentifiers.is_lead_agency && projIdentifiers.current_agency) ||
-      (!projIdentifiers.is_lead_agency && projIdentifiers.side_agency)) &&
-    projIdentifiers.meeting
+      (!projIdentifiers.is_lead_agency && projIdentifiers.side_agency))
 
   const areNextSectionsDisabled = !canLinkToBp || currentStep < 1
   const isSubmitDisabled =
     areNextSectionsDisabled ||
-    !(crossCuttingFields.title && crossCuttingFields.project_type)
+    !(
+      crossCuttingFields.project_type &&
+      crossCuttingFields.sector &&
+      crossCuttingFields.title
+    )
+  const areProjectSpecificTabsDisabled =
+    areNextSectionsDisabled ||
+    !crossCuttingFields.project_type ||
+    !crossCuttingFields.sector
 
   const steps = [
     {
       step: 0,
-      id: 'project-identifier-section',
-      ariaControls: 'project-identifier-section',
-      label: 'Project identifiers',
+      id: 'project-identifiers',
+      ariaControls: 'project-identifiers',
+      label: 'Identifiers',
       component: (
         <ProjectIdentifiersSection
           {...{
@@ -50,6 +121,7 @@ const ProjectsCreate = () => {
             setCurrentTab,
             projIdentifiers,
             setProjIdentifiers,
+            setCrossCuttingFields,
             areNextSectionsDisabled,
             isSubmitSuccessful,
           }}
@@ -61,7 +133,7 @@ const ProjectsCreate = () => {
       step: 1,
       id: 'project-bp-link-section',
       ariaControls: 'project-bp-link-section',
-      label: 'Link to BP',
+      label: 'Business Plan',
       disabled: areNextSectionsDisabled,
       component: (
         <ProjectBPLinking
@@ -77,19 +149,65 @@ const ProjectsCreate = () => {
     },
     {
       step: 2,
-      id: 'project-cross-cutting-fields-section',
-      ariaControls: 'project-cross-cutting-fields-section',
-      label: 'Cross-Cutting Fields',
+      id: 'project-cross-cutting-section',
+      ariaControls: 'project-cross-cutting-section',
+      label: 'Cross-Cutting',
       disabled: areNextSectionsDisabled,
       component: (
         <ProjectCrossCuttingFields
           {...{
+            projIdentifiers,
             crossCuttingFields,
             setCrossCuttingFields,
           }}
         />
       ),
     },
+    {
+      step: 3,
+      id: 'project-specific-overview-section',
+      ariaControls: 'project-specific-overview-section',
+      label: 'Overview',
+      disabled: areProjectSpecificTabsDisabled,
+      component: (
+        <ProjectOverview
+          {...{
+            projectSpecificFields,
+            setProjectSpecificFields,
+          }}
+        />
+      ),
+    },
+    {
+      step: 4,
+      id: 'project-substance-details-section',
+      ariaControls: 'project-substance-details-section',
+      label: 'Substance details',
+      disabled: areProjectSpecificTabsDisabled,
+      component: (
+        <ProjectSubstanceDetails
+          {...{
+            projectSpecificFields,
+            setProjectSpecificFields,
+          }}
+        />
+      ),
+    },
+    // {
+    //   step: 5,
+    //   id: 'project-impact-section',
+    //   ariaControls: 'project-impact-section',
+    //   label: 'Impact',
+    //   disabled: areProjectSpecificTabsDisabled,
+    //   component: (
+    //     <ProjectImpact
+    //       {...{
+    //         projectSpecificFields,
+    //         setProjectSpecificFields,
+    //       }}
+    //     />
+    //   ),
+    // },
   ]
 
   const submitProject = async () => {
@@ -108,7 +226,14 @@ const ProjectsCreate = () => {
             'side_agency',
             'is_lead_agency',
           ]),
-          ...crossCuttingFields,
+          ...pickBy(
+            crossCuttingFields,
+            (value) => !isNil(value) && value !== '',
+          ),
+          ...pickBy(
+            projectSpecificFields,
+            (value) => !isNil(value) && value !== '',
+          ),
         },
         method: 'POST',
       })
@@ -125,7 +250,7 @@ const ProjectsCreate = () => {
     <>
       <HeaderTitle>
         <div className="align-center flex justify-between">
-          <PageHeading>New submission</PageHeading>
+          <PageHeading>New project submission</PageHeading>
           <div className="flex flex-wrap items-center gap-2.5">
             <Button
               className={cx('ml-auto mr-0 h-10 px-3 py-1', {
