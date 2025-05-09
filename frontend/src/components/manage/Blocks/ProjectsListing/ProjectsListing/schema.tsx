@@ -83,8 +83,8 @@ const getColumnDefs = () =>
         },
         {
           headerName: tableColumns.agency,
-          field: 'lead_agency',
-          tooltipField: 'lead_agency',
+          field: 'agency',
+          tooltipField: 'agency',
           cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
           minWidth: 110,
         },
