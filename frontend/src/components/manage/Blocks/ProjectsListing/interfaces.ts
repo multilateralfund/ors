@@ -20,7 +20,7 @@ export interface CrossCuttingFields {
   total_fund: string
   support_cost_psc: string
   psc: string
-  individual_consideration: boolean | null
+  individual_consideration: boolean
 }
 export interface SpecificFields {
   tranche: number | null

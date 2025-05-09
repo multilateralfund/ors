@@ -31,7 +31,7 @@ const initialCrossCuttingFields = (): CrossCuttingFields => {
     total_fund: '',
     support_cost_psc: '',
     psc: '',
-    individual_consideration: null,
+    individual_consideration: true,
   }
 }
 

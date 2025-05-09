@@ -9,7 +9,6 @@ import { ProjectSectorType } from '@ors/types/api_project_sector.ts'
 import { ProjectSubSectorType } from '@ors/types/api_project_subsector.ts'
 import {
   tableColumns,
-  blanketOrIndConsiderationOpts,
   lvcNonLvcOpts,
   defaultProps,
   defaultPropsSimpleField,
@@ -20,7 +19,7 @@ import { isOptionEqualToValueByValue } from '../utils'
 import { useStore } from '@ors/store'
 import { api } from '@ors/helpers'
 
-import { TextareaAutosize } from '@mui/material'
+import { Checkbox, TextareaAutosize } from '@mui/material'
 import { debounce, filter, find, includes, isNil } from 'lodash'
 import dayjs from 'dayjs'
 
@@ -195,14 +194,10 @@ const ProjectCrossCuttingFields = ({
     }
   }
 
-  const handleChangeBlanketConsideration = (
-    consideration: BooleanFieldType | null,
-  ) => {
+  const handleChangeBlanketConsideration = (consideration: boolean) => {
     setCrossCuttingFields((prevFilters) => ({
       ...prevFilters,
-      individual_consideration: !isNil(consideration?.value)
-        ? consideration?.value
-        : null,
+      individual_consideration: !consideration,
     }))
   }
 
@@ -360,24 +355,17 @@ const ProjectCrossCuttingFields = ({
           />
         </div>
       </div>
-      <div>
-        <Label>{tableColumns.individual_consideration}</Label>
-        <Field<BooleanFieldType>
-          widget="autocomplete"
-          options={blanketOrIndConsiderationOpts}
-          value={
-            (find(blanketOrIndConsiderationOpts, {
-              value: crossCuttingFields?.individual_consideration,
-            }) || null) as BooleanFieldType | null
-          }
+      <div className="flex">
+        <Label>Blanket consideration</Label>
+        <Checkbox
+          className="pb-1 pl-2 pt-0"
+          checked={!crossCuttingFields?.individual_consideration}
           onChange={(_: any, value: any) =>
-            handleChangeBlanketConsideration(value as BooleanFieldType | null)
+            handleChangeBlanketConsideration(value)
           }
-          getOptionLabel={(option: any) =>
-            getOptionLabel(blanketOrIndConsiderationOpts, option, 'value')
-          }
-          isOptionEqualToValue={isOptionEqualToValueByValue}
-          {...defaultProps}
+          sx={{
+            color: 'black',
+          }}
         />
       </div>
     </div>
