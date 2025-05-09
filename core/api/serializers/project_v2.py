@@ -183,8 +183,9 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "substance_type",
             "substance_category",
             "substance_phasedout",
-            "subsector",
-            "subsector_id",
+            "subsector_names",
+            "subsector_ids",
+            "subsectors",
             "subsector_legacy",
             "support_cost_psc",
             "targets",
@@ -290,7 +291,7 @@ class ProjectV2CreateSerializer(serializers.ModelSerializer):
             "project_type",
             "starting_point",
             "sector",
-            "subsector",
+            "subsectors",
             "support_cost_psc",
             "targets",
             "tranche",
@@ -310,6 +311,7 @@ class ProjectV2CreateSerializer(serializers.ModelSerializer):
         validated_data["status_id"] = status.id
         validated_data["submission_status_id"] = submission_status.id
         ods_odp_data = validated_data.pop("ods_odp", [])
+        subsectors_data = validated_data.pop("subsectors", [])
         project = Project.objects.create(**validated_data)
         # set subcode
         project.code = get_project_sub_code(
@@ -328,4 +330,14 @@ class ProjectV2CreateSerializer(serializers.ModelSerializer):
         for ods_odp in ods_odp_data:
             ProjectOdsOdp.objects.create(project=project, **ods_odp)
 
+        project.subsectors.set(subsectors_data)
         return project
+
+    def update(self, instance, validated_data):
+        subsectors_data = validated_data.pop("subsectors", None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        if subsectors_data is not None:
+            instance.subsectors.set(subsectors_data)
+        return instance

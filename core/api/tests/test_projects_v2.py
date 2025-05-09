@@ -177,7 +177,7 @@ def setup_project_list(
     # project_without sector and subsector
     proj_data = projects_data[0].copy()
     proj_data["sector"] = None
-    proj_data["subsector"] = None
+    proj_data["subsectors"] = None
     proj_data["code"] = get_project_sub_code(
         proj_data["country"],
         proj_data["cluster"],
@@ -435,11 +435,11 @@ class TestProjectV2List(BaseTest):
     def test_project_list_subsector_filter(self, user, subsector, _setup_project_list):
         self.client.force_authenticate(user=user)
 
-        response = self.client.get(self.url, {"subsector_id": subsector.id})
+        response = self.client.get(self.url, {"subsectors": [subsector.id]})
         assert response.status_code == 200
         assert len(response.data) == 5
         for project in response.data:
-            assert project["subsector"] == subsector.name
+            assert project["subsector_names"] == [subsector.name]
 
     def test_project_list_subs_type_filter(self, user, _setup_project_list):
         self.client.force_authenticate(user=user)
