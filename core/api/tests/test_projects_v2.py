@@ -2,6 +2,7 @@ import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
 
+from core.api.serializers.project_metadata import ProjectSubSectorSerializer
 from core.api.tests.base import BaseTest
 from core.api.tests.factories import (
     AgencyFactory,
@@ -439,7 +440,7 @@ class TestProjectV2List(BaseTest):
         assert response.status_code == 200
         assert len(response.data) == 5
         for project in response.data:
-            assert project["subsector_names"] == [subsector.name]
+            assert project["subsectors"] == [ProjectSubSectorSerializer(subsector).data]
 
     def test_project_list_subs_type_filter(self, user, _setup_project_list):
         self.client.force_authenticate(user=user)

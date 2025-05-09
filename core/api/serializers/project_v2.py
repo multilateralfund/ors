@@ -183,7 +183,6 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "substance_type",
             "substance_category",
             "substance_phasedout",
-            "subsector_names",
             "subsector_ids",
             "subsectors",
             "subsector_legacy",
