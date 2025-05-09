@@ -9,6 +9,7 @@ from core.api.serializers.project_metadata import (
     ProjectClusterSerializer,
     ProjectSectorSerializer,
     ProjectTypeSerializer,
+    ProjectSubSectorSerializer,
 )
 from core.models.agency import Agency
 from core.models.blend import Blend
@@ -284,13 +285,8 @@ class ProjectListSerializer(serializers.ModelSerializer):
         queryset=ProjectSector.objects.all().values_list("id", flat=True),
     )
     sector_legacy = serializers.CharField(read_only=True)
-    subsector_names = serializers.SlugRelatedField(
-        "name", many=True, read_only=True, source="subsectors"
-    )
+    subsectors = ProjectSubSectorSerializer(many=True, read_only=True)
     subsector_ids = serializers.PrimaryKeyRelatedField(
-        many=True, read_only=True, source="subsectors"
-    )
-    subsectors = serializers.PrimaryKeyRelatedField(
         allow_null=True,
         many=True,
         write_only=True,
@@ -414,9 +410,8 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "substance_type",
             "substance_category",
             "substance_phasedout",
-            "subsector_names",
-            "subsector_ids",
             "subsectors",
+            "subsector_ids",
             "subsector_legacy",
             "support_cost_psc",
             "rbm_measures",
@@ -476,13 +471,13 @@ class ProjectListSerializer(serializers.ModelSerializer):
         return obj.meta_project.type
 
     def create(self, validated_data):
-        subsectors_data = validated_data.pop("subsectors", [])
+        subsectors_data = validated_data.pop("subsector_ids", [])
         project = Project.objects.create(**validated_data)
         project.subsectors.set(subsectors_data)
         return project
 
     def update(self, instance, validated_data):
-        subsectors_data = validated_data.pop("subsectors", None)
+        subsectors_data = validated_data.pop("subsector_ids", None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
@@ -594,7 +589,7 @@ class ProjectDetailsSerializer(ProjectListSerializer):
         funds = validated_data.pop("funds", [])
         comments = validated_data.pop("comments", [])
         coop_agencies_id = validated_data.pop("coop_agencies_id")
-        subsectors_data = validated_data.pop("subsectors", [])
+        subsectors_data = validated_data.pop("subsector_ids", [])
 
         # a new project = new submission ?
         status = ProjectStatus.objects.get(code="NEWSUB")

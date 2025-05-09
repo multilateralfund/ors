@@ -437,6 +437,7 @@ class ProjectFactory(factory.django.DjangoModelFactory):
         if extracted:
             obj.subsectors.set(extracted)
 
+
 class ProjectOdsOdpFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ProjectOdsOdp

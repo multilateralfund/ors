@@ -122,6 +122,7 @@ class ProjectSectorView(SectorSubsectorBaseView):
 
         return super().list(request, *args, **kwargs)
 
+
 class ProjectSubSectorView(SectorSubsectorBaseView):
     """
     List project subsector

@@ -5,6 +5,8 @@ from pathlib import Path
 import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
+
+from core.api.serializers.project_metadata import ProjectSubSectorSerializer
 from core.api.tests.base import BaseTest
 
 from core.api.tests.factories import (
@@ -462,7 +464,7 @@ class TestProjectList(BaseTest):
         assert response.status_code == 200
         assert len(response.data) == 5
         for project in response.data:
-            assert project["subsector_names"] == [subsector.name]
+            assert project["subsectors"] == [ProjectSubSectorSerializer(subsector).data]
 
     def test_project_list_subs_type_filter(self, user, _setup_project_list):
         self.client.force_authenticate(user=user)
@@ -607,7 +609,7 @@ def setup_project_create(
         "agency_id": agency.id,
         "coop_agencies_id": coop_agencies,
         "sector_id": subsector.sector_id,
-        "subsectors": [subsector.id],
+        "subsector_ids": [subsector.id],
         "project_type_id": project_type.id,
         "status_id": statuses[0].id,
         "submission_status_id": submission_statuses[0].id,
@@ -715,7 +717,7 @@ class TestCreateProjects(BaseTest):
 
         # create project
         response = self.client.post(self.url, data, format="json")
-        assert response.status_code == 201
+        assert response.status_code == 201, response.json()
         assert response.data["title"] == data["title"]
         assert response.data["country"] == country_ro.name
         assert response.data["agency"] == agency.name
@@ -723,7 +725,9 @@ class TestCreateProjects(BaseTest):
         assert response.data["sector"]["id"] == subsector.sector.id
         assert response.data["sector"]["name"] == subsector.sector.name
         assert response.data["sector"]["code"] == subsector.sector.code
-        assert response.data["subsector_names"] == [subsector.name]
+        assert response.data["subsectors"] == [
+            ProjectSubSectorSerializer(subsector).data
+        ]
         assert response.data["project_type"]["id"] == project_type.id
         assert response.data["project_type"]["name"] == project_type.name
         assert response.data["project_type"]["code"] == project_type.code
