@@ -5,9 +5,18 @@ import { OdsOdpFields } from '../interfaces'
 import { useStore } from '@ors/store'
 
 import { ITooltipParams } from 'ag-grid-community'
+import { IoTrash } from 'react-icons/io5'
 import { find } from 'lodash'
 
-const ProjectOdsOdpTable = ({ data }: { data: OdsOdpFields[] }) => {
+const ProjectOdsOdpTable = ({
+  data,
+  mode,
+  onRemoveOdsOdp = () => {},
+}: {
+  data: OdsOdpFields[]
+  mode?: string
+  onRemoveOdsOdp?: (props: any) => void
+}) => {
   const cpReportsSlice = useStore((state) => state.cp_reports)
   const substances = cpReportsSlice.substances.data
 
@@ -24,10 +33,30 @@ const ProjectOdsOdpTable = ({ data }: { data: OdsOdpFields[] }) => {
     <ViewTable
       className="projects-table mb-4"
       rowData={data}
+      resizeGridOnRowUpdate={true}
       enablePagination={false}
       suppressCellFocus={false}
       withSeparators={true}
       columnDefs={[
+        ...(mode === 'edit'
+          ? [
+              {
+                field: '',
+                cellRenderer: (props: any) => (
+                  <IoTrash
+                    className="cursor-pointer fill-gray-400"
+                    size={16}
+                    onClick={() => {
+                      onRemoveOdsOdp(props)
+                    }}
+                  />
+                ),
+                resizable: false,
+                minWidth: 20,
+                maxWidth: 20,
+              },
+            ]
+          : []),
         {
           headerName: tableColumns.ods_substance_id,
           field: 'ods_substance_id',
