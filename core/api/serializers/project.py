@@ -470,21 +470,6 @@ class ProjectListSerializer(serializers.ModelSerializer):
             return None
         return obj.meta_project.type
 
-    def create(self, validated_data):
-        subsectors_data = validated_data.pop("subsector_ids", [])
-        project = Project.objects.create(**validated_data)
-        project.subsectors.set(subsectors_data)
-        return project
-
-    def update(self, instance, validated_data):
-        subsectors_data = validated_data.pop("subsector_ids", None)
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
-        if subsectors_data is not None:
-            instance.subsectors.set(subsectors_data)
-        return instance
-
 
 class ProjectExportSerializer(ProjectListSerializer):
     sector = serializers.SlugRelatedField("name", read_only=True)
@@ -642,6 +627,7 @@ class ProjectDetailsSerializer(ProjectListSerializer):
     @transaction.atomic
     def update(self, instance, validated_data):
         coop_agencies_id = validated_data.pop("coop_agencies_id", None)
+        subsectors_data = validated_data.pop("subsector_ids", None)
 
         super().update(instance, validated_data)
 
@@ -663,5 +649,8 @@ class ProjectDetailsSerializer(ProjectListSerializer):
             instance.serial_number,
         )
         instance.save()
+
+        if subsectors_data is not None:
+            instance.subsectors.set(subsectors_data)
 
         return instance
