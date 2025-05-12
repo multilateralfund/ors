@@ -28,7 +28,7 @@ def backwards_func(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("core", "0197_project_subsectors_and_more"),
+        ("core", "0198_project_subsectors_and_more"),
     ]
 
     operations = [

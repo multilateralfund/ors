@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("core", "0196_project_ad_hoc_pcr_project_aggregated_consumption_and_more"),
+        ("core", "0197_adjust_triennial_contributions_view"),
     ]
 
     operations = [
