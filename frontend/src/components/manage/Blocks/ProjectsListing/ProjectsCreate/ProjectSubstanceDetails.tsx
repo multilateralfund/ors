@@ -8,6 +8,7 @@ import { SpecificFieldsSectionProps } from '../interfaces'
 
 import { TextareaAutosize, Button } from '@mui/material'
 import { IoAddCircle } from 'react-icons/io5'
+import { findIndex, map } from 'lodash'
 
 const ProjectSubstanceDetails = ({
   projectSpecificFields,
@@ -24,6 +25,27 @@ const ProjectSubstanceDetails = ({
     }))
   }
 
+  const onRemoveOdsOdp = (props: any) => {
+    const removedOdsOdp = props.data
+    const newData = [...projectSpecificFields.ods_odp]
+
+    const index = findIndex(newData, (row: any) => row.id === removedOdsOdp.id)
+
+    if (index > -1) {
+      newData.splice(index, 1)
+
+      const formattedData = map(newData, (dataItem, index) => ({
+        ...dataItem,
+        id: newData.length - index - 1,
+      }))
+
+      setProjectSpecificFields((prevFilters: any) => ({
+        ...prevFilters,
+        ods_odp: formattedData,
+      }))
+    }
+  }
+
   return (
     <div className="flex flex-col gap-y-2">
       <div>
@@ -38,7 +60,11 @@ const ProjectSubstanceDetails = ({
       </div>
       <div>
         <Label>{tableColumns.ods_odp}</Label>
-        <ProjectOdsOdpTable data={projectSpecificFields?.ods_odp || []} />
+        <ProjectOdsOdpTable
+          data={projectSpecificFields?.ods_odp || []}
+          mode="edit"
+          onRemoveOdsOdp={onRemoveOdsOdp}
+        />
         <Button
           className="rounded-lg border border-solid border-primary bg-white p-1.5 text-base hover:bg-primary"
           onClick={() => setDisplayODPModal(true)}

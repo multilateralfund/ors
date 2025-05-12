@@ -194,7 +194,8 @@
   }
 }
 
-.bp-edit-table.ag-table {
+.bp-edit-table.ag-table,
+.projects-table.ag-table {
   .ag-header-row .ag-header-cell:first-child .ag-header-cell-resize {
     display: none;
   }

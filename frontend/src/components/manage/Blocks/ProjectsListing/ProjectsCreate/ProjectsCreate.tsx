@@ -15,7 +15,7 @@ import { CrossCuttingFields, SpecificFields } from '../interfaces.ts'
 import { api } from '@ors/helpers'
 
 import { Alert, Button, CircularProgress, Tabs, Tab } from '@mui/material'
-import { isNil, omit, pickBy } from 'lodash'
+import { isNil, map, omit, pickBy } from 'lodash'
 import cx from 'classnames'
 
 const initialCrossCuttingFields = (): CrossCuttingFields => {
@@ -205,6 +205,12 @@ const ProjectsCreate = () => {
           ...pickBy(
             projectSpecificFields,
             (value) => !isNil(value) && value !== '',
+          ),
+          ods_odp: map(projectSpecificFields.ods_odp, (ods_odp) =>
+            omit(
+              pickBy(ods_odp, (value) => !isNil(value) && value !== ''),
+              'id',
+            ),
           ),
         },
         method: 'POST',
