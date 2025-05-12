@@ -59,7 +59,6 @@ const ProjectSubstanceDetails = ({
         />
       </div>
       <div>
-        <Label>{tableColumns.ods_odp}</Label>
         <ProjectOdsOdpTable
           data={projectSpecificFields?.ods_odp || []}
           mode="edit"

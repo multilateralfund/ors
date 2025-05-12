@@ -74,6 +74,9 @@ const ProjectOverview = ({
               getGroupOptionLabel(projectSlice.substances_groups.data, option)
             }
             {...defaultProps}
+            FieldProps={{
+              className: defaultProps.FieldProps.className + ' w-[12rem]',
+            }}
           />
         </div>
         <div>

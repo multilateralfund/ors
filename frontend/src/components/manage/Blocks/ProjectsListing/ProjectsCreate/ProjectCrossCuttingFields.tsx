@@ -303,8 +303,7 @@ const ProjectCrossCuttingFields = ({
           type="text"
           {...defaultPropsSimpleField}
           containerClassName={
-            defaultPropsSimpleField.containerClassName +
-            ' !w-[90%] max-w-[80rem]'
+            defaultPropsSimpleField.containerClassName + ' !w-[70rem]'
           }
         />
       </div>
@@ -313,7 +312,7 @@ const ProjectCrossCuttingFields = ({
         <TextareaAutosize
           value={crossCuttingFields?.description}
           onChange={handleChangeDescription}
-          className={textAreaClassname + ' !h-[25rem] w-[90%] lg:!h-[30rem]'}
+          className={textAreaClassname + ' !h-[15.5rem] !min-w-[70rem]'}
           minRows={3}
           tabIndex={-1}
         />
@@ -362,7 +361,7 @@ const ProjectCrossCuttingFields = ({
           />
         </div>
       </div>
-      <div className="flex">
+      {/* <div className="flex">
         <Label>Blanket consideration</Label>
         <Checkbox
           className="pb-1 pl-2 pt-0"
@@ -374,7 +373,7 @@ const ProjectCrossCuttingFields = ({
             color: 'black',
           }}
         />
-      </div>
+      </div> */}
     </div>
   )
 }
