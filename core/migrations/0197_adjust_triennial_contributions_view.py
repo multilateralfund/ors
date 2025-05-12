@@ -72,6 +72,6 @@ class Migration(migrations.Migration):
                     ELSE outstanding_contributions
                 END as current_outstanding_contributions
             FROM core_triennialcontributionstatus tcs;
-            """
+            """,
         )
     ]

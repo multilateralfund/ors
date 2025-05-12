@@ -20,6 +20,7 @@ from core.models.project_metadata import (
     ProjectCluster,
     ProjectStatus,
     ProjectSubmissionStatus,
+    ProjectSubSector,
 )
 from core.utils import get_project_sub_code
 
@@ -247,6 +248,12 @@ class ProjectV2CreateSerializer(serializers.ModelSerializer):
     """
 
     ods_odp = ProjectOdsOdpListSerializer(many=True, required=False)
+    subsector_ids = serializers.PrimaryKeyRelatedField(
+        allow_null=True,
+        many=True,
+        write_only=True,
+        queryset=ProjectSubSector.objects.all(),
+    )
 
     class Meta:
         model = Project
@@ -291,6 +298,7 @@ class ProjectV2CreateSerializer(serializers.ModelSerializer):
             "starting_point",
             "sector",
             "subsectors",
+            "subsector_ids",
             "support_cost_psc",
             "targets",
             "tranche",
@@ -310,7 +318,7 @@ class ProjectV2CreateSerializer(serializers.ModelSerializer):
         validated_data["status_id"] = status.id
         validated_data["submission_status_id"] = submission_status.id
         ods_odp_data = validated_data.pop("ods_odp", [])
-        subsectors_data = validated_data.pop("subsectors", [])
+        subsectors_data = validated_data.pop("subsector_ids", [])
         project = Project.objects.create(**validated_data)
         # set subcode
         project.code = get_project_sub_code(

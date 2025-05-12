@@ -289,7 +289,7 @@ def setup_project_create(
         "project_type": project_type.id,
         "sector": subsector.sector.id,
         "starting_point": 543.4,
-        "subsector": subsector.id,
+        "subsector_ids": [subsector.id],
         "support_cost_psc": 23,
         "tranche": 2,
         "targets": 543.4,
@@ -620,7 +620,9 @@ class TestCreateProjects(BaseTest):
         assert response.data["sector"]["name"] == subsector.sector.name
         assert response.data["sector"]["code"] == subsector.sector.code
         assert response.data["starting_point"] == data["starting_point"]
-        assert response.data["subsector_id"] == data["subsector"]
+        assert response.data["subsectors"] == [
+            ProjectSubSectorSerializer(subsector).data
+        ]
         assert response.data["support_cost_psc"] == data["support_cost_psc"]
         assert response.data["tranche"] == data["tranche"]
         assert response.data["targets"] == data["targets"]
