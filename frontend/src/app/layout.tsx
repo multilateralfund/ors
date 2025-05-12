@@ -53,12 +53,34 @@ function useAppState(user: ApiUser | null | undefined) {
 
   useEffect(
     function () {
-      async function fetchState() {
+      async function fetchCommonState() {
         const [
           // Common data
           settings,
           agencies,
           countries,
+        ] = await Promise.all([
+          api('api/settings/', {}, false),
+          api('api/agencies/', {}, false),
+          api('api/countries/', {}, false),
+        ])
+
+        const common = {
+          agencies: getInitialSliceData(agencies),
+          countries: getInitialSliceData<Country[]>(countries),
+          countries_for_create: getInitialSliceData<Country[]>(
+            countries.filter((c: Country) => c.has_cp_report && !c.is_a2),
+          ),
+          countries_for_listing: getInitialSliceData<Country[]>(
+            countries.filter((c: Country) => c.has_cp_report),
+          ),
+          settings: getInitialSliceData(settings),
+        }
+        setState({ common })
+      }
+
+      async function fetchOtherState() {
+        const [
           // Projects data
           statuses,
           submission_statuses,
@@ -73,9 +95,6 @@ function useAppState(user: ApiUser | null | undefined) {
           blends,
           substances,
         ] = await Promise.all([
-          api('api/settings/', {}, false),
-          api('api/agencies/', {}, false),
-          api('api/countries/', {}, false),
           api('api/project-statuses/', {}, false),
           api('api/project-submission-statuses/', {}, false),
           api('api/project-sector/', {}, false),
@@ -98,17 +117,6 @@ function useAppState(user: ApiUser | null | undefined) {
           // api('api/usages/', {}, false),
         ])
 
-        const common = {
-          agencies: getInitialSliceData(agencies),
-          countries: getInitialSliceData<Country[]>(countries),
-          countries_for_create: getInitialSliceData<Country[]>(
-            countries.filter((c: Country) => c.has_cp_report && !c.is_a2),
-          ),
-          countries_for_listing: getInitialSliceData<Country[]>(
-            countries.filter((c: Country) => c.has_cp_report),
-          ),
-          settings: getInitialSliceData(settings),
-        }
         const projects = {
           clusters: getInitialSliceData(clusters),
           meetings: getInitialSliceData(meetings),
@@ -136,11 +144,12 @@ function useAppState(user: ApiUser | null | undefined) {
           decisions: getInitialSliceData(decisions),
         }
 
-        setState({ common, projects, cp_reports, businessPlans })
+        setState({ projects, cp_reports, businessPlans })
       }
 
       if (user) {
-        fetchState()
+        fetchCommonState()
+        fetchOtherState()
       }
     },
     [user],
