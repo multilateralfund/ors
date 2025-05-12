@@ -303,7 +303,7 @@ const ProjectCrossCuttingFields = ({
           type="text"
           {...defaultPropsSimpleField}
           containerClassName={
-            defaultPropsSimpleField.containerClassName + ' !w-[70rem]'
+            defaultPropsSimpleField.containerClassName + ' !w-[64rem]'
           }
         />
       </div>
@@ -312,8 +312,8 @@ const ProjectCrossCuttingFields = ({
         <TextareaAutosize
           value={crossCuttingFields?.description}
           onChange={handleChangeDescription}
-          className={textAreaClassname + ' !h-[15.5rem] !min-w-[70rem]'}
-          minRows={3}
+          className={textAreaClassname + ' !min-w-[64rem]'}
+          minRows={7}
           tabIndex={-1}
         />
       </div>

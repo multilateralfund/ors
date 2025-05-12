@@ -53,7 +53,7 @@ const ProjectSubstanceDetails = ({
         <TextareaAutosize
           value={projectSpecificFields?.products_manufactured}
           onChange={handleChangeProductsManufactured}
-          className={textAreaClassname + ' !min-h-[20px] !w-[415px]'}
+          className={textAreaClassname + ' !min-h-[20px] w-[415px]'}
           minRows={2}
           tabIndex={-1}
         />
