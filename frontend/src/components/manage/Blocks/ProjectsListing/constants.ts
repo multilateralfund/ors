@@ -25,7 +25,7 @@ export const tableColumns: { [key: string]: string } = {
   description: 'Description',
   is_sme: 'SME/non-SME',
   products_manufactured: 'Products manufactured',
-  group: 'Annex group of substances',
+  group: 'Annex and group of substances',
   ods_odp: 'ODS ODP',
   ods_substance_id: 'Substance - baseline technology',
   ods_replacement: 'Replacement technology/ies',
