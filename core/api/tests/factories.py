@@ -426,12 +426,16 @@ class ProjectFactory(factory.django.DjangoModelFactory):
     status = factory.SubFactory(ProjectStatusFactory)
     submission_status = factory.SubFactory(ProjectSubmissionStatusFactory)
     sector = factory.SubFactory(ProjectSectorFactory)
-    subsector = factory.SubFactory(ProjectSubSectorFactory)
     agency = factory.SubFactory(AgencyFactory)
     country = factory.SubFactory(CountryFactory)
     meeting = factory.SubFactory(MeetingFactory)
     submission_category = "bilateral cooperation"
     submission_number = factory.Faker("random_int", min=1, max=100)
+
+    @factory.post_generation
+    def subsectors(obj, _, extracted, **kwargs):
+        if extracted:
+            obj.subsectors.set(extracted)
 
 
 class ProjectOdsOdpFactory(factory.django.DjangoModelFactory):

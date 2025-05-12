@@ -409,7 +409,7 @@ def project(
         status=project_status,
         submission_status=project_submission_status,
         sector=sector,
-        subsector=subsector,
+        subsectors=[subsector],
         meeting=meeting,
         substance_type="HCFC",
         cluster=project_cluster_kpp,

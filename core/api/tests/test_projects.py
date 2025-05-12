@@ -5,6 +5,8 @@ from pathlib import Path
 import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
+
+from core.api.serializers.project_metadata import ProjectSubSectorSerializer
 from core.api.tests.base import BaseTest
 
 from core.api.tests.factories import (
@@ -271,7 +273,7 @@ def setup_project_list(
     new_project_type = ProjectTypeFactory.create(code="NewType")
     new_project_status = ProjectStatusFactory.create(code="NEWSUB")
     new_sector = ProjectSectorFactory.create(name="New Sector")
-    new_subsector = ProjectSubSectorFactory.create(sector=new_sector)
+    new_subsectors = [ProjectSubSectorFactory.create(sector=new_sector)]
     new_meeting = MeetingFactory.create(number=3, date="2020-03-14")
 
     projects_data = [
@@ -281,7 +283,7 @@ def setup_project_list(
             "project_type": project_type,
             "status": project_status,
             "sector": sector,
-            "subsector": subsector,
+            "subsectors": [subsector],
             "substance_type": "HCFC",
             "meeting": meeting,
             "cluster": project_cluster_kpp,
@@ -292,7 +294,7 @@ def setup_project_list(
             "project_type": new_project_type,
             "status": new_project_status,
             "sector": new_sector,
-            "subsector": new_subsector,
+            "subsectors": new_subsectors,
             "substance_type": "CFC",
             "meeting": new_meeting,
             "cluster": project_cluster_kip,
@@ -340,7 +342,7 @@ def setup_project_list(
     # project_without sector and subsector
     proj_data = projects_data[0].copy()
     proj_data["sector"] = None
-    proj_data["subsector"] = None
+    proj_data["subsectors"] = None
     proj_data["code"] = get_project_sub_code(
         proj_data["country"],
         proj_data["cluster"],
@@ -458,11 +460,11 @@ class TestProjectList(BaseTest):
     def test_project_list_subsector_filter(self, user, subsector, _setup_project_list):
         self.client.force_authenticate(user=user)
 
-        response = self.client.get(self.url, {"subsector_id": subsector.id})
+        response = self.client.get(self.url, {"subsectors": [subsector.id]})
         assert response.status_code == 200
         assert len(response.data) == 5
         for project in response.data:
-            assert project["subsector"] == subsector.name
+            assert project["subsectors"] == [ProjectSubSectorSerializer(subsector).data]
 
     def test_project_list_subs_type_filter(self, user, _setup_project_list):
         self.client.force_authenticate(user=user)
@@ -607,7 +609,7 @@ def setup_project_create(
         "agency_id": agency.id,
         "coop_agencies_id": coop_agencies,
         "sector_id": subsector.sector_id,
-        "subsector_id": subsector.id,
+        "subsector_ids": [subsector.id],
         "project_type_id": project_type.id,
         "status_id": statuses[0].id,
         "submission_status_id": submission_statuses[0].id,
@@ -715,7 +717,7 @@ class TestCreateProjects(BaseTest):
 
         # create project
         response = self.client.post(self.url, data, format="json")
-        assert response.status_code == 201
+        assert response.status_code == 201, response.json()
         assert response.data["title"] == data["title"]
         assert response.data["country"] == country_ro.name
         assert response.data["agency"] == agency.name
@@ -723,7 +725,9 @@ class TestCreateProjects(BaseTest):
         assert response.data["sector"]["id"] == subsector.sector.id
         assert response.data["sector"]["name"] == subsector.sector.name
         assert response.data["sector"]["code"] == subsector.sector.code
-        assert response.data["subsector"] == subsector.name
+        assert response.data["subsectors"] == [
+            ProjectSubSectorSerializer(subsector).data
+        ]
         assert response.data["project_type"]["id"] == project_type.id
         assert response.data["project_type"]["name"] == project_type.name
         assert response.data["project_type"]["code"] == project_type.code
@@ -769,10 +773,10 @@ class TestCreateProjects(BaseTest):
     def test_create_project_project_fk(self, user, _setup_project_create):
         data = _setup_project_create
         self.client.force_authenticate(user=user)
+        data["subsectors"] = [999]
         # invalid country, agency, subsector, project_type ids
         for field in [
             "agency_id",
-            "subsector_id",
             "project_type_id",
             "country_id",
             "cluster_id",
@@ -860,7 +864,7 @@ class TestProjectsExport(BaseTest):
         assert sheet["H2"].value == project.agency.name
         assert sheet["I2"].value == project.sector.name
         assert sheet["J2"].value == project.sector_legacy
-        assert sheet["K2"].value == project.subsector.name
+        assert sheet["K2"].value == ",".join([p.name for p in project.subsectors.all()])
         assert sheet["L2"].value == project.subsector_legacy
         assert sheet["M2"].value == project.substance_type
         assert sheet["O2"].value == project.status.name

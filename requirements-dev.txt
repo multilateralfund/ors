@@ -9,8 +9,8 @@ ipython
 ipython-autotime
 mypy-extensions
 pdfminer.six
-pylint-django
-pylint-secure-coding-standard
+pylint-django==2.6.1
+pylint-secure-coding-standard==1.5.1
 pytest
 pytest-cov
 pytest-django

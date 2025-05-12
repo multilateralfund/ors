@@ -465,6 +465,8 @@ def parse_db_files(dir_path, database_name):
     articles_dict, articles_without_text = parse_admb_file(admb_file_name, strings_dict)
     logger.info("✔ admb file parsed")
 
+    notes = {}
+
     if articles_without_text:
         notes = parse_notes_file(dir_path / "Notes.json", articles_without_text)
         logger.info(

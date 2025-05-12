@@ -186,7 +186,6 @@ class ProjectViewSet(
         "country__name",
         "agency__name",
         "sector__name",
-        "subsector__name",
         "project_type__name",
         "substance_type",
     ]
@@ -197,7 +196,6 @@ class ProjectViewSet(
         queryset = Project.objects.select_related(
             "country",
             "agency",
-            "subsector__sector",
             "project_type",
             "status",
             "submission_status",
@@ -208,6 +206,7 @@ class ProjectViewSet(
         ).prefetch_related(
             "coop_agencies",
             "submission_amounts",
+            "subsectors__sector",
             "rbm_measures__measure",
             "ods_odp",
         )

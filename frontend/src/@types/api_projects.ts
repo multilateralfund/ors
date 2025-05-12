@@ -1,3 +1,11 @@
+export type ProjectSubSectorType = {
+  id: number
+  name: string
+  code: string
+  sort_order: number
+  sector_id: number
+}
+
 export type ProjectType = {
   agency: string
   agency_id: number
@@ -110,8 +118,7 @@ export type ProjectType = {
   submission_category: any
   submission_comments: any
   submission_number: any
-  subsector: string
-  subsector_id: number
+  subsectors: ProjectSubSectorType[]
   subsector_legacy: string
   substance_category: string
   substance_name: string

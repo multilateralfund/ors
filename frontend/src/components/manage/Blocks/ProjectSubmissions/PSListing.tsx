@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 
@@ -83,7 +82,7 @@ const initialParams = {
   project_type_id: [],
   search: '',
   sector_id: [],
-  subsector_id: [],
+  subsectors: [],
   substance_type: [],
 }
 
@@ -348,15 +347,12 @@ export default function PSListing() {
               widget="autocomplete"
               onChange={(_: any, sector_id: any) => {
                 const sectorIds = map(sector_id, (item: any) => item.id)
-                const subsector_id = filter(
-                  params.subsector_id,
-                  (item: any) => {
-                    return includes(sectorIds, item.sector_id)
-                  },
-                )
+                const subsectors = filter(params.subsectors, (item: any) => {
+                  return includes(sectorIds, item.sector_id)
+                })
                 updateParams({
                   sector_id,
-                  subsector_id,
+                  subsectors,
                 })
               }}
               multiple
@@ -366,13 +362,13 @@ export default function PSListing() {
                 Input={{ label: 'Subsector' }}
                 disabled={loading}
                 getOptionLabel={(option: any) => option?.name}
-                value={params.subsector_id}
+                value={params.subsectors}
                 widget="autocomplete"
                 options={filter(projectSlice.subsectors.data, (item) => {
                   return includes(sectorIds, item.sector_id)
                 })}
-                onChange={(_: any, subsector_id: any) => {
-                  updateParams({ subsector_id })
+                onChange={(_: any, subsectors: any) => {
+                  updateParams({ subsectors })
                 }}
                 multiple
               />

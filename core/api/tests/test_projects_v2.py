@@ -2,6 +2,7 @@ import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
 
+from core.api.serializers.project_metadata import ProjectSubSectorSerializer
 from core.api.tests.base import BaseTest
 from core.api.tests.factories import (
     AgencyFactory,
@@ -117,7 +118,7 @@ def setup_project_list(
             "status": project_status,
             "submission_status": project_submission_status,
             "sector": sector,
-            "subsector": subsector,
+            "subsectors": [subsector],
             "substance_type": "HCFC",
             "meeting": meeting,
             "cluster": project_cluster_kpp,
@@ -129,7 +130,7 @@ def setup_project_list(
             "status": new_project_status,
             "submission_status": new_project_submission_status,
             "sector": new_sector,
-            "subsector": new_subsector,
+            "subsectors": [new_subsector],
             "substance_type": "CFC",
             "meeting": new_meeting,
             "cluster": project_cluster_kip,
@@ -177,7 +178,7 @@ def setup_project_list(
     # project_without sector and subsector
     proj_data = projects_data[0].copy()
     proj_data["sector"] = None
-    proj_data["subsector"] = None
+    proj_data["subsectors"] = None
     proj_data["code"] = get_project_sub_code(
         proj_data["country"],
         proj_data["cluster"],
@@ -288,7 +289,7 @@ def setup_project_create(
         "project_type": project_type.id,
         "sector": subsector.sector.id,
         "starting_point": 543.4,
-        "subsector": subsector.id,
+        "subsector_ids": [subsector.id],
         "support_cost_psc": 23,
         "tranche": 2,
         "targets": 543.4,
@@ -435,11 +436,11 @@ class TestProjectV2List(BaseTest):
     def test_project_list_subsector_filter(self, user, subsector, _setup_project_list):
         self.client.force_authenticate(user=user)
 
-        response = self.client.get(self.url, {"subsector_id": subsector.id})
+        response = self.client.get(self.url, {"subsectors": [subsector.id]})
         assert response.status_code == 200
         assert len(response.data) == 5
         for project in response.data:
-            assert project["subsector"] == subsector.name
+            assert project["subsectors"] == [ProjectSubSectorSerializer(subsector).data]
 
     def test_project_list_subs_type_filter(self, user, _setup_project_list):
         self.client.force_authenticate(user=user)
@@ -619,7 +620,9 @@ class TestCreateProjects(BaseTest):
         assert response.data["sector"]["name"] == subsector.sector.name
         assert response.data["sector"]["code"] == subsector.sector.code
         assert response.data["starting_point"] == data["starting_point"]
-        assert response.data["subsector_id"] == data["subsector"]
+        assert response.data["subsectors"] == [
+            ProjectSubSectorSerializer(subsector).data
+        ]
         assert response.data["support_cost_psc"] == data["support_cost_psc"]
         assert response.data["tranche"] == data["tranche"]
         assert response.data["targets"] == data["targets"]
