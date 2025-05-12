@@ -511,7 +511,7 @@ function Table(props: TableProps) {
             noRowsOverlayComponent={(props: any) => {
               return (
                 <Typography id="no-rows" component="span">
-                  {props.label || 'No Rows To Show'}
+                  {props.label || 'No rows to show'}
                 </Typography>
               )
             }}

@@ -13,7 +13,7 @@ import {
 } from '../constants'
 import { isOptionEqualToValueByValue } from '../utils'
 
-import { find, isNil } from 'lodash'
+import { find, get, isNil, isObject } from 'lodash'
 
 export type TrancheType = {
   name: number
@@ -25,6 +25,11 @@ const ProjectOverview = ({
   setProjectSpecificFields,
 }: SpecificFieldsSectionProps) => {
   const projectSlice = useStore((state) => state.projects)
+
+  const getGroupOptionLabel = (data: any, option: any, field: string = 'id') =>
+    isObject(option)
+      ? get(option, 'name_alt')
+      : find(data, { [field]: option })?.name_alt || ''
 
   const handleChangeSubstancesGroups = (
     group: ProjectSubstancesGroupsType | null,
@@ -66,7 +71,7 @@ const ProjectOverview = ({
               )
             }
             getOptionLabel={(option: any) =>
-              getOptionLabel(projectSlice.substances_groups.data, option)
+              getGroupOptionLabel(projectSlice.substances_groups.data, option)
             }
             {...defaultProps}
           />

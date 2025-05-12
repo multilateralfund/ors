@@ -14,7 +14,7 @@ import { defaultProps, tableColumns } from '../constants'
 import { useStore } from '@ors/store'
 
 import { Button, Checkbox, FormControlLabel } from '@mui/material'
-import { find } from 'lodash'
+import { find, filter } from 'lodash'
 
 const ProjectIdentifiersSection = ({
   projIdentifiers,
@@ -28,6 +28,15 @@ const ProjectIdentifiersSection = ({
 }: any) => {
   const commonSlice = useStore((state) => state.common)
   const projectSlice = useStore((state) => state.projects)
+
+  const agencyOptions = filter(
+    commonSlice.agencies.data,
+    (agency) => agency.id !== projIdentifiers.side_agency,
+  )
+  const leadAgencyOptions = filter(
+    commonSlice.agencies.data,
+    (agency) => agency.id !== projIdentifiers.current_agency,
+  )
 
   const handleChangeCountry = (country: any) => {
     setProjIdentifiers((prevFilters: any) => ({
@@ -91,9 +100,12 @@ const ProjectIdentifiersSection = ({
             }
             disabled={!areNextSectionsDisabled}
             {...defaultProps}
+            FieldProps={{
+              className: defaultProps.FieldProps.className + ' w-[16rem]',
+            }}
           />
         </div>
-        <div className="w-40">
+        <div className="w-32">
           <Label>{tableColumns.meeting}</Label>
           <PopoverInput
             label={getMeetingNr(projIdentifiers?.meeting)}
@@ -111,14 +123,17 @@ const ProjectIdentifiersSection = ({
           <Label>{tableColumns.agency}</Label>
           <Field
             widget="autocomplete"
-            options={commonSlice.agencies.data}
+            options={agencyOptions}
             value={projIdentifiers?.current_agency}
             onChange={(_: any, value: any) => handleChangeCurrentAgency(value)}
             getOptionLabel={(option: any) =>
-              getOptionLabel(commonSlice.agencies.data, option)
+              getOptionLabel(agencyOptions, option)
             }
             disabled={!areNextSectionsDisabled}
             {...defaultProps}
+            FieldProps={{
+              className: defaultProps.FieldProps.className + ' w-[16rem]',
+            }}
           />
         </div>
         <div>
@@ -133,6 +148,9 @@ const ProjectIdentifiersSection = ({
             }
             disabled={!areNextSectionsDisabled}
             {...defaultProps}
+            FieldProps={{
+              className: defaultProps.FieldProps.className + ' w-[20rem]',
+            }}
           />
         </div>
       </div>
@@ -158,14 +176,17 @@ const ProjectIdentifiersSection = ({
           <Label>Lead agency</Label>
           <Field
             widget="autocomplete"
-            options={commonSlice.agencies.data}
+            options={leadAgencyOptions}
             value={projIdentifiers?.side_agency}
             onChange={(_: any, value: any) => handleChangeSideAgency(value)}
             getOptionLabel={(option: any) =>
-              getOptionLabel(commonSlice.agencies.data, option)
+              getOptionLabel(leadAgencyOptions, option)
             }
             disabled={!areNextSectionsDisabled}
             {...defaultProps}
+            FieldProps={{
+              className: defaultProps.FieldProps.className + ' w-[16rem]',
+            }}
           />
         </>
       )}

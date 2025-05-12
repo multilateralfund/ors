@@ -233,6 +233,9 @@ const ProjectCrossCuttingFields = ({
               getOptionLabel(projectTypesOpts, option)
             }
             {...defaultProps}
+            FieldProps={{
+              className: defaultProps.FieldProps.className + ' w-[15rem]',
+            }}
           />
         </div>
         <div>
@@ -246,8 +249,13 @@ const ProjectCrossCuttingFields = ({
             }
             getOptionLabel={(option) => getOptionLabel(sectorsOpts, option)}
             {...defaultProps}
+            FieldProps={{
+              className: defaultProps.FieldProps.className + ' w-[15rem]',
+            }}
           />
         </div>
+      </div>
+      <div className="flex flex-wrap gap-x-20 gap-y-3">
         <div>
           <Label>{tableColumns.subsector}</Label>
           <Field<ProjectSubSectorType>
@@ -263,11 +271,9 @@ const ProjectCrossCuttingFields = ({
               handleChangeSubSector(value as ProjectSubSectorType[])
             }
             getOptionLabel={(option) => getOptionLabel(subsectors, option)}
-            FieldProps={{ className: 'mb-0 w-[640px] BPListUpload' }}
+            FieldProps={{ className: 'mb-0 w-[40rem] BPListUpload' }}
           />
         </div>
-      </div>
-      <div className="flex flex-wrap gap-x-20 gap-y-3">
         <div>
           <Label>{tableColumns.is_lvc}</Label>
           <Field<BooleanFieldType>
@@ -287,26 +293,27 @@ const ProjectCrossCuttingFields = ({
             {...defaultProps}
           />
         </div>
-        <div>
-          <Label>{tableColumns.title}</Label>
-          <SimpleInput
-            id={crossCuttingFields?.title}
-            value={crossCuttingFields?.title}
-            onChange={handleChangeTitle}
-            type="text"
-            {...defaultPropsSimpleField}
-            containerClassName={
-              defaultPropsSimpleField.containerClassName + ' !w-[400px]'
-            }
-          />
-        </div>
+      </div>
+      <div>
+        <Label>{tableColumns.title}</Label>
+        <SimpleInput
+          id={crossCuttingFields?.title}
+          value={crossCuttingFields?.title}
+          onChange={handleChangeTitle}
+          type="text"
+          {...defaultPropsSimpleField}
+          containerClassName={
+            defaultPropsSimpleField.containerClassName +
+            ' !w-[90%] max-w-[80rem]'
+          }
+        />
       </div>
       <div>
         <Label>{tableColumns.description}</Label>
         <TextareaAutosize
           value={crossCuttingFields?.description}
           onChange={handleChangeDescription}
-          className={textAreaClassname}
+          className={textAreaClassname + ' !h-[25rem] w-[90%] lg:!h-[30rem]'}
           minRows={3}
           tabIndex={-1}
         />
