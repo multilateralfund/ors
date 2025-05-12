@@ -11,6 +11,7 @@ import { parseNumber } from '@ors/helpers/Utils/Utils'
 import { useStore } from '@ors/store'
 
 import { FaEdit } from 'react-icons/fa'
+import { ProjectSubSectorType } from '@ors/types/api_projects'
 
 function suppressUndo(params: SuppressKeyboardEventParams) {
   const event = params.event
@@ -223,7 +224,8 @@ export function usePSListingGridOptions() {
             },
           },
           cellRenderer: (props: any) => {
-            return <AgCellRenderer {...props} value={props.data.subsector} />
+            const subsectorNames = props.data.subsectors?.map((s: ProjectSubSectorType) => s.name).join(",")
+            return <AgCellRenderer {...props} value={subsectorNames} />
           },
           field: 'subsectors',
           headerComponentParams: {
@@ -246,7 +248,7 @@ export function usePSListingGridOptions() {
               </Tooltip>
             ),
           },
-          headerName: 'Subsector',
+          headerName: 'Subsectors',
         },
         {
           editable: false,
