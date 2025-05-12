@@ -433,7 +433,7 @@ class ProjectFactory(factory.django.DjangoModelFactory):
     submission_number = factory.Faker("random_int", min=1, max=100)
 
     @factory.post_generation
-    def subsectors(obj, create, extracted, **kwargs):
+    def subsectors(obj, _, extracted, **kwargs):
         if extracted:
             obj.subsectors.set(extracted)
 
