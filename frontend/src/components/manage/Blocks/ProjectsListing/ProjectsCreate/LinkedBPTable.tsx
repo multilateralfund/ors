@@ -7,14 +7,17 @@ import { useGetYearRanges } from '@ors/components/manage/Blocks/BusinessPlans/us
 import { useGetActivities } from '@ors/components/manage/Blocks/BusinessPlans/useGetActivities'
 
 import { find, map } from 'lodash'
-import { ApiBPActivity } from '@ors/types/api_bp_get.ts'
-import { ApiBPYearRange } from '@ors/types/api_bp_get_years.ts'
-import { PeriodSelectorOption } from '@ors/components/manage/Blocks/Replenishment/types.ts'
 import { ProjIdentifiers } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
+import {ApiBPActivity} from '@ors/types/api_bp_get'
 
 const ACTIVITIES_PER_PAGE_TABLE = 50
 
-const LinkedBPTableWrapper = (props: any) => {
+export type LinkedBPTableWrapperProps = Omit<
+  LinkedBPTableProps,
+  'period' | 'yearRanges'
+>
+
+const LinkedBPTableWrapper = (props: LinkedBPTableWrapperProps) => {
   const { results: yearRanges } = useGetYearRanges()
   const { periodOptions } = useGetBpPeriods(yearRanges)
 
@@ -38,7 +41,10 @@ const LinkedBPTableWrapper = (props: any) => {
   )
 }
 
-type LinkedBPTableProps = LatestEndorsedBPActivitiesProps & {
+type LinkedBPTableProps = Omit<
+  LatestEndorsedBPActivitiesProps,
+  'activities'
+> & {
   period: ReturnType<typeof useGetBpPeriods>['periodOptions'][0]
   projIdentifiers: ProjIdentifiers
 }
@@ -53,16 +59,21 @@ const LinkedBPTable = ({
     year_start: period?.year_start,
     year_end: period?.year_start + 2,
     country_id: projIdentifiers.country,
-    agency_id: projIdentifiers?.is_lead_agency
-      ? projIdentifiers.current_agency
-      : projIdentifiers.side_agency,
+    agency_id: [
+      projIdentifiers.current_agency,
+      projIdentifiers.side_agency,
+    ].filter((v) => !!v),
     project_cluster_id: projIdentifiers.cluster,
     limit: ACTIVITIES_PER_PAGE_TABLE,
     offset: 0,
   }
 
   const activities = useGetActivities(filters)
-  const { loading } = activities
+  const { loading, results: foundActivities } = activities
+
+  const bp = useMemo(() => {
+    return foundActivities.length > 0 ? foundActivities[0].business_plan : null
+  }, [foundActivities])
 
   return (
     <>
@@ -70,6 +81,13 @@ const LinkedBPTable = ({
         className="!fixed bg-action-disabledBackground"
         active={loading}
       />
+      {bp ? (
+        <div>
+          Business plan {bp.name} {' - '}
+          <span>(Meeting: {bp.meeting_id})</span>
+          {bp.decision_id ? <span>(Decision: {bp.decision_id})</span> : null}
+        </div>
+      ) : null}
       <LatestEndorsedBPActivities
         {...{
           activities,
@@ -84,7 +102,11 @@ const LinkedBPTable = ({
 type LatestEndorsedBPActivitiesProps = {
   activities: ReturnType<typeof useGetActivities>
   yearRanges: ReturnType<typeof useGetYearRanges>['results']
-  bpId: number
+  bpId?: number
+}
+
+export type LinkableActivity = ApiBPActivity & {
+  selected: boolean
 }
 
 function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {

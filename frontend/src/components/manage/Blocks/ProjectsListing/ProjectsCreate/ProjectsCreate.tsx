@@ -10,7 +10,6 @@ import ProjectBPLinking from './ProjectBPLinking'
 import ProjectCrossCuttingFields from './ProjectCrossCuttingFields'
 import ProjectOverview from './ProjectOverview.tsx'
 import ProjectSubstanceDetails from './ProjectSubstanceDetails.tsx'
-import ProjectImpact from './ProjectImpact.tsx'
 import {
   CrossCuttingFields,
   ProjIdentifiers,

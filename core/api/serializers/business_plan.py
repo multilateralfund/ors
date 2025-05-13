@@ -160,6 +160,7 @@ class BPActivityExportSerializer(serializers.ModelSerializer):
 class BPActivityDetailSerializer(serializers.ModelSerializer):
     agency = AgencySerializer()
     country = CountrySerializer()
+    business_plan = BusinessPlanSerializer(read_only=True)
     lvc_status = serializers.ChoiceField(choices=BPActivity.LVCStatus.choices)
     project_type = ProjectTypeSerializer()
     project_type_code = serializers.SerializerMethodField()
@@ -195,6 +196,7 @@ class BPActivityDetailSerializer(serializers.ModelSerializer):
             "initial_id",
             "title",
             "required_by_model",
+            "business_plan",
             "agency",
             "agency_id",
             "country",
