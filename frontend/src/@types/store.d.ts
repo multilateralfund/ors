@@ -18,6 +18,7 @@ import { ProjectSubmissionStatusType } from '@ors/types/api_project_submission_s
 import { ProjectSubSectorType } from '@ors/types/api_project_subsector.ts'
 import { ProjectTypeType } from '@ors/types/api_project_types.ts'
 import { ProjectSubstancesGroupsType } from '@ors/types/api_project_substances_groups'
+import { MeetingType } from '@ors/types/api_meetings.ts'
 
 type StoreProviderProps = {
   children: React.ReactNode
@@ -152,7 +153,7 @@ export interface BPErrorsSlice {
 
 export interface ProjectsSlice {
   clusters: SliceData
-  meetings: SliceData
+  meetings: SliceData<MeetingType[]>
   sectors: SliceData<ProjectSectorType[]>
   statuses: SliceData<ProjectStatusType[]>
   submission_statuses: SliceData<ProjectSubmissionStatusType[]>

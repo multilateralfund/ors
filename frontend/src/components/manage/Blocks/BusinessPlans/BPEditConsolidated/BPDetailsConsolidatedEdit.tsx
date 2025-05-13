@@ -49,6 +49,8 @@ const BPSummary = (props: {
   const canEditBp = userCanEditBusinessPlan[user_type as UserType]
   const canUpdateFiles = userCanUpdateFilesBusinessPlan[user_type as UserType]
 
+  const meetingOptions = getMeetingOptions()
+
   const handleChangeMeeting = (meeting: string) => {
     setBpForm((form: any) => ({ ...form, meeting }))
   }
@@ -91,7 +93,7 @@ const BPSummary = (props: {
                 className="!m-0 h-10 !py-1"
                 options={getMeetingOptions()}
                 onChange={handleChangeMeeting}
-                label={getMeetingNr(bpForm.meeting)}
+                label={getMeetingNr(bpForm.meeting)?.toString()}
                 value={bpForm.meeting}
               />
             </div>
@@ -120,7 +122,7 @@ const BPSummary = (props: {
           <>
             <SimpleField
               id="meeting"
-              data={getMeetingNr(meeting_id)}
+              data={getMeetingNr(meeting_id)?.toString() ?? ''}
               label="Meeting number"
               textClassName="text-[1.25rem]"
             />

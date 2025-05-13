@@ -31,10 +31,10 @@ export function SaveManager(props: SaveManagerProps) {
 
   const projectSlice = useStore((state) => state.projects)
   const meetings = projectSlice.meetings.data
-  const formattedMeetings = meetings?.map((meeting: any) => ({
-    label: meeting.number,
-    value: meeting.id,
-    year: meeting.date ? new Date(meeting.date).getFullYear() : '-',
+  const formattedMeetings = meetings?.map((meeting) => ({
+    label: meeting.number.toString(),
+    value: meeting.id.toString(),
+    year: meeting.date ? new Date(meeting.date).getFullYear().toString() : '-',
   }))
   const meetingOptions = reverse(formattedMeetings)
 

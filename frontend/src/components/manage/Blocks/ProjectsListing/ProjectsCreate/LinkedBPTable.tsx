@@ -7,6 +7,10 @@ import { useGetYearRanges } from '@ors/components/manage/Blocks/BusinessPlans/us
 import { useGetActivities } from '@ors/components/manage/Blocks/BusinessPlans/useGetActivities'
 
 import { find, map } from 'lodash'
+import { ApiBPActivity } from '@ors/types/api_bp_get.ts'
+import { ApiBPYearRange } from '@ors/types/api_bp_get_years.ts'
+import { PeriodSelectorOption } from '@ors/components/manage/Blocks/Replenishment/types.ts'
+import { ProjIdentifiers } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
 
 const ACTIVITIES_PER_PAGE_TABLE = 50
 
@@ -34,7 +38,16 @@ const LinkedBPTableWrapper = (props: any) => {
   )
 }
 
-const LinkedBPTable = ({ period, projIdentifiers, ...rest }: any) => {
+type LinkedBPTableProps = LatestEndorsedBPActivitiesProps & {
+  period: ReturnType<typeof useGetBpPeriods>['periodOptions'][0]
+  projIdentifiers: ProjIdentifiers
+}
+
+const LinkedBPTable = ({
+  period,
+  projIdentifiers,
+  ...rest
+}: LinkedBPTableProps) => {
   const filters = {
     bp_status: 'Endorsed',
     year_start: period?.year_start,
@@ -68,7 +81,13 @@ const LinkedBPTable = ({ period, projIdentifiers, ...rest }: any) => {
   )
 }
 
-function LatestEndorsedBPActivities(props: any) {
+type LatestEndorsedBPActivitiesProps = {
+  activities: ReturnType<typeof useGetActivities>
+  yearRanges: ReturnType<typeof useGetYearRanges>['results']
+  bpId: number
+}
+
+function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
   const { activities, yearRanges, bpId, ...rest } = props
   const { results, ...restActivities } = activities
 
@@ -81,7 +100,7 @@ function LatestEndorsedBPActivities(props: any) {
     [results, bpId],
   )
 
-  const form = useRef<any>()
+  const form = useRef<HTMLFormElement>(null)
 
   return (
     <div className="activities flex flex-1 flex-col justify-start gap-6 pt-3">
