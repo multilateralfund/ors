@@ -14,7 +14,7 @@ export const tableColumns: { [key: string]: string } = {
   title: 'Title',
   type: 'Type',
   sector: 'Sector',
-  subsector: 'Sub-sector(s)',
+  subsectors: 'Sub-sector(s)',
   is_lvc: 'LVC/non-LVC',
   project_start_date: 'Project start date',
   project_end_date: 'Project end date',

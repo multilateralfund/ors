@@ -141,7 +141,7 @@ const ProjectCrossCuttingFields = ({
   const handleChangeSubSector = (subsectors: ProjectSubSectorType[]) => {
     setCrossCuttingFields((prevFilters) => ({
       ...prevFilters,
-      subsector: subsectors.map((subsector) => subsector.id) ?? [],
+      subsector_ids: subsectors.map((subsector) => subsector.id) ?? [],
     }))
   }
 
@@ -257,14 +257,14 @@ const ProjectCrossCuttingFields = ({
       </div>
       <div className="flex flex-wrap gap-x-20 gap-y-3">
         <div>
-          <Label>{tableColumns.subsector}</Label>
+          <Label>{tableColumns.subsectors}</Label>
           <Field<ProjectSubSectorType>
             widget="autocomplete"
             multiple={true}
             options={subsectors}
             value={
               filter(subsectors, (subsector) =>
-                includes(crossCuttingFields.subsector, subsector.id),
+                includes(crossCuttingFields.subsector_ids, subsector.id),
               ) as ProjectSubSectorType[]
             }
             onChange={(_: any, value) =>

@@ -22,7 +22,7 @@ const initialCrossCuttingFields = (): CrossCuttingFields => {
   return {
     project_type: null,
     sector: null,
-    subsector: [],
+    subsector_ids: [],
     is_lvc: null,
     title: '',
     description: '',
