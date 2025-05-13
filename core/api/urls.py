@@ -456,7 +456,7 @@ urlpatterns = [
         name="project-cluster-list",
     ),
     path(
-        "project-cluster-type-sector/",
+        "project-cluster/<int:cluster_id>/type/<int:type_id>/sector/<int:sector_id>/fields/",
         ProjectClusterTypeSectorListView.as_view(),
         name="project-cluster-type-sector-fields-list",
     ),

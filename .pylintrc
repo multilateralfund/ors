@@ -26,7 +26,6 @@ disable=
     consider-using-f-string,
     duplicate-code,
     too-many-ancestors,
-    too-many-positional-arguments,
 
 [FORMAT]
 max-line-length=120

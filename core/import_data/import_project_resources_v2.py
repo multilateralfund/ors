@@ -11,6 +11,7 @@ from core.import_data.utils import (
 from core.models.project_metadata import (
     ProjectCluster,
     ProjectClusterTypeSectorFields,
+    ProjectField,
     ProjectSector,
     ProjectSubSector,
     ProjectType,
@@ -212,6 +213,58 @@ def import_subsector(file_path):
             )
 
 
+def import_cluster_type_sector_fields(file_path):
+    """
+    Import project clusters from file
+    Please make sure that the file has the correct extention
+        (xls, xlsx, xlsm, xlsb, odf, ods, odt)
+
+    @param file_path = str (file path for import file)
+    """
+
+    def _clean_up_field_name(field_name):
+        """
+        Clean up field name
+        """
+        if field_name == "Phase out (M t)":
+            return "Phase out (Mt)"
+        return field_name.strip().replace("  ", " ")
+
+    df = pd.read_excel(file_path).fillna("")
+
+    for _, row in df.iterrows():
+        try:
+            cluster_sector_type = ProjectClusterTypeSectorFields.objects.get(
+                cluster__name__iexact=row["Cluster name"].strip(),
+                type__name__iexact=row["Project type name"].strip(),
+                sector__name__iexact=row["Sector name"].strip(),
+            )
+        except ProjectClusterTypeSectorFields.DoesNotExist:
+            logger.warning(
+                f"⚠️ {row['Cluster name']}/{row['Project type name']}/{row['Sector name']} not found."
+            )
+            continue
+
+        # particular fields start from row 22
+        field_names = [
+            _clean_up_field_name(row[field_index].strip())
+            for field_index in range(22, len(row) - 1)
+            if row[field_index] != ""
+        ]
+        project_fields = ProjectField.objects.filter(import_name__in=field_names)
+        missing_fields = set(field_names) - set(
+            project_fields.values_list("import_name", flat=True)
+        )
+
+        for missing_field in missing_fields:
+            logger.warning(
+                f"⚠️ {missing_field} field not found =>"
+                + f"{row['Cluster name']}/{row['Project type name']}/{row['Sector name']}"
+            )
+
+        cluster_sector_type.fields.add(*project_fields)
+
+
 def import_cluster_type_sector_links(file_path):
     """
     Import links between cluster, type and sector from file
@@ -249,6 +302,32 @@ def import_cluster_type_sector_links(file_path):
                 )
 
 
+def import_fields(file_path):
+    """
+    Import project type from file
+
+    @param file_path = str (file path for import file)
+    """
+    with open(file_path, "r", encoding="utf8") as f:
+        fields_json = json.load(f)
+
+    # add other types that are not in the file
+    for field_json in fields_json:
+
+        field_data = {
+            "import_name": field_json["IMPORT_NAME"],
+            "label": field_json["LABEL"],
+            "field_name": field_json["FIELD_NAME"],
+            "table": field_json["TABLE"],
+            "data_type": field_json["DATA_TYPE"],
+            "section": field_json["SECTION"],
+        }
+
+        ProjectField.objects.update_or_create(
+            field_name=field_data["field_name"], defaults=field_data
+        )
+
+
 @transaction.atomic
 def import_project_resources_v2():
 
@@ -273,3 +352,11 @@ def import_project_resources_v2():
     file_path = IMPORT_RESOURCES_DIR / "projects_v2" / "ClusterTypeSectorLinks.json"
     import_cluster_type_sector_links(file_path)
     logger.info("✔ cluster type sector links imported")
+
+    file_path = IMPORT_RESOURCES_DIR / "projects_v2" / "Fields_06_05_2025.json"
+    import_fields(file_path)
+    logger.info("✔ fields imported")
+
+    file_path = IMPORT_RESOURCES_DIR / "projects_v2" / "cluster_type_sector_fields.xlsx"
+    import_cluster_type_sector_fields(file_path)
+    logger.info("✔ cluster type sector fields imported")

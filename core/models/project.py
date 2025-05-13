@@ -77,6 +77,11 @@ class Project(models.Model):
             "Conversion to non-controlled substance",
         )
 
+    class Regulations(models.TextChoices):
+        PR1 = "pr1", "PR1"
+        PR2 = "pr2", "PR2"
+        PR3 = "pr3", "PR3"
+
     meta_project = models.ForeignKey(MetaProject, on_delete=models.CASCADE, null=True)
     bp_activity = models.ForeignKey(
         "BPActivity",
@@ -300,7 +305,7 @@ class Project(models.Model):
     cost_effectiveness_co2 = models.FloatField(
         null=True,
         blank=True,
-        help_text="Cost effectiveness (US$/ CO2-ep) (MYA)",
+        help_text="Cost effectiveness (US$/ CO2-eq) (MYA)",
     )
     number_of_production_lines_assisted = models.IntegerField(
         null=True,
@@ -474,6 +479,13 @@ class Project(models.Model):
         null=True,
         blank=True,
         help_text="Quantity of controlled substances destroyed (CO2-eq tonnes)",
+    )
+    checklist_regulations = models.CharField(
+        max_length=256,
+        null=True,
+        blank=True,
+        choices=Regulations.choices,
+        help_text="Checklist of regulations or policies enacted",
     )
     quantity_hfc_23_by_product_generated = models.FloatField(
         null=True,

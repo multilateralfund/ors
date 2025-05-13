@@ -54,7 +54,7 @@ class ProjectV2FileSerializer(serializers.ModelSerializer):
 
 class ProjectListV2Serializer(ProjectListSerializer):
 
-    group = serializers.SlugRelatedField("name", read_only=True)
+    group = serializers.SlugRelatedField("name_alt", read_only=True)
     group_id = serializers.PrimaryKeyRelatedField(
         allow_null=True,
         queryset=Group.objects.all().values_list("id", flat=True),
@@ -181,6 +181,7 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "ee_demonstration_project",
             "quantity_controlled_substances_destroyed_mt",
             "quantity_controlled_substances_destroyed_co2_eq_t",
+            "checklist_regulations",
             "quantity_hfc_23_by_product_generated",
             "quantity_hfc_23_by_product_generation_rate",
             "quantity_hfc_23_by_product_destroyed",
@@ -356,6 +357,7 @@ class ProjectV2CreateSerializer(serializers.ModelSerializer):
             "ee_demonstration_project",
             "quantity_controlled_substances_destroyed_mt",
             "quantity_controlled_substances_destroyed_co2_eq_t",
+            "checklist_regulations",
             "quantity_hfc_23_by_product_generated",
             "quantity_hfc_23_by_product_generation_rate",
             "quantity_hfc_23_by_product_destroyed",

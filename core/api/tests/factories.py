@@ -46,6 +46,7 @@ from core.models.project import (
 from core.models.project_metadata import (
     ProjectCluster,
     ProjectClusterTypeSectorFields,
+    ProjectField,
     ProjectSector,
     ProjectStatus,
     ProjectSubmissionStatus,
@@ -408,6 +409,18 @@ class ProjectClusterTypeSectorFieldsFactory(factory.django.DjangoModelFactory):
     sector = factory.SubFactory(ProjectSectorFactory)
 
 
+class ProjectFieldFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ProjectField
+
+    import_name = factory.Faker("pystr", max_chars=100)
+    label = factory.Faker("pystr", max_chars=100)
+    field_name = factory.Faker("pystr", max_chars=100)
+    table = factory.Faker("pystr", max_chars=100)
+    data_type = factory.Faker("pystr", max_chars=100)
+    section = factory.Faker("pystr", max_chars=100)
+
+
 class MetaProjectFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = MetaProject
@@ -432,6 +445,7 @@ class ProjectFactory(factory.django.DjangoModelFactory):
     submission_category = "bilateral cooperation"
     submission_number = factory.Faker("random_int", min=1, max=100)
 
+    # pylint: disable=E1101
     @factory.post_generation
     def subsectors(obj, _, extracted, **kwargs):
         if extracted:

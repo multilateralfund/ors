@@ -7,10 +7,12 @@ from core.api.tests.factories import (
     ProjectClusterTypeSectorFieldsFactory,
     MeetingFactory,
     ProjectFactory,
+    ProjectFieldFactory,
     ProjectSectorFactory,
     ProjectSubSectorFactory,
     ProjectTypeFactory,
     RbmMeasureFactory,
+    SubstanceFactory,
 )
 from core.models.project_metadata import ProjectSector, ProjectSubSector
 
@@ -311,81 +313,85 @@ class TestProjectCluster(BaseTest):
 @pytest.fixture(name="_setup_cluster_type_sector_fields")
 def setup_cluster_type_sector_fields():
     cluster1 = ProjectClusterFactory.create(name="Cluster1", code="CL1", sort_order=1)
-    cluster2 = ProjectClusterFactory.create(name="Cluster2", code="CL2", sort_order=2)
     project_type1 = ProjectTypeFactory.create(name="Type1", code="TYP1")
-    project_type2 = ProjectTypeFactory.create(name="Type2", code="TYP2")
     sector1 = ProjectSectorFactory.create(name="Sector1", code="SEC1")
-    sector2 = ProjectSectorFactory.create(name="Sector2", code="SEC2")
 
-    ProjectClusterTypeSectorFieldsFactory.create(
+    cluster_type_sector = ProjectClusterTypeSectorFieldsFactory.create(
         cluster=cluster1,
         type=project_type1,
         sector=sector1,
     )
-    ProjectClusterTypeSectorFieldsFactory.create(
-        cluster=cluster1,
-        type=project_type1,
-        sector=sector2,
+    field1 = ProjectFieldFactory.create(
+        import_name="substance",
+        label="Substance",
+        field_name="ods_substance",
+        table="ods_odp",
+        data_type="drop_down",
+        section="section1",
     )
-    ProjectClusterTypeSectorFieldsFactory.create(
-        cluster=cluster1,
-        type=project_type2,
-        sector=sector2,
-    )
-    ProjectClusterTypeSectorFieldsFactory.create(
-        cluster=cluster2,
-        type=project_type1,
-        sector=sector1,
+    substance = SubstanceFactory.create()
+    field2 = ProjectFieldFactory.create(
+        import_name="EE demonstration project included (yes/no)",
+        label="EE demonstration project included",
+        field_name="ee_demonstration_project",
+        table="project",
+        data_type="boolean",
+        section="section2",
     )
 
-    return cluster1, cluster2, project_type1, project_type2, sector1, sector2
+    cluster_type_sector.fields.add(field1, field2)
+
+    return cluster1, project_type1, sector1, field1, field2, substance
 
 
 class TestProjectClusterTypeSectorFields(BaseTest):
-    url = reverse("project-cluster-type-sector-fields-list")
+
+    def test_without_login(self, _setup_cluster_type_sector_fields):
+        cluster1, project_type1, sector1, _, _, _ = _setup_cluster_type_sector_fields
+        url = reverse(
+            "project-cluster-type-sector-fields-list",
+            kwargs={
+                "cluster_id": cluster1.id,
+                "type_id": project_type1.id,
+                "sector_id": sector1.id,
+            },
+        )
+        self.client.force_authenticate(user=None)
+        response = self.client.delete(url)
+        assert response.status_code == 403
 
     def test_project_cluster_type_sector_fields_list(
         self, viewer_user, _setup_cluster_type_sector_fields
     ):
-        cluster1, cluster2, project_type1, project_type2, sector1, sector2 = (
+        cluster1, project_type1, sector1, field1, field2, substance = (
             _setup_cluster_type_sector_fields
         )
         self.client.force_authenticate(user=viewer_user)
-        response = self.client.get(self.url)
+        url = reverse(
+            "project-cluster-type-sector-fields-list",
+            kwargs={
+                "cluster_id": cluster1.id,
+                "type_id": project_type1.id,
+                "sector_id": sector1.id,
+            },
+        )
+        response = self.client.get(url)
         assert response.status_code == 200
-        assert len(response.data) == 2
-        assert response.data[0]["name"] == cluster1.name
-        assert response.data[0]["code"] == cluster1.code
-        assert response.data[0]["id"] == cluster1.id
-        assert response.data[0]["types"][0]["name"] == project_type1.name
-        assert response.data[0]["types"][0]["code"] == project_type1.code
-        assert response.data[0]["types"][0]["id"] == project_type1.id
-        assert len(response.data[0]["types"][0]["sectors"]) == 2
-        assert response.data[0]["types"][0]["sectors"][0]["name"] == sector1.name
-        assert response.data[0]["types"][0]["sectors"][0]["code"] == sector1.code
-        assert response.data[0]["types"][0]["sectors"][0]["id"] == sector1.id
-        assert response.data[0]["types"][0]["sectors"][1]["name"] == sector2.name
-        assert response.data[0]["types"][0]["sectors"][1]["code"] == sector2.code
-        assert response.data[0]["types"][0]["sectors"][1]["id"] == sector2.id
-        assert response.data[0]["types"][1]["name"] == project_type2.name
-        assert response.data[0]["types"][1]["code"] == project_type2.code
-        assert response.data[0]["types"][1]["id"] == project_type2.id
-        assert len(response.data[0]["types"][1]["sectors"]) == 1
-        assert response.data[0]["types"][1]["sectors"][0]["name"] == sector2.name
-        assert response.data[0]["types"][1]["sectors"][0]["code"] == sector2.code
-        assert response.data[0]["types"][1]["sectors"][0]["id"] == sector2.id
-
-        assert response.data[1]["name"] == cluster2.name
-        assert response.data[1]["code"] == cluster2.code
-        assert response.data[1]["id"] == cluster2.id
-        assert len(response.data[1]["types"]) == 1
-        assert response.data[1]["types"][0]["name"] == project_type1.name
-        assert response.data[1]["types"][0]["code"] == project_type1.code
-        assert response.data[1]["types"][0]["id"] == project_type1.id
-        assert len(response.data[1]["types"][0]["sectors"]) == 1
-        assert response.data[1]["types"][0]["sectors"][0]["name"] == sector1.name
-        assert response.data[1]["types"][0]["sectors"][0]["code"] == sector1.code
-        assert response.data[1]["types"][0]["sectors"][0]["id"] == sector1.id
+        fields = response.data["fields"]
+        assert len(fields) == 2
+        assert fields[0]["label"] == field1.label
+        assert fields[0]["field_name"] == field1.field_name
+        assert fields[0]["table"] == field1.table
+        assert fields[0]["data_type"] == field1.data_type
+        assert fields[0]["section"] == field1.section
+        assert len(fields[0]["options"]) == 1
+        assert fields[0]["options"][0]["id"] == substance.id
+        assert fields[0]["options"][0]["name"] == substance.name
+        assert fields[1]["label"] == field2.label
+        assert fields[1]["field_name"] == field2.field_name
+        assert fields[1]["table"] == field2.table
+        assert fields[1]["data_type"] == field2.data_type
+        assert fields[1]["section"] == field2.section
 
 
 @pytest.fixture(name="_setup_rbm_measures")
