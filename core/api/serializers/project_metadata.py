@@ -1,13 +1,27 @@
 from rest_framework import serializers
 
+from core.models import (
+    Group,
+    Substance,
+)
+from core.api.serializers.chemicals import (
+    GroupSerializer,
+    SubstanceSerializer,
+)
 from core.models.project_metadata import (
     ProjectCluster,
+    ProjectField,
     ProjectSector,
     ProjectStatus,
     ProjectSubmissionStatus,
+    ProjectClusterTypeSectorFields,
     ProjectSubSector,
     ProjectType,
 )
+
+from core.models import Project
+
+# pylint: disable=R0911
 
 
 class ProjectClusterSerializer(serializers.ModelSerializer):
@@ -113,30 +127,55 @@ class ProjectTypeSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "allowed_sectors"]
 
 
-class ProjectClusterTypeSectorFieldsSerializer(serializers.ModelSerializer):
-    types = serializers.SerializerMethodField()
+class ProjectFieldSerializer(serializers.ModelSerializer):
+    """
+    ProjectFieldSerializer class
+    """
+
+    options = serializers.SerializerMethodField()
 
     class Meta:
-        model = ProjectCluster
-        fields = ["id", "name", "code", "types"]
+        model = ProjectField
+        fields = [
+            "id",
+            "label",
+            "field_name",
+            "table",
+            "data_type",
+            "section",
+            "options",
+        ]
 
-    def get_types(self, obj):
-        types = {}
-        for field in obj.prefetched_cluster_type_sector_fields:
-            type_id = field.type.id
-            if type_id not in types:
-                types[type_id] = {
-                    "name": field.type.name,
-                    "id": type_id,
-                    "code": field.type.code,
-                    "sectors": [],
-                }
-            types[type_id]["sectors"].append(
-                {
-                    "name": field.sector.name,
-                    "code": field.sector.code,
-                    "id": field.sector.id,
-                }
-            )
+    def get_options(self, obj):
+        if obj.field_name == "group":
+            return GroupSerializer(Group.objects.all().order_by("name"), many=True).data
 
-        return list(types.values())
+        if obj.field_name == "ods_substance":
+            return SubstanceSerializer(
+                Substance.objects.all().order_by("name"), many=True
+            ).data
+
+        if obj.field_name == "is_sme":
+            return [
+                {"label": "Yes", "value": True},
+                {"label": "No", "value": False},
+            ]
+        if obj.field_name == "production_control_type":
+            return Project.ProductionControlType.choices
+
+        if obj.field_name == "destruction_technology":
+            return Project.DestructionTechnology.choices
+
+        if obj.field_name == "checklist_regulations":
+            return Project.Regulations.choices
+        return None
+
+
+class ProjectClusterTypeSectorFieldsSerializer(serializers.ModelSerializer):
+    fields = ProjectFieldSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ProjectClusterTypeSectorFields
+        fields = [
+            "fields",
+        ]

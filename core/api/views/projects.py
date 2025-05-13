@@ -137,7 +137,7 @@ class ProjectClusterListView(generics.ListAPIView):
     serializer_class = ProjectClusterSerializer
 
 
-class ProjectClusterTypeSectorListView(generics.ListAPIView):
+class ProjectClusterTypeSectorListView(generics.RetrieveAPIView):
     """
     Get a tree structure of project cluster types and sectors
     *and the list of required fields for each combination* *to be implemented*.
@@ -146,19 +146,18 @@ class ProjectClusterTypeSectorListView(generics.ListAPIView):
     permission_classes = [IsSecretariat | IsAgency | IsCountryUser | IsViewer]
     serializer_class = ProjectClusterTypeSectorFieldsSerializer
 
-    def get_queryset(self):
-        return (
-            ProjectCluster.objects.prefetch_related(
-                models.Prefetch(
-                    "cluster_type_sector_fields",
-                    queryset=ProjectClusterTypeSectorFields.objects.select_related(
-                        "type", "sector"
-                    ),
-                    to_attr="prefetched_cluster_type_sector_fields",
-                )
-            )
-            .order_by("sort_order")
-            .all()
+    def get_object(self):
+        queryset = ProjectClusterTypeSectorFields.objects.select_related(
+            "cluster", "type", "sector"
+        ).prefetch_related(
+            "fields",
+        )
+
+        return get_object_or_404(
+            queryset,
+            cluster_id=self.kwargs["cluster_id"],
+            type_id=self.kwargs["type_id"],
+            sector_id=self.kwargs["sector_id"],
         )
 
 

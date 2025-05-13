@@ -9,7 +9,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, mixins, viewsets, filters, status
 from rest_framework.response import Response
 from rest_framework import parsers
-
+from rest_framework.decorators import action
+from rest_framework.views import APIView
 
 from core.api.filters.project import ProjectFilter
 from core.api.permissions import IsAgency, IsCountryUser, IsSecretariat, IsViewer
@@ -22,8 +23,40 @@ from core.api.serializers.project_v2 import (
 from core.api.swagger import FileUploadAutoSchema
 from core.models.project import (
     Project,
+    ProjectOdsOdp,
     ProjectFile,
 )
+
+
+class ProjectDestructionTechnologyView(APIView):
+    """
+    View to return a list of all Project DestructionTechnology choices
+    """
+
+    def get(self, request, *args, **kwargs):
+        choices = Project.DestructionTechnology.choices
+        return Response(choices)
+
+
+class ProjectProductionControlTypeView(APIView):
+    """
+    View to return a list of all Project ProductionControlType choices
+    """
+
+    def get(self, request, *args, **kwargs):
+        choices = Project.ProductionControlType.choices
+        return Response(choices)
+
+
+class ProjectOdsOdpTypeView(APIView):
+    """
+    View to return a list of all Project OdsOdpType choices
+    """
+
+    def get(self, request, *args, **kwargs):
+        choices = ProjectOdsOdp.ProjectOdsOdpType.choices
+        return Response(choices)
+
 
 # pylint: disable=R1710
 
@@ -132,6 +165,12 @@ class ProjectV2ViewSet(
     )
     def create(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
+
+    @action(methods=["GET"], detail=False)
+    def api_schema(self, request):
+        meta = self.metadata_class()
+        data = meta.determine_metadata(request, self)
+        return Response(data)
 
 
 class ProjectV2FileView(

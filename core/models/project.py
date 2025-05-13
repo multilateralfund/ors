@@ -61,6 +61,27 @@ class Project(models.Model):
         EE = "Energy Efficieny", "Energy Efficieny"
         NONEE = "Non-Energey Efficiency", "Non-Energey Efficiency"
 
+    class DestructionTechnology(models.TextChoices):
+        DT1 = "D1", "D1"
+        DT2 = "D2", "D2"
+
+    class ProductionControlType(models.TextChoices):
+        REDUCTION = "reduction", "Reduction"
+        CLOSURE = "closure", "Closure"
+        SWITCH_TO_PRODUCTION_FOR_FEEDSTOCK_USES = (
+            "switch_to_production_for_feedstock_uses",
+            "Switch to production for feedstock uses",
+        )
+        CONVERSION_TO_NON_CONTROLLED_SUBSTANCE = (
+            "conversion_to_non_controlled_substance",
+            "Conversion to non-controlled substance",
+        )
+
+    class Regulations(models.TextChoices):
+        PR1 = "pr1", "PR1"
+        PR2 = "pr2", "PR2"
+        PR3 = "pr3", "PR3"
+
     meta_project = models.ForeignKey(MetaProject, on_delete=models.CASCADE, null=True)
     bp_activity = models.ForeignKey(
         "BPActivity",
@@ -227,9 +248,13 @@ class Project(models.Model):
         blank=True,
         help_text="Annex group of substances",
     )
-    destruction_tehnology = models.CharField(max_length=256, null=True, blank=True)
+    destruction_technology = models.CharField(
+        max_length=256, choices=DestructionTechnology.choices, null=True, blank=True
+    )
+
     production_control_type = models.CharField(
         max_length=256,
+        choices=ProductionControlType.choices,
         null=True,
         blank=True,
     )
@@ -245,6 +270,11 @@ class Project(models.Model):
     )
     mya_support_cost = models.FloatField(
         null=True, blank=True, help_text="Support Cost (MYA)"
+    )
+    number_of_enterprises = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Number of enterprises (MYA)",
     )
     aggregated_consumption = models.FloatField(
         null=True,
@@ -275,7 +305,12 @@ class Project(models.Model):
     cost_effectiveness_co2 = models.FloatField(
         null=True,
         blank=True,
-        help_text="Cost effectiveness (US$/ CO2-ep) (MYA)",
+        help_text="Cost effectiveness (US$/ CO2-eq) (MYA)",
+    )
+    number_of_production_lines_assisted = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Number of production lines assisted (MYA)",
     )
 
     # new approval fields
@@ -294,6 +329,183 @@ class Project(models.Model):
         null=True,
         blank=True,
         help_text="PCR waived",
+    )
+
+    # impact indicators (old RBM measures)
+    total_number_of_technicians_trained = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Total number of technicians trained",
+    )
+    number_of_female_technicians_trained = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Number of female technicians trained",
+    )
+    total_number_of_trainers_trained = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Total number of trainers trained",
+    )
+    number_of_female_trainers_trained = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Number of female trainers trained",
+    )
+    total_number_of_technicians_certified = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Total number of technicians certified",
+    )
+    number_of_female_technicians_certified = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Number of female technicians certified",
+    )
+    number_of_training_institutions_newly_assisted = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Number of training institutions newly assisted",
+    )
+    number_of_tools_sets_distributed = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Number of tools sets distributed",
+    )
+    total_number_of_customs_officers_trained = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Total number of customs officers trained",
+    )
+    number_of_female_customs_officers_trained = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Number of female customs officers trained",
+    )
+    total_number_of_nou_personnnel_supported = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Total number of NOU personnel supported",
+    )
+    number_of_female_nou_personnel_supported = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Number of female NOU personnel supported",
+    )
+    number_of_enterprises_assisted = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Number of enterprises assisted",
+    )
+    certification_system_for_technicians = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="Certification system for technicians established or further enhanced",
+    )
+    operation_of_recovery_and_recycling_scheme = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="Operation of recovery and recycling scheme",
+    )
+    operation_of_reclamation_scheme = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="Operation of reclamation scheme",
+    )
+    establishment_of_imp_exp_licensing = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="Establishment or upgrade of import/export licensing",
+    )
+    establishment_of_quota_systems = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="Establishment of quota systems",
+    )
+    ban_of_equipment = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Ban of equipment",
+    )
+    ban_of_substances = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Ban of substances",
+    )
+    kwh_year_saved = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="kWh/year saved",
+    )
+    meps_developed_domestic_refrigeration = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="MEPS developed for domestic refrigeration",
+    )
+    meps_developed_commercial_refrigeration = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="MEPS developed for commercial refrigeration",
+    )
+    meps_developed_residential_ac = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="MEPS developed for residential air-conditioning",
+    )
+    meps_developed_commercial_ac = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="MEPS developed for commercial AC",
+    )
+    capacity_building_programmes = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="""
+            Capacity building programmes for technicians, end-users, operators,
+            consultants, procurement officers and other Government entities",
+        """,
+    )
+    ee_demonstration_project = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="EE demonstration project included",
+    )
+    quantity_controlled_substances_destroyed_mt = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Quantity of controlled substances destroyed (Metric tonnes)",
+    )
+    quantity_controlled_substances_destroyed_co2_eq_t = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Quantity of controlled substances destroyed (CO2-eq tonnes)",
+    )
+    checklist_regulations = models.CharField(
+        max_length=256,
+        null=True,
+        blank=True,
+        choices=Regulations.choices,
+        help_text="Checklist of regulations or policies enacted",
+    )
+    quantity_hfc_23_by_product_generated = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Quantity of HFC-23 by-product (Generated)",
+    )
+    quantity_hfc_23_by_product_generation_rate = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Quantity of HFC-23 by-product (by product generation rate)",
+    )
+    quantity_hfc_23_by_product_destroyed = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Quantity of HFC-23 by-product (Destroyed)",
+    )
+    quantity_hfc_23_by_product_emitted = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Quantity of HFC-23 by-product (Emitted)",
     )
 
     objects = ProjectManager()
@@ -337,6 +549,7 @@ class ProjectOdsOdp(models.Model):
         Substance,
         on_delete=models.CASCADE,
         related_name="project_ods",
+        help_text="Substance - baseline technology",
         null=True,
         blank=True,
     )
@@ -349,11 +562,13 @@ class ProjectOdsOdp(models.Model):
     )
 
     ods_display_name = models.CharField(max_length=256, null=True, blank=True)
-    odp = models.FloatField(null=True, blank=True)
     ods_replacement = models.CharField(
         max_length=256, null=True, blank=True, help_text="Replacement technology/ies"
     )
-    co2_mt = models.FloatField(null=True, blank=True)
+    co2_mt = models.FloatField(null=True, blank=True, help_text="Phase out (CO2-eq t)")
+    odp = models.FloatField(null=True, blank=True, help_text="Phase out (ODP t)")
+    phase_out_mt = models.FloatField(null=True, blank=True, help_text="Phase out (Mt)")
+
     ods_type = models.CharField(
         max_length=256,
         choices=ProjectOdsOdpType.choices,
