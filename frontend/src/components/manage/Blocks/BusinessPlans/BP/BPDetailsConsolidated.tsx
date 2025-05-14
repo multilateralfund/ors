@@ -49,7 +49,7 @@ const BPSummary = (props: any) => {
         />
         <SimpleField
           id="meeting"
-          data={getMeetingNr(meeting_id) || '-'}
+          data={getMeetingNr(meeting_id)?.toString() || '-'}
           label="Meeting number"
           textClassName="text-[1.25rem]"
         />

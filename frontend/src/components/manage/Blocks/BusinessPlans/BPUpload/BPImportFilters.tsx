@@ -53,7 +53,7 @@ const BPImportFilters = ({
               withClear={true}
               onChange={handleChangeMeeting}
               onClear={() => handleChangeMeeting('')}
-              label={getMeetingNr(filters?.meeting)}
+              label={getMeetingNr(filters?.meeting)?.toString()}
             />
           </div>
         </div>
