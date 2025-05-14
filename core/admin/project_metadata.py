@@ -45,6 +45,7 @@ class ProjectClusterTypeSectorFieldsAdmin(admin.ModelAdmin):
         "cluster",
         "type",
         "sector",
+        "fields",
     ]
     autocomplete_fields = ["cluster", "type", "sector"]
 

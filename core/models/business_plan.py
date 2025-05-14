@@ -5,12 +5,12 @@ from django.db import models
 from core.models.agency import Agency
 from core.models.country import Country
 from core.models.meeting import Decision, Meeting
-from core.models.project import (
+from core.models.project_metadata import (
     ProjectCluster,
     ProjectSector,
     ProjectSubSector,
+    ProjectType,
 )
-from core.models.project_metadata import ProjectType
 from core.models.substance import Substance
 from core.models.utils import get_protected_storage
 
