@@ -1,5 +1,3 @@
-import { map, range } from 'lodash'
-
 export const PROJECTS_PER_PAGE = 100
 
 export const tableColumns: { [key: string]: string } = {
@@ -36,7 +34,13 @@ export const tableColumns: { [key: string]: string } = {
 }
 
 export const defaultProps = {
-  FieldProps: { className: 'mb-0 w-40 BPListUpload' },
+  FieldProps: { className: 'mb-0 w-[12rem] BPListUpload' },
+}
+
+export const additionalProperties: { [key: string]: any } = {
+  ods_substance_id: {
+    FieldProps: { className: defaultProps.FieldProps.className + ' w-full' },
+  },
 }
 
 export const defaultPropsSimpleField = {
@@ -46,7 +50,7 @@ export const defaultPropsSimpleField = {
 }
 
 export const textAreaClassname =
-  'min-h-[30px] w-[400px] min-w-[350px] rounded-lg border bg-white p-2 pb-10 shadow-none'
+  'min-h-[20px] w-[415px] min-w-[350px] max-w-full rounded-lg border bg-white p-2 pb-10 shadow-none'
 
 export const blanketOrIndConsiderationOpts = [
   { name: 'Individual', value: true },
@@ -62,15 +66,3 @@ export const isSmeOpts = [
   { name: 'SME', value: true },
   { name: 'Non-SME', value: false },
 ]
-
-export const trancheOpts = map(range(1, 11), (n) => ({ id: n, name: n }))
-
-export const odsTypeOpts = [
-  { name: 'General', id: 1 },
-  { name: 'Production', id: 2 },
-  { name: 'Indirect', id: 3 },
-]
-
-export const widgetsMapping: { [key: string]: string } = {
-  drop_down: 'autocomplete',
-}

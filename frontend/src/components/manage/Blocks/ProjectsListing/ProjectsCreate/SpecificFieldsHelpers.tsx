@@ -1,34 +1,35 @@
-import {
-  ProjectSpecificFields,
-  FieldType,
-  SpecificFields,
-  OdsOdpFields,
-} from '../interfaces'
+import { ChangeEvent } from 'react'
+
+import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
-import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
+import { isOptionEqualToValue } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
+import { ProjectSpecificFields, FieldType } from '../interfaces'
 import {
+  additionalProperties,
   defaultProps,
   defaultPropsSimpleField,
   textAreaClassname,
-  widgetsMapping,
 } from '../constants'
-import { find, get, isArray, isObject, map } from 'lodash'
+import {
+  formatOptions,
+  handleChangeDecimalField,
+  handleChangeNumberField,
+} from '../utils'
+
 import { Checkbox, TextareaAutosize } from '@mui/material'
-import { handleChangeDecimalField, handleChangeNumberField } from '../utils'
+import { find, get, isObject, reduce, isBoolean } from 'lodash'
 
 export const handler: Record<
   FieldType,
   (
     value: any,
     field: string,
-    setProjectSpecificFields: React.Dispatch<
-      React.SetStateAction<SpecificFields | OdsOdpFields>
-    >,
+    setProjectSpecificFields: React.Dispatch<React.SetStateAction<any>>,
   ) => void
 > = {
   text: (value, field, setProjectSpecificFields) => {
-    setProjectSpecificFields((prevFilters) => ({
+    setProjectSpecificFields((prevFilters: any) => ({
       ...prevFilters,
       [field]: value.target.value,
     }))
@@ -40,35 +41,51 @@ export const handler: Record<
     handleChangeDecimalField(value, field, setProjectSpecificFields)
   },
   drop_down: (value, field, setProjectSpecificFields) => {
-    setProjectSpecificFields((prevFilters) => ({
+    setProjectSpecificFields((prevFilters: any) => ({
       ...prevFilters,
       [field]: value?.id ?? null,
       //  !isNil(is_sme?.value) ? is_sme?.value : null,
     }))
   },
   boolean: (value, field, setProjectSpecificFields) => {
-    setProjectSpecificFields((prevFilters) => ({
+    setProjectSpecificFields((prevFilters: any) => ({
       ...prevFilters,
       [field]: value,
     }))
   },
 }
 
-const getOptionLabel = (data: any, option: any, field: string = 'id') =>
+const getOptionLabel = (
+  data: any,
+  option: any,
+  labelField: string = 'name',
+  field: string = 'id',
+) =>
   isObject(option)
-    ? get(option, 'name')
-    : find(data, { [field]: option })?.name || ''
+    ? get(option, labelField)
+    : find(data, { [field]: option })[labelField] || ''
+
+export const getDefaultValFields = (fields: any) =>
+  reduce(
+    fields,
+    (acc: any, field) => {
+      acc[field.field_name] = field.data_type === 'drop_down' ? null : ''
+      return acc
+    },
+    {},
+  )
 
 export const AutocompleteWidget = (
   field: ProjectSpecificFields,
-  projectSpecificFields: SpecificFields | OdsOdpFields,
-  setProjectSpecificFields: React.Dispatch<
-    React.SetStateAction<SpecificFields | OdsOdpFields>
-  >,
+  projectSpecificFields: any,
+  setProjectSpecificFields: React.Dispatch<React.SetStateAction<any>>,
 ) => {
-  const options = map(field.options, (option) =>
-    isArray(option) ? { id: option[0], name: option[1] } : option,
-  )
+  const options = formatOptions(field)
+  const fieldName = field.field_name
+  const value = projectSpecificFields[fieldName]
+  const formattedValue = isBoolean(value)
+    ? find(options, { id: value }) || null
+    : value
 
   return (
     <div>
@@ -76,16 +93,20 @@ export const AutocompleteWidget = (
       <Field
         widget="autocomplete"
         options={options}
-        value={projectSpecificFields[field.field_name]}
+        value={formattedValue}
         onChange={(_: React.SyntheticEvent, value) =>
-          handler[field.data_type](
-            value,
-            field.field_name,
-            setProjectSpecificFields,
+          handler[field.data_type](value, fieldName, setProjectSpecificFields)
+        }
+        getOptionLabel={(option: any) =>
+          getOptionLabel(
+            options,
+            option,
+            fieldName === 'group' ? 'name_alt' : 'name',
           )
         }
-        getOptionLabel={(option: any) => getOptionLabel(options, option)}
+        isOptionEqualToValue={isOptionEqualToValue}
         {...defaultProps}
+        {...(additionalProperties[fieldName] as any)}
       />
     </div>
   )
@@ -93,23 +114,21 @@ export const AutocompleteWidget = (
 
 export const TextWidget = (
   field: ProjectSpecificFields,
-  projectSpecificFields: SpecificFields | OdsOdpFields,
-  setProjectSpecificFields: React.Dispatch<
-    React.SetStateAction<SpecificFields | OdsOdpFields>
-  >,
+  projectSpecificFields: any,
+  setProjectSpecificFields: React.Dispatch<React.SetStateAction<any>>,
 ) => (
   <div>
     <Label>{field.label}</Label>
     <TextareaAutosize
       value={projectSpecificFields[field.field_name]}
-      onChange={(event) =>
+      onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
         handler[field.data_type](
           event,
           field.field_name,
           setProjectSpecificFields,
         )
       }
-      className={textAreaClassname + ' !min-h-[20px] w-[415px]'}
+      className={textAreaClassname}
       minRows={2}
       tabIndex={-1}
     />
@@ -118,10 +137,8 @@ export const TextWidget = (
 
 const NumberWidget = (
   field: ProjectSpecificFields,
-  projectSpecificFields: SpecificFields | OdsOdpFields,
-  setProjectSpecificFields: React.Dispatch<
-    React.SetStateAction<SpecificFields | OdsOdpFields>
-  >,
+  projectSpecificFields: any,
+  setProjectSpecificFields: React.Dispatch<React.SetStateAction<any>>,
 ) => (
   <div>
     <Label>{field.label}</Label>
@@ -143,12 +160,10 @@ const NumberWidget = (
 
 const BooleanWidget = (
   field: ProjectSpecificFields,
-  projectSpecificFields: SpecificFields | OdsOdpFields,
-  setProjectSpecificFields: React.Dispatch<
-    React.SetStateAction<SpecificFields | OdsOdpFields>
-  >,
+  projectSpecificFields: any,
+  setProjectSpecificFields: React.Dispatch<React.SetStateAction<any>>,
 ) => (
-  <div className="flex w-full">
+  <div className="col-span-full flex w-full">
     <Label>{field.label}</Label>
     <Checkbox
       className="pb-1 pl-2 pt-0"

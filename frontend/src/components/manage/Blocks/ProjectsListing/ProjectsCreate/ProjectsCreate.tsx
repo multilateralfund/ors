@@ -20,7 +20,7 @@ import {
 import { api } from '@ors/helpers'
 
 import { Alert, Button, CircularProgress, Tabs, Tab } from '@mui/material'
-import { find, isNil, map, omit, pickBy } from 'lodash'
+import { filter, isNil, map, omit, pickBy } from 'lodash'
 import cx from 'classnames'
 
 const initialCrossCuttingFields = (): CrossCuttingFields => {
@@ -78,8 +78,12 @@ const ProjectsCreate = () => {
   const projectType = crossCuttingFields.project_type
   const sector = crossCuttingFields.sector
 
-  const sectionHasFields = (section: string) =>
-    find(specificFields, (field) => field.section === section)
+  const getSectionFields = (section: string) =>
+    filter(specificFields, (field) => field.section === section)
+
+  const overviewFields = getSectionFields('Header')
+  const substanceDetailsFields = getSectionFields('Substance Details')
+  const impactFields = getSectionFields('Impact')
 
   const fetchSpecificFields = async () => {
     try {
@@ -173,14 +177,14 @@ const ProjectsCreate = () => {
       id: 'project-specific-overview-section',
       ariaControls: 'project-specific-overview-section',
       label: 'Overview',
-      disabled: areProjectSpecificTabsDisabled || !sectionHasFields('Header'),
+      disabled: areProjectSpecificTabsDisabled || overviewFields.length < 1,
       component: (
         <ProjectOverview
           {...{
             projectSpecificFields,
             setProjectSpecificFields,
-            specificFields,
           }}
+          fields={overviewFields}
         />
       ),
     },
@@ -190,15 +194,14 @@ const ProjectsCreate = () => {
       ariaControls: 'project-substance-details-section',
       label: 'Substance details',
       disabled:
-        areProjectSpecificTabsDisabled ||
-        !sectionHasFields('Substance Details'),
+        areProjectSpecificTabsDisabled || substanceDetailsFields.length < 1,
       component: (
         <ProjectSubstanceDetails
           {...{
             projectSpecificFields,
             setProjectSpecificFields,
-            specificFields,
           }}
+          fields={substanceDetailsFields}
         />
       ),
     },
@@ -207,20 +210,19 @@ const ProjectsCreate = () => {
       id: 'project-impact-section',
       ariaControls: 'project-impact-section',
       label: 'Impact',
-      disabled: areProjectSpecificTabsDisabled || !sectionHasFields('Impact'),
+      disabled: areProjectSpecificTabsDisabled || impactFields.length < 1,
       component: (
         <ProjectImpact
           {...{
             projectSpecificFields,
             setProjectSpecificFields,
-            specificFields,
           }}
+          fields={impactFields}
         />
       ),
     },
   ]
 
-  console.log(projectSpecificFields, specificFields)
   const submitProject = async () => {
     setIsLoading(true)
 

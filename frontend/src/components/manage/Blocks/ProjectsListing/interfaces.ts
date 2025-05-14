@@ -44,7 +44,7 @@ export type OdsOdpFields = {
 export type SpecificFieldsSectionProps = {
   projectSpecificFields: SpecificFields
   setProjectSpecificFields: React.Dispatch<React.SetStateAction<SpecificFields>>
-  specificFields: ProjectSpecificFields[]
+  fields: ProjectSpecificFields[]
 }
 
 export type OdsOdpModalProps = {
@@ -52,14 +52,11 @@ export type OdsOdpModalProps = {
   setDisplayODPModal: Dispatch<SetStateAction<boolean>>
   setProjectSpecificFields: React.Dispatch<React.SetStateAction<SpecificFields>>
   odsOdpFields: ProjectSpecificFields[]
+  field: string
 }
 
-export type OdsTypesType = {
-  id: number
-  name: string
-}
-
-export type FieldType = 'text' | 'number' | 'drop_down' | 'decimal' | 'boolean'
+export type TableFieldType = 'text' | 'drop_down' | 'decimal'
+export type FieldType = TableFieldType | 'number' | 'boolean'
 
 export type ProjectSpecificFields = {
   id: number
@@ -68,5 +65,5 @@ export type ProjectSpecificFields = {
   table: string
   data_type: FieldType
   section: string
-  options: any[] | null
+  options: { id: number; name: string }[]
 }

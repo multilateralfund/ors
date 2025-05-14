@@ -169,10 +169,10 @@ const ProjectCrossCuttingFields = ({
   const handleChangeProjectFunding = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value
 
-    if (value.trim() !== '' && !isNaN(Number(value))) {
+    if (!isNaN(Number(value))) {
       setCrossCuttingFields((prevFilters: any) => ({
         ...prevFilters,
-        total_fund: Number(event.target.value),
+        total_fund: value.trim() !== '' ? Number(value) : '',
       }))
     } else {
       event.preventDefault()
@@ -184,10 +184,10 @@ const ProjectCrossCuttingFields = ({
   ) => {
     const value = event.target.value
 
-    if (value.trim() !== '' && !isNaN(Number(value))) {
+    if (!isNaN(Number(value))) {
       setCrossCuttingFields((prevFilters: any) => ({
         ...prevFilters,
-        support_cost_psc: Number(event.target.value),
+        support_cost_psc: value.trim() !== '' ? Number(value) : '',
       }))
     } else {
       event.preventDefault()

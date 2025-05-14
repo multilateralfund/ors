@@ -1,25 +1,30 @@
 import ViewTable from '@ors/components/manage/Form/ViewTable'
-import { odsTypeOpts, tableColumns } from '../constants'
-import { formatNumberColumns } from '../utils'
-import { OdsOdpFields } from '../interfaces'
-import { useStore } from '@ors/store'
+import {
+  ProjectSpecificFields,
+  OdsOdpFields,
+  TableFieldType,
+} from '../interfaces'
+import { formatNumberColumns, formatOptions } from '../utils'
 
-import { ITooltipParams } from 'ag-grid-community'
+import {
+  ValueGetterParams,
+  ITooltipParams,
+  ICellRendererParams,
+} from 'ag-grid-community'
 import { IoTrash } from 'react-icons/io5'
-import { find } from 'lodash'
+import { find, map } from 'lodash'
 
 const ProjectOdsOdpTable = ({
+  odsOdpFields,
   data,
   mode,
   onRemoveOdsOdp = () => {},
 }: {
+  odsOdpFields: ProjectSpecificFields[]
   data: OdsOdpFields[]
   mode?: string
-  onRemoveOdsOdp?: (props: any) => void
+  onRemoveOdsOdp?: (props: ICellRendererParams) => void
 }) => {
-  const cpReportsSlice = useStore((state) => state.cp_reports)
-  const substances = cpReportsSlice.substances.data
-
   const defaultColDef = {
     headerClass: 'ag-text-center',
     cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-not-inline',
@@ -28,6 +33,58 @@ const ProjectOdsOdpTable = ({
 
   const getFieldName = (options: any[], params: any, field: string) =>
     find(options, { id: params.data[field] })?.name
+
+  const fieldColumnMapping = {
+    drop_down: (fieldObj: ProjectSpecificFields) => {
+      const field = fieldObj.field_name
+      const options = formatOptions(fieldObj)
+
+      return {
+        headerName: fieldObj.label,
+        field: field,
+        valueGetter: (params: ValueGetterParams<OdsOdpFields>) =>
+          getFieldName(options, params, field),
+        tooltipValueGetter: (params: ITooltipParams) =>
+          getFieldName(options, params, field),
+        initialWidth: 140,
+        minWidth: 140,
+        ...defaultColDef,
+      }
+    },
+    text: (fieldObj: ProjectSpecificFields) => {
+      const field = fieldObj.field_name
+
+      return {
+        headerName: fieldObj.label,
+        field: field,
+        tooltipField: field,
+        initialWidth: 180,
+        minWidth: 180,
+        ...defaultColDef,
+      }
+    },
+    decimal: (fieldObj: ProjectSpecificFields) => {
+      const field = fieldObj.field_name
+
+      return {
+        headerName: fieldObj.label,
+        field: field,
+        valueGetter: (params: ValueGetterParams<OdsOdpFields>) =>
+          formatNumberColumns(params, field),
+        tooltipValueGetter: (params: ITooltipParams) =>
+          formatNumberColumns(params, field, {
+            maximumFractionDigits: 10,
+            minimumFractionDigits: 2,
+          }),
+        cellRendererParams: () => ({
+          tooltipClassName: 'odp-table-tooltip',
+        }),
+        initialWidth: 100,
+        minWidth: 100,
+        ...defaultColDef,
+      }
+    },
+  }
 
   return (
     <ViewTable
@@ -42,7 +99,7 @@ const ProjectOdsOdpTable = ({
           ? [
               {
                 field: '',
-                cellRenderer: (props: any) => (
+                cellRenderer: (props: ICellRendererParams) => (
                   <IoTrash
                     className="cursor-pointer fill-gray-400"
                     size={16}
@@ -57,89 +114,14 @@ const ProjectOdsOdpTable = ({
               },
             ]
           : []),
-        {
-          headerName: tableColumns.ods_substance_id,
-          field: 'ods_substance_id',
-          valueGetter: (params: any) =>
-            getFieldName(substances, params, 'ods_substance_id'),
-          tooltipValueGetter: (params: ITooltipParams) =>
-            getFieldName(substances, params, 'ods_substance_id'),
-          initialWidth: 140,
-          minWidth: 140,
-          ...defaultColDef,
-        },
-        {
-          headerName: tableColumns.ods_replacement,
-          field: 'ods_replacement',
-          tooltipField: 'ods_replacement',
-          initialWidth: 180,
-          minWidth: 180,
-          ...defaultColDef,
-        },
-        {
-          headerName: tableColumns.co2_mt,
-          field: 'co2_mt',
-          valueGetter: (params: any) => formatNumberColumns(params, 'co2_mt'),
-          tooltipValueGetter: (params: ITooltipParams) =>
-            formatNumberColumns(params, 'co2_mt', {
-              maximumFractionDigits: 10,
-              minimumFractionDigits: 2,
-            }),
-          cellRendererParams: () => ({
-            tooltipClassName: 'bp-table-tooltip',
-          }),
-          initialWidth: 100,
-          minWidth: 100,
-          ...defaultColDef,
-        },
-        {
-          headerName: tableColumns.odp,
-          field: 'odp',
-          valueGetter: (params: any) => formatNumberColumns(params, 'odp'),
-          tooltipValueGetter: (params: ITooltipParams) =>
-            formatNumberColumns(params, 'odp', {
-              maximumFractionDigits: 10,
-              minimumFractionDigits: 2,
-            }),
-          cellRendererParams: () => ({
-            tooltipClassName: 'bp-table-tooltip',
-          }),
-          initialWidth: 100,
-          minWidth: 100,
-          ...defaultColDef,
-        },
-        {
-          headerName: tableColumns.phase_out_mt,
-          field: 'phase_out_mt',
-          valueGetter: (params: any) =>
-            formatNumberColumns(params, 'phase_out_mt'),
-          tooltipValueGetter: (params: ITooltipParams) =>
-            formatNumberColumns(params, 'phase_out_mt', {
-              maximumFractionDigits: 10,
-              minimumFractionDigits: 2,
-            }),
-          cellRendererParams: () => ({
-            tooltipClassName: 'bp-table-tooltip',
-          }),
-          initialWidth: 100,
-          minWidth: 100,
-          ...defaultColDef,
-        },
-        {
-          headerName: tableColumns.ods_type,
-          field: 'ods_type',
-          valueGetter: (params: any) =>
-            getFieldName(odsTypeOpts, params, 'ods_type'),
-          tooltipValueGetter: (params: ITooltipParams) =>
-            getFieldName(odsTypeOpts, params, 'ods_type'),
-          initialWidth: 100,
-          minWidth: 100,
-          ...defaultColDef,
-        },
+        ...map(odsOdpFields, (field) =>
+          (
+            fieldColumnMapping[field.data_type as TableFieldType] ??
+            fieldColumnMapping['text']
+          )(field),
+        ),
       ]}
-      getRowId={(props: any) => {
-        return props.data.id
-      }}
+      getRowId={(props: any) => props.data.id}
     />
   )
 }
