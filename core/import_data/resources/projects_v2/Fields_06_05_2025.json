@@ -1,7 +1,7 @@
 [
     {
         "IMPORT_NAME": "Annex group of substances",
-        "LABEL": "Annex group of substances",
+        "LABEL": "Annex and group of substances",
         "FIELD_NAME": "group",
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
@@ -9,7 +9,7 @@
     },
     {
         "IMPORT_NAME": "Destruction Technology",
-        "LABEL": "Destruction Technology",
+        "LABEL": "Destruction technology",
         "FIELD_NAME": "destruction_technology",
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
@@ -17,7 +17,7 @@
     },
     {
         "IMPORT_NAME": "Production Control Type",
-        "LABEL": "Production Control Type",
+        "LABEL": "Production control type",
         "FIELD_NAME": "production_control_type",
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
@@ -25,15 +25,15 @@
     },
     {
         "IMPORT_NAME": "Tranche Number",
-        "LABEL": "Tranche Number",
+        "LABEL": "Tranche number",
         "FIELD_NAME": "tranche_number",
         "TABLE": "project",
-        "DATA_TYPE": "number",
+        "DATA_TYPE": "drop_down",
         "SECTION": "Header"
     },
     {
         "IMPORT_NAME": "SME/ Non-SME",
-        "LABEL": "Is SME?",
+        "LABEL": "SME/Non-SME",
         "FIELD_NAME": "is_sme",
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
@@ -42,7 +42,7 @@
     {
         "IMPORT_NAME": "Substance - baseline technology",
         "LABEL": "Substance - baseline technology",
-        "FIELD_NAME": "ods_substance",
+        "FIELD_NAME": "ods_substance_id",
         "TABLE": "ods_odp",
         "DATA_TYPE": "drop_down",
         "SECTION": "Substance Details"
@@ -81,7 +81,7 @@
     },
     {
         "IMPORT_NAME": "Product Manufactured",
-        "LABEL": "Product Manufactured",
+        "LABEL": "Product manufactured",
         "FIELD_NAME": "products_manufactured",
         "TABLE": "project",
         "DATA_TYPE": "text",
@@ -185,7 +185,7 @@
     },
     {
         "IMPORT_NAME": "Establishment or upgrade of Import/export licensing (yes or no)",
-        "LABEL": "Establishment or upgrade of Import/export licensing",
+        "LABEL": "Establishment or upgrade of import/export licensing",
         "FIELD_NAME": "establishment_of_imp_exp_licensing",
         "TABLE": "project",
         "DATA_TYPE": "boolean",
@@ -257,7 +257,7 @@
     },
     {
         "IMPORT_NAME": "Capacity building programmes (checklist (yes/no) for technicians, end-users, operators, consultants, procurement officers and other Government entities)",
-        "LABEL": "Capacity building programmes (checklist (yes/no) for technicians, end-users, operators, consultants, procurement officers and other Government entities)",
+        "LABEL": "Capacity building programmes (checklist for technicians, end-users, operators, consultants, procurement officers and other government entities)",
         "FIELD_NAME": "capacity_building_programmes",
         "TABLE": "project",
         "DATA_TYPE": "boolean",
@@ -290,7 +290,7 @@
     {
         "IMPORT_NAME": "Checklist of regulations or policies enacted",
         "LABEL": "Checklist of regulations or policies enacted",
-        "FIELD_NAME": "checklist_of_regulations_or_policies_enacted",
+        "FIELD_NAME": "checklist_regulations",
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
         "SECTION": "Impact"
@@ -369,7 +369,7 @@
     },
     {
         "IMPORT_NAME": "Project Funding (MYA)",
-        "LABEL": "Project Funding (MYA)",
+        "LABEL": "Project funding (MYA)",
         "FIELD_NAME": "mya_project_funding",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
@@ -377,7 +377,7 @@
     },
     {
         "IMPORT_NAME": "Support Cost (MYA)",
-        "LABEL": "Support Cost (MYA)",
+        "LABEL": "Support cost (MYA)",
         "FIELD_NAME": "mya_support_cost",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
@@ -409,7 +409,7 @@
     },
     {
         "IMPORT_NAME": "Starting Point",
-        "LABEL": "Starting Point",
+        "LABEL": "Starting point",
         "FIELD_NAME": "starting_point",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
@@ -465,7 +465,7 @@
     },
     {
         "IMPORT_NAME": "Number of Production Lines assisted",
-        "LABEL": "Number of Production Lines assisted",
+        "LABEL": "Number of production lines assisted",
         "FIELD_NAME": "number_of_production_lines_assisted",
         "TABLE": "project",
         "DATA_TYPE": "drop_down",

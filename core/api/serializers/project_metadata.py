@@ -150,16 +150,19 @@ class ProjectFieldSerializer(serializers.ModelSerializer):
         if obj.field_name == "group":
             return GroupSerializer(Group.objects.all().order_by("name"), many=True).data
 
-        if obj.field_name == "ods_substance":
+        if obj.field_name == "ods_substance_id":
             return SubstanceSerializer(
                 Substance.objects.all().order_by("name"), many=True
             ).data
 
         if obj.field_name == "is_sme":
             return [
-                {"label": "Yes", "value": True},
-                {"label": "No", "value": False},
+                {"id": True, "name": "SME"},
+                {"id": False, "name": "Non-SME"},
             ]
+
+        if obj.field_name == "tranche_number":
+            return [{"id": index, "name": str(index)} for index in range(1, 11)]
         if obj.field_name == "production_control_type":
             return Project.ProductionControlType.choices
 

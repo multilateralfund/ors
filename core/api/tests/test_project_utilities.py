@@ -324,7 +324,7 @@ def setup_cluster_type_sector_fields():
     field1 = ProjectFieldFactory.create(
         import_name="substance",
         label="Substance",
-        field_name="ods_substance",
+        field_name="ods_substance_id",
         table="ods_odp",
         data_type="drop_down",
         section="section1",
