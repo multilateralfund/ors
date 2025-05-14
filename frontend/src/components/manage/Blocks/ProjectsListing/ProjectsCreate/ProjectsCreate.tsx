@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Link from '@ors/components/ui/Link/Link'
@@ -11,11 +11,15 @@ import ProjectCrossCuttingFields from './ProjectCrossCuttingFields'
 import ProjectOverview from './ProjectOverview.tsx'
 import ProjectSubstanceDetails from './ProjectSubstanceDetails.tsx'
 import ProjectImpact from './ProjectImpact.tsx'
-import { CrossCuttingFields, SpecificFields } from '../interfaces.ts'
+import {
+  CrossCuttingFields,
+  ProjectSpecificFields,
+  SpecificFields,
+} from '../interfaces.ts'
 import { api } from '@ors/helpers'
 
 import { Alert, Button, CircularProgress, Tabs, Tab } from '@mui/material'
-import { isNil, map, omit, pickBy } from 'lodash'
+import { find, isNil, map, omit, pickBy } from 'lodash'
 import cx from 'classnames'
 
 const initialCrossCuttingFields = (): CrossCuttingFields => {
@@ -59,26 +63,48 @@ const ProjectsCreate = () => {
     useState<SpecificFields>(initialProjectSpecificFields)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isSubmitSuccessful, setIsSubmitSuccessful] = useState<boolean>()
+  const [projectId, setProjectId] = useState<number | null>(null)
+  const [specificFields, setSpecificFields] = useState<ProjectSpecificFields[]>(
+    [],
+  )
+
+  const cluster = projIdentifiers.cluster
+  const projectType = crossCuttingFields.project_type
+  const sector = crossCuttingFields.sector
+
+  const sectionHasFields = (section: string) =>
+    find(specificFields, (field) => field.section === section)
+
+  const fetchSpecificFields = async () => {
+    try {
+      const res = await api(
+        `/api/project-cluster/${cluster}/type/${projectType}/sector/${sector}/fields/`,
+      )
+      setSpecificFields(res.fields || [])
+    } catch (e) {
+      console.error('Error at loading project specific fields')
+    }
+  }
+
+  useEffect(() => {
+    if (cluster && projectType && sector) {
+      fetchSpecificFields()
+    } else setSpecificFields([])
+  }, [cluster, projectType, sector])
 
   const canLinkToBp =
     projIdentifiers.country &&
     projIdentifiers.meeting &&
-    projIdentifiers.cluster &&
+    cluster &&
     ((projIdentifiers.is_lead_agency && projIdentifiers.current_agency) ||
       (!projIdentifiers.is_lead_agency && projIdentifiers.side_agency))
 
   const areNextSectionsDisabled = !canLinkToBp || currentStep < 1
   const isSubmitDisabled =
     areNextSectionsDisabled ||
-    !(
-      crossCuttingFields.project_type &&
-      crossCuttingFields.sector &&
-      crossCuttingFields.title
-    )
+    !(projectType && sector && crossCuttingFields.title)
   const areProjectSpecificTabsDisabled =
-    areNextSectionsDisabled ||
-    !crossCuttingFields.project_type ||
-    !crossCuttingFields.sector
+    areNextSectionsDisabled || !projectType || !sector
 
   const steps = [
     {
@@ -140,12 +166,13 @@ const ProjectsCreate = () => {
       id: 'project-specific-overview-section',
       ariaControls: 'project-specific-overview-section',
       label: 'Overview',
-      disabled: areProjectSpecificTabsDisabled,
+      disabled: areProjectSpecificTabsDisabled || !sectionHasFields('Header'),
       component: (
         <ProjectOverview
           {...{
             projectSpecificFields,
             setProjectSpecificFields,
+            specificFields,
           }}
         />
       ),
@@ -155,38 +182,43 @@ const ProjectsCreate = () => {
       id: 'project-substance-details-section',
       ariaControls: 'project-substance-details-section',
       label: 'Substance details',
-      disabled: areProjectSpecificTabsDisabled,
+      disabled:
+        areProjectSpecificTabsDisabled ||
+        !sectionHasFields('Substance Details'),
       component: (
         <ProjectSubstanceDetails
           {...{
             projectSpecificFields,
             setProjectSpecificFields,
+            specificFields,
           }}
         />
       ),
     },
-    // {
-    //   step: 5,
-    //   id: 'project-impact-section',
-    //   ariaControls: 'project-impact-section',
-    //   label: 'Impact',
-    //   disabled: areProjectSpecificTabsDisabled,
-    //   component: (
-    //     <ProjectImpact
-    //       {...{
-    //         projectSpecificFields,
-    //         setProjectSpecificFields,
-    //       }}
-    //     />
-    //   ),
-    // },
+    {
+      step: 5,
+      id: 'project-impact-section',
+      ariaControls: 'project-impact-section',
+      label: 'Impact',
+      disabled: areProjectSpecificTabsDisabled || !sectionHasFields('Impact'),
+      component: (
+        <ProjectImpact
+          {...{
+            projectSpecificFields,
+            setProjectSpecificFields,
+            specificFields,
+          }}
+        />
+      ),
+    },
   ]
 
+  console.log(projectSpecificFields, specificFields)
   const submitProject = async () => {
     setIsLoading(true)
 
     try {
-      await api(`api/projects/v2/`, {
+      const result = await api(`api/projects/v2/`, {
         data: {
           bp_activity: bpId,
           agency: projIdentifiers.current_agency,
@@ -218,9 +250,11 @@ const ProjectsCreate = () => {
 
       setIsLoading(false)
       setIsSubmitSuccessful(true)
+      setProjectId(result.id)
     } catch (error) {
       setIsLoading(false)
       setIsSubmitSuccessful(false)
+      setProjectId(null)
     }
   }
 
@@ -294,12 +328,14 @@ const ProjectsCreate = () => {
           className="BPAlert mt-4 w-fit border-0"
           severity={isSubmitSuccessful ? 'success' : 'error'}
         >
-          {isSubmitSuccessful ? (
+          {isSubmitSuccessful && projectId ? (
             <Link
               className="text-xl text-inherit no-underline"
-              href="/projects-listing/"
+              href={`/projects-listing/${projectId}`}
             >
-              <p className="m-0 text-lg">Project submitted successfully</p>
+              <p className="m-0 text-lg">
+                Submission was successful. View project.
+              </p>
             </Link>
           ) : (
             <p className="m-0 text-lg">An error occurred. Please try again</p>

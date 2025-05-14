@@ -8,13 +8,26 @@ import { SpecificFieldsSectionProps } from '../interfaces'
 
 import { TextareaAutosize, Button } from '@mui/material'
 import { IoAddCircle } from 'react-icons/io5'
-import { findIndex, map } from 'lodash'
+import { filter, findIndex, map } from 'lodash'
+import { widgets } from './SpecificFieldsHelpers'
 
 const ProjectSubstanceDetails = ({
   projectSpecificFields,
   setProjectSpecificFields,
+  specificFields,
 }: SpecificFieldsSectionProps) => {
   const [displayODPModal, setDisplayODPModal] = useState(false)
+
+  const fields = filter(
+    specificFields,
+    (field) =>
+      field.section === 'Substance Details' && field.table === 'project',
+  )
+  const odsOdpFields = filter(
+    specificFields,
+    (field) =>
+      field.section === 'Substance Details' && field.table === 'ods_odp',
+  )
 
   const handleChangeProductsManufactured = (
     event: ChangeEvent<HTMLTextAreaElement>,
@@ -78,8 +91,17 @@ const ProjectSubstanceDetails = ({
             displayODPModal,
             setDisplayODPModal,
             setProjectSpecificFields,
+            odsOdpFields,
           }}
         />
+      )}
+
+      {fields.map((field) =>
+        widgets[field.data_type](
+          field,
+          projectSpecificFields,
+          setProjectSpecificFields,
+        ),
       )}
     </div>
   )

@@ -8,7 +8,7 @@ import {
   isOptionEqualToValue,
 } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { ApiSubstance } from '@ors/types/api_substances'
-import { handleChangeNumericField } from '../utils'
+import { handleChangeDecimalField } from '../utils'
 import { OdsOdpFields, OdsOdpModalProps, OdsTypesType } from '../interfaces'
 import {
   defaultProps,
@@ -20,6 +20,7 @@ import {
 import { useStore } from '@ors/store'
 
 import { Button, Typography, Box, Modal, TextareaAutosize } from '@mui/material'
+import { widgets } from './SpecificFieldsHelpers'
 
 const OdsOdp = {
   ods_substance_id: null,
@@ -36,6 +37,7 @@ const OdsOdpModal = ({
   displayODPModal,
   setDisplayODPModal,
   setProjectSpecificFields,
+  odsOdpFields,
 }: OdsOdpModalProps) => {
   const [odsOdpData, setOdsOdpData] = useState<OdsOdpFields>(OdsOdp)
 
@@ -43,7 +45,7 @@ const OdsOdpModal = ({
   const substances = cpReportsSlice.substances.data
 
   const handleChangeSubstance = (substance: ApiSubstance | null) => {
-    setOdsOdpData((prevFilters: any) => ({
+    setOdsOdpData((prevFilters) => ({
       ...prevFilters,
       ods_substance_id: substance?.id ?? null,
     }))
@@ -59,7 +61,7 @@ const OdsOdpModal = ({
   }
 
   const handleChangeOdsType = (odsType: OdsTypesType | null) => {
-    setOdsOdpData((prevFilters: any) => ({
+    setOdsOdpData((prevFilters) => ({
       ...prevFilters,
       ods_type: odsType?.id ?? null,
     }))
@@ -119,7 +121,7 @@ const OdsOdpModal = ({
               id={odsOdpData?.co2_mt}
               value={odsOdpData?.co2_mt}
               onChange={(event) =>
-                handleChangeNumericField(event, 'co2_mt', setOdsOdpData)
+                handleChangeDecimalField(event, 'co2_mt', setOdsOdpData)
               }
               type="number"
               {...defaultPropsSimpleField}
@@ -131,7 +133,7 @@ const OdsOdpModal = ({
               id={odsOdpData?.odp}
               value={odsOdpData?.odp}
               onChange={(event) =>
-                handleChangeNumericField(event, 'odp', setOdsOdpData)
+                handleChangeDecimalField(event, 'odp', setOdsOdpData)
               }
               type="number"
               {...defaultPropsSimpleField}
@@ -143,7 +145,7 @@ const OdsOdpModal = ({
               id={odsOdpData?.phase_out_mt}
               value={odsOdpData?.phase_out_mt}
               onChange={(event) =>
-                handleChangeNumericField(event, 'phase_out_mt', setOdsOdpData)
+                handleChangeDecimalField(event, 'phase_out_mt', setOdsOdpData)
               }
               type="number"
               {...defaultPropsSimpleField}
@@ -166,6 +168,9 @@ const OdsOdpModal = ({
             />
           </div>
         </div>
+        {odsOdpFields.map((field) =>
+          widgets[field.data_type](field, odsOdpData, setOdsOdpData),
+        )}
         <div className="mt-2 flex justify-end">
           <Typography>
             <Button onClick={saveOdsOdp}>Save</Button>

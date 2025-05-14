@@ -70,3 +70,7 @@ export const odsTypeOpts = [
   { name: 'Production', id: 2 },
   { name: 'Indirect', id: 3 },
 ]
+
+export const widgetsMapping: { [key: string]: string } = {
+  drop_down: 'autocomplete',
+}

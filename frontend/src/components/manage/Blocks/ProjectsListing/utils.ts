@@ -21,7 +21,28 @@ export const formatNumberColumns = (
 export const isOptionEqualToValueByValue = (option: any, value: any) =>
   isObject(value) ? isEqual(option, value) : option.value === value
 
-export const handleChangeNumericField = (
+export const handleChangeNumberField = (
+  event: ChangeEvent<HTMLInputElement>,
+  field: string,
+  setState: Dispatch<SetStateAction<any>>,
+) => {
+  const value = event.target.value
+
+  if (
+    value.trim() !== '' &&
+    !isNaN(Number(value)) &&
+    Number.isInteger(Number(value))
+  ) {
+    setState((prevFilters: any) => ({
+      ...prevFilters,
+      [field]: Number(event.target.value),
+    }))
+  } else {
+    event.preventDefault()
+  }
+}
+
+export const handleChangeDecimalField = (
   event: ChangeEvent<HTMLInputElement>,
   field: string,
   setState: Dispatch<SetStateAction<any>>,
