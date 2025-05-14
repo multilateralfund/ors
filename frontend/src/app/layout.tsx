@@ -26,6 +26,7 @@ import { ProjectSectorType } from '@ors/types/api_project_sector.ts'
 import { ProjectSubSectorType } from '@ors/types/api_project_subsector.ts'
 import { ProjectSubmissionStatusType } from '@ors/types/api_project_submission_statuses.ts'
 import { ProjectSubstancesGroupsType } from '@ors/types/api_project_substances_groups'
+import { MeetingType } from '@ors/types/api_meetings.ts'
 
 function useUser() {
   const [userData, setUserData] = useState<{
@@ -119,7 +120,7 @@ function useAppState(user: ApiUser | null | undefined) {
 
         const projects = {
           clusters: getInitialSliceData(clusters),
-          meetings: getInitialSliceData(meetings),
+          meetings: getInitialSliceData<MeetingType[]>(meetings),
           sectors: getInitialSliceData<ProjectSectorType[]>(sectors),
           statuses: getInitialSliceData<ProjectStatusType[]>(statuses),
           submission_statuses:

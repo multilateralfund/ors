@@ -7,7 +7,7 @@ export const getMeetingOptions = () => {
   const formattedMeetings = meetings?.map((meeting: any) => ({
     label: meeting.number,
     value: meeting.id,
-    year: meeting.date ? new Date(meeting.date).getFullYear() : '-',
+    year: meeting.date ? new Date(meeting.date).getFullYear().toString() : '-',
   }))
 
   return reverse(formattedMeetings)
@@ -33,7 +33,7 @@ export const getFilterOptions = (
   )
 }
 
-export const getMeetingNr = (meeting_id: number) => {
+export const getMeetingNr = (meeting_id?: number) => {
   const projectSlice = useStore((state) => state.projects)
   const meetings = projectSlice.meetings.data
 

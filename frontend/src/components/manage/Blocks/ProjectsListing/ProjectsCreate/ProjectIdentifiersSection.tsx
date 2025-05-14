@@ -15,6 +15,24 @@ import { useStore } from '@ors/store'
 
 import { Button, Checkbox, FormControlLabel } from '@mui/material'
 import { find, filter } from 'lodash'
+import {
+  CrossCuttingFields,
+  ProjIdentifiers,
+} from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
+import { parseNumber } from '@ors/helpers'
+
+type ProjectIdentifiersSectionProps = {
+  setProjIdentifiers: React.Dispatch<React.SetStateAction<ProjIdentifiers>>
+  projIdentifiers: ProjIdentifiers
+  setCrossCuttingFields: React.Dispatch<
+    React.SetStateAction<CrossCuttingFields>
+  >
+  isNextBtnEnabled: boolean
+  areNextSectionsDisabled: boolean
+  isSubmitSuccessful?: boolean
+  setCurrentStep: React.Dispatch<React.SetStateAction<number>>
+  setCurrentTab: React.Dispatch<React.SetStateAction<number>>
+}
 
 const ProjectIdentifiersSection = ({
   projIdentifiers,
@@ -25,7 +43,7 @@ const ProjectIdentifiersSection = ({
   isSubmitSuccessful,
   setCurrentStep,
   setCurrentTab,
-}: any) => {
+}: ProjectIdentifiersSectionProps) => {
   const commonSlice = useStore((state) => state.common)
   const projectSlice = useStore((state) => state.projects)
 
@@ -39,47 +57,48 @@ const ProjectIdentifiersSection = ({
   )
 
   const handleChangeCountry = (country: any) => {
-    setProjIdentifiers((prevFilters: any) => ({
+    setProjIdentifiers((prevFilters) => ({
       ...prevFilters,
       country: country?.id ?? null,
     }))
 
-    setCrossCuttingFields((prevFilters: any) => ({
+    setCrossCuttingFields((prevFilters) => ({
       ...prevFilters,
-      is_lvc: find(commonSlice.countries.data, { id: country?.id })?.is_lvc,
+      is_lvc:
+        find(commonSlice.countries.data, { id: country?.id })?.is_lvc ?? null,
     }))
   }
 
-  const handleChangeMeeting = (meeting: string) => {
-    setProjIdentifiers((prevFilters: any) => ({
+  const handleChangeMeeting = (meeting?: string) => {
+    setProjIdentifiers((prevFilters) => ({
       ...prevFilters,
-      meeting,
+      meeting: parseNumber(meeting),
     }))
   }
 
   const handleChangeCluster = (cluster: any) => {
-    setProjIdentifiers((prevFilters: any) => ({
+    setProjIdentifiers((prevFilters) => ({
       ...prevFilters,
       cluster: cluster?.id ?? null,
     }))
   }
 
   const handleChangeIsLeadAgency = (event: ChangeEvent<HTMLInputElement>) => {
-    setProjIdentifiers((prevFilters: any) => ({
+    setProjIdentifiers((prevFilters) => ({
       ...prevFilters,
       is_lead_agency: event.target.checked,
     }))
   }
 
   const handleChangeCurrentAgency = (agency: any) => {
-    setProjIdentifiers((prevFilters: any) => ({
+    setProjIdentifiers((prevFilters) => ({
       ...prevFilters,
       current_agency: agency?.id ?? null,
     }))
   }
 
   const handleChangeSideAgency = (agency: any) => {
-    setProjIdentifiers((prevFilters: any) => ({
+    setProjIdentifiers((prevFilters) => ({
       ...prevFilters,
       side_agency: agency?.id ?? null,
     }))
@@ -108,10 +127,12 @@ const ProjectIdentifiersSection = ({
         <div className="w-32">
           <Label>{tableColumns.meeting}</Label>
           <PopoverInput
-            label={getMeetingNr(projIdentifiers?.meeting)}
+            label={getMeetingNr(
+              projIdentifiers?.meeting ?? undefined,
+            )?.toString()}
             options={getMeetingOptions()}
             onChange={handleChangeMeeting}
-            onClear={() => handleChangeMeeting('')}
+            onClear={() => handleChangeMeeting()}
             className="!m-0 h-10 !py-1"
             clearBtnClassName="right-1"
             withClear={true}

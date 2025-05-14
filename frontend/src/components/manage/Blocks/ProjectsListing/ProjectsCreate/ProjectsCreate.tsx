@@ -13,6 +13,7 @@ import ProjectSubstanceDetails from './ProjectSubstanceDetails.tsx'
 import ProjectImpact from './ProjectImpact.tsx'
 import {
   CrossCuttingFields,
+  ProjIdentifiers,
   ProjectSpecificFields,
   SpecificFields,
 } from '../interfaces.ts'
@@ -52,8 +53,13 @@ const initialProjectSpecificFields = (): SpecificFields => {
 const ProjectsCreate = () => {
   const [currentStep, setCurrentStep] = useState<number>(0)
   const [currentTab, setCurrentTab] = useState<number>(0)
-  const [projIdentifiers, setProjIdentifiers] = useState<any>({
+  const [projIdentifiers, setProjIdentifiers] = useState<ProjIdentifiers>({
     is_lead_agency: true,
+    country: null,
+    meeting: null,
+    current_agency: null,
+    side_agency: null,
+    cluster: null,
   })
   const [isLinkedToBP, setIsLinkedToBP] = useState<boolean>(false)
   const [bpId, setBpId] = useState<number>()
@@ -92,12 +98,13 @@ const ProjectsCreate = () => {
     } else setSpecificFields([])
   }, [cluster, projectType, sector])
 
-  const canLinkToBp =
+  const canLinkToBp = !!(
     projIdentifiers.country &&
     projIdentifiers.meeting &&
     cluster &&
     ((projIdentifiers.is_lead_agency && projIdentifiers.current_agency) ||
       (!projIdentifiers.is_lead_agency && projIdentifiers.side_agency))
+  )
 
   const areNextSectionsDisabled = !canLinkToBp || currentStep < 1
   const isSubmitDisabled =

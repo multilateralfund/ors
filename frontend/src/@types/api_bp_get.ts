@@ -1,20 +1,28 @@
 // Response from /api/business-plan/get?
 
 import { ApiAgency } from './api_agencies'
+import {ProjectSectorType} from './api_project_sector'
+import {ProjectSubSectorType} from './api_project_subsector'
 import { Country } from './store'
 
-export interface ApiBP {
+export type ApiBaseBP = {
+  id: number
+  name: string
+  status: string
+  year_start: number
+  year_end: number
+  meeting_id: number
+  decision_id: null | number
+  updated_at: string
+  updated_by: string
+}
+
+export interface ApiBP extends ApiBaseBP {
   agency: ApiAgency
   feedback_file_download_url: string
   feedback_filename: string
-  id: number
   is_latest: boolean
-  name: string
-  status: string
-  updated_at: string
   version: number
-  year_end: number
-  year_start: number
 }
 
 export interface ApiBPProjectType {
@@ -47,6 +55,9 @@ export interface ApiBPValue {
 }
 
 export interface ApiBPActivity {
+  agency: ApiAgency
+  business_plan: ApiBaseBP
+  bp_status: string
   amount_polyol: null
   bp_chemical_type: ApiBPChemicalType
   bp_chemical_type_id: number
@@ -63,14 +74,16 @@ export interface ApiBPActivity {
   project_cluster: ApiBPProjectCluster
   project_cluster_id: number
   project_type: ApiBPProjectType
+  project_type_code: string
   project_type_id: number
   remarks: string
   required_by_model: string
-  sector: null
+  sector: ProjectSectorType | null
+  sector_code: string
   sector_id: null
   status: string
   status_display: string
-  subsector: null
+  subsector: ProjectSubSectorType | null
   subsector_id: null
   substances: number[]
   substances_display: string[]
