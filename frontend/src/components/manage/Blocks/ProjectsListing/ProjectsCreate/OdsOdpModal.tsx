@@ -38,7 +38,11 @@ const OdsOdpModal = ({
       <Box className="xs:max-w-xs w-full max-w-md absolute-center sm:max-w-sm">
         <div className="flex flex-col gap-y-2">
           {odsOdpFields.map((field) =>
-            widgets[field.data_type](field, odsOdpData, setOdsOdpData),
+            widgets[field.data_type](
+              field,
+              odsOdpData as any,
+              setOdsOdpData as any,
+            ),
           )}
         </div>
 

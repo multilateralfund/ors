@@ -58,8 +58,8 @@ export const blanketOrIndConsiderationOpts = [
 ]
 
 export const lvcNonLvcOpts = [
-  { name: 'LVC', value: true },
-  { name: 'Non-LVC', value: false },
+  { name: 'LVC', id: true },
+  { name: 'Non-LVC', id: false },
 ]
 
 export const isSmeOpts = [

@@ -61,9 +61,12 @@ export type FieldType = TableFieldType | 'number' | 'boolean'
 export type ProjectSpecificFields = {
   id: number
   label: string
-  field_name: string
+  field_name: keyof SpecificFields
   table: string
   data_type: FieldType
   section: string
-  options: { id: number; name: string }[]
+  options: OptionsType[]
 }
+
+export type OptionsType = { id: number; name: string }
+export type BooleanOptionsType = { id: boolean; name: string }

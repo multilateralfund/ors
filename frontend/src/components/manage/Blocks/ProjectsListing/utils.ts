@@ -19,9 +19,6 @@ export const formatNumberColumns = (
     : '0.00'
 }
 
-export const isOptionEqualToValueByValue = (option: any, value: any) =>
-  isObject(value) ? isEqual(option, value) : option.value === value
-
 export const handleChangeNumberField = (
   event: ChangeEvent<HTMLInputElement>,
   field: string,

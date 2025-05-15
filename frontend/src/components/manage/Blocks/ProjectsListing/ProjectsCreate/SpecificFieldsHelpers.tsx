@@ -1,10 +1,15 @@
-import { ChangeEvent } from 'react'
+import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { isOptionEqualToValue } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
-import { ProjectSpecificFields, FieldType } from '../interfaces'
+import {
+  ProjectSpecificFields,
+  FieldType,
+  SpecificFields,
+  CrossCuttingFields,
+} from '../interfaces'
 import {
   additionalProperties,
   defaultProps,
@@ -24,12 +29,12 @@ export const handler: Record<
   FieldType,
   (
     value: any,
-    field: string,
-    setProjectSpecificFields: React.Dispatch<React.SetStateAction<any>>,
+    field: keyof SpecificFields | keyof CrossCuttingFields,
+    setProjectSpecificFields: Dispatch<SetStateAction<SpecificFields>>,
   ) => void
 > = {
   text: (value, field, setProjectSpecificFields) => {
-    setProjectSpecificFields((prevFilters: any) => ({
+    setProjectSpecificFields((prevFilters) => ({
       ...prevFilters,
       [field]: value.target.value,
     }))
@@ -41,14 +46,13 @@ export const handler: Record<
     handleChangeDecimalField(value, field, setProjectSpecificFields)
   },
   drop_down: (value, field, setProjectSpecificFields) => {
-    setProjectSpecificFields((prevFilters: any) => ({
+    setProjectSpecificFields((prevFilters) => ({
       ...prevFilters,
       [field]: value?.id ?? null,
-      //  !isNil(is_sme?.value) ? is_sme?.value : null,
     }))
   },
   boolean: (value, field, setProjectSpecificFields) => {
-    setProjectSpecificFields((prevFilters: any) => ({
+    setProjectSpecificFields((prevFilters) => ({
       ...prevFilters,
       [field]: value,
     }))
@@ -77,8 +81,8 @@ export const getDefaultValFields = (fields: any) =>
 
 export const AutocompleteWidget = (
   field: ProjectSpecificFields,
-  projectSpecificFields: any,
-  setProjectSpecificFields: React.Dispatch<React.SetStateAction<any>>,
+  projectSpecificFields: SpecificFields,
+  setProjectSpecificFields: Dispatch<SetStateAction<SpecificFields>>,
 ) => {
   const options = formatOptions(field)
   const fieldName = field.field_name
@@ -114,13 +118,13 @@ export const AutocompleteWidget = (
 
 export const TextWidget = (
   field: ProjectSpecificFields,
-  projectSpecificFields: any,
-  setProjectSpecificFields: React.Dispatch<React.SetStateAction<any>>,
+  projectSpecificFields: SpecificFields,
+  setProjectSpecificFields: Dispatch<SetStateAction<SpecificFields>>,
 ) => (
   <div>
     <Label>{field.label}</Label>
     <TextareaAutosize
-      value={projectSpecificFields[field.field_name]}
+      value={projectSpecificFields[field.field_name] as string}
       onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
         handler[field.data_type](
           event,
@@ -137,13 +141,13 @@ export const TextWidget = (
 
 const NumberWidget = (
   field: ProjectSpecificFields,
-  projectSpecificFields: any,
-  setProjectSpecificFields: React.Dispatch<React.SetStateAction<any>>,
+  projectSpecificFields: SpecificFields,
+  setProjectSpecificFields: Dispatch<SetStateAction<SpecificFields>>,
 ) => (
   <div>
     <Label>{field.label}</Label>
     <SimpleInput
-      id={projectSpecificFields[field.field_name]}
+      id={projectSpecificFields[field.field_name] as string}
       value={projectSpecificFields[field.field_name]}
       onChange={(value) =>
         handler[field.data_type](
@@ -160,14 +164,14 @@ const NumberWidget = (
 
 const BooleanWidget = (
   field: ProjectSpecificFields,
-  projectSpecificFields: any,
-  setProjectSpecificFields: React.Dispatch<React.SetStateAction<any>>,
+  projectSpecificFields: SpecificFields,
+  setProjectSpecificFields: Dispatch<SetStateAction<SpecificFields>>,
 ) => (
   <div className="col-span-full flex w-full">
     <Label>{field.label}</Label>
     <Checkbox
       className="pb-1 pl-2 pt-0"
-      checked={projectSpecificFields[field.field_name]}
+      checked={projectSpecificFields[field.field_name] as boolean}
       onChange={(_: React.SyntheticEvent, value) =>
         handler[field.data_type](
           value,
