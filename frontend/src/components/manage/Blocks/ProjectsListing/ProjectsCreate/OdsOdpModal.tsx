@@ -1,47 +1,47 @@
 import { useState } from 'react'
 
-import { getDefaultValFields, widgets } from './SpecificFieldsHelpers'
+import { widgets } from './SpecificFieldsHelpers'
 import { OdsOdpFields, OdsOdpModalProps } from '../interfaces'
+import { getDefaultValues } from '../utils'
 
 import { Button, Typography, Box, Modal } from '@mui/material'
 
 const OdsOdpModal = ({
-  displayODPModal,
-  setDisplayODPModal,
-  setProjectSpecificFields,
+  displayModal,
+  setDisplayModal,
+  setFields,
   odsOdpFields,
   field,
 }: OdsOdpModalProps) => {
-  const odsOdp = getDefaultValFields(odsOdpFields)
-  const [odsOdpData, setOdsOdpData] = useState<OdsOdpFields>(
-    odsOdp as OdsOdpFields,
-  )
+  const initialOdsOdp = getDefaultValues(odsOdpFields)
+  const [odsOdpData, setOdsOdpData] = useState<OdsOdpFields>(initialOdsOdp)
 
   const saveOdsOdp = () => {
-    setProjectSpecificFields((prevFilters: any) => ({
-      ...prevFilters,
-      [field]: [
-        ...prevFilters[field],
-        { ...odsOdpData, id: prevFilters[field].length + 1 },
-      ],
-    }))
-    setDisplayODPModal(false)
+    setFields((prevFields) => {
+      const crtData = (prevFields[field] as OdsOdpFields[]) || []
+
+      return {
+        ...prevFields,
+        [field]: [...crtData, { ...odsOdpData, id: crtData.length + 1 }],
+      }
+    })
+    setDisplayModal(false)
   }
 
   return (
     <Modal
       aria-labelledby="odp-modal"
-      open={displayODPModal}
-      onClose={() => setDisplayODPModal(false)}
+      open={displayModal}
+      onClose={() => setDisplayModal(false)}
       keepMounted
     >
       <Box className="xs:max-w-xs w-full max-w-md absolute-center sm:max-w-sm">
         <div className="flex flex-col gap-y-2">
           {odsOdpFields.map((field) =>
-            widgets[field.data_type](
+            widgets[field.data_type]<OdsOdpFields>(
+              odsOdpData,
+              setOdsOdpData,
               field,
-              odsOdpData as any,
-              setOdsOdpData as any,
             ),
           )}
         </div>
@@ -51,7 +51,7 @@ const OdsOdpModal = ({
             <Button onClick={saveOdsOdp}>Save</Button>
           </Typography>
           <Typography>
-            <Button onClick={() => setDisplayODPModal(false)}>Close</Button>
+            <Button onClick={() => setDisplayModal(false)}>Close</Button>
           </Typography>
         </div>
       </Box>

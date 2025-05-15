@@ -10,7 +10,7 @@ import { DateInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { ProjectTypeType } from '@ors/types/api_project_types.ts'
 import { ProjectSectorType } from '@ors/types/api_project_sector.ts'
 import { ProjectSubSectorType } from '@ors/types/api_project_subsector.ts'
-import { handler } from './SpecificFieldsHelpers'
+import { changeHandler } from './SpecificFieldsHelpers'
 import {
   tableColumns,
   lvcNonLvcOpts,
@@ -265,10 +265,10 @@ const ProjectCrossCuttingFields = ({
                 null) as BooleanOptionsType | null
             }
             onChange={(_: any, value: any) =>
-              handler['drop_down'](
+              changeHandler['drop_down']<CrossCuttingFields>(
                 value,
                 'is_lvc',
-                setCrossCuttingFields as any,
+                setCrossCuttingFields,
               )
             }
             getOptionLabel={(option: any) =>
@@ -285,7 +285,11 @@ const ProjectCrossCuttingFields = ({
           id={crossCuttingFields?.title}
           value={crossCuttingFields?.title}
           onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
-            handler['text'](event, 'title', setCrossCuttingFields as any)
+            changeHandler['text']<CrossCuttingFields>(
+              event,
+              'title',
+              setCrossCuttingFields,
+            )
           }
           type="text"
           {...defaultPropsSimpleField}
@@ -299,7 +303,11 @@ const ProjectCrossCuttingFields = ({
         <TextareaAutosize
           value={crossCuttingFields?.description}
           onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
-            handler['text'](event, 'description', setCrossCuttingFields as any)
+            changeHandler['text']<CrossCuttingFields>(
+              event,
+              'description',
+              setCrossCuttingFields,
+            )
           }
           className={textAreaClassname + ' !min-w-[64rem]'}
           minRows={7}

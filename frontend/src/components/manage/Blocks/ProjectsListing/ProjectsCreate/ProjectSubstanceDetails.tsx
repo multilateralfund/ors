@@ -3,26 +3,33 @@ import { useState } from 'react'
 import ProjectOdsOdpTable from '../ProjectView/ProjectOdsOdpTable'
 import OdsOdpModal from './OdsOdpModal'
 import { widgets } from './SpecificFieldsHelpers'
-import { OdsOdpFields, SpecificFieldsSectionProps } from '../interfaces'
+import {
+  OdsOdpFields,
+  SpecificFieldsSectionProps,
+  SpecificFields,
+} from '../interfaces'
 import { tableColumns } from '../constants'
 
 import { ICellRendererParams } from 'ag-grid-community'
 import { Button } from '@mui/material'
 import { IoAddCircle } from 'react-icons/io5'
-import { filter, findIndex, map } from 'lodash'
+import { findIndex, groupBy, map } from 'lodash'
 
 const ProjectSubstanceDetails = ({
-  projectSpecificFields,
-  setProjectSpecificFields,
   fields,
+  setFields,
+  sectionFields,
 }: SpecificFieldsSectionProps) => {
-  const [displayODPModal, setDisplayODPModal] = useState(false)
+  const [displayModal, setDisplayModal] = useState(false)
 
-  const projectFields = filter(fields, (field) => field.table === 'project')
-  const odsOdpFields = filter(fields, (field) => field.table === 'ods_odp')
+  const field = 'ods_odp'
+
+  const groupedFields = groupBy(sectionFields, 'table')
+  const projectFields = groupedFields['project'] || []
+  const odsOdpFields = groupedFields[field] || []
 
   const onRemoveOdsOdp = (props: ICellRendererParams) => {
-    const odsOdpData = [...projectSpecificFields.ods_odp]
+    const odsOdpData = [...fields.ods_odp]
 
     const index = findIndex(
       odsOdpData,
@@ -37,33 +44,26 @@ const ProjectSubstanceDetails = ({
         id: odsOdpData.length - index - 1,
       }))
 
-      setProjectSpecificFields((prevFilters) => ({
-        ...prevFilters,
-        ods_odp: formattedData,
-      }))
+      setFields((prevFields) => ({ ...prevFields, ods_odp: formattedData }))
     }
   }
 
   return (
     <div className="flex flex-col gap-y-2">
       {projectFields.map((field) =>
-        widgets[field.data_type](
-          field,
-          projectSpecificFields,
-          setProjectSpecificFields,
-        ),
+        widgets[field.data_type]<SpecificFields>(fields, setFields, field),
       )}
       {odsOdpFields.length > 0 && (
         <div>
           <ProjectOdsOdpTable
-            odsOdpFields={odsOdpFields}
-            data={projectSpecificFields?.ods_odp || []}
+            data={fields?.ods_odp || []}
+            fields={odsOdpFields}
             mode="edit"
             onRemoveOdsOdp={onRemoveOdsOdp}
           />
           <Button
             className="rounded-lg border border-solid border-primary bg-white p-1.5 text-base hover:bg-primary"
-            onClick={() => setDisplayODPModal(true)}
+            onClick={() => setDisplayModal(true)}
           >
             Add {tableColumns.ods_odp}
             <IoAddCircle className="ml-1.5" size={18} />
@@ -71,15 +71,15 @@ const ProjectSubstanceDetails = ({
         </div>
       )}
 
-      {displayODPModal && (
+      {displayModal && (
         <OdsOdpModal
           {...{
-            displayODPModal,
-            setDisplayODPModal,
-            setProjectSpecificFields,
+            displayModal,
+            setDisplayModal,
+            setFields,
             odsOdpFields,
+            field,
           }}
-          field="ods_odp"
         />
       )}
     </div>

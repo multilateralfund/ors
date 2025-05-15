@@ -1,14 +1,35 @@
 import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
+import { ProjectSpecificFields } from './interfaces'
 import { formatDecimalValue } from '@ors/helpers'
 
-import { isArray, isEqual, isObject, map } from 'lodash'
-import { ProjectSpecificFields } from './interfaces'
+import { isArray, map, reduce } from 'lodash'
+import { ITooltipParams, ValueGetterParams } from 'ag-grid-community'
+
+export const getDefaultValues = (fields: ProjectSpecificFields[]) =>
+  reduce(
+    fields,
+    (acc: any, field) => {
+      acc[field.field_name] = ['drop_down', 'boolean'].includes(field.data_type)
+        ? null
+        : ''
+      return acc
+    },
+    {},
+  )
+
+export const formatOptions = (field: ProjectSpecificFields) =>
+  map(field.options, (option) =>
+    isArray(option) ? { id: option[0], name: option[1] } : option,
+  )
 
 export const formatNumberColumns = (
-  params: any,
+  params: ValueGetterParams | ITooltipParams,
   field: string,
-  valueFormatter?: any,
+  valueFormatter?: {
+    maximumFractionDigits: number
+    minimumFractionDigits: number
+  },
 ) => {
   const value = params.data[field]
 
@@ -19,16 +40,15 @@ export const formatNumberColumns = (
     : '0.00'
 }
 
-export const handleChangeNumberField = (
+export const handleChangeNumberField = <T>(
   event: ChangeEvent<HTMLInputElement>,
-  field: string,
-  setState: Dispatch<SetStateAction<any>>,
+  field: keyof T,
+  setState: Dispatch<SetStateAction<T>>,
 ) => {
   const value = event.target.value
 
   if (!isNaN(Number(value)) && Number.isInteger(Number(value))) {
-    console.log('dana')
-    setState((prevFilters: any) => ({
+    setState((prevFilters) => ({
       ...prevFilters,
       [field]: value.trim() !== '' ? Number(value) : '',
     }))
@@ -37,15 +57,15 @@ export const handleChangeNumberField = (
   }
 }
 
-export const handleChangeDecimalField = (
+export const handleChangeDecimalField = <T>(
   event: ChangeEvent<HTMLInputElement>,
-  field: string,
-  setState: Dispatch<SetStateAction<any>>,
+  field: keyof T,
+  setState: Dispatch<SetStateAction<T>>,
 ) => {
   const value = event.target.value
 
   if (!isNaN(Number(value))) {
-    setState((prevFilters: any) => ({
+    setState((prevFilters) => ({
       ...prevFilters,
       [field]: value.trim() !== '' ? Number(value) : '',
     }))
@@ -53,8 +73,3 @@ export const handleChangeDecimalField = (
     event.preventDefault()
   }
 }
-
-export const formatOptions = (field: ProjectSpecificFields) =>
-  map(field.options, (option) =>
-    isArray(option) ? { id: option[0], name: option[1] } : option,
-  )

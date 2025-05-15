@@ -3,25 +3,27 @@ import {
   ProjectSpecificFields,
   OdsOdpFields,
   TableFieldType,
+  OptionsType,
 } from '../interfaces'
 import { formatNumberColumns, formatOptions } from '../utils'
 
+import { IoTrash } from 'react-icons/io5'
+import { find, map } from 'lodash'
 import {
   ValueGetterParams,
   ITooltipParams,
   ICellRendererParams,
+  GetRowIdParams,
 } from 'ag-grid-community'
-import { IoTrash } from 'react-icons/io5'
-import { find, map } from 'lodash'
 
 const ProjectOdsOdpTable = ({
-  odsOdpFields,
   data,
+  fields,
   mode,
   onRemoveOdsOdp = () => {},
 }: {
-  odsOdpFields: ProjectSpecificFields[]
   data: OdsOdpFields[]
+  fields: ProjectSpecificFields[]
   mode?: string
   onRemoveOdsOdp?: (props: ICellRendererParams) => void
 }) => {
@@ -31,8 +33,11 @@ const ProjectOdsOdpTable = ({
     resizable: true,
   }
 
-  const getFieldName = (options: any[], params: any, field: string) =>
-    find(options, { id: params.data[field] })?.name
+  const getFieldName = (
+    params: ValueGetterParams | ITooltipParams,
+    options: OptionsType[],
+    field: string,
+  ) => find(options, { id: params.data[field] })?.name
 
   const fieldColumnMapping = {
     drop_down: (fieldObj: ProjectSpecificFields) => {
@@ -43,9 +48,9 @@ const ProjectOdsOdpTable = ({
         headerName: fieldObj.label,
         field: field,
         valueGetter: (params: ValueGetterParams<OdsOdpFields>) =>
-          getFieldName(options, params, field),
+          getFieldName(params, options, field),
         tooltipValueGetter: (params: ITooltipParams) =>
-          getFieldName(options, params, field),
+          getFieldName(params, options, field),
         initialWidth: 140,
         minWidth: 140,
         ...defaultColDef,
@@ -88,12 +93,12 @@ const ProjectOdsOdpTable = ({
 
   return (
     <ViewTable
-      className="projects-table mb-4"
       rowData={data}
       resizeGridOnRowUpdate={true}
       enablePagination={false}
       suppressCellFocus={false}
       withSeparators={true}
+      className="projects-table mb-4"
       columnDefs={[
         ...(mode === 'edit'
           ? [
@@ -114,14 +119,14 @@ const ProjectOdsOdpTable = ({
               },
             ]
           : []),
-        ...map(odsOdpFields, (field) =>
+        ...map(fields, (field) =>
           (
             fieldColumnMapping[field.data_type as TableFieldType] ??
             fieldColumnMapping['text']
           )(field),
         ),
       ]}
-      getRowId={(props: any) => props.data.id}
+      getRowId={(props: GetRowIdParams) => props.data.id}
     />
   )
 }

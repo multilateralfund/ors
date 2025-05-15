@@ -1,3 +1,5 @@
+import { CrossCuttingFields, ProjIdentifiers } from './interfaces'
+
 export const PROJECTS_PER_PAGE = 100
 
 export const tableColumns: { [key: string]: string } = {
@@ -37,12 +39,6 @@ export const defaultProps = {
   FieldProps: { className: 'mb-0 w-[12rem] BPListUpload' },
 }
 
-export const additionalProperties: { [key: string]: any } = {
-  ods_substance_id: {
-    FieldProps: { className: defaultProps.FieldProps.className + ' w-full' },
-  },
-}
-
 export const defaultPropsSimpleField = {
   label: '',
   className: 'BPListUpload mb-0 w-40 border-primary project-input',
@@ -51,6 +47,40 @@ export const defaultPropsSimpleField = {
 
 export const textAreaClassname =
   'min-h-[20px] w-[415px] min-w-[350px] max-w-full rounded-lg border bg-white p-2 pb-10 shadow-none'
+
+export const additionalProperties: Record<string, Record<string, unknown>> = {
+  ods_substance_id: {
+    FieldProps: { className: defaultProps.FieldProps.className + ' w-full' },
+  },
+}
+
+export const initialProjectIdentifiers = (): ProjIdentifiers => {
+  return {
+    is_lead_agency: true,
+    country: null,
+    meeting: null,
+    current_agency: null,
+    side_agency: null,
+    cluster: null,
+  }
+}
+
+export const initialCrossCuttingFields = (): CrossCuttingFields => {
+  return {
+    project_type: null,
+    sector: null,
+    subsector_ids: [],
+    is_lvc: null,
+    title: '',
+    description: '',
+    project_start_date: '',
+    project_end_date: '',
+    total_fund: '',
+    support_cost_psc: '',
+    psc: '',
+    individual_consideration: true,
+  }
+}
 
 export const blanketOrIndConsiderationOpts = [
   { name: 'Individual', value: true },

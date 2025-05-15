@@ -1,22 +1,16 @@
 import { widgets } from './SpecificFieldsHelpers'
-import { SpecificFieldsSectionProps } from '../interfaces'
+import { SpecificFieldsSectionProps, SpecificFields } from '../interfaces'
 
 const ProjectImpact = ({
-  projectSpecificFields,
-  setProjectSpecificFields,
   fields,
+  setFields,
+  sectionFields,
 }: SpecificFieldsSectionProps) => {
   return (
-    <div className="flex flex-col gap-y-2">
-      <div className="grid grid-cols-4 gap-x-20 gap-y-3">
-        {fields.map((field) =>
-          widgets[field.data_type](
-            field,
-            projectSpecificFields,
-            setProjectSpecificFields,
-          ),
-        )}
-      </div>
+    <div className="grid grid-cols-4 gap-x-20 gap-y-3">
+      {sectionFields.map((field) =>
+        widgets[field.data_type]<SpecificFields>(fields, setFields, field),
+      )}
     </div>
   )
 }
