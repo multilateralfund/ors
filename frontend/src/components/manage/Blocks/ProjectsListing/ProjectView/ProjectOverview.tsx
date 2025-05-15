@@ -13,7 +13,7 @@ import { find, map } from 'lodash'
 const ProjectOverview = ({ project }: any) => {
   const { data } = project
 
-  const is_lvc = find(lvcNonLvcOpts, { value: data.is_lvc })?.name || '-'
+  const is_lvc = find(lvcNonLvcOpts, { id: data.is_lvc })?.name || '-'
   const is_sme = find(isSmeOpts, { value: data.is_sme })?.name || '-'
   const subsectors = map(data.subsectors, 'name').join(', ')
 
