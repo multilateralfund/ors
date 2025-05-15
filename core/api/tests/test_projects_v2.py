@@ -881,6 +881,76 @@ class TestCreateProjects(BaseTest):
         assert Project.objects.count() == 0
 
 
+class TestProjectsV2Update:
+    client = APIClient()
+
+    def test_project_patch_anon(self, project_url):
+        response = self.client.patch(project_url, {"title": "Into the Spell"})
+        assert response.status_code == 403
+
+    def test_as_viewer(self, viewer_user, project_url):
+        self.client.force_authenticate(user=viewer_user)
+        response = self.client.patch(project_url, {"title": "Into the Spell"})
+        assert response.status_code == 403
+
+    def test_without_permission_wrong_agency(self, other_agency_user, project_url):
+        self.client.force_authenticate(user=other_agency_user)
+        response = self.client.patch(project_url, {"title": "Into the Spell"})
+        assert response.status_code == 404
+
+    def test_without_permission_country_user(self, country_user, project_url):
+        self.client.force_authenticate(user=country_user)
+        response = self.client.patch(project_url, {"title": "Into the Spell"})
+        assert response.status_code == 403
+
+    def test_project_update(self, user, project_url, project, agency):
+        self.client.force_authenticate(user=user)
+        new_agency = AgencyFactory.create(code="NEWAG")
+
+        update_data = {
+            "title": "Into the Spell",
+            "agency": new_agency.id,
+        }
+        response = self.client.patch(project_url, update_data, format="json")
+        assert response.status_code == 200, response.data
+
+        project.refresh_from_db()
+        assert project.title == "Into the Spell"
+        assert project.code == get_project_sub_code(
+            project.country,
+            project.cluster,
+            new_agency,
+            project.project_type,
+            project.sector,
+            project.meeting,
+            None,
+            project.serial_number,
+        )
+
+    def test_project_patch_ods_odp(
+        self, user, project_url, project, project_ods_odp_subst
+    ):
+        self.client.force_authenticate(user=user)
+        update_data = {
+            "title": "Crocodile wearing a vest",
+            "ods_odp": [
+                {
+                    "id": project_ods_odp_subst.id,
+                    "ods_substance_id": project_ods_odp_subst.ods_substance_id,
+                    "odp": project_ods_odp_subst.odp + 5,
+                }
+            ],
+        }
+        response = self.client.patch(project_url, update_data, format="json")
+        # fails silently -> update only the title
+        assert response.status_code == 200, response.data
+
+        project.refresh_from_db()
+        assert project.title == "Crocodile wearing a vest"
+        assert project.ods_odp.count() == 1
+        assert project.ods_odp.first().odp == project_ods_odp_subst.odp
+
+
 class TestProjectFiles:
     client = APIClient()
 

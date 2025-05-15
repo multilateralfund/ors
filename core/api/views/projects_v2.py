@@ -30,7 +30,7 @@ from core.api.serializers.project_v2 import (
     ProjectV2FileSerializer,
     ProjectDetailsV2Serializer,
     ProjectListV2Serializer,
-    ProjectV2CreateSerializer,
+    ProjectV2CreateUpdateSerializer,
 )
 from core.api.swagger import FileUploadAutoSchema
 from core.models.project import (
@@ -85,6 +85,7 @@ class ProjectV2ViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
 ):
     """V2 ViewSet for Project model."""
 
@@ -189,11 +190,12 @@ class ProjectV2ViewSet(
         return queryset
 
     def get_serializer_class(self):
+        serializer = ProjectDetailsV2Serializer
         if self.action == "list":
-            return ProjectListV2Serializer
-        if self.action == "create":
-            return ProjectV2CreateSerializer
-        return ProjectDetailsV2Serializer
+            serializer = ProjectListV2Serializer
+        elif self.action in ["create", "update"]:
+            serializer = ProjectV2CreateUpdateSerializer
+        return serializer
 
     @swagger_auto_schema(
         manual_parameters=[
@@ -229,7 +231,7 @@ class ProjectV2ViewSet(
         V2 projects endpoint for creating a project. This endpoint should be used in the first step of the
         project creation workflow.
         """,
-        request_body=ProjectV2CreateSerializer,
+        request_body=ProjectV2CreateUpdateSerializer,
         responses={
             status.HTTP_201_CREATED: ProjectDetailsV2Serializer,
             status.HTTP_400_BAD_REQUEST: "Bad request",

@@ -1,12 +1,11 @@
 from django.db import transaction
 from django.urls import reverse
-
 from rest_framework import serializers
-
 
 from core.api.serializers.project import (
     ProjectListSerializer,
     ProjectOdsOdpListSerializer,
+    ProjectOdsOdpCreateSerializer,
 )
 from core.models.agency import Agency
 from core.models.country import Country
@@ -360,7 +359,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
         return versions
 
 
-class ProjectV2CreateSerializer(serializers.ModelSerializer):
+class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
     """
     ProjectSerializer class
     """
@@ -496,11 +495,61 @@ class ProjectV2CreateSerializer(serializers.ModelSerializer):
         project.subsectors.set(subsectors_data)
         return project
 
+    @transaction.atomic
     def update(self, instance, validated_data):
-        subsectors_data = validated_data.pop("subsectors", None)
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
+        subsectors_data = validated_data.pop("subsector_ids", None)
+        ods_odp_data = validated_data.pop("ods_odp", [])
+
+        super().update(instance, validated_data)
+
+        # update, create, delete ods_odp
+        self._update_or_create_ods_odp(instance, ods_odp_data)
+
+        # set new subcode
+        instance.code = get_project_sub_code(
+            instance.country,
+            instance.cluster,
+            instance.agency,
+            instance.project_type,
+            instance.sector,
+            instance.meeting,
+            instance.meeting_transf,
+            instance.serial_number,
+        )
         instance.save()
+
         if subsectors_data is not None:
             instance.subsectors.set(subsectors_data)
+
         return instance
+
+    def _update_or_create_ods_odp(self, instance, ods_odp_data):
+        existing_ods_odp_map = {obj.id: obj for obj in instance.ods_odp.all()}
+
+        ods_odp_to_create = []
+        ods_odp_to_update = []
+        incoming_ids = set()
+
+        for ods_odp in ods_odp_data:
+            item_id = ods_odp.get("id")
+            if item_id and item_id in existing_ods_odp_map:
+                incoming_ids.add(item_id)
+                ods_odp_instance = existing_ods_odp_map[item_id]
+                serializer = ProjectOdsOdpCreateSerializer(
+                    instance=ods_odp_instance, data=ods_odp, partial=True
+                )
+                serializer.is_valid(raise_exception=True)
+                ods_odp_to_update.append(serializer)
+            else:
+                ods_odp_to_create.append(ProjectOdsOdp(project=instance, **ods_odp))
+
+        if ods_odp_to_create:
+            ProjectOdsOdp.objects.bulk_create(ods_odp_to_create)
+
+        ids_to_delete = set(existing_ods_odp_map.keys()) - incoming_ids
+
+        if ids_to_delete:
+            instance.ods_odp.filter(id__in=ids_to_delete).delete()
+
+        for serializer in ods_odp_to_update:
+            serializer.save()
