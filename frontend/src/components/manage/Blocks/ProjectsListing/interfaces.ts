@@ -11,7 +11,7 @@ export interface ProjIdentifiers {
 export interface CrossCuttingFields {
   project_type: number | null
   sector: number | null
-  subsector: number[]
+  subsector_ids: number[]
   is_lvc: boolean | null
   title: string
   description: string
@@ -44,15 +44,29 @@ export type OdsOdpFields = {
 export type SpecificFieldsSectionProps = {
   projectSpecificFields: SpecificFields
   setProjectSpecificFields: React.Dispatch<React.SetStateAction<SpecificFields>>
+  fields: ProjectSpecificFields[]
 }
 
 export type OdsOdpModalProps = {
   displayODPModal: boolean
   setDisplayODPModal: Dispatch<SetStateAction<boolean>>
   setProjectSpecificFields: React.Dispatch<React.SetStateAction<SpecificFields>>
+  odsOdpFields: ProjectSpecificFields[]
+  field: string
 }
 
-export type OdsTypesType = {
+export type TableFieldType = 'text' | 'drop_down' | 'decimal'
+export type FieldType = TableFieldType | 'number' | 'boolean'
+
+export type ProjectSpecificFields = {
   id: number
-  name: string
+  label: string
+  field_name: keyof SpecificFields
+  table: string
+  data_type: FieldType
+  section: string
+  options: OptionsType[]
 }
+
+export type OptionsType = { id: number; name: string }
+export type BooleanOptionsType = { id: boolean; name: string }

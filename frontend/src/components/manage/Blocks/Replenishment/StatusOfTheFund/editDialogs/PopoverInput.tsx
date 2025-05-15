@@ -79,7 +79,7 @@ const PopoverContent = ({
         />
       </div>
       <div className="grid w-full grid-flow-row grid-cols-4 grid-rows-3 justify-items-center gap-1">
-        {pagedData[currentPage].map((entry: InputOptionType) => {
+        {pagedData[currentPage]?.map((entry: InputOptionType) => {
           const entryValue = entry.value
           const entryLabel = entry.label
 

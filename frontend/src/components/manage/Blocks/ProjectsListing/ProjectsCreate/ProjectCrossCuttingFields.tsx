@@ -1,12 +1,16 @@
 import { useEffect, useState, ChangeEvent } from 'react'
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
-import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
+import {
+  getOptionLabel,
+  isOptionEqualToValue,
+} from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import { DateInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { ProjectTypeType } from '@ors/types/api_project_types.ts'
 import { ProjectSectorType } from '@ors/types/api_project_sector.ts'
 import { ProjectSubSectorType } from '@ors/types/api_project_subsector.ts'
+import { handler } from './SpecificFieldsHelpers'
 import {
   tableColumns,
   lvcNonLvcOpts,
@@ -14,19 +18,17 @@ import {
   defaultPropsSimpleField,
   textAreaClassname,
 } from '../constants'
-import { CrossCuttingFields, ProjIdentifiers } from '../interfaces'
-import { isOptionEqualToValueByValue } from '../utils'
+import {
+  CrossCuttingFields,
+  BooleanOptionsType,
+  ProjIdentifiers,
+} from '../interfaces'
 import { useStore } from '@ors/store'
 import { api } from '@ors/helpers'
 
 import { Checkbox, TextareaAutosize } from '@mui/material'
 import { debounce, filter, find, includes, isNil } from 'lodash'
 import dayjs from 'dayjs'
-
-export type BooleanFieldType = {
-  name: string
-  value: boolean
-}
 
 const ProjectCrossCuttingFields = ({
   projIdentifiers,
@@ -141,38 +143,17 @@ const ProjectCrossCuttingFields = ({
   const handleChangeSubSector = (subsectors: ProjectSubSectorType[]) => {
     setCrossCuttingFields((prevFilters) => ({
       ...prevFilters,
-      subsector: subsectors.map((subsector) => subsector.id) ?? [],
-    }))
-  }
-
-  const handleChangeLvcNonLvc = (is_lvc: BooleanFieldType | null) => {
-    setCrossCuttingFields((prevFilters) => ({
-      ...prevFilters,
-      is_lvc: !isNil(is_lvc?.value) ? is_lvc?.value : null,
-    }))
-  }
-
-  const handleChangeTitle = (event: ChangeEvent<HTMLInputElement>) => {
-    setCrossCuttingFields((prevFilters) => ({
-      ...prevFilters,
-      title: event.target.value,
-    }))
-  }
-
-  const handleChangeDescription = (event: ChangeEvent<HTMLTextAreaElement>) => {
-    setCrossCuttingFields((prevFilters) => ({
-      ...prevFilters,
-      description: event.target.value,
+      subsector_ids: subsectors.map((subsector) => subsector.id) ?? [],
     }))
   }
 
   const handleChangeProjectFunding = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value
 
-    if (value.trim() !== '' && !isNaN(Number(value))) {
+    if (!isNaN(Number(value))) {
       setCrossCuttingFields((prevFilters: any) => ({
         ...prevFilters,
-        total_fund: Number(event.target.value),
+        total_fund: value.trim() !== '' ? Number(value) : '',
       }))
     } else {
       event.preventDefault()
@@ -184,10 +165,10 @@ const ProjectCrossCuttingFields = ({
   ) => {
     const value = event.target.value
 
-    if (value.trim() !== '' && !isNaN(Number(value))) {
+    if (!isNaN(Number(value))) {
       setCrossCuttingFields((prevFilters: any) => ({
         ...prevFilters,
-        support_cost_psc: Number(event.target.value),
+        support_cost_psc: value.trim() !== '' ? Number(value) : '',
       }))
     } else {
       event.preventDefault()
@@ -257,14 +238,14 @@ const ProjectCrossCuttingFields = ({
       </div>
       <div className="flex flex-wrap gap-x-20 gap-y-3">
         <div>
-          <Label>{tableColumns.subsector}</Label>
+          <Label>{tableColumns.subsectors}</Label>
           <Field<ProjectSubSectorType>
             widget="autocomplete"
             multiple={true}
             options={subsectors}
             value={
               filter(subsectors, (subsector) =>
-                includes(crossCuttingFields.subsector, subsector.id),
+                includes(crossCuttingFields.subsector_ids, subsector.id),
               ) as ProjectSubSectorType[]
             }
             onChange={(_: any, value) =>
@@ -276,20 +257,24 @@ const ProjectCrossCuttingFields = ({
         </div>
         <div>
           <Label>{tableColumns.is_lvc}</Label>
-          <Field<BooleanFieldType>
+          <Field<BooleanOptionsType>
             widget="autocomplete"
             options={lvcNonLvcOpts}
             value={
-              (find(lvcNonLvcOpts, { value: crossCuttingFields?.is_lvc }) ||
-                null) as BooleanFieldType | null
+              (find(lvcNonLvcOpts, { id: crossCuttingFields?.is_lvc }) ||
+                null) as BooleanOptionsType | null
             }
             onChange={(_: any, value: any) =>
-              handleChangeLvcNonLvc(value as BooleanFieldType | null)
+              handler['drop_down'](
+                value,
+                'is_lvc',
+                setCrossCuttingFields as any,
+              )
             }
             getOptionLabel={(option: any) =>
-              getOptionLabel(lvcNonLvcOpts, option, 'value')
+              getOptionLabel(lvcNonLvcOpts, option)
             }
-            isOptionEqualToValue={isOptionEqualToValueByValue}
+            isOptionEqualToValue={isOptionEqualToValue}
             {...defaultProps}
           />
         </div>
@@ -299,7 +284,9 @@ const ProjectCrossCuttingFields = ({
         <SimpleInput
           id={crossCuttingFields?.title}
           value={crossCuttingFields?.title}
-          onChange={handleChangeTitle}
+          onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
+            handler['text'](event, 'title', setCrossCuttingFields as any)
+          }
           type="text"
           {...defaultPropsSimpleField}
           containerClassName={
@@ -311,7 +298,9 @@ const ProjectCrossCuttingFields = ({
         <Label>{tableColumns.description}</Label>
         <TextareaAutosize
           value={crossCuttingFields?.description}
-          onChange={handleChangeDescription}
+          onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
+            handler['text'](event, 'description', setCrossCuttingFields as any)
+          }
           className={textAreaClassname + ' !min-w-[64rem]'}
           minRows={7}
           tabIndex={-1}

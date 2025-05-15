@@ -17,7 +17,7 @@ const ProjectSubstanceDetails = ({ project }: any) => {
         )}
       </div>
       <span>{tableColumns.ods_odp}</span>
-      <ProjectOdsOdpTable data={data.ods_odp || []} />
+      {/* <ProjectOdsOdpTable data={data.ods_odp || []} /> */}
       <Divider />
       <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
         {detailItem('Substance name', data.substance_name)}

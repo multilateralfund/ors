@@ -8,13 +8,14 @@ import {
 import { isSmeOpts, lvcNonLvcOpts, tableColumns } from '../constants'
 
 import { Divider, Typography } from '@mui/material'
-import { find } from 'lodash'
+import { find, map } from 'lodash'
 
 const ProjectOverview = ({ project }: any) => {
   const { data } = project
 
-  const is_lvc = find(lvcNonLvcOpts, { value: data.is_lvc })?.name || '-'
+  const is_lvc = find(lvcNonLvcOpts, { id: data.is_lvc })?.name || '-'
   const is_sme = find(isSmeOpts, { value: data.is_sme })?.name || '-'
+  const subsectors = map(data.subsectors, 'name').join(', ')
 
   return (
     <div className="flex w-full flex-col gap-4">
@@ -26,6 +27,7 @@ const ProjectOverview = ({ project }: any) => {
         {detailItem(tableColumns.is_lvc, is_lvc)}
         {detailItem(tableColumns.type, data.project_type?.name)}
         {detailItem(tableColumns.sector, data.sector?.name)}
+        {detailItem(tableColumns.subsectors, subsectors)}
         {detailItem(tableColumns.group, data.group)}
         {detailItem(tableColumns.tranche, data.tranche)}
         {detailItem(tableColumns.is_sme, is_sme)}
@@ -36,7 +38,6 @@ const ProjectOverview = ({ project }: any) => {
         {detailItem(tableColumns.project_status, data.status)}
         {detailItem(tableColumns.metacode, data.metaproject_code)}
         {detailItem('Metaproject category', data.metaproject_category)}
-        {detailItem('Subsector', data.subsector)}
         {detailItem('Transfer meeting', data.meeting_transf)}
       </div>
       <Divider />
