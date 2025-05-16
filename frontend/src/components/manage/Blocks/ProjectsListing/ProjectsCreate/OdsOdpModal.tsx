@@ -13,7 +13,7 @@ const OdsOdpModal = ({
   odsOdpFields,
   field,
 }: OdsOdpModalProps) => {
-  const initialOdsOdp = getDefaultValues(odsOdpFields)
+  const initialOdsOdp = getDefaultValues<OdsOdpFields>(odsOdpFields)
   const [odsOdpData, setOdsOdpData] = useState<OdsOdpFields>(initialOdsOdp)
 
   const saveOdsOdp = () => {

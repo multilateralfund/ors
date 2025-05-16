@@ -20,7 +20,6 @@ export interface CrossCuttingFields {
   project_end_date: string
   total_fund: string
   support_cost_psc: string
-  psc: string
   individual_consideration: boolean
 }
 
@@ -142,8 +141,11 @@ export type ProjectFilesObject = {
   deletedFilesIds?: number[]
   newFiles?: File[]
 }
-export interface ProjectDocs {
-  bpFiles?: ProjectFile[]
+
+export interface ProjectFiles {
   files?: ProjectFilesObject
   setFiles?: Dispatch<SetStateAction<ProjectFilesObject>>
+}
+export interface ProjectDocs extends ProjectFiles {
+  bpFiles?: ProjectFile[]
 }

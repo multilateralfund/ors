@@ -1,20 +1,32 @@
 import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
-import { ProjectSpecificFields } from './interfaces'
+import { OdsOdpFields, ProjectSpecificFields } from './interfaces'
 import { formatDecimalValue } from '@ors/helpers'
 
-import { filter, isArray, map, reduce } from 'lodash'
+import { filter, find, isArray, map, reduce } from 'lodash'
 import { ITooltipParams, ValueGetterParams } from 'ag-grid-community'
 
-export const getDefaultValues = (fields: ProjectSpecificFields[]) =>
+export const getDefaultValues = <T>(
+  fields: ProjectSpecificFields[],
+  data?: T,
+) =>
   reduce(
     fields,
     (acc: any, field) => {
-      acc[field.write_field_name] = ['drop_down', 'boolean'].includes(
-        field.data_type,
-      )
-        ? null
-        : ''
+      if (data) {
+        acc[field.write_field_name] =
+          field.data_type === 'drop_down'
+            ? find(formatOptions(field), {
+                name: data[field.read_field_name as keyof T]?.toString(),
+              })?.id
+            : data[field.write_field_name]
+      } else {
+        acc[field.write_field_name] = ['drop_down', 'boolean'].includes(
+          field.data_type,
+        )
+          ? null
+          : ''
+      }
       return acc
     },
     {},
