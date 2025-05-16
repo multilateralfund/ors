@@ -4,16 +4,17 @@ import { filter } from 'lodash'
 
 import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
 import { formatApiUrl } from '@ors/helpers'
-import { BpDetails } from './types'
+import { BpDetails, BpFile } from './types'
+import { ProjectDocs, ProjectFile } from '../ProjectsListing/interfaces'
 
 import { IoDownloadOutline, IoTrash } from 'react-icons/io5'
 import { TbFiles } from 'react-icons/tb'
 
-export function FilesViewer(props: BpDetails) {
+export function FilesViewer(props: BpDetails | ProjectDocs) {
   const { bpFiles, files, setFiles } = props
 
   const currentBpFiles = filter(
-    bpFiles,
+    bpFiles as (BpFile | ProjectFile)[],
     (file) => !files?.deletedFilesIds?.includes(file.id),
   )
   const [currentFiles, setCurrentFiles] = useState(currentBpFiles || [])

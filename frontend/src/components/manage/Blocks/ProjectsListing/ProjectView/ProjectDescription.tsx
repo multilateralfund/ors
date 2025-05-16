@@ -1,14 +1,13 @@
 import { detailItem } from './ViewHelperComponents'
 import { blanketOrIndConsiderationOpts, tableColumns } from '../constants'
-import { ProjectViewProps } from '../interfaces'
+import { BooleanOptionsType, ProjectTypeApi } from '../interfaces'
 
 import { find } from 'lodash'
 
-const ProjectDescription = ({ project }: ProjectViewProps) => {
-  const individual_consideration =
-    find(blanketOrIndConsiderationOpts, {
-      value: project.individual_consideration,
-    })?.name || '-'
+const ProjectDescription = ({ project }: { project: ProjectTypeApi }) => {
+  const individual_consideration = find(blanketOrIndConsiderationOpts, {
+    id: project.individual_consideration,
+  }) as BooleanOptionsType
 
   return (
     <div className="flex w-full flex-col gap-4">
@@ -16,7 +15,7 @@ const ProjectDescription = ({ project }: ProjectViewProps) => {
       {detailItem(tableColumns.description, project.description, 'self-start')}
       {/* {detailItem(
         tableColumns.individual_consideration,
-        individual_consideration,
+        individual_consideration?.name,
       )} */}
     </div>
   )

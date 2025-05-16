@@ -16,12 +16,11 @@ import { useParams } from 'wouter'
 
 const ProjectViewWrapper = () => {
   const { project_id } = useParams<Record<string, string>>()
-
   const project = useGetProject(project_id)
   const { data, loading } = project
   const { cluster_id, project_type_id, sector_id } = data || {}
 
-  const { data: projectFiles } = useGetProjectFiles(project_id) as any
+  const { data: projectFiles } = useGetProjectFiles(project_id)
 
   const [specificFields, setSpecificFields] = useState<ProjectSpecificFields[]>(
     [],
@@ -51,7 +50,7 @@ const ProjectViewWrapper = () => {
           <HeaderTitle>
             <div className="align-center flex justify-between">
               <PageHeading className="min-w-fit">{data.code}</PageHeading>
-              {/* <CustomLink
+              <CustomLink
                 className="mb-4 h-10 text-nowrap px-4 py-2 text-lg uppercase"
                 href={`/projects-listing/${project_id}/edit`}
                 color="secondary"
@@ -59,7 +58,7 @@ const ProjectViewWrapper = () => {
                 button
               >
                 Edit
-              </CustomLink> */}
+              </CustomLink>
             </div>
           </HeaderTitle>
           <ProjectView project={data} {...{ projectFiles, specificFields }} />

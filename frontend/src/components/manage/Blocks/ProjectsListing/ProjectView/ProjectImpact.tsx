@@ -9,7 +9,7 @@ const ProjectImpact = ({ project, specificFields }: ProjectViewProps) => {
 
   return (
     <div className="flex w-full flex-col gap-4 opacity-100">
-      <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-x-6 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
         {map(fields, (field) =>
           viewModesHandler[field.data_type](project, field),
         )}
