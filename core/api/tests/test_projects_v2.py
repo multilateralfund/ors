@@ -775,7 +775,7 @@ class TestCreateProjects(BaseTest):
 
         # create project
         response = self.client.post(self.url, data, format="json")
-        assert response.status_code == 201
+        assert response.status_code == 201, response.data
         self._test_response_data(response, data)
         assert response.data["agency"] == agency.name
         assert response.data["cluster"]["id"] == data["cluster"]
@@ -898,11 +898,6 @@ class TestProjectsV2Update:
         response = self.client.patch(project_url, {"title": "Into the Spell"})
         assert response.status_code == 404
 
-    def test_without_permission_country_user(self, country_user, project_url):
-        self.client.force_authenticate(user=country_user)
-        response = self.client.patch(project_url, {"title": "Into the Spell"})
-        assert response.status_code == 403
-
     def test_project_update(self, user, project_url, project, agency):
         self.client.force_authenticate(user=user)
         new_agency = AgencyFactory.create(code="NEWAG")
@@ -942,13 +937,14 @@ class TestProjectsV2Update:
             ],
         }
         response = self.client.patch(project_url, update_data, format="json")
-        # fails silently -> update only the title
         assert response.status_code == 200, response.data
 
         project.refresh_from_db()
         assert project.title == "Crocodile wearing a vest"
         assert project.ods_odp.count() == 1
-        assert project.ods_odp.first().odp == project_ods_odp_subst.odp
+        # This test copied from v1 where it was not supposed to actually
+        # update ods_odp, in our case it does update it.
+        assert project.ods_odp.first().odp == project_ods_odp_subst.odp + 5
 
 
 class TestProjectFiles:

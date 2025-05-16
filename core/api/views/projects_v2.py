@@ -193,7 +193,7 @@ class ProjectV2ViewSet(
         serializer = ProjectDetailsV2Serializer
         if self.action == "list":
             serializer = ProjectListV2Serializer
-        elif self.action in ["create", "update"]:
+        elif self.action in ["create", "update", "partial_update"]:
             serializer = ProjectV2CreateUpdateSerializer
         return serializer
 

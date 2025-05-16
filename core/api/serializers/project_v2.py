@@ -5,7 +5,7 @@ from rest_framework import serializers
 from core.api.serializers.project import (
     ProjectListSerializer,
     ProjectOdsOdpListSerializer,
-    ProjectOdsOdpCreateSerializer,
+    ProjectOdsOdpCreateUpdateSerializer,
 )
 from core.models.agency import Agency
 from core.models.country import Country
@@ -364,7 +364,7 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
     ProjectSerializer class
     """
 
-    ods_odp = ProjectOdsOdpListSerializer(many=True, required=False)
+    ods_odp = ProjectOdsOdpCreateUpdateSerializer(many=True, required=False)
     subsector_ids = serializers.PrimaryKeyRelatedField(
         allow_null=True,
         many=True,
@@ -468,6 +468,9 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         request = validated_data.pop("request", None)
         user = getattr(request, "user", None)
+        import ipdb
+
+        ipdb.set_trace()
         status = ProjectStatus.objects.get(code="NA")
         submission_status = ProjectSubmissionStatus.objects.get(name="Draft")
         validated_data["status_id"] = status.id
@@ -503,7 +506,8 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
         super().update(instance, validated_data)
 
         # update, create, delete ods_odp
-        self._update_or_create_ods_odp(instance, ods_odp_data)
+        if ods_odp_data:
+            self._update_or_create_ods_odp(instance, ods_odp_data)
 
         # set new subcode
         instance.code = get_project_sub_code(
@@ -527,7 +531,6 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
         existing_ods_odp_map = {obj.id: obj for obj in instance.ods_odp.all()}
 
         ods_odp_to_create = []
-        ods_odp_to_update = []
         incoming_ids = set()
 
         for ods_odp in ods_odp_data:
@@ -535,11 +538,11 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
             if item_id and item_id in existing_ods_odp_map:
                 incoming_ids.add(item_id)
                 ods_odp_instance = existing_ods_odp_map[item_id]
-                serializer = ProjectOdsOdpCreateSerializer(
+                serializer = ProjectOdsOdpCreateUpdateSerializer(
                     instance=ods_odp_instance, data=ods_odp, partial=True
                 )
                 serializer.is_valid(raise_exception=True)
-                ods_odp_to_update.append(serializer)
+                serializer.save()
             else:
                 ods_odp_to_create.append(ProjectOdsOdp(project=instance, **ods_odp))
 
@@ -550,6 +553,3 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
 
         if ids_to_delete:
             instance.ods_odp.filter(id__in=ids_to_delete).delete()
-
-        for serializer in ods_odp_to_update:
-            serializer.save()
