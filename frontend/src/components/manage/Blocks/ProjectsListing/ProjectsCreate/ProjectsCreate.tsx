@@ -11,56 +11,40 @@ import ProjectCrossCuttingFields from './ProjectCrossCuttingFields'
 import ProjectOverview from './ProjectOverview.tsx'
 import ProjectSubstanceDetails from './ProjectSubstanceDetails.tsx'
 import ProjectImpact from './ProjectImpact.tsx'
+
 import {
   CrossCuttingFields,
   ProjIdentifiers,
   ProjectSpecificFields,
   SpecificFields,
 } from '../interfaces.ts'
+import {
+  initialCrossCuttingFields,
+  initialProjectIdentifiers,
+} from '../constants.ts'
+import { getDefaultValues, getSectionFields } from '../utils.ts'
 import { api } from '@ors/helpers'
 
 import { Alert, Button, CircularProgress, Tabs, Tab } from '@mui/material'
-import { filter, isNil, map, omit, pickBy } from 'lodash'
+import { groupBy, isNil, map, omit, pickBy } from 'lodash'
 import cx from 'classnames'
 
-const initialCrossCuttingFields = (): CrossCuttingFields => {
-  return {
-    project_type: null,
-    sector: null,
-    subsector_ids: [],
-    is_lvc: null,
-    title: '',
-    description: '',
-    project_start_date: '',
-    project_end_date: '',
-    total_fund: '',
-    support_cost_psc: '',
-    psc: '',
-    individual_consideration: true,
-  }
-}
+const ProjectsCreate = () => {
+  const [specificFields, setSpecificFields] = useState<ProjectSpecificFields[]>(
+    [],
+  )
 
-const initialProjectSpecificFields = (): SpecificFields => {
-  return {
-    tranche: null,
-    is_sme: null,
-    products_manufactured: '',
-    group: null,
+  const projectFields = groupBy(specificFields, 'table')['project'] || []
+  const initialProjectSpecificFields = {
+    ...getDefaultValues(projectFields),
     ods_odp: [],
   }
-}
 
-const ProjectsCreate = () => {
   const [currentStep, setCurrentStep] = useState<number>(0)
   const [currentTab, setCurrentTab] = useState<number>(0)
-  const [projIdentifiers, setProjIdentifiers] = useState<ProjIdentifiers>({
-    is_lead_agency: true,
-    country: null,
-    meeting: null,
-    current_agency: null,
-    side_agency: null,
-    cluster: null,
-  })
+  const [projIdentifiers, setProjIdentifiers] = useState<ProjIdentifiers>(
+    initialProjectIdentifiers,
+  )
   const [isLinkedToBP, setIsLinkedToBP] = useState<boolean>(false)
   const [bpId, setBpId] = useState<number>()
   const [crossCuttingFields, setCrossCuttingFields] =
@@ -70,20 +54,16 @@ const ProjectsCreate = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isSubmitSuccessful, setIsSubmitSuccessful] = useState<boolean>()
   const [projectId, setProjectId] = useState<number | null>(null)
-  const [specificFields, setSpecificFields] = useState<ProjectSpecificFields[]>(
-    [],
-  )
 
   const cluster = projIdentifiers.cluster
   const projectType = crossCuttingFields.project_type
   const sector = crossCuttingFields.sector
 
-  const getSectionFields = (section: string) =>
-    filter(specificFields, (field) => field.section === section)
-
-  const overviewFields = getSectionFields('Header')
-  const substanceDetailsFields = getSectionFields('Substance Details')
-  const impactFields = getSectionFields('Impact')
+  const [overviewFields, substanceDetailsFields, impactFields] = [
+    getSectionFields(specificFields, 'Header'),
+    getSectionFields(specificFields, 'Substance Details'),
+    getSectionFields(specificFields, 'Impact'),
+  ]
 
   const fetchSpecificFields = async () => {
     try {
@@ -180,11 +160,9 @@ const ProjectsCreate = () => {
       disabled: areProjectSpecificTabsDisabled || overviewFields.length < 1,
       component: (
         <ProjectOverview
-          {...{
-            projectSpecificFields,
-            setProjectSpecificFields,
-          }}
-          fields={overviewFields}
+          fields={projectSpecificFields}
+          setFields={setProjectSpecificFields}
+          sectionFields={overviewFields}
         />
       ),
     },
@@ -197,11 +175,9 @@ const ProjectsCreate = () => {
         areProjectSpecificTabsDisabled || substanceDetailsFields.length < 1,
       component: (
         <ProjectSubstanceDetails
-          {...{
-            projectSpecificFields,
-            setProjectSpecificFields,
-          }}
-          fields={substanceDetailsFields}
+          fields={projectSpecificFields}
+          setFields={setProjectSpecificFields}
+          sectionFields={substanceDetailsFields}
         />
       ),
     },
@@ -213,11 +189,9 @@ const ProjectsCreate = () => {
       disabled: areProjectSpecificTabsDisabled || impactFields.length < 1,
       component: (
         <ProjectImpact
-          {...{
-            projectSpecificFields,
-            setProjectSpecificFields,
-          }}
-          fields={impactFields}
+          fields={projectSpecificFields}
+          setFields={setProjectSpecificFields}
+          sectionFields={impactFields}
         />
       ),
     },
@@ -313,7 +287,7 @@ const ProjectsCreate = () => {
               setCurrentTab(newValue)
             }}
           >
-            {steps.map(({ id, ariaControls, label, disabled }: any) => (
+            {steps.map(({ id, ariaControls, label, disabled }) => (
               <Tab
                 id={id}
                 aria-controls={ariaControls}

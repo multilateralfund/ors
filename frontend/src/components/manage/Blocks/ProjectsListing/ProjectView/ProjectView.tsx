@@ -6,16 +6,14 @@ import ProjectOverview from './ProjectOverview'
 import ProjectDescription from './ProjectDescription'
 import ProjectFinancial from './ProjectFinancial'
 import ProjectDate from './ProjectDate'
-import ProjectSubmissionDetails from './ProjectSubmissionDetails'
 import ProjectSubstanceDetails from './ProjectSubstanceDetails'
-import ProjectCostsDetails from './ProjectCostsDetails'
-import ProjectPhaseOutDetails from './ProjectPhaseOutDetails'
 import ProjectImpact from './ProjectImpact'
 import ProjectDocumentation from '../Project/ProjectDocumentation'
+import { ProjectViewProps } from '../interfaces'
 
 import { Tab, Tabs } from '@mui/material'
 
-const ProjectView = (props: any) => {
+const ProjectView = (props: ProjectViewProps) => {
   const [activeTab, setActiveTab] = useState(0)
 
   return (
@@ -57,21 +55,6 @@ const ProjectView = (props: any) => {
           label="Substance details"
         />
         <Tab
-          id="project-submission"
-          aria-controls="project-submission"
-          label="Submission details"
-        />
-        <Tab
-          id="project-costs"
-          aria-controls="project-costs"
-          label="Costs details"
-        />
-        <Tab
-          id="project-phase-out"
-          aria-controls="project-phase-out"
-          label="Phase-out details"
-        />
-        <Tab
           id="project-impact"
           aria-controls="project-impact"
           label="Impact"
@@ -88,11 +71,8 @@ const ProjectView = (props: any) => {
         {activeTab === 2 && <ProjectFinancial {...props} />}
         {activeTab === 3 && <ProjectDate {...props} />}
         {activeTab === 4 && <ProjectSubstanceDetails {...props} />}
-        {activeTab === 5 && <ProjectSubmissionDetails {...props} />}
-        {activeTab === 6 && <ProjectCostsDetails {...props} />}
-        {activeTab === 7 && <ProjectPhaseOutDetails {...props} />}
-        {activeTab === 8 && <ProjectImpact {...props} />}
-        {activeTab === 9 && (
+        {activeTab === 5 && <ProjectImpact {...props} />}
+        {activeTab === 6 && (
           <ProjectDocumentation projectFiles={props.projectFiles} />
         )}
       </div>
