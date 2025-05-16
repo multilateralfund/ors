@@ -608,7 +608,6 @@ class TestCreateProjects(BaseTest):
             "funding_window",
             "individual_consideration",
             "is_lvc",
-            "is_sme",
             "mya_start_date",
             "mya_end_date",
             "mya_project_funding",
@@ -647,12 +646,10 @@ class TestCreateProjects(BaseTest):
             "ee_demonstration_project",
             "quantity_controlled_substances_destroyed_mt",
             "quantity_controlled_substances_destroyed_co2_eq_t",
-            "checklist_regulations",
             "quantity_hfc_23_by_product_generated",
             "quantity_hfc_23_by_product_generation_rate",
             "quantity_hfc_23_by_product_destroyed",
             "quantity_hfc_23_by_product_emitted",
-            "production_control_type",
             "products_manufactured",
             "programme_officer",
             "project_end_date",
@@ -689,7 +686,9 @@ class TestCreateProjects(BaseTest):
         assert response.data["agency"] == agency.name
         assert response.data["cluster"]["id"] == data["cluster"]
         assert response.data["country"] == country_ro.name
+        assert response.data["checklist_regulations"] == "PR1"
         assert response.data["decision_id"] == decision.id
+        assert response.data["destruction_technology"] == "D1"
         assert response.data["lead_agency"] == agency.name
         assert response.data["group_id"] == data["group"]
         assert response.data["meeting_id"] == data["meeting"]
@@ -697,10 +696,12 @@ class TestCreateProjects(BaseTest):
         assert response.data["project_type"]["id"] == project_type.id
         assert response.data["project_type"]["name"] == project_type.name
         assert response.data["project_type"]["code"] == project_type.code
+        assert response.data["production_control_type"] == "Reduction"
         assert response.data["sector_id"] == data["sector"]
         assert response.data["sector"]["id"] == subsector.sector.id
         assert response.data["sector"]["name"] == subsector.sector.name
         assert response.data["sector"]["code"] == subsector.sector.code
+        assert response.data["is_sme"] == "Non-SME"
         assert response.data["starting_point"] == data["starting_point"]
         assert response.data["subsectors"] == [
             ProjectSubSectorSerializer(subsector).data

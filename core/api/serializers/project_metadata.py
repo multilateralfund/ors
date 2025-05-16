@@ -139,7 +139,8 @@ class ProjectFieldSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "label",
-            "field_name",
+            "read_field_name",
+            "write_field_name",
             "table",
             "data_type",
             "section",
@@ -147,29 +148,30 @@ class ProjectFieldSerializer(serializers.ModelSerializer):
         ]
 
     def get_options(self, obj):
-        if obj.field_name == "group":
+
+        if obj.read_field_name == "group":
             return GroupSerializer(Group.objects.all().order_by("name"), many=True).data
 
-        if obj.field_name == "ods_substance_id":
+        if obj.read_field_name == "ods_substance_name":
             return SubstanceSerializer(
                 Substance.objects.all().order_by("name"), many=True
             ).data
 
-        if obj.field_name == "is_sme":
+        if obj.read_field_name == "is_sme":
             return [
                 {"id": True, "name": "SME"},
                 {"id": False, "name": "Non-SME"},
             ]
 
-        if obj.field_name == "tranche_number":
+        if obj.read_field_name == "tranche":
             return [{"id": index, "name": str(index)} for index in range(1, 11)]
-        if obj.field_name == "production_control_type":
+        if obj.read_field_name == "production_control_type":
             return Project.ProductionControlType.choices
 
-        if obj.field_name == "destruction_technology":
+        if obj.read_field_name == "destruction_technology":
             return Project.DestructionTechnology.choices
 
-        if obj.field_name == "checklist_regulations":
+        if obj.read_field_name == "checklist_regulations":
             return Project.Regulations.choices
         return None
 

@@ -64,6 +64,29 @@ class ProjectListV2Serializer(ProjectListSerializer):
         allow_null=True,
         queryset=Decision.objects.all().values_list("id", flat=True),
     )
+    is_sme = serializers.SerializerMethodField()
+    destruction_technology = serializers.SerializerMethodField()
+    production_control_type = serializers.SerializerMethodField()
+    checklist_regulations = serializers.SerializerMethodField()
+
+    def get_destruction_technology(self, obj):
+        return obj.get_destruction_technology_display()
+
+    def get_production_control_type(self, obj):
+        return obj.get_production_control_type_display()
+
+    def get_is_sme(self, obj):
+        """
+        Get the is_sme field
+        """
+        if obj.is_sme:
+            return "SME"
+        if obj.is_sme is False:
+            return "Non-SME"
+        return None
+
+    def get_checklist_regulations(self, obj):
+        return obj.get_checklist_regulations_display()
 
     class Meta:
         model = Project

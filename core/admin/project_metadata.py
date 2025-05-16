@@ -25,7 +25,8 @@ class ProjectClusterAdmin(admin.ModelAdmin):
 @admin.register(ProjectField)
 class ProjectFieldAdmin(admin.ModelAdmin):
     search_fields = [
-        "field_name",
+        "read_field_name",
+        "write_field_name",
         "name",
     ]
 

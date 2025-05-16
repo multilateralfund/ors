@@ -200,12 +200,11 @@ class ProjectV2ViewSet(
     @action(methods=["POST"], detail=True)
     @swagger_auto_schema(
         operation_description="""
-            This endpoint archives the project by creating a copy of the project
-            and increases the version of the original entry.
+            This endpoint archives the project by creating a copy of it and
+            increasing the version of the original entry.
             The related entries (ProjectOdsOdp, ProjectFund, ProjectRBMMeasure,
             ProjectProgressReport, SubmissionAmount, ProjectComment, ProjectFile)
             are also duplicated and linked to the archived project.
-            The original project is updated to the new version.
             The file itself is also duplicated and linked to the archived project.
         """,
         request_body=openapi.Schema(type=openapi.TYPE_OBJECT, properties=None),
