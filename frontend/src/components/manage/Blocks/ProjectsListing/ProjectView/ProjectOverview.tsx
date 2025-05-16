@@ -1,15 +1,16 @@
 import { detailItem, viewModesHandler } from './ViewHelperComponents'
 import { lvcNonLvcOpts, tableColumns } from '../constants'
-import { ProjectViewProps } from '../interfaces'
+import { BooleanOptionsType, ProjectViewProps } from '../interfaces'
 import { getSectionFields } from '../utils'
 
-import { Divider } from '@mui/material'
 import { find, map } from 'lodash'
 
 const ProjectOverview = ({ project, specificFields }: ProjectViewProps) => {
   const fields = getSectionFields(specificFields, 'Header')
 
-  const is_lvc = find(lvcNonLvcOpts, { id: project.is_lvc })?.name || '-'
+  const is_lvc = find(lvcNonLvcOpts, {
+    id: project.is_lvc,
+  }) as BooleanOptionsType
   const subsectors = map(project.subsectors, 'name').join(', ')
 
   return (
@@ -19,7 +20,7 @@ const ProjectOverview = ({ project, specificFields }: ProjectViewProps) => {
         {detailItem(tableColumns.meeting, project.meeting)}
         {detailItem(tableColumns.agency, project.agency)}
         {detailItem(tableColumns.cluster, project.cluster?.name)}
-        {detailItem(tableColumns.is_lvc, is_lvc)}
+        {detailItem(tableColumns.is_lvc, is_lvc?.name)}
         {detailItem(tableColumns.type, project.project_type?.name)}
         {detailItem(tableColumns.sector, project.sector?.name)}
         {detailItem(tableColumns.subsectors, subsectors)}
@@ -27,7 +28,6 @@ const ProjectOverview = ({ project, specificFields }: ProjectViewProps) => {
           viewModesHandler[field.data_type](project, field),
         )}
       </div>
-      <Divider />
     </div>
   )
 }

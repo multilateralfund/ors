@@ -11,7 +11,7 @@ import ProjectCrossCuttingFields from './ProjectCrossCuttingFields'
 import ProjectOverview from './ProjectOverview.tsx'
 import ProjectSubstanceDetails from './ProjectSubstanceDetails.tsx'
 import ProjectImpact from './ProjectImpact.tsx'
-
+import { fetchSpecificFields } from '../hooks/getSpecificFields.ts'
 import {
   CrossCuttingFields,
   ProjIdentifiers,
@@ -65,20 +65,9 @@ const ProjectsCreate = () => {
     getSectionFields(specificFields, 'Impact'),
   ]
 
-  const fetchSpecificFields = async () => {
-    try {
-      const res = await api(
-        `/api/project-cluster/${cluster}/type/${projectType}/sector/${sector}/fields/`,
-      )
-      setSpecificFields(res.fields || [])
-    } catch (e) {
-      console.error('Error at loading project specific fields')
-    }
-  }
-
   useEffect(() => {
     if (cluster && projectType && sector) {
-      fetchSpecificFields()
+      fetchSpecificFields(cluster, projectType, sector, setSpecificFields)
     } else setSpecificFields([])
   }, [cluster, projectType, sector])
 

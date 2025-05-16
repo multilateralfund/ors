@@ -1,8 +1,8 @@
 import { dateDetailItem } from './ViewHelperComponents'
-import { ProjectViewProps } from '../interfaces'
+import { ProjectTypeApi } from '../interfaces'
 import { tableColumns } from '../constants'
 
-const ProjectDate = ({ project }: ProjectViewProps) => {
+const ProjectDate = ({ project }: { project: ProjectTypeApi }) => {
   return (
     <div className="flex w-full flex-col gap-4">
       <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">

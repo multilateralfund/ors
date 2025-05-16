@@ -9,38 +9,33 @@ import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import ProjectView from './ProjectView'
 import { useGetProject } from '../hooks/useGetProject'
 import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
+import { fetchSpecificFields } from '../hooks/getSpecificFields'
 import { ProjectSpecificFields } from '../interfaces'
-import { api } from '@ors/helpers'
 
 import { useParams } from 'wouter'
 
 const ProjectViewWrapper = () => {
   const { project_id } = useParams<Record<string, string>>()
-
   const project = useGetProject(project_id)
   const { data, loading } = project
   const { cluster_id, project_type_id, sector_id } = data || {}
 
-  const { data: projectFiles } = useGetProjectFiles(project_id) as any
+  const { data: projectFiles } = useGetProjectFiles(project_id)
 
   const [specificFields, setSpecificFields] = useState<ProjectSpecificFields[]>(
     [],
   )
-
-  const fetchSpecificFields = async () => {
-    try {
-      const res = await api(
-        `/api/project-cluster/${cluster_id}/type/${project_type_id}/sector/${sector_id}/fields/`,
-      )
-      setSpecificFields(res.fields || [])
-    } catch (e) {
-      console.error('Error at loading project specific fields')
-    }
-  }
+  const [fieldsLoading, setFieldsLoading] = useState<boolean>(true)
 
   useEffect(() => {
     if (cluster_id && project_type_id && sector_id) {
-      fetchSpecificFields()
+      fetchSpecificFields(
+        cluster_id,
+        project_type_id,
+        sector_id,
+        setSpecificFields,
+        setFieldsLoading,
+      )
     } else setSpecificFields([])
   }, [cluster_id, project_type_id, sector_id])
 
@@ -48,14 +43,14 @@ const ProjectViewWrapper = () => {
     <>
       <Loading
         className="!fixed bg-action-disabledBackground"
-        active={loading}
+        active={loading || fieldsLoading}
       />
-      {!loading && data && (
+      {!loading && !fieldsLoading && data && (
         <>
           <HeaderTitle>
             <div className="align-center flex justify-between">
               <PageHeading className="min-w-fit">{data.code}</PageHeading>
-              {/* <CustomLink
+              <CustomLink
                 className="mb-4 h-10 text-nowrap px-4 py-2 text-lg uppercase"
                 href={`/projects-listing/${project_id}/edit`}
                 color="secondary"
@@ -63,7 +58,7 @@ const ProjectViewWrapper = () => {
                 button
               >
                 Edit
-              </CustomLink> */}
+              </CustomLink>
             </div>
           </HeaderTitle>
           <ProjectView project={data} {...{ projectFiles, specificFields }} />

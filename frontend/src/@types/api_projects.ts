@@ -72,6 +72,7 @@ export type ProjectType = {
   latest_file: any
   loan: boolean
   local_ownership: number
+  meeting: string
   meeting_transf: any
   meeting_transf_id: any
   metaproject_category: string

@@ -1,4 +1,5 @@
 import { Dispatch, ReactNode, SetStateAction } from 'react'
+import { ProjectType } from '@ors/types/api_projects'
 
 export interface ProjIdentifiers {
   country: number | null
@@ -86,7 +87,8 @@ export type BooleanOptionsType = { id: boolean; name: string }
 export type ProjectSpecificFields = {
   id: number
   label: string
-  field_name: keyof (SpecificFields | OdsOdpFields)
+  read_field_name: keyof (SpecificFields | OdsOdpFields)
+  write_field_name: keyof (SpecificFields | OdsOdpFields)
   table: string
   data_type: FieldType
   section: string
@@ -113,10 +115,35 @@ export type FieldHandler = <T>(
   setState: Dispatch<SetStateAction<T>>,
 ) => void
 
+export type ProjectFile = {
+  id: number
+  name: string
+  filename: string
+  date_created: string
+  download_url: string
+  project_id: number
+}
+
+export type ProjectTypeApi = ProjIdentifiers &
+  CrossCuttingFields &
+  SpecificFields &
+  ProjectType
 export interface ProjectViewProps {
-  project: any
-  projectFiles: any
+  project: ProjectTypeApi
   specificFields: ProjectSpecificFields[]
 }
 
-export type ViewModesHandler = (data: any, field: any) => ReactNode
+export type ViewModesHandler = (
+  data: ProjectTypeApi,
+  field: ProjectSpecificFields,
+) => ReactNode
+
+export type ProjectFilesObject = {
+  deletedFilesIds?: number[]
+  newFiles?: File[]
+}
+export interface ProjectDocs {
+  bpFiles?: ProjectFile[]
+  files?: ProjectFilesObject
+  setFiles?: Dispatch<SetStateAction<ProjectFilesObject>>
+}

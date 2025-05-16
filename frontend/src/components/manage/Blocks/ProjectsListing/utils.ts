@@ -10,7 +10,9 @@ export const getDefaultValues = (fields: ProjectSpecificFields[]) =>
   reduce(
     fields,
     (acc: any, field) => {
-      acc[field.field_name] = ['drop_down', 'boolean'].includes(field.data_type)
+      acc[field.write_field_name] = ['drop_down', 'boolean'].includes(
+        field.data_type,
+      )
         ? null
         : ''
       return acc

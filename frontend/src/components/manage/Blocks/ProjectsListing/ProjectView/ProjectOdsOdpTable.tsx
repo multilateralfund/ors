@@ -42,7 +42,7 @@ const ProjectOdsOdpTable = ({
 
   const fieldColumnMapping = {
     drop_down: (fieldObj: ProjectSpecificFields) => {
-      const field = fieldObj.field_name
+      const field = fieldObj.write_field_name
       const options = formatOptions(fieldObj)
 
       return {
@@ -58,7 +58,7 @@ const ProjectOdsOdpTable = ({
       }
     },
     text: (fieldObj: ProjectSpecificFields) => {
-      const field = fieldObj.field_name
+      const field = fieldObj.read_field_name
 
       return {
         headerName: fieldObj.label,
@@ -70,7 +70,7 @@ const ProjectOdsOdpTable = ({
       }
     },
     decimal: (fieldObj: ProjectSpecificFields) => {
-      const field = fieldObj.field_name
+      const field = fieldObj.read_field_name
 
       return {
         headerName: fieldObj.label,

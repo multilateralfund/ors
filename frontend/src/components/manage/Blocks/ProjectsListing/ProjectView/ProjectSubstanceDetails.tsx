@@ -3,7 +3,6 @@ import { viewModesHandler } from './ViewHelperComponents'
 import { ProjectViewProps } from '../interfaces'
 import { getSectionFields } from '../utils'
 
-import { Divider } from '@mui/material'
 import { groupBy, map } from 'lodash'
 
 const ProjectSubstanceDetails = ({
@@ -11,7 +10,6 @@ const ProjectSubstanceDetails = ({
   specificFields,
 }: ProjectViewProps) => {
   const fields = getSectionFields(specificFields, 'Substance Details')
-
   const field = 'ods_odp'
 
   const groupedFields = groupBy(fields, 'table')
@@ -25,8 +23,7 @@ const ProjectSubstanceDetails = ({
           viewModesHandler[field.data_type](project, field),
         )}
       </div>
-      <ProjectOdsOdpTable data={project?.ods_odp || []} fields={odsOdpFields} />
-      <Divider />
+      <ProjectOdsOdpTable data={project?.[field] || []} fields={odsOdpFields} />
     </div>
   )
 }

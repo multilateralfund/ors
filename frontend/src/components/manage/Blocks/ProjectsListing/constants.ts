@@ -23,16 +23,7 @@ export const tableColumns: { [key: string]: string } = {
   individual_consideration: 'Blanket or individual consideration',
   meeting: 'Meeting number',
   description: 'Description',
-  is_sme: 'SME/non-SME',
-  products_manufactured: 'Products manufactured',
-  group: 'Annex and group of substances',
   ods_odp: 'ODS ODP',
-  ods_substance_id: 'Substance - baseline technology',
-  ods_replacement: 'Replacement technology/ies',
-  co2_mt: 'Phase out (CO₂-eq t)',
-  odp: 'Phase out (ODP t)',
-  phase_out_mt: 'Phase out (Mt)',
-  ods_type: 'ODS type',
 }
 
 export const defaultProps = {
@@ -83,8 +74,8 @@ export const initialCrossCuttingFields = (): CrossCuttingFields => {
 }
 
 export const blanketOrIndConsiderationOpts = [
-  { name: 'Individual', value: true },
-  { name: 'Blanket', value: false },
+  { name: 'Individual', id: true },
+  { name: 'Blanket', id: false },
 ]
 
 export const lvcNonLvcOpts = [
