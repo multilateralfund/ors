@@ -47,18 +47,18 @@ export const dateDetailItem = (fieldName: string, fieldValue: string) => (
 
 export const viewModesHandler: Record<FieldType, ViewModesHandler> = {
   text: (data, field) =>
-    detailItem(field.label, data[field.field_name], 'self-start'),
-  number: (data, field) => detailItem(field.label, data[field.field_name]),
+    detailItem(field.label, data[field.read_field_name], 'self-start'),
+  number: (data, field) => detailItem(field.label, data[field.read_field_name]),
   decimal: (data, field) =>
-    numberDetailItem(field.label, data[field.field_name]),
+    numberDetailItem(field.label, data[field.read_field_name]),
   drop_down: (data, field) => {
-    const value = data[field.field_name]
+    const value = data[field.read_field_name]
     const formattedValue = isBoolean(value)
-      ? find(field.options, { id: data[field.field_name] })?.name || '-'
+      ? find(field.options, { id: data[field.write_field_name] })?.name || '-'
       : value
 
     return detailItem(field.label, formattedValue)
   },
   boolean: (data, field) =>
-    booleanDetailItem(field.label, data[field.field_name]),
+    booleanDetailItem(field.label, data[field.read_field_name]),
 }

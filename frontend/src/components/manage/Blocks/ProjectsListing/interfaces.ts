@@ -87,7 +87,8 @@ export type BooleanOptionsType = { id: boolean; name: string }
 export type ProjectSpecificFields = {
   id: number
   label: string
-  field_name: keyof (SpecificFields | OdsOdpFields)
+  read_field_name: keyof (SpecificFields | OdsOdpFields)
+  write_field_name: keyof (SpecificFields | OdsOdpFields)
   table: string
   data_type: FieldType
   section: string

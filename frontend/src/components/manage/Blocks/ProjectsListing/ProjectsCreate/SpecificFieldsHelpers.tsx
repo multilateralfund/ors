@@ -58,7 +58,7 @@ export const AutocompleteWidget = <T,>(
   field: ProjectSpecificFields,
 ) => {
   const options = formatOptions(field)
-  const fieldName = field.field_name
+  const fieldName = field.write_field_name
 
   const value = fields[fieldName]
   const formattedValue = isBoolean(value)
@@ -98,9 +98,13 @@ export const TextWidget = <T,>(
   <div>
     <Label>{field.label}</Label>
     <TextareaAutosize
-      value={fields[field.field_name] as string}
+      value={fields[field.write_field_name] as string}
       onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
-        changeHandler[field.data_type]<T>(event, field.field_name, setFields)
+        changeHandler[field.data_type]<T>(
+          event,
+          field.write_field_name,
+          setFields,
+        )
       }
       className={textAreaClassname}
       minRows={2}
@@ -117,10 +121,14 @@ const NumberWidget = <T,>(
   <div>
     <Label>{field.label}</Label>
     <SimpleInput
-      id={fields[field.field_name] as string}
-      value={fields[field.field_name]}
+      id={fields[field.write_field_name] as string}
+      value={fields[field.write_field_name]}
       onChange={(value) =>
-        changeHandler[field.data_type]<T>(value, field.field_name, setFields)
+        changeHandler[field.data_type]<T>(
+          value,
+          field.write_field_name,
+          setFields,
+        )
       }
       type="number"
       {...defaultPropsSimpleField}
@@ -137,9 +145,13 @@ const BooleanWidget = <T,>(
     <Label>{field.label}</Label>
     <Checkbox
       className="pb-1 pl-2 pt-0"
-      checked={fields[field.field_name] as boolean}
+      checked={fields[field.write_field_name] as boolean}
       onChange={(_: React.SyntheticEvent, value) =>
-        changeHandler[field.data_type]<T>(value, field.field_name, setFields)
+        changeHandler[field.data_type]<T>(
+          value,
+          field.write_field_name,
+          setFields,
+        )
       }
       sx={{
         color: 'black',
