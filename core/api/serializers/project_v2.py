@@ -94,6 +94,7 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "country_id",
             "date_actual",
             "date_approved",
+            "date_created",
             "date_completion",
             "date_comp_revised",
             "date_of_revision",
@@ -236,6 +237,8 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "total_psc_cost",
             "total_psc_transferred",
             "umbrella_project",
+            "version_created_by",
+            "version",
             "withdrawn",
         ]
 
@@ -265,6 +268,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
         required=False,
         queryset=ProjectCluster.objects.all().values_list("id", flat=True),
     )
+    versions = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
@@ -275,8 +279,62 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
             "meeting_transf_id",
             "cluster_id",
             "latest_file",
+            "latest_project",
             "ods_odp",
+            "versions",
         ]
+
+    def get_versions(self, obj):
+        """
+        Get the versions of the project
+        """
+        versions = []
+        if obj.latest_project:
+            # If the project has a latest project, it means it is an archived project
+            # and we need to append the latest project to the list first
+            versions.append(
+                {
+                    "id": obj.latest_project.id,
+                    "title": obj.latest_project.title,
+                    "version": obj.latest_project.version,
+                    "final_version_id": obj.latest_project.id,
+                    "created_by": getattr(obj.version_created_by, "username", None),
+                    "date_created": obj.latest_project.date_created,
+                }
+            )
+            latest_project = obj.latest_project
+        else:
+            versions.append(
+                {
+                    "id": obj.id,
+                    "title": obj.title,
+                    "version": obj.version,
+                    "final_version_id": obj.id,
+                    "created_by": getattr(obj.version_created_by, "username", None),
+                    "date_created": obj.date_created,
+                }
+            )
+            latest_project = obj
+        previous_versions = (
+            Project.objects.really_all()
+            .filter(latest_project__id=latest_project.id)
+            .values(
+                "id", "title", "version", "version_created_by__username", "date_created"
+            )
+            .order_by("-version")
+        )
+        for version in previous_versions:
+            versions.append(
+                {
+                    "id": version["id"],
+                    "title": version["title"],
+                    "version": version["version"],
+                    "final_version_id": latest_project.id,
+                    "created_by": version["version_created_by__username"],
+                    "date_created": version["date_created"],
+                }
+            )
+        return versions
 
 
 class ProjectV2CreateSerializer(serializers.ModelSerializer):
@@ -386,13 +444,15 @@ class ProjectV2CreateSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
+        request = validated_data.pop("request", None)
+        user = getattr(request, "user", None)
         status = ProjectStatus.objects.get(code="NA")
         submission_status = ProjectSubmissionStatus.objects.get(name="Draft")
         validated_data["status_id"] = status.id
         validated_data["submission_status_id"] = submission_status.id
         ods_odp_data = validated_data.pop("ods_odp", [])
         subsectors_data = validated_data.pop("subsector_ids", [])
-        project = Project.objects.create(**validated_data)
+        project = Project.objects.create(**validated_data, version_created_by=user)
         # set subcode
         project.code = get_project_sub_code(
             project.country,

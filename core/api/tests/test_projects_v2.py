@@ -784,7 +784,7 @@ class TestCreateProjects(BaseTest):
         assert Project.objects.count() == 0
 
 
-class TestCPFiles:
+class TestProjectFiles:
     client = APIClient()
 
     def test_file_upload_anon(self, project):
@@ -869,3 +869,45 @@ class TestCPFiles:
 
         assert response.status_code == 200
         assert response.content == my_file.file.read()
+
+
+class TestProjectVersioning:
+    client = APIClient()
+
+    def test_versioning(self, user, project, test_file1):
+        self.client.force_authenticate(user=user)
+        url = reverse("project-files-v2", args=(project.id,))
+
+        # upload file
+        data = {"files": [test_file1.open()]}
+        response = self.client.post(url, data, format="multipart")
+        assert response.status_code == 201
+
+        url = reverse("project-v2-increase-version", args=(project.id,))
+        # get project version
+        response = self.client.post(url)
+        assert response.status_code == 200
+        assert response.data["version"] == 2
+        assert len(response.data["versions"]) == 2
+        assert response.data["versions"][0]["version"] == 2
+        assert response.data["versions"][0]["created_by"] == user.username
+        assert response.data["versions"][0]["title"] == project.title
+        assert response.data["versions"][0]["final_version_id"] == project.id
+        assert response.data["versions"][0]["date_created"] == project.date_created
+
+        archived_project = Project.objects.really_all().get(latest_project=project)
+        assert response.data["versions"][1]["version"] == 1
+        assert response.data["versions"][1]["created_by"] == getattr(
+            archived_project.version_created_by, "username", None
+        )
+        assert response.data["versions"][1]["title"] == archived_project.title
+        assert response.data["versions"][1]["final_version_id"] == project.id
+        assert (
+            response.data["versions"][1]["date_created"]
+            == archived_project.date_created
+        )
+
+        project_file = ProjectFile.objects.get(project=project)
+        archived_project_file = ProjectFile.objects.get(project=archived_project)
+        assert archived_project_file.filename == project_file.filename
+        assert archived_project_file.file.read() == project_file.file.read()

@@ -1,8 +1,10 @@
 import os
 import urllib
+import shutil
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -23,9 +25,15 @@ from core.api.serializers.project_v2 import (
 from core.api.swagger import FileUploadAutoSchema
 from core.models.project import (
     Project,
+    ProjectComment,
+    ProjectFund,
+    ProjectRBMMeasure,
     ProjectOdsOdp,
+    ProjectProgressReport,
     ProjectFile,
+    SubmissionAmount,
 )
+from core.models.utils import get_protected_storage
 
 
 class ProjectDestructionTechnologyView(APIView):
@@ -88,7 +96,12 @@ class ProjectV2ViewSet(
 
     def get_queryset(self):
         user = self.request.user
-        queryset = Project.objects.select_related(
+        if self.action == "retrieve":
+            queryset = Project.objects.really_all()
+        else:
+            queryset = Project.objects.all()
+
+        queryset = queryset.select_related(
             "country",
             "agency",
             "project_type",
@@ -164,13 +177,126 @@ class ProjectV2ViewSet(
         },
     )
     def create(self, request, *args, **kwargs):
-        return super().create(request, *args, **kwargs)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(request=request)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
 
     @action(methods=["GET"], detail=False)
     def api_schema(self, request):
         meta = self.metadata_class()
         data = meta.determine_metadata(request, self)
         return Response(data)
+
+    def _get_new_file_path(self, original_file_name, new_project_id):
+        # Generate a new file path for the duplicated file
+        base_dir, file_name = os.path.split(original_file_name)
+        new_file_name = f"{file_name}_{new_project_id}"
+        return os.path.join(base_dir, new_file_name)
+
+    @action(methods=["POST"], detail=True)
+    @swagger_auto_schema(
+        operation_description="""
+            This endpoint archives the project by creating a copy of the project
+            and increases the version of the original entry.
+            The related entries (ProjectOdsOdp, ProjectFund, ProjectRBMMeasure,
+            ProjectProgressReport, SubmissionAmount, ProjectComment, ProjectFile)
+            are also duplicated and linked to the archived project.
+            The original project is updated to the new version.
+            The file itself is also duplicated and linked to the archived project.
+        """,
+        request_body=openapi.Schema(type=openapi.TYPE_OBJECT, properties=None),
+        responses={
+            status.HTTP_200_OK: ProjectDetailsV2Serializer,
+            status.HTTP_400_BAD_REQUEST: "Bad request",
+        },
+    )
+    def increase_version(self, request, *args, **kwargs):
+        project = self.get_object()
+        if project.latest_project:
+            return Response(
+                {"error": "This project already has a latest version."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        with transaction.atomic():
+            # Duplicate the project
+            old_project = Project.objects.get(pk=project.pk)
+            old_project.pk = None
+            old_project.latest_project = project
+
+            old_project.save()
+
+            project.version += 1
+            project.version_created_by = request.user
+            project.save()
+
+            # Duplicate the linked ProjectOdsOdp entries
+            ods_odp_entries = ProjectOdsOdp.objects.filter(project=project)
+            for entry in ods_odp_entries:
+                entry.pk = None
+                entry.project = old_project
+                entry.save()
+
+            # Duplicate the linked ProjectFund entries
+            fund_entries = ProjectFund.objects.filter(project=project)
+            for entry in fund_entries:
+                entry.pk = None
+                entry.project = old_project
+                entry.save()
+
+            # Duplicate the linked ProjectRBMMeasure entries
+            rbm_entries = ProjectRBMMeasure.objects.filter(project=project)
+            for entry in rbm_entries:
+                entry.pk = None
+                entry.project = old_project
+                entry.save()
+
+            # Duplicate the linked ProjectProgressReport entries
+            progress_report_entries = ProjectProgressReport.objects.filter(
+                project=project
+            )
+            for entry in progress_report_entries:
+                entry.pk = None
+                entry.project = old_project
+                entry.save()
+
+            # Duplicate the linked SubmissionAmount entries
+            submission_amount_entries = SubmissionAmount.objects.filter(project=project)
+            for entry in submission_amount_entries:
+                entry.pk = None
+                entry.project = old_project
+                entry.save()
+
+            # Duplicate the ProjectComment entries
+            comment_entries = ProjectComment.objects.filter(project=project)
+            for entry in comment_entries:
+                entry.pk = None
+                entry.project = old_project
+                entry.save()
+
+            # Duplicate the ProjectFile entries
+            file_entries = ProjectFile.objects.filter(project=project)
+            for entry in file_entries:
+                original_file_path = entry.file.path
+                new_file_path = self._get_new_file_path(entry.file.name, old_project.id)
+                storage = get_protected_storage()
+                with storage.open(original_file_path, "rb") as original_file:
+                    with storage.open(new_file_path, "wb") as new_file:
+                        shutil.copyfileobj(original_file, new_file)
+                entry.pk = None
+                entry.project = old_project
+                entry.file.name = (
+                    new_file_path  # Update the file field to point to the new file
+                )
+                entry.save()
+
+        return Response(
+            ProjectDetailsV2Serializer(project).data,
+            status=status.HTTP_200_OK,
+        )
 
 
 class ProjectV2FileView(
@@ -207,7 +333,9 @@ class ProjectV2FileView(
         return [parsers.JSONParser]
 
     def get(self, request, *args, **kwargs):
-        project = get_object_or_404(Project, id=self.kwargs.get("project_id"))
+        project = get_object_or_404(
+            Project.objects.really_all(), pk=self.kwargs.get("project_id")
+        )
         queryset = ProjectFile.objects.filter(project=project)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -286,7 +414,9 @@ class ProjectV2FileView(
         ),
     )
     def delete(self, request, *args, **kwargs):
-        project = get_object_or_404(Project, id=self.kwargs.get("project_id"))
+        project = get_object_or_404(
+            Project.objects.really_all(), pk=self.kwargs.get("project_id")
+        )
         file_ids = request.data.get("file_ids")
         queryset = ProjectFile.objects.filter(project=project)
         queryset.filter(id__in=file_ids).delete()
