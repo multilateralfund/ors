@@ -1,4 +1,7 @@
+import { FieldType, ViewModesHandler } from '../interfaces'
 import { formatDecimalValue } from '@ors/helpers'
+
+import { find, isBoolean } from 'lodash'
 import dayjs from 'dayjs'
 
 export const detailItem = (
@@ -41,3 +44,21 @@ export const dateDetailItem = (fieldName: string, fieldValue: string) => (
     </h4>
   </span>
 )
+
+export const viewModesHandler: Record<FieldType, ViewModesHandler> = {
+  text: (data, field) =>
+    detailItem(field.label, data[field.field_name], 'self-start'),
+  number: (data, field) => detailItem(field.label, data[field.field_name]),
+  decimal: (data, field) =>
+    numberDetailItem(field.label, data[field.field_name]),
+  drop_down: (data, field) => {
+    const value = data[field.field_name]
+    const formattedValue = isBoolean(value)
+      ? find(field.options, { id: data[field.field_name] })?.name || '-'
+      : value
+
+    return detailItem(field.label, formattedValue)
+  },
+  boolean: (data, field) =>
+    booleanDetailItem(field.label, data[field.field_name]),
+}

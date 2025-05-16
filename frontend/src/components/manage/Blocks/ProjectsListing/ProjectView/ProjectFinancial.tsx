@@ -1,82 +1,17 @@
-import Table from '@ors/components/manage/Form/Table'
 import { numberDetailItem } from './ViewHelperComponents'
+import { ProjectViewProps } from '../interfaces'
 import { tableColumns } from '../constants'
 
-import { Divider } from '@mui/material'
-
-const ProjectFinancial = ({ project }: any) => {
-  const { data } = project
-
+const ProjectFinancial = ({ project }: ProjectViewProps) => {
   return (
     <div className="flex w-full flex-col gap-4">
       <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
-        {numberDetailItem(tableColumns.total_fund, data.total_fund)}
-        {numberDetailItem(tableColumns.support_cost_psc, data.support_cost_psc)}
-      </div>
-      <Divider />
-      <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
-        {numberDetailItem('Total fund', data.total_fund)}
-        {numberDetailItem('Total fund approved', data.total_fund_approved)}
+        {numberDetailItem(tableColumns.total_fund, project.total_fund)}
         {numberDetailItem(
-          'Total fund transferred',
-          data.total_fund_transferred,
+          tableColumns.support_cost_psc,
+          project.support_cost_psc,
         )}
-        {numberDetailItem('Funds allocated', data.funds_allocated)}
-        {numberDetailItem('Funds disbursed', data.fund_disbursed)}
-        {numberDetailItem('Funds disbursed PSC', data.fund_disbursed_psc)}
       </div>
-      <span>Funds</span>
-      <Table
-        className="mb-4"
-        enablePagination={false}
-        rowData={data.funds}
-        suppressCellFocus={false}
-        withSeparators={true}
-        columnDefs={[
-          {
-            field: 'fund_type',
-            headerName: 'Type',
-            initialWidth: 140,
-            minWidth: 140,
-          },
-          {
-            field: 'meeting',
-            headerName: 'Meeting',
-            initialWidth: 140,
-            minWidth: 140,
-          },
-          {
-            dataType: 'number',
-            field: 'amount',
-            headerName: 'Amount',
-            initialWidth: 120,
-            minWidth: 120,
-          },
-          {
-            dataType: 'number',
-            field: 'support_psc',
-            headerName: 'Support PSC',
-            initialWidth: 120,
-            minWidth: 120,
-          },
-          {
-            field: 'interest',
-            headerName: 'Interest',
-            initialWidth: 120,
-            minWidth: 120,
-          },
-          {
-            dataType: 'date',
-            field: 'date',
-            headerName: 'Date',
-            initialWidth: 120,
-            minWidth: 120,
-          },
-        ]}
-        getRowId={(props: any) => {
-          return props.data.id
-        }}
-      />
     </div>
   )
 }

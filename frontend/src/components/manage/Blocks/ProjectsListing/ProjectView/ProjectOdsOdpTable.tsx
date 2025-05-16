@@ -9,6 +9,7 @@ import { formatNumberColumns, formatOptions } from '../utils'
 
 import { IoTrash } from 'react-icons/io5'
 import { find, map } from 'lodash'
+import cx from 'classnames'
 import {
   ValueGetterParams,
   ITooltipParams,
@@ -98,7 +99,7 @@ const ProjectOdsOdpTable = ({
       enablePagination={false}
       suppressCellFocus={false}
       withSeparators={true}
-      className="projects-table mb-4"
+      className={cx('mb-4', { 'projects-table': mode === 'edit' })}
       columnDefs={[
         ...(mode === 'edit'
           ? [

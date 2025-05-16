@@ -22,11 +22,11 @@ import {
   initialCrossCuttingFields,
   initialProjectIdentifiers,
 } from '../constants.ts'
-import { getDefaultValues } from '../utils.ts'
+import { getDefaultValues, getSectionFields } from '../utils.ts'
 import { api } from '@ors/helpers'
 
 import { Alert, Button, CircularProgress, Tabs, Tab } from '@mui/material'
-import { filter, groupBy, isNil, map, omit, pickBy } from 'lodash'
+import { groupBy, isNil, map, omit, pickBy } from 'lodash'
 import cx from 'classnames'
 
 const ProjectsCreate = () => {
@@ -59,13 +59,10 @@ const ProjectsCreate = () => {
   const projectType = crossCuttingFields.project_type
   const sector = crossCuttingFields.sector
 
-  const getSectionFields = (section: string) =>
-    filter(specificFields, (field) => field.section === section)
-
   const [overviewFields, substanceDetailsFields, impactFields] = [
-    getSectionFields('Header'),
-    getSectionFields('Substance Details'),
-    getSectionFields('Impact'),
+    getSectionFields(specificFields, 'Header'),
+    getSectionFields(specificFields, 'Substance Details'),
+    getSectionFields(specificFields, 'Impact'),
   ]
 
   const fetchSpecificFields = async () => {

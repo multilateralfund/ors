@@ -91,8 +91,3 @@ export const lvcNonLvcOpts = [
   { name: 'LVC', id: true },
   { name: 'Non-LVC', id: false },
 ]
-
-export const isSmeOpts = [
-  { name: 'SME', value: true },
-  { name: 'Non-SME', value: false },
-]

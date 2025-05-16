@@ -1,31 +1,32 @@
 import ProjectOdsOdpTable from './ProjectOdsOdpTable'
-import { detailItem, numberDetailItem } from './ViewHelperComponents'
-import { tableColumns } from '../constants'
+import { viewModesHandler } from './ViewHelperComponents'
+import { ProjectViewProps } from '../interfaces'
+import { getSectionFields } from '../utils'
 
 import { Divider } from '@mui/material'
+import { groupBy, map } from 'lodash'
 
-const ProjectSubstanceDetails = ({ project }: any) => {
-  const { data } = project
+const ProjectSubstanceDetails = ({
+  project,
+  specificFields,
+}: ProjectViewProps) => {
+  const fields = getSectionFields(specificFields, 'Substance Details')
+
+  const field = 'ods_odp'
+
+  const groupedFields = groupBy(fields, 'table')
+  const projectFields = groupedFields['project'] || []
+  const odsOdpFields = groupedFields[field] || []
 
   return (
     <div className="flex w-full flex-col gap-4">
       <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
-        {detailItem(
-          tableColumns.products_manufactured,
-          data.products_manufactured,
-          'self-start',
+        {map(projectFields, (field) =>
+          viewModesHandler[field.data_type](project, field),
         )}
       </div>
-      <span>{tableColumns.ods_odp}</span>
-      {/* <ProjectOdsOdpTable data={data.ods_odp || []} /> */}
+      <ProjectOdsOdpTable data={project?.ods_odp || []} fields={odsOdpFields} />
       <Divider />
-      <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
-        {detailItem('Substance name', data.substance_name)}
-        {detailItem('Substance category', data.substance_category)}
-        {detailItem('Substance type', data.substance_type)}
-        {numberDetailItem('Substance phasedout', data.substance_phasedout)}
-        {numberDetailItem('HCFC stage', data.hcfc_stage)}
-      </div>
     </div>
   )
 }

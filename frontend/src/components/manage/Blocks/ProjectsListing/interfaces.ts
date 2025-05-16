@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction } from 'react'
+import { Dispatch, ReactNode, SetStateAction } from 'react'
 
 export interface ProjIdentifiers {
   country: number | null
@@ -112,3 +112,11 @@ export type FieldHandler = <T>(
   field: keyof T,
   setState: Dispatch<SetStateAction<T>>,
 ) => void
+
+export interface ProjectViewProps {
+  project: any
+  projectFiles: any
+  specificFields: ProjectSpecificFields[]
+}
+
+export type ViewModesHandler = (data: any, field: any) => ReactNode

@@ -3,7 +3,7 @@ import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 import { ProjectSpecificFields } from './interfaces'
 import { formatDecimalValue } from '@ors/helpers'
 
-import { isArray, map, reduce } from 'lodash'
+import { filter, isArray, map, reduce } from 'lodash'
 import { ITooltipParams, ValueGetterParams } from 'ag-grid-community'
 
 export const getDefaultValues = (fields: ProjectSpecificFields[]) =>
@@ -22,6 +22,11 @@ export const formatOptions = (field: ProjectSpecificFields) =>
   map(field.options, (option) =>
     isArray(option) ? { id: option[0], name: option[1] } : option,
   )
+
+export const getSectionFields = (
+  fields: ProjectSpecificFields[],
+  section: string,
+) => filter(fields, (field) => field.section === section)
 
 export const formatNumberColumns = (
   params: ValueGetterParams | ITooltipParams,
