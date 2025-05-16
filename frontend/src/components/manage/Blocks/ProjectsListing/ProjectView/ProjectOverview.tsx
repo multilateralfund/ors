@@ -3,7 +3,6 @@ import { lvcNonLvcOpts, tableColumns } from '../constants'
 import { ProjectViewProps } from '../interfaces'
 import { getSectionFields } from '../utils'
 
-import { Divider } from '@mui/material'
 import { find, map } from 'lodash'
 
 const ProjectOverview = ({ project, specificFields }: ProjectViewProps) => {
@@ -27,7 +26,6 @@ const ProjectOverview = ({ project, specificFields }: ProjectViewProps) => {
           viewModesHandler[field.data_type](project, field),
         )}
       </div>
-      <Divider />
     </div>
   )
 }

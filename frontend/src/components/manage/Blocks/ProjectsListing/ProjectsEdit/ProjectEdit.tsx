@@ -8,7 +8,7 @@ import ProjectFinancial from '../ProjectView/ProjectFinancial'
 import ProjectDate from '../ProjectView/ProjectDate'
 import ProjectSubstanceDetails from '../ProjectView/ProjectSubstanceDetails'
 import ProjectImpact from '../ProjectView/ProjectImpact'
-import ProjectDocumentation from '../Project/ProjectDocumentation'
+import ProjectDocumentation from '../ProjectView/ProjectDocumentation'
 
 import { Tab, Tabs } from '@mui/material'
 

@@ -9,8 +9,8 @@ import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import ProjectView from './ProjectView'
 import { useGetProject } from '../hooks/useGetProject'
 import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
+import { fetchSpecificFields } from '../hooks/getSpecificFields'
 import { ProjectSpecificFields } from '../interfaces'
-import { api } from '@ors/helpers'
 
 import { useParams } from 'wouter'
 
@@ -26,21 +26,17 @@ const ProjectViewWrapper = () => {
   const [specificFields, setSpecificFields] = useState<ProjectSpecificFields[]>(
     [],
   )
-
-  const fetchSpecificFields = async () => {
-    try {
-      const res = await api(
-        `/api/project-cluster/${cluster_id}/type/${project_type_id}/sector/${sector_id}/fields/`,
-      )
-      setSpecificFields(res.fields || [])
-    } catch (e) {
-      console.error('Error at loading project specific fields')
-    }
-  }
+  const [fieldsLoading, setFieldsLoading] = useState<boolean>(true)
 
   useEffect(() => {
     if (cluster_id && project_type_id && sector_id) {
-      fetchSpecificFields()
+      fetchSpecificFields(
+        cluster_id,
+        project_type_id,
+        sector_id,
+        setSpecificFields,
+        setFieldsLoading,
+      )
     } else setSpecificFields([])
   }, [cluster_id, project_type_id, sector_id])
 
@@ -48,9 +44,9 @@ const ProjectViewWrapper = () => {
     <>
       <Loading
         className="!fixed bg-action-disabledBackground"
-        active={loading}
+        active={loading || fieldsLoading}
       />
-      {!loading && data && (
+      {!loading && !fieldsLoading && data && (
         <>
           <HeaderTitle>
             <div className="align-center flex justify-between">
