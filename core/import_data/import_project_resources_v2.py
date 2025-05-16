@@ -317,14 +317,15 @@ def import_fields(file_path):
         field_data = {
             "import_name": field_json["IMPORT_NAME"],
             "label": field_json["LABEL"],
-            "field_name": field_json["FIELD_NAME"],
+            "read_field_name": field_json["READ_FIELD_NAME"],
+            "write_field_name": field_json["WRITE_FIELD_NAME"],
             "table": field_json["TABLE"],
             "data_type": field_json["DATA_TYPE"],
             "section": field_json["SECTION"],
         }
 
         ProjectField.objects.update_or_create(
-            field_name=field_data["field_name"], defaults=field_data
+            read_field_name=field_data["read_field_name"], defaults=field_data
         )
 
 

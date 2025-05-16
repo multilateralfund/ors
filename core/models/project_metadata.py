@@ -35,7 +35,8 @@ PROJECT_SECTOR_TO_TYPE_MAPPINGS = {
 class ProjectField(models.Model):
     import_name = models.CharField(max_length=255)
     label = models.CharField(max_length=255)
-    field_name = models.CharField(max_length=255)
+    read_field_name = models.CharField(max_length=255)
+    write_field_name = models.CharField(max_length=255)
     table = models.CharField(max_length=255)
     data_type = models.CharField(max_length=255)
     section = models.CharField(max_length=255, blank=True)

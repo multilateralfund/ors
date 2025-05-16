@@ -324,7 +324,8 @@ def setup_cluster_type_sector_fields():
     field1 = ProjectFieldFactory.create(
         import_name="substance",
         label="Substance",
-        field_name="ods_substance_id",
+        read_field_name="ods_substance_name",
+        write_field_name="ods_substance_id",
         table="ods_odp",
         data_type="drop_down",
         section="section1",
@@ -333,7 +334,8 @@ def setup_cluster_type_sector_fields():
     field2 = ProjectFieldFactory.create(
         import_name="EE demonstration project included (yes/no)",
         label="EE demonstration project included",
-        field_name="ee_demonstration_project",
+        read_field_name="ee_demonstration_project",
+        write_field_name="ee_demonstration_project",
         table="project",
         data_type="boolean",
         section="section2",
@@ -380,7 +382,8 @@ class TestProjectClusterTypeSectorFields(BaseTest):
         fields = response.data["fields"]
         assert len(fields) == 2
         assert fields[0]["label"] == field1.label
-        assert fields[0]["field_name"] == field1.field_name
+        assert fields[0]["read_field_name"] == field1.read_field_name
+        assert fields[0]["write_field_name"] == field1.write_field_name
         assert fields[0]["table"] == field1.table
         assert fields[0]["data_type"] == field1.data_type
         assert fields[0]["section"] == field1.section
@@ -388,7 +391,8 @@ class TestProjectClusterTypeSectorFields(BaseTest):
         assert fields[0]["options"][0]["id"] == substance.id
         assert fields[0]["options"][0]["name"] == substance.name
         assert fields[1]["label"] == field2.label
-        assert fields[1]["field_name"] == field2.field_name
+        assert fields[1]["read_field_name"] == field2.read_field_name
+        assert fields[1]["write_field_name"] == field2.write_field_name
         assert fields[1]["table"] == field2.table
         assert fields[1]["data_type"] == field2.data_type
         assert fields[1]["section"] == field2.section

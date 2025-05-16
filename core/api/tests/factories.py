@@ -415,7 +415,8 @@ class ProjectFieldFactory(factory.django.DjangoModelFactory):
 
     import_name = factory.Faker("pystr", max_chars=100)
     label = factory.Faker("pystr", max_chars=100)
-    field_name = factory.Faker("pystr", max_chars=100)
+    read_field_name = factory.Faker("pystr", max_chars=100)
+    write_field_name = factory.Faker("pystr", max_chars=100)
     table = factory.Faker("pystr", max_chars=100)
     data_type = factory.Faker("pystr", max_chars=100)
     section = factory.Faker("pystr", max_chars=100)

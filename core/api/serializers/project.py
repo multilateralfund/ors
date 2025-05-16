@@ -123,6 +123,7 @@ class ProjectOdsOdpListSerializer(serializers.ModelSerializer):
     """
 
     ods_display_name = serializers.SerializerMethodField()
+    ods_substance_name = serializers.SerializerMethodField()
     ods_substance_id = serializers.PrimaryKeyRelatedField(
         required=False,
         queryset=Substance.objects.all().values_list("id", flat=True),
@@ -137,6 +138,7 @@ class ProjectOdsOdpListSerializer(serializers.ModelSerializer):
             "id",
             "project_id",
             "ods_display_name",
+            "ods_substance_name",
             "odp",
             "ods_replacement",
             "co2_mt",
@@ -155,6 +157,11 @@ class ProjectOdsOdpListSerializer(serializers.ModelSerializer):
             return obj.ods_substance.name
         if obj.ods_blend:
             return obj.ods_blend.name
+        return None
+
+    def get_ods_substance_name(self, obj):
+        if obj.ods_substance:
+            return obj.ods_substance.name
         return None
 
     def validate(self, attrs):
