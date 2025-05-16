@@ -2,7 +2,8 @@
     {
         "IMPORT_NAME": "Annex group of substances",
         "LABEL": "Annex and group of substances",
-        "FIELD_NAME": "group",
+        "WRITE_FIELD_NAME": "group_id",
+        "READ_FIELD_NAME": "group",
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
         "SECTION": "Header"
@@ -10,7 +11,8 @@
     {
         "IMPORT_NAME": "Destruction Technology",
         "LABEL": "Destruction technology",
-        "FIELD_NAME": "destruction_technology",
+        "WRITE_FIELD_NAME": "destruction_technology",
+        "READ_FIELD_NAME": "destruction_technology",
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
         "SECTION": "Header"
@@ -18,7 +20,8 @@
     {
         "IMPORT_NAME": "Production Control Type",
         "LABEL": "Production control type",
-        "FIELD_NAME": "production_control_type",
+        "WRITE_FIELD_NAME": "production_control_type",
+        "READ_FIELD_NAME": "production_control_type",
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
         "SECTION": "Header"
@@ -26,7 +29,8 @@
     {
         "IMPORT_NAME": "Tranche Number",
         "LABEL": "Tranche number",
-        "FIELD_NAME": "tranche_number",
+        "WRITE_FIELD_NAME": "tranche",
+        "READ_FIELD_NAME": "tranche",
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
         "SECTION": "Header"
@@ -34,7 +38,8 @@
     {
         "IMPORT_NAME": "SME/ Non-SME",
         "LABEL": "SME/Non-SME",
-        "FIELD_NAME": "is_sme",
+        "WRITE_FIELD_NAME": "is_sme",
+        "READ_FIELD_NAME": "is_sme",
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
         "SECTION": "Header"
@@ -42,7 +47,8 @@
     {
         "IMPORT_NAME": "Substance - baseline technology",
         "LABEL": "Substance - baseline technology",
-        "FIELD_NAME": "ods_substance_id",
+        "WRITE_FIELD_NAME": "ods_substance_id",
+        "READ_FIELD_NAME": "ods_substance_name",
         "TABLE": "ods_odp",
         "DATA_TYPE": "drop_down",
         "SECTION": "Substance Details"
@@ -50,7 +56,8 @@
     {
         "IMPORT_NAME": "Replacement technology/ies",
         "LABEL": "Replacement technology/ies",
-        "FIELD_NAME": "ods_replacement",
+        "WRITE_FIELD_NAME": "ods_replacement",
+        "READ_FIELD_NAME": "ods_replacement",
         "TABLE": "ods_odp",
         "DATA_TYPE": "text",
         "SECTION": "Substance Details"
@@ -58,15 +65,17 @@
     {
         "IMPORT_NAME": "Phase out (CO2-eq t)",
         "LABEL": "Phase out (CO2-eq t)",
-        "FIELD_NAME": "co2_mt",
-        "TABLE": "project",
+        "WRITE_FIELD_NAME": "co2_mt",
+        "READ_FIELD_NAME": "co2_mt",
+        "TABLE": "ods_odp",
         "DATA_TYPE": "decimal",
         "SECTION": "Substance Details"
     },
     {
         "IMPORT_NAME": "Phase out (ODP t)",
         "LABEL": "Phase out (ODP t)",
-        "FIELD_NAME": "odp",
+        "WRITE_FIELD_NAME": "odp",
+        "READ_FIELD_NAME": "odp",
         "TABLE": "ods_odp",
         "DATA_TYPE": "decimal",
         "SECTION": "Substance Details"
@@ -74,7 +83,8 @@
     {
         "IMPORT_NAME": "Phase out (Mt)",
         "LABEL": "Phase out (Mt)",
-        "FIELD_NAME": "phase_out_mt",
+        "WRITE_FIELD_NAME": "phase_out_mt",
+        "READ_FIELD_NAME": "phase_out_mt",
         "TABLE": "ods_odp",
         "DATA_TYPE": "decimal",
         "SECTION": "Substance Details"
@@ -82,7 +92,8 @@
     {
         "IMPORT_NAME": "Product Manufactured",
         "LABEL": "Product manufactured",
-        "FIELD_NAME": "products_manufactured",
+        "WRITE_FIELD_NAME": "products_manufactured",
+        "READ_FIELD_NAME": "products_manufactured",
         "TABLE": "project",
         "DATA_TYPE": "text",
         "SECTION": "Substance Details"
@@ -90,7 +101,8 @@
     {
         "IMPORT_NAME": "Total number of technicians trained",
         "LABEL": "Total number of technicians trained",
-        "FIELD_NAME": "total_number_of_technicians_trained",
+        "WRITE_FIELD_NAME": "total_number_of_technicians_trained",
+        "READ_FIELD_NAME": "total_number_of_technicians_trained",
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact"
@@ -98,7 +110,8 @@
     {
         "IMPORT_NAME": "Number of female technicians trained",
         "LABEL": "Number of female technicians trained",
-        "FIELD_NAME": "number_of_female_technicians_trained",
+        "WRITE_FIELD_NAME": "number_of_female_technicians_trained",
+        "READ_FIELD_NAME": "number_of_female_technicians_trained",
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact"
@@ -106,7 +119,8 @@
     {
         "IMPORT_NAME": "Total number of trainers trained",
         "LABEL": "Total number of trainers trained",
-        "FIELD_NAME": "total_number_of_trainers_trained",
+        "WRITE_FIELD_NAME": "total_number_of_trainers_trained",
+        "READ_FIELD_NAME": "total_number_of_trainers_trained",
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact"
@@ -114,7 +128,8 @@
     {
         "IMPORT_NAME": "Number of female trainers trained",
         "LABEL": "Number of female trainers trained",
-        "FIELD_NAME": "number_of_female_trainers_trained",
+        "WRITE_FIELD_NAME": "number_of_female_trainers_trained",
+        "READ_FIELD_NAME": "number_of_female_trainers_trained",
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact"
@@ -122,7 +137,8 @@
     {
         "IMPORT_NAME": "Total number of technicians certified",
         "LABEL": "Total number of technicians certified",
-        "FIELD_NAME": "total_number_of_technicians_certified",
+        "WRITE_FIELD_NAME": "total_number_of_technicians_certified",
+        "READ_FIELD_NAME": "total_number_of_technicians_certified",
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact"
@@ -130,7 +146,8 @@
     {
         "IMPORT_NAME": "Number of female technicians certified",
         "LABEL": "Number of female technicians certified",
-        "FIELD_NAME": "number_of_female_technicians_certified",
+        "WRITE_FIELD_NAME": "number_of_female_technicians_certified",
+        "READ_FIELD_NAME": "number_of_female_technicians_certified",
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact"
@@ -138,7 +155,8 @@
     {
         "IMPORT_NAME": "Number of training institutions newly  assisted",
         "LABEL": "Number of training institutions newly assisted",
-        "FIELD_NAME": "number_of_training_institutions_newly_assisted",
+        "WRITE_FIELD_NAME": "number_of_training_institutions_newly_assisted",
+        "READ_FIELD_NAME": "number_of_training_institutions_newly_assisted",
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact"
@@ -146,7 +164,8 @@
     {
         "IMPORT_NAME": "Certification system for technicians established or further enhanced (yes or no)",
         "LABEL": "Certification system for technicians established or further enhanced",
-        "FIELD_NAME": "certification_system_for_technicians",
+        "WRITE_FIELD_NAME": "certification_system_for_technicians",
+        "READ_FIELD_NAME": "certification_system_for_technicians",
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact"
@@ -154,7 +173,8 @@
     {
         "IMPORT_NAME": "Operation of recovery and recycling scheme (yes or no)",
         "LABEL": "Operation of recovery and recycling scheme",
-        "FIELD_NAME": "operation_of_recovery_and_recycling_scheme",
+        "WRITE_FIELD_NAME": "operation_of_recovery_and_recycling_scheme",
+        "READ_FIELD_NAME": "operation_of_recovery_and_recycling_scheme",
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact"
@@ -162,7 +182,8 @@
     {
         "IMPORT_NAME": "Operation of reclamation scheme (yes or no)",
         "LABEL": "Operation of reclamation scheme",
-        "FIELD_NAME": "operation_of_reclamation_scheme",
+        "WRITE_FIELD_NAME": "operation_of_reclamation_scheme",
+        "READ_FIELD_NAME": "operation_of_reclamation_scheme",
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact"
@@ -170,7 +191,8 @@
     {
         "IMPORT_NAME": "Total number of customs officers trained",
         "LABEL": "Total number of customs officers trained",
-        "FIELD_NAME": "total_number_of_customs_officers_trained",
+        "WRITE_FIELD_NAME": "total_number_of_customs_officers_trained",
+        "READ_FIELD_NAME": "total_number_of_customs_officers_trained",
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact"
@@ -178,7 +200,8 @@
     {
         "IMPORT_NAME": "Number of female customs officers trained",
         "LABEL": "Number of female customs officers trained",
-        "FIELD_NAME": "number_of_female_customs_officers_trained",
+        "WRITE_FIELD_NAME": "number_of_female_customs_officers_trained",
+        "READ_FIELD_NAME": "number_of_female_customs_officers_trained",
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact"
@@ -186,7 +209,8 @@
     {
         "IMPORT_NAME": "Establishment or upgrade of Import/export licensing (yes or no)",
         "LABEL": "Establishment or upgrade of import/export licensing",
-        "FIELD_NAME": "establishment_of_imp_exp_licensing",
+        "WRITE_FIELD_NAME": "establishment_of_imp_exp_licensing",
+        "READ_FIELD_NAME": "establishment_of_imp_exp_licensing",
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact"
@@ -194,7 +218,8 @@
     {
         "IMPORT_NAME": "Establishment of quota systems (yes or no)",
         "LABEL": "Establishment of quota systems",
-        "FIELD_NAME": "establishment_of_quota_systems",
+        "WRITE_FIELD_NAME": "establishment_of_quota_systems",
+        "READ_FIELD_NAME": "establishment_of_quota_systems",
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact"
@@ -202,7 +227,8 @@
     {
         "IMPORT_NAME": "Ban of equipment (number)",
         "LABEL": "Ban of equipment",
-        "FIELD_NAME": "ban_of_equipment",
+        "WRITE_FIELD_NAME": "ban_of_equipment",
+        "READ_FIELD_NAME": "ban_of_equipment",
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact"
@@ -210,7 +236,8 @@
     {
         "IMPORT_NAME": "Ban of substances (number)",
         "LABEL": "Ban of substances",
-        "FIELD_NAME": "ban_of_substances",
+        "WRITE_FIELD_NAME": "ban_of_substances",
+        "READ_FIELD_NAME": "ban_of_substances",
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact"
@@ -218,7 +245,8 @@
     {
         "IMPORT_NAME": "kWh/year saved",
         "LABEL": "kWh/year saved",
-        "FIELD_NAME": "kwh_year_saved",
+        "WRITE_FIELD_NAME": "kwh_year_saved",
+        "READ_FIELD_NAME": "kwh_year_saved",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "Impact"   
@@ -226,7 +254,8 @@
     {
         "IMPORT_NAME": "MEPS developed for domestic refrigeration (yes/no)",
         "LABEL": "MEPS developed for domestic refrigeration",
-        "FIELD_NAME": "meps_developed_domestic_refrigeration",
+        "WRITE_FIELD_NAME": "meps_developed_domestic_refrigeration",
+        "READ_FIELD_NAME": "meps_developed_domestic_refrigeration",
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact"   
@@ -234,7 +263,8 @@
     {
         "IMPORT_NAME": "MEPS developed for commercial refrigeration (yes/no)",
         "LABEL": "MEPS developed for commercial refrigeration",
-        "FIELD_NAME": "meps_developed_commercial_refrigeration",
+        "WRITE_FIELD_NAME": "meps_developed_commercial_refrigeration",
+        "READ_FIELD_NAME": "meps_developed_commercial_refrigeration",
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact"   
@@ -242,7 +272,8 @@
     {
         "IMPORT_NAME": "MEPS developed for residential air-conditioning (yes/no)",
         "LABEL": "MEPS developed for residential air-conditioning",
-        "FIELD_NAME": "meps_developed_residential_ac",
+        "WRITE_FIELD_NAME": "meps_developed_residential_ac",
+        "READ_FIELD_NAME": "meps_developed_residential_ac",
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact"   
@@ -250,7 +281,8 @@
     {
         "IMPORT_NAME": "MEPS developed for commercial AC (yes/no)",
         "LABEL": "MEPS developed for commercial AC",
-        "FIELD_NAME": "meps_developed_commercial_ac",
+        "WRITE_FIELD_NAME": "meps_developed_commercial_ac",
+        "READ_FIELD_NAME": "meps_developed_commercial_ac",
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact"   
@@ -258,7 +290,8 @@
     {
         "IMPORT_NAME": "Capacity building programmes (checklist (yes/no) for technicians, end-users, operators, consultants, procurement officers and other Government entities)",
         "LABEL": "Capacity building programmes (checklist for technicians, end-users, operators, consultants, procurement officers and other government entities)",
-        "FIELD_NAME": "capacity_building_programmes",
+        "WRITE_FIELD_NAME": "capacity_building_programmes",
+        "READ_FIELD_NAME": "capacity_building_programmes",
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact"   
@@ -266,7 +299,8 @@
     {
         "IMPORT_NAME": "EE demonstration project included (yes/no)",
         "LABEL": "EE demonstration project included",
-        "FIELD_NAME": "ee_demonstration_project",
+        "WRITE_FIELD_NAME": "ee_demonstration_project",
+        "READ_FIELD_NAME": "ee_demonstration_project",
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact"   
@@ -274,7 +308,8 @@
     {
         "IMPORT_NAME": "Quantity of controlled substances destroyed (M t)",
         "LABEL": "Quantity of controlled substances destroyed (M t)",
-        "FIELD_NAME": "quantity_controlled_substances_destroyed_mt",
+        "WRITE_FIELD_NAME": "quantity_controlled_substances_destroyed_mt",
+        "READ_FIELD_NAME": "quantity_controlled_substances_destroyed_mt",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "Impact"
@@ -282,7 +317,8 @@
     {
         "IMPORT_NAME": "Quantity of controlled substances destroyed (CO2-eq t)",
         "LABEL": "Quantity of controlled substances destroyed (CO2-eq t)",
-        "FIELD_NAME": "quantity_controlled_substances_destroyed_co2_eq_t",
+        "WRITE_FIELD_NAME": "quantity_controlled_substances_destroyed_co2_eq_t",
+        "READ_FIELD_NAME": "quantity_controlled_substances_destroyed_co2_eq_t",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "Impact"
@@ -290,7 +326,8 @@
     {
         "IMPORT_NAME": "Checklist of regulations or policies enacted",
         "LABEL": "Checklist of regulations or policies enacted",
-        "FIELD_NAME": "checklist_regulations",
+        "WRITE_FIELD_NAME": "checklist_regulations",
+        "READ_FIELD_NAME": "checklist_regulations",
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
         "SECTION": "Impact"
@@ -298,7 +335,8 @@
     {
         "IMPORT_NAME": "Quantity of HFC-23 by-product (Generated)",
         "LABEL": "Quantity of HFC-23 by-product (Generated)",
-        "FIELD_NAME": "quantity_hfc_23_by_product_generated",
+        "WRITE_FIELD_NAME": "quantity_hfc_23_by_product_generated",
+        "READ_FIELD_NAME": "quantity_hfc_23_by_product_generated",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "Impact"
@@ -306,7 +344,8 @@
     {
         "IMPORT_NAME": "Quantity of HFC-23 by-product (by product generation rate)",
         "LABEL": "Quantity of HFC-23 by-product (by product generation rate)",
-        "FIELD_NAME": "quantity_hfc_23_by_product_generation_rate",
+        "WRITE_FIELD_NAME": "quantity_hfc_23_by_product_generation_rate",
+        "READ_FIELD_NAME": "quantity_hfc_23_by_product_generation_rate",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "Impact"
@@ -314,7 +353,8 @@
     {
         "IMPORT_NAME": "Quantity of HFC-23 by-product (Destroyed)",
         "LABEL": "Quantity of HFC-23 by-product (Destroyed)",
-        "FIELD_NAME": "quantity_hfc_23_by_product_destroyed",
+        "WRITE_FIELD_NAME": "quantity_hfc_23_by_product_destroyed",
+        "READ_FIELD_NAME": "quantity_hfc_23_by_product_destroyed",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "Impact"
@@ -322,7 +362,8 @@
     {
         "IMPORT_NAME": "Quantity of HFC-23 by-product (Emitted)",
         "LABEL": "Quantity of HFC-23 by-product (Emitted)",
-        "FIELD_NAME": "quantity_hfc_23_by_product_emitted",
+        "WRITE_FIELD_NAME": "quantity_hfc_23_by_product_emitted",
+        "READ_FIELD_NAME": "quantity_hfc_23_by_product_emitted",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "Impact"
@@ -330,7 +371,8 @@
     {
         "IMPORT_NAME": "Total number of NOU personnel supported",
         "LABEL": "Total number of NOU personnel supported",
-        "FIELD_NAME": "total_number_of_nou_personnnel_supported",
+        "WRITE_FIELD_NAME": "total_number_of_nou_personnnel_supported",
+        "READ_FIELD_NAME": "total_number_of_nou_personnnel_supported",
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact"
@@ -338,7 +380,8 @@
     {
         "IMPORT_NAME": "Number of female NOU personnel supported",
         "LABEL": "Number of female NOU personnel supported",
-        "FIELD_NAME": "number_of_female_nou_personnel_supported",
+        "WRITE_FIELD_NAME": "number_of_female_nou_personnel_supported",
+        "READ_FIELD_NAME": "number_of_female_nou_personnel_supported",
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact"
@@ -346,7 +389,8 @@
     {
         "IMPORT_NAME": "Number of enterprises assisted",
         "LABEL": "Number of enterprises assisted",
-        "FIELD_NAME": "number_of_enterprises_assisted",
+        "WRITE_FIELD_NAME": "number_of_enterprises_assisted",
+        "READ_FIELD_NAME": "number_of_enterprises_assisted",
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact"
@@ -354,7 +398,8 @@
     {
         "IMPORT_NAME": "Start date (MYA)",
         "LABEL": "Start date (MYA)",
-        "FIELD_NAME": "mya_start_date",
+        "WRITE_FIELD_NAME": "mya_start_date",
+        "READ_FIELD_NAME": "mya_start_date",
         "TABLE": "project",
         "DATA_TYPE": "date",
         "SECTION": "MYA"
@@ -362,7 +407,8 @@
     {
         "IMPORT_NAME": "End date (MYA)",
         "LABEL": "End date (MYA)",
-        "FIELD_NAME": "mya_end_date",
+        "WRITE_FIELD_NAME": "mya_end_date",
+        "READ_FIELD_NAME": "mya_end_date",
         "TABLE": "project",
         "DATA_TYPE": "date",
         "SECTION": "MYA"
@@ -370,7 +416,8 @@
     {
         "IMPORT_NAME": "Project Funding (MYA)",
         "LABEL": "Project funding (MYA)",
-        "FIELD_NAME": "mya_project_funding",
+        "WRITE_FIELD_NAME": "mya_project_funding",
+        "READ_FIELD_NAME": "mya_project_funding",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "MYA"
@@ -378,7 +425,8 @@
     {
         "IMPORT_NAME": "Support Cost (MYA)",
         "LABEL": "Support cost (MYA)",
-        "FIELD_NAME": "mya_support_cost",
+        "WRITE_FIELD_NAME": "mya_support_cost",
+        "READ_FIELD_NAME": "mya_support_cost",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "MYA"
@@ -386,7 +434,8 @@
     {
         "IMPORT_NAME": "Number of enterprises",
         "LABEL": "Number of enterprises",
-        "FIELD_NAME": "number_of_enterprises",
+        "WRITE_FIELD_NAME": "number_of_enterprises",
+        "READ_FIELD_NAME": "number_of_enterprises",
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "MYA"
@@ -394,7 +443,8 @@
     {
         "IMPORT_NAME": "Aggregated consumption",
         "LABEL": "Aggregated consumption",
-        "FIELD_NAME": "aggregated_consumption",
+        "WRITE_FIELD_NAME": "aggregated_consumption",
+        "READ_FIELD_NAME": "aggregated_consumption",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "MYA"
@@ -402,7 +452,8 @@
     {
         "IMPORT_NAME": "Targets",
         "LABEL": "Targets",
-        "FIELD_NAME": "targets",
+        "WRITE_FIELD_NAME": "targets",
+        "READ_FIELD_NAME": "targets",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "MYA"
@@ -410,7 +461,8 @@
     {
         "IMPORT_NAME": "Starting Point",
         "LABEL": "Starting point",
-        "FIELD_NAME": "starting_point",
+        "WRITE_FIELD_NAME": "starting_point",
+        "READ_FIELD_NAME": "starting_point",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "MYA"
@@ -418,7 +470,8 @@
     {
         "IMPORT_NAME": "Baseline",
         "LABEL": "Baseline",
-        "FIELD_NAME": "baseline",
+        "WRITE_FIELD_NAME": "baseline",
+        "READ_FIELD_NAME": "baseline",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "MYA"
@@ -426,7 +479,8 @@
     {
         "IMPORT_NAME": "Phase out (CO2-eq t) (MYA)",
         "LABEL": "Phase out (CO2-eq t) (MYA)",
-        "FIELD_NAME": "mya_phase_out_co2_eq_t",
+        "WRITE_FIELD_NAME": "mya_phase_out_co2_eq_t",
+        "READ_FIELD_NAME": "mya_phase_out_co2_eq_t",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "MYA"
@@ -434,7 +488,8 @@
     {
         "IMPORT_NAME": "Phase out (ODP t) (MYA)",
         "LABEL": "Phase out (ODP t) (MYA)",
-        "FIELD_NAME": "mya_phase_out_odp_t",
+        "WRITE_FIELD_NAME": "mya_phase_out_odp_t",
+        "READ_FIELD_NAME": "mya_phase_out_odp_t",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "MYA"
@@ -442,7 +497,8 @@
     {
         "IMPORT_NAME": "Phase out (Mt) (MYA)",
         "LABEL": "Phase out (Mt) (MYA)",
-        "FIELD_NAME": "mya_phase_out_mt",
+        "WRITE_FIELD_NAME": "mya_phase_out_mt",
+        "READ_FIELD_NAME": "mya_phase_out_mt",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "MYA"
@@ -450,7 +506,8 @@
     {
         "IMPORT_NAME": "Cost effectiveness (US$/ Kg)",
         "LABEL": "Cost effectiveness (US$/ Kg)",
-        "FIELD_NAME": "cost_effectiveness",
+        "WRITE_FIELD_NAME": "cost_effectiveness",
+        "READ_FIELD_NAME": "cost_effectiveness",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "MYA"
@@ -458,7 +515,8 @@
     {
         "IMPORT_NAME": "Cost effectiveness (US$/ CO2-eq)",
         "LABEL": "Cost effectiveness (US$/ CO2-eq)",
-        "FIELD_NAME": "cost_effectiveness_co2",
+        "WRITE_FIELD_NAME": "cost_effectiveness_co2",
+        "READ_FIELD_NAME": "cost_effectiveness_co2",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "MYA"
@@ -466,7 +524,8 @@
     {
         "IMPORT_NAME": "Number of Production Lines assisted",
         "LABEL": "Number of production lines assisted",
-        "FIELD_NAME": "number_of_production_lines_assisted",
+        "WRITE_FIELD_NAME": "number_of_production_lines_assisted",
+        "READ_FIELD_NAME": "number_of_production_lines_assisted",
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
         "SECTION": "MYA"

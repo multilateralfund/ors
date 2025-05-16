@@ -608,7 +608,6 @@ class TestCreateProjects(BaseTest):
             "funding_window",
             "individual_consideration",
             "is_lvc",
-            "is_sme",
             "mya_start_date",
             "mya_end_date",
             "mya_project_funding",
@@ -647,12 +646,10 @@ class TestCreateProjects(BaseTest):
             "ee_demonstration_project",
             "quantity_controlled_substances_destroyed_mt",
             "quantity_controlled_substances_destroyed_co2_eq_t",
-            "checklist_regulations",
             "quantity_hfc_23_by_product_generated",
             "quantity_hfc_23_by_product_generation_rate",
             "quantity_hfc_23_by_product_destroyed",
             "quantity_hfc_23_by_product_emitted",
-            "production_control_type",
             "products_manufactured",
             "programme_officer",
             "project_end_date",
@@ -689,7 +686,9 @@ class TestCreateProjects(BaseTest):
         assert response.data["agency"] == agency.name
         assert response.data["cluster"]["id"] == data["cluster"]
         assert response.data["country"] == country_ro.name
+        assert response.data["checklist_regulations"] == "PR1"
         assert response.data["decision_id"] == decision.id
+        assert response.data["destruction_technology"] == "D1"
         assert response.data["lead_agency"] == agency.name
         assert response.data["group_id"] == data["group"]
         assert response.data["meeting_id"] == data["meeting"]
@@ -697,10 +696,12 @@ class TestCreateProjects(BaseTest):
         assert response.data["project_type"]["id"] == project_type.id
         assert response.data["project_type"]["name"] == project_type.name
         assert response.data["project_type"]["code"] == project_type.code
+        assert response.data["production_control_type"] == "Reduction"
         assert response.data["sector_id"] == data["sector"]
         assert response.data["sector"]["id"] == subsector.sector.id
         assert response.data["sector"]["name"] == subsector.sector.name
         assert response.data["sector"]["code"] == subsector.sector.code
+        assert response.data["is_sme"] == "Non-SME"
         assert response.data["starting_point"] == data["starting_point"]
         assert response.data["subsectors"] == [
             ProjectSubSectorSerializer(subsector).data
@@ -784,7 +785,7 @@ class TestCreateProjects(BaseTest):
         assert Project.objects.count() == 0
 
 
-class TestCPFiles:
+class TestProjectFiles:
     client = APIClient()
 
     def test_file_upload_anon(self, project):
@@ -869,3 +870,45 @@ class TestCPFiles:
 
         assert response.status_code == 200
         assert response.content == my_file.file.read()
+
+
+class TestProjectVersioning:
+    client = APIClient()
+
+    def test_versioning(self, user, project, test_file1):
+        self.client.force_authenticate(user=user)
+        url = reverse("project-files-v2", args=(project.id,))
+
+        # upload file
+        data = {"files": [test_file1.open()]}
+        response = self.client.post(url, data, format="multipart")
+        assert response.status_code == 201
+
+        url = reverse("project-v2-increase-version", args=(project.id,))
+        # get project version
+        response = self.client.post(url)
+        assert response.status_code == 200
+        assert response.data["version"] == 2
+        assert len(response.data["versions"]) == 2
+        assert response.data["versions"][0]["version"] == 2
+        assert response.data["versions"][0]["created_by"] == user.username
+        assert response.data["versions"][0]["title"] == project.title
+        assert response.data["versions"][0]["final_version_id"] == project.id
+        assert response.data["versions"][0]["date_created"] == project.date_created
+
+        archived_project = Project.objects.really_all().get(latest_project=project)
+        assert response.data["versions"][1]["version"] == 1
+        assert response.data["versions"][1]["created_by"] == getattr(
+            archived_project.version_created_by, "username", None
+        )
+        assert response.data["versions"][1]["title"] == archived_project.title
+        assert response.data["versions"][1]["final_version_id"] == project.id
+        assert (
+            response.data["versions"][1]["date_created"]
+            == archived_project.date_created
+        )
+
+        project_file = ProjectFile.objects.get(project=project)
+        archived_project_file = ProjectFile.objects.get(project=archived_project)
+        assert archived_project_file.filename == project_file.filename
+        assert archived_project_file.file.read() == project_file.file.read()
