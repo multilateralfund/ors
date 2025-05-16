@@ -37,6 +37,15 @@ class ProjectManager(models.Manager):
     def get_next_serial_number(self, country_id):
         return self.select_for_update().filter(country_id=country_id).count() + 1
 
+    def get_queryset(self):
+        # by default, get projects that don't have latest_project set
+        # i.e. the latest versions of the projects
+        return super().get_queryset().filter(latest_project=None)
+
+    def really_all(self):
+        # this method is used to get all projects, including the archived ones
+        return super().get_queryset()
+
 
 class Project(models.Model):
     class SubmissionCategory(models.TextChoices):
@@ -90,6 +99,25 @@ class Project(models.Model):
         null=True,
         blank=True,
     )
+    latest_project = models.ForeignKey(
+        "self",
+        on_delete=models.CASCADE,
+        related_name="archive_projects",
+        help_text="If this is an archive project, this field will be set to the latest project",
+        null=True,
+        blank=True,
+    )
+    date_created = models.DateTimeField(auto_now_add=True)
+    version_created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        default=None,
+        related_name="created_projects_version",
+        help_text="User who created this project version",
+    )
+    version = models.FloatField(default=1)
 
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
     lead_agency = models.ForeignKey(
@@ -105,7 +133,8 @@ class Project(models.Model):
         Agency, related_name="coop_projects", blank=True
     )
 
-    legacy_code = models.CharField(max_length=128, unique=True, null=True, blank=True)
+    legacy_code = models.CharField(max_length=128, null=True, blank=True)
+
     code = models.CharField(max_length=128, null=True, blank=True)
     serial_number_legacy = models.IntegerField(null=True, blank=True)  # number
     serial_number = models.IntegerField(null=True, blank=True)
@@ -511,6 +540,13 @@ class Project(models.Model):
     objects = ProjectManager()
 
     class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["legacy_code"],
+                condition=models.Q(latest_project__isnull=True),
+                name="unique_legacy_code_when_latest_project_is_none",
+            )
+        ]
         ordering = ["-date_actual", "country__name", "serial_number"]
 
     def __str__(self):
@@ -580,7 +616,7 @@ class ProjectOdsOdp(models.Model):
     sort_order = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
-        return_str = self.ods_display_name
+        return_str = self.ods_display_name or ""
         if self.ods_replacement:
             return_str += " replacement: " + self.ods_replacement
         return return_str

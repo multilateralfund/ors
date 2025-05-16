@@ -1,5 +1,6 @@
 from admin_auto_filters.filters import AutocompleteFilterFactory
 from django.contrib import admin
+from django.contrib.admin import SimpleListFilter
 
 from core.admin.utils import get_final_display_list
 from core.models.meeting import Decision, Meeting
@@ -36,6 +37,24 @@ class ProjectFileInline(admin.TabularInline):
     extra = 1
 
 
+class LatestProjectVersionsFilter(SimpleListFilter):
+    title = "Only latest project versions/Only archived projects"
+    parameter_name = "latest_project_versions"
+
+    def lookups(self, request, model_admin):
+        return (
+            ("latest_projects", "Only latest project versions"),
+            ("archived_projects", "Only archived projects"),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() == "latest_projects":
+            return queryset.filter(latest_project__isnull=True)
+        if self.value() == "archived_projects":
+            return queryset.filter(latest_project__isnull=False)
+        return queryset
+
+
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
     inlines = [ProjectFileInline]
@@ -44,17 +63,27 @@ class ProjectAdmin(admin.ModelAdmin):
         "code",
     ]
     list_filter = [
+        LatestProjectVersionsFilter,
         AutocompleteFilterFactory("agency", "agency"),
         AutocompleteFilterFactory("sector", "sector"),
         AutocompleteFilterFactory("subsectors", "subsectors"),
         AutocompleteFilterFactory("project_type", "project_type"),
         AutocompleteFilterFactory("cluster", "cluster"),
+        AutocompleteFilterFactory("country", "country"),
+        AutocompleteFilterFactory("latest_project", "latest_project"),
         "substance_type",
         "meta_project__type",
         "status",
         "submission_status",
     ]
-    autocomplete_fields = ["country", "sector", "subsectors", "agency", "project_type"]
+    autocomplete_fields = [
+        "country",
+        "sector",
+        "subsectors",
+        "agency",
+        "project_type",
+        "latest_project",
+    ]
 
     def get_list_display(self, request):
         exclude = [
@@ -67,8 +96,13 @@ class ProjectAdmin(admin.ModelAdmin):
             "comments",
             "submission_amounts",
             "rbm_measures",
+            "latest_project",
+            "archive_projects",
         ]
         return get_final_display_list(Project, exclude)
+
+    def get_queryset(self, request):
+        return Project.objects.really_all()
 
 
 @admin.register(ProjectProgressReport)
@@ -85,6 +119,23 @@ class ProjectProgressReportAdmin(admin.ModelAdmin):
         exclude = ["remarks_1", "remarks_2"]
         return get_final_display_list(ProjectProgressReport, exclude)
 
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "project":
+            # Use Project.objects.really_all() to include all projects
+            kwargs["queryset"] = Project.objects.really_all()
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+@admin.register(ProjectFile)
+class ProjectFileAdmin(admin.ModelAdmin):
+    list_filter = []
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "project":
+            # Use Project.objects.really_all() to include all projects
+            kwargs["queryset"] = Project.objects.really_all()
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
 
 @admin.register(ProjectComment)
 class ProjectCommentAdmin(admin.ModelAdmin):
@@ -97,6 +148,12 @@ class ProjectCommentAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         exclude = ["source_file"]
         return get_final_display_list(ProjectComment, exclude)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "project":
+            # Use Project.objects.really_all() to include all projects
+            kwargs["queryset"] = Project.objects.really_all()
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 @admin.register(ProjectOdsOdp)
@@ -112,6 +169,12 @@ class ProjectOdsOdpAdmin(admin.ModelAdmin):
         exclude = ["project"]
         return get_final_display_list(ProjectOdsOdp, exclude)
 
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "project":
+            # Use Project.objects.really_all() to include all projects
+            kwargs["queryset"] = Project.objects.really_all()
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
 
 @admin.register(ProjectFund)
 class ProjectFundAdmin(admin.ModelAdmin):
@@ -125,6 +188,12 @@ class ProjectFundAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         exclude = ["project"]
         return get_final_display_list(ProjectFund, exclude)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "project":
+            # Use Project.objects.really_all() to include all projects
+            kwargs["queryset"] = Project.objects.really_all()
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 @admin.register(SubmissionAmount)
@@ -140,6 +209,12 @@ class SubmissionAmountAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         exclude = []
         return get_final_display_list(SubmissionAmount, exclude)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "project":
+            # Use Project.objects.really_all() to include all projects
+            kwargs["queryset"] = Project.objects.really_all()
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 @admin.register(Meeting)
@@ -197,3 +272,9 @@ class ProjectRbmMeasureAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         exclude = ["project"]
         return get_final_display_list(ProjectRBMMeasure, exclude)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "project":
+            # Use Project.objects.really_all() to include all projects
+            kwargs["queryset"] = Project.objects.really_all()
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
