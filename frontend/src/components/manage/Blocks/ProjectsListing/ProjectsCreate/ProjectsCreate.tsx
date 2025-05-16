@@ -11,12 +11,17 @@ import ProjectCrossCuttingFields from './ProjectCrossCuttingFields'
 import ProjectOverview from './ProjectOverview.tsx'
 import ProjectSubstanceDetails from './ProjectSubstanceDetails.tsx'
 import ProjectImpact from './ProjectImpact.tsx'
+import ProjectDocumentation from '../ProjectView/ProjectDocumentation.tsx'
 import { fetchSpecificFields } from '../hooks/getSpecificFields.ts'
 import {
   CrossCuttingFields,
   ProjIdentifiers,
+  ProjectFile,
   ProjectSpecificFields,
+  ProjectTypeApi,
+  ProjectFiles,
   SpecificFields,
+  OdsOdpFields,
 } from '../interfaces.ts'
 import {
   initialCrossCuttingFields,
@@ -29,14 +34,23 @@ import { Alert, Button, CircularProgress, Tabs, Tab } from '@mui/material'
 import { groupBy, isNil, map, omit, pickBy } from 'lodash'
 import cx from 'classnames'
 
-const ProjectsCreate = () => {
+const ProjectsCreate = ({
+  project,
+  ...rest
+}: ProjectFiles & {
+  project?: ProjectTypeApi
+  projectFiles?: ProjectFile[]
+}) => {
   const [specificFields, setSpecificFields] = useState<ProjectSpecificFields[]>(
     [],
   )
 
-  const projectFields = groupBy(specificFields, 'table')['project'] || []
+  const groupedFields = groupBy(specificFields, 'table')
+  const projectFields = groupedFields['project'] || []
+  const odsOdpFields = groupedFields['ods_odp'] || []
+
   const initialProjectSpecificFields = {
-    ...getDefaultValues(projectFields),
+    ...getDefaultValues<ProjectTypeApi>(projectFields),
     ods_odp: [],
   }
 
@@ -71,6 +85,43 @@ const ProjectsCreate = () => {
     } else setSpecificFields([])
   }, [cluster, projectType, sector])
 
+  useEffect(() => {
+    if (project) {
+      setProjIdentifiers({
+        is_lead_agency: project.agency_id === project.lead_agency_id,
+        country: project.country_id,
+        meeting: project.meeting,
+        current_agency: project.agency_id,
+        side_agency:
+          project.agency_id === project.lead_agency_id
+            ? null
+            : project.lead_agency_id,
+        cluster: project.cluster_id,
+      })
+      setIsLinkedToBP(!!project.bp_activity)
+      setBpId(project.bp_activity)
+      setCrossCuttingFields({
+        project_type: project.project_type_id,
+        sector: project.sector_id,
+        subsector_ids: map(project.subsectors, 'id'),
+        is_lvc: project.is_lvc,
+        title: project.title,
+        description: project.description,
+        project_start_date: project.project_start_date,
+        project_end_date: project.project_end_date,
+        total_fund: project.total_fund,
+        support_cost_psc: project.support_cost_psc,
+        individual_consideration: project.individual_consideration,
+      })
+      setProjectSpecificFields({
+        ...getDefaultValues<ProjectTypeApi>(projectFields, project),
+        ods_odp: map(project.ods_odp, (ods) => {
+          return { ...getDefaultValues<OdsOdpFields>(odsOdpFields, ods) }
+        }),
+      })
+    }
+  }, [project, specificFields])
+
   const canLinkToBp = !!(
     projIdentifiers.country &&
     projIdentifiers.meeting &&
@@ -101,7 +152,6 @@ const ProjectsCreate = () => {
             setProjIdentifiers,
             setCrossCuttingFields,
             areNextSectionsDisabled,
-            isSubmitSuccessful,
           }}
           isNextBtnEnabled={canLinkToBp}
         />
@@ -183,6 +233,16 @@ const ProjectsCreate = () => {
           sectionFields={impactFields}
         />
       ),
+    },
+    {
+      ...(project && {
+        step: 6,
+        id: 'project-documentation-section',
+        ariaControls: 'project-documentation-section',
+        label: 'Documentation',
+        disabled: areProjectSpecificTabsDisabled,
+        component: <ProjectDocumentation {...rest} mode="edit" />,
+      }),
     },
   ]
 

@@ -68,7 +68,6 @@ export const initialCrossCuttingFields = (): CrossCuttingFields => {
     project_end_date: '',
     total_fund: '',
     support_cost_psc: '',
-    psc: '',
     individual_consideration: true,
   }
 }

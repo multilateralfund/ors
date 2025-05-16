@@ -13,6 +13,7 @@ export type ProjectType = {
   application: any
   approval_meeting: number
   approval_meeting_id: number
+  bp_activity: number
   capital_cost: number
   cluster: any
   cluster_id: number
@@ -70,6 +71,7 @@ export type ProjectType = {
   issue: boolean
   issue_description: any
   latest_file: any
+  lead_agency_id: number
   loan: boolean
   local_ownership: number
   meeting: string
@@ -81,14 +83,15 @@ export type ProjectType = {
   mya_subsector: string
   national_agency: any
   ods_odp: {
-    co2_mt: number
+    co2_mt: string
     id: number
-    odp: number
+    odp: string
+    phase_out_mt: string
     ods_blend_id: any
     ods_display_name: string
     ods_replacement: any
     ods_substance_id: number
-    ods_type: string
+    ods_type: number
     project_id: number
     sort_order: number
   }[]

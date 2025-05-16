@@ -29,7 +29,6 @@ type ProjectIdentifiersSectionProps = {
   >
   isNextBtnEnabled: boolean
   areNextSectionsDisabled: boolean
-  isSubmitSuccessful?: boolean
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>
   setCurrentTab: React.Dispatch<React.SetStateAction<number>>
 }
@@ -40,7 +39,6 @@ const ProjectIdentifiersSection = ({
   setCrossCuttingFields,
   isNextBtnEnabled,
   areNextSectionsDisabled,
-  isSubmitSuccessful,
   setCurrentStep,
   setCurrentTab,
 }: ProjectIdentifiersSectionProps) => {
@@ -218,7 +216,7 @@ const ProjectIdentifiersSection = ({
           setCurrentStep={setCurrentStep}
           setCurrentTab={setCurrentTab}
         />
-        {!isSubmitSuccessful && !areNextSectionsDisabled && (
+        {!areNextSectionsDisabled && (
           <div className="mt-5">
             <Button
               className="h-10 border border-solid border-primary bg-white px-3 py-1 text-primary"
