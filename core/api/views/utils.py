@@ -574,6 +574,9 @@ class SummaryStatusOfContributionsAggregator:
     TriennialContributionView data.
     """
 
+    # Years for which the bilateral assistance is taken from triennial data
+    bilateral_triennial_years = [1994, 1995, 1996, 1997, 1998, 1999]
+
     def get_status_of_contributions_qs(self):
         """
         @return: List of contributor countries annotated with the SoC data, similar
@@ -589,8 +592,25 @@ class SummaryStatusOfContributionsAggregator:
                 cash_payments=models.Sum(
                     "triennialcontributionview__cash_payments", default=0
                 ),
-                bilateral_assistance=models.Subquery(
-                    BilateralAssistance.objects.filter(country=models.OuterRef("pk"))
+                bilateral_assistance=models.Sum(
+                    models.Case(
+                        # For years 1994-1999, we use the values from the view
+                        models.When(
+                            triennialcontributionview__start_year__in=[1994, 1997],
+                            then=F("triennialcontributionview__bilateral_assistance"),
+                        ),
+                        default=0,
+                        output_field=models.DecimalField(),
+                    ),
+                    default=0,
+                )
+                + models.Subquery(
+                    BilateralAssistance.objects.exclude(
+                        year__in=self.bilateral_triennial_years
+                    )
+                    .filter(
+                        country=models.OuterRef("pk"),
+                    )
                     .values("country__pk")
                     .annotate(total=models.Sum("amount", default=0))
                     .values("total")[:1]
@@ -668,9 +688,15 @@ class SummaryStatusOfContributionsAggregator:
                 "current_outstanding_contributions", default=0
             ),
         )
-        ret["bilateral_assistance"] = BilateralAssistance.objects.aggregate(
-            total=models.Sum("amount", default=0)
-        )["total"]
+        # Taking the bliateral 1994-1996 and 1997-1999 data from the triennials
+        bilateral_assistance = TriennialContributionView.objects.filter(
+            start_year__in=[1994, 1997]
+        ).aggregate(total=models.Sum("bilateral_assistance", default=0))["total"]
+        # And the rest of the bilateral data from the BilateralAssistance model
+        bilateral_assistance += BilateralAssistance.objects.exclude(
+            year__in=self.bilateral_triennial_years
+        ).aggregate(total=models.Sum("amount", default=0))["total"]
+        ret["bilateral_assistance"] = bilateral_assistance
         return ret
 
     def get_gain_loss(self):
@@ -717,15 +743,32 @@ class TriennialStatusOfContributionsAggregator:
                 cash_payments=models.Sum(
                     "triennialcontributionview__cash_payments", default=0
                 ),
-                bilateral_assistance=models.Subquery(
-                    BilateralAssistance.objects.filter(
-                        country=models.OuterRef("pk"),
-                        year__gte=self.start_year,
-                        year__lte=self.end_year,
-                    )
-                    .values("country__pk")
-                    .annotate(total=models.Sum("amount", default=0))
-                    .values("total")[:1]
+                bilateral_assistance=models.Case(
+                    # For the 1994-1996 triennial
+                    models.When(
+                        triennialcontributionview__start_year=1994,
+                        then=models.Sum(
+                            "triennialcontributionview__bilateral_assistance", default=0
+                        ),
+                    ),
+                    # For the 1997-1999 triennial
+                    models.When(
+                        triennialcontributionview__start_year=1997,
+                        then=models.Sum(
+                            "triennialcontributionview__bilateral_assistance", default=0
+                        ),
+                    ),
+                    default=models.Subquery(
+                        BilateralAssistance.objects.filter(
+                            country=models.OuterRef("pk"),
+                            year__gte=self.start_year,
+                            year__lte=self.end_year,
+                        )
+                        .values("country__pk")
+                        .annotate(total=models.Sum("amount", default=0))
+                        .values("total")[:1]
+                    ),
+                    output_field=models.DecimalField(),
                 ),
                 promissory_notes=models.Sum(
                     "triennialcontributionview__promissory_notes", default=0
@@ -809,9 +852,17 @@ class TriennialStatusOfContributionsAggregator:
         ).aggregate(total=models.Sum("amount", default=0))["total"]
 
         # Adding bilateral assistance totals
-        ret["bilateral_assistance"] = BilateralAssistance.objects.filter(
-            year__gte=self.start_year, year__lte=self.end_year
-        ).aggregate(total=models.Sum("amount", default=0))["total"]
+        if self.start_year in [1994, 1997]:
+            # For the 1994-1996 and 1997-1999 triennials, use the value from
+            # the TriennialContributionView
+            ret["bilateral_assistance"] = TriennialContributionView.objects.filter(
+                start_year=self.start_year
+            ).aggregate(total=models.Sum("bilateral_assistance", default=0))["total"]
+        else:
+            # For all other triennials, use the BilateralAssistance model
+            ret["bilateral_assistance"] = BilateralAssistance.objects.filter(
+                year__gte=self.start_year, year__lte=self.end_year
+            ).aggregate(total=models.Sum("amount", default=0))["total"]
 
         # Adding interest earned totals
         yearly_or_quarterly_data = ExternalIncomeAnnual.objects.filter(
