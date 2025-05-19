@@ -576,6 +576,7 @@ class SummaryStatusOfContributionsAggregator:
 
     # Years for which the bilateral assistance is taken from triennial data
     bilateral_triennial_years = [1994, 1995, 1996, 1997, 1998, 1999]
+    bilateral_triennial_start_years = [1994, 1997]
 
     def get_status_of_contributions_qs(self):
         """
@@ -596,7 +597,7 @@ class SummaryStatusOfContributionsAggregator:
                     models.Case(
                         # For years 1994-1999, we use the values from the view
                         models.When(
-                            triennialcontributionview__start_year__in=[1994, 1997],
+                            triennialcontributionview__start_year__in=self.bilateral_triennial_start_years,
                             then=F("triennialcontributionview__bilateral_assistance"),
                         ),
                         default=0,
@@ -690,7 +691,7 @@ class SummaryStatusOfContributionsAggregator:
         )
         # Taking the bliateral 1994-1996 and 1997-1999 data from the triennials
         bilateral_assistance = TriennialContributionView.objects.filter(
-            start_year__in=[1994, 1997]
+            start_year__in=self.bilateral_triennial_start_years
         ).aggregate(total=models.Sum("bilateral_assistance", default=0))["total"]
         # And the rest of the bilateral data from the BilateralAssistance model
         bilateral_assistance += BilateralAssistance.objects.exclude(

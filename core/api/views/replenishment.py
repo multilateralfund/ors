@@ -1298,6 +1298,7 @@ class ReplenishmentDashboardView(views.APIView):
     permission_classes = [IsUserAllowedReplenishment]
 
     bilateral_triennial_years = [1994, 1995, 1996, 1997, 1998, 1999]
+    bilateral_triennial_start_years = [1994, 1997]
 
     def get(self, request, *args, **kwargs):
         self.check_permissions(request)
@@ -1324,7 +1325,7 @@ class ReplenishmentDashboardView(views.APIView):
             information_strategy=models.Sum("information_strategy", default=0),
         )
         bilateral_assistance = TriennialContributionView.objects.filter(
-            start_year__in=[1994, 1997]
+            start_year__in=self.bilateral_triennial_start_years
         ).aggregate(total=models.Sum("bilateral_assistance", default=0))["total"]
         bilateral_assistance += BilateralAssistance.objects.exclude(
             year__in=self.bilateral_triennial_years
@@ -1478,6 +1479,10 @@ class ReplenishmentDashboardView(views.APIView):
 class ReplenishmentDashboardExportView(views.APIView):
     permission_classes = [IsUserAllowedReplenishment]
 
+    # Years for which the bilateral assistance is taken from triennial data
+    bilateral_triennial_start_years = [1994, 1997]
+    bilateral_triennial_years = [1994, 1995, 1996, 1997, 1998, 1999]
+
     def get_status(self):
         income_interest = ExternalIncomeAnnual.objects.aggregate(
             interest_earned=models.Sum("interest_earned", default=0),
@@ -1502,9 +1507,13 @@ class ReplenishmentDashboardExportView(views.APIView):
         gain_loss = FermGainLoss.objects.aggregate(
             total=models.Sum("amount", default=0)
         )["total"]
-        bilateral_assistance = BilateralAssistance.objects.aggregate(
-            total=models.Sum("amount", default=0)
-        )["total"]
+        bilateral_assistance = TriennialContributionView.objects.filter(
+            start_year__in=self.bilateral_triennial_start_years
+        ).aggregate(total=models.Sum("bilateral_assistance", default=0))["total"]
+        # And the rest of the bilateral data from the BilateralAssistance model
+        bilateral_assistance += BilateralAssistance.objects.exclude(
+            year__in=self.bilateral_triennial_years
+        ).aggregate(total=models.Sum("amount", default=0))["total"]
 
         total_income = sum(
             [
