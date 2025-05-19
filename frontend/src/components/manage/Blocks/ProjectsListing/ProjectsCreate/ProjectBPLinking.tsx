@@ -1,4 +1,4 @@
-import { ChangeEvent } from 'react'
+import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
 import LinkedBPTableWrapper, {
   LinkedBPTableWrapperProps,
@@ -8,16 +8,22 @@ import { Checkbox, FormControlLabel } from '@mui/material'
 
 type ProjectBPLinkingProps = LinkedBPTableWrapperProps & {
   isLinkedToBP: boolean
-  setIsLinkedToBP: React.Dispatch<React.SetStateAction<boolean>>
+  setIsLinkedToBP: Dispatch<SetStateAction<boolean>>
+  setBpId: Dispatch<SetStateAction<number | null>>
 }
 
 const ProjectBPLinking = ({
   isLinkedToBP,
   setIsLinkedToBP,
+  setBpId,
   ...rest
 }: ProjectBPLinkingProps) => {
   const handleChangeBPLink = (event: ChangeEvent<HTMLInputElement>) => {
     setIsLinkedToBP(event.target.checked)
+
+    if (!event.target.checked) {
+      setBpId(null)
+    }
   }
 
   return (
@@ -38,7 +44,7 @@ const ProjectBPLinking = ({
           typography: { fontSize: '1.05rem' },
         }}
       />
-      {isLinkedToBP && <LinkedBPTableWrapper {...rest} />}
+      {isLinkedToBP && <LinkedBPTableWrapper setBpId={setBpId} {...rest} />}
     </>
   )
 }

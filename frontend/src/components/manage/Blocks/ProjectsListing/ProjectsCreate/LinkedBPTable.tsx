@@ -8,7 +8,7 @@ import { useGetActivities } from '@ors/components/manage/Blocks/BusinessPlans/us
 
 import { find, map } from 'lodash'
 import { ProjIdentifiers } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
-import {ApiBPActivity} from '@ors/types/api_bp_get'
+import { ApiBPActivity } from '@ors/types/api_bp_get'
 
 const ACTIVITIES_PER_PAGE_TABLE = 50
 
@@ -17,7 +17,11 @@ export type LinkedBPTableWrapperProps = Omit<
   'period' | 'yearRanges'
 >
 
-const LinkedBPTableWrapper = (props: LinkedBPTableWrapperProps) => {
+const LinkedBPTableWrapper = (
+  props: LinkedBPTableWrapperProps & {
+    setBpId: React.Dispatch<React.SetStateAction<number | null>>
+  },
+) => {
   const { results: yearRanges } = useGetYearRanges()
   const { periodOptions } = useGetBpPeriods(yearRanges)
 
@@ -102,7 +106,7 @@ const LinkedBPTable = ({
 type LatestEndorsedBPActivitiesProps = {
   activities: ReturnType<typeof useGetActivities>
   yearRanges: ReturnType<typeof useGetYearRanges>['results']
-  bpId?: number
+  bpId: number | null
 }
 
 export type LinkableActivity = ApiBPActivity & {

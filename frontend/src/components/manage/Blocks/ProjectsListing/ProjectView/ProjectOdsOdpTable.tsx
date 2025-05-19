@@ -2,7 +2,7 @@ import ViewTable from '@ors/components/manage/Form/ViewTable'
 import {
   ProjectSpecificFields,
   OdsOdpFields,
-  TableFieldType,
+  FieldType,
   OptionsType,
 } from '../interfaces'
 import { formatNumberColumns, formatOptions } from '../utils'
@@ -69,6 +69,18 @@ const ProjectOdsOdpTable = ({
         ...defaultColDef,
       }
     },
+    number: (fieldObj: ProjectSpecificFields) => {
+      const field = fieldObj.read_field_name
+
+      return {
+        headerName: fieldObj.label,
+        field: field,
+        tooltipField: field,
+        initialWidth: 80,
+        minWidth: 80,
+        ...defaultColDef,
+      }
+    },
     decimal: (fieldObj: ProjectSpecificFields) => {
       const field = fieldObj.read_field_name
 
@@ -90,6 +102,21 @@ const ProjectOdsOdpTable = ({
         ...defaultColDef,
       }
     },
+    boolean: (fieldObj: ProjectSpecificFields) => {
+      const field = fieldObj.read_field_name
+
+      return {
+        headerName: fieldObj.label,
+        field: field,
+        valueGetter: (params: ValueGetterParams) =>
+          params.data[field] ? 'Yes' : 'No',
+        tooltipValueGetter: (params: ITooltipParams) =>
+          params.data[field] ? 'Yes' : 'No',
+        initialWidth: 60,
+        minWidth: 60,
+        ...defaultColDef,
+      }
+    },
   }
 
   return (
@@ -99,7 +126,9 @@ const ProjectOdsOdpTable = ({
       enablePagination={false}
       suppressCellFocus={false}
       withSeparators={true}
-      className={cx('mb-4', { 'projects-table': mode === 'edit' })}
+      className={cx('mb-4', {
+        'projects-table ods-odp-table': mode === 'edit',
+      })}
       columnDefs={[
         ...(mode === 'edit'
           ? [
@@ -122,7 +151,7 @@ const ProjectOdsOdpTable = ({
           : []),
         ...map(fields, (field) =>
           (
-            fieldColumnMapping[field.data_type as TableFieldType] ??
+            fieldColumnMapping[field.data_type as FieldType] ??
             fieldColumnMapping['text']
           )(field),
         ),

@@ -64,7 +64,7 @@ const ProjectsCreate = ({
     initialProjectIdentifiers,
   )
   const [isLinkedToBP, setIsLinkedToBP] = useState<boolean>(false)
-  const [bpId, setBpId] = useState<number>()
+  const [bpId, setBpId] = useState<number | null>(null)
   const [crossCuttingFields, setCrossCuttingFields] =
     useState<CrossCuttingFields>(initialCrossCuttingFields)
   const [projectSpecificFields, setProjectSpecificFields] =

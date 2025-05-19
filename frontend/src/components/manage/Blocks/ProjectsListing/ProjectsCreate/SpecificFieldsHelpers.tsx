@@ -82,7 +82,6 @@ export const AutocompleteWidget = <T,>(
             ? get(option, field)
             : (find(options, { id: option }) as OptionsType)?.[field] || ''
         }}
-        isOptionEqualToValue={isOptionEqualToValue}
         {...defaultProps}
         {...(additionalProperties[fieldName] ?? {})}
       />

@@ -77,8 +77,7 @@ export type OdsOdpFields = {
   sort_order: number | null
 }
 
-export type TableFieldType = 'text' | 'drop_down' | 'decimal'
-export type FieldType = TableFieldType | 'number' | 'boolean'
+export type FieldType = 'text' | 'drop_down' | 'decimal' | 'number' | 'boolean'
 
 export type OptionsType = { id: number; name: string; name_alt?: string }
 export type BooleanOptionsType = { id: boolean; name: string }
