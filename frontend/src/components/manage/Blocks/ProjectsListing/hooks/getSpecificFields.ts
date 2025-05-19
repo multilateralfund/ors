@@ -17,6 +17,7 @@ export const fetchSpecificFields = async (
     setFields(res.fields || [])
   } catch (e) {
     console.error('Error at loading project specific fields')
+    setFields([])
   } finally {
     setLoading?.(false)
   }

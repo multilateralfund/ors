@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { ReactNode, useEffect, useRef, useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Link from '@ors/components/ui/Link/Link'
@@ -35,9 +35,13 @@ import { groupBy, isNil, map, omit, pickBy } from 'lodash'
 import cx from 'classnames'
 
 const ProjectsCreate = ({
+  heading,
+  actionButtons,
   project,
   ...rest
 }: ProjectFiles & {
+  heading: string
+  actionButtons?: ReactNode
   project?: ProjectTypeApi
   projectFiles?: ProjectFile[]
 }) => {
@@ -68,6 +72,8 @@ const ProjectsCreate = ({
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isSubmitSuccessful, setIsSubmitSuccessful] = useState<boolean>()
   const [projectId, setProjectId] = useState<number | null>(null)
+
+  const fieldsValuesLoaded = useRef<boolean>(false)
 
   const cluster = projIdentifiers.cluster
   const projectType = crossCuttingFields.project_type
@@ -113,14 +119,20 @@ const ProjectsCreate = ({
         support_cost_psc: project.support_cost_psc,
         individual_consideration: project.individual_consideration,
       })
+    }
+  }, [])
+
+  useEffect(() => {
+    if (project && specificFields.length > 0 && !fieldsValuesLoaded.current) {
       setProjectSpecificFields({
         ...getDefaultValues<ProjectTypeApi>(projectFields, project),
         ods_odp: map(project.ods_odp, (ods) => {
           return { ...getDefaultValues<OdsOdpFields>(odsOdpFields, ods) }
         }),
       })
+      fieldsValuesLoaded.current = true
     }
-  }, [project, specificFields])
+  }, [fieldsValuesLoaded, specificFields])
 
   const canLinkToBp = !!(
     projIdentifiers.country &&
@@ -290,32 +302,32 @@ const ProjectsCreate = ({
     }
   }
 
+  const defaultActionButtons = (
+    <div className="flex flex-wrap items-center gap-2.5">
+      <Button
+        className={cx('ml-auto mr-0 h-10 px-3 py-1', {
+          'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
+            !isSubmitDisabled,
+        })}
+        size="large"
+        variant="contained"
+        onClick={submitProject}
+        disabled={isSubmitDisabled}
+      >
+        Submit
+      </Button>
+      {isLoading && (
+        <CircularProgress color="inherit" size="30px" className="ml-1.5" />
+      )}
+    </div>
+  )
+
   return (
     <>
       <HeaderTitle>
         <div className="align-center flex justify-between">
-          <PageHeading>New project submission</PageHeading>
-          <div className="flex flex-wrap items-center gap-2.5">
-            <Button
-              className={cx('ml-auto mr-0 h-10 px-3 py-1', {
-                'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
-                  !isSubmitDisabled,
-              })}
-              size="large"
-              variant="contained"
-              onClick={submitProject}
-              disabled={isSubmitDisabled}
-            >
-              Submit
-            </Button>
-            {isLoading && (
-              <CircularProgress
-                color="inherit"
-                size="30px"
-                className="ml-1.5"
-              />
-            )}
-          </div>
+          <PageHeading className="min-w-fit">{heading}</PageHeading>
+          {actionButtons ?? defaultActionButtons}
         </div>
       </HeaderTitle>
 
