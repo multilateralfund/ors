@@ -83,6 +83,7 @@ from core.models import (
     ScaleOfAssessment,
     ScaleOfAssessmentVersion,
     TriennialContributionStatus,
+    TriennialContributionView,
     StatusOfTheFundFile,
 )
 
@@ -1296,6 +1297,8 @@ class BilateralAssistanceViewSet(
 class ReplenishmentDashboardView(views.APIView):
     permission_classes = [IsUserAllowedReplenishment]
 
+    bilateral_triennial_years = [1994, 1995, 1996, 1997, 1998, 1999]
+
     def get(self, request, *args, **kwargs):
         self.check_permissions(request)
 
@@ -1320,9 +1323,12 @@ class ReplenishmentDashboardView(views.APIView):
             technical_audit=models.Sum("technical_audit", default=0),
             information_strategy=models.Sum("information_strategy", default=0),
         )
-        bilateral_assistance = BilateralAssistance.objects.aggregate(
-            total=models.Sum("amount", default=0)
-        )["total"]
+        bilateral_assistance = TriennialContributionView.objects.filter(
+            start_year__in=[1994, 1997]
+        ).aggregate(total=models.Sum("bilateral_assistance", default=0))["total"]
+        bilateral_assistance += BilateralAssistance.objects.exclude(
+            year__in=self.bilateral_triennial_years
+        ).aggregate(total=models.Sum("amount", default=0))["total"]
 
         computed_summary_data = TriennialContributionStatus.objects.aggregate(
             cash_payments=models.Sum("cash_payments", default=0),
