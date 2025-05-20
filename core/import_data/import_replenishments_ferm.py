@@ -203,9 +203,7 @@ def parse_interest(interest_df, countries):
             quarter=None,
             miscellaneous_income=misc_income.miscellaneous_income,
         )
-        for misc_income in ExternalIncome.objects.filter(
-            miscellaneous_income__gte=0
-        ).all()
+        for misc_income in ExternalIncome.objects.exclude(miscellaneous_income=0).all()
     ]
     ExternalIncomeAnnual.objects.bulk_create(misc_incomes)
     logger.info(

@@ -8,7 +8,7 @@ from openpyxl.cell import WriteOnlyCell
 from openpyxl.styles import DEFAULT_FONT, Font, Side, Border, Alignment
 from openpyxl.utils import get_column_letter, range_boundaries
 
-from django.db.models import F
+from django.db.models import F, Q
 
 from core.api.export.base import configure_sheet_print, WriteOnlyBase
 from core.models import (
@@ -982,9 +982,9 @@ class ConsolidatedInputDataWriter:
             "comment",
         ]
 
-        data = BilateralAssistance.objects.filter(amount__gte=Decimal(5)).values_list(
-            *expressions
-        )
+        data = BilateralAssistance.objects.filter(
+            Q(amount__gte=Decimal(5)) | Q(amount__lte=Decimal(-5))
+        ).values_list(*expressions)
         self.write_headers(ws, columns)
         self.write_data(ws, data)
 
@@ -1007,7 +1007,8 @@ class ConsolidatedInputDataWriter:
         ]
 
         data = ExternalIncomeAnnual.objects.filter(
-            interest_earned__gte=Decimal(5), year__isnull=False
+            Q(interest_earned__gte=Decimal(5)) | Q(interest_earned__lte=Decimal(-5)),
+            year__isnull=False,
         ).values_list(*expressions)
         self.write_headers(ws, columns)
         self.write_data(ws, data)
@@ -1021,7 +1022,9 @@ class ConsolidatedInputDataWriter:
             "comment",
         ]
         queryset_annual = ExternalIncomeAnnual.objects.filter(
-            year__isnull=False, miscellaneous_income__gte=Decimal(5)
+            Q(miscellaneous_income__gte=Decimal(5))
+            | Q(miscellaneous_income__lte=Decimal(-5)),
+            year__isnull=False,
         )
 
         expressions_triennial = [
@@ -1031,7 +1034,9 @@ class ConsolidatedInputDataWriter:
             "comment",
         ]
         queryset_triennial = ExternalIncomeAnnual.objects.filter(
-            triennial_start_year__isnull=False, miscellaneous_income__gte=Decimal(5)
+            Q(miscellaneous_income__gte=Decimal(5))
+            | Q(miscellaneous_income__lte=Decimal(-5)),
+            triennial_start_year__isnull=False,
         )
         triennial_data = [
             (f"{data[0]}-{data[0] + 2}", *data[1:])
@@ -1056,9 +1061,9 @@ class ConsolidatedInputDataWriter:
             "amount",
             "comment",
         ]
-        data = DisputedContribution.objects.filter(amount__gte=Decimal(5)).values_list(
-            *expressions
-        )
+        data = DisputedContribution.objects.filter(
+            Q(amount__gte=Decimal(5)) | Q(amount__lte=Decimal(-5))
+        ).values_list(*expressions)
 
         self.write_headers(ws, columns)
         self.write_data(ws, data)
@@ -1080,7 +1085,7 @@ class ConsolidatedInputDataWriter:
             agency_expressions = expressions_first + [amount_field] + expressions_second
             queryset = ExternalAllocation.objects.annotate(
                 amount=F(amount_field)
-            ).filter(amount__gt=Decimal(0))
+            ).exclude(amount=Decimal(0))
             data = queryset.values_list(*agency_expressions)
             self.write_agency_data(
                 ws,
@@ -1099,8 +1104,8 @@ class ConsolidatedInputDataWriter:
             "staff_contracts",
             "comment",
         ]
-        data = ExternalAllocation.objects.filter(
-            staff_contracts__gt=Decimal(0)
+        data = ExternalAllocation.objects.exclude(
+            staff_contracts=Decimal(0)
         ).values_list(*expressions)
 
         self.write_headers(ws, columns)
@@ -1115,9 +1120,9 @@ class ConsolidatedInputDataWriter:
             "treasury_fees",
             "comment",
         ]
-        data = ExternalAllocation.objects.filter(
-            treasury_fees__gt=Decimal(0)
-        ).values_list(*expressions)
+        data = ExternalAllocation.objects.exclude(treasury_fees=Decimal(0)).values_list(
+            *expressions
+        )
 
         self.write_headers(ws, columns)
         self.write_data(ws, data)
@@ -1131,8 +1136,8 @@ class ConsolidatedInputDataWriter:
             "monitoring_fees",
             "comment",
         ]
-        data = ExternalAllocation.objects.filter(
-            monitoring_fees__gt=Decimal(0)
+        data = ExternalAllocation.objects.exclude(
+            monitoring_fees=Decimal(0)
         ).values_list(*expressions)
 
         self.write_headers(ws, columns)
