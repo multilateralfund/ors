@@ -1,18 +1,14 @@
-import { Dispatch, SetStateAction } from 'react'
-
 import FileInput from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/FileInput'
 import { FilesViewer } from '@ors/components/manage/Blocks/BusinessPlans/FilesViewer'
-import { ProjectFile, ProjectFilesObject } from '../interfaces'
+import { ProjectFile, ProjectFiles } from '../interfaces'
 
 const ProjectDocumentation = ({
   files,
   setFiles,
   projectFiles,
   mode,
-}: {
-  files?: ProjectFilesObject
-  setFiles?: Dispatch<SetStateAction<ProjectFilesObject>>
-  projectFiles: ProjectFile[]
+}: ProjectFiles & {
+  projectFiles?: ProjectFile[]
   mode?: string
 }) => {
   return (

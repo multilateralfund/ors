@@ -4,7 +4,7 @@ import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 export default function CreateProject() {
   return (
     <PageWrapper>
-      <ProjectsCreate />
+      <ProjectsCreate heading="New project submission" />
     </PageWrapper>
   )
 }

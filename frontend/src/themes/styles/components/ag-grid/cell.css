@@ -195,7 +195,7 @@
 }
 
 .bp-edit-table.ag-table,
-.projects-table.ag-table {
+.projects-table.ods-odp-table.ag-table {
   .ag-header-row .ag-header-cell:first-child .ag-header-cell-resize {
     display: none;
   }
@@ -206,5 +206,11 @@
 
   .ag-row .ag-cell:first-child {
     border: none;
+  }
+}
+
+.projects-table.ag-table {
+  .ag-cell.ag-column-first {
+    padding-left: 2px;
   }
 }

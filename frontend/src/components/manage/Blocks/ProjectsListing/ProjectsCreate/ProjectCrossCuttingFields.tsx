@@ -274,7 +274,6 @@ const ProjectCrossCuttingFields = ({
             getOptionLabel={(option: any) =>
               getOptionLabel(lvcNonLvcOpts, option)
             }
-            isOptionEqualToValue={isOptionEqualToValue}
             {...defaultProps}
           />
         </div>

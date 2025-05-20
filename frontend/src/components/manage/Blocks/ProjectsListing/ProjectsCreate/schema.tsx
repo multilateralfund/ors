@@ -2,15 +2,19 @@ import { Dispatch, SetStateAction } from 'react'
 
 import { tagsCellRenderer } from '@ors/components/manage/Blocks/Table/BusinessPlansTable/schemaHelpers'
 import { tableColumns } from '@ors/components/manage/Blocks/BusinessPlans/constants'
+import { LinkableActivity } from './LinkedBPTable'
 import { formatDecimalValue } from '@ors/helpers'
 
 import { Checkbox } from '@mui/material'
-import { ICellRendererParams, ITooltipParams, ValueGetterParams } from 'ag-grid-community'
-import {LinkableActivity} from './LinkedBPTable'
+import {
+  ICellRendererParams,
+  ITooltipParams,
+  ValueGetterParams,
+} from 'ag-grid-community'
 
 const bpLinkColumnDefs = (
   yearColumns: any[],
-  setBpId: Dispatch<SetStateAction<number>>,
+  setBpId: Dispatch<SetStateAction<number | null>>,
 ) => [
   {
     headerName: 'Select',
@@ -22,8 +26,8 @@ const bpLinkColumnDefs = (
     cellRenderer: (params: ICellRendererParams<LinkableActivity>) => (
       <Checkbox
         checked={params.data?.selected}
-        onChange={() => {
-          setBpId(params.data!.id)
+        onChange={(event) => {
+          setBpId(event.target.checked ? params.data!.id : null)
         }}
         sx={{
           color: 'black',
@@ -139,7 +143,8 @@ const bpLinkColumnDefs = (
     tooltipField: 'is_multi_year_display',
     minWidth: 100,
     cellClass: 'ag-text-center',
-    valueGetter: ({ data }: ValueGetterParams<LinkableActivity>) => (data?.is_multi_year ? 'M' : 'I'),
+    valueGetter: ({ data }: ValueGetterParams<LinkableActivity>) =>
+      data?.is_multi_year ? 'M' : 'I',
   },
   {
     headerName: tableColumns.remarks,

@@ -5,25 +5,38 @@ import { tableColumns } from '../constants'
 import { formatNumberColumns } from '../utils'
 
 import { Checkbox } from '@mui/material'
-import { ITooltipParams } from 'ag-grid-community'
-import { FiEye } from 'react-icons/fi'
+import { FiEdit, FiEye } from 'react-icons/fi'
+import {
+  ICellRendererParams,
+  ITooltipParams,
+  ValueGetterParams,
+} from 'ag-grid-community'
 
 const getColumnDefs = () =>
   useMemo(
     () => ({
       columnDefs: [
         {
-          cellRenderer: (props: any) => (
-            <Link
-              className="flex justify-center"
-              href={`/projects-listing/${props.data.id}`}
-            >
-              <FiEye size={16} />
-            </Link>
+          cellRenderer: (props: ICellRendererParams) => (
+            <div className="flex items-center justify-center gap-1.5">
+              <Link
+                className="flex justify-center"
+                href={`/projects-listing/${props.data.id}`}
+              >
+                <FiEye size={16} />
+              </Link>
+              <span>/</span>
+              <Link
+                className="flex justify-center"
+                href={`/projects-listing/${props.data.id}/edit`}
+              >
+                <FiEdit size={16} />
+              </Link>
+            </div>
           ),
           field: '',
-          minWidth: 50,
-          maxWidth: 50,
+          minWidth: 70,
+          maxWidth: 70,
         },
         {
           headerName: 'Select',
@@ -94,7 +107,7 @@ const getColumnDefs = () =>
           tooltipField: 'title',
           cellClass: 'ag-cell-ellipsed',
           minWidth: 300,
-          cellRenderer: (props: any) => (
+          cellRenderer: (props: ICellRendererParams) => (
             <Link href={`/projects-listing/${props.data.id}`}>
               {props.value}
             </Link>
@@ -114,7 +127,7 @@ const getColumnDefs = () =>
           headerName: tableColumns.total_fund,
           field: 'total_fund',
           minWidth: 120,
-          valueGetter: (params: any) =>
+          valueGetter: (params: ValueGetterParams) =>
             '$' + formatNumberColumns(params, 'total_fund'),
           tooltipValueGetter: (params: ITooltipParams) =>
             formatNumberColumns(params, 'total_fund', {

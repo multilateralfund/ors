@@ -1,3 +1,4 @@
+import { isOptionEqualToValue } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { CrossCuttingFields, ProjIdentifiers } from './interfaces'
 
 export const PROJECTS_PER_PAGE = 100
@@ -28,6 +29,7 @@ export const tableColumns: { [key: string]: string } = {
 
 export const defaultProps = {
   FieldProps: { className: 'mb-0 w-[12rem] BPListUpload' },
+  isOptionEqualToValue: isOptionEqualToValue,
 }
 
 export const defaultPropsSimpleField = {
@@ -68,7 +70,6 @@ export const initialCrossCuttingFields = (): CrossCuttingFields => {
     project_end_date: '',
     total_fund: '',
     support_cost_psc: '',
-    psc: '',
     individual_consideration: true,
   }
 }
