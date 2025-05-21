@@ -7,6 +7,7 @@ import ProjectsCreate from './ProjectsCreate.tsx'
 import { fetchSpecificFields } from '../hooks/getSpecificFields.ts'
 import {
   ProjectData,
+  ProjectFilesObject,
   ProjectSpecificFields,
   ProjectTypeApi,
 } from '../interfaces.ts'
@@ -15,13 +16,14 @@ import {
   initialProjectIdentifiers,
 } from '../constants.ts'
 import {
-  canGoToSecondStep,
   formatSubmitData,
   getDefaultValues,
+  getIsSubmitDisabled,
 } from '../utils.ts'
-import { api } from '@ors/helpers'
+import { api, uploadFiles } from '@ors/helpers'
 
 import { Alert, Button, CircularProgress } from '@mui/material'
+import { enqueueSnackbar } from 'notistack'
 import { groupBy, isNil } from 'lodash'
 import cx from 'classnames'
 
@@ -53,16 +55,22 @@ const ProjectsCreateWrapper = () => {
   const { cluster } = projIdentifiers
   const { project_type, sector } = crossCuttingFields
 
+  const [files, setFiles] = useState<ProjectFilesObject>({
+    deletedFilesIds: [],
+    newFiles: [],
+  })
+  const { newFiles = [] } = files
+
   useEffect(() => {
     if (cluster && project_type && sector) {
       fetchSpecificFields(cluster, project_type, sector, setSpecificFields)
     } else setSpecificFields([])
   }, [cluster, project_type, sector])
 
-  const canLinkToBp = canGoToSecondStep(projIdentifiers)
-
-  const isSubmitDisabled =
-    !canLinkToBp || !(project_type && sector && crossCuttingFields.title)
+  const isSubmitDisabled = getIsSubmitDisabled(
+    projIdentifiers,
+    crossCuttingFields,
+  )
 
   const submitProject = async () => {
     setIsLoading(true)
@@ -75,9 +83,31 @@ const ProjectsCreateWrapper = () => {
         method: 'POST',
       })
 
+      if (newFiles.length > 0) {
+        await uploadFiles(
+          `/api/project/${result.id}/files/v2/`,
+          newFiles,
+          false,
+          'list',
+        )
+      }
+
       setIsSubmitSuccessful(true)
       setProjectId(result.id)
     } catch (error) {
+      if (error.status === 400) {
+        const errors = await error.json()
+        if (errors?.files) {
+          enqueueSnackbar(errors.files, {
+            variant: 'error',
+          })
+        } else {
+          enqueueSnackbar(<>An error occurred. Please try again.</>, {
+            variant: 'error',
+          })
+        }
+      }
+
       setIsSubmitSuccessful(false)
       setProjectId(null)
     } finally {
@@ -114,6 +144,8 @@ const ProjectsCreateWrapper = () => {
           setProjectData,
           actionButtons,
           specificFields,
+          files,
+          setFiles,
         }}
       />
 

@@ -11,7 +11,11 @@ import {
 } from '../ProjectVersions/ProjectVersionsComponents'
 import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
-import { canGoToSecondStep, formatSubmitData, getDefaultValues } from '../utils'
+import {
+  formatSubmitData,
+  getDefaultValues,
+  getIsSubmitDisabled,
+} from '../utils'
 import {
   OdsOdpFields,
   ProjectData,
@@ -65,10 +69,10 @@ const ProjectsEdit = ({ project }: { project: ProjectTypeApi }) => {
   const projectFields = groupedFields['project'] || []
   const odsOdpFields = groupedFields['ods_odp'] || []
 
-  const canLinkToBp = canGoToSecondStep(projIdentifiers)
-
-  const isSubmitDisabled =
-    !canLinkToBp || !(project_type && sector && crossCuttingFields.title)
+  const isSubmitDisabled = getIsSubmitDisabled(
+    projIdentifiers,
+    crossCuttingFields,
+  )
 
   const Versions = (
     <>
@@ -248,6 +252,7 @@ const ProjectsEdit = ({ project }: { project: ProjectTypeApi }) => {
     <ProjectsCreate
       heading={`Edit ${code}`}
       versions={Versions}
+      initialCurrentStep={1}
       {...{
         projectData,
         setProjectData,

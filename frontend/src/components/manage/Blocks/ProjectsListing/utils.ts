@@ -4,6 +4,7 @@ import {
   ProjIdentifiers,
   ProjectSpecificFields,
   ProjectData,
+  CrossCuttingFields,
 } from './interfaces'
 import { formatDecimalValue } from '@ors/helpers'
 
@@ -44,6 +45,16 @@ export const canGoToSecondStep = (projIdentifiers: ProjIdentifiers) =>
     ((projIdentifiers.is_lead_agency && projIdentifiers.current_agency) ||
       (!projIdentifiers.is_lead_agency && projIdentifiers.side_agency))
   )
+
+export const getIsSubmitDisabled = (
+  projIdentifiers: ProjIdentifiers,
+  crossCuttingFields: CrossCuttingFields,
+) => {
+  const canLinkToBp = canGoToSecondStep(projIdentifiers)
+  const { project_type, sector, title } = crossCuttingFields
+
+  return !canLinkToBp || !(project_type && sector && title)
+}
 
 export const formatOptions = (field: ProjectSpecificFields) =>
   map(field.options, (option) =>

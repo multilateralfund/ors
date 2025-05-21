@@ -30,6 +30,7 @@ const ProjectsCreate = ({
   specificFields,
   project,
   versions,
+  initialCurrentStep,
   ...rest
 }: ProjectDataProps &
   ProjectFiles & {
@@ -39,8 +40,11 @@ const ProjectsCreate = ({
     project?: ProjectTypeApi
     projectFiles?: ProjectFile[]
     versions?: ReactNode
+    initialCurrentStep?: number
   }) => {
-  const [currentStep, setCurrentStep] = useState<number>(0)
+  const [currentStep, setCurrentStep] = useState<number>(
+    initialCurrentStep ?? 0,
+  )
   const [currentTab, setCurrentTab] = useState<number>(0)
 
   const projIdentifiers = projectData.projIdentifiers
