@@ -252,7 +252,7 @@ const ProjectsEdit = ({ project }: { project: ProjectTypeApi }) => {
     <ProjectsCreate
       heading={`Edit ${code}`}
       versions={Versions}
-      initialCurrentStep={1}
+      mode="edit"
       {...{
         projectData,
         setProjectData,

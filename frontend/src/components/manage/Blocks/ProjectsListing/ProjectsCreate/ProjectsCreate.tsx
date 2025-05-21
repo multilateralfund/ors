@@ -28,22 +28,22 @@ const ProjectsCreate = ({
   heading,
   actionButtons,
   specificFields,
+  mode,
   project,
   versions,
-  initialCurrentStep,
   ...rest
 }: ProjectDataProps &
   ProjectFiles & {
     heading: string
     actionButtons: ReactNode
     specificFields: ProjectSpecificFields[]
+    mode: string
     project?: ProjectTypeApi
     projectFiles?: ProjectFile[]
     versions?: ReactNode
-    initialCurrentStep?: number
   }) => {
   const [currentStep, setCurrentStep] = useState<number>(
-    initialCurrentStep ?? 0,
+    mode === 'edit' ? 1 : 0,
   )
   const [currentTab, setCurrentTab] = useState<number>(0)
 
@@ -157,7 +157,7 @@ const ProjectsCreate = ({
       ariaControls: 'project-documentation-section',
       label: 'Documentation',
       disabled: areNextSectionsDisabled,
-      component: <ProjectDocumentation {...rest} mode="edit" />,
+      component: <ProjectDocumentation {...rest} mode={mode} />,
     },
   ]
 

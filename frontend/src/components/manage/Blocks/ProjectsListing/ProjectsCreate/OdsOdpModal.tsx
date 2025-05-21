@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { widgets } from './SpecificFieldsHelpers'
-import { OdsOdpFields, OdsOdpModalProps } from '../interfaces'
+import { OdsOdpFields, OdsOdpModalProps, SpecificFields } from '../interfaces'
 import { getDefaultValues } from '../utils'
 
 import { Button, Typography, Box, Modal } from '@mui/material'
@@ -15,7 +15,7 @@ const OdsOdpModal = ({
 }: OdsOdpModalProps) => {
   const sectionIdentifier = 'projectSpecificFields'
 
-  type OdsOdpDataType = { [field]: OdsOdpFields }
+  type OdsOdpDataType = Partial<Record<keyof SpecificFields, OdsOdpFields>>
 
   const initialOdsOdp = getDefaultValues<OdsOdpFields>(odsOdpFields)
   const [odsOdpData, setOdsOdpData] = useState<OdsOdpDataType>({

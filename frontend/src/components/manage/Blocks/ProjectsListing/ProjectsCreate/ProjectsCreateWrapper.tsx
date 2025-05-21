@@ -139,6 +139,7 @@ const ProjectsCreateWrapper = () => {
     <>
       <ProjectsCreate
         heading="New project submission"
+        mode="add"
         {...{
           projectData,
           setProjectData,

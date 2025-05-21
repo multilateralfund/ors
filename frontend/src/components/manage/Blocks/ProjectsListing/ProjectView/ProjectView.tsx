@@ -80,7 +80,9 @@ const ProjectView = ({
           <ProjectSubstanceDetails {...{ project, specificFields }} />
         )}
         {activeTab === 5 && <ProjectImpact {...{ project, specificFields }} />}
-        {activeTab === 6 && <ProjectDocumentation {...{ projectFiles }} />}
+        {activeTab === 6 && (
+          <ProjectDocumentation {...{ projectFiles }} mode="view" />
+        )}
       </div>
     </>
   )
