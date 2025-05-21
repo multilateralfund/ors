@@ -16,60 +16,39 @@ import {
   ProjectSpecificFields,
   ProjectTypeApi,
   ProjectFiles,
+  ProjectDataProps,
 } from '../interfaces.ts'
-import { getSectionFields } from '../utils.ts'
+import { canGoToSecondStep, getSectionFields } from '../utils.ts'
 
 import { Tabs, Tab } from '@mui/material'
 
 const ProjectsCreate = ({
+  projectData,
+  setProjectData,
   heading,
   actionButtons,
-  project,
   specificFields,
-  projIdentifiers,
-  setProjIdentifiers,
-  crossCuttingFields,
-  setCrossCuttingFields,
-  isLinkedToBP,
-  setIsLinkedToBP,
-  bpId,
-  setBpId,
-  projectSpecificFields,
-  setProjectSpecificFields,
+  project,
+  versions,
   ...rest
-}: ProjectFiles & {
-  heading: string
-  actionButtons: ReactNode
-  project?: ProjectTypeApi
-  projectFiles?: ProjectFile[]
-  specificFields: ProjectSpecificFields[]
-  projectSpecificFields: any
-  setProjectSpecificFields: any
-  projIdentifiers: any
-  crossCuttingFields: any
-  setProjIdentifiers: any
-  setCrossCuttingFields: any
-  isLinkedToBP: any
-  setIsLinkedToBP: any
-  bpId: any
-  setBpId: any
-}) => {
+}: ProjectDataProps &
+  ProjectFiles & {
+    heading: string
+    actionButtons: ReactNode
+    specificFields: ProjectSpecificFields[]
+    project?: ProjectTypeApi
+    projectFiles?: ProjectFile[]
+    versions?: ReactNode
+  }) => {
   const [currentStep, setCurrentStep] = useState<number>(0)
   const [currentTab, setCurrentTab] = useState<number>(0)
 
-  const { cluster } = projIdentifiers
-  const { project_type, sector } = crossCuttingFields
+  const projIdentifiers = projectData.projIdentifiers
+  const { project_type, sector } = projectData.crossCuttingFields
 
-  const canLinkToBp = !!(
-    projIdentifiers.country &&
-    projIdentifiers.meeting &&
-    cluster &&
-    ((projIdentifiers.is_lead_agency && projIdentifiers.current_agency) ||
-      (!projIdentifiers.is_lead_agency && projIdentifiers.side_agency))
-  )
+  const canLinkToBp = canGoToSecondStep(projIdentifiers)
 
   const areNextSectionsDisabled = !canLinkToBp || currentStep < 1
-
   const areProjectSpecificTabsDisabled =
     areNextSectionsDisabled || !project_type || !sector
 
@@ -88,9 +67,8 @@ const ProjectsCreate = ({
       component: (
         <ProjectIdentifiersSection
           {...{
-            projIdentifiers,
-            setProjIdentifiers,
-            setCrossCuttingFields,
+            projectData,
+            setProjectData,
             areNextSectionsDisabled,
             setCurrentStep,
             setCurrentTab,
@@ -108,11 +86,8 @@ const ProjectsCreate = ({
       component: (
         <ProjectBPLinking
           {...{
-            projIdentifiers,
-            isLinkedToBP,
-            setIsLinkedToBP,
-            bpId,
-            setBpId,
+            projectData,
+            setProjectData,
           }}
         />
       ),
@@ -126,9 +101,8 @@ const ProjectsCreate = ({
       component: (
         <ProjectCrossCuttingFields
           {...{
-            projIdentifiers,
-            crossCuttingFields,
-            setCrossCuttingFields,
+            projectData,
+            setProjectData,
           }}
         />
       ),
@@ -141,9 +115,8 @@ const ProjectsCreate = ({
       disabled: areProjectSpecificTabsDisabled || overviewFields.length < 1,
       component: (
         <ProjectOverview
-          fields={projectSpecificFields}
-          setFields={setProjectSpecificFields}
           sectionFields={overviewFields}
+          {...{ projectData, setProjectData }}
         />
       ),
     },
@@ -156,9 +129,8 @@ const ProjectsCreate = ({
         areProjectSpecificTabsDisabled || substanceDetailsFields.length < 1,
       component: (
         <ProjectSubstanceDetails
-          fields={projectSpecificFields}
-          setFields={setProjectSpecificFields}
           sectionFields={substanceDetailsFields}
+          {...{ projectData, setProjectData }}
         />
       ),
     },
@@ -170,9 +142,8 @@ const ProjectsCreate = ({
       disabled: areProjectSpecificTabsDisabled || impactFields.length < 1,
       component: (
         <ProjectImpact
-          fields={projectSpecificFields}
-          setFields={setProjectSpecificFields}
           sectionFields={impactFields}
+          {...{ projectData, setProjectData }}
         />
       ),
     },
@@ -190,7 +161,11 @@ const ProjectsCreate = ({
     <>
       <HeaderTitle>
         <div className="align-center flex justify-between">
-          <PageHeading className="min-w-fit">{heading}</PageHeading>
+          <div className="flex gap-2">
+            <PageHeading className="min-w-fit">{heading}</PageHeading>
+            {versions}
+          </div>
+
           {actionButtons}
         </div>
       </HeaderTitle>

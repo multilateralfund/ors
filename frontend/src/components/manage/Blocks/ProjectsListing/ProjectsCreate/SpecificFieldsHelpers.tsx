@@ -1,14 +1,14 @@
 import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
-import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import Field from '@ors/components/manage/Form/Field'
+import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
-import { isOptionEqualToValue } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import {
   ProjectSpecificFields,
   FieldType,
   FieldHandler,
   OptionsType,
+  SpecificFields,
 } from '../interfaces'
 import {
   defaultProps,
@@ -26,41 +26,53 @@ import { Checkbox, TextareaAutosize } from '@mui/material'
 import { find, get, isObject, isBoolean } from 'lodash'
 
 export const changeHandler: Record<FieldType, FieldHandler> = {
-  text: (value, field, setState) => {
-    setState((prevFields) => ({
-      ...prevFields,
-      [field]: value.target.value,
+  text: (value, field, setState, section) => {
+    setState((prevData) => ({
+      ...prevData,
+      [section]: {
+        ...prevData[section],
+        [field]: value.target.value,
+      },
     }))
   },
-  number: (value, field, setState) => {
-    handleChangeNumberField(value, field, setState)
+  number: (value, field, setState, section) => {
+    handleChangeNumberField(value, field, setState, section)
   },
-  decimal: (value, field, setState) => {
-    handleChangeDecimalField(value, field, setState)
+  decimal: (value, field, setState, section) => {
+    handleChangeDecimalField(value, field, setState, section)
   },
-  drop_down: (value, field, setState) => {
-    setState((prevFields) => ({
-      ...prevFields,
-      [field]: value?.id ?? null,
+  drop_down: (value, field, setState, section) => {
+    setState((prevData) => ({
+      ...prevData,
+      [section]: {
+        ...prevData[section],
+        [field]: value?.id ?? null,
+      },
     }))
   },
-  boolean: (value, field, setState) => {
-    setState((prevFields) => ({
-      ...prevFields,
-      [field]: value,
+  boolean: (value, field, setState, section) => {
+    setState((prevData) => ({
+      ...prevData,
+      [section]: {
+        ...prevData[section],
+        [field]: value,
+      },
     }))
   },
 }
+
+const identifier = 'projectSpecificFields'
 
 export const AutocompleteWidget = <T,>(
   fields: T,
   setFields: Dispatch<SetStateAction<T>>,
   field: ProjectSpecificFields,
+  sectionIdentifier: keyof T = identifier as keyof T,
 ) => {
   const options = formatOptions(field)
   const fieldName = field.write_field_name
 
-  const value = fields[fieldName]
+  const value = fields[sectionIdentifier][fieldName]
   const formattedValue = isBoolean(value)
     ? find(options, { id: value }) || null
     : value
@@ -73,7 +85,12 @@ export const AutocompleteWidget = <T,>(
         options={options}
         value={formattedValue}
         onChange={(_: React.SyntheticEvent, value) =>
-          changeHandler[field.data_type]<T>(value, fieldName, setFields)
+          changeHandler[field.data_type]<T, SpecificFields>(
+            value,
+            fieldName,
+            setFields,
+            sectionIdentifier,
+          )
         }
         getOptionLabel={(option) => {
           const field = fieldName === 'group' ? 'name_alt' : 'name'
@@ -93,16 +110,18 @@ export const TextWidget = <T,>(
   fields: T,
   setFields: Dispatch<SetStateAction<T>>,
   field: ProjectSpecificFields,
+  sectionIdentifier: keyof T = identifier as keyof T,
 ) => (
   <div>
     <Label>{field.label}</Label>
     <TextareaAutosize
-      value={fields[field.write_field_name] as string}
+      value={fields[sectionIdentifier][field.write_field_name] as string}
       onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
-        changeHandler[field.data_type]<T>(
+        changeHandler[field.data_type]<T, SpecificFields>(
           event,
           field.write_field_name,
           setFields,
+          sectionIdentifier,
         )
       }
       className={textAreaClassname}
@@ -116,17 +135,19 @@ const NumberWidget = <T,>(
   fields: T,
   setFields: Dispatch<SetStateAction<T>>,
   field: ProjectSpecificFields,
+  sectionIdentifier: keyof T = identifier as keyof T,
 ) => (
   <div>
     <Label>{field.label}</Label>
     <SimpleInput
-      id={fields[field.write_field_name] as string}
-      value={fields[field.write_field_name]}
+      id={fields[sectionIdentifier][field.write_field_name] as string}
+      value={fields[sectionIdentifier][field.write_field_name]}
       onChange={(value) =>
-        changeHandler[field.data_type]<T>(
+        changeHandler[field.data_type]<T, SpecificFields>(
           value,
           field.write_field_name,
           setFields,
+          sectionIdentifier,
         )
       }
       type="number"
@@ -139,17 +160,19 @@ const BooleanWidget = <T,>(
   fields: T,
   setFields: Dispatch<SetStateAction<T>>,
   field: ProjectSpecificFields,
+  sectionIdentifier: keyof T = identifier as keyof T,
 ) => (
   <div className="col-span-full flex w-full">
     <Label>{field.label}</Label>
     <Checkbox
       className="pb-1 pl-2 pt-0"
-      checked={fields[field.write_field_name] as boolean}
+      checked={fields[sectionIdentifier][field.write_field_name] as boolean}
       onChange={(_: React.SyntheticEvent, value) =>
-        changeHandler[field.data_type]<T>(
+        changeHandler[field.data_type]<T, SpecificFields>(
           value,
           field.write_field_name,
           setFields,
+          sectionIdentifier,
         )
       }
       sx={{

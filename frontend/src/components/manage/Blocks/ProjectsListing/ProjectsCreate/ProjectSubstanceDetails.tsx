@@ -6,7 +6,7 @@ import { widgets } from './SpecificFieldsHelpers'
 import {
   OdsOdpFields,
   SpecificFieldsSectionProps,
-  SpecificFields,
+  ProjectData,
 } from '../interfaces'
 import { tableColumns } from '../constants'
 
@@ -16,47 +16,59 @@ import { IoAddCircle } from 'react-icons/io5'
 import { findIndex, groupBy, map } from 'lodash'
 
 const ProjectSubstanceDetails = ({
-  fields,
-  setFields,
+  projectData,
+  setProjectData,
   sectionFields,
 }: SpecificFieldsSectionProps) => {
   const [displayModal, setDisplayModal] = useState(false)
 
+  const sectionIdentifier = 'projectSpecificFields'
   const field = 'ods_odp'
+  const odsOdpData = projectData[sectionIdentifier][field]
 
   const groupedFields = groupBy(sectionFields, 'table')
   const projectFields = groupedFields['project'] || []
   const odsOdpFields = groupedFields[field] || []
 
   const onRemoveOdsOdp = (props: ICellRendererParams) => {
-    const odsOdpData = [...fields.ods_odp]
+    const odsOdpDataCopy = [...odsOdpData]
 
     const index = findIndex(
-      odsOdpData,
+      odsOdpDataCopy,
       (row: OdsOdpFields & { id?: number }) => row.id === props.data.id,
     )
 
     if (index > -1) {
-      odsOdpData.splice(index, 1)
+      odsOdpDataCopy.splice(index, 1)
 
-      const formattedData = map(odsOdpData, (dataItem, index) => ({
+      const formattedData = map(odsOdpDataCopy, (dataItem, index) => ({
         ...dataItem,
-        id: odsOdpData.length - index - 1,
+        id: odsOdpDataCopy.length - index - 1,
       }))
 
-      setFields((prevFields) => ({ ...prevFields, ods_odp: formattedData }))
+      setProjectData((prevData) => ({
+        ...prevData,
+        [sectionIdentifier]: {
+          ...prevData[sectionIdentifier],
+          [field]: formattedData,
+        },
+      }))
     }
   }
 
   return (
     <div className="flex flex-col gap-y-2">
       {projectFields.map((field) =>
-        widgets[field.data_type]<SpecificFields>(fields, setFields, field),
+        widgets[field.data_type]<ProjectData>(
+          projectData,
+          setProjectData,
+          field,
+        ),
       )}
       {odsOdpFields.length > 0 && (
         <div>
           <ProjectOdsOdpTable
-            data={fields?.ods_odp || []}
+            data={odsOdpData || []}
             fields={odsOdpFields}
             mode="edit"
             onRemoveOdsOdp={onRemoveOdsOdp}
@@ -76,7 +88,7 @@ const ProjectSubstanceDetails = ({
           {...{
             displayModal,
             setDisplayModal,
-            setFields,
+            setProjectData,
             odsOdpFields,
             field,
           }}

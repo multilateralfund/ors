@@ -1,5 +1,4 @@
 import { isOptionEqualToValue } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
-import { CrossCuttingFields, ProjIdentifiers } from './interfaces'
 
 export const PROJECTS_PER_PAGE = 100
 
@@ -47,31 +46,27 @@ export const additionalProperties: Record<string, Record<string, unknown>> = {
   },
 }
 
-export const initialProjectIdentifiers = (): ProjIdentifiers => {
-  return {
-    is_lead_agency: true,
-    country: null,
-    meeting: null,
-    current_agency: null,
-    side_agency: null,
-    cluster: null,
-  }
+export const initialProjectIdentifiers = {
+  is_lead_agency: true,
+  country: null,
+  meeting: null,
+  current_agency: null,
+  side_agency: null,
+  cluster: null,
 }
 
-export const initialCrossCuttingFields = (): CrossCuttingFields => {
-  return {
-    project_type: null,
-    sector: null,
-    subsector_ids: [],
-    is_lvc: null,
-    title: '',
-    description: '',
-    project_start_date: '',
-    project_end_date: '',
-    total_fund: '',
-    support_cost_psc: '',
-    individual_consideration: true,
-  }
+export const initialCrossCuttingFields = {
+  project_type: null,
+  sector: null,
+  subsector_ids: [],
+  is_lvc: null,
+  title: '',
+  description: '',
+  project_start_date: '',
+  project_end_date: '',
+  total_fund: '',
+  support_cost_psc: '',
+  individual_consideration: true,
 }
 
 export const blanketOrIndConsiderationOpts = [

@@ -3,6 +3,7 @@ import { Dispatch, SetStateAction } from 'react'
 import { tagsCellRenderer } from '@ors/components/manage/Blocks/Table/BusinessPlansTable/schemaHelpers'
 import { tableColumns } from '@ors/components/manage/Blocks/BusinessPlans/constants'
 import { LinkableActivity } from './LinkedBPTable'
+import { ProjectData } from '../interfaces'
 import { formatDecimalValue } from '@ors/helpers'
 
 import { Checkbox } from '@mui/material'
@@ -14,7 +15,7 @@ import {
 
 const bpLinkColumnDefs = (
   yearColumns: any[],
-  setBpId: Dispatch<SetStateAction<number | null>>,
+  setProjectData: Dispatch<SetStateAction<ProjectData>>,
 ) => [
   {
     headerName: 'Select',
@@ -27,7 +28,13 @@ const bpLinkColumnDefs = (
       <Checkbox
         checked={params.data?.selected}
         onChange={(event) => {
-          setBpId(event.target.checked ? params.data!.id : null)
+          setProjectData((prevData) => ({
+            ...prevData,
+            bpLinking: {
+              ...prevData.bpLinking,
+              bpId: event.target.checked ? params.data!.id : null,
+            },
+          }))
         }}
         sx={{
           color: 'black',

@@ -6,21 +6,23 @@ import Link from '@ors/components/ui/Link/Link'
 import ProjectsCreate from './ProjectsCreate.tsx'
 import { fetchSpecificFields } from '../hooks/getSpecificFields.ts'
 import {
-  CrossCuttingFields,
-  ProjIdentifiers,
+  ProjectData,
   ProjectSpecificFields,
   ProjectTypeApi,
-  SpecificFields,
 } from '../interfaces.ts'
 import {
   initialCrossCuttingFields,
   initialProjectIdentifiers,
 } from '../constants.ts'
-import { getDefaultValues } from '../utils.ts'
+import {
+  canGoToSecondStep,
+  formatSubmitData,
+  getDefaultValues,
+} from '../utils.ts'
 import { api } from '@ors/helpers'
 
 import { Alert, Button, CircularProgress } from '@mui/material'
-import { groupBy, isNil, map, omit, pickBy } from 'lodash'
+import { groupBy, isNil } from 'lodash'
 import cx from 'classnames'
 
 const ProjectsCreateWrapper = () => {
@@ -36,20 +38,18 @@ const ProjectsCreateWrapper = () => {
     ods_odp: [],
   }
 
-  const [projIdentifiers, setProjIdentifiers] = useState<ProjIdentifiers>(
-    initialProjectIdentifiers,
-  )
-  const [isLinkedToBP, setIsLinkedToBP] = useState<boolean>(false)
-  const [bpId, setBpId] = useState<number | null>(null)
-  const [crossCuttingFields, setCrossCuttingFields] =
-    useState<CrossCuttingFields>(initialCrossCuttingFields)
-  const [projectSpecificFields, setProjectSpecificFields] =
-    useState<SpecificFields>(initialProjectSpecificFields)
+  const [projectData, setProjectData] = useState<ProjectData>({
+    projIdentifiers: initialProjectIdentifiers,
+    bpLinking: { isLinkedToBP: false, bpId: null },
+    crossCuttingFields: initialCrossCuttingFields,
+    projectSpecificFields: initialProjectSpecificFields,
+  })
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isSubmitSuccessful, setIsSubmitSuccessful] = useState<boolean>()
   const [projectId, setProjectId] = useState<number | null>(null)
 
+  const { projIdentifiers, crossCuttingFields } = projectData
   const { cluster } = projIdentifiers
   const { project_type, sector } = crossCuttingFields
 
@@ -59,13 +59,7 @@ const ProjectsCreateWrapper = () => {
     } else setSpecificFields([])
   }, [cluster, project_type, sector])
 
-  const canLinkToBp = !!(
-    projIdentifiers.country &&
-    projIdentifiers.meeting &&
-    cluster &&
-    ((projIdentifiers.is_lead_agency && projIdentifiers.current_agency) ||
-      (!projIdentifiers.is_lead_agency && projIdentifiers.side_agency))
-  )
+  const canLinkToBp = canGoToSecondStep(projIdentifiers)
 
   const isSubmitDisabled =
     !canLinkToBp || !(project_type && sector && crossCuttingFields.title)
@@ -74,33 +68,10 @@ const ProjectsCreateWrapper = () => {
     setIsLoading(true)
 
     try {
+      const data = formatSubmitData(projectData)
+
       const result = await api(`api/projects/v2/`, {
-        data: {
-          bp_activity: bpId,
-          agency: projIdentifiers.current_agency,
-          lead_agency: projIdentifiers?.is_lead_agency
-            ? projIdentifiers.current_agency
-            : projIdentifiers.side_agency,
-          ...omit(projIdentifiers, [
-            'current_agency',
-            'side_agency',
-            'is_lead_agency',
-          ]),
-          ...pickBy(
-            crossCuttingFields,
-            (value) => !isNil(value) && value !== '',
-          ),
-          ...pickBy(
-            projectSpecificFields,
-            (value) => !isNil(value) && value !== '',
-          ),
-          ods_odp: map(projectSpecificFields.ods_odp, (ods_odp) =>
-            omit(
-              pickBy(ods_odp, (value) => !isNil(value) && value !== ''),
-              'id',
-            ),
-          ),
-        },
+        data: data,
         method: 'POST',
       })
 
@@ -138,19 +109,11 @@ const ProjectsCreateWrapper = () => {
     <>
       <ProjectsCreate
         heading="New project submission"
-        actionButtons={actionButtons}
-        specificFields={specificFields}
         {...{
-          projectSpecificFields,
-          setProjectSpecificFields,
-          projIdentifiers,
-          crossCuttingFields,
-          setProjIdentifiers,
-          setCrossCuttingFields,
-          isLinkedToBP,
-          setIsLinkedToBP,
-          bpId,
-          setBpId,
+          projectData,
+          setProjectData,
+          actionButtons,
+          specificFields,
         }}
       />
 

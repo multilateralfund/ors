@@ -1,29 +1,30 @@
-import { ChangeEvent, Dispatch, SetStateAction } from 'react'
+import { ChangeEvent } from 'react'
 
-import LinkedBPTableWrapper, {
-  LinkedBPTableWrapperProps,
-} from './LinkedBPTable'
+import LinkedBPTableWrapper from './LinkedBPTable'
+import { ProjectDataProps } from '../interfaces'
 
 import { Checkbox, FormControlLabel } from '@mui/material'
 
-type ProjectBPLinkingProps = LinkedBPTableWrapperProps & {
-  isLinkedToBP: boolean
-  setIsLinkedToBP: Dispatch<SetStateAction<boolean>>
-  setBpId: Dispatch<SetStateAction<number | null>>
-}
-
 const ProjectBPLinking = ({
-  isLinkedToBP,
-  setIsLinkedToBP,
-  setBpId,
-  ...rest
-}: ProjectBPLinkingProps) => {
-  const handleChangeBPLink = (event: ChangeEvent<HTMLInputElement>) => {
-    setIsLinkedToBP(event.target.checked)
+  projectData,
+  setProjectData,
+}: ProjectDataProps) => {
+  const { isLinkedToBP } = projectData.bpLinking
 
-    if (!event.target.checked) {
-      setBpId(null)
-    }
+  const handleChangeBPLink = (event: ChangeEvent<HTMLInputElement>) => {
+    setProjectData((prevData) => {
+      const { bpLinking } = prevData
+      const isChecked = event.target.checked
+
+      return {
+        ...prevData,
+        bpLinking: {
+          ...bpLinking,
+          isLinkedToBP: isChecked,
+          bpId: isChecked ? bpLinking.bpId : null,
+        },
+      }
+    })
   }
 
   return (
@@ -44,7 +45,9 @@ const ProjectBPLinking = ({
           typography: { fontSize: '1.05rem' },
         }}
       />
-      {isLinkedToBP && <LinkedBPTableWrapper setBpId={setBpId} {...rest} />}
+      {isLinkedToBP && (
+        <LinkedBPTableWrapper {...{ projectData, setProjectData }} />
+      )}
     </>
   )
 }
