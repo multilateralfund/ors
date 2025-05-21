@@ -270,7 +270,7 @@ export function CreateBlend({ closeModal, onCreateBlend, substances }: any) {
                   <span className="flex w-full items-center justify-between">
                     <div>Substance</div>
                     <Button
-                      className="rounded-lg border-[1.1px] border-solid border-primary px-2 py-1 text-xs"
+                      className="rounded-lg border-[1.1px] border-solid border-mlfs-hlYellowTint px-2 py-1 text-xs text-mlfs-hlYellowTint"
                       onClick={() => {
                         const row_id = `${newNodeIndex.current}`
                         const newComponent = {
