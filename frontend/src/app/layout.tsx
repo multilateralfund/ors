@@ -14,11 +14,7 @@ import { useLocation } from 'wouter'
 import View from '@ors/components/theme/Views/View'
 // import View from '../components/theme/Views/View'
 import api from '@ors/helpers/Api/_api'
-import {
-  getInitialSliceData,
-  fetchSliceData,
-  setSlice,
-} from '@ors/helpers/Store/Store'
+import { getInitialSliceData } from '@ors/helpers/Store/Store'
 import { getCurrentView } from '@ors/helpers/View/View'
 import { StoreProvider } from '@ors/store'
 import ThemeProvider from '@ors/themes/ThemeProvider'
@@ -30,7 +26,6 @@ import { ProjectSectorType } from '@ors/types/api_project_sector.ts'
 import { ProjectSubSectorType } from '@ors/types/api_project_subsector.ts'
 import { ProjectSubmissionStatusType } from '@ors/types/api_project_submission_statuses.ts'
 import { ProjectSubstancesGroupsType } from '@ors/types/api_project_substances_groups'
-import { MeetingType } from '@ors/types/api_meetings.ts'
 
 function useUser() {
   const [userData, setUserData] = useState<{
@@ -54,117 +49,98 @@ function useUser() {
 }
 
 function useAppState(user: ApiUser | null | undefined) {
-  const [state, setState] = useState<any>({})
+  const [state, setState] = useState<any>(null)
 
   useEffect(
     function () {
-      const fetchStateData = async () => {
-        setSlice('common.countries', { loaded: false, loading: true })
-        setSlice('common.countries_for_create', {
-          loaded: false,
-          loading: true,
-        })
-        setSlice('common.countries_for_listing', {
-          loaded: false,
-          loading: true,
-        })
+      async function fetchState() {
+        const [
+          // Common data
+          settings,
+          agencies,
+          countries,
+          // Projects data
+          statuses,
+          submission_statuses,
+          sectors,
+          subsectors,
+          types,
+          meetings,
+          decisions,
+          clusters,
+          substances_groups,
+          // Country programme data
+          blends,
+          substances,
+        ] = await Promise.all([
+          api('api/settings/', {}, false),
+          api('api/agencies/', {}, false),
+          api('api/countries/', {}, false),
+          api('api/project-statuses/', {}, false),
+          api('api/project-submission-statuses/', {}, false),
+          api('api/project-sector/', {}, false),
+          api('api/project-subsector/', {}, false),
+          api('api/project-types/', {}, false),
+          api('api/meetings/', {}, false),
+          api('api/decisions/', {}, false),
+          api('api/project-clusters/', {}, false),
+          api('api/groups/', {}, false),
+          api(
+            'api/blends/',
+            { params: { with_alt_names: true, with_usages: true } },
+            false,
+          ),
+          api(
+            'api/substances/',
+            { params: { with_alt_names: true, with_usages: true } },
+            false,
+          ),
+          // api('api/usages/', {}, false),
+        ])
 
-        const countries =
-          (await api<Country[]>('api/countries', {}, false)) ?? []
+        const common = {
+          agencies: getInitialSliceData(agencies),
+          countries: getInitialSliceData<Country[]>(countries),
+          countries_for_create: getInitialSliceData<Country[]>(
+            countries.filter((c: Country) => c.has_cp_report && !c.is_a2),
+          ),
+          countries_for_listing: getInitialSliceData<Country[]>(
+            countries.filter((c: Country) => c.has_cp_report),
+          ),
+          settings: getInitialSliceData(settings),
+        }
+        const projects = {
+          clusters: getInitialSliceData(clusters),
+          meetings: getInitialSliceData(meetings),
+          sectors: getInitialSliceData<ProjectSectorType[]>(sectors),
+          statuses: getInitialSliceData<ProjectStatusType[]>(statuses),
+          submission_statuses:
+            getInitialSliceData<ProjectSubmissionStatusType[]>(
+              submission_statuses,
+            ),
+          subsectors: getInitialSliceData<ProjectSubSectorType[]>(subsectors),
+          types: getInitialSliceData(types),
+          substances_groups:
+            getInitialSliceData<ProjectSubstancesGroupsType[]>(
+              substances_groups,
+            ),
+        }
+        const cp_reports = {
+          blends: getInitialSliceData<ApiBlend[]>(blends),
+          substances: getInitialSliceData<ApiSubstance[]>(substances),
+        }
+        const businessPlans = {
+          sectors: getInitialSliceData(sectors),
+          subsectors: getInitialSliceData(subsectors),
+          types: getInitialSliceData(types),
+          decisions: getInitialSliceData(decisions),
+        }
 
-        setSlice('common.countries', {
-          data: countries,
-          error: null,
-          loaded: true,
-          loading: false,
-        })
-        setSlice('common.countries_for_create', {
-          data: countries.filter((c) => c.has_cp_report && !c.is_a2),
-          error: null,
-          loaded: true,
-          loading: false,
-        })
-        setSlice('common.countries_for_listing', {
-          data: countries.filter((c) => c.has_cp_report),
-          error: null,
-          loaded: true,
-          loading: false,
-        })
-
-        const dataFetchMapping = [
-          { apiSettings: { path: 'api/agencies/' }, slice: 'common.agencies' },
-          { apiSettings: { path: 'api/settings/' }, slice: 'common.settings' },
-
-          {
-            apiSettings: { path: 'api/project-statuses/' },
-            slice: 'projects.statuses',
-          },
-          {
-            apiSettings: { path: 'api/project-submission-statuses/' },
-            slice: 'projects.submission_statuses',
-          },
-          {
-            apiSettings: { path: 'api/project-sector/' },
-            slice: 'projects.sectors',
-          },
-          {
-            apiSettings: { path: 'api/project-subsector/' },
-            slice: 'projects.subsectors',
-          },
-          {
-            apiSettings: { path: 'api/project-types/' },
-            slice: 'projects.types',
-          },
-          {
-            apiSettings: { path: 'api/meetings/' },
-            slice: 'projects.meetings',
-          },
-          {
-            apiSettings: { path: 'api/project-clusters/' },
-            slice: 'projects.clusters',
-          },
-          {
-            apiSettings: { path: 'api/groups/' },
-            slice: 'projects.substances_groups',
-          },
-
-          {
-            apiSettings: { path: 'api/project-sector/' },
-            slice: 'businessPlans.sectors',
-          },
-          {
-            apiSettings: { path: 'api/project-subsector/' },
-            slice: 'businessPlans.subsectors',
-          },
-          {
-            apiSettings: { path: 'api/project-types/' },
-            slice: 'businessPlans.types',
-          },
-          {
-            apiSettings: { path: 'api/decisions/' },
-            slice: 'businessPlans.decisions',
-          },
-
-          {
-            apiSettings: {
-              path: 'api/blends/',
-              params: { with_alt_names: true, with_usages: true },
-            },
-            slice: 'cp_reports.blends',
-          },
-          {
-            apiSettings: {
-              path: 'api/substances/',
-              params: { with_alt_names: true, with_usages: true },
-            },
-            slice: 'cp_reports.substances',
-          },
-        ]
-        dataFetchMapping.forEach((item) => fetchSliceData(item))
+        setState({ common, projects, cp_reports, businessPlans })
       }
 
       if (user) {
-        fetchStateData()
+        fetchState()
       }
     },
     [user],
