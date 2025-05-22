@@ -96,6 +96,10 @@ function useAppState(user: ApiUser | null | undefined) {
           { apiSettings: { path: 'api/settings/' }, slice: 'common.settings' },
 
           {
+            apiSettings: { path: 'api/user/permissions/' },
+            slice: 'projects.user_permissions',
+          },
+          {
             apiSettings: { path: 'api/project-statuses/' },
             slice: 'projects.statuses',
           },

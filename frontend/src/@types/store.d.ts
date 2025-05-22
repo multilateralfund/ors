@@ -152,6 +152,7 @@ export interface BPErrorsSlice {
 }
 
 export interface ProjectsSlice {
+  user_permissions: SliceData<string[]>
   clusters: SliceData
   meetings: SliceData<MeetingType[]>
   sectors: SliceData<ProjectSectorType[]>

@@ -11,6 +11,14 @@ import { formatDecimalValue } from '@ors/helpers'
 import { filter, find, isArray, isNil, map, omit, pickBy, reduce } from 'lodash'
 import { ITooltipParams, ValueGetterParams } from 'ag-grid-community'
 
+const getFieldId = <T>(field: ProjectSpecificFields, data: T) => {
+  const fieldName = field.read_field_name === 'group' ? 'name_alt' : 'name'
+
+  return find(formatOptions(field), {
+    [fieldName]: data[field.read_field_name as keyof T]?.toString(),
+  })?.id
+}
+
 export const getDefaultValues = <T>(
   fields: ProjectSpecificFields[],
   data?: T,
@@ -21,9 +29,7 @@ export const getDefaultValues = <T>(
       if (data) {
         acc[field.write_field_name] =
           field.data_type === 'drop_down'
-            ? find(formatOptions(field), {
-                name: data[field.read_field_name as keyof T]?.toString(),
-              })?.id
+            ? getFieldId<T>(field, data)
             : data[field.write_field_name]
       } else {
         acc[field.write_field_name] = ['drop_down', 'boolean'].includes(
