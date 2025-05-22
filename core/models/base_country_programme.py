@@ -167,21 +167,21 @@ class AbstractCPPrices(AbstractWChemical):
 class AbstractCPGeneration(models.Model):
     all_uses = models.DecimalField(
         max_digits=25,
-        decimal_places=3,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Captured for all uses",
     )
     feedstock = models.DecimalField(
         max_digits=25,
-        decimal_places=3,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Captured for feedstock uses within your country",
     )
     destruction = models.DecimalField(
         max_digits=25,
-        decimal_places=3,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Captured for destruction",
@@ -198,49 +198,49 @@ class AbstractCPEmission(models.Model):
     facility = models.CharField(max_length=256, help_text="Facility name or identifier")
     total = models.DecimalField(
         max_digits=25,
-        decimal_places=3,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Total amount generated",
     )
     all_uses = models.DecimalField(
         max_digits=25,
-        decimal_places=3,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Amount generated and captured - For all uses",
     )
     feedstock_gc = models.DecimalField(
         max_digits=25,
-        decimal_places=3,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Amount generated and captured - For feedstock use in your country",
     )
     destruction = models.DecimalField(
         max_digits=25,
-        decimal_places=3,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Amount generated and captured - For destruction",
     )
     feedstock_wpc = models.DecimalField(
         max_digits=25,
-        decimal_places=3,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Captured for feedstock uses within your country",
     )
     destruction_wpc = models.DecimalField(
         max_digits=25,
-        decimal_places=3,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Amount used for feedstock without prior capture",
     )
     generated_emissions = models.DecimalField(
         max_digits=25,
-        decimal_places=3,
+        decimal_places=10,
         null=True,
         blank=True,
         help_text="Captured for destruction",
