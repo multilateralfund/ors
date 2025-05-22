@@ -15,11 +15,15 @@ import { useGetProject } from '../hooks/useGetProject'
 import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
 import { ProjectSpecificFields } from '../interfaces'
+import { useStore } from '@ors/store'
 
 import { useParams } from 'wouter'
 
 const ProjectViewWrapper = () => {
   const { project_id } = useParams<Record<string, string>>()
+
+  const projectSlice = useStore((state) => state.projects)
+  const user_permissions = projectSlice.user_permissions.data || []
 
   const project = useGetProject(project_id)
   const { data, loading } = project
@@ -64,7 +68,7 @@ const ProjectViewWrapper = () => {
                 />
                 <HeaderTag {...{ latest_project, version }} />
               </div>
-              {!latest_project && (
+              {user_permissions.includes('edit_project') && (
                 <CustomLink
                   className="mb-4 h-10 text-nowrap px-4 py-2 text-lg uppercase"
                   href={`/projects-listing/${project_id}/edit`}

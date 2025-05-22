@@ -29,6 +29,7 @@ import {
   initialProjectIdentifiers,
 } from '../constants'
 import { api, uploadFiles } from '@ors/helpers'
+import { useStore } from '@ors/store'
 
 import { enqueueSnackbar } from 'notistack'
 import { Button } from '@mui/material'
@@ -38,6 +39,9 @@ import cx from 'classnames'
 const ProjectsEdit = ({ project }: { project: ProjectTypeApi }) => {
   const project_id = project.id.toString()
   const { code, versions, version, latest_project } = project
+
+  const projectSlice = useStore((state) => state.projects)
+  const user_permissions = projectSlice.user_permissions.data || []
 
   const [projectData, setProjectData] = useState<ProjectData>({
     projIdentifiers: initialProjectIdentifiers,
@@ -207,39 +211,45 @@ const ProjectsEdit = ({ project }: { project: ProjectTypeApi }) => {
 
   const actionButtons = (
     <div>
-      <div className="container flex w-full justify-between gap-x-4 px-0">
-        <Link
-          className="border border-solid border-primary bg-white px-4 py-2 text-primary shadow-none hover:bg-primary hover:text-white"
-          color="primary"
-          href={`/projects-listing/${project_id}`}
-          size="large"
-          variant="contained"
-          button
-        >
-          Cancel
-        </Link>
-        <Button
-          className={cx('px-4 py-2 shadow-none', {
-            [enabledButtonClassname]: !isSubmitDisabled,
-          })}
-          size="large"
-          variant="contained"
-          onClick={editProject}
-          disabled={isSubmitDisabled}
-        >
-          Save
-        </Button>
-        <Button
-          className={cx('px-4 py-2 shadow-none', {
-            [enabledButtonClassname]: !isSubmitDisabled,
-          })}
-          size="large"
-          variant="contained"
-          onClick={increaseVersion}
-          disabled={isSubmitDisabled}
-        >
-          Submit new version
-        </Button>
+      <div className="container flex w-full flex-wrap gap-x-3 gap-y-2 px-0">
+        {user_permissions.includes('view_project') && (
+          <Link
+            className="border border-solid border-primary bg-white px-4 py-2 text-primary shadow-none hover:bg-primary hover:text-white"
+            color="primary"
+            href={`/projects-listing/${project_id}`}
+            size="large"
+            variant="contained"
+            button
+          >
+            Cancel
+          </Link>
+        )}
+        {user_permissions.includes('edit_project') && (
+          <Button
+            className={cx('px-4 py-2 shadow-none', {
+              [enabledButtonClassname]: !isSubmitDisabled,
+            })}
+            size="large"
+            variant="contained"
+            onClick={editProject}
+            disabled={isSubmitDisabled}
+          >
+            Save
+          </Button>
+        )}
+        {user_permissions.includes('increase_project_version') && (
+          <Button
+            className={cx('px-4 py-2 shadow-none', {
+              [enabledButtonClassname]: !isSubmitDisabled,
+            })}
+            size="large"
+            variant="contained"
+            onClick={increaseVersion}
+            disabled={isSubmitDisabled}
+          >
+            Submit new version
+          </Button>
+        )}
         <Loading
           className="!fixed bg-action-disabledBackground"
           active={isSaving}

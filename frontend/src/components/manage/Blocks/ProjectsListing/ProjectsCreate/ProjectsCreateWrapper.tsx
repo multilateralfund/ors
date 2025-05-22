@@ -21,6 +21,7 @@ import {
   getIsSubmitDisabled,
 } from '../utils.ts'
 import { api, uploadFiles } from '@ors/helpers'
+import { useStore } from '@ors/store.tsx'
 
 import { Alert, Button, CircularProgress } from '@mui/material'
 import { enqueueSnackbar } from 'notistack'
@@ -28,6 +29,9 @@ import { groupBy, isNil } from 'lodash'
 import cx from 'classnames'
 
 const ProjectsCreateWrapper = () => {
+  const projectSlice = useStore((state) => state.projects)
+  const user_permissions = projectSlice.user_permissions.data || []
+
   const [specificFields, setSpecificFields] = useState<ProjectSpecificFields[]>(
     [],
   )
@@ -117,18 +121,20 @@ const ProjectsCreateWrapper = () => {
 
   const actionButtons = (
     <div className="flex flex-wrap items-center gap-2.5">
-      <Button
-        className={cx('ml-auto mr-0 h-10 px-3 py-1', {
-          'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
-            !isSubmitDisabled,
-        })}
-        size="large"
-        variant="contained"
-        onClick={submitProject}
-        disabled={isSubmitDisabled}
-      >
-        Submit
-      </Button>
+      {user_permissions.includes('add_project') && (
+        <Button
+          className={cx('ml-auto mr-0 h-10 px-3 py-1', {
+            'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
+              !isSubmitDisabled,
+          })}
+          size="large"
+          variant="contained"
+          onClick={submitProject}
+          disabled={isSubmitDisabled}
+        >
+          Submit
+        </Button>
+      )}
       {isLoading && (
         <CircularProgress color="inherit" size="30px" className="ml-1.5" />
       )}

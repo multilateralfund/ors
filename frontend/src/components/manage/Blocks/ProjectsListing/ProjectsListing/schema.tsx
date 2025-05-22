@@ -12,32 +12,44 @@ import {
   ValueGetterParams,
 } from 'ag-grid-community'
 
-const getColumnDefs = () =>
+const getColumnDefs = (user_permissions: string[]) =>
   useMemo(
     () => ({
       columnDefs: [
-        {
-          cellRenderer: (props: ICellRendererParams) => (
-            <div className="flex items-center justify-center gap-1.5">
-              <Link
-                className="flex justify-center"
-                href={`/projects-listing/${props.data.id}`}
-              >
-                <FiEye size={16} />
-              </Link>
-              <span>/</span>
-              <Link
-                className="flex justify-center"
-                href={`/projects-listing/${props.data.id}/edit`}
-              >
-                <FiEdit size={16} />
-              </Link>
-            </div>
-          ),
-          field: '',
-          minWidth: 70,
-          maxWidth: 70,
-        },
+        ...(user_permissions.includes('view_project') ||
+        user_permissions.includes('edit_project')
+          ? [
+              {
+                cellRenderer: (props: ICellRendererParams) => (
+                  <div className="flex items-center justify-center gap-1.5">
+                    {user_permissions.includes('view_project') && (
+                      <Link
+                        className="flex justify-center"
+                        href={`/projects-listing/${props.data.id}`}
+                      >
+                        <FiEye size={16} />
+                      </Link>
+                    )}
+                    {user_permissions.includes('view_project') &&
+                      user_permissions.includes('edit_project') && (
+                        <span>/</span>
+                      )}
+                    {user_permissions.includes('edit_project') && (
+                      <Link
+                        className="flex justify-center"
+                        href={`/projects-listing/${props.data.id}/edit`}
+                      >
+                        <FiEdit size={16} />
+                      </Link>
+                    )}
+                  </div>
+                ),
+                field: '',
+                minWidth: 70,
+                maxWidth: 70,
+              },
+            ]
+          : []),
         {
           headerName: 'Select',
           field: '',
@@ -107,11 +119,13 @@ const getColumnDefs = () =>
           tooltipField: 'title',
           cellClass: 'ag-cell-ellipsed',
           minWidth: 300,
-          cellRenderer: (props: ICellRendererParams) => (
-            <Link href={`/projects-listing/${props.data.id}`}>
-              {props.value}
-            </Link>
-          ),
+          ...(user_permissions.includes('view_project') && {
+            cellRenderer: (props: ICellRendererParams) => (
+              <Link href={`/projects-listing/${props.data.id}`}>
+                {props.value}
+              </Link>
+            ),
+          }),
         },
         {
           headerName: tableColumns.type,
@@ -144,7 +158,7 @@ const getColumnDefs = () =>
         sortable: false,
       },
     }),
-    [],
+    [user_permissions],
   )
 
 export default getColumnDefs

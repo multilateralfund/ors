@@ -164,12 +164,11 @@ const ProjectsCreate = ({
   return (
     <>
       <HeaderTitle>
-        <div className="align-center flex justify-between">
+        <div className="align-center flex flex-wrap justify-between gap-x-4 gap-y-2">
           <div className="flex gap-2">
-            <PageHeading className="min-w-fit">{heading}</PageHeading>
+            <PageHeading>{heading}</PageHeading>
             {versions}
           </div>
-
           {actionButtons}
         </div>
       </HeaderTitle>
