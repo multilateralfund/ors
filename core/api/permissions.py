@@ -12,6 +12,76 @@ class IsSecretariat(permissions.BasePermission):
         return False
 
 
+class IsSecretariatViewer(permissions.BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+        if user.is_authenticated:
+            if user.is_superuser:
+                return True
+            if user.user_type == user.UserType.SECRETARIAT_VIEWER:
+                return True
+        return False
+
+    def has_object_permission(self, request, view, obj):
+        return True
+
+
+class IsSecretariatV1V2EditAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+        if user.is_authenticated:
+            if user.is_superuser:
+                return True
+            if user.user_type == user.UserType.SECRETARIAT_V1_V2_EDIT_ACCESS:
+                return True
+        return False
+
+    def has_object_permission(self, request, view, obj):
+        return True
+
+
+class IsSecretariatV3EditAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+        if user.is_authenticated:
+            if user.is_superuser:
+                return True
+            if user.user_type == user.UserType.SECRETARIAT_V3_EDIT_ACCESS:
+                return True
+        return False
+
+    def has_object_permission(self, request, view, obj):
+        return True
+
+
+class IsSecretariatProductionV1V2EditAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+        if user.is_authenticated:
+            if user.is_superuser:
+                return True
+            if user.user_type == user.UserType.SECRETARIAT_PRODUCTION_V1_V2_EDIT_ACCESS:
+                return True
+        return False
+
+    def has_object_permission(self, request, view, obj):
+        return True
+
+
+class IsSecretariatProductionV3EditAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+        if user.is_authenticated:
+            if user.is_superuser:
+                return True
+            if user.user_type == user.UserType.SECRETARIAT_PRODUCTION_V3_EDIT_ACCESS:
+                return True
+        return False
+
+    def has_object_permission(self, request, view, obj):
+        return True
+
+
 class IsViewer(permissions.BasePermission):
     def has_permission(self, request, view):
         user = request.user

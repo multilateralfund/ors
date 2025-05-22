@@ -45,7 +45,7 @@ class ProjectField(models.Model):
         return f"{self.table} - {self.label}"
 
 
-class ProjectClusterTypeSectorFields(models.Model):
+class ProjectSpecificFields(models.Model):
     """
     Model that for a combination of cluster, type and sector
     gives a list of fields that are available for the project
@@ -54,28 +54,28 @@ class ProjectClusterTypeSectorFields(models.Model):
     cluster = models.ForeignKey(
         "ProjectCluster",
         on_delete=models.CASCADE,
-        related_name="cluster_type_sector_fields",
+        related_name="project_specific_fields",
     )
     type = models.ForeignKey(
         "ProjectType",
         on_delete=models.CASCADE,
-        related_name="cluster_type_sector_fields",
+        related_name="project_specific_fields",
     )
     sector = models.ForeignKey(
         "ProjectSector",
         on_delete=models.CASCADE,
-        related_name="cluster_type_sector_fields",
+        related_name="project_specific_fields",
     )
     fields = models.ManyToManyField(
         ProjectField,
         blank=True,
-        related_name="cluster_type_sector_fields",
+        related_name="project_specific_fields",
         help_text="List of fields that should be filled in the project for this"
         " combination of cluster, type and sector",
     )
 
     class Meta:
-        verbose_name_plural = "Project cluster type sector fields"
+        verbose_name_plural = "Project specific fields"
         unique_together = (
             "cluster",
             "type",

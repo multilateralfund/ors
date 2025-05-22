@@ -17,7 +17,6 @@ from core.models.agency import Agency
 from core.models.meeting import Meeting
 from core.models.project_metadata import (
     ProjectCluster,
-    ProjectClusterTypeSectorFields,
     ProjectSector,
     ProjectStatus,
     ProjectSubSector,
@@ -364,43 +363,6 @@ def import_rbm_measures(file_path):
         )
 
 
-def import_cluster_type_sector_links(file_path):
-    """
-    Import links between cluster, type and sector from file
-
-    @param file_path = str (file path for import file)
-    """
-    with open(file_path, "r", encoding="utf8") as f:
-        data = json.load(f)
-
-    for cluster_json in data:
-        cluster = ProjectCluster.objects.filter(name=cluster_json["cluster"]).first()
-        if not cluster:
-            logger.warning(
-                f"⚠️ {cluster_json['cluster']} cluster not found => {cluster_json['cluster']} not imported"
-            )
-            continue
-        for type_json in cluster_json["types"]:
-            type_obj = ProjectType.objects.filter(name=type_json["type"]).first()
-            if not type_obj:
-                logger.warning(
-                    f"⚠️ {type_json['type']} type not found => {cluster_json['cluster']} not imported"
-                )
-                continue
-            for sector_name in type_json["sectors"]:
-                sector = ProjectSector.objects.filter(name=sector_name).first()
-                if not sector:
-                    logger.warning(
-                        f"⚠️ {sector_name} sector not found => {cluster_json['cluster']} not imported"
-                    )
-                    continue
-                ProjectClusterTypeSectorFields.objects.update_or_create(
-                    cluster=cluster,
-                    type=type_obj,
-                    sector=sector,
-                )
-
-
 def import_meetings():
     for i in range(1, 92):
         meeting_data = {
@@ -443,10 +405,6 @@ def import_project_resources():
     file_path = IMPORT_RESOURCES_DIR / "rbm_measures.xlsx"
     import_rbm_measures(file_path)
     logger.info("✔ rbm measures imported")
-
-    file_path = IMPORT_RESOURCES_DIR / "ClusterTypeSectorLinks.json"
-    import_cluster_type_sector_links(file_path)
-    logger.info("✔ cluster type sector links imported")
 
     import_meetings()
     logger.info("✔ meetings imported")

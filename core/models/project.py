@@ -25,6 +25,9 @@ class MetaProject(models.Model):
         MYA = "Multi-year agreement", "Multi-year agreement"
         IND = "Individual", "Individual"
 
+    lead_agency = models.ForeignKey(
+        Agency, on_delete=models.PROTECT, null=True, blank=True
+    )
     type = models.CharField(max_length=255, choices=MetaProjectType.choices)
     code = models.CharField(max_length=255, null=True, blank=True)
     pcr_project_id = models.CharField(max_length=255, null=True, blank=True)

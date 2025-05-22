@@ -1,3 +1,5 @@
+from admin_auto_filters.filters import AutocompleteFilterFactory
+
 from django.contrib import admin
 
 from core.admin.utils import get_final_display_list
@@ -9,7 +11,7 @@ from core.models.project_metadata import (
     ProjectSubSector,
     ProjectType,
     ProjectField,
-    ProjectClusterTypeSectorFields,
+    ProjectSpecificFields,
 )
 
 
@@ -18,7 +20,7 @@ class ProjectClusterAdmin(admin.ModelAdmin):
     search_fields = ["name", "code"]
 
     def get_list_display(self, request):
-        exclude = ["project", "bpactivity", "cluster_type_sector_fields"]
+        exclude = ["project", "bpactivity", "project_specific_fields"]
         return get_final_display_list(ProjectCluster, exclude)
 
 
@@ -31,28 +33,30 @@ class ProjectFieldAdmin(admin.ModelAdmin):
     ]
 
     def get_list_display(self, request):
-        exclude = []
+        exclude = [
+            "project_specific_fields",
+        ]
         return get_final_display_list(ProjectField, exclude)
 
 
-@admin.register(ProjectClusterTypeSectorFields)
-class ProjectClusterTypeSectorFieldsAdmin(admin.ModelAdmin):
+@admin.register(ProjectSpecificFields)
+class ProjectSpecificFieldsAdmin(admin.ModelAdmin):
     search_fields = [
         "cluster__name",
         "type__name",
         "sector__name",
     ]
     list_filter = [
-        "cluster",
-        "type",
-        "sector",
-        "fields",
+        AutocompleteFilterFactory("cluster", "cluster"),
+        AutocompleteFilterFactory("type", "type"),
+        AutocompleteFilterFactory("sector", "sector"),
+        AutocompleteFilterFactory("fields", "fields"),
     ]
     autocomplete_fields = ["cluster", "type", "sector"]
 
     def get_list_display(self, request):
         exclude = []
-        return get_final_display_list(ProjectClusterTypeSectorFields, exclude)
+        return get_final_display_list(ProjectSpecificFields, exclude)
 
 
 @admin.register(ProjectSector)
@@ -66,7 +70,7 @@ class ProjectSectorAdmin(admin.ModelAdmin):
             "projectsubsector",
             "bpactivity",
             "project",
-            "cluster_type_sector_fields",
+            "project_specific_fields",
         ]
         return get_final_display_list(ProjectSector, exclude)
 
@@ -99,12 +103,11 @@ class ProjectSubSectorAdmin(admin.ModelAdmin):
         "name",
     ]
     list_filter = [
-        "sector",
+        AutocompleteFilterFactory("sector", "sector"),
     ]
-    autocomplete_fields = ["sector"]
 
     def get_list_display(self, request):
-        exclude = ["project", "bpactivity"]
+        exclude = ["projects", "bpactivity"]
         return get_final_display_list(ProjectSubSector, exclude)
 
 
@@ -119,6 +122,6 @@ class ProjectTypeAdmin(admin.ModelAdmin):
             "project",
             "businessplan",
             "bpactivity",
-            "cluster_type_sector_fields",
+            "project_specific_fields",
         ]
         return get_final_display_list(ProjectType, exclude)

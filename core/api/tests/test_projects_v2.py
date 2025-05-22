@@ -25,7 +25,7 @@ from core.models.project import Project, ProjectFile
 from core.utils import get_project_sub_code
 
 pytestmark = pytest.mark.django_db
-# pylint: disable=C8008,W0221,R0913,R0914,R0915
+# pylint: disable=C0302,C8008,W0221,R0913,R0914,R0915
 
 
 @pytest.fixture(name="other_agency_user")
@@ -357,38 +357,60 @@ def setup_project_create(
 class TestProjectV2List(BaseTest):
     url = reverse("project-v2-list")
 
-    def test_project_list(self, viewer_user, _setup_project_list):
-        self.client.force_authenticate(user=viewer_user)
+    def test_projest_list_permissions(
+        self,
+        _setup_project_list,
+        user,
+        viewer_user,
+        agency_user,
+        agency_inputter_user,
+        secretariat_viewer_user,
+        secretariat_v1_v2_edit_access_user,
+        secretariat_production_v1_v2_edit_access_user,
+        secretariat_v3_edit_access_user,
+        secretariat_production_v3_edit_access_user,
+        admin_user,
+    ):
 
-        # get project list
+        def _test_user_permissions(user, expected_response_status, expected_count=None):
+            self.client.force_authenticate(user=user)
+            response = self.client.get(self.url)
+            assert response.status_code == expected_response_status
+            if expected_count is not None:
+                assert len(response.data) == expected_count
+            return response.data
+
+        # test with unauthenticated user
         response = self.client.get(self.url)
-        assert response.status_code == 200
-        assert len(response.data) == 10
+        assert response.status_code == 403
 
-    def test_project_list_agency_user(self, agency_user, _setup_project_list):
-        self.client.force_authenticate(user=agency_user)
-
-        # get project list for user agency
-        response = self.client.get(self.url)
-        assert response.status_code == 200
-        assert len(response.data) == 6
-        for project in response.data:
+        # test with authenticated user
+        _test_user_permissions(user, 403)
+        _test_user_permissions(
+            viewer_user, 200, 0
+        )  # because user has no agency defined
+        viewer_user.agency = agency_user.agency
+        viewer_user.save()
+        _test_user_permissions(viewer_user, 200, 6)
+        response_data = _test_user_permissions(agency_user, 200, 6)
+        for project in response_data:
             assert project["agency"] == agency_user.agency.name
+        response_data = _test_user_permissions(agency_inputter_user, 200, 6)
+        for project in response_data:
+            assert project["agency"] == agency_inputter_user.agency.name
 
-    def test_project_list_country_user(self, country_user, _setup_project_list):
-        self.client.force_authenticate(user=country_user)
+        _test_user_permissions(secretariat_viewer_user, 200, 10)
+        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200, 10)
+        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200, 10)
+        _test_user_permissions(secretariat_v3_edit_access_user, 200, 10)
+        _test_user_permissions(secretariat_production_v3_edit_access_user, 200, 10)
+        _test_user_permissions(admin_user, 200, 10)
 
-        # get project list for user country
-        response = self.client.get(self.url)
-        assert response.status_code == 200
-        assert len(response.data) == 6
-        for project in response.data:
-            assert project["country"] == country_user.country.name
-
-    def test_project_list_agency_filter(self, user, agency, _setup_project_list):
+    def test_project_list_agency_filter(
+        self, secretariat_viewer_user, agency, _setup_project_list
+    ):
         new_agency, _, _, _, _ = _setup_project_list
-        self.client.force_authenticate(user=user)
-
+        self.client.force_authenticate(user=secretariat_viewer_user)
         response = self.client.get(self.url, {"agency_id": agency.id})
         assert response.status_code == 200
         assert len(response.data) == 6
@@ -401,9 +423,10 @@ class TestProjectV2List(BaseTest):
         assert response.status_code == 200
         assert len(response.data) == 10
 
-    def test_project_list_type_filter(self, user, project_type, _setup_project_list):
-        self.client.force_authenticate(user=user)
-
+    def test_project_list_type_filter(
+        self, secretariat_viewer_user, project_type, _setup_project_list
+    ):
+        self.client.force_authenticate(user=secretariat_viewer_user)
         response = self.client.get(self.url, {"project_type_id": project_type.id})
         assert response.status_code == 200
         assert len(response.data) == 6
@@ -413,11 +436,10 @@ class TestProjectV2List(BaseTest):
             assert project["project_type"]["code"] == project_type.code
 
     def test_project_list_status_filter(
-        self, user, project_status, _setup_project_list
+        self, secretariat_viewer_user, project_status, _setup_project_list
     ):
         _, new_project_status, _, _, _ = _setup_project_list
-        self.client.force_authenticate(user=user)
-
+        self.client.force_authenticate(user=secretariat_viewer_user)
         response = self.client.get(self.url, {"status_id": project_status.id})
         assert response.status_code == 200
         assert len(response.data) == 6
@@ -431,10 +453,10 @@ class TestProjectV2List(BaseTest):
         assert len(response.data) == 10
 
     def test_project_list_submission_status_filter(
-        self, user, project_submission_status, _setup_project_list
+        self, secretariat_viewer_user, project_submission_status, _setup_project_list
     ):
         _, _, new_project_submission_status, _, _ = _setup_project_list
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_viewer_user)
 
         response = self.client.get(
             self.url, {"submission_status_id": project_submission_status.id}
@@ -453,9 +475,11 @@ class TestProjectV2List(BaseTest):
         assert response.status_code == 200
         assert len(response.data) == 10
 
-    def test_project_list_sector_filter(self, user, sector, _setup_project_list):
+    def test_project_list_sector_filter(
+        self, secretariat_viewer_user, sector, _setup_project_list
+    ):
         _, _, _, new_sector, _ = _setup_project_list
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_viewer_user)
 
         response = self.client.get(self.url, {"sector_id": sector.id})
         assert response.status_code == 200
@@ -471,8 +495,10 @@ class TestProjectV2List(BaseTest):
         assert response.status_code == 200
         assert len(response.data) == 9
 
-    def test_project_list_subsector_filter(self, user, subsector, _setup_project_list):
-        self.client.force_authenticate(user=user)
+    def test_project_list_subsector_filter(
+        self, secretariat_viewer_user, subsector, _setup_project_list
+    ):
+        self.client.force_authenticate(user=secretariat_viewer_user)
 
         response = self.client.get(self.url, {"subsectors": [subsector.id]})
         assert response.status_code == 200
@@ -480,8 +506,10 @@ class TestProjectV2List(BaseTest):
         for project in response.data:
             assert project["subsectors"] == [ProjectSubSectorSerializer(subsector).data]
 
-    def test_project_list_subs_type_filter(self, user, _setup_project_list):
-        self.client.force_authenticate(user=user)
+    def test_project_list_subs_type_filter(
+        self, secretariat_viewer_user, _setup_project_list
+    ):
+        self.client.force_authenticate(user=secretariat_viewer_user)
 
         response = self.client.get(self.url, {"substance_type": "HCFC"})
         assert response.status_code == 200
@@ -489,9 +517,11 @@ class TestProjectV2List(BaseTest):
         for project in response.data:
             assert project["substance_type"] == "HCFC"
 
-    def test_project_list_meet_filter(self, user, _setup_project_list, meeting):
+    def test_project_list_meet_filter(
+        self, secretariat_viewer_user, _setup_project_list, meeting
+    ):
         _, _, _, _, new_meeting = _setup_project_list
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_viewer_user)
 
         response = self.client.get(self.url, {"meeting_id": meeting.id})
         assert response.status_code == 200
@@ -505,8 +535,10 @@ class TestProjectV2List(BaseTest):
         assert response.status_code == 200
         assert len(response.data) == 10
 
-    def test_project_list_country_filter(self, user, country_ro, _setup_project_list):
-        self.client.force_authenticate(user=user)
+    def test_project_list_country_filter(
+        self, secretariat_viewer_user, country_ro, _setup_project_list
+    ):
+        self.client.force_authenticate(user=secretariat_viewer_user)
 
         response = self.client.get(self.url, {"country_id": country_ro.id})
         assert response.status_code == 200
@@ -514,8 +546,10 @@ class TestProjectV2List(BaseTest):
         for project in response.data:
             assert project["country"] == country_ro.name
 
-    def test_project_list_date_received_filter(self, user, _setup_project_list):
-        self.client.force_authenticate(user=user)
+    def test_project_list_date_received_filter(
+        self, secretariat_viewer_user, _setup_project_list
+    ):
+        self.client.force_authenticate(user=secretariat_viewer_user)
 
         response = self.client.get(self.url, {"date_received_after": "2020-01-03"})
         assert response.status_code == 200
@@ -532,8 +566,10 @@ class TestProjectV2List(BaseTest):
         assert len(response.data) == 2
         assert response.data[0]["date_received"] == "2020-01-01"
 
-    def test_project_list_search_filter(self, user, _setup_project_list):
-        self.client.force_authenticate(user=user)
+    def test_project_list_search_filter(
+        self, secretariat_viewer_user, _setup_project_list
+    ):
+        self.client.force_authenticate(user=secretariat_viewer_user)
 
         response = self.client.get(self.url, {"search": "Project 26"})
         assert response.status_code == 200
@@ -544,30 +580,67 @@ class TestProjectV2List(BaseTest):
 class TestProjectsRetrieve:
     client = APIClient()
 
-    def test_project_get_anon(self, project_url):
+    def test_projest_retrieve_permissions(
+        self,
+        project,
+        new_agency,
+        project_url,
+        user,
+        viewer_user,
+        agency_user,
+        agency_inputter_user,
+        secretariat_viewer_user,
+        secretariat_v1_v2_edit_access_user,
+        secretariat_production_v1_v2_edit_access_user,
+        secretariat_v3_edit_access_user,
+        secretariat_production_v3_edit_access_user,
+        admin_user,
+    ):
+        def _test_user_permissions(user, expected_response_status):
+            self.client.force_authenticate(user=user)
+            response = self.client.get(project_url)
+            assert response.status_code == expected_response_status
+            if expected_response_status == 200:
+                assert response.data["id"] == project.id
+            return response.data
+
+        # test with unauthenticated user
         response = self.client.get(project_url)
         assert response.status_code == 403
 
-    def test_without_permission_wrong_agency(self, other_agency_user, project_url):
-        self.client.force_authenticate(user=other_agency_user)
-        response = self.client.get(project_url)
-        assert response.status_code == 404
+        _test_user_permissions(user, 403)
+        viewer_user.agency = agency_user.agency
+        viewer_user.save()
+        _test_user_permissions(viewer_user, 200)
+        _test_user_permissions(agency_user, 200)
+        _test_user_permissions(agency_inputter_user, 200)
+        _test_user_permissions(secretariat_viewer_user, 200)
+        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_v3_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_v3_edit_access_user, 200)
+        _test_user_permissions(admin_user, 200)
 
-    def test_without_permission_wrong_country(self, other_country_user, project_url):
-        self.client.force_authenticate(user=other_country_user)
-        response = self.client.get(project_url)
-        assert response.status_code == 404
+        project.agency = new_agency
+        project.save()
 
-    def test_project_get(self, viewer_user, project_url, project):
-        self.client.force_authenticate(user=viewer_user)
+        # test project is not visible to other agency users
+        _test_user_permissions(viewer_user, 404)
+        _test_user_permissions(agency_user, 404)
+        _test_user_permissions(agency_inputter_user, 404)
+
+    def test_project_get(self, secretariat_viewer_user, project_url, project):
+        self.client.force_authenticate(user=secretariat_viewer_user)
         response = self.client.get(project_url)
         assert response.status_code == 200
         assert response.data["id"] == project.id
         assert response.data["substance_category"] == "Production"
         assert response.data["latest_file"] is None
 
-    def test_project_files_get(self, viewer_user, project_url, project_file):
-        self.client.force_authenticate(user=viewer_user)
+    def test_project_files_get(
+        self, secretariat_viewer_user, project_url, project_file
+    ):
+        self.client.force_authenticate(user=secretariat_viewer_user)
         response = self.client.get(project_url)
         assert response.status_code == 200
         assert response.data["latest_file"]["id"] == project_file.id
@@ -577,19 +650,40 @@ class TestProjectsRetrieve:
 class TestCreateProjects(BaseTest):
     url = reverse("project-v2-list")
 
-    def test_without_login(self, _setup_project_create):
-        data = _setup_project_create
-        self.client.force_authenticate(user=None)
+    def test_create_project_permissions(
+        self,
+        _setup_project_create,
+        user,
+        viewer_user,
+        agency_user,
+        agency_inputter_user,
+        secretariat_viewer_user,
+        secretariat_v1_v2_edit_access_user,
+        secretariat_production_v1_v2_edit_access_user,
+        secretariat_v3_edit_access_user,
+        secretariat_production_v3_edit_access_user,
+        admin_user,
+    ):
+        # test with unauthenticated user
 
-        response = self.client.post(self.url, data, format="json")
+        def _test_user_permissions(user, expected_response_status):
+            self.client.force_authenticate(user=user)
+            response = self.client.post(self.url, _setup_project_create, format="json")
+            assert response.status_code == expected_response_status
+
+        response = self.client.post(self.url, _setup_project_create, format="json")
         assert response.status_code == 403
 
-    def test_as_viewer(self, viewer_user, _setup_project_create):
-        data = _setup_project_create
-        self.client.force_authenticate(user=viewer_user)
-
-        response = self.client.post(self.url, data, format="json")
-        assert response.status_code == 403
+        _test_user_permissions(user, 403)
+        _test_user_permissions(viewer_user, 403)
+        _test_user_permissions(agency_user, 201)
+        _test_user_permissions(agency_inputter_user, 201)
+        _test_user_permissions(secretariat_viewer_user, 403)
+        _test_user_permissions(secretariat_v1_v2_edit_access_user, 201)
+        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 201)
+        _test_user_permissions(secretariat_v3_edit_access_user, 403)
+        _test_user_permissions(secretariat_production_v3_edit_access_user, 403)
+        _test_user_permissions(admin_user, 201)
 
     def _test_response_data(self, response, data):
         fields = [
@@ -666,7 +760,7 @@ class TestCreateProjects(BaseTest):
 
     def test_create_project(
         self,
-        user,
+        agency_inputter_user,
         country_ro,
         agency,
         project_type,
@@ -677,7 +771,7 @@ class TestCreateProjects(BaseTest):
         decision,
     ):
         data = _setup_project_create
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=agency_inputter_user)
 
         # create project
         response = self.client.post(self.url, data, format="json")
@@ -762,9 +856,11 @@ class TestCreateProjects(BaseTest):
             2,
         )
 
-    def test_create_project_project_fk(self, user, _setup_project_create):
+    def test_create_project_project_fk(
+        self, agency_inputter_user, _setup_project_create
+    ):
         data = _setup_project_create
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=agency_inputter_user)
         # invalid country, agency, sector, project_type ids
         for field in [
             "agency",
@@ -788,15 +884,95 @@ class TestCreateProjects(BaseTest):
 class TestProjectFiles:
     client = APIClient()
 
-    def test_file_upload_anon(self, project):
+    def test_file_upload_permissions(
+        self,
+        agency_inputter_user,
+        project,
+        new_agency,
+        test_file1,
+        test_file2,
+        user,
+        viewer_user,
+        agency_user,
+        secretariat_viewer_user,
+        secretariat_v1_v2_edit_access_user,
+        secretariat_production_v1_v2_edit_access_user,
+        secretariat_v3_edit_access_user,
+        secretariat_production_v3_edit_access_user,
+        admin_user,
+    ):
         url = reverse("project-files-v2", args=(project.id,))
-        response = self.client.post(url, {})
+        data = {"files": [test_file1.open(), test_file2.open()]}
+
+        def _test_user_permissions(
+            user,
+            expected_post_response_status,
+            expected_get_response_status,
+            expected_delete_response_status,
+        ):
+            self.client.force_authenticate(user=user)
+            response = self.client.post(url, data, format="multipart")
+            assert response.status_code == expected_post_response_status
+            if expected_post_response_status == 201:
+                ProjectFile.objects.filter(project=project).delete()
+            response = self.client.get(url)
+            assert response.status_code == expected_get_response_status
+
+            if expected_get_response_status == 200:
+                delete_data = {"file_ids": [entry["id"] for entry in response.data]}
+            else:
+                delete_data = {"file_ids": []}
+
+            if expected_get_response_status == 200:
+                if len(response.data) > 0:
+                    download_url = reverse(
+                        "project-files-v2-download",
+                        args=(
+                            response.data[0]["project_id"],
+                            response.data[0]["id"],
+                        ),
+                    )
+                    response = self.client.get(download_url)
+                    assert response.status_code == 200
+
+            response = self.client.delete(url, delete_data, format="json")
+            assert response.status_code == expected_delete_response_status
+
+        # test with unauthenticated user
+        self.client.force_authenticate(user=None)
+        response = self.client.post(url, data, format="multipart")
+        assert response.status_code == 403
+        response = self.client.get(url)
+        assert response.status_code == 403
+        response = self.client.delete(url)
         assert response.status_code == 403
 
+        _test_user_permissions(user, 403, 403, 403)
+        _test_user_permissions(viewer_user, 403, 200, 403)
+        _test_user_permissions(agency_user, 201, 200, 204)
+        _test_user_permissions(agency_inputter_user, 201, 200, 204)
+        _test_user_permissions(secretariat_viewer_user, 403, 200, 403)
+        _test_user_permissions(secretariat_v1_v2_edit_access_user, 201, 200, 204)
+        _test_user_permissions(
+            secretariat_production_v1_v2_edit_access_user, 201, 200, 204
+        )
+
+        _test_user_permissions(secretariat_v3_edit_access_user, 403, 200, 403)
+        _test_user_permissions(
+            secretariat_production_v3_edit_access_user, 403, 200, 403
+        )
+        _test_user_permissions(admin_user, 201, 200, 204)
+
+        project.agency = new_agency
+        project.save()
+
+        _test_user_permissions(agency_user, 404, 404, 404)
+        _test_user_permissions(agency_inputter_user, 404, 404, 404)
+
     def test_file_upload_wrong_extension(
-        self, user, project, test_file1, test_file2, wrong_format_file3
+        self, agency_inputter_user, project, test_file1, test_file2, wrong_format_file3
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=agency_inputter_user)
         url = reverse("project-files-v2", args=(project.id,))
 
         # upload file with wrong extension
@@ -807,8 +983,10 @@ class TestProjectFiles:
         assert response.status_code == 400
         assert response.data == {"file": "File extension .csv is not valid"}
 
-    def test_file_upload_duplicate(self, user, project, test_file1, test_file2):
-        self.client.force_authenticate(user=user)
+    def test_file_upload_duplicate(
+        self, agency_inputter_user, project, test_file1, test_file2
+    ):
+        self.client.force_authenticate(user=agency_inputter_user)
         url = reverse("project-files-v2", args=(project.id,))
 
         # upload file
@@ -826,8 +1004,8 @@ class TestProjectFiles:
             "files": f"Some files already exist: {test_file1.name}, {test_file2.name}"
         }
 
-    def test_file_upload(self, user, project, test_file1, test_file2):
-        self.client.force_authenticate(user=user)
+    def test_file_upload(self, agency_inputter_user, project, test_file1, test_file2):
+        self.client.force_authenticate(user=agency_inputter_user)
         url = reverse("project-files-v2", args=(project.id,))
 
         # upload file
@@ -854,8 +1032,8 @@ class TestProjectFiles:
         assert response.status_code == 200
         assert response.data == []
 
-    def test_file_download(self, user, project, test_file1):
-        self.client.force_authenticate(user=user)
+    def test_file_download(self, agency_inputter_user, project, test_file1):
+        self.client.force_authenticate(user=agency_inputter_user)
         url = reverse("project-files-v2", args=(project.id,))
 
         # upload file
@@ -865,7 +1043,13 @@ class TestProjectFiles:
 
         # download file
         my_file = ProjectFile.objects.get(filename=test_file1.name)
-        url = reverse("project-files-v2-download", args=(my_file.id,))
+        url = reverse(
+            "project-files-v2-download",
+            args=(
+                my_file.project.id,
+                my_file.id,
+            ),
+        )
         response = self.client.get(url)
 
         assert response.status_code == 200
@@ -875,8 +1059,47 @@ class TestProjectFiles:
 class TestProjectVersioning:
     client = APIClient()
 
-    def test_versioning(self, user, project, test_file1):
-        self.client.force_authenticate(user=user)
+    def test_increase_version_permissions(
+        self,
+        agency_inputter_user,
+        project,
+        user,
+        viewer_user,
+        agency_user,
+        secretariat_viewer_user,
+        secretariat_v1_v2_edit_access_user,
+        secretariat_production_v1_v2_edit_access_user,
+        secretariat_v3_edit_access_user,
+        secretariat_production_v3_edit_access_user,
+        admin_user,
+    ):
+        url = reverse("project-v2-increase-version", args=(project.id,))
+
+        def _test_user_permissions(user, expected_response_status):
+            self.client.force_authenticate(user=user)
+            response = self.client.post(url)
+            assert response.status_code == expected_response_status
+            return response.data
+
+        # test with unauthenticated user
+        self.client.force_authenticate(user=None)
+        response = self.client.post(url)
+        assert response.status_code == 403
+
+        _test_user_permissions(user, 403)
+        _test_user_permissions(viewer_user, 403)
+        _test_user_permissions(agency_user, 200)
+        _test_user_permissions(agency_inputter_user, 200)
+        _test_user_permissions(secretariat_viewer_user, 403)
+        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
+
+        _test_user_permissions(secretariat_v3_edit_access_user, 403)
+        _test_user_permissions(secretariat_production_v3_edit_access_user, 403)
+        _test_user_permissions(admin_user, 200)
+
+    def test_versioning(self, agency_inputter_user, project, test_file1):
+        self.client.force_authenticate(user=agency_inputter_user)
         url = reverse("project-files-v2", args=(project.id,))
 
         # upload file
@@ -891,7 +1114,9 @@ class TestProjectVersioning:
         assert response.data["version"] == 2
         assert len(response.data["versions"]) == 2
         assert response.data["versions"][0]["version"] == 2
-        assert response.data["versions"][0]["created_by"] == user.username
+        assert (
+            response.data["versions"][0]["created_by"] == agency_inputter_user.username
+        )
         assert response.data["versions"][0]["title"] == project.title
         assert response.data["versions"][0]["final_version_id"] == project.id
         assert response.data["versions"][0]["date_created"] == project.date_created

@@ -49,7 +49,7 @@ class ProjectV2FileSerializer(serializers.ModelSerializer):
         return obj.file.name
 
     def get_download_url(self, obj):
-        return reverse("project-files-v2-download", args=(obj.id,))
+        return reverse("project-files-v2-download", args=(obj.project_id, obj.id))
 
 
 class ProjectListV2Serializer(ProjectListSerializer):

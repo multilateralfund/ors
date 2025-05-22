@@ -10,7 +10,7 @@ from core.import_data.utils import (
 
 from core.models.project_metadata import (
     ProjectCluster,
-    ProjectClusterTypeSectorFields,
+    ProjectSpecificFields,
     ProjectField,
     ProjectSector,
     ProjectSubSector,
@@ -213,7 +213,7 @@ def import_subsector(file_path):
             )
 
 
-def import_cluster_type_sector_fields(file_path):
+def import_project_specific_fields(file_path):
     """
     Import project clusters from file
     Please make sure that the file has the correct extention
@@ -234,12 +234,12 @@ def import_cluster_type_sector_fields(file_path):
 
     for _, row in df.iterrows():
         try:
-            cluster_sector_type = ProjectClusterTypeSectorFields.objects.get(
+            cluster_sector_type = ProjectSpecificFields.objects.get(
                 cluster__name__iexact=row["Cluster name"].strip(),
                 type__name__iexact=row["Project type name"].strip(),
                 sector__name__iexact=row["Sector name"].strip(),
             )
-        except ProjectClusterTypeSectorFields.DoesNotExist:
+        except ProjectSpecificFields.DoesNotExist:
             logger.warning(
                 f"⚠️ {row['Cluster name']}/{row['Project type name']}/{row['Sector name']} not found."
             )
@@ -295,7 +295,7 @@ def import_cluster_type_sector_links(file_path):
                         f"⚠️ {sector_name} sector not found => {cluster_json['cluster']} not imported"
                     )
                     continue
-                ProjectClusterTypeSectorFields.objects.update_or_create(
+                ProjectSpecificFields.objects.update_or_create(
                     cluster=cluster,
                     type=type_obj,
                     sector=sector,
@@ -358,6 +358,6 @@ def import_project_resources_v2():
     import_fields(file_path)
     logger.info("✔ fields imported")
 
-    file_path = IMPORT_RESOURCES_DIR / "projects_v2" / "cluster_type_sector_fields.xlsx"
-    import_cluster_type_sector_fields(file_path)
+    file_path = IMPORT_RESOURCES_DIR / "projects_v2" / "project_specific_fields.xlsx"
+    import_project_specific_fields(file_path)
     logger.info("✔ cluster type sector fields imported")

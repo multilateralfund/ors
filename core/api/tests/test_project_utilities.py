@@ -4,7 +4,7 @@ from core.api.tests.base import BaseTest
 
 from core.api.tests.factories import (
     ProjectClusterFactory,
-    ProjectClusterTypeSectorFieldsFactory,
+    ProjectSpecificFieldsFactory,
     MeetingFactory,
     ProjectFactory,
     ProjectFieldFactory,
@@ -310,13 +310,13 @@ class TestProjectCluster(BaseTest):
         assert response.data[1]["code"] == project_cluster_kip.code
 
 
-@pytest.fixture(name="_setup_cluster_type_sector_fields")
-def setup_cluster_type_sector_fields():
+@pytest.fixture(name="_setup_project_specific_fields")
+def setup_project_specific_fields():
     cluster1 = ProjectClusterFactory.create(name="Cluster1", code="CL1", sort_order=1)
     project_type1 = ProjectTypeFactory.create(name="Type1", code="TYP1")
     sector1 = ProjectSectorFactory.create(name="Sector1", code="SEC1")
 
-    cluster_type_sector = ProjectClusterTypeSectorFieldsFactory.create(
+    project_specific_fields = ProjectSpecificFieldsFactory.create(
         cluster=cluster1,
         type=project_type1,
         sector=sector1,
@@ -341,17 +341,17 @@ def setup_cluster_type_sector_fields():
         section="section2",
     )
 
-    cluster_type_sector.fields.add(field1, field2)
+    project_specific_fields.fields.add(field1, field2)
 
     return cluster1, project_type1, sector1, field1, field2, substance
 
 
-class TestProjectClusterTypeSectorFields(BaseTest):
+class TestProjectSpecificFields(BaseTest):
 
-    def test_without_login(self, _setup_cluster_type_sector_fields):
-        cluster1, project_type1, sector1, _, _, _ = _setup_cluster_type_sector_fields
+    def test_without_login(self, _setup_project_specific_fields):
+        cluster1, project_type1, sector1, _, _, _ = _setup_project_specific_fields
         url = reverse(
-            "project-cluster-type-sector-fields-list",
+            "project-specific-fields",
             kwargs={
                 "cluster_id": cluster1.id,
                 "type_id": project_type1.id,
@@ -362,15 +362,15 @@ class TestProjectClusterTypeSectorFields(BaseTest):
         response = self.client.delete(url)
         assert response.status_code == 403
 
-    def test_project_cluster_type_sector_fields_list(
-        self, viewer_user, _setup_cluster_type_sector_fields
+    def test_project_project_specific_fields_list(
+        self, viewer_user, _setup_project_specific_fields
     ):
         cluster1, project_type1, sector1, field1, field2, substance = (
-            _setup_cluster_type_sector_fields
+            _setup_project_specific_fields
         )
         self.client.force_authenticate(user=viewer_user)
         url = reverse(
-            "project-cluster-type-sector-fields-list",
+            "project-specific-fields",
             kwargs={
                 "cluster_id": cluster1.id,
                 "type_id": project_type1.id,

@@ -10,7 +10,7 @@ from core.api.serializers.project_metadata import (
     ProjectSubSectorSerializer,
 )
 from core.models.project_metadata import (
-    ProjectClusterTypeSectorFields,
+    ProjectSpecificFields,
     ProjectSector,
     ProjectSubSector,
 )
@@ -88,7 +88,7 @@ class ProjectSectorView(SectorSubsectorBaseView):
 
             if cluster_id and type_id:
                 queryset = queryset.filter(
-                    id__in=ProjectClusterTypeSectorFields.objects.filter(
+                    id__in=ProjectSpecificFields.objects.filter(
                         cluster_id=cluster_id, type_id=type_id
                     ).values_list("sector_id", flat=True)
                 ).order_by("sort_order")
