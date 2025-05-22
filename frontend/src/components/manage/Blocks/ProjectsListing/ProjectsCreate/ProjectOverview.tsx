@@ -1,16 +1,20 @@
-import { SpecificFieldsSectionProps, SpecificFields } from '../interfaces'
+import { SpecificFieldsSectionProps, ProjectData } from '../interfaces'
 import { widgets } from './SpecificFieldsHelpers'
 
 const ProjectOverview = ({
-  fields,
-  setFields,
+  projectData,
+  setProjectData,
   sectionFields,
 }: SpecificFieldsSectionProps) => {
   return (
     <>
       <div className="flex flex-wrap gap-x-20 gap-y-5">
         {sectionFields.map((field) =>
-          widgets[field.data_type]<SpecificFields>(fields, setFields, field),
+          widgets[field.data_type]<ProjectData>(
+            projectData,
+            setProjectData,
+            field,
+          ),
         )}
       </div>
     </>

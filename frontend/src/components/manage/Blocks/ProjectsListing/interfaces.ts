@@ -93,24 +93,23 @@ export type ProjectSpecificFields = {
   options: OptionsType[]
 }
 
-export type SpecificFieldsSectionProps = {
-  fields: SpecificFields
-  setFields: Dispatch<SetStateAction<SpecificFields>>
+export type SpecificFieldsSectionProps = ProjectDataProps & {
   sectionFields: ProjectSpecificFields[]
 }
 
 export type OdsOdpModalProps = {
   displayModal: boolean
   setDisplayModal: Dispatch<SetStateAction<boolean>>
-  setFields: Dispatch<SetStateAction<SpecificFields>>
+  setProjectData: Dispatch<SetStateAction<ProjectData>>
   odsOdpFields: ProjectSpecificFields[]
   field: keyof SpecificFields
 }
 
-export type FieldHandler = <T>(
+export type FieldHandler = <T, K>(
   value: any,
-  field: keyof T,
+  field: keyof K,
   setState: Dispatch<SetStateAction<T>>,
+  section: keyof T,
 ) => void
 
 export type ProjectFile = {
@@ -125,7 +124,11 @@ export type ProjectFile = {
 export type ProjectTypeApi = ProjIdentifiers &
   CrossCuttingFields &
   SpecificFields &
-  ProjectType
+  ProjectType & {
+    versions: ProjectVersions[]
+    version: number
+    latest_project: number | null
+  }
 export interface ProjectViewProps {
   project: ProjectTypeApi
   specificFields: ProjectSpecificFields[]
@@ -147,4 +150,28 @@ export interface ProjectFiles {
 }
 export interface ProjectDocs extends ProjectFiles {
   bpFiles?: ProjectFile[]
+}
+
+export interface ProjectVersions {
+  id: number
+  title: string
+  version: number
+  final_version_id: number
+  created_by: string
+  date_created: string
+}
+
+export interface ProjectData {
+  projIdentifiers: ProjIdentifiers
+  crossCuttingFields: CrossCuttingFields
+  projectSpecificFields: SpecificFields
+  bpLinking: {
+    isLinkedToBP: boolean
+    bpId: number | null
+  }
+}
+
+export interface ProjectDataProps {
+  projectData: ProjectData
+  setProjectData: Dispatch<SetStateAction<ProjectData>>
 }

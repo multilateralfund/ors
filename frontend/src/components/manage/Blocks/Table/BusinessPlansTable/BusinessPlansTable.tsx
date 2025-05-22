@@ -44,7 +44,7 @@ export const BPTable = ({
   withAgency = false,
   yearRanges,
   isProjectsSection,
-  setBpId,
+  setProjectData,
 }: any) => {
   const yearRangeSelected = useMemo(
     () => yearRanges.find((item: any) => item.year_start == filters.year_start),
@@ -182,7 +182,7 @@ export const BPTable = ({
 
   const columnDefs = useMemo(() => {
     if (isProjectsSection) {
-      return bpLinkColumnDefs(yearColumns, setBpId)
+      return bpLinkColumnDefs(yearColumns, setProjectData)
     }
 
     switch (gridOptions) {

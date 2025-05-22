@@ -6,7 +6,7 @@ import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/help
 import { NavigationButton } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/NavigationButton'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import {
-  CrossCuttingFields,
+  ProjectData,
   ProjIdentifiers,
 } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
 import {
@@ -17,15 +17,15 @@ import { changeHandler } from './SpecificFieldsHelpers'
 import { defaultProps, tableColumns } from '../constants'
 
 import { useStore } from '@ors/store'
+import { Country } from '@ors/types/store'
 import { parseNumber } from '@ors/helpers'
 
 import { Button, Checkbox, FormControlLabel } from '@mui/material'
 import { find, filter } from 'lodash'
 
 type ProjectIdentifiersSectionProps = {
-  setProjIdentifiers: Dispatch<SetStateAction<ProjIdentifiers>>
-  projIdentifiers: ProjIdentifiers
-  setCrossCuttingFields: Dispatch<SetStateAction<CrossCuttingFields>>
+  projectData: ProjectData
+  setProjectData: Dispatch<SetStateAction<ProjectData>>
   isNextBtnEnabled: boolean
   areNextSectionsDisabled: boolean
   setCurrentStep: Dispatch<SetStateAction<number>>
@@ -33,14 +33,16 @@ type ProjectIdentifiersSectionProps = {
 }
 
 const ProjectIdentifiersSection = ({
-  projIdentifiers,
-  setProjIdentifiers,
-  setCrossCuttingFields,
+  projectData,
+  setProjectData,
   isNextBtnEnabled,
   areNextSectionsDisabled,
   setCurrentStep,
   setCurrentTab,
 }: ProjectIdentifiersSectionProps) => {
+  const sectionIdentifier = 'projIdentifiers'
+  const projIdentifiers = projectData[sectionIdentifier]
+
   const commonSlice = useStore((state) => state.common)
   const projectSlice = useStore((state) => state.projects)
 
@@ -53,30 +55,48 @@ const ProjectIdentifiersSection = ({
     (agency) => agency.id !== projIdentifiers.current_agency,
   )
 
-  const handleChangeCountry = (country: any) => {
-    setProjIdentifiers((prevFilters) => ({
-      ...prevFilters,
-      country: country?.id ?? null,
-    }))
+  const sectionDefaultProps = {
+    ...defaultProps,
+    FieldProps: {
+      className: defaultProps.FieldProps.className + ' w-[16rem]',
+    },
+  }
 
-    setCrossCuttingFields((prevFilters) => ({
-      ...prevFilters,
-      is_lvc:
-        find(commonSlice.countries.data, { id: country?.id })?.is_lvc ?? null,
+  const handleChangeCountry = (country: Country) => {
+    changeHandler['drop_down']<ProjectData, ProjIdentifiers>(
+      country,
+      'country',
+      setProjectData,
+      sectionIdentifier,
+    )
+
+    setProjectData((prevData) => ({
+      ...prevData,
+      crossCuttingFields: {
+        ...prevData.crossCuttingFields,
+        is_lvc:
+          find(commonSlice.countries.data, { id: country?.id })?.is_lvc ?? null,
+      },
     }))
   }
 
   const handleChangeMeeting = (meeting?: string) => {
-    setProjIdentifiers((prevFilters) => ({
-      ...prevFilters,
-      meeting: parseNumber(meeting),
+    setProjectData((prevData) => ({
+      ...prevData,
+      [sectionIdentifier]: {
+        ...prevData[sectionIdentifier],
+        meeting: parseNumber(meeting),
+      },
     }))
   }
 
   const handleChangeIsLeadAgency = (event: ChangeEvent<HTMLInputElement>) => {
-    setProjIdentifiers((prevFilters) => ({
-      ...prevFilters,
-      is_lead_agency: event.target.checked,
+    setProjectData((prevData) => ({
+      ...prevData,
+      [sectionIdentifier]: {
+        ...prevData[sectionIdentifier],
+        is_lead_agency: event.target.checked,
+      },
     }))
   }
 
@@ -89,15 +109,12 @@ const ProjectIdentifiersSection = ({
             widget="autocomplete"
             options={commonSlice.countries.data}
             value={projIdentifiers?.country}
-            onChange={(_: any, value: any) => handleChangeCountry(value)}
-            getOptionLabel={(option: any) =>
+            onChange={(_, value) => handleChangeCountry(value)}
+            getOptionLabel={(option) =>
               getOptionLabel(commonSlice.countries.data, option)
             }
             disabled={!areNextSectionsDisabled}
-            {...defaultProps}
-            FieldProps={{
-              className: defaultProps.FieldProps.className + ' w-[16rem]',
-            }}
+            {...sectionDefaultProps}
           />
         </div>
         <div className="w-32">
@@ -123,18 +140,16 @@ const ProjectIdentifiersSection = ({
             options={agencyOptions}
             value={projIdentifiers?.current_agency}
             onChange={(_, value) =>
-              changeHandler['drop_down']<ProjIdentifiers>(
+              changeHandler['drop_down']<ProjectData, ProjIdentifiers>(
                 value,
                 'current_agency',
-                setProjIdentifiers,
+                setProjectData,
+                sectionIdentifier,
               )
             }
             getOptionLabel={(option) => getOptionLabel(agencyOptions, option)}
             disabled={!areNextSectionsDisabled}
-            {...defaultProps}
-            FieldProps={{
-              className: defaultProps.FieldProps.className + ' w-[16rem]',
-            }}
+            {...sectionDefaultProps}
           />
         </div>
         <div>
@@ -144,10 +159,11 @@ const ProjectIdentifiersSection = ({
             options={projectSlice.clusters.data}
             value={projIdentifiers?.cluster}
             onChange={(_, value) =>
-              changeHandler['drop_down']<ProjIdentifiers>(
+              changeHandler['drop_down']<ProjectData, ProjIdentifiers>(
                 value,
                 'cluster',
-                setProjIdentifiers,
+                setProjectData,
+                sectionIdentifier,
               )
             }
             getOptionLabel={(option) =>
@@ -186,29 +202,27 @@ const ProjectIdentifiersSection = ({
             options={leadAgencyOptions}
             value={projIdentifiers?.side_agency}
             onChange={(_, value) =>
-              changeHandler['drop_down']<ProjIdentifiers>(
+              changeHandler['drop_down']<ProjectData, ProjIdentifiers>(
                 value,
                 'side_agency',
-                setProjIdentifiers,
+                setProjectData,
+                sectionIdentifier,
               )
             }
             getOptionLabel={(option) =>
               getOptionLabel(leadAgencyOptions, option)
             }
             disabled={!areNextSectionsDisabled}
-            {...defaultProps}
-            FieldProps={{
-              className: defaultProps.FieldProps.className + ' w-[16rem]',
-            }}
+            {...sectionDefaultProps}
           />
         </>
       )}
       <div className="flex flex-wrap items-center gap-2.5">
         <NavigationButton
           isBtnDisabled={!isNextBtnEnabled}
-          direction={'next'}
           setCurrentStep={setCurrentStep}
           setCurrentTab={setCurrentTab}
+          direction={'next'}
         />
         {!areNextSectionsDisabled && (
           <div className="mt-5">

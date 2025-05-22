@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { widgets } from './SpecificFieldsHelpers'
-import { OdsOdpFields, OdsOdpModalProps } from '../interfaces'
+import { OdsOdpFields, OdsOdpModalProps, SpecificFields } from '../interfaces'
 import { getDefaultValues } from '../utils'
 
 import { Button, Typography, Box, Modal } from '@mui/material'
@@ -9,22 +9,38 @@ import { Button, Typography, Box, Modal } from '@mui/material'
 const OdsOdpModal = ({
   displayModal,
   setDisplayModal,
-  setFields,
+  setProjectData,
   odsOdpFields,
   field,
 }: OdsOdpModalProps) => {
+  const sectionIdentifier = 'projectSpecificFields'
+
+  type OdsOdpDataType = Partial<Record<keyof SpecificFields, OdsOdpFields>>
+
   const initialOdsOdp = getDefaultValues<OdsOdpFields>(odsOdpFields)
-  const [odsOdpData, setOdsOdpData] = useState<OdsOdpFields>(initialOdsOdp)
+  const [odsOdpData, setOdsOdpData] = useState<OdsOdpDataType>({
+    [field]: initialOdsOdp,
+  })
 
   const saveOdsOdp = () => {
-    setFields((prevFields) => {
-      const crtData = (prevFields[field] as OdsOdpFields[]) || []
+    setProjectData((prevData) => {
+      const section = prevData[sectionIdentifier]
+      const crtData = (section[field] as OdsOdpFields[]) || []
+
+      const newOdsOdp = {
+        ...odsOdpData[field],
+        id: crtData.length + 1,
+      }
 
       return {
-        ...prevFields,
-        [field]: [...crtData, { ...odsOdpData, id: crtData.length + 1 }],
+        ...prevData,
+        [sectionIdentifier]: {
+          ...section,
+          [field]: [...crtData, newOdsOdp],
+        },
       }
     })
+
     setDisplayModal(false)
   }
 
@@ -37,10 +53,11 @@ const OdsOdpModal = ({
     >
       <Box className="xs:max-w-xs w-full max-w-md absolute-center sm:max-w-sm">
         <div className="flex flex-col gap-y-2">
-          {odsOdpFields.map((field) =>
-            widgets[field.data_type]<OdsOdpFields>(
+          {odsOdpFields.map((odsOdpField) =>
+            widgets[odsOdpField.data_type]<OdsOdpDataType>(
               odsOdpData,
               setOdsOdpData,
+              odsOdpField,
               field,
             ),
           )}

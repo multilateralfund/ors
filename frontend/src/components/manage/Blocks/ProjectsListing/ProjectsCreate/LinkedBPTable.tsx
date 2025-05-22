@@ -5,23 +5,14 @@ import { BPTable } from '@ors/components/manage/Blocks/Table/BusinessPlansTable/
 import useGetBpPeriods from '@ors/components/manage/Blocks/BusinessPlans/BPList/useGetBPPeriods'
 import { useGetYearRanges } from '@ors/components/manage/Blocks/BusinessPlans/useGetYearRanges'
 import { useGetActivities } from '@ors/components/manage/Blocks/BusinessPlans/useGetActivities'
+import { ProjectDataProps } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
+import { ApiBPActivity } from '@ors/types/api_bp_get'
 
 import { find, map } from 'lodash'
-import { ProjIdentifiers } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
-import { ApiBPActivity } from '@ors/types/api_bp_get'
 
 const ACTIVITIES_PER_PAGE_TABLE = 50
 
-export type LinkedBPTableWrapperProps = Omit<
-  LinkedBPTableProps,
-  'period' | 'yearRanges'
->
-
-const LinkedBPTableWrapper = (
-  props: LinkedBPTableWrapperProps & {
-    setBpId: React.Dispatch<React.SetStateAction<number | null>>
-  },
-) => {
+const LinkedBPTableWrapper = (props: ProjectDataProps) => {
   const { results: yearRanges } = useGetYearRanges()
   const { periodOptions } = useGetBpPeriods(yearRanges)
 
@@ -50,14 +41,15 @@ type LinkedBPTableProps = Omit<
   'activities'
 > & {
   period: ReturnType<typeof useGetBpPeriods>['periodOptions'][0]
-  projIdentifiers: ProjIdentifiers
 }
 
 const LinkedBPTable = ({
+  projectData,
   period,
-  projIdentifiers,
   ...rest
 }: LinkedBPTableProps) => {
+  const projIdentifiers = projectData.projIdentifiers
+
   const filters = {
     bp_status: 'Endorsed',
     year_start: period?.year_start,
@@ -94,6 +86,7 @@ const LinkedBPTable = ({
       ) : null}
       <LatestEndorsedBPActivities
         {...{
+          projectData,
           activities,
           filters,
         }}
@@ -103,10 +96,9 @@ const LinkedBPTable = ({
   )
 }
 
-type LatestEndorsedBPActivitiesProps = {
+type LatestEndorsedBPActivitiesProps = ProjectDataProps & {
   activities: ReturnType<typeof useGetActivities>
   yearRanges: ReturnType<typeof useGetYearRanges>['results']
-  bpId: number | null
 }
 
 export type LinkableActivity = ApiBPActivity & {
@@ -114,8 +106,9 @@ export type LinkableActivity = ApiBPActivity & {
 }
 
 function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
-  const { activities, yearRanges, bpId, ...rest } = props
+  const { activities, yearRanges, projectData, ...rest } = props
   const { results, ...restActivities } = activities
+  const { bpId } = projectData.bpLinking
 
   const formattedResults = useMemo(
     () =>
