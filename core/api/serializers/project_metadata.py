@@ -14,7 +14,7 @@ from core.models.project_metadata import (
     ProjectSector,
     ProjectStatus,
     ProjectSubmissionStatus,
-    ProjectClusterTypeSectorFields,
+    ProjectSpecificFields,
     ProjectSubSector,
     ProjectType,
 )
@@ -176,11 +176,11 @@ class ProjectFieldSerializer(serializers.ModelSerializer):
         return None
 
 
-class ProjectClusterTypeSectorFieldsSerializer(serializers.ModelSerializer):
+class ProjectSpecificFieldsSerializer(serializers.ModelSerializer):
     fields = ProjectFieldSerializer(many=True, read_only=True)
 
     class Meta:
-        model = ProjectClusterTypeSectorFields
+        model = ProjectSpecificFields
         fields = [
             "fields",
         ]

@@ -130,6 +130,14 @@ class ProjectProgressReportAdmin(admin.ModelAdmin):
 class ProjectFileAdmin(admin.ModelAdmin):
     list_filter = []
 
+    list_filter = [
+        AutocompleteFilterFactory("project", "project"),
+    ]
+
+    def get_list_display(self, request):
+        exclude = []
+        return get_final_display_list(ProjectFile, exclude)
+
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "project":
             # Use Project.objects.really_all() to include all projects
@@ -163,6 +171,8 @@ class ProjectOdsOdpAdmin(admin.ModelAdmin):
     ]
     list_filter = [
         "ods_type",
+        AutocompleteFilterFactory("ods_substance", "ods_substance"),
+        AutocompleteFilterFactory("project", "project"),
     ]
 
     def get_list_display(self, request):
@@ -200,6 +210,10 @@ class ProjectFundAdmin(admin.ModelAdmin):
 class SubmissionAmountAdmin(admin.ModelAdmin):
     search_fields = [
         "project__title",
+    ]
+
+    list_filter = [
+        AutocompleteFilterFactory("project", "project"),
     ]
 
     def get_queryset(self, request):

@@ -34,6 +34,7 @@ from core.api.views import (
     StatisticsStatusOfContributionsView,
     StatusOfTheFundFileViewSet,
     ConsolidatedInputDataExportView,
+    UserPermissionsView,
 )
 from core.api.views.agency import AgencyListView
 from core.api.views.bp_export import BPActivityExportView
@@ -92,7 +93,7 @@ from core.api.views.meetings import DecisionListView, MeetingListView
 from core.api.views.projects import (
     MetaProjectListView,
     ProjectClusterListView,
-    ProjectClusterTypeSectorListView,
+    ProjectSpecificFieldsListView,
     ProjectOdsOdpViewSet,
     ProjectRbmMeasureViewSet,
     ProjectStatisticsView,
@@ -457,8 +458,8 @@ urlpatterns = [
     ),
     path(
         "project-cluster/<int:cluster_id>/type/<int:type_id>/sector/<int:sector_id>/fields/",
-        ProjectClusterTypeSectorListView.as_view(),
-        name="project-cluster-type-sector-fields-list",
+        ProjectSpecificFieldsListView.as_view(),
+        name="project-specific-fields",
     ),
     path(
         "rbm-measures/",
@@ -476,7 +477,7 @@ urlpatterns = [
         name="project-files-v2",
     ),
     path(
-        "project/files/<int:id>/download/v2/",
+        "project/<int:project_id>/files/<int:id>/download/v2/",
         ProjectFilesDownloadView.as_view(),
         name="project-files-v2-download",
     ),
@@ -589,6 +590,11 @@ urlpatterns = [
         "replenishment/input-data/export/",
         ConsolidatedInputDataExportView.as_view(),
         name="replenishment-input-data-export",
+    ),
+    path(
+        "user/permissions/",
+        UserPermissionsView.as_view(),
+        name="user-permissions",
     ),
     *router.urls,
 ]

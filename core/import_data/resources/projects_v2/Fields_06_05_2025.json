@@ -2,7 +2,7 @@
     {
         "IMPORT_NAME": "Annex group of substances",
         "LABEL": "Annex and group of substances",
-        "WRITE_FIELD_NAME": "group_id",
+        "WRITE_FIELD_NAME": "group",
         "READ_FIELD_NAME": "group",
         "TABLE": "project",
         "DATA_TYPE": "drop_down",

@@ -30,7 +30,7 @@ from core.api.serializers.project import (
 )
 from core.api.serializers.project_metadata import (
     ProjectClusterSerializer,
-    ProjectClusterTypeSectorFieldsSerializer,
+    ProjectSpecificFieldsSerializer,
     ProjectStatusSerializer,
     ProjectSubmissionStatusSerializer,
     ProjectTypeSerializer,
@@ -54,7 +54,7 @@ from core.models.project import (
 )
 from core.models.project_metadata import (
     ProjectCluster,
-    ProjectClusterTypeSectorFields,
+    ProjectSpecificFields,
     ProjectStatus,
     ProjectSubmissionStatus,
     ProjectType,
@@ -105,7 +105,7 @@ class ProjectTypeListView(generics.ListAPIView):
         cluster_id = self.request.query_params.get("cluster_id")
         if cluster_id:
             queryset = queryset.filter(
-                id__in=ProjectClusterTypeSectorFields.objects.filter(
+                id__in=ProjectSpecificFields.objects.filter(
                     cluster_id=cluster_id
                 ).values_list("type_id", flat=True)
             )
@@ -137,17 +137,17 @@ class ProjectClusterListView(generics.ListAPIView):
     serializer_class = ProjectClusterSerializer
 
 
-class ProjectClusterTypeSectorListView(generics.RetrieveAPIView):
+class ProjectSpecificFieldsListView(generics.RetrieveAPIView):
     """
     Get a tree structure of project cluster types and sectors
     *and the list of required fields for each combination* *to be implemented*.
     """
 
     permission_classes = [IsSecretariat | IsAgency | IsCountryUser | IsViewer]
-    serializer_class = ProjectClusterTypeSectorFieldsSerializer
+    serializer_class = ProjectSpecificFieldsSerializer
 
     def get_object(self):
-        queryset = ProjectClusterTypeSectorFields.objects.select_related(
+        queryset = ProjectSpecificFields.objects.select_related(
             "cluster", "type", "sector"
         ).prefetch_related(
             "fields",

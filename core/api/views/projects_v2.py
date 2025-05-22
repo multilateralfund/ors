@@ -5,6 +5,7 @@ import shutil
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from django.db import transaction
+from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -15,7 +16,16 @@ from rest_framework.decorators import action
 from rest_framework.views import APIView
 
 from core.api.filters.project import ProjectFilter
-from core.api.permissions import IsAgency, IsCountryUser, IsSecretariat, IsViewer
+from core.api.permissions import (
+    IsAgencyInputter,
+    IsAgencySubmitter,
+    IsSecretariatViewer,
+    IsSecretariatV1V2EditAccess,
+    IsSecretariatV3EditAccess,
+    IsSecretariatProductionV1V2EditAccess,
+    IsSecretariatProductionV3EditAccess,
+    IsViewer,
+)
 from core.api.serializers.project_v2 import (
     ProjectV2FileSerializer,
     ProjectDetailsV2Serializer,
@@ -33,6 +43,7 @@ from core.models.project import (
     ProjectFile,
     SubmissionAmount,
 )
+from core.models.user import User
 from core.models.utils import get_protected_storage
 
 
@@ -77,7 +88,6 @@ class ProjectV2ViewSet(
 ):
     """V2 ViewSet for Project model."""
 
-    permission_classes = [IsSecretariat | IsAgency | IsCountryUser | IsViewer]
     filterset_class = ProjectFilter
     filter_backends = [
         DjangoFilterBackend,
@@ -94,13 +104,71 @@ class ProjectV2ViewSet(
     ]
     search_fields = ["code", "legacy_code", "meta_project__code", "title"]
 
-    def get_queryset(self):
+    @property
+    def permission_classes(self):
+        if self.action in ["list", "retrieve"]:
+            return [
+                IsViewer
+                | IsAgencyInputter
+                | IsAgencySubmitter
+                | IsSecretariatViewer
+                | IsSecretariatV1V2EditAccess
+                | IsSecretariatV3EditAccess
+                | IsSecretariatProductionV1V2EditAccess
+                | IsSecretariatProductionV3EditAccess
+            ]
+        if self.action in [
+            "create",
+            "update",
+            "partial_update",
+            "destroy",
+            "increase_version",
+        ]:
+            return [
+                IsAgencyInputter
+                | IsAgencySubmitter
+                | IsSecretariatV1V2EditAccess
+                | IsSecretariatProductionV1V2EditAccess
+            ]
+        return super().get_permissions()
+
+    def filter_permissions_queryset(self, queryset):
+        """
+        Filter the queryset based on the user's permissions.
+        """
         user = self.request.user
+        if user.is_superuser:
+            return queryset
+
+        if user.user_type in [
+            User.UserType.SECRETARIAT_VIEWER,
+            User.UserType.SECRETARIAT_V1_V2_EDIT_ACCESS,
+            User.UserType.SECRETARIAT_V3_EDIT_ACCESS,
+            User.UserType.SECRETARIAT_PRODUCTION_V1_V2_EDIT_ACCESS,
+            User.UserType.SECRETARIAT_PRODUCTION_V3_EDIT_ACCESS,
+        ]:
+            return queryset
+        if user.user_type in [
+            User.UserType.AGENCY_SUBMITTER,
+            User.UserType.AGENCY_INPUTTER,
+            User.UserType.VIEWER,
+        ]:
+            return queryset.filter(
+                Q(agency=user.agency)
+                | (
+                    Q(meta_project__lead_agency=user.agency)
+                    & Q(meta_project__lead_agency__isnull=False)
+                )
+            )
+
+        return queryset.none()
+
+    def get_queryset(self):
         if self.action == "retrieve":
             queryset = Project.objects.really_all()
         else:
             queryset = Project.objects.all()
-
+        queryset = self.filter_permissions_queryset(queryset)
         queryset = queryset.select_related(
             "country",
             "agency",
@@ -118,15 +186,6 @@ class ProjectV2ViewSet(
             "rbm_measures__measure",
             "ods_odp",
         )
-
-        if "agency" in user.user_type.lower():
-            # filter projects by agency if user is agency
-            queryset = queryset.filter(agency=user.agency)
-
-        if "country" in user.user_type.lower():
-            # filter projects by country if user is country
-            queryset = queryset.filter(country=user.country)
-
         return queryset
 
     def get_serializer_class(self):
@@ -317,6 +376,67 @@ class ProjectV2FileView(
         ".docx",
     ]
 
+    @property
+    def permission_classes(self):
+        if self.request.method in ["GET"]:
+            return [
+                IsViewer
+                | IsAgencyInputter
+                | IsAgencySubmitter
+                | IsSecretariatViewer
+                | IsSecretariatV1V2EditAccess
+                | IsSecretariatV3EditAccess
+                | IsSecretariatProductionV1V2EditAccess
+                | IsSecretariatProductionV3EditAccess
+            ]
+        if self.request.method in ["POST", "DELETE"]:
+            return [
+                IsAgencyInputter
+                | IsAgencySubmitter
+                | IsSecretariatV1V2EditAccess
+                | IsSecretariatProductionV1V2EditAccess
+            ]
+
+        return super().get_permissions()
+
+    def filter_permissions_queryset(self, queryset):
+        """
+        Filter the queryset based on the user's permissions.
+        """
+        user = self.request.user
+        if user.is_superuser:
+            return queryset
+
+        if user.user_type in [
+            User.UserType.SECRETARIAT_VIEWER,
+            User.UserType.SECRETARIAT_V1_V2_EDIT_ACCESS,
+            User.UserType.SECRETARIAT_V3_EDIT_ACCESS,
+            User.UserType.SECRETARIAT_PRODUCTION_V1_V2_EDIT_ACCESS,
+            User.UserType.SECRETARIAT_PRODUCTION_V3_EDIT_ACCESS,
+        ]:
+            return queryset
+        if user.user_type in [
+            User.UserType.AGENCY_SUBMITTER,
+            User.UserType.AGENCY_INPUTTER,
+            User.UserType.VIEWER,
+        ]:
+            return queryset.filter(
+                Q(agency=user.agency) | Q(meta_project__lead_agency=user.agency)
+            )
+
+        return queryset.none()
+
+    def get_queryset(self):
+        projects = self.filter_permissions_queryset(Project.objects.really_all())
+        project = get_object_or_404(projects, pk=self.kwargs.get("project_id"))
+        queryset = ProjectFile.objects.filter(project=project)
+        return queryset
+
+    def get_object(self):
+        queryset = self.get_queryset()
+        obj = get_object_or_404(queryset, pk=self.kwargs.get("id"))
+        return obj
+
     def get_serializer_class(self):
         # don't use the serializer here as it will be used for auto-generating the schema
         # and it conflicts with the url parameters
@@ -332,10 +452,7 @@ class ProjectV2FileView(
         return [parsers.JSONParser]
 
     def get(self, request, *args, **kwargs):
-        project = get_object_or_404(
-            Project.objects.really_all(), pk=self.kwargs.get("project_id")
-        )
-        queryset = ProjectFile.objects.filter(project=project)
+        queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -397,6 +514,7 @@ class ProjectV2FileView(
         ],
     )
     def post(self, request, *args, **kwargs):
+        self.get_queryset()
         return self._file_create(request, *args, **kwargs)
 
     @swagger_auto_schema(
@@ -413,11 +531,8 @@ class ProjectV2FileView(
         ),
     )
     def delete(self, request, *args, **kwargs):
-        project = get_object_or_404(
-            Project.objects.really_all(), pk=self.kwargs.get("project_id")
-        )
+        queryset = self.get_queryset()
         file_ids = request.data.get("file_ids")
-        queryset = ProjectFile.objects.filter(project=project)
         queryset.filter(id__in=file_ids).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -425,6 +540,44 @@ class ProjectV2FileView(
 class ProjectFilesDownloadView(generics.RetrieveAPIView):
     queryset = ProjectFile.objects.all()
     lookup_field = "id"
+
+    def filter_permissions_queryset(self, queryset):
+        """
+        Filter the queryset based on the user's permissions.
+        """
+        user = self.request.user
+        if user.is_superuser:
+            return queryset
+
+        if user.user_type in [
+            User.UserType.SECRETARIAT_VIEWER,
+            User.UserType.SECRETARIAT_V1_V2_EDIT_ACCESS,
+            User.UserType.SECRETARIAT_V3_EDIT_ACCESS,
+            User.UserType.SECRETARIAT_PRODUCTION_V1_V2_EDIT_ACCESS,
+            User.UserType.SECRETARIAT_PRODUCTION_V3_EDIT_ACCESS,
+        ]:
+            return queryset
+        if user.user_type in [
+            User.UserType.AGENCY_SUBMITTER,
+            User.UserType.AGENCY_INPUTTER,
+            User.UserType.VIEWER,
+        ]:
+            return queryset.filter(
+                Q(agency=user.agency) | Q(meta_project__lead_agency=user.agency)
+            )
+
+        return queryset.none()
+
+    def get_queryset(self):
+        projects = self.filter_permissions_queryset(Project.objects.really_all())
+        project = get_object_or_404(projects, pk=self.kwargs.get("project_id"))
+        queryset = ProjectFile.objects.filter(project=project)
+        return queryset
+
+    def get_object(self):
+        queryset = self.get_queryset()
+        obj = get_object_or_404(queryset, pk=self.kwargs.get("id"))
+        return obj
 
     def get(self, request, *args, **kwargs):
         obj = self.get_object()

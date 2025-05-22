@@ -71,6 +71,60 @@ def viewer_user():
 
 
 @pytest.fixture
+def admin_user():
+    return UserFactory(
+        username="Admin",
+        email="admin@test.com",
+        is_superuser=True,
+    )
+
+
+@pytest.fixture
+def secretariat_viewer_user():
+    return UserFactory(
+        username="secretariat_viewer",
+        email="testuser@test.com",
+        user_type="secretariat_viewer",
+    )
+
+
+@pytest.fixture
+def secretariat_v1_v2_edit_access_user():
+    return UserFactory(
+        username="secretariat_v1_v2_edit_access",
+        email="secretariat_v1_v2_edit_access@mail.com",
+        user_type="secretariat_v1_v2_edit_access",
+    )
+
+
+@pytest.fixture
+def secretariat_v3_edit_access_user():
+    return UserFactory(
+        username="secretariat_v3_edit_access",
+        email="secretariat_v3_edit_access@mail.com",
+        user_type="secretariat_v3_edit_access",
+    )
+
+
+@pytest.fixture
+def secretariat_production_v1_v2_edit_access_user():
+    return UserFactory(
+        username="secretariat_production_v1_v2_edit_access",
+        email="secretariat_production_v1_v2_edit_access@mail.com",
+        user_type="secretariat_production_v1_v2_edit_access",
+    )
+
+
+@pytest.fixture
+def secretariat_production_v3_edit_access_user():
+    return UserFactory(
+        username="secretariat_production_v3_edit_access",
+        email="secretariat_production_v3_edit_access@mail.com",
+        user_type="secretariat_production_v3_edit_access",
+    )
+
+
+@pytest.fixture
 def stakeholder_user():
     return UserFactory(user_type="stakeholder")
 

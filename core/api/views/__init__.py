@@ -7,3 +7,4 @@ from .cp_reports import *
 from .countries import *
 from .projects import *
 from .replenishment import *
+from .users import *

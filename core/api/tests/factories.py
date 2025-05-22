@@ -45,7 +45,7 @@ from core.models.project import (
 )
 from core.models.project_metadata import (
     ProjectCluster,
-    ProjectClusterTypeSectorFields,
+    ProjectSpecificFields,
     ProjectField,
     ProjectSector,
     ProjectStatus,
@@ -400,9 +400,9 @@ class ProjectClusterFactory(factory.django.DjangoModelFactory):
     sort_order = factory.Faker("random_int", min=1, max=100)
 
 
-class ProjectClusterTypeSectorFieldsFactory(factory.django.DjangoModelFactory):
+class ProjectSpecificFieldsFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = ProjectClusterTypeSectorFields
+        model = ProjectSpecificFields
 
     cluster = factory.SubFactory(ProjectClusterFactory)
     type = factory.SubFactory(ProjectTypeFactory)
