@@ -55,9 +55,12 @@ const EditActionButtons = ({
         })
       }
 
-      enqueueSnackbar(<>Updated {project.code} successfully.</>, {
-        variant: 'success',
-      })
+      enqueueSnackbar(
+        <>Updated {project.code ?? project.code_legacy} successfully.</>,
+        {
+          variant: 'success',
+        },
+      )
     } catch (error) {
       if (error.status === 400) {
         const errors = await error.json()

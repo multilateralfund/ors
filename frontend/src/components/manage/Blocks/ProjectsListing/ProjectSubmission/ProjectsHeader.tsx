@@ -37,6 +37,7 @@ const ProjectsHeader = ({
 
   const {
     code,
+    code_legacy,
     versions = [],
     version = 0,
     latest_project = null,
@@ -55,7 +56,9 @@ const ProjectsHeader = ({
       <div className="align-center flex flex-wrap justify-between gap-x-4 gap-y-2">
         <div className="flex gap-2">
           <PageHeading>
-            {mode === 'edit' ? `Edit ${code}` : 'New project submission'}
+            {mode === 'edit'
+              ? `Edit ${code ?? code_legacy}`
+              : 'New project submission'}
           </PageHeading>
           {mode === 'edit' && Versions}
         </div>

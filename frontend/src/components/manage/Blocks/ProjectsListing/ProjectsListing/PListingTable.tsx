@@ -40,6 +40,7 @@ const PListingTable = ({ projects, filters, projectId, setProjectId }: any) => {
         loading={loading}
         paginationPageSize={PROJECTS_PER_PAGE}
         paginationPageSizeSelector={paginationPageSizeSelectorOpts}
+        resizeGridOnRowUpdate={true}
         rowBuffer={50}
         rowCount={count}
         rowData={results}
@@ -59,11 +60,20 @@ const PListingTable = ({ projects, filters, projectId, setProjectId }: any) => {
           const ordering = api
             .getColumnState()
             .filter((column) => !!column.sort)
-            .map(
-              ({ sort, colId }) =>
-                (sort === 'asc' ? '' : '-') +
-                (colId === 'title' ? colId : colId.split('.')[0] + '__name'),
-            )
+            .map(({ sort, colId }) => {
+              const field = [
+                'country',
+                'agency',
+                'sector',
+                'project_type',
+              ].includes(colId)
+                ? colId.split('.')[0] + '__name'
+                : ['meta_project', 'cluster'].includes(colId)
+                  ? colId.split('.')[0] + '__code'
+                  : colId
+
+              return (sort === 'asc' ? '' : '-') + field
+            })
             .join(',')
           setParams({ offset: 0, ordering })
         }}

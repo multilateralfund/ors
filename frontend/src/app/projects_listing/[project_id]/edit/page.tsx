@@ -4,7 +4,7 @@ import ProjectsEditWrapper from '@ors/components/manage/Blocks/ProjectsListing/P
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 
 export default function Project() {
-  usePageTitle('Project')
+  usePageTitle('Project edit')
 
   return (
     <PageWrapper>

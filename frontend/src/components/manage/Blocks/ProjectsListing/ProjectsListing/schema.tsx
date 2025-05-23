@@ -48,6 +48,7 @@ const getColumnDefs = (
               field: '',
               minWidth: 70,
               maxWidth: 70,
+              sortable: false,
             },
           ]
         : []),
@@ -57,6 +58,7 @@ const getColumnDefs = (
         cellClass: 'ag-text-center',
         minWidth: 90,
         maxWidth: 90,
+        sortable: false,
         cellRenderer: (props: ICellRendererParams) => (
           <Checkbox
             checked={projectId == props.data.id}
@@ -160,7 +162,7 @@ const getColumnDefs = (
       cellClass: 'ag-text-center ag-cell-ellipsed',
       minWidth: 90,
       resizable: true,
-      sortable: false,
+      sortable: true,
     },
   }
 }
