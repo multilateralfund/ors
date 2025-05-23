@@ -1349,14 +1349,14 @@ class TestCPReportDelete(BaseTest):
         assert generations.count() == 1
         for generation in generations:
             assert generation.country_programme_report_id == current_report.id
-            assert str(generation.all_uses) == "80.570"
+            assert str(generation.all_uses) == "80.5700000000"
 
         # check cp emissions
         emissions = CPEmission.objects.all()
         assert emissions.count() == 1
         for emission in emissions:
             assert emission.country_programme_report_id == current_report.id
-            assert str(emission.total) == "12.400"
+            assert str(emission.total) == "12.4000000000"
 
 
 @pytest.fixture(name="_setup_get_empty_form")

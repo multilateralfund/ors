@@ -101,7 +101,15 @@ class ProjectV2ViewSet(
         "sector__name",
         "project_type__name",
         "substance_type",
+        "submission_status",
+        "status",
+        "meta_project__code",
+        "code",
+        "cluster__code",
+        "tranche_number",
+        "total_fund",
     ]
+
     search_fields = ["code", "legacy_code", "meta_project__code", "title"]
 
     @property

@@ -153,14 +153,23 @@
         "SECTION": "Impact"
     },    
     {
-        "IMPORT_NAME": "Number of training institutions newly  assisted",
+        "IMPORT_NAME": "Number of training institutions newly assisted",
         "LABEL": "Number of training institutions newly assisted",
         "WRITE_FIELD_NAME": "number_of_training_institutions_newly_assisted",
         "READ_FIELD_NAME": "number_of_training_institutions_newly_assisted",
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact"
-    }, 
+    },
+    {
+        "IMPORT_NAME": "Number of tools sets distributed",
+        "LABEL": "Number of tools sets distributed",
+        "WRITE_FIELD_NAME": "number_of_tools_sets_distributed",
+        "READ_FIELD_NAME": "number_of_tools_sets_distributed",
+        "TABLE": "project",
+        "DATA_TYPE": "number",
+        "SECTION": "Impact"
+    },
     {
         "IMPORT_NAME": "Certification system for technicians established or further enhanced (yes or no)",
         "LABEL": "Certification system for technicians established or further enhanced",
