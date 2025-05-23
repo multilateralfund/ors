@@ -6,6 +6,7 @@ import { formatNumberColumns } from '../utils'
 
 import { Checkbox } from '@mui/material'
 import { FiEdit, FiEye } from 'react-icons/fi'
+import { isNil } from 'lodash'
 import {
   ICellRendererParams,
   ITooltipParams,
@@ -149,7 +150,9 @@ const getColumnDefs = (
         field: 'total_fund',
         minWidth: 120,
         valueGetter: (params: ValueGetterParams) =>
-          '$' + formatNumberColumns(params, 'total_fund'),
+          !isNil(params.data.total_fund)
+            ? '$' + formatNumberColumns(params, 'total_fund')
+            : '',
         tooltipValueGetter: (params: ITooltipParams) =>
           formatNumberColumns(params, 'total_fund', {
             maximumFractionDigits: 10,

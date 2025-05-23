@@ -82,11 +82,11 @@ export const formatNumberColumns = (
 ) => {
   const value = params.data[field]
 
-  return value
+  return !isNil(value)
     ? valueFormatter
       ? formatDecimalValue(parseFloat(value), valueFormatter)
       : formatDecimalValue(parseFloat(value))
-    : '0.00'
+    : ''
 }
 
 export const handleChangeNumberField = <T, K>(

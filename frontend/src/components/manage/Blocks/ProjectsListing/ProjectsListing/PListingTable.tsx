@@ -64,13 +64,15 @@ const PListingTable = ({ projects, filters, projectId, setProjectId }: any) => {
               const field = [
                 'country',
                 'agency',
-                'sector',
-                'project_type',
+                'sector.code',
+                'project_type.code',
               ].includes(colId)
                 ? colId.split('.')[0] + '__name'
-                : ['meta_project', 'cluster'].includes(colId)
+                : colId === 'cluster.code'
                   ? colId.split('.')[0] + '__code'
-                  : colId
+                  : colId === 'metaproject_code'
+                    ? 'meta_project__code'
+                    : colId
 
               return (sort === 'asc' ? '' : '-') + field
             })
