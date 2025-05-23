@@ -1,18 +1,21 @@
 'use client'
 
 import ViewTable from '@ors/components/manage/Form/ViewTable'
-
 import getColumnDefs from './schema'
 import { PROJECTS_PER_PAGE } from '../constants'
 import { useStore } from '@ors/store'
 
-const PListingTable = ({ projects, filters }: any) => {
+const PListingTable = ({ projects, filters, projectId, setProjectId }: any) => {
   const { count, loaded, loading, results, setParams } = projects
 
   const projectSlice = useStore((state) => state.projects)
   const user_permissions = projectSlice.user_permissions.data || []
 
-  const { columnDefs, defaultColDef } = getColumnDefs(user_permissions)
+  const { columnDefs, defaultColDef } = getColumnDefs(
+    user_permissions,
+    projectId,
+    setProjectId,
+  )
 
   const getPaginationSelectorOpts = (): number[] => {
     const nrResultsOpts = [100, 250, 500, 1000]

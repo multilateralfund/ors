@@ -48,6 +48,7 @@ import ProjectSubmissionsEditPage from '@ors/app/project-submissions/edit/page'
 
 import ProjectsListingPage from '@ors/app/projects_listing/page'
 import ProjectsCreatePage from '@ors/app/projects_listing/create/page'
+import ProjectsCopyPage from '@ors/app/projects_listing/copy/page'
 import ProjectsListingProjectPage from '@ors/app/projects_listing/[project_id]/page'
 import ProjectsListingArchiveProjectPage from '@ors/app/projects_listing/[project_id]/archive/page'
 
@@ -233,6 +234,9 @@ export default function App() {
         </Route>
         <Route path="/projects-listing/create">
           <ProjectsCreatePage />
+        </Route>
+        <Route path="/projects-listing/create/copyFrom/:project_id">
+          <ProjectsCopyPage />
         </Route>
         <Route path="/projects-listing/:project_id">
           <ProjectsListingProjectPage />

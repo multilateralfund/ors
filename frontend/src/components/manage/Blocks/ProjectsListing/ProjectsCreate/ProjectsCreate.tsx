@@ -1,9 +1,7 @@
 'use client'
 
-import { ReactNode, useState } from 'react'
+import { useState } from 'react'
 
-import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
-import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import ProjectIdentifiersSection from './ProjectIdentifiersSection.tsx'
 import ProjectBPLinking from './ProjectBPLinking'
 import ProjectCrossCuttingFields from './ProjectCrossCuttingFields'
@@ -25,26 +23,18 @@ import { Tabs, Tab } from '@mui/material'
 const ProjectsCreate = ({
   projectData,
   setProjectData,
-  heading,
-  actionButtons,
   specificFields,
   mode,
   project,
-  versions,
   ...rest
 }: ProjectDataProps &
   ProjectFiles & {
-    heading: string
-    actionButtons: ReactNode
     specificFields: ProjectSpecificFields[]
     mode: string
     project?: ProjectTypeApi
     projectFiles?: ProjectFile[]
-    versions?: ReactNode
   }) => {
-  const [currentStep, setCurrentStep] = useState<number>(
-    mode === 'edit' ? 1 : 0,
-  )
+  const [currentStep, setCurrentStep] = useState<number>(mode !== 'add' ? 1 : 0)
   const [currentTab, setCurrentTab] = useState<number>(0)
 
   const projIdentifiers = projectData.projIdentifiers
@@ -163,50 +153,38 @@ const ProjectsCreate = ({
 
   return (
     <>
-      <HeaderTitle>
-        <div className="align-center flex flex-wrap justify-between gap-x-4 gap-y-2">
-          <div className="flex gap-2">
-            <PageHeading>{heading}</PageHeading>
-            {versions}
-          </div>
-          {actionButtons}
-        </div>
-      </HeaderTitle>
-
-      <>
-        <Tabs
-          aria-label="create-project"
-          value={currentTab}
-          className="sectionsTabs"
-          variant="scrollable"
-          scrollButtons="auto"
-          allowScrollButtonsMobile
-          TabIndicatorProps={{
-            className: 'h-0',
-            style: { transitionDuration: '150ms' },
-          }}
-          onChange={(_, newValue) => {
-            setCurrentTab(newValue)
-          }}
-        >
-          {steps.map(({ id, ariaControls, label, disabled }) => (
-            <Tab
-              id={id}
-              aria-controls={ariaControls}
-              label={label}
-              disabled={disabled}
-              classes={{
-                disabled: 'text-gray-200',
-              }}
-            />
-          ))}
-        </Tabs>
-        <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
-          {steps
-            .filter(({ step }) => step === currentTab)
-            .map(({ component }) => component)}
-        </div>
-      </>
+      <Tabs
+        aria-label="create-project"
+        value={currentTab}
+        className="sectionsTabs"
+        variant="scrollable"
+        scrollButtons="auto"
+        allowScrollButtonsMobile
+        TabIndicatorProps={{
+          className: 'h-0',
+          style: { transitionDuration: '150ms' },
+        }}
+        onChange={(_, newValue) => {
+          setCurrentTab(newValue)
+        }}
+      >
+        {steps.map(({ id, ariaControls, label, disabled }) => (
+          <Tab
+            id={id}
+            aria-controls={ariaControls}
+            label={label}
+            disabled={disabled}
+            classes={{
+              disabled: 'text-gray-200',
+            }}
+          />
+        ))}
+      </Tabs>
+      <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
+        {steps
+          .filter(({ step }) => step === currentTab)
+          .map(({ component }) => component)}
+      </div>
     </>
   )
 }

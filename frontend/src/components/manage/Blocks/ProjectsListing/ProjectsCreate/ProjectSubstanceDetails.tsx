@@ -8,7 +8,6 @@ import {
   SpecificFieldsSectionProps,
   ProjectData,
 } from '../interfaces'
-import { tableColumns } from '../constants'
 
 import { ICellRendererParams } from 'ag-grid-community'
 import { Button } from '@mui/material'
@@ -77,7 +76,7 @@ const ProjectSubstanceDetails = ({
             className="rounded-lg border border-solid border-primary bg-white p-1.5 text-base hover:bg-primary"
             onClick={() => setDisplayModal(true)}
           >
-            Add {tableColumns.ods_odp}
+            Add row
             <IoAddCircle className="ml-1.5" size={18} />
           </Button>
         </div>

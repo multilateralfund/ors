@@ -6,7 +6,7 @@ import { useGetProject } from '../hooks/useGetProject'
 
 import { useParams } from 'wouter'
 
-const ProjectsEditWrapper = () => {
+const ProjectsEditWrapper = ({ mode = 'edit' }: { mode?: string }) => {
   const { project_id } = useParams<Record<string, string>>()
 
   const project = useGetProject(project_id)
@@ -18,7 +18,7 @@ const ProjectsEditWrapper = () => {
         className="!fixed bg-action-disabledBackground"
         active={loading}
       />
-      {!loading && data && <ProjectsEdit project={data} />}
+      {!loading && data && <ProjectsEdit project={data} mode={mode} />}
     </>
   )
 }

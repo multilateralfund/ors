@@ -23,7 +23,6 @@ export const tableColumns: { [key: string]: string } = {
   individual_consideration: 'Blanket or individual consideration',
   meeting: 'Meeting number',
   description: 'Description',
-  ods_odp: 'ODS ODP',
 }
 
 export const defaultProps = {
