@@ -652,5 +652,51 @@
                 ]
             }
         ]
+    },
+    {
+        "cluster": "Alternative Financing Mechanism",
+        "types": [
+            {
+                "type": "Revolving Fund",
+                "sectors": [
+                    "Energy Efficiency End-user Revolving fund"
+                ]
+            },
+            {
+                "type": "Preparation",
+                "sectors": [
+                    "Energy Efficiency End-user Revolving fund"
+                ]
+            }
+        ]
+    },
+    {
+        "cluster": "Atmospheric Monitoring",
+        "types": [
+            {
+                "type": "Demonstration",
+                "sectors": [
+                    "Control Substance Monitoring"
+                ]
+            },
+            {
+                "type": "Investment",
+                "sectors": [
+                    "Control Substance Monitoring"
+                ]
+            },
+            {
+                "type": "Preparation",
+                "sectors": [
+                    "Control Substance Monitoring"
+                ]
+            },
+            {
+                "type": "Technical assistance",
+                "sectors": [
+                    "Control Substance Monitoring"
+                ]
+            }
+        ]
     }
 ]

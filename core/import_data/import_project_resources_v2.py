@@ -233,6 +233,13 @@ def import_project_specific_fields(file_path):
     df = pd.read_excel(file_path).fillna("")
 
     for _, row in df.iterrows():
+        if (
+            row["Sector name"].strip() == "Other Sector"
+            or row["Project type name"].strip() == "Other Type"
+        ):
+            continue
+        if row["Project type name"].strip() == "Project preparation":
+            row["Project type name"] = "Preparation"
         try:
             cluster_sector_type = ProjectSpecificFields.objects.get(
                 cluster__name__iexact=row["Cluster name"].strip(),
@@ -358,6 +365,8 @@ def import_project_resources_v2():
     import_fields(file_path)
     logger.info("✔ fields imported")
 
-    file_path = IMPORT_RESOURCES_DIR / "projects_v2" / "project_specific_fields.xlsx"
+    file_path = (
+        IMPORT_RESOURCES_DIR / "projects_v2" / "project_specific_fields_22_05_2025.xlsx"
+    )
     import_project_specific_fields(file_path)
     logger.info("✔ cluster type sector fields imported")
