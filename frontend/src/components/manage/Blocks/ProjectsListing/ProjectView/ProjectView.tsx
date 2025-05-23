@@ -10,6 +10,7 @@ import ProjectSubstanceDetails from './ProjectSubstanceDetails'
 import ProjectImpact from './ProjectImpact'
 import ProjectDocumentation from './ProjectDocumentation'
 import { ProjectFile, ProjectViewProps } from '../interfaces'
+import { getSectionFields } from '../utils'
 
 import { Tabs, Tab } from '@mui/material'
 
@@ -20,6 +21,10 @@ const ProjectView = ({
 }: ProjectViewProps & { projectFiles: ProjectFile[] }) => {
   const [activeTab, setActiveTab] = useState(0)
 
+  const [substanceDetailsFields, impactFields] = [
+    getSectionFields(specificFields, 'Substance Details'),
+    getSectionFields(specificFields, 'Impact'),
+  ]
   return (
     <>
       <Tabs
@@ -57,11 +62,19 @@ const ProjectView = ({
           id="project-substance-details"
           aria-controls="project-substance-details"
           label="Substance details"
+          disabled={!substanceDetailsFields.length}
+          classes={{
+            disabled: 'text-gray-200',
+          }}
         />
         <Tab
           id="project-impact"
           aria-controls="project-impact"
           label="Impact"
+          disabled={!impactFields.length}
+          classes={{
+            disabled: 'text-gray-200',
+          }}
         />
         <Tab
           id="project-documentation"

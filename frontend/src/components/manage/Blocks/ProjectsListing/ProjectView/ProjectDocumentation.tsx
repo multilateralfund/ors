@@ -24,7 +24,7 @@ const ProjectDocumentation = ({
       ) : (
         <HeaderWithIcon title="File attachments" Icon={TbFiles} />
       )}
-      {['add', 'edit'].includes(mode) && (
+      {mode !== 'view' && (
         <FileInput
           {...{ files, setFiles }}
           extensionsList="Allowed files extensions: .pdf, .doc, .docx"

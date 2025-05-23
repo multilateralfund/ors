@@ -34,10 +34,9 @@ const ProjectViewWrapper = () => {
   const [specificFields, setSpecificFields] = useState<ProjectSpecificFields[]>(
     [],
   )
-  const [fieldsLoading, setFieldsLoading] = useState<boolean>(true)
   const [showVersionsMenu, setShowVersionsMenu] = useState<boolean>(false)
 
-  const { code, versions, version, latest_project } = data || {}
+  const { code, code_legacy, versions, version, latest_project } = data || {}
 
   useEffect(() => {
     if (cluster_id && project_type_id && sector_id) {
@@ -46,7 +45,6 @@ const ProjectViewWrapper = () => {
         project_type_id,
         sector_id,
         setSpecificFields,
-        setFieldsLoading,
       )
     } else setSpecificFields([])
   }, [cluster_id, project_type_id, sector_id])
@@ -55,14 +53,16 @@ const ProjectViewWrapper = () => {
     <>
       <Loading
         className="!fixed bg-action-disabledBackground"
-        active={loading || fieldsLoading}
+        active={loading}
       />
-      {!loading && !fieldsLoading && data && (
+      {!loading && data && (
         <>
           <HeaderTitle>
             <div className="align-center flex justify-between">
               <div className="flex gap-2">
-                <PageHeading className="min-w-fit">{code}</PageHeading>
+                <PageHeading className="min-w-fit">
+                  {code ?? code_legacy}
+                </PageHeading>
                 <VersionsDropdown
                   {...{ versions, showVersionsMenu, setShowVersionsMenu }}
                 />

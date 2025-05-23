@@ -1,18 +1,21 @@
 'use client'
 
 import ViewTable from '@ors/components/manage/Form/ViewTable'
-
 import getColumnDefs from './schema'
 import { PROJECTS_PER_PAGE } from '../constants'
 import { useStore } from '@ors/store'
 
-const PListingTable = ({ projects, filters }: any) => {
+const PListingTable = ({ projects, filters, projectId, setProjectId }: any) => {
   const { count, loaded, loading, results, setParams } = projects
 
   const projectSlice = useStore((state) => state.projects)
   const user_permissions = projectSlice.user_permissions.data || []
 
-  const { columnDefs, defaultColDef } = getColumnDefs(user_permissions)
+  const { columnDefs, defaultColDef } = getColumnDefs(
+    user_permissions,
+    projectId,
+    setProjectId,
+  )
 
   const getPaginationSelectorOpts = (): number[] => {
     const nrResultsOpts = [100, 250, 500, 1000]
@@ -37,6 +40,7 @@ const PListingTable = ({ projects, filters }: any) => {
         loading={loading}
         paginationPageSize={PROJECTS_PER_PAGE}
         paginationPageSizeSelector={paginationPageSizeSelectorOpts}
+        resizeGridOnRowUpdate={true}
         rowBuffer={50}
         rowCount={count}
         rowData={results}
@@ -56,11 +60,22 @@ const PListingTable = ({ projects, filters }: any) => {
           const ordering = api
             .getColumnState()
             .filter((column) => !!column.sort)
-            .map(
-              ({ sort, colId }) =>
-                (sort === 'asc' ? '' : '-') +
-                (colId === 'title' ? colId : colId.split('.')[0] + '__name'),
-            )
+            .map(({ sort, colId }) => {
+              const field = [
+                'country',
+                'agency',
+                'sector.code',
+                'project_type.code',
+              ].includes(colId)
+                ? colId.split('.')[0] + '__name'
+                : colId === 'cluster.code'
+                  ? colId.split('.')[0] + '__code'
+                  : colId === 'metaproject_code'
+                    ? 'meta_project__code'
+                    : colId
+
+              return (sort === 'asc' ? '' : '-') + field
+            })
             .join(',')
           setParams({ offset: 0, ordering })
         }}

@@ -2,20 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react'
 
-import Loading from '@ors/components/theme/Loading/Loading'
-import Link from '@ors/components/ui/Link/Link'
+import ProjectsHeader from '../ProjectSubmission/ProjectsHeader'
 import ProjectsCreate from '../ProjectsCreate/ProjectsCreate'
-import {
-  HeaderTag,
-  VersionsDropdown,
-} from '../ProjectVersions/ProjectVersionsComponents'
 import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
-import {
-  formatSubmitData,
-  getDefaultValues,
-  getIsSubmitDisabled,
-} from '../utils'
+import { getDefaultValues } from '../utils'
 import {
   OdsOdpFields,
   ProjectData,
@@ -28,20 +19,17 @@ import {
   initialCrossCuttingFields,
   initialProjectIdentifiers,
 } from '../constants'
-import { api, uploadFiles } from '@ors/helpers'
-import { useStore } from '@ors/store'
 
-import { enqueueSnackbar } from 'notistack'
-import { Button } from '@mui/material'
 import { groupBy, map } from 'lodash'
-import cx from 'classnames'
 
-const ProjectsEdit = ({ project }: { project: ProjectTypeApi }) => {
+const ProjectsEdit = ({
+  project,
+  mode,
+}: {
+  project: ProjectTypeApi
+  mode: string
+}) => {
   const project_id = project.id.toString()
-  const { code, versions, version, latest_project } = project
-
-  const projectSlice = useStore((state) => state.projects)
-  const user_permissions = projectSlice.user_permissions.data || []
 
   const [projectData, setProjectData] = useState<ProjectData>({
     projIdentifiers: initialProjectIdentifiers,
@@ -53,18 +41,6 @@ const ProjectsEdit = ({ project }: { project: ProjectTypeApi }) => {
     [],
   )
 
-  const { data: projectFiles } = useGetProjectFiles(project_id)
-  const [files, setFiles] = useState<ProjectFilesObject>({
-    deletedFilesIds: [],
-    newFiles: [],
-  })
-  const { deletedFilesIds = [], newFiles = [] } = files || {}
-
-  const [showVersionsMenu, setShowVersionsMenu] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
-
-  const fieldsValuesLoaded = useRef<boolean>(false)
-
   const { projIdentifiers, crossCuttingFields } = projectData
   const { cluster } = projIdentifiers
   const { project_type, sector } = crossCuttingFields
@@ -73,19 +49,13 @@ const ProjectsEdit = ({ project }: { project: ProjectTypeApi }) => {
   const projectFields = groupedFields['project'] || []
   const odsOdpFields = groupedFields['ods_odp'] || []
 
-  const isSubmitDisabled = getIsSubmitDisabled(
-    projIdentifiers,
-    crossCuttingFields,
-  )
+  const fieldsValuesLoaded = useRef<boolean>(false)
 
-  const Versions = (
-    <>
-      <VersionsDropdown
-        {...{ versions, showVersionsMenu, setShowVersionsMenu }}
-      />
-      <HeaderTag {...{ latest_project, version }} />
-    </>
-  )
+  const { data: projectFiles } = useGetProjectFiles(project_id)
+  const [files, setFiles] = useState<ProjectFilesObject>({
+    deletedFilesIds: [],
+    newFiles: [],
+  })
 
   useEffect(() => {
     setProjectData((prevData) => ({
@@ -143,137 +113,29 @@ const ProjectsEdit = ({ project }: { project: ProjectTypeApi }) => {
     }
   }, [specificFields, fieldsValuesLoaded])
 
-  const editProject = async () => {
-    setIsSaving(true)
-
-    try {
-      if (newFiles.length > 0) {
-        await uploadFiles(
-          `/api/project/${project_id}/files/v2/`,
-          newFiles,
-          false,
-          'list',
-        )
-      }
-
-      if (deletedFilesIds.length > 0) {
-        await api(`/api/project/${project_id}/files/v2`, {
-          data: {
-            file_ids: deletedFilesIds,
-          },
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          method: 'DELETE',
-        })
-      }
-
-      enqueueSnackbar(<>Updated {code} successfully.</>, {
-        variant: 'success',
-      })
-    } catch (error) {
-      if (error.status === 400) {
-        const errors = await error.json()
-        if (errors?.files) {
-          enqueueSnackbar(errors.files, {
-            variant: 'error',
-          })
-        } else {
-          enqueueSnackbar(<>An error occurred. Please try again.</>, {
-            variant: 'error',
-          })
-        }
-      }
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
-  const increaseVersion = async () => {
-    setIsSaving(true)
-
-    try {
-      const data = formatSubmitData(projectData)
-
-      await api(`api/projects/v2/${project_id}/increase_version/`, {
-        data: data,
-        method: 'POST',
-      })
-    } catch (error) {
-      console.error('Could not increase version.')
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
-  const enabledButtonClassname =
-    'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow'
-
-  const actionButtons = (
-    <div>
-      <div className="container flex w-full flex-wrap gap-x-3 gap-y-2 px-0">
-        {user_permissions.includes('view_project') && (
-          <Link
-            className="border border-solid border-primary bg-white px-4 py-2 text-primary shadow-none hover:bg-primary hover:text-white"
-            color="primary"
-            href={`/projects-listing/${project_id}`}
-            size="large"
-            variant="contained"
-            button
-          >
-            Cancel
-          </Link>
-        )}
-        {user_permissions.includes('edit_project') && (
-          <Button
-            className={cx('px-4 py-2 shadow-none', {
-              [enabledButtonClassname]: !isSubmitDisabled,
-            })}
-            size="large"
-            variant="contained"
-            onClick={editProject}
-            disabled={isSubmitDisabled}
-          >
-            Save
-          </Button>
-        )}
-        {user_permissions.includes('increase_project_version') && (
-          <Button
-            className={cx('px-4 py-2 shadow-none', {
-              [enabledButtonClassname]: !isSubmitDisabled,
-            })}
-            size="large"
-            variant="contained"
-            onClick={increaseVersion}
-            disabled={isSubmitDisabled}
-          >
-            Submit new version
-          </Button>
-        )}
-        <Loading
-          className="!fixed bg-action-disabledBackground"
-          active={isSaving}
-        />
-      </div>
-    </div>
-  )
-
   return (
-    <ProjectsCreate
-      heading={`Edit ${code}`}
-      versions={Versions}
-      mode="edit"
-      {...{
-        projectData,
-        setProjectData,
-        actionButtons,
-        specificFields,
-        project,
-        files,
-        setFiles,
-        projectFiles,
-      }}
-    />
+    <>
+      <ProjectsHeader
+        {...{
+          mode,
+          project,
+          projectData,
+          files,
+        }}
+      />
+      <ProjectsCreate
+        {...{
+          projectData,
+          setProjectData,
+          mode,
+          specificFields,
+          project,
+          files,
+          setFiles,
+          projectFiles,
+        }}
+      />
+    </>
   )
 }
 
