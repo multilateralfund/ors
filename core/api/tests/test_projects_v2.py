@@ -922,6 +922,8 @@ class TestProjectsV2Update:
             project.serial_number,
         )
 
+    # TODO: test ods_odp create/delete
+
     def test_project_patch_ods_odp(
         self, agency_user, project_url, project, project_ods_odp_subst
     ):
