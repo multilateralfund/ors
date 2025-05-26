@@ -61,18 +61,15 @@ const PListingTable = ({ projects, filters, projectId, setProjectId }: any) => {
             .getColumnState()
             .filter((column) => !!column.sort)
             .map(({ sort, colId }) => {
-              const field = [
-                'country',
-                'agency',
-                'sector.code',
-                'project_type.code',
-              ].includes(colId)
-                ? colId.split('.')[0] + '__name'
+              const field = ['code', 'tranche', 'title', 'total_fund'].includes(
+                colId,
+              )
+                ? colId
                 : colId === 'cluster.code'
                   ? colId.split('.')[0] + '__code'
                   : colId === 'metaproject_code'
                     ? 'meta_project__code'
-                    : colId
+                    : colId.split('.')[0] + '__name'
 
               return (sort === 'asc' ? '' : '-') + field
             })
