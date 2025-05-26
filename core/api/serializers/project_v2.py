@@ -7,6 +7,7 @@ from core.api.serializers.project import (
     ProjectOdsOdpListSerializer,
     ProjectOdsOdpCreateSerializer,
 )
+from core.api.serializers.project_history import ProjectHistorySerializer
 from core.models.agency import Agency
 from core.models.country import Country
 from core.models.group import Group
@@ -291,6 +292,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
         queryset=ProjectCluster.objects.all().values_list("id", flat=True),
     )
     versions = serializers.SerializerMethodField()
+    history = ProjectHistorySerializer(many=True, read_only=True)
 
     class Meta:
         model = Project
@@ -505,6 +507,10 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
             ProjectOdsOdp.objects.create(project=project, **ods_odp)
 
         project.subsectors.set(subsectors_data)
+
+        request_user = self.context["user"]
+        self._create_history(project, request_user)
+
         return project
 
     @transaction.atomic
@@ -534,6 +540,9 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
         if subsectors_data is not None:
             instance.subsectors.set(subsectors_data)
 
+        request_user = self.context["user"]
+        self._update_history(instance, request_user)
+
         return instance
 
     def _update_or_create_ods_odp(self, instance, ods_odp_data):
@@ -562,3 +571,19 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
 
         if ids_to_delete:
             instance.ods_odp.filter(id__in=ids_to_delete).delete()
+
+    def _create_history(self, project, request_user):
+        self._manage_history(project, request_user, "Project created.")
+
+    def _update_history(self, project, request_user):
+        self._manage_history(project, request_user, "Project updated.")
+
+    def _manage_history(self, project, request_user, description):
+        history_data = {
+            "project_id": project.id,
+            "updated_by_id": request_user.id,
+            "description": description,
+        }
+        history_serializer = ProjectHistorySerializer(data=history_data)
+        history_serializer.is_valid(raise_exception=True)
+        history_serializer.save()
