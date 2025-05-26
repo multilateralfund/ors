@@ -5,7 +5,7 @@ from rest_framework import serializers
 from core.api.serializers.project import (
     ProjectListSerializer,
     ProjectOdsOdpListSerializer,
-    ProjectOdsOdpCreateUpdateSerializer,
+    ProjectOdsOdpCreateSerializer,
 )
 from core.models.agency import Agency
 from core.models.country import Country
@@ -359,12 +359,24 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
         return versions
 
 
+class ProjectV2OdsOdpCreateUpdateSerializer(ProjectOdsOdpCreateSerializer):
+    id = serializers.IntegerField(required=False)
+
+    project_id = serializers.PrimaryKeyRelatedField(
+        required=False,
+        read_only=True,
+    )
+
+    class Meta(ProjectOdsOdpCreateSerializer.Meta):
+        fields = ["id"] + ProjectOdsOdpCreateSerializer.Meta.fields
+
+
 class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
     """
     ProjectSerializer class
     """
 
-    ods_odp = ProjectOdsOdpCreateUpdateSerializer(many=True, required=False)
+    ods_odp = ProjectV2OdsOdpCreateUpdateSerializer(many=True, required=False)
     subsector_ids = serializers.PrimaryKeyRelatedField(
         allow_null=True,
         many=True,
@@ -468,9 +480,6 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         request = validated_data.pop("request", None)
         user = getattr(request, "user", None)
-        import ipdb
-
-        ipdb.set_trace()
         status = ProjectStatus.objects.get(code="NA")
         submission_status = ProjectSubmissionStatus.objects.get(name="Draft")
         validated_data["status_id"] = status.id
@@ -538,7 +547,7 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
             if item_id and item_id in existing_ods_odp_map:
                 incoming_ids.add(item_id)
                 ods_odp_instance = existing_ods_odp_map[item_id]
-                serializer = ProjectOdsOdpCreateUpdateSerializer(
+                serializer = ProjectV2OdsOdpCreateUpdateSerializer(
                     instance=ods_odp_instance, data=ods_odp, partial=True
                 )
                 serializer.is_valid(raise_exception=True)

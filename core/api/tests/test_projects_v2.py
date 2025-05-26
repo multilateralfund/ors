@@ -669,10 +669,10 @@ class TestCreateProjects(BaseTest):
         def _test_user_permissions(user, expected_response_status):
             self.client.force_authenticate(user=user)
             response = self.client.post(self.url, _setup_project_create, format="json")
-            assert response.status_code == expected_response_status
+            assert response.status_code == expected_response_status, response.data
 
         response = self.client.post(self.url, _setup_project_create, format="json")
-        assert response.status_code == 403
+        assert response.status_code == 403, response.data
 
         _test_user_permissions(user, 403)
         _test_user_permissions(viewer_user, 403)
@@ -898,8 +898,8 @@ class TestProjectsV2Update:
         response = self.client.patch(project_url, {"title": "Into the Spell"})
         assert response.status_code == 404
 
-    def test_project_update(self, user, project_url, project, agency):
-        self.client.force_authenticate(user=user)
+    def test_project_update(self, agency_user, project_url, project):
+        self.client.force_authenticate(user=agency_user)
         new_agency = AgencyFactory.create(code="NEWAG")
 
         update_data = {
@@ -923,9 +923,9 @@ class TestProjectsV2Update:
         )
 
     def test_project_patch_ods_odp(
-        self, user, project_url, project, project_ods_odp_subst
+        self, agency_user, project_url, project, project_ods_odp_subst
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=agency_user)
         update_data = {
             "title": "Crocodile wearing a vest",
             "ods_odp": [

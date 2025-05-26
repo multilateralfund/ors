@@ -24,7 +24,7 @@ from core.api.serializers.project import (
     ProjectCommentCreateSerializer,
     ProjectExportSerializer,
     ProjectFundCreateSerializer,
-    ProjectOdsOdpCreateUpdateSerializer,
+    ProjectOdsOdpCreateSerializer,
     ProjectRbmMeasureCreateSerializer,
     SubmissionAmountCreateSerializer,
 )
@@ -357,7 +357,7 @@ class ProjectOdsOdpViewSet(
 
     permission_classes = [IsSecretariat | IsAgency]
     queryset = ProjectOdsOdp.objects.select_related("ods_substance", "ods_blend").all()
-    serializer_class = ProjectOdsOdpCreateUpdateSerializer
+    serializer_class = ProjectOdsOdpCreateSerializer
 
 
 class ProjectFundViewSet(

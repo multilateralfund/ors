@@ -191,14 +191,13 @@ class ProjectOdsOdpListSerializer(serializers.ModelSerializer):
         return super().validate(attrs)
 
 
-class ProjectOdsOdpCreateUpdateSerializer(
+class ProjectOdsOdpCreateSerializer(
     ProjectOdsOdpListSerializer,
     BaseProjectUtilityCreateSerializer,
 ):
-    id = serializers.IntegerField(required=False)
 
     class Meta(ProjectOdsOdpListSerializer.Meta):
-        fields = ["id"] + ProjectOdsOdpListSerializer.Meta.fields
+        fields = ProjectOdsOdpListSerializer.Meta.fields
 
 
 class SubmissionAmountListSerializer(serializers.ModelSerializer):
