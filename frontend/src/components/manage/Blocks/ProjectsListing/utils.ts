@@ -140,8 +140,7 @@ export const formatSubmitData = (projectData: ProjectData) => {
   } = projectData
 
   return {
-    agency: projIdentifiers.current_agency,
-    lead_agency: projIdentifiers?.is_lead_agency
+    agency: projIdentifiers?.is_lead_agency
       ? projIdentifiers.current_agency
       : projIdentifiers.side_agency,
     ...omit(projIdentifiers, [
@@ -158,5 +157,36 @@ export const formatSubmitData = (projectData: ProjectData) => {
         'id',
       ),
     ),
+  }
+}
+
+export const getProjIdentifiersErrors = (
+  projIdentifiers: ProjIdentifiers,
+  errors: { [key: string]: [] },
+) => {
+  const filteredErrors = Object.fromEntries(
+    Object.entries(errors).filter(([key]) =>
+      ['country', 'meeting', 'agency', 'cluster'].includes(key),
+    ),
+  )
+
+  const {
+    country,
+    meeting,
+    current_agency,
+    cluster,
+    side_agency,
+    is_lead_agency,
+  } = projIdentifiers
+
+  return {
+    country: !country ? ['This field may not be null.'] : [],
+    meeting: !meeting ? ['This field may not be null.'] : [],
+    agency:
+      (is_lead_agency && !current_agency) || (!is_lead_agency && !side_agency)
+        ? ['This field may not be null.']
+        : [],
+    cluster: !cluster ? ['This field may not be null.'] : [],
+    ...filteredErrors,
   }
 }

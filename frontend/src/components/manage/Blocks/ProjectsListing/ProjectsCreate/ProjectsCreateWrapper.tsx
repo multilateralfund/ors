@@ -50,6 +50,7 @@ const ProjectsCreateWrapper = () => {
     deletedFilesIds: [],
     newFiles: [],
   })
+  const [errors, setErrors] = useState<{ [key: string]: [] }>({})
 
   useEffect(() => {
     if (cluster && project_type && sector) {
@@ -59,7 +60,10 @@ const ProjectsCreateWrapper = () => {
 
   return (
     <>
-      <ProjectsHeader mode="add" {...{ projectData, files, setProjectId }} />
+      <ProjectsHeader
+        mode="add"
+        {...{ projectData, files, setProjectId, setErrors }}
+      />
       <ProjectsCreate
         mode="add"
         {...{
@@ -68,6 +72,9 @@ const ProjectsCreateWrapper = () => {
           specificFields,
           files,
           setFiles,
+          errors,
+          setErrors,
+          projectId,
         }}
       />
 

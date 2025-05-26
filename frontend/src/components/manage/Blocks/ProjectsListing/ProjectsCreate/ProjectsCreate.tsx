@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { Dispatch, SetStateAction, useMemo, useState } from 'react'
 
+import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
 import ProjectIdentifiersSection from './ProjectIdentifiersSection.tsx'
 import ProjectBPLinking from './ProjectBPLinking'
 import ProjectCrossCuttingFields from './ProjectCrossCuttingFields'
@@ -16,9 +17,14 @@ import {
   ProjectFiles,
   ProjectDataProps,
 } from '../interfaces.ts'
-import { canGoToSecondStep, getSectionFields } from '../utils.ts'
+import {
+  canGoToSecondStep,
+  getProjIdentifiersErrors,
+  getSectionFields,
+} from '../utils.ts'
 
 import { Tabs, Tab } from '@mui/material'
+import { capitalize } from 'lodash'
 
 const ProjectsCreate = ({
   projectData,
@@ -26,19 +32,26 @@ const ProjectsCreate = ({
   specificFields,
   mode,
   project,
+  files,
+  errors,
+  setErrors,
+  projectId,
   ...rest
 }: ProjectDataProps &
   ProjectFiles & {
     specificFields: ProjectSpecificFields[]
     mode: string
+    errors?: { [key: string]: [] }
+    setErrors?: Dispatch<SetStateAction<{ [key: string]: [] }>>
     project?: ProjectTypeApi
     projectFiles?: ProjectFile[]
+    projectId: number | undefined | null
   }) => {
   const [currentStep, setCurrentStep] = useState<number>(mode !== 'add' ? 1 : 0)
   const [currentTab, setCurrentTab] = useState<number>(0)
 
   const projIdentifiers = projectData.projIdentifiers
-  const { project_type, sector } = projectData.crossCuttingFields
+  const { project_type, sector, title } = projectData.crossCuttingFields
 
   const canLinkToBp = canGoToSecondStep(projIdentifiers)
 
@@ -52,12 +65,43 @@ const ProjectsCreate = ({
     getSectionFields(specificFields, 'Impact'),
   ]
 
+  const projIdentifiersErrors = useMemo(
+    () =>
+      getProjIdentifiersErrors(
+        projIdentifiers,
+        errors as { [key: string]: [] },
+      ),
+    [projIdentifiers, errors],
+  )
+
+  const hasSectionErrors = (errors: { [key: string]: string[] }) =>
+    Object.values(errors).some((errors) => errors.length > 0)
+
+  const formatErrors = (errors: { [key: string]: string[] }) =>
+    Object.entries(errors)
+      .filter(([, errorMsgs]) => errorMsgs.length > 0)
+      .flatMap(([field, errorMsgs]) =>
+        errorMsgs.map((errMsg, idx) => ({
+          id: `${field}-${idx}`,
+          message: `${capitalize(field)}: ${errMsg}`,
+        })),
+      )
+
   const steps = [
     {
       step: 0,
       id: 'project-identifiers',
       ariaControls: 'project-identifiers',
-      label: 'Identifiers',
+      label: (
+        <div className="relative flex items-center justify-between gap-x-2">
+          <div>Identifiers</div>
+          {hasSectionErrors(projIdentifiersErrors) && (
+            <SectionErrorIndicator
+              errors={formatErrors(projIdentifiersErrors)}
+            />
+          )}
+        </div>
+      ),
       component: (
         <ProjectIdentifiersSection
           {...{
@@ -66,8 +110,10 @@ const ProjectsCreate = ({
             areNextSectionsDisabled,
             setCurrentStep,
             setCurrentTab,
+            projectId,
           }}
           isNextBtnEnabled={canLinkToBp}
+          errors={projIdentifiersErrors}
         />
       ),
     },
@@ -90,7 +136,15 @@ const ProjectsCreate = ({
       step: 2,
       id: 'project-cross-cutting-section',
       ariaControls: 'project-cross-cutting-section',
-      label: 'Cross-Cutting',
+      label: (
+        <div className="relative flex items-center justify-between gap-x-2">
+          <div>Cross-Cutting</div>
+          {!areNextSectionsDisabled &&
+          (areProjectSpecificTabsDisabled || !title) ? (
+            <SectionErrorIndicator errors={[]} />
+          ) : null}
+        </div>
+      ),
       disabled: areNextSectionsDisabled,
       component: (
         <ProjectCrossCuttingFields
@@ -145,9 +199,16 @@ const ProjectsCreate = ({
       step: 6,
       id: 'project-documentation-section',
       ariaControls: 'project-documentation-section',
-      label: 'Documentation',
+      label: (
+        <div className="relative flex items-center justify-between gap-x-2">
+          <div>Documentation</div>
+          {!areNextSectionsDisabled && files?.newFiles?.length === 0 ? (
+            <SectionErrorIndicator errors={[]} />
+          ) : null}
+        </div>
+      ),
       disabled: areNextSectionsDisabled,
-      component: <ProjectDocumentation {...rest} mode={mode} />,
+      component: <ProjectDocumentation {...rest} {...{ files, mode }} />,
     },
   ]
 

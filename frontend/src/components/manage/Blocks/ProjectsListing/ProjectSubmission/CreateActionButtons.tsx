@@ -16,15 +16,19 @@ const CreateActionButtons = ({
   setProjectId,
   isSubmitDisabled,
   setIsLoading,
+  setErrors = () => {},
 }: {
   projectData: ProjectData
   files: ProjectFilesObject
   setProjectId: Dispatch<SetStateAction<number | null | undefined>>
   isSubmitDisabled: boolean
   setIsLoading: Dispatch<SetStateAction<boolean>>
+  setErrors?: Dispatch<SetStateAction<{ [key: string]: [] }>>
 }) => {
   const projectSlice = useStore((state) => state.projects)
   const user_permissions = projectSlice.user_permissions.data || []
+
+  const disableButton = isSubmitDisabled || files.newFiles.length === 0
 
   const { newFiles = [] } = files || {}
 
@@ -49,6 +53,7 @@ const CreateActionButtons = ({
       }
 
       setProjectId(result.id)
+      setErrors({})
     } catch (error) {
       if (error.status === 400) {
         const errors = await error.json()
@@ -57,6 +62,7 @@ const CreateActionButtons = ({
             variant: 'error',
           })
         } else {
+          setErrors(errors)
           enqueueSnackbar(<>An error occurred. Please try again.</>, {
             variant: 'error',
           })
@@ -85,12 +91,12 @@ const CreateActionButtons = ({
         <Button
           className={cx('ml-auto mr-0 h-10 px-3 py-1', {
             'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
-              !isSubmitDisabled,
+              !disableButton,
           })}
           size="large"
           variant="contained"
           onClick={submitProject}
-          disabled={isSubmitDisabled}
+          disabled={disableButton}
         >
           Submit
         </Button>

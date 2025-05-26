@@ -17,12 +17,14 @@ const ProjectsHeader = ({
   projectData,
   mode,
   files,
+  setErrors,
   setProjectId = () => {},
   project,
 }: {
   projectData: ProjectData
   mode: string
   files: ProjectFilesObject
+  setErrors?: Dispatch<SetStateAction<{ [key: string]: [] }>>
   setProjectId?: Dispatch<SetStateAction<number | null | undefined>>
   project?: ProjectTypeApi
 }) => {
@@ -71,6 +73,7 @@ const ProjectsHeader = ({
                 setProjectId,
                 isSubmitDisabled,
                 setIsLoading,
+                setErrors,
               }}
             />
           ) : (
