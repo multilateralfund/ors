@@ -101,12 +101,12 @@ class ProjectV2ViewSet(
         "sector__name",
         "project_type__name",
         "substance_type",
-        "submission_status",
-        "status",
+        "submission_status__name",
+        "status__name",
         "meta_project__code",
         "code",
         "cluster__code",
-        "tranche_number",
+        "tranche",
         "total_fund",
     ]
 
