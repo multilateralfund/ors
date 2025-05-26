@@ -669,10 +669,10 @@ class TestCreateProjects(BaseTest):
         def _test_user_permissions(user, expected_response_status):
             self.client.force_authenticate(user=user)
             response = self.client.post(self.url, _setup_project_create, format="json")
-            assert response.status_code == expected_response_status
+            assert response.status_code == expected_response_status, response.data
 
         response = self.client.post(self.url, _setup_project_create, format="json")
-        assert response.status_code == 403
+        assert response.status_code == 403, response.data
 
         _test_user_permissions(user, 403)
         _test_user_permissions(viewer_user, 403)
@@ -775,7 +775,7 @@ class TestCreateProjects(BaseTest):
 
         # create project
         response = self.client.post(self.url, data, format="json")
-        assert response.status_code == 201
+        assert response.status_code == 201, response.data
         self._test_response_data(response, data)
         assert response.data["agency"] == agency.name
         assert response.data["cluster"]["id"] == data["cluster"]
@@ -879,6 +879,74 @@ class TestCreateProjects(BaseTest):
 
         # check project count
         assert Project.objects.count() == 0
+
+
+class TestProjectsV2Update:
+    client = APIClient()
+
+    def test_project_patch_anon(self, project_url):
+        response = self.client.patch(project_url, {"title": "Into the Spell"})
+        assert response.status_code == 403
+
+    def test_as_viewer(self, viewer_user, project_url):
+        self.client.force_authenticate(user=viewer_user)
+        response = self.client.patch(project_url, {"title": "Into the Spell"})
+        assert response.status_code == 403
+
+    def test_without_permission_wrong_agency(self, other_agency_user, project_url):
+        self.client.force_authenticate(user=other_agency_user)
+        response = self.client.patch(project_url, {"title": "Into the Spell"})
+        assert response.status_code == 404
+
+    def test_project_update(self, agency_user, project_url, project):
+        self.client.force_authenticate(user=agency_user)
+        new_agency = AgencyFactory.create(code="NEWAG")
+
+        update_data = {
+            "title": "Into the Spell",
+            "agency": new_agency.id,
+        }
+        response = self.client.patch(project_url, update_data, format="json")
+        assert response.status_code == 200, response.data
+
+        project.refresh_from_db()
+        assert project.title == "Into the Spell"
+        assert project.code == get_project_sub_code(
+            project.country,
+            project.cluster,
+            new_agency,
+            project.project_type,
+            project.sector,
+            project.meeting,
+            None,
+            project.serial_number,
+        )
+
+    # TODO: test ods_odp create/delete
+
+    def test_project_patch_ods_odp(
+        self, agency_user, project_url, project, project_ods_odp_subst
+    ):
+        self.client.force_authenticate(user=agency_user)
+        update_data = {
+            "title": "Crocodile wearing a vest",
+            "ods_odp": [
+                {
+                    "id": project_ods_odp_subst.id,
+                    "ods_substance_id": project_ods_odp_subst.ods_substance_id,
+                    "odp": project_ods_odp_subst.odp + 5,
+                }
+            ],
+        }
+        response = self.client.patch(project_url, update_data, format="json")
+        assert response.status_code == 200, response.data
+
+        project.refresh_from_db()
+        assert project.title == "Crocodile wearing a vest"
+        assert project.ods_odp.count() == 1
+        # This test copied from v1 where it was not supposed to actually
+        # update ods_odp, in our case it does update it.
+        assert project.ods_odp.first().odp == project_ods_odp_subst.odp + 5
 
 
 class TestProjectFiles:

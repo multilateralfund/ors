@@ -192,8 +192,10 @@ class ProjectOdsOdpListSerializer(serializers.ModelSerializer):
 
 
 class ProjectOdsOdpCreateSerializer(
-    ProjectOdsOdpListSerializer, BaseProjectUtilityCreateSerializer
+    ProjectOdsOdpListSerializer,
+    BaseProjectUtilityCreateSerializer,
 ):
+
     class Meta(ProjectOdsOdpListSerializer.Meta):
         fields = ProjectOdsOdpListSerializer.Meta.fields
 
