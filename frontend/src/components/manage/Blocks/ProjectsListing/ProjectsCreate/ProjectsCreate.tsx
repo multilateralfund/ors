@@ -23,10 +23,10 @@ import {
   getCrossCuttingErrors,
   getProjIdentifiersErrors,
   getSectionFields,
+  getSpecificFieldsErrors,
 } from '../utils.ts'
 
 import { Tabs, Tab } from '@mui/material'
-import { capitalize } from 'lodash'
 
 const ProjectsCreate = ({
   projectData,
@@ -55,6 +55,7 @@ const ProjectsCreate = ({
   const projIdentifiers = projectData.projIdentifiers
   const crossCuttingFields = projectData.crossCuttingFields
   const { project_type, sector } = crossCuttingFields
+  const projectSpecificFields = projectData.projectSpecificFields
 
   const canLinkToBp = canGoToSecondStep(projIdentifiers)
 
@@ -67,6 +68,13 @@ const ProjectsCreate = ({
     getSectionFields(specificFields, 'Substance Details'),
     getSectionFields(specificFields, 'Impact'),
   ]
+
+  const isOverviewTabDisabled =
+    areProjectSpecificTabsDisabled || overviewFields.length < 1
+  const isSubstanceDetailsTabDisabled =
+    areProjectSpecificTabsDisabled || substanceDetailsFields.length < 1
+  const isImpactTabDisabled =
+    areProjectSpecificTabsDisabled || impactFields.length < 1
 
   const projIdentifiersErrors = useMemo(
     () =>
@@ -94,6 +102,19 @@ const ProjectsCreate = ({
     [crossCuttingFields, errors],
   )
 
+  const specificFieldsErrors = useMemo(
+    () =>
+      getSpecificFieldsErrors(
+        projectSpecificFields,
+        specificFields,
+        errors as { [key: string]: [] },
+      ),
+    [projectSpecificFields, specificFields, errors],
+  )
+  const overviewErrors = specificFieldsErrors['Header'] || {}
+  const substanceDetailsErrors = specificFieldsErrors['Substance Details'] || {}
+  const impactErrors = specificFieldsErrors['Impact'] || {}
+
   const hasSectionErrors = (errors: { [key: string]: string[] }) =>
     Object.values(errors).some((errors) => errors.length > 0)
 
@@ -103,7 +124,7 @@ const ProjectsCreate = ({
       .flatMap(([field, errorMsgs]) =>
         errorMsgs.map((errMsg, idx) => ({
           id: `${field}-${idx}`,
-          message: `${tableColumns[field] ?? capitalize(field).replace('_', ' ')}: ${errMsg}`,
+          message: `${tableColumns[field] ?? field}: ${errMsg}`,
         })),
       )
 
@@ -187,12 +208,20 @@ const ProjectsCreate = ({
       step: 3,
       id: 'project-specific-overview-section',
       ariaControls: 'project-specific-overview-section',
-      label: 'Overview',
-      disabled: areProjectSpecificTabsDisabled || overviewFields.length < 1,
+      label: (
+        <div className="relative flex items-center justify-between gap-x-2">
+          <div>Overview</div>
+          {!isOverviewTabDisabled && hasSectionErrors(overviewErrors) && (
+            <SectionErrorIndicator errors={formatErrors(overviewErrors)} />
+          )}
+        </div>
+      ),
+      disabled: isOverviewTabDisabled,
       component: (
         <ProjectOverview
           sectionFields={overviewFields}
-          {...{ projectData, setProjectData }}
+          errors={overviewErrors}
+          {...{ projectData, setProjectData, projectId }}
         />
       ),
     },
@@ -200,13 +229,23 @@ const ProjectsCreate = ({
       step: 4,
       id: 'project-substance-details-section',
       ariaControls: 'project-substance-details-section',
-      label: 'Substance details',
-      disabled:
-        areProjectSpecificTabsDisabled || substanceDetailsFields.length < 1,
+      label: (
+        <div className="relative flex items-center justify-between gap-x-2">
+          <div>Substance details</div>
+          {!isSubstanceDetailsTabDisabled &&
+            hasSectionErrors(substanceDetailsErrors) && (
+              <SectionErrorIndicator
+                errors={formatErrors(substanceDetailsErrors)}
+              />
+            )}
+        </div>
+      ),
+      disabled: isSubstanceDetailsTabDisabled,
       component: (
         <ProjectSubstanceDetails
           sectionFields={substanceDetailsFields}
-          {...{ projectData, setProjectData }}
+          errors={substanceDetailsErrors}
+          {...{ projectData, setProjectData, projectId }}
         />
       ),
     },
@@ -214,12 +253,20 @@ const ProjectsCreate = ({
       step: 5,
       id: 'project-impact-section',
       ariaControls: 'project-impact-section',
-      label: 'Impact',
-      disabled: areProjectSpecificTabsDisabled || impactFields.length < 1,
+      label: (
+        <div className="relative flex items-center justify-between gap-x-2">
+          <div>Impact</div>
+          {!isImpactTabDisabled && hasSectionErrors(impactErrors) && (
+            <SectionErrorIndicator errors={formatErrors(impactErrors)} />
+          )}
+        </div>
+      ),
+      disabled: isImpactTabDisabled,
       component: (
         <ProjectImpact
           sectionFields={impactFields}
-          {...{ projectData, setProjectData }}
+          errors={impactErrors}
+          {...{ projectData, setProjectData, projectId }}
         />
       ),
     },

@@ -18,6 +18,8 @@ const ProjectSubstanceDetails = ({
   projectData,
   setProjectData,
   sectionFields,
+  errors,
+  projectId,
 }: SpecificFieldsSectionProps) => {
   const [displayModal, setDisplayModal] = useState(false)
 
@@ -62,6 +64,8 @@ const ProjectSubstanceDetails = ({
           projectData,
           setProjectData,
           field,
+          errors as { [key: string]: string[] },
+          projectId,
         ),
       )}
       {odsOdpFields.length > 0 && (

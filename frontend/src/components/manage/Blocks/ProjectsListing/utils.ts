@@ -5,6 +5,7 @@ import {
   ProjectSpecificFields,
   ProjectData,
   CrossCuttingFields,
+  SpecificFields,
 } from './interfaces'
 import { formatDecimalValue } from '@ors/helpers'
 
@@ -98,13 +99,10 @@ export const handleChangeNumberField = <T, K>(
 ) => {
   const value = event.target.value
 
-  if (!isNaN(Number(value)) && Number.isInteger(Number(value))) {
+  if (!isNaN(parseInt(value))) {
     setState((prevData) => ({
       ...prevData,
-      [section]: {
-        ...prevData[section],
-        [field]: value.trim() !== '' ? Number(value) : '',
-      },
+      [section]: { ...prevData[section], [field]: parseInt(value) },
     }))
   } else {
     event.preventDefault()
@@ -122,10 +120,7 @@ export const handleChangeDecimalField = <T, K>(
   if (!isNaN(Number(value))) {
     setState((prevData) => ({
       ...prevData,
-      [section]: {
-        ...prevData[section],
-        [field]: value.trim() !== '' ? Number(value) : '',
-      },
+      [section]: { ...prevData[section], [field]: value },
     }))
   } else {
     event.preventDefault()
@@ -232,4 +227,68 @@ export const getCrossCuttingErrors = (
       : [],
     ...filteredErrors,
   }
+}
+
+export const getSpecificFieldsErrors = (
+  projectSpecificFields: SpecificFields,
+  specificFields: ProjectSpecificFields[],
+  errors: { [key: string]: [] },
+) => {
+  const errorMsg = 'Number cannot be greater than the total one.'
+
+  const fieldsPairs: [
+    keyof typeof projectSpecificFields,
+    keyof typeof projectSpecificFields,
+  ][] = [
+    [
+      'number_of_female_technicians_trained',
+      'total_number_of_technicians_trained',
+    ],
+    ['number_of_female_trainers_trained', 'total_number_of_trainers_trained'],
+    [
+      'number_of_female_technicians_certified',
+      'total_number_of_technicians_certified',
+    ],
+    [
+      'number_of_female_customs_officers_trained',
+      'total_number_of_customs_officers_trained',
+    ],
+    [
+      'number_of_female_nou_personnel_supported',
+      'total_number_of_nou_personnnel_supported',
+    ],
+  ]
+
+  const defaultErrors = Object.fromEntries(
+    fieldsPairs.map(([key, totalKey]) => [
+      key,
+      (projectSpecificFields[key] ?? 0) > (projectSpecificFields[totalKey] ?? 0)
+        ? [errorMsg]
+        : [],
+    ]),
+  )
+
+  const updatedErrors = { ...defaultErrors, ...errors }
+  const fieldNames = map(specificFields, 'write_field_name') as string[]
+
+  const filteredErrors = Object.entries(updatedErrors)
+    .filter(([key]) => fieldNames.includes(key))
+    .reduce(
+      (acc, [key, errMsg]) => {
+        const field = specificFields.find(
+          ({ write_field_name }) => write_field_name === key,
+        )
+
+        if (field) {
+          const { section, label } = field
+          if (!acc[section]) acc[section] = {}
+          acc[section][label || key] = errMsg
+        }
+
+        return acc
+      },
+      {} as Record<string, Record<string, any>>,
+    )
+
+  return filteredErrors
 }
