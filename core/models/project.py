@@ -1,6 +1,9 @@
+import os
+import shutil
+
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.db import models
+from django.db import models, transaction
 
 from core.models.agency import Agency
 from core.models.blend import Blend
@@ -551,6 +554,83 @@ class Project(models.Model):
             )
         ]
         ordering = ["-date_actual", "country__name", "serial_number"]
+
+    def increase_version(self, user):
+        def _get_new_file_path(original_file_name, new_project_id):
+            # Generate a new file path for the duplicated file
+            base_dir, file_name = os.path.split(original_file_name)
+            new_file_name = f"{file_name}_{new_project_id}"
+            return os.path.join(base_dir, new_file_name)
+
+        with transaction.atomic():
+            # Duplicate the project
+            old_project = Project.objects.get(pk=self.pk)
+            old_project.pk = None
+            old_project.latest_project = self
+
+            old_project.save()
+
+            self.version += 1
+            self.version_created_by = user
+            self.save()
+
+            # Duplicate the linked ProjectOdsOdp entries
+            ods_odp_entries = ProjectOdsOdp.objects.filter(project=self)
+            for entry in ods_odp_entries:
+                entry.pk = None
+                entry.project = old_project
+                entry.save()
+
+            # Duplicate the linked ProjectFund entries
+            fund_entries = ProjectFund.objects.filter(project=self)
+            for entry in fund_entries:
+                entry.pk = None
+                entry.project = old_project
+                entry.save()
+
+            # Duplicate the linked ProjectRBMMeasure entries
+            rbm_entries = ProjectRBMMeasure.objects.filter(project=self)
+            for entry in rbm_entries:
+                entry.pk = None
+                entry.project = old_project
+                entry.save()
+
+            # Duplicate the linked ProjectProgressReport entries
+            progress_report_entries = ProjectProgressReport.objects.filter(project=self)
+            for entry in progress_report_entries:
+                entry.pk = None
+                entry.project = old_project
+                entry.save()
+
+            # Duplicate the linked SubmissionAmount entries
+            submission_amount_entries = SubmissionAmount.objects.filter(project=self)
+            for entry in submission_amount_entries:
+                entry.pk = None
+                entry.project = old_project
+                entry.save()
+
+            # Duplicate the ProjectComment entries
+            comment_entries = ProjectComment.objects.filter(project=self)
+            for entry in comment_entries:
+                entry.pk = None
+                entry.project = old_project
+                entry.save()
+
+            # Duplicate the ProjectFile entries
+            file_entries = ProjectFile.objects.filter(project=self)
+            for entry in file_entries:
+                original_file_path = entry.file.path
+                new_file_path = _get_new_file_path(entry.file.name, old_project.id)
+                storage = get_protected_storage()
+                with storage.open(original_file_path, "rb") as original_file:
+                    with storage.open(new_file_path, "wb") as new_file:
+                        shutil.copyfileobj(original_file, new_file)
+                entry.pk = None
+                entry.project = old_project
+                entry.file.name = (
+                    new_file_path  # Update the file field to point to the new file
+                )
+                entry.save()
 
     def __str__(self):
         return self.title

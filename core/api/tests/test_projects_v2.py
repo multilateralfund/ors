@@ -29,7 +29,7 @@ from core.models.project import Project, ProjectFile
 from core.utils import get_project_sub_code
 
 pytestmark = pytest.mark.django_db
-# pylint: disable=C0302,C8008,W0221,R0913,R0914,R0915
+# pylint: disable=C0302,C8008,W0221,R0913,R0914,R0915,W0613
 
 
 @pytest.fixture(name="other_agency_user")
@@ -1206,6 +1206,59 @@ class TestProjectVersioning:
             assert response.status_code == expected_response_status
             return response.data
 
+        # test with unauthenticated user.
+        self.client.force_authenticate(user=None)
+        response = self.client.post(url)
+        assert response.status_code == 403
+
+        _test_user_permissions(user, 403)
+        _test_user_permissions(viewer_user, 403)
+        _test_user_permissions(agency_user, 200)
+        _test_user_permissions(agency_inputter_user, 403)
+        _test_user_permissions(secretariat_viewer_user, 403)
+        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_v3_edit_access_user, 403)
+        _test_user_permissions(secretariat_production_v3_edit_access_user, 403)
+        _test_user_permissions(admin_user, 200)
+
+    def test_submit_permissions(
+        self,
+        agency_inputter_user,
+        project,
+        project_file,
+        project_submission_status,
+        user,
+        viewer_user,
+        agency_user,
+        secretariat_viewer_user,
+        secretariat_v1_v2_edit_access_user,
+        secretariat_production_v1_v2_edit_access_user,
+        secretariat_v3_edit_access_user,
+        secretariat_production_v3_edit_access_user,
+        admin_user,
+    ):
+        project.is_lvc = False
+        project.project_start_date = "2023-10-01"
+        project.project_end_date = "2024-09-30"
+        project.total_fund = 2340000
+        project.support_cost_psc = 23
+        project.save()
+
+        url = reverse("project-v2-submit", args=(project.id,))
+
+        def _test_user_permissions(user, expected_response_status):
+            self.client.force_authenticate(user=user)
+            response = self.client.post(url)
+            assert response.status_code == expected_response_status
+            return response.data
+
+        def _set_project_back_to_v1():
+            project.version = 1
+            project.submission_status = project_submission_status
+            project.save()
+            Project.objects.really_all().filter(latest_project=project).delete()
+
         # test with unauthenticated user
         self.client.force_authenticate(user=None)
         response = self.client.post(url)
@@ -1214,17 +1267,64 @@ class TestProjectVersioning:
         _test_user_permissions(user, 403)
         _test_user_permissions(viewer_user, 403)
         _test_user_permissions(agency_user, 200)
-        _test_user_permissions(agency_inputter_user, 200)
+        _set_project_back_to_v1()
+        _test_user_permissions(agency_inputter_user, 403)
         _test_user_permissions(secretariat_viewer_user, 403)
         _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
+        _set_project_back_to_v1()
         _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
-
+        _set_project_back_to_v1()
         _test_user_permissions(secretariat_v3_edit_access_user, 403)
         _test_user_permissions(secretariat_production_v3_edit_access_user, 403)
         _test_user_permissions(admin_user, 200)
 
-    def test_versioning(self, agency_inputter_user, project, test_file1):
-        self.client.force_authenticate(user=agency_inputter_user)
+    def test_submit_project(
+        self,
+        agency_user,
+        project,
+        project_file,
+        project_submission_status,
+    ):
+
+        self.client.force_authenticate(user=agency_user)
+        url = reverse("project-v2-submit", args=(project.id,))
+
+        # submit project and expect failure due to missing required fields
+        response = self.client.post(url)
+        assert response.status_code == 400
+        assert response.data
+
+        # set required fields
+        project.is_lvc = False
+        project.project_start_date = "2023-10-01"
+        project.project_end_date = "2024-09-30"
+        project.total_fund = 2340000
+        project.support_cost_psc = 23
+        project.save()
+
+        self.client.force_authenticate(user=agency_user)
+        url = reverse("project-v2-submit", args=(project.id,))
+
+        # submit project
+        response = self.client.post(url)
+        assert response.status_code == 200
+
+        # check if the project is archived
+        archived_project = Project.objects.really_all().get(latest_project=project)
+        assert archived_project.submission_status.name == "Submitted"
+        assert archived_project.version == 1
+
+        # check if the project file is archived
+        assert ProjectFile.objects.filter(project=project).count() == 1
+        assert ProjectFile.objects.filter(project=archived_project).count() == 1
+
+        # check project
+        project.refresh_from_db()
+        assert project.submission_status.name == "Submitted"
+        assert project.version == 2
+
+    def test_increase_version(self, agency_user, project, test_file1):
+        self.client.force_authenticate(user=agency_user)
         url = reverse("project-files-v2", args=(project.id,))
 
         # upload file
@@ -1239,9 +1339,7 @@ class TestProjectVersioning:
         assert response.data["version"] == 2
         assert len(response.data["versions"]) == 2
         assert response.data["versions"][0]["version"] == 2
-        assert (
-            response.data["versions"][0]["created_by"] == agency_inputter_user.username
-        )
+        assert response.data["versions"][0]["created_by"] == agency_user.username
         assert response.data["versions"][0]["title"] == project.title
         assert response.data["versions"][0]["final_version_id"] == project.id
         assert response.data["versions"][0]["date_created"] == project.date_created
