@@ -15,7 +15,7 @@ class ProjectHistory(models.Model):
         related_name="project_history",
     )
 
-    updated_by = models.ForeignKey(
+    user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name="updated_projects",

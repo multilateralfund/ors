@@ -3,6 +3,10 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 
 from core.api.serializers.project_metadata import ProjectSubSectorSerializer
+
+from core.api.serializers.project_v2 import HISTORY_DESCRIPTION_CREATE
+from core.api.serializers.project_v2 import HISTORY_DESCRIPTION_UPDATE
+
 from core.api.tests.base import BaseTest
 from core.api.tests.factories import (
     AgencyFactory,
@@ -871,11 +875,13 @@ class TestCreateProjects(BaseTest):
         assert len(history) == 1
 
         history_item = history[0]
-        assert history_item["description"] == "Project created."
-        assert history_item["updated_by_username"] == agency_inputter_user.username
-        assert history_item["updated_by_email"] == agency_inputter_user.email
-        assert history_item["updated_by_first_name"] == agency_inputter_user.first_name
-        assert history_item["updated_by_last_name"] == agency_inputter_user.last_name
+        assert history_item["description"] == HISTORY_DESCRIPTION_CREATE
+
+        history_item_user = history_item["user"]
+        assert history_item_user["username"] == agency_inputter_user.username
+        assert history_item_user["email"] == agency_inputter_user.email
+        assert history_item_user["first_name"] == agency_inputter_user.first_name
+        assert history_item_user["last_name"] == agency_inputter_user.last_name
 
     def test_create_project_project_fk(
         self, agency_inputter_user, _setup_project_create
@@ -991,11 +997,13 @@ class TestProjectsV2Update:
         assert len(history) > 1
 
         history_item = history[0]
-        assert history_item["description"] == "Project updated."
-        assert history_item["updated_by_username"] == agency_user.username
-        assert history_item["updated_by_email"] == agency_user.email
-        assert history_item["updated_by_first_name"] == agency_user.first_name
-        assert history_item["updated_by_last_name"] == agency_user.last_name
+        assert history_item["description"] == HISTORY_DESCRIPTION_UPDATE
+
+        history_item_user = history_item["user"]
+        assert history_item_user["username"] == agency_user.username
+        assert history_item_user["email"] == agency_user.email
+        assert history_item_user["first_name"] == agency_user.first_name
+        assert history_item_user["last_name"] == agency_user.last_name
 
 
 class TestProjectFiles:

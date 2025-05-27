@@ -26,6 +26,10 @@ from core.models.project_metadata import (
 from core.utils import get_project_sub_code
 
 
+HISTORY_DESCRIPTION_CREATE = "Project created."
+HISTORY_DESCRIPTION_UPDATE = "Project updated."
+
+
 class ProjectV2FileSerializer(serializers.ModelSerializer):
     download_url = serializers.SerializerMethodField()
     name = serializers.SerializerMethodField()
@@ -53,7 +57,6 @@ class ProjectV2FileSerializer(serializers.ModelSerializer):
 
 
 class ProjectListV2Serializer(ProjectListSerializer):
-
     group = serializers.SlugRelatedField("name_alt", read_only=True)
     group_id = serializers.PrimaryKeyRelatedField(
         allow_null=True,
@@ -310,8 +313,9 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
         ]
 
     def get_history(self, obj):
-        queryset = obj.project_history.all().select_related("project", "updated_by")
-        return ProjectHistorySerializer(queryset, many=True).data
+        queryset = obj.project_history.all().select_related("project", "user")
+        serializer = ProjectHistorySerializer(queryset, many=True)
+        return serializer.data
 
     def get_versions(self, obj):
         """
@@ -485,7 +489,7 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        request = validated_data.pop("request", None)
+        _ = validated_data.pop("request", None)
         user = self.context["request"].user
         status = ProjectStatus.objects.get(code="NA")
         submission_status = ProjectSubmissionStatus.objects.get(name="Draft")
@@ -513,7 +517,7 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
 
         project.subsectors.set(subsectors_data)
 
-        self._create_history(project, user)
+        self._log_history(project, user, HISTORY_DESCRIPTION_CREATE)
 
         return project
 
@@ -545,7 +549,7 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
         if subsectors_data is not None:
             instance.subsectors.set(subsectors_data)
 
-        self._update_history(instance, user)
+        self._log_history(instance, user, HISTORY_DESCRIPTION_UPDATE)
 
         return instance
 
@@ -576,18 +580,11 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
         if ids_to_delete:
             instance.ods_odp.filter(id__in=ids_to_delete).delete()
 
-    def _create_history(self, project, request_user):
-        self._manage_history(project, request_user, "Project created.")
-
-    def _update_history(self, project, request_user):
-        self._manage_history(project, request_user, "Project updated.")
-
-    def _manage_history(self, project, request_user, description):
+    def _log_history(self, project, request_user, description):
         history_data = {
             "project_id": project.id,
-            "updated_by_id": request_user.id,
             "description": description,
         }
         history_serializer = ProjectHistorySerializer(data=history_data)
         history_serializer.is_valid(raise_exception=True)
-        history_serializer.save()
+        history_serializer.save(user=request_user)
