@@ -278,7 +278,11 @@ const ProjectsCreate = ({
         <div className="relative flex items-center justify-between gap-x-2">
           <div>Documentation</div>
           {!areNextSectionsDisabled && files?.newFiles?.length === 0 ? (
-            <SectionErrorIndicator errors={[]} />
+            <SectionErrorIndicator
+              errors={[
+                { id: '1', message: 'At least a file should be provided' },
+              ]}
+            />
           ) : null}
         </div>
       ),

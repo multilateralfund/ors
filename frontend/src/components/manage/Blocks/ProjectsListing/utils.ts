@@ -9,8 +9,22 @@ import {
 } from './interfaces'
 import { formatDecimalValue } from '@ors/helpers'
 
-import { filter, find, isArray, isNil, map, omit, pickBy, reduce } from 'lodash'
-import { ITooltipParams, ValueGetterParams } from 'ag-grid-community'
+import {
+  filter,
+  find,
+  isArray,
+  isNaN,
+  isNil,
+  map,
+  omit,
+  pickBy,
+  reduce,
+} from 'lodash'
+import {
+  ITooltipParams,
+  ValueFormatterParams,
+  ValueGetterParams,
+} from 'ag-grid-community'
 import dayjs from 'dayjs'
 
 const getFieldId = <T>(field: ProjectSpecificFields, data: T) => {
@@ -75,7 +89,7 @@ export const getSectionFields = (
 ) => filter(fields, (field) => field.section === section)
 
 export const formatNumberColumns = (
-  params: ValueGetterParams | ITooltipParams,
+  params: ValueGetterParams | ITooltipParams | ValueFormatterParams,
   field: string,
   valueFormatter?: {
     maximumFractionDigits: number
@@ -84,7 +98,7 @@ export const formatNumberColumns = (
 ) => {
   const value = params.data[field]
 
-  return !isNil(value)
+  return !isNil(value) && !isNaN(parseFloat(value))
     ? valueFormatter
       ? formatDecimalValue(parseFloat(value), valueFormatter)
       : formatDecimalValue(parseFloat(value))

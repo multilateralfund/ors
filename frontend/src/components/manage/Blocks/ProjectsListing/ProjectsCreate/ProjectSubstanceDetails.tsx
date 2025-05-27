@@ -74,7 +74,12 @@ const ProjectSubstanceDetails = ({
             data={odsOdpData || []}
             fields={odsOdpFields}
             mode="edit"
-            onRemoveOdsOdp={onRemoveOdsOdp}
+            {...{
+              onRemoveOdsOdp,
+              setProjectData,
+              sectionIdentifier,
+              field,
+            }}
           />
           <Button
             className="rounded-lg border border-solid border-primary bg-white p-1.5 text-base hover:bg-primary"

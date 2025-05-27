@@ -1,20 +1,29 @@
-import ViewTable from '@ors/components/manage/Form/ViewTable'
+import { Dispatch, SetStateAction } from 'react'
+
+import EditTable from '@ors/components/manage/Form/EditTable'
+import {
+  agFormatValue,
+  getOptionLabel,
+  isOptionEqualToValueByName,
+} from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import {
   ProjectSpecificFields,
   OdsOdpFields,
   FieldType,
   OptionsType,
+  ProjectData,
 } from '../interfaces'
 import { formatNumberColumns, formatOptions } from '../utils'
 
 import { IoTrash } from 'react-icons/io5'
-import { find, map } from 'lodash'
+import { find, findIndex, lowerCase, map } from 'lodash'
 import cx from 'classnames'
 import {
   ValueGetterParams,
   ITooltipParams,
   ICellRendererParams,
   GetRowIdParams,
+  ValueFormatterParams,
 } from 'ag-grid-community'
 
 const ProjectOdsOdpTable = ({
@@ -22,11 +31,17 @@ const ProjectOdsOdpTable = ({
   fields,
   mode,
   onRemoveOdsOdp = () => {},
+  setProjectData,
+  sectionIdentifier,
+  field,
 }: {
   data: OdsOdpFields[]
   fields: ProjectSpecificFields[]
   mode?: string
   onRemoveOdsOdp?: (props: ICellRendererParams) => void
+  setProjectData?: Dispatch<SetStateAction<ProjectData>>
+  sectionIdentifier?: keyof ProjectData
+  field?: string
 }) => {
   const defaultColDef = {
     headerClass: 'ag-text-center',
@@ -48,10 +63,21 @@ const ProjectOdsOdpTable = ({
       return {
         headerName: fieldObj.label,
         field: field,
+        cellEditor: 'agSelectCellEditor',
+        cellEditorParams: {
+          Input: { placeholder: `Select ${lowerCase(fieldObj.label)}` },
+          agFormatValue,
+          getOptionLabel: (option: any) =>
+            getOptionLabel(fieldObj.options, option),
+          isOptionEqualToValue: isOptionEqualToValueByName,
+          options: fieldObj.options,
+          openOnFocus: true,
+        },
         valueGetter: (params: ValueGetterParams<OdsOdpFields>) =>
           getFieldName(params, options, field),
         tooltipValueGetter: (params: ITooltipParams) =>
           getFieldName(params, options, field),
+        editable: mode === 'edit',
         initialWidth: 140,
         minWidth: 140,
         ...defaultColDef,
@@ -64,6 +90,7 @@ const ProjectOdsOdpTable = ({
         headerName: fieldObj.label,
         field: field,
         tooltipField: field,
+        editable: mode === 'edit',
         initialWidth: 180,
         minWidth: 180,
         ...defaultColDef,
@@ -76,6 +103,7 @@ const ProjectOdsOdpTable = ({
         headerName: fieldObj.label,
         field: field,
         tooltipField: field,
+        editable: mode === 'edit',
         initialWidth: 80,
         minWidth: 80,
         ...defaultColDef,
@@ -87,8 +115,15 @@ const ProjectOdsOdpTable = ({
       return {
         headerName: fieldObj.label,
         field: field,
-        valueGetter: (params: ValueGetterParams<OdsOdpFields>) =>
+        cellEditor: 'agNumberCellEditor',
+        cellEditorParams: {
+          allowNullVals: true,
+        },
+        dataType: 'number',
+        valueFormatter: (params: ValueFormatterParams<OdsOdpFields>) =>
           formatNumberColumns(params, field),
+        valueGetter: (params: ValueGetterParams<OdsOdpFields>) =>
+          params.data?.[field],
         tooltipValueGetter: (params: ITooltipParams) =>
           formatNumberColumns(params, field, {
             maximumFractionDigits: 10,
@@ -97,6 +132,7 @@ const ProjectOdsOdpTable = ({
         cellRendererParams: () => ({
           tooltipClassName: 'odp-table-tooltip',
         }),
+        editable: mode === 'edit',
         initialWidth: 100,
         minWidth: 100,
         ...defaultColDef,
@@ -112,6 +148,7 @@ const ProjectOdsOdpTable = ({
           params.data[field] ? 'Yes' : 'No',
         tooltipValueGetter: (params: ITooltipParams) =>
           params.data[field] ? 'Yes' : 'No',
+        editable: mode === 'edit',
         initialWidth: 60,
         minWidth: 60,
         ...defaultColDef,
@@ -120,15 +157,41 @@ const ProjectOdsOdpTable = ({
   }
 
   return (
-    <ViewTable
-      rowData={data}
+    <EditTable
+      rowData={data ?? []}
+      results={[]}
+      suppressScrollOnNewData={true}
       resizeGridOnRowUpdate={true}
       enablePagination={false}
-      suppressCellFocus={false}
+      suppressCellFocus={true}
       withSeparators={true}
+      singleClickEdit={true}
       className={cx('mb-4', {
         'projects-table ods-odp-table': mode === 'edit',
       })}
+      onCellValueChanged={(event) => {
+        const eventData = event.data
+        const newData = [...data]
+
+        const rowIndex = findIndex(
+          newData,
+          (row: OdsOdpFields & { id?: number }) => row.id === eventData.id,
+        )
+
+        if (rowIndex > -1) {
+          newData.splice(rowIndex, 1, {
+            ...eventData,
+          })
+
+          setProjectData?.((prevData) => ({
+            ...prevData,
+            [sectionIdentifier as keyof ProjectData]: {
+              ...prevData[sectionIdentifier as keyof ProjectData],
+              [field as string]: newData,
+            },
+          }))
+        }
+      }}
       columnDefs={[
         ...(mode === 'edit'
           ? [
