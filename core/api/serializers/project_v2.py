@@ -292,7 +292,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
         queryset=ProjectCluster.objects.all().values_list("id", flat=True),
     )
     versions = serializers.SerializerMethodField()
-    history = ProjectHistorySerializer(many=True, read_only=True)
+    history = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
@@ -306,7 +306,12 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
             "latest_project",
             "ods_odp",
             "versions",
+            "history",
         ]
+
+    def get_history(self, obj):
+        queryset = obj.project_history.all().select_related("project", "updated_by")
+        return ProjectHistorySerializer(queryset, many=True).data
 
     def get_versions(self, obj):
         """
@@ -481,7 +486,7 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
     @transaction.atomic
     def create(self, validated_data):
         request = validated_data.pop("request", None)
-        user = getattr(request, "user", None)
+        user = self.context["request"].user
         status = ProjectStatus.objects.get(code="NA")
         submission_status = ProjectSubmissionStatus.objects.get(name="Draft")
         validated_data["status_id"] = status.id
@@ -508,13 +513,13 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
 
         project.subsectors.set(subsectors_data)
 
-        request_user = self.context["user"]
-        self._create_history(project, request_user)
+        self._create_history(project, user)
 
         return project
 
     @transaction.atomic
     def update(self, instance, validated_data):
+        user = self.context["request"].user
         subsectors_data = validated_data.pop("subsector_ids", None)
         ods_odp_data = validated_data.pop("ods_odp", [])
 
@@ -540,8 +545,7 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
         if subsectors_data is not None:
             instance.subsectors.set(subsectors_data)
 
-        request_user = self.context["user"]
-        self._update_history(instance, request_user)
+        self._update_history(instance, user)
 
         return instance
 

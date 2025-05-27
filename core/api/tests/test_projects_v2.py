@@ -856,6 +856,27 @@ class TestCreateProjects(BaseTest):
             2,
         )
 
+    def test_create_project_history(
+        self,
+        agency_inputter_user,
+        _setup_project_create,
+    ):
+        data = _setup_project_create
+        self.client.force_authenticate(user=agency_inputter_user)
+        response = self.client.post(self.url, data, format="json")
+        assert response.status_code == 201, response.data
+
+        # check history items in get records
+        history = response.data["history"]
+        assert len(history) == 1
+
+        history_item = history[0]
+        assert history_item["description"] == "Project created."
+        assert history_item["updated_by_username"] == agency_inputter_user.username
+        assert history_item["updated_by_email"] == agency_inputter_user.email
+        assert history_item["updated_by_first_name"] == agency_inputter_user.first_name
+        assert history_item["updated_by_last_name"] == agency_inputter_user.last_name
+
     def test_create_project_project_fk(
         self, agency_inputter_user, _setup_project_create
     ):
@@ -947,6 +968,34 @@ class TestProjectsV2Update:
         # This test copied from v1 where it was not supposed to actually
         # update ods_odp, in our case it does update it.
         assert project.ods_odp.first().odp == project_ods_odp_subst.odp + 5
+
+    def test_project_update_history(
+        self, agency_inputter_user, agency_user, _setup_project_create
+    ):
+        data = _setup_project_create
+        self.client.force_authenticate(user=agency_inputter_user)
+        response = self.client.post(TestCreateProjects.url, data, format="json")
+        assert response.status_code == 201, response.data
+
+        self.client.force_authenticate(user=agency_user)
+
+        update_data = {
+            "title": "Into the Spell",
+        }
+        project_url = reverse("project-v2-detail", args=(response.data["id"],))
+        response = self.client.patch(project_url, update_data, format="json")
+        assert response.status_code == 200, response.data
+
+        # check history items in get records
+        history = response.data["history"]
+        assert len(history) > 1
+
+        history_item = history[0]
+        assert history_item["description"] == "Project updated."
+        assert history_item["updated_by_username"] == agency_user.username
+        assert history_item["updated_by_email"] == agency_user.email
+        assert history_item["updated_by_first_name"] == agency_user.first_name
+        assert history_item["updated_by_last_name"] == agency_user.last_name
 
 
 class TestProjectFiles:
