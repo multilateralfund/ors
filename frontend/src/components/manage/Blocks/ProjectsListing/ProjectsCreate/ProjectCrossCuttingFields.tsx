@@ -24,12 +24,15 @@ import { useStore } from '@ors/store'
 import { api } from '@ors/helpers'
 
 import { TextareaAutosize } from '@mui/material'
-import { debounce, filter, find, includes } from 'lodash'
+import { debounce, filter, find, includes, isNull } from 'lodash'
+import cx from 'classnames'
 import dayjs from 'dayjs'
 
 const ProjectCrossCuttingFields = ({
   projectData,
   setProjectData,
+  errors = {},
+  projectId,
 }: ProjectDataProps) => {
   const sectionIdentifier = 'crossCuttingFields'
   const crossCuttingFields = projectData[sectionIdentifier]
@@ -168,7 +171,7 @@ const ProjectCrossCuttingFields = ({
         ...prevData,
         [sectionIdentifier]: {
           ...prevData[sectionIdentifier],
-          [field]: value.trim() !== '' ? Number(value).toString() : '',
+          [field]: value,
         },
       }))
     } else {
@@ -184,6 +187,20 @@ const ProjectCrossCuttingFields = ({
         individual_consideration: !consideration,
       },
     }))
+  }
+
+  const getIsInputDisabled = (field: keyof typeof errors) =>
+    isNull(projectId) && errors[field]?.length > 0
+
+  const getFieldDefaultProps = (field: string) => {
+    return {
+      ...{
+        ...defaultPropsSimpleField,
+        className: cx(defaultPropsSimpleField.className, '!m-0 h-10 !py-1', {
+          'border-red-500': getIsInputDisabled(field),
+        }),
+      },
+    }
   }
 
   return (
@@ -206,6 +223,9 @@ const ProjectCrossCuttingFields = ({
             getOptionLabel={(option: any) =>
               getOptionLabel(projectTypesOpts, option)
             }
+            Input={{
+              error: getIsInputDisabled('project_type'),
+            }}
             {...sectionDefaultProps}
           />
         </div>
@@ -224,6 +244,9 @@ const ProjectCrossCuttingFields = ({
               )
             }
             getOptionLabel={(option) => getOptionLabel(sectorsOpts, option)}
+            Input={{
+              error: getIsInputDisabled('sector'),
+            }}
             {...sectionDefaultProps}
           />
         </div>
@@ -244,6 +267,9 @@ const ProjectCrossCuttingFields = ({
               handleChangeSubSector(value as ProjectSubSectorType[])
             }
             getOptionLabel={(option) => getOptionLabel(subsectors, option)}
+            Input={{
+              error: getIsInputDisabled('subsector_ids'),
+            }}
             FieldProps={{ className: 'mb-0 w-[40rem] BPListUpload' }}
           />
         </div>
@@ -267,6 +293,9 @@ const ProjectCrossCuttingFields = ({
             getOptionLabel={(option: any) =>
               getOptionLabel(lvcNonLvcOpts, option)
             }
+            Input={{
+              error: getIsInputDisabled('is_lvc'),
+            }}
             {...defaultProps}
           />
         </div>
@@ -285,7 +314,7 @@ const ProjectCrossCuttingFields = ({
             )
           }
           type="text"
-          {...defaultPropsSimpleField}
+          {...getFieldDefaultProps('title')}
           containerClassName={
             defaultPropsSimpleField.containerClassName + ' !w-[64rem]'
           }
@@ -303,7 +332,9 @@ const ProjectCrossCuttingFields = ({
               sectionIdentifier,
             )
           }
-          className={textAreaClassname + ' !min-w-[64rem]'}
+          className={cx(textAreaClassname + ' !min-w-[64rem]', {
+            'border-red-500': getIsInputDisabled('description'),
+          })}
           minRows={7}
           tabIndex={-1}
         />
@@ -315,8 +346,9 @@ const ProjectCrossCuttingFields = ({
             id={total_fund}
             value={total_fund}
             onChange={(event) => handleChangeNumericValues(event, 'total_fund')}
-            type="number"
+            type="text"
             {...defaultPropsSimpleField}
+            {...getFieldDefaultProps('total_fund')}
           />
         </div>
         <div>
@@ -327,8 +359,9 @@ const ProjectCrossCuttingFields = ({
             onChange={(event) =>
               handleChangeNumericValues(event, 'support_cost_psc')
             }
-            type="number"
+            type="text"
             {...defaultPropsSimpleField}
+            {...getFieldDefaultProps('support_cost_psc')}
           />
         </div>
       </div>
@@ -347,7 +380,9 @@ const ProjectCrossCuttingFields = ({
               )
             }
             formatValue={(value) => dayjs(value).format('MM/DD/YYYY')}
-            {...defaultPropsDateInput}
+            className={cx(defaultPropsDateInput.className, {
+              'border-red-500': getIsInputDisabled('project_start_date'),
+            })}
           />
         </div>
         <div>
@@ -364,7 +399,9 @@ const ProjectCrossCuttingFields = ({
               )
             }
             formatValue={(value) => dayjs(value).format('MM/DD/YYYY')}
-            {...defaultPropsDateInput}
+            className={cx(defaultPropsDateInput.className, {
+              'border-red-500': getIsInputDisabled('project_end_date'),
+            })}
           />
         </div>
       </div>

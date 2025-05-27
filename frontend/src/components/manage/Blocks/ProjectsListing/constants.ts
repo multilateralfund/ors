@@ -23,6 +23,9 @@ export const tableColumns: { [key: string]: string } = {
   individual_consideration: 'Blanket or individual consideration',
   meeting: 'Meeting number',
   description: 'Description',
+  bp_activity: 'BP activity',
+  project_type: 'Project type',
+  subsector_ids: 'Sub-sector(s)',
 }
 
 export const defaultProps = {

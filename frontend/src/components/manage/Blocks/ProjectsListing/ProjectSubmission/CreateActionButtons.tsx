@@ -28,7 +28,7 @@ const CreateActionButtons = ({
   const projectSlice = useStore((state) => state.projects)
   const user_permissions = projectSlice.user_permissions.data || []
 
-  const disableButton = isSubmitDisabled || files.newFiles.length === 0
+  const disableButton = isSubmitDisabled || files?.newFiles?.length === 0
 
   const { newFiles = [] } = files || {}
 

@@ -174,4 +174,6 @@ export interface ProjectData {
 export interface ProjectDataProps {
   projectData: ProjectData
   setProjectData: Dispatch<SetStateAction<ProjectData>>
+  errors?: { [key: string]: string[] }
+  projectId?: number | undefined | null
 }

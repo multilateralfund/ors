@@ -10,6 +10,7 @@ import { formatDecimalValue } from '@ors/helpers'
 
 import { filter, find, isArray, isNil, map, omit, pickBy, reduce } from 'lodash'
 import { ITooltipParams, ValueGetterParams } from 'ag-grid-community'
+import dayjs from 'dayjs'
 
 const getFieldId = <T>(field: ProjectSpecificFields, data: T) => {
   const fieldName = field.read_field_name === 'group' ? 'name_alt' : 'name'
@@ -187,6 +188,48 @@ export const getProjIdentifiersErrors = (
         ? ['This field may not be null.']
         : [],
     cluster: !cluster ? ['This field may not be null.'] : [],
+    ...filteredErrors,
+  }
+}
+
+export const getCrossCuttingErrors = (
+  crossCuttingFields: CrossCuttingFields,
+  errors: { [key: string]: [] },
+) => {
+  const filteredErrors = Object.fromEntries(
+    Object.entries(errors).filter(([key]) =>
+      [
+        'project_type',
+        'sector',
+        'subsector_ids',
+        'is_lvc',
+        'title',
+        'description',
+        'total_fund',
+        'support_cost_psc',
+        'project_start_date',
+        'project_end_date',
+      ].includes(key),
+    ),
+  )
+
+  const { project_type, sector, title, project_start_date, project_end_date } =
+    crossCuttingFields
+
+  return {
+    project_type: !project_type ? ['This field is required.'] : [],
+    sector: !sector ? ['This field is required.'] : [],
+    title: !title ? ['This field is required.'] : [],
+    project_start_date: dayjs(project_start_date).isAfter(
+      dayjs(project_end_date),
+    )
+      ? ['Start date cannot be later than end date.']
+      : [],
+    project_end_date: dayjs(project_end_date).isBefore(
+      dayjs(project_start_date),
+    )
+      ? ['End date cannot be earlier than start date.']
+      : [],
     ...filteredErrors,
   }
 }

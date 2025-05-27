@@ -10,6 +10,7 @@ import ProjectOverview from './ProjectOverview.tsx'
 import ProjectSubstanceDetails from './ProjectSubstanceDetails.tsx'
 import ProjectImpact from './ProjectImpact.tsx'
 import ProjectDocumentation from '../ProjectView/ProjectDocumentation.tsx'
+import { tableColumns } from '../constants.ts'
 import {
   ProjectFile,
   ProjectSpecificFields,
@@ -19,6 +20,7 @@ import {
 } from '../interfaces.ts'
 import {
   canGoToSecondStep,
+  getCrossCuttingErrors,
   getProjIdentifiersErrors,
   getSectionFields,
 } from '../utils.ts'
@@ -45,13 +47,14 @@ const ProjectsCreate = ({
     setErrors?: Dispatch<SetStateAction<{ [key: string]: [] }>>
     project?: ProjectTypeApi
     projectFiles?: ProjectFile[]
-    projectId: number | undefined | null
+    projectId?: number | undefined | null
   }) => {
   const [currentStep, setCurrentStep] = useState<number>(mode !== 'add' ? 1 : 0)
   const [currentTab, setCurrentTab] = useState<number>(0)
 
   const projIdentifiers = projectData.projIdentifiers
-  const { project_type, sector, title } = projectData.crossCuttingFields
+  const crossCuttingFields = projectData.crossCuttingFields
+  const { project_type, sector } = crossCuttingFields
 
   const canLinkToBp = canGoToSecondStep(projIdentifiers)
 
@@ -74,6 +77,23 @@ const ProjectsCreate = ({
     [projIdentifiers, errors],
   )
 
+  const bpErrors = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(errors ?? {}).filter(([key]) => key === 'bp_activity'),
+      ),
+    [errors],
+  )
+
+  const crossCuttingErrors = useMemo(
+    () =>
+      getCrossCuttingErrors(
+        crossCuttingFields,
+        errors as { [key: string]: [] },
+      ),
+    [crossCuttingFields, errors],
+  )
+
   const hasSectionErrors = (errors: { [key: string]: string[] }) =>
     Object.values(errors).some((errors) => errors.length > 0)
 
@@ -83,7 +103,7 @@ const ProjectsCreate = ({
       .flatMap(([field, errorMsgs]) =>
         errorMsgs.map((errMsg, idx) => ({
           id: `${field}-${idx}`,
-          message: `${capitalize(field)}: ${errMsg}`,
+          message: `${tableColumns[field] ?? capitalize(field).replace('_', ' ')}: ${errMsg}`,
         })),
       )
 
@@ -121,7 +141,14 @@ const ProjectsCreate = ({
       step: 1,
       id: 'project-bp-link-section',
       ariaControls: 'project-bp-link-section',
-      label: 'Business Plan',
+      label: (
+        <div className="relative flex items-center justify-between gap-x-2">
+          <div>Business Plan</div>
+          {hasSectionErrors(bpErrors) && (
+            <SectionErrorIndicator errors={formatErrors(bpErrors)} />
+          )}
+        </div>
+      ),
       disabled: areNextSectionsDisabled,
       component: (
         <ProjectBPLinking
@@ -139,10 +166,9 @@ const ProjectsCreate = ({
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div>Cross-Cutting</div>
-          {!areNextSectionsDisabled &&
-          (areProjectSpecificTabsDisabled || !title) ? (
-            <SectionErrorIndicator errors={[]} />
-          ) : null}
+          {!areNextSectionsDisabled && hasSectionErrors(crossCuttingErrors) && (
+            <SectionErrorIndicator errors={formatErrors(crossCuttingErrors)} />
+          )}
         </div>
       ),
       disabled: areNextSectionsDisabled,
@@ -151,7 +177,9 @@ const ProjectsCreate = ({
           {...{
             projectData,
             setProjectData,
+            projectId,
           }}
+          errors={crossCuttingErrors}
         />
       ),
     },
