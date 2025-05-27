@@ -41,20 +41,38 @@ class TestUserPermissions(BaseTest):
         _test_user_permissions(viewer_user, ["view_project"])
         _test_user_permissions(
             agency_user,
-            ["add_project", "edit_project", "increase_project_version", "view_project"],
+            [
+                "add_project",
+                "edit_project",
+                "increase_project_version",
+                "submit_project",
+                "view_project",
+            ],
         )
         _test_user_permissions(
             agency_inputter_user,
-            ["add_project", "edit_project", "increase_project_version", "view_project"],
+            ["add_project", "edit_project", "view_project"],
         )
         _test_user_permissions(secretariat_viewer_user, ["view_project"])
         _test_user_permissions(
             secretariat_v1_v2_edit_access_user,
-            ["add_project", "edit_project", "increase_project_version", "view_project"],
+            [
+                "add_project",
+                "edit_project",
+                "increase_project_version",
+                "submit_project",
+                "view_project",
+            ],
         )
         _test_user_permissions(
             secretariat_production_v1_v2_edit_access_user,
-            ["add_project", "edit_project", "increase_project_version", "view_project"],
+            [
+                "add_project",
+                "edit_project",
+                "increase_project_version",
+                "submit_project",
+                "view_project",
+            ],
         )
         _test_user_permissions(
             secretariat_v3_edit_access_user,
@@ -66,5 +84,11 @@ class TestUserPermissions(BaseTest):
         )
         _test_user_permissions(
             admin_user,
-            ["add_project", "edit_project", "increase_project_version", "view_project"],
+            [
+                "add_project",
+                "edit_project",
+                "increase_project_version",
+                "submit_project",
+                "view_project",
+            ],
         )
