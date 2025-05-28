@@ -60,8 +60,10 @@ class TestUserPermissions(BaseTest):
                 "add_project",
                 "edit_project",
                 "increase_project_version",
+                "send_project_back_to_draft",
                 "submit_project",
                 "view_project",
+                "withdraw_project",
             ],
         )
         _test_user_permissions(
@@ -70,8 +72,10 @@ class TestUserPermissions(BaseTest):
                 "add_project",
                 "edit_project",
                 "increase_project_version",
+                "send_project_back_to_draft",
                 "submit_project",
                 "view_project",
+                "withdraw_project",
             ],
         )
         _test_user_permissions(
