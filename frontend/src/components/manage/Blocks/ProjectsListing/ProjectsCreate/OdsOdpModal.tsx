@@ -59,7 +59,7 @@ const OdsOdpModal = ({
               setOdsOdpData,
               odsOdpField,
               {},
-              undefined,
+              false,
               field,
             ),
           )}

@@ -32,7 +32,7 @@ type ProjectIdentifiersSectionProps = {
   setCurrentStep: Dispatch<SetStateAction<number>>
   setCurrentTab: Dispatch<SetStateAction<number>>
   errors: { [key: string]: string[] }
-  projectId?: number | null
+  hasSubmitted: boolean
 }
 
 const ProjectIdentifiersSection = ({
@@ -43,7 +43,7 @@ const ProjectIdentifiersSection = ({
   setCurrentStep,
   setCurrentTab,
   errors,
-  projectId,
+  hasSubmitted,
 }: ProjectIdentifiersSectionProps) => {
   const sectionIdentifier = 'projIdentifiers'
   const projIdentifiers = projectData[sectionIdentifier]
@@ -106,7 +106,7 @@ const ProjectIdentifiersSection = ({
   }
 
   const getIsInputDisabled = (field: keyof typeof errors) =>
-    !projectId && errors[field]?.length > 0
+    hasSubmitted && errors[field]?.length > 0
 
   return (
     <div className="flex flex-col gap-y-2">

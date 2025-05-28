@@ -310,3 +310,13 @@ export const getSpecificFieldsErrors = (
 
   return filteredErrors
 }
+
+export const getNonFieldErrors = (errors: { [key: string]: [] }) => {
+  const nonFieldsOdsOdpErrors = errors?.['ods_odp']?.find(
+    (err) => Object.keys(err)[0] === 'non_field_errors',
+  )
+  return [
+    ...(errors?.['non_field_errors'] || []),
+    ...(nonFieldsOdsOdpErrors?.['non_field_errors'] || []),
+  ]
+}

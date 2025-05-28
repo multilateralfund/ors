@@ -32,7 +32,7 @@ const ProjectCrossCuttingFields = ({
   projectData,
   setProjectData,
   errors = {},
-  projectId,
+  hasSubmitted,
 }: ProjectDataProps) => {
   const sectionIdentifier = 'crossCuttingFields'
   const crossCuttingFields = projectData[sectionIdentifier]
@@ -190,7 +190,7 @@ const ProjectCrossCuttingFields = ({
   }
 
   const getIsInputDisabled = (field: keyof typeof errors) =>
-    !projectId && errors[field]?.length > 0
+    hasSubmitted && errors[field]?.length > 0
 
   const getFieldDefaultProps = (field: string) => {
     return {

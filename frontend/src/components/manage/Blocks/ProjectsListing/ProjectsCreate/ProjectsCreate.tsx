@@ -34,21 +34,21 @@ const ProjectsCreate = ({
   setProjectData,
   specificFields,
   mode,
-  project,
   files,
   errors,
   setErrors,
-  projectId,
+  hasSubmitted,
+  project,
   ...rest
 }: ProjectDataProps &
   ProjectFiles & {
     specificFields: ProjectSpecificFields[]
     mode: string
-    errors?: { [key: string]: [] }
-    setErrors?: Dispatch<SetStateAction<{ [key: string]: [] }>>
+    errors: { [key: string]: [] }
+    setErrors: Dispatch<SetStateAction<{ [key: string]: [] }>>
+    hasSubmitted: boolean
     project?: ProjectTypeApi
     projectFiles?: ProjectFile[]
-    projectId?: number | null
   }) => {
   const [currentStep, setCurrentStep] = useState<number>(mode !== 'add' ? 1 : 0)
   const [currentTab, setCurrentTab] = useState<number>(0)
@@ -78,11 +78,7 @@ const ProjectsCreate = ({
     areProjectSpecificTabsDisabled || impactFields.length < 1
 
   const projIdentifiersErrors = useMemo(
-    () =>
-      getProjIdentifiersErrors(
-        projIdentifiers,
-        errors as { [key: string]: [] },
-      ),
+    () => getProjIdentifiersErrors(projIdentifiers, errors),
     [projIdentifiers, errors],
   )
 
@@ -95,21 +91,13 @@ const ProjectsCreate = ({
   )
 
   const crossCuttingErrors = useMemo(
-    () =>
-      getCrossCuttingErrors(
-        crossCuttingFields,
-        errors as { [key: string]: [] },
-      ),
+    () => getCrossCuttingErrors(crossCuttingFields, errors),
     [crossCuttingFields, errors],
   )
 
   const specificFieldsErrors = useMemo(
     () =>
-      getSpecificFieldsErrors(
-        projectSpecificFields,
-        specificFields,
-        errors as { [key: string]: [] },
-      ),
+      getSpecificFieldsErrors(projectSpecificFields, specificFields, errors),
     [projectSpecificFields, specificFields, errors],
   )
   const overviewErrors = specificFieldsErrors['Header'] || {}
@@ -180,7 +168,7 @@ const ProjectsCreate = ({
             areNextSectionsDisabled,
             setCurrentStep,
             setCurrentTab,
-            projectId,
+            hasSubmitted,
           }}
           isNextBtnEnabled={canLinkToBp}
           errors={projIdentifiersErrors}
@@ -227,7 +215,7 @@ const ProjectsCreate = ({
           {...{
             projectData,
             setProjectData,
-            projectId,
+            hasSubmitted,
           }}
           errors={crossCuttingErrors}
         />
@@ -250,7 +238,7 @@ const ProjectsCreate = ({
         <ProjectOverview
           sectionFields={overviewFields}
           errors={overviewErrors}
-          {...{ projectData, setProjectData, projectId }}
+          {...{ projectData, setProjectData, hasSubmitted }}
         />
       ),
     },
@@ -278,7 +266,7 @@ const ProjectsCreate = ({
         <ProjectSubstanceDetails
           sectionFields={substanceDetailsFields}
           errors={substanceDetailsErrors}
-          {...{ projectData, setProjectData, projectId }}
+          {...{ projectData, setProjectData, hasSubmitted }}
         />
       ),
     },
@@ -299,7 +287,7 @@ const ProjectsCreate = ({
         <ProjectImpact
           sectionFields={impactFields}
           errors={impactErrors}
-          {...{ projectData, setProjectData, projectId }}
+          {...{ projectData, setProjectData, hasSubmitted }}
         />
       ),
     },

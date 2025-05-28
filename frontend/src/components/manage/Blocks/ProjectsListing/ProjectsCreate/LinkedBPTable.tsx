@@ -12,7 +12,9 @@ import { find, map } from 'lodash'
 
 const ACTIVITIES_PER_PAGE_TABLE = 50
 
-const LinkedBPTableWrapper = (props: ProjectDataProps) => {
+const LinkedBPTableWrapper = (
+  props: Omit<ProjectDataProps, 'hasSubmitted'>,
+) => {
   const { results: yearRanges } = useGetYearRanges()
   const { periodOptions } = useGetBpPeriods(yearRanges)
 
@@ -96,7 +98,10 @@ const LinkedBPTable = ({
   )
 }
 
-type LatestEndorsedBPActivitiesProps = ProjectDataProps & {
+type LatestEndorsedBPActivitiesProps = Omit<
+  ProjectDataProps,
+  'hasSubmitted'
+> & {
   activities: ReturnType<typeof useGetActivities>
   yearRanges: ReturnType<typeof useGetYearRanges>['results']
 }

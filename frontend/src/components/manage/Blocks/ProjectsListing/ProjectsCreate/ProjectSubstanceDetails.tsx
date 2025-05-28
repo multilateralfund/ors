@@ -18,8 +18,8 @@ const ProjectSubstanceDetails = ({
   projectData,
   setProjectData,
   sectionFields,
-  errors,
-  projectId,
+  errors = {},
+  hasSubmitted,
 }: SpecificFieldsSectionProps) => {
   const [displayModal, setDisplayModal] = useState(false)
 
@@ -64,8 +64,8 @@ const ProjectSubstanceDetails = ({
           projectData,
           setProjectData,
           field,
-          errors as { [key: string]: string[] },
-          projectId,
+          errors,
+          hasSubmitted,
         ),
       )}
       {odsOdpFields.length > 0 && (
@@ -80,7 +80,7 @@ const ProjectSubstanceDetails = ({
               sectionIdentifier,
               field,
               errors,
-              projectId,
+              hasSubmitted,
             }}
           />
           <Button

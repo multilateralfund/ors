@@ -5,8 +5,8 @@ const ProjectOverview = ({
   projectData,
   setProjectData,
   sectionFields,
-  errors,
-  projectId,
+  errors = {},
+  hasSubmitted,
 }: SpecificFieldsSectionProps) => {
   return (
     <>
@@ -16,8 +16,8 @@ const ProjectOverview = ({
             projectData,
             setProjectData,
             field,
-            errors as { [key: string]: string[] },
-            projectId,
+            errors,
+            hasSubmitted,
           ),
         )}
       </div>

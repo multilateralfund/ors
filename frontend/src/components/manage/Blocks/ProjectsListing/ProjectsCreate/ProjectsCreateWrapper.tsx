@@ -16,7 +16,7 @@ import {
   initialCrossCuttingFields,
   initialProjectIdentifiers,
 } from '../constants.ts'
-import { getDefaultValues } from '../utils.ts'
+import { getDefaultValues, getNonFieldErrors } from '../utils.ts'
 
 import { Alert } from '@mui/material'
 import { groupBy, map } from 'lodash'
@@ -50,15 +50,10 @@ const ProjectsCreateWrapper = () => {
     deletedFilesIds: [],
     newFiles: [],
   })
+  const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
 
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
-  const nonFieldsOdsOdpErrors = errors?.['ods_odp']?.find(
-    (err) => Object.keys(err)[0] === 'non_field_errors',
-  )
-  const nonFieldsErrors = [
-    ...(errors?.['non_field_errors'] || []),
-    ...(nonFieldsOdsOdpErrors?.['non_field_errors'] || []),
-  ]
+  const nonFieldsErrors = getNonFieldErrors(errors)
 
   useEffect(() => {
     if (cluster && project_type && sector) {
@@ -70,7 +65,7 @@ const ProjectsCreateWrapper = () => {
     <>
       <ProjectsHeader
         mode="add"
-        {...{ projectData, files, setProjectId, errors, setErrors }}
+        {...{ projectData, files, setProjectId, setErrors, setHasSubmitted }}
       />
       <ProjectsCreate
         mode="add"
@@ -82,7 +77,7 @@ const ProjectsCreateWrapper = () => {
           setFiles,
           errors,
           setErrors,
-          projectId,
+          hasSubmitted,
         }}
       />
 

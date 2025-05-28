@@ -174,6 +174,6 @@ export interface ProjectData {
 export interface ProjectDataProps {
   projectData: ProjectData
   setProjectData: Dispatch<SetStateAction<ProjectData>>
+  hasSubmitted: boolean
   errors?: { [key: string]: string[] }
-  projectId?: number | null
 }

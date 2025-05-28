@@ -35,7 +35,7 @@ const ProjectOdsOdpTable = ({
   sectionIdentifier,
   field,
   errors,
-  projectId,
+  hasSubmitted,
 }: {
   data: OdsOdpFields[]
   fields: ProjectSpecificFields[]
@@ -45,7 +45,7 @@ const ProjectOdsOdpTable = ({
   sectionIdentifier?: keyof ProjectData
   field?: string
   errors?: { [key: string]: string[] }
-  projectId?: number | null
+  hasSubmitted?: boolean
 }) => {
   const defaultColDef = {
     headerClass: 'ag-text-center',

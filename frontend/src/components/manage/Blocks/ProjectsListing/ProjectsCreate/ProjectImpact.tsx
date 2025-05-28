@@ -5,8 +5,8 @@ const ProjectImpact = ({
   projectData,
   setProjectData,
   sectionFields,
-  errors,
-  projectId,
+  errors = {},
+  hasSubmitted,
 }: SpecificFieldsSectionProps) => {
   return (
     <div className="grid grid-cols-4 gap-x-20 gap-y-3">
@@ -15,8 +15,8 @@ const ProjectImpact = ({
           projectData,
           setProjectData,
           field,
-          errors as { [key: string]: string[] },
-          projectId,
+          errors,
+          hasSubmitted,
         ),
       )}
     </div>

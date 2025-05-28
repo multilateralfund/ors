@@ -16,12 +16,14 @@ const EditActionButtons = ({
   files,
   isSubmitDisabled,
   setIsLoading,
+  setHasSubmitted,
 }: {
   projectData: ProjectData
   files: ProjectFilesObject
   project: ProjectTypeApi
   isSubmitDisabled: boolean
   setIsLoading: Dispatch<SetStateAction<boolean>>
+  setHasSubmitted: Dispatch<SetStateAction<boolean>>
 }) => {
   const { id } = project
 
@@ -76,6 +78,7 @@ const EditActionButtons = ({
       }
     } finally {
       setIsLoading(false)
+      setHasSubmitted(true)
     }
   }
 
