@@ -1,6 +1,7 @@
 import os
 import urllib
 
+
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from django.db.models import Q
@@ -42,6 +43,8 @@ from core.models.project import (
 from core.models.project_metadata import ProjectSubmissionStatus
 from core.models.user import User
 from core.api.views.utils import log_project_history
+
+from core.api.views.projects_export import ProjectsV2Export
 
 
 class ProjectDestructionTechnologyView(APIView):
@@ -112,7 +115,7 @@ class ProjectV2ViewSet(
 
     @property
     def permission_classes(self):
-        if self.action in ["list", "retrieve"]:
+        if self.action in ["list", "retrieve", "export"]:
             return [
                 IsViewer
                 | IsAgencyInputter
@@ -153,7 +156,8 @@ class ProjectV2ViewSet(
             ]
         if self.action in ["recommend", "withdraw", "send_back_to_draft"]:
             return [IsSecretariatV1V2EditAccess | IsSecretariatProductionV1V2EditAccess]
-        return super().get_permissions()
+
+        return []
 
     def filter_permissions_queryset(self, queryset):
         """
@@ -213,7 +217,7 @@ class ProjectV2ViewSet(
 
     def get_serializer_class(self):
         serializer = ProjectDetailsV2Serializer
-        if self.action == "list":
+        if self.action in ["list", "export"]:
             serializer = ProjectListV2Serializer
         elif self.action in ["create", "update", "partial_update"]:
             serializer = ProjectV2CreateUpdateSerializer
@@ -273,6 +277,10 @@ class ProjectV2ViewSet(
         meta = self.metadata_class()
         data = meta.determine_metadata(request, self)
         return Response(data)
+
+    @action(methods=["GET"], detail=False)
+    def export(self, *args, **kwargs):
+        return ProjectsV2Export(self).export_xls()
 
     @action(methods=["POST"], detail=True)
     @swagger_auto_schema(

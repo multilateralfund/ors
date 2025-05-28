@@ -41,6 +41,7 @@ from core.api.serializers.project import (
     ProjectListSerializer,
 )
 from core.api.utils import workbook_pdf_response, workbook_response
+from core.api.views.projects_export import ProjectsExport
 from core.models.meeting import Meeting
 from core.models.project import (
     MetaProject,
@@ -263,29 +264,13 @@ class ProjectViewSet(
         ProjectFile.objects.create(file=file, project=project)
         return Response({}, status.HTTP_201_CREATED)
 
-    def get_wb(self, method):
-        queryset = self.filter_queryset(self.get_queryset())
-
-        data = ProjectExportSerializer(queryset, many=True).data
-
-        wb = openpyxl.Workbook(write_only=True)
-        sheet = wb.create_sheet("Projects")
-        configure_sheet_print(sheet, "landscape")
-
-        ProjectWriter(
-            sheet,
-        ).write(data)
-
-        name = "Projects"
-        return method(name, wb)
-
     @action(methods=["GET"], detail=False)
     def export(self, *args, **kwargs):
-        return self.get_wb(workbook_response)
+        return ProjectsExport(self).export_xls()
 
     @action(methods=["GET"], detail=False)
     def print(self, *args, **kwargs):
-        return self.get_wb(workbook_pdf_response)
+        return ProjectsExport(self).export_pdf()
 
     @swagger_auto_schema(
         deprecated=True,
