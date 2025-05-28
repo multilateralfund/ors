@@ -7,6 +7,7 @@ from core.api.serializers.project import (
     ProjectOdsOdpListSerializer,
     ProjectOdsOdpCreateSerializer,
 )
+from core.api.serializers.project_history import ProjectHistorySerializer
 from core.models.agency import Agency
 from core.models.country import Country
 from core.models.group import Group
@@ -23,6 +24,10 @@ from core.models.project_metadata import (
     ProjectSubSector,
 )
 from core.utils import get_project_sub_code
+
+
+HISTORY_DESCRIPTION_CREATE = "Project created."
+HISTORY_DESCRIPTION_UPDATE = "Project updated."
 
 
 class ProjectV2FileSerializer(serializers.ModelSerializer):
@@ -52,7 +57,6 @@ class ProjectV2FileSerializer(serializers.ModelSerializer):
 
 
 class ProjectListV2Serializer(ProjectListSerializer):
-
     group = serializers.SlugRelatedField("name_alt", read_only=True)
     group_id = serializers.PrimaryKeyRelatedField(
         allow_null=True,
@@ -291,6 +295,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
         queryset=ProjectCluster.objects.all().values_list("id", flat=True),
     )
     versions = serializers.SerializerMethodField()
+    history = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
@@ -304,7 +309,13 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
             "latest_project",
             "ods_odp",
             "versions",
+            "history",
         ]
+
+    def get_history(self, obj):
+        queryset = obj.project_history.all().select_related("project", "user")
+        serializer = ProjectHistorySerializer(queryset, many=True)
+        return serializer.data
 
     def get_versions(self, obj):
         """
@@ -478,8 +489,8 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        request = validated_data.pop("request", None)
-        user = getattr(request, "user", None)
+        _ = validated_data.pop("request", None)
+        user = self.context["request"].user
         status = ProjectStatus.objects.get(code="NA")
         submission_status = ProjectSubmissionStatus.objects.get(name="Draft")
         validated_data["status_id"] = status.id
@@ -505,10 +516,14 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
             ProjectOdsOdp.objects.create(project=project, **ods_odp)
 
         project.subsectors.set(subsectors_data)
+
+        self._log_history(project, user, HISTORY_DESCRIPTION_CREATE)
+
         return project
 
     @transaction.atomic
     def update(self, instance, validated_data):
+        user = self.context["request"].user
         subsectors_data = validated_data.pop("subsector_ids", None)
         ods_odp_data = validated_data.pop("ods_odp", [])
 
@@ -533,6 +548,8 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
 
         if subsectors_data is not None:
             instance.subsectors.set(subsectors_data)
+
+        self._log_history(instance, user, HISTORY_DESCRIPTION_UPDATE)
 
         return instance
 
@@ -562,3 +579,12 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
 
         if ids_to_delete:
             instance.ods_odp.filter(id__in=ids_to_delete).delete()
+
+    def _log_history(self, project, request_user, description):
+        history_data = {
+            "project_id": project.id,
+            "description": description,
+        }
+        history_serializer = ProjectHistorySerializer(data=history_data)
+        history_serializer.is_valid(raise_exception=True)
+        history_serializer.save(user=request_user)
