@@ -20,7 +20,6 @@ class UserPermissionsView(views.APIView):
             ]
 
         if self.request.user.user_type in [
-            User.UserType.AGENCY_INPUTTER,
             User.UserType.AGENCY_SUBMITTER,
             User.UserType.SECRETARIAT_PRODUCTION_V1_V2_EDIT_ACCESS,
             User.UserType.SECRETARIAT_V1_V2_EDIT_ACCESS,
@@ -29,10 +28,12 @@ class UserPermissionsView(views.APIView):
                 "add_project",
                 "edit_project",
                 "increase_project_version",
+                "submit_project",
                 "view_project",
             ]
 
         if self.request.user.user_type in [
+            User.UserType.AGENCY_INPUTTER,
             User.UserType.SECRETARIAT_PRODUCTION_V3_EDIT_ACCESS,
             User.UserType.SECRETARIAT_V3_EDIT_ACCESS,
         ]:
@@ -47,6 +48,7 @@ class UserPermissionsView(views.APIView):
                 "add_project",
                 "edit_project",
                 "increase_project_version",
+                "submit_project",
                 "view_project",
             ]
 

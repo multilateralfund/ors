@@ -1,10 +1,8 @@
 import os
 import urllib
-import shutil
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -27,6 +25,8 @@ from core.api.permissions import (
     IsViewer,
 )
 from core.api.serializers.project_v2 import (
+    ProjectV2SubmitSerializer,
+    ProjectV2RecommendSerializer,
     ProjectV2FileSerializer,
     ProjectDetailsV2Serializer,
     ProjectListV2Serializer,
@@ -35,16 +35,11 @@ from core.api.serializers.project_v2 import (
 from core.api.swagger import FileUploadAutoSchema
 from core.models.project import (
     Project,
-    ProjectComment,
-    ProjectFund,
-    ProjectRBMMeasure,
     ProjectOdsOdp,
-    ProjectProgressReport,
     ProjectFile,
-    SubmissionAmount,
 )
+from core.models.project_metadata import ProjectSubmissionStatus
 from core.models.user import User
-from core.models.utils import get_protected_storage
 
 
 class ProjectDestructionTechnologyView(APIView):
@@ -131,7 +126,6 @@ class ProjectV2ViewSet(
             "update",
             "partial_update",
             "destroy",
-            "increase_version",
         ]:
             return [
                 IsAgencyInputter
@@ -139,6 +133,18 @@ class ProjectV2ViewSet(
                 | IsSecretariatV1V2EditAccess
                 | IsSecretariatProductionV1V2EditAccess
             ]
+        if self.action in [
+            "increase_version",
+            "submit",
+        ]:
+            return [
+                IsAgencySubmitter
+                | IsSecretariatV1V2EditAccess
+                | IsSecretariatProductionV1V2EditAccess
+            ]
+
+        if self.action == "recommend":
+            return [IsSecretariatV1V2EditAccess | IsSecretariatProductionV1V2EditAccess]
         return super().get_permissions()
 
     def filter_permissions_queryset(self, queryset):
@@ -260,12 +266,6 @@ class ProjectV2ViewSet(
         data = meta.determine_metadata(request, self)
         return Response(data)
 
-    def _get_new_file_path(self, original_file_name, new_project_id):
-        # Generate a new file path for the duplicated file
-        base_dir, file_name = os.path.split(original_file_name)
-        new_file_name = f"{file_name}_{new_project_id}"
-        return os.path.join(base_dir, new_file_name)
-
     @action(methods=["POST"], detail=True)
     @swagger_auto_schema(
         operation_description="""
@@ -289,78 +289,91 @@ class ProjectV2ViewSet(
                 {"error": "This project already has a latest version."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        with transaction.atomic():
-            # Duplicate the project
-            old_project = Project.objects.get(pk=project.pk)
-            old_project.pk = None
-            old_project.latest_project = project
+        project.increase_version(request.user)
 
-            old_project.save()
+        return Response(
+            ProjectDetailsV2Serializer(project).data,
+            status=status.HTTP_200_OK,
+        )
 
-            project.version += 1
-            project.version_created_by = request.user
-            project.save()
+    @action(methods=["POST"], detail=True)
+    @swagger_auto_schema(
+        operation_description="""
+        Submit the project for review.
+        The project is checked for validity (check version, status and if the required fields are filled).
+        If the project is valid, it is marked as submitted and the version is increased, creating an
+        archived version of the project.
+        The related entries (ProjectOdsOdp, ProjectFund, ProjectRBMMeasure,
+        ProjectProgressReport, SubmissionAmount, ProjectComment, ProjectFile)
+        are also duplicated and linked to the archived project.
+        An email notification is sent to the secretariat team
+        to inform them about the new submission. (TO BE IMPLEMENTED)
+        """,
+        request_body=openapi.Schema(type=openapi.TYPE_OBJECT, properties=None),
+        responses={
+            status.HTTP_200_OK: ProjectDetailsV2Serializer,
+            status.HTTP_400_BAD_REQUEST: "Bad request",
+        },
+    )
+    def submit(self, request, *args, **kwargs):
+        """
+        Submit the project for review.
+        The project is checked for validity (check version, status and if the required fields are filled).
+        If the project is valid, it is marked as submitted and the version is increased, creating an
+        archived version of the project.
+        The related entries (ProjectOdsOdp, ProjectFund, ProjectRBMMeasure,
+        ProjectProgressReport, SubmissionAmount, ProjectComment, ProjectFile)
+        are also duplicated and linked to the archived project.
+        An email notification is sent to the secretariat team
+        to inform them about the new submission. (TO BE IMPLEMENTED)
+        """
+        project = self.get_object()
+        serializer = ProjectV2SubmitSerializer(project, data={}, partial=True)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        project.submission_status = ProjectSubmissionStatus.objects.get(
+            name="Submitted"
+        )
+        project.save()
+        project.increase_version(request.user)
+        # TODO: Implement MLFS notifications
+        return Response(
+            ProjectDetailsV2Serializer(project).data,
+            status=status.HTTP_200_OK,
+        )
 
-            # Duplicate the linked ProjectOdsOdp entries
-            ods_odp_entries = ProjectOdsOdp.objects.filter(project=project)
-            for entry in ods_odp_entries:
-                entry.pk = None
-                entry.project = old_project
-                entry.save()
-
-            # Duplicate the linked ProjectFund entries
-            fund_entries = ProjectFund.objects.filter(project=project)
-            for entry in fund_entries:
-                entry.pk = None
-                entry.project = old_project
-                entry.save()
-
-            # Duplicate the linked ProjectRBMMeasure entries
-            rbm_entries = ProjectRBMMeasure.objects.filter(project=project)
-            for entry in rbm_entries:
-                entry.pk = None
-                entry.project = old_project
-                entry.save()
-
-            # Duplicate the linked ProjectProgressReport entries
-            progress_report_entries = ProjectProgressReport.objects.filter(
-                project=project
-            )
-            for entry in progress_report_entries:
-                entry.pk = None
-                entry.project = old_project
-                entry.save()
-
-            # Duplicate the linked SubmissionAmount entries
-            submission_amount_entries = SubmissionAmount.objects.filter(project=project)
-            for entry in submission_amount_entries:
-                entry.pk = None
-                entry.project = old_project
-                entry.save()
-
-            # Duplicate the ProjectComment entries
-            comment_entries = ProjectComment.objects.filter(project=project)
-            for entry in comment_entries:
-                entry.pk = None
-                entry.project = old_project
-                entry.save()
-
-            # Duplicate the ProjectFile entries
-            file_entries = ProjectFile.objects.filter(project=project)
-            for entry in file_entries:
-                original_file_path = entry.file.path
-                new_file_path = self._get_new_file_path(entry.file.name, old_project.id)
-                storage = get_protected_storage()
-                with storage.open(original_file_path, "rb") as original_file:
-                    with storage.open(new_file_path, "wb") as new_file:
-                        shutil.copyfileobj(original_file, new_file)
-                entry.pk = None
-                entry.project = old_project
-                entry.file.name = (
-                    new_file_path  # Update the file field to point to the new file
-                )
-                entry.save()
-
+    @action(methods=["POST"], detail=True)
+    @swagger_auto_schema(
+        operation_description="""
+        Recommend the project.
+        The project is checked for validity (check version, status and if the required fields are filled).
+        If the project is valid, it is marked as Recommended and the version is increased, creating an
+        archived version of the project.
+        The related entries (ProjectOdsOdp, ProjectFund, ProjectRBMMeasure,
+        ProjectProgressReport, SubmissionAmount, ProjectComment, ProjectFile)
+        are also duplicated and linked to the archived project.
+        """,
+        request_body=openapi.Schema(type=openapi.TYPE_OBJECT, properties=None),
+        responses={
+            status.HTTP_200_OK: ProjectDetailsV2Serializer,
+            status.HTTP_400_BAD_REQUEST: "Bad request",
+        },
+    )
+    def recommend(self, request, *args, **kwargs):
+        """
+        This method is not implemented in the V2 API.
+        """
+        project = self.get_object()
+        serializer = ProjectV2RecommendSerializer(
+            project, data=request.data, partial=True
+        )
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        project.submission_status = ProjectSubmissionStatus.objects.get(
+            name="Recommended"
+        )
+        project.save()
+        project.increase_version(request.user)
         return Response(
             ProjectDetailsV2Serializer(project).data,
             status=status.HTTP_200_OK,

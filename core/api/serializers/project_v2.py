@@ -19,11 +19,14 @@ from core.models.project import (
 )
 from core.models.project_metadata import (
     ProjectCluster,
+    ProjectSpecificFields,
     ProjectStatus,
     ProjectSubmissionStatus,
     ProjectSubSector,
 )
 from core.utils import get_project_sub_code
+
+# pylint: disable=R1702
 
 
 HISTORY_DESCRIPTION_CREATE = "Project created."
@@ -588,3 +591,117 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
         history_serializer = ProjectHistorySerializer(data=history_data)
         history_serializer.is_valid(raise_exception=True)
         history_serializer.save(user=request_user)
+
+
+class ProjectV2SubmitSerializer(serializers.ModelSerializer):
+    """
+    ProjectSerializer class for submitting a project
+    """
+
+    class Meta:
+        model = Project
+        fields = [
+            "version",
+        ]
+
+    def validate_required_fields(self, errors):
+        mandatory_fields_at_submission = [
+            "cluster",
+            "project_type",
+            "sector",
+            "country",
+            "agency",
+            "meeting",
+            "is_lvc",
+            "title",
+            "description",
+            "project_start_date",
+            "project_end_date",
+            "total_fund",
+            "support_cost_psc",
+        ]
+        for field in mandatory_fields_at_submission:
+            if getattr(self.instance, field) is None:
+                errors[field] = (
+                    f"{field.replace('_', ' ').title()} is required for submission."
+                )
+
+        # Check project specific mandatory fields
+        project_specific_fields_obj = ProjectSpecificFields.objects.filter(
+            cluster=self.instance.cluster,
+            type=self.instance.project_type,
+            sector=self.instance.sector,
+        ).first()
+
+        if project_specific_fields_obj:
+            for field in project_specific_fields_obj.fields.filter(
+                section__in=["Header", "Substance Details", "Impact"]
+            ):
+                if field.section == "Substance Details":
+                    project_ods_odp_entries = self.instance.ods_odp.all()
+                    if not project_ods_odp_entries:
+                        errors[field.write_field_name] = (
+                            f"{field.label} is required for submission."
+                        )
+                    else:
+                        for ods_odp in project_ods_odp_entries:
+                            if getattr(ods_odp, field.write_field_name) is None:
+                                errors[f"{field.write_field_name}_ods_odp"] = (
+                                    f"{field.label} is required for submission."
+                                )
+                else:
+                    if not getattr(self.instance, field.write_field_name):
+                        errors[field.write_field_name] = (
+                            f"{field.label} is required for submission."
+                        )
+        if ProjectFile.objects.filter(project=self.instance).count() < 1:
+            errors["files"] = (
+                "At least one file must be attached to the project for submission."
+            )
+        return errors
+
+    def validate(self, attrs):
+        """
+        Validate the project submission
+        """
+        errors = {}
+        if self.instance.version != 1:
+            errors["version"] = "Project can only be submitted if it is version 1."
+        if self.instance.submission_status.name != "Draft":
+            errors["submission_status"] = (
+                "Project can only be submitted if its status is Draft."
+            )
+
+        self.validate_required_fields(errors)
+        if errors:
+            raise serializers.ValidationError(errors)
+        return attrs
+
+
+class ProjectV2RecommendSerializer(ProjectV2SubmitSerializer):
+    """
+    ProjectSerializer class for recommending a project
+    """
+
+    class Meta:
+        model = Project
+        fields = [
+            "version",
+        ]
+
+    def validate(self, attrs):
+        """
+        Validate the project submission
+        """
+        errors = {}
+        if self.instance.version != 2:
+            errors["version"] = "Project can only be recommended if it is version 2."
+        if self.instance.submission_status.name != "Submitted":
+            errors["submission_status"] = (
+                "Project can only be recommended if its status is Submitted."
+            )
+
+        self.validate_required_fields(errors)
+        if errors:
+            raise serializers.ValidationError(errors)
+        return attrs
