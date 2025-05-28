@@ -1,15 +1,32 @@
 import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
+import { validationFieldsPairs } from './constants'
 import {
   ProjIdentifiers,
   ProjectSpecificFields,
   ProjectData,
   CrossCuttingFields,
+  SpecificFields,
 } from './interfaces'
 import { formatDecimalValue } from '@ors/helpers'
 
-import { filter, find, isArray, isNil, map, omit, pickBy, reduce } from 'lodash'
-import { ITooltipParams, ValueGetterParams } from 'ag-grid-community'
+import {
+  filter,
+  find,
+  isArray,
+  isNaN,
+  isNil,
+  map,
+  omit,
+  pickBy,
+  reduce,
+} from 'lodash'
+import {
+  ITooltipParams,
+  ValueFormatterParams,
+  ValueGetterParams,
+} from 'ag-grid-community'
+import dayjs from 'dayjs'
 
 const getFieldId = <T>(field: ProjectSpecificFields, data: T) => {
   const fieldName = field.read_field_name === 'group' ? 'name_alt' : 'name'
@@ -73,7 +90,7 @@ export const getSectionFields = (
 ) => filter(fields, (field) => field.section === section)
 
 export const formatNumberColumns = (
-  params: ValueGetterParams | ITooltipParams,
+  params: ValueGetterParams | ITooltipParams | ValueFormatterParams,
   field: string,
   valueFormatter?: {
     maximumFractionDigits: number
@@ -82,7 +99,7 @@ export const formatNumberColumns = (
 ) => {
   const value = params.data[field]
 
-  return !isNil(value)
+  return !isNil(value) && !isNaN(parseFloat(value))
     ? valueFormatter
       ? formatDecimalValue(parseFloat(value), valueFormatter)
       : formatDecimalValue(parseFloat(value))
@@ -97,12 +114,12 @@ export const handleChangeNumberField = <T, K>(
 ) => {
   const value = event.target.value
 
-  if (!isNaN(Number(value)) && Number.isInteger(Number(value))) {
+  if (value === '' || !isNaN(parseInt(value))) {
     setState((prevData) => ({
       ...prevData,
       [section]: {
         ...prevData[section],
-        [field]: value.trim() !== '' ? Number(value) : '',
+        [field]: value ? parseInt(value) : '',
       },
     }))
   } else {
@@ -121,10 +138,7 @@ export const handleChangeDecimalField = <T, K>(
   if (!isNaN(Number(value))) {
     setState((prevData) => ({
       ...prevData,
-      [section]: {
-        ...prevData[section],
-        [field]: value.trim() !== '' ? Number(value) : '',
-      },
+      [section]: { ...prevData[section], [field]: value },
     }))
   } else {
     event.preventDefault()
@@ -140,8 +154,7 @@ export const formatSubmitData = (projectData: ProjectData) => {
   } = projectData
 
   return {
-    agency: projIdentifiers.current_agency,
-    lead_agency: projIdentifiers?.is_lead_agency
+    agency: projIdentifiers?.is_lead_agency
       ? projIdentifiers.current_agency
       : projIdentifiers.side_agency,
     ...omit(projIdentifiers, [
@@ -159,4 +172,137 @@ export const formatSubmitData = (projectData: ProjectData) => {
       ),
     ),
   }
+}
+
+export const getProjIdentifiersErrors = (
+  projIdentifiers: ProjIdentifiers,
+  errors: { [key: string]: [] },
+) => {
+  const requiredFields = ['country', 'meeting', 'agency', 'cluster']
+
+  const filteredErrors = Object.fromEntries(
+    Object.entries(errors).filter(([key]) => requiredFields.includes(key)),
+  )
+
+  const { current_agency, side_agency, is_lead_agency } = projIdentifiers
+
+  return {
+    ...requiredFields.reduce((acc: any, field) => {
+      acc[field] = !projIdentifiers[field as keyof ProjIdentifiers]
+        ? ['This field may not be null.']
+        : []
+
+      return acc
+    }, {}),
+    agency:
+      (is_lead_agency && !current_agency) || (!is_lead_agency && !side_agency)
+        ? ['This field may not be null.']
+        : [],
+    ...filteredErrors,
+  }
+}
+
+export const getCrossCuttingErrors = (
+  crossCuttingFields: CrossCuttingFields,
+  errors: { [key: string]: [] },
+) => {
+  const requiredFields = [
+    'project_type',
+    'sector',
+    'title',
+    'subsector_ids',
+    'is_lvc',
+    'description',
+    'total_fund',
+    'support_cost_psc',
+    'project_start_date',
+    'project_end_date',
+  ]
+
+  const filteredErrors = Object.fromEntries(
+    Object.entries(errors).filter(([key]) => requiredFields.includes(key)),
+  )
+
+  const { project_start_date, project_end_date } = crossCuttingFields
+
+  return {
+    ...requiredFields.slice(0, 3).reduce((acc: any, field) => {
+      acc[field] = !crossCuttingFields[field as keyof CrossCuttingFields]
+        ? ['This field is required.']
+        : []
+
+      return acc
+    }, {}),
+    project_start_date: dayjs(project_start_date).isAfter(
+      dayjs(project_end_date),
+    )
+      ? ['Start date cannot be later than end date.']
+      : [],
+    project_end_date: dayjs(project_end_date).isBefore(
+      dayjs(project_start_date),
+    )
+      ? ['End date cannot be earlier than start date.']
+      : [],
+    ...filteredErrors,
+  }
+}
+
+export const getDefaultImpactErrors = (
+  projectSpecificFields: SpecificFields,
+) => {
+  const errorMsg = 'Number cannot be greater than the total one.'
+
+  return Object.fromEntries(
+    validationFieldsPairs.map(([key, totalKey]) => [
+      key,
+      (projectSpecificFields[key] ?? 0) > (projectSpecificFields[totalKey] ?? 0)
+        ? [errorMsg]
+        : [],
+    ]),
+  )
+}
+export const getSpecificFieldsErrors = (
+  projectSpecificFields: SpecificFields,
+  specificFields: ProjectSpecificFields[],
+  errors: { [key: string]: [] },
+) => {
+  const defaultImpactErrors =
+    getDefaultImpactErrors(projectSpecificFields) ?? {}
+  const updatedErrors = { ...defaultImpactErrors, ...errors }
+
+  const fieldNames = map(specificFields, 'write_field_name') as string[]
+
+  const filteredErrors = Object.entries(updatedErrors)
+    .filter(([key]) => fieldNames.includes(key))
+    .reduce(
+      (acc, [key, errMsg]) => {
+        const field = specificFields.find(
+          ({ write_field_name }) => write_field_name === key,
+        )
+
+        if (field) {
+          const { section, label } = field
+
+          if (!acc[section]) {
+            acc[section] = {}
+          }
+          acc[section][label || key] = errMsg
+        }
+
+        return acc
+      },
+      {} as Record<string, Record<string, any>>,
+    )
+
+  return filteredErrors
+}
+
+export const getNonFieldErrors = (errors: { [key: string]: [] }) => {
+  const nonFieldsOdsOdpErrors = errors?.['ods_odp']?.find(
+    (err) => Object.keys(err)[0] === 'non_field_errors',
+  )
+  return [
+    ...(errors?.['non_field_errors'] || []),
+    ...(nonFieldsOdsOdpErrors?.['non_field_errors'] || []),
+  ]
 }

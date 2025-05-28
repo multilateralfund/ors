@@ -2,7 +2,7 @@ import { Dispatch, SetStateAction } from 'react'
 
 import Link from '@ors/components/ui/Link/Link'
 import { formatSubmitData } from '../utils'
-import { ProjectData, ProjectFilesObject } from '../interfaces'
+import { SubmitActionButtons } from '../interfaces'
 import { api, uploadFiles } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
@@ -16,12 +16,11 @@ const CreateActionButtons = ({
   setProjectId,
   isSubmitDisabled,
   setIsLoading,
-}: {
-  projectData: ProjectData
-  files: ProjectFilesObject
-  setProjectId: Dispatch<SetStateAction<number | null | undefined>>
-  isSubmitDisabled: boolean
-  setIsLoading: Dispatch<SetStateAction<boolean>>
+  setErrors,
+  setHasSubmitted,
+  setFileErrors,
+}: SubmitActionButtons & {
+  setProjectId: Dispatch<SetStateAction<number | null>>
 }) => {
   const projectSlice = useStore((state) => state.projects)
   const user_permissions = projectSlice.user_permissions.data || []
@@ -30,6 +29,8 @@ const CreateActionButtons = ({
 
   const submitProject = async () => {
     setIsLoading(true)
+    setFileErrors('')
+    setErrors({})
 
     try {
       const data = formatSubmitData(projectData)
@@ -38,6 +39,7 @@ const CreateActionButtons = ({
         data: data,
         method: 'POST',
       })
+      setProjectId(result.id)
 
       if (newFiles.length > 0) {
         await uploadFiles(
@@ -47,25 +49,23 @@ const CreateActionButtons = ({
           'list',
         )
       }
-
-      setProjectId(result.id)
     } catch (error) {
       if (error.status === 400) {
         const errors = await error.json()
-        if (errors?.files) {
-          enqueueSnackbar(errors.files, {
-            variant: 'error',
-          })
+
+        if (errors?.file) {
+          setFileErrors(errors.file)
         } else {
-          enqueueSnackbar(<>An error occurred. Please try again.</>, {
-            variant: 'error',
-          })
+          setErrors(errors)
+          setProjectId(null)
         }
       }
-
-      setProjectId(null)
+      enqueueSnackbar(<>An error occurred. Please try again.</>, {
+        variant: 'error',
+      })
     } finally {
       setIsLoading(false)
+      setHasSubmitted(true)
     }
   }
 

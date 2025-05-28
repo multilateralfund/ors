@@ -8,7 +8,7 @@ import { Checkbox, FormControlLabel } from '@mui/material'
 const ProjectBPLinking = ({
   projectData,
   setProjectData,
-}: ProjectDataProps) => {
+}: Omit<ProjectDataProps, 'hasSubmitted'>) => {
   const { isLinkedToBP } = projectData.bpLinking
 
   const handleChangeBPLink = (event: ChangeEvent<HTMLInputElement>) => {

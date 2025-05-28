@@ -6,7 +6,7 @@ import ProjectsHeader from '../ProjectSubmission/ProjectsHeader'
 import ProjectsCreate from '../ProjectsCreate/ProjectsCreate'
 import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
-import { getDefaultValues } from '../utils'
+import { getDefaultValues, getNonFieldErrors } from '../utils'
 import {
   OdsOdpFields,
   ProjectData,
@@ -56,6 +56,12 @@ const ProjectsEdit = ({
     deletedFilesIds: [],
     newFiles: [],
   })
+  const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
+
+  const [errors, setErrors] = useState<{ [key: string]: [] }>({})
+  const [fileErrors, setFileErrors] = useState<string>('')
+
+  const nonFieldsErrors = getNonFieldErrors(errors)
 
   useEffect(() => {
     setProjectData((prevData) => ({
@@ -121,6 +127,9 @@ const ProjectsEdit = ({
           project,
           projectData,
           files,
+          setErrors,
+          setHasSubmitted,
+          setFileErrors,
         }}
       />
       <ProjectsCreate
@@ -133,6 +142,9 @@ const ProjectsEdit = ({
           files,
           setFiles,
           projectFiles,
+          errors,
+          setErrors,
+          hasSubmitted,
         }}
       />
     </>

@@ -22,6 +22,7 @@ import { parseNumber } from '@ors/helpers'
 
 import { Button, Checkbox, FormControlLabel } from '@mui/material'
 import { find, filter } from 'lodash'
+import cx from 'classnames'
 
 type ProjectIdentifiersSectionProps = {
   projectData: ProjectData
@@ -30,6 +31,8 @@ type ProjectIdentifiersSectionProps = {
   areNextSectionsDisabled: boolean
   setCurrentStep: Dispatch<SetStateAction<number>>
   setCurrentTab: Dispatch<SetStateAction<number>>
+  errors: { [key: string]: string[] }
+  hasSubmitted: boolean
 }
 
 const ProjectIdentifiersSection = ({
@@ -39,6 +42,8 @@ const ProjectIdentifiersSection = ({
   areNextSectionsDisabled,
   setCurrentStep,
   setCurrentTab,
+  errors,
+  hasSubmitted,
 }: ProjectIdentifiersSectionProps) => {
   const sectionIdentifier = 'projIdentifiers'
   const projIdentifiers = projectData[sectionIdentifier]
@@ -100,6 +105,9 @@ const ProjectIdentifiersSection = ({
     }))
   }
 
+  const getIsInputDisabled = (field: keyof typeof errors) =>
+    hasSubmitted && errors[field]?.length > 0
+
   return (
     <div className="flex flex-col gap-y-2">
       <div className="flex flex-wrap gap-x-20 gap-y-3">
@@ -114,6 +122,9 @@ const ProjectIdentifiersSection = ({
               getOptionLabel(commonSlice.countries.data, option)
             }
             disabled={!areNextSectionsDisabled}
+            Input={{
+              error: getIsInputDisabled('country'),
+            }}
             {...sectionDefaultProps}
           />
         </div>
@@ -126,7 +137,9 @@ const ProjectIdentifiersSection = ({
             options={getMeetingOptions()}
             onChange={handleChangeMeeting}
             onClear={() => handleChangeMeeting()}
-            className="!m-0 h-10 !py-1"
+            className={cx('!m-0 h-10 !py-1', {
+              'border-red-500': getIsInputDisabled('meeting'),
+            })}
             clearBtnClassName="right-1"
             withClear={true}
           />
@@ -149,6 +162,10 @@ const ProjectIdentifiersSection = ({
             }
             getOptionLabel={(option) => getOptionLabel(agencyOptions, option)}
             disabled={!areNextSectionsDisabled}
+            Input={{
+              error:
+                projIdentifiers.is_lead_agency && getIsInputDisabled('agency'),
+            }}
             {...sectionDefaultProps}
           />
         </div>
@@ -170,6 +187,9 @@ const ProjectIdentifiersSection = ({
               getOptionLabel(projectSlice.clusters.data, option)
             }
             disabled={!areNextSectionsDisabled}
+            Input={{
+              error: getIsInputDisabled('cluster'),
+            }}
             {...defaultProps}
             FieldProps={{
               className: defaultProps.FieldProps.className + ' w-[20rem]',
@@ -178,6 +198,7 @@ const ProjectIdentifiersSection = ({
         </div>
       </div>
       <FormControlLabel
+        className="w-fit"
         label="Confirm you are the lead agency submitting on behalf of a cooperating agency."
         control={
           <Checkbox
@@ -213,6 +234,10 @@ const ProjectIdentifiersSection = ({
               getOptionLabel(leadAgencyOptions, option)
             }
             disabled={!areNextSectionsDisabled}
+            Input={{
+              error:
+                !projIdentifiers.is_lead_agency && getIsInputDisabled('agency'),
+            }}
             {...sectionDefaultProps}
           />
         </>

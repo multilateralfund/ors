@@ -24,6 +24,24 @@ import {
 
 import { Checkbox, TextareaAutosize } from '@mui/material'
 import { find, get, isObject, isBoolean } from 'lodash'
+import cx from 'classnames'
+
+const getIsInputDisabled = (
+  hasSubmitted: boolean,
+  errors: { [key: string]: string[] },
+  field: string,
+) => hasSubmitted && errors[field]?.length > 0
+
+const getFieldDefaultProps = (isError: boolean) => {
+  return {
+    ...{
+      ...defaultPropsSimpleField,
+      className: cx(defaultPropsSimpleField.className, {
+        'border-red-500': isError,
+      }),
+    },
+  }
+}
 
 export const changeHandler: Record<FieldType, FieldHandler> = {
   text: (value, field, setState, section) => {
@@ -67,6 +85,8 @@ export const AutocompleteWidget = <T,>(
   fields: T,
   setFields: Dispatch<SetStateAction<T>>,
   field: ProjectSpecificFields,
+  errors: { [key: string]: string[] },
+  hasSubmitted: boolean,
   sectionIdentifier: keyof T = identifier as keyof T,
 ) => {
   const options = formatOptions(field)
@@ -99,6 +119,9 @@ export const AutocompleteWidget = <T,>(
             ? get(option, field)
             : (find(options, { id: option }) as OptionsType)?.[field] || ''
         }}
+        Input={{
+          error: getIsInputDisabled(hasSubmitted, errors, field.label),
+        }}
         {...defaultProps}
         {...(additionalProperties[fieldName] ?? {})}
       />
@@ -110,6 +133,8 @@ export const TextWidget = <T,>(
   fields: T,
   setFields: Dispatch<SetStateAction<T>>,
   field: ProjectSpecificFields,
+  errors: { [key: string]: string[] },
+  hasSubmitted: boolean,
   sectionIdentifier: keyof T = identifier as keyof T,
 ) => (
   <div>
@@ -124,7 +149,9 @@ export const TextWidget = <T,>(
           sectionIdentifier,
         )
       }
-      className={textAreaClassname}
+      className={cx(textAreaClassname, {
+        'border-red-500': getIsInputDisabled(hasSubmitted, errors, field.label),
+      })}
       minRows={2}
       tabIndex={-1}
     />
@@ -135,13 +162,15 @@ const NumberWidget = <T,>(
   fields: T,
   setFields: Dispatch<SetStateAction<T>>,
   field: ProjectSpecificFields,
+  errors: { [key: string]: string[] },
+  hasSubmitted: boolean,
   sectionIdentifier: keyof T = identifier as keyof T,
 ) => (
   <div>
     <Label>{field.label}</Label>
     <SimpleInput
       id={fields[sectionIdentifier][field.write_field_name] as string}
-      value={fields[sectionIdentifier][field.write_field_name]}
+      value={fields[sectionIdentifier][field.write_field_name] ?? ''}
       onChange={(value) =>
         changeHandler[field.data_type]<T, SpecificFields>(
           value,
@@ -150,8 +179,10 @@ const NumberWidget = <T,>(
           sectionIdentifier,
         )
       }
-      type="number"
-      {...defaultPropsSimpleField}
+      type="text"
+      {...getFieldDefaultProps(
+        getIsInputDisabled(hasSubmitted, errors, field.label),
+      )}
     />
   </div>
 )
@@ -160,6 +191,8 @@ const BooleanWidget = <T,>(
   fields: T,
   setFields: Dispatch<SetStateAction<T>>,
   field: ProjectSpecificFields,
+  errors: { [key: string]: string[] },
+  hasSubmitted: boolean,
   sectionIdentifier: keyof T = identifier as keyof T,
 ) => (
   <div className="col-span-full flex w-full">
@@ -176,7 +209,9 @@ const BooleanWidget = <T,>(
         )
       }
       sx={{
-        color: 'black',
+        color: getIsInputDisabled(hasSubmitted, errors, field.label)
+          ? 'red'
+          : 'black',
       }}
     />
   </div>

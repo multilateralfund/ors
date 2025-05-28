@@ -8,29 +8,48 @@ import {
 } from '../ProjectVersions/ProjectVersionsComponents'
 import CreateActionButtons from './CreateActionButtons'
 import EditActionButtons from './EditActionButtons'
-import { getIsSubmitDisabled } from '../utils'
+import { getDefaultImpactErrors, getIsSubmitDisabled } from '../utils'
 import { ProjectData, ProjectFilesObject, ProjectTypeApi } from '../interfaces'
 
 import { CircularProgress } from '@mui/material'
+import dayjs from 'dayjs'
 
 const ProjectsHeader = ({
   projectData,
   mode,
-  files,
   setProjectId = () => {},
   project,
+  files,
+  ...rest
 }: {
   projectData: ProjectData
   mode: string
   files: ProjectFilesObject
-  setProjectId?: Dispatch<SetStateAction<number | null | undefined>>
+  setErrors: Dispatch<SetStateAction<{ [key: string]: [] }>>
+  setHasSubmitted: Dispatch<SetStateAction<boolean>>
+  setFileErrors: Dispatch<SetStateAction<string>>
+  setProjectId?: Dispatch<SetStateAction<number | null>>
   project?: ProjectTypeApi
 }) => {
-  const { projIdentifiers, crossCuttingFields } = projectData
-  const isSubmitDisabled = getIsSubmitDisabled(
+  const { projIdentifiers, crossCuttingFields, projectSpecificFields } =
+    projectData
+  const { project_start_date, project_end_date } = crossCuttingFields
+  const { ods_odp } = projectSpecificFields
+
+  const defaultImpactErrors = getDefaultImpactErrors(projectSpecificFields)
+  const hasValidationErrors = Object.values(defaultImpactErrors).some(
+    (errors) => errors.length > 0,
+  )
+  const hasMissingRequiredFields = getIsSubmitDisabled(
     projIdentifiers,
     crossCuttingFields,
   )
+  const isSubmitDisabled =
+    hasMissingRequiredFields ||
+    files?.newFiles?.length === 0 ||
+    dayjs(project_start_date).isAfter(dayjs(project_end_date)) ||
+    hasValidationErrors ||
+    (ods_odp.length > 0 && ods_odp.some((item) => !item.ods_substance_id))
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [showVersionsMenu, setShowVersionsMenu] = useState(false)
@@ -67,21 +86,23 @@ const ProjectsHeader = ({
             <CreateActionButtons
               {...{
                 projectData,
-                files,
                 setProjectId,
                 isSubmitDisabled,
                 setIsLoading,
+                files,
               }}
+              {...rest}
             />
           ) : (
             <EditActionButtons
               project={project as ProjectTypeApi}
               {...{
                 projectData,
-                files,
                 isSubmitDisabled,
                 setIsLoading,
+                files,
               }}
+              {...rest}
             />
           )}
           {isLoading && (

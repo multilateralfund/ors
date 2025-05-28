@@ -18,7 +18,12 @@ const ProjectSubstanceDetails = ({
   projectData,
   setProjectData,
   sectionFields,
-}: SpecificFieldsSectionProps) => {
+  errors = {},
+  hasSubmitted,
+  odsOdpErrors,
+}: SpecificFieldsSectionProps & {
+  odsOdpErrors: { [key: string]: [] | number }[]
+}) => {
   const [displayModal, setDisplayModal] = useState(false)
 
   const sectionIdentifier = 'projectSpecificFields'
@@ -62,6 +67,8 @@ const ProjectSubstanceDetails = ({
           projectData,
           setProjectData,
           field,
+          errors,
+          hasSubmitted,
         ),
       )}
       {odsOdpFields.length > 0 && (
@@ -70,7 +77,13 @@ const ProjectSubstanceDetails = ({
             data={odsOdpData || []}
             fields={odsOdpFields}
             mode="edit"
-            onRemoveOdsOdp={onRemoveOdsOdp}
+            {...{
+              onRemoveOdsOdp,
+              setProjectData,
+              sectionIdentifier,
+              field,
+              odsOdpErrors,
+            }}
           />
           <Button
             className="rounded-lg border border-solid border-primary bg-white p-1.5 text-base hover:bg-primary"

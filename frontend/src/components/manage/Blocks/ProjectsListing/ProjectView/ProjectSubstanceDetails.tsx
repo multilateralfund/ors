@@ -23,7 +23,11 @@ const ProjectSubstanceDetails = ({
           viewModesHandler[field.data_type](project, field),
         )}
       </div>
-      <ProjectOdsOdpTable data={project?.[field] || []} fields={odsOdpFields} />
+      <ProjectOdsOdpTable
+        data={project?.[field] || []}
+        fields={odsOdpFields}
+        mode="view"
+      />
     </div>
   )
 }

@@ -5,6 +5,8 @@ const ProjectOverview = ({
   projectData,
   setProjectData,
   sectionFields,
+  errors = {},
+  hasSubmitted,
 }: SpecificFieldsSectionProps) => {
   return (
     <>
@@ -14,6 +16,8 @@ const ProjectOverview = ({
             projectData,
             setProjectData,
             field,
+            errors,
+            hasSubmitted,
           ),
         )}
       </div>

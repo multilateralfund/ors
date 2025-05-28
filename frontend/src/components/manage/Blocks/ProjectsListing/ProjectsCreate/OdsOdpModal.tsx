@@ -4,13 +4,13 @@ import { widgets } from './SpecificFieldsHelpers'
 import { OdsOdpFields, OdsOdpModalProps, SpecificFields } from '../interfaces'
 import { getDefaultValues } from '../utils'
 
-import { Button, Typography, Box, Modal } from '@mui/material'
+import { Button, Typography, Box, Modal, Alert } from '@mui/material'
 
 const OdsOdpModal = ({
   displayModal,
   setDisplayModal,
   setProjectData,
-  odsOdpFields,
+  odsOdpFields = [],
   field,
 }: OdsOdpModalProps) => {
   const sectionIdentifier = 'projectSpecificFields'
@@ -21,27 +21,44 @@ const OdsOdpModal = ({
   const [odsOdpData, setOdsOdpData] = useState<OdsOdpDataType>({
     [field]: initialOdsOdp,
   })
+  const [isModalValid, setIsModalValid] = useState<boolean>(true)
+
+  const substanceFieldName = 'ods_substance_id'
+  const hasSubstanceId = odsOdpData[field]?.[substanceFieldName]
+  const substanceField = odsOdpFields.find(
+    ({ write_field_name }) => write_field_name === substanceFieldName,
+  )
+  const substanceLabel = substanceField?.label
+  const substanceError = {
+    [substanceLabel as string]: !hasSubstanceId
+      ? [`${substanceLabel} is required.`]
+      : [],
+  }
 
   const saveOdsOdp = () => {
-    setProjectData((prevData) => {
-      const section = prevData[sectionIdentifier]
-      const crtData = (section[field] as OdsOdpFields[]) || []
+    if (hasSubstanceId) {
+      setProjectData((prevData) => {
+        const section = prevData[sectionIdentifier]
+        const crtData = (section[field] as OdsOdpFields[]) || []
 
-      const newOdsOdp = {
-        ...odsOdpData[field],
-        id: crtData.length + 1,
-      }
+        const newOdsOdp = {
+          ...odsOdpData[field],
+          id: crtData.length + 1,
+        }
 
-      return {
-        ...prevData,
-        [sectionIdentifier]: {
-          ...section,
-          [field]: [...crtData, newOdsOdp],
-        },
-      }
-    })
+        return {
+          ...prevData,
+          [sectionIdentifier]: {
+            ...section,
+            [field]: [...crtData, newOdsOdp],
+          },
+        }
+      })
 
-    setDisplayModal(false)
+      setDisplayModal(false)
+    } else {
+      setIsModalValid(false)
+    }
   }
 
   return (
@@ -58,6 +75,8 @@ const OdsOdpModal = ({
               odsOdpData,
               setOdsOdpData,
               odsOdpField,
+              substanceError,
+              !isModalValid,
               field,
             ),
           )}
@@ -71,6 +90,11 @@ const OdsOdpModal = ({
             <Button onClick={() => setDisplayModal(false)}>Close</Button>
           </Typography>
         </div>
+        {!isModalValid && (
+          <Alert className="BPAlert mt-2 w-fit border-0" severity="error">
+            <div className="mt-0.5 text-lg">{substanceLabel} is required.</div>
+          </Alert>
+        )}
       </Box>
     </Modal>
   )

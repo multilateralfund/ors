@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react'
 
-import Link from '@ors/components/ui/Link/Link'
 import ProjectsHeader from '../ProjectSubmission/ProjectsHeader.tsx'
 import ProjectsCreate from './ProjectsCreate.tsx'
+import ProjectSubmissionFooter from '../ProjectSubmission/ProjectSubmissionFooter.tsx'
 import { fetchSpecificFields } from '../hooks/getSpecificFields.ts'
 import {
   ProjectData,
@@ -16,10 +16,9 @@ import {
   initialCrossCuttingFields,
   initialProjectIdentifiers,
 } from '../constants.ts'
-import { getDefaultValues } from '../utils.ts'
+import { getDefaultValues, getNonFieldErrors } from '../utils.ts'
 
-import { Alert } from '@mui/material'
-import { groupBy, isUndefined } from 'lodash'
+import { groupBy } from 'lodash'
 
 const ProjectsCreateWrapper = () => {
   const [specificFields, setSpecificFields] = useState<ProjectSpecificFields[]>(
@@ -45,11 +44,17 @@ const ProjectsCreateWrapper = () => {
   const { cluster } = projIdentifiers
   const { project_type, sector } = crossCuttingFields
 
-  const [projectId, setProjectId] = useState<number | null | undefined>()
+  const [projectId, setProjectId] = useState<number | null>(null)
   const [files, setFiles] = useState<ProjectFilesObject>({
     deletedFilesIds: [],
     newFiles: [],
   })
+  const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
+
+  const [errors, setErrors] = useState<{ [key: string]: [] }>({})
+  const [fileErrors, setFileErrors] = useState<string>('')
+
+  const nonFieldsErrors = getNonFieldErrors(errors)
 
   useEffect(() => {
     if (cluster && project_type && sector) {
@@ -59,7 +64,17 @@ const ProjectsCreateWrapper = () => {
 
   return (
     <>
-      <ProjectsHeader mode="add" {...{ projectData, files, setProjectId }} />
+      <ProjectsHeader
+        mode="add"
+        {...{
+          projectData,
+          files,
+          setProjectId,
+          setErrors,
+          setHasSubmitted,
+          setFileErrors,
+        }}
+      />
       <ProjectsCreate
         mode="add"
         {...{
@@ -68,28 +83,14 @@ const ProjectsCreateWrapper = () => {
           specificFields,
           files,
           setFiles,
+          errors,
+          setErrors,
+          hasSubmitted,
         }}
       />
-
-      {!isUndefined(projectId) && (
-        <Alert
-          className="BPAlert mt-4 w-fit border-0"
-          severity={projectId ? 'success' : 'error'}
-        >
-          {projectId ? (
-            <Link
-              className="text-xl text-inherit no-underline"
-              href={`/projects-listing/${projectId}`}
-            >
-              <p className="m-0 mt-0.5 text-lg">
-                Submission was successful. View project.
-              </p>
-            </Link>
-          ) : (
-            <p className="m-0 text-lg">An error occurred. Please try again</p>
-          )}
-        </Alert>
-      )}
+      <ProjectSubmissionFooter
+        {...{ projectId, nonFieldsErrors, fileErrors }}
+      />
     </>
   )
 }
