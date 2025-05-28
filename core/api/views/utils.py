@@ -15,16 +15,17 @@ from core.api.export.replenishment import (
     StatisticsStatusOfContributionsWriter,
 )
 from core.models import (
-    Country,
-    TriennialContributionStatus,
-    TriennialContributionView,
-    FermGainLoss,
-    BilateralAssistance,
-    DisputedContribution,
     AnnualContributionStatus,
+    BilateralAssistance,
+    Country,
+    DisputedContribution,
     ExternalIncomeAnnual,
     ExternalAllocation,
+    FermGainLoss,
     Payment,
+    ProjectHistory,
+    TriennialContributionStatus,
+    TriennialContributionView,
 )
 from core.models.business_plan import BusinessPlan
 from core.models.country_programme import CPRecord, CPReport, CPReportFormatRow
@@ -59,6 +60,14 @@ SUBSTANCE_GROUP_ID_TO_CATEGORY = {
     "uncontrolled": "Other",
     "legacy": "Legacy",
 }
+
+
+def log_project_history(project, request_user, description):
+    ProjectHistory.objects.create(
+        project=project,
+        description=description,
+        user=request_user,
+    )
 
 
 def get_country_region_dict():

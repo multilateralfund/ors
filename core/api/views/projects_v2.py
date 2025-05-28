@@ -40,6 +40,7 @@ from core.models.project import (
 )
 from core.models.project_metadata import ProjectSubmissionStatus
 from core.models.user import User
+from core.api.views.utils import log_project_history
 
 
 class ProjectDestructionTechnologyView(APIView):
@@ -143,7 +144,7 @@ class ProjectV2ViewSet(
                 | IsSecretariatProductionV1V2EditAccess
             ]
 
-        if self.action == "recommend":
+        if self.action in ["recommend", "withdraw", "send_back_to_draft"]:
             return [IsSecretariatV1V2EditAccess | IsSecretariatProductionV1V2EditAccess]
         return super().get_permissions()
 
@@ -336,6 +337,7 @@ class ProjectV2ViewSet(
         )
         project.save()
         project.increase_version(request.user)
+        log_project_history(project, request.user, "Project submitted")
         # TODO: Implement MLFS notifications
         return Response(
             ProjectDetailsV2Serializer(project).data,
@@ -374,6 +376,69 @@ class ProjectV2ViewSet(
         )
         project.save()
         project.increase_version(request.user)
+        log_project_history(project, request.user, "Project recommended")
+        return Response(
+            ProjectDetailsV2Serializer(project).data,
+            status=status.HTTP_200_OK,
+        )
+
+    @action(methods=["POST"], detail=True)
+    @swagger_auto_schema(
+        operation_description="""
+        Withdraw the project.
+        The project is checked for validity (status should be 'Submitted' and version should be 2).
+        If the project is valid, it is marked as Withdrawn.
+        """,
+        request_body=openapi.Schema(type=openapi.TYPE_OBJECT, properties=None),
+        responses={
+            status.HTTP_200_OK: ProjectDetailsV2Serializer,
+            status.HTTP_400_BAD_REQUEST: "Bad request",
+        },
+    )
+    def withdraw(self, request, *args, **kwargs):
+        project = self.get_object()
+        if project.submission_status.name != "Submitted" or project.version != 2:
+            return Response(
+                {
+                    "error": "Project can only be withdrawn if it is in 'Submitted' status and version 2."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        project.submission_status = ProjectSubmissionStatus.objects.get(
+            name="Withdrawn"
+        )
+        log_project_history(project, request.user, "Project withdrawn")
+        project.save()
+        return Response(
+            ProjectDetailsV2Serializer(project).data,
+            status=status.HTTP_200_OK,
+        )
+
+    @action(methods=["POST"], detail=True)
+    @swagger_auto_schema(
+        operation_description="""
+        Send the project back to draft.
+        The project is checked for validity (status should be 'Submitted' and version should be 2).
+        The status is set to 'Draft', but the version is not changed back to 1.
+        """,
+        request_body=openapi.Schema(type=openapi.TYPE_OBJECT, properties=None),
+        responses={
+            status.HTTP_200_OK: ProjectDetailsV2Serializer,
+            status.HTTP_400_BAD_REQUEST: "Bad request",
+        },
+    )
+    def send_back_to_draft(self, request, *args, **kwargs):
+        project = self.get_object()
+        if project.submission_status.name != "Submitted" or project.version != 2:
+            return Response(
+                {
+                    "error": "Project can only be sent back to draft if it is in 'Submitted' status and version 2."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        project.submission_status = ProjectSubmissionStatus.objects.get(name="Draft")
+        project.save()
+        log_project_history(project, request.user, "Project sent back to draft")
         return Response(
             ProjectDetailsV2Serializer(project).data,
             status=status.HTTP_200_OK,

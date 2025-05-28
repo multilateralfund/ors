@@ -98,6 +98,7 @@ class ProjectAdmin(admin.ModelAdmin):
             "rbm_measures",
             "latest_project",
             "archive_projects",
+            "project_history",
         ]
         return get_final_display_list(Project, exclude)
 

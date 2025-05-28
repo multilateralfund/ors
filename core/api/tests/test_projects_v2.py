@@ -1435,6 +1435,156 @@ class TestProjectVersioning:
         assert project.submission_status.name == "Recommended"
         assert project.version == 3
 
+    def test_withdraw_permissions(
+        self,
+        agency_inputter_user,
+        project,
+        project_submitted_status,
+        user,
+        viewer_user,
+        agency_user,
+        secretariat_viewer_user,
+        secretariat_v1_v2_edit_access_user,
+        secretariat_production_v1_v2_edit_access_user,
+        secretariat_v3_edit_access_user,
+        secretariat_production_v3_edit_access_user,
+        admin_user,
+    ):
+        project.version = 2
+        project.submission_status = project_submitted_status
+        project.save()
+
+        url = reverse("project-v2-withdraw", args=(project.id,))
+
+        def _test_user_permissions(user, expected_response_status):
+            self.client.force_authenticate(user=user)
+            response = self.client.post(url)
+            assert response.status_code == expected_response_status
+            return response.data
+
+        # test with unauthenticated user
+        self.client.force_authenticate(user=None)
+        response = self.client.post(url)
+        assert response.status_code == 403
+
+        _test_user_permissions(user, 403)
+        _test_user_permissions(viewer_user, 403)
+        _test_user_permissions(agency_user, 403)
+        _test_user_permissions(agency_inputter_user, 403)
+        _test_user_permissions(secretariat_viewer_user, 403)
+        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
+        project.submission_status = project_submitted_status
+        project.save()
+        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
+        project.submission_status = project_submitted_status
+        project.save()
+        _test_user_permissions(secretariat_v3_edit_access_user, 403)
+        _test_user_permissions(secretariat_production_v3_edit_access_user, 403)
+        _test_user_permissions(admin_user, 200)
+
+    def test_withdraw_project(
+        self,
+        secretariat_v1_v2_edit_access_user,
+        project,
+        project_submitted_status,
+    ):
+
+        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        url = reverse("project-v2-withdraw", args=(project.id,))
+
+        # submit project and expect failure due to bad submission status
+        response = self.client.post(url)
+        assert response.status_code == 400
+        assert response.data
+
+        # set required fields
+        project.version = 2
+        project.submission_status = project_submitted_status
+        project.save()
+
+        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        url = reverse("project-v2-withdraw", args=(project.id,))
+
+        response = self.client.post(url)
+        assert response.status_code == 200
+        project.refresh_from_db()
+        assert project.submission_status.name == "Withdrawn"
+
+    def test_send_back_to_draft_permissions(
+        self,
+        agency_inputter_user,
+        project,
+        project_submitted_status,
+        user,
+        viewer_user,
+        agency_user,
+        secretariat_viewer_user,
+        secretariat_v1_v2_edit_access_user,
+        secretariat_production_v1_v2_edit_access_user,
+        secretariat_v3_edit_access_user,
+        secretariat_production_v3_edit_access_user,
+        admin_user,
+    ):
+        project.version = 2
+        project.submission_status = project_submitted_status
+        project.save()
+
+        url = reverse("project-v2-send-back-to-draft", args=(project.id,))
+
+        def _test_user_permissions(user, expected_response_status):
+            self.client.force_authenticate(user=user)
+            response = self.client.post(url)
+            assert response.status_code == expected_response_status
+            return response.data
+
+        # test with unauthenticated user
+        self.client.force_authenticate(user=None)
+        response = self.client.post(url)
+        assert response.status_code == 403
+
+        _test_user_permissions(user, 403)
+        _test_user_permissions(viewer_user, 403)
+        _test_user_permissions(agency_user, 403)
+        _test_user_permissions(agency_inputter_user, 403)
+        _test_user_permissions(secretariat_viewer_user, 403)
+        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
+        project.submission_status = project_submitted_status
+        project.save()
+        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
+        project.submission_status = project_submitted_status
+        project.save()
+        _test_user_permissions(secretariat_v3_edit_access_user, 403)
+        _test_user_permissions(secretariat_production_v3_edit_access_user, 403)
+        _test_user_permissions(admin_user, 200)
+
+    def test_send_back_to_draft_project(
+        self,
+        secretariat_v1_v2_edit_access_user,
+        project,
+        project_submitted_status,
+    ):
+
+        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        url = reverse("project-v2-send-back-to-draft", args=(project.id,))
+
+        # submit project and expect failure due to bad submission status
+        response = self.client.post(url)
+        assert response.status_code == 400
+        assert response.data
+
+        # set required fields
+        project.version = 2
+        project.submission_status = project_submitted_status
+        project.save()
+
+        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        url = reverse("project-v2-send-back-to-draft", args=(project.id,))
+
+        response = self.client.post(url)
+        assert response.status_code == 200
+        project.refresh_from_db()
+        assert project.submission_status.name == "Draft"
+
     def test_increase_version(self, agency_user, project, test_file1):
         self.client.force_authenticate(user=agency_user)
         url = reverse("project-files-v2", args=(project.id,))

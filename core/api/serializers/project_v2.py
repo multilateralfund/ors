@@ -25,6 +25,7 @@ from core.models.project_metadata import (
     ProjectSubSector,
 )
 from core.utils import get_project_sub_code
+from core.api.views.utils import log_project_history
 
 # pylint: disable=R1702
 
@@ -520,7 +521,7 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
 
         project.subsectors.set(subsectors_data)
 
-        self._log_history(project, user, HISTORY_DESCRIPTION_CREATE)
+        log_project_history(project, user, HISTORY_DESCRIPTION_CREATE)
 
         return project
 
@@ -552,7 +553,7 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
         if subsectors_data is not None:
             instance.subsectors.set(subsectors_data)
 
-        self._log_history(instance, user, HISTORY_DESCRIPTION_UPDATE)
+        log_project_history(instance, user, HISTORY_DESCRIPTION_UPDATE)
 
         return instance
 
@@ -582,15 +583,6 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
 
         if ids_to_delete:
             instance.ods_odp.filter(id__in=ids_to_delete).delete()
-
-    def _log_history(self, project, request_user, description):
-        history_data = {
-            "project_id": project.id,
-            "description": description,
-        }
-        history_serializer = ProjectHistorySerializer(data=history_data)
-        history_serializer.is_valid(raise_exception=True)
-        history_serializer.save(user=request_user)
 
 
 class ProjectV2SubmitSerializer(serializers.ModelSerializer):
