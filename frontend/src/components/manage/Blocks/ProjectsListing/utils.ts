@@ -174,29 +174,26 @@ export const getProjIdentifiersErrors = (
   projIdentifiers: ProjIdentifiers,
   errors: { [key: string]: [] },
 ) => {
+  const requiredFields = ['country', 'meeting', 'agency', 'cluster']
+
   const filteredErrors = Object.fromEntries(
-    Object.entries(errors).filter(([key]) =>
-      ['country', 'meeting', 'agency', 'cluster'].includes(key),
-    ),
+    Object.entries(errors).filter(([key]) => requiredFields.includes(key)),
   )
 
-  const {
-    country,
-    meeting,
-    current_agency,
-    cluster,
-    side_agency,
-    is_lead_agency,
-  } = projIdentifiers
+  const { current_agency, side_agency, is_lead_agency } = projIdentifiers
 
   return {
-    country: !country ? ['This field may not be null.'] : [],
-    meeting: !meeting ? ['This field may not be null.'] : [],
+    ...requiredFields.reduce((acc: any, field) => {
+      acc[field] = !projIdentifiers[field as keyof ProjIdentifiers]
+        ? ['This field may not be null.']
+        : []
+
+      return acc
+    }, {}),
     agency:
       (is_lead_agency && !current_agency) || (!is_lead_agency && !side_agency)
         ? ['This field may not be null.']
         : [],
-    cluster: !cluster ? ['This field may not be null.'] : [],
     ...filteredErrors,
   }
 }
@@ -205,30 +202,33 @@ export const getCrossCuttingErrors = (
   crossCuttingFields: CrossCuttingFields,
   errors: { [key: string]: [] },
 ) => {
+  const requiredFields = [
+    'project_type',
+    'sector',
+    'title',
+    'subsector_ids',
+    'is_lvc',
+    'description',
+    'total_fund',
+    'support_cost_psc',
+    'project_start_date',
+    'project_end_date',
+  ]
+
   const filteredErrors = Object.fromEntries(
-    Object.entries(errors).filter(([key]) =>
-      [
-        'project_type',
-        'sector',
-        'subsector_ids',
-        'is_lvc',
-        'title',
-        'description',
-        'total_fund',
-        'support_cost_psc',
-        'project_start_date',
-        'project_end_date',
-      ].includes(key),
-    ),
+    Object.entries(errors).filter(([key]) => requiredFields.includes(key)),
   )
 
-  const { project_type, sector, title, project_start_date, project_end_date } =
-    crossCuttingFields
+  const { project_start_date, project_end_date } = crossCuttingFields
 
   return {
-    project_type: !project_type ? ['This field is required.'] : [],
-    sector: !sector ? ['This field is required.'] : [],
-    title: !title ? ['This field is required.'] : [],
+    ...requiredFields.slice(0, 3).reduce((acc: any, field) => {
+      acc[field] = !crossCuttingFields[field as keyof CrossCuttingFields]
+        ? ['This field is required.']
+        : []
+
+      return acc
+    }, {}),
     project_start_date: dayjs(project_start_date).isAfter(
       dayjs(project_end_date),
     )
@@ -283,6 +283,7 @@ export const getSpecificFieldsErrors = (
   )
 
   const updatedErrors = { ...defaultErrors, ...errors }
+
   const fieldNames = map(specificFields, 'write_field_name') as string[]
 
   const filteredErrors = Object.entries(updatedErrors)
@@ -295,7 +296,10 @@ export const getSpecificFieldsErrors = (
 
         if (field) {
           const { section, label } = field
-          if (!acc[section]) acc[section] = {}
+
+          if (!acc[section]) {
+            acc[section] = {}
+          }
           acc[section][label || key] = errMsg
         }
 

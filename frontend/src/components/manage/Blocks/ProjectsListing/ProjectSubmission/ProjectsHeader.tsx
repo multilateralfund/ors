@@ -17,6 +17,7 @@ const ProjectsHeader = ({
   projectData,
   mode,
   files,
+  errors,
   setErrors,
   setProjectId = () => {},
   project,
@@ -24,8 +25,9 @@ const ProjectsHeader = ({
   projectData: ProjectData
   mode: string
   files: ProjectFilesObject
+  errors?: { [key: string]: [] }
   setErrors?: Dispatch<SetStateAction<{ [key: string]: [] }>>
-  setProjectId?: Dispatch<SetStateAction<number | null | undefined>>
+  setProjectId?: Dispatch<SetStateAction<number | null>>
   project?: ProjectTypeApi
 }) => {
   const { projIdentifiers, crossCuttingFields } = projectData
@@ -73,6 +75,7 @@ const ProjectsHeader = ({
                 setProjectId,
                 isSubmitDisabled,
                 setIsLoading,
+                errors,
                 setErrors,
               }}
             />

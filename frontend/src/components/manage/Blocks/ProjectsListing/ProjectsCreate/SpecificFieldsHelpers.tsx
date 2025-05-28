@@ -23,14 +23,14 @@ import {
 } from '../utils'
 
 import { Checkbox, TextareaAutosize } from '@mui/material'
-import { find, get, isObject, isBoolean, isNull } from 'lodash'
+import { find, get, isObject, isBoolean } from 'lodash'
 import cx from 'classnames'
 
 const getIsInputDisabled = (
-  projectId: number | null | undefined,
+  projectId: number | null,
   errors: { [key: string]: string[] },
   field: string,
-) => isNull(projectId) && errors[field]?.length > 0
+) => !projectId && errors[field]?.length > 0
 
 const getFieldDefaultProps = (isError: boolean) => {
   return {
@@ -86,7 +86,7 @@ export const AutocompleteWidget = <T,>(
   setFields: Dispatch<SetStateAction<T>>,
   field: ProjectSpecificFields,
   errors: { [key: string]: string[] },
-  projectId: number | undefined | null,
+  projectId: number | null,
   sectionIdentifier: keyof T = identifier as keyof T,
 ) => {
   const options = formatOptions(field)
@@ -134,7 +134,7 @@ export const TextWidget = <T,>(
   setFields: Dispatch<SetStateAction<T>>,
   field: ProjectSpecificFields,
   errors: { [key: string]: string[] },
-  projectId: number | undefined | null,
+  projectId: number | null,
   sectionIdentifier: keyof T = identifier as keyof T,
 ) => (
   <div>
@@ -163,7 +163,7 @@ const NumberWidget = <T,>(
   setFields: Dispatch<SetStateAction<T>>,
   field: ProjectSpecificFields,
   errors: { [key: string]: string[] },
-  projectId: number | undefined | null,
+  projectId: number | null,
   sectionIdentifier: keyof T = identifier as keyof T,
 ) => (
   <div>
@@ -192,7 +192,7 @@ const BooleanWidget = <T,>(
   setFields: Dispatch<SetStateAction<T>>,
   field: ProjectSpecificFields,
   errors: { [key: string]: string[] },
-  projectId: number | undefined | null,
+  projectId: number | null,
   sectionIdentifier: keyof T = identifier as keyof T,
 ) => (
   <div className="col-span-full flex w-full">

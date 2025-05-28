@@ -27,6 +27,7 @@ import {
 } from '../utils.ts'
 
 import { Tabs, Tab } from '@mui/material'
+import { isEmpty, map } from 'lodash'
 
 const ProjectsCreate = ({
   projectData,
@@ -47,7 +48,7 @@ const ProjectsCreate = ({
     setErrors?: Dispatch<SetStateAction<{ [key: string]: [] }>>
     project?: ProjectTypeApi
     projectFiles?: ProjectFile[]
-    projectId?: number | undefined | null
+    projectId?: number | null
   }) => {
   const [currentStep, setCurrentStep] = useState<number>(mode !== 'add' ? 1 : 0)
   const [currentTab, setCurrentTab] = useState<number>(0)
@@ -114,6 +115,34 @@ const ProjectsCreate = ({
   const overviewErrors = specificFieldsErrors['Header'] || {}
   const substanceDetailsErrors = specificFieldsErrors['Substance Details'] || {}
   const impactErrors = specificFieldsErrors['Impact'] || {}
+
+  const odsOdpErrors = map(
+    errors?.ods_odp as { [key: string]: [] }[],
+    (odp, index) => (!isEmpty(odp) ? { ...odp, rowId: index } : { ...odp }),
+  ).filter((odp) => !isEmpty(odp))
+
+  const formattedOdsOdpErrors = odsOdpErrors.flatMap((err) => {
+    const { rowId, ...fields } = err
+
+    return Object.entries(fields)
+      .filter(
+        ([field, errorMsgs]) =>
+          Array.isArray(errorMsgs) &&
+          errorMsgs.length > 0 &&
+          field !== 'non_field_errors',
+      )
+      .flatMap(([field, errorMsgs]) => {
+        const specificField = specificFields.find(
+          ({ write_field_name }) => write_field_name === field,
+        )
+        const label = specificField?.label ?? field
+
+        return errorMsgs.map((msg) => ({
+          id: `${label}-${rowId}`,
+          message: `Row ${rowId} - ${label}: ${msg}`,
+        }))
+      })
+  })
 
   const hasSectionErrors = (errors: { [key: string]: string[] }) =>
     Object.values(errors).some((errors) => errors.length > 0)
@@ -233,9 +262,13 @@ const ProjectsCreate = ({
         <div className="relative flex items-center justify-between gap-x-2">
           <div>Substance details</div>
           {!isSubstanceDetailsTabDisabled &&
-            hasSectionErrors(substanceDetailsErrors) && (
+            (hasSectionErrors(substanceDetailsErrors) ||
+              formattedOdsOdpErrors.length > 0) && (
               <SectionErrorIndicator
-                errors={formatErrors(substanceDetailsErrors)}
+                errors={[
+                  ...formatErrors(substanceDetailsErrors),
+                  ...formattedOdsOdpErrors,
+                ]}
               />
             )}
         </div>

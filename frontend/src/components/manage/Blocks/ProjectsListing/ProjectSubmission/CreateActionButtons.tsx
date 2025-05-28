@@ -16,13 +16,15 @@ const CreateActionButtons = ({
   setProjectId,
   isSubmitDisabled,
   setIsLoading,
+  errors,
   setErrors = () => {},
 }: {
   projectData: ProjectData
   files: ProjectFilesObject
-  setProjectId: Dispatch<SetStateAction<number | null | undefined>>
+  setProjectId: Dispatch<SetStateAction<number | null>>
   isSubmitDisabled: boolean
   setIsLoading: Dispatch<SetStateAction<boolean>>
+  errors?: { [key: string]: [] }
   setErrors?: Dispatch<SetStateAction<{ [key: string]: [] }>>
 }) => {
   const projectSlice = useStore((state) => state.projects)

@@ -34,6 +34,8 @@ const ProjectOdsOdpTable = ({
   setProjectData,
   sectionIdentifier,
   field,
+  errors,
+  projectId,
 }: {
   data: OdsOdpFields[]
   fields: ProjectSpecificFields[]
@@ -42,6 +44,8 @@ const ProjectOdsOdpTable = ({
   setProjectData?: Dispatch<SetStateAction<ProjectData>>
   sectionIdentifier?: keyof ProjectData
   field?: string
+  errors?: { [key: string]: string[] }
+  projectId?: number | null
 }) => {
   const defaultColDef = {
     headerClass: 'ag-text-center',

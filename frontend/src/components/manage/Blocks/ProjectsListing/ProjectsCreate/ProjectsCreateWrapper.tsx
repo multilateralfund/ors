@@ -19,7 +19,7 @@ import {
 import { getDefaultValues } from '../utils.ts'
 
 import { Alert } from '@mui/material'
-import { groupBy, isUndefined } from 'lodash'
+import { groupBy, map } from 'lodash'
 
 const ProjectsCreateWrapper = () => {
   const [specificFields, setSpecificFields] = useState<ProjectSpecificFields[]>(
@@ -45,12 +45,20 @@ const ProjectsCreateWrapper = () => {
   const { cluster } = projIdentifiers
   const { project_type, sector } = crossCuttingFields
 
-  const [projectId, setProjectId] = useState<number | null | undefined>()
+  const [projectId, setProjectId] = useState<number | null>(null)
   const [files, setFiles] = useState<ProjectFilesObject>({
     deletedFilesIds: [],
     newFiles: [],
   })
+
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
+  const nonFieldsOdsOdpErrors = errors?.['ods_odp']?.find(
+    (err) => Object.keys(err)[0] === 'non_field_errors',
+  )
+  const nonFieldsErrors = [
+    ...(errors?.['non_field_errors'] || []),
+    ...(nonFieldsOdsOdpErrors?.['non_field_errors'] || []),
+  ]
 
   useEffect(() => {
     if (cluster && project_type && sector) {
@@ -62,7 +70,7 @@ const ProjectsCreateWrapper = () => {
     <>
       <ProjectsHeader
         mode="add"
-        {...{ projectData, files, setProjectId, setErrors }}
+        {...{ projectData, files, setProjectId, errors, setErrors }}
       />
       <ProjectsCreate
         mode="add"
@@ -78,7 +86,7 @@ const ProjectsCreateWrapper = () => {
         }}
       />
 
-      {!isUndefined(projectId) && (
+      {(projectId || nonFieldsErrors.length > 0) && (
         <Alert
           className="BPAlert mt-4 w-fit border-0"
           severity={projectId ? 'success' : 'error'}
@@ -93,7 +101,13 @@ const ProjectsCreateWrapper = () => {
               </p>
             </Link>
           ) : (
-            <p className="m-0 text-lg">An error occurred. Please try again</p>
+            nonFieldsErrors.length > 0 && (
+              <div className="m-0 mt-1.5">
+                {map(nonFieldsErrors, (err) => (
+                  <div>{err}</div>
+                ))}
+              </div>
+            )
           )}
         </Alert>
       )}

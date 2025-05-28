@@ -79,6 +79,8 @@ const ProjectSubstanceDetails = ({
               setProjectData,
               sectionIdentifier,
               field,
+              errors,
+              projectId,
             }}
           />
           <Button

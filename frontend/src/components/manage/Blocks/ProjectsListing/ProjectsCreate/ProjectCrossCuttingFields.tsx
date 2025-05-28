@@ -24,7 +24,7 @@ import { useStore } from '@ors/store'
 import { api } from '@ors/helpers'
 
 import { TextareaAutosize } from '@mui/material'
-import { debounce, filter, find, includes, isNull } from 'lodash'
+import { debounce, filter, find, includes } from 'lodash'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 
@@ -190,7 +190,7 @@ const ProjectCrossCuttingFields = ({
   }
 
   const getIsInputDisabled = (field: keyof typeof errors) =>
-    isNull(projectId) && errors[field]?.length > 0
+    !projectId && errors[field]?.length > 0
 
   const getFieldDefaultProps = (field: string) => {
     return {

@@ -21,7 +21,7 @@ import { Country } from '@ors/types/store'
 import { parseNumber } from '@ors/helpers'
 
 import { Button, Checkbox, FormControlLabel } from '@mui/material'
-import { find, filter, isNull } from 'lodash'
+import { find, filter } from 'lodash'
 import cx from 'classnames'
 
 type ProjectIdentifiersSectionProps = {
@@ -32,7 +32,7 @@ type ProjectIdentifiersSectionProps = {
   setCurrentStep: Dispatch<SetStateAction<number>>
   setCurrentTab: Dispatch<SetStateAction<number>>
   errors: { [key: string]: string[] }
-  projectId: number | undefined | null
+  projectId?: number | null
 }
 
 const ProjectIdentifiersSection = ({
@@ -106,7 +106,7 @@ const ProjectIdentifiersSection = ({
   }
 
   const getIsInputDisabled = (field: keyof typeof errors) =>
-    isNull(projectId) && errors[field]?.length > 0
+    !projectId && errors[field]?.length > 0
 
   return (
     <div className="flex flex-col gap-y-2">
