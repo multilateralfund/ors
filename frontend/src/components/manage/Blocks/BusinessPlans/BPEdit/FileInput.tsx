@@ -7,7 +7,15 @@ import { TextField } from '@mui/material'
 import { IoTrash } from 'react-icons/io5'
 
 const FileInput = (props: BpFileInput) => {
-  const { files, setFiles, extensionsList } = props
+  const {
+    files,
+    setFiles,
+    extensionsList,
+    value,
+    clearable = true,
+    multiple = true,
+    accept,
+  } = props
   const { newFiles = [] } = files || {}
 
   const extensionsListText =
@@ -37,7 +45,10 @@ const FileInput = (props: BpFileInput) => {
     <div className="flex flex-col">
       <TextField
         type="text"
-        value={newFiles.length === 0 ? 'No files selected' : formatFileNames()}
+        value={
+          value ??
+          (newFiles.length === 0 ? 'No files selected' : formatFileNames())
+        }
         variant="standard"
         InputProps={{
           className:
@@ -45,7 +56,7 @@ const FileInput = (props: BpFileInput) => {
           disableUnderline: true,
           endAdornment: (
             <>
-              {newFiles.length > 0 && (
+              {clearable && newFiles.length > 0 && (
                 <IconButton
                   className="h-full rounded-none border-y-0 border-r-0"
                   onClick={handleClearInput}
@@ -65,14 +76,13 @@ const FileInput = (props: BpFileInput) => {
                   id="file_attachments"
                   name="file_attachments"
                   type="file"
-                  accept="image/*, application/pdf, application/msword,
-                application/vnd.openxmlformats-officedocument.wordprocessingml.document,
-                application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,
-                application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.presentationml.presentation,
-                .zip, .rar"
+                  accept={
+                    accept ??
+                    'image/*, application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.presentationml.presentation, .zip, .rar'
+                  }
                   onChange={handleFileChange}
                   hidden
-                  multiple
+                  multiple={multiple ?? true}
                 />
                 Browse files
               </IconButton>
