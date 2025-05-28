@@ -1,8 +1,6 @@
-import { Dispatch, SetStateAction } from 'react'
-
 import Link from '@ors/components/ui/Link/Link'
 import { formatSubmitData } from '../utils'
-import { ProjectData, ProjectFilesObject, ProjectTypeApi } from '../interfaces'
+import { ProjectTypeApi, SubmitActionButtons } from '../interfaces'
 import { api, uploadFiles } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
@@ -17,13 +15,10 @@ const EditActionButtons = ({
   isSubmitDisabled,
   setIsLoading,
   setHasSubmitted,
-}: {
-  projectData: ProjectData
-  files: ProjectFilesObject
+  setFileErrors,
+  setErrors,
+}: SubmitActionButtons & {
   project: ProjectTypeApi
-  isSubmitDisabled: boolean
-  setIsLoading: Dispatch<SetStateAction<boolean>>
-  setHasSubmitted: Dispatch<SetStateAction<boolean>>
 }) => {
   const { id } = project
 
@@ -66,16 +61,16 @@ const EditActionButtons = ({
     } catch (error) {
       if (error.status === 400) {
         const errors = await error.json()
-        if (errors?.files) {
-          enqueueSnackbar(errors.files, {
-            variant: 'error',
-          })
+
+        if (errors?.file) {
+          setFileErrors(errors.file)
         } else {
-          enqueueSnackbar(<>An error occurred. Please try again.</>, {
-            variant: 'error',
-          })
+          setErrors(errors)
         }
       }
+      enqueueSnackbar(<>An error occurred. Please try again.</>, {
+        variant: 'error',
+      })
     } finally {
       setIsLoading(false)
       setHasSubmitted(true)

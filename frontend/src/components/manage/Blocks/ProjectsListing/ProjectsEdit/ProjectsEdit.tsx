@@ -59,6 +59,8 @@ const ProjectsEdit = ({
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
 
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
+  const [fileErrors, setFileErrors] = useState<string>('')
+
   const nonFieldsErrors = getNonFieldErrors(errors)
 
   useEffect(() => {
@@ -127,6 +129,7 @@ const ProjectsEdit = ({
           files,
           setErrors,
           setHasSubmitted,
+          setFileErrors,
         }}
       />
       <ProjectsCreate

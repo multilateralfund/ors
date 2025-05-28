@@ -26,7 +26,7 @@ import {
   getSpecificFieldsErrors,
 } from '../utils.ts'
 
-import { Tabs, Tab } from '@mui/material'
+import { Tabs, Tab, Alert, Typography } from '@mui/material'
 import { isEmpty, map } from 'lodash'
 
 const ProjectsCreate = ({
@@ -342,6 +342,13 @@ const ProjectsCreate = ({
         ))}
       </Tabs>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
+        {!isEmpty(errors) && (
+          <Alert className="mb-12" severity="error">
+            <Typography>
+              Please make sure all the sections are valid.
+            </Typography>
+          </Alert>
+        )}
         {steps
           .filter(({ step }) => step === currentTab)
           .map(({ component }) => component)}

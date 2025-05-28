@@ -2,7 +2,7 @@ import { Dispatch, SetStateAction } from 'react'
 
 import Link from '@ors/components/ui/Link/Link'
 import { formatSubmitData } from '../utils'
-import { ProjectData, ProjectFilesObject } from '../interfaces'
+import { SubmitActionButtons } from '../interfaces'
 import { api, uploadFiles } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
@@ -18,14 +18,9 @@ const CreateActionButtons = ({
   setIsLoading,
   setErrors,
   setHasSubmitted,
-}: {
-  projectData: ProjectData
-  files: ProjectFilesObject
+  setFileErrors,
+}: SubmitActionButtons & {
   setProjectId: Dispatch<SetStateAction<number | null>>
-  isSubmitDisabled: boolean
-  setIsLoading: Dispatch<SetStateAction<boolean>>
-  setErrors: Dispatch<SetStateAction<{ [key: string]: [] }>>
-  setHasSubmitted: Dispatch<SetStateAction<boolean>>
 }) => {
   const projectSlice = useStore((state) => state.projects)
   const user_permissions = projectSlice.user_permissions.data || []
@@ -36,6 +31,8 @@ const CreateActionButtons = ({
 
   const submitProject = async () => {
     setIsLoading(true)
+    setFileErrors('')
+    setErrors({})
 
     try {
       const data = formatSubmitData(projectData)
@@ -44,6 +41,7 @@ const CreateActionButtons = ({
         data: data,
         method: 'POST',
       })
+      setProjectId(result.id)
 
       if (newFiles.length > 0) {
         await uploadFiles(
@@ -53,25 +51,20 @@ const CreateActionButtons = ({
           'list',
         )
       }
-
-      setProjectId(result.id)
-      setErrors({})
     } catch (error) {
       if (error.status === 400) {
         const errors = await error.json()
-        if (errors?.files) {
-          enqueueSnackbar(errors.files, {
-            variant: 'error',
-          })
+
+        if (errors?.file) {
+          setFileErrors(errors.file)
         } else {
           setErrors(errors)
-          enqueueSnackbar(<>An error occurred. Please try again.</>, {
-            variant: 'error',
-          })
+          setProjectId(null)
         }
       }
-
-      setProjectId(null)
+      enqueueSnackbar(<>An error occurred. Please try again.</>, {
+        variant: 'error',
+      })
     } finally {
       setIsLoading(false)
       setHasSubmitted(true)

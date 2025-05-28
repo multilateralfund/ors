@@ -16,17 +16,16 @@ import { CircularProgress } from '@mui/material'
 const ProjectsHeader = ({
   projectData,
   mode,
-  files,
-  setErrors,
   setProjectId = () => {},
-  setHasSubmitted,
   project,
+  ...rest
 }: {
   projectData: ProjectData
   mode: string
   files: ProjectFilesObject
   setErrors: Dispatch<SetStateAction<{ [key: string]: [] }>>
   setHasSubmitted: Dispatch<SetStateAction<boolean>>
+  setFileErrors: Dispatch<SetStateAction<string>>
   setProjectId?: Dispatch<SetStateAction<number | null>>
   project?: ProjectTypeApi
 }) => {
@@ -71,24 +70,21 @@ const ProjectsHeader = ({
             <CreateActionButtons
               {...{
                 projectData,
-                files,
                 setProjectId,
                 isSubmitDisabled,
                 setIsLoading,
-                setErrors,
-                setHasSubmitted,
               }}
+              {...rest}
             />
           ) : (
             <EditActionButtons
               project={project as ProjectTypeApi}
               {...{
                 projectData,
-                files,
                 isSubmitDisabled,
                 setIsLoading,
-                setHasSubmitted,
               }}
+              {...rest}
             />
           )}
           {isLoading && (

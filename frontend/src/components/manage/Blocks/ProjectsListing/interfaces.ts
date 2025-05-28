@@ -177,3 +177,13 @@ export interface ProjectDataProps {
   hasSubmitted: boolean
   errors?: { [key: string]: string[] }
 }
+
+export interface SubmitActionButtons {
+  projectData: ProjectData
+  files: ProjectFilesObject
+  isSubmitDisabled: boolean
+  setIsLoading: Dispatch<SetStateAction<boolean>>
+  setErrors: Dispatch<SetStateAction<{ [key: string]: [] }>>
+  setHasSubmitted: Dispatch<SetStateAction<boolean>>
+  setFileErrors: Dispatch<SetStateAction<string>>
+}
