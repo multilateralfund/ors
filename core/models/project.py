@@ -616,9 +616,7 @@ class Project(models.Model):
                 entry.save()
 
             # Transfer files to the archive project
-            ProjectFile.objects.filter(project=self).update(
-                project=old_project
-            )
+            ProjectFile.objects.filter(project=self).update(project=old_project)
 
     def __str__(self):
         return self.title
