@@ -3,6 +3,13 @@ import openpyxl
 from rest_framework.viewsets import GenericViewSet
 
 from core.models.country import Country
+from core.models.agency import Agency
+
+from core.models.project_metadata import ProjectCluster
+from core.models.project_metadata import ProjectType
+from core.models.project_metadata import ProjectSector
+from core.models.project_metadata import ProjectSubSector
+from core.models.project_metadata import ProjectStatus
 
 from core.api.export.base import configure_sheet_print
 from core.api.export.projects import ProjectWriter
@@ -10,6 +17,7 @@ from core.api.serializers.project import ProjectExportSerializer
 from core.api.utils import workbook_response, workbook_pdf_response
 
 from core.api.export.business_plan import ModelNameCodeWriter
+from core.api.export.business_plan import ModelNameWriter
 
 
 class ProjectsExport:
@@ -45,6 +53,12 @@ class ProjectsV2Export(ProjectsExport):
         queryset = cls_name.objects.values_list("name", code_name).order_by("name")
         return [{"name": name, "acronym": acronym} for name, acronym in queryset]
 
+    def get_names(self, cls_name):
+        queryset = (
+            cls_name.objects.values_list("name", flat=True).distinct().order_by("name")
+        )
+        return [{"name": name} for name in queryset]
+
     def get_wb(self, method):
         queryset = self.view.filter_queryset(self.view.get_queryset())
 
@@ -58,10 +72,37 @@ class ProjectsV2Export(ProjectsExport):
         data = ProjectExportSerializer(queryset, many=True).data
         ProjectWriter(sheet).write(data)
 
-        data = self.get_name_and_codes(Country, "abbr")
-        ModelNameCodeWriter(wb, "Countries").write(data)
+        targets_model_name = [
+            (ProjectCluster, "Clusters", "D"),
+            (ProjectType, "Project types", "F"),
+            (Agency, "Agencies", "H"),
+            (ProjectSector, "Sectors", "I"),
+            (ProjectSubSector, "Subsectors", "K"),
+            (ProjectStatus, "Status", "O"),
+        ]
 
-        self.add_data_validation(wb, sheet, "R", "Countries", len(data), show_error=True)
+        for model_class, sheet_name, validate_column in targets_model_name:
+            data = self.get_names(model_class)
+            ModelNameWriter(wb, sheet_name).write(data)
+            self.add_data_validation(
+                wb, sheet, validate_column, sheet_name, len(data), show_error=True
+            )
+
+        targets_model_name_code = [
+            (Country, "Countries", "R", "abbr"),
+        ]
+
+        for (
+            model_class,
+            sheet_name,
+            validate_column,
+            code_name,
+        ) in targets_model_name_code:
+            data = self.get_name_and_codes(model_class, code_name)
+            ModelNameCodeWriter(wb, sheet_name).write(data)
+            self.add_data_validation(
+                wb, sheet, validate_column, sheet_name, len(data), show_error=True
+            )
 
         filename = "Projects"
         return method(filename, wb)
@@ -85,7 +126,7 @@ class ProjectsV2Export(ProjectsExport):
         @param allow_blank: bool
 
         """
-        validation_formula = f"{validation_sheet}!$A$2:$A${validation_range + 1}"
+        validation_formula = f"'{validation_sheet}'!$A$2:$A${validation_range + 1}"
         data_validation = openpyxl.worksheet.datavalidation.DataValidation(
             type="list",
             formula1=validation_formula,
