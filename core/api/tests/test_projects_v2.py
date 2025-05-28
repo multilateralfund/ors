@@ -96,7 +96,7 @@ def setup_project_list(
     agency,
     project_type,
     project_status,
-    project_submission_status,
+    project_draft_status,
     subsector,
     meeting,
     sector,
@@ -120,7 +120,7 @@ def setup_project_list(
             "agency": agency,
             "project_type": project_type,
             "status": project_status,
-            "submission_status": project_submission_status,
+            "submission_status": project_draft_status,
             "sector": sector,
             "subsectors": [subsector],
             "substance_type": "HCFC",
@@ -457,23 +457,23 @@ class TestProjectV2List(BaseTest):
         assert len(response.data) == 10
 
     def test_project_list_submission_status_filter(
-        self, secretariat_viewer_user, project_submission_status, _setup_project_list
+        self, secretariat_viewer_user, project_draft_status, _setup_project_list
     ):
         _, _, new_project_submission_status, _, _ = _setup_project_list
         self.client.force_authenticate(user=secretariat_viewer_user)
 
         response = self.client.get(
-            self.url, {"submission_status_id": project_submission_status.id}
+            self.url, {"submission_status_id": project_draft_status.id}
         )
         assert response.status_code == 200
         assert len(response.data) == 6
         for project in response.data:
-            assert project["submission_status"] == project_submission_status.name
+            assert project["submission_status"] == project_draft_status.name
 
         response = self.client.get(
             self.url,
             {
-                "submission_status_id": f"{project_submission_status.id},{new_project_submission_status.id}"
+                "submission_status_id": f"{project_draft_status.id},{new_project_submission_status.id}"
             },
         )
         assert response.status_code == 200
@@ -1227,7 +1227,7 @@ class TestProjectVersioning:
         agency_inputter_user,
         project,
         project_file,
-        project_submission_status,
+        project_draft_status,
         user,
         viewer_user,
         agency_user,
@@ -1255,9 +1255,13 @@ class TestProjectVersioning:
 
         def _set_project_back_to_v1():
             project.version = 1
-            project.submission_status = project_submission_status
+            project.submission_status = project_draft_status
             project.save()
-            Project.objects.really_all().filter(latest_project=project).delete()
+            archive_project = (
+                Project.objects.really_all().filter(latest_project=project).first()
+            )
+            ProjectFile.objects.filter(project=archive_project).update(project=project)
+            archive_project.delete()
 
         # test with unauthenticated user
         self.client.force_authenticate(user=None)
@@ -1283,7 +1287,7 @@ class TestProjectVersioning:
         agency_user,
         project,
         project_file,
-        project_submission_status,
+        project_draft_status,
     ):
 
         self.client.force_authenticate(user=agency_user)
@@ -1315,13 +1319,121 @@ class TestProjectVersioning:
         assert archived_project.version == 1
 
         # check if the project file is archived
-        assert ProjectFile.objects.filter(project=project).count() == 1
+        assert ProjectFile.objects.filter(project=project).count() == 0
         assert ProjectFile.objects.filter(project=archived_project).count() == 1
 
         # check project
         project.refresh_from_db()
         assert project.submission_status.name == "Submitted"
         assert project.version == 2
+
+    def test_recommend_permissions(
+        self,
+        agency_inputter_user,
+        project,
+        project_file,
+        project_submitted_status,
+        user,
+        viewer_user,
+        agency_user,
+        secretariat_viewer_user,
+        secretariat_v1_v2_edit_access_user,
+        secretariat_production_v1_v2_edit_access_user,
+        secretariat_v3_edit_access_user,
+        secretariat_production_v3_edit_access_user,
+        admin_user,
+    ):
+        project.version = 2
+        project.submission_status = project_submitted_status
+        project.is_lvc = False
+        project.project_start_date = "2023-10-01"
+        project.project_end_date = "2024-09-30"
+        project.total_fund = 2340000
+        project.support_cost_psc = 23
+        project.save()
+
+        url = reverse("project-v2-recommend", args=(project.id,))
+
+        def _test_user_permissions(user, expected_response_status):
+            self.client.force_authenticate(user=user)
+            response = self.client.post(url)
+            assert response.status_code == expected_response_status
+            return response.data
+
+        def _set_project_back_to_v2():
+            project.version = 2
+            project.submission_status = project_submitted_status
+            project.save()
+            archive_project = (
+                Project.objects.really_all().filter(latest_project=project).first()
+            )
+            ProjectFile.objects.filter(project=archive_project).update(project=project)
+            archive_project.delete()
+
+        # test with unauthenticated user
+        self.client.force_authenticate(user=None)
+        response = self.client.post(url)
+        assert response.status_code == 403
+
+        _test_user_permissions(user, 403)
+        _test_user_permissions(viewer_user, 403)
+        _test_user_permissions(agency_user, 403)
+        _test_user_permissions(agency_inputter_user, 403)
+        _test_user_permissions(secretariat_viewer_user, 403)
+        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
+        _set_project_back_to_v2()
+        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
+        _set_project_back_to_v2()
+        _test_user_permissions(secretariat_v3_edit_access_user, 403)
+        _test_user_permissions(secretariat_production_v3_edit_access_user, 403)
+        _test_user_permissions(admin_user, 200)
+
+    def test_recommend_project(
+        self,
+        secretariat_v1_v2_edit_access_user,
+        project,
+        project_file,
+        project_submitted_status,
+    ):
+
+        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        url = reverse("project-v2-recommend", args=(project.id,))
+
+        # submit project and expect failure due to missing required fields
+        response = self.client.post(url)
+        assert response.status_code == 400
+        assert response.data
+
+        # set required fields
+        project.version = 2
+        project.submission_status = project_submitted_status
+        project.is_lvc = False
+        project.project_start_date = "2023-10-01"
+        project.project_end_date = "2024-09-30"
+        project.total_fund = 2340000
+        project.support_cost_psc = 23
+        project.save()
+
+        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        url = reverse("project-v2-recommend", args=(project.id,))
+
+        # submit project
+        response = self.client.post(url)
+        assert response.status_code == 200
+
+        # check if the project is archived
+        archived_project = Project.objects.really_all().get(latest_project=project)
+        assert archived_project.submission_status.name == "Recommended"
+        assert archived_project.version == 2
+
+        # check if the project file is archived
+        assert ProjectFile.objects.filter(project=project).count() == 0
+        assert ProjectFile.objects.filter(project=archived_project).count() == 1
+
+        # check project
+        project.refresh_from_db()
+        assert project.submission_status.name == "Recommended"
+        assert project.version == 3
 
     def test_increase_version(self, agency_user, project, test_file1):
         self.client.force_authenticate(user=agency_user)
@@ -1356,7 +1468,6 @@ class TestProjectVersioning:
             == archived_project.date_created
         )
 
-        project_file = ProjectFile.objects.get(project=project)
-        archived_project_file = ProjectFile.objects.get(project=archived_project)
-        assert archived_project_file.filename == project_file.filename
-        assert archived_project_file.file.read() == project_file.file.read()
+        project_file = ProjectFile.objects.filter(project=project).first()
+        assert project_file is None
+        ProjectFile.objects.get(project=archived_project)

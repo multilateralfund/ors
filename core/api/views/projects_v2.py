@@ -26,6 +26,7 @@ from core.api.permissions import (
 )
 from core.api.serializers.project_v2 import (
     ProjectV2SubmitSerializer,
+    ProjectV2RecommendSerializer,
     ProjectV2FileSerializer,
     ProjectDetailsV2Serializer,
     ProjectListV2Serializer,
@@ -141,6 +142,9 @@ class ProjectV2ViewSet(
                 | IsSecretariatV1V2EditAccess
                 | IsSecretariatProductionV1V2EditAccess
             ]
+
+        if self.action == "recommend":
+            return [IsSecretariatV1V2EditAccess | IsSecretariatProductionV1V2EditAccess]
         return super().get_permissions()
 
     def filter_permissions_queryset(self, queryset):
@@ -295,12 +299,15 @@ class ProjectV2ViewSet(
     @action(methods=["POST"], detail=True)
     @swagger_auto_schema(
         operation_description="""
-            This endpoint archives the project by creating a copy of it and
-            increasing the version of the original entry.
-            The related entries (ProjectOdsOdp, ProjectFund, ProjectRBMMeasure,
-            ProjectProgressReport, SubmissionAmount, ProjectComment, ProjectFile)
-            are also duplicated and linked to the archived project.
-            The file itself is also duplicated and linked to the archived project.
+        Submit the project for review.
+        The project is checked for validity (check version, status and if the required fields are filled).
+        If the project is valid, it is marked as submitted and the version is increased, creating an
+        archived version of the project.
+        The related entries (ProjectOdsOdp, ProjectFund, ProjectRBMMeasure,
+        ProjectProgressReport, SubmissionAmount, ProjectComment, ProjectFile)
+        are also duplicated and linked to the archived project.
+        An email notification is sent to the secretariat team
+        to inform them about the new submission. (TO BE IMPLEMENTED)
         """,
         request_body=openapi.Schema(type=openapi.TYPE_OBJECT, properties=None),
         responses={
@@ -330,6 +337,43 @@ class ProjectV2ViewSet(
         project.save()
         project.increase_version(request.user)
         # TODO: Implement MLFS notifications
+        return Response(
+            ProjectDetailsV2Serializer(project).data,
+            status=status.HTTP_200_OK,
+        )
+
+    @action(methods=["POST"], detail=True)
+    @swagger_auto_schema(
+        operation_description="""
+        Recommend the project.
+        The project is checked for validity (check version, status and if the required fields are filled).
+        If the project is valid, it is marked as Recommended and the version is increased, creating an
+        archived version of the project.
+        The related entries (ProjectOdsOdp, ProjectFund, ProjectRBMMeasure,
+        ProjectProgressReport, SubmissionAmount, ProjectComment, ProjectFile)
+        are also duplicated and linked to the archived project.
+        """,
+        request_body=openapi.Schema(type=openapi.TYPE_OBJECT, properties=None),
+        responses={
+            status.HTTP_200_OK: ProjectDetailsV2Serializer,
+            status.HTTP_400_BAD_REQUEST: "Bad request",
+        },
+    )
+    def recommend(self, request, *args, **kwargs):
+        """
+        This method is not implemented in the V2 API.
+        """
+        project = self.get_object()
+        serializer = ProjectV2RecommendSerializer(
+            project, data=request.data, partial=True
+        )
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        project.submission_status = ProjectSubmissionStatus.objects.get(
+            name="Recommended"
+        )
+        project.save()
+        project.increase_version(request.user)
         return Response(
             ProjectDetailsV2Serializer(project).data,
             status=status.HTTP_200_OK,

@@ -604,11 +604,7 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
             "version",
         ]
 
-    def validate(self, attrs):
-        """
-        Validate the project submission
-        """
-        errors = {}
+    def validate_required_fields(self, errors):
         mandatory_fields_at_submission = [
             "cluster",
             "project_type",
@@ -624,13 +620,6 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
             "total_fund",
             "support_cost_psc",
         ]
-        if self.instance.version != 1:
-            errors["version"] = "Project can only be submitted if it is version 1."
-        if self.instance.submission_status.name != "Draft":
-            errors["submission_status"] = (
-                "Project can only be submitted if its status is Draft."
-            )
-
         for field in mandatory_fields_at_submission:
             if getattr(self.instance, field) is None:
                 errors[field] = (
@@ -669,7 +658,50 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
             errors["files"] = (
                 "At least one file must be attached to the project for submission."
             )
+        return errors
 
+    def validate(self, attrs):
+        """
+        Validate the project submission
+        """
+        errors = {}
+        if self.instance.version != 1:
+            errors["version"] = "Project can only be submitted if it is version 1."
+        if self.instance.submission_status.name != "Draft":
+            errors["submission_status"] = (
+                "Project can only be submitted if its status is Draft."
+            )
+
+        self.validate_required_fields(errors)
+        if errors:
+            raise serializers.ValidationError(errors)
+        return attrs
+
+
+class ProjectV2RecommendSerializer(ProjectV2SubmitSerializer):
+    """
+    ProjectSerializer class for recommending a project
+    """
+
+    class Meta:
+        model = Project
+        fields = [
+            "version",
+        ]
+
+    def validate(self, attrs):
+        """
+        Validate the project submission
+        """
+        errors = {}
+        if self.instance.version != 2:
+            errors["version"] = "Project can only be recommended if it is version 2."
+        if self.instance.submission_status.name != "Submitted":
+            errors["submission_status"] = (
+                "Project can only be recommended if its status is Submitted."
+            )
+
+        self.validate_required_fields(errors)
         if errors:
             raise serializers.ValidationError(errors)
         return attrs

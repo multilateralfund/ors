@@ -1,5 +1,4 @@
 import os
-import shutil
 
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -616,21 +615,10 @@ class Project(models.Model):
                 entry.project = old_project
                 entry.save()
 
-            # Duplicate the ProjectFile entries
-            file_entries = ProjectFile.objects.filter(project=self)
-            for entry in file_entries:
-                original_file_path = entry.file.path
-                new_file_path = _get_new_file_path(entry.file.name, old_project.id)
-                storage = get_protected_storage()
-                with storage.open(original_file_path, "rb") as original_file:
-                    with storage.open(new_file_path, "wb") as new_file:
-                        shutil.copyfileobj(original_file, new_file)
-                entry.pk = None
-                entry.project = old_project
-                entry.file.name = (
-                    new_file_path  # Update the file field to point to the new file
-                )
-                entry.save()
+            # Transfer files to the archive project
+            ProjectFile.objects.filter(project=self).update(
+                project=old_project
+            )
 
     def __str__(self):
         return self.title

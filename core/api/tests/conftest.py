@@ -374,9 +374,16 @@ def project_status():
 
 
 @pytest.fixture
-def project_submission_status():
+def project_draft_status():
     return ProjectSubmissionStatusFactory.create(
         name="Draft", code="draft", color="#FF0000"
+    )
+
+
+@pytest.fixture
+def project_submitted_status():
+    return ProjectSubmissionStatusFactory.create(
+        name="Submitted", code="submitted", color="#00FF00"
     )
 
 
@@ -444,7 +451,7 @@ def project(
     agency,
     project_type,
     project_status,
-    project_submission_status,
+    project_draft_status,
     sector,
     subsector,
     meeting,
@@ -461,7 +468,7 @@ def project(
         agency=agency,
         project_type=project_type,
         status=project_status,
-        submission_status=project_submission_status,
+        submission_status=project_draft_status,
         sector=sector,
         subsectors=[subsector],
         meeting=meeting,
