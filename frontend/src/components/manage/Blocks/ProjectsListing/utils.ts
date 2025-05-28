@@ -1,5 +1,6 @@
 import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
+import { validationFieldsPairs } from './constants'
 import {
   ProjIdentifiers,
   ProjectSpecificFields,
@@ -113,10 +114,13 @@ export const handleChangeNumberField = <T, K>(
 ) => {
   const value = event.target.value
 
-  if (!isNaN(parseInt(value))) {
+  if (value === '' || !isNaN(parseInt(value))) {
     setState((prevData) => ({
       ...prevData,
-      [section]: { ...prevData[section], [field]: parseInt(value) },
+      [section]: {
+        ...prevData[section],
+        [field]: value ? parseInt(value) : '',
+      },
     }))
   } else {
     event.preventDefault()
@@ -243,46 +247,28 @@ export const getCrossCuttingErrors = (
   }
 }
 
-export const getSpecificFieldsErrors = (
+export const getDefaultImpactErrors = (
   projectSpecificFields: SpecificFields,
-  specificFields: ProjectSpecificFields[],
-  errors: { [key: string]: [] },
 ) => {
   const errorMsg = 'Number cannot be greater than the total one.'
 
-  const fieldsPairs: [
-    keyof typeof projectSpecificFields,
-    keyof typeof projectSpecificFields,
-  ][] = [
-    [
-      'number_of_female_technicians_trained',
-      'total_number_of_technicians_trained',
-    ],
-    ['number_of_female_trainers_trained', 'total_number_of_trainers_trained'],
-    [
-      'number_of_female_technicians_certified',
-      'total_number_of_technicians_certified',
-    ],
-    [
-      'number_of_female_customs_officers_trained',
-      'total_number_of_customs_officers_trained',
-    ],
-    [
-      'number_of_female_nou_personnel_supported',
-      'total_number_of_nou_personnnel_supported',
-    ],
-  ]
-
-  const defaultErrors = Object.fromEntries(
-    fieldsPairs.map(([key, totalKey]) => [
+  return Object.fromEntries(
+    validationFieldsPairs.map(([key, totalKey]) => [
       key,
       (projectSpecificFields[key] ?? 0) > (projectSpecificFields[totalKey] ?? 0)
         ? [errorMsg]
         : [],
     ]),
   )
-
-  const updatedErrors = { ...defaultErrors, ...errors }
+}
+export const getSpecificFieldsErrors = (
+  projectSpecificFields: SpecificFields,
+  specificFields: ProjectSpecificFields[],
+  errors: { [key: string]: [] },
+) => {
+  const defaultImpactErrors =
+    getDefaultImpactErrors(projectSpecificFields) ?? {}
+  const updatedErrors = { ...defaultImpactErrors, ...errors }
 
   const fieldNames = map(specificFields, 'write_field_name') as string[]
 

@@ -1,6 +1,8 @@
 import { Dispatch, SetStateAction } from 'react'
 
 import EditTable from '@ors/components/manage/Form/EditTable'
+import CellValidation from '@ors/components/manage/Blocks/BusinessPlans/BPTableHelpers/CellValidation'
+import AgBpCellRenderer from '@ors/components/manage/Blocks/BusinessPlans/BPTableHelpers/AgBpCellRenderer'
 import {
   agFormatValue,
   getOptionLabel,
@@ -28,24 +30,22 @@ import {
 
 const ProjectOdsOdpTable = ({
   data,
-  fields,
+  fields = [],
   mode,
   onRemoveOdsOdp = () => {},
   setProjectData,
   sectionIdentifier,
   field,
-  errors,
-  hasSubmitted,
+  odsOdpErrors = [],
 }: {
   data: OdsOdpFields[]
   fields: ProjectSpecificFields[]
-  mode?: string
+  mode: string
   onRemoveOdsOdp?: (props: ICellRendererParams) => void
   setProjectData?: Dispatch<SetStateAction<ProjectData>>
   sectionIdentifier?: keyof ProjectData
   field?: string
-  errors?: { [key: string]: string[] }
-  hasSubmitted?: boolean
+  odsOdpErrors?: { [key: string]: [] | number }[]
 }) => {
   const defaultColDef = {
     headerClass: 'ag-text-center',
@@ -53,8 +53,41 @@ const ProjectOdsOdpTable = ({
     resizable: true,
   }
 
+  const editCellRenderer = (
+    props: any,
+    value: string,
+    errors: { [key: string]: [] | number }[],
+    field: string,
+    isLongText?: boolean,
+  ) => {
+    const substanceFieldName = 'ods_substance_id'
+
+    const crtRowError = find(errors, (error) => error.rowId === props.rowIndex)
+
+    const crtColError =
+      field === substanceFieldName && !props.data[substanceFieldName]
+        ? ['This field is required.']
+        : (crtRowError?.[field] as string[])
+
+    return crtColError?.length > 0 ? (
+      <div className="flex justify-between">
+        <div
+          className={cx({
+            'w-full': !isLongText,
+            'w-[90%]': isLongText,
+          })}
+        >
+          <AgBpCellRenderer {...props} value={value} />
+        </div>
+        <CellValidation errors={crtColError} />
+      </div>
+    ) : (
+      <AgBpCellRenderer {...props} value={value} />
+    )
+  }
+
   const getFieldName = (
-    params: ValueGetterParams | ITooltipParams,
+    params: ITooltipParams | ICellRendererParams | ValueGetterParams,
     options: OptionsType[],
     field: string,
   ) => find(options, { id: params.data[field] })?.name
@@ -77,6 +110,15 @@ const ProjectOdsOdpTable = ({
           options: fieldObj.options,
           openOnFocus: true,
         },
+        ...(mode === 'edit' && {
+          cellRenderer: (props: ICellRendererParams) =>
+            editCellRenderer(
+              props,
+              getFieldName(props, options, field) ?? '',
+              odsOdpErrors,
+              field,
+            ),
+        }),
         valueGetter: (params: ValueGetterParams<OdsOdpFields>) =>
           getFieldName(params, options, field),
         tooltipValueGetter: (params: ITooltipParams) =>
@@ -94,6 +136,16 @@ const ProjectOdsOdpTable = ({
         headerName: fieldObj.label,
         field: field,
         tooltipField: field,
+        ...(mode === 'edit' && {
+          cellRenderer: (props: ICellRendererParams) =>
+            editCellRenderer(
+              props,
+              props.data?.[field],
+              odsOdpErrors,
+              field,
+              true,
+            ),
+        }),
         editable: mode === 'edit',
         initialWidth: 180,
         minWidth: 180,
@@ -128,6 +180,10 @@ const ProjectOdsOdpTable = ({
           formatNumberColumns(params, field),
         valueGetter: (params: ValueGetterParams<OdsOdpFields>) =>
           params.data?.[field],
+        ...(mode === 'edit' && {
+          cellRenderer: (props: ICellRendererParams) =>
+            editCellRenderer(props, props.data?.[field], odsOdpErrors, field),
+        }),
         tooltipValueGetter: (params: ITooltipParams) =>
           formatNumberColumns(params, field, {
             maximumFractionDigits: 10,

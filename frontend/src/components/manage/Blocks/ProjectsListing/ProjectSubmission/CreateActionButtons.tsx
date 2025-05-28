@@ -25,8 +25,6 @@ const CreateActionButtons = ({
   const projectSlice = useStore((state) => state.projects)
   const user_permissions = projectSlice.user_permissions.data || []
 
-  const disableButton = isSubmitDisabled || files?.newFiles?.length === 0
-
   const { newFiles = [] } = files || {}
 
   const submitProject = async () => {
@@ -87,12 +85,12 @@ const CreateActionButtons = ({
         <Button
           className={cx('ml-auto mr-0 h-10 px-3 py-1', {
             'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
-              !disableButton,
+              !isSubmitDisabled,
           })}
           size="large"
           variant="contained"
           onClick={submitProject}
-          disabled={disableButton}
+          disabled={isSubmitDisabled}
         >
           Submit
         </Button>

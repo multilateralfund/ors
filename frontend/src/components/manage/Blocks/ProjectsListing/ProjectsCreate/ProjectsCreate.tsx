@@ -53,10 +53,10 @@ const ProjectsCreate = ({
   const [currentStep, setCurrentStep] = useState<number>(mode !== 'add' ? 1 : 0)
   const [currentTab, setCurrentTab] = useState<number>(0)
 
-  const projIdentifiers = projectData.projIdentifiers
-  const crossCuttingFields = projectData.crossCuttingFields
+  const { projIdentifiers, crossCuttingFields, projectSpecificFields } =
+    projectData ?? {}
   const { project_type, sector } = crossCuttingFields
-  const projectSpecificFields = projectData.projectSpecificFields
+  const { ods_odp } = projectSpecificFields
 
   const canLinkToBp = canGoToSecondStep(projIdentifiers)
 
@@ -104,8 +104,18 @@ const ProjectsCreate = ({
   const substanceDetailsErrors = specificFieldsErrors['Substance Details'] || {}
   const impactErrors = specificFieldsErrors['Impact'] || {}
 
+  const substanceDetailsErrorIndexes = ods_odp
+    .filter(({ ods_substance_id }) => !ods_substance_id)
+    .map((_, index) => index)
+
+  const updatedOdsOdpErrors = errors?.ods_odp?.map(
+    (item: { [key: string]: [] }, index) =>
+      substanceDetailsErrorIndexes.includes(index)
+        ? { ...item, ods_substance_id: ['This field is required.'] }
+        : item,
+  )
   const odsOdpErrors = map(
-    errors?.ods_odp as { [key: string]: [] }[],
+    updatedOdsOdpErrors as { [key: string]: [] }[],
     (odp, index) => (!isEmpty(odp) ? { ...odp, rowId: index } : { ...odp }),
   ).filter((odp) => !isEmpty(odp))
 
@@ -127,7 +137,7 @@ const ProjectsCreate = ({
 
         return errorMsgs.map((msg) => ({
           id: `${label}-${rowId}`,
-          message: `Row ${rowId} - ${label}: ${msg}`,
+          message: `Row ${(rowId as number) + 1} - ${label}: ${msg}`,
         }))
       })
   })
@@ -266,7 +276,7 @@ const ProjectsCreate = ({
         <ProjectSubstanceDetails
           sectionFields={substanceDetailsFields}
           errors={substanceDetailsErrors}
-          {...{ projectData, setProjectData, hasSubmitted }}
+          {...{ projectData, setProjectData, hasSubmitted, odsOdpErrors }}
         />
       ),
     },

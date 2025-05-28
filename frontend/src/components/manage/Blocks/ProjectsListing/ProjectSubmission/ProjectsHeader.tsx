@@ -8,16 +8,18 @@ import {
 } from '../ProjectVersions/ProjectVersionsComponents'
 import CreateActionButtons from './CreateActionButtons'
 import EditActionButtons from './EditActionButtons'
-import { getIsSubmitDisabled } from '../utils'
+import { getDefaultImpactErrors, getIsSubmitDisabled } from '../utils'
 import { ProjectData, ProjectFilesObject, ProjectTypeApi } from '../interfaces'
 
 import { CircularProgress } from '@mui/material'
+import dayjs from 'dayjs'
 
 const ProjectsHeader = ({
   projectData,
   mode,
   setProjectId = () => {},
   project,
+  files,
   ...rest
 }: {
   projectData: ProjectData
@@ -29,11 +31,25 @@ const ProjectsHeader = ({
   setProjectId?: Dispatch<SetStateAction<number | null>>
   project?: ProjectTypeApi
 }) => {
-  const { projIdentifiers, crossCuttingFields } = projectData
-  const isSubmitDisabled = getIsSubmitDisabled(
+  const { projIdentifiers, crossCuttingFields, projectSpecificFields } =
+    projectData
+  const { project_start_date, project_end_date } = crossCuttingFields
+  const { ods_odp } = projectSpecificFields
+
+  const defaultImpactErrors = getDefaultImpactErrors(projectSpecificFields)
+  const hasValidationErrors = Object.values(defaultImpactErrors).some(
+    (errors) => errors.length > 0,
+  )
+  const hasMissingRequiredFields = getIsSubmitDisabled(
     projIdentifiers,
     crossCuttingFields,
   )
+  const isSubmitDisabled =
+    hasMissingRequiredFields ||
+    files?.newFiles?.length === 0 ||
+    dayjs(project_start_date).isAfter(dayjs(project_end_date)) ||
+    hasValidationErrors ||
+    (ods_odp.length > 0 && ods_odp.some((item) => !item.ods_substance_id))
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [showVersionsMenu, setShowVersionsMenu] = useState(false)
@@ -73,6 +89,7 @@ const ProjectsHeader = ({
                 setProjectId,
                 isSubmitDisabled,
                 setIsLoading,
+                files,
               }}
               {...rest}
             />
@@ -83,6 +100,7 @@ const ProjectsHeader = ({
                 projectData,
                 isSubmitDisabled,
                 setIsLoading,
+                files,
               }}
               {...rest}
             />

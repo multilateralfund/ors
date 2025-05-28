@@ -1,4 +1,5 @@
 import { isOptionEqualToValue } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
+import { SpecificFields } from './interfaces'
 
 export const PROJECTS_PER_PAGE = 100
 
@@ -79,4 +80,27 @@ export const blanketOrIndConsiderationOpts = [
 export const lvcNonLvcOpts = [
   { name: 'LVC', id: true },
   { name: 'Non-LVC', id: false },
+]
+
+export const validationFieldsPairs: [
+  keyof SpecificFields,
+  keyof SpecificFields,
+][] = [
+  [
+    'number_of_female_technicians_trained',
+    'total_number_of_technicians_trained',
+  ],
+  ['number_of_female_trainers_trained', 'total_number_of_trainers_trained'],
+  [
+    'number_of_female_technicians_certified',
+    'total_number_of_technicians_certified',
+  ],
+  [
+    'number_of_female_customs_officers_trained',
+    'total_number_of_customs_officers_trained',
+  ],
+  [
+    'number_of_female_nou_personnel_supported',
+    'total_number_of_nou_personnnel_supported',
+  ],
 ]
