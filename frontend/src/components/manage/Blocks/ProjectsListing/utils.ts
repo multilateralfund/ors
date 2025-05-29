@@ -233,15 +233,10 @@ export const getCrossCuttingErrors = (
 
       return acc
     }, {}),
-    project_start_date: dayjs(project_start_date).isAfter(
-      dayjs(project_end_date),
-    )
-      ? ['Start date cannot be later than end date.']
-      : [],
     project_end_date: dayjs(project_end_date).isBefore(
       dayjs(project_start_date),
     )
-      ? ['End date cannot be earlier than start date.']
+      ? ['Start date cannot be later than end date.']
       : [],
     ...filteredErrors,
   }

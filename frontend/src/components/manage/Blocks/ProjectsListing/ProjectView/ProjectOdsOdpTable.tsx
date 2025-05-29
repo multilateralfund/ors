@@ -174,6 +174,7 @@ const ProjectOdsOdpTable = ({
         cellEditor: 'agNumberCellEditor',
         cellEditorParams: {
           allowNullVals: true,
+          min: 0,
         },
         dataType: 'number',
         valueFormatter: (params: ValueFormatterParams<OdsOdpFields>) =>

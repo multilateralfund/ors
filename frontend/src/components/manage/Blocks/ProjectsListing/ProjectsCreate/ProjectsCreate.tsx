@@ -108,12 +108,16 @@ const ProjectsCreate = ({
     .filter(({ ods_substance_id }) => !ods_substance_id)
     .map((_, index) => index)
 
-  const updatedOdsOdpErrors = errors?.ods_odp?.map(
-    (item: { [key: string]: [] }, index) =>
-      substanceDetailsErrorIndexes.includes(index)
-        ? { ...item, ods_substance_id: ['This field is required.'] }
-        : item,
-  )
+  const substanceError = { ods_substance_id: ['This field is required.'] }
+  const updatedOdsOdpErrors = errors?.ods_odp
+    ? errors.ods_odp.map((item: { [key: string]: [] }, index) =>
+        substanceDetailsErrorIndexes.includes(index)
+          ? { ...item, ...substanceError }
+          : item,
+      )
+    : substanceDetailsErrorIndexes.length > 0
+      ? [substanceError]
+      : []
   const odsOdpErrors = map(
     updatedOdsOdpErrors as { [key: string]: [] }[],
     (odp, index) => (!isEmpty(odp) ? { ...odp, rowId: index } : { ...odp }),

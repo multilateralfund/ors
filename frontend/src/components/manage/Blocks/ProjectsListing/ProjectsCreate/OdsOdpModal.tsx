@@ -28,7 +28,8 @@ const OdsOdpModal = ({
   const substanceField = odsOdpFields.find(
     ({ write_field_name }) => write_field_name === substanceFieldName,
   )
-  const substanceLabel = substanceField?.label
+  const substanceLabel =
+    substanceField?.label ?? 'Substance - baseline technology'
   const substanceError = {
     [substanceLabel as string]: !hasSubstanceId
       ? [`${substanceLabel} is required.`]
