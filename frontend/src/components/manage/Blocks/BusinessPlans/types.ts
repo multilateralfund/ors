@@ -47,6 +47,10 @@ export type BpFileInput = {
   files?: BpFilesObject
   setFiles?: React.Dispatch<React.SetStateAction<BpFilesObject>>
   extensionsList?: string
+  value?: string
+  clearable?: boolean
+  multiple?: boolean
+  accept?: string
 }
 
 export interface BpDetails extends BpFileInput {
