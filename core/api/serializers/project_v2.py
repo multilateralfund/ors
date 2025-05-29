@@ -28,7 +28,7 @@ from core.models.project_metadata import (
 from core.utils import get_project_sub_code
 from core.api.views.utils import log_project_history
 
-# pylint: disable=R1702
+# pylint: disable=R1702,W0707
 
 
 HISTORY_DESCRIPTION_CREATE = "Project created."
@@ -400,11 +400,27 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
         queryset=ProjectSubSector.objects.all(),
     )
 
+    # This field is not on the Project model, but is used for input only
+    associate_project_id = serializers.IntegerField(
+        allow_null=True,
+        required=False,
+        write_only=True,
+    )
+
+    def validate_associate_project_id(self, value):
+        if value is not None:
+            try:
+                Project.objects.get(id=value)
+            except Project.DoesNotExist:
+                raise serializers.ValidationError("Associated project does not exist.")
+        return value
+
     class Meta:
         model = Project
         fields = [
             "ad_hoc_pcr",
             "agency",
+            "associate_project_id",
             "aggregated_consumption",
             "baseline",
             "bp_activity",
@@ -486,6 +502,7 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
             "title",
             "total_fund",
         ]
+        extra_kwargs = {"associate_project_id": {"write_only": True}}
 
     def to_representation(self, instance):
         return ProjectDetailsV2Serializer(context=self.context).to_representation(
@@ -502,6 +519,7 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
         validated_data["submission_status_id"] = submission_status.id
         ods_odp_data = validated_data.pop("ods_odp", [])
         subsectors_data = validated_data.pop("subsector_ids", [])
+        associate_project_id = validated_data.pop("associate_project_id", None)
         project = Project.objects.create(**validated_data, version_created_by=user)
         # set subcode
         project.code = get_project_sub_code(
@@ -523,9 +541,13 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
         project.subsectors.set(subsectors_data)
 
         # create MetaProject
-        project.meta_project = MetaProject.objects.create(
-            lead_agency=project.agency,
-        )
+        if associate_project_id:
+            associate_project = Project.objects.get(id=associate_project_id)
+            project.meta_project = associate_project.meta_project
+        else:
+            project.meta_project = MetaProject.objects.create(
+                lead_agency=project.agency,
+            )
         project.save()
         log_project_history(project, user, HISTORY_DESCRIPTION_CREATE)
 

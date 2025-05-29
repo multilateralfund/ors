@@ -767,6 +767,7 @@ class TestCreateProjects(BaseTest):
         agency_inputter_user,
         country_ro,
         agency,
+        project2,
         project_type,
         subsector,
         meeting,
@@ -775,6 +776,10 @@ class TestCreateProjects(BaseTest):
         decision,
     ):
         data = _setup_project_create
+
+        # check that passing an associated project results in assigning
+        # its meta_project to the new project
+        data["associate_project_id"] = project2.id
         self.client.force_authenticate(user=agency_inputter_user)
 
         # create project
@@ -857,12 +862,11 @@ class TestCreateProjects(BaseTest):
             subsector.sector,
             meeting,
             None,
-            2,
+            3,
         )
 
         project = Project.objects.get(id=response.data["id"])
-        assert project.meta_project
-        assert project.meta_project.lead_agency == agency
+        assert project.meta_project == project2.meta_project
 
     def test_create_project_history(
         self,
