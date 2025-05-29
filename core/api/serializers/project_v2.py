@@ -13,6 +13,7 @@ from core.models.country import Country
 from core.models.group import Group
 from core.models.meeting import Meeting, Decision
 from core.models.project import (
+    MetaProject,
     Project,
     ProjectFile,
     ProjectOdsOdp,
@@ -521,6 +522,11 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
 
         project.subsectors.set(subsectors_data)
 
+        # create MetaProject
+        project.meta_project = MetaProject.objects.create(
+            lead_agency=project.agency,
+        )
+        project.save()
         log_project_history(project, user, HISTORY_DESCRIPTION_CREATE)
 
         return project
