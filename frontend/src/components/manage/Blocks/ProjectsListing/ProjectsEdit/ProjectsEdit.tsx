@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import ProjectsHeader from '../ProjectSubmission/ProjectsHeader'
 import ProjectsCreate from '../ProjectsCreate/ProjectsCreate'
+import ProjectSubmissionFooter from '../ProjectSubmission/ProjectSubmissionFooter'
 import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
 import { getDefaultValues, getNonFieldErrors } from '../utils'
@@ -56,11 +57,16 @@ const ProjectsEdit = ({
     deletedFilesIds: [],
     newFiles: [],
   })
+  const [projectId, setProjectId] = useState<number | null>(null)
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
 
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
 
+  const hasNoFiles =
+    files?.newFiles?.length === 0 &&
+    (projectFiles?.length === 0 ||
+      files?.deletedFilesIds?.length === projectFiles?.length)
   const nonFieldsErrors = getNonFieldErrors(errors)
 
   useEffect(() => {
@@ -127,9 +133,11 @@ const ProjectsEdit = ({
           project,
           projectData,
           files,
+          setProjectId,
           setErrors,
           setHasSubmitted,
           setFileErrors,
+          hasNoFiles,
         }}
       />
       <ProjectsCreate
@@ -145,7 +153,13 @@ const ProjectsEdit = ({
           errors,
           setErrors,
           hasSubmitted,
+          hasNoFiles,
+          fileErrors,
         }}
+      />
+      <ProjectSubmissionFooter
+        successMessage={`Updated ${project.code ?? project.code_legacy} successfully.`}
+        {...{ projectId, nonFieldsErrors, fileErrors }}
       />
     </>
   )

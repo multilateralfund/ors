@@ -49,7 +49,7 @@ export type BpFileInput = {
   extensionsList?: string
   value?: string
   clearable?: boolean
-  multiple?: boolean
+  inputValue?: []
   accept?: string
 }
 

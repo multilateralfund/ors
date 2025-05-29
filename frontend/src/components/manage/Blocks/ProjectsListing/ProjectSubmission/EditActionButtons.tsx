@@ -12,6 +12,7 @@ const EditActionButtons = ({
   projectData,
   project,
   files,
+  setProjectId,
   isSubmitDisabled,
   setIsLoading,
   setHasSubmitted,
@@ -29,6 +30,8 @@ const EditActionButtons = ({
 
   const editProject = async () => {
     setIsLoading(true)
+    setFileErrors('')
+    setErrors({})
 
     try {
       if (newFiles.length > 0) {
@@ -52,22 +55,24 @@ const EditActionButtons = ({
         })
       }
 
-      enqueueSnackbar(
-        <>Updated {project.code ?? project.code_legacy} successfully.</>,
-        {
-          variant: 'success',
-        },
-      )
+      const data = formatSubmitData(projectData)
+
+      const result = await api(`api/projects/v2/${id}`, {
+        data: data,
+        method: 'PUT',
+      })
+      setProjectId(result.id)
     } catch (error) {
       if (error.status === 400) {
         const errors = await error.json()
 
-        if (errors?.file) {
-          setFileErrors(errors.file)
+        if (errors?.files) {
+          setFileErrors(errors.files)
         } else {
           setErrors(errors)
         }
       }
+      setProjectId(null)
       enqueueSnackbar(<>An error occurred. Please try again.</>, {
         variant: 'error',
       })

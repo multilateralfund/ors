@@ -5,7 +5,7 @@ import { ProjectFile, ProjectFiles } from '../interfaces'
 const ProjectDocumentation = ({
   files,
   setFiles,
-  projectFiles,
+  projectFiles = [],
   mode,
 }: ProjectFiles & {
   projectFiles?: ProjectFile[]
@@ -25,7 +25,7 @@ const ProjectDocumentation = ({
             extensionsList="Allowed files extensions: .pdf, .doc, .docx"
             value="Select files"
             clearable={false}
-            multiple={false}
+            inputValue={[]}
             accept=".pdf,.doc,.docx"
           />
         </div>

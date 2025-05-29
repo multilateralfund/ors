@@ -39,6 +39,8 @@ const ProjectsCreate = ({
   setErrors,
   hasSubmitted,
   project,
+  hasNoFiles,
+  fileErrors,
   ...rest
 }: ProjectDataProps &
   ProjectFiles & {
@@ -47,6 +49,8 @@ const ProjectsCreate = ({
     errors: { [key: string]: [] }
     setErrors: Dispatch<SetStateAction<{ [key: string]: [] }>>
     hasSubmitted: boolean
+    hasNoFiles: boolean
+    fileErrors: string
     project?: ProjectTypeApi
     projectFiles?: ProjectFile[]
   }) => {
@@ -56,7 +60,7 @@ const ProjectsCreate = ({
   const { projIdentifiers, crossCuttingFields, projectSpecificFields } =
     projectData ?? {}
   const { project_type, sector } = crossCuttingFields
-  const { ods_odp } = projectSpecificFields
+  const { ods_odp = [] } = projectSpecificFields
 
   const canLinkToBp = canGoToSecondStep(projIdentifiers)
 
@@ -312,10 +316,15 @@ const ProjectsCreate = ({
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div>Documentation</div>
-          {!areNextSectionsDisabled && files?.newFiles?.length === 0 ? (
+          {!areNextSectionsDisabled && (hasNoFiles || fileErrors) ? (
             <SectionErrorIndicator
               errors={[
-                { id: '1', message: 'At least a file should be provided' },
+                {
+                  id: '1',
+                  message: hasNoFiles
+                    ? 'At least a file should be provided'
+                    : fileErrors,
+                },
               ]}
             />
           ) : null}

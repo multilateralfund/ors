@@ -13,7 +13,7 @@ const FileInput = (props: BpFileInput) => {
     extensionsList,
     value,
     clearable = true,
-    multiple = true,
+    inputValue,
     accept,
   } = props
   const { newFiles = [] } = files || {}
@@ -80,9 +80,10 @@ const FileInput = (props: BpFileInput) => {
                     accept ??
                     'image/*, application/pdf, application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document, application/vnd.ms-excel, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-powerpoint, application/vnd.openxmlformats-officedocument.presentationml.presentation, .zip, .rar'
                   }
+                  {...(inputValue ? { value: inputValue } : {})}
                   onChange={handleFileChange}
                   hidden
-                  multiple={multiple ?? true}
+                  multiple
                 />
                 Browse files
               </IconButton>
