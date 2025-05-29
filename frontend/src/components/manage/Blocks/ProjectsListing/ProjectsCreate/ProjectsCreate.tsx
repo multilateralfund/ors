@@ -56,7 +56,7 @@ const ProjectsCreate = ({
   const { projIdentifiers, crossCuttingFields, projectSpecificFields } =
     projectData ?? {}
   const { project_type, sector } = crossCuttingFields
-  const { ods_odp } = projectSpecificFields
+  const { ods_odp = [] } = projectSpecificFields
 
   const canLinkToBp = canGoToSecondStep(projIdentifiers)
 
