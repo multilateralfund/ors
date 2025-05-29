@@ -142,7 +142,7 @@ class BaseWriter:
 
     def _write_header_cell(self, row, column, value, comment=None):
         cell = self.sheet.cell(row, column, value)
-        cell.font = Font(name=DEFAULT_FONT.name, bold=True)
+        cell.font = Font(name=DEFAULT_FONT.name, bold=True, color=None)
         cell.border = Border(
             left=Side(style="thin"),
             right=Side(style="thin"),
@@ -174,6 +174,7 @@ class BaseWriter:
         cell_format=None,
     ):
         cell = self.sheet.cell(row, column, value)
+        cell.font = Font(color=None)
         cell.alignment = Alignment(horizontal=align, vertical="center", wrap_text=True)
         cell.border = Border(
             left=Side(style="hair"),
@@ -221,7 +222,7 @@ class CPReportBase:
             title_cell = sheet.cell(
                 1, 1, "Country: %(country)s Year: %(year)s" % cp_report
             )
-            title_cell.font = Font(bold=True, size=20)
+            title_cell.font = Font(bold=True, size=20, color=None)
 
             args = {}
             args["usages"] = usages.get(section, [])
@@ -321,6 +322,7 @@ class WriteOnlyBase:
 
     def write_record_cell(self, value, read_only=False):
         cell = WriteOnlyCell(self.sheet, value=value)
+        cell.font = Font(color=None)
         cell.alignment = Alignment(horizontal="left", vertical="center", wrap_text=True)
         cell.border = Border(
             left=Side(style="hair"),
