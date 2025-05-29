@@ -54,6 +54,7 @@ const ProjectsCreateWrapper = () => {
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
 
+  const hasNoFiles = files?.newFiles?.length === 0
   const nonFieldsErrors = getNonFieldErrors(errors)
 
   useEffect(() => {
@@ -73,6 +74,8 @@ const ProjectsCreateWrapper = () => {
           setErrors,
           setHasSubmitted,
           setFileErrors,
+          hasNoFiles,
+          specificFields,
         }}
       />
       <ProjectsCreate
@@ -86,9 +89,12 @@ const ProjectsCreateWrapper = () => {
           errors,
           setErrors,
           hasSubmitted,
+          hasNoFiles,
+          fileErrors,
         }}
       />
       <ProjectSubmissionFooter
+        successMessage="Submission was successful."
         {...{ projectId, nonFieldsErrors, fileErrors }}
       />
     </>

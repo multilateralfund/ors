@@ -1,5 +1,3 @@
-import { Dispatch, SetStateAction } from 'react'
-
 import Link from '@ors/components/ui/Link/Link'
 import { formatSubmitData } from '../utils'
 import { SubmitActionButtons } from '../interfaces'
@@ -19,9 +17,8 @@ const CreateActionButtons = ({
   setErrors,
   setHasSubmitted,
   setFileErrors,
-}: SubmitActionButtons & {
-  setProjectId: Dispatch<SetStateAction<number | null>>
-}) => {
+  specificFields,
+}: SubmitActionButtons) => {
   const projectSlice = useStore((state) => state.projects)
   const user_permissions = projectSlice.user_permissions.data || []
 
@@ -33,7 +30,7 @@ const CreateActionButtons = ({
     setErrors({})
 
     try {
-      const data = formatSubmitData(projectData)
+      const data = formatSubmitData(projectData, specificFields)
 
       const result = await api(`api/projects/v2/`, {
         data: data,
@@ -57,9 +54,9 @@ const CreateActionButtons = ({
           setFileErrors(errors.file)
         } else {
           setErrors(errors)
-          setProjectId(null)
         }
       }
+      setProjectId(null)
       enqueueSnackbar(<>An error occurred. Please try again.</>, {
         variant: 'error',
       })
@@ -92,7 +89,7 @@ const CreateActionButtons = ({
           onClick={submitProject}
           disabled={isSubmitDisabled}
         >
-          Submit
+          Save
         </Button>
       )}
     </div>

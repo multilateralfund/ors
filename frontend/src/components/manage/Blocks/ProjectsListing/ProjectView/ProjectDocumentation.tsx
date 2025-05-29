@@ -5,17 +5,14 @@ import { ProjectFile, ProjectFiles } from '../interfaces'
 const ProjectDocumentation = ({
   files,
   setFiles,
-  projectFiles,
+  projectFiles = [],
   mode,
 }: ProjectFiles & {
   projectFiles?: ProjectFile[]
   mode: string
 }) => {
   return (
-    <div
-      key={JSON.stringify(projectFiles)}
-      className="flex w-full flex-col gap-4"
-    >
+    <div className="flex w-full flex-col gap-4">
       <FilesViewer {...{ files, setFiles }} bpFiles={projectFiles || []} />
 
       {mode !== 'view' && (
@@ -25,7 +22,7 @@ const ProjectDocumentation = ({
             extensionsList="Allowed files extensions: .pdf, .doc, .docx"
             value="Select files"
             clearable={false}
-            multiple={false}
+            inputValue={[]}
             accept=".pdf,.doc,.docx"
           />
         </div>

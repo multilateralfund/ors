@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
 import ProjectOdsOdpTable from '../ProjectView/ProjectOdsOdpTable'
 import OdsOdpModal from './OdsOdpModal'
@@ -28,18 +28,20 @@ const ProjectSubstanceDetails = ({
 
   const sectionIdentifier = 'projectSpecificFields'
   const field = 'ods_odp'
-  const odsOdpData = projectData[sectionIdentifier][field]
+  const odsOdpData = projectData[sectionIdentifier][field] || []
 
   const groupedFields = groupBy(sectionFields, 'table')
   const projectFields = groupedFields['project'] || []
   const odsOdpFields = groupedFields[field] || []
 
+  const formattedData = odsOdpData.map((entry, idx) => ({ ...entry, id: idx }))
+
   const onRemoveOdsOdp = (props: ICellRendererParams) => {
-    const odsOdpDataCopy = [...odsOdpData]
+    const odsOdpDataCopy = [...formattedData]
 
     const index = findIndex(
       odsOdpDataCopy,
-      (row: OdsOdpFields & { id?: number }) => row.id === props.data.id,
+      (row: OdsOdpFields & { id: number }) => row.id === props.data.id,
     )
 
     if (index > -1) {
@@ -74,7 +76,7 @@ const ProjectSubstanceDetails = ({
       {odsOdpFields.length > 0 && (
         <div>
           <ProjectOdsOdpTable
-            data={odsOdpData || []}
+            data={formattedData || []}
             fields={odsOdpFields}
             mode="edit"
             {...{

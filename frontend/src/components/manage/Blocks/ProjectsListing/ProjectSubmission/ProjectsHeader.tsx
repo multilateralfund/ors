@@ -9,7 +9,13 @@ import {
 import CreateActionButtons from './CreateActionButtons'
 import EditActionButtons from './EditActionButtons'
 import { getDefaultImpactErrors, getIsSubmitDisabled } from '../utils'
-import { ProjectData, ProjectFilesObject, ProjectTypeApi } from '../interfaces'
+import {
+  ProjectData,
+  ProjectFile,
+  ProjectFilesObject,
+  ProjectSpecificFields,
+  ProjectTypeApi,
+} from '../interfaces'
 
 import { CircularProgress } from '@mui/material'
 import dayjs from 'dayjs'
@@ -17,9 +23,10 @@ import dayjs from 'dayjs'
 const ProjectsHeader = ({
   projectData,
   mode,
-  setProjectId = () => {},
   project,
   files,
+  hasNoFiles,
+  setProjectFiles = () => {},
   ...rest
 }: {
   projectData: ProjectData
@@ -28,13 +35,16 @@ const ProjectsHeader = ({
   setErrors: Dispatch<SetStateAction<{ [key: string]: [] }>>
   setHasSubmitted: Dispatch<SetStateAction<boolean>>
   setFileErrors: Dispatch<SetStateAction<string>>
-  setProjectId?: Dispatch<SetStateAction<number | null>>
+  hasNoFiles: boolean
+  setProjectId: Dispatch<SetStateAction<number | null>>
+  specificFields: ProjectSpecificFields[]
   project?: ProjectTypeApi
+  setProjectFiles?: Dispatch<SetStateAction<ProjectFile[]>>
 }) => {
   const { projIdentifiers, crossCuttingFields, projectSpecificFields } =
     projectData
   const { project_start_date, project_end_date } = crossCuttingFields
-  const { ods_odp } = projectSpecificFields
+  const { ods_odp = [] } = projectSpecificFields
 
   const defaultImpactErrors = getDefaultImpactErrors(projectSpecificFields)
   const hasValidationErrors = Object.values(defaultImpactErrors).some(
@@ -46,10 +56,10 @@ const ProjectsHeader = ({
   )
   const isSubmitDisabled =
     hasMissingRequiredFields ||
-    files?.newFiles?.length === 0 ||
     dayjs(project_start_date).isAfter(dayjs(project_end_date)) ||
     hasValidationErrors ||
-    (ods_odp.length > 0 && ods_odp.some((item) => !item.ods_substance_id))
+    (ods_odp.length > 0 && ods_odp.some((item) => !item.ods_substance_id)) ||
+    hasNoFiles
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [showVersionsMenu, setShowVersionsMenu] = useState(false)
@@ -81,12 +91,11 @@ const ProjectsHeader = ({
           </PageHeading>
           {mode === 'edit' && Versions}
         </div>
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex items-center gap-2.5">
           {mode !== 'edit' ? (
             <CreateActionButtons
               {...{
                 projectData,
-                setProjectId,
                 isSubmitDisabled,
                 setIsLoading,
                 files,
@@ -101,6 +110,7 @@ const ProjectsHeader = ({
                 isSubmitDisabled,
                 setIsLoading,
                 files,
+                setProjectFiles,
               }}
               {...rest}
             />

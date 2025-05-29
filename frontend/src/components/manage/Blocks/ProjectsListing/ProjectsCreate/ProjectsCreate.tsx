@@ -39,6 +39,8 @@ const ProjectsCreate = ({
   setErrors,
   hasSubmitted,
   project,
+  hasNoFiles,
+  fileErrors,
   ...rest
 }: ProjectDataProps &
   ProjectFiles & {
@@ -47,6 +49,8 @@ const ProjectsCreate = ({
     errors: { [key: string]: [] }
     setErrors: Dispatch<SetStateAction<{ [key: string]: [] }>>
     hasSubmitted: boolean
+    hasNoFiles: boolean
+    fileErrors: string
     project?: ProjectTypeApi
     projectFiles?: ProjectFile[]
   }) => {
@@ -105,8 +109,8 @@ const ProjectsCreate = ({
   const impactErrors = specificFieldsErrors['Impact'] || {}
 
   const substanceDetailsErrorIndexes = ods_odp
-    .filter(({ ods_substance_id }) => !ods_substance_id)
-    .map((_, index) => index)
+    .map((item, index) => (!item.ods_substance_id ? index : -1))
+    .filter((index) => index !== -1)
 
   const substanceError = { ods_substance_id: ['This field is required.'] }
   const updatedOdsOdpErrors = errors?.ods_odp
@@ -116,15 +120,17 @@ const ProjectsCreate = ({
           : item,
       )
     : substanceDetailsErrorIndexes.length > 0
-      ? [substanceError]
+      ? ods_odp.map((_, index) =>
+          substanceDetailsErrorIndexes.includes(index) ? substanceError : {},
+        )
       : []
   const odsOdpErrors = map(
     updatedOdsOdpErrors as { [key: string]: [] }[],
-    (odp, index) => (!isEmpty(odp) ? { ...odp, rowId: index } : { ...odp }),
+    (odp, index) => (!isEmpty(odp) ? { ...odp, id: index } : { ...odp }),
   ).filter((odp) => !isEmpty(odp))
 
   const formattedOdsOdpErrors = odsOdpErrors.flatMap((err) => {
-    const { rowId, ...fields } = err
+    const { id, ...fields } = err
 
     return Object.entries(fields)
       .filter(
@@ -140,8 +146,8 @@ const ProjectsCreate = ({
         const label = specificField?.label ?? field
 
         return errorMsgs.map((msg) => ({
-          id: `${label}-${rowId}`,
-          message: `Row ${(rowId as number) + 1} - ${label}: ${msg}`,
+          id: `${label}-${id}`,
+          message: `Row ${(id as number) + 1} - ${label}: ${msg}`,
         }))
       })
   })
@@ -312,10 +318,15 @@ const ProjectsCreate = ({
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div>Documentation</div>
-          {!areNextSectionsDisabled && files?.newFiles?.length === 0 ? (
+          {!areNextSectionsDisabled && (hasNoFiles || fileErrors) ? (
             <SectionErrorIndicator
               errors={[
-                { id: '1', message: 'At least a file should be provided' },
+                {
+                  id: '1',
+                  message: hasNoFiles
+                    ? 'At least a file should be provided'
+                    : fileErrors,
+                },
               ]}
             />
           ) : null}

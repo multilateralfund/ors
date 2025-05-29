@@ -4,12 +4,14 @@ import { useEffect, useRef, useState } from 'react'
 
 import ProjectsHeader from '../ProjectSubmission/ProjectsHeader'
 import ProjectsCreate from '../ProjectsCreate/ProjectsCreate'
+import ProjectSubmissionFooter from '../ProjectSubmission/ProjectSubmissionFooter'
 import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
 import { getDefaultValues, getNonFieldErrors } from '../utils'
 import {
   OdsOdpFields,
   ProjectData,
+  ProjectFile,
   ProjectFilesObject,
   ProjectSpecificFields,
   ProjectTypeApi,
@@ -51,16 +53,35 @@ const ProjectsEdit = ({
 
   const fieldsValuesLoaded = useRef<boolean>(false)
 
-  const { data: projectFiles } = useGetProjectFiles(project_id)
+  const { data } = useGetProjectFiles(project_id)
+
+  const [projectFiles, setProjectFiles] = useState<ProjectFile[]>([])
   const [files, setFiles] = useState<ProjectFilesObject>({
     deletedFilesIds: [],
     newFiles: [],
   })
+
+  useEffect(() => {
+    setProjectFiles(data)
+  }, [data])
+
+  useEffect(() => {
+    setFiles({
+      deletedFilesIds: [],
+      newFiles: [],
+    })
+  }, [projectFiles])
+
+  const [projectId, setProjectId] = useState<number | null>(null)
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
 
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
 
+  const hasNoFiles = false
+  // files?.newFiles?.length === 0 &&
+  // (projectFiles?.length === 0 ||
+  //   files?.deletedFilesIds?.length === projectFiles?.length)
   const nonFieldsErrors = getNonFieldErrors(errors)
 
   useEffect(() => {
@@ -127,9 +148,13 @@ const ProjectsEdit = ({
           project,
           projectData,
           files,
+          setProjectId,
           setErrors,
           setHasSubmitted,
           setFileErrors,
+          hasNoFiles,
+          setProjectFiles,
+          specificFields,
         }}
       />
       <ProjectsCreate
@@ -145,7 +170,13 @@ const ProjectsEdit = ({
           errors,
           setErrors,
           hasSubmitted,
+          hasNoFiles,
+          fileErrors,
         }}
+      />
+      <ProjectSubmissionFooter
+        successMessage={`Updated ${project.code ?? project.code_legacy} successfully.`}
+        {...{ projectId, nonFieldsErrors, fileErrors }}
       />
     </>
   )

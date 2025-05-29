@@ -1,6 +1,8 @@
+import { Dispatch, SetStateAction } from 'react'
+
 import Link from '@ors/components/ui/Link/Link'
 import { formatSubmitData } from '../utils'
-import { ProjectTypeApi, SubmitActionButtons } from '../interfaces'
+import { ProjectFile, ProjectTypeApi, SubmitActionButtons } from '../interfaces'
 import { api, uploadFiles } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
@@ -12,13 +14,17 @@ const EditActionButtons = ({
   projectData,
   project,
   files,
+  setProjectId,
   isSubmitDisabled,
   setIsLoading,
   setHasSubmitted,
   setFileErrors,
   setErrors,
+  setProjectFiles,
+  specificFields,
 }: SubmitActionButtons & {
   project: ProjectTypeApi
+  setProjectFiles: Dispatch<SetStateAction<ProjectFile[]>>
 }) => {
   const { id } = project
 
@@ -29,6 +35,8 @@ const EditActionButtons = ({
 
   const editProject = async () => {
     setIsLoading(true)
+    setFileErrors('')
+    setErrors({})
 
     try {
       if (newFiles.length > 0) {
@@ -52,22 +60,33 @@ const EditActionButtons = ({
         })
       }
 
-      enqueueSnackbar(
-        <>Updated {project.code ?? project.code_legacy} successfully.</>,
+      const res = await api(
+        `/api/project/${id}/files/v2/`,
         {
-          variant: 'success',
+          withStoreCache: false,
         },
+        false,
       )
+      setProjectFiles(res)
+
+      const data = formatSubmitData(projectData, specificFields)
+
+      const result = await api(`api/projects/v2/${id}`, {
+        data: data,
+        method: 'PUT',
+      })
+      setProjectId(result.id)
     } catch (error) {
       if (error.status === 400) {
         const errors = await error.json()
 
-        if (errors?.file) {
-          setFileErrors(errors.file)
+        if (errors?.files) {
+          setFileErrors(errors.files)
         } else {
           setErrors(errors)
         }
       }
+      setProjectId(null)
       enqueueSnackbar(<>An error occurred. Please try again.</>, {
         variant: 'error',
       })
@@ -81,7 +100,7 @@ const EditActionButtons = ({
     setIsLoading(true)
 
     try {
-      const data = formatSubmitData(projectData)
+      const data = formatSubmitData(projectData, specificFields)
 
       await api(`api/projects/v2/${id}/increase_version/`, {
         data: data,

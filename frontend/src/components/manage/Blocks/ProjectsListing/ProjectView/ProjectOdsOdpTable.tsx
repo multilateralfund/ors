@@ -50,6 +50,7 @@ const ProjectOdsOdpTable = ({
   const defaultColDef = {
     headerClass: 'ag-text-center',
     cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-not-inline',
+    enableCellChangeFlash: false,
     resizable: true,
   }
 
@@ -62,7 +63,7 @@ const ProjectOdsOdpTable = ({
   ) => {
     const substanceFieldName = 'ods_substance_id'
 
-    const crtRowError = find(errors, (error) => error.rowId === props.rowIndex)
+    const crtRowError = find(errors, (error) => error.id === props.rowIndex)
 
     const crtColError =
       field === substanceFieldName && !props.data[substanceFieldName]
