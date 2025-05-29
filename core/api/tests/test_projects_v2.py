@@ -767,6 +767,7 @@ class TestCreateProjects(BaseTest):
         agency_inputter_user,
         country_ro,
         agency,
+        project2,
         project_type,
         subsector,
         meeting,
@@ -775,6 +776,10 @@ class TestCreateProjects(BaseTest):
         decision,
     ):
         data = _setup_project_create
+
+        # check that passing an associated project results in assigning
+        # its meta_project to the new project
+        data["associate_project_id"] = project2.id
         self.client.force_authenticate(user=agency_inputter_user)
 
         # create project
@@ -857,12 +862,11 @@ class TestCreateProjects(BaseTest):
             subsector.sector,
             meeting,
             None,
-            2,
+            3,
         )
 
         project = Project.objects.get(id=response.data["id"])
-        assert project.meta_project
-        assert project.meta_project.lead_agency == agency
+        assert project.meta_project == project2.meta_project
 
     def test_create_project_history(
         self,
@@ -1625,3 +1629,93 @@ class TestProjectVersioning:
         project_file = ProjectFile.objects.filter(project=project).first()
         assert project_file is None
         ProjectFile.objects.get(project=archived_project)
+
+
+class TestAssociateProject:
+    client = APIClient()
+
+    def test_associate_project_permissions(
+        self,
+        project,
+        project2,
+        user,
+        viewer_user,
+        agency_user,
+        agency_inputter_user,
+        secretariat_viewer_user,
+        secretariat_v1_v2_edit_access_user,
+        secretariat_production_v1_v2_edit_access_user,
+        secretariat_v3_edit_access_user,
+        secretariat_production_v3_edit_access_user,
+        admin_user,
+    ):
+        url = reverse("project-v2-associate-projects")
+
+        def _test_user_permissions(user, expected_response_status):
+            self.client.force_authenticate(user=user)
+            response = self.client.post(
+                url,
+                data={
+                    "project_ids": [project.id, project2.id],
+                },
+                format="json",
+            )
+            assert response.status_code == expected_response_status
+            return response.data
+
+        # test with unauthenticated user
+        self.client.force_authenticate(user=None)
+        response = self.client.post(url)
+        assert response.status_code == 403
+
+        _test_user_permissions(user, 403)
+        _test_user_permissions(viewer_user, 403)
+        _test_user_permissions(agency_user, 403)
+        _test_user_permissions(agency_inputter_user, 403)
+        _test_user_permissions(secretariat_viewer_user, 403)
+        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_v3_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_v3_edit_access_user, 200)
+        _test_user_permissions(admin_user, 200)
+
+    def test_associate_project(
+        self,
+        secretariat_v1_v2_edit_access_user,
+        project,
+        project2,
+    ):
+        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        url = reverse("project-v2-associate-projects")
+
+        # associate project
+        response = self.client.post(
+            url,
+            format="json",
+            data={
+                "project_ids": [project.id, project2.id],
+            },
+        )
+        assert response.status_code == 200, response.data
+
+        project.refresh_from_db()
+        project2.refresh_from_db()
+        assert project.meta_project == project2.meta_project
+
+        project.meta_project = None
+        project.save()
+        project2.meta_project = None
+        project2.save()
+
+        response = self.client.post(
+            url,
+            format="json",
+            data={
+                "project_ids": [project.id, project2.id],
+            },
+        )
+        assert response.status_code == 200, response.data
+
+        project.refresh_from_db()
+        project2.refresh_from_db()
+        assert project.meta_project == project2.meta_project
