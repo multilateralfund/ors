@@ -322,3 +322,21 @@ export const getNonFieldErrors = (errors: { [key: string]: [] }) => {
     ...(nonFieldsOdsOdpErrors?.['non_field_errors'] || []),
   ]
 }
+
+export const getFileFromMetadata = async (fileMeta: {
+  download_url: string
+  filename: string
+}): Promise<File> => {
+  const res = await fetch(fileMeta.download_url)
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch file: ${res.statusText}`)
+  }
+
+  const blob = await res.blob()
+
+  const contentType =
+    res.headers.get('Content-Type') || 'application/octet-stream'
+
+  return new File([blob], fileMeta.filename, { type: contentType })
+}

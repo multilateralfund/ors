@@ -7,7 +7,11 @@ import ProjectsCreate from '../ProjectsCreate/ProjectsCreate'
 import ProjectSubmissionFooter from '../ProjectSubmission/ProjectSubmissionFooter'
 import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
-import { getDefaultValues, getNonFieldErrors } from '../utils'
+import {
+  getDefaultValues,
+  getFileFromMetadata,
+  getNonFieldErrors,
+} from '../utils'
 import {
   OdsOdpFields,
   ProjectData,
@@ -63,13 +67,30 @@ const ProjectsEdit = ({
 
   useEffect(() => {
     setProjectFiles(data)
+
+    if (mode === 'copy' && data?.length > 0) {
+      const loadFiles = async () => {
+        const resolvedFiles = await Promise.all(
+          data.map((file: ProjectFile) => getFileFromMetadata(file)),
+        )
+
+        setFiles((prev) => ({
+          ...prev,
+          newFiles: resolvedFiles,
+        }))
+      }
+
+      loadFiles()
+    }
   }, [data])
 
   useEffect(() => {
-    setFiles({
-      deletedFilesIds: [],
-      newFiles: [],
-    })
+    if (mode === 'edit') {
+      setFiles({
+        deletedFilesIds: [],
+        newFiles: [],
+      })
+    }
   }, [projectFiles])
 
   const [projectId, setProjectId] = useState<number | null>(null)
@@ -88,7 +109,9 @@ const ProjectsEdit = ({
     setProjectData((prevData) => ({
       ...prevData,
       projIdentifiers: {
-        is_lead_agency: project.agency_id === project.lead_agency_id,
+        is_lead_agency:
+          project.agency_id === project.lead_agency_id ||
+          !project.lead_agency_id,
         country: project.country_id,
         meeting: project.meeting,
         current_agency: project.agency_id,
@@ -175,7 +198,11 @@ const ProjectsEdit = ({
         }}
       />
       <ProjectSubmissionFooter
-        successMessage={`Updated ${project.code ?? project.code_legacy} successfully.`}
+        successMessage={
+          mode === 'edit'
+            ? `Updated ${project.code ?? project.code_legacy} successfully.`
+            : 'Submission was successful.'
+        }
         {...{ projectId, nonFieldsErrors, fileErrors }}
       />
     </>
