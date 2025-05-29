@@ -21,6 +21,7 @@ const EditActionButtons = ({
   setFileErrors,
   setErrors,
   setProjectFiles,
+  specificFields,
 }: SubmitActionButtons & {
   project: ProjectTypeApi
   setProjectFiles: Dispatch<SetStateAction<ProjectFile[]>>
@@ -68,7 +69,7 @@ const EditActionButtons = ({
       )
       setProjectFiles(res)
 
-      const data = formatSubmitData(projectData)
+      const data = formatSubmitData(projectData, specificFields)
 
       const result = await api(`api/projects/v2/${id}`, {
         data: data,
@@ -99,7 +100,7 @@ const EditActionButtons = ({
     setIsLoading(true)
 
     try {
-      const data = formatSubmitData(projectData)
+      const data = formatSubmitData(projectData, specificFields)
 
       await api(`api/projects/v2/${id}/increase_version/`, {
         data: data,

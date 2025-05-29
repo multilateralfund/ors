@@ -55,7 +55,7 @@ const ProjectsEdit = ({
 
   const { data } = useGetProjectFiles(project_id)
 
-  const [projectFiles, setProjectFiles] = useState<ProjectFile[]>()
+  const [projectFiles, setProjectFiles] = useState<ProjectFile[]>([])
   const [files, setFiles] = useState<ProjectFilesObject>({
     deletedFilesIds: [],
     newFiles: [],
@@ -154,6 +154,7 @@ const ProjectsEdit = ({
           setFileErrors,
           hasNoFiles,
           setProjectFiles,
+          specificFields,
         }}
       />
       <ProjectsCreate

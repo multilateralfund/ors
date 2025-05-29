@@ -18,6 +18,7 @@ import {
   isNil,
   map,
   omit,
+  pick,
   pickBy,
   reduce,
 } from 'lodash'
@@ -145,13 +146,30 @@ export const handleChangeDecimalField = <T, K>(
   }
 }
 
-export const formatSubmitData = (projectData: ProjectData) => {
+export const formatSubmitData = (
+  projectData: ProjectData,
+  specificFields: ProjectSpecificFields[],
+) => {
   const {
     projIdentifiers,
     bpLinking,
     crossCuttingFields,
     projectSpecificFields,
   } = projectData
+
+  const specificFieldsAvailable = map(
+    specificFields,
+    ({ write_field_name }) => write_field_name,
+  )
+
+  const crtProjectSpecificFields = pick(
+    projectSpecificFields,
+    specificFieldsAvailable,
+  )
+
+  const crtOdsOdpFields = map(projectSpecificFields.ods_odp, (field) =>
+    pick(field, specificFieldsAvailable),
+  )
 
   return {
     agency: projIdentifiers?.is_lead_agency
@@ -164,8 +182,11 @@ export const formatSubmitData = (projectData: ProjectData) => {
     ]),
     bp_activity: bpLinking.bpId,
     ...pickBy(crossCuttingFields, (value) => !isNil(value) && value !== ''),
-    ...pickBy(projectSpecificFields, (value) => !isNil(value) && value !== ''),
-    ods_odp: map(projectSpecificFields.ods_odp, (ods_odp) =>
+    ...pickBy(
+      crtProjectSpecificFields,
+      (value) => !isNil(value) && value !== '',
+    ),
+    ods_odp: map(crtOdsOdpFields, (ods_odp) =>
       omit(
         pickBy(ods_odp, (value) => !isNil(value) && value !== ''),
         'id',

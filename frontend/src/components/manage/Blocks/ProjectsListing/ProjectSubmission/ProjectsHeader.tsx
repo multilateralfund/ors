@@ -9,7 +9,13 @@ import {
 import CreateActionButtons from './CreateActionButtons'
 import EditActionButtons from './EditActionButtons'
 import { getDefaultImpactErrors, getIsSubmitDisabled } from '../utils'
-import { ProjectData, ProjectFilesObject, ProjectTypeApi } from '../interfaces'
+import {
+  ProjectData,
+  ProjectFile,
+  ProjectFilesObject,
+  ProjectSpecificFields,
+  ProjectTypeApi,
+} from '../interfaces'
 
 import { CircularProgress } from '@mui/material'
 import dayjs from 'dayjs'
@@ -20,6 +26,7 @@ const ProjectsHeader = ({
   project,
   files,
   hasNoFiles,
+  setProjectFiles = () => {},
   ...rest
 }: {
   projectData: ProjectData
@@ -30,7 +37,9 @@ const ProjectsHeader = ({
   setFileErrors: Dispatch<SetStateAction<string>>
   hasNoFiles: boolean
   setProjectId: Dispatch<SetStateAction<number | null>>
+  specificFields: ProjectSpecificFields[]
   project?: ProjectTypeApi
+  setProjectFiles?: Dispatch<SetStateAction<ProjectFile[]>>
 }) => {
   const { projIdentifiers, crossCuttingFields, projectSpecificFields } =
     projectData
@@ -101,6 +110,7 @@ const ProjectsHeader = ({
                 isSubmitDisabled,
                 setIsLoading,
                 files,
+                setProjectFiles,
               }}
               {...rest}
             />

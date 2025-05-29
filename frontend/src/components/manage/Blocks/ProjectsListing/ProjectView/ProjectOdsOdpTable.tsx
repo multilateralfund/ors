@@ -37,6 +37,7 @@ const ProjectOdsOdpTable = ({
   sectionIdentifier,
   field,
   odsOdpErrors = [],
+  grid,
 }: {
   data: OdsOdpFields[]
   fields: ProjectSpecificFields[]
@@ -46,6 +47,7 @@ const ProjectOdsOdpTable = ({
   sectionIdentifier?: keyof ProjectData
   field?: string
   odsOdpErrors?: { [key: string]: [] | number }[]
+  grid?: any
 }) => {
   const defaultColDef = {
     headerClass: 'ag-text-center',
@@ -62,7 +64,7 @@ const ProjectOdsOdpTable = ({
   ) => {
     const substanceFieldName = 'ods_substance_id'
 
-    const crtRowError = find(errors, (error) => error.rowId === props.rowIndex)
+    const crtRowError = find(errors, (error) => error.id === props.rowIndex)
 
     const crtColError =
       field === substanceFieldName && !props.data[substanceFieldName]
@@ -221,6 +223,7 @@ const ProjectOdsOdpTable = ({
     <EditTable
       rowData={data ?? []}
       results={[]}
+      gridRef={grid}
       suppressScrollOnNewData={true}
       resizeGridOnRowUpdate={true}
       enablePagination={false}

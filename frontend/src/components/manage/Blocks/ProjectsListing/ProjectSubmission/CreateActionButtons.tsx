@@ -17,6 +17,7 @@ const CreateActionButtons = ({
   setErrors,
   setHasSubmitted,
   setFileErrors,
+  specificFields,
 }: SubmitActionButtons) => {
   const projectSlice = useStore((state) => state.projects)
   const user_permissions = projectSlice.user_permissions.data || []
@@ -29,7 +30,7 @@ const CreateActionButtons = ({
     setErrors({})
 
     try {
-      const data = formatSubmitData(projectData)
+      const data = formatSubmitData(projectData, specificFields)
 
       const result = await api(`api/projects/v2/`, {
         data: data,

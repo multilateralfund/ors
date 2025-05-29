@@ -75,6 +75,7 @@ const ProjectsCreateWrapper = () => {
           setHasSubmitted,
           setFileErrors,
           hasNoFiles,
+          specificFields,
         }}
       />
       <ProjectsCreate
