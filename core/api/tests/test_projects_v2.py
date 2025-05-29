@@ -860,6 +860,10 @@ class TestCreateProjects(BaseTest):
             2,
         )
 
+        project = Project.objects.get(id=response.data["id"])
+        assert project.meta_project
+        assert project.meta_project.lead_agency == agency
+
     def test_create_project_history(
         self,
         agency_inputter_user,
