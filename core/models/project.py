@@ -96,7 +96,9 @@ class Project(models.Model):
         PR2 = "pr2", "PR2"
         PR3 = "pr3", "PR3"
 
-    meta_project = models.ForeignKey(MetaProject, on_delete=models.CASCADE, null=True)
+    meta_project = models.ForeignKey(
+        MetaProject, on_delete=models.CASCADE, related_name="projects", null=True
+    )
     bp_activity = models.ForeignKey(
         "BPActivity",
         on_delete=models.PROTECT,

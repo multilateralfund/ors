@@ -34,6 +34,7 @@ from core.api.serializers.project_v2 import (
 )
 from core.api.swagger import FileUploadAutoSchema
 from core.models.project import (
+    MetaProject,
     Project,
     ProjectOdsOdp,
     ProjectFile,
@@ -143,7 +144,13 @@ class ProjectV2ViewSet(
                 | IsSecretariatV1V2EditAccess
                 | IsSecretariatProductionV1V2EditAccess
             ]
-
+        if self.action == "associate_projects":
+            return [
+                IsSecretariatV1V2EditAccess
+                | IsSecretariatProductionV1V2EditAccess
+                | IsSecretariatV3EditAccess
+                | IsSecretariatProductionV3EditAccess
+            ]
         if self.action in ["recommend", "withdraw", "send_back_to_draft"]:
             return [IsSecretariatV1V2EditAccess | IsSecretariatProductionV1V2EditAccess]
         return super().get_permissions()
@@ -441,6 +448,64 @@ class ProjectV2ViewSet(
         log_project_history(project, request.user, "Project sent back to draft")
         return Response(
             ProjectDetailsV2Serializer(project).data,
+            status=status.HTTP_200_OK,
+        )
+
+    @action(methods=["POST"], detail=False)
+    @swagger_auto_schema(
+        operation_description="""
+        Receives a list of project ids and associates them under the same meta project.
+        Performs a clean-up of meta projects that have no projects associated with them.
+        """,
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "project_ids": openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    items=openapi.Items(type=openapi.TYPE_INTEGER),
+                ),
+            },
+            required=["project_ids"],
+        ),
+        responses={
+            status.HTTP_200_OK: ProjectDetailsV2Serializer,
+            status.HTTP_400_BAD_REQUEST: "Bad request",
+        },
+    )
+    def associate_projects(self, request, *args, **kwargs):
+        project_objs = Project.objects.filter(
+            id__in=request.data.get("project_ids", [])
+        )
+
+        if len(project_objs) != len(request.data.get("project_ids", [])):
+            return Response(
+                {"error": "Some project IDs do not exist."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Get first meta project that can be found in the project_objs
+        meta_project = next(
+            (p.meta_project for p in project_objs if p.meta_project), None
+        )
+        if not meta_project:
+            # Create a new meta project if none exists
+            meta_project = MetaProject.objects.create()
+            # TODO: we will need to select the lead agency in this case
+
+        # Associate all projects with the meta project
+        project_objs.update(meta_project=meta_project)
+
+        # Clean up any meta projects that have no projects associated with them
+
+        count = MetaProject.objects.filter(projects__isnull=True).count()
+        MetaProject.objects.filter(projects__isnull=True).delete()
+        return Response(
+            {
+                "message": f"""
+                    Projects associated with meta project {meta_project.code}.
+                    Cleaned up {count} empty meta projects.
+                """,
+            },
             status=status.HTTP_200_OK,
         )
 
