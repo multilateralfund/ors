@@ -37,7 +37,6 @@ const ProjectOdsOdpTable = ({
   sectionIdentifier,
   field,
   odsOdpErrors = [],
-  grid,
 }: {
   data: OdsOdpFields[]
   fields: ProjectSpecificFields[]
@@ -47,11 +46,11 @@ const ProjectOdsOdpTable = ({
   sectionIdentifier?: keyof ProjectData
   field?: string
   odsOdpErrors?: { [key: string]: [] | number }[]
-  grid?: any
 }) => {
   const defaultColDef = {
     headerClass: 'ag-text-center',
     cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-not-inline',
+    enableCellChangeFlash: false,
     resizable: true,
   }
 
@@ -223,7 +222,6 @@ const ProjectOdsOdpTable = ({
     <EditTable
       rowData={data ?? []}
       results={[]}
-      gridRef={grid}
       suppressScrollOnNewData={true}
       resizeGridOnRowUpdate={true}
       enablePagination={false}

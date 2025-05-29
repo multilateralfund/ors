@@ -3,7 +3,6 @@ import { useRef, useState } from 'react'
 import ProjectOdsOdpTable from '../ProjectView/ProjectOdsOdpTable'
 import OdsOdpModal from './OdsOdpModal'
 import { widgets } from './SpecificFieldsHelpers'
-import { applyTransaction } from '@ors/helpers'
 import {
   OdsOdpFields,
   SpecificFieldsSectionProps,
@@ -25,8 +24,6 @@ const ProjectSubstanceDetails = ({
 }: SpecificFieldsSectionProps & {
   odsOdpErrors: { [key: string]: [] | number }[]
 }) => {
-  const grid = useRef<any>()
-
   const [displayModal, setDisplayModal] = useState(false)
 
   const sectionIdentifier = 'projectSpecificFields'
@@ -44,7 +41,7 @@ const ProjectSubstanceDetails = ({
 
     const index = findIndex(
       odsOdpDataCopy,
-      (row: OdsOdpFields & { id?: number }) => row.id === props.data.id,
+      (row: OdsOdpFields & { id: number }) => row.id === props.data.id,
     )
 
     if (index > -1) {
@@ -62,9 +59,6 @@ const ProjectSubstanceDetails = ({
           [field]: formattedData,
         },
       }))
-      applyTransaction(grid.current.api, {
-        remove: [props.data],
-      })
     }
   }
 
@@ -87,7 +81,6 @@ const ProjectSubstanceDetails = ({
             mode="edit"
             {...{
               onRemoveOdsOdp,
-              grid,
               setProjectData,
               sectionIdentifier,
               field,

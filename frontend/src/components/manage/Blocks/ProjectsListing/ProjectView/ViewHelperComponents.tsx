@@ -32,9 +32,7 @@ export const numberDetailItem = (fieldName: string, fieldValue: string) => (
 export const booleanDetailItem = (fieldName: string, fieldValue: string) => (
   <span className="flex items-center gap-2">
     <span>{fieldName}</span>
-    <h4 className="m-0">
-      {isNil(fieldValue) ? '-' : fieldValue ? 'Yes' : 'No'}
-    </h4>
+    <h4 className="m-0">{fieldValue ? 'Yes' : 'No'}</h4>
   </span>
 )
 
