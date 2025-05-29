@@ -11,6 +11,7 @@ import { getDefaultValues, getNonFieldErrors } from '../utils'
 import {
   OdsOdpFields,
   ProjectData,
+  ProjectFile,
   ProjectFilesObject,
   ProjectSpecificFields,
   ProjectTypeApi,
@@ -52,21 +53,35 @@ const ProjectsEdit = ({
 
   const fieldsValuesLoaded = useRef<boolean>(false)
 
-  const { data: projectFiles } = useGetProjectFiles(project_id)
+  const { data } = useGetProjectFiles(project_id)
+
+  const [projectFiles, setProjectFiles] = useState<ProjectFile[]>()
   const [files, setFiles] = useState<ProjectFilesObject>({
     deletedFilesIds: [],
     newFiles: [],
   })
+
+  useEffect(() => {
+    setProjectFiles(data)
+  }, [data])
+
+  useEffect(() => {
+    setFiles({
+      deletedFilesIds: [],
+      newFiles: [],
+    })
+  }, [projectFiles])
+
   const [projectId, setProjectId] = useState<number | null>(null)
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
 
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
 
-  const hasNoFiles =
-    files?.newFiles?.length === 0 &&
-    (projectFiles?.length === 0 ||
-      files?.deletedFilesIds?.length === projectFiles?.length)
+  const hasNoFiles = false
+  // files?.newFiles?.length === 0 &&
+  // (projectFiles?.length === 0 ||
+  //   files?.deletedFilesIds?.length === projectFiles?.length)
   const nonFieldsErrors = getNonFieldErrors(errors)
 
   useEffect(() => {
@@ -138,6 +153,7 @@ const ProjectsEdit = ({
           setHasSubmitted,
           setFileErrors,
           hasNoFiles,
+          setProjectFiles,
         }}
       />
       <ProjectsCreate

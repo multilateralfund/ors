@@ -1,6 +1,8 @@
+import { Dispatch, SetStateAction } from 'react'
+
 import Link from '@ors/components/ui/Link/Link'
 import { formatSubmitData } from '../utils'
-import { ProjectTypeApi, SubmitActionButtons } from '../interfaces'
+import { ProjectFile, ProjectTypeApi, SubmitActionButtons } from '../interfaces'
 import { api, uploadFiles } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
@@ -18,8 +20,10 @@ const EditActionButtons = ({
   setHasSubmitted,
   setFileErrors,
   setErrors,
+  setProjectFiles,
 }: SubmitActionButtons & {
   project: ProjectTypeApi
+  setProjectFiles: Dispatch<SetStateAction<ProjectFile[]>>
 }) => {
   const { id } = project
 
@@ -54,6 +58,15 @@ const EditActionButtons = ({
           method: 'DELETE',
         })
       }
+
+      const res = await api(
+        `/api/project/${id}/files/v2/`,
+        {
+          withStoreCache: false,
+        },
+        false,
+      )
+      setProjectFiles(res)
 
       const data = formatSubmitData(projectData)
 

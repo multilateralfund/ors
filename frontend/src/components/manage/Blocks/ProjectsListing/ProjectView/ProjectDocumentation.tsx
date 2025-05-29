@@ -12,10 +12,7 @@ const ProjectDocumentation = ({
   mode: string
 }) => {
   return (
-    <div
-      key={JSON.stringify(projectFiles)}
-      className="flex w-full flex-col gap-4"
-    >
+    <div className="flex w-full flex-col gap-4">
       <FilesViewer {...{ files, setFiles }} bpFiles={projectFiles || []} />
 
       {mode !== 'view' && (
