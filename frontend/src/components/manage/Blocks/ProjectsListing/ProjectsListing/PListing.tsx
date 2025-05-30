@@ -47,7 +47,7 @@ export default function PListing() {
           </CustomLink>
           <CustomLink
             className="mb-4 h-10 min-w-[6.25rem] text-nowrap px-4 py-2 text-lg uppercase"
-            href={`/projects-listing/create/copyFrom/${projectId}`}
+            href={`/projects-listing/create/${projectId}/copy`}
             color="secondary"
             variant="contained"
             disabled={!projectId}

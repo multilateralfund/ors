@@ -25,6 +25,7 @@ import {
   initialCrossCuttingFields,
   initialProjectIdentifiers,
 } from '../constants'
+import { useStore } from '@ors/store'
 
 import { groupBy, map } from 'lodash'
 
@@ -36,6 +37,9 @@ const ProjectsEdit = ({
   mode: string
 }) => {
   const project_id = project.id.toString()
+
+  const userSlice = useStore((state) => state.user)
+  const { agency_id } = userSlice.data
 
   const [projectData, setProjectData] = useState<ProjectData>({
     projIdentifiers: initialProjectIdentifiers,
@@ -68,7 +72,7 @@ const ProjectsEdit = ({
   useEffect(() => {
     setProjectFiles(data)
 
-    if (mode === 'copy' && data?.length > 0) {
+    if (mode !== 'edit' && data?.length > 0) {
       const loadFiles = async () => {
         const resolvedFiles = await Promise.all(
           data.map((file: ProjectFile) => getFileFromMetadata(file)),
@@ -98,27 +102,26 @@ const ProjectsEdit = ({
 
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
+  const [otherErrors, setOtherErrors] = useState<string>('')
 
-  const hasNoFiles = false
+  const hasNoFiles = mode !== 'edit' ? files?.newFiles?.length === 0 : false
   // files?.newFiles?.length === 0 &&
-  // (projectFiles?.length === 0 ||
-  //   files?.deletedFilesIds?.length === projectFiles?.length)
+  //   (projectFiles?.length === 0 ||
+  //     files?.deletedFilesIds?.length === projectFiles?.length)
   const nonFieldsErrors = getNonFieldErrors(errors)
 
   useEffect(() => {
     setProjectData((prevData) => ({
       ...prevData,
       projIdentifiers: {
-        is_lead_agency:
-          project.agency_id === project.lead_agency_id ||
-          !project.lead_agency_id,
         country: project.country_id,
         meeting: project.meeting,
-        current_agency: project.agency_id,
+        current_agency: agency_id ?? project.agency_id,
         side_agency:
-          project.agency_id === project.lead_agency_id
+          !agency_id || project.agency_id === agency_id
             ? null
-            : project.lead_agency_id,
+            : project.agency_id,
+        is_lead_agency: agency_id ? project.agency_id === agency_id : true,
         cluster: project.cluster_id,
       },
       bpLinking: {
@@ -171,10 +174,12 @@ const ProjectsEdit = ({
           project,
           projectData,
           files,
+          projectId,
           setProjectId,
           setErrors,
           setHasSubmitted,
           setFileErrors,
+          setOtherErrors,
           hasNoFiles,
           setProjectFiles,
           specificFields,
@@ -203,7 +208,7 @@ const ProjectsEdit = ({
             ? `Updated ${project.code ?? project.code_legacy} successfully.`
             : 'Submission was successful.'
         }
-        {...{ projectId, nonFieldsErrors, fileErrors }}
+        {...{ projectId, nonFieldsErrors, fileErrors, otherErrors }}
       />
     </>
   )

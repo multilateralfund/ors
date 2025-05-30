@@ -6,7 +6,7 @@ import { useGetProject } from '../hooks/useGetProject'
 
 import { useParams } from 'wouter'
 
-const ProjectsEditWrapper = ({ mode = 'edit' }: { mode?: string }) => {
+const ProjectsEditWrapper = ({ mode }: { mode: string }) => {
   const { project_id } = useParams<Record<string, string>>()
 
   const project = useGetProject(project_id)

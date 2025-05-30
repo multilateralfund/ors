@@ -3,7 +3,7 @@ import { tableColumns } from '../constants'
 import { formatNumberColumns } from '../utils'
 
 import { Checkbox } from '@mui/material'
-import { FiEdit, FiEye } from 'react-icons/fi'
+import { FiEdit } from 'react-icons/fi'
 import { isNil } from 'lodash'
 import {
   ICellRendererParams,
@@ -24,16 +24,6 @@ const getColumnDefs = (
             {
               cellRenderer: (props: ICellRendererParams) => (
                 <div className="flex items-center justify-center gap-1.5">
-                  {user_permissions.includes('view_project') && (
-                    <Link
-                      className="flex justify-center"
-                      href={`/projects-listing/${props.data.id}`}
-                    >
-                      <FiEye size={16} />
-                    </Link>
-                  )}
-                  {user_permissions.includes('view_project') &&
-                    user_permissions.includes('edit_project') && <span>/</span>}
                   {user_permissions.includes('edit_project') && (
                     <Link
                       className="flex justify-center"
@@ -45,8 +35,8 @@ const getColumnDefs = (
                 </div>
               ),
               field: '',
-              minWidth: 70,
-              maxWidth: 70,
+              minWidth: 50,
+              maxWidth: 50,
               sortable: false,
             },
           ]
@@ -74,6 +64,20 @@ const getColumnDefs = (
             },
           ]
         : []),
+      {
+        headerName: tableColumns.title,
+        field: 'title',
+        tooltipField: 'title',
+        cellClass: 'ag-cell-ellipsed',
+        minWidth: 300,
+        ...(user_permissions.includes('view_project') && {
+          cellRenderer: (props: ICellRendererParams) => (
+            <Link href={`/projects-listing/${props.data.id}`}>
+              {props.value}
+            </Link>
+          ),
+        }),
+      },
       {
         headerName: tableColumns.submission_status,
         field: 'submission_status',
@@ -122,20 +126,6 @@ const getColumnDefs = (
         tooltipField: 'agency',
         cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
         minWidth: 110,
-      },
-      {
-        headerName: tableColumns.title,
-        field: 'title',
-        tooltipField: 'title',
-        cellClass: 'ag-cell-ellipsed',
-        minWidth: 300,
-        ...(user_permissions.includes('view_project') && {
-          cellRenderer: (props: ICellRendererParams) => (
-            <Link href={`/projects-listing/${props.data.id}`}>
-              {props.value}
-            </Link>
-          ),
-        }),
       },
       {
         headerName: tableColumns.type,

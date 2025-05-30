@@ -17,10 +17,14 @@ import {
   initialProjectIdentifiers,
 } from '../constants.ts'
 import { getDefaultValues, getNonFieldErrors } from '../utils.ts'
+import { useStore } from '@ors/store.tsx'
 
 import { groupBy } from 'lodash'
 
 const ProjectsCreateWrapper = () => {
+  const userSlice = useStore((state) => state.user)
+  const { agency_id } = userSlice.data
+
   const [specificFields, setSpecificFields] = useState<ProjectSpecificFields[]>(
     [],
   )
@@ -34,7 +38,10 @@ const ProjectsCreateWrapper = () => {
   }
 
   const [projectData, setProjectData] = useState<ProjectData>({
-    projIdentifiers: initialProjectIdentifiers,
+    projIdentifiers: {
+      ...initialProjectIdentifiers,
+      current_agency: agency_id ?? null,
+    },
     bpLinking: { isLinkedToBP: false, bpId: null },
     crossCuttingFields: initialCrossCuttingFields,
     projectSpecificFields: initialProjectSpecificFields,
@@ -53,6 +60,7 @@ const ProjectsCreateWrapper = () => {
 
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
+  const [otherErrors, setOtherErrors] = useState<string>('')
 
   const hasNoFiles = files?.newFiles?.length === 0
   const nonFieldsErrors = getNonFieldErrors(errors)
@@ -70,10 +78,12 @@ const ProjectsCreateWrapper = () => {
         {...{
           projectData,
           files,
+          projectId,
           setProjectId,
           setErrors,
           setHasSubmitted,
           setFileErrors,
+          setOtherErrors,
           hasNoFiles,
           specificFields,
         }}
@@ -95,7 +105,7 @@ const ProjectsCreateWrapper = () => {
       />
       <ProjectSubmissionFooter
         successMessage="Submission was successful."
-        {...{ projectId, nonFieldsErrors, fileErrors }}
+        {...{ projectId, nonFieldsErrors, fileErrors, otherErrors }}
       />
     </>
   )
