@@ -48,11 +48,9 @@ import ProjectSubmissionsEditPage from '@ors/app/project-submissions/edit/page'
 
 import ProjectsListingPage from '@ors/app/projects_listing/page'
 import ProjectsCreatePage from '@ors/app/projects_listing/create/page'
-import ProjectsCopyPage from '@ors/app/projects_listing/copy/page'
+import ProjectsEditPage from '@ors/app/projects_listing/[project_id]/edit/page'
 import ProjectsListingProjectPage from '@ors/app/projects_listing/[project_id]/page'
 import ProjectsListingArchiveProjectPage from '@ors/app/projects_listing/[project_id]/archive/page'
-
-import ProjectsListingEditProjectPage from '@ors/app/projects_listing/[project_id]/edit/page'
 
 import NotFoundPage from '@ors/app/not-found'
 
@@ -235,9 +233,6 @@ export default function App() {
         <Route path="/projects-listing/create">
           <ProjectsCreatePage />
         </Route>
-        <Route path="/projects-listing/create/copyFrom/:project_id">
-          <ProjectsCopyPage />
-        </Route>
         <Route path="/projects-listing/:project_id">
           <ProjectsListingProjectPage />
         </Route>
@@ -245,7 +240,13 @@ export default function App() {
           <ProjectsListingArchiveProjectPage />
         </Route>
         <Route path="/projects-listing/:project_id/edit">
-          <ProjectsListingEditProjectPage />
+          <ProjectsEditPage mode="edit" />
+        </Route>
+        <Route path="/projects-listing/create/:project_id/copy">
+          <ProjectsEditPage mode="copy" />
+        </Route>
+        <Route path="/projects-listing/create/:project_id/additional-component">
+          <ProjectsEditPage mode="link" />
         </Route>
         <Route>
           <NotFoundPage />

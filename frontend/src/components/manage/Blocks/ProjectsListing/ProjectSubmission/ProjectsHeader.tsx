@@ -24,6 +24,7 @@ const ProjectsHeader = ({
   projectData,
   mode,
   project,
+  projectId,
   files,
   hasNoFiles,
   setProjectFiles = () => {},
@@ -36,6 +37,7 @@ const ProjectsHeader = ({
   setHasSubmitted: Dispatch<SetStateAction<boolean>>
   setFileErrors: Dispatch<SetStateAction<string>>
   hasNoFiles: boolean
+  projectId: number | null
   setProjectId: Dispatch<SetStateAction<number | null>>
   specificFields: ProjectSpecificFields[]
   project?: ProjectTypeApi
@@ -96,9 +98,11 @@ const ProjectsHeader = ({
             <CreateActionButtons
               {...{
                 projectData,
+                projectId,
                 isSubmitDisabled,
                 setIsLoading,
                 files,
+                mode,
               }}
               {...rest}
             />

@@ -68,7 +68,7 @@ const ProjectsEdit = ({
   useEffect(() => {
     setProjectFiles(data)
 
-    if (mode === 'copy' && data?.length > 0) {
+    if (mode !== 'edit' && data?.length > 0) {
       const loadFiles = async () => {
         const resolvedFiles = await Promise.all(
           data.map((file: ProjectFile) => getFileFromMetadata(file)),
@@ -99,10 +99,10 @@ const ProjectsEdit = ({
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
 
-  const hasNoFiles = false
+  const hasNoFiles = mode !== 'edit' ? files?.newFiles?.length === 0 : false
   // files?.newFiles?.length === 0 &&
-  // (projectFiles?.length === 0 ||
-  //   files?.deletedFilesIds?.length === projectFiles?.length)
+  //   (projectFiles?.length === 0 ||
+  //     files?.deletedFilesIds?.length === projectFiles?.length)
   const nonFieldsErrors = getNonFieldErrors(errors)
 
   useEffect(() => {
@@ -171,6 +171,7 @@ const ProjectsEdit = ({
           project,
           projectData,
           files,
+          projectId,
           setProjectId,
           setErrors,
           setHasSubmitted,
