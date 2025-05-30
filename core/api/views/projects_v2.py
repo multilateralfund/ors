@@ -518,7 +518,64 @@ class ProjectV2ViewSet(
         )
 
 
+class FileCreateMixin:
+    ACCEPTED_EXTENSIONS = [
+        ".pdf",
+        ".doc",
+        ".docx",
+    ]
+
+    def _file_create(self, request, dry_run, *args, **kwargs):
+        files = request.FILES
+        if not files:
+            return Response(
+                {"file": "File not provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        filenames = []
+        for file in files.getlist("files"):
+            filenames.append(file.name)
+            extension = os.path.splitext(file.name)[-1]
+            if extension not in self.ACCEPTED_EXTENSIONS:
+                return Response(
+                    {"file": f"File extension {extension} is not valid"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        if self.kwargs.get("project_id"):
+            existing_file = ProjectFile.objects.filter(
+                project_id=self.kwargs.get("project_id"),
+                filename__in=filenames,
+            ).values_list("filename", flat=True)
+
+            if existing_file:
+                return Response(
+                    {
+                        "files": "Some files already exist: "
+                        + str(", ".join(existing_file)),
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        if dry_run:
+            return Response(
+                {"message": "Files are valid and ready to be uploaded."},
+                status=status.HTTP_201_CREATED,
+            )
+        project_files = []
+        for file in files.getlist("files"):
+            project_files.append(
+                ProjectFile(
+                    project_id=self.kwargs.get("project_id"),
+                    filename=file.name,
+                    file=file,
+                )
+            )
+        ProjectFile.objects.bulk_create(project_files)
+        return Response({}, status=status.HTTP_201_CREATED)
+
+
 class ProjectV2FileView(
+    FileCreateMixin,
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
     mixins.DestroyModelMixin,
@@ -530,12 +587,6 @@ class ProjectV2FileView(
 
     queryset = ProjectFile.objects.all()
     serializer_class = ProjectV2FileSerializer
-
-    ACCEPTED_EXTENSIONS = [
-        ".pdf",
-        ".doc",
-        ".docx",
-    ]
 
     @property
     def permission_classes(self):
@@ -617,49 +668,6 @@ class ProjectV2FileView(
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def _file_create(self, request, *args, **kwargs):
-        files = request.FILES
-        if not files:
-            return Response(
-                {"file": "File not provided"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        filenames = []
-        for file in files.getlist("files"):
-            filenames.append(file.name)
-            extension = os.path.splitext(file.name)[-1]
-            if extension not in self.ACCEPTED_EXTENSIONS:
-                return Response(
-                    {"file": f"File extension {extension} is not valid"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-        existing_file = ProjectFile.objects.filter(
-            project_id=self.kwargs.get("project_id"),
-            filename__in=filenames,
-        ).values_list("filename", flat=True)
-
-        if existing_file:
-            return Response(
-                {
-                    "files": "Some files already exist: "
-                    + str(", ".join(existing_file)),
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        project_files = []
-        for file in files.getlist("files"):
-            project_files.append(
-                ProjectFile(
-                    project_id=self.kwargs.get("project_id"),
-                    filename=file.name,
-                    file=file,
-                )
-            )
-        ProjectFile.objects.bulk_create(project_files)
-        return Response({}, status=status.HTTP_201_CREATED)
-
     @swagger_auto_schema(
         operation_description="Upload multiple files...",
         auto_schema=FileUploadAutoSchema,
@@ -676,7 +684,7 @@ class ProjectV2FileView(
     )
     def post(self, request, *args, **kwargs):
         self.get_queryset()
-        return self._file_create(request, *args, **kwargs)
+        return self._file_create(request, dry_run=False, *args, **kwargs)
 
     @swagger_auto_schema(
         operation_description="Receives a list of files ids and deletes them.",
@@ -696,6 +704,29 @@ class ProjectV2FileView(
         file_ids = request.data.get("file_ids")
         queryset.filter(id__in=file_ids).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ProjectFilesValidationView(FileCreateMixin, APIView):
+    """
+    View to validate the files that are being uploaded.
+    It checks if the files have valid extensions and if they already exist.
+    Return a 201 status code if the files are valid, otherwise return a 400 status code with an error message.
+    This endpoint is used to validate the files that are being uploaded, without actually saving them.
+    """
+
+    def post(self, request, *args, **kwargs):
+        """
+        This endpoint is used to validate the files that are being uploaded.
+        It checks if the files have valid extensions and if they already exist.
+        Return a 201 status code if the files are valid, otherwise return a 400 status code with an error message.
+        """
+        response = self._file_create(request, dry_run=True, *args, **kwargs)
+        if response.status_code == status.HTTP_201_CREATED:
+            return Response(
+                {"message": "Files are valid and ready to be uploaded."},
+                status=status.HTTP_201_CREATED,
+            )
+        return response
 
 
 class ProjectFilesDownloadView(generics.RetrieveAPIView):
