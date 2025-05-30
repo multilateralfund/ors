@@ -1154,7 +1154,7 @@ class TestProjectFiles:
         # upload file
         data = {"files": [test_file1.open(), test_file2.open()]}
         response = self.client.post(url, data, format="multipart")
-        assert response.status_code == 201
+        assert response.status_code == 200
         assert ProjectFile.objects.all().count() == 0
 
     def test_file_upload_duplicate(

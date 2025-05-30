@@ -707,24 +707,30 @@ class ProjectV2FileView(
 
 
 class ProjectFilesValidationView(FileCreateMixin, APIView):
-    """
-    View to validate the files that are being uploaded.
-    It checks if the files have valid extensions and if they already exist.
-    Return a 201 status code if the files are valid, otherwise return a 400 status code with an error message.
-    This endpoint is used to validate the files that are being uploaded, without actually saving them.
-    """
-
-    def post(self, request, *args, **kwargs):
-        """
+    @swagger_auto_schema(
+        operation_description="""
         This endpoint is used to validate the files that are being uploaded.
-        It checks if the files have valid extensions and if they already exist.
-        Return a 201 status code if the files are valid, otherwise return a 400 status code with an error message.
-        """
+        It checks if the files have valid extensions.
+        Returns a 200 status code if the files are valid, otherwise return a 400 status code with an error message.
+        """,
+        auto_schema=FileUploadAutoSchema,
+        manual_parameters=[
+            openapi.Parameter(
+                name="files",
+                in_=openapi.IN_FORM,
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Items(type=openapi.TYPE_FILE),
+                required=True,
+                description="List of documents",
+            )
+        ],
+    )
+    def post(self, request, *args, **kwargs):
         response = self._file_create(request, dry_run=True, *args, **kwargs)
         if response.status_code == status.HTTP_201_CREATED:
             return Response(
                 {"message": "Files are valid and ready to be uploaded."},
-                status=status.HTTP_201_CREATED,
+                status=status.HTTP_200_OK,
             )
         return response
 
