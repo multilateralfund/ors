@@ -15,6 +15,7 @@ from core.api.tests.factories import (
     CountryFactory,
     MeetingFactory,
     ProjectFactory,
+    ProjectOdsOdpFactory,
     ProjectSectorFactory,
     ProjectStatusFactory,
     ProjectSubmissionStatusFactory,
@@ -960,17 +961,32 @@ class TestProjectsV2Update:
     # TODO: test ods_odp create/delete
 
     def test_project_patch_ods_odp(
-        self, agency_user, project_url, project, project_ods_odp_subst
+        self,
+        agency_user,
+        project_url,
+        project,
+        project_ods_odp_subst,
+        substance,
     ):
+        ods_odp_to_delete = ProjectOdsOdpFactory.create(
+            project=project,
+            ods_substance_id=substance.id,
+            odp=0.02,
+        )
         self.client.force_authenticate(user=agency_user)
         update_data = {
             "title": "Crocodile wearing a vest",
             "ods_odp": [
                 {
+                    "ods_substance_id": substance.id,
+                    "odp": 0.01,
+                    "ods_replacement": "test replacement",
+                },
+                {
                     "id": project_ods_odp_subst.id,
                     "ods_substance_id": project_ods_odp_subst.ods_substance_id,
                     "odp": project_ods_odp_subst.odp + 5,
-                }
+                },
             ],
         }
         response = self.client.patch(project_url, update_data, format="json")
@@ -978,10 +994,12 @@ class TestProjectsV2Update:
 
         project.refresh_from_db()
         assert project.title == "Crocodile wearing a vest"
-        assert project.ods_odp.count() == 1
+        assert project.ods_odp.count() == 2
+        assert project.ods_odp.filter(id=ods_odp_to_delete.id).count() == 0
         # This test copied from v1 where it was not supposed to actually
         # update ods_odp, in our case it does update it.
         assert project.ods_odp.first().odp == project_ods_odp_subst.odp + 5
+        assert project.ods_odp.last().odp == update_data["ods_odp"][0]["odp"]
 
     def test_project_update_history(
         self, agency_inputter_user, agency_user, _setup_project_create
