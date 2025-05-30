@@ -39,6 +39,14 @@ const CreateActionButtons = ({
     try {
       const data = formatSubmitData(projectData, specificFields)
 
+      if (newFiles.length > 0) {
+        await uploadFiles(
+          `/api/project/files/validate/`,
+          newFiles,
+          false,
+          'list',
+        )
+      }
       const result = await api(`api/projects/v2/`, {
         data:
           mode === 'link'
