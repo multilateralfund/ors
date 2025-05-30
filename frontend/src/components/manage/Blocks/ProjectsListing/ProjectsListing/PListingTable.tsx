@@ -4,8 +4,22 @@ import ViewTable from '@ors/components/manage/Form/ViewTable'
 import getColumnDefs from './schema'
 import { PROJECTS_PER_PAGE } from '../constants'
 import { useStore } from '@ors/store'
+import type { useGetProjects } from '@ors/components/manage/Blocks/ProjectsListing/hooks/useGetProjects.ts'
+import React from 'react'
 
-const PListingTable = ({ projects, filters, projectId, setProjectId }: any) => {
+export type PListingTableProps = {
+  projects: ReturnType<typeof useGetProjects>
+  filters: Record<string, any>
+  projectId?: number | null
+  setProjectId?: (id: number | null) => void
+}
+
+const PListingTable = ({
+  projects,
+  filters,
+  projectId,
+  setProjectId,
+}: PListingTableProps) => {
   const { count, loaded, loading, results, setParams } = projects
 
   const projectSlice = useStore((state) => state.projects)

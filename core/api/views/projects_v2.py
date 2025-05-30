@@ -1,6 +1,7 @@
 import os
 import urllib
 
+
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from django.db.models import Q
@@ -42,6 +43,8 @@ from core.models.project import (
 from core.models.project_metadata import ProjectSubmissionStatus
 from core.models.user import User
 from core.api.views.utils import log_project_history
+
+from core.api.views.projects_export import ProjectsV2Export
 
 
 class ProjectDestructionTechnologyView(APIView):
@@ -112,7 +115,7 @@ class ProjectV2ViewSet(
 
     @property
     def permission_classes(self):
-        if self.action in ["list", "retrieve"]:
+        if self.action in ["list", "retrieve", "export"]:
             return [
                 IsViewer
                 | IsAgencyInputter
@@ -153,7 +156,8 @@ class ProjectV2ViewSet(
             ]
         if self.action in ["recommend", "withdraw", "send_back_to_draft"]:
             return [IsSecretariatV1V2EditAccess | IsSecretariatProductionV1V2EditAccess]
-        return super().get_permissions()
+
+        return []
 
     def filter_permissions_queryset(self, queryset):
         """
@@ -213,7 +217,7 @@ class ProjectV2ViewSet(
 
     def get_serializer_class(self):
         serializer = ProjectDetailsV2Serializer
-        if self.action == "list":
+        if self.action in ["list", "export"]:
             serializer = ProjectListV2Serializer
         elif self.action in ["create", "update", "partial_update"]:
             serializer = ProjectV2CreateUpdateSerializer
@@ -273,6 +277,10 @@ class ProjectV2ViewSet(
         meta = self.metadata_class()
         data = meta.determine_metadata(request, self)
         return Response(data)
+
+    @action(methods=["GET"], detail=False)
+    def export(self, *args, **kwargs):
+        return ProjectsV2Export(self).export_xls()
 
     @action(methods=["POST"], detail=True)
     @swagger_auto_schema(
@@ -510,7 +518,64 @@ class ProjectV2ViewSet(
         )
 
 
+class FileCreateMixin:
+    ACCEPTED_EXTENSIONS = [
+        ".pdf",
+        ".doc",
+        ".docx",
+    ]
+
+    def _file_create(self, request, dry_run, *args, **kwargs):
+        files = request.FILES
+        if not files:
+            return Response(
+                {"file": "File not provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        filenames = []
+        for file in files.getlist("files"):
+            filenames.append(file.name)
+            extension = os.path.splitext(file.name)[-1]
+            if extension not in self.ACCEPTED_EXTENSIONS:
+                return Response(
+                    {"file": f"File extension {extension} is not valid"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        if self.kwargs.get("project_id"):
+            existing_file = ProjectFile.objects.filter(
+                project_id=self.kwargs.get("project_id"),
+                filename__in=filenames,
+            ).values_list("filename", flat=True)
+
+            if existing_file:
+                return Response(
+                    {
+                        "files": "Some files already exist: "
+                        + str(", ".join(existing_file)),
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        if dry_run:
+            return Response(
+                {"message": "Files are valid and ready to be uploaded."},
+                status=status.HTTP_201_CREATED,
+            )
+        project_files = []
+        for file in files.getlist("files"):
+            project_files.append(
+                ProjectFile(
+                    project_id=self.kwargs.get("project_id"),
+                    filename=file.name,
+                    file=file,
+                )
+            )
+        ProjectFile.objects.bulk_create(project_files)
+        return Response({}, status=status.HTTP_201_CREATED)
+
+
 class ProjectV2FileView(
+    FileCreateMixin,
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
     mixins.DestroyModelMixin,
@@ -522,12 +587,6 @@ class ProjectV2FileView(
 
     queryset = ProjectFile.objects.all()
     serializer_class = ProjectV2FileSerializer
-
-    ACCEPTED_EXTENSIONS = [
-        ".pdf",
-        ".doc",
-        ".docx",
-    ]
 
     @property
     def permission_classes(self):
@@ -609,49 +668,6 @@ class ProjectV2FileView(
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def _file_create(self, request, *args, **kwargs):
-        files = request.FILES
-        if not files:
-            return Response(
-                {"file": "File not provided"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        filenames = []
-        for file in files.getlist("files"):
-            filenames.append(file.name)
-            extension = os.path.splitext(file.name)[-1]
-            if extension not in self.ACCEPTED_EXTENSIONS:
-                return Response(
-                    {"file": f"File extension {extension} is not valid"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-        existing_file = ProjectFile.objects.filter(
-            project_id=self.kwargs.get("project_id"),
-            filename__in=filenames,
-        ).values_list("filename", flat=True)
-
-        if existing_file:
-            return Response(
-                {
-                    "files": "Some files already exist: "
-                    + str(", ".join(existing_file)),
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        project_files = []
-        for file in files.getlist("files"):
-            project_files.append(
-                ProjectFile(
-                    project_id=self.kwargs.get("project_id"),
-                    filename=file.name,
-                    file=file,
-                )
-            )
-        ProjectFile.objects.bulk_create(project_files)
-        return Response({}, status=status.HTTP_201_CREATED)
-
     @swagger_auto_schema(
         operation_description="Upload multiple files...",
         auto_schema=FileUploadAutoSchema,
@@ -668,7 +684,7 @@ class ProjectV2FileView(
     )
     def post(self, request, *args, **kwargs):
         self.get_queryset()
-        return self._file_create(request, *args, **kwargs)
+        return self._file_create(request, dry_run=False, *args, **kwargs)
 
     @swagger_auto_schema(
         operation_description="Receives a list of files ids and deletes them.",
@@ -688,6 +704,35 @@ class ProjectV2FileView(
         file_ids = request.data.get("file_ids")
         queryset.filter(id__in=file_ids).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ProjectFilesValidationView(FileCreateMixin, APIView):
+    @swagger_auto_schema(
+        operation_description="""
+        This endpoint is used to validate the files that are being uploaded.
+        It checks if the files have valid extensions.
+        Returns a 200 status code if the files are valid, otherwise return a 400 status code with an error message.
+        """,
+        auto_schema=FileUploadAutoSchema,
+        manual_parameters=[
+            openapi.Parameter(
+                name="files",
+                in_=openapi.IN_FORM,
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Items(type=openapi.TYPE_FILE),
+                required=True,
+                description="List of documents",
+            )
+        ],
+    )
+    def post(self, request, *args, **kwargs):
+        response = self._file_create(request, dry_run=True, *args, **kwargs)
+        if response.status_code == status.HTTP_201_CREATED:
+            return Response(
+                {"message": "Files are valid and ready to be uploaded."},
+                status=status.HTTP_200_OK,
+            )
+        return response
 
 
 class ProjectFilesDownloadView(generics.RetrieveAPIView):

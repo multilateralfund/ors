@@ -112,6 +112,7 @@ from core.api.views.projects_v2 import (
     ProjectV2ViewSet,
     ProjectV2FileView,
     ProjectFilesDownloadView,
+    ProjectFilesValidationView,
 )
 from core.api.views.rbm_measures import RBMMeasureListView
 from core.api.views.sector_subsector import ProjectSectorView, ProjectSubSectorView
@@ -480,6 +481,11 @@ urlpatterns = [
         "project/<int:project_id>/files/<int:id>/download/v2/",
         ProjectFilesDownloadView.as_view(),
         name="project-files-v2-download",
+    ),
+    path(
+        "project/files/validate/",
+        ProjectFilesValidationView.as_view(),
+        name="project-files-validation",
     ),
     path(
         "business-plan/upload/validate/",

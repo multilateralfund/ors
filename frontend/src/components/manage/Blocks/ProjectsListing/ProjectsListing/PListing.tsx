@@ -55,6 +55,15 @@ export default function PListing() {
           >
             Copy project
           </CustomLink>
+          <CustomLink
+            className="mb-4 h-10 min-w-[6.25rem] text-nowrap px-4 py-2 text-lg uppercase"
+            href="/projects-listing/export"
+            color="secondary"
+            variant="contained"
+            button
+          >
+            Generate DB
+          </CustomLink>
         </div>
       )}
       <form className="flex flex-col gap-6" ref={form} key={key}>

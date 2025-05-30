@@ -1,5 +1,3 @@
-import { Dispatch, SetStateAction } from 'react'
-
 import Link from '@ors/components/ui/Link/Link'
 import { tableColumns } from '../constants'
 import { formatNumberColumns } from '../utils'
@@ -15,8 +13,8 @@ import {
 
 const getColumnDefs = (
   user_permissions: string[],
-  projectId: number | null,
-  setProjectId: Dispatch<SetStateAction<number | null>>,
+  projectId?: number | null,
+  setProjectId?: (id: number | null) => void,
 ) => {
   return {
     columnDefs: [
@@ -53,25 +51,29 @@ const getColumnDefs = (
             },
           ]
         : []),
-      {
-        headerName: 'Select',
-        field: '',
-        cellClass: 'ag-text-center',
-        minWidth: 90,
-        maxWidth: 90,
-        sortable: false,
-        cellRenderer: (props: ICellRendererParams) => (
-          <Checkbox
-            checked={projectId == props.data.id}
-            onChange={(event) => {
-              setProjectId(event.target.checked ? props.data.id : null)
-            }}
-            sx={{
-              color: 'black',
-            }}
-          />
-        ),
-      },
+      ...(projectId !== undefined && setProjectId
+        ? [
+            {
+              headerName: 'Select',
+              field: '',
+              cellClass: 'ag-text-center',
+              minWidth: 90,
+              maxWidth: 90,
+              sortable: false,
+              cellRenderer: (props: ICellRendererParams) => (
+                <Checkbox
+                  checked={projectId == props.data.id}
+                  onChange={(event) => {
+                    setProjectId(event.target.checked ? props.data.id : null)
+                  }}
+                  sx={{
+                    color: 'black',
+                  }}
+                />
+              ),
+            },
+          ]
+        : []),
       {
         headerName: tableColumns.submission_status,
         field: 'submission_status',
