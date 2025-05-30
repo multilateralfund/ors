@@ -52,8 +52,6 @@ import {
   IoSearchOutline,
 } from 'react-icons/io5'
 
-
-
 let timer: any
 
 const debounce = (func: () => void) => {
