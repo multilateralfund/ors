@@ -140,6 +140,7 @@ class ProjectsV2Export(ProjectsExport):
                 ModelNameWriter,
                 "Codes",
                 "A",
+                enforce_validation=False,
             ),
             SheetDefinition(
                 Project,
@@ -147,6 +148,7 @@ class ProjectsV2Export(ProjectsExport):
                 ModelNameWriter,
                 "Legacy codes",
                 "B",
+                enforce_validation=False,
             ),
             SheetDefinition(
                 MetaProject,
@@ -154,6 +156,7 @@ class ProjectsV2Export(ProjectsExport):
                 ModelNameWriter,
                 "Metaproject codes",
                 "C",
+                enforce_validation=False,
             ),
             SheetDefinition(
                 ProjectCluster, self.get_names, ModelNameWriter, "Clusters", "D"
@@ -177,7 +180,12 @@ class ProjectsV2Export(ProjectsExport):
             ),
             SheetDefinition(Agency, self.get_names, ModelNameWriter, "Agencies", "H"),
             SheetDefinition(
-                ProjectSector, self.get_names, ModelNameWriter, "Sectors", "I"
+                ProjectSector,
+                self.get_names,
+                ModelNameWriter,
+                "Sectors",
+                "I",
+                enforce_validation=False,
             ),
             SheetDefinition(
                 Project,
@@ -187,7 +195,12 @@ class ProjectsV2Export(ProjectsExport):
                 "J",
             ),
             SheetDefinition(
-                ProjectSubSector, self.get_names, ModelNameWriter, "Subsectors", "K"
+                ProjectSubSector,
+                self.get_names,
+                ModelNameWriter,
+                "Subsectors",
+                "K",
+                enforce_validation=False,
             ),
             SheetDefinition(
                 Project,
