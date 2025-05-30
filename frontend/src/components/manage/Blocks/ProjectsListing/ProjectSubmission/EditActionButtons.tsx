@@ -19,6 +19,7 @@ const EditActionButtons = ({
   setIsLoading,
   setHasSubmitted,
   setFileErrors,
+  setOtherErrors,
   setErrors,
   setProjectFiles,
   specificFields,
@@ -36,6 +37,7 @@ const EditActionButtons = ({
   const editProject = async () => {
     setIsLoading(true)
     setFileErrors('')
+    setOtherErrors('')
     setErrors({})
 
     try {
@@ -77,15 +79,18 @@ const EditActionButtons = ({
       })
       setProjectId(result.id)
     } catch (error) {
-      if (error.status === 400) {
-        const errors = await error.json()
+      const errors = await error.json()
 
+      if (error.status === 400) {
         if (errors?.files) {
           setFileErrors(errors.files)
         } else {
           setErrors(errors)
         }
+      } else if (errors?.details) {
+        setOtherErrors(errors.details)
       }
+
       setProjectId(null)
       enqueueSnackbar(<>An error occurred. Please try again.</>, {
         variant: 'error',

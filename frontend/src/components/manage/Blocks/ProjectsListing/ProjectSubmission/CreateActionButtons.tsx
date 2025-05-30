@@ -19,6 +19,7 @@ const CreateActionButtons = ({
   setErrors,
   setHasSubmitted,
   setFileErrors,
+  setOtherErrors,
   specificFields,
   mode,
 }: SubmitActionButtons & { projectId: number | null; mode: string }) => {
@@ -34,6 +35,7 @@ const CreateActionButtons = ({
   const submitProject = async () => {
     setIsLoading(true)
     setFileErrors('')
+    setOtherErrors('')
     setErrors({})
 
     try {
@@ -65,15 +67,18 @@ const CreateActionButtons = ({
         )
       }
     } catch (error) {
-      if (error.status === 400) {
-        const errors = await error.json()
+      const errors = await error.json()
 
+      if (error.status === 400) {
         if (errors?.file) {
           setFileErrors(errors.file)
         } else {
           setErrors(errors)
         }
+      } else if (errors?.details) {
+        setOtherErrors(errors.details)
       }
+
       setProjectId(null)
       enqueueSnackbar(<>An error occurred. Please try again.</>, {
         variant: 'error',

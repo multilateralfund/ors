@@ -187,5 +187,6 @@ export interface SubmitActionButtons {
   setErrors: Dispatch<SetStateAction<{ [key: string]: [] }>>
   setHasSubmitted: Dispatch<SetStateAction<boolean>>
   setFileErrors: Dispatch<SetStateAction<string>>
+  setOtherErrors: Dispatch<SetStateAction<string>>
   specificFields: ProjectSpecificFields[]
 }

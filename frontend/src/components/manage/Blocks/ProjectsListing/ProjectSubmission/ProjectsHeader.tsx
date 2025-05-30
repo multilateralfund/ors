@@ -36,6 +36,7 @@ const ProjectsHeader = ({
   setErrors: Dispatch<SetStateAction<{ [key: string]: [] }>>
   setHasSubmitted: Dispatch<SetStateAction<boolean>>
   setFileErrors: Dispatch<SetStateAction<string>>
+  setOtherErrors: Dispatch<SetStateAction<string>>
   hasNoFiles: boolean
   projectId: number | null
   setProjectId: Dispatch<SetStateAction<number | null>>

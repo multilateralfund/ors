@@ -50,6 +50,8 @@ const ProjectIdentifiersSection = ({
 
   const commonSlice = useStore((state) => state.common)
   const projectSlice = useStore((state) => state.projects)
+  const userSlice = useStore((state) => state.user)
+  const { agency_id } = userSlice.data
 
   const agencyOptions = filter(
     commonSlice.agencies.data,
@@ -161,7 +163,7 @@ const ProjectIdentifiersSection = ({
               )
             }
             getOptionLabel={(option) => getOptionLabel(agencyOptions, option)}
-            disabled={!areNextSectionsDisabled}
+            disabled={!!agency_id || !areNextSectionsDisabled}
             Input={{
               error:
                 projIdentifiers.is_lead_agency && getIsInputDisabled('agency'),
