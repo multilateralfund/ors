@@ -1,14 +1,17 @@
 import { ChangeEvent } from 'react'
 
 import LinkedBPTableWrapper from './LinkedBPTable'
+import { SectionTitle } from './ProjectsCreate'
 import { ProjectDataProps } from '../interfaces'
 
 import { Checkbox, FormControlLabel } from '@mui/material'
+import cx from 'classnames'
 
 const ProjectBPLinking = ({
   projectData,
   setProjectData,
-}: Omit<ProjectDataProps, 'hasSubmitted'>) => {
+  isDisabled,
+}: Omit<ProjectDataProps, 'hasSubmitted'> & { isDisabled: boolean }) => {
   const { isLinkedToBP } = projectData.bpLinking
 
   const handleChangeBPLink = (event: ChangeEvent<HTMLInputElement>) => {
@@ -28,7 +31,8 @@ const ProjectBPLinking = ({
   }
 
   return (
-    <>
+    <div className={cx({ 'pointer-events-none opacity-50': isDisabled })}>
+      <SectionTitle>Business Plan</SectionTitle>
       <FormControlLabel
         label="Is the proposal included in the BP?"
         control={
@@ -48,7 +52,7 @@ const ProjectBPLinking = ({
       {isLinkedToBP && (
         <LinkedBPTableWrapper {...{ projectData, setProjectData }} />
       )}
-    </>
+    </div>
   )
 }
 

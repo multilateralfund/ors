@@ -1,6 +1,6 @@
 'use client'
 
-import { Dispatch, SetStateAction, useMemo, useState } from 'react'
+import { Dispatch, ReactNode, SetStateAction, useMemo, useState } from 'react'
 
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
 import ProjectIdentifiersSection from './ProjectIdentifiersSection.tsx'
@@ -28,6 +28,12 @@ import {
 
 import { Tabs, Tab, Alert, Typography } from '@mui/material'
 import { isEmpty, map } from 'lodash'
+
+export const SectionTitle = ({ children }: { children: ReactNode }) => (
+  <div className="text-typography-sectionTitle mb-4 text-xl uppercase tracking-[1px]">
+    {children}
+  </div>
+)
 
 const ProjectsCreate = ({
   projectData,
@@ -173,9 +179,10 @@ const ProjectsCreate = ({
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div>Identifiers</div>
-          {hasSectionErrors(projIdentifiersErrors) && (
+          {(hasSectionErrors(projIdentifiersErrors) ||
+            hasSectionErrors(bpErrors)) && (
             <SectionErrorIndicator
-              errors={formatErrors(projIdentifiersErrors)}
+              errors={formatErrors({ ...projIdentifiersErrors, ...bpErrors })}
             />
           )}
         </div>
@@ -197,28 +204,6 @@ const ProjectsCreate = ({
     },
     {
       step: 1,
-      id: 'project-bp-link-section',
-      ariaControls: 'project-bp-link-section',
-      label: (
-        <div className="relative flex items-center justify-between gap-x-2">
-          <div>Business Plan</div>
-          {hasSectionErrors(bpErrors) && (
-            <SectionErrorIndicator errors={formatErrors(bpErrors)} />
-          )}
-        </div>
-      ),
-      disabled: areNextSectionsDisabled,
-      component: (
-        <ProjectBPLinking
-          {...{
-            projectData,
-            setProjectData,
-          }}
-        />
-      ),
-    },
-    {
-      step: 2,
       id: 'project-cross-cutting-section',
       ariaControls: 'project-cross-cutting-section',
       label: (
@@ -242,7 +227,7 @@ const ProjectsCreate = ({
       ),
     },
     {
-      step: 3,
+      step: 2,
       id: 'project-specific-overview-section',
       ariaControls: 'project-specific-overview-section',
       label: (
@@ -263,7 +248,7 @@ const ProjectsCreate = ({
       ),
     },
     {
-      step: 4,
+      step: 3,
       id: 'project-substance-details-section',
       ariaControls: 'project-substance-details-section',
       label: (
@@ -291,7 +276,7 @@ const ProjectsCreate = ({
       ),
     },
     {
-      step: 5,
+      step: 4,
       id: 'project-impact-section',
       ariaControls: 'project-impact-section',
       label: (
@@ -312,7 +297,7 @@ const ProjectsCreate = ({
       ),
     },
     {
-      step: 6,
+      step: 5,
       id: 'project-documentation-section',
       ariaControls: 'project-documentation-section',
       label: (
