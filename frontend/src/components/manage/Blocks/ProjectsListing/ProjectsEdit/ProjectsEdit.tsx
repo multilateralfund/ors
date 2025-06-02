@@ -104,10 +104,6 @@ const ProjectsEdit = ({
   const [fileErrors, setFileErrors] = useState<string>('')
   const [otherErrors, setOtherErrors] = useState<string>('')
 
-  const hasNoFiles = mode !== 'edit' ? files?.newFiles?.length === 0 : false
-  // files?.newFiles?.length === 0 &&
-  //   (projectFiles?.length === 0 ||
-  //     files?.deletedFilesIds?.length === projectFiles?.length)
   const nonFieldsErrors = getNonFieldErrors(errors)
 
   useEffect(() => {
@@ -180,7 +176,6 @@ const ProjectsEdit = ({
           setHasSubmitted,
           setFileErrors,
           setOtherErrors,
-          hasNoFiles,
           setProjectFiles,
           specificFields,
         }}
@@ -198,7 +193,6 @@ const ProjectsEdit = ({
           errors,
           setErrors,
           hasSubmitted,
-          hasNoFiles,
           fileErrors,
         }}
       />

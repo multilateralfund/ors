@@ -90,6 +90,7 @@ const originalColors = {
       faded: 'rgba(255, 255, 255, 0.5)',
       primary: 'hsla(198, 100%, 12%, 1)',
       secondary: 'rgba(0, 149, 213, 1)',
+      sectionTitle: '#4d4d4d',
     },
     warning: {
       DEFAULT: '#FF8A00',
@@ -145,6 +146,7 @@ const originalColors = {
       faded: gray[500],
       primary: gray[900],
       secondary: '#0095D5',
+      sectionTitle: '#4d4d4d',
     },
     warning: {
       DEFAULT: '#FF8A00',

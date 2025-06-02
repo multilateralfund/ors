@@ -190,3 +190,14 @@ export interface SubmitActionButtons {
   setOtherErrors: Dispatch<SetStateAction<string>>
   specificFields: ProjectSpecificFields[]
 }
+
+export type ProjectIdentifiersSectionProps = {
+  projectData: ProjectData
+  setProjectData: Dispatch<SetStateAction<ProjectData>>
+  isNextBtnEnabled: boolean
+  areNextSectionsDisabled: boolean
+  setCurrentStep: Dispatch<SetStateAction<number>>
+  setCurrentTab: Dispatch<SetStateAction<number>>
+  errors: { [key: string]: string[] }
+  hasSubmitted: boolean
+}
