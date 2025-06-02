@@ -26,7 +26,6 @@ const ProjectsHeader = ({
   project,
   projectId,
   files,
-  hasNoFiles,
   setProjectFiles = () => {},
   ...rest
 }: {
@@ -37,7 +36,6 @@ const ProjectsHeader = ({
   setHasSubmitted: Dispatch<SetStateAction<boolean>>
   setFileErrors: Dispatch<SetStateAction<string>>
   setOtherErrors: Dispatch<SetStateAction<string>>
-  hasNoFiles: boolean
   projectId: number | null
   setProjectId: Dispatch<SetStateAction<number | null>>
   specificFields: ProjectSpecificFields[]
@@ -61,8 +59,7 @@ const ProjectsHeader = ({
     hasMissingRequiredFields ||
     dayjs(project_start_date).isAfter(dayjs(project_end_date)) ||
     hasValidationErrors ||
-    (ods_odp.length > 0 && ods_odp.some((item) => !item.ods_substance_id)) ||
-    hasNoFiles
+    (ods_odp.length > 0 && ods_odp.some((item) => !item.ods_substance_id))
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [showVersionsMenu, setShowVersionsMenu] = useState(false)

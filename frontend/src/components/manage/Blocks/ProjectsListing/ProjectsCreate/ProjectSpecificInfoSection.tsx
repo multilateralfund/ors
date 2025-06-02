@@ -1,0 +1,47 @@
+import ProjectOverview from './ProjectOverview'
+import ProjectSubstanceDetails from './ProjectSubstanceDetails'
+import { SectionTitle } from './ProjectsCreate'
+import {
+  ProjectDataProps,
+  ProjectSpecificFields,
+} from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
+
+import { Divider } from '@mui/material'
+
+const ProjectSpecificInfoSection = ({
+  overviewFields,
+  substanceDetailsFields,
+  overviewErrors,
+  substanceDetailsErrors,
+  odsOdpErrors,
+  ...rest
+}: ProjectDataProps & {
+  overviewFields: ProjectSpecificFields[]
+  substanceDetailsFields: ProjectSpecificFields[]
+  overviewErrors?: { [key: string]: string[] }
+  substanceDetailsErrors?: { [key: string]: string[] }
+  odsOdpErrors: { [key: string]: [] | number }[]
+}) => {
+  return (
+    <>
+      <SectionTitle>Overview</SectionTitle>
+      <ProjectOverview
+        sectionFields={overviewFields}
+        errors={overviewErrors}
+        {...rest}
+      />
+
+      <Divider className="my-6" />
+
+      <SectionTitle>Substance Details</SectionTitle>
+      <ProjectSubstanceDetails
+        sectionFields={substanceDetailsFields}
+        errors={substanceDetailsErrors}
+        odsOdpErrors={odsOdpErrors}
+        {...rest}
+      />
+    </>
+  )
+}
+
+export default ProjectSpecificInfoSection

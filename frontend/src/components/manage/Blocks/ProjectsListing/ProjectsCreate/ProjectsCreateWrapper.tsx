@@ -62,7 +62,6 @@ const ProjectsCreateWrapper = () => {
   const [fileErrors, setFileErrors] = useState<string>('')
   const [otherErrors, setOtherErrors] = useState<string>('')
 
-  const hasNoFiles = files?.newFiles?.length === 0
   const nonFieldsErrors = getNonFieldErrors(errors)
 
   useEffect(() => {
@@ -84,7 +83,6 @@ const ProjectsCreateWrapper = () => {
           setHasSubmitted,
           setFileErrors,
           setOtherErrors,
-          hasNoFiles,
           specificFields,
         }}
       />
@@ -99,7 +97,6 @@ const ProjectsCreateWrapper = () => {
           errors,
           setErrors,
           hasSubmitted,
-          hasNoFiles,
           fileErrors,
         }}
       />
