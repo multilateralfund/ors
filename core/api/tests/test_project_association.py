@@ -1,25 +1,10 @@
 import pytest
 from django.urls import reverse
-from rest_framework.test import APIClient
-
-from core.api.serializers.project_metadata import ProjectSubSectorSerializer
-
-from core.api.serializers.project_v2 import HISTORY_DESCRIPTION_CREATE
-from core.api.serializers.project_v2 import HISTORY_DESCRIPTION_UPDATE
-
 from core.api.tests.base import BaseTest
 from core.api.tests.factories import (
     AgencyFactory,
-    CountryFactory,
-    MeetingFactory,
     ProjectFactory,
-    ProjectSectorFactory,
-    ProjectStatusFactory,
-    ProjectSubmissionStatusFactory,
-    ProjectSubSectorFactory,
-    ProjectTypeFactory,
 )
-from core.utils import get_project_sub_code
 
 pytestmark = pytest.mark.django_db
 # pylint: disable=C0302,C8008,W0221,R0913,R0914,R0915,W0613

@@ -1,9 +1,5 @@
 from rest_framework import serializers
 
-from core.api.serializers.project import (
-    ProjectListSerializer,
-)
-
 from core.models.agency import Agency
 from core.models.project import (
     MetaProject,

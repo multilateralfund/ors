@@ -118,6 +118,3 @@ class ProjectAssociationViewSet(
             "projects__files",
         )
         return queryset
-
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
