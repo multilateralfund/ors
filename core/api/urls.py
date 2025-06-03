@@ -1,4 +1,4 @@
-from django.urls import path, re_path
+from django.urls import path, re_path, include
 from rest_framework import routers, permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
@@ -114,6 +114,7 @@ from core.api.views.projects_v2 import (
     ProjectFilesDownloadView,
     ProjectFilesValidationView,
 )
+from core.api.views.project_associations import ProjectAssociationViewSet
 from core.api.views.rbm_measures import RBMMeasureListView
 from core.api.views.sector_subsector import ProjectSectorView, ProjectSubSectorView
 from core.api.views.settings import SettingsView
@@ -123,6 +124,9 @@ from core.api.views.countries import CountryListView
 router = routers.SimpleRouter()
 router.register("projects/v2", ProjectV2ViewSet, basename="project-v2")
 router.register("projects", ProjectViewSet, basename="project")
+router.register(
+    "project-association", ProjectAssociationViewSet, basename="project-association"
+)
 router.register("project-fund", ProjectFundViewSet)
 router.register("project-ods-odp", ProjectOdsOdpViewSet)
 router.register("project-comment", ProjectCommentViewSet)

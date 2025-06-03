@@ -625,10 +625,11 @@ class Project(models.Model):
 
     @property
     def latest_file(self):
-        try:
-            return self.files.latest()
-        except ProjectFile.DoesNotExist:
+        files = list(self.files.all())
+        if not files:
             return None
+        files.sort(key=lambda f: f.date_created, reverse=True)
+        return files[0]
 
 
 class ProjectFile(models.Model):

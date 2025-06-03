@@ -32,10 +32,10 @@ from core.api.serializers.project_metadata import (
     ProjectTypeSerializer,
 )
 from core.api.serializers.project import (
-    MetaProjectSerializer,
     ProjectDetailsSerializer,
     ProjectListSerializer,
 )
+from core.api.serializers.project_association import MetaProjectSerializer
 from core.api.views.projects_export import ProjectsExport
 from core.models.meeting import Meeting
 from core.models.project import (
