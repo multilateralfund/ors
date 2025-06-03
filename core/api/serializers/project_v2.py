@@ -279,7 +279,7 @@ class ProjectListV2Serializer(ProjectListSerializer):
         for detailed representation.
         """
         data = super().to_representation(instance)
-        if instance.submission_status != "Approved":
+        if instance.submission_status.name != "Approved":
             if "code" in data:
                 data["code"] = None
         return data
