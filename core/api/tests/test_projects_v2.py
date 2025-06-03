@@ -855,16 +855,9 @@ class TestCreateProjects(BaseTest):
         )
         assert response.data["status"] == "N/A"
         assert response.data["submission_status"] == "Draft"
-        assert response.data["code"] == get_project_sub_code(
-            country_ro,
-            project_cluster_kip,
-            agency,
-            project_type,
-            subsector.sector,
-            meeting,
-            None,
-            3,
-        )
+        assert (
+            response.data["code"] is None
+        )  # code should be sent to FE as None till approved
 
         project = Project.objects.get(id=response.data["id"])
         assert project.meta_project == project2.meta_project

@@ -104,6 +104,7 @@ class ProjectV2ViewSet(
         "substance_type",
         "submission_status__name",
         "status__name",
+        "date_created",
         "meta_project__code",
         "code",
         "cluster__code",

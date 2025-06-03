@@ -4,6 +4,7 @@ from django.contrib.admin import SimpleListFilter
 
 from core.admin.utils import get_final_display_list
 from core.models.meeting import Decision, Meeting
+from core.models.project_history import ProjectHistory
 from core.models.project import (
     MetaProject,
     Project,
@@ -53,6 +54,17 @@ class LatestProjectVersionsFilter(SimpleListFilter):
         if self.value() == "archived_projects":
             return queryset.filter(latest_project__isnull=False)
         return queryset
+
+
+@admin.register(ProjectHistory)
+class ProjectHistoryAdmin(admin.ModelAdmin):
+    search_fields = [
+        "project__title",
+    ]
+    readonly_fields = ("created_at",)
+    list_filter = [
+        AutocompleteFilterFactory("project", "project"),
+    ]
 
 
 @admin.register(Project)
