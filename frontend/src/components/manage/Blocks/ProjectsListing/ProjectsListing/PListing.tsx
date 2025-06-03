@@ -19,6 +19,7 @@ export default function PListing() {
   const initialFilters = {
     offset: 0,
     limit: PROJECTS_PER_PAGE,
+    ordering: '-date_created',
   }
 
   const projects = useGetProjects(initialFilters)

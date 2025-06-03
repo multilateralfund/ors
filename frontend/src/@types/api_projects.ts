@@ -7,6 +7,7 @@ export type ProjectSubSectorType = {
 }
 
 export type ProjectType = {
+  ad_hoc_pcr: boolean
   agency: string
   agency_id: number
   agency_remarks: any
@@ -41,12 +42,14 @@ export type ProjectType = {
   date_per_agreement: any
   date_per_decision: any
   date_received: any
+  decision: string
   description: any
   effectiveness_cost: any
   excom_provision: string
   export_to: number
   fund_disbursed: any
   fund_disbursed_psc: number
+  funding_window: string
   funds: {
     amount: number
     date: string
@@ -97,6 +100,7 @@ export type ProjectType = {
   }[]
   ods_phasedout_co2mt: any
   operating_cost: number
+  pcr_waived: boolean
   plan: any
   plus: boolean
   products_manufactured: any

@@ -61,7 +61,7 @@ const ProjectViewWrapper = () => {
       {!loading && data && (
         <>
           <HeaderTitle>
-            <div className="align-center flex justify-between">
+            <div className="align-center flex flex-wrap justify-between gap-3">
               <div className="flex gap-2">
                 <PageHeading className="min-w-fit">
                   Project: {title ?? 'N/A'}

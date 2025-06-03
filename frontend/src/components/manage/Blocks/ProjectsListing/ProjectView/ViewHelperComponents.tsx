@@ -29,7 +29,7 @@ export const numberDetailItem = (fieldName: string, fieldValue: string) => (
   </span>
 )
 
-export const booleanDetailItem = (fieldName: string, fieldValue: string) => (
+export const booleanDetailItem = (fieldName: string, fieldValue: boolean) => (
   <span className="flex items-center gap-2">
     <span>{fieldName}</span>
     <h4 className="m-0">{fieldValue ? 'Yes' : 'No'}</h4>
