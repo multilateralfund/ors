@@ -136,6 +136,7 @@ export type ProjectTypeApi = ProjIdentifiers &
   CrossCuttingFields &
   SpecificFields &
   ProjectType & {
+    meeting_id: number | null
     versions: ProjectVersions[]
     version: number
     latest_project: number | null
@@ -192,13 +193,13 @@ export interface ProjectDataProps {
 export interface SubmitActionButtons {
   projectData: ProjectData
   files: ProjectFilesObject
-  setProjectId: Dispatch<SetStateAction<number | null>>
+  setProjectId: (id: number | null) => void
   isSubmitDisabled: boolean
-  setIsLoading: Dispatch<SetStateAction<boolean>>
-  setErrors: Dispatch<SetStateAction<{ [key: string]: [] }>>
-  setHasSubmitted: Dispatch<SetStateAction<boolean>>
-  setFileErrors: Dispatch<SetStateAction<string>>
-  setOtherErrors: Dispatch<SetStateAction<string>>
+  setIsLoading: (value: boolean) => void
+  setErrors: (value: { [key: string]: [] }) => void
+  setHasSubmitted: (value: boolean) => void
+  setFileErrors: (value: string) => void
+  setOtherErrors: (value: string) => void
   specificFields: ProjectSpecificFields[]
 }
 

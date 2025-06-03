@@ -111,7 +111,7 @@ const ProjectsEdit = ({
       ...prevData,
       projIdentifiers: {
         country: project.country_id,
-        meeting: project.meeting,
+        meeting: project.meeting_id,
         current_agency: agency_id ?? project.agency_id,
         side_agency:
           !agency_id || project.agency_id === agency_id

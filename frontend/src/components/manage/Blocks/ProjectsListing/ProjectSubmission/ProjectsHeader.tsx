@@ -37,15 +37,15 @@ const ProjectsHeader = ({
   projectData: ProjectData
   mode: string
   files: ProjectFilesObject
-  setErrors: Dispatch<SetStateAction<{ [key: string]: [] }>>
-  setHasSubmitted: Dispatch<SetStateAction<boolean>>
-  setFileErrors: Dispatch<SetStateAction<string>>
-  setOtherErrors: Dispatch<SetStateAction<string>>
+  setErrors: (errors: Record<string, []>) => void
+  setHasSubmitted: (value: boolean) => void
+  setFileErrors: (value: string) => void
+  setOtherErrors: (value: string) => void
   projectId: number | null
-  setProjectId: Dispatch<SetStateAction<number | null>>
+  setProjectId: (id: number | null) => void
   specificFields: ProjectSpecificFields[]
   project?: ProjectTypeApi
-  setProjectFiles?: Dispatch<SetStateAction<ProjectFile[]>>
+  setProjectFiles?: (value: ProjectFile[]) => void
 }) => {
   const { projIdentifiers, crossCuttingFields, projectSpecificFields } =
     projectData

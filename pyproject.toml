@@ -30,6 +30,8 @@ exclude = [
     "node_modules",
     "site-packages",
     "venv",
+    "frontend",
+    "core/migrations",
 ]
 
 # Same as Black.
@@ -52,6 +54,10 @@ unfixable = []
 
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.lint.per-file-ignores]
+"**/wsgi.py" = ["ALL"]
+"**/manage.py" = ["ALL"]
 
 [tool.ruff.lint.pylint]
 max-args=6

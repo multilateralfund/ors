@@ -6,7 +6,7 @@ import { api, uploadFiles } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
 import { enqueueSnackbar } from 'notistack'
-import { useParams } from 'wouter'
+import { useLocation, useParams } from 'wouter'
 import cx from 'classnames'
 
 const CreateActionButtons = ({
@@ -23,6 +23,7 @@ const CreateActionButtons = ({
   specificFields,
   mode,
 }: SubmitActionButtons & { projectId: number | null; mode: string }) => {
+  const [_, setLocation] = useLocation()
   const { project_id } = useParams<Record<string, string>>()
 
   const projectSlice = useStore((state) => state.projects)
@@ -32,7 +33,7 @@ const CreateActionButtons = ({
 
   const isAddComponentDisabled = isSubmitDisabled || !projectId
 
-  const submitProject = async () => {
+  const createProject = async () => {
     setIsLoading(true)
     setFileErrors('')
     setOtherErrors('')
@@ -66,6 +67,7 @@ const CreateActionButtons = ({
           'list',
         )
       }
+      setLocation(`/projects-listing/${result.id}/edit`)
     } catch (error) {
       const errors = await error.json()
 
@@ -104,9 +106,9 @@ const CreateActionButtons = ({
       {user_permissions.includes('add_project') && (
         <>
           <SubmitButton
-            title="Save"
+            title="Create project"
             isDisabled={isSubmitDisabled}
-            onSubmit={submitProject}
+            onSubmit={createProject}
             className="ml-auto"
           />
           <Link

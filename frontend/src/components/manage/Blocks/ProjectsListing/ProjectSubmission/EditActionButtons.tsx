@@ -25,7 +25,7 @@ const EditActionButtons = ({
   specificFields,
 }: SubmitActionButtons & {
   project: ProjectTypeApi
-  setProjectFiles: Dispatch<SetStateAction<ProjectFile[]>>
+  setProjectFiles: (value: ProjectFile[]) => void
 }) => {
   const { id } = project
 
@@ -33,6 +33,25 @@ const EditActionButtons = ({
   const user_permissions = projectSlice.user_permissions.data || []
 
   const { deletedFilesIds = [], newFiles = [] } = files || {}
+
+  const handleErrors = async (error: any) => {
+    const errors = await error.json()
+
+    if (error.status === 400) {
+      if (errors?.files) {
+        setFileErrors(errors.files)
+      } else {
+        setErrors(errors)
+      }
+    } else if (errors?.details) {
+      setOtherErrors(errors.details)
+    }
+
+    setProjectId(null)
+    enqueueSnackbar(<>An error occurred. Please try again.</>, {
+      variant: 'error',
+    })
+  }
 
   const editProject = async () => {
     setIsLoading(true)
@@ -79,22 +98,21 @@ const EditActionButtons = ({
       })
       setProjectId(result.id)
     } catch (error) {
-      const errors = await error.json()
+      await handleErrors(error)
+    } finally {
+      setIsLoading(false)
+      setHasSubmitted(true)
+    }
+  }
 
-      if (error.status === 400) {
-        if (errors?.files) {
-          setFileErrors(errors.files)
-        } else {
-          setErrors(errors)
-        }
-      } else if (errors?.details) {
-        setOtherErrors(errors.details)
-      }
-
-      setProjectId(null)
-      enqueueSnackbar(<>An error occurred. Please try again.</>, {
-        variant: 'error',
+  const submitProject = async () => {
+    await editProject()
+    try {
+      await api(`api/projects/v2/${id}/submit`, {
+        method: 'POST',
       })
+    } catch (error) {
+      await handleErrors(error)
     } finally {
       setIsLoading(false)
       setHasSubmitted(true)
@@ -145,21 +163,35 @@ const EditActionButtons = ({
           onClick={editProject}
           disabled={isSubmitDisabled}
         >
-          Save
+          Update project
         </Button>
       )}
       {user_permissions.includes('increase_project_version') && (
-        <Button
-          className={cx('px-4 py-2 shadow-none', {
-            [enabledButtonClassname]: !isSubmitDisabled,
-          })}
-          size="large"
-          variant="contained"
-          onClick={increaseVersion}
-          disabled={isSubmitDisabled}
-        >
-          Submit new version
-        </Button>
+        <>
+          {/*<Button*/}
+          {/*  className={cx('px-4 py-2 shadow-none', {*/}
+          {/*    [enabledButtonClassname]: !isSubmitDisabled,*/}
+          {/*  })}*/}
+          {/*  size="large"*/}
+          {/*  variant="contained"*/}
+          {/*  onClick={increaseVersion}*/}
+          {/*  disabled={isSubmitDisabled}*/}
+          {/*>*/}
+          {/*  Submit new version*/}
+          {/*</Button>*/}
+          <Button
+            className={cx('px-4 py-2', {
+              'bg-primary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
+                !isSubmitDisabled,
+            })}
+            size="large"
+            variant="contained"
+            onClick={submitProject}
+            disabled={isSubmitDisabled}
+          >
+            Submit project
+          </Button>
+        </>
       )}
     </div>
   )
