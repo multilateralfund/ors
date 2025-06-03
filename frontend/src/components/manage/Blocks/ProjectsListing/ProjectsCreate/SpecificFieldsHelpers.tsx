@@ -9,6 +9,7 @@ import {
   FieldHandler,
   OptionsType,
   SpecificFields,
+  NestedFieldHandler,
 } from '../interfaces'
 import {
   defaultProps,
@@ -23,7 +24,7 @@ import {
 } from '../utils'
 
 import { Checkbox, TextareaAutosize } from '@mui/material'
-import { find, get, isObject, isBoolean } from 'lodash'
+import { find, get, isObject, isBoolean, isNil } from 'lodash'
 import cx from 'classnames'
 
 const getIsInputDisabled = (
@@ -43,39 +44,129 @@ const getFieldDefaultProps = (isError: boolean) => {
   }
 }
 
-export const changeHandler: Record<FieldType, FieldHandler> = {
-  text: (value, field, setState, section) => {
-    setState((prevData) => ({
+const changeNestedField: NestedFieldHandler = (
+  value,
+  field,
+  setState,
+  section,
+  subField,
+  index,
+) => {
+  setState((prevData) => {
+    const sectionData = prevData[section]
+    const subSectionData = [
+      ...((sectionData?.[subField as keyof typeof sectionData] as Record<
+        string,
+        any
+      >[]) || []),
+    ]
+
+    subSectionData[index] = {
+      ...subSectionData[index],
+      [field]: value,
+    }
+
+    return {
       ...prevData,
       [section]: {
         ...prevData[section],
-        [field]: value.target.value,
+        [subField]: subSectionData,
       },
-    }))
+    }
+  })
+}
+
+const changeField: FieldHandler = (value, field, setState, section) => {
+  setState((prevData) => ({
+    ...prevData,
+    [section]: {
+      ...prevData[section],
+      [field]: value,
+    },
+  }))
+}
+
+const getValue = <T,>(
+  fields: T,
+  sectionIdentifier: keyof T,
+  fieldName: string,
+  subField?: string,
+  index?: number,
+) => {
+  const sectionData = fields[sectionIdentifier]
+  const subSectionData = sectionData[
+    subField as keyof typeof sectionData
+  ] as Record<string, any>[]
+
+  if (subField && !isNil(index)) {
+    const crtEntryData = subSectionData?.[index]
+    return crtEntryData?.[fieldName as keyof typeof crtEntryData]
+  } else {
+    return sectionData[fieldName as keyof typeof sectionData]
+  }
+}
+
+export const changeHandler: Record<FieldType, FieldHandler> = {
+  text: (value, field, setState, section, subField, index) => {
+    const formattedVal = value.target.value
+
+    if (subField && !isNil(index)) {
+      changeNestedField(formattedVal, field, setState, section, subField, index)
+    } else {
+      changeField(formattedVal, field, setState, section)
+    }
   },
-  number: (value, field, setState, section) => {
+  number: (value, field, setState, section, subField, index) => {
+    const formattedVal = value.target.value
+
+    if (formattedVal === '' || !isNaN(parseInt(formattedVal))) {
+      const finalVal = formattedVal ? parseInt(formattedVal) : ''
+
+      if (subField && !isNil(index)) {
+        changeNestedField(finalVal, field, setState, section, subField, index)
+      } else {
+        changeField(finalVal, field, setState, section)
+      }
+    } else {
+      value.preventDefault()
+    }
     handleChangeNumberField(value, field, setState, section)
   },
-  decimal: (value, field, setState, section) => {
-    handleChangeDecimalField(value, field, setState, section)
+  decimal: (value, field, setState, section, subField, index) => {
+    const formattedVal = value.target.value
+
+    if (!isNaN(Number(formattedVal))) {
+      if (subField && !isNil(index)) {
+        changeNestedField(
+          formattedVal,
+          field,
+          setState,
+          section,
+          subField,
+          index,
+        )
+      } else {
+        changeField(formattedVal, field, setState, section)
+      }
+    } else {
+      value.preventDefault()
+    }
   },
-  drop_down: (value, field, setState, section) => {
-    setState((prevData) => ({
-      ...prevData,
-      [section]: {
-        ...prevData[section],
-        [field]: value?.id ?? null,
-      },
-    }))
+  drop_down: (value, field, setState, section, subField, index) => {
+    const formattedVal = value?.id ?? null
+
+    if (subField && !isNil(index)) {
+      changeNestedField(formattedVal, field, setState, section, subField, index)
+    } else {
+      changeField(formattedVal, field, setState, section)
+    }
   },
-  boolean: (value, field, setState, section) => {
-    setState((prevData) => ({
-      ...prevData,
-      [section]: {
-        ...prevData[section],
-        [field]: value,
-      },
-    }))
+  boolean: (value, field, setState, section, subField, index) => {
+    if (subField && !isNil(index)) {
+      changeNestedField(value, field, setState, section, subField, index)
+    } else {
+      changeField(value, field, setState, section)
+    }
   },
 }
 
@@ -88,11 +179,13 @@ export const AutocompleteWidget = <T,>(
   errors: { [key: string]: string[] },
   hasSubmitted: boolean,
   sectionIdentifier: keyof T = identifier as keyof T,
+  subField?: string,
+  index?: number,
 ) => {
   const options = formatOptions(field)
   const fieldName = field.write_field_name
+  const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
 
-  const value = fields[sectionIdentifier][fieldName]
   const formattedValue = isBoolean(value)
     ? find(options, { id: value }) || null
     : value
@@ -110,14 +203,18 @@ export const AutocompleteWidget = <T,>(
             fieldName,
             setFields,
             sectionIdentifier,
+            subField,
+            index,
           )
         }
         getOptionLabel={(option) => {
           const field = fieldName === 'group' ? 'name_alt' : 'name'
 
-          return isObject(option)
-            ? get(option, field)
-            : (find(options, { id: option }) as OptionsType)?.[field] || ''
+          return (
+            (isObject(option)
+              ? get(option, field)
+              : (find(options, { id: option }) as OptionsType)?.[field]) || ''
+          )
         }}
         Input={{
           error: getIsInputDisabled(hasSubmitted, errors, field.label),
@@ -136,27 +233,40 @@ export const TextWidget = <T,>(
   errors: { [key: string]: string[] },
   hasSubmitted: boolean,
   sectionIdentifier: keyof T = identifier as keyof T,
-) => (
-  <div>
-    <Label>{field.label}</Label>
-    <TextareaAutosize
-      value={fields[sectionIdentifier][field.write_field_name] as string}
-      onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
-        changeHandler[field.data_type]<T, SpecificFields>(
-          event,
-          field.write_field_name,
-          setFields,
-          sectionIdentifier,
-        )
-      }
-      className={cx(textAreaClassname, {
-        'border-red-500': getIsInputDisabled(hasSubmitted, errors, field.label),
-      })}
-      minRows={2}
-      tabIndex={-1}
-    />
-  </div>
-)
+  subField?: string,
+  index?: number,
+) => {
+  const fieldName = field.write_field_name
+  const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
+
+  return (
+    <div>
+      <Label>{field.label}</Label>
+      <TextareaAutosize
+        value={value as string}
+        onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
+          changeHandler[field.data_type]<T, SpecificFields>(
+            event,
+            fieldName,
+            setFields,
+            sectionIdentifier,
+            subField,
+            index,
+          )
+        }
+        className={cx(textAreaClassname, {
+          'border-red-500': getIsInputDisabled(
+            hasSubmitted,
+            errors,
+            field.label,
+          ),
+        })}
+        minRows={2}
+        tabIndex={-1}
+      />
+    </div>
+  )
+}
 
 const NumberWidget = <T,>(
   fields: T,
@@ -165,27 +275,36 @@ const NumberWidget = <T,>(
   errors: { [key: string]: string[] },
   hasSubmitted: boolean,
   sectionIdentifier: keyof T = identifier as keyof T,
-) => (
-  <div>
-    <Label>{field.label}</Label>
-    <SimpleInput
-      id={fields[sectionIdentifier][field.write_field_name] as string}
-      value={fields[sectionIdentifier][field.write_field_name] ?? ''}
-      onChange={(value) =>
-        changeHandler[field.data_type]<T, SpecificFields>(
-          value,
-          field.write_field_name,
-          setFields,
-          sectionIdentifier,
-        )
-      }
-      type="text"
-      {...getFieldDefaultProps(
-        getIsInputDisabled(hasSubmitted, errors, field.label),
-      )}
-    />
-  </div>
-)
+  subField?: string,
+  index?: number,
+) => {
+  const fieldName = field.write_field_name
+  const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
+
+  return (
+    <div>
+      <Label>{field.label}</Label>
+      <SimpleInput
+        id={value as string}
+        value={value ?? ''}
+        onChange={(value) =>
+          changeHandler[field.data_type]<T, SpecificFields>(
+            value,
+            field.write_field_name,
+            setFields,
+            sectionIdentifier,
+            subField,
+            index,
+          )
+        }
+        type="text"
+        {...getFieldDefaultProps(
+          getIsInputDisabled(hasSubmitted, errors, field.label),
+        )}
+      />
+    </div>
+  )
+}
 
 const BooleanWidget = <T,>(
   fields: T,
@@ -194,28 +313,37 @@ const BooleanWidget = <T,>(
   errors: { [key: string]: string[] },
   hasSubmitted: boolean,
   sectionIdentifier: keyof T = identifier as keyof T,
-) => (
-  <div className="col-span-full flex w-full">
-    <Label>{field.label}</Label>
-    <Checkbox
-      className="pb-1 pl-2 pt-0"
-      checked={fields[sectionIdentifier][field.write_field_name] as boolean}
-      onChange={(_: React.SyntheticEvent, value) =>
-        changeHandler[field.data_type]<T, SpecificFields>(
-          value,
-          field.write_field_name,
-          setFields,
-          sectionIdentifier,
-        )
-      }
-      sx={{
-        color: getIsInputDisabled(hasSubmitted, errors, field.label)
-          ? 'red'
-          : 'black',
-      }}
-    />
-  </div>
-)
+  subField?: string,
+  index?: number,
+) => {
+  const fieldName = field.write_field_name
+  const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
+
+  return (
+    <div className="col-span-full flex w-full">
+      <Label>{field.label}</Label>
+      <Checkbox
+        className="pb-1 pl-2 pt-0"
+        checked={value as boolean}
+        onChange={(_: React.SyntheticEvent, value) =>
+          changeHandler[field.data_type]<T, SpecificFields>(
+            value,
+            fieldName,
+            setFields,
+            sectionIdentifier,
+            subField,
+            index,
+          )
+        }
+        sx={{
+          color: getIsInputDisabled(hasSubmitted, errors, field.label)
+            ? 'red'
+            : 'black',
+        }}
+      />
+    </div>
+  )
+}
 
 export const widgets = {
   drop_down: AutocompleteWidget,

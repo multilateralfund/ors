@@ -1,18 +1,14 @@
-import { useState } from 'react'
-
-import ProjectOdsOdpTable from '../ProjectView/ProjectOdsOdpTable'
-import OdsOdpModal from './OdsOdpModal'
 import { widgets } from './SpecificFieldsHelpers'
+import { SubmitButton } from '../HelperComponents'
+import { getDefaultValues } from '../utils'
 import {
   OdsOdpFields,
   SpecificFieldsSectionProps,
   ProjectData,
 } from '../interfaces'
 
-import { ICellRendererParams } from 'ag-grid-community'
-import { Button } from '@mui/material'
-import { IoAddCircle } from 'react-icons/io5'
-import { findIndex, groupBy, map } from 'lodash'
+import { IoTrash } from 'react-icons/io5'
+import { groupBy } from 'lodash'
 
 const ProjectSubstanceDetails = ({
   projectData,
@@ -24,8 +20,6 @@ const ProjectSubstanceDetails = ({
 }: SpecificFieldsSectionProps & {
   odsOdpErrors: { [key: string]: [] | number }[]
 }) => {
-  const [displayModal, setDisplayModal] = useState(false)
-
   const sectionIdentifier = 'projectSpecificFields'
   const field = 'ods_odp'
   const odsOdpData = projectData[sectionIdentifier][field] || []
@@ -34,36 +28,50 @@ const ProjectSubstanceDetails = ({
   const projectFields = groupedFields['project'] || []
   const odsOdpFields = groupedFields[field] || []
 
-  const formattedData = odsOdpData.map((entry, idx) => ({ ...entry, id: idx }))
+  const onAddSubstance = () => {
+    const initialOdsOdp = getDefaultValues<OdsOdpFields>(odsOdpFields)
 
-  const onRemoveOdsOdp = (props: ICellRendererParams) => {
-    const odsOdpDataCopy = [...formattedData]
+    setProjectData((prevData) => {
+      const sectionData = prevData[sectionIdentifier][field] || []
 
-    const index = findIndex(
-      odsOdpDataCopy,
-      (row: OdsOdpFields & { id: number }) => row.id === props.data.id,
-    )
-
-    if (index > -1) {
-      odsOdpDataCopy.splice(index, 1)
-
-      const formattedData = map(odsOdpDataCopy, (dataItem, index) => ({
-        ...dataItem,
-        id: odsOdpDataCopy.length - index - 1,
-      }))
-
-      setProjectData((prevData) => ({
+      return {
         ...prevData,
         [sectionIdentifier]: {
           ...prevData[sectionIdentifier],
-          [field]: formattedData,
+          [field]: [...sectionData, initialOdsOdp],
         },
-      }))
-    }
+      }
+    })
+  }
+
+  const onRemoveOdsOdp = (index: number) => {
+    setProjectData((prevData) => {
+      const sectionData = prevData[sectionIdentifier][field] || []
+
+      return {
+        ...prevData,
+        [sectionIdentifier]: {
+          ...prevData[sectionIdentifier],
+          [field]: sectionData.filter((_, idx) => idx !== index),
+        },
+      }
+    })
+  }
+
+  const substanceFieldName = 'ods_substance_id'
+  // const hasSubstanceId = odsOdpDataa?.[field]?.[substanceFieldName]
+  const substanceField = odsOdpFields.find(
+    ({ write_field_name }) => write_field_name === substanceFieldName,
+  )
+  const substanceLabel =
+    substanceField?.label ?? 'Substance - baseline technology'
+  const substanceError = {
+    // [substanceLabel as string]: !hasSubstanceId
+    [substanceLabel as string]: true ? [`${substanceLabel} is required.`] : [],
   }
 
   return (
-    <div className="flex flex-col gap-y-2">
+    <div className="flex flex-col gap-y-6">
       {projectFields.map((field) =>
         widgets[field.data_type]<ProjectData>(
           projectData,
@@ -73,41 +81,38 @@ const ProjectSubstanceDetails = ({
           hasSubmitted,
         ),
       )}
-      {odsOdpFields.length > 0 && (
-        <div>
-          <ProjectOdsOdpTable
-            data={formattedData || []}
-            fields={odsOdpFields}
-            mode="edit"
-            {...{
-              onRemoveOdsOdp,
-              setProjectData,
-              sectionIdentifier,
-              field,
-              odsOdpErrors,
-            }}
-          />
-          <Button
-            className="rounded-lg border border-solid border-primary bg-white p-1.5 text-base hover:bg-primary"
-            onClick={() => setDisplayModal(true)}
-          >
-            Add row
-            <IoAddCircle className="ml-1.5" size={18} />
-          </Button>
+      <div className="flex flex-col gap-y-2">
+        <div className="flex flex-wrap gap-x-20 gap-y-3">
+          {odsOdpData.map((_, index) => (
+            <div className="align-center flex flex-row gap-12">
+              {odsOdpFields.map((odsOdpField) =>
+                widgets[odsOdpField.data_type]<ProjectData>(
+                  projectData,
+                  setProjectData,
+                  odsOdpField,
+                  substanceError,
+                  hasSubmitted,
+                  sectionIdentifier,
+                  field,
+                  index,
+                ),
+              )}
+              <IoTrash
+                className="cursor-pointer fill-gray-400"
+                size={16}
+                onClick={() => {
+                  onRemoveOdsOdp(index)
+                }}
+              />
+            </div>
+          ))}
         </div>
-      )}
-
-      {displayModal && (
-        <OdsOdpModal
-          {...{
-            displayModal,
-            setDisplayModal,
-            setProjectData,
-            odsOdpFields,
-            field,
-          }}
-        />
-      )}
+      </div>
+      <SubmitButton
+        title="Add substance"
+        onSubmit={onAddSubstance}
+        className="mr-auto"
+      />
     </div>
   )
 }
