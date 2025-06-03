@@ -179,6 +179,18 @@ const EditActionButtons = ({
           {/*>*/}
           {/*  Submit new version*/}
           {/*</Button>*/}
+          <Link
+            className={cx(
+              'ml-auto mr-0 h-10 px-3 py-1',
+              'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow',
+            )}
+            href={`/projects-listing/create/${id}/additional-component`}
+            size="large"
+            variant="contained"
+            button
+          >
+            Add additional component
+          </Link>
           <Button
             className={cx('px-4 py-2', {
               'bg-primary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':

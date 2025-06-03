@@ -111,19 +111,6 @@ const CreateActionButtons = ({
             onSubmit={createProject}
             className="ml-auto"
           />
-          <Link
-            className={cx('ml-auto mr-0 h-10 px-3 py-1', {
-              'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
-                !isAddComponentDisabled,
-            })}
-            href={`/projects-listing/create/${projectId}/additional-component`}
-            size="large"
-            variant="contained"
-            button
-            disabled={isAddComponentDisabled}
-          >
-            Add additional component
-          </Link>
         </>
       )}
     </div>
