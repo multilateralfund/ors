@@ -59,16 +59,21 @@ const ProjectSubstanceDetails = ({
   }
 
   const substanceFieldName = 'ods_substance_id'
-  // const hasSubstanceId = odsOdpDataa?.[field]?.[substanceFieldName]
-  const substanceField = odsOdpFields.find(
-    ({ write_field_name }) => write_field_name === substanceFieldName,
-  )
-  const substanceLabel =
-    substanceField?.label ?? 'Substance - baseline technology'
-  const substanceError = {
-    // [substanceLabel as string]: !hasSubstanceId
-    [substanceLabel as string]: true ? [`${substanceLabel} is required.`] : [],
-  }
+
+  const substanceErrors = odsOdpData?.map((odsOdp) => {
+    const hasSubstanceId = odsOdp?.[substanceFieldName]
+    const substanceField = odsOdpFields.find(
+      ({ write_field_name }) => write_field_name === substanceFieldName,
+    )
+    const substanceLabel =
+      substanceField?.label ?? 'Substance - baseline technology'
+
+    return {
+      [substanceLabel as string]: !hasSubstanceId
+        ? [`${substanceLabel} is required.`]
+        : [],
+    }
+  })
 
   return (
     <div className="flex flex-col gap-y-6">
@@ -82,15 +87,15 @@ const ProjectSubstanceDetails = ({
         ),
       )}
       <div className="flex flex-col gap-y-2">
-        <div className="flex flex-wrap gap-x-20 gap-y-3">
+        <div className="flex flex-wrap gap-x-20 gap-y-7">
           {odsOdpData.map((_, index) => (
-            <div className="align-center flex flex-row gap-12">
+            <div className="align-center flex flex-row flex-wrap gap-12">
               {odsOdpFields.map((odsOdpField) =>
                 widgets[odsOdpField.data_type]<ProjectData>(
                   projectData,
                   setProjectData,
                   odsOdpField,
-                  substanceError,
+                  substanceErrors,
                   hasSubmitted,
                   sectionIdentifier,
                   field,
@@ -98,7 +103,7 @@ const ProjectSubstanceDetails = ({
                 ),
               )}
               <IoTrash
-                className="cursor-pointer fill-gray-400"
+                className="mt-12 min-h-[16px] min-w-[16px] cursor-pointer fill-gray-400"
                 size={16}
                 onClick={() => {
                   onRemoveOdsOdp(index)

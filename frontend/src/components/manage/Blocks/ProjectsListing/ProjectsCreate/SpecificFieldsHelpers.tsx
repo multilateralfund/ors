@@ -29,9 +29,20 @@ import cx from 'classnames'
 
 const getIsInputDisabled = (
   hasSubmitted: boolean,
-  errors: { [key: string]: string[] },
+  errors: { [key: string]: string[] } | { [key: string]: string[] }[],
   field: string,
-) => hasSubmitted && errors[field]?.length > 0
+  index?: number,
+) => {
+  let isError = false
+
+  if (Array.isArray(errors) && !isNil(index)) {
+    isError = errors?.[index]?.[field]?.length > 0
+  } else if (!Array.isArray(errors)) {
+    isError = errors?.[field]?.length > 0
+  }
+
+  return hasSubmitted && isError
+}
 
 const getFieldDefaultProps = (isError: boolean) => {
   return {
@@ -176,7 +187,7 @@ export const AutocompleteWidget = <T,>(
   fields: T,
   setFields: Dispatch<SetStateAction<T>>,
   field: ProjectSpecificFields,
-  errors: { [key: string]: string[] },
+  errors: { [key: string]: string[] } | { [key: string]: string[] }[],
   hasSubmitted: boolean,
   sectionIdentifier: keyof T = identifier as keyof T,
   subField?: string,
@@ -217,7 +228,7 @@ export const AutocompleteWidget = <T,>(
           )
         }}
         Input={{
-          error: getIsInputDisabled(hasSubmitted, errors, field.label),
+          error: getIsInputDisabled(hasSubmitted, errors, field.label, index),
         }}
         {...defaultProps}
         {...(additionalProperties[fieldName] ?? {})}
@@ -230,7 +241,7 @@ export const TextWidget = <T,>(
   fields: T,
   setFields: Dispatch<SetStateAction<T>>,
   field: ProjectSpecificFields,
-  errors: { [key: string]: string[] },
+  errors: { [key: string]: string[] } | { [key: string]: string[] }[],
   hasSubmitted: boolean,
   sectionIdentifier: keyof T = identifier as keyof T,
   subField?: string,
@@ -259,6 +270,7 @@ export const TextWidget = <T,>(
             hasSubmitted,
             errors,
             field.label,
+            index,
           ),
         })}
         minRows={2}
@@ -272,7 +284,7 @@ const NumberWidget = <T,>(
   fields: T,
   setFields: Dispatch<SetStateAction<T>>,
   field: ProjectSpecificFields,
-  errors: { [key: string]: string[] },
+  errors: { [key: string]: string[] } | { [key: string]: string[] }[],
   hasSubmitted: boolean,
   sectionIdentifier: keyof T = identifier as keyof T,
   subField?: string,
@@ -299,7 +311,7 @@ const NumberWidget = <T,>(
         }
         type="text"
         {...getFieldDefaultProps(
-          getIsInputDisabled(hasSubmitted, errors, field.label),
+          getIsInputDisabled(hasSubmitted, errors, field.label, index),
         )}
       />
     </div>
@@ -310,7 +322,7 @@ const BooleanWidget = <T,>(
   fields: T,
   setFields: Dispatch<SetStateAction<T>>,
   field: ProjectSpecificFields,
-  errors: { [key: string]: string[] },
+  errors: { [key: string]: string[] } | { [key: string]: string[] }[],
   hasSubmitted: boolean,
   sectionIdentifier: keyof T = identifier as keyof T,
   subField?: string,
@@ -336,7 +348,7 @@ const BooleanWidget = <T,>(
           )
         }
         sx={{
-          color: getIsInputDisabled(hasSubmitted, errors, field.label)
+          color: getIsInputDisabled(hasSubmitted, errors, field.label, index)
             ? 'red'
             : 'black',
         }}
