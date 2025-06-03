@@ -5,12 +5,14 @@ import { useState } from 'react'
 import ProjectIdentifiers from './ProjectIdentifiers'
 import ProjectCrossCutting from './ProjectCrossCutting'
 import ProjectSpecificInfo from './ProjectSpecificInfo'
+import ProjectApproval from './ProjectApproval'
 import ProjectImpact from './ProjectImpact'
 import ProjectDocumentation from './ProjectDocumentation'
 import { ProjectFile, ProjectViewProps } from '../interfaces'
 import { getSectionFields } from '../utils'
 
 import { Tabs, Tab } from '@mui/material'
+import { lowerCase } from 'lodash'
 
 const ProjectView = ({
   project,
@@ -74,6 +76,13 @@ const ProjectView = ({
           aria-controls="project-documentation"
           label="Documentation"
         />
+        {lowerCase(project.submission_status) === 'approved' && (
+          <Tab
+            id="project-approval"
+            aria-controls="project-approval"
+            label="Approval"
+          />
+        )}
       </Tabs>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {activeTab === 0 && (
@@ -87,6 +96,7 @@ const ProjectView = ({
         {activeTab === 4 && (
           <ProjectDocumentation {...{ projectFiles }} mode="view" />
         )}
+        {activeTab === 5 && <ProjectApproval {...{ project }} />}
       </div>
     </>
   )
