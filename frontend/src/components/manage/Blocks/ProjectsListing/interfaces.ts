@@ -110,6 +110,17 @@ export type FieldHandler = <T, K>(
   field: keyof K,
   setState: Dispatch<SetStateAction<T>>,
   section: keyof T,
+  subField?: string,
+  index?: number,
+) => void
+
+export type NestedFieldHandler = <T, K>(
+  value: any,
+  field: keyof K,
+  setState: Dispatch<SetStateAction<T>>,
+  section: keyof T,
+  subField: string,
+  index: number,
 ) => void
 
 export type ProjectFile = {

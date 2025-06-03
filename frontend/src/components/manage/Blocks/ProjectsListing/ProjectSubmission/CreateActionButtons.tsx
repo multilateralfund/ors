@@ -1,11 +1,11 @@
 import Link from '@ors/components/ui/Link/Link'
+import { SubmitButton } from '../HelperComponents'
 import { formatSubmitData } from '../utils'
 import { SubmitActionButtons } from '../interfaces'
 import { api, uploadFiles } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
 import { enqueueSnackbar } from 'notistack'
-import { Button } from '@mui/material'
 import { useParams } from 'wouter'
 import cx from 'classnames'
 
@@ -103,18 +103,12 @@ const CreateActionButtons = ({
       </Link>
       {user_permissions.includes('add_project') && (
         <>
-          <Button
-            className={cx('ml-auto mr-0 h-10 px-3 py-1', {
-              'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
-                !isSubmitDisabled,
-            })}
-            size="large"
-            variant="contained"
-            onClick={submitProject}
-            disabled={isSubmitDisabled}
-          >
-            Save
-          </Button>
+          <SubmitButton
+            title="Save"
+            isDisabled={isSubmitDisabled}
+            onSubmit={submitProject}
+            className="ml-auto"
+          />
           <Link
             className={cx('ml-auto mr-0 h-10 px-3 py-1', {
               'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
