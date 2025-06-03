@@ -273,6 +273,17 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "withdrawn",
         ]
 
+    def to_representation(self, instance):
+        """
+        Override the to_representation method to use the ProjectDetailsV2Serializer
+        for detailed representation.
+        """
+        data = super().to_representation(instance)
+        if instance.submission_status != "Approved":
+            if "code" in data:
+                data["code"] = None
+        return data
+
 
 class ProjectDetailsV2Serializer(ProjectListV2Serializer):
     """
