@@ -122,6 +122,7 @@ export type ProjectType = {
   submission_category: any
   submission_comments: any
   submission_number: any
+  submission_status: string
   subsectors: ProjectSubSectorType[]
   subsector_legacy: string
   substance_category: string
