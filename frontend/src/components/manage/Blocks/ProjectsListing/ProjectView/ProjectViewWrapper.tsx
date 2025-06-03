@@ -15,8 +15,10 @@ import { useGetProject } from '../hooks/useGetProject'
 import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
 import { ProjectSpecificFields } from '../interfaces'
+import { getTitleExtras } from '../utils'
 import { useStore } from '@ors/store'
 
+import { lowerCase } from 'lodash'
 import { useParams } from 'wouter'
 
 const ProjectViewWrapper = () => {
@@ -36,7 +38,8 @@ const ProjectViewWrapper = () => {
   )
   const [showVersionsMenu, setShowVersionsMenu] = useState<boolean>(false)
 
-  const { code, code_legacy, versions, version, latest_project } = data || {}
+  const { title, versions, version, latest_project, submission_status } =
+    data || {}
 
   useEffect(() => {
     if (cluster_id && project_type_id && sector_id) {
@@ -61,12 +64,17 @@ const ProjectViewWrapper = () => {
             <div className="align-center flex justify-between">
               <div className="flex gap-2">
                 <PageHeading className="min-w-fit">
-                  {code ?? code_legacy}
+                  Project: {title ?? 'N/A'}
+                  {getTitleExtras(data)}
                 </PageHeading>
-                <VersionsDropdown
-                  {...{ versions, showVersionsMenu, setShowVersionsMenu }}
-                />
-                <HeaderTag {...{ latest_project, version }} />
+                {(version > 1 || lowerCase(submission_status) !== 'draft') && (
+                  <>
+                    <VersionsDropdown
+                      {...{ versions, showVersionsMenu, setShowVersionsMenu }}
+                    />
+                    <HeaderTag {...{ latest_project, version }} />
+                  </>
+                )}
               </div>
               {user_permissions.includes('edit_project') && (
                 <CustomLink

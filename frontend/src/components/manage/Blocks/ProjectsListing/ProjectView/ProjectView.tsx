@@ -2,11 +2,9 @@
 
 import { useState } from 'react'
 
-import ProjectOverview from './ProjectOverview'
-import ProjectDescription from './ProjectDescription'
-import ProjectFinancial from './ProjectFinancial'
-import ProjectDate from './ProjectDate'
-import ProjectSubstanceDetails from './ProjectSubstanceDetails'
+import ProjectIdentifiers from './ProjectIdentifiers'
+import ProjectCrossCutting from './ProjectCrossCutting'
+import ProjectSpecificInfo from './ProjectSpecificInfo'
 import ProjectImpact from './ProjectImpact'
 import ProjectDocumentation from './ProjectDocumentation'
 import { ProjectFile, ProjectViewProps } from '../interfaces'
@@ -21,7 +19,8 @@ const ProjectView = ({
 }: ProjectViewProps & { projectFiles: ProjectFile[] }) => {
   const [activeTab, setActiveTab] = useState(0)
 
-  const [substanceDetailsFields, impactFields] = [
+  const [overviewFields, substanceDetailsFields, impactFields] = [
+    getSectionFields(specificFields, 'Header'),
     getSectionFields(specificFields, 'Substance Details'),
     getSectionFields(specificFields, 'Impact'),
   ]
@@ -43,26 +42,20 @@ const ProjectView = ({
         }}
       >
         <Tab
-          id="project-overview"
-          aria-controls="project-overview"
-          label="Overview"
+          id="project-identifiers"
+          aria-controls="project-identifiers"
+          label="Identifiers"
         />
         <Tab
-          id="project-description"
-          aria-controls="project-description"
-          label="Description"
+          id="project-cross-cutting"
+          aria-controls="project-cross-cutting"
+          label="Cross-Cutting"
         />
         <Tab
-          id="project-financial"
-          aria-controls="project-financial"
-          label="Financial"
-        />
-        <Tab id="project-date" aria-controls="project-date" label="Date" />
-        <Tab
-          id="project-substance-details"
-          aria-controls="project-substance-details"
-          label="Substance details"
-          disabled={!substanceDetailsFields.length}
+          id="project-specific-info"
+          aria-controls="project-specific-info"
+          label="Specific Information"
+          disabled={!substanceDetailsFields.length && !overviewFields.length}
           classes={{
             disabled: 'text-gray-200',
           }}
@@ -84,16 +77,14 @@ const ProjectView = ({
       </Tabs>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {activeTab === 0 && (
-          <ProjectOverview {...{ project, specificFields }} />
+          <ProjectIdentifiers {...{ project, specificFields }} />
         )}
-        {activeTab === 1 && <ProjectDescription {...{ project }} />}
-        {activeTab === 2 && <ProjectFinancial {...{ project }} />}
-        {activeTab === 3 && <ProjectDate {...{ project }} />}
+        {activeTab === 1 && <ProjectCrossCutting {...{ project }} />}
+        {activeTab === 2 && (
+          <ProjectSpecificInfo {...{ project, specificFields }} />
+        )}
+        {activeTab === 3 && <ProjectImpact {...{ project, specificFields }} />}
         {activeTab === 4 && (
-          <ProjectSubstanceDetails {...{ project, specificFields }} />
-        )}
-        {activeTab === 5 && <ProjectImpact {...{ project, specificFields }} />}
-        {activeTab === 6 && (
           <ProjectDocumentation {...{ projectFiles }} mode="view" />
         )}
       </div>

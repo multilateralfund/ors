@@ -8,7 +8,11 @@ import {
 } from '../ProjectVersions/ProjectVersionsComponents'
 import CreateActionButtons from './CreateActionButtons'
 import EditActionButtons from './EditActionButtons'
-import { getDefaultImpactErrors, getIsSubmitDisabled } from '../utils'
+import {
+  getDefaultImpactErrors,
+  getIsSubmitDisabled,
+  getTitleExtras,
+} from '../utils'
 import {
   ProjectData,
   ProjectFile,
@@ -18,6 +22,7 @@ import {
 } from '../interfaces'
 
 import { CircularProgress } from '@mui/material'
+import { lowerCase } from 'lodash'
 import dayjs from 'dayjs'
 
 const ProjectsHeader = ({
@@ -65,11 +70,11 @@ const ProjectsHeader = ({
   const [showVersionsMenu, setShowVersionsMenu] = useState(false)
 
   const {
-    code,
-    code_legacy,
+    title,
     versions = [],
     version = 0,
     latest_project = null,
+    submission_status,
   } = project || {}
 
   const Versions = (
@@ -86,10 +91,12 @@ const ProjectsHeader = ({
         <div className="flex gap-2">
           <PageHeading>
             {mode === 'edit'
-              ? `Edit ${code ?? code_legacy}`
+              ? `Edit project: ${title ?? 'N/A'}${getTitleExtras(project as ProjectTypeApi)}`
               : 'New project submission'}
           </PageHeading>
-          {mode === 'edit' && Versions}
+          {mode === 'edit' &&
+            (version > 1 || lowerCase(submission_status) !== 'draft') &&
+            Versions}
         </div>
         <div className="flex items-center gap-2.5">
           {mode !== 'edit' ? (
