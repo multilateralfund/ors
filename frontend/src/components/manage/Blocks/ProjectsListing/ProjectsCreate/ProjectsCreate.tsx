@@ -28,7 +28,7 @@ import { Tabs, Tab, Alert, Typography } from '@mui/material'
 import { isEmpty, map } from 'lodash'
 
 export const SectionTitle = ({ children }: { children: ReactNode }) => (
-  <div className="text-typography-sectionTitle mb-4 text-xl uppercase tracking-[1px]">
+  <div className="mb-4 text-xl uppercase tracking-[1px] text-typography-sectionTitle">
     {children}
   </div>
 )
@@ -148,7 +148,7 @@ const ProjectsCreate = ({
 
         return errorMsgs.map((msg) => ({
           id: `${label}-${id}`,
-          message: `Row ${(id as number) + 1} - ${label}: ${msg}`,
+          message: `Substance ${(id as number) + 1} - ${label}: ${msg}`,
         }))
       })
   })
