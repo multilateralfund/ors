@@ -20,7 +20,7 @@ const ProjectSpecificInfoSection = ({
   substanceDetailsFields: ProjectSpecificFields[]
   overviewErrors?: { [key: string]: string[] }
   substanceDetailsErrors?: { [key: string]: string[] }
-  odsOdpErrors: { [key: string]: [] | number }[]
+  odsOdpErrors: { [key: string]: [] }[]
 }) => {
   return (
     <>
