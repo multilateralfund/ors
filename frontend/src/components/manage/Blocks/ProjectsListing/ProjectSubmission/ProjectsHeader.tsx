@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useState } from 'react'
+import { useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
@@ -50,7 +50,6 @@ const ProjectsHeader = ({
   const { projIdentifiers, crossCuttingFields, projectSpecificFields } =
     projectData
   const { project_start_date, project_end_date } = crossCuttingFields
-  const { ods_odp = [] } = projectSpecificFields
 
   const defaultImpactErrors = getDefaultImpactErrors(projectSpecificFields)
   const hasValidationErrors = Object.values(defaultImpactErrors).some(
@@ -63,8 +62,7 @@ const ProjectsHeader = ({
   const isSubmitDisabled =
     hasMissingRequiredFields ||
     dayjs(project_start_date).isAfter(dayjs(project_end_date)) ||
-    hasValidationErrors ||
-    (ods_odp.length > 0 && ods_odp.some((item) => !item.ods_substance_id))
+    hasValidationErrors
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [showVersionsMenu, setShowVersionsMenu] = useState(false)

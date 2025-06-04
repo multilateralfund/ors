@@ -97,14 +97,6 @@ export type SpecificFieldsSectionProps = ProjectDataProps & {
   sectionFields: ProjectSpecificFields[]
 }
 
-export type OdsOdpModalProps = {
-  displayModal: boolean
-  setDisplayModal: Dispatch<SetStateAction<boolean>>
-  setProjectData: Dispatch<SetStateAction<ProjectData>>
-  odsOdpFields: ProjectSpecificFields[]
-  field: keyof SpecificFields
-}
-
 export type FieldHandler = <T, K>(
   value: any,
   field: keyof K,
@@ -112,15 +104,6 @@ export type FieldHandler = <T, K>(
   section: keyof T,
   subField?: string,
   index?: number,
-) => void
-
-export type NestedFieldHandler = <T, K>(
-  value: any,
-  field: keyof K,
-  setState: Dispatch<SetStateAction<T>>,
-  section: keyof T,
-  subField: string,
-  index: number,
 ) => void
 
 export type ProjectFile = {

@@ -1,5 +1,3 @@
-import { ChangeEvent, Dispatch, SetStateAction } from 'react'
-
 import { validationFieldsPairs } from './constants'
 import {
   ProjIdentifiers,
@@ -108,45 +106,6 @@ export const formatNumberColumns = (
       ? formatDecimalValue(parseFloat(value), valueFormatter)
       : formatDecimalValue(parseFloat(value))
     : ''
-}
-
-export const handleChangeNumberField = <T, K>(
-  event: ChangeEvent<HTMLInputElement>,
-  field: keyof K,
-  setState: Dispatch<SetStateAction<T>>,
-  section: keyof T,
-) => {
-  const value = event.target.value
-
-  if (value === '' || !isNaN(parseInt(value))) {
-    setState((prevData) => ({
-      ...prevData,
-      [section]: {
-        ...prevData[section],
-        [field]: value ? parseInt(value) : '',
-      },
-    }))
-  } else {
-    event.preventDefault()
-  }
-}
-
-export const handleChangeDecimalField = <T, K>(
-  event: ChangeEvent<HTMLInputElement>,
-  field: keyof K,
-  setState: Dispatch<SetStateAction<T>>,
-  section: keyof T,
-) => {
-  const value = event.target.value
-
-  if (!isNaN(Number(value))) {
-    setState((prevData) => ({
-      ...prevData,
-      [section]: { ...prevData[section], [field]: value },
-    }))
-  } else {
-    event.preventDefault()
-  }
 }
 
 export const formatSubmitData = (
@@ -280,6 +239,17 @@ export const getDefaultImpactErrors = (
     ]),
   )
 }
+
+export const getFieldLabel = (
+  specificFields: ProjectSpecificFields[],
+  field: string,
+) => {
+  const specificField = specificFields.find(
+    ({ write_field_name }) => write_field_name === field,
+  )
+  return specificField?.label ?? field
+}
+
 export const getSpecificFieldsErrors = (
   projectSpecificFields: SpecificFields,
   specificFields: ProjectSpecificFields[],
