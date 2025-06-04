@@ -913,19 +913,83 @@ class TestCreateProjects(BaseTest):
 class TestProjectsV2Update:
     client = APIClient()
 
-    def test_project_patch_anon(self, project_url):
-        response = self.client.patch(project_url, {"title": "Into the Spell"})
-        assert response.status_code == 403
+    def test_update_project_permissions(
+        self,
+        _setup_project_create,
+        user,
+        project,
+        project_url,
+        viewer_user,
+        agency_user,
+        new_agency,
+        agency_inputter_user,
+        secretariat_viewer_user,
+        secretariat_v1_v2_edit_access_user,
+        secretariat_production_v1_v2_edit_access_user,
+        secretariat_v3_edit_access_user,
+        secretariat_production_v3_edit_access_user,
+        admin_user,
+    ):
+        def _test_user_permissions(user, expected_response_status):
+            self.client.force_authenticate(user=user)
+            response = self.client.patch(project_url, {"title": "Into the Spell"})
+            assert response.status_code == expected_response_status, response.data
 
-    def test_as_viewer(self, viewer_user, project_url):
-        self.client.force_authenticate(user=viewer_user)
         response = self.client.patch(project_url, {"title": "Into the Spell"})
-        assert response.status_code == 403
+        assert response.status_code == 403, response.data
 
-    def test_without_permission_wrong_agency(self, other_agency_user, project_url):
-        self.client.force_authenticate(user=other_agency_user)
-        response = self.client.patch(project_url, {"title": "Into the Spell"})
-        assert response.status_code == 404
+        def _test_permissions_for_different_project_agency(
+            user,
+            own_agency_response_status,
+            different_agency_response_status,
+            lead_agency_response_status,
+        ):
+            project.agency = user.agency
+            project.save()
+            _test_user_permissions(user, own_agency_response_status)
+            project.agency = new_agency
+            project.save()
+            project.meta_project.lead_agency = None
+            project.meta_project.save()
+            _test_user_permissions(user, different_agency_response_status)
+            project.meta_project.lead_agency = user.agency
+            project.meta_project.save()
+            _test_user_permissions(user, lead_agency_response_status)
+
+        _test_user_permissions(user, 403)
+        viewer_user.agency = agency_user.agency
+        viewer_user.save()
+        _test_permissions_for_different_project_agency(viewer_user, 403, 403, 403)
+        _test_permissions_for_different_project_agency(agency_user, 200, 404, 200)
+        _test_permissions_for_different_project_agency(
+            agency_inputter_user, 200, 404, 200
+        )
+        secretariat_viewer_user.agency = agency_user.agency
+        secretariat_viewer_user.save()
+        _test_permissions_for_different_project_agency(
+            secretariat_viewer_user, 403, 403, 403
+        )
+        secretariat_v1_v2_edit_access_user.agency = agency_user.agency
+        secretariat_v1_v2_edit_access_user.save()
+        _test_permissions_for_different_project_agency(
+            secretariat_v1_v2_edit_access_user, 200, 200, 200
+        )
+        secretariat_production_v1_v2_edit_access_user.agency = agency_user.agency
+        secretariat_production_v1_v2_edit_access_user.save()
+        _test_permissions_for_different_project_agency(
+            secretariat_production_v1_v2_edit_access_user, 200, 200, 200
+        )
+        secretariat_v3_edit_access_user.agency = agency_user.agency
+        secretariat_v3_edit_access_user.save()
+        _test_permissions_for_different_project_agency(
+            secretariat_v3_edit_access_user, 403, 403, 403
+        )
+        secretariat_production_v3_edit_access_user.agency = agency_user.agency
+        secretariat_production_v3_edit_access_user.save()
+        _test_permissions_for_different_project_agency(
+            secretariat_production_v3_edit_access_user, 403, 403, 403
+        )
+        _test_user_permissions(admin_user, 200)
 
     def test_project_update(self, agency_user, project_url, project):
         self.client.force_authenticate(user=agency_user)
@@ -1684,6 +1748,7 @@ class TestAssociateProject:
         admin_user,
     ):
         url = reverse("project-v2-associate-projects")
+        agency = AgencyFactory.create(code="TESTAG")
 
         def _test_user_permissions(user, expected_response_status):
             self.client.force_authenticate(user=user)
@@ -1691,6 +1756,7 @@ class TestAssociateProject:
                 url,
                 data={
                     "project_ids": [project.id, project2.id],
+                    "lead_agency_id": agency.id,
                 },
                 format="json",
             )
@@ -1721,13 +1787,14 @@ class TestAssociateProject:
     ):
         self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
         url = reverse("project-v2-associate-projects")
-
+        agency = AgencyFactory.create(code="TESTAG")
         # associate project
         response = self.client.post(
             url,
             format="json",
             data={
                 "project_ids": [project.id, project2.id],
+                "lead_agency_id": agency.id,
             },
         )
         assert response.status_code == 200, response.data
@@ -1735,6 +1802,7 @@ class TestAssociateProject:
         project.refresh_from_db()
         project2.refresh_from_db()
         assert project.meta_project == project2.meta_project
+        assert project.meta_project.lead_agency == agency
 
         project.meta_project = None
         project.save()
@@ -1746,6 +1814,7 @@ class TestAssociateProject:
             format="json",
             data={
                 "project_ids": [project.id, project2.id],
+                "lead_agency_id": agency.id,
             },
         )
         assert response.status_code == 200, response.data
@@ -1753,3 +1822,4 @@ class TestAssociateProject:
         project.refresh_from_db()
         project2.refresh_from_db()
         assert project.meta_project == project2.meta_project
+        assert project.meta_project.lead_agency == agency

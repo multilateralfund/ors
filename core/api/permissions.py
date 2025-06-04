@@ -169,6 +169,22 @@ class IsAgencySubmitter(IsAgency):
                 return True
         return False
 
+    def has_object_permission(self, request, view, obj):
+        """
+        Check if user has permission to access the object
+
+        """
+        if getattr(obj, "agency_id", "no attr") == "no attr":
+            return False
+        if request.user.agency_id == obj.agency_id:
+            return True
+        if getattr(obj, "meta_project", "no metaproject") == "no metaproject":
+            return False
+
+        if request.user.agency == obj.meta_project.lead_agency:
+            return True
+        return False
+
 
 class IsAgencyInputter(IsAgency):
     def has_permission(self, request, view):
@@ -179,6 +195,22 @@ class IsAgencyInputter(IsAgency):
                 and user.agency_id is not None
             ):
                 return True
+        return False
+
+    def has_object_permission(self, request, view, obj):
+        """
+        Check if user has permission to access the object
+
+        """
+        if getattr(obj, "agency_id", "no attr") == "no attr":
+            return False
+        if request.user.agency_id == obj.agency_id:
+            return True
+        if getattr(obj, "meta_project", "no metaproject") == "no metaproject":
+            return False
+
+        if request.user.agency == obj.meta_project.lead_agency:
+            return True
         return False
 
 

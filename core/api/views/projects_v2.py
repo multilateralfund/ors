@@ -34,6 +34,7 @@ from core.api.serializers.project_v2 import (
     ProjectV2CreateUpdateSerializer,
 )
 from core.api.swagger import FileUploadAutoSchema
+from core.models.agency import Agency
 from core.models.project import (
     MetaProject,
     Project,
@@ -198,18 +199,23 @@ class ProjectV2ViewSet(
             queryset = Project.objects.all()
         queryset = self.filter_permissions_queryset(queryset)
         queryset = queryset.select_related(
-            "country",
             "agency",
+            "cluster",
+            "country",
             "project_type",
             "status",
             "submission_status",
-            "cluster",
+            "sector",
             "meeting",
             "meeting_transf",
             "meta_project",
         ).prefetch_related(
             "coop_agencies",
             "submission_amounts",
+            "subsectors",
+            "funds",
+            "comments",
+            "files",
             "subsectors__sector",
             "rbm_measures__measure",
             "ods_odp",
@@ -272,12 +278,6 @@ class ProjectV2ViewSet(
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
-
-    @action(methods=["GET"], detail=False)
-    def api_schema(self, request):
-        meta = self.metadata_class()
-        data = meta.determine_metadata(request, self)
-        return Response(data)
 
     @action(methods=["GET"], detail=False)
     def export(self, *args, **kwargs):
@@ -473,8 +473,12 @@ class ProjectV2ViewSet(
                     type=openapi.TYPE_ARRAY,
                     items=openapi.Items(type=openapi.TYPE_INTEGER),
                 ),
+                "lead_agency_id": openapi.Schema(
+                    type=openapi.TYPE_INTEGER,
+                    description="ID of the lead agency for the meta project.",
+                ),
             },
-            required=["project_ids"],
+            required=["project_ids", "lead_agency_id"],
         ),
         responses={
             status.HTTP_200_OK: ProjectDetailsV2Serializer,
@@ -492,6 +496,15 @@ class ProjectV2ViewSet(
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        lead_agency_id = request.data.get("lead_agency_id", None)
+        if not lead_agency_id:
+            return Response(
+                {"error": "Lead agency is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        lead_agency = get_object_or_404(Agency, pk=lead_agency_id)
+
         # Get first meta project that can be found in the project_objs
         meta_project = next(
             (p.meta_project for p in project_objs if p.meta_project), None
@@ -503,6 +516,8 @@ class ProjectV2ViewSet(
 
         # Associate all projects with the meta project
         project_objs.update(meta_project=meta_project)
+        meta_project.lead_agency = lead_agency
+        meta_project.save()
 
         # Clean up any meta projects that have no projects associated with them
 
