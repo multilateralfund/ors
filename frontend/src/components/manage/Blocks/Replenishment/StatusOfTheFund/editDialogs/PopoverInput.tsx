@@ -164,6 +164,7 @@ export default function PopoverInput({
           required={required}
           style={STYLE}
           value={label ?? selectedEntry}
+          readOnly={true}
           onClick={openPopover}
         />
         {withClear && selectedEntry && (

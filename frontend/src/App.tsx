@@ -1,4 +1,4 @@
-import { Switch, Route, Redirect, useLocation } from 'wouter'
+import { Switch, Route, Redirect } from 'wouter'
 
 import LoginLayout from '@ors/app/login/layout'
 
@@ -61,13 +61,10 @@ import { useStore } from '@ors/store.tsx'
 function RedirectToSection() {
   const user = useStore((state) => state.user)
   const isTreasurer = user && user.data.user_type === 'treasurer'
-  const [_, setLocation] = useLocation()
   if (isTreasurer) {
-    setLocation('/replenishment/dashboard/cummulative')
-  } else {
-    setLocation('/country-programme/reports')
+    return <Redirect to={'/replenishment/dashboard/cummulative'} />
   }
-  return null
+  return <Redirect to={'/country-programme/reports'} />
 }
 
 export default function App() {
