@@ -1,0 +1,26 @@
+[
+  {
+    "STATUS_CODE": null,
+    "STATUS": "Approved"
+  },
+  {
+    "STATUS_CODE": null,
+    "STATUS": "Draft"
+  },
+  {
+    "STATUS_CODE": null,
+    "STATUS": "Not approved"
+  },
+  {
+    "STATUS_CODE": null,
+    "STATUS": "Recommended"
+  },
+  {
+    "STATUS_CODE": null,
+    "STATUS": "Submitted"
+  },
+  {
+    "STATUS_CODE": null,
+    "STATUS": "Withdrawn"
+  }
+]

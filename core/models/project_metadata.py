@@ -104,6 +104,15 @@ class ProjectCluster(models.Model):
         choices=ProjectClusterCategory.choices,
         default=ProjectClusterCategory.BOTH,
     )
+    group = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text="""
+            Dashboard group. If value is Production, projects with this cluster will be considered
+            as production projects
+        """,
+    )
     sort_order = models.FloatField(null=True, blank=True)
 
     objects = ProjectClusterManager()

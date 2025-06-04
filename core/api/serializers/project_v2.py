@@ -397,6 +397,27 @@ class ProjectV2OdsOdpCreateUpdateSerializer(ProjectOdsOdpCreateSerializer):
     class Meta(ProjectOdsOdpCreateSerializer.Meta):
         fields = ["id"] + ProjectOdsOdpCreateSerializer.Meta.fields
 
+    def validate(self, attrs):
+        if attrs.get("ods_substance_id") and attrs.get("ods_blend_id"):
+            raise serializers.ValidationError(
+                "Only one of ods_substance_id or ods_blend_id is required"
+            )
+        # validate partial updates
+        if self.instance:
+            # set ods_substance_id wile ods_blend_id is set
+            if attrs.get("ods_substance_id") and self.instance.ods_blend_id:
+                raise serializers.ValidationError(
+                    "Cannot update ods_substance_id when ods_blend_id is set"
+                )
+
+            # set ods_blend_id wile ods_substance_id is set
+            if attrs.get("ods_blend_id") and self.instance.ods_substance_id:
+                raise serializers.ValidationError(
+                    "Cannot update ods_blend_id when ods_substance_id is set"
+                )
+
+        return super(ProjectOdsOdpListSerializer, self).validate(attrs)
+
 
 class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
     """
@@ -668,7 +689,7 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
             for field in project_specific_fields_obj.fields.filter(
                 section__in=["Header", "Substance Details", "Impact"]
             ):
-                if field.section == "Substance Details":
+                if field.table == "ods_odp":
                     project_ods_odp_entries = self.instance.ods_odp.all()
                     if not project_ods_odp_entries:
                         errors[field.write_field_name] = (
