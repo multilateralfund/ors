@@ -29,7 +29,16 @@ const ProjectViewWrapper = () => {
 
   const project = useGetProject(project_id)
   const { data, loading } = project
-  const { cluster_id, project_type_id, sector_id } = data || {}
+  const {
+    cluster_id,
+    project_type_id,
+    sector_id,
+    title,
+    versions,
+    version,
+    latest_project,
+    submission_status,
+  } = data || {}
 
   const { data: projectFiles } = useGetProjectFiles(project_id)
 
@@ -37,9 +46,6 @@ const ProjectViewWrapper = () => {
     [],
   )
   const [showVersionsMenu, setShowVersionsMenu] = useState<boolean>(false)
-
-  const { title, versions, version, latest_project, submission_status } =
-    data || {}
 
   useEffect(() => {
     if (cluster_id && project_type_id && sector_id) {
@@ -76,17 +82,18 @@ const ProjectViewWrapper = () => {
                   </>
                 )}
               </div>
-              {user_permissions.includes('edit_project') && (
-                <CustomLink
-                  className="mb-4 h-10 text-nowrap px-4 py-2 text-lg uppercase"
-                  href={`/projects-listing/${project_id}/edit`}
-                  color="secondary"
-                  variant="contained"
-                  button
-                >
-                  Edit
-                </CustomLink>
-              )}
+              {user_permissions.includes('edit_project') &&
+                lowerCase(submission_status) !== 'withdrawn' && (
+                  <CustomLink
+                    className="mb-4 h-10 text-nowrap px-4 py-2 text-lg uppercase"
+                    href={`/projects-listing/${project_id}/edit`}
+                    color="secondary"
+                    variant="contained"
+                    button
+                  >
+                    Edit
+                  </CustomLink>
+                )}
             </div>
           </HeaderTitle>
           <ProjectView project={data} {...{ projectFiles, specificFields }} />

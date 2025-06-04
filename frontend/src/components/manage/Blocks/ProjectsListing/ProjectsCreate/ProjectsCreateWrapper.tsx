@@ -77,7 +77,6 @@ const ProjectsCreateWrapper = () => {
         {...{
           projectData,
           files,
-          projectId,
           setProjectId,
           setErrors,
           setHasSubmitted,

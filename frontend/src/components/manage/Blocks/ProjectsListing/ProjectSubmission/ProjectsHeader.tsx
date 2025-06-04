@@ -29,7 +29,6 @@ const ProjectsHeader = ({
   projectData,
   mode,
   project,
-  projectId,
   files,
   setProjectFiles = () => {},
   ...rest
@@ -41,7 +40,6 @@ const ProjectsHeader = ({
   setHasSubmitted: (value: boolean) => void
   setFileErrors: (value: string) => void
   setOtherErrors: (value: string) => void
-  projectId: number | null
   setProjectId: (id: number | null) => void
   specificFields: ProjectSpecificFields[]
   project?: ProjectTypeApi
@@ -85,7 +83,7 @@ const ProjectsHeader = ({
   )
   return (
     <HeaderTitle>
-      <div className="align-center flex flex-wrap justify-between gap-x-4 gap-y-2">
+      <div className="align-center flex flex-wrap justify-between gap-x-4 gap-y-4">
         <div className="flex gap-2">
           <PageHeading>
             {mode === 'edit'
@@ -96,12 +94,11 @@ const ProjectsHeader = ({
             (version > 1 || lowerCase(submission_status) !== 'draft') &&
             Versions}
         </div>
-        <div className="flex items-center gap-2.5">
+        <div className="ml-auto flex items-center gap-2.5">
           {mode !== 'edit' ? (
             <CreateActionButtons
               {...{
                 projectData,
-                projectId,
                 isSubmitDisabled,
                 setIsLoading,
                 files,

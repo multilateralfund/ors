@@ -70,7 +70,7 @@ const ProjectSubstanceDetails = ({
         ),
       )}
       <div className="flex flex-col gap-y-2">
-        <div className="flex flex-wrap gap-x-20 gap-y-7">
+        <div className="flex flex-col flex-wrap gap-x-20 gap-y-7">
           {odsOdpData.map((_, index) => (
             <div className="align-center flex flex-row flex-wrap gap-12">
               {odsOdpFields.map((odsOdpField) =>
