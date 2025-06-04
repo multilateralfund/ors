@@ -9,7 +9,6 @@ import {
   FieldHandler,
   OptionsType,
   SpecificFields,
-  NestedFieldHandler,
 } from '../interfaces'
 import {
   defaultProps,
@@ -17,14 +16,10 @@ import {
   textAreaClassname,
   additionalProperties,
 } from '../constants'
-import {
-  formatOptions,
-  handleChangeDecimalField,
-  handleChangeNumberField,
-} from '../utils'
+import { formatOptions } from '../utils'
 
 import { Checkbox, TextareaAutosize } from '@mui/material'
-import { find, get, isObject, isBoolean, isNil } from 'lodash'
+import { find, get, isObject, isBoolean, isNil, isArray } from 'lodash'
 import cx from 'classnames'
 
 const getIsInputDisabled = (
@@ -33,13 +28,10 @@ const getIsInputDisabled = (
   field: string,
   index?: number,
 ) => {
-  let isError = false
-
-  if (Array.isArray(errors) && !isNil(index)) {
-    isError = errors?.[index]?.[field]?.length > 0
-  } else if (!Array.isArray(errors)) {
-    isError = errors?.[field]?.length > 0
-  }
+  const isError =
+    isArray(errors) && !isNil(index)
+      ? errors?.[index]?.[field]?.length > 0
+      : !isArray(errors) && errors?.[field]?.length > 0
 
   return hasSubmitted && isError
 }
@@ -55,7 +47,7 @@ const getFieldDefaultProps = (isError: boolean) => {
   }
 }
 
-const changeNestedField: NestedFieldHandler = (
+const changeNestedField: FieldHandler = (
   value,
   field,
   setState,
@@ -63,28 +55,25 @@ const changeNestedField: NestedFieldHandler = (
   subField,
   index,
 ) => {
-  setState((prevData) => {
-    const sectionData = prevData[section]
-    const subSectionData = [
-      ...((sectionData?.[subField as keyof typeof sectionData] as Record<
-        string,
-        any
-      >[]) || []),
-    ]
+  if (!isNil(index) && subField) {
+    setState((prevData) => {
+      const sectionData = prevData[section] as Record<string, any>
+      const subSectionData = sectionData[subField] || []
 
-    subSectionData[index] = {
-      ...subSectionData[index],
-      [field]: value,
-    }
+      subSectionData[index] = {
+        ...subSectionData[index],
+        [field]: value,
+      }
 
-    return {
-      ...prevData,
-      [section]: {
-        ...prevData[section],
-        [subField]: subSectionData,
-      },
-    }
-  })
+      return {
+        ...prevData,
+        [section]: {
+          ...prevData[section],
+          [subField]: subSectionData,
+        },
+      }
+    })
+  }
 }
 
 const changeField: FieldHandler = (value, field, setState, section) => {
@@ -104,80 +93,59 @@ const getValue = <T,>(
   subField?: string,
   index?: number,
 ) => {
-  const sectionData = fields[sectionIdentifier]
-  const subSectionData = sectionData[
-    subField as keyof typeof sectionData
-  ] as Record<string, any>[]
+  const sectionData = fields[sectionIdentifier] as Record<string, any>
+  const subSectionData = sectionData[subField as string] || []
 
+  return subField && !isNil(index)
+    ? subSectionData?.[index]?.[fieldName]
+    : sectionData[fieldName]
+}
+
+const onFieldChange: FieldHandler = (
+  value,
+  field,
+  setState,
+  section,
+  subField,
+  index,
+) => {
   if (subField && !isNil(index)) {
-    const crtEntryData = subSectionData?.[index]
-    return crtEntryData?.[fieldName as keyof typeof crtEntryData]
+    changeNestedField(value, field, setState, section, subField, index)
   } else {
-    return sectionData[fieldName as keyof typeof sectionData]
+    changeField(value, field, setState, section)
   }
 }
 
 export const changeHandler: Record<FieldType, FieldHandler> = {
   text: (value, field, setState, section, subField, index) => {
     const formattedVal = value.target.value
-
-    if (subField && !isNil(index)) {
-      changeNestedField(formattedVal, field, setState, section, subField, index)
-    } else {
-      changeField(formattedVal, field, setState, section)
-    }
+    onFieldChange(formattedVal, field, setState, section, subField, index)
   },
   number: (value, field, setState, section, subField, index) => {
     const formattedVal = value.target.value
 
     if (formattedVal === '' || !isNaN(parseInt(formattedVal))) {
       const finalVal = formattedVal ? parseInt(formattedVal) : ''
-
-      if (subField && !isNil(index)) {
-        changeNestedField(finalVal, field, setState, section, subField, index)
-      } else {
-        changeField(finalVal, field, setState, section)
-      }
+      onFieldChange(finalVal, field, setState, section, subField, index)
     } else {
       value.preventDefault()
     }
-    handleChangeNumberField(value, field, setState, section)
   },
   decimal: (value, field, setState, section, subField, index) => {
     const formattedVal = value.target.value
 
     if (!isNaN(Number(formattedVal))) {
-      if (subField && !isNil(index)) {
-        changeNestedField(
-          formattedVal,
-          field,
-          setState,
-          section,
-          subField,
-          index,
-        )
-      } else {
-        changeField(formattedVal, field, setState, section)
-      }
+      onFieldChange(formattedVal, field, setState, section, subField, index)
     } else {
       value.preventDefault()
     }
   },
   drop_down: (value, field, setState, section, subField, index) => {
     const formattedVal = value?.id ?? null
-
-    if (subField && !isNil(index)) {
-      changeNestedField(formattedVal, field, setState, section, subField, index)
-    } else {
-      changeField(formattedVal, field, setState, section)
-    }
+    onFieldChange(formattedVal, field, setState, section, subField, index)
   },
   boolean: (value, field, setState, section, subField, index) => {
-    if (subField && !isNil(index)) {
-      changeNestedField(value, field, setState, section, subField, index)
-    } else {
-      changeField(value, field, setState, section)
-    }
+    onFieldChange(value, field, setState, section, subField, index)
   },
 }
 

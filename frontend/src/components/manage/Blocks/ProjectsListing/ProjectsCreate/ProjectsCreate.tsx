@@ -19,13 +19,14 @@ import {
 import {
   canGoToSecondStep,
   getCrossCuttingErrors,
+  getFieldLabel,
   getProjIdentifiersErrors,
   getSectionFields,
   getSpecificFieldsErrors,
 } from '../utils.ts'
 
 import { Tabs, Tab, Alert, Typography } from '@mui/material'
-import { isEmpty, map } from 'lodash'
+import { has, isArray, isEmpty, map, mapKeys } from 'lodash'
 
 export const SectionTitle = ({ children }: { children: ReactNode }) => (
   <div className="mb-4 text-xl uppercase tracking-[1px] text-typography-sectionTitle">
@@ -62,7 +63,6 @@ const ProjectsCreate = ({
   const { projIdentifiers, crossCuttingFields, projectSpecificFields } =
     projectData ?? {}
   const { project_type, sector } = crossCuttingFields
-  const { ods_odp = [] } = projectSpecificFields
 
   const canLinkToBp = canGoToSecondStep(projIdentifiers)
 
@@ -109,49 +109,30 @@ const ProjectsCreate = ({
   const substanceDetailsErrors = specificFieldsErrors['Substance Details'] || {}
   const impactErrors = specificFieldsErrors['Impact'] || {}
 
-  const substanceDetailsErrorIndexes = ods_odp
-    .map((item, index) => (!item.ods_substance_id ? index : -1))
-    .filter((index) => index !== -1)
-
-  const substanceError = { ods_substance_id: ['This field is required.'] }
-  const updatedOdsOdpErrors = errors?.ods_odp
-    ? errors.ods_odp.map((item: { [key: string]: [] }, index) =>
-        substanceDetailsErrorIndexes.includes(index)
-          ? { ...item, ...substanceError }
-          : item,
-      )
-    : substanceDetailsErrorIndexes.length > 0
-      ? ods_odp.map((_, index) =>
-          substanceDetailsErrorIndexes.includes(index) ? substanceError : {},
-        )
-      : []
-  const odsOdpErrors = map(
-    updatedOdsOdpErrors as { [key: string]: [] }[],
+  const filteredOdsOdpErrors = map(
+    errors?.ods_odp as { [key: string]: [] }[],
     (odp, index) => (!isEmpty(odp) ? { ...odp, id: index } : { ...odp }),
-  ).filter((odp) => !isEmpty(odp))
+  ).filter((odp) => !isEmpty(odp) && !has(odp, 'non_field_errors'))
 
-  const formattedOdsOdpErrors = odsOdpErrors.flatMap((err) => {
+  const formattedOdsOdpErrors = filteredOdsOdpErrors.flatMap((err) => {
     const { id, ...fields } = err
 
     return Object.entries(fields)
-      .filter(
-        ([field, errorMsgs]) =>
-          Array.isArray(errorMsgs) &&
-          errorMsgs.length > 0 &&
-          field !== 'non_field_errors',
-      )
+      .filter(([_, errorMsgs]) => isArray(errorMsgs) && errorMsgs.length > 0)
       .flatMap(([field, errorMsgs]) => {
-        const specificField = specificFields.find(
-          ({ write_field_name }) => write_field_name === field,
-        )
-        const label = specificField?.label ?? field
+        const label = getFieldLabel(specificFields, field)
 
         return errorMsgs.map((msg) => ({
           id: `${label}-${id}`,
-          message: `Substance ${(id as number) + 1} - ${label}: ${msg}`,
+          message: `Entry ${(id as number) + 1} - ${label}: ${msg}`,
         }))
       })
   })
+
+  const odsOdpErrors = map(
+    errors?.ods_odp as { [key: string]: [] }[],
+    (error) => mapKeys(error, (_, key) => getFieldLabel(specificFields, key)),
+  )
 
   const hasSectionErrors = (errors: { [key: string]: string[] }) =>
     Object.values(errors).some((errors) => errors.length > 0)

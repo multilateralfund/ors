@@ -18,7 +18,7 @@ const ProjectSubstanceDetails = ({
   hasSubmitted,
   odsOdpErrors,
 }: SpecificFieldsSectionProps & {
-  odsOdpErrors: { [key: string]: [] | number }[]
+  odsOdpErrors: { [key: string]: [] }[]
 }) => {
   const sectionIdentifier = 'projectSpecificFields'
   const field = 'ods_odp'
@@ -58,23 +58,6 @@ const ProjectSubstanceDetails = ({
     })
   }
 
-  const substanceFieldName = 'ods_substance_id'
-
-  const substanceErrors = odsOdpData?.map((odsOdp) => {
-    const hasSubstanceId = odsOdp?.[substanceFieldName]
-    const substanceField = odsOdpFields.find(
-      ({ write_field_name }) => write_field_name === substanceFieldName,
-    )
-    const substanceLabel =
-      substanceField?.label ?? 'Substance - baseline technology'
-
-    return {
-      [substanceLabel as string]: !hasSubstanceId
-        ? [`${substanceLabel} is required.`]
-        : [],
-    }
-  })
-
   return (
     <div className="flex flex-col gap-y-6">
       {projectFields.map((field) =>
@@ -95,7 +78,7 @@ const ProjectSubstanceDetails = ({
                   projectData,
                   setProjectData,
                   odsOdpField,
-                  substanceErrors,
+                  odsOdpErrors,
                   hasSubmitted,
                   sectionIdentifier,
                   field,
@@ -113,11 +96,13 @@ const ProjectSubstanceDetails = ({
           ))}
         </div>
       </div>
-      <SubmitButton
-        title="Add substance"
-        onSubmit={onAddSubstance}
-        className="mr-auto"
-      />
+      {odsOdpFields.length > 0 && (
+        <SubmitButton
+          title="Add substance"
+          onSubmit={onAddSubstance}
+          className="mr-auto"
+        />
+      )}{' '}
     </div>
   )
 }
