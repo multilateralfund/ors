@@ -18,20 +18,17 @@ const getColumnDefs = (
 ) => {
   return {
     columnDefs: [
-      ...(user_permissions.includes('view_project') ||
-      user_permissions.includes('edit_project')
+      ...(user_permissions.includes('edit_project')
         ? [
             {
               cellRenderer: (props: ICellRendererParams) => (
                 <div className="flex items-center justify-center gap-1.5">
-                  {user_permissions.includes('edit_project') && (
-                    <Link
-                      className="flex justify-center"
-                      href={`/projects-listing/${props.data.id}/edit`}
-                    >
-                      <FiEdit size={16} />
-                    </Link>
-                  )}
+                  <Link
+                    className="flex justify-center"
+                    href={`/projects-listing/${props.data.id}/edit`}
+                  >
+                    <FiEdit size={16} />
+                  </Link>
                 </div>
               ),
               field: '',

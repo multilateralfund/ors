@@ -170,7 +170,6 @@ const ProjectsEdit = ({
           project,
           projectData,
           files,
-          projectId,
           setProjectId,
           setErrors,
           setHasSubmitted,
@@ -199,7 +198,7 @@ const ProjectsEdit = ({
       <ProjectSubmissionFooter
         successMessage={
           mode === 'edit'
-            ? `Updated ${project.code ?? project.code_legacy} successfully.`
+            ? 'Updated project successfully.'
             : 'Submission was successful.'
         }
         {...{ projectId, nonFieldsErrors, fileErrors, otherErrors }}

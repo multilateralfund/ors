@@ -1,6 +1,5 @@
-import { Dispatch, SetStateAction } from 'react'
-
 import Link from '@ors/components/ui/Link/Link'
+import { IncreaseVersionButton } from '../HelperComponents'
 import { formatSubmitData } from '../utils'
 import { ProjectFile, ProjectTypeApi, SubmitActionButtons } from '../interfaces'
 import { api, uploadFiles } from '@ors/helpers'
@@ -8,6 +7,8 @@ import { useStore } from '@ors/store'
 
 import { enqueueSnackbar } from 'notistack'
 import { Button } from '@mui/material'
+import { useLocation } from 'wouter'
+import { lowerCase } from 'lodash'
 import cx from 'classnames'
 
 const EditActionButtons = ({
@@ -27,7 +28,9 @@ const EditActionButtons = ({
   project: ProjectTypeApi
   setProjectFiles: (value: ProjectFile[]) => void
 }) => {
-  const { id } = project
+  const [_, setLocation] = useLocation()
+
+  const { id, version, submission_status } = project
 
   const projectSlice = useStore((state) => state.projects)
   const user_permissions = projectSlice.user_permissions.data || []
@@ -38,13 +41,15 @@ const EditActionButtons = ({
     const errors = await error.json()
 
     if (error.status === 400) {
+      setErrors(errors)
+
       if (errors?.files) {
         setFileErrors(errors.files)
-      } else {
-        setErrors(errors)
       }
-    } else if (errors?.details) {
-      setOtherErrors(errors.details)
+
+      if (errors?.details) {
+        setOtherErrors(errors.details)
+      }
     }
 
     setProjectId(null)
@@ -119,20 +124,31 @@ const EditActionButtons = ({
     }
   }
 
-  const increaseVersion = async () => {
-    setIsLoading(true)
-
+  const recommendProject = async () => {
+    await editProject()
     try {
-      const data = formatSubmitData(projectData, specificFields)
-
-      await api(`api/projects/v2/${id}/increase_version/`, {
-        data: data,
+      await api(`api/projects/v2/${id}/recommend`, {
         method: 'POST',
       })
     } catch (error) {
-      console.error('Could not increase version.')
+      await handleErrors(error)
     } finally {
       setIsLoading(false)
+      setHasSubmitted(true)
+    }
+  }
+
+  const withdrawProject = async () => {
+    try {
+      await api(`api/projects/v2/${id}/withdraw`, {
+        method: 'POST',
+      })
+    } catch (error) {
+      enqueueSnackbar(<>Could not withdraw project. Please try again.</>, {
+        variant: 'error',
+      })
+    } finally {
+      setLocation(`/projects-listing/${id}`)
     }
   }
 
@@ -166,45 +182,40 @@ const EditActionButtons = ({
           Update project
         </Button>
       )}
-      {user_permissions.includes('increase_project_version') && (
-        <>
-          {/*<Button*/}
-          {/*  className={cx('px-4 py-2 shadow-none', {*/}
-          {/*    [enabledButtonClassname]: !isSubmitDisabled,*/}
-          {/*  })}*/}
-          {/*  size="large"*/}
-          {/*  variant="contained"*/}
-          {/*  onClick={increaseVersion}*/}
-          {/*  disabled={isSubmitDisabled}*/}
-          {/*>*/}
-          {/*  Submit new version*/}
-          {/*</Button>*/}
-          <Link
-            className={cx(
-              'ml-auto mr-0 h-10 px-3 py-1',
-              'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow',
-            )}
-            href={`/projects-listing/create/${id}/additional-component`}
-            size="large"
-            variant="contained"
-            button
-          >
-            Add additional component
-          </Link>
-          <Button
-            className={cx('px-4 py-2', {
-              'bg-primary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
-                !isSubmitDisabled,
-            })}
-            size="large"
-            variant="contained"
-            onClick={submitProject}
-            disabled={isSubmitDisabled}
-          >
-            Submit project
-          </Button>
-        </>
+      {user_permissions.includes('add_project') && (
+        <Link
+          className={cx(
+            'mr-0 px-3 py-1',
+            'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow',
+          )}
+          href={`/projects-listing/create/${id}/additional-component`}
+          size="large"
+          variant="contained"
+          button
+        >
+          Add additional component
+        </Link>
       )}
+      {user_permissions.includes('increase_project_version') &&
+        (version === 1 && lowerCase(submission_status) === 'draft' ? (
+          <IncreaseVersionButton
+            title="Submit project"
+            onSubmit={submitProject}
+            isDisabled={isSubmitDisabled}
+          />
+        ) : version === 2 && lowerCase(submission_status) === 'submitted' ? (
+          <>
+            <IncreaseVersionButton
+              title="Recommend project"
+              onSubmit={recommendProject}
+              isDisabled={isSubmitDisabled}
+            />
+            <IncreaseVersionButton
+              title="Withdraw project"
+              onSubmit={withdrawProject}
+            />
+          </>
+        ) : null)}
     </div>
   )
 }

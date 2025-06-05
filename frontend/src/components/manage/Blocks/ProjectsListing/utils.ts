@@ -328,9 +328,9 @@ export const getTitleExtras = (project: ProjectTypeApi) => {
         return ` (${formattedStatus})`
       case status === 'draft' && version === 1:
         return ` (${formattedStatus})`
-      case status === 'submitted' && version === 1:
+      case status === 'submitted' && version === 2:
         return ` (${formattedStatus})`
-      case status === 'recommended' && version === 2:
+      case status === 'recommended' && version === 3:
         return ` (${formattedStatus})`
       default:
         return ''

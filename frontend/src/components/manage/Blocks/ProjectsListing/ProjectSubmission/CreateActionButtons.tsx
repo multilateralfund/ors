@@ -7,12 +7,10 @@ import { useStore } from '@ors/store'
 
 import { enqueueSnackbar } from 'notistack'
 import { useLocation, useParams } from 'wouter'
-import cx from 'classnames'
 
 const CreateActionButtons = ({
   projectData,
   files,
-  projectId,
   setProjectId,
   isSubmitDisabled,
   setIsLoading,
@@ -22,7 +20,7 @@ const CreateActionButtons = ({
   setOtherErrors,
   specificFields,
   mode,
-}: SubmitActionButtons & { projectId: number | null; mode: string }) => {
+}: SubmitActionButtons & { mode: string }) => {
   const [_, setLocation] = useLocation()
   const { project_id } = useParams<Record<string, string>>()
 
@@ -30,8 +28,6 @@ const CreateActionButtons = ({
   const user_permissions = projectSlice.user_permissions.data || []
 
   const { newFiles = [] } = files || {}
-
-  const isAddComponentDisabled = isSubmitDisabled || !projectId
 
   const createProject = async () => {
     setIsLoading(true)
@@ -72,13 +68,15 @@ const CreateActionButtons = ({
       const errors = await error.json()
 
       if (error.status === 400) {
+        setErrors(errors)
+
         if (errors?.file) {
           setFileErrors(errors.file)
-        } else {
-          setErrors(errors)
         }
-      } else if (errors?.details) {
-        setOtherErrors(errors.details)
+
+        if (errors?.details) {
+          setOtherErrors(errors.details)
+        }
       }
 
       setProjectId(null)
