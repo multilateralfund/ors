@@ -402,7 +402,7 @@
         "READ_FIELD_NAME": "number_of_enterprises_assisted",
         "TABLE": "project",
         "DATA_TYPE": "number",
-        "SECTION": "Impact"
+        "SECTION": "MYA"
     },
     {
         "IMPORT_NAME": "Start date (MYA)",
