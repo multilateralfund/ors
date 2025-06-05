@@ -19,29 +19,39 @@ const ProjectSpecificInfo = ({ project, specificFields }: ProjectViewProps) => {
 
   return (
     <>
-      <SectionTitle>Overview</SectionTitle>
-      <div className="flex w-full flex-col gap-4">
-        <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
-          {map(headerFields, (field) =>
-            viewModesHandler[field.data_type](project, field),
-          )}
-        </div>
-      </div>
-      <Divider className="my-6" />
+      {headerFields.length > 0 && (
+        <>
+          <SectionTitle>Overview</SectionTitle>
+          <div className="flex w-full flex-col gap-4">
+            <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
+              {map(headerFields, (field) =>
+                viewModesHandler[field.data_type](project, field),
+              )}
+            </div>
+          </div>
+        </>
+      )}
 
-      <SectionTitle>Substance Details</SectionTitle>
+      {headerFields.length > 0 && substanceFields.length > 0 && (
+        <Divider className="my-6" />
+      )}
 
-      <div className="flex w-full flex-col gap-4">
-        <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
-          {map(projectFields, (field) =>
-            viewModesHandler[field.data_type](project, field),
-          )}
-        </div>
-        <ProjectOdsOdpTable
-          data={project?.[field] || []}
-          fields={odsOdpFields}
-        />
-      </div>
+      {substanceFields.length > 0 && (
+        <>
+          <SectionTitle>Substance Details</SectionTitle>
+          <div className="flex w-full flex-col gap-4">
+            <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
+              {map(projectFields, (field) =>
+                viewModesHandler[field.data_type](project, field),
+              )}
+            </div>
+            <ProjectOdsOdpTable
+              data={project?.[field] || []}
+              fields={odsOdpFields}
+            />
+          </div>
+        </>
+      )}
     </>
   )
 }
