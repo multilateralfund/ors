@@ -1035,7 +1035,6 @@ class TestProjectsV2Update:
             "title": "Crocodile wearing a vest",
             "ods_odp": [
                 {
-                    "ods_substance_id": substance.id,
                     "odp": 0.01,
                     "ods_replacement": "test replacement",
                 },

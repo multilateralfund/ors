@@ -13,6 +13,7 @@ from core.models.project_metadata import (
     ProjectSpecificFields,
     ProjectField,
     ProjectSector,
+    ProjectSubmissionStatus,
     ProjectSubSector,
     ProjectType,
 )
@@ -93,6 +94,7 @@ def import_project_clusters(file_path):
             "name": row["Name"],
             "code": row["Acronym"],
             "category": row["Category"].upper(),
+            "group": row["Dashboard group"],
             "sort_order": index,
         }
         ProjectCluster.objects.update_or_create(
@@ -272,6 +274,26 @@ def import_project_specific_fields(file_path):
         cluster_sector_type.fields.add(*project_fields)
 
 
+def import_project_submission_statuses(file_path):
+    """
+    Import project submission statuses from file
+
+    @param file_path = str (file path for import file)
+    """
+
+    with open(file_path, "r", encoding="utf8") as f:
+        statuses_json = json.load(f)
+
+    for status_json in statuses_json:
+        status_data = {
+            "name": status_json["STATUS"],
+            "code": status_json["STATUS_CODE"],
+        }
+        ProjectSubmissionStatus.objects.update_or_create(
+            name=status_data["name"], defaults=status_data
+        )
+
+
 def import_cluster_type_sector_links(file_path):
     """
     Import links between cluster, type and sector from file
@@ -356,6 +378,12 @@ def import_project_resources_v2():
     file_path = IMPORT_RESOURCES_DIR / "projects_v2" / "tbSubsector_06_05_2025.json"
     import_subsector(file_path)
     logger.info("✔ subsectors imported")
+
+    file_path = (
+        IMPORT_RESOURCES_DIR / "projects_v2" / "project_submission_statuses.json"
+    )
+    import_project_submission_statuses(file_path)
+    logger.info("✔ project submission statuses imported")
 
     file_path = IMPORT_RESOURCES_DIR / "projects_v2" / "ClusterTypeSectorLinks.json"
     import_cluster_type_sector_links(file_path)
