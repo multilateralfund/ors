@@ -201,7 +201,7 @@ const ProjectsEdit = ({
             ? 'Updated project successfully.'
             : 'Submission was successful.'
         }
-        {...{ projectId, nonFieldsErrors, fileErrors, otherErrors }}
+        {...{ projectId, nonFieldsErrors, otherErrors }}
       />
     </>
   )

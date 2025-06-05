@@ -8,7 +8,6 @@ import ProjectCrossCuttingFields from './ProjectCrossCuttingFields'
 import ProjectSpecificInfoSection from './ProjectSpecificInfoSection.tsx'
 import ProjectImpact from './ProjectImpact.tsx'
 import ProjectDocumentation from '../ProjectView/ProjectDocumentation.tsx'
-import { tableColumns } from '../constants.ts'
 import {
   ProjectFile,
   ProjectSpecificFields,
@@ -18,6 +17,7 @@ import {
 } from '../interfaces.ts'
 import {
   canGoToSecondStep,
+  formatErrors,
   getCrossCuttingErrors,
   getFieldLabel,
   getProjIdentifiersErrors,
@@ -137,16 +137,6 @@ const ProjectsCreate = ({
   const hasSectionErrors = (errors: { [key: string]: string[] }) =>
     Object.values(errors).some((errors) => errors.length > 0)
 
-  const formatErrors = (errors: { [key: string]: string[] }) =>
-    Object.entries(errors)
-      .filter(([, errorMsgs]) => errorMsgs.length > 0)
-      .flatMap(([field, errorMsgs]) =>
-        errorMsgs.map((errMsg, idx) => ({
-          id: `${field}-${idx}`,
-          message: `${tableColumns[field] ?? field}: ${errMsg}`,
-        })),
-      )
-
   const steps = [
     {
       step: 0,
@@ -157,9 +147,7 @@ const ProjectsCreate = ({
           <div>Identifiers</div>
           {(hasSectionErrors(projIdentifiersErrors) ||
             hasSectionErrors(bpErrors)) && (
-            <SectionErrorIndicator
-              errors={formatErrors({ ...projIdentifiersErrors, ...bpErrors })}
-            />
+            <SectionErrorIndicator errors={[]} />
           )}
         </div>
       ),
@@ -177,6 +165,7 @@ const ProjectsCreate = ({
           errors={projIdentifiersErrors}
         />
       ),
+      errors: formatErrors({ ...projIdentifiersErrors, ...bpErrors }),
     },
     {
       step: 1,
@@ -186,7 +175,7 @@ const ProjectsCreate = ({
         <div className="relative flex items-center justify-between gap-x-2">
           <div>Cross-Cutting</div>
           {!areNextSectionsDisabled && hasSectionErrors(crossCuttingErrors) && (
-            <SectionErrorIndicator errors={formatErrors(crossCuttingErrors)} />
+            <SectionErrorIndicator errors={[]} />
           )}
         </div>
       ),
@@ -201,6 +190,7 @@ const ProjectsCreate = ({
           errors={crossCuttingErrors}
         />
       ),
+      errors: formatErrors(crossCuttingErrors),
     },
     {
       step: 2,
@@ -213,15 +203,7 @@ const ProjectsCreate = ({
             (hasSectionErrors(overviewErrors) ||
               hasSectionErrors(substanceDetailsErrors) ||
               formattedOdsOdpErrors.length > 0) && (
-              <SectionErrorIndicator
-                errors={[
-                  ...formatErrors({
-                    ...overviewErrors,
-                    ...substanceDetailsErrors,
-                  }),
-                  ...formattedOdsOdpErrors,
-                ]}
-              />
+              <SectionErrorIndicator errors={[]} />
             )}
         </div>
       ),
@@ -240,6 +222,13 @@ const ProjectsCreate = ({
           }}
         />
       ),
+      errors: [
+        ...formatErrors({
+          ...overviewErrors,
+          ...substanceDetailsErrors,
+        }),
+        ...formattedOdsOdpErrors,
+      ],
     },
     {
       step: 3,
@@ -249,7 +238,7 @@ const ProjectsCreate = ({
         <div className="relative flex items-center justify-between gap-x-2">
           <div>Impact</div>
           {!isImpactTabDisabled && hasSectionErrors(impactErrors) && (
-            <SectionErrorIndicator errors={formatErrors(impactErrors)} />
+            <SectionErrorIndicator errors={[]} />
           )}
         </div>
       ),
@@ -261,6 +250,7 @@ const ProjectsCreate = ({
           {...{ projectData, setProjectData, hasSubmitted }}
         />
       ),
+      errors: formatErrors(impactErrors),
     },
     {
       step: 4,
@@ -270,19 +260,18 @@ const ProjectsCreate = ({
         <div className="relative flex items-center justify-between gap-x-2">
           <div>Documentation</div>
           {!areNextSectionsDisabled && fileErrors ? (
-            <SectionErrorIndicator
-              errors={[
-                {
-                  id: '1',
-                  message: fileErrors,
-                },
-              ]}
-            />
+            <SectionErrorIndicator errors={[]} />
           ) : null}
         </div>
       ),
       disabled: areNextSectionsDisabled,
       component: <ProjectDocumentation {...rest} {...{ files, mode }} />,
+      errors: [
+        {
+          id: '1',
+          message: fileErrors,
+        },
+      ],
     },
   ]
 
@@ -316,16 +305,29 @@ const ProjectsCreate = ({
         ))}
       </Tabs>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
-        {!isEmpty(errors) && (
-          <Alert className="mb-12" severity="error">
-            <Typography>
-              Please make sure all the sections are valid.
-            </Typography>
-          </Alert>
-        )}
         {steps
           .filter(({ step }) => step === currentTab)
-          .map(({ component }) => component)}
+          .map(({ component, errors }) => {
+            return (
+              <>
+                {errors.length > 0 && (
+                  <Alert className="mb-5" severity="error">
+                    <Typography>
+                      Please make sure all the sections are valid.
+                      <div className="mt-1">
+                        {errors.map((err, idx) => (
+                          <div key={idx} className="py-1.5">
+                            {'\u2022'} {err.message}
+                          </div>
+                        ))}
+                      </div>
+                    </Typography>
+                  </Alert>
+                )}
+                {component}
+              </>
+            )
+          })}
       </div>
     </>
   )
