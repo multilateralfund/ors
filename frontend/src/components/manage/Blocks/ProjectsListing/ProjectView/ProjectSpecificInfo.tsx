@@ -45,10 +45,12 @@ const ProjectSpecificInfo = ({ project, specificFields }: ProjectViewProps) => {
                 viewModesHandler[field.data_type](project, field),
               )}
             </div>
-            <ProjectOdsOdpTable
-              data={project?.[field] || []}
-              fields={odsOdpFields}
-            />
+            {odsOdpFields.length > 0 && (
+              <ProjectOdsOdpTable
+                data={project?.[field] || []}
+                fields={odsOdpFields}
+              />
+            )}
           </div>
         </>
       )}

@@ -22,7 +22,10 @@ const ProjectCrossCutting = ({ project }: { project: ProjectTypeApi }) => {
   const is_lvc = find(lvcNonLvcOpts, {
     id: project.is_lvc,
   }) as BooleanOptionsType
-  const subsectors = map(project.subsectors, 'name').join(', ')
+  const subsectors =
+    project.subsectors.length > 0
+      ? map(project.subsectors, 'name').join(', ')
+      : '-'
 
   return (
     <>

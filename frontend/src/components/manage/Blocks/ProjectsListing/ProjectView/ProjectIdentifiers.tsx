@@ -15,6 +15,10 @@ const ProjectIdentifiers = ({ project }: { project: ProjectTypeApi }) => {
           {detailItem(tableColumns.meeting, project.meeting)}
           {detailItem(tableColumns.agency, project.agency)}
           {detailItem(tableColumns.cluster, project.cluster?.name)}
+          {detailItem(
+            tableColumns.submission_status,
+            project.submission_status,
+          )}
         </div>
       </div>
 
