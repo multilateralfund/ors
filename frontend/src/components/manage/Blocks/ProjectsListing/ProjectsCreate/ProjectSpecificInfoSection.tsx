@@ -24,22 +24,32 @@ const ProjectSpecificInfoSection = ({
 }) => {
   return (
     <>
-      <SectionTitle>Overview</SectionTitle>
-      <ProjectOverview
-        sectionFields={overviewFields}
-        errors={overviewErrors}
-        {...rest}
-      />
+      {overviewFields.length > 0 && (
+        <>
+          <SectionTitle>Overview</SectionTitle>
+          <ProjectOverview
+            sectionFields={overviewFields}
+            errors={overviewErrors}
+            {...rest}
+          />
+        </>
+      )}
 
-      <Divider className="my-6" />
+      {overviewFields.length > 0 && substanceDetailsFields.length > 0 && (
+        <Divider className="my-6" />
+      )}
 
-      <SectionTitle>Substance Details</SectionTitle>
-      <ProjectSubstanceDetails
-        sectionFields={substanceDetailsFields}
-        errors={substanceDetailsErrors}
-        odsOdpErrors={odsOdpErrors}
-        {...rest}
-      />
+      {substanceDetailsFields.length > 0 && (
+        <>
+          <SectionTitle>Substance Details</SectionTitle>
+          <ProjectSubstanceDetails
+            sectionFields={substanceDetailsFields}
+            errors={substanceDetailsErrors}
+            odsOdpErrors={odsOdpErrors}
+            {...rest}
+          />
+        </>
+      )}
     </>
   )
 }
