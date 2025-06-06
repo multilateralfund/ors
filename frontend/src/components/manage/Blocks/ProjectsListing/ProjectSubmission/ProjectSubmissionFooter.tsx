@@ -6,12 +6,10 @@ import { map } from 'lodash'
 const ProjectSubmissionFooter = ({
   projectId,
   nonFieldsErrors,
-  fileErrors,
   successMessage,
 }: {
   projectId: number | null
   nonFieldsErrors: string[]
-  fileErrors: string
   successMessage: string
 }) => {
   return (
@@ -26,13 +24,12 @@ const ProjectSubmissionFooter = ({
           </Link>
         </Alert>
       ) : (
-        (nonFieldsErrors.length > 0 || fileErrors) && (
+        nonFieldsErrors.length > 0 && (
           <Alert className="BPAlert mt-4 w-fit border-0" severity="error">
             <div className="mt-0.5 text-lg">
               {map(nonFieldsErrors, (err, idx) => (
                 <div key={idx}>{err}</div>
               ))}
-              {fileErrors && <div>{fileErrors}</div>}
             </div>
           </Alert>
         )

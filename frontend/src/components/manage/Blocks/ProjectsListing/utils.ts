@@ -1,4 +1,4 @@
-import { validationFieldsPairs } from './constants'
+import { tableColumns, validationFieldsPairs } from './constants'
 import {
   ProjIdentifiers,
   ProjectSpecificFields,
@@ -337,3 +337,13 @@ export const getTitleExtras = (project: ProjectTypeApi) => {
     }
   })()
 }
+
+export const formatErrors = (errors: { [key: string]: string[] }) =>
+  Object.entries(errors)
+    .filter(([, errorMsgs]) => errorMsgs.length > 0)
+    .flatMap(([field, errorMsgs]) =>
+      errorMsgs.map((errMsg, idx) => ({
+        id: `${field}-${idx}`,
+        message: `${tableColumns[field] ?? field}: ${errMsg}`,
+      })),
+    )
