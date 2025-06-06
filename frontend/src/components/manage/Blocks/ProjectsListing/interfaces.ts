@@ -123,6 +123,7 @@ export type ProjectTypeApi = ProjIdentifiers &
     versions: ProjectVersions[]
     version: number
     latest_project: number | null
+    history: ProjectType['history']
   }
 export interface ProjectViewProps {
   project: ProjectTypeApi

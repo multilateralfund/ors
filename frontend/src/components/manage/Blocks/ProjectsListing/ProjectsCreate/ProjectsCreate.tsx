@@ -27,6 +27,7 @@ import {
 
 import { Tabs, Tab, Alert, Typography } from '@mui/material'
 import { has, isArray, isEmpty, map, mapKeys } from 'lodash'
+import ProjectHistory from '@ors/components/manage/Blocks/ProjectsListing/ProjectView/ProjectHistory.tsx'
 
 export const SectionTitle = ({ children }: { children: ReactNode }) => (
   <div className="mb-4 text-xl uppercase tracking-[1px] text-typography-sectionTitle">
@@ -284,6 +285,22 @@ const ProjectsCreate = ({
       disabled: areNextSectionsDisabled,
       component: <ProjectDocumentation {...rest} {...{ files, mode }} />,
     },
+    ...(project
+      ? [
+          {
+            step: 5,
+            id: 'project-history-section',
+            ariaControls: 'project-history-section',
+            label: (
+              <div className="relative flex items-center justify-between gap-x-2">
+                <div>History</div>
+              </div>
+            ),
+            disabled: false,
+            component: <ProjectHistory mode={mode} project={project} />,
+          },
+        ]
+      : []),
   ]
 
   return (

@@ -104,7 +104,7 @@ const CreateActionButtons = ({
       {user_permissions.includes('add_project') && (
         <>
           <SubmitButton
-            title="Create project"
+            title="Create project (draft)"
             isDisabled={isSubmitDisabled}
             onSubmit={createProject}
             className="ml-auto"

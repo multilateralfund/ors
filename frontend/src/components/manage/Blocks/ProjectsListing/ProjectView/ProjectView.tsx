@@ -13,6 +13,7 @@ import { getSectionFields } from '../utils'
 
 import { Tabs, Tab } from '@mui/material'
 import { lowerCase } from 'lodash'
+import ProjectHistory from '@ors/components/manage/Blocks/ProjectsListing/ProjectView/ProjectHistory.tsx'
 
 const ProjectView = ({
   project,
@@ -76,6 +77,11 @@ const ProjectView = ({
           aria-controls="project-documentation"
           label="Documentation"
         />
+        <Tab
+          id="project-history-section"
+          aria-controls="project-history-section"
+          label="History"
+        />
         {lowerCase(project.submission_status) === 'approved' && (
           <Tab
             id="project-approval"
@@ -96,7 +102,8 @@ const ProjectView = ({
         {activeTab === 4 && (
           <ProjectDocumentation {...{ projectFiles }} mode="view" />
         )}
-        {activeTab === 5 && <ProjectApproval {...{ project }} />}
+        {activeTab === 5 && <ProjectHistory mode={'view'} project={project} />}
+        {activeTab === 6 && <ProjectApproval {...{ project }} />}
       </div>
     </>
   )
