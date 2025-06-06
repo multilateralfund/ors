@@ -1,6 +1,13 @@
+import { useMemo } from 'react'
+
 import Link from '@ors/components/ui/Link/Link'
 import { IncreaseVersionButton } from '../HelperComponents'
-import { formatSubmitData } from '../utils'
+import {
+  formatSubmitData,
+  getCrossCuttingErrors,
+  getSpecificFieldsErrors,
+  hasSectionErrors,
+} from '../utils'
 import { ProjectFile, ProjectTypeApi, SubmitActionButtons } from '../interfaces'
 import { api, uploadFiles } from '@ors/helpers'
 import { useStore } from '@ors/store'
@@ -16,6 +23,7 @@ const EditActionButtons = ({
   project,
   files,
   setProjectId,
+  isSaveDisabled,
   isSubmitDisabled,
   setIsLoading,
   setHasSubmitted,
@@ -26,6 +34,7 @@ const EditActionButtons = ({
   specificFields,
 }: SubmitActionButtons & {
   project: ProjectTypeApi
+  isSubmitDisabled: boolean
   setProjectFiles: (value: ProjectFile[]) => void
 }) => {
   const [_, setLocation] = useLocation()
@@ -34,6 +43,28 @@ const EditActionButtons = ({
 
   const projectSlice = useStore((state) => state.projects)
   const user_permissions = projectSlice.user_permissions.data || []
+
+  const { crossCuttingFields, projectSpecificFields } = projectData
+
+  const crossCuttingErrors = useMemo(
+    () => getCrossCuttingErrors(crossCuttingFields, {}, 'edit'),
+    [crossCuttingFields],
+  )
+  const specificErrors = useMemo(
+    () =>
+      getSpecificFieldsErrors(
+        projectSpecificFields,
+        specificFields,
+        {},
+        'edit',
+      ),
+    [projectSpecificFields],
+  )
+  const impactErrors = specificErrors['Impact'] || {}
+
+  const hasErrors =
+    hasSectionErrors(crossCuttingErrors) || hasSectionErrors(impactErrors)
+  const disableSubmit = isSubmitDisabled || hasErrors
 
   const { deletedFilesIds = [], newFiles = [] } = files || {}
 
@@ -172,12 +203,12 @@ const EditActionButtons = ({
       {user_permissions.includes('edit_project') && (
         <Button
           className={cx('px-4 py-2 shadow-none', {
-            [enabledButtonClassname]: !isSubmitDisabled,
+            [enabledButtonClassname]: !isSaveDisabled,
           })}
           size="large"
           variant="contained"
           onClick={editProject}
-          disabled={isSubmitDisabled}
+          disabled={isSaveDisabled}
         >
           Update project
         </Button>
@@ -201,14 +232,14 @@ const EditActionButtons = ({
           <IncreaseVersionButton
             title="Submit project"
             onSubmit={submitProject}
-            isDisabled={isSubmitDisabled}
+            isDisabled={disableSubmit}
           />
         ) : version === 2 && lowerCase(submission_status) === 'submitted' ? (
           <>
             <IncreaseVersionButton
               title="Recommend project"
               onSubmit={recommendProject}
-              isDisabled={isSubmitDisabled}
+              isDisabled={disableSubmit}
             />
             <IncreaseVersionButton
               title="Withdraw project"

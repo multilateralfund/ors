@@ -177,7 +177,7 @@ export interface SubmitActionButtons {
   projectData: ProjectData
   files: ProjectFilesObject
   setProjectId: (id: number | null) => void
-  isSubmitDisabled: boolean
+  isSaveDisabled: boolean
   setIsLoading: (value: boolean) => void
   setErrors: (value: { [key: string]: [] }) => void
   setHasSubmitted: (value: boolean) => void

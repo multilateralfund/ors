@@ -23,6 +23,7 @@ import {
   getProjIdentifiersErrors,
   getSectionFields,
   getSpecificFieldsErrors,
+  hasSectionErrors,
 } from '../utils.ts'
 
 import { Tabs, Tab, Alert, Typography } from '@mui/material'
@@ -96,14 +97,19 @@ const ProjectsCreate = ({
   )
 
   const crossCuttingErrors = useMemo(
-    () => getCrossCuttingErrors(crossCuttingFields, errors),
-    [crossCuttingFields, errors],
+    () => getCrossCuttingErrors(crossCuttingFields, errors, mode),
+    [crossCuttingFields, errors, mode],
   )
 
   const specificFieldsErrors = useMemo(
     () =>
-      getSpecificFieldsErrors(projectSpecificFields, specificFields, errors),
-    [projectSpecificFields, specificFields, errors],
+      getSpecificFieldsErrors(
+        projectSpecificFields,
+        specificFields,
+        errors,
+        mode,
+      ),
+    [projectSpecificFields, specificFields, errors, mode],
   )
   const overviewErrors = specificFieldsErrors['Header'] || {}
   const substanceDetailsErrors = specificFieldsErrors['Substance Details'] || {}
@@ -133,9 +139,6 @@ const ProjectsCreate = ({
     errors?.ods_odp as { [key: string]: [] }[],
     (error) => mapKeys(error, (_, key) => getFieldLabel(specificFields, key)),
   )
-
-  const hasSectionErrors = (errors: { [key: string]: string[] }) =>
-    Object.values(errors).some((errors) => errors.length > 0)
 
   const steps = [
     {
@@ -266,12 +269,14 @@ const ProjectsCreate = ({
       ),
       disabled: areNextSectionsDisabled,
       component: <ProjectDocumentation {...rest} {...{ files, mode }} />,
-      errors: [
-        {
-          id: '1',
-          message: fileErrors,
-        },
-      ],
+      errors: fileErrors
+        ? [
+            {
+              id: '1',
+              message: fileErrors,
+            },
+          ]
+        : [],
     },
   ]
 

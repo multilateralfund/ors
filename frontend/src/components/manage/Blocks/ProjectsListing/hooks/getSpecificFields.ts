@@ -8,6 +8,7 @@ export const fetchSpecificFields = async (
   project_type: number,
   sector: number,
   setFields: Dispatch<SetStateAction<ProjectSpecificFields[]>>,
+  setSpecificFieldsLoaded?: (isLoaded: boolean) => void,
 ) => {
   try {
     const res = await api(
@@ -17,5 +18,7 @@ export const fetchSpecificFields = async (
   } catch (e) {
     console.error('Error at loading project specific fields')
     setFields([])
+  } finally {
+    setSpecificFieldsLoaded?.(true)
   }
 }

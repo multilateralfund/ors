@@ -167,7 +167,7 @@ export default function PopoverInput({
           readOnly={true}
           onClick={openPopover}
         />
-        {withClear && selectedEntry && (
+        {withClear && (label || selectedEntry) && (
           <ClearButton className={clearBtnClassName} onClick={handleClear} />
         )}
       </div>
