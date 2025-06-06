@@ -1,15 +1,13 @@
-import { ApiEditBPActivity } from '@ors/types/api_bp_get'
-
 import { Dispatch, SetStateAction, useCallback, useMemo } from 'react'
 
-import { filter, isNil } from 'lodash'
-
+import { ApiEditBPActivity } from '@ors/types/api_bp_get'
 import { useStore } from '@ors/store'
-
 import {
   editCellRenderer,
   EditTagsCellRenderer,
 } from '../BPTableHelpers/cellRenderers'
+import { hasErrors } from '../utils'
+import { chemicalTypesType } from '../types'
 import { lvcStatuses, multiYearFilterOptions, tableColumns } from '../constants'
 import {
   MYAValueSetter,
@@ -28,10 +26,9 @@ import {
 } from './editSchemaHelpers'
 import { HeaderPasteWrapper } from './pasteSupport'
 
+import { filter, isNil } from 'lodash'
 import { IoTrash } from 'react-icons/io5'
 import { ITooltipParams } from 'ag-grid-community'
-import { hasErrors } from '../utils'
-import { chemicalTypesType } from '../types'
 
 const useColumnsOptions = (
   yearColumns: any[],
