@@ -6,6 +6,8 @@ import {
   CrossCuttingFields,
   SpecificFields,
   ProjectTypeApi,
+  ProjectFilesObject,
+  ProjectFile,
 } from './interfaces'
 import { formatDecimalValue } from '@ors/helpers'
 
@@ -180,7 +182,9 @@ export const checkInvalidValue = (value: any) =>
 const getFieldErrors = (fields: string[], data: any) =>
   fields.reduce((acc: any, field) => {
     acc[field] = checkInvalidValue(data[field as keyof typeof fields])
-      ? ['This field is required.']
+      ? ['title', 'project_type', 'sector'].includes(field)
+        ? ['This field is required.']
+        : ['This field is required for submission.']
       : []
 
     return acc
@@ -359,3 +363,8 @@ export const formatErrors = (errors: { [key: string]: string[] }) =>
         message: `${tableColumns[field] ?? field}: ${errMsg}`,
       })),
     )
+
+export const getHasNoFiles = (
+  files?: ProjectFilesObject,
+  projectFiles?: ProjectFile[],
+) => projectFiles?.length === 0 && files?.newFiles?.length === 0

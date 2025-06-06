@@ -178,6 +178,7 @@ const ProjectsEdit = ({
             mode,
             project,
             projectData,
+            projectFiles,
             files,
             setProjectId,
             setErrors,

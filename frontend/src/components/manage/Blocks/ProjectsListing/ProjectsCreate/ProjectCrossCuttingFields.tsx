@@ -350,7 +350,7 @@ const ProjectCrossCuttingFields = ({
           <div>
             <Label>{tableColumns.total_fund}</Label>
             <SimpleInput
-              id={total_fund}
+              id={total_fund ?? ''}
               value={total_fund}
               onChange={(event) =>
                 handleChangeNumericValues(event, 'total_fund')
@@ -363,7 +363,7 @@ const ProjectCrossCuttingFields = ({
           <div>
             <Label>{tableColumns.support_cost_psc}</Label>
             <SimpleInput
-              id={support_cost_psc}
+              id={support_cost_psc ?? ''}
               value={support_cost_psc}
               onChange={(event) =>
                 handleChangeNumericValues(event, 'support_cost_psc')
@@ -379,7 +379,7 @@ const ProjectCrossCuttingFields = ({
             <Label>{tableColumns.project_start_date}</Label>
             <DateInput
               id="project_start_date"
-              value={project_start_date}
+              value={project_start_date ?? ''}
               onChange={(event) =>
                 changeHandler['text']<ProjectData, CrossCuttingFields>(
                   event,
@@ -398,7 +398,7 @@ const ProjectCrossCuttingFields = ({
             <Label>{tableColumns.project_end_date}</Label>
             <DateInput
               id="project_end_date"
-              value={project_end_date}
+              value={project_end_date ?? ''}
               onChange={(event) =>
                 changeHandler['text']<ProjectData, CrossCuttingFields>(
                   event,

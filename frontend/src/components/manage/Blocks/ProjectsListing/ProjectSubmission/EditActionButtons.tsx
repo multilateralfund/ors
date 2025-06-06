@@ -6,6 +6,7 @@ import {
   checkInvalidValue,
   formatSubmitData,
   getCrossCuttingErrors,
+  getHasNoFiles,
   getSpecificFieldsErrors,
   hasSectionErrors,
 } from '../utils'
@@ -23,6 +24,7 @@ const EditActionButtons = ({
   projectData,
   project,
   files,
+  projectFiles,
   setProjectId,
   isSaveDisabled,
   isSubmitDisabled,
@@ -36,6 +38,7 @@ const EditActionButtons = ({
 }: SubmitActionButtons & {
   project: ProjectTypeApi
   isSubmitDisabled: boolean
+  projectFiles?: ProjectFile[]
   setProjectFiles: (value: ProjectFile[]) => void
 }) => {
   const [_, setLocation] = useLocation()
@@ -71,7 +74,8 @@ const EditActionButtons = ({
   const hasErrors =
     hasSectionErrors(crossCuttingErrors) ||
     hasSectionErrors(impactErrors) ||
-    hasOdsOdpErrors
+    hasOdsOdpErrors ||
+    getHasNoFiles(files, projectFiles)
   const disableSubmit = isSubmitDisabled || hasErrors
 
   const { deletedFilesIds = [], newFiles = [] } = files || {}
@@ -145,7 +149,6 @@ const EditActionButtons = ({
       await handleErrors(error)
     } finally {
       setIsLoading(false)
-      setHasSubmitted(true)
     }
   }
 
@@ -155,6 +158,7 @@ const EditActionButtons = ({
       await api(`api/projects/v2/${id}/submit`, {
         method: 'POST',
       })
+      setLocation(`/projects-listing/${id}`)
     } catch (error) {
       await handleErrors(error)
     } finally {
@@ -169,6 +173,7 @@ const EditActionButtons = ({
       await api(`api/projects/v2/${id}/recommend`, {
         method: 'POST',
       })
+      setLocation(`/projects-listing/${id}`)
     } catch (error) {
       await handleErrors(error)
     } finally {
@@ -182,12 +187,11 @@ const EditActionButtons = ({
       await api(`api/projects/v2/${id}/withdraw`, {
         method: 'POST',
       })
+      setLocation(`/projects-listing/${id}`)
     } catch (error) {
       enqueueSnackbar(<>Could not withdraw project. Please try again.</>, {
         variant: 'error',
       })
-    } finally {
-      setLocation(`/projects-listing/${id}`)
     }
   }
 

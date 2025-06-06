@@ -24,11 +24,12 @@ import {
   getProjIdentifiersErrors,
   getSectionFields,
   getSpecificFieldsErrors,
+  getHasNoFiles,
   hasSectionErrors,
 } from '../utils.ts'
 
 import { Tabs, Tab, Alert, Typography } from '@mui/material'
-import { groupBy, has, isArray, isEmpty, map, mapKeys } from 'lodash'
+import { groupBy, has, isEmpty, map, mapKeys } from 'lodash'
 
 export const SectionTitle = ({ children }: { children: ReactNode }) => (
   <div className="mb-4 text-xl uppercase tracking-[1px] text-typography-sectionTitle">
@@ -42,6 +43,7 @@ const ProjectsCreate = ({
   specificFields,
   mode,
   files,
+  projectFiles,
   errors,
   setErrors,
   hasSubmitted,
@@ -143,25 +145,33 @@ const ProjectsCreate = ({
     !isEmpty(odp) ? { ...odp, id: index } : { ...odp },
   ).filter((odp) => !isEmpty(odp) && !has(odp, 'non_field_errors'))
 
-  const formattedOdsOdpErrors = filteredOdsOdpErrors.flatMap((err) => {
-    const { id, ...fields } = err
+  const formattedOdsOdpErrors = map(
+    filteredOdsOdpErrors,
+    ({ id, ...fields }) => {
+      const fieldLabels = map(
+        fields as Record<string, string[]>,
+        (errorMsgs, field) => {
+          if (Array.isArray(errorMsgs) && errorMsgs.length > 0) {
+            return getFieldLabel(specificFields, field)
+          }
+          return null
+        },
+      ).filter(Boolean)
 
-    return Object.entries(fields)
-      .filter(([_, errorMsgs]) => isArray(errorMsgs) && errorMsgs.length > 0)
-      .flatMap(([field, errorMsgs]) => {
-        const label = getFieldLabel(specificFields, field)
+      if (fieldLabels.length === 0) return null
 
-        return errorMsgs.map((msg) => ({
-          id: `${label}-${id}`,
-          message: `Entry ${(id as number) + 1} - ${label}: ${msg}`,
-        }))
-      })
-  })
+      return {
+        message: `Substance ${Number(id) + 1} - ${fieldLabels.join(', ')}: ${fieldLabels.length > 1 ? 'These fields are' : 'This field is'} required for submission.`,
+      }
+    },
+  ).filter(Boolean)
 
   const odsOdpErrors = map(
     formattedOdsOdp as { [key: string]: [] }[],
     (error) => mapKeys(error, (_, key) => getFieldLabel(specificFields, key)),
   )
+
+  const hasNoFiles = mode === 'edit' && getHasNoFiles(files, projectFiles)
 
   const steps = [
     {
@@ -255,7 +265,12 @@ const ProjectsCreate = ({
           ...substanceDetailsErrors,
         }),
         ...(mode === 'edit' && odsOdpData.length === 0
-          ? [{ message: 'At least a substance must be provided' }]
+          ? [
+              {
+                message:
+                  'At least a substance must be provided for submission.',
+              },
+            ]
           : []),
         ...formattedOdsOdpErrors,
       ],
@@ -289,20 +304,31 @@ const ProjectsCreate = ({
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div>Documentation</div>
-          {!areNextSectionsDisabled && fileErrors ? (
+          {!areNextSectionsDisabled && (fileErrors || hasNoFiles) ? (
             <SectionErrorIndicator errors={[]} />
           ) : null}
         </div>
       ),
       disabled: areNextSectionsDisabled,
-      component: <ProjectDocumentation {...rest} {...{ files, mode }} />,
-      errors: fileErrors
-        ? [
-            {
-              message: fileErrors,
-            },
-          ]
-        : [],
+      component: (
+        <ProjectDocumentation {...rest} {...{ projectFiles, files, mode }} />
+      ),
+      errors: [
+        ...(fileErrors
+          ? [
+              {
+                message: fileErrors,
+              },
+            ]
+          : []),
+        ...(hasNoFiles
+          ? [
+              {
+                message: 'At least a file must be provided for submission.',
+              },
+            ]
+          : []),
+      ],
     },
   ]
 
@@ -346,11 +372,13 @@ const ProjectsCreate = ({
                     <Typography>
                       Please make sure all the sections are valid.
                       <div className="mt-1">
-                        {errors.map((err, idx) => (
-                          <div key={idx} className="py-1.5">
-                            {'\u2022'} {err.message}
-                          </div>
-                        ))}
+                        {errors.map((err, idx) =>
+                          err ? (
+                            <div key={idx} className="py-1.5">
+                              {'\u2022'} {err.message}
+                            </div>
+                          ) : null,
+                        )}
                       </div>
                     </Typography>
                   </Alert>
