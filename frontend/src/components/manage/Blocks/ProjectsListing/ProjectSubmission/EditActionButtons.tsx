@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 import Link from '@ors/components/ui/Link/Link'
 import { IncreaseVersionButton } from '../HelperComponents'
 import {
+  checkInvalidValue,
   formatSubmitData,
   getCrossCuttingErrors,
   getSpecificFieldsErrors,
@@ -45,6 +46,7 @@ const EditActionButtons = ({
   const user_permissions = projectSlice.user_permissions.data || []
 
   const { crossCuttingFields, projectSpecificFields } = projectData
+  const odsOdpData = projectSpecificFields?.ods_odp ?? []
 
   const crossCuttingErrors = useMemo(
     () => getCrossCuttingErrors(crossCuttingFields, {}, 'edit'),
@@ -60,10 +62,16 @@ const EditActionButtons = ({
       ),
     [projectSpecificFields],
   )
+
+  const hasOdsOdpErrors =
+    odsOdpData.some((data) => Object.values(data).some(checkInvalidValue)) ||
+    odsOdpData.length === 0
   const impactErrors = specificErrors['Impact'] || {}
 
   const hasErrors =
-    hasSectionErrors(crossCuttingErrors) || hasSectionErrors(impactErrors)
+    hasSectionErrors(crossCuttingErrors) ||
+    hasSectionErrors(impactErrors) ||
+    hasOdsOdpErrors
   const disableSubmit = isSubmitDisabled || hasErrors
 
   const { deletedFilesIds = [], newFiles = [] } = files || {}

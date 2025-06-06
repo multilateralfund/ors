@@ -17,6 +17,7 @@ import {
 } from '../interfaces.ts'
 import {
   canGoToSecondStep,
+  checkInvalidValue,
   formatErrors,
   getCrossCuttingErrors,
   getFieldLabel,
@@ -27,7 +28,7 @@ import {
 } from '../utils.ts'
 
 import { Tabs, Tab, Alert, Typography } from '@mui/material'
-import { has, isArray, isEmpty, map, mapKeys } from 'lodash'
+import { groupBy, has, isArray, isEmpty, map, mapKeys } from 'lodash'
 
 export const SectionTitle = ({ children }: { children: ReactNode }) => (
   <div className="mb-4 text-xl uppercase tracking-[1px] text-typography-sectionTitle">
@@ -76,6 +77,8 @@ const ProjectsCreate = ({
     getSectionFields(specificFields, 'Substance Details'),
     getSectionFields(specificFields, 'Impact'),
   ]
+  const groupedFields = groupBy(substanceDetailsFields, 'table')
+  const odsOdpFields = groupedFields['ods_odp'] || []
 
   const isSpecificInfoTabDisalbed =
     areProjectSpecificTabsDisabled ||
@@ -115,9 +118,29 @@ const ProjectsCreate = ({
   const substanceDetailsErrors = specificFieldsErrors['Substance Details'] || {}
   const impactErrors = specificFieldsErrors['Impact'] || {}
 
-  const filteredOdsOdpErrors = map(
-    errors?.ods_odp as { [key: string]: [] }[],
-    (odp, index) => (!isEmpty(odp) ? { ...odp, id: index } : { ...odp }),
+  const fieldsForValidation = map(odsOdpFields, 'write_field_name')
+  const odsOdpData = projectSpecificFields?.ods_odp ?? []
+
+  const odsOpdDataErrors =
+    mode === 'edit'
+      ? map(odsOdpData, (odsOdp) => {
+          const errors = map(fieldsForValidation, (field) =>
+            checkInvalidValue(odsOdp[field])
+              ? [field, ['This field is required for submission.']]
+              : null,
+          ).filter(Boolean) as [string, string[]][]
+
+          return Object.fromEntries(errors)
+        })
+      : []
+
+  const formattedOdsOdp = map(odsOpdDataErrors, (error, index) => ({
+    ...error,
+    ...(((errors?.ods_odp ?? [])[index] as Record<string, []>) || {}),
+  }))
+
+  const filteredOdsOdpErrors = map(formattedOdsOdp, (odp, index) =>
+    !isEmpty(odp) ? { ...odp, id: index } : { ...odp },
   ).filter((odp) => !isEmpty(odp) && !has(odp, 'non_field_errors'))
 
   const formattedOdsOdpErrors = filteredOdsOdpErrors.flatMap((err) => {
@@ -136,7 +159,7 @@ const ProjectsCreate = ({
   })
 
   const odsOdpErrors = map(
-    errors?.ods_odp as { [key: string]: [] }[],
+    formattedOdsOdp as { [key: string]: [] }[],
     (error) => mapKeys(error, (_, key) => getFieldLabel(specificFields, key)),
   )
 
@@ -205,7 +228,8 @@ const ProjectsCreate = ({
           {!isSpecificInfoTabDisalbed &&
             (hasSectionErrors(overviewErrors) ||
               hasSectionErrors(substanceDetailsErrors) ||
-              formattedOdsOdpErrors.length > 0) && (
+              formattedOdsOdpErrors.length > 0 ||
+              (mode === 'edit' && odsOdpData.length === 0)) && (
               <SectionErrorIndicator errors={[]} />
             )}
         </div>
@@ -230,6 +254,9 @@ const ProjectsCreate = ({
           ...overviewErrors,
           ...substanceDetailsErrors,
         }),
+        ...(mode === 'edit' && odsOdpData.length === 0
+          ? [{ message: 'At least a substance must be provided' }]
+          : []),
         ...formattedOdsOdpErrors,
       ],
     },
@@ -272,7 +299,6 @@ const ProjectsCreate = ({
       errors: fileErrors
         ? [
             {
-              id: '1',
               message: fileErrors,
             },
           ]

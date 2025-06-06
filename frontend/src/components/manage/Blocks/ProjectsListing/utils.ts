@@ -20,7 +20,6 @@ import {
   map,
   omit,
   pick,
-  pickBy,
   reduce,
 } from 'lodash'
 import {
@@ -120,11 +119,7 @@ export const formatSubmitData = (
     crossCuttingFields,
     projectSpecificFields,
   } = projectData
-
-  const specificFieldsAvailable = map(
-    specificFields,
-    ({ write_field_name }) => write_field_name,
-  )
+  const specificFieldsAvailable = map(specificFields, 'write_field_name')
 
   const crtProjectSpecificFields = pick(
     projectSpecificFields,
@@ -145,17 +140,9 @@ export const formatSubmitData = (
       'is_lead_agency',
     ]),
     bp_activity: bpLinking.bpId,
-    ...pickBy(crossCuttingFields, (value) => !isNil(value) && value !== ''),
-    ...pickBy(
-      crtProjectSpecificFields,
-      (value) => !isNil(value) && value !== '',
-    ),
-    ods_odp: map(crtOdsOdpFields, (ods_odp) =>
-      omit(
-        pickBy(ods_odp, (value) => !isNil(value) && value !== ''),
-        'id',
-      ),
-    ),
+    ...crossCuttingFields,
+    ...crtProjectSpecificFields,
+    ods_odp: map(crtOdsOdpFields, (ods_odp) => omit(ods_odp, 'id')),
   }
 }
 
@@ -187,7 +174,7 @@ export const getProjIdentifiersErrors = (
   }
 }
 
-const checkInvalidValue = (value: any) =>
+export const checkInvalidValue = (value: any) =>
   isNil(value) || value === '' || value.length === 0
 
 const getFieldErrors = (fields: string[], data: any) =>
@@ -270,7 +257,13 @@ export const getSpecificFieldsErrors = (
   errors: { [key: string]: [] },
   mode: string,
 ) => {
-  const fieldNames = map(specificFields, 'write_field_name') as string[]
+  const fieldNames = map(
+    filter(
+      specificFields,
+      ({ table, section }) => table === 'project' && section !== 'MYA',
+    ),
+    'write_field_name',
+  ) as string[]
 
   const defaultImpactErrors =
     getDefaultImpactErrors(projectSpecificFields) ?? {}
