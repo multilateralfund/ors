@@ -136,3 +136,33 @@ class ProjectSubSectorView(SectorSubsectorBaseView):
         sector_id = request.data["sector_id"]
 
         return ProjectSubSector.objects.find_by_name_and_sector(name, sector_id)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        try:
+            sector_id = int(self.request.query_params.get("sector_id", ""))
+        except (ValueError, TypeError):
+            sector_id = None
+
+        if not sector_id:
+            return queryset
+        return queryset.filter(sector_id=sector_id).order_by("sort_order")
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "sector_id",
+                openapi.IN_QUERY,
+                description="Filter sub-sectors by sector ID",
+                type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                "name",
+                openapi.IN_QUERY,
+                description="Filter sub-sectors by name",
+                type=openapi.TYPE_STRING,
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)

@@ -228,6 +228,7 @@ def setup_project_create(
 ):
     statuses_dict = [
         {"name": "N/A", "code": "NA"},
+        {"name": "New submission", "code": "NEWSUB"},
     ]
 
     submission_statuses_dict = [
@@ -853,14 +854,18 @@ class TestCreateProjects(BaseTest):
             response.data["ods_odp"][1]["sort_order"]
             == data["ods_odp"][1]["sort_order"]
         )
-        assert response.data["status"] == "N/A"
+        assert response.data["status"] == "New submission"
         assert response.data["submission_status"] == "Draft"
+
         assert (
             response.data["code"] is None
         )  # code should be sent to FE as None till approved
 
         project = Project.objects.get(id=response.data["id"])
+        project2.refresh_from_db()
         assert project.meta_project == project2.meta_project
+        assert project.component
+        assert project.component == project2.component
 
     def test_create_project_history(
         self,
@@ -1431,6 +1436,93 @@ class TestProjectVersioning:
         project.refresh_from_db()
         assert project.submission_status.name == "Submitted"
         assert project.version == 2
+
+    def test_validate_projects_for_submission_permissions(
+        self,
+        agency_inputter_user,
+        project,
+        user,
+        viewer_user,
+        agency_user,
+        secretariat_viewer_user,
+        secretariat_v1_v2_edit_access_user,
+        secretariat_production_v1_v2_edit_access_user,
+        secretariat_v3_edit_access_user,
+        secretariat_production_v3_edit_access_user,
+        admin_user,
+    ):
+        url = reverse("project-v2-validate-projects-for-submission")
+        data = {
+            "project_ids": [project.id],
+        }
+
+        def _test_user_permissions(user, expected_response_status):
+            self.client.force_authenticate(user=user)
+            response = self.client.post(url, data, format="json")
+            assert response.status_code == expected_response_status
+            return response.data
+
+        # test with unauthenticated user
+        self.client.force_authenticate(user=None)
+        response = self.client.post(url, data, format="json")
+        assert response.status_code == 403
+        assert response.data == {
+            "detail": "Authentication credentials were not provided."
+        }
+        _test_user_permissions(user, 403)
+        _test_user_permissions(viewer_user, 403)
+        _test_user_permissions(agency_inputter_user, 403)
+        _test_user_permissions(agency_user, 200)
+        _test_user_permissions(secretariat_viewer_user, 403)
+        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_v3_edit_access_user, 403)
+        _test_user_permissions(secretariat_production_v3_edit_access_user, 403)
+        _test_user_permissions(admin_user, 200)
+
+    def test_validate_projects_for_submission(
+        self,
+        agency_user,
+        project_draft_status,
+        project_file,
+        project_cluster_kip,
+        test_file1,
+    ):
+        project1 = ProjectFactory.create(
+            agency=agency_user.agency,
+            cluster=project_cluster_kip,
+            submission_status=project_draft_status,
+            is_lvc=False,
+            total_fund=2340000,
+            support_cost_psc=23,
+            project_start_date="2023-10-01",
+            project_end_date="2024-09-30",
+        )
+        project_file = ProjectFile(project=project1)
+        project_file.file.save("scott.txt", test_file1.open())
+        project_file.save()
+        project2 = ProjectFactory.create(
+            agency=agency_user.agency,
+            submission_status=project_draft_status,
+            is_lvc=False,
+            project_start_date="2023-10-01",
+            project_end_date="2024-09-30",
+        )
+
+        self.client.force_authenticate(user=agency_user)
+        url = reverse("project-v2-validate-projects-for-submission")
+        data = {
+            "project_ids": [project1.id, project2.id],
+        }
+        response = self.client.post(url, data, format="json")
+        assert response.status_code == 200, response.data
+        assert response.data[0]["id"] == project1.id
+        assert response.data[0]["valid"] is True
+        assert response.data[0]["errors"] == {}
+
+        assert response.data[1]["id"] == project2.id
+        assert response.data[1]["valid"] is False
+        assert len(response.data[1]["errors"]) == 4
 
     def test_recommend_permissions(
         self,

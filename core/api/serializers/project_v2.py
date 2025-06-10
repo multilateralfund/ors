@@ -15,6 +15,7 @@ from core.models.meeting import Meeting, Decision
 from core.models.project import (
     MetaProject,
     Project,
+    ProjectComponents,
     ProjectFile,
     ProjectOdsOdp,
 )
@@ -545,7 +546,7 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         _ = validated_data.pop("request", None)
         user = self.context["request"].user
-        status = ProjectStatus.objects.get(code="NA")
+        status = ProjectStatus.objects.get(code="NEWSUB")
         submission_status = ProjectSubmissionStatus.objects.get(name="Draft")
         validated_data["status_id"] = status.id
         validated_data["submission_status_id"] = submission_status.id
@@ -576,6 +577,13 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
         if associate_project_id:
             associate_project = Project.objects.get(id=associate_project_id)
             project.meta_project = associate_project.meta_project
+            if project.component:
+                project.component = associate_project.component
+            else:
+                component = ProjectComponents.objects.create()
+                project.component = component
+                associate_project.component = component
+                associate_project.save()
         else:
             project.meta_project = MetaProject.objects.create(
                 lead_agency=project.agency,
@@ -702,7 +710,7 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
                                     f"{field.label} is required for submission."
                                 )
                 else:
-                    if not getattr(self.instance, field.write_field_name):
+                    if getattr(self.instance, field.write_field_name) is None:
                         errors[field.write_field_name] = (
                             f"{field.label} is required for submission."
                         )

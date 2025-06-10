@@ -52,6 +52,16 @@ class ProjectManager(models.Manager):
         return super().get_queryset()
 
 
+class ProjectComponents(models.Model):
+    """
+    Used as an umbrella for all projects that are components to each other.
+    """
+
+    def __str__(self):
+        projects = Project.objects.really_all().filter(component=self)
+        return f"{[x.id for x in projects]}"
+
+
 class Project(models.Model):
     class SubmissionCategory(models.TextChoices):
         BIL_COOP = (
@@ -99,6 +109,14 @@ class Project(models.Model):
     meta_project = models.ForeignKey(
         MetaProject, on_delete=models.CASCADE, related_name="projects", null=True
     )
+    component = models.ForeignKey(
+        ProjectComponents,
+        on_delete=models.DO_NOTHING,
+        related_name="projects",
+        null=True,
+        blank=True,
+    )
+
     bp_activity = models.ForeignKey(
         "BPActivity",
         on_delete=models.PROTECT,

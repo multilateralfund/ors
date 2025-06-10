@@ -1,6 +1,7 @@
 from admin_auto_filters.filters import AutocompleteFilterFactory
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
+from django.utils.html import format_html_join
 
 from core.admin.utils import get_final_display_list
 from core.models.meeting import Decision, Meeting
@@ -9,6 +10,7 @@ from core.models.project import (
     MetaProject,
     Project,
     ProjectComment,
+    ProjectComponents,
     ProjectFile,
     ProjectFund,
     ProjectOdsOdp,
@@ -37,6 +39,11 @@ class MetaProjectAdmin(admin.ModelAdmin):
             "projects",
         ]
         return get_final_display_list(MetaProject, exclude)
+
+
+@admin.register(ProjectComponents)
+class ProjectComponentsAdmin(admin.ModelAdmin):
+    pass
 
 
 class ProjectFileInline(admin.TabularInline):
@@ -105,6 +112,7 @@ class ProjectAdmin(admin.ModelAdmin):
 
     def get_list_display(self, request):
         exclude = [
+            "component",
             "progress_reports",
             "projectsubmission",
             "ods_odp",
@@ -122,6 +130,40 @@ class ProjectAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return Project.objects.really_all()
+
+    def other_projects_in_component(self, obj):
+        if not obj.component_id:
+            return "-"
+        # Exclude the current project from the list
+        other_projects = (
+            Project.objects.really_all()
+            .filter(component_id=obj.component_id)
+            .exclude(id=obj.id)
+        )
+        if not other_projects.exists():
+            return "-"
+        return format_html_join(
+            "",
+            '<p><a href="{}">{}</a></p>',
+            (
+                (
+                    f"/admin/core/project/{p.id}/change/",
+                    f"{p.title or str(p)} version {p.version}",
+                )
+                for p in other_projects
+            ),
+        )
+
+    other_projects_in_component.short_description = "Other Projects in Same Component"
+
+    def get_fields(self, request, obj=None):
+        fields = super().get_fields(request, obj)
+        # Add the custom field at the end if not already present
+        if "other_projects_in_component" not in fields:
+            fields = list(fields) + ["other_projects_in_component"]
+        return fields
+
+    readonly_fields = ["other_projects_in_component"]
 
 
 @admin.register(ProjectProgressReport)

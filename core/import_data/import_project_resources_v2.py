@@ -13,10 +13,12 @@ from core.models.project_metadata import (
     ProjectSpecificFields,
     ProjectField,
     ProjectSector,
+    ProjectStatus,
     ProjectSubmissionStatus,
     ProjectSubSector,
     ProjectType,
 )
+from core.models.project import Project
 
 logger = logging.getLogger(__name__)
 
@@ -100,6 +102,28 @@ def import_project_clusters(file_path):
         ProjectCluster.objects.update_or_create(
             name=cluster_data["name"], defaults=cluster_data
         )
+
+
+def clean_up_project_statuses():
+    """
+    Clean up project statuses
+    Remove outdated statuses and add new ones
+    """
+    # remove Unknown status only if there are no projects with this status
+    if Project.objects.filter(status__code="UNK").exists():
+        logger.warning(
+            "⚠️ Cannot remove 'Unknown' status, there are projects with this status."
+        )
+    else:
+        ProjectStatus.objects.filter(code="UNK").delete()
+
+    # change the status 'N/A' into 'New submission' and delete status 'N/A'
+    Project.objects.filter(status__code="NA").update(
+        status=ProjectStatus.objects.get(code="NEWSUB")
+    )
+    ProjectStatus.objects.filter(code="NA").delete()
+
+    ProjectStatus.objects.filter(code="NEWSUB").update(name="New submission")
 
 
 def import_project_type(file_path):
@@ -384,6 +408,9 @@ def import_project_resources_v2():
     )
     import_project_submission_statuses(file_path)
     logger.info("✔ project submission statuses imported")
+
+    clean_up_project_statuses()
+    logger.info("✔ project statuses cleaned up")
 
     file_path = IMPORT_RESOURCES_DIR / "projects_v2" / "ClusterTypeSectorLinks.json"
     import_cluster_type_sector_links(file_path)

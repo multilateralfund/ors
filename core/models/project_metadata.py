@@ -202,6 +202,7 @@ class ProjectSubSectorManager(models.Manager):
         ).all()
 
     def find_by_name_and_sector(self, name, sector_id):
+        name = name or ""
         name_str = name.strip()
         return self.filter(
             models.Q(name__iexact=name_str) | models.Q(code__iexact=name_str),
