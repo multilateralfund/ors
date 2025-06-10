@@ -71,7 +71,11 @@ const BPEditConsolidated = ({ activitiesRef, isFirstRender }: any) => {
   const [warnOnClose, setWarnOnClose] = useState(false)
   useVisibilityChange(warnOnClose)
 
-  const localStorage = useEditLocalStorageConsolidated(form ?? [], type, period)
+  const localStorage = useEditLocalStorageConsolidated(
+    (results as ApiEditBPActivity[]) ?? [],
+    type,
+    period,
+  )
 
   const handleSetForm = useCallback(
     (value: any, updateLocalStorage: boolean = true) => {
@@ -102,10 +106,10 @@ const BPEditConsolidated = ({ activitiesRef, isFirstRender }: any) => {
     activitiesRef.current.all = isFirstRender.current
       ? [...(activitiesRef.current.all || [])]
       : uniq([
-        ...addedActivities,
-        ...(activitiesRef.current.edited || []),
-        ...(activitiesRef.current.all || []),
-      ])
+          ...addedActivities,
+          ...(activitiesRef.current.edited || []),
+          ...(activitiesRef.current.all || []),
+        ])
 
     const sortedActivities = [...results].sort((activ1, activ2) => {
       const index1 = activitiesRef.current.all.indexOf(activ1.initial_id)

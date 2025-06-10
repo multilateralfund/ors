@@ -2,6 +2,7 @@
 
 import { Dispatch, ReactNode, SetStateAction, useMemo, useState } from 'react'
 
+import ProjectHistory from '@ors/components/manage/Blocks/ProjectsListing/ProjectView/ProjectHistory.tsx'
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
 import ProjectIdentifiersSection from './ProjectIdentifiersSection.tsx'
 import ProjectCrossCuttingFields from './ProjectCrossCuttingFields'
@@ -330,6 +331,22 @@ const ProjectsCreate = ({
           : []),
       ],
     },
+    ...(project
+      ? [
+          {
+            step: 5,
+            id: 'project-history-section',
+            ariaControls: 'project-history-section',
+            label: (
+              <div className="relative flex items-center justify-between gap-x-2">
+                <div>History</div>
+              </div>
+            ),
+            disabled: false,
+            component: <ProjectHistory mode={mode} project={project} />,
+          },
+        ]
+      : []),
   ]
 
   return (
@@ -367,7 +384,7 @@ const ProjectsCreate = ({
           .map(({ component, errors }) => {
             return (
               <>
-                {errors.length > 0 && (
+                {errors && errors.length > 0 && (
                   <Alert className="mb-5" severity="error">
                     <Typography>
                       Please make sure all the sections are valid.

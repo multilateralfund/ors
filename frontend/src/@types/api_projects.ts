@@ -1,9 +1,22 @@
+import { ApiUser } from '@ors/types/api_auth_user.ts'
+
 export type ProjectSubSectorType = {
   id: number
   name: string
   code: string
   sort_order: number
   sector_id: number
+}
+
+export type ProjectHistoryUser = Pick<
+  ApiUser,
+  'first_name' | 'last_name' | 'username' | 'email'
+> & { id: number }
+
+export type ProjectHistoryItem = {
+  created_at: string
+  user: ProjectHistoryUser
+  description: string
 }
 
 export type ProjectType = {
@@ -64,6 +77,7 @@ export type ProjectType = {
   }[]
   funds_allocated: any
   hcfc_stage: any
+  history: ProjectHistoryItem[]
   id: number
   impact: number
   impact_co2mt: number

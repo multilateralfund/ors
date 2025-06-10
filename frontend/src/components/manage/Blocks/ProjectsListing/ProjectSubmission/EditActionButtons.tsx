@@ -209,7 +209,7 @@ const EditActionButtons = ({
           variant="contained"
           button
         >
-          Cancel
+          Close
         </Link>
       )}
       {user_permissions.includes('edit_project') && (
