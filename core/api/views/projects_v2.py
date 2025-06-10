@@ -142,6 +142,7 @@ class ProjectV2ViewSet(
             ]
         if self.action in [
             "increase_version",
+            "validate_projects_for_submission",
             "submit",
         ]:
             return [
@@ -359,6 +360,62 @@ class ProjectV2ViewSet(
             ProjectDetailsV2Serializer(project).data,
             status=status.HTTP_200_OK,
         )
+
+    @action(methods=["POST"], detail=False)
+    @swagger_auto_schema(
+        operation_description="""
+        Receives a list of project ids and checks if they are valid for submission.
+        A project is valid for submission if it is in 'Draft' status and version 1.
+        Also, it checks if the required fields are filled and there is at least one
+        file attached to the project.
+        """,
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "project_ids": openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    items=openapi.Items(type=openapi.TYPE_INTEGER),
+                ),
+            },
+            required=["project_ids", "lead_agency_id"],
+        ),
+        responses={
+            status.HTTP_200_OK: ProjectDetailsV2Serializer,
+            status.HTTP_400_BAD_REQUEST: "Bad request",
+        },
+    )
+    def validate_projects_for_submission(self, request, *args, **kwargs):
+        """
+        Receives a list of project ids and checks if they are valid for submission.
+        A project is valid for submission if it is in 'Draft' status and version 1.
+        Also, it checks if the required fields are filled and there is at least one
+        file attached to the project.
+        """
+        projects = (
+            Project.objects.really_all()
+            .filter(id__in=self.request.data.get("project_ids", []))
+            .order_by("id")
+        )
+        data = []
+        for project in projects:
+            serializer = ProjectV2SubmitSerializer(project, data={}, partial=True)
+            if not serializer.is_valid():
+                data.append(
+                    {
+                        "id": project.id,
+                        "valid": False,
+                        "errors": serializer.errors,
+                    }
+                )
+            else:
+                data.append(
+                    {
+                        "id": project.id,
+                        "valid": True,
+                        "errors": {},
+                    }
+                )
+        return Response(data, status=status.HTTP_200_OK)
 
     @action(methods=["POST"], detail=True)
     @swagger_auto_schema(
