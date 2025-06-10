@@ -12,7 +12,7 @@ const CreateActionButtons = ({
   projectData,
   files,
   setProjectId,
-  isSubmitDisabled,
+  isSaveDisabled,
   setIsLoading,
   setErrors,
   setHasSubmitted,
@@ -105,7 +105,7 @@ const CreateActionButtons = ({
         <>
           <SubmitButton
             title="Create project (draft)"
-            isDisabled={isSubmitDisabled}
+            isDisabled={isSaveDisabled}
             onSubmit={createProject}
             className="ml-auto"
           />

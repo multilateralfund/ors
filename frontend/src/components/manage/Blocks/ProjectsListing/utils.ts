@@ -1,4 +1,4 @@
-import { validationFieldsPairs } from './constants'
+import { tableColumns, validationFieldsPairs } from './constants'
 import {
   ProjIdentifiers,
   ProjectSpecificFields,
@@ -6,6 +6,8 @@ import {
   CrossCuttingFields,
   SpecificFields,
   ProjectTypeApi,
+  ProjectFilesObject,
+  ProjectFile,
 } from './interfaces'
 import { formatDecimalValue } from '@ors/helpers'
 
@@ -20,7 +22,6 @@ import {
   map,
   omit,
   pick,
-  pickBy,
   reduce,
 } from 'lodash'
 import {
@@ -49,7 +50,9 @@ export const getDefaultValues = <T>(
         acc[field.write_field_name] =
           field.data_type === 'drop_down'
             ? getFieldId<T>(field, data)
-            : data[field.write_field_name]
+            : field.data_type === 'boolean'
+              ? (data[field.write_field_name] ?? false)
+              : data[field.write_field_name]
       } else {
         acc[field.write_field_name] = ['drop_down', 'boolean'].includes(
           field.data_type,
@@ -71,7 +74,7 @@ export const canGoToSecondStep = (projIdentifiers: ProjIdentifiers) =>
       (!projIdentifiers.is_lead_agency && projIdentifiers.side_agency))
   )
 
-export const getIsSubmitDisabled = (
+export const getIsSaveDisabled = (
   projIdentifiers: ProjIdentifiers,
   crossCuttingFields: CrossCuttingFields,
 ) => {
@@ -118,11 +121,7 @@ export const formatSubmitData = (
     crossCuttingFields,
     projectSpecificFields,
   } = projectData
-
-  const specificFieldsAvailable = map(
-    specificFields,
-    ({ write_field_name }) => write_field_name,
-  )
+  const specificFieldsAvailable = map(specificFields, 'write_field_name')
 
   const crtProjectSpecificFields = pick(
     projectSpecificFields,
@@ -143,17 +142,9 @@ export const formatSubmitData = (
       'is_lead_agency',
     ]),
     bp_activity: bpLinking.bpId,
-    ...pickBy(crossCuttingFields, (value) => !isNil(value) && value !== ''),
-    ...pickBy(
-      crtProjectSpecificFields,
-      (value) => !isNil(value) && value !== '',
-    ),
-    ods_odp: map(crtOdsOdpFields, (ods_odp) =>
-      omit(
-        pickBy(ods_odp, (value) => !isNil(value) && value !== ''),
-        'id',
-      ),
-    ),
+    ...crossCuttingFields,
+    ...crtProjectSpecificFields,
+    ods_odp: map(crtOdsOdpFields, (ods_odp) => omit(ods_odp, 'id')),
   }
 }
 
@@ -172,30 +163,45 @@ export const getProjIdentifiersErrors = (
   return {
     ...requiredFields.reduce((acc: any, field) => {
       acc[field] = !projIdentifiers[field as keyof ProjIdentifiers]
-        ? ['This field may not be null.']
+        ? ['This field is required.']
         : []
 
       return acc
     }, {}),
     agency:
       (is_lead_agency && !current_agency) || (!is_lead_agency && !side_agency)
-        ? ['This field may not be null.']
+        ? ['This field is required.']
         : [],
     ...filteredErrors,
   }
 }
 
+export const checkInvalidValue = (value: any) =>
+  isNil(value) || value === '' || value.length === 0
+
+const getFieldErrors = (fields: string[], data: any) =>
+  fields.reduce((acc: any, field) => {
+    acc[field] = checkInvalidValue(data[field as keyof typeof fields])
+      ? ['title', 'project_type', 'sector'].includes(field)
+        ? ['This field is required.']
+        : ['This field is required for submission.']
+      : []
+
+    return acc
+  }, {})
+
 export const getCrossCuttingErrors = (
   crossCuttingFields: CrossCuttingFields,
   errors: { [key: string]: [] },
+  mode: string,
 ) => {
   const requiredFields = [
+    'title',
     'project_type',
     'sector',
-    'title',
+    'description',
     'subsector_ids',
     'is_lvc',
-    'description',
     'total_fund',
     'support_cost_psc',
     'project_start_date',
@@ -208,19 +214,14 @@ export const getCrossCuttingErrors = (
 
   const { project_start_date, project_end_date } = crossCuttingFields
 
-  return {
-    ...requiredFields.slice(0, 3).reduce((acc: any, field) => {
-      acc[field] = !crossCuttingFields[field as keyof CrossCuttingFields]
-        ? ['This field is required.']
-        : []
+  const fieldsToCheck =
+    mode === 'edit' ? requiredFields : requiredFields.slice(0, 3)
 
-      return acc
-    }, {}),
-    project_end_date: dayjs(project_end_date).isBefore(
-      dayjs(project_start_date),
-    )
-      ? ['Start date cannot be later than end date.']
-      : [],
+  return {
+    ...getFieldErrors(fieldsToCheck, crossCuttingFields),
+    ...(dayjs(project_end_date).isBefore(dayjs(project_start_date)) && {
+      project_end_date: ['Start date cannot be later than end date.'],
+    }),
     ...filteredErrors,
   }
 }
@@ -231,14 +232,18 @@ export const getDefaultImpactErrors = (
   const errorMsg = 'Number cannot be greater than the total one.'
 
   return Object.fromEntries(
-    validationFieldsPairs.map(([key, totalKey]) => [
-      key,
-      (projectSpecificFields[key] ?? 0) > (projectSpecificFields[totalKey] ?? 0)
-        ? [errorMsg]
-        : [],
-    ]),
+    validationFieldsPairs
+      .filter(
+        ([key, totalKey]) =>
+          (projectSpecificFields[key] ?? 0) >
+          (projectSpecificFields[totalKey] ?? 0),
+      )
+      .map(([key]) => [key, [errorMsg]]),
   )
 }
+
+export const hasSectionErrors = (errors: { [key: string]: string[] }) =>
+  Object.values(errors).some((errors) => errors.length > 0)
 
 export const getFieldLabel = (
   specificFields: ProjectSpecificFields[],
@@ -254,12 +259,23 @@ export const getSpecificFieldsErrors = (
   projectSpecificFields: SpecificFields,
   specificFields: ProjectSpecificFields[],
   errors: { [key: string]: [] },
+  mode: string,
 ) => {
+  const fieldNames = map(
+    filter(
+      specificFields,
+      ({ table, section }) => table === 'project' && section !== 'MYA',
+    ),
+    'write_field_name',
+  ) as string[]
+
   const defaultImpactErrors =
     getDefaultImpactErrors(projectSpecificFields) ?? {}
-  const updatedErrors = { ...defaultImpactErrors, ...errors }
-
-  const fieldNames = map(specificFields, 'write_field_name') as string[]
+  const sectionErrors =
+    mode === 'edit'
+      ? (getFieldErrors(fieldNames, projectSpecificFields) ?? {})
+      : {}
+  const updatedErrors = { ...sectionErrors, ...defaultImpactErrors, ...errors }
 
   const filteredErrors = Object.entries(updatedErrors)
     .filter(([key]) => fieldNames.includes(key))
@@ -337,3 +353,18 @@ export const getTitleExtras = (project: ProjectTypeApi) => {
     }
   })()
 }
+
+export const formatErrors = (errors: { [key: string]: string[] }) =>
+  Object.entries(errors)
+    .filter(([, errorMsgs]) => errorMsgs.length > 0)
+    .flatMap(([field, errorMsgs]) =>
+      errorMsgs.map((errMsg, idx) => ({
+        id: `${field}-${idx}`,
+        message: `${tableColumns[field] ?? field}: ${errMsg}`,
+      })),
+    )
+
+export const getHasNoFiles = (
+  files?: ProjectFilesObject,
+  projectFiles?: ProjectFile[],
+) => projectFiles?.length === 0 && files?.newFiles?.length === 0

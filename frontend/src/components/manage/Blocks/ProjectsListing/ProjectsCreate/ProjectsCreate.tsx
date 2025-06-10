@@ -2,13 +2,13 @@
 
 import { Dispatch, ReactNode, SetStateAction, useMemo, useState } from 'react'
 
+import ProjectHistory from '@ors/components/manage/Blocks/ProjectsListing/ProjectView/ProjectHistory.tsx'
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
 import ProjectIdentifiersSection from './ProjectIdentifiersSection.tsx'
 import ProjectCrossCuttingFields from './ProjectCrossCuttingFields'
 import ProjectSpecificInfoSection from './ProjectSpecificInfoSection.tsx'
 import ProjectImpact from './ProjectImpact.tsx'
 import ProjectDocumentation from '../ProjectView/ProjectDocumentation.tsx'
-import { tableColumns } from '../constants.ts'
 import {
   ProjectFile,
   ProjectSpecificFields,
@@ -18,16 +18,19 @@ import {
 } from '../interfaces.ts'
 import {
   canGoToSecondStep,
+  checkInvalidValue,
+  formatErrors,
   getCrossCuttingErrors,
   getFieldLabel,
   getProjIdentifiersErrors,
   getSectionFields,
   getSpecificFieldsErrors,
+  getHasNoFiles,
+  hasSectionErrors,
 } from '../utils.ts'
 
 import { Tabs, Tab, Alert, Typography } from '@mui/material'
-import { has, isArray, isEmpty, map, mapKeys } from 'lodash'
-import ProjectHistory from '@ors/components/manage/Blocks/ProjectsListing/ProjectView/ProjectHistory.tsx'
+import { groupBy, has, isEmpty, map, mapKeys } from 'lodash'
 
 export const SectionTitle = ({ children }: { children: ReactNode }) => (
   <div className="mb-4 text-xl uppercase tracking-[1px] text-typography-sectionTitle">
@@ -41,6 +44,7 @@ const ProjectsCreate = ({
   specificFields,
   mode,
   files,
+  projectFiles,
   errors,
   setErrors,
   hasSubmitted,
@@ -76,6 +80,8 @@ const ProjectsCreate = ({
     getSectionFields(specificFields, 'Substance Details'),
     getSectionFields(specificFields, 'Impact'),
   ]
+  const groupedFields = groupBy(substanceDetailsFields, 'table')
+  const odsOdpFields = groupedFields['ods_odp'] || []
 
   const isSpecificInfoTabDisalbed =
     areProjectSpecificTabsDisabled ||
@@ -97,56 +103,76 @@ const ProjectsCreate = ({
   )
 
   const crossCuttingErrors = useMemo(
-    () => getCrossCuttingErrors(crossCuttingFields, errors),
-    [crossCuttingFields, errors],
+    () => getCrossCuttingErrors(crossCuttingFields, errors, mode),
+    [crossCuttingFields, errors, mode],
   )
 
   const specificFieldsErrors = useMemo(
     () =>
-      getSpecificFieldsErrors(projectSpecificFields, specificFields, errors),
-    [projectSpecificFields, specificFields, errors],
+      getSpecificFieldsErrors(
+        projectSpecificFields,
+        specificFields,
+        errors,
+        mode,
+      ),
+    [projectSpecificFields, specificFields, errors, mode],
   )
   const overviewErrors = specificFieldsErrors['Header'] || {}
   const substanceDetailsErrors = specificFieldsErrors['Substance Details'] || {}
   const impactErrors = specificFieldsErrors['Impact'] || {}
 
-  const filteredOdsOdpErrors = map(
-    errors?.ods_odp as { [key: string]: [] }[],
-    (odp, index) => (!isEmpty(odp) ? { ...odp, id: index } : { ...odp }),
+  const fieldsForValidation = map(odsOdpFields, 'write_field_name')
+  const odsOdpData = projectSpecificFields?.ods_odp ?? []
+
+  const odsOpdDataErrors =
+    mode === 'edit'
+      ? map(odsOdpData, (odsOdp) => {
+          const errors = map(fieldsForValidation, (field) =>
+            checkInvalidValue(odsOdp[field])
+              ? [field, ['This field is required for submission.']]
+              : null,
+          ).filter(Boolean) as [string, string[]][]
+
+          return Object.fromEntries(errors)
+        })
+      : []
+
+  const formattedOdsOdp = map(odsOpdDataErrors, (error, index) => ({
+    ...error,
+    ...(((errors?.ods_odp ?? [])[index] as Record<string, []>) || {}),
+  }))
+
+  const filteredOdsOdpErrors = map(formattedOdsOdp, (odp, index) =>
+    !isEmpty(odp) ? { ...odp, id: index } : { ...odp },
   ).filter((odp) => !isEmpty(odp) && !has(odp, 'non_field_errors'))
 
-  const formattedOdsOdpErrors = filteredOdsOdpErrors.flatMap((err) => {
-    const { id, ...fields } = err
+  const formattedOdsOdpErrors = map(
+    filteredOdsOdpErrors,
+    ({ id, ...fields }) => {
+      const fieldLabels = map(
+        fields as Record<string, string[]>,
+        (errorMsgs, field) => {
+          if (Array.isArray(errorMsgs) && errorMsgs.length > 0) {
+            return getFieldLabel(specificFields, field)
+          }
+          return null
+        },
+      ).filter(Boolean)
 
-    return Object.entries(fields)
-      .filter(([_, errorMsgs]) => isArray(errorMsgs) && errorMsgs.length > 0)
-      .flatMap(([field, errorMsgs]) => {
-        const label = getFieldLabel(specificFields, field)
+      if (fieldLabels.length === 0) return null
 
-        return errorMsgs.map((msg) => ({
-          id: `${label}-${id}`,
-          message: `Entry ${(id as number) + 1} - ${label}: ${msg}`,
-        }))
-      })
-  })
+      return {
+        message: `Substance ${Number(id) + 1} - ${fieldLabels.join(', ')}: ${fieldLabels.length > 1 ? 'These fields are' : 'This field is'} required for submission.`,
+      }
+    },
+  ).filter(Boolean)
 
   const odsOdpErrors = map(
-    errors?.ods_odp as { [key: string]: [] }[],
+    formattedOdsOdp as { [key: string]: [] }[],
     (error) => mapKeys(error, (_, key) => getFieldLabel(specificFields, key)),
   )
 
-  const hasSectionErrors = (errors: { [key: string]: string[] }) =>
-    Object.values(errors).some((errors) => errors.length > 0)
-
-  const formatErrors = (errors: { [key: string]: string[] }) =>
-    Object.entries(errors)
-      .filter(([, errorMsgs]) => errorMsgs.length > 0)
-      .flatMap(([field, errorMsgs]) =>
-        errorMsgs.map((errMsg, idx) => ({
-          id: `${field}-${idx}`,
-          message: `${tableColumns[field] ?? field}: ${errMsg}`,
-        })),
-      )
+  const hasNoFiles = mode === 'edit' && getHasNoFiles(files, projectFiles)
 
   const steps = [
     {
@@ -158,9 +184,7 @@ const ProjectsCreate = ({
           <div>Identifiers</div>
           {(hasSectionErrors(projIdentifiersErrors) ||
             hasSectionErrors(bpErrors)) && (
-            <SectionErrorIndicator
-              errors={formatErrors({ ...projIdentifiersErrors, ...bpErrors })}
-            />
+            <SectionErrorIndicator errors={[]} />
           )}
         </div>
       ),
@@ -178,6 +202,7 @@ const ProjectsCreate = ({
           errors={projIdentifiersErrors}
         />
       ),
+      errors: formatErrors({ ...projIdentifiersErrors, ...bpErrors }),
     },
     {
       step: 1,
@@ -187,7 +212,7 @@ const ProjectsCreate = ({
         <div className="relative flex items-center justify-between gap-x-2">
           <div>Cross-Cutting</div>
           {!areNextSectionsDisabled && hasSectionErrors(crossCuttingErrors) && (
-            <SectionErrorIndicator errors={formatErrors(crossCuttingErrors)} />
+            <SectionErrorIndicator errors={[]} />
           )}
         </div>
       ),
@@ -202,6 +227,7 @@ const ProjectsCreate = ({
           errors={crossCuttingErrors}
         />
       ),
+      errors: formatErrors(crossCuttingErrors),
     },
     {
       step: 2,
@@ -213,16 +239,9 @@ const ProjectsCreate = ({
           {!isSpecificInfoTabDisalbed &&
             (hasSectionErrors(overviewErrors) ||
               hasSectionErrors(substanceDetailsErrors) ||
-              formattedOdsOdpErrors.length > 0) && (
-              <SectionErrorIndicator
-                errors={[
-                  ...formatErrors({
-                    ...overviewErrors,
-                    ...substanceDetailsErrors,
-                  }),
-                  ...formattedOdsOdpErrors,
-                ]}
-              />
+              formattedOdsOdpErrors.length > 0 ||
+              (mode === 'edit' && odsOdpData.length === 0)) && (
+              <SectionErrorIndicator errors={[]} />
             )}
         </div>
       ),
@@ -241,6 +260,21 @@ const ProjectsCreate = ({
           }}
         />
       ),
+      errors: [
+        ...formatErrors({
+          ...overviewErrors,
+          ...substanceDetailsErrors,
+        }),
+        ...(mode === 'edit' && odsOdpData.length === 0
+          ? [
+              {
+                message:
+                  'At least a substance must be provided for submission.',
+              },
+            ]
+          : []),
+        ...formattedOdsOdpErrors,
+      ],
     },
     {
       step: 3,
@@ -250,7 +284,7 @@ const ProjectsCreate = ({
         <div className="relative flex items-center justify-between gap-x-2">
           <div>Impact</div>
           {!isImpactTabDisabled && hasSectionErrors(impactErrors) && (
-            <SectionErrorIndicator errors={formatErrors(impactErrors)} />
+            <SectionErrorIndicator errors={[]} />
           )}
         </div>
       ),
@@ -262,6 +296,7 @@ const ProjectsCreate = ({
           {...{ projectData, setProjectData, hasSubmitted }}
         />
       ),
+      errors: formatErrors(impactErrors),
     },
     {
       step: 4,
@@ -270,20 +305,31 @@ const ProjectsCreate = ({
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div>Documentation</div>
-          {!areNextSectionsDisabled && fileErrors ? (
-            <SectionErrorIndicator
-              errors={[
-                {
-                  id: '1',
-                  message: fileErrors,
-                },
-              ]}
-            />
+          {!areNextSectionsDisabled && (fileErrors || hasNoFiles) ? (
+            <SectionErrorIndicator errors={[]} />
           ) : null}
         </div>
       ),
       disabled: areNextSectionsDisabled,
-      component: <ProjectDocumentation {...rest} {...{ files, mode }} />,
+      component: (
+        <ProjectDocumentation {...rest} {...{ projectFiles, files, mode }} />
+      ),
+      errors: [
+        ...(fileErrors
+          ? [
+              {
+                message: fileErrors,
+              },
+            ]
+          : []),
+        ...(hasNoFiles
+          ? [
+              {
+                message: 'At least a file must be provided for submission.',
+              },
+            ]
+          : []),
+      ],
     },
     ...(project
       ? [
@@ -333,16 +379,31 @@ const ProjectsCreate = ({
         ))}
       </Tabs>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
-        {!isEmpty(errors) && (
-          <Alert className="mb-12" severity="error">
-            <Typography>
-              Please make sure all the sections are valid.
-            </Typography>
-          </Alert>
-        )}
         {steps
           .filter(({ step }) => step === currentTab)
-          .map(({ component }) => component)}
+          .map(({ component, errors }) => {
+            return (
+              <>
+                {errors && errors.length > 0 && (
+                  <Alert className="mb-5" severity="error">
+                    <Typography>
+                      Please make sure all the sections are valid.
+                      <div className="mt-1">
+                        {errors.map((err, idx) =>
+                          err ? (
+                            <div key={idx} className="py-1.5">
+                              {'\u2022'} {err.message}
+                            </div>
+                          ) : null,
+                        )}
+                      </div>
+                    </Typography>
+                  </Alert>
+                )}
+                {component}
+              </>
+            )
+          })}
       </div>
     </>
   )

@@ -76,7 +76,7 @@ const changeNestedField: FieldHandler = (
   }
 }
 
-const changeField: FieldHandler = (value, field, setState, section) => {
+export const changeField: FieldHandler = (value, field, setState, section) => {
   setState((prevData) => ({
     ...prevData,
     [section]: {

@@ -58,10 +58,13 @@ const ProjectCrossCutting = ({ project }: { project: ProjectTypeApi }) => {
         </div>
         <div className="flex w-full flex-col gap-4">
           <div className="grid grid-cols-2 gap-y-4 border-0 md:grid-cols-3 lg:grid-cols-4">
-            {numberDetailItem(tableColumns.total_fund, project.total_fund)}
+            {numberDetailItem(
+              tableColumns.total_fund,
+              project.total_fund as string,
+            )}
             {numberDetailItem(
               tableColumns.support_cost_psc,
-              project.support_cost_psc,
+              project.support_cost_psc as string,
             )}
           </div>
         </div>
@@ -69,11 +72,11 @@ const ProjectCrossCutting = ({ project }: { project: ProjectTypeApi }) => {
           <div className="grid grid-cols-2 gap-y-4 border-0 md:grid-cols-3 lg:grid-cols-4">
             {dateDetailItem(
               tableColumns.project_start_date,
-              project.project_start_date,
+              project.project_start_date as string,
             )}
             {dateDetailItem(
               tableColumns.project_end_date,
-              project.project_end_date,
+              project.project_end_date as string,
             )}
           </div>
         </div>

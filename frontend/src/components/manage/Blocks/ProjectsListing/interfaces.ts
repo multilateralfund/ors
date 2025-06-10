@@ -16,10 +16,10 @@ export interface CrossCuttingFields {
   is_lvc: boolean | null
   title: string
   description: string
-  project_start_date: string
-  project_end_date: string
-  total_fund: string
-  support_cost_psc: string
+  project_start_date: string | null
+  project_end_date: string | null
+  total_fund: string | null
+  support_cost_psc: string | null
   individual_consideration: boolean
 }
 
@@ -178,7 +178,7 @@ export interface SubmitActionButtons {
   projectData: ProjectData
   files: ProjectFilesObject
   setProjectId: (id: number | null) => void
-  isSubmitDisabled: boolean
+  isSaveDisabled: boolean
   setIsLoading: (value: boolean) => void
   setErrors: (value: { [key: string]: [] }) => void
   setHasSubmitted: (value: boolean) => void

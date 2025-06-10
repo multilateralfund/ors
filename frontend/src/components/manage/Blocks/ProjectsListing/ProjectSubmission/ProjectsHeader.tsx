@@ -10,7 +10,7 @@ import CreateActionButtons from './CreateActionButtons'
 import EditActionButtons from './EditActionButtons'
 import {
   getDefaultImpactErrors,
-  getIsSubmitDisabled,
+  getIsSaveDisabled,
   getTitleExtras,
 } from '../utils'
 import {
@@ -53,14 +53,15 @@ const ProjectsHeader = ({
   const hasValidationErrors = Object.values(defaultImpactErrors).some(
     (errors) => errors.length > 0,
   )
-  const hasMissingRequiredFields = getIsSubmitDisabled(
+  const hasMissingRequiredFields = getIsSaveDisabled(
     projIdentifiers,
     crossCuttingFields,
   )
-  const isSubmitDisabled =
+  const isSaveDisabled =
     hasMissingRequiredFields ||
     dayjs(project_start_date).isAfter(dayjs(project_end_date)) ||
     hasValidationErrors
+  const isSubmitDisabled = isSaveDisabled
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [showVersionsMenu, setShowVersionsMenu] = useState(false)
@@ -99,7 +100,7 @@ const ProjectsHeader = ({
             <CreateActionButtons
               {...{
                 projectData,
-                isSubmitDisabled,
+                isSaveDisabled,
                 setIsLoading,
                 files,
                 mode,
@@ -111,6 +112,7 @@ const ProjectsHeader = ({
               project={project as ProjectTypeApi}
               {...{
                 projectData,
+                isSaveDisabled,
                 isSubmitDisabled,
                 setIsLoading,
                 files,

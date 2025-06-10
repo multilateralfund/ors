@@ -6,7 +6,7 @@ import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/help
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { DateInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import { SectionTitle } from './ProjectsCreate'
-import { changeHandler } from './SpecificFieldsHelpers'
+import { changeField, changeHandler } from './SpecificFieldsHelpers'
 import {
   tableColumns,
   lvcNonLvcOpts,
@@ -165,7 +165,7 @@ const ProjectCrossCuttingFields = ({
     event: ChangeEvent<HTMLInputElement>,
     field: string,
   ) => {
-    const value = event.target.value
+    const value = event.target.value || null
 
     if (!isNaN(Number(value))) {
       setProjectData((prevData) => ({
@@ -350,7 +350,7 @@ const ProjectCrossCuttingFields = ({
           <div>
             <Label>{tableColumns.total_fund}</Label>
             <SimpleInput
-              id={total_fund}
+              id={total_fund as string}
               value={total_fund}
               onChange={(event) =>
                 handleChangeNumericValues(event, 'total_fund')
@@ -363,7 +363,7 @@ const ProjectCrossCuttingFields = ({
           <div>
             <Label>{tableColumns.support_cost_psc}</Label>
             <SimpleInput
-              id={support_cost_psc}
+              id={support_cost_psc as string}
               value={support_cost_psc}
               onChange={(event) =>
                 handleChangeNumericValues(event, 'support_cost_psc')
@@ -379,10 +379,10 @@ const ProjectCrossCuttingFields = ({
             <Label>{tableColumns.project_start_date}</Label>
             <DateInput
               id="project_start_date"
-              value={project_start_date}
+              value={project_start_date as string}
               onChange={(event) =>
-                changeHandler['text']<ProjectData, CrossCuttingFields>(
-                  event,
+                changeField(
+                  event.target.value || null,
                   'project_start_date',
                   setProjectData,
                   sectionIdentifier,
@@ -398,10 +398,10 @@ const ProjectCrossCuttingFields = ({
             <Label>{tableColumns.project_end_date}</Label>
             <DateInput
               id="project_end_date"
-              value={project_end_date}
+              value={project_end_date as string}
               onChange={(event) =>
-                changeHandler['text']<ProjectData, CrossCuttingFields>(
-                  event,
+                changeField(
+                  event.target.value || null,
                   'project_end_date',
                   setProjectData,
                   sectionIdentifier,

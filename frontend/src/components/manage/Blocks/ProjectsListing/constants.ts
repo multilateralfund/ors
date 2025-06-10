@@ -65,10 +65,10 @@ export const initialCrossCuttingFields = {
   is_lvc: null,
   title: '',
   description: '',
-  project_start_date: '',
-  project_end_date: '',
-  total_fund: '',
-  support_cost_psc: '',
+  project_start_date: null,
+  project_end_date: null,
+  total_fund: null,
+  support_cost_psc: null,
   individual_consideration: true,
 }
 

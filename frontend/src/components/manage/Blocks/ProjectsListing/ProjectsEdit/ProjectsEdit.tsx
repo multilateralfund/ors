@@ -50,6 +50,8 @@ const ProjectsEdit = ({
   const [specificFields, setSpecificFields] = useState<ProjectSpecificFields[]>(
     [],
   )
+  const [specificFieldsLoaded, setSpecificFieldsLoaded] =
+    useState<boolean>(false)
 
   const { projIdentifiers, crossCuttingFields } = projectData
   const { cluster } = projIdentifiers
@@ -142,7 +144,13 @@ const ProjectsEdit = ({
 
   useEffect(() => {
     if (cluster && project_type && sector) {
-      fetchSpecificFields(cluster, project_type, sector, setSpecificFields)
+      fetchSpecificFields(
+        cluster,
+        project_type,
+        sector,
+        setSpecificFields,
+        setSpecificFieldsLoaded,
+      )
     } else setSpecificFields([])
   }, [cluster, project_type, sector])
 
@@ -163,47 +171,50 @@ const ProjectsEdit = ({
   }, [specificFields, fieldsValuesLoaded])
 
   return (
-    <>
-      <ProjectsHeader
-        {...{
-          mode,
-          project,
-          projectData,
-          files,
-          setProjectId,
-          setErrors,
-          setHasSubmitted,
-          setFileErrors,
-          setOtherErrors,
-          setProjectFiles,
-          specificFields,
-        }}
-      />
-      <ProjectsCreate
-        {...{
-          projectData,
-          setProjectData,
-          mode,
-          specificFields,
-          project,
-          files,
-          setFiles,
-          projectFiles,
-          errors,
-          setErrors,
-          hasSubmitted,
-          fileErrors,
-        }}
-      />
-      <ProjectSubmissionFooter
-        successMessage={
-          mode === 'edit'
-            ? 'Updated project successfully.'
-            : 'Submission was successful.'
-        }
-        {...{ projectId, nonFieldsErrors, fileErrors, otherErrors }}
-      />
-    </>
+    specificFieldsLoaded && (
+      <>
+        <ProjectsHeader
+          {...{
+            mode,
+            project,
+            projectData,
+            projectFiles,
+            files,
+            setProjectId,
+            setErrors,
+            setHasSubmitted,
+            setFileErrors,
+            setOtherErrors,
+            setProjectFiles,
+            specificFields,
+          }}
+        />
+        <ProjectsCreate
+          {...{
+            projectData,
+            setProjectData,
+            mode,
+            specificFields,
+            project,
+            files,
+            setFiles,
+            projectFiles,
+            errors,
+            setErrors,
+            hasSubmitted,
+            fileErrors,
+          }}
+        />
+        <ProjectSubmissionFooter
+          successMessage={
+            mode === 'edit'
+              ? 'Updated project successfully.'
+              : 'Submission was successful.'
+          }
+          {...{ projectId, nonFieldsErrors, otherErrors }}
+        />
+      </>
+    )
   )
 }
 
