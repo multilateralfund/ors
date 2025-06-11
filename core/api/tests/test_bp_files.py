@@ -8,6 +8,7 @@ pytestmark = pytest.mark.django_db
 
 # pylint: disable=R0913
 
+
 @pytest.fixture(name="test_file")
 def _test_file(tmp_path):
     p = tmp_path / "adrian.csv"

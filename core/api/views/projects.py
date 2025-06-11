@@ -15,7 +15,14 @@ from rest_framework.views import APIView
 from rest_framework import status
 
 from core.api.filters.project import MetaProjectFilter, ProjectFilter
-from core.api.permissions import IsAgency, IsCountryUser, IsSecretariat, IsViewer
+from core.api.permissions import (
+    IsAgency,
+    IsCountryUser,
+    IsSecretariat,
+    IsViewer,
+    IsBPViewer,
+    IsBPEditor,
+)
 from core.api.serializers.meeting import MeetingSerializer
 from core.api.serializers.project import (
     ProjectCommentCreateSerializer,
@@ -73,7 +80,9 @@ class ProjectStatusListView(generics.ListAPIView):
     List project status
     """
 
-    permission_classes = [IsSecretariat | IsAgency | IsCountryUser | IsViewer]
+    permission_classes = [
+        IsSecretariat | IsAgency | IsCountryUser | IsViewer | IsBPViewer | IsBPEditor
+    ]
     queryset = ProjectStatus.objects.all()
     serializer_class = ProjectStatusSerializer
 
@@ -83,7 +92,9 @@ class ProjectSubmissionStatusListView(generics.ListAPIView):
     List project submission status
     """
 
-    permission_classes = [IsSecretariat | IsAgency | IsCountryUser | IsViewer]
+    permission_classes = [
+        IsSecretariat | IsAgency | IsCountryUser | IsViewer | IsBPViewer | IsBPEditor
+    ]
     queryset = ProjectSubmissionStatus.objects.all()
     serializer_class = ProjectSubmissionStatusSerializer
 
@@ -93,7 +104,9 @@ class ProjectTypeListView(generics.ListAPIView):
     List project type
     """
 
-    permission_classes = [IsSecretariat | IsAgency | IsCountryUser | IsViewer]
+    permission_classes = [
+        IsSecretariat | IsAgency | IsCountryUser | IsViewer | IsBPViewer | IsBPEditor
+    ]
     serializer_class = ProjectTypeSerializer
 
     def get_queryset(self):
@@ -122,13 +135,17 @@ class ProjectTypeListView(generics.ListAPIView):
 
 
 class ProjectMeetingListView(generics.ListAPIView):
-    permission_classes = [IsSecretariat | IsAgency | IsCountryUser | IsViewer]
+    permission_classes = [
+        IsSecretariat | IsAgency | IsCountryUser | IsViewer | IsBPViewer | IsBPEditor
+    ]
     queryset = Meeting.objects.order_by("number").all()
     serializer_class = MeetingSerializer
 
 
 class ProjectClusterListView(generics.ListAPIView):
-    permission_classes = [IsSecretariat | IsAgency | IsCountryUser | IsViewer]
+    permission_classes = [
+        IsSecretariat | IsAgency | IsCountryUser | IsViewer | IsBPViewer | IsBPEditor
+    ]
     queryset = ProjectCluster.objects.order_by("sort_order").all()
     serializer_class = ProjectClusterSerializer
 
@@ -139,7 +156,9 @@ class ProjectSpecificFieldsListView(generics.RetrieveAPIView):
     *and the list of required fields for each combination* *to be implemented*.
     """
 
-    permission_classes = [IsSecretariat | IsAgency | IsCountryUser | IsViewer]
+    permission_classes = [
+        IsSecretariat | IsAgency | IsCountryUser | IsViewer | IsBPViewer | IsBPEditor
+    ]
     serializer_class = ProjectSpecificFieldsSerializer
 
     def get_object(self):
