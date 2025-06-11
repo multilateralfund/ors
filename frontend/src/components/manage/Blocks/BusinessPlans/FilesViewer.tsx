@@ -1,7 +1,6 @@
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 
-import { filter } from 'lodash'
-
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
 import { formatApiUrl } from '@ors/helpers'
 import { BpDetails, BpFile } from './types'
@@ -9,9 +8,12 @@ import { ProjectDocs, ProjectFile } from '../ProjectsListing/interfaces'
 
 import { IoDownloadOutline, IoTrash } from 'react-icons/io5'
 import { TbFiles } from 'react-icons/tb'
+import { filter } from 'lodash'
 
 export function FilesViewer(props: BpDetails | ProjectDocs) {
   const { bpFiles, files, setFiles } = props
+
+  const { canDownloadFiles, canDeleteFiles } = useContext(PermissionsContext)
 
   const currentBpFiles = filter(
     bpFiles as (BpFile | ProjectFile)[],
@@ -46,16 +48,22 @@ export function FilesViewer(props: BpDetails | ProjectDocs) {
         ) : (
           currentFiles.map((file, index: number) => (
             <div key={index} className="flex items-center gap-2">
-              <a
-                className="m-0 flex items-center gap-2.5 no-underline"
-                href={formatApiUrl(file.download_url)}
-              >
-                <IoDownloadOutline className="mb-1 min-h-[20px] min-w-[20px] text-secondary" />
+              {canDownloadFiles ? (
+                <a
+                  className="m-0 flex items-center gap-2.5 no-underline"
+                  href={formatApiUrl(file.download_url)}
+                >
+                  <IoDownloadOutline className="mb-1 min-h-[20px] min-w-[20px] text-secondary" />
+                  <span className="text-lg font-medium text-secondary">
+                    {file.filename}
+                  </span>
+                </a>
+              ) : (
                 <span className="text-lg font-medium text-secondary">
                   {file.filename}
                 </span>
-              </a>
-              {setFiles && (
+              )}
+              {setFiles && canDeleteFiles && (
                 <IoTrash
                   className="transition-colors mb-1 min-h-[20px] min-w-[20px] text-[#666] ease-in-out hover:cursor-pointer hover:text-inherit"
                   onClick={() => handleDelete(file.id)}

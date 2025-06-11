@@ -2,8 +2,8 @@
 
 import { useContext, useEffect, useState } from 'react'
 
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
-
 import useGetBpPeriods from '../BPList/useGetBPPeriods'
 import { RedirectToBpList } from '../RedirectToBpList'
 import BPExport from './BPExport'
@@ -14,9 +14,11 @@ import BPUploadSectionWrapper from './BPUploadSectionWrapper'
 import { getLatestBpYearRange } from '../utils'
 
 const BPUploadHeader = () => {
+  const { canViewBp } = useContext(PermissionsContext)
+
   return (
     <div>
-      <RedirectToBpList />
+      {canViewBp && <RedirectToBpList />}
       <div className="mb-4 flex min-h-[40px] flex-wrap items-center justify-between gap-x-8 gap-y-2">
         <h1 className="m-0 text-5xl leading-normal">Upload Business Plan</h1>
       </div>

@@ -1,5 +1,16 @@
-import { Dispatch, SetStateAction, useState } from 'react'
+import { Dispatch, SetStateAction, useContext, useState } from 'react'
 
+import PermissionsContext from '@ors/contexts/PermissionsContext'
+import { CancelButton } from '@ors/components/ui/Button/Button'
+import { getMeetingNr } from '@ors/components/manage/Utils/utilFunctions'
+import Link from '@ors/components/ui/Link/Link'
+import { PeriodSelectorOption } from '../../Replenishment/types'
+import { getCurrentTriennium, getLatestBpYearRange } from '../utils'
+import { uploadFiles } from '@ors/helpers'
+import { useStore } from '@ors/store'
+
+import { IoEllipse } from 'react-icons/io5'
+import { MdExpandMore } from 'react-icons/md'
 import {
   Accordion,
   AccordionDetails,
@@ -7,22 +18,10 @@ import {
   Alert,
   Button,
   Typography,
+  CircularProgress,
 } from '@mui/material'
 import cx from 'classnames'
 import { capitalize, keys } from 'lodash'
-
-import { CancelButton } from '@ors/components/ui/Button/Button'
-import { getMeetingNr } from '@ors/components/manage/Utils/utilFunctions'
-import Link from '@ors/components/ui/Link/Link'
-import { uploadFiles } from '@ors/helpers'
-
-import { PeriodSelectorOption } from '../../Replenishment/types'
-
-import { IoEllipse } from 'react-icons/io5'
-import { MdExpandMore } from 'react-icons/md'
-import { useStore } from '@ors/store'
-import { getCurrentTriennium, getLatestBpYearRange } from '../utils'
-import { CircularProgress } from '@mui/material'
 
 interface IBPReviewChanges {
   file: FileList | null
@@ -44,9 +43,12 @@ const BPReviewChanges = ({
   const { setBPType } = useStore((state) => state.bpType)
   const { fetchYearRanges } = useStore((state) => state.yearRanges)
 
+  const { canUploadBp, canViewBp } = useContext(PermissionsContext)
+
   const [expandedItems, setExpandedItems] = useState<Array<string>>([])
   const [importResult, setImportResult] = useState<any>()
   const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [uploadError, setUploadError] = useState('')
 
   const currentTriennium = getCurrentTriennium()
 
@@ -79,12 +81,14 @@ const BPReviewChanges = ({
       if (file) {
         const result = await uploadFiles(formattedUrl, [file[0]])
         setImportResult(result)
-        setIsLoading(false)
         setBPType(bp_status)
         fetchYearRanges()
       }
     } catch (error: any) {
       console.error('Error:', error)
+      setUploadError(error?.statusText)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -165,9 +169,9 @@ const BPReviewChanges = ({
           <Button
             className={cx('h-10 px-3 py-1', {
               'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
-                errors.length === 0,
+                errors.length === 0 && canUploadBp,
             })}
-            disabled={errors.length > 0}
+            disabled={errors.length > 0 || !canUploadBp}
             size="large"
             variant="contained"
             onClick={submitBP}
@@ -187,30 +191,41 @@ const BPReviewChanges = ({
             <CircularProgress color="inherit" size="30px" className="ml-1.5" />
           )}
         </div>
-        <Link
-          className="no-underline"
-          href={`/business-plans/list/report-info/${getLatestBpYearRange(periodOptions)?.value || currentTriennium}`}
-        >
-          <CancelButton className="h-10 !text-[15px]">
-            Cancel Upload
-          </CancelButton>
-        </Link>
+        {canViewBp && (
+          <Link
+            className="no-underline"
+            href={`/business-plans/list/report-info/${getLatestBpYearRange(periodOptions)?.value || currentTriennium}`}
+          >
+            <CancelButton className="h-10 !text-[15px]">
+              Cancel Upload
+            </CancelButton>
+          </Link>
+        )}
       </div>
       {keys(importResult).length > 0 && !isLoading && (
         <Alert
           className="BPAlert mt-4 w-fit border-0"
           severity={importResult.status === 200 ? 'success' : 'error'}
         >
-          <Link
-            className="text-xl text-inherit no-underline"
-            href={`/business-plans/list/report-info/${year_start}-${year_end}`}
-            onClick={() => {
-              setBPType(bp_status)
-            }}
-          >
-            {importResult.response}.
-            {importResult.status === 200 && <> View Business Plan</>}
-          </Link>
+          {canViewBp ? (
+            <Link
+              className="text-xl text-inherit no-underline"
+              href={`/business-plans/list/report-info/${year_start}-${year_end}`}
+              onClick={() => {
+                setBPType(bp_status)
+              }}
+            >
+              {importResult.response}.
+              {importResult.status === 200 && <> View Business Plan</>}
+            </Link>
+          ) : (
+            <p className="m-0 text-lg">{importResult.response}.</p>
+          )}
+        </Alert>
+      )}
+      {uploadError && !isLoading && (
+        <Alert className="BPAlert mt-4 w-fit border-0" severity={'error'}>
+          <p className="m-0 mt-1 text-lg">{uploadError}</p>
         </Alert>
       )}
     </>

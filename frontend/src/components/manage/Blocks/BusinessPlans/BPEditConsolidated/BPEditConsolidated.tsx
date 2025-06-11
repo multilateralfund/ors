@@ -1,15 +1,9 @@
 'use client'
 
-import { ApiEditBPActivity } from '@ors/types/api_bp_get'
-
 import { useCallback, useEffect, useState } from 'react'
-
-import { capitalize, map, filter, uniq } from 'lodash'
-import { useParams } from 'wouter'
 
 import Loading from '@ors/components/theme/Loading/Loading'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
-
 import BEditTable from '../BPEdit/BPEditTable'
 import BPRestoreEdit from '../BPEdit/BPRestoreEdit'
 import { useGetActivities } from '../useGetActivities'
@@ -17,10 +11,14 @@ import BPHeaderEditConsolidated from './BPHeaderEditConsolidated'
 import { useEditLocalStorageConsolidated } from './useLocalStorageConsolidated'
 import BPTabs from '../BPTabs'
 import { BpFilesObject } from '../types'
+import { useGetChemicalTypes } from '../useGetChemicalTypes'
 import { useGetBpData } from '../BP/useGetBpData'
 import { useStore } from '@ors/store'
 import NotFoundPage from '@ors/app/not-found'
-import { useGetChemicalTypes } from '../useGetChemicalTypes'
+import { ApiEditBPActivity } from '@ors/types/api_bp_get'
+
+import { capitalize, map, filter, uniq } from 'lodash'
+import { useParams } from 'wouter'
 
 const BPEditConsolidated = ({ activitiesRef, isFirstRender }: any) => {
   const { period, type } = useParams<{ period: string; type: string }>()

@@ -1,10 +1,13 @@
-import { useParams } from 'wouter'
-
-import usePageTitle from '@ors/hooks/usePageTitle'
-import BPDetailsConsolidated from '@ors/components/manage/Blocks/BusinessPlans/BP/BPDetailsConsolidated'
 import { useContext } from 'react'
-import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
+
+import BPDetailsConsolidated from '@ors/components/manage/Blocks/BusinessPlans/BP/BPDetailsConsolidated'
 import { useSetInitialBpType } from '@ors/components/manage/Blocks/BusinessPlans/useSetInitialBpType'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
+import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
+import usePageTitle from '@ors/hooks/usePageTitle'
+import NotFoundPage from '@ors/app/not-found'
+
+import { useParams } from 'wouter'
 
 export default function BusinessPlansDetailsConsolidated() {
   usePageTitle('Business Plans')
@@ -14,6 +17,12 @@ export default function BusinessPlansDetailsConsolidated() {
   ) as any
   const { period } = useParams<Record<string, string>>()
   const bpType = useSetInitialBpType(yearRanges, period)
+
+  const { canViewBp, canViewBpYears } = useContext(PermissionsContext)
+
+  if (!canViewBp || !canViewBpYears) {
+    return <NotFoundPage />
+  }
 
   return (
     yearRangesLoaded && (
