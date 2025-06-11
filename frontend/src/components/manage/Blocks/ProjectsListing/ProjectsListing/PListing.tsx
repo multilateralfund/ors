@@ -13,8 +13,8 @@ import { useStore } from '@ors/store'
 export default function PListing() {
   const form = useRef<any>()
 
-  const projectSlice = useStore((state) => state.projects)
-  const user_permissions = projectSlice.user_permissions.data || []
+  const commonSlice = useStore((state) => state.common)
+  const user_permissions = commonSlice.user_permissions.data || []
 
   const initialFilters = {
     offset: 0,

@@ -152,7 +152,6 @@ export interface BPErrorsSlice {
 }
 
 export interface ProjectsSlice {
-  user_permissions: SliceData<string[]>
   clusters: SliceData
   meetings: SliceData<MeetingType[]>
   sectors: SliceData<ProjectSectorType[]>
@@ -189,6 +188,7 @@ export interface CommonSlice {
   countries_for_listing: SliceData<Country[]>
   setSettings: (newSettings: Partial<Settings>) => void
   settings: SliceData<Settings>
+  user_permissions: SliceData<string[]>
 }
 
 export interface FiltersSlice {
