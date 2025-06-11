@@ -74,6 +74,13 @@ const ProjectsHeader = ({
     submission_status,
   } = project || {}
 
+  const pageTitleExtraInfo =
+    mode === 'copy'
+      ? '(copy)'
+      : mode === 'full-link' || mode === 'partial-link'
+        ? `(component of ${title ?? 'N/A'})`
+        : ''
+
   const Versions = (
     <>
       <VersionsDropdown
@@ -89,7 +96,7 @@ const ProjectsHeader = ({
           <PageHeading>
             {mode === 'edit'
               ? `Edit project: ${title ?? 'N/A'}${getTitleExtras(project as ProjectTypeApi)}`
-              : 'New project submission'}
+              : 'New project submission ' + pageTitleExtraInfo}
           </PageHeading>
           {mode === 'edit' &&
             (version > 1 || lowerCase(submission_status) !== 'draft') &&

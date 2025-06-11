@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 
 import Link from '@ors/components/ui/Link/Link'
 import { IncreaseVersionButton } from '../HelperComponents'
@@ -14,8 +14,8 @@ import { ProjectFile, ProjectTypeApi, SubmitActionButtons } from '../interfaces'
 import { api, uploadFiles } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
+import { Button, Modal, Typography, Box } from '@mui/material'
 import { enqueueSnackbar } from 'notistack'
-import { Button } from '@mui/material'
 import { useLocation } from 'wouter'
 import { lowerCase } from 'lodash'
 import cx from 'classnames'
@@ -47,6 +47,8 @@ const EditActionButtons = ({
 
   const projectSlice = useStore((state) => state.projects)
   const user_permissions = projectSlice.user_permissions.data || []
+
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const { crossCuttingFields, projectSpecificFields } = projectData
   const odsOdpData = projectSpecificFields?.ods_odp ?? []
@@ -226,18 +228,14 @@ const EditActionButtons = ({
         </Button>
       )}
       {user_permissions.includes('add_project') && (
-        <Link
-          className={cx(
-            'mr-0 px-3 py-1',
-            'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow',
-          )}
-          href={`/projects-listing/create/${id}/additional-component`}
+        <Button
+          className={cx('px-4 py-2 shadow-none', enabledButtonClassname)}
           size="large"
           variant="contained"
-          button
+          onClick={() => setIsModalOpen(true)}
         >
           Add additional component
-        </Link>
+        </Button>
       )}
       {user_permissions.includes('increase_project_version') &&
         (version === 1 && lowerCase(submission_status) === 'draft' ? (
@@ -259,6 +257,57 @@ const EditActionButtons = ({
             />
           </>
         ) : null)}
+      {isModalOpen && (
+        <Modal
+          aria-labelledby="add-component-modal-title"
+          open={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          keepMounted
+        >
+          <Box className="flex w-full max-w-lg flex-col absolute-center">
+            <Typography className="mb-4 text-xl">
+              Start from a copy of this project or from a blank submission?
+            </Typography>
+            <div className="ml-auto flex gap-1">
+              <Link
+                component="a"
+                className="no-underline"
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+                href={`/projects-listing/create/${id}/full-copy/additional-component`}
+              >
+                <Button
+                  className="text-base"
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  Copy of project
+                </Button>
+              </Link>
+
+              <Link
+                component="a"
+                className="no-underline"
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+                href={`/projects-listing/create/${id}/partial-copy/additional-component`}
+              >
+                <Button
+                  className="text-base"
+                  onClick={() => setIsModalOpen(false)}
+                >
+                  Blank submission
+                </Button>
+              </Link>
+              <Button
+                className="text-base"
+                onClick={() => setIsModalOpen(false)}
+              >
+                Close
+              </Button>
+            </div>
+          </Box>
+        </Modal>
+      )}
     </div>
   )
 }

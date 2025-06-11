@@ -331,7 +331,7 @@ const ProjectsCreate = ({
           : []),
       ],
     },
-    ...(project
+    ...(project && mode === 'edit'
       ? [
           {
             step: 5,
