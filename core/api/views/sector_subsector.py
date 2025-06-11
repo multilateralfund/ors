@@ -6,7 +6,7 @@ from drf_yasg.utils import swagger_auto_schema
 
 from core.api.permissions import IsAgency, IsSecretariat, IsViewer
 from core.api.serializers.project_metadata import (
-    ProjectSectorSerializer,
+    ProjectSectorIncludingSubsectorsSerializer,
     ProjectSubSectorSerializer,
 )
 from core.models.project_metadata import (
@@ -75,7 +75,7 @@ class ProjectSectorView(SectorSubsectorBaseView):
     """
 
     queryset = ProjectSector.objects.order_by("sort_order").all()
-    serializer_class = ProjectSectorSerializer
+    serializer_class = ProjectSectorIncludingSubsectorsSerializer
 
     def get_existing_object(self, request):
         return ProjectSector.objects.find_by_name(request.data["name"])

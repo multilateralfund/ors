@@ -6,6 +6,7 @@ from .cp_report_empty_form import *
 from .cp_reports import *
 from .countries import *
 from .project_associations import *
+from .projects_metadata import *
 from .projects import *
 from .projects_v2 import *
 from .replenishment import *
