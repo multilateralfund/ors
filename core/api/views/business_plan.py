@@ -17,7 +17,11 @@ from core.api.filters.business_plan import (
     BPFileFilter,
     BPFilterBackend,
 )
-from core.api.permissions import IsAgency, IsSecretariat, IsViewer
+from core.api.permissions import (
+    IsBPViewer,
+    IsBPEditor,
+)
+
 from core.api.serializers.bp_history import BPHistorySerializer
 from core.api.serializers.business_plan import (
     BusinessPlanCreateSerializer,
@@ -41,7 +45,7 @@ class BPChemicalTypeListView(generics.ListAPIView):
     List BP chemical types
     """
 
-    permission_classes = [IsSecretariat | IsAgency | IsViewer]
+    permission_classses = [IsBPViewer | IsBPEditor]
     queryset = BPChemicalType.objects.all()
     filterset_class = BPChemicalTypeFilter
     serializer_class = BPChemicalTypeSerializer
@@ -55,7 +59,6 @@ class BusinessPlanViewSet(
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet,
 ):
-    permission_classes = [IsSecretariat | IsAgency | IsViewer]
     filter_backends = [
         BPFilterBackend,
         filters.OrderingFilter,
@@ -64,6 +67,19 @@ class BusinessPlanViewSet(
     search_fields = []
     ordering = ["id"]
     ordering_fields = "__all__"
+
+    @property
+    def permission_classes(self):
+        if self.action in ["list", "retrieve", "get_years", "get"]:
+            return [IsBPViewer | IsBPEditor]
+        if self.action in [
+            "create",
+            "update",
+            "partial_update",
+            "destroy",
+        ]:
+            return [IsBPEditor]
+        return []
 
     def get_queryset(self):
         if self.action == "get":
@@ -169,9 +185,7 @@ class BPActivityViewSet(
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
-    permission_classes = [IsSecretariat | IsAgency | IsViewer]
     filterset_class = BPActivityListFilter
-
     filter_backends = [
         DjangoFilterBackend,
         filters.OrderingFilter,
@@ -181,19 +195,19 @@ class BPActivityViewSet(
     ordering = ["agency__name", "country__abbr", "initial_id"]
     ordering_fields = BPACTIVITY_ORDERING_FIELDS
 
+    @property
+    def permission_classes(self):
+        if self.action in ["list", "retrieve"]:
+            return [IsBPViewer | IsBPEditor]
+        return super().get_permissions()
+
     def get_serializer_class(self):
         if self.action == "list":
             return BPActivityListSerializer
         return BPActivityDetailSerializer
 
     def get_queryset(self):
-        queryset = BPActivity.objects.all()
-
-        if "agency" in self.request.user.user_type.lower():
-            # filter activities by agency if user is agency
-            queryset = queryset.filter(agency=self.request.user.agency)
-
-        return queryset
+        return BPActivity.objects.all()
 
 
 class BPFileView(
@@ -206,7 +220,6 @@ class BPFileView(
     API endpoint that allows uploading business plan file.
     """
 
-    permission_classes = [IsSecretariat | IsAgency | IsViewer]
     queryset = BPFile.objects.all()
     serializer_class = BPFileSerializer
     filterset_class = BPFileFilter
@@ -229,10 +242,12 @@ class BPFileView(
         ".7z",
     ]
 
-    def get_permissions(self):
-        # only the secretariat can create / delete files
+    @property
+    def permission_classes(self):
+        if self.request.method in ["GET"]:
+            return [IsBPViewer | IsBPEditor]
         if self.request.method in ["POST", "DELETE"]:
-            return [IsSecretariat()]
+            return [IsBPEditor]
         return super().get_permissions()
 
     def get(self, request, *args, **kwargs):
@@ -296,7 +311,7 @@ class BPFileView(
 
 
 class BPFileDownloadView(generics.RetrieveAPIView):
-    permission_classes = [IsSecretariat | IsAgency | IsViewer]
+    permission_classes = [IsBPViewer | IsBPEditor]
     queryset = BPFile.objects.all()
     lookup_field = "id"
 
@@ -315,6 +330,8 @@ class BPFileDownloadView(generics.RetrieveAPIView):
 
 
 class BPImportValidateView(BusinessPlanUtils, generics.GenericAPIView):
+    permission_classes = [IsBPEditor]
+
     @swagger_auto_schema(
         manual_parameters=IMPORT_PARAMETERS,
         operation_description="Check if uploaded file is valid without saving data",
@@ -360,6 +377,7 @@ class BPImportView(
     generics.GenericAPIView,
 ):
     serializer_class = BusinessPlanCreateSerializer
+    permission_classes = [IsBPEditor]
 
     @swagger_auto_schema(
         manual_parameters=IMPORT_PARAMETERS,

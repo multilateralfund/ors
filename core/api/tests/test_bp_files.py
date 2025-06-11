@@ -2,17 +2,11 @@ import pytest
 from django.urls import reverse
 from rest_framework.test import APIClient
 
-from core.api.tests.factories import AgencyFactory, UserFactory
 from core.models.business_plan import BPFile
 
 pytestmark = pytest.mark.django_db
 
-
-@pytest.fixture(name="new_agency_user")
-def _new_agency_user():
-    new_agency = AgencyFactory.create(name="Agency2", code="AG2")
-    return UserFactory.create(agency=new_agency, user_type="agency_submitter")
-
+# pylint: disable=R0913
 
 @pytest.fixture(name="test_file")
 def _test_file(tmp_path):
@@ -35,28 +29,55 @@ def _bp_files_url(business_plan):
 class TestBPFileUpload:
     client = APIClient()
 
-    def test_file_upload_anon(self, bp_files_url):
-        response = self.client.post(bp_files_url, {})
-        assert response.status_code == 403
-
-    def test_file_upload_wrong_user(self, bp_files_url, new_agency_user, test_file):
-        self.client.force_authenticate(user=new_agency_user)
-
-        # upload file
+    def test_file_upload_permissions(
+        self,
+        bp_files_url,
+        user,
+        bp_viewer_user,
+        bp_editor_user,
+        admin_user,
+        test_file,
+    ):
         data = {"adrian.csv": test_file.open()}
+        # check anon permissions
         response = self.client.post(bp_files_url, data, format="multipart")
         assert response.status_code == 403
 
-    def test_file_upload_wrong_extension(self, user, bp_files_url, test_file):
         self.client.force_authenticate(user=user)
+        response = self.client.post(bp_files_url, data, format="multipart")
+        assert response.status_code == 403
+
+        self.client.force_authenticate(user=bp_viewer_user)
+        response = self.client.post(bp_files_url, data, format="multipart")
+        assert response.status_code == 403
+
+        self.client.force_authenticate(user=bp_editor_user)
+        response = self.client.post(bp_files_url, data, format="multipart")
+        assert response.status_code == 201
+
+        response = self.client.get(bp_files_url)
+        assert response.status_code == 200
+        # test delete
+        file_id = response.data[0]["id"]
+        data = {"file_ids": [file_id]}
+        response = self.client.delete(bp_files_url, data, format="json")
+        assert response.status_code == 204
+
+        self.client.force_authenticate(user=admin_user)
+        data = {"adrian.csv": test_file.open()}
+        response = self.client.post(bp_files_url, data, format="multipart")
+        assert response.status_code == 201
+
+    def test_file_upload_wrong_extension(self, bp_editor_user, bp_files_url, test_file):
+        self.client.force_authenticate(user=bp_editor_user)
 
         # upload file with wrong extension
         data = {"adrian.txt": test_file.open()}
         response = self.client.post(bp_files_url, data, format="multipart")
         assert response.status_code == 400
 
-    def test_file_upload(self, user, bp_files_url, test_file, business_plan):
-        self.client.force_authenticate(user=user)
+    def test_file_upload(self, bp_editor_user, bp_files_url, test_file, business_plan):
+        self.client.force_authenticate(user=bp_editor_user)
 
         # upload file (POST)
         data = {"adrian.csv": test_file.open()}
@@ -84,9 +105,9 @@ class TestBPFileUpload:
 
 
 @pytest.fixture(name="bp_file_id")
-def _bp_file(bp_files_url, user, test_file):
+def _bp_file(bp_files_url, bp_editor_user, test_file):
     client = APIClient()
-    client.force_authenticate(user=user)
+    client.force_authenticate(user=bp_editor_user)
 
     data = {"adrian.csv": test_file.open()}
     client.post(bp_files_url, data, format="multipart")
@@ -96,14 +117,25 @@ def _bp_file(bp_files_url, user, test_file):
 class TestBPFileDownload:
     client = APIClient()
 
-    def test_file_download_anon(self, bp_file_id):
-        self.client.force_authenticate(user=None)
+    def test_file_download_permissions(
+        self, bp_file_id, user, bp_viewer_user, bp_editor_user, admin_user
+    ):
         url = reverse("business-plan-file-download", kwargs={"id": bp_file_id})
-        response = self.client.get(url)
-        assert response.status_code == 403
 
-    def test_file_download(self, agency_user, bp_file_id):
-        self.client.force_authenticate(user=agency_user)
+        def _test_file_download_permissions(user, expected_status):
+            self.client.force_authenticate(user=user)
+            response = self.client.get(url)
+            assert response.status_code == expected_status
+
+        # check anon permissions
+        _test_file_download_permissions(None, 403)
+        _test_file_download_permissions(user, 403)
+        _test_file_download_permissions(bp_viewer_user, 200)
+        _test_file_download_permissions(bp_editor_user, 200)
+        _test_file_download_permissions(admin_user, 200)
+
+    def test_file_download(self, bp_editor_user, bp_file_id):
+        self.client.force_authenticate(user=bp_editor_user)
         my_file = BPFile.objects.get(id=bp_file_id).file
         # download file
         url = reverse("business-plan-file-download", kwargs={"id": bp_file_id})

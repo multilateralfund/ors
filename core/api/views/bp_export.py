@@ -13,7 +13,7 @@ from core.api.export.business_plan import (
     ProjectSubsectorWriter,
 )
 from core.api.filters.business_plan import BPActivityListFilter
-from core.api.permissions import IsAgency, IsSecretariat, IsViewer
+from core.api.permissions import IsBPViewer, IsBPEditor
 
 from core.api.serializers.business_plan import BPActivityExportSerializer
 from core.api.utils import (
@@ -35,7 +35,7 @@ from core.models.project_metadata import (
 
 # pylint: disable=R0913
 class BPActivityExportView(generics.GenericAPIView):
-    permission_classes = [IsSecretariat | IsAgency | IsViewer]
+    permission_classes = [IsBPViewer | IsBPEditor]
     filterset_class = BPActivityListFilter
 
     filter_backends = [

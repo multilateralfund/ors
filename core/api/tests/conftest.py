@@ -125,6 +125,24 @@ def secretariat_production_v3_edit_access_user():
 
 
 @pytest.fixture
+def bp_viewer_user():
+    return UserFactory(
+        username="bp_viewer",
+        email="bp_viewer@mail.com",
+        user_type="bp_viewer",
+    )
+
+
+@pytest.fixture
+def bp_editor_user():
+    return UserFactory(
+        username="bp_editor",
+        email="bp_editor@mail.com",
+        user_type="bp_editor",
+    )
+
+
+@pytest.fixture
 def stakeholder_user():
     return UserFactory(user_type="stakeholder")
 
