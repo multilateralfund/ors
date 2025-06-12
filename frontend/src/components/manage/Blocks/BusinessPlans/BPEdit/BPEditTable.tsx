@@ -1,29 +1,44 @@
 'use client'
-import { ApiBPYearRange } from '@ors/types/api_bp_get_years'
+import { useCallback, useContext, useMemo, useRef, useState } from 'react'
 
-import { useCallback, useContext, useMemo, useRef } from 'react'
-
-import { Button, Alert } from '@mui/material'
-import { findIndex, isNil, map, uniq } from 'lodash'
-import { useParams } from 'wouter'
-
+import EditTable from '@ors/components/manage/Form/EditTable'
 import {
   BPEditTableInterface,
   BpPathParams,
 } from '@ors/components/manage/Blocks/BusinessPlans/types'
 import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
-import { applyTransaction } from '@ors/helpers'
-
-import useColumnsOptions from './editSchema'
+import { editCellRenderer } from '../BPTableHelpers/cellRenderers'
+import { emptyFieldData, updateFieldData } from './editSchemaHelpers'
 import { BasePasteWrapper } from './pasteSupport'
+import useColumnsOptions from './editSchema'
+import { ApiBPYearRange } from '@ors/types/api_bp_get_years'
+import { applyTransaction } from '@ors/helpers'
+import { useStore } from '@ors/store'
+import { ApiEditBPActivity } from '@ors/types/api_bp_get'
 
+import { findIndex, isNil, map, uniq } from 'lodash'
+import { useParams } from 'wouter'
 import {
   IoAddCircle,
   IoInformationCircleOutline,
   IoClipboardOutline,
 } from 'react-icons/io5'
-import { editCellRenderer } from '../BPTableHelpers/cellRenderers'
-import EditTable from '@ors/components/manage/Form/EditTable'
+
+import {
+  Button,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  DialogContentText,
+} from '@mui/material'
+
+export type PendingEditType = null | {
+  field: string
+  newValue: number
+  rowId: number
+}
 
 export function BPEditBaseTable(
   props: { yearRangeSelected: ApiBPYearRange } & BPEditTableInterface,
@@ -41,6 +56,13 @@ export function BPEditBaseTable(
   } = props
 
   const grid = useRef<any>()
+
+  const bpSlice = useStore((state) => state.businessPlans)
+  const projectSlice = useStore((state) => state.projects)
+
+  const clusters = projectSlice.clusters.data
+  const types = bpSlice.types.data
+  const sectors = bpSlice.sectors.data
 
   const getYearColsValue = (
     value: any,
@@ -356,6 +378,8 @@ export function BPEditBaseTable(
     }
   }
 
+  const [pendingEdit, setPendingEdit] = useState<PendingEditType>(null)
+
   const columnOptions = useColumnsOptions(
     yearColumns,
     onRemoveActivity,
@@ -363,6 +387,7 @@ export function BPEditBaseTable(
     setForm,
     chemicalTypes,
     activitiesRef,
+    setPendingEdit,
     isConsolidatedView,
   )
 
@@ -441,6 +466,77 @@ export function BPEditBaseTable(
       activitiesRef.current.all.includes(props.data.initial_id),
   }
 
+  const setFieldData = (data: any) => {
+    if (pendingEdit) {
+      const field = pendingEdit.field
+
+      const optionsMap = {
+        project_cluster: clusters,
+        project_type: types,
+        sector: sectors,
+      }
+      const options = optionsMap[field as keyof typeof optionsMap]
+
+      const resetMapping: Record<string, (keyof ApiEditBPActivity)[]> = {
+        project_cluster: ['project_type', 'sector', 'subsector'],
+        project_type: ['sector', 'subsector'],
+        sector: ['subsector'],
+      }
+
+      updateFieldData(options, data, field, pendingEdit?.newValue)
+      resetMapping[field]?.forEach((field) => emptyFieldData(data, field))
+
+      return data
+    }
+  }
+
+  const changeCellValue = (eventData: any, rowIndex: number) => {
+    const newData = [...form]
+
+    if (rowIndex > -1) {
+      newData.splice(rowIndex, 1, {
+        ...eventData,
+      })
+
+      setForm(newData)
+
+      activitiesRef.current.edited = uniq([
+        eventData.initial_id,
+        ...(activitiesRef.current.edited || []),
+      ]).filter(Boolean)
+    }
+  }
+
+  const updateFields = () => {
+    if (pendingEdit) {
+      const rowIndex = form.length - pendingEdit.rowId - 1
+
+      const data = setFieldData(form[rowIndex])
+      changeCellValue(data, rowIndex)
+    }
+  }
+
+  const handleUpdateFields = () => {
+    updateFields()
+    setPendingEdit(null)
+  }
+
+  const handleCancel = () => {
+    setPendingEdit(null)
+  }
+
+  const dialogTextHelper = {
+    project_cluster: {
+      columnName: 'cluster',
+      affectedColumnsText: 'project type, sector and subsector',
+    },
+    project_type: {
+      columnName: 'project type',
+      affectedColumnsText: 'sector and subsector',
+    },
+    sector: { columnName: 'sector', affectedColumnsText: 'subsector' },
+  }
+
   return (
     <>
       <form>
@@ -465,27 +561,52 @@ export function BPEditBaseTable(
           onCellValueChanged={(event) => {
             const eventData = event.data
             const newData = [...form]
-
             const rowIndex = findIndex(
               newData,
               (row) => row.row_id === eventData.row_id,
             )
 
-            if (rowIndex > -1) {
-              newData.splice(rowIndex, 1, {
-                ...eventData,
-              })
-
-              setForm(newData)
-
-              activitiesRef.current.edited = uniq([
-                eventData.initial_id,
-                ...(activitiesRef.current.edited || []),
-              ]).filter(Boolean)
-            }
+            changeCellValue(eventData, rowIndex)
           }}
         />
       </form>
+
+      <Dialog
+        aria-describedby="alert-dialog-description"
+        aria-labelledby="alert-dialog-title"
+        open={!!pendingEdit}
+        onClose={handleCancel}
+      >
+        <DialogTitle id="alert-dialog-title">
+          Dependent data will be cleared
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText
+            id="alert-dialog-description"
+            className="text-pretty"
+          >
+            Changing the{' '}
+            {
+              dialogTextHelper[
+                pendingEdit?.field as keyof typeof dialogTextHelper
+              ]?.columnName
+            }{' '}
+            will reset the{' '}
+            {
+              dialogTextHelper[
+                pendingEdit?.field as keyof typeof dialogTextHelper
+              ]?.affectedColumnsText
+            }{' '}
+            as {pendingEdit?.field === 'sector' ? 'it is' : 'they are'} no
+            longer valid for the current selection. Are you sure you want to
+            continue?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCancel}>No</Button>
+          <Button onClick={handleUpdateFields}>Yes</Button>
+        </DialogActions>
+      </Dialog>
     </>
   )
 }

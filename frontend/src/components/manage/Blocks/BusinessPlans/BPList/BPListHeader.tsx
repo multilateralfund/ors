@@ -1,21 +1,21 @@
-import { UserType, userCanEditBusinessPlan } from '@ors/types/user_types'
-
-import { useLocation } from 'wouter'
-import cx from 'classnames'
-import styles from '@ors/app/business-plans/list/styles.module.css'
+import { useContext } from 'react'
 
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import CustomLink from '@ors/components/ui/Link/Link'
-import { useStore } from '@ors/store'
 import useGetBpPeriods from './useGetBPPeriods'
-import { useContext } from 'react'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
 import PeriodSelector from '../../Replenishment/PeriodSelector'
 import { getPathPeriod } from '../../Replenishment/utils'
-import { bpTypes } from '../constants'
-import { capitalize, filter, find, indexOf, map } from 'lodash'
 import SimpleSelect from '@ors/components/ui/SimpleSelect/SimpleSelect'
 import { getCurrentPeriodOption } from '../utils'
+import { bpTypes } from '../constants'
+import { useStore } from '@ors/store'
+import styles from '@ors/app/business-plans/list/styles.module.css'
+
+import { capitalize, filter, find, indexOf, map } from 'lodash'
+import { useLocation } from 'wouter'
+import cx from 'classnames'
 
 const BPListHeader = ({
   viewType,
@@ -28,10 +28,10 @@ const BPListHeader = ({
   setParamsFiles?: any
   setParamsActivities?: any
 }) => {
-  const { user_type } = useStore((state) => state.user?.data)
   const { setBPType, bpType } = useStore((state) => state.bpType)
 
   const [pathname] = useLocation()
+  const { canUploadBp } = useContext(PermissionsContext)
   const { yearRanges } = useContext(BPYearRangesContext) as any
   const { periodOptions } = useGetBpPeriods(yearRanges)
   const period = getPathPeriod(pathname)
@@ -101,7 +101,7 @@ const BPListHeader = ({
           />
         </div>
       </div>
-      {userCanEditBusinessPlan[user_type as UserType] && (
+      {canUploadBp && (
         <CustomLink
           className="h-10 min-w-[6.25rem] text-nowrap px-4 py-2 text-lg uppercase"
           href="/business-plans/upload"

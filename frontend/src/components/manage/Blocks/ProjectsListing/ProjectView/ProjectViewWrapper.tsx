@@ -24,8 +24,8 @@ import { useParams } from 'wouter'
 const ProjectViewWrapper = () => {
   const { project_id } = useParams<Record<string, string>>()
 
-  const projectSlice = useStore((state) => state.projects)
-  const user_permissions = projectSlice.user_permissions.data || []
+  const commonSlice = useStore((state) => state.common)
+  const user_permissions = commonSlice.user_permissions.data || []
 
   const project = useGetProject(project_id)
   const { data, loading } = project

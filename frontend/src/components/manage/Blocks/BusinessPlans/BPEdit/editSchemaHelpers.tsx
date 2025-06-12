@@ -1,4 +1,6 @@
-import { filter, find, get, isEqual, isObject, map } from 'lodash'
+import { filter, find, get, isEqual, isObject, map, isNil } from 'lodash'
+import { ValueSetterParams } from 'ag-grid-community'
+import { PendingEditType } from './BPEditTable'
 
 export const agFormatValue = (value: any) => value?.id || ''
 export const agFormatNameValue = (value: any) => value?.name || ''
@@ -27,41 +29,115 @@ export const isOptionEqualToValueByName = (option: any, value: any) =>
 export const isOptionEqualToValueByCode = (option: any, value: any) =>
   isObject(value) ? isEqual(option, value) : option.code === value
 
-const updateSubsector = (params: any, value: any, subsectors: any) => {
-  const subsectorsSectorIds = map(
-    subsectors,
-    (subsector) => subsector.sector_id,
-  )
+export const getClusterTypesOpts = (cluster_id: number, clusterOptions: any) =>
+  get(find(clusterOptions, { cluster_id }), 'types', [])
 
-  if (!subsectorsSectorIds.includes(value)) {
-    params.data.subsector_id = null
-    params.data.subsector = {}
+export const getTypeSectorsOpts = (type_id: number, typesOptions: any) =>
+  get(find(typesOptions, { type_id }), 'sectors', [])
+
+export const getSectorSubsectorsOpts = (sector_id: any, sectorOptions: any) =>
+  get(find(sectorOptions, { id: sector_id }), 'subsectors', [])
+
+export const emptyFieldData = (data: any, field: string) => {
+  data[field + '_id'] = null
+  data[field] = {}
+
+  if (field !== 'subsector') {
+    data[field + 'code'] = ''
   }
 }
 
+export const updateFieldData = (
+  fieldOpts: any,
+  data: any,
+  colIdentifier: string,
+  fieldNewId: number,
+) => {
+  const currentDataObj = find(fieldOpts, { id: fieldNewId })
+
+  data[colIdentifier + '_id'] = fieldNewId
+  data[colIdentifier] = currentDataObj
+
+  if (['project_type', 'sector'].includes(colIdentifier)) {
+    data[colIdentifier + '_code'] = currentDataObj?.code || ''
+  }
+}
+
+const shouldEmptyProjectType = (
+  params: ValueSetterParams,
+  newVal: number,
+  opts: any,
+) => {
+  const projectTypesOpts = getClusterTypesOpts(newVal, opts)
+  const projectTypesOptsIds = map(projectTypesOpts, 'type_id')
+
+  return !projectTypesOptsIds.includes(params.data?.project_type_id)
+}
+
+const shouldEmptySector = (
+  params: ValueSetterParams,
+  newVal: number,
+  opts: any,
+) => {
+  const projectTypesOpts = getClusterTypesOpts(
+    params.data?.project_cluster_id,
+    opts,
+  )
+  const sectorOpts = getTypeSectorsOpts(newVal, projectTypesOpts)
+  const sectorOptsIds = map(sectorOpts, 'sector_id')
+
+  return !sectorOptsIds.includes(params.data?.sector_id)
+}
+
+const shouldEmptySubsector = (
+  params: ValueSetterParams,
+  newVal: number,
+  opts: any,
+) => {
+  const subsectorOpts = getSectorSubsectorsOpts(newVal, opts)
+  const subsectorOptsIds = map(subsectorOpts, 'id')
+
+  return !subsectorOptsIds.includes(params.data?.subsector_id)
+}
+
 export const valueSetter = (
-  params: any,
+  params: ValueSetterParams,
   colIdentifier: string,
   data: any,
-  extraData?: any,
+  opts?: any,
+  setPendingEdit?: (value: PendingEditType) => void,
 ) => {
   const newVal = params.newValue
 
-  const currentDataObj = find(data, {
-    id: newVal,
-  })
+  if (!['project_cluster', 'project_type', 'sector'].includes(colIdentifier)) {
+    updateFieldData(data, params.data, colIdentifier, newVal)
+  } else {
+    const shouldUpdateChildren = {
+      project_cluster:
+        !isNil(params.data?.project_type_id) &&
+        shouldEmptyProjectType(params, newVal, opts),
+      project_type:
+        !isNil(params.data?.sector_id) &&
+        shouldEmptySector(params, newVal, opts),
+      sector:
+        !isNil(params.data?.subsector_id) &&
+        shouldEmptySubsector(params, newVal, opts),
+    }
 
-  params.data[colIdentifier + '_id'] = newVal
+    if (
+      shouldUpdateChildren[colIdentifier as keyof typeof shouldUpdateChildren]
+    ) {
+      setPendingEdit?.({
+        field: colIdentifier,
+        newValue: newVal,
+        rowId: params.data.row_id,
+      })
 
-  if (['project_type', 'sector'].includes(colIdentifier)) {
-    params.data[colIdentifier + '_code'] = currentDataObj?.code || ''
+      return false
+    } else {
+      updateFieldData(data, params.data, colIdentifier, newVal)
+    }
   }
-
-  if (colIdentifier === 'sector') {
-    updateSubsector(params, newVal, extraData)
-  }
-
-  params.data[colIdentifier] = currentDataObj
 
   return true
 }

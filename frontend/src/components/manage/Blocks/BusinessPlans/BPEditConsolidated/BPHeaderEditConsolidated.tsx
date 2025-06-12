@@ -1,18 +1,19 @@
-import { Button } from '@mui/material'
-import { capitalize, filter, keys, map, some } from 'lodash'
-import { useParams } from 'wouter'
-import { useSnackbar } from 'notistack'
+import { useContext, useState } from 'react'
 
+import Loading from '@ors/components/theme/Loading/Loading'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import Link from '@ors/components/ui/Link/Link'
-import { api, uploadFiles } from '@ors/helpers'
-
+import { useEditLocalStorageConsolidated } from './useLocalStorageConsolidated'
+import { RedirectToBpList } from '../RedirectToBpList'
 import { tableColumns } from '../constants'
 import { BpPathParams } from '../types'
-import { useEditLocalStorageConsolidated } from './useLocalStorageConsolidated'
+import { api, uploadFiles } from '@ors/helpers'
 import { useStore } from '@ors/store'
-import { RedirectToBpList } from '../RedirectToBpList'
-import { useState } from 'react'
-import Loading from '@ors/components/theme/Loading/Loading'
+
+import { capitalize, filter, keys, map, some } from 'lodash'
+import { Button } from '@mui/material'
+import { useSnackbar } from 'notistack'
+import { useParams } from 'wouter'
 
 export default function BPHeaderEditConsolidated({
   form,
@@ -32,6 +33,8 @@ export default function BPHeaderEditConsolidated({
   const { setBusinessPlan } = useStore((state) => state.businessPlan)
   const { activeTab } = useStore((state) => state.bp_current_tab)
   const { setRowErrors } = useStore((state) => state.bpErrors)
+
+  const { canViewBp, canUpdateBp } = useContext(PermissionsContext)
 
   const { enqueueSnackbar } = useSnackbar()
 
@@ -155,24 +158,28 @@ export default function BPHeaderEditConsolidated({
   const headerActions = (
     <div className="flex items-center">
       <div className="container flex w-full justify-between gap-x-4 px-0">
-        <Link
-          className="border border-solid border-primary bg-white px-4 py-2 text-primary shadow-none hover:bg-primary hover:text-white"
-          color="primary"
-          href={`/business-plans/list/${activeTab === 0 ? 'report-info' : 'activities'}/${period}`}
-          size="large"
-          variant="contained"
-          button
-        >
-          Cancel
-        </Link>
-        <Button
-          className="px-4 py-2 shadow-none hover:text-white"
-          size="large"
-          variant="contained"
-          onClick={editBP}
-        >
-          Save
-        </Button>
+        {canViewBp && (
+          <Link
+            className="border border-solid border-primary bg-white px-4 py-2 text-primary shadow-none hover:bg-primary hover:text-white"
+            color="primary"
+            href={`/business-plans/list/${activeTab === 0 ? 'report-info' : 'activities'}/${period}`}
+            size="large"
+            variant="contained"
+            button
+          >
+            Cancel
+          </Link>
+        )}
+        {canUpdateBp && (
+          <Button
+            className="px-4 py-2 shadow-none hover:text-white"
+            size="large"
+            variant="contained"
+            onClick={editBP}
+          >
+            Save
+          </Button>
+        )}
         <Loading
           className="!fixed bg-action-disabledBackground"
           active={isSaving}
@@ -183,7 +190,7 @@ export default function BPHeaderEditConsolidated({
 
   return (
     <>
-      <RedirectToBpList currentYearRange={period} />
+      {canViewBp && <RedirectToBpList currentYearRange={period} />}
       <div className="mb-4 flex min-h-[40px] items-center justify-between gap-x-8 gap-y-2">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
           <div className="flex flex-wrap items-center gap-x-2">

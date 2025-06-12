@@ -66,6 +66,7 @@ class TestProjectSectorList(BaseTest):
             "code": sector.code,
             "sort_order": sector.sort_order,
             "allowed_types": [],
+            "subsectors": [],
         }
 
 
@@ -119,6 +120,7 @@ class TestProjectSectorCreate(BaseTest):
             "code": sector.code,
             "sort_order": sector.sort_order,
             "allowed_types": [],
+            "subsectors": [],
         }
 
         sect_co = ProjectSector.objects.count()

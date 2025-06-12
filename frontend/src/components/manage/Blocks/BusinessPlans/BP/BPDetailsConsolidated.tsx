@@ -1,18 +1,16 @@
-import { UserType, userCanViewFilesBusinessPlan } from '@ors/types/user_types'
+import { useContext } from 'react'
 
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import SimpleField from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleField'
 import VersionHistoryList from '@ors/components/ui/VersionDetails/VersionHistoryList'
 import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
 import { getMeetingNr } from '@ors/components/manage/Utils/utilFunctions'
-
-import { FilesViewer } from '../FilesViewer'
+import BPTableToolbarButtons from '../BPTableToolbarButtons'
 import BPListHeader from '../BPList/BPListHeader'
 import BPListTabs from '../BPList/BPListTabs'
 import { useBPListApi } from '../BPList/BPList'
+import { FilesViewer } from '../FilesViewer'
 import { useGetBpData } from './useGetBpData'
-import BPTableToolbarButtons from '../BPTableToolbarButtons'
-
-import { useStore } from '@ors/store'
 
 import { BsFilesAlt } from 'react-icons/bs'
 import { Divider } from '@mui/material'
@@ -22,8 +20,7 @@ const BPSummary = (props: any) => {
   const { year_end, year_start, status, meeting_id, decision_id } =
     results[0] || {}
 
-  const { user_type } = useStore((state) => state.user.data)
-  const canViewFiles = userCanViewFilesBusinessPlan[user_type as UserType]
+  const { canViewFiles } = useContext(PermissionsContext)
 
   return (
     <div className="flex flex-col gap-6 rounded-lg bg-white p-6">
@@ -60,8 +57,12 @@ const BPSummary = (props: any) => {
           textClassName="text-[1.25rem]"
         />
       </div>
-      <Divider />
-      {canViewFiles && loadedFiles && <FilesViewer bpFiles={bpFiles || []} />}
+      {canViewFiles && (
+        <>
+          <Divider />
+          {loadedFiles && <FilesViewer bpFiles={bpFiles || []} />}
+        </>
+      )}
     </div>
   )
 }

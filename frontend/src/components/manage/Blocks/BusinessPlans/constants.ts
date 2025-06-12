@@ -7,7 +7,6 @@ export const tableColumns: { [key: string]: string } = {
   agency_id: 'Agency',
   amount_polyol: 'Amount of polyol in project (MT)',
   bp_chemical_type_id: 'Chemical',
-  comment_secretariat: 'Comment',
   country_id: 'Country',
   is_multi_year: 'I-Indiv M-MY',
   lvc_status: 'HCFC status',

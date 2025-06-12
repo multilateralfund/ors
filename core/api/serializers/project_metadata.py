@@ -89,6 +89,23 @@ class ProjectSectorSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "allowed_types"]
 
 
+class ProjectSectorIncludingSubsectorsSerializer(ProjectSectorSerializer):
+    subsectors = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProjectSector
+        fields = ProjectSectorSerializer.Meta.fields + [
+            "subsectors",
+        ]
+        read_only_fields = ProjectSectorSerializer.Meta.read_only_fields + [
+            "subsectors",
+        ]
+
+    def get_subsectors(self, obj):
+        subsectors = ProjectSubSector.objects.filter(sector=obj).order_by("sort_order")
+        return ProjectSubSectorSerializer(subsectors, many=True).data
+
+
 class ProjectSubSectorSerializer(serializers.ModelSerializer):
     """
     ProjectSubSectorSerializer class

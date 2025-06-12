@@ -1,8 +1,8 @@
 // Response from /api/business-plan/get?
 
 import { ApiAgency } from './api_agencies'
-import {ProjectSectorType} from './api_project_sector'
-import {ProjectSubSectorType} from './api_project_subsector'
+import { ProjectSectorType } from './api_project_sector'
+import { ProjectSubSectorType } from './api_project_subsector'
 import { Country } from './store'
 
 export type ApiBaseBP = {
@@ -61,7 +61,6 @@ export interface ApiBPActivity {
   amount_polyol: null
   bp_chemical_type: ApiBPChemicalType
   bp_chemical_type_id: number
-  comment_secretariat: string
   country: Country
   country_id: number
   id: number
@@ -75,7 +74,7 @@ export interface ApiBPActivity {
   project_cluster_id: number
   project_type: ApiBPProjectType
   project_type_code: string
-  project_type_id: number
+  project_type_id: number | null
   remarks: string
   required_by_model: string
   sector: ProjectSectorType | null

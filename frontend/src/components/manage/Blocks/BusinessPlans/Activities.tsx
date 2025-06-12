@@ -182,7 +182,7 @@ function OpenActivity({
   period,
 }: any) {
   const isValuesView = gridOptions === 'values'
-  const isCommentsView = gridOptions === 'comments'
+  const isRemarksView = gridOptions === 'remarks'
   const isAllView = gridOptions === 'all' || !gridOptions
 
   return (
@@ -197,8 +197,7 @@ function OpenActivity({
         className={cx(
           'grid grid-cols-2 gap-y-4 border-0 pb-4 md:grid-cols-3 lg:grid-cols-4',
           {
-            'border-b border-solid border-gray-200':
-              isAllView || isCommentsView,
+            'border-b border-solid border-gray-200': isAllView || isRemarksView,
           },
         )}
       >
@@ -294,14 +293,14 @@ function OpenActivity({
         </>
       )}
 
-      {!isCommentsView && (
+      {!isRemarksView && (
         <ValuesTable
           {...{ isAllView, isValuesView, period }}
           values={activity.values}
         />
       )}
 
-      {(isAllView || isCommentsView) && (
+      {(isAllView || isRemarksView) && (
         <>
           <div className="flex flex-wrap">
             <span className="flex w-1/2 flex-col gap-2.5 pr-1.5">
@@ -309,16 +308,6 @@ function OpenActivity({
               {activity.remarks ? (
                 <div className="break-words rounded-lg bg-gray-100 p-4">
                   {activity.remarks}
-                </div>
-              ) : (
-                <h4 className="m-0">-</h4>
-              )}
-            </span>
-            <span className="flex w-1/2 flex-col gap-2.5 pl-1.5">
-              <span>{tableColumns.comment_secretariat}</span>
-              {activity.comment_secretariat ? (
-                <div className="break-words rounded-lg bg-gray-100 p-4">
-                  {activity.comment_secretariat}
                 </div>
               ) : (
                 <h4 className="m-0">-</h4>

@@ -45,8 +45,8 @@ const EditActionButtons = ({
 
   const { id, version, submission_status } = project
 
-  const projectSlice = useStore((state) => state.projects)
-  const user_permissions = projectSlice.user_permissions.data || []
+  const commonSlice = useStore((state) => state.common)
+  const user_permissions = commonSlice.user_permissions.data || []
 
   const [isModalOpen, setIsModalOpen] = useState(false)
 

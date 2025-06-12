@@ -33,6 +33,10 @@ class User(AbstractUser):
             _("Secretariat Production V3 Edit Access"),
         )
 
+        # Business profile
+        BP_VIEWER = "bp_viewer", _("Business Plan Viewer")
+        BP_EDITOR = "bp_editor", _("Business Plan Editor")
+
     country = models.ForeignKey(
         "Country", null=True, blank=True, on_delete=models.CASCADE
     )

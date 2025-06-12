@@ -73,27 +73,48 @@ def setup_bp_list():
 class TestBPList(BaseTest):
     url = reverse("businessplan-list")
 
-    def test_list_anon(self):
-        response = self.client.get(self.url)
-        assert response.status_code == 403
+    def test_list_permissions(
+        self,
+        secretariat_user,
+        agency_user,
+        agency_inputter_user,
+        bp_viewer_user,
+        bp_editor_user,
+        admin_user,
+    ):
+        def _test_permissions(user, expected_status):
+            self.client.force_authenticate(user=user)
+            response = self.client.get(self.url)
+            assert response.status_code == expected_status
 
-    def test_list(self, user, _setup_bp_list):
-        self.client.force_authenticate(user=user)
+        # check anon permissions
+        _test_permissions(None, 403)
+
+        _test_permissions(secretariat_user, 200)
+        _test_permissions(agency_user, 200)
+        _test_permissions(agency_inputter_user, 200)
+
+        _test_permissions(bp_viewer_user, 200)
+        _test_permissions(bp_editor_user, 200)
+        _test_permissions(admin_user, 200)
+
+    def test_list(self, bp_viewer_user, _setup_bp_list):
+        self.client.force_authenticate(user=bp_viewer_user)
 
         response = self.client.get(self.url)
         assert response.status_code == 200
         assert len(response.json()) == 6
 
-    def test_list_status_filter(self, user, _setup_bp_list):
-        self.client.force_authenticate(user=user)
+    def test_list_status_filter(self, bp_viewer_user, _setup_bp_list):
+        self.client.force_authenticate(user=bp_viewer_user)
 
         response = self.client.get(self.url, {"status": "Endorsed"})
         assert response.status_code == 200
         assert len(response.json()) == 3
         assert all(bp["status"] == "Endorsed" for bp in response.json())
 
-    def test_list_year_filter(self, user, _setup_bp_list):
-        self.client.force_authenticate(user=user)
+    def test_list_year_filter(self, bp_viewer_user, _setup_bp_list):
+        self.client.force_authenticate(user=bp_viewer_user)
         current_year = datetime.now().year
         response = self.client.get(self.url, {"year_start": current_year})
         assert response.status_code == 200
@@ -109,12 +130,32 @@ class TestBPList(BaseTest):
 class TestBPYearList(BaseTest):
     url = reverse("businessplan-get-years")
 
-    def test_list_anon(self):
-        response = self.client.get(self.url)
-        assert response.status_code == 403
+    def test_list_permissions(
+        self,
+        secretariat_user,
+        agency_user,
+        agency_inputter_user,
+        bp_viewer_user,
+        bp_editor_user,
+        admin_user,
+    ):
+        def _test_permissions(user, expected_status):
+            self.client.force_authenticate(user=user)
+            response = self.client.get(self.url)
+            assert response.status_code == expected_status
 
-    def test_list(self, user, _setup_bp_list):
-        self.client.force_authenticate(user=user)
+        # check anon permissions
+        _test_permissions(None, 403)
+
+        _test_permissions(bp_viewer_user, 200)
+        _test_permissions(bp_editor_user, 200)
+        _test_permissions(secretariat_user, 200)
+        _test_permissions(agency_user, 200)
+        _test_permissions(agency_inputter_user, 200)
+        _test_permissions(admin_user, 200)
+
+    def test_list(self, bp_editor_user, _setup_bp_list):
+        self.client.force_authenticate(user=bp_editor_user)
 
         current_year = datetime.now().year
 
@@ -134,14 +175,40 @@ class TestBPImportValidate:
     params = f"?year_start={year_start}"
     url = reverse("bp-upload-validate") + params
 
-    def test_without_login(self):
-        response = self.client.post(self.url, {}, format="multipart")
-        assert response.status_code == 403
+    def test_bp_import_validate_permissions(
+        self,
+        user,
+        bp_viewer_user,
+        bp_editor_user,
+        admin_user,
+        secretariat_user,
+        agency_user,
+        agency_inputter_user,
+        subsector_other,
+        _setup_bp_activity_create,
+    ):
+        file_path = "core/api/tests/files/Test_BP2025-2027.xlsx"
+
+        def _test_bp_import_validate_permissions(test_user, expected_status):
+            self.client.force_authenticate(user=test_user)
+            with open(file_path, "rb") as f:
+                data = {"Test_BP2025-2027.xlsx": f}
+                response = self.client.post(self.url, data, format="multipart")
+                assert response.status_code == expected_status
+
+        # check anon permissions
+        _test_bp_import_validate_permissions(None, 403)
+        _test_bp_import_validate_permissions(bp_viewer_user, 403)
+        _test_bp_import_validate_permissions(agency_user, 403)
+        _test_bp_import_validate_permissions(agency_inputter_user, 403)
+        _test_bp_import_validate_permissions(secretariat_user, 200)
+        _test_bp_import_validate_permissions(bp_editor_user, 200)
+        _test_bp_import_validate_permissions(admin_user, 200)
 
     def test_bp_import_validate_invalid_template(
-        self, user, subsector_other, _setup_bp_activity_create
+        self, bp_editor_user, subsector_other, _setup_bp_activity_create
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=bp_editor_user)
         file_path = "core/api/tests/files/Test_BP2025-2027_invalid_template.xlsx"
 
         with open(file_path, "rb") as f:
@@ -156,9 +223,9 @@ class TestBPImportValidate:
         )
 
     def test_bp_import_validate_multiple_errors(
-        self, user, subsector_other, _setup_bp_activity_create
+        self, bp_editor_user, subsector_other, _setup_bp_activity_create
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=bp_editor_user)
         file_path = "core/api/tests/files/Test_BP2025-2027_multiple_errors.xlsx"
 
         with open(file_path, "rb") as f:
@@ -178,9 +245,9 @@ class TestBPImportValidate:
         )
 
     def test_bp_import_validate_multiple_warnings(
-        self, user, subsector_other, _setup_bp_activity_create
+        self, bp_editor_user, subsector_other, _setup_bp_activity_create
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=bp_editor_user)
         file_path = "core/api/tests/files/Test_BP2025-2027_multiple_warnings.xlsx"
 
         ProjectClusterFactory(name="Other", code="OTH")
@@ -215,8 +282,10 @@ class TestBPImportValidate:
             in response.data["warnings"][4]["warning_message"]
         )
 
-    def test_bp_import_validate(self, user, subsector_other, _setup_bp_activity_create):
-        self.client.force_authenticate(user=user)
+    def test_bp_import_validate(
+        self, bp_editor_user, subsector_other, _setup_bp_activity_create
+    ):
+        self.client.force_authenticate(user=bp_editor_user)
         file_path = "core/api/tests/files/Test_BP2025-2027.xlsx"
 
         with open(file_path, "rb") as f:
@@ -250,13 +319,40 @@ class TestBPImport:
     params = f"?status={status}&year_start={year_start}&year_end={year_end}"
     url = reverse("bp-upload") + params
 
-    def test_without_login(self):
-        response = self.client.post(self.url, {}, format="multipart")
-        assert response.status_code == 403
+    def test_import_permissions(
+        self,
+        secretariat_user,
+        agency_user,
+        agency_inputter_user,
+        bp_viewer_user,
+        bp_editor_user,
+        admin_user,
+        meeting,
+        decision,
+        _setup_bp_activity_create,
+    ):
+        def _test_permissions(test_user, expected_status):
+            self.client.force_authenticate(user=test_user)
+            url = f"{self.url}&meeting_id={meeting.id}&decision_id={decision.id}"
+
+            with open(self.file_path, "rb") as f:
+                data = {"Test_BP2025-2027.xlsx": f}
+                response = self.client.post(url, data, format="multipart")
+                assert response.status_code == expected_status
+
+        # check anon permissions
+        _test_permissions(None, 403)
+
+        _test_permissions(bp_viewer_user, 403)
+        _test_permissions(agency_user, 403)
+        _test_permissions(agency_inputter_user, 403)
+        _test_permissions(secretariat_user, 200)
+        _test_permissions(bp_editor_user, 200)
+        _test_permissions(admin_user, 200)
 
     def test_bp_import(
         self,
-        user,
+        bp_editor_user,
         meeting,
         decision,
         agency,
@@ -268,7 +364,7 @@ class TestBPImport:
         subsector_other,
         _setup_bp_activity_create,
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=bp_editor_user)
         url = f"{self.url}&meeting_id={meeting.id}&decision_id={decision.id}"
 
         with open(self.file_path, "rb") as f:
@@ -319,21 +415,60 @@ class TestBPImport:
 class TestBPUpdate:
     client = APIClient()
 
-    def test_without_login(self, _setup_bp_activity_create, business_plan):
-        url = reverse("businessplan-list") + f"{business_plan.id}/"
-        data = {
-            "year_start": business_plan.year_start,
-            "year_end": business_plan.year_end,
-            "status": business_plan.status,
-            "activities": [_setup_bp_activity_create],
-        }
-        response = self.client.put(url, data, format="json")
-        assert response.status_code == 403
+    def test_update_permissions(
+        self,
+        bp_viewer_user,
+        bp_editor_user,
+        secretariat_user,
+        agency_user,
+        agency_inputter_user,
+        admin_user,
+        _setup_bp_activity_create,
+        substance,
+    ):
+        def _test_permissions(test_user, expected_status):
+            business_plan = BusinessPlanFactory()
+            self.client.force_authenticate(user=test_user)
+            url = reverse("businessplan-list") + f"{business_plan.id}/"
+            activity_data = _setup_bp_activity_create
+            activity_data["substances"] = [substance.id]
+            activity_data["business_plan_id"] = business_plan.id
+            activity_data["title"] = "Title test"
+            activity_data["status"] = "P"
+            activity_data["is_multi_year"] = False
+            activity_data["remarks"] = "Remarks test"
+            activity_data["values"] = [
+                {
+                    "year": business_plan.year_end,
+                    "is_after": False,
+                    "value_usd": 100,
+                    "value_odp": 100,
+                    "value_mt": 100,
+                }
+            ]
+            data = {
+                "year_start": business_plan.year_start,
+                "year_end": business_plan.year_end,
+                "status": business_plan.status,
+                "activities": [],
+            }
+            response = self.client.put(url, data, format="json")
+            assert response.status_code == expected_status
+
+        # check anon permissions
+        _test_permissions(None, 403)
+
+        _test_permissions(bp_viewer_user, 403)
+        _test_permissions(bp_editor_user, 200)
+        _test_permissions(agency_user, 403)
+        _test_permissions(agency_inputter_user, 403)
+        _test_permissions(secretariat_user, 200)
+        _test_permissions(admin_user, 200)
 
     def test_update_wrong_activity_values(
-        self, user, _setup_bp_activity_create, business_plan
+        self, bp_editor_user, _setup_bp_activity_create, business_plan
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=bp_editor_user)
         url = reverse("businessplan-list") + f"{business_plan.id}/"
 
         # year not in business plan interval
@@ -389,12 +524,12 @@ class TestBPUpdate:
 
     def test_bp_update(
         self,
-        user,
+        bp_editor_user,
         _setup_bp_activity_create,
         business_plan,
         substance,
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=bp_editor_user)
 
         url = reverse("businessplan-list") + f"{business_plan.id}/"
         other_business_plan = BusinessPlanFactory()
@@ -502,19 +637,42 @@ class TestBPActivityList:
     client = APIClient()
     url = reverse("bpactivity-list")
 
-    def test_list_anon(self, business_plan):
-        response = self.client.get(
-            self.url,
-            {
-                "year_start": business_plan.year_start,
-                "year_end": business_plan.year_end,
-                "bp_status": business_plan.status,
-            },
-        )
-        assert response.status_code == 403
+    def test_list_permissions(
+        self,
+        secretariat_user,
+        agency_user,
+        agency_inputter_user,
+        bp_viewer_user,
+        bp_editor_user,
+        business_plan,
+        admin_user,
+    ):
+        def _test_permissions(test_user, expected_status):
+            self.client.force_authenticate(user=test_user)
+            response = self.client.get(
+                self.url,
+                {
+                    "year_start": business_plan.year_start,
+                    "year_end": business_plan.year_end,
+                    "bp_status": business_plan.status,
+                },
+            )
+            assert response.status_code == expected_status
 
-    def test_activity_list(self, user, _setup_bp_activity_list, business_plan):
-        self.client.force_authenticate(user=user)
+        # check anon permissions
+        _test_permissions(None, 403)
+
+        _test_permissions(bp_viewer_user, 200)
+        _test_permissions(agency_user, 200)
+        _test_permissions(agency_inputter_user, 200)
+        _test_permissions(secretariat_user, 200)
+        _test_permissions(bp_editor_user, 200)
+        _test_permissions(admin_user, 200)
+
+    def test_activity_list(
+        self, bp_viewer_user, _setup_bp_activity_list, business_plan
+    ):
+        self.client.force_authenticate(user=bp_viewer_user)
 
         # get by start_year, end_year
         response = self.client.get(
@@ -540,9 +698,9 @@ class TestBPActivityList:
         assert len(response.json()) == 8
 
     def test_country_filter(
-        self, user, business_plan, country_ro, _setup_bp_activity_list
+        self, bp_viewer_user, business_plan, country_ro, _setup_bp_activity_list
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=bp_viewer_user)
 
         response = self.client.get(
             self.url,
@@ -557,8 +715,10 @@ class TestBPActivityList:
         assert len(response.json()) == 1
         assert response.json()[0]["country"]["id"] == country_ro.id
 
-    def test_invalid_country_filter(self, user, _setup_bp_activity_list, business_plan):
-        self.client.force_authenticate(user=user)
+    def test_invalid_country_filter(
+        self, bp_viewer_user, _setup_bp_activity_list, business_plan
+    ):
+        self.client.force_authenticate(user=bp_viewer_user)
 
         response = self.client.get(
             self.url,
@@ -571,8 +731,10 @@ class TestBPActivityList:
         )
         assert response.status_code == 400
 
-    def test_status_filter(self, user, business_plan, _setup_bp_activity_list):
-        self.client.force_authenticate(user=user)
+    def test_status_filter(
+        self, bp_viewer_user, business_plan, _setup_bp_activity_list
+    ):
+        self.client.force_authenticate(user=bp_viewer_user)
 
         response = self.client.get(
             self.url,
@@ -599,8 +761,10 @@ class TestBPActivityList:
         assert response.status_code == 200
         assert len(response.json()) == 0
 
-    def test_search_filter(self, user, business_plan, _setup_bp_activity_list):
-        self.client.force_authenticate(user=user)
+    def test_search_filter(
+        self, bp_viewer_user, business_plan, _setup_bp_activity_list
+    ):
+        self.client.force_authenticate(user=bp_viewer_user)
 
         response = self.client.get(
             self.url,
@@ -615,8 +779,10 @@ class TestBPActivityList:
         assert len(response.json()) == 1
         assert response.json()[0]["title"] == "Planu2"
 
-    def test_agency_filter(self, user, agency, business_plan, _setup_bp_activity_list):
-        self.client.force_authenticate(user=user)
+    def test_agency_filter(
+        self, bp_viewer_user, agency, business_plan, _setup_bp_activity_list
+    ):
+        self.client.force_authenticate(user=bp_viewer_user)
 
         response = self.client.get(
             self.url,
@@ -631,8 +797,10 @@ class TestBPActivityList:
         assert len(response.json()) == 4
         assert response.json()[0]["agency"]["name"] == agency.name
 
-    def test_invalid_agency(self, user, business_plan, _setup_bp_activity_list):
-        self.client.force_authenticate(user=user)
+    def test_invalid_agency(
+        self, bp_viewer_user, business_plan, _setup_bp_activity_list
+    ):
+        self.client.force_authenticate(user=bp_viewer_user)
 
         response = self.client.get(
             self.url,
@@ -645,8 +813,10 @@ class TestBPActivityList:
         )
         assert response.status_code == 400
 
-    def test_invalid_bp_status(self, user, business_plan, _setup_bp_activity_list):
-        self.client.force_authenticate(user=user)
+    def test_invalid_bp_status(
+        self, bp_viewer_user, business_plan, _setup_bp_activity_list
+    ):
+        self.client.force_authenticate(user=bp_viewer_user)
 
         response = self.client.get(
             self.url,
@@ -663,12 +833,35 @@ class TestBPGet:
     client = APIClient()
     url = reverse("businessplan-get")
 
-    def test_list_anon(self, business_plan):
-        response = self.client.get(self.url, {"business_plan_id": business_plan.id})
-        assert response.status_code == 403
+    def test_get_permissions(
+        self,
+        secretariat_user,
+        agency_user,
+        agency_inputter_user,
+        bp_viewer_user,
+        bp_editor_user,
+        admin_user,
+        business_plan,
+    ):
+        def _test_permissions(test_user, expected_status):
+            self.client.force_authenticate(user=test_user)
+            response = self.client.get(self.url, {"business_plan_id": business_plan.id})
+            assert response.status_code == expected_status
 
-    def test_activity_list(self, user, _setup_bp_activity_list, business_plan):
-        self.client.force_authenticate(user=user)
+        # check anon permissions
+        _test_permissions(None, 403)
+
+        _test_permissions(bp_viewer_user, 200)
+        _test_permissions(bp_editor_user, 200)
+        _test_permissions(secretariat_user, 200)
+        _test_permissions(agency_user, 200)
+        _test_permissions(agency_inputter_user, 200)
+        _test_permissions(admin_user, 200)
+
+    def test_activity_list(
+        self, bp_viewer_user, _setup_bp_activity_list, business_plan
+    ):
+        self.client.force_authenticate(user=bp_viewer_user)
 
         # get by id
         response = self.client.get(self.url, {"business_plan_id": business_plan.id})
@@ -688,9 +881,9 @@ class TestBPGet:
         assert len(response.json()["activities"]) == 4
 
     def test_country_filter(
-        self, user, business_plan, country_ro, _setup_bp_activity_list
+        self, bp_viewer_user, business_plan, country_ro, _setup_bp_activity_list
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=bp_viewer_user)
 
         response = self.client.get(
             self.url,
@@ -700,8 +893,10 @@ class TestBPGet:
         assert len(response.json()["activities"]) == 1
         assert response.json()["activities"][0]["country"]["id"] == country_ro.id
 
-    def test_invalid_country_filter(self, user, _setup_bp_activity_list, business_plan):
-        self.client.force_authenticate(user=user)
+    def test_invalid_country_filter(
+        self, bp_viewer_user, _setup_bp_activity_list, business_plan
+    ):
+        self.client.force_authenticate(user=bp_viewer_user)
 
         response = self.client.get(
             self.url,
@@ -709,8 +904,10 @@ class TestBPGet:
         )
         assert response.status_code == 400
 
-    def test_status_filter(self, user, business_plan, _setup_bp_activity_list):
-        self.client.force_authenticate(user=user)
+    def test_status_filter(
+        self, bp_viewer_user, business_plan, _setup_bp_activity_list
+    ):
+        self.client.force_authenticate(user=bp_viewer_user)
 
         response = self.client.get(
             self.url,
@@ -727,8 +924,10 @@ class TestBPGet:
         assert response.status_code == 200
         assert len(response.json()["activities"]) == 0
 
-    def test_search_filter(self, user, business_plan, _setup_bp_activity_list):
-        self.client.force_authenticate(user=user)
+    def test_search_filter(
+        self, bp_viewer_user, business_plan, _setup_bp_activity_list
+    ):
+        self.client.force_authenticate(user=bp_viewer_user)
 
         response = self.client.get(
             self.url,
@@ -738,8 +937,8 @@ class TestBPGet:
         assert len(response.json()["activities"]) == 1
         assert response.json()["activities"][0]["title"] == "Planu2"
 
-    def test_invalid_bp_id(self, user, _setup_bp_activity_list):
-        self.client.force_authenticate(user=user)
+    def test_invalid_bp_id(self, bp_viewer_user, _setup_bp_activity_list):
+        self.client.force_authenticate(user=bp_viewer_user)
 
         response = self.client.get(
             self.url,
@@ -747,8 +946,8 @@ class TestBPGet:
         )
         assert response.status_code == 400
 
-    def test_invalid_year(self, user, business_plan, _setup_bp_activity_list):
-        self.client.force_authenticate(user=user)
+    def test_invalid_year(self, bp_viewer_user, business_plan, _setup_bp_activity_list):
+        self.client.force_authenticate(user=bp_viewer_user)
 
         response = self.client.get(
             self.url,
@@ -760,8 +959,10 @@ class TestBPGet:
         )
         assert response.status_code == 400
 
-    def test_invalid_agency(self, user, business_plan, _setup_bp_activity_list):
-        self.client.force_authenticate(user=user)
+    def test_invalid_agency(
+        self, bp_viewer_user, business_plan, _setup_bp_activity_list
+    ):
+        self.client.force_authenticate(user=bp_viewer_user)
 
         response = self.client.get(
             self.url,
@@ -774,8 +975,10 @@ class TestBPGet:
         )
         assert response.status_code == 400
 
-    def test_invalid_bp_status(self, user, business_plan, _setup_bp_activity_list):
-        self.client.force_authenticate(user=user)
+    def test_invalid_bp_status(
+        self, bp_viewer_user, business_plan, _setup_bp_activity_list
+    ):
+        self.client.force_authenticate(user=bp_viewer_user)
 
         response = self.client.get(
             self.url,

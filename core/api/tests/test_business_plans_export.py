@@ -13,19 +13,45 @@ pytestmark = pytest.mark.django_db
 class TestBPExport(BaseTest):
     url = reverse("bpactivity-export")
 
-    def test_export_anon(self, business_plan):
-        response = self.client.get(
-            self.url,
-            {
-                "year_start": business_plan.year_start,
-                "year_end": business_plan.year_end,
-                "bp_status": business_plan.status,
-            },
-        )
-        assert response.status_code == 403
+    def test_export_permissions(
+        self,
+        secretariat_user,
+        agency_user,
+        agency_inputter_user,
+        bp_viewer_user,
+        bp_editor_user,
+        admin_user,
+        business_plan,
+    ):
 
-    def test_export(self, user, business_plan, bp_activity, bp_activity_values):
-        self.client.force_authenticate(user=user)
+        def _test_export_permissions(user, expected_status):
+            # check user with permissions
+            self.client.force_authenticate(user=user)
+            response = self.client.get(
+                self.url,
+                {
+                    "year_start": business_plan.year_start,
+                    "year_end": business_plan.year_end,
+                    "bp_status": business_plan.status,
+                },
+            )
+            assert response.status_code == expected_status
+
+        # check anon user
+        _test_export_permissions(None, 403)
+
+        _test_export_permissions(secretariat_user, 200)
+        _test_export_permissions(agency_user, 200)
+        _test_export_permissions(agency_inputter_user, 200)
+        _test_export_permissions(bp_viewer_user, 200)
+        _test_export_permissions(bp_editor_user, 200)
+        _test_export_permissions(admin_user, 200)
+        # check user with BP editor permissions
+
+    def test_export(
+        self, bp_viewer_user, business_plan, bp_activity, bp_activity_values
+    ):
+        self.client.force_authenticate(user=bp_viewer_user)
 
         response = self.client.get(
             self.url,

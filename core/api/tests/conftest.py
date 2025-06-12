@@ -59,6 +59,11 @@ def user():
 
 
 @pytest.fixture
+def secretariat_user():
+    return UserFactory(username="UserNoType", email="usernotype@mail.com")
+
+
+@pytest.fixture
 def second_user():
     return UserFactory(username="Plebeii", email="restul@cantaretilor.ro")
 
@@ -121,6 +126,24 @@ def secretariat_production_v3_edit_access_user():
         username="secretariat_production_v3_edit_access",
         email="secretariat_production_v3_edit_access@mail.com",
         user_type="secretariat_production_v3_edit_access",
+    )
+
+
+@pytest.fixture
+def bp_viewer_user():
+    return UserFactory(
+        username="bp_viewer",
+        email="bp_viewer@mail.com",
+        user_type="bp_viewer",
+    )
+
+
+@pytest.fixture
+def bp_editor_user():
+    return UserFactory(
+        username="bp_editor",
+        email="bp_editor@mail.com",
+        user_type="bp_editor",
     )
 
 

@@ -1,5 +1,7 @@
 import { Dispatch, SetStateAction, useCallback, useMemo } from 'react'
 
+import { PendingEditType } from './BPEditTable'
+import { useGetClusterOptions } from '../useGetClusterOptions'
 import { ApiEditBPActivity } from '@ors/types/api_bp_get'
 import { useStore } from '@ors/store'
 import {
@@ -14,6 +16,9 @@ import {
   agFormatNameValue,
   agFormatValue,
   agFormatValueTags,
+  getClusterTypesOpts,
+  getTypeSectorsOpts,
+  getSectorSubsectorsOpts,
   getOptionLabel,
   getOptions,
   isOptionEqualToValue,
@@ -26,9 +31,13 @@ import {
 } from './editSchemaHelpers'
 import { HeaderPasteWrapper } from './pasteSupport'
 
-import { filter, isNil } from 'lodash'
+import {
+  ICellEditorParams,
+  ITooltipParams,
+  ValueSetterParams,
+} from 'ag-grid-community'
+import { filter, isNil, map } from 'lodash'
 import { IoTrash } from 'react-icons/io5'
-import { ITooltipParams } from 'ag-grid-community'
 
 const useColumnsOptions = (
   yearColumns: any[],
@@ -37,12 +46,15 @@ const useColumnsOptions = (
   setForm: Dispatch<SetStateAction<ApiEditBPActivity[] | null | undefined>>,
   chemicalTypes: chemicalTypesType,
   activitiesRef: any,
+  setPendingEdit: (value: PendingEditType) => void,
   isConsolidatedView?: boolean,
 ) => {
   const commonSlice = useStore((state) => state.common)
   const projectSlice = useStore((state) => state.projects)
   const cpReportsSlice = useStore((state) => state.cp_reports)
   const bpSlice = useStore((state) => state.businessPlans)
+
+  const { results: clusterOptions } = useGetClusterOptions()
 
   const countries = commonSlice.countries.data
   const agencies = commonSlice.agencies.data
@@ -60,35 +72,49 @@ const useColumnsOptions = (
 
   const { rowErrors } = useStore((state) => state.bpErrors)
 
-  const getSectorOfProjectType = useCallback(
-    (params: any) =>
-      filter(sectors, (sector) => {
-        return (
-          !params.data.project_type?.id ||
-          params.data.project_type.allowed_sectors.includes(sector.id)
-        )
-      }),
-    [sectors],
+  const getProjectTypesOfCluster = useCallback(
+    (params: ICellEditorParams | ValueSetterParams) => {
+      const clusterTypes = getClusterTypesOpts(
+        params.data?.project_cluster_id,
+        clusterOptions,
+      )
+      const clusterTypesIds = map(clusterTypes, 'type_id')
+
+      return filter(types, (type) => clusterTypesIds.includes(type.id))
+    },
+    [types, clusterOptions],
   )
 
-  const getProjectTypeOfSector = useCallback(
-    (params: any) =>
-      filter(types, (type) => {
-        return (
-          !params.data.sector?.id ||
-          params.data.sector.allowed_types.includes(type.id)
-        )
-      }),
-    [types],
+  const getSectorsOfProjectType = useCallback(
+    (params: ICellEditorParams | ValueSetterParams) => {
+      const clusterTypes = getClusterTypesOpts(
+        params.data?.project_cluster_id,
+        clusterOptions,
+      )
+      const typeSectors = getTypeSectorsOpts(
+        params.data?.project_type_id,
+        clusterTypes,
+      )
+      const typeSectorsIds = map(typeSectors, 'sector_id')
+
+      return filter(sectors, (sector) => typeSectorsIds.includes(sector.id))
+    },
+    [sectors, clusterOptions],
   )
 
   const getSubsectorsOfSector = useCallback(
-    (params: any) =>
-      filter(
-        subsectors,
-        (subsector) => subsector.sector_id === params.data.sector_id,
-      ),
-    [subsectors],
+    (params: ICellEditorParams | ValueSetterParams) => {
+      const sectorSubsectors = getSectorSubsectorsOpts(
+        params.data?.sector_id,
+        sectors,
+      )
+      const sectorSubsectorsIds = map(sectorSubsectors, 'id')
+
+      return filter(subsectors, (subsector) =>
+        sectorSubsectorsIds.includes(subsector.id),
+      )
+    },
+    [subsectors, clusterOptions],
   )
 
   const colsOptions = useMemo(
@@ -203,16 +229,16 @@ const useColumnsOptions = (
         {
           cellClass: 'ag-text-center ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
-          cellEditorParams: (params: any) => {
-            const projectTypeOfSector = getProjectTypeOfSector(params)
+          cellEditorParams: (params: ICellEditorParams) => {
+            const projectTypeOfCluster = getProjectTypesOfCluster(params)
             return {
               Input: { placeholder: 'Select type' },
               agFormatValue,
               getOptionLabel: (option: any) =>
-                getOptionLabel(projectTypeOfSector, option),
+                getOptionLabel(projectTypeOfCluster, option),
               isOptionEqualToValue: isOptionEqualToValueByCode,
               openOnFocus: true,
-              options: projectTypeOfSector,
+              options: projectTypeOfCluster,
             }
           },
           ...(hasErrors(rowErrors, 'project_type_id') && {
@@ -229,8 +255,14 @@ const useColumnsOptions = (
           tooltipField: 'project_type.name',
           valueGetter: (params: any) =>
             params.data.project_type?.code ?? params.data.project_type?.name,
-          valueSetter: (params: any) =>
-            valueSetter(params, 'project_type', getProjectTypeOfSector(params)),
+          valueSetter: (params: ValueSetterParams) =>
+            valueSetter(
+              params,
+              'project_type',
+              getProjectTypesOfCluster(params),
+              clusterOptions,
+              setPendingEdit,
+            ),
         },
         {
           cellClass: 'ag-text-center ag-cell-ellipsed',
@@ -345,14 +377,20 @@ const useColumnsOptions = (
           valueGetter: (params: any) =>
             params.data.project_cluster?.code ??
             params.data.project_cluster?.name,
-          valueSetter: (params: any) =>
-            valueSetter(params, 'project_cluster', clusters),
+          valueSetter: (params: ValueSetterParams) =>
+            valueSetter(
+              params,
+              'project_cluster',
+              clusters,
+              clusterOptions,
+              setPendingEdit,
+            ),
         },
         {
           cellClass: 'ag-text-center ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
-          cellEditorParams: (params: any) => {
-            const sectorOfProjectType = getSectorOfProjectType(params)
+          cellEditorParams: (params: ICellEditorParams) => {
+            const sectorOfProjectType = getSectorsOfProjectType(params)
 
             return {
               Input: { placeholder: 'Select sector' },
@@ -378,18 +416,19 @@ const useColumnsOptions = (
           tooltipField: 'sector.name',
           valueGetter: (params: any) =>
             params.data.sector?.code ?? params.data.sector?.name,
-          valueSetter: (params: any) =>
+          valueSetter: (params: ValueSetterParams) =>
             valueSetter(
               params,
               'sector',
-              getSectorOfProjectType(params),
-              getSubsectorsOfSector(params),
+              getSectorsOfProjectType(params),
+              sectors,
+              setPendingEdit,
             ),
         },
         {
           cellClass: 'ag-text-center ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
-          cellEditorParams: (params: any) => {
+          cellEditorParams: (params: ICellEditorParams) => {
             const subsectorsOfSector = getSubsectorsOfSector(params)
 
             return {
@@ -416,7 +455,7 @@ const useColumnsOptions = (
           tooltipField: 'subsector.name',
           valueGetter: (params: any) =>
             params.data.subsector?.code ?? params.data.subsector?.name,
-          valueSetter: (params: any) =>
+          valueSetter: (params: ValueSetterParams) =>
             valueSetter(params, 'subsector', getSubsectorsOfSector(params)),
         },
         {
@@ -520,33 +559,6 @@ const useColumnsOptions = (
           }),
           tooltipField: 'remarks',
         },
-        {
-          cellClass: 'ag-cell-ellipsed',
-          field: 'comment_secretariat',
-          headerClass: 'ag-text-center',
-          headerComponent: function (props: any) {
-            return (
-              <HeaderPasteWrapper
-                addTopMargin={true}
-                field={props.column.colDef.field}
-                label={props.displayName}
-                setForm={setForm}
-                activitiesRef={activitiesRef}
-              />
-            )
-          },
-          headerName: tableColumns.comment_secretariat,
-          minWidth: 200,
-          ...(hasErrors(rowErrors, 'comment_secretariat') && {
-            cellRenderer: (props: any) =>
-              editCellRenderer(props, props.data.comment_secretariat, true),
-          }),
-          tooltipField: 'comment_secretariat',
-          valueSetter: (params: any) => {
-            params.data.comment_secretariat = params.newValue ?? ''
-            return true
-          },
-        },
       ],
       defaultColDef: {
         editable: true,
@@ -563,8 +575,8 @@ const useColumnsOptions = (
       setForm,
       types,
       getSubsectorsOfSector,
-      getSectorOfProjectType,
-      getProjectTypeOfSector,
+      getSectorsOfProjectType,
+      getProjectTypesOfCluster,
       chemicalTypesResults,
       sectors,
       substances,
@@ -572,6 +584,7 @@ const useColumnsOptions = (
       yearColumns,
       onRemoveActivity,
       agencies,
+      clusterOptions,
     ],
   )
 

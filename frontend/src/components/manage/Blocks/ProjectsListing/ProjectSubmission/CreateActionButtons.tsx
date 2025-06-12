@@ -24,8 +24,8 @@ const CreateActionButtons = ({
   const [_, setLocation] = useLocation()
   const { project_id } = useParams<Record<string, string>>()
 
-  const projectSlice = useStore((state) => state.projects)
-  const user_permissions = projectSlice.user_permissions.data || []
+  const commonSlice = useStore((state) => state.common)
+  const user_permissions = commonSlice.user_permissions.data || []
 
   const { newFiles = [] } = files || {}
 

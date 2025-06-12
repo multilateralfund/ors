@@ -9,7 +9,7 @@ import {
 import { TableDataSelectorValuesType } from '@ors/components/manage/Blocks/Table/BusinessPlansTable/TableDateSwitcher'
 import {
   allColumnDefs,
-  commentsColumnDefs,
+  remarksColumnDefs,
   defaultColDef,
   odpColumnDefs,
   valuesColumnDefs,
@@ -190,8 +190,8 @@ export const BPTable = ({
         return valuesColumnDefs(yearColumns, false, withAgency)
       case 'odp':
         return odpColumnDefs(yearColumns, false, withAgency)
-      case 'comments':
-        return commentsColumnDefs(false, withAgency)
+      case 'remarks':
+        return remarksColumnDefs(false, withAgency)
       default:
         return allColumnDefs(yearColumns, false, withAgency)
     }

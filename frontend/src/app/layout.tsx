@@ -57,10 +57,10 @@ function useAppState(user: ApiUser | null | undefined) {
         const [
           // Common data
           settings,
+          user_permissions,
           agencies,
           countries,
           // Projects data
-          user_permissions,
           statuses,
           submission_statuses,
           sectors,
@@ -75,9 +75,9 @@ function useAppState(user: ApiUser | null | undefined) {
           substances,
         ] = await Promise.all([
           api('api/settings/', {}, false),
+          api('api/user/permissions/', {}, false),
           api('api/agencies/', {}, false),
           api('api/countries/', {}, false),
-          api('api/user/permissions/', {}, false),
           api('api/project-statuses/', {}, false),
           api('api/project-submission-statuses/', {}, false),
           api('api/project-sector/', {}, false),
@@ -110,9 +110,9 @@ function useAppState(user: ApiUser | null | undefined) {
             countries.filter((c: Country) => c.has_cp_report),
           ),
           settings: getInitialSliceData(settings),
+          user_permissions: getInitialSliceData(user_permissions),
         }
         const projects = {
-          user_permissions: getInitialSliceData(user_permissions),
           clusters: getInitialSliceData(clusters),
           meetings: getInitialSliceData(meetings),
           sectors: getInitialSliceData<ProjectSectorType[]>(sectors),
