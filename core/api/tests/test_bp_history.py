@@ -13,16 +13,16 @@ class TestBPHistory:
 
     def test_create_history(
         self,
-        user,
+        bp_editor_user,
         meeting,
         decision,
         subsector_other,
         _setup_bp_activity_create,
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=bp_editor_user)
         VALIDATION_LIST = [
-            ("created by user", 1, user.username),
-            ("updated by user", 0, user.username),
+            ("created by user", 1, bp_editor_user.username),
+            ("updated by user", 0, bp_editor_user.username),
         ]
 
         # create new business plan from import

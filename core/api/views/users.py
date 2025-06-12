@@ -11,6 +11,31 @@ class UserPermissionsView(views.APIView):
 
     def get(self, *args, **kwargs):
         permissions = []
+        if self.request.user.user_type in [User.UserType.BP_EDITOR]:
+            permissions = [
+                "export_bp_activity",
+                "upload_bp_file",
+                "delete_bp_file",
+                "retrieve_bp_file",
+                "download_bp_file",
+                "view_business_plan",
+                "view_business_plan_get_years",
+                "upload-validate_business_plan",
+                "upload_business_plan",
+                "update_business_plan",
+                "view_business_plan_activity",
+            ]
+        if self.request.user.user_type in [
+            User.UserType.BP_VIEWER,
+        ]:
+            permissions = [
+                "export_bp_activity",
+                "retrieve_bp_file",
+                "download_bp_file",
+                "view_business_plan",
+                "view_business_plan_get_years",
+                "view_business_plan_activity",
+            ]
         if self.request.user.user_type in [
             User.UserType.VIEWER,
             User.UserType.SECRETARIAT_VIEWER,
@@ -62,6 +87,17 @@ class UserPermissionsView(views.APIView):
                 "increase_project_version",
                 "submit_project",
                 "view_project",
+                "export_bp_activity",
+                "upload_bp_file",
+                "delete_bp_file",
+                "retrieve_bp_file",
+                "download_bp_file",
+                "view_business_plan",
+                "view_business_plan_get_years",
+                "upload-validate_business_plan",
+                "upload_business_plan",
+                "update_business_plan",
+                "view_business_plan_activity",
             ]
 
         return Response(permissions)

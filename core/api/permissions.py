@@ -12,6 +12,31 @@ class IsSecretariat(permissions.BasePermission):
         return False
 
 
+class IsBPViewer(permissions.BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+        if user.is_authenticated:
+            if user.is_superuser:
+                return True
+            if user.user_type == user.UserType.BP_VIEWER:
+                return True
+        return False
+
+
+class IsBPEditor(permissions.BasePermission):
+    def has_permission(self, request, view):
+        user = request.user
+        if user.is_authenticated:
+            if user.is_superuser:
+                return True
+            if user.user_type == user.UserType.BP_EDITOR:
+                return True
+        return False
+
+    def has_object_permission(self, request, view, obj):
+        return True
+
+
 class IsSecretariatViewer(permissions.BasePermission):
     def has_permission(self, request, view):
         user = request.user
