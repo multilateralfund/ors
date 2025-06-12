@@ -160,13 +160,6 @@ const bpLinkColumnDefs = (
     minWidth: 200,
     cellClass: 'ag-cell-ellipsed',
   },
-  {
-    headerName: tableColumns.comment_secretariat,
-    field: 'comment_secretariat',
-    tooltipField: 'comment_secretariat',
-    minWidth: 200,
-    cellClass: 'ag-cell-ellipsed',
-  },
 ]
 
 const defaultColDefBpLink = {

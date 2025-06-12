@@ -18,7 +18,7 @@ import { useStore } from '@ors/store'
 
 import {
   allColumnDefs,
-  commentsColumnDefs,
+  remarksColumnDefs,
   defaultColDef,
   odpColumnDefs,
   valuesColumnDefs,
@@ -145,8 +145,8 @@ export default function BPDiffTable({
         return valuesColumnDefs(yearColumns, true, false)
       case 'odp':
         return odpColumnDefs(yearColumns, true, false)
-      case 'comments':
-        return commentsColumnDefs(true, false)
+      case 'remarks':
+        return remarksColumnDefs(true, false)
       default:
         return allColumnDefs(yearColumns, true, false)
     }

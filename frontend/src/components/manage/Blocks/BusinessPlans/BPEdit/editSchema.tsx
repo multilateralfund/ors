@@ -1,5 +1,6 @@
 import { Dispatch, SetStateAction, useCallback, useMemo } from 'react'
 
+import { PendingEditType } from './BPEditTable'
 import { useGetClusterOptions } from '../useGetClusterOptions'
 import { ApiEditBPActivity } from '@ors/types/api_bp_get'
 import { useStore } from '@ors/store'
@@ -45,6 +46,7 @@ const useColumnsOptions = (
   setForm: Dispatch<SetStateAction<ApiEditBPActivity[] | null | undefined>>,
   chemicalTypes: chemicalTypesType,
   activitiesRef: any,
+  setPendingEdit: (value: PendingEditType) => void,
   isConsolidatedView?: boolean,
 ) => {
   const commonSlice = useStore((state) => state.common)
@@ -72,7 +74,10 @@ const useColumnsOptions = (
 
   const getProjectTypesOfCluster = useCallback(
     (params: ICellEditorParams | ValueSetterParams) => {
-      const clusterTypes = getClusterTypesOpts(params, clusterOptions)
+      const clusterTypes = getClusterTypesOpts(
+        params.data?.project_cluster_id,
+        clusterOptions,
+      )
       const clusterTypesIds = map(clusterTypes, 'type_id')
 
       return filter(types, (type) => clusterTypesIds.includes(type.id))
@@ -82,8 +87,14 @@ const useColumnsOptions = (
 
   const getSectorsOfProjectType = useCallback(
     (params: ICellEditorParams | ValueSetterParams) => {
-      const clusterTypes = getClusterTypesOpts(params, clusterOptions)
-      const typeSectors = getTypeSectorsOpts(params, clusterTypes)
+      const clusterTypes = getClusterTypesOpts(
+        params.data?.project_cluster_id,
+        clusterOptions,
+      )
+      const typeSectors = getTypeSectorsOpts(
+        params.data?.project_type_id,
+        clusterTypes,
+      )
       const typeSectorsIds = map(typeSectors, 'sector_id')
 
       return filter(sectors, (sector) => typeSectorsIds.includes(sector.id))
@@ -93,7 +104,10 @@ const useColumnsOptions = (
 
   const getSubsectorsOfSector = useCallback(
     (params: ICellEditorParams | ValueSetterParams) => {
-      const sectorSubsectors = getSectorSubsectorsOpts(params, sectors)
+      const sectorSubsectors = getSectorSubsectorsOpts(
+        params.data?.sector_id,
+        sectors,
+      )
       const sectorSubsectorsIds = map(sectorSubsectors, 'id')
 
       return filter(subsectors, (subsector) =>
@@ -247,6 +261,7 @@ const useColumnsOptions = (
               'project_type',
               getProjectTypesOfCluster(params),
               clusterOptions,
+              setPendingEdit,
             ),
         },
         {
@@ -363,7 +378,13 @@ const useColumnsOptions = (
             params.data.project_cluster?.code ??
             params.data.project_cluster?.name,
           valueSetter: (params: ValueSetterParams) =>
-            valueSetter(params, 'project_cluster', clusters, clusterOptions),
+            valueSetter(
+              params,
+              'project_cluster',
+              clusters,
+              clusterOptions,
+              setPendingEdit,
+            ),
         },
         {
           cellClass: 'ag-text-center ag-cell-ellipsed',
@@ -401,6 +422,7 @@ const useColumnsOptions = (
               'sector',
               getSectorsOfProjectType(params),
               sectors,
+              setPendingEdit,
             ),
         },
         {
@@ -536,33 +558,6 @@ const useColumnsOptions = (
               ),
           }),
           tooltipField: 'remarks',
-        },
-        {
-          cellClass: 'ag-cell-ellipsed',
-          field: 'comment_secretariat',
-          headerClass: 'ag-text-center',
-          headerComponent: function (props: any) {
-            return (
-              <HeaderPasteWrapper
-                addTopMargin={true}
-                field={props.column.colDef.field}
-                label={props.displayName}
-                setForm={setForm}
-                activitiesRef={activitiesRef}
-              />
-            )
-          },
-          headerName: tableColumns.comment_secretariat,
-          minWidth: 200,
-          ...(hasErrors(rowErrors, 'comment_secretariat') && {
-            cellRenderer: (props: any) =>
-              editCellRenderer(props, props.data.comment_secretariat, true),
-          }),
-          tooltipField: 'comment_secretariat',
-          valueSetter: (params: any) => {
-            params.data.comment_secretariat = params.newValue ?? ''
-            return true
-          },
         },
       ],
       defaultColDef: {

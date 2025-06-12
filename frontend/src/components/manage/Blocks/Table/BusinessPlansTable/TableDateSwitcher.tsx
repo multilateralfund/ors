@@ -2,11 +2,11 @@ import Field from '@ors/components/manage/Form/Field'
 import { KeyboardEvent } from 'react'
 import { IoChevronDown } from 'react-icons/io5'
 
-export type TableDataSelectorValuesType = 'all' | 'comments' | 'odp' | 'values'
+export type TableDataSelectorValuesType = 'all' | 'remarks' | 'odp' | 'values'
 
 const TableDataSelectorLabels = [
   { value: 'all', label: 'View All' },
-  { value: 'comments', label: 'Comments' },
+  { value: 'remarks', label: 'Remarks' },
   {
     value: 'odp',
     label: 'ODP/MT/CO₂-eq',

@@ -1,8 +1,6 @@
 import { formatDecimalValue } from '@ors/helpers'
 import {
   cellValueGetter,
-  commentsDiffCellRenderer,
-  commentsDiffValueGetter,
   numberCellGetter,
   numberCellRenderer,
   objectCellValueGetter,
@@ -192,7 +190,7 @@ const getIsMultiYearColumn = (isDiff: boolean) => ({
       }),
 })
 
-const getCommentsColumnsDefs = (isDiff: boolean) => [
+const getRemarksColumnsDefs = (isDiff: boolean) => [
   {
     cellClass: 'ag-cell-ellipsed',
     headerClass: 'ag-text-center',
@@ -207,22 +205,6 @@ const getCommentsColumnsDefs = (isDiff: boolean) => [
       : {
           tooltipField: 'remarks',
           valueGetter: (params: any) => params.data.remarks,
-        }),
-  },
-  {
-    cellClass: 'ag-cell-ellipsed',
-    field: 'comment_secretariat',
-    headerClass: 'ag-text-center',
-    headerName: tableColumns.comment_secretariat,
-    minWidth: 200,
-    sortable: !isDiff,
-    ...(isDiff
-      ? {
-          cellRenderer: commentsDiffCellRenderer,
-          valueGetter: (params: any) => commentsDiffValueGetter(params),
-        }
-      : {
-          tooltipField: 'comment_secretariat',
         }),
   },
 ]
@@ -255,9 +237,9 @@ const odpColumnDefs = (
   ) || []),
 ]
 
-const commentsColumnDefs = (isDiff: boolean, withAgency: boolean) => [
+const remarksColumnDefs = (isDiff: boolean, withAgency: boolean) => [
   ...getDefaultColumnDefs(isDiff, withAgency),
-  ...getCommentsColumnsDefs(isDiff),
+  ...getRemarksColumnsDefs(isDiff),
 ]
 
 const allColumnDefs = (
@@ -336,7 +318,7 @@ const allColumnDefs = (
     ...yearColumns,
     getStatusColumn(isDiff),
     getIsMultiYearColumn(isDiff),
-    ...getCommentsColumnsDefs(isDiff),
+    ...getRemarksColumnsDefs(isDiff),
   ]
 }
 
@@ -346,7 +328,7 @@ const defaultColDef = {
 
 export {
   allColumnDefs,
-  commentsColumnDefs,
+  remarksColumnDefs,
   defaultColDef,
   odpColumnDefs,
   valuesColumnDefs,
