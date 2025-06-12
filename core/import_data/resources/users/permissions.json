@@ -1,0 +1,321 @@
+[
+    {
+        "permission_codename": "view_country_programme_versions",
+        "permission_name": "View country programme versions",
+        "app_label": "core",
+        "model_name": "cpreportarchive"
+    },
+    {
+        "permission_codename": "view_country_programme_files",
+        "permission_name": "View country programme files",
+        "app_label": "core",
+        "model_name": "cpfile"
+    },
+    {
+        "permission_codename": "create_country_programme_files",
+        "permission_name": "Create country programme files",
+        "app_label": "core",
+        "model_name": "cpfile"
+    },
+    {
+        "permission_codename": "delete_country_programme_files",
+        "permission_name": "Delete country programme files",
+        "app_label": "core",
+        "model_name": "cpfile"
+    },
+    {
+        "permission_codename": "download_country_programme_files",
+        "permission_name": "Download country programme files",
+        "app_label": "core",
+        "model_name": "cpfile"
+    },
+    {
+        "permission_codename": "export_country_programme_reports",
+        "permission_name": "Export country programme reports",
+        "app_label": "core",
+        "model_name": "cpreport"
+    },
+    {
+        "permission_codename": "export_country_programme_reports_hcfc",
+        "permission_name": "Export country programme reports HCFC",
+        "app_label": "core",
+        "model_name": "cpreport"
+    },
+    {
+        "permission_codename": "export_country_programme_reports_hfc",
+        "permission_name": "Export country programme reports HFC",
+        "app_label": "core",
+        "model_name": "cpreport"
+    },
+    {
+        "permission_codename": "export_country_programme_extraction_all",
+        "permission_name": "Export country programme extraction all",
+        "app_label": "core",
+        "model_name": "cpreport"
+    },
+    {
+        "permission_codename": "view_export_country_programme_records",
+        "permission_name": "View and export country programme records",
+        "app_label": "core",
+        "model_name": "cprecord"
+    },
+    {
+        "permission_codename": "get_empty_form_country_programme",
+        "permission_name": "Get empty form country programme",
+        "app_label": "core",
+        "model_name": "cpreport"
+    },
+    {
+        "permission_codename": "view_sectors",
+        "permission_name": "View sectors",
+        "app_label": "core",
+        "model_name": "projectsector"
+    },
+    {
+        "permission_codename": "view_sub_sectors",
+        "permission_name": "View sub-sectors",
+        "app_label": "core",
+        "model_name": "projectsubsector"
+    },
+    {
+        "permission_codename": "view_meta_projects",
+        "permission_name": "View meta projects",
+        "app_label": "core",
+        "model_name": "metaproject"
+    },
+    {
+        "permission_codename": "view_project_statuses",
+        "permission_name": "View project statuses",
+        "app_label": "core",
+        "model_name": "projectstatus"
+    },
+    {
+        "permission_codename": "view_project_submission_statuses",
+        "permission_name": "View project submission statuses",
+        "app_label": "core",
+        "model_name": "projectsubmissionstatus"
+    },
+    {
+        "permission_codename": "view_project_types",
+        "permission_name": "View project types",
+        "app_label": "core",
+        "model_name": "projecttype"
+    },
+    {
+        "permission_codename": "view_project_meetings",
+        "permission_name": "View project meetings",
+        "app_label": "core",
+        "model_name": "meeting"
+    },
+    {
+        "permission_codename": "view_project_clusters",
+        "permission_name": "View project clusters",
+        "app_label": "core",
+        "model_name": "projectcluster"
+    },
+    {
+        "permission_codename": "view_project_specific_fields",
+        "permission_name": "View project specific fields",
+        "app_label": "core",
+        "model_name": "projectspecificfields"
+    },
+    {
+        "permission_codename": "add_project",
+        "permission_name": "Add project",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
+        "permission_codename": "view_project",
+        "permission_name": "View project",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
+        "permission_codename": "edit_project",
+        "permission_name": "Edit project",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
+        "permission_codename": "upload_project_file",
+        "permission_name": "Upload project file",
+        "app_label": "core",
+        "model_name": "projectfile"
+    },
+    {
+        "permission_codename": "export_xls_project",
+        "permission_name": "Export project in XLS format",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
+        "permission_codename": "view_project_file",
+        "permission_name": "View project file",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
+        "permission_codename": "delete_project_file",
+        "permission_name": "Delete project file",
+        "app_label": "core",
+        "model_name": "projectfile"
+    },
+    {
+        "permission_codename": "add_project_ods_odp",
+        "permission_name": "Add project ods odp",
+        "app_label": "core",
+        "model_name": "projectodsodp"
+    },
+    {
+        "permission_codename": "edit_project_ods_odp",
+        "permission_name": "Edit project ods odp",
+        "app_label": "core",
+        "model_name": "projectodsodp"
+    },
+    {
+        "permission_codename": "delete_project_ods_odp",
+        "permission_name": "Delete project ods odp",
+        "app_label": "core",
+        "model_name": "projectodsodp"
+    },
+    {
+        "permission_codename": "add_project_fund",
+        "permission_name": "Add project fund",
+        "app_label": "core",
+        "model_name": "projectfund"
+    },
+    {
+        "permission_codename": "edit_project_fund",
+        "permission_name": "Edit project fund",
+        "app_label": "core",
+        "model_name": "projectfund"
+    },
+    {
+        "permission_codename": "delete_project_fund",
+        "permission_name": "Delete project fund",
+        "app_label": "core",
+        "model_name": "projectfund"
+    },
+    {
+        "permission_codename": "add_project_comment",
+        "permission_name": "Add project comment",
+        "app_label": "core",
+        "model_name": "projectcomment"
+    },
+    {
+        "permission_codename": "edit_project_comment",
+        "permission_name": "Edit project comment",
+        "app_label": "core",
+        "model_name": "projectcomment"
+    },
+    {
+        "permission_codename": "delete_project_comment",
+        "permission_name": "Delete project comment",
+        "app_label": "core",
+        "model_name": "projectcomment"
+    },
+       {
+        "permission_codename": "add_project_rbm_measure",
+        "permission_name": "Add project rbm measure",
+        "app_label": "core",
+        "model_name": "projectrbmmeasure"
+    },
+    {
+        "permission_codename": "edit_project_rbm_measure",
+        "permission_name": "Edit project rbm measure",
+        "app_label": "core",
+        "model_name": "projectrbmmeasure"
+    }, 
+    {
+        "permission_codename": "delete_project_rbm_measure",
+        "permission_name": "Delete project rbm measure",
+        "app_label": "core",
+        "model_name": "projectrbmmeasure"
+    },
+    {
+        "permission_codename": "add_project_submission_amount",
+        "permission_name": "Add project submission amount",
+        "app_label": "core",
+        "model_name": "submissionamount"
+    },
+    {
+        "permission_codename": "edit_project_submission_amount",
+        "permission_name": "Edit project submission amount",
+        "app_label": "core",
+        "model_name": "submissionamount"
+    }, 
+    {
+        "permission_codename": "delete_project_submission_amount",
+        "permission_name": "Delete project submission amount",
+        "app_label": "core",
+        "model_name": "submissionamount"
+    },
+    {
+        "permission_codename": "view_project_statistics",
+        "permission_name": "View project statistics",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
+        "permission_codename": "view_country_programme_reports",
+        "permission_name": "View country programme reports",
+        "app_label": "core",
+        "model_name": "cpreport"
+    },
+    {
+        "permission_codename": "add_country_programme_reports",
+        "permission_name": "Add country programme reports",
+        "app_label": "core",
+        "model_name": "cpreport"
+    },
+    {
+        "permission_codename": "edit_country_programme_reports",
+        "permission_name": "Edit country programme reports",
+        "app_label": "core",
+        "model_name": "cpreport"
+    },
+    {
+        "permission_codename": "delete_country_programme_reports",
+        "permission_name": "Delete country programme reports",
+        "app_label": "core",
+        "model_name": "cpreport"
+    },
+    {
+        "permission_codename": "update_country_programme_report_status",
+        "permission_name": "Update country programme report status",
+        "app_label": "core",
+        "model_name": "cpreport"
+    },
+    {
+        "permission_codename": "view_country_programme_report_grouped_by_year",
+        "permission_name": "Update country programme report grouped by year",
+        "app_label": "core",
+        "model_name": "cpreport"
+    },
+    {
+        "permission_codename": "view_country_programme_report_grouped_by_country",
+        "permission_name": "Update country programme report grouped by country",
+        "app_label": "core",
+        "model_name": "cpreport"
+    },
+    {
+        "permission_codename": "add_country_programme_report_comments",
+        "permission_name": "Add country programme report comments",
+        "app_label": "core",
+        "model_name": "cpcomment"
+    },
+    {
+        "permission_codename": "edit_country_programme_report_comments",
+        "permission_name": "Edit country programme report comments",
+        "app_label": "core",
+        "model_name": "cpcomment"
+    },
+    {
+        "permission_codename": "export_business_plan_activities",
+        "permission_name": "Export business plan activities",
+        "app_label": "core",
+        "model_name": "bpactivity"
+    }
+]
+

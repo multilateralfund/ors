@@ -1,0 +1,72 @@
+[
+    {
+        "name": "Secretariat",
+        "permissions": [
+            "add_project",
+            "view_country_programme_versions",
+            "view_country_programme_files",
+            "create_country_programme_files",
+            "delete_country_programme_files",
+            "download_country_programme_files",
+            "export_country_programme_reports",
+            "export_country_programme_reports_hcfc",
+            "export_country_programme_reports_hfc",
+            "export_country_programme_extraction_all",
+            "view_export_country_programme_records",
+            "get_empty_form_country_programme",
+            "view_sectors",
+            "view_sub_sectors",
+            "view_meta_projects",
+            "view_project_statuses",
+            "view_project_submission_statuses",
+            "view_project_types",
+            "view_project_meetings",
+            "view_project_clusters",
+            "view_project_specific_fields",
+            "add_project",
+            "view_project",
+            "edit_project",
+            "upload_project_file",
+            "export_xls_project",
+            "view_project_file",
+            "delete_project_file",
+            "add_project_ods_odp",
+            "edit_project_ods_odp",
+            "delete_project_ods_odp",
+            "add_project_fund",
+            "edit_project_fund",
+            "delete_project_fund",
+            "add_project_comment",
+            "edit_project_comment",
+            "delete_project_comment",
+            "add_project_rbm_measure",
+            "edit_project_rbm_measure",
+            "delete_project_rbm_measure",
+            "add_project_submission_amount",
+            "edit_project_submission_amount",
+            "delete_project_submission_amount",
+            "view_project_statistics",
+            "view_country_programme_reports",
+            "add_country_programme_reports",
+            "edit_country_programme_reports",
+            "delete_country_programme_reports",
+            "update_country_programme_report_status",
+            "view_country_programme_report_grouped_by_year",
+            "view_country_programme_report_grouped_by_country",
+            "add_country_programme_report_comments",
+            "edit_country_programme_report_comments"
+        ]
+    },
+    {
+        "name": "Business Plan Viewer",
+        "permissions": [
+            "export_business_plan_activities",
+        ]
+
+    }
+
+
+
+]
+
+
