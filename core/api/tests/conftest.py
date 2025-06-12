@@ -59,6 +59,11 @@ def user():
 
 
 @pytest.fixture
+def secretariat_user():
+    return UserFactory(username="UserNoType", email="usernotype@mail.com")
+
+
+@pytest.fixture
 def second_user():
     return UserFactory(username="Plebeii", email="restul@cantaretilor.ro")
 

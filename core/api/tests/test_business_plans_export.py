@@ -14,7 +14,14 @@ class TestBPExport(BaseTest):
     url = reverse("bpactivity-export")
 
     def test_export_permissions(
-        self, user, bp_viewer_user, bp_editor_user, admin_user, business_plan
+        self,
+        secretariat_user,
+        agency_user,
+        agency_inputter_user,
+        bp_viewer_user,
+        bp_editor_user,
+        admin_user,
+        business_plan,
     ):
 
         def _test_export_permissions(user, expected_status):
@@ -33,7 +40,9 @@ class TestBPExport(BaseTest):
         # check anon user
         _test_export_permissions(None, 403)
 
-        _test_export_permissions(user, 403)
+        _test_export_permissions(secretariat_user, 200)
+        _test_export_permissions(agency_user, 200)
+        _test_export_permissions(agency_inputter_user, 200)
         _test_export_permissions(bp_viewer_user, 200)
         _test_export_permissions(bp_editor_user, 200)
         _test_export_permissions(admin_user, 200)

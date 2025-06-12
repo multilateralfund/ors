@@ -33,7 +33,9 @@ class TestBPFileUpload:
     def test_file_upload_permissions(
         self,
         bp_files_url,
-        user,
+        secretariat_user,
+        agency_user,
+        agency_inputter_user,
         bp_viewer_user,
         bp_editor_user,
         admin_user,
@@ -44,15 +46,31 @@ class TestBPFileUpload:
         response = self.client.post(bp_files_url, data, format="multipart")
         assert response.status_code == 403
 
-        self.client.force_authenticate(user=user)
-        response = self.client.post(bp_files_url, data, format="multipart")
-        assert response.status_code == 403
-
         self.client.force_authenticate(user=bp_viewer_user)
         response = self.client.post(bp_files_url, data, format="multipart")
         assert response.status_code == 403
 
+        self.client.force_authenticate(user=agency_user)
+        response = self.client.post(bp_files_url, data, format="multipart")
+        assert response.status_code == 403
+
+        self.client.force_authenticate(user=agency_inputter_user)
+        response = self.client.post(bp_files_url, data, format="multipart")
+        assert response.status_code == 403
+
+        self.client.force_authenticate(user=secretariat_user)
+        response = self.client.post(bp_files_url, data, format="multipart")
+        assert response.status_code == 201
+        response = self.client.get(bp_files_url)
+        assert response.status_code == 200
+        # test delete
+        file_id = response.data[0]["id"]
+        data = {"file_ids": [file_id]}
+        response = self.client.delete(bp_files_url, data, format="json")
+        assert response.status_code == 204
+
         self.client.force_authenticate(user=bp_editor_user)
+        data = {"adrian.csv": test_file.open()}
         response = self.client.post(bp_files_url, data, format="multipart")
         assert response.status_code == 201
 
@@ -119,7 +137,14 @@ class TestBPFileDownload:
     client = APIClient()
 
     def test_file_download_permissions(
-        self, bp_file_id, user, bp_viewer_user, bp_editor_user, admin_user
+        self,
+        bp_file_id,
+        secretariat_user,
+        agency_user,
+        agency_inputter_user,
+        bp_viewer_user,
+        bp_editor_user,
+        admin_user,
     ):
         url = reverse("business-plan-file-download", kwargs={"id": bp_file_id})
 
@@ -130,9 +155,12 @@ class TestBPFileDownload:
 
         # check anon permissions
         _test_file_download_permissions(None, 403)
-        _test_file_download_permissions(user, 403)
         _test_file_download_permissions(bp_viewer_user, 200)
         _test_file_download_permissions(bp_editor_user, 200)
+        _test_file_download_permissions(agency_user, 200)
+        _test_file_download_permissions(agency_inputter_user, 200)
+
+        _test_file_download_permissions(secretariat_user, 200)
         _test_file_download_permissions(admin_user, 200)
 
     def test_file_download(self, bp_editor_user, bp_file_id):
