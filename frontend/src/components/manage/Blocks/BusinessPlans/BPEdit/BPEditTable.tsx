@@ -7,6 +7,7 @@ import {
   BpPathParams,
 } from '@ors/components/manage/Blocks/BusinessPlans/types'
 import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
+import BPResetFieldsWarning from './BPResetFieldsWarning'
 import { editCellRenderer } from '../BPTableHelpers/cellRenderers'
 import { emptyFieldData, updateFieldData } from './editSchemaHelpers'
 import { BasePasteWrapper } from './pasteSupport'
@@ -14,25 +15,15 @@ import useColumnsOptions from './editSchema'
 import { ApiBPYearRange } from '@ors/types/api_bp_get_years'
 import { applyTransaction } from '@ors/helpers'
 import { useStore } from '@ors/store'
-import { ApiEditBPActivity } from '@ors/types/api_bp_get'
 
 import { findIndex, isNil, map, uniq } from 'lodash'
+import { Button, Alert } from '@mui/material'
 import { useParams } from 'wouter'
 import {
   IoAddCircle,
   IoInformationCircleOutline,
   IoClipboardOutline,
 } from 'react-icons/io5'
-
-import {
-  Button,
-  Alert,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  DialogContentText,
-} from '@mui/material'
 
 export type PendingEditType = null | {
   field: string
@@ -466,75 +457,53 @@ export function BPEditBaseTable(
       activitiesRef.current.all.includes(props.data.initial_id),
   }
 
-  const setFieldData = (data: any) => {
+  const getUpdatedFieldData = (data: any) => {
     if (pendingEdit) {
-      const field = pendingEdit.field
-
-      const optionsMap = {
+      const optionsFieldMapping = {
         project_cluster: clusters,
         project_type: types,
         sector: sectors,
       }
-      const options = optionsMap[field as keyof typeof optionsMap]
+      const field = pendingEdit.field as keyof typeof optionsFieldMapping
+      const options = optionsFieldMapping[field]
 
-      const resetMapping: Record<string, (keyof ApiEditBPActivity)[]> = {
+      const resetFieldsMapping = {
         project_cluster: ['project_type', 'sector', 'subsector'],
         project_type: ['sector', 'subsector'],
         sector: ['subsector'],
       }
 
       updateFieldData(options, data, field, pendingEdit?.newValue)
-      resetMapping[field]?.forEach((field) => emptyFieldData(data, field))
+      resetFieldsMapping[field]?.forEach((field) => emptyFieldData(data, field))
 
       return data
     }
   }
 
-  const changeCellValue = (eventData: any, rowIndex: number) => {
+  const changeCellValue = (data: any, rowIndex: number) => {
     const newData = [...form]
 
     if (rowIndex > -1) {
       newData.splice(rowIndex, 1, {
-        ...eventData,
+        ...data,
       })
 
       setForm(newData)
 
       activitiesRef.current.edited = uniq([
-        eventData.initial_id,
+        data.initial_id,
         ...(activitiesRef.current.edited || []),
       ]).filter(Boolean)
     }
   }
 
   const updateFields = () => {
-    if (pendingEdit) {
+    if (pendingEdit && form && form.length > 0) {
       const rowIndex = form.length - pendingEdit.rowId - 1
 
-      const data = setFieldData(form[rowIndex])
+      const data = getUpdatedFieldData(form[rowIndex])
       changeCellValue(data, rowIndex)
     }
-  }
-
-  const handleUpdateFields = () => {
-    updateFields()
-    setPendingEdit(null)
-  }
-
-  const handleCancel = () => {
-    setPendingEdit(null)
-  }
-
-  const dialogTextHelper = {
-    project_cluster: {
-      columnName: 'cluster',
-      affectedColumnsText: 'project type, sector and subsector',
-    },
-    project_type: {
-      columnName: 'project type',
-      affectedColumnsText: 'sector and subsector',
-    },
-    sector: { columnName: 'sector', affectedColumnsText: 'subsector' },
   }
 
   return (
@@ -570,43 +539,9 @@ export function BPEditBaseTable(
           }}
         />
       </form>
-
-      <Dialog
-        aria-describedby="alert-dialog-description"
-        aria-labelledby="alert-dialog-title"
-        open={!!pendingEdit}
-        onClose={handleCancel}
-      >
-        <DialogTitle id="alert-dialog-title">
-          Dependent data will be cleared
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText
-            id="alert-dialog-description"
-            className="text-pretty"
-          >
-            Changing the{' '}
-            {
-              dialogTextHelper[
-                pendingEdit?.field as keyof typeof dialogTextHelper
-              ]?.columnName
-            }{' '}
-            will reset the{' '}
-            {
-              dialogTextHelper[
-                pendingEdit?.field as keyof typeof dialogTextHelper
-              ]?.affectedColumnsText
-            }{' '}
-            as {pendingEdit?.field === 'sector' ? 'it is' : 'they are'} no
-            longer valid for the current selection. Are you sure you want to
-            continue?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCancel}>No</Button>
-          <Button onClick={handleUpdateFields}>Yes</Button>
-        </DialogActions>
-      </Dialog>
+      <BPResetFieldsWarning
+        {...{ pendingEdit, setPendingEdit, updateFields }}
+      />
     </>
   )
 }
