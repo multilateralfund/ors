@@ -47,7 +47,7 @@ export const getSectorSubsectorsOpts = (params: any, sectorOptions: any) =>
 
 const emptySector = (params: ValueSetterParams) => {
   params.data.sector_id = null
-  params.data.sector_code = null
+  params.data.sector_code = ''
   params.data.sector = {}
 }
 
@@ -62,7 +62,7 @@ const updateProjectType = (params: ValueSetterParams, opts: any) => {
 
   if (!projectTypesOptsIds.includes(params.data?.project_type_id)) {
     params.data.project_type_id = null
-    params.data.project_type_code = null
+    params.data.project_type_code = ''
     params.data.project_type = {}
 
     emptySector(params)
