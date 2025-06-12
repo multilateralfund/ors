@@ -30,5 +30,9 @@ export const createCommonSlice = ({
       ...defaultSliceData,
       ...(initialState?.common?.settings || {}),
     },
+    user_permissions: {
+      ...defaultSliceData,
+      ...(initialState?.common?.user_permissions || {}),
+    },
   }
 }

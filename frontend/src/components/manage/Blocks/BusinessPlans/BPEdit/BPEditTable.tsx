@@ -1,29 +1,26 @@
 'use client'
-import { ApiBPYearRange } from '@ors/types/api_bp_get_years'
-
 import { useCallback, useContext, useMemo, useRef } from 'react'
 
-import { Button, Alert } from '@mui/material'
-import { findIndex, isNil, map, uniq } from 'lodash'
-import { useParams } from 'wouter'
-
+import EditTable from '@ors/components/manage/Form/EditTable'
 import {
   BPEditTableInterface,
   BpPathParams,
 } from '@ors/components/manage/Blocks/BusinessPlans/types'
 import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
+import { editCellRenderer } from '../BPTableHelpers/cellRenderers'
+import { BasePasteWrapper } from './pasteSupport'
+import useColumnsOptions from './editSchema'
+import { ApiBPYearRange } from '@ors/types/api_bp_get_years'
 import { applyTransaction } from '@ors/helpers'
 
-import useColumnsOptions from './editSchema'
-import { BasePasteWrapper } from './pasteSupport'
-
+import { findIndex, isNil, map, uniq } from 'lodash'
+import { Button, Alert } from '@mui/material'
+import { useParams } from 'wouter'
 import {
   IoAddCircle,
   IoInformationCircleOutline,
   IoClipboardOutline,
 } from 'react-icons/io5'
-import { editCellRenderer } from '../BPTableHelpers/cellRenderers'
-import EditTable from '@ors/components/manage/Form/EditTable'
 
 export function BPEditBaseTable(
   props: { yearRangeSelected: ApiBPYearRange } & BPEditTableInterface,

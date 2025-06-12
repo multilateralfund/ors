@@ -1,9 +1,10 @@
 import { useEffect } from 'react'
-import { useStore } from '@ors/store'
 
-import usePageTitle from '@ors/hooks/usePageTitle'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
+import PermissionsProvider from '@ors/contexts/PermissionsProvider'
 import BPYearRangesProvider from '@ors/contexts/BusinessPlans/BPYearRangesProvider'
+import usePageTitle from '@ors/hooks/usePageTitle'
+import { useStore } from '@ors/store'
 
 export default function BusinessPlansListLayout({ children }: any) {
   usePageTitle('Business Plans')
@@ -18,7 +19,9 @@ export default function BusinessPlansListLayout({ children }: any) {
 
   return (
     <PageWrapper className="print:p-0">
-      <BPYearRangesProvider>{children}</BPYearRangesProvider>
+      <BPYearRangesProvider>
+        <PermissionsProvider>{children}</PermissionsProvider>
+      </BPYearRangesProvider>
     </PageWrapper>
   )
 }

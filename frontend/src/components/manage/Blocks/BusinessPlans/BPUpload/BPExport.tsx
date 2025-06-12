@@ -1,14 +1,16 @@
-import { Dispatch, SetStateAction } from 'react'
+import { Dispatch, SetStateAction, useContext } from 'react'
 
-import cx from 'classnames'
-
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import Link from '@ors/components/ui/Link/Link'
 import { formatApiUrl } from '@ors/helpers'
-
 import { PeriodSelectorOption } from '../../Replenishment/types'
 import { INavigationButton } from '../types'
 import BPMainFilters from './BPMainFilters'
 import { NavigationButton } from './NavigationButton'
+
+import { IoInformationCircleOutline } from 'react-icons/io5'
+import { Alert } from '@mui/material'
+import cx from 'classnames'
 
 interface IBPExport {
   downloadFilters: any
@@ -26,7 +28,10 @@ const BPExport = ({
 }: IBPExport & Omit<INavigationButton, 'direction'>) => {
   const { bp_status, year_end, year_start } = downloadFilters
   const { year_end: headerYearEnd, year_start: headerYearStart } = filters
-  const isDownloadButtonEnabled = year_start && bp_status
+
+  const { canExportBp } = useContext(PermissionsContext)
+
+  const isDownloadButtonEnabled = canExportBp && year_start && bp_status
 
   const downloadUrl = formatApiUrl(
     `/api/business-plan-activity/export/?year_start=${year_start}&year_end=${year_end}&bp_status=${bp_status}&header_year_start=${headerYearStart}&header_year_end=${headerYearEnd}`,
@@ -43,6 +48,17 @@ const BPExport = ({
           setFilters={setDownloadFilters}
         />
       </div>
+      {!canExportBp && (
+        <Alert
+          className="mt-2 w-fit"
+          icon={<IoInformationCircleOutline size={24} />}
+          severity="error"
+        >
+          <p className="m-0 text-lg">
+            You are not authorized to download business plans!
+          </p>
+        </Alert>
+      )}
       <div className="flex items-center gap-2.5">
         <Link
           className={cx(

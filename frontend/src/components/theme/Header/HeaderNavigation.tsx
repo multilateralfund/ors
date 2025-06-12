@@ -5,7 +5,7 @@ import {
   userCanViewReports,
 } from '@ors/types/user_types'
 
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { useLocation } from 'wouter'
 import Link from '@ors/components/ui/Link/Link'
 
@@ -66,6 +66,9 @@ const makeInternalNavItem = (
 
 const useInternalNavSections = () => {
   const { user_type } = useStore((state) => state.user?.data)
+  const commonSlice = useStore((state) => state.common)
+  const user_permissions = commonSlice.user_permissions.data || []
+
   const [pathname] = useLocation()
   const nI = makeInternalNavItem.bind(null, pathname)
   const userIsViewer = user_type === 'viewer'
@@ -89,7 +92,7 @@ const useInternalNavSections = () => {
       ].filter(Boolean),
       url: '/country-programme/reports',
     },
-    ...(userIsAdminOrSecretariat || userIsViewer
+    ...(user_permissions.includes('view_business_plan')
       ? [{ label: 'Business plans', url: '/business-plans' }]
       : []),
     ...(userIsAdminOrSecretariat || userIsViewer

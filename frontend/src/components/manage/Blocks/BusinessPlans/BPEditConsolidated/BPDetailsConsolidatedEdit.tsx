@@ -1,11 +1,4 @@
-import {
-  UserType,
-  userCanEditBusinessPlan,
-  userCanUpdateFilesBusinessPlan,
-  userCanViewFilesBusinessPlan,
-} from '@ors/types/user_types'
-
-import { Dispatch, SetStateAction } from 'react'
+import { Dispatch, SetStateAction, useContext } from 'react'
 
 import SimpleField from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleField'
 import {
@@ -14,14 +7,14 @@ import {
 } from '@ors/components/manage/Utils/utilFunctions'
 import VersionHistoryList from '@ors/components/ui/VersionDetails/VersionHistoryList'
 import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
-import { useStore } from '@ors/store'
-
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { FilesViewer } from '../FilesViewer'
 import PopoverInput from '../../Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
 import { Label } from '../BPUpload/helpers'
 import { BpFilesObject } from '../types'
 import FileInput from '../BPEdit/FileInput'
 import SimpleInput from '../../Section/ReportInfo/SimpleInput'
+
 import { BsFilesAlt } from 'react-icons/bs'
 import { Divider } from '@mui/material'
 
@@ -44,12 +37,8 @@ const BPSummary = (props: {
   const { year_end, year_start, status, meeting_id, decision_id } =
     business_plan || {}
 
-  const { user_type } = useStore((state) => state.user.data)
-  const canViewFiles = userCanViewFilesBusinessPlan[user_type as UserType]
-  const canEditBp = userCanEditBusinessPlan[user_type as UserType]
-  const canUpdateFiles = userCanUpdateFilesBusinessPlan[user_type as UserType]
-
-  const meetingOptions = getMeetingOptions()
+  const { canUpdateBp, canViewFiles, canUploadFiles } =
+    useContext(PermissionsContext)
 
   const handleChangeMeeting = (meeting: string) => {
     setBpForm((form: any) => ({ ...form, meeting }))
@@ -84,7 +73,7 @@ const BPSummary = (props: {
           label="Status"
           textClassName="text-[1.25rem]"
         />
-        {canEditBp ? (
+        {canUpdateBp ? (
           <>
             <div>
               <Label isRequired>Meeting number</Label>
@@ -135,11 +124,11 @@ const BPSummary = (props: {
           </>
         )}
       </div>
-      <Divider />
+      {(canViewFiles || canUploadFiles) && <Divider />}
       {canViewFiles && (
         <FilesViewer {...{ files, setFiles }} bpFiles={bpFiles || []} />
       )}
-      {canUpdateFiles && <FileInput {...{ files, setFiles }} />}
+      {canUploadFiles && <FileInput {...{ files, setFiles }} />}
     </div>
   )
 }
