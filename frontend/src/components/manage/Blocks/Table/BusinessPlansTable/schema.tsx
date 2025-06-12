@@ -190,7 +190,7 @@ const getIsMultiYearColumn = (isDiff: boolean) => ({
       }),
 })
 
-const getCommentsColumnsDefs = (isDiff: boolean) => [
+const getRemarksColumnsDefs = (isDiff: boolean) => [
   {
     cellClass: 'ag-cell-ellipsed',
     headerClass: 'ag-text-center',
@@ -239,7 +239,7 @@ const odpColumnDefs = (
 
 const remarksColumnDefs = (isDiff: boolean, withAgency: boolean) => [
   ...getDefaultColumnDefs(isDiff, withAgency),
-  ...getCommentsColumnsDefs(isDiff),
+  ...getRemarksColumnsDefs(isDiff),
 ]
 
 const allColumnDefs = (
@@ -318,7 +318,7 @@ const allColumnDefs = (
     ...yearColumns,
     getStatusColumn(isDiff),
     getIsMultiYearColumn(isDiff),
-    ...getCommentsColumnsDefs(isDiff),
+    ...getRemarksColumnsDefs(isDiff),
   ]
 }
 
