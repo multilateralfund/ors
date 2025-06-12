@@ -1,4 +1,5 @@
 import { filter, find, get, isEqual, isObject, map } from 'lodash'
+import { ValueSetterParams } from 'ag-grid-community'
 
 export const agFormatValue = (value: any) => value?.id || ''
 export const agFormatNameValue = (value: any) => value?.name || ''
@@ -27,23 +28,74 @@ export const isOptionEqualToValueByName = (option: any, value: any) =>
 export const isOptionEqualToValueByCode = (option: any, value: any) =>
   isObject(value) ? isEqual(option, value) : option.code === value
 
-const updateSubsector = (params: any, value: any, subsectors: any) => {
-  const subsectorsSectorIds = map(
-    subsectors,
-    (subsector) => subsector.sector_id,
+export const getClusterTypesOpts = (params: any, clusterOptions: any) =>
+  get(
+    find(clusterOptions, { cluster_id: params.data?.project_cluster_id }),
+    'types',
+    [],
   )
 
-  if (!subsectorsSectorIds.includes(value)) {
+export const getTypeSectorsOpts = (params: any, typesOptions: any) =>
+  get(
+    find(typesOptions, { type_id: params.data?.project_type_id }),
+    'sectors',
+    [],
+  )
+
+export const getSectorSubsectorsOpts = (params: any, sectorOptions: any) =>
+  get(find(sectorOptions, { id: params.data?.sector_id }), 'subsectors', [])
+
+const emptySector = (params: ValueSetterParams) => {
+  params.data.sector_id = null
+  params.data.sector_code = null
+  params.data.sector = {}
+}
+
+const emptySubsector = (params: ValueSetterParams) => {
+  params.data.subsector_id = null
+  params.data.subsector = {}
+}
+
+const updateProjectType = (params: ValueSetterParams, opts: any) => {
+  const projectTypesOpts = getClusterTypesOpts(params, opts)
+  const projectTypesOptsIds = map(projectTypesOpts, 'type_id')
+
+  if (!projectTypesOptsIds.includes(params.data?.project_type_id)) {
+    params.data.project_type_id = null
+    params.data.project_type_code = null
+    params.data.project_type = {}
+
+    emptySector(params)
+    emptySubsector(params)
+  }
+}
+
+const updateSector = (params: ValueSetterParams, opts: any) => {
+  const projectTypesOpts = getClusterTypesOpts(params, opts)
+  const sectorOpts = getTypeSectorsOpts(params, projectTypesOpts)
+  const sectorOptsIds = map(sectorOpts, 'sector_id')
+
+  if (!sectorOptsIds.includes(params.data?.sector_id)) {
+    emptySector(params)
+    emptySubsector(params)
+  }
+}
+
+const updateSubsector = (params: ValueSetterParams, opts: any) => {
+  const subsectorOpts = getSectorSubsectorsOpts(params, opts)
+  const subsectorOptsIds = map(subsectorOpts, 'id')
+
+  if (!subsectorOptsIds.includes(params.data?.subsector_id)) {
     params.data.subsector_id = null
     params.data.subsector = {}
   }
 }
 
 export const valueSetter = (
-  params: any,
+  params: ValueSetterParams,
   colIdentifier: string,
   data: any,
-  extraData?: any,
+  opts?: any,
 ) => {
   const newVal = params.newValue
 
@@ -57,11 +109,17 @@ export const valueSetter = (
     params.data[colIdentifier + '_code'] = currentDataObj?.code || ''
   }
 
-  if (colIdentifier === 'sector') {
-    updateSubsector(params, newVal, extraData)
-  }
-
   params.data[colIdentifier] = currentDataObj
+
+  if (colIdentifier === 'project_cluster') {
+    updateProjectType(params, opts)
+  }
+  if (colIdentifier === 'project_type') {
+    updateSector(params, opts)
+  }
+  if (colIdentifier === 'sector') {
+    updateSubsector(params, opts)
+  }
 
   return true
 }
