@@ -73,7 +73,15 @@ def setup_bp_list():
 class TestBPList(BaseTest):
     url = reverse("businessplan-list")
 
-    def test_list_permissions(self, user, bp_viewer_user, bp_editor_user, admin_user):
+    def test_list_permissions(
+        self,
+        secretariat_user,
+        agency_user,
+        agency_inputter_user,
+        bp_viewer_user,
+        bp_editor_user,
+        admin_user,
+    ):
         def _test_permissions(user, expected_status):
             self.client.force_authenticate(user=user)
             response = self.client.get(self.url)
@@ -82,7 +90,10 @@ class TestBPList(BaseTest):
         # check anon permissions
         _test_permissions(None, 403)
 
-        _test_permissions(user, 403)
+        _test_permissions(secretariat_user, 200)
+        _test_permissions(agency_user, 200)
+        _test_permissions(agency_inputter_user, 200)
+
         _test_permissions(bp_viewer_user, 200)
         _test_permissions(bp_editor_user, 200)
         _test_permissions(admin_user, 200)
@@ -119,7 +130,15 @@ class TestBPList(BaseTest):
 class TestBPYearList(BaseTest):
     url = reverse("businessplan-get-years")
 
-    def test_list_permissions(self, user, bp_viewer_user, bp_editor_user, admin_user):
+    def test_list_permissions(
+        self,
+        secretariat_user,
+        agency_user,
+        agency_inputter_user,
+        bp_viewer_user,
+        bp_editor_user,
+        admin_user,
+    ):
         def _test_permissions(user, expected_status):
             self.client.force_authenticate(user=user)
             response = self.client.get(self.url)
@@ -128,9 +147,11 @@ class TestBPYearList(BaseTest):
         # check anon permissions
         _test_permissions(None, 403)
 
-        _test_permissions(user, 403)
         _test_permissions(bp_viewer_user, 200)
         _test_permissions(bp_editor_user, 200)
+        _test_permissions(secretariat_user, 200)
+        _test_permissions(agency_user, 200)
+        _test_permissions(agency_inputter_user, 200)
         _test_permissions(admin_user, 200)
 
     def test_list(self, bp_editor_user, _setup_bp_list):
@@ -160,6 +181,9 @@ class TestBPImportValidate:
         bp_viewer_user,
         bp_editor_user,
         admin_user,
+        secretariat_user,
+        agency_user,
+        agency_inputter_user,
         subsector_other,
         _setup_bp_activity_create,
     ):
@@ -174,8 +198,10 @@ class TestBPImportValidate:
 
         # check anon permissions
         _test_bp_import_validate_permissions(None, 403)
-        _test_bp_import_validate_permissions(user, 403)
         _test_bp_import_validate_permissions(bp_viewer_user, 403)
+        _test_bp_import_validate_permissions(agency_user, 403)
+        _test_bp_import_validate_permissions(agency_inputter_user, 403)
+        _test_bp_import_validate_permissions(secretariat_user, 200)
         _test_bp_import_validate_permissions(bp_editor_user, 200)
         _test_bp_import_validate_permissions(admin_user, 200)
 
@@ -295,7 +321,9 @@ class TestBPImport:
 
     def test_import_permissions(
         self,
-        user,
+        secretariat_user,
+        agency_user,
+        agency_inputter_user,
         bp_viewer_user,
         bp_editor_user,
         admin_user,
@@ -315,8 +343,10 @@ class TestBPImport:
         # check anon permissions
         _test_permissions(None, 403)
 
-        _test_permissions(user, 403)
         _test_permissions(bp_viewer_user, 403)
+        _test_permissions(agency_user, 403)
+        _test_permissions(agency_inputter_user, 403)
+        _test_permissions(secretariat_user, 200)
         _test_permissions(bp_editor_user, 200)
         _test_permissions(admin_user, 200)
 
@@ -387,9 +417,11 @@ class TestBPUpdate:
 
     def test_update_permissions(
         self,
-        user,
         bp_viewer_user,
         bp_editor_user,
+        secretariat_user,
+        agency_user,
+        agency_inputter_user,
         admin_user,
         _setup_bp_activity_create,
         substance,
@@ -426,9 +458,11 @@ class TestBPUpdate:
         # check anon permissions
         _test_permissions(None, 403)
 
-        _test_permissions(user, 403)
         _test_permissions(bp_viewer_user, 403)
         _test_permissions(bp_editor_user, 200)
+        _test_permissions(agency_user, 403)
+        _test_permissions(agency_inputter_user, 403)
+        _test_permissions(secretariat_user, 200)
         _test_permissions(admin_user, 200)
 
     def test_update_wrong_activity_values(
@@ -604,7 +638,14 @@ class TestBPActivityList:
     url = reverse("bpactivity-list")
 
     def test_list_permissions(
-        self, user, bp_viewer_user, bp_editor_user, business_plan, admin_user
+        self,
+        secretariat_user,
+        agency_user,
+        agency_inputter_user,
+        bp_viewer_user,
+        bp_editor_user,
+        business_plan,
+        admin_user,
     ):
         def _test_permissions(test_user, expected_status):
             self.client.force_authenticate(user=test_user)
@@ -621,8 +662,10 @@ class TestBPActivityList:
         # check anon permissions
         _test_permissions(None, 403)
 
-        _test_permissions(user, 403)
         _test_permissions(bp_viewer_user, 200)
+        _test_permissions(agency_user, 200)
+        _test_permissions(agency_inputter_user, 200)
+        _test_permissions(secretariat_user, 200)
         _test_permissions(bp_editor_user, 200)
         _test_permissions(admin_user, 200)
 
@@ -791,7 +834,14 @@ class TestBPGet:
     url = reverse("businessplan-get")
 
     def test_get_permissions(
-        self, user, bp_viewer_user, bp_editor_user, admin_user, business_plan
+        self,
+        secretariat_user,
+        agency_user,
+        agency_inputter_user,
+        bp_viewer_user,
+        bp_editor_user,
+        admin_user,
+        business_plan,
     ):
         def _test_permissions(test_user, expected_status):
             self.client.force_authenticate(user=test_user)
@@ -801,9 +851,11 @@ class TestBPGet:
         # check anon permissions
         _test_permissions(None, 403)
 
-        _test_permissions(user, 403)
         _test_permissions(bp_viewer_user, 200)
         _test_permissions(bp_editor_user, 200)
+        _test_permissions(secretariat_user, 200)
+        _test_permissions(agency_user, 200)
+        _test_permissions(agency_inputter_user, 200)
         _test_permissions(admin_user, 200)
 
     def test_activity_list(

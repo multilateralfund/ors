@@ -4,7 +4,13 @@ from rest_framework.response import Response
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
-from core.api.permissions import IsAgency, IsSecretariat, IsViewer, IsBPEditor, IsBPViewer
+from core.api.permissions import (
+    IsAgency,
+    IsSecretariat,
+    IsViewer,
+    IsBPEditor,
+    IsBPViewer,
+)
 from core.api.serializers.project_metadata import (
     ProjectSectorIncludingSubsectorsSerializer,
     ProjectSubSectorSerializer,

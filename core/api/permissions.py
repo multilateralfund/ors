@@ -18,7 +18,11 @@ class IsBPViewer(permissions.BasePermission):
         if user.is_authenticated:
             if user.is_superuser:
                 return True
-            if user.user_type == user.UserType.BP_VIEWER:
+            if user.user_type in (
+                user.UserType.BP_VIEWER,
+                user.UserType.AGENCY_INPUTTER,
+                user.UserType.AGENCY_SUBMITTER,
+            ):
                 return True
         return False
 
@@ -29,7 +33,10 @@ class IsBPEditor(permissions.BasePermission):
         if user.is_authenticated:
             if user.is_superuser:
                 return True
-            if user.user_type == user.UserType.BP_EDITOR:
+            if user.user_type in (
+                user.UserType.BP_EDITOR,
+                user.UserType.SECRETARIAT,
+            ):
                 return True
         return False
 
