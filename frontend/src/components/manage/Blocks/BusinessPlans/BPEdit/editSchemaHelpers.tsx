@@ -1,6 +1,6 @@
+import { PendingEditType } from './BPEditTable'
 import { filter, find, get, isEqual, isObject, map, isNil } from 'lodash'
 import { ValueSetterParams } from 'ag-grid-community'
-import { PendingEditType } from './BPEditTable'
 
 export const agFormatValue = (value: any) => value?.id || ''
 export const agFormatNameValue = (value: any) => value?.name || ''
@@ -35,27 +35,29 @@ export const getClusterTypesOpts = (cluster_id: number, clusterOptions: any) =>
 export const getTypeSectorsOpts = (type_id: number, typesOptions: any) =>
   get(find(typesOptions, { type_id }), 'sectors', [])
 
-export const getSectorSubsectorsOpts = (sector_id: any, sectorOptions: any) =>
-  get(find(sectorOptions, { id: sector_id }), 'subsectors', [])
+export const getSectorSubsectorsOpts = (
+  sector_id: number,
+  sectorOptions: any,
+) => get(find(sectorOptions, { id: sector_id }), 'subsectors', [])
 
 export const emptyFieldData = (data: any, field: string) => {
   data[field + '_id'] = null
   data[field] = {}
 
   if (field !== 'subsector') {
-    data[field + 'code'] = ''
+    data[field + '_code'] = ''
   }
 }
 
 export const updateFieldData = (
-  fieldOpts: any,
+  opts: any,
   data: any,
   colIdentifier: string,
-  fieldNewId: number,
+  newId: number,
 ) => {
-  const currentDataObj = find(fieldOpts, { id: fieldNewId })
+  const currentDataObj = find(opts, { id: newId })
 
-  data[colIdentifier + '_id'] = fieldNewId
+  data[colIdentifier + '_id'] = newId
   data[colIdentifier] = currentDataObj
 
   if (['project_type', 'sector'].includes(colIdentifier)) {
@@ -130,7 +132,7 @@ export const valueSetter = (
       setPendingEdit?.({
         field: colIdentifier,
         newValue: newVal,
-        rowId: params.data.row_id,
+        rowId: params.data?.row_id,
       })
 
       return false
