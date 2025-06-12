@@ -197,6 +197,7 @@ const ProjectsCreate = ({
             setCurrentStep,
             setCurrentTab,
             hasSubmitted,
+            mode,
           }}
           isNextBtnEnabled={canLinkToBp}
           errors={projIdentifiersErrors}

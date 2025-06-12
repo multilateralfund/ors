@@ -35,6 +35,7 @@ const ProjectIdentifiersFields = ({
   setCurrentTab,
   errors,
   hasSubmitted,
+  mode,
 }: ProjectIdentifiersSectionProps) => {
   const sectionIdentifier = 'projIdentifiers'
   const projIdentifiers = projectData[sectionIdentifier]
@@ -116,7 +117,11 @@ const ProjectIdentifiersFields = ({
               getOptionLabel={(option) =>
                 getOptionLabel(commonSlice.countries.data, option)
               }
-              disabled={!areNextSectionsDisabled}
+              disabled={
+                !areNextSectionsDisabled ||
+                mode === 'partial-link' ||
+                mode === 'full-link'
+              }
               Input={{
                 error: getIsInputDisabled('country'),
               }}
