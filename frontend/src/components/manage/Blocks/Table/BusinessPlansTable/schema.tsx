@@ -1,8 +1,6 @@
 import { formatDecimalValue } from '@ors/helpers'
 import {
   cellValueGetter,
-  commentsDiffCellRenderer,
-  commentsDiffValueGetter,
   numberCellGetter,
   numberCellRenderer,
   objectCellValueGetter,
@@ -209,22 +207,6 @@ const getCommentsColumnsDefs = (isDiff: boolean) => [
           valueGetter: (params: any) => params.data.remarks,
         }),
   },
-  {
-    cellClass: 'ag-cell-ellipsed',
-    field: 'comment_secretariat',
-    headerClass: 'ag-text-center',
-    headerName: tableColumns.comment_secretariat,
-    minWidth: 200,
-    sortable: !isDiff,
-    ...(isDiff
-      ? {
-          cellRenderer: commentsDiffCellRenderer,
-          valueGetter: (params: any) => commentsDiffValueGetter(params),
-        }
-      : {
-          tooltipField: 'comment_secretariat',
-        }),
-  },
 ]
 
 const valuesColumnDefs = (
@@ -255,7 +237,7 @@ const odpColumnDefs = (
   ) || []),
 ]
 
-const commentsColumnDefs = (isDiff: boolean, withAgency: boolean) => [
+const remarksColumnDefs = (isDiff: boolean, withAgency: boolean) => [
   ...getDefaultColumnDefs(isDiff, withAgency),
   ...getCommentsColumnsDefs(isDiff),
 ]
@@ -346,7 +328,7 @@ const defaultColDef = {
 
 export {
   allColumnDefs,
-  commentsColumnDefs,
+  remarksColumnDefs,
   defaultColDef,
   odpColumnDefs,
   valuesColumnDefs,

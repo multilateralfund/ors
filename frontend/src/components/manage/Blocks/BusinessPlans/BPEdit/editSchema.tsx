@@ -559,33 +559,6 @@ const useColumnsOptions = (
           }),
           tooltipField: 'remarks',
         },
-        {
-          cellClass: 'ag-cell-ellipsed',
-          field: 'comment_secretariat',
-          headerClass: 'ag-text-center',
-          headerComponent: function (props: any) {
-            return (
-              <HeaderPasteWrapper
-                addTopMargin={true}
-                field={props.column.colDef.field}
-                label={props.displayName}
-                setForm={setForm}
-                activitiesRef={activitiesRef}
-              />
-            )
-          },
-          headerName: tableColumns.comment_secretariat,
-          minWidth: 200,
-          ...(hasErrors(rowErrors, 'comment_secretariat') && {
-            cellRenderer: (props: any) =>
-              editCellRenderer(props, props.data.comment_secretariat, true),
-          }),
-          tooltipField: 'comment_secretariat',
-          valueSetter: (params: any) => {
-            params.data.comment_secretariat = params.newValue ?? ''
-            return true
-          },
-        },
       ],
       defaultColDef: {
         editable: true,

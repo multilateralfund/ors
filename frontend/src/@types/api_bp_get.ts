@@ -61,7 +61,6 @@ export interface ApiBPActivity {
   amount_polyol: null
   bp_chemical_type: ApiBPChemicalType
   bp_chemical_type_id: number
-  comment_secretariat: string
   country: Country
   country_id: number
   id: number
