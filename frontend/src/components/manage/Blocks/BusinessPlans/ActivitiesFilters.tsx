@@ -138,6 +138,27 @@ export default function ActivitiesFilters(props: any) {
           />
         )}
         <Field
+          Input={{ placeholder: tableColumns.project_cluster_id }}
+          getOptionLabel={(option: any) => option?.name}
+          options={getFilterOptions(filters, clusters, 'project_cluster_id')}
+          value={[]}
+          widget="autocomplete"
+          onChange={(_: any, value: any) => {
+            const projectCluster = filters.project_cluster_id || []
+            const newValue = union(projectCluster, value)
+
+            handleFilterChange({ project_cluster_id: newValue })
+            handleParamsChange({
+              offset: 0,
+              project_cluster_id: newValue
+                .map((item: any) => item.id)
+                .join(','),
+            })
+          }}
+          multiple
+          {...defaultProps}
+        />
+        <Field
           Input={{ placeholder: tableColumns.project_type_id }}
           getOptionLabel={(option: any) => option?.name}
           options={getFilterOptions(
@@ -158,27 +179,6 @@ export default function ActivitiesFilters(props: any) {
             handleParamsChange({
               offset: 0,
               project_type_id: newValue.map((item: any) => item.id).join(','),
-            })
-          }}
-          multiple
-          {...defaultProps}
-        />
-        <Field
-          Input={{ placeholder: tableColumns.project_cluster_id }}
-          getOptionLabel={(option: any) => option?.name}
-          options={getFilterOptions(filters, clusters, 'project_cluster_id')}
-          value={[]}
-          widget="autocomplete"
-          onChange={(_: any, value: any) => {
-            const projectCluster = filters.project_cluster_id || []
-            const newValue = union(projectCluster, value)
-
-            handleFilterChange({ project_cluster_id: newValue })
-            handleParamsChange({
-              offset: 0,
-              project_cluster_id: newValue
-                .map((item: any) => item.id)
-                .join(','),
             })
           }}
           multiple
