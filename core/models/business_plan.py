@@ -146,9 +146,6 @@ class BPActivity(models.Model):
     remarks = models.TextField(null=True, blank=True)
     remarks_additional = models.TextField(null=True, blank=True)
 
-    # Secretariat comment
-    comment_secretariat = models.TextField(blank=True)
-
     initial_id = models.PositiveIntegerField(null=True, blank=True)
 
     objects = BPActivityManager()

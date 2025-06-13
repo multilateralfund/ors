@@ -13,33 +13,33 @@ class BPActivitiesWriter(BaseWriter):
             for year in range(min_year, max_year + 1):
                 label = str(year)
                 if year == max_year:
-                    label = f"After {year - 1}"
+                    label = f"after {year - 1}"
                 year_headers.extend(
                     [
                         {
                             "id": f"value_usd_{year}",
-                            "headerName": f"Value ($000) {label} Adjusted",
+                            "headerName": f"Value ($000) {label} adjusted",
                             "type": "number",
                             "method": self.get_value,
                             "cell_format": "$###,###,##0.00#############",
                         },
                         {
                             "id": f"value_odp_{year}",
-                            "headerName": f"ODP {label} Adjusted",
+                            "headerName": f"ODP {label} adjusted",
                             "type": "number",
                             "method": self.get_value,
                             "align": "right",
                         },
                         {
                             "id": f"value_mt_{year}",
-                            "headerName": f"MT for HFC {label} Adjusted",
+                            "headerName": f"MT for HFC {label} adjusted",
                             "type": "number",
                             "method": self.get_value,
                             "align": "right",
                         },
                         {
                             "id": f"value_co2_{year}",
-                            "headerName": f"CO₂-eq {label} Adjusted",
+                            "headerName": f"CO2-EQ {label} adjusted",
                             "type": "number",
                             "method": self.get_value,
                             "align": "right",
@@ -116,11 +116,6 @@ class BPActivitiesWriter(BaseWriter):
             {
                 "id": "remarks_additional",
                 "headerName": "Remarks (Additional)",
-                "column_width": self.COLUMN_WIDTH * 4,
-            },
-            {
-                "id": "comment_secretariat",
-                "headerName": "Comment",
                 "column_width": self.COLUMN_WIDTH * 4,
             },
         ]

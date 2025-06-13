@@ -209,24 +209,23 @@ def get_bp_activity_data(
         "is_multi_year": bool(strip_str(row["Project Category (I/M)"]) == "m"),
         "remarks": row["Remarks"],
         "remarks_additional": row["Remarks (Additional)"],
-        "comment_secretariat": row["Comment"],
         "values": [],
     }
     for year in range(year_start, year_start + 4):
         if year == year_start + 3:
             year_value = year - 1
             is_after = True
-            value_usd = row[f"Value ($000) After {year_value} Adjusted"]
-            value_odp = row[f"ODP After {year_value} Adjusted"]
-            value_mt = row[f"MT for HFC After {year_value} Adjusted"]
-            value_co2 = row[f"CO₂-eq After {year_value} Adjusted"]
+            value_usd = row[f"Value ($000) after {year_value} adjusted"]
+            value_odp = row[f"ODP after {year_value} adjusted"]
+            value_mt = row[f"MT for HFC after {year_value} adjusted"]
+            value_co2 = row[f"CO2-EQ after {year_value} adjusted"]
         else:
             year_value = year
             is_after = False
-            value_usd = row[f"Value ($000) {year_value} Adjusted"]
-            value_odp = row[f"ODP {year_value} Adjusted"]
-            value_mt = row[f"MT for HFC {year_value} Adjusted"]
-            value_co2 = row[f"CO₂-eq {year_value} Adjusted"]
+            value_usd = row[f"Value ($000) {year_value} adjusted"]
+            value_odp = row[f"ODP {year_value} adjusted"]
+            value_mt = row[f"MT for HFC {year_value} adjusted"]
+            value_co2 = row[f"CO2-EQ {year_value} adjusted"]
         # if these values are not numbers we will set them to be '0'
 
         value_usd = check_year_values(
