@@ -51,25 +51,6 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
   },
   {
     cellClass: 'ag-text-center ag-cell-ellipsed',
-    field: 'project_type.code',
-    headerClass: 'ag-text-center',
-    headerName: tableColumns.project_type_id,
-    minWidth: 70,
-    sortable: !isDiff,
-    ...(isDiff
-      ? {
-          cellRenderer: textCellRenderer,
-          valueGetter: (params: any) =>
-            objectCellValueGetter(params, 'project_type'),
-        }
-      : {
-          tooltipField: 'project_type.name',
-          valueGetter: (params: any) =>
-            params.data.project_type?.code ?? params.data.project_type?.name,
-        }),
-  },
-  {
-    cellClass: 'ag-text-center ag-cell-ellipsed',
     field: 'project_cluster.code',
     headerClass: 'ag-text-center',
     headerName: tableColumns.project_cluster_id,
@@ -86,6 +67,25 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
           valueGetter: (params: any) =>
             params.data.project_cluster?.code ??
             params.data.project_cluster?.name,
+        }),
+  },
+  {
+    cellClass: 'ag-text-center ag-cell-ellipsed',
+    field: 'project_type.code',
+    headerClass: 'ag-text-center',
+    headerName: tableColumns.project_type_id,
+    minWidth: 70,
+    sortable: !isDiff,
+    ...(isDiff
+      ? {
+          cellRenderer: textCellRenderer,
+          valueGetter: (params: any) =>
+            objectCellValueGetter(params, 'project_type'),
+        }
+      : {
+          tooltipField: 'project_type.name',
+          valueGetter: (params: any) =>
+            params.data.project_type?.code ?? params.data.project_type?.name,
         }),
   },
   {
@@ -249,7 +249,7 @@ const allColumnDefs = (
 ) => {
   const defaultColDef = getDefaultColumnDefs(isDiff, withAgency)
   return [
-    ...defaultColDef.slice(0, 4),
+    ...defaultColDef.slice(0, 5),
     {
       cellClass: 'ag-text-center ag-cell-ellipsed',
       field: 'bp_chemical_type.name',
@@ -313,7 +313,7 @@ const allColumnDefs = (
             },
           }),
     },
-    ...defaultColDef.slice(4),
+    ...defaultColDef.slice(5),
     getReqByModelColumn(isDiff),
     ...yearColumns,
     getStatusColumn(isDiff),

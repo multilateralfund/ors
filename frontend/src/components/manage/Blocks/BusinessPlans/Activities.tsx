@@ -216,6 +216,10 @@ function OpenActivity({
           <h4 className="m-0">{activity.lvc_status || '-'}</h4>
         </span>
         <span className="flex items-center gap-2">
+          <span>{tableColumns.project_cluster_id}</span>
+          <h4 className="m-0">{activity.project_cluster?.code || '-'}</h4>
+        </span>
+        <span className="flex items-center gap-2">
           <span>{tableColumns.project_type_id}</span>
           <h4 className="m-0">{activity.project_type?.code || '-'}</h4>
         </span>
@@ -225,10 +229,6 @@ function OpenActivity({
             <h4 className="m-0">{activity.bp_chemical_type?.name || '-'}</h4>
           </span>
         )}
-        <span className="flex items-center gap-2">
-          <span>{tableColumns.project_cluster_id}</span>
-          <h4 className="m-0">{activity.project_cluster?.code || '-'}</h4>
-        </span>
         <span className="flex items-center gap-2">
           <span>{tableColumns.sector_id}</span>
           <h4 className="m-0">{activity.sector?.code || '-'}</h4>
@@ -349,6 +349,10 @@ function ClosedActivity({
           <h4 className="m-0">{activity.lvc_status || '-'} </h4>
         </span>
         <span className="flex items-center gap-2">
+          <span>{tableColumns.project_cluster_id}</span>
+          <h4 className="m-0">{activity.project_cluster?.code || '-'}</h4>
+        </span>
+        <span className="flex items-center gap-2">
           <span>{tableColumns.project_type_id}</span>
           <h4 className="m-0">{activity.project_type?.code || '-'}</h4>
         </span>
@@ -358,10 +362,6 @@ function ClosedActivity({
             <h4 className="m-0">{activity.bp_chemical_type?.name || '-'}</h4>
           </span>
         )}
-        <span className="flex items-center gap-2">
-          <span>{tableColumns.project_cluster_id}</span>
-          <h4 className="m-0">{activity.project_cluster?.code || '-'}</h4>
-        </span>
         <span className="flex items-center gap-2">
           <span>{tableColumns.sector_id}</span>
           <h4 className="m-0">{activity.sector?.code || '-'}</h4>
