@@ -233,8 +233,14 @@ class TestBPImportValidate:
             response = self.client.post(self.url, data, format="multipart")
 
         assert response.status_code == 200
-        assert len(response.data["warnings"]) == 0
+        assert len(response.data["warnings"]) == 1
+
+        assert response.data["warnings"][0]["warning_message"] == (
+            "Subsector 'Subsector' does not exist in KMS and will be set to 'Other'"
+        )
+
         assert len(response.data["errors"]) == 2
+
         assert (
             "Agency 'NoAgency' does not exist"
             in response.data["errors"][0]["error_message"]
@@ -260,7 +266,15 @@ class TestBPImportValidate:
 
         assert response.status_code == 200
         assert len(response.data["warnings"]) == 5
-        assert len(response.data["errors"]) == 0
+        assert len(response.data["errors"]) == 2
+        assert (
+            "Project type 'Project Type' is not linked to the cluster 'Other'"
+            in response.data["errors"][0]["error_message"]
+        )
+        assert (
+            "Sector 'Other' is not linked to the project type 'Project Type' in cluster 'Other'"
+            in response.data["errors"][1]["error_message"]
+        )
         assert (
             "Cluster 'NoCluster' does not exist"
             in response.data["warnings"][0]["warning_message"]
@@ -618,7 +632,6 @@ def setup_bp_activity_list(
                 "is_multi_year": i % 2 == 0,
                 "reason_for_exceeding": f"Planu, planu, planu, planu, planu{i}",
                 "remarks": f"Merge bine, bine, bine ca aeroplanu{i}",
-                "remarks_additional": f"Poate si la anu / Daca merge bine planu stau ca barosanu.{i}",
             }
             bp_activity = BPActivityFactory.create(**data)
             bp_activity.substances.set([substance])

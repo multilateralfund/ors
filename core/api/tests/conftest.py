@@ -26,6 +26,7 @@ from core.api.tests.factories import (
     ProjectOdsOdpFactory,
     ProjectRBMMeasureFactory,
     ProjectSectorFactory,
+    ProjectSpecificFieldsFactory,
     ProjectStatusFactory,
     ProjectSubmissionStatusFactory,
     ProjectSubSectorFactory,
@@ -907,6 +908,11 @@ def setup_bp_activity_create(
     project_cluster_kpp,
     substance,
 ):
+    ProjectSpecificFieldsFactory.create(
+        cluster=project_cluster_kpp,
+        type=project_type,
+        sector=sector,
+    )
     return {
         "initial_id": 1,
         "title": "Planu",
@@ -925,7 +931,6 @@ def setup_bp_activity_create(
         "is_multi_year": False,
         "reason_for_exceeding": "Planu, planu, planu, planu, planu",
         "remarks": "Merge bine, bine, bine ca aeroplanu",
-        "remarks_additional": "Poate si la anu / Daca merge bine planu stau ca barosanu.",
         "values": [
             {
                 "year": 2025,

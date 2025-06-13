@@ -113,11 +113,6 @@ class BPActivitiesWriter(BaseWriter):
                 "headerName": "Remarks",
                 "column_width": self.COLUMN_WIDTH * 4,
             },
-            {
-                "id": "remarks_additional",
-                "headerName": "Remarks (Additional)",
-                "column_width": self.COLUMN_WIDTH * 4,
-            },
         ]
 
         sheet = wb.create_sheet("Activities")

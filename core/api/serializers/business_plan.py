@@ -138,7 +138,6 @@ class BPActivityExportSerializer(serializers.ModelSerializer):
             "is_multi_year_display",
             "reason_for_exceeding",
             "remarks",
-            "remarks_additional",
             "values",
         ]
 
@@ -221,7 +220,6 @@ class BPActivityDetailSerializer(serializers.ModelSerializer):
             "is_multi_year",
             "reason_for_exceeding",
             "remarks",
-            "remarks_additional",
             "values",
             "is_multi_year_display",
             "status_display",
@@ -380,7 +378,6 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
             "is_multi_year",
             "reason_for_exceeding",
             "remarks",
-            "remarks_additional",
             "values",
         ]
 
