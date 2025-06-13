@@ -4,8 +4,8 @@ import BPEditConsolidated from '@ors/components/manage/Blocks/BusinessPlans/BPEd
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import usePageTitle from '@ors/hooks/usePageTitle'
-import NotFoundPage from '@ors/app/not-found'
 import { useStore } from '@ors/store'
+import { Redirect } from 'wouter'
 
 export default function BusinessPlansEditConsolidated() {
   usePageTitle('Business Plans Edit')
@@ -19,7 +19,7 @@ export default function BusinessPlansEditConsolidated() {
     useContext(PermissionsContext)
 
   if (!canViewBp || !canViewBpYears || !canUpdateBp) {
-    return <NotFoundPage />
+    return <Redirect to={'/business-plans'} />
   }
   return (
     <PageWrapper>

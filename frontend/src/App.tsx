@@ -61,8 +61,14 @@ import { useStore } from '@ors/store.tsx'
 function RedirectToSection() {
   const user = useStore((state) => state.user)
   const isTreasurer = user && user.data.user_type === 'treasurer'
+  const isBPUser =
+    user && ['bp_editor', 'bp_viewer'].includes(user.data.user_type)
+
   if (isTreasurer) {
     return <Redirect to={'/replenishment/dashboard/cummulative'} />
+  }
+  if (isBPUser) {
+    return <Redirect to={'/business-plans'} />
   }
   return <Redirect to={'/country-programme/reports'} />
 }
