@@ -229,6 +229,42 @@ const useColumnsOptions = (
         {
           cellClass: 'ag-text-center ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
+          cellEditorParams: {
+            Input: { placeholder: 'Select cluster' },
+            agFormatValue,
+            getOptionLabel: (option: any) => getOptionLabel(clusters, option),
+            isOptionEqualToValue: isOptionEqualToValueByCode,
+            openOnFocus: true,
+            options: clusters,
+          },
+          ...(hasErrors(rowErrors, 'project_cluster_id') && {
+            cellRenderer: (props: any) =>
+              editCellRenderer(
+                props,
+                props.data.project_cluster?.code ??
+                  props.data.project_cluster?.name,
+              ),
+          }),
+          field: 'project_cluster_id',
+          headerClass: 'ag-text-center',
+          headerName: tableColumns.project_cluster_id,
+          minWidth: 120,
+          tooltipField: 'project_cluster.name',
+          valueGetter: (params: any) =>
+            params.data.project_cluster?.code ??
+            params.data.project_cluster?.name,
+          valueSetter: (params: ValueSetterParams) =>
+            valueSetter(
+              params,
+              'project_cluster',
+              clusters,
+              clusterOptions,
+              setPendingEdit,
+            ),
+        },
+        {
+          cellClass: 'ag-text-center ag-cell-ellipsed',
+          cellEditor: 'agSelectCellEditor',
           cellEditorParams: (params: ICellEditorParams) => {
             const projectTypeOfCluster = getProjectTypesOfCluster(params)
             return {
@@ -349,42 +385,6 @@ const useColumnsOptions = (
             return true
           },
           wrapText: true,
-        },
-        {
-          cellClass: 'ag-text-center ag-cell-ellipsed',
-          cellEditor: 'agSelectCellEditor',
-          cellEditorParams: {
-            Input: { placeholder: 'Select cluster' },
-            agFormatValue,
-            getOptionLabel: (option: any) => getOptionLabel(clusters, option),
-            isOptionEqualToValue: isOptionEqualToValueByCode,
-            openOnFocus: true,
-            options: clusters,
-          },
-          ...(hasErrors(rowErrors, 'project_cluster_id') && {
-            cellRenderer: (props: any) =>
-              editCellRenderer(
-                props,
-                props.data.project_cluster?.code ??
-                  props.data.project_cluster?.name,
-              ),
-          }),
-          field: 'project_cluster_id',
-          headerClass: 'ag-text-center',
-          headerName: tableColumns.project_cluster_id,
-          minWidth: 120,
-          tooltipField: 'project_cluster.name',
-          valueGetter: (params: any) =>
-            params.data.project_cluster?.code ??
-            params.data.project_cluster?.name,
-          valueSetter: (params: ValueSetterParams) =>
-            valueSetter(
-              params,
-              'project_cluster',
-              clusters,
-              clusterOptions,
-              setPendingEdit,
-            ),
         },
         {
           cellClass: 'ag-text-center ag-cell-ellipsed',
