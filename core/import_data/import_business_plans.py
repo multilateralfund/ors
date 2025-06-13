@@ -249,7 +249,6 @@ def create_business_plan(row, index_row, year_start, year_end):
         "is_multi_year": row["I-Indiv M-MY"] == "M",
         "reason_for_exceeding": row["Reason for exceeding"],
         "remarks": row["Remarks"],
-        "remarks_additional": row["Remarks (Additional)"],
     }
 
     return BPActivity.objects.create(**bp_activity_data)

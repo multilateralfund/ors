@@ -17,6 +17,7 @@ from core.models import (
     BPHistory,
     Country,
     ProjectCluster,
+    ProjectSpecificFields,
     ProjectSector,
     ProjectSubSector,
     ProjectType,
@@ -100,6 +101,31 @@ def get_error_messages(row, agencies, countries):
     return agency, country, error_messages
 
 
+def check_cluster_type_sector_mapping(
+    cluster, project_type, sector, types_mapping, sector_mapping
+):
+    error_messages = []
+    if not cluster or not project_type:
+        return error_messages
+    entry_exists = types_mapping.get((cluster.id, project_type.id))
+    if not entry_exists:
+        error_messages.append(
+            f"Project type '{project_type.name}' is not linked to the cluster "
+            f"'{cluster.name}'"
+        )
+
+    if not sector:
+        return error_messages
+    entry_exists = sector_mapping.get((cluster.id, project_type.id, sector.id))
+    if not entry_exists:
+        error_messages.append(
+            f"Sector '{sector.name}' is not linked to the project type "
+            f"'{project_type.name}' in cluster '{cluster.name}'"
+        )
+        return error_messages
+    return error_messages
+
+
 def get_object(row, field_name, objs_dict, warning_messages):
     if not row[field_name]:
         return None
@@ -117,19 +143,27 @@ def get_object(row, field_name, objs_dict, warning_messages):
     return ret_obj
 
 
-def get_subsector(row, sector, subsectors, warning_messages):
+def get_subsector(row, sector, subsectors, subsectors_links, warning_messages):
     if not row["Subsector"] or not sector:
         return None
 
-    subsector = subsectors.get((sector.name, strip_str(row["Subsector"])))
     subsector_other_name = (
         "other" if sector.name == "Other" else f"other {strip_str(sector.name)}"
     )
-    subsector_other = subsectors.get((sector.name, subsector_other_name))
-    if not subsector:
+    subsector_other = subsectors_links.get((sector.name, subsector_other_name))
+
+    if not row["Subsector"] in subsectors:
         warning_messages.append(
             f"Subsector '{row['Subsector']}' does not exist in KMS "
-            f"or it is not linked to the sector and we will set it to be 'Other'"
+            f"and will be set to 'Other'"
+        )
+        return subsector_other
+
+    subsector = subsectors_links.get((sector.name, strip_str(row["Subsector"])))
+    if not subsector:
+        warning_messages.append(
+            f"Subsector '{row['Subsector']}' is not linked to the sector "
+            f"and we will set it to be 'Other'"
         )
         return subsector_other
 
@@ -208,7 +242,6 @@ def get_bp_activity_data(
         "status": project_status,
         "is_multi_year": bool(strip_str(row["Project Category (I/M)"]) == "m"),
         "remarks": row["Remarks"],
-        "remarks_additional": row["Remarks (Additional)"],
         "values": [],
     }
     for year in range(year_start, year_start + 4):
@@ -274,12 +307,35 @@ def parse_bp_file(file, year_start, from_validate=False):
         for project_cluster in ProjectCluster.objects.all()
     }
     sectors = {strip_str(sector.name): sector for sector in ProjectSector.objects.all()}
-    subsectors = {
+    subsectors_links = {
         (subsector.sector.name, strip_str(subsector.name)): subsector
         for subsector in ProjectSubSector.objects.select_related("sector")
     }
+    subsectors = [
+        strip_str(subsector.name) for subsector in ProjectSubSector.objects.all()
+    ]
     substance_dict = {
         strip_str(substance.name): substance for substance in Substance.objects.all()
+    }
+
+    types_mapping = {
+        (
+            project_specific_field.cluster.id,
+            project_specific_field.type.id,
+        ): project_specific_field
+        for project_specific_field in ProjectSpecificFields.objects.select_related(
+            "cluster", "type"
+        )
+    }
+    sector_mapping = {
+        (
+            project_specific_field.cluster.id,
+            project_specific_field.type.id,
+            project_specific_field.sector.id,
+        ): project_specific_field
+        for project_specific_field in ProjectSpecificFields.objects.select_related(
+            "cluster", "type", "sector"
+        )
     }
 
     activities = []
@@ -310,7 +366,9 @@ def parse_bp_file(file, year_start, from_validate=False):
         )
         project_cluster = get_object(row, "Cluster", project_clusters, warning_messages)
         sector = get_object(row, "Sector", sectors, warning_messages)
-        subsector = get_subsector(row, sector, subsectors, warning_messages)
+        subsector = get_subsector(
+            row, sector, subsectors, subsectors_links, warning_messages
+        )
 
         substance_names = (
             row["Chemical Detail"].split("/") if row["Chemical Detail"] else []
@@ -319,6 +377,24 @@ def parse_bp_file(file, year_start, from_validate=False):
             substance_dict.get(strip_str(name), substance_dict.get("other substances"))
             for name in substance_names
         ]
+
+        agency, country, error_messages = get_error_messages(row, agencies, countries)
+        error_messages = check_cluster_type_sector_mapping(
+            project_cluster, project_type, sector, types_mapping, sector_mapping
+        )
+
+        for error_message in error_messages:
+            if not from_validate:
+                # raise when first error is found and stop parsing entire file
+                raise ValidationError("Data error")
+            errors.append(
+                {
+                    "error_type": "data error",
+                    "row_number": index + 2,
+                    "activity_id": row["Activity ID"],
+                    "error_message": error_message,
+                }
+            )
 
         # return activity data in serializer format (with object IDs instead of names)
         activity_data = get_bp_activity_data(

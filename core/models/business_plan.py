@@ -144,7 +144,6 @@ class BPActivity(models.Model):
     is_multi_year = models.BooleanField(default=False)
     reason_for_exceeding = models.TextField(null=True, blank=True)
     remarks = models.TextField(null=True, blank=True)
-    remarks_additional = models.TextField(null=True, blank=True)
 
     initial_id = models.PositiveIntegerField(null=True, blank=True)
 

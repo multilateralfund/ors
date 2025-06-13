@@ -532,9 +532,6 @@ class BPActivityFactory(factory.django.DjangoModelFactory):
         "pystr", max_chars=200, prefix="bpactivity-reason-for-exceeding"
     )
     remarks = factory.Faker("pystr", max_chars=200, prefix="bpactivity-remarks")
-    remarks_additional = factory.Faker(
-        "pystr", max_chars=200, prefix="bpactivity-remarks-additional"
-    )
 
 
 class BPActivityValueFactory(factory.django.DjangoModelFactory):
