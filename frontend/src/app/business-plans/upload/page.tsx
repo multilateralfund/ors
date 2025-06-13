@@ -4,7 +4,8 @@ import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import BPUpload from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/BPUpload'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import usePageTitle from '@ors/hooks/usePageTitle'
-import NotFoundPage from '@ors/app/not-found'
+
+import { Redirect } from 'wouter'
 
 export default function BusinessPlans() {
   usePageTitle('Business Plans Upload')
@@ -12,7 +13,7 @@ export default function BusinessPlans() {
   const { canUploadBp, canViewBpYears } = useContext(PermissionsContext)
 
   if (!canUploadBp || !canViewBpYears) {
-    return <NotFoundPage />
+    return <Redirect to={'/business-plans'} />
   }
 
   return (
