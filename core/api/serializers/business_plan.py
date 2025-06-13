@@ -140,7 +140,6 @@ class BPActivityExportSerializer(serializers.ModelSerializer):
             "remarks",
             "remarks_additional",
             "values",
-            "comment_secretariat",
         ]
 
     def get_chemical_detail(self, obj):
@@ -226,7 +225,6 @@ class BPActivityDetailSerializer(serializers.ModelSerializer):
             "values",
             "is_multi_year_display",
             "status_display",
-            "comment_secretariat",
         ]
 
     def get_is_multi_year_display(self, obj):
@@ -383,7 +381,6 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
             "reason_for_exceeding",
             "remarks",
             "remarks_additional",
-            "comment_secretariat",
             "values",
         ]
 

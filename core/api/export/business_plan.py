@@ -18,28 +18,28 @@ class BPActivitiesWriter(BaseWriter):
                     [
                         {
                             "id": f"value_usd_{year}",
-                            "headerName": f"Value {label} ($)",
+                            "headerName": f"Value ($000) {label} adjusted",
                             "type": "number",
                             "method": self.get_value,
                             "cell_format": "$###,###,##0.00#############",
                         },
                         {
                             "id": f"value_odp_{year}",
-                            "headerName": f"ODP {label}",
+                            "headerName": f"ODP {label} adjusted",
                             "type": "number",
                             "method": self.get_value,
                             "align": "right",
                         },
                         {
                             "id": f"value_mt_{year}",
-                            "headerName": f"MT for HFC {label}",
+                            "headerName": f"MT for HFC {label} adjusted",
                             "type": "number",
                             "method": self.get_value,
                             "align": "right",
                         },
                         {
                             "id": f"value_co2_{year}",
-                            "headerName": f"CO₂-eq {label}",
+                            "headerName": f"CO2-EQ {label} adjusted",
                             "type": "number",
                             "method": self.get_value,
                             "align": "right",
@@ -50,7 +50,7 @@ class BPActivitiesWriter(BaseWriter):
         headers = [
             {
                 "id": "display_internal_id",
-                "headerName": "Sort Order",
+                "headerName": "Activity ID",
                 "read_only": True,
                 "column_width": self.COLUMN_WIDTH + 5,
             },
@@ -65,7 +65,7 @@ class BPActivitiesWriter(BaseWriter):
             },
             {
                 "id": "lvc_status",
-                "headerName": "Country Status",
+                "headerName": "HCFC Status",
             },
             {
                 "id": "project_type",
@@ -73,11 +73,11 @@ class BPActivitiesWriter(BaseWriter):
             },
             {
                 "id": "bp_chemical_type",
-                "headerName": "Substance",
+                "headerName": "Chemical",
             },
             {
                 "id": "chemical_detail",
-                "headerName": "Substance Detail",
+                "headerName": "Chemical Detail",
             },
             {
                 "id": "amount_polyol",
@@ -116,11 +116,6 @@ class BPActivitiesWriter(BaseWriter):
             {
                 "id": "remarks_additional",
                 "headerName": "Remarks (Additional)",
-                "column_width": self.COLUMN_WIDTH * 4,
-            },
-            {
-                "id": "comment_secretariat",
-                "headerName": "Comment",
                 "column_width": self.COLUMN_WIDTH * 4,
             },
         ]

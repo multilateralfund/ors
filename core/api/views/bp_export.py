@@ -43,7 +43,7 @@ class BPActivityExportView(generics.GenericAPIView):
         filters.OrderingFilter,
         filters.SearchFilter,
     ]
-    search_fields = ["title", "comment_secretariat"]
+    search_fields = ["title"]
     ordering = ["agency__name", "country__abbr", "initial_id"]
     ordering_fields = BPACTIVITY_ORDERING_FIELDS
     queryset = BPActivity.objects.all()

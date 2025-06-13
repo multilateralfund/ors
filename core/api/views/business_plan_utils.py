@@ -85,7 +85,7 @@ def check_year_values(value_type, value, year, is_after, warning_messages):
 
 def get_error_messages(row, agencies, countries):
     error_messages = []
-    not_found_error = "does not exist in our system"
+    not_found_error = "does not exist in KMS"
 
     agency = agencies.get(strip_str(row["Agency"]))
     country_name = COUNTRY_NAME_MAPPING.get(row["Country"], row["Country"])
@@ -111,7 +111,7 @@ def get_object(row, field_name, objs_dict, warning_messages):
     ret_obj = objs_dict.get("other")
     warning_messages.append(
         f"{field_name} '{row[field_name]}' does not exist "
-        f"in our system and we will set it to be 'Other'"
+        f"in KMS and will be set to 'Other'"
     )
 
     return ret_obj
@@ -128,7 +128,7 @@ def get_subsector(row, sector, subsectors, warning_messages):
     subsector_other = subsectors.get((sector.name, subsector_other_name))
     if not subsector:
         warning_messages.append(
-            f"Subsector '{row['Subsector']}' does not exist in our system "
+            f"Subsector '{row['Subsector']}' does not exist in KMS "
             f"or it is not linked to the sector and we will set it to be 'Other'"
         )
         return subsector_other
@@ -158,23 +158,23 @@ def get_bp_activity_data(
     for substance in substances:
         if substance.name == "Other substances":
             warning_messages.append(
-                "Some substances do not exist in our system and we will set them to be 'Other'"
+                "Some substances do not exist in KMS and will be set to 'Other'"
             )
             break
 
     project_status = row["Project Status (A/P)"].strip()
     if project_status and project_status not in BPActivity.Status.values:
         warning_messages.append(
-            f"Project Status '{project_status}' does not exist in our system "
-            f"and we will set it to be 'Undefined'"
+            f"Project Status '{project_status}' does not exist in KMS "
+            f"and will be set to 'Undefined'"
         )
         project_status = BPActivity.Status.undefined
 
-    country_status = row["Country Status"].strip()
+    country_status = row["HCFC Status"].strip()
     if country_status and country_status not in BPActivity.LVCStatus.values:
         warning_messages.append(
-            f"Country Status '{country_status}' does not exist in our system "
-            f"and we will set it to be 'Undefined'"
+            f"HCFC Status '{country_status}' does not exist in KMS "
+            f"and will be set to 'Undefined'"
         )
         country_status = BPActivity.LVCStatus.undefined
 
@@ -185,12 +185,12 @@ def get_bp_activity_data(
             "Amount of Polyol is not a number and we will set it to be '0'"
         )
 
-    # get `initial_id` from `Sort Order` column
-    sort_order = row["Sort Order"].rsplit("-", 1)
-    initial_id = sort_order[1].lstrip("0") if len(sort_order) > 1 else 0
+    # get `initial_id` from `Activity ID` column
+    activity_id = row["Activity ID"].rsplit("-", 1)
+    initial_id = activity_id[1].lstrip("0") if len(activity_id) > 1 else None
 
     activity_data = {
-        "initial_id": initial_id if initial_id else 0,
+        "initial_id": initial_id if initial_id else None,
         "title": row["Title"],
         "agency_id": agency.id if agency else None,
         "country_id": country.id if country else None,
@@ -209,27 +209,25 @@ def get_bp_activity_data(
         "is_multi_year": bool(strip_str(row["Project Category (I/M)"]) == "m"),
         "remarks": row["Remarks"],
         "remarks_additional": row["Remarks (Additional)"],
-        "comment_secretariat": row["Comment"],
         "values": [],
     }
-
     for year in range(year_start, year_start + 4):
         if year == year_start + 3:
             year_value = year - 1
             is_after = True
-            value_usd = row[f"Value after {year_value} ($)"]
-            value_odp = row[f"ODP after {year_value}"]
-            value_mt = row[f"MT for HFC after {year_value}"]
-            value_co2 = row[f"CO₂-eq after {year_value}"]
+            value_usd = row[f"Value ($000) after {year_value} adjusted"]
+            value_odp = row[f"ODP after {year_value} adjusted"]
+            value_mt = row[f"MT for HFC after {year_value} adjusted"]
+            value_co2 = row[f"CO2-EQ after {year_value} adjusted"]
         else:
             year_value = year
             is_after = False
-            value_usd = row[f"Value {year_value} ($)"]
-            value_odp = row[f"ODP {year_value}"]
-            value_mt = row[f"MT for HFC {year_value}"]
-            value_co2 = row[f"CO₂-eq {year_value}"]
-
+            value_usd = row[f"Value ($000) {year_value} adjusted"]
+            value_odp = row[f"ODP {year_value} adjusted"]
+            value_mt = row[f"MT for HFC {year_value} adjusted"]
+            value_co2 = row[f"CO2-EQ {year_value} adjusted"]
         # if these values are not numbers we will set them to be '0'
+
         value_usd = check_year_values(
             "usd", value_usd, year_value, is_after, warning_messages
         )
@@ -299,7 +297,7 @@ def parse_bp_file(file, year_start, from_validate=False):
                 {
                     "error_type": "data error",
                     "row_number": index + 2,
-                    "activity_id": row["Sort Order"],
+                    "activity_id": row["Activity ID"],
                     "error_message": error_message,
                 }
             )
@@ -308,14 +306,14 @@ def parse_bp_file(file, year_start, from_validate=False):
         warning_messages = []
         project_type = get_object(row, "Type", project_types, warning_messages)
         bp_chemical_type = get_object(
-            row, "Substance", bp_chemical_types, warning_messages
+            row, "Chemical", bp_chemical_types, warning_messages
         )
         project_cluster = get_object(row, "Cluster", project_clusters, warning_messages)
         sector = get_object(row, "Sector", sectors, warning_messages)
         subsector = get_subsector(row, sector, subsectors, warning_messages)
 
         substance_names = (
-            row["Substance Detail"].split("/") if row["Substance Detail"] else []
+            row["Chemical Detail"].split("/") if row["Chemical Detail"] else []
         )
         substances = [
             substance_dict.get(strip_str(name), substance_dict.get("other substances"))
@@ -343,7 +341,7 @@ def parse_bp_file(file, year_start, from_validate=False):
                 {
                     "warning_type": "data warning",
                     "row_number": index + 2,
-                    "activity_id": row["Sort Order"],
+                    "activity_id": row["Activity ID"],
                     "warning_message": warning_message,
                 }
             )

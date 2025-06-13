@@ -274,7 +274,7 @@ class TestBPImportValidate:
             in response.data["warnings"][2]["warning_message"]
         )
         assert (
-            "Country Status 'Other' does not exist"
+            "HCFC Status 'Other' does not exist"
             in response.data["warnings"][3]["warning_message"]
         )
         assert (
@@ -619,7 +619,6 @@ def setup_bp_activity_list(
                 "reason_for_exceeding": f"Planu, planu, planu, planu, planu{i}",
                 "remarks": f"Merge bine, bine, bine ca aeroplanu{i}",
                 "remarks_additional": f"Poate si la anu / Daca merge bine planu stau ca barosanu.{i}",
-                "comment_secretariat": f"Alo, alo, Te-am sunat sa-ti spun{i}",
             }
             bp_activity = BPActivityFactory.create(**data)
             bp_activity.substances.set([substance])
