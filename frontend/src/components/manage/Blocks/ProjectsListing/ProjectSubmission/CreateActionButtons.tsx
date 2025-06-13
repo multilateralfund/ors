@@ -48,7 +48,7 @@ const CreateActionButtons = ({
       }
       const result = await api(`api/projects/v2/`, {
         data:
-          mode === 'link'
+          mode === 'full-link' || mode === 'partial-link'
             ? { ...data, associate_project_id: parseInt(project_id) }
             : data,
         method: 'POST',

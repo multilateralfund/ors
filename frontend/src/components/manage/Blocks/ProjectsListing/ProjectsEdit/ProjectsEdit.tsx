@@ -113,7 +113,7 @@ const ProjectsEdit = ({
       ...prevData,
       projIdentifiers: {
         country: project.country_id,
-        meeting: project.meeting_id,
+        meeting: mode !== 'partial-link' ? project.meeting_id : null,
         current_agency: agency_id ?? project.agency_id,
         side_agency:
           !agency_id || project.agency_id === agency_id
@@ -122,23 +122,30 @@ const ProjectsEdit = ({
         is_lead_agency: agency_id ? project.agency_id === agency_id : true,
         cluster: project.cluster_id,
       },
-      bpLinking: {
-        isLinkedToBP: !!project.bp_activity,
-        bpId: project.bp_activity,
-      },
-      crossCuttingFields: {
-        project_type: project.project_type_id,
-        sector: project.sector_id,
-        subsector_ids: map(project.subsectors, 'id'),
-        is_lvc: project.is_lvc,
-        title: project.title,
-        description: project.description,
-        project_start_date: project.project_start_date,
-        project_end_date: project.project_end_date,
-        total_fund: project.total_fund,
-        support_cost_psc: project.support_cost_psc,
-        individual_consideration: project.individual_consideration,
-      },
+      ...(mode !== 'partial-link'
+        ? {
+            bpLinking: {
+              isLinkedToBP: !!project.bp_activity,
+              bpId: project.bp_activity,
+            },
+            crossCuttingFields: {
+              project_type: project.project_type_id,
+              sector: project.sector_id,
+              subsector_ids: map(project.subsectors, 'id'),
+              is_lvc: project.is_lvc,
+              title: project.title,
+              description: project.description,
+              project_start_date: project.project_start_date,
+              project_end_date: project.project_end_date,
+              total_fund: project.total_fund,
+              support_cost_psc: project.support_cost_psc,
+              individual_consideration: project.individual_consideration,
+            },
+          }
+        : {
+            bpLinking: { isLinkedToBP: false, bpId: null },
+            crossCuttingFields: initialCrossCuttingFields,
+          }),
     }))
   }, [])
 
@@ -152,18 +159,26 @@ const ProjectsEdit = ({
         setSpecificFieldsLoaded,
       )
     } else setSpecificFields([])
+
+    if (mode === 'partial-link') {
+      setSpecificFieldsLoaded(true)
+    }
   }, [cluster, project_type, sector])
 
   useEffect(() => {
     if (specificFields.length > 0 && !fieldsValuesLoaded.current) {
       setProjectData((prevData) => ({
         ...prevData,
-        projectSpecificFields: {
-          ...getDefaultValues<ProjectTypeApi>(projectFields, project),
-          ods_odp: map(project.ods_odp, (ods) => {
-            return { ...getDefaultValues<OdsOdpFields>(odsOdpFields, ods) }
-          }),
-        },
+        ...(mode !== 'partial-link' && {
+          projectSpecificFields: {
+            ...getDefaultValues<ProjectTypeApi>(projectFields, project),
+            ods_odp: map(project.ods_odp, (ods) => {
+              return {
+                ...getDefaultValues<OdsOdpFields>(odsOdpFields, ods),
+              }
+            }),
+          },
+        }),
       }))
 
       fieldsValuesLoaded.current = true

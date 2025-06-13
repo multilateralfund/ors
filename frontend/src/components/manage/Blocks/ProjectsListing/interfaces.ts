@@ -196,4 +196,5 @@ export type ProjectIdentifiersSectionProps = {
   setCurrentTab: Dispatch<SetStateAction<number>>
   errors: { [key: string]: string[] }
   hasSubmitted: boolean
+  mode: string
 }

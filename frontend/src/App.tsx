@@ -246,8 +246,11 @@ export default function App() {
         <Route path="/projects-listing/create/:project_id/copy">
           <ProjectsEditPage mode="copy" />
         </Route>
-        <Route path="/projects-listing/create/:project_id/additional-component">
-          <ProjectsEditPage mode="link" />
+        <Route path="/projects-listing/create/:project_id/full-copy/additional-component">
+          <ProjectsEditPage mode="full-link" />
+        </Route>
+        <Route path="/projects-listing/create/:project_id/partial-copy/additional-component">
+          <ProjectsEditPage mode="partial-link" />
         </Route>
         <Route>
           <NotFoundPage />

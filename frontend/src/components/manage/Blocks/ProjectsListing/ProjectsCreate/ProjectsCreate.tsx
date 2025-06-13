@@ -197,6 +197,7 @@ const ProjectsCreate = ({
             setCurrentStep,
             setCurrentTab,
             hasSubmitted,
+            mode,
           }}
           isNextBtnEnabled={canLinkToBp}
           errors={projIdentifiersErrors}
@@ -331,7 +332,7 @@ const ProjectsCreate = ({
           : []),
       ],
     },
-    ...(project
+    ...(project && mode === 'edit'
       ? [
           {
             step: 5,
