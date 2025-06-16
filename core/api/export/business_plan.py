@@ -1,5 +1,6 @@
 from core.api.export.base import BaseWriter
 
+# pylint: disable=W0613
 
 class BPActivitiesWriter(BaseWriter):
     header_row_start_idx = 1
@@ -90,6 +91,15 @@ class BPActivitiesWriter(BaseWriter):
             {"id": "sector", "headerName": "Sector"},
             {"id": "subsector", "headerName": "Subsector"},
             {
+                "id": "status",
+                "headerName": "A-Appr. P-Plan'd",
+            },
+            {
+                "id": "is_multi_year",
+                "headerName": "I-Indiv M-MY",
+                "method": self.get_is_multi_year_display,
+            },
+            {
                 "id": "title",
                 "headerName": "Title",
                 "column_width": self.COLUMN_WIDTH * 4,
@@ -128,6 +138,9 @@ class BPActivitiesWriter(BaseWriter):
             if value["year"] == int(year) and value["is_after"] == is_after:
                 return value[attr]
         return 0
+
+    def get_is_multi_year_display(self, activity, header):
+        return "M" if activity.get("is_multi_year") else "I"
 
 
 class ModelNameWriter(BaseWriter):

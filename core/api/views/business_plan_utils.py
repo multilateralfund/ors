@@ -500,39 +500,23 @@ class BusinessPlanUtils:
 
     def update_bp(self, data, current_obj):
         # validate data
-        serializer = self.get_serializer(data=data)
+        serializer = self.get_serializer(data=data, instance=current_obj)
         errors = self.validate_bp(serializer, current_obj)
         if errors:
             return status.HTTP_400_BAD_REQUEST, errors
-
-        # create new bp instance and activities
-        self.perform_create(serializer)
-        new_instance = serializer.instance
-
-        # inherit all history
-        BPHistory.objects.filter(business_plan=current_obj).update(
-            business_plan=new_instance
-        )
+        serializer.save()
 
         # set initial_id
-        new_instance.activities.filter(initial_id__isnull=True).update(
+        current_obj.activities.filter(initial_id__isnull=True).update(
             initial_id=F("id")
         )
 
-        # set name
-        if not new_instance.name:
-            new_instance.name = f"{new_instance.status} {new_instance.year_start} - {new_instance.year_end}"
-
-        # set updated by user, inherit other fields
-        new_instance.updated_at = new_instance.created_at
-        new_instance.updated_by = self.request.user
-        new_instance.created_at = current_obj.created_at
-        new_instance.created_by = current_obj.created_by
-        new_instance.save()
-        current_obj.delete()
+        # set name if it wasn't set yet; this is to preserve previous behavior
+        if not current_obj.name:
+            current_obj.name = f"{current_obj.status} {current_obj.year_start} - {current_obj.year_end}"
 
         # create new history for update event
-        self.create_history(new_instance, "Updated by user")
+        self.create_history(current_obj, "Updated by user")
 
         return status.HTTP_200_OK, serializer.data
 
