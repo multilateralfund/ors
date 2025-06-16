@@ -21,8 +21,8 @@ const menus = [
   {
     title: 'Planning',
     menuItems: [
-      { title: 'View Business Plans', url: '/business-plans' },
-      { title: 'New Business Plan', url: '/business-plans/upload' },
+      { title: 'View business plans', url: '/business-plans' },
+      { title: 'New business plan', url: '/business-plans/upload' },
     ],
   },
   {
