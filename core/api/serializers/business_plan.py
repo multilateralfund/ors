@@ -456,12 +456,123 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
         # bulk create activity values
         BPActivityValue.objects.bulk_create(activity_values, batch_size=1000)
 
+    def _bulk_create_m2m_relations(self, activity_objs, activities):
+        activity_values = []
+        m2m_substances = []
+        for instance, activity_data in zip(activity_objs, activities, strict=True):
+            # set Many2Many fields after all activities are created
+            substance_ids = activity_data.get("substances", [])
+            m2m_substances += self.create_m2m_substances(instance, substance_ids)
+
+            # update existing values or create new ones
+            for activity_value in activity_data.get("values", []):
+                activity_value["bp_activity_id"] = instance.id
+                if "id" in activity_value:
+                    # update existing value
+                    activity_value_obj, _ = BPActivityValue.objects.update_or_create(
+                        id=activity_value["id"], defaults=activity_value
+                    )
+                else:
+                    # create new value
+                    activity_value_obj = BPActivityValue(**activity_value)
+                activity_values.append(activity_value_obj)
+        # bulk create Many2Many relations
+        BPActivity.substances.through.objects.bulk_create(
+            m2m_substances, batch_size=1000
+        )
+        # bulk create activity values
+        BPActivityValue.objects.bulk_create(activity_values, batch_size=1000)
+
+    def _update_bp_activities(self, business_plan, activities):
+        # update existing activities
+        create_activity_objs = []
+        create_activities = []
+        update_activities = []
+
+        for activity in activities:
+            activity_id = activity.get("id", None)
+
+            if not activity_id:
+                # create
+                # set `business_plan_id` for each activity
+                # remove Many2Many fields
+                create_activities.append(copy.deepcopy(activity))
+                activity.pop("values", [])
+                activity.pop("substances", [])
+                activity.pop("project_type_code", "")
+                activity.pop("sector_code", "")
+                activity["business_plan_id"] = business_plan.id
+                create_activity_objs.append(BPActivity(**activity))
+            else:
+                update_activities.append((activity_id, copy.deepcopy(activity)))
+        # bulk create new activities for this bp
+        create_activity_objs = BPActivity.objects.bulk_create(
+            create_activity_objs, batch_size=1000
+        )
+        self._bulk_create_m2m_relations(create_activity_objs, create_activities)
+        # bulk update all activities for this bp
+        # BPActivity.objects.bulk_update(activity_objs, ["title", "status", "is_multi_year"], batch_size=1000)
+
+        instances = BPActivity.objects.filter(
+            id__in=[activity_id for activity_id, _ in update_activities]
+        )
+        fields_to_update = [
+            "title",
+            "required_by_model",
+            "agency_id",
+            "country_id",
+            "lvc_status",
+            "project_type_id",
+            "bp_chemical_type_id",
+            "project_cluster_id",
+            "amount_polyol",
+            "sector_id",
+            "subsector_id",
+            "legacy_sector_and_subsector",
+            "status",
+            "is_multi_year",
+            "reason_for_exceeding",
+            "remarks",
+        ]
+        for instance, (activity_id, activity_data) in zip(
+            instances, update_activities, strict=True
+        ):
+            for field in fields_to_update:
+                setattr(instance, field, activity_data[field])
+
+        BPActivity.objects.bulk_update(instances, fields_to_update, batch_size=1000)
+
+        # delete old M2M activities
+        BPActivity.substances.through.objects.filter(
+            bpactivity_id__in=instances
+        ).delete()
+        BPActivityValue.objects.filter(bp_activity_id__in=instances).delete()
+
+        # recreate M2M relations
+        self._bulk_create_m2m_relations(
+            instances, [activity for _, activity in update_activities]
+        )
+
+        # delete activities that are not in create or update lists
+        create_activity_ids = set(activity.id for activity in create_activity_objs)
+        update_activity_ids = set(activity_id for activity_id, _ in update_activities)
+        BPActivity.objects.filter(business_plan=business_plan).exclude(
+            id__in=create_activity_ids.union(update_activity_ids)
+        ).delete()
+
     def create(self, validated_data):
         activities = validated_data.pop("activities", [])
         business_plan = super().create(validated_data)
         self._create_bp_activities(business_plan, activities)
-
         return business_plan
+
+    def update(self, instance, validated_data):
+        activities = validated_data.pop("activities", [])
+        # update business plan fields
+        instance = super().update(instance, validated_data)
+        # update existing activities
+        self._update_bp_activities(instance, activities)
+        return instance
 
 
 class BPFileSerializer(serializers.ModelSerializer):
