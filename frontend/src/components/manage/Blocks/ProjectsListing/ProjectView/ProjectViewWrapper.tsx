@@ -76,7 +76,7 @@ const ProjectViewWrapper = () => {
                   <PageHeading className="min-w-fit">
                     <div className="flex gap-2.5">
                       <span className="font-medium text-[#4D4D4D]">
-                        Project:
+                        View project:
                       </span>
                       <div>
                         {title ?? 'New project'}
