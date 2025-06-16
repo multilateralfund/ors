@@ -1,5 +1,7 @@
 from core.api.export.base import BaseWriter
 
+# pylint: disable=W0613
+
 
 class BPActivitiesWriter(BaseWriter):
     header_row_start_idx = 1
