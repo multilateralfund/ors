@@ -9,8 +9,8 @@ import { useStore } from '@ors/store'
 export type PListingTableProps = {
   projects: ReturnType<typeof useGetProjects>
   filters: Record<string, any>
-  projectId: number | null
-  setProjectData: (data: {
+  projectId?: number | null
+  setProjectData?: (data: {
     projectId: number | null
     projectTitle: string
   }) => void

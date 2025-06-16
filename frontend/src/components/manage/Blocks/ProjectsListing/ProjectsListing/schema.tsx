@@ -14,8 +14,8 @@ import cx from 'classnames'
 
 const getColumnDefs = (
   user_permissions: string[],
-  projectId: number | null,
-  setProjectData: (data: {
+  projectId?: number | null,
+  setProjectData?: (data: {
     projectId: number | null
     projectTitle: string
   }) => void,
@@ -40,22 +40,24 @@ const getColumnDefs = (
                 <FiEdit size={16} />
               </Link>
             )}
-            <Checkbox
-              checked={projectId == props.data.id}
-              onChange={(event) => {
-                setProjectData(
-                  event.target.checked
-                    ? {
-                        projectId: props.data.id,
-                        projectTitle: props.data.title,
-                      }
-                    : { projectId: null, projectTitle: '' },
-                )
-              }}
-              sx={{
-                color: 'black',
-              }}
-            />
+            {projectId !== undefined && setProjectData && (
+              <Checkbox
+                checked={projectId == props.data.id}
+                onChange={(event) => {
+                  setProjectData(
+                    event.target.checked
+                      ? {
+                          projectId: props.data.id,
+                          projectTitle: props.data.title,
+                        }
+                      : { projectId: null, projectTitle: '' },
+                  )
+                }}
+                sx={{
+                  color: 'black',
+                }}
+              />
+            )}
             <Link
               className={cx('ml-2 overflow-hidden truncate whitespace-nowrap', {
                 'no-underline': !canViewProject,
