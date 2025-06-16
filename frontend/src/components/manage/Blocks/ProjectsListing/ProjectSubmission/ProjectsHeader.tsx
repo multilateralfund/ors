@@ -148,21 +148,19 @@ const ProjectsHeader = ({
         </div>
       </div>
       {mode === 'edit' && (
-        <div className="mt-4 flex gap-4">
-          <div className="text-md flex items-center">
-            <div className="flex items-center">
-              <span>Submission status:</span>
-              <span className="text-md rounded-full border border-[#0B2D38] px-2 py-0.5 font-medium">
-                {project?.submission_status}
-              </span>
-            </div>
+        <div className="mt-4 flex gap-3">
+          <div className="flex items-center gap-3">
+            <span>Submission status:</span>
+            <span className="rounded border border-solid border-[#002A3C] p-1 font-medium uppercase leading-none text-[#002A3C]">
+              {project?.submission_status}
+            </span>
           </div>
 
           <span>|</span>
 
-          <div className="text-md flex items-center">
+          <div className="flex items-center gap-3">
             <span>Project status:</span>
-            <span className="text-md rounded-full border border-[#0B2D38] px-2 py-0.5 font-medium">
+            <span className="rounded border border-solid border-[#002A3C] p-1 font-medium uppercase leading-none text-[#002A3C]">
               {project?.status}
             </span>
           </div>

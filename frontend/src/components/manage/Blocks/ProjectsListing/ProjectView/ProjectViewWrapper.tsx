@@ -39,6 +39,7 @@ const ProjectViewWrapper = () => {
     version,
     latest_project,
     submission_status,
+    status,
   } = data || {}
 
   const { data: projectFiles } = useGetProjectFiles(project_id)
@@ -73,8 +74,15 @@ const ProjectViewWrapper = () => {
                 <RedirectBackButton />
                 <div className="flex gap-2">
                   <PageHeading className="min-w-fit">
-                    Project: {title ?? 'New project'}
-                    {getTitleExtras(data)}
+                    <div className="flex gap-2.5">
+                      <span className="font-medium text-[#4D4D4D]">
+                        Project:
+                      </span>
+                      <div>
+                        {title ?? 'New project'}
+                        {getTitleExtras(data)}
+                      </div>
+                    </div>
                   </PageHeading>
                   {(version > 1 ||
                     lowerCase(submission_status) !== 'draft') && (
@@ -99,6 +107,23 @@ const ProjectViewWrapper = () => {
                     Edit
                   </CustomLink>
                 )}
+            </div>
+            <div className="mt-4 flex gap-3">
+              <div className="flex items-center gap-3">
+                <span>Submission status:</span>
+                <span className="rounded border border-solid border-[#002A3C] p-1 font-medium uppercase leading-none text-[#002A3C]">
+                  {submission_status}
+                </span>
+              </div>
+
+              <span>|</span>
+
+              <div className="flex items-center gap-3">
+                <span>Project status:</span>
+                <span className="rounded border border-solid border-[#002A3C] p-1 font-medium uppercase leading-none text-[#002A3C]">
+                  {status}
+                </span>
+              </div>
             </div>
           </HeaderTitle>
           <ProjectView project={data} {...{ projectFiles, specificFields }} />

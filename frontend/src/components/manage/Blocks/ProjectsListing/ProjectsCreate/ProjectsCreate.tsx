@@ -31,6 +31,7 @@ import {
 
 import { Tabs, Tab, Alert, Typography } from '@mui/material'
 import { groupBy, has, isEmpty, map, mapKeys } from 'lodash'
+import { MdErrorOutline } from 'react-icons/md'
 
 export const SectionTitle = ({ children }: { children: ReactNode }) => (
   <div className="mb-4 text-xl uppercase tracking-[1px] text-typography-sectionTitle">
@@ -386,9 +387,15 @@ const ProjectsCreate = ({
             return (
               <>
                 {errors && errors.length > 0 && (
-                  <Alert className="mb-5" severity="error">
-                    <Typography>
+                  <Alert
+                    className="mb-5 w-fit border-0 bg-[#FAECD1] text-[#291B00]"
+                    severity="error"
+                    icon={<MdErrorOutline color="#291B00" />}
+                  >
+                    <Typography className="text-lg">
                       Please make sure all the sections are valid.
+                    </Typography>
+                    <Typography>
                       <div className="mt-1">
                         {errors.map((err, idx) =>
                           err ? (
