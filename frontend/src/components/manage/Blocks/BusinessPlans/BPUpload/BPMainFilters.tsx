@@ -37,10 +37,6 @@ const BPMainFilters = ({
         period.label + ` (${nrBps} ${nrBps === 1 ? 'bp' : 'bps'} available)`,
     }
   })
-  const step2PeriodOptions = map(periodOptions.slice(0, 2), (period) => ({
-    ...period,
-    disabled: period.status?.length === 0,
-  }))
 
   const currentPeriod = getCurrentPeriodOption(
     periodOptions,
@@ -93,7 +89,7 @@ const BPMainFilters = ({
           initialIndex={filters ? Math.max(currentPeriodIndex, 0) : 0}
           inputClassName="gap-x-4 h-10"
           label={''}
-          options={isFirstStepUpload ? step1PeriodOptions : step2PeriodOptions}
+          options={isFirstStepUpload ? step1PeriodOptions : periodOptions}
           onChange={handleChangeTriennium}
           withDisabledOptions
         />
