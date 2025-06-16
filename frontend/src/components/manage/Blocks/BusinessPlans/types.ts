@@ -51,6 +51,7 @@ export type BpFileInput = {
   clearable?: boolean
   inputValue?: []
   accept?: string
+  label?: string
 }
 
 export interface BpDetails extends BpFileInput {

@@ -52,7 +52,9 @@ export function FilesViewer(props: ProjectDocs) {
       {mode !== 'view' && (
         <div className="mt-5">
           <Button
-            className="h-10 border border-solid border-primary bg-white px-3 py-1 text-primary"
+            disabled
+            className="h-9 border border-solid px-3 py-1 leading-none"
+            // className="h-9 border border-solid border-primary bg-white px-3 py-1 leading-none text-primary"
             size="large"
             variant="contained"
           >
@@ -60,7 +62,7 @@ export function FilesViewer(props: ProjectDocs) {
           </Button>
         </div>
       )}
-      <Divider className="mt-3" />
+      <Divider className="mt-4" />
       <div className="mt-3 flex flex-col gap-2.5">
         {currentFiles.length === 0 ? (
           <p className="m-1 ml-0 text-lg font-normal text-gray-500">

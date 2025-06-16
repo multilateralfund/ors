@@ -15,6 +15,7 @@ const FileInput = (props: BpFileInput) => {
     clearable = true,
     inputValue,
     accept,
+    label,
   } = props
   const { newFiles = [] } = files || {}
 
@@ -43,6 +44,7 @@ const FileInput = (props: BpFileInput) => {
 
   return (
     <div className="flex flex-col">
+      {label && <p className="mb-2.5 mt-0 text-xl">{label}</p>}
       <TextField
         type="text"
         value={
@@ -68,7 +70,7 @@ const FileInput = (props: BpFileInput) => {
                 </IconButton>
               )}
               <IconButton
-                className="flex h-full items-center justify-center text-nowrap rounded-l-none border-y-0 border-r-0 border-gray-400 text-lg font-normal"
+                className="flex h-full items-center justify-center text-nowrap rounded-l-none border-y-0 border-r-0 !border-gray-400 bg-[#E8E9EB] px-3 py-2.5 text-xl font-normal normal-case !text-[#344054]"
                 aria-label="upload files"
                 component="label"
               >
@@ -95,7 +97,7 @@ const FileInput = (props: BpFileInput) => {
       />
       <p
         id="file_input_help"
-        className="mt-1 text-pretty text-sm text-gray-900"
+        className="mt-1 text-pretty text-sm text-gray-500"
       >
         {extensionsListText}
       </p>

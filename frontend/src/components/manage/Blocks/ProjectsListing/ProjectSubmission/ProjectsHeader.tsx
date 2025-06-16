@@ -97,9 +97,19 @@ const ProjectsHeader = ({
           <RedirectBackButton />
           <div className="flex gap-2">
             <PageHeading>
-              {mode === 'edit'
-                ? `Edit project: ${title ?? 'New project'}${getTitleExtras(project as ProjectTypeApi)}`
-                : 'New project submission ' + pageTitleExtraInfo}
+              {mode === 'edit' && (
+                <div className="flex gap-2.5">
+                  <span className="font-medium text-[#4D4D4D]">
+                    Edit project:
+                  </span>
+                  <div>
+                    {title ?? 'New project'}
+                    {getTitleExtras(project as ProjectTypeApi)}
+                  </div>
+                </div>
+              )}
+              {mode !== 'edit' &&
+                'New project submission ' + pageTitleExtraInfo}
             </PageHeading>
             {mode === 'edit' &&
               (version > 1 || lowerCase(submission_status) !== 'draft') &&
@@ -137,6 +147,27 @@ const ProjectsHeader = ({
           )}
         </div>
       </div>
+      {mode === 'edit' && (
+        <div className="mt-4 flex gap-4">
+          <div className="text-md flex items-center">
+            <div className="flex items-center">
+              <span>Submission status:</span>
+              <span className="text-md rounded-full border border-[#0B2D38] px-2 py-0.5 font-medium">
+                {project?.submission_status}
+              </span>
+            </div>
+          </div>
+
+          <span>|</span>
+
+          <div className="text-md flex items-center">
+            <span>Project status:</span>
+            <span className="text-md rounded-full border border-[#0B2D38] px-2 py-0.5 font-medium">
+              {project?.status}
+            </span>
+          </div>
+        </div>
+      )}
     </HeaderTitle>
   )
 }
