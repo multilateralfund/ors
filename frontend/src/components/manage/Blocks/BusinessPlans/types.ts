@@ -111,6 +111,7 @@ export interface INavigationButton {
   setCurrentStep: Dispatch<SetStateAction<number>>
   setCurrentTab?: Dispatch<SetStateAction<number>>
   title?: string
+  classname?: string
 }
 
 export interface IDecision {

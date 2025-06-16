@@ -7,6 +7,7 @@ import Loading from '@ors/components/theme/Loading/Loading'
 import CustomLink from '@ors/components/ui/Link/Link'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import ProjectView from './ProjectView'
+import { RedirectBackButton } from '../HelperComponents'
 import {
   VersionsDropdown,
   HeaderTag,
@@ -68,19 +69,23 @@ const ProjectViewWrapper = () => {
         <>
           <HeaderTitle>
             <div className="align-center flex flex-wrap justify-between gap-3">
-              <div className="flex gap-2">
-                <PageHeading className="min-w-fit">
-                  Project: {title ?? 'N/A'}
-                  {getTitleExtras(data)}
-                </PageHeading>
-                {(version > 1 || lowerCase(submission_status) !== 'draft') && (
-                  <>
-                    <VersionsDropdown
-                      {...{ versions, showVersionsMenu, setShowVersionsMenu }}
-                    />
-                    <HeaderTag {...{ latest_project, version }} />
-                  </>
-                )}
+              <div className="flex flex-col">
+                <RedirectBackButton />
+                <div className="flex gap-2">
+                  <PageHeading className="min-w-fit">
+                    Project: {title ?? 'New project'}
+                    {getTitleExtras(data)}
+                  </PageHeading>
+                  {(version > 1 ||
+                    lowerCase(submission_status) !== 'draft') && (
+                    <>
+                      <VersionsDropdown
+                        {...{ versions, showVersionsMenu, setShowVersionsMenu }}
+                      />
+                      <HeaderTag {...{ latest_project, version }} />
+                    </>
+                  )}
+                </div>
               </div>
               {user_permissions.includes('edit_project') &&
                 lowerCase(submission_status) !== 'withdrawn' && (

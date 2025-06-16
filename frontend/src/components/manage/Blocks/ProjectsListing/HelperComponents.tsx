@@ -1,3 +1,6 @@
+import Link from '@ors/components/ui/Link/Link'
+
+import { IoReturnUpBack } from 'react-icons/io5'
 import { Button } from '@mui/material'
 import cx from 'classnames'
 
@@ -45,4 +48,15 @@ export const IncreaseVersionButton = ({
   >
     {title}
   </Button>
+)
+
+export const RedirectBackButton = () => (
+  <div className="w-fit">
+    <Link className="text-black no-underline" href="/projects-listing">
+      <div className="mb-3 flex items-center gap-2 text-lg uppercase tracking-[0.05em]">
+        <IoReturnUpBack size={18} />
+        IA/BA Portal
+      </div>
+    </Link>
+  </div>
 )

@@ -14,7 +14,7 @@ const ProjectDocumentation = ({
   return (
     <div className="flex w-full flex-col gap-4">
       <FilesViewer
-        {...{ files, setFiles }}
+        {...{ files, setFiles, mode }}
         bpFiles={mode === 'edit' || mode === 'view' ? projectFiles : []}
       />
 
