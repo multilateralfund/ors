@@ -109,6 +109,9 @@ class ProjectAdmin(admin.ModelAdmin):
         "project_type",
         "latest_project",
     ]
+    raw_id_fields = [
+        "bp_activity",
+    ]
 
     def get_list_display(self, request):
         exclude = [

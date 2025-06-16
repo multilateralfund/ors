@@ -4,6 +4,7 @@ import urllib
 
 from django.db import transaction
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -17,6 +18,7 @@ from core.api.filters.business_plan import (
     BPFileFilter,
     BPFilterBackend,
 )
+from core.models import Project
 from core.api.permissions import (
     IsBPViewer,
     IsBPEditor,
@@ -199,7 +201,9 @@ class BPActivityViewSet(
     def permission_classes(self):
         if self.action in ["list", "retrieve"]:
             return [IsBPViewer | IsBPEditor]
-        return super().get_permissions()
+        if self.action in ["validate_for_removal"]:
+            return [IsBPEditor]
+        return []
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -208,6 +212,16 @@ class BPActivityViewSet(
 
     def get_queryset(self):
         return BPActivity.objects.all()
+
+    @action(methods=["GET"], detail=True)
+    def validate_for_removal(self, *args, **kwargs):
+        errors = []
+        bp_activity = get_object_or_404(self.get_queryset(), id=kwargs.get("pk", None))
+        if Project.objects.really_all().filter(bp_activity=bp_activity).count() > 0:
+            errors.append(
+                "Cannot remove activity with projects. Please remove all projects first."
+            )
+        return Response(errors, status=status.HTTP_200_OK)
 
 
 class BPFileView(
