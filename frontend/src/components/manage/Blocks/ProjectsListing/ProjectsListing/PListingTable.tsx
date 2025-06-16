@@ -1,24 +1,26 @@
 'use client'
 
+import type { useGetProjects } from '@ors/components/manage/Blocks/ProjectsListing/hooks/useGetProjects.ts'
 import ViewTable from '@ors/components/manage/Form/ViewTable'
 import getColumnDefs from './schema'
 import { PROJECTS_PER_PAGE } from '../constants'
 import { useStore } from '@ors/store'
-import type { useGetProjects } from '@ors/components/manage/Blocks/ProjectsListing/hooks/useGetProjects.ts'
-import React from 'react'
 
 export type PListingTableProps = {
   projects: ReturnType<typeof useGetProjects>
   filters: Record<string, any>
   projectId?: number | null
-  setProjectId?: (id: number | null) => void
+  setProjectData?: (data: {
+    projectId: number | null
+    projectTitle: string
+  }) => void
 }
 
 const PListingTable = ({
   projects,
   filters,
   projectId,
-  setProjectId,
+  setProjectData,
 }: PListingTableProps) => {
   const { count, loaded, loading, results, setParams } = projects
 
@@ -28,7 +30,7 @@ const PListingTable = ({
   const { columnDefs, defaultColDef } = getColumnDefs(
     user_permissions,
     projectId,
-    setProjectId,
+    setProjectData,
   )
 
   const getPaginationSelectorOpts = (): number[] => {

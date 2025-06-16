@@ -10,70 +10,66 @@ import {
   ITooltipParams,
   ValueGetterParams,
 } from 'ag-grid-community'
+import cx from 'classnames'
 
 const getColumnDefs = (
   user_permissions: string[],
   projectId?: number | null,
-  setProjectId?: (id: number | null) => void,
+  setProjectData?: (data: {
+    projectId: number | null
+    projectTitle: string
+  }) => void,
 ) => {
+  const canViewProject = user_permissions.includes('view_project')
+
   return {
     columnDefs: [
-      ...(user_permissions.includes('edit_project')
-        ? [
-            {
-              cellRenderer: (props: ICellRendererParams) => (
-                <div className="flex items-center justify-center gap-1.5">
-                  <Link
-                    className="flex justify-center"
-                    href={`/projects-listing/${props.data.id}/edit`}
-                  >
-                    <FiEdit size={16} />
-                  </Link>
-                </div>
-              ),
-              field: '',
-              minWidth: 50,
-              maxWidth: 50,
-              sortable: false,
-            },
-          ]
-        : []),
-      ...(projectId !== undefined && setProjectId
-        ? [
-            {
-              headerName: 'Select',
-              field: '',
-              cellClass: 'ag-text-center',
-              minWidth: 90,
-              maxWidth: 90,
-              sortable: false,
-              cellRenderer: (props: ICellRendererParams) => (
-                <Checkbox
-                  checked={projectId == props.data.id}
-                  onChange={(event) => {
-                    setProjectId(event.target.checked ? props.data.id : null)
-                  }}
-                  sx={{
-                    color: 'black',
-                  }}
-                />
-              ),
-            },
-          ]
-        : []),
       {
         headerName: tableColumns.title,
         field: 'title',
         tooltipField: 'title',
         cellClass: 'ag-cell-ellipsed',
         minWidth: 300,
-        ...(user_permissions.includes('view_project') && {
-          cellRenderer: (props: ICellRendererParams) => (
-            <Link href={`/projects-listing/${props.data.id}`}>
+        cellRenderer: (props: ICellRendererParams) => (
+          <div className="flex items-center gap-1 p-2">
+            {user_permissions.includes('edit_project') && (
+              <Link
+                className="flex h-4 w-4 justify-center"
+                href={`/projects-listing/${props.data.id}/edit`}
+              >
+                <FiEdit size={16} />
+              </Link>
+            )}
+            {projectId !== undefined && setProjectData && (
+              <Checkbox
+                checked={projectId == props.data.id}
+                onChange={(event) => {
+                  setProjectData(
+                    event.target.checked
+                      ? {
+                          projectId: props.data.id,
+                          projectTitle: props.data.title,
+                        }
+                      : { projectId: null, projectTitle: '' },
+                  )
+                }}
+                sx={{
+                  color: 'black',
+                }}
+              />
+            )}
+            <Link
+              className={cx('ml-2 overflow-hidden truncate whitespace-nowrap', {
+                'no-underline': !canViewProject,
+              })}
+              href={
+                canViewProject ? `/projects-listing/${props.data.id}` : null
+              }
+            >
               {props.value}
             </Link>
-          ),
-        }),
+          </div>
+        ),
       },
       {
         headerName: tableColumns.submission_status,
