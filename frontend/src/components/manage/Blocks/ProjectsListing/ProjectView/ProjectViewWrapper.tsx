@@ -7,6 +7,7 @@ import Loading from '@ors/components/theme/Loading/Loading'
 import CustomLink from '@ors/components/ui/Link/Link'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import ProjectView from './ProjectView'
+import { RedirectBackButton } from '../HelperComponents'
 import {
   VersionsDropdown,
   HeaderTag,
@@ -38,6 +39,7 @@ const ProjectViewWrapper = () => {
     version,
     latest_project,
     submission_status,
+    status,
   } = data || {}
 
   const { data: projectFiles } = useGetProjectFiles(project_id)
@@ -68,19 +70,30 @@ const ProjectViewWrapper = () => {
         <>
           <HeaderTitle>
             <div className="align-center flex flex-wrap justify-between gap-3">
-              <div className="flex gap-2">
-                <PageHeading className="min-w-fit">
-                  Project: {title ?? 'N/A'}
-                  {getTitleExtras(data)}
-                </PageHeading>
-                {(version > 1 || lowerCase(submission_status) !== 'draft') && (
-                  <>
-                    <VersionsDropdown
-                      {...{ versions, showVersionsMenu, setShowVersionsMenu }}
-                    />
-                    <HeaderTag {...{ latest_project, version }} />
-                  </>
-                )}
+              <div className="flex flex-col">
+                <RedirectBackButton />
+                <div className="flex gap-2">
+                  <PageHeading className="min-w-fit">
+                    <div className="flex gap-2.5">
+                      <span className="font-medium text-[#4D4D4D]">
+                        Project:
+                      </span>
+                      <div>
+                        {title ?? 'New project'}
+                        {getTitleExtras(data)}
+                      </div>
+                    </div>
+                  </PageHeading>
+                  {(version > 1 ||
+                    lowerCase(submission_status) !== 'draft') && (
+                    <>
+                      <VersionsDropdown
+                        {...{ versions, showVersionsMenu, setShowVersionsMenu }}
+                      />
+                      <HeaderTag {...{ latest_project, version }} />
+                    </>
+                  )}
+                </div>
               </div>
               {user_permissions.includes('edit_project') &&
                 lowerCase(submission_status) !== 'withdrawn' && (
@@ -94,6 +107,23 @@ const ProjectViewWrapper = () => {
                     Edit
                   </CustomLink>
                 )}
+            </div>
+            <div className="mt-4 flex gap-3">
+              <div className="flex items-center gap-3">
+                <span>Submission status:</span>
+                <span className="rounded border border-solid border-[#002A3C] p-1 font-medium uppercase leading-none text-[#002A3C]">
+                  {submission_status}
+                </span>
+              </div>
+
+              <span>|</span>
+
+              <div className="flex items-center gap-3">
+                <span>Project status:</span>
+                <span className="rounded border border-solid border-[#002A3C] p-1 font-medium uppercase leading-none text-[#002A3C]">
+                  {status}
+                </span>
+              </div>
             </div>
           </HeaderTitle>
           <ProjectView project={data} {...{ projectFiles, specificFields }} />

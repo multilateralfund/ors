@@ -8,6 +8,7 @@ import {
 } from '../ProjectVersions/ProjectVersionsComponents'
 import CreateActionButtons from './CreateActionButtons'
 import EditActionButtons from './EditActionButtons'
+import { RedirectBackButton } from '../HelperComponents'
 import {
   getDefaultImpactErrors,
   getIsSaveDisabled,
@@ -78,7 +79,7 @@ const ProjectsHeader = ({
     mode === 'copy'
       ? '(copy)'
       : mode === 'full-link' || mode === 'partial-link'
-        ? `(component of ${title ?? 'N/A'})`
+        ? `(component of ${title ?? 'New project'})`
         : ''
 
   const Versions = (
@@ -92,15 +93,28 @@ const ProjectsHeader = ({
   return (
     <HeaderTitle>
       <div className="align-center flex flex-wrap justify-between gap-x-4 gap-y-4">
-        <div className="flex gap-2">
-          <PageHeading>
-            {mode === 'edit'
-              ? `Edit project: ${title ?? 'N/A'}${getTitleExtras(project as ProjectTypeApi)}`
-              : 'New project submission ' + pageTitleExtraInfo}
-          </PageHeading>
-          {mode === 'edit' &&
-            (version > 1 || lowerCase(submission_status) !== 'draft') &&
-            Versions}
+        <div className="flex flex-col">
+          <RedirectBackButton />
+          <div className="flex gap-2">
+            <PageHeading>
+              {mode === 'edit' && (
+                <div className="flex gap-2.5">
+                  <span className="font-medium text-[#4D4D4D]">
+                    Edit project:
+                  </span>
+                  <div>
+                    {title ?? 'New project'}
+                    {getTitleExtras(project as ProjectTypeApi)}
+                  </div>
+                </div>
+              )}
+              {mode !== 'edit' &&
+                'New project submission ' + pageTitleExtraInfo}
+            </PageHeading>
+            {mode === 'edit' &&
+              (version > 1 || lowerCase(submission_status) !== 'draft') &&
+              Versions}
+          </div>
         </div>
         <div className="ml-auto flex items-center gap-2.5">
           {mode !== 'edit' ? (
@@ -133,6 +147,25 @@ const ProjectsHeader = ({
           )}
         </div>
       </div>
+      {mode === 'edit' && (
+        <div className="mt-4 flex gap-3">
+          <div className="flex items-center gap-3">
+            <span>Submission status:</span>
+            <span className="rounded border border-solid border-[#002A3C] p-1 font-medium uppercase leading-none text-[#002A3C]">
+              {project?.submission_status}
+            </span>
+          </div>
+
+          <span>|</span>
+
+          <div className="flex items-center gap-3">
+            <span>Project status:</span>
+            <span className="rounded border border-solid border-[#002A3C] p-1 font-medium uppercase leading-none text-[#002A3C]">
+              {project?.status}
+            </span>
+          </div>
+        </div>
+      )}
     </HeaderTitle>
   )
 }

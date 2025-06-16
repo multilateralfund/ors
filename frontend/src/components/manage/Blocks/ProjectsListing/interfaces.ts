@@ -145,6 +145,7 @@ export interface ProjectFiles {
   setFiles?: Dispatch<SetStateAction<ProjectFilesObject>>
 }
 export interface ProjectDocs extends ProjectFiles {
+  mode: string
   bpFiles?: ProjectFile[]
 }
 

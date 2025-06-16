@@ -144,8 +144,6 @@ const ProjectIdentifiersFields = ({
               withClear={true}
             />
           </div>
-        </div>
-        <div className="flex flex-wrap gap-x-20 gap-y-3">
           <div>
             <Label>{tableColumns.agency}</Label>
             <Field
@@ -170,6 +168,8 @@ const ProjectIdentifiersFields = ({
               {...sectionDefaultProps}
             />
           </div>
+        </div>
+        <div className="flex flex-wrap gap-x-20 gap-y-3">
           <div>
             <Label>{tableColumns.cluster}</Label>
             <Field
@@ -197,6 +197,23 @@ const ProjectIdentifiersFields = ({
               }}
             />
           </div>
+          <FormControlLabel
+            className="w-fit self-end"
+            label="Production"
+            control={
+              <Checkbox
+                checked={false}
+                disabled={true}
+                size="small"
+                sx={{
+                  color: 'black',
+                }}
+              />
+            }
+            componentsProps={{
+              typography: { fontSize: '1.05rem' },
+            }}
+          />
         </div>
         <FormControlLabel
           className="w-fit"
@@ -248,13 +265,18 @@ const ProjectIdentifiersFields = ({
           <NavigationButton
             isBtnDisabled={!isNextBtnEnabled}
             setCurrentStep={setCurrentStep}
-            // setCurrentTab={setCurrentTab}
-            direction={'next'}
+            direction="next"
+            classname={
+              'h-8 leading-none ' +
+              (isNextBtnEnabled
+                ? 'border-secondary !bg-secondary text-white hover:border-primary hover:!bg-primary hover:text-mlfs-hlYellow'
+                : '')
+            }
           />
           {!areNextSectionsDisabled && (
             <div className="mt-5">
               <Button
-                className="h-10 border border-solid border-primary bg-white px-3 py-1 text-primary"
+                className="h-8 border border-solid border-primary bg-white px-3 py-1 leading-none text-primary"
                 size="large"
                 variant="contained"
                 onClick={() => {

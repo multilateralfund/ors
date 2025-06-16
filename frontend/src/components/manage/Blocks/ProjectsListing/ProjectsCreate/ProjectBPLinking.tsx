@@ -34,7 +34,7 @@ const ProjectBPLinking = ({
     <div className={cx({ 'pointer-events-none opacity-50': isDisabled })}>
       <SectionTitle>Business Plan</SectionTitle>
       <FormControlLabel
-        label="Is the proposal included in the BP?"
+        label="The proposal is included in a BP."
         control={
           <Checkbox
             checked={isLinkedToBP}

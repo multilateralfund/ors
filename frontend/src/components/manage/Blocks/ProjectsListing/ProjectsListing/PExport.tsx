@@ -10,7 +10,6 @@ import { formatApiUrl } from '@ors/helpers'
 import { PROJECTS_PER_PAGE } from '../constants'
 import Link from '@ors/components/ui/Link/Link'
 
-
 export default function PExport() {
   const form = useRef<any>()
 
@@ -19,12 +18,14 @@ export default function PExport() {
     limit: PROJECTS_PER_PAGE,
   }
 
-  const downloadUrlBase = "/api/projects/v2/export"
+  const downloadUrlBase = '/api/projects/v2/export'
 
   const projects = useGetProjects(initialFilters)
   const { loading, params, setParams } = projects
 
-  const [filters, setFilters] = useState<Record<string, any>>({ ...initialFilters })
+  const [filters, setFilters] = useState<Record<string, any>>({
+    ...initialFilters,
+  })
   const key = useMemo(() => JSON.stringify(filters), [filters])
 
   const downloadUrl = useMemo(() => {
@@ -40,7 +41,7 @@ export default function PExport() {
       />
 
       <form className="flex flex-col gap-6" ref={form} key={key}>
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <PListingFilters
             {...{ form, filters, initialFilters, setFilters, setParams }}
           />

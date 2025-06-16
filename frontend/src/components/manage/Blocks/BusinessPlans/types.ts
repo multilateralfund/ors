@@ -51,6 +51,7 @@ export type BpFileInput = {
   clearable?: boolean
   inputValue?: []
   accept?: string
+  label?: string
 }
 
 export interface BpDetails extends BpFileInput {
@@ -111,6 +112,7 @@ export interface INavigationButton {
   setCurrentStep: Dispatch<SetStateAction<number>>
   setCurrentTab?: Dispatch<SetStateAction<number>>
   title?: string
+  classname?: string
 }
 
 export interface IDecision {

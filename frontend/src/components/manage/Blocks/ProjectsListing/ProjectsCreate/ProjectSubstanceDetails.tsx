@@ -100,7 +100,7 @@ const ProjectSubstanceDetails = ({
         <SubmitButton
           title="Add substance"
           onSubmit={onAddSubstance}
-          className="mr-auto"
+          className="mr-auto h-8"
         />
       )}{' '}
     </div>

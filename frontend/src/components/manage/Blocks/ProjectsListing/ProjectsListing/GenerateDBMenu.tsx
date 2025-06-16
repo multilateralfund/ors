@@ -72,6 +72,7 @@ const GenerateDBMenu = () => {
           <MenuItem
             className="whitespace-normal rounded-none py-2 pl-3.5 pr-7 hover:bg-white"
             onClick={handleClose}
+            disabled={!url}
           >
             <CustomLink
               className="break-words text-lg normal-case leading-tight tracking-[0.05em] no-underline"
