@@ -288,7 +288,7 @@ class TestBPImportValidate:
             in response.data["warnings"][2]["warning_message"]
         )
         assert (
-            "HCFC Status 'Other' does not exist"
+            "Status 'Other' does not exist"
             in response.data["warnings"][3]["warning_message"]
         )
         assert (

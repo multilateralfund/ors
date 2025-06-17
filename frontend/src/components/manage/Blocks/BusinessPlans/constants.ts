@@ -9,7 +9,7 @@ export const tableColumns: { [key: string]: string } = {
   bp_chemical_type_id: 'Chemical',
   country_id: 'Country',
   is_multi_year: 'Project category (I/M)',
-  lvc_status: 'HCFC status',
+  lvc_status: 'Status',
   project_cluster_id: 'Cluster',
   project_type_id: 'Type',
   remarks: 'Remarks',

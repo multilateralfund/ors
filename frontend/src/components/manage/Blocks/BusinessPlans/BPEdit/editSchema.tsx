@@ -206,7 +206,7 @@ const useColumnsOptions = (
           cellClass: 'ag-text-center ag-cell-centered ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
-            Input: { placeholder: 'Select HCFC status' },
+            Input: { placeholder: 'Select status' },
             agFormatValue,
             getOptionLabel: (option: any) =>
               getOptionLabel(lvcStatuses, option),

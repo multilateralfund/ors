@@ -205,10 +205,10 @@ def get_bp_activity_data(
         )
         project_status = BPActivity.Status.undefined
 
-    country_status = row["HCFC Status"].strip()
+    country_status = row["Status"].strip()
     if country_status and country_status not in BPActivity.LVCStatus.values:
         warning_messages.append(
-            f"HCFC Status '{country_status}' does not exist in KMS "
+            f"Status '{country_status}' does not exist in KMS "
             f"and will be set to 'Undefined'"
         )
         country_status = BPActivity.LVCStatus.undefined
