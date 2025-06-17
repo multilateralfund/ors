@@ -376,7 +376,6 @@ def parse_bp_file(file, year_start, from_validate=False):
             for name in substance_names
         ]
 
-        agency, country, error_messages = get_error_messages(row, agencies, countries)
         check_cluster_type_sector_mapping(
             project_cluster,
             project_type,
@@ -421,14 +420,15 @@ def parse_bp_file(file, year_start, from_validate=False):
         .select_related("bp_activity")
     )
     for project in projects:
-        errors.append(
+        warnings.append(
             {
-                "error_type": "data error",
+                "warning_type": "data warning",
                 "row_number": "-",
                 "activity_id": "N/A",
-                "error_message": (
+                "warning_message": (
                     f"Activity with ID {project.bp_activity.id} "
-                    "is already linked to a project and cannot be removed"
+                    "is linked to a project and the link will be removed."
+                    "Minimal activity information will remain on the project."
                 ),
             }
         )

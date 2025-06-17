@@ -1,3 +1,4 @@
+from admin_auto_filters.filters import AutocompleteFilterFactory
 from django.contrib import admin
 
 from core.admin.utils import get_final_display_list
@@ -18,8 +19,12 @@ class BusinessPlanAdmin(admin.ModelAdmin):
 
 @admin.register(BPActivity)
 class BPActivityAdmin(admin.ModelAdmin):
-    search_fields = [
-        "title",
+    search_fields = ["title", "business_plan__name"]
+    list_filter = [
+        AutocompleteFilterFactory("project_cluster", "project_cluster"),
+        AutocompleteFilterFactory("country", "country"),
+        AutocompleteFilterFactory("agency", "agency"),
+        "business_plan",
     ]
 
     def get_list_display(self, request):
