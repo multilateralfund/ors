@@ -445,6 +445,7 @@ class TestBPUpdate:
             self.client.force_authenticate(user=test_user)
             url = reverse("businessplan-list") + f"{business_plan.id}/"
             activity_data = _setup_bp_activity_create
+            activity_data.pop("initial_id", None)  # remove initial_id for update
             activity_data["substances"] = [substance.id]
             activity_data["business_plan_id"] = business_plan.id
             activity_data["title"] = "Title test"
@@ -549,6 +550,7 @@ class TestBPUpdate:
         other_business_plan = BusinessPlanFactory()
         activity_data = _setup_bp_activity_create
         substance2 = SubstanceFactory.create(name="substance2")
+        activity_data.pop("initial_id", None)
         activity_data["substances"] = [substance.id, substance2.id]
         activity_data["business_plan_id"] = other_business_plan.id  # should be ignored
         activity_data["title"] = "Planu 2"

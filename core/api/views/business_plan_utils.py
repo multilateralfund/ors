@@ -16,6 +16,7 @@ from core.models import (
     BPChemicalType,
     BPHistory,
     Country,
+    Project,
     ProjectCluster,
     ProjectSpecificFields,
     ProjectSector,
@@ -421,7 +422,27 @@ def parse_bp_file(file, year_start, from_validate=False):
                     "warning_message": warning_message,
                 }
             )
-
+    activities_ids = [
+        activity["initial_id"] for activity in activities if activity["initial_id"]
+    ]
+    projects = (
+        Project.objects.really_all()
+        .exclude(bp_activity__id__in=activities_ids)
+        .filter(bp_activity__id__isnull=False)
+        .select_related("bp_activity")
+    )
+    for project in projects:
+        errors.append(
+            {
+                "error_type": "data error",
+                "row_number": "-",
+                "activity_id": "N/A",
+                "error_message": (
+                    f"Activity with ID {project.bp_activity.id} "
+                    "is already linked to a project and cannot be removed"
+                ),
+            }
+        )
     return activities, errors, warnings
 
 
@@ -504,7 +525,7 @@ class BusinessPlanUtils:
         errors = self.validate_bp(serializer, current_obj)
         if errors:
             return status.HTTP_400_BAD_REQUEST, errors
-        serializer.save()
+        serializer.save(from_import=True)
 
         # set initial_id
         current_obj.activities.filter(initial_id__isnull=True).update(

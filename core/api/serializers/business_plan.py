@@ -483,19 +483,20 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
         # bulk create activity values
         BPActivityValue.objects.bulk_create(activity_values, batch_size=1000)
 
-    def _update_bp_activities(self, business_plan, activities):
+    def _update_bp_activities(self, business_plan, activities, from_import=False):
         # update existing activities
         create_activity_objs = []
         create_activities = []
+        initial_update_activities = []
         update_activities = []
 
         for activity in activities:
-            activity_id = activity.get("id", None)
-
-            if not activity_id:
-                # create
+            if from_import:
+                identifier = activity.get("initial_id", None)
+            else:
+                identifier = activity.get("id", None)
+            if not identifier:
                 # set `business_plan_id` for each activity
-                # remove Many2Many fields
                 create_activities.append(copy.deepcopy(activity))
                 activity.pop("values", [])
                 activity.pop("substances", [])
@@ -504,18 +505,32 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
                 activity["business_plan_id"] = business_plan.id
                 create_activity_objs.append(BPActivity(**activity))
             else:
-                update_activities.append((activity_id, copy.deepcopy(activity)))
+                initial_update_activities.append((identifier, copy.deepcopy(activity)))
         # bulk create new activities for this bp
         create_activity_objs = BPActivity.objects.bulk_create(
             create_activity_objs, batch_size=1000
         )
         self._bulk_create_m2m_relations(create_activity_objs, create_activities)
         # bulk update all activities for this bp
-        # BPActivity.objects.bulk_update(activity_objs, ["title", "status", "is_multi_year"], batch_size=1000)
+        if from_import:
+            instances = BPActivity.objects.filter(
+                initial_id__in=[
+                    activity_id for activity_id, _ in initial_update_activities
+                ]
+            )
+            instances_ids = [instance.initial_id for instance in instances]
+            for identifier, activity_data in initial_update_activities:
+                if identifier in instances_ids:
+                    update_activities.append((identifier, activity_data))
+        else:
+            instances = BPActivity.objects.filter(
+                id__in=[activity_id for activity_id, _ in initial_update_activities]
+            )
+            instances_ids = [instance.id for instance in instances]
+            for identifier, activity_data in initial_update_activities:
+                if identifier in instances_ids:
+                    update_activities.append((identifier, activity_data))
 
-        instances = BPActivity.objects.filter(
-            id__in=[activity_id for activity_id, _ in update_activities]
-        )
         fields_to_update = [
             "title",
             "required_by_model",
@@ -534,11 +549,11 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
             "reason_for_exceeding",
             "remarks",
         ]
-        for instance, (activity_id, activity_data) in zip(
+        for instance, (identifier, activity_data) in zip(
             instances, update_activities, strict=True
         ):
             for field in fields_to_update:
-                setattr(instance, field, activity_data[field])
+                setattr(instance, field, activity_data.get(field, None))
 
         BPActivity.objects.bulk_update(instances, fields_to_update, batch_size=1000)
 
@@ -555,10 +570,12 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
 
         # delete activities that are not in create or update lists
         create_activity_ids = set(activity.id for activity in create_activity_objs)
-        update_activity_ids = set(activity_id for activity_id, _ in update_activities)
-        BPActivity.objects.filter(business_plan=business_plan).exclude(
-            id__in=create_activity_ids.union(update_activity_ids)
-        ).delete()
+        update_activity_ids = [instance.id for instance in instances]
+        bp_activities = BPActivity.objects.filter(business_plan=business_plan).exclude(
+            id__in=create_activity_ids
+        )
+        bp_activities = bp_activities.exclude(id__in=update_activity_ids)
+        bp_activities.delete()
 
     def create(self, validated_data):
         activities = validated_data.pop("activities", [])
@@ -567,11 +584,12 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
         return business_plan
 
     def update(self, instance, validated_data):
+        from_import = validated_data.pop("from_import", False)
         activities = validated_data.pop("activities", [])
         # update business plan fields
         instance = super().update(instance, validated_data)
         # update existing activities
-        self._update_bp_activities(instance, activities)
+        self._update_bp_activities(instance, activities, from_import=from_import)
         return instance
 
 
