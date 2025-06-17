@@ -31,13 +31,17 @@ export const CellAutocompleteWidget = memo(
         isMultiple?: boolean
         isOptionEqualToValue?: (option: any, value: any) => any
         openOnFocus?: boolean
+        freeSolo?: boolean
         showUnselectedOptions?: boolean
       } & AutocompleteWidgetProps &
         ICellEditorParams,
       ref,
     ) => {
       const [value, setValue] = useState(props.value)
+      const [inputValue, setInputValue] = useState(props.value)
+
       const refInput = useRef<HTMLInputElement>(null)
+      const isValueSelected = useRef(false)
 
       // focus on the input
       useEffect(() => {
@@ -96,7 +100,7 @@ export const CellAutocompleteWidget = memo(
         return {
           // the final value to send to the grid, on completion of editing
           getValue() {
-            return value
+            return props.freeSolo ? inputValue : value
           },
 
           // Gets called once before editing starts, to give editor a chance to
@@ -120,6 +124,9 @@ export const CellAutocompleteWidget = memo(
           groupBy={props.groupBy}
           isOptionEqualToValue={props.isOptionEqualToValue}
           openOnFocus={props.openOnFocus}
+          freeSolo={props.freeSolo}
+          optionClassname={props.optionClassname}
+          optionTextClassname={props.optionTextClassname}
           ref={refInput}
           renderOption={props.renderOption}
           options={
@@ -142,10 +149,23 @@ export const CellAutocompleteWidget = memo(
             '& fieldset': { border: 'none' },
             borderRadius: 0,
           }}
-          onChange={(event: any, value: any) => {
+          onChange={(_: any, value: any) => {
+            isValueSelected.current = true
+
             const parsedValue = props.agFormatValue?.(value) || value
             setValue(parsedValue)
+            setInputValue(parsedValue)
           }}
+          {...(props.freeSolo && {
+            onInputChange: (_: any, value: any) => {
+              if (isValueSelected.current) {
+                isValueSelected.current = false
+                return
+              }
+
+              setInputValue(value)
+            },
+          })}
           onKeyDown={(event: any) => onKeyDown(event)}
         />
       )

@@ -16,7 +16,7 @@ import { ApiBPYearRange } from '@ors/types/api_bp_get_years'
 import { api, applyTransaction } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
-import { findIndex, isNil, map, uniq } from 'lodash'
+import { find, findIndex, isNil, map, uniq } from 'lodash'
 import { Button, Alert } from '@mui/material'
 import { useParams } from 'wouter'
 import {
@@ -29,6 +29,7 @@ export type PendingEditType = null | {
   field: string
   newValue: number
   rowId: number
+  isOtherValue: boolean
 }
 
 export function BPEditBaseTable(
@@ -54,6 +55,7 @@ export function BPEditBaseTable(
   const clusters = projectSlice.clusters.data
   const types = bpSlice.types.data
   const sectors = bpSlice.sectors.data
+  const subsectors = bpSlice.subsectors.data
 
   const [deleteErrors, setDeleteErrors] = useState([])
 
@@ -423,6 +425,11 @@ export function BPEditBaseTable(
           or typing text or numbers in the appropriate fields.
         </li>
         <li>
+          When adding a cluster, type, sector or subsector which is not in the
+          list, the value will be converted to 'Other'. Please ensure you
+          mention the value in the Remarks field.
+        </li>
+        <li>
           By default, the activities listed below are sorted alphabetically.
           However, newly added or edited activities will temporarily appear at
           the top of the list until the page is refreshed or navigated away
@@ -496,9 +503,12 @@ export function BPEditBaseTable(
         project_cluster: clusters,
         project_type: types,
         sector: sectors,
+        ...(pendingEdit.isOtherValue && { subsector: subsectors }),
       }
-      const field = pendingEdit.field as keyof typeof optionsFieldMapping
-      const options = optionsFieldMapping[field]
+
+      const field = pendingEdit.field
+      const options =
+        optionsFieldMapping[field as keyof typeof optionsFieldMapping]
 
       const resetFieldsMapping = {
         project_cluster: ['project_type', 'sector', 'subsector'],
@@ -506,8 +516,14 @@ export function BPEditBaseTable(
         sector: ['subsector'],
       }
 
-      updateFieldData(options, data, field, pendingEdit?.newValue)
-      resetFieldsMapping[field]?.forEach((field) => emptyFieldData(data, field))
+      const valueForUpdate = pendingEdit.isOtherValue
+        ? find(options, (option) => option.name === 'Other')?.id
+        : pendingEdit.newValue
+
+      updateFieldData(options, data, field, valueForUpdate)
+      resetFieldsMapping[field as keyof typeof resetFieldsMapping]?.forEach(
+        (field) => emptyFieldData(data, field),
+      )
 
       return data
     }
@@ -572,9 +588,11 @@ export function BPEditBaseTable(
           }}
         />
       </form>
-      <BPResetFieldsWarning
-        {...{ pendingEdit, setPendingEdit, updateFields }}
-      />
+      {pendingEdit && (
+        <BPResetFieldsWarning
+          {...{ pendingEdit, setPendingEdit, updateFields }}
+        />
+      )}
     </>
   )
 }

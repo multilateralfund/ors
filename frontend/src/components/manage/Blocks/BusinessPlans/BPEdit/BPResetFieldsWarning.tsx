@@ -36,9 +36,33 @@ const BPResetFieldsWarning = ({
       affectedColsText: 'sector and subsector',
     },
     sector: { colName: 'sector', affectedColsText: 'subsector' },
+    subsector: { colName: 'subsector', affectedColsText: '' },
   }
 
   const field = pendingEdit?.field as keyof typeof textHelper
+
+  const commonText = `will reset the ${textHelper[field]?.affectedColsText} as
+    ${pendingEdit?.field === 'sector' ? 'it is' : 'they are'} no longer valid
+    for the current selection.`
+
+  const infoText = !pendingEdit?.isOtherValue ? (
+    <>
+      Changing the {textHelper[field]?.colName} {commonText}
+    </>
+  ) : (
+    <>
+      When adding a value which is not in the list, it will be converted to
+      'Other'. Therefore, please ensure you mention the value in the Remarks
+      field.
+      {field !== 'subsector' && (
+        <>
+          <br />
+          <br />
+          This change {commonText}
+        </>
+      )}
+    </>
+  )
 
   return (
     <Dialog
@@ -48,17 +72,16 @@ const BPResetFieldsWarning = ({
       onClose={handleCancel}
     >
       <DialogTitle id="alert-dialog-title">
-        Dependent data will be cleared
+        {pendingEdit?.isOtherValue
+          ? 'Inputted value will be converted'
+          : 'Dependent data will be cleared'}
       </DialogTitle>
       <DialogContent>
         <DialogContentText
           id="alert-dialog-description"
           className="text-pretty"
         >
-          Changing the {textHelper[field]?.colName} will reset the{' '}
-          {textHelper[field]?.affectedColsText} as{' '}
-          {pendingEdit?.field === 'sector' ? 'it is' : 'they are'} no longer
-          valid for the current selection. Are you sure you want to continue?
+          {infoText} Are you sure you want to continue?
         </DialogContentText>
       </DialogContent>
       <DialogActions>

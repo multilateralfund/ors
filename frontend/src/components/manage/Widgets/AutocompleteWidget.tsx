@@ -26,6 +26,8 @@ export interface AutocompleteWidgetProps<T = DefaultValue | undefined>
   getCount?: (option: T) => number
   options?: T[] | undefined
   withDisabledOptions?: boolean
+  optionClassname?: string
+  optionTextClassname?: string
 }
 
 const AutocompleteWidget = forwardRef(function AutocompleteWidget(
@@ -39,6 +41,8 @@ const AutocompleteWidget = forwardRef(function AutocompleteWidget(
     renderInput,
     renderOption,
     withDisabledOptions,
+    optionClassname,
+    optionTextClassname,
     ...rest
   }: AutocompleteWidgetProps,
   ref: any,
@@ -91,12 +95,17 @@ const AutocompleteWidget = forwardRef(function AutocompleteWidget(
           <li
             {...props}
             key={option.id || option.value || option.label || option}
-            className={cx(className, {
+            className={cx(className, optionClassname, {
               'pointer-events-none opacity-40':
                 withDisabledOptions && option.disabled,
             })}
           >
-            <div className="flex w-full items-start justify-between gap-x-4">
+            <div
+              className={cx(
+                'flex w-full items-start justify-between gap-x-4',
+                optionTextClassname,
+              )}
+            >
               <span>
                 {!!getOptionLabel ? getOptionLabel(option) : option.label}
               </span>
