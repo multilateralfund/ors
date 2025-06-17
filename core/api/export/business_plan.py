@@ -67,7 +67,7 @@ class BPActivitiesWriter(BaseWriter):
             },
             {
                 "id": "lvc_status",
-                "headerName": "HCFC Status",
+                "headerName": "Status",
             },
             {
                 "id": "project_type",
