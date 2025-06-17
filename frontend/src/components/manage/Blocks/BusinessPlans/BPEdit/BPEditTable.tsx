@@ -427,6 +427,11 @@ export function BPEditBaseTable(
           or typing text or numbers in the appropriate fields.
         </li>
         <li>
+          When adding a cluster, type, sector or subsector which is not in the
+          list, the value will be converted to 'Other'. Please ensure you
+          mention the value in the Remarks field.
+        </li>
+        <li>
           By default, the activities listed below are sorted alphabetically.
           However, newly added or edited activities will temporarily appear at
           the top of the list until the page is refreshed or navigated away
@@ -500,9 +505,12 @@ export function BPEditBaseTable(
         project_cluster: clusters,
         project_type: types,
         sector: sectors,
+        ...(pendingEdit.isOtherValue && { subsector: subsectors }),
       }
-      const field = pendingEdit.field as keyof typeof optionsFieldMapping
-      const options = optionsFieldMapping[field]
+
+      const field = pendingEdit.field
+      const options =
+        optionsFieldMapping[field as keyof typeof optionsFieldMapping]
 
       const resetFieldsMapping = {
         project_cluster: ['project_type', 'sector', 'subsector'],
@@ -510,41 +518,14 @@ export function BPEditBaseTable(
         sector: ['subsector'],
       }
 
-      updateFieldData(options, data, field, pendingEdit?.newValue)
-      resetFieldsMapping[field]?.forEach((field) => emptyFieldData(data, field))
+      const valueForUpdate = pendingEdit.isOtherValue
+        ? find(options, (option) => option.name === 'Other')?.id
+        : pendingEdit.newValue
 
-      return data
-    }
-  }
-
-  const getUpdatedFieldDataOther = (data: any) => {
-    if (pendingEdit) {
-      const optionsFieldMapping = {
-        project_cluster: clusters,
-        project_type: types,
-        sector: sectors,
-        subsector: subsectors,
-      }
-      const field = pendingEdit.field as keyof typeof optionsFieldMapping
-      const options = optionsFieldMapping[field]
-
-      const resetFieldsMapping = {
-        project_cluster: ['project_type', 'sector', 'subsector'],
-        project_type: ['sector', 'subsector'],
-        sector: ['subsector'],
-      }
-
-      const formattedNewVal = find(
-        options,
-        (option) => option.name === 'Other',
-      )?.id
-      console.log(
-        options,
-        find(options, (option) => option.name === 'Other')?.id,
+      updateFieldData(options, data, field, valueForUpdate)
+      resetFieldsMapping[field as keyof typeof resetFieldsMapping]?.forEach(
+        (field) => emptyFieldData(data, field),
       )
-
-      updateFieldData(options, data, field, formattedNewVal)
-      resetFieldsMapping[field]?.forEach((field) => emptyFieldData(data, field))
 
       return data
     }
@@ -572,15 +553,6 @@ export function BPEditBaseTable(
       const rowIndex = form.length - pendingEdit.rowId - 1
 
       const data = getUpdatedFieldData(form[rowIndex])
-      changeCellValue(data, rowIndex)
-    }
-  }
-
-  const updateFieldsOther = () => {
-    if (pendingEdit && form && form.length > 0) {
-      const rowIndex = form.length - pendingEdit.rowId - 1
-
-      const data = getUpdatedFieldDataOther(form[rowIndex])
       changeCellValue(data, rowIndex)
     }
   }
@@ -620,10 +592,7 @@ export function BPEditBaseTable(
       </form>
       {pendingEdit && (
         <BPResetFieldsWarning
-          {...{ pendingEdit, setPendingEdit }}
-          updateFields={
-            pendingEdit.isOtherValue ? updateFieldsOther : updateFields
-          }
+          {...{ pendingEdit, setPendingEdit, updateFields }}
         />
       )}
     </>

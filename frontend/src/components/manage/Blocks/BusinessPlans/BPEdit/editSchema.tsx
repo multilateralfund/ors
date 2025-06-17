@@ -39,6 +39,9 @@ import {
 import { filter, isNil, map } from 'lodash'
 import { IoTrash } from 'react-icons/io5'
 
+const optionTextClassname = 'text-base'
+const optionClassname = '!pl-1.5'
+
 const useColumnsOptions = (
   yearColumns: any[],
   onRemoveActivity: (props: any) => void,
@@ -72,6 +75,19 @@ const useColumnsOptions = (
 
   const { rowErrors } = useStore((state) => state.bpErrors)
 
+  const filteredOptions = (
+    params: any,
+    field: string,
+    options: any[],
+    parentIds: any[],
+  ) =>
+    params.data?.[field]?.name === 'Other'
+      ? options
+      : filter(
+          options,
+          (option) => option.name === 'Other' || parentIds.includes(option.id),
+        )
+
   const getProjectTypesOfCluster = useCallback(
     (params: ICellEditorParams | ValueSetterParams) => {
       const clusterTypes = getClusterTypesOpts(
@@ -80,10 +96,7 @@ const useColumnsOptions = (
       )
       const clusterTypesIds = map(clusterTypes, 'type_id')
 
-      return filter(
-        types,
-        (type) => type.name === 'Other' || clusterTypesIds.includes(type.id),
-      )
+      return filteredOptions(params, 'project_cluster', types, clusterTypesIds)
     },
     [types, clusterOptions],
   )
@@ -100,11 +113,7 @@ const useColumnsOptions = (
       )
       const typeSectorsIds = map(typeSectors, 'sector_id')
 
-      return filter(
-        sectors,
-        (sector) =>
-          sector.name === 'Other' || typeSectorsIds.includes(sector.id),
-      )
+      return filteredOptions(params, 'project_type', sectors, typeSectorsIds)
     },
     [sectors, clusterOptions],
   )
@@ -117,12 +126,7 @@ const useColumnsOptions = (
       )
       const sectorSubsectorsIds = map(sectorSubsectors, 'id')
 
-      return filter(
-        subsectors,
-        (subsector) =>
-          subsector.name === 'Other' ||
-          sectorSubsectorsIds.includes(subsector.id),
-      )
+      return filteredOptions(params, 'sector', subsectors, sectorSubsectorsIds)
     },
     [subsectors, clusterOptions],
   )
@@ -163,6 +167,8 @@ const useColumnsOptions = (
             isOptionEqualToValue: isOptionEqualToValueByName,
             openOnFocus: true,
             options: countries,
+            optionClassname,
+            optionTextClassname,
           },
           ...(hasErrors(rowErrors, 'country_id') && {
             cellRenderer: (props: any) =>
@@ -193,6 +199,8 @@ const useColumnsOptions = (
                   isOptionEqualToValue: isOptionEqualToValueByName,
                   openOnFocus: true,
                   options: agencies,
+                  optionClassname,
+                  optionTextClassname,
                 },
                 ...(hasErrors(rowErrors, 'agency_id') && {
                   cellRenderer: (props: any) =>
@@ -223,6 +231,8 @@ const useColumnsOptions = (
             isOptionEqualToValue,
             openOnFocus: true,
             options: lvcStatuses,
+            optionClassname,
+            optionTextClassname,
           },
           ...(hasErrors(rowErrors, 'lvc_status') && {
             cellRenderer: (props: any) =>
@@ -247,6 +257,8 @@ const useColumnsOptions = (
             openOnFocus: true,
             freeSolo: true,
             options: clusters,
+            optionClassname,
+            optionTextClassname,
           },
           ...(hasErrors(rowErrors, 'project_cluster_id') && {
             cellRenderer: (props: any) =>
@@ -287,6 +299,8 @@ const useColumnsOptions = (
               openOnFocus: true,
               freeSolo: true,
               options: projectTypeOfCluster,
+              optionClassname,
+              optionTextClassname,
             }
           },
           ...(hasErrors(rowErrors, 'project_type_id') && {
@@ -323,6 +337,8 @@ const useColumnsOptions = (
             isOptionEqualToValue: isOptionEqualToValueByName,
             openOnFocus: true,
             options: chemicalTypesResults,
+            optionClassname,
+            optionTextClassname,
           },
           ...(hasErrors(rowErrors, 'bp_chemical_type_id') && {
             cellRenderer: (props: any) =>
@@ -350,6 +366,8 @@ const useColumnsOptions = (
             isOptionEqualToValue,
             openOnFocus: true,
             showUnselectedOptions: true,
+            optionClassname,
+            optionTextClassname,
           },
           cellRenderer: (props: any) =>
             EditTagsCellRenderer({
@@ -413,6 +431,8 @@ const useColumnsOptions = (
               openOnFocus: true,
               freeSolo: true,
               options: sectorOfProjectType,
+              optionClassname,
+              optionTextClassname,
             }
           },
           ...(hasErrors(rowErrors, 'sector_id') && {
@@ -453,6 +473,8 @@ const useColumnsOptions = (
               openOnFocus: true,
               freeSolo: true,
               options: subsectorsOfSector,
+              optionClassname,
+              optionTextClassname,
             }
           },
           ...(hasErrors(rowErrors, 'subsector_id') && {
@@ -524,6 +546,8 @@ const useColumnsOptions = (
             isOptionEqualToValue,
             openOnFocus: true,
             options: statuses,
+            optionClassname,
+            optionTextClassname,
           },
           ...(hasErrors(rowErrors, 'status') && {
             cellRenderer: (props: any) =>
@@ -547,6 +571,8 @@ const useColumnsOptions = (
             isOptionEqualToValue: isOptionEqualToValueByName,
             openOnFocus: true,
             options: multiYearFilterOptions,
+            optionClassname,
+            optionTextClassname,
           },
           field: 'is_multi_year',
           headerClass: 'ag-text-center',

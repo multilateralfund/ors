@@ -51,9 +51,9 @@ const BPResetFieldsWarning = ({
     </>
   ) : (
     <>
-      When adding a {textHelper[field]?.colName} which is not in the list, the
-      value will be converted to 'Other'. Please ensure you mention the value in
-      the Remarks field.
+      When adding a value which is not in the list, it will be converted to
+      'Other'. Therefore, please ensure you mention the value in the Remarks
+      field.
       {field !== 'subsector' && (
         <>
           <br />
