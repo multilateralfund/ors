@@ -110,8 +110,24 @@ export const valueSetter = (
   setPendingEdit?: (value: PendingEditType) => void,
 ) => {
   const newVal = params.newValue
+  const fieldsForCustomUpdate = ['project_cluster', 'project_type', 'sector']
 
-  if (!['project_cluster', 'project_type', 'sector'].includes(colIdentifier)) {
+  if ([...fieldsForCustomUpdate, 'subsector'].includes(colIdentifier)) {
+    const optionsIds = map(data, 'id')
+
+    if (!optionsIds.includes(newVal)) {
+      setPendingEdit?.({
+        field: colIdentifier,
+        newValue: newVal,
+        rowId: params.data?.row_id,
+        isOtherValue: true,
+      })
+
+      return false
+    }
+  }
+
+  if (!fieldsForCustomUpdate.includes(colIdentifier)) {
     updateFieldData(data, params.data, colIdentifier, newVal)
   } else {
     const shouldUpdateChildren = {
@@ -133,6 +149,7 @@ export const valueSetter = (
         field: colIdentifier,
         newValue: newVal,
         rowId: params.data?.row_id,
+        isOtherValue: false,
       })
 
       return false

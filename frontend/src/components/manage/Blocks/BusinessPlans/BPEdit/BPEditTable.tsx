@@ -16,7 +16,7 @@ import { ApiBPYearRange } from '@ors/types/api_bp_get_years'
 import { api, applyTransaction } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
-import { findIndex, isNil, map, uniq } from 'lodash'
+import { find, findIndex, isNil, map, uniq } from 'lodash'
 import { Button, Alert } from '@mui/material'
 import { useParams } from 'wouter'
 import {
@@ -29,6 +29,7 @@ export type PendingEditType = null | {
   field: string
   newValue: number
   rowId: number
+  isOtherValue: boolean
 }
 
 export function BPEditBaseTable(
@@ -54,6 +55,7 @@ export function BPEditBaseTable(
   const clusters = projectSlice.clusters.data
   const types = bpSlice.types.data
   const sectors = bpSlice.sectors.data
+  const subsectors = bpSlice.subsectors.data
 
   const [deleteErrors, setDeleteErrors] = useState([])
 
@@ -515,6 +517,39 @@ export function BPEditBaseTable(
     }
   }
 
+  const getUpdatedFieldDataOther = (data: any) => {
+    if (pendingEdit) {
+      const optionsFieldMapping = {
+        project_cluster: clusters,
+        project_type: types,
+        sector: sectors,
+        subsector: subsectors,
+      }
+      const field = pendingEdit.field as keyof typeof optionsFieldMapping
+      const options = optionsFieldMapping[field]
+
+      const resetFieldsMapping = {
+        project_cluster: ['project_type', 'sector', 'subsector'],
+        project_type: ['sector', 'subsector'],
+        sector: ['subsector'],
+      }
+
+      const formattedNewVal = find(
+        options,
+        (option) => option.name === 'Other',
+      )?.id
+      console.log(
+        options,
+        find(options, (option) => option.name === 'Other')?.id,
+      )
+
+      updateFieldData(options, data, field, formattedNewVal)
+      resetFieldsMapping[field]?.forEach((field) => emptyFieldData(data, field))
+
+      return data
+    }
+  }
+
   const changeCellValue = (data: any, rowIndex: number) => {
     const newData = [...form]
 
@@ -537,6 +572,15 @@ export function BPEditBaseTable(
       const rowIndex = form.length - pendingEdit.rowId - 1
 
       const data = getUpdatedFieldData(form[rowIndex])
+      changeCellValue(data, rowIndex)
+    }
+  }
+
+  const updateFieldsOther = () => {
+    if (pendingEdit && form && form.length > 0) {
+      const rowIndex = form.length - pendingEdit.rowId - 1
+
+      const data = getUpdatedFieldDataOther(form[rowIndex])
       changeCellValue(data, rowIndex)
     }
   }
@@ -574,9 +618,14 @@ export function BPEditBaseTable(
           }}
         />
       </form>
-      <BPResetFieldsWarning
-        {...{ pendingEdit, setPendingEdit, updateFields }}
-      />
+      {pendingEdit && (
+        <BPResetFieldsWarning
+          {...{ pendingEdit, setPendingEdit }}
+          updateFields={
+            pendingEdit.isOtherValue ? updateFieldsOther : updateFields
+          }
+        />
+      )}
     </>
   )
 }

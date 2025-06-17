@@ -80,7 +80,10 @@ const useColumnsOptions = (
       )
       const clusterTypesIds = map(clusterTypes, 'type_id')
 
-      return filter(types, (type) => clusterTypesIds.includes(type.id))
+      return filter(
+        types,
+        (type) => type.name === 'Other' || clusterTypesIds.includes(type.id),
+      )
     },
     [types, clusterOptions],
   )
@@ -97,7 +100,11 @@ const useColumnsOptions = (
       )
       const typeSectorsIds = map(typeSectors, 'sector_id')
 
-      return filter(sectors, (sector) => typeSectorsIds.includes(sector.id))
+      return filter(
+        sectors,
+        (sector) =>
+          sector.name === 'Other' || typeSectorsIds.includes(sector.id),
+      )
     },
     [sectors, clusterOptions],
   )
@@ -110,8 +117,11 @@ const useColumnsOptions = (
       )
       const sectorSubsectorsIds = map(sectorSubsectors, 'id')
 
-      return filter(subsectors, (subsector) =>
-        sectorSubsectorsIds.includes(subsector.id),
+      return filter(
+        subsectors,
+        (subsector) =>
+          subsector.name === 'Other' ||
+          sectorSubsectorsIds.includes(subsector.id),
       )
     },
     [subsectors, clusterOptions],
@@ -235,6 +245,7 @@ const useColumnsOptions = (
             getOptionLabel: (option: any) => getOptionLabel(clusters, option),
             isOptionEqualToValue: isOptionEqualToValueByCode,
             openOnFocus: true,
+            freeSolo: true,
             options: clusters,
           },
           ...(hasErrors(rowErrors, 'project_cluster_id') && {
@@ -274,6 +285,7 @@ const useColumnsOptions = (
                 getOptionLabel(projectTypeOfCluster, option),
               isOptionEqualToValue: isOptionEqualToValueByCode,
               openOnFocus: true,
+              freeSolo: true,
               options: projectTypeOfCluster,
             }
           },
@@ -399,6 +411,7 @@ const useColumnsOptions = (
                 getOptionLabel(sectorOfProjectType, option),
               isOptionEqualToValue: isOptionEqualToValueByCode,
               openOnFocus: true,
+              freeSolo: true,
               options: sectorOfProjectType,
             }
           },
@@ -438,6 +451,7 @@ const useColumnsOptions = (
                 getOptionLabel(subsectorsOfSector, option),
               isOptionEqualToValue: isOptionEqualToValueByCode,
               openOnFocus: true,
+              freeSolo: true,
               options: subsectorsOfSector,
             }
           },
@@ -456,7 +470,13 @@ const useColumnsOptions = (
           valueGetter: (params: any) =>
             params.data.subsector?.code ?? params.data.subsector?.name,
           valueSetter: (params: ValueSetterParams) =>
-            valueSetter(params, 'subsector', getSubsectorsOfSector(params)),
+            valueSetter(
+              params,
+              'subsector',
+              getSubsectorsOfSector(params),
+              null,
+              setPendingEdit,
+            ),
         },
         {
           cellClass: 'ag-cell-ellipsed',
