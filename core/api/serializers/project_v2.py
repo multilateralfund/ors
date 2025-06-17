@@ -553,6 +553,13 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
         ods_odp_data = validated_data.pop("ods_odp", [])
         subsectors_data = validated_data.pop("subsector_ids", [])
         associate_project_id = validated_data.pop("associate_project_id", None)
+        bp_activity = validated_data.get("bp_activity", None)
+        business_plan = getattr(bp_activity, "business_plan", None)
+        validated_data["bp_year_start"] = getattr(business_plan, "year_start", None)
+        validated_data["bp_year_end"] = getattr(business_plan, "year_end", None)
+        validated_data["bp_meeting"] = getattr(business_plan, "meeting", None)
+        validated_data["bp_decision"] = getattr(business_plan, "decision", None)
+        validated_data["bp_activity_title"] = getattr(bp_activity, "title", "")
         project = Project.objects.create(**validated_data, version_created_by=user)
         # set subcode
         project.code = get_project_sub_code(
@@ -598,6 +605,14 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
         user = self.context["request"].user
         subsectors_data = validated_data.pop("subsector_ids", None)
         ods_odp_data = validated_data.pop("ods_odp", [])
+        bp_activity = validated_data.get("bp_activity", None)
+        if instance.bp_activity != bp_activity:
+            business_plan = getattr(bp_activity, "business_plan", None)
+            validated_data["bp_year_start"] = getattr(business_plan, "year_start", None)
+            validated_data["bp_year_end"] = getattr(business_plan, "year_end", None)
+            validated_data["bp_meeting"] = getattr(business_plan, "meeting", None)
+            validated_data["bp_decision"] = getattr(business_plan, "decision", None)
+            validated_data["bp_activity_title"] = getattr(bp_activity, "title", "")
 
         super().update(instance, validated_data)
 
