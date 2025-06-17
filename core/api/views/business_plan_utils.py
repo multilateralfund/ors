@@ -103,28 +103,25 @@ def get_error_messages(row, agencies, countries):
 
 
 def check_cluster_type_sector_mapping(
-    cluster, project_type, sector, types_mapping, sector_mapping
+    cluster, project_type, sector, types_mapping, sector_mapping, warning_messages
 ):
-    error_messages = []
     if not cluster or not project_type:
-        return error_messages
+        return
     entry_exists = types_mapping.get((cluster.id, project_type.id))
-    if not entry_exists:
-        error_messages.append(
+    if not entry_exists and "other" not in project_type.name.lower():
+        warning_messages.append(
             f"Project type '{project_type.name}' is not linked to the cluster "
             f"'{cluster.name}'"
         )
 
     if not sector:
-        return error_messages
+        return
     entry_exists = sector_mapping.get((cluster.id, project_type.id, sector.id))
-    if not entry_exists:
-        error_messages.append(
+    if not entry_exists and "other" not in sector.name.lower():
+        warning_messages.append(
             f"Sector '{sector.name}' is not linked to the project type "
             f"'{project_type.name}' in cluster '{cluster.name}'"
         )
-        return error_messages
-    return error_messages
 
 
 def get_object(row, field_name, objs_dict, warning_messages):
@@ -380,22 +377,14 @@ def parse_bp_file(file, year_start, from_validate=False):
         ]
 
         agency, country, error_messages = get_error_messages(row, agencies, countries)
-        error_messages = check_cluster_type_sector_mapping(
-            project_cluster, project_type, sector, types_mapping, sector_mapping
+        check_cluster_type_sector_mapping(
+            project_cluster,
+            project_type,
+            sector,
+            types_mapping,
+            sector_mapping,
+            warning_messages,
         )
-
-        for error_message in error_messages:
-            if not from_validate:
-                # raise when first error is found and stop parsing entire file
-                raise ValidationError("Data error")
-            errors.append(
-                {
-                    "error_type": "data error",
-                    "row_number": index + 2,
-                    "activity_id": row["Activity ID"],
-                    "error_message": error_message,
-                }
-            )
 
         # return activity data in serializer format (with object IDs instead of names)
         activity_data = get_bp_activity_data(

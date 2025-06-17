@@ -265,16 +265,8 @@ class TestBPImportValidate:
             response = self.client.post(self.url, data, format="multipart")
 
         assert response.status_code == 200
-        assert len(response.data["warnings"]) == 5
-        assert len(response.data["errors"]) == 2
-        assert (
-            "Project type 'Project Type' is not linked to the cluster 'Other'"
-            in response.data["errors"][0]["error_message"]
-        )
-        assert (
-            "Sector 'Other' is not linked to the project type 'Project Type' in cluster 'Other'"
-            in response.data["errors"][1]["error_message"]
-        )
+        assert len(response.data["warnings"]) == 6
+        assert len(response.data["errors"]) == 0
         assert (
             "Cluster 'NoCluster' does not exist"
             in response.data["warnings"][0]["warning_message"]
@@ -284,16 +276,20 @@ class TestBPImportValidate:
             in response.data["warnings"][1]["warning_message"]
         )
         assert (
-            "Some substances do not exist"
+            "Project type 'Project Type' is not linked to the cluster 'Other'"
             in response.data["warnings"][2]["warning_message"]
         )
         assert (
-            "Status 'Other' does not exist"
+            "Some substances do not exist"
             in response.data["warnings"][3]["warning_message"]
         )
         assert (
-            "Value odp for year 2025 (After: False) is not a number"
+            "Status 'Other' does not exist"
             in response.data["warnings"][4]["warning_message"]
+        )
+        assert (
+            "Value odp for year 2025 (After: False) is not a number"
+            in response.data["warnings"][5]["warning_message"]
         )
 
     def test_bp_import_validate(
