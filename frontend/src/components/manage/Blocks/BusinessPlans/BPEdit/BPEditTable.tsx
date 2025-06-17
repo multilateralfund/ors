@@ -375,27 +375,25 @@ export function BPEditBaseTable(
       isDeletionValid = (await validateActivity(removedActivity.id)) as boolean
     }
 
-    if (isDeletionValid) {
-      const newData = [...form]
+    const newData = [...form]
 
-      const index = findIndex(
-        newData,
-        (row: any) => row.row_id === removedActivity.row_id,
-      )
+    const index = findIndex(
+      newData,
+      (row: any) => row.row_id === removedActivity.row_id,
+    )
 
-      if (index > -1) {
-        newData.splice(index, 1)
+    if (index > -1) {
+      newData.splice(index, 1)
 
-        const formattedData = map(newData, (dataItem, index) => ({
-          ...dataItem,
-          row_id: newData.length - index - 1,
-        }))
+      const formattedData = map(newData, (dataItem, index) => ({
+        ...dataItem,
+        row_id: newData.length - index - 1,
+      }))
 
-        setForm(formattedData)
-        applyTransaction(grid.current.api, {
-          remove: [removedActivity],
-        })
-      }
+      setForm(formattedData)
+      applyTransaction(grid.current.api, {
+        remove: [removedActivity],
+      })
     }
   }
 
