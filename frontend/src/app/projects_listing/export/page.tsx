@@ -14,7 +14,10 @@ export default function Projects() {
       <HeaderTitle>
         <RedirectBackButton />
         <PageHeading className="min-w-fit">
-          Generate DB: Project warehouse
+          <div className="flex gap-2.5">
+            <span className="font-medium text-[#4D4D4D]">Generate DB:</span>
+            <div>Project warehouse</div>
+          </div>
         </PageHeading>
       </HeaderTitle>
       <PExport />
