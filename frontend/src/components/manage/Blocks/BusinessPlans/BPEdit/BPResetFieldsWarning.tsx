@@ -73,7 +73,7 @@ const BPResetFieldsWarning = ({
     >
       <DialogTitle id="alert-dialog-title">
         {pendingEdit?.isOtherValue
-          ? 'Inputted value will be converted'
+          ? 'Added value will be converted'
           : 'Dependent data will be cleared'}
       </DialogTitle>
       <DialogContent>

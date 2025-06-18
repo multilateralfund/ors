@@ -7,6 +7,7 @@ import {
   BpPathParams,
 } from '@ors/components/manage/Blocks/BusinessPlans/types'
 import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
+import BPDeleteActivityWarning from './BPDeleteActivityWarning'
 import BPResetFieldsWarning from './BPResetFieldsWarning'
 import { editCellRenderer } from '../BPTableHelpers/cellRenderers'
 import { emptyFieldData, updateFieldData } from './editSchemaHelpers'
@@ -57,7 +58,11 @@ export function BPEditBaseTable(
   const sectors = bpSlice.sectors.data
   const subsectors = bpSlice.subsectors.data
 
-  const [deleteErrors, setDeleteErrors] = useState([])
+  const [deleteErrors, setDeleteErrors] = useState<string[]>([])
+  const [activityToDelete, setActivityToDelete] = useState<Record<
+    string,
+    any
+  > | null>(null)
 
   const getYearColsValue = (
     value: any,
@@ -372,30 +377,42 @@ export function BPEditBaseTable(
   const onRemoveActivity = async (props: any) => {
     const removedActivity = props.data
 
-    let isDeletionValid = false
+    let isDeletionValid = true
     if (removedActivity?.id) {
       isDeletionValid = (await validateActivity(removedActivity.id)) as boolean
     }
 
-    const newData = [...form]
+    if (isDeletionValid) {
+      handleRemoveActivity(removedActivity)
+    } else {
+      setActivityToDelete(removedActivity)
+    }
+  }
 
-    const index = findIndex(
-      newData,
-      (row: any) => row.row_id === removedActivity.row_id,
-    )
+  const handleRemoveActivity = (activity: any) => {
+    const crtActivity = activity ?? activityToDelete
 
-    if (index > -1) {
-      newData.splice(index, 1)
+    if (crtActivity) {
+      const newData = [...form]
 
-      const formattedData = map(newData, (dataItem, index) => ({
-        ...dataItem,
-        row_id: newData.length - index - 1,
-      }))
+      const index = findIndex(
+        newData,
+        (row: any) => row.row_id === crtActivity.row_id,
+      )
 
-      setForm(formattedData)
-      applyTransaction(grid.current.api, {
-        remove: [removedActivity],
-      })
+      if (index > -1) {
+        newData.splice(index, 1)
+
+        const formattedData = map(newData, (dataItem, index) => ({
+          ...dataItem,
+          row_id: newData.length - index - 1,
+        }))
+
+        setForm(formattedData)
+        applyTransaction(grid.current.api, {
+          remove: [crtActivity],
+        })
+      }
     }
   }
 
@@ -481,14 +498,9 @@ export function BPEditBaseTable(
   )
 
   const TableToolbar = () => (
-    <div className="flex flex-col gap-2">
-      <div className="flex justify-between gap-2.5">
-        <InfoBox />
-        <AddActivityButton />
-      </div>
-      {deleteErrors.length > 0 && (
-        <Alert severity="error">{deleteErrors[0]}</Alert>
-      )}
+    <div className="flex justify-between gap-2.5">
+      <InfoBox />
+      <AddActivityButton />
     </div>
   )
 
@@ -593,6 +605,9 @@ export function BPEditBaseTable(
           {...{ pendingEdit, setPendingEdit, updateFields }}
         />
       )}
+      <BPDeleteActivityWarning
+        {...{ deleteErrors, setDeleteErrors, handleRemoveActivity }}
+      />
     </>
   )
 }

@@ -36,7 +36,7 @@ import {
   ITooltipParams,
   ValueSetterParams,
 } from 'ag-grid-community'
-import { filter, isNil, map } from 'lodash'
+import { filter, find, flatMap, get, isNil, map } from 'lodash'
 import { IoTrash } from 'react-icons/io5'
 
 const optionTextClassname = 'text-base'
@@ -103,14 +103,26 @@ const useColumnsOptions = (
 
   const getSectorsOfProjectType = useCallback(
     (params: ICellEditorParams | ValueSetterParams) => {
+      const isOtherCluster = params.data?.project_cluster?.name === 'Other'
+
       const clusterTypes = getClusterTypesOpts(
         params.data?.project_cluster_id,
         clusterOptions,
       )
-      const typeSectors = getTypeSectorsOpts(
-        params.data?.project_type_id,
-        clusterTypes,
+
+      const crtTypeSectorMapping = get(
+        find(
+          flatMap(clusterOptions, (cluster) => cluster.types),
+          (type) => type.type_name === params.data?.project_type?.name,
+        ),
+        'sectors',
+        [],
       )
+
+      const typeSectors = isOtherCluster
+        ? crtTypeSectorMapping
+        : getTypeSectorsOpts(params.data?.project_type_id, clusterTypes)
+
       const typeSectorsIds = map(typeSectors, 'sector_id')
 
       return filteredOptions(params, 'project_type', sectors, typeSectorsIds)
@@ -167,7 +179,6 @@ const useColumnsOptions = (
             isOptionEqualToValue: isOptionEqualToValueByName,
             openOnFocus: true,
             options: countries,
-            optionClassname,
             optionTextClassname,
           },
           ...(hasErrors(rowErrors, 'country_id') && {
@@ -199,7 +210,6 @@ const useColumnsOptions = (
                   isOptionEqualToValue: isOptionEqualToValueByName,
                   openOnFocus: true,
                   options: agencies,
-                  optionClassname,
                   optionTextClassname,
                 },
                 ...(hasErrors(rowErrors, 'agency_id') && {
@@ -231,7 +241,6 @@ const useColumnsOptions = (
             isOptionEqualToValue,
             openOnFocus: true,
             options: lvcStatuses,
-            optionClassname,
             optionTextClassname,
           },
           ...(hasErrors(rowErrors, 'lvc_status') && {
@@ -299,7 +308,6 @@ const useColumnsOptions = (
               openOnFocus: true,
               freeSolo: true,
               options: projectTypeOfCluster,
-              optionClassname,
               optionTextClassname,
             }
           },
@@ -337,7 +345,6 @@ const useColumnsOptions = (
             isOptionEqualToValue: isOptionEqualToValueByName,
             openOnFocus: true,
             options: chemicalTypesResults,
-            optionClassname,
             optionTextClassname,
           },
           ...(hasErrors(rowErrors, 'bp_chemical_type_id') && {
@@ -366,7 +373,6 @@ const useColumnsOptions = (
             isOptionEqualToValue,
             openOnFocus: true,
             showUnselectedOptions: true,
-            optionClassname,
             optionTextClassname,
           },
           cellRenderer: (props: any) =>
@@ -431,7 +437,6 @@ const useColumnsOptions = (
               openOnFocus: true,
               freeSolo: true,
               options: sectorOfProjectType,
-              optionClassname,
               optionTextClassname,
             }
           },
@@ -473,7 +478,6 @@ const useColumnsOptions = (
               openOnFocus: true,
               freeSolo: true,
               options: subsectorsOfSector,
-              optionClassname,
               optionTextClassname,
             }
           },
@@ -546,7 +550,6 @@ const useColumnsOptions = (
             isOptionEqualToValue,
             openOnFocus: true,
             options: statuses,
-            optionClassname,
             optionTextClassname,
           },
           ...(hasErrors(rowErrors, 'status') && {
@@ -571,7 +574,6 @@ const useColumnsOptions = (
             isOptionEqualToValue: isOptionEqualToValueByName,
             openOnFocus: true,
             options: multiYearFilterOptions,
-            optionClassname,
             optionTextClassname,
           },
           field: 'is_multi_year',
