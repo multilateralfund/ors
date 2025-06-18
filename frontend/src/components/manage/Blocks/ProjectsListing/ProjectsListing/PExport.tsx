@@ -56,7 +56,7 @@ export default function PExport() {
             Generate DB
           </Link>
         </div>
-        <PListingTable {...{ projects, filters }} />
+        <PListingTable mode="listing" {...{ projects, filters }} />
       </form>
     </>
   )
