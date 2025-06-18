@@ -606,6 +606,7 @@ export function BPEditBaseTable(
         />
       )}
       <BPDeleteActivityWarning
+        activityId={activityToDelete?.display_internal_id}
         {...{ deleteErrors, setDeleteErrors, handleRemoveActivity }}
       />
     </>

@@ -8,10 +8,12 @@ import {
 } from '@mui/material'
 
 const BPDeleteActivityWarning = ({
+  activityId,
   deleteErrors,
   setDeleteErrors,
   handleRemoveActivity,
 }: {
+  activityId: number
   deleteErrors: string[]
   setDeleteErrors: (value: string[]) => void
   handleRemoveActivity: (activity?: any) => void
@@ -40,8 +42,9 @@ const BPDeleteActivityWarning = ({
           id="alert-dialog-description"
           className="text-pretty"
         >
-          This activity is linked to a project. Are you sure you want to
-          continue?
+          Activity with ID {activityId} is linked to a project and the link will
+          be removed. Minimal activity information will remain on the project.
+          Are you sure you want to continue?
         </DialogContentText>
       </DialogContent>
       <DialogActions>
