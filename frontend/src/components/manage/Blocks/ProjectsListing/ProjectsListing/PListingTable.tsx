@@ -1,14 +1,17 @@
 'use client'
 
 import type { useGetProjects } from '@ors/components/manage/Blocks/ProjectsListing/hooks/useGetProjects.ts'
+import type { useGetProjectsAssociation } from '../hooks/useGetProjectsAssociation'
 import ViewTable from '@ors/components/manage/Form/ViewTable'
 import getColumnDefs from './schema'
 import { PROJECTS_PER_PAGE } from '../constants'
 import { useStore } from '@ors/store'
+import { ProjectAssociationType, ProjectType } from '@ors/types/api_projects'
 
 export type PListingTableProps = {
-  projects: ReturnType<typeof useGetProjects>
+  projects: ReturnType<typeof useGetProjects | typeof useGetProjectsAssociation>
   filters: Record<string, any>
+  mode: string
   projectId?: number | null
   setProjectData?: (data: {
     projectId: number | null
@@ -19,6 +22,7 @@ export type PListingTableProps = {
 const PListingTable = ({
   projects,
   filters,
+  mode,
   projectId,
   setProjectData,
 }: PListingTableProps) => {
@@ -27,8 +31,16 @@ const PListingTable = ({
   const commonSlice = useStore((state) => state.common)
   const user_permissions = commonSlice.user_permissions.data || []
 
+  const rowData =
+    mode === 'listing'
+      ? (results as ProjectType[])
+      : (results as ProjectAssociationType[]).flatMap(
+          (entry) => entry.projects || [],
+        )
+
   const { columnDefs, defaultColDef } = getColumnDefs(
     user_permissions,
+    'listing',
     projectId,
     setProjectData,
   )
@@ -59,7 +71,7 @@ const PListingTable = ({
         resizeGridOnRowUpdate={true}
         rowBuffer={50}
         rowCount={count}
-        rowData={results}
+        rowData={rowData}
         rowsVisible={25}
         tooltipShowDelay={200}
         components={{
