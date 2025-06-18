@@ -21,11 +21,10 @@ import {
   ProjectData,
 } from '../interfaces'
 import { ProjectSubSectorType } from '@ors/types/api_project_subsector.ts'
-import { useStore } from '@ors/store'
 import { api } from '@ors/helpers'
 
 import { TextareaAutosize, Divider } from '@mui/material'
-import { debounce, filter, find, includes } from 'lodash'
+import { debounce, filter, find, includes, some } from 'lodash'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 
@@ -52,11 +51,11 @@ const ProjectCrossCuttingFields = ({
   } = crossCuttingFields
   const { cluster } = projectData.projIdentifiers
 
-  const projectSlice = useStore((state) => state.projects)
-  const subsectors = projectSlice.subsectors.data
-
   const [projectTypesOpts, setProjectTypesOpts] = useState([])
   const [sectorsOpts, setSectorsOpts] = useState([])
+  const [subsectorsOpts, setSubsectorsOpts] = useState<ProjectSubSectorType[]>(
+    [],
+  )
 
   const fetchProjectTypes = async () => {
     try {
@@ -110,6 +109,35 @@ const ProjectCrossCuttingFields = ({
       setSectorsOpts([])
     }
   }, [cluster, project_type])
+
+  const fetchProjectSubsectors = async () => {
+    try {
+      const res = await api(
+        'api/project-subsector/',
+        {
+          params: {
+            sector_id: sector,
+          },
+          withStoreCache: true,
+        },
+        false,
+      )
+      setSubsectorsOpts(res || [])
+    } catch (e) {
+      console.error('Error at loading project subsectors')
+      setSubsectorsOpts([])
+    }
+  }
+
+  const debouncedFetchProjectSubsectors = debounce(fetchProjectSubsectors, 0)
+
+  useEffect(() => {
+    if (sector) {
+      debouncedFetchProjectSubsectors()
+    } else {
+      setSubsectorsOpts([])
+    }
+  }, [sector])
 
   useEffect(() => {
     if (projectTypesOpts.length > 0) {
@@ -257,7 +285,11 @@ const ProjectCrossCuttingFields = ({
             <Field
               widget="autocomplete"
               options={projectTypesOpts}
-              value={project_type}
+              value={
+                some(projectTypesOpts, { id: project_type })
+                  ? project_type
+                  : null
+              }
               onChange={(_: React.SyntheticEvent, value) =>
                 changeHandler['drop_down']<ProjectData, CrossCuttingFields>(
                   value,
@@ -280,7 +312,7 @@ const ProjectCrossCuttingFields = ({
             <Field
               widget="autocomplete"
               options={sectorsOpts}
-              value={sector}
+              value={some(sectorsOpts, { id: sector }) ? sector : null}
               onChange={(_, value) =>
                 changeHandler['drop_down']<ProjectData, CrossCuttingFields>(
                   value,
@@ -303,16 +335,18 @@ const ProjectCrossCuttingFields = ({
             <Field
               widget="autocomplete"
               multiple={true}
-              options={subsectors}
+              options={subsectorsOpts}
               value={
-                filter(subsectors, (subsector) =>
+                filter(subsectorsOpts, (subsector) =>
                   includes(subsector_ids, subsector.id),
                 ) as ProjectSubSectorType[]
               }
               onChange={(_, value) =>
                 handleChangeSubSector(value as ProjectSubSectorType[])
               }
-              getOptionLabel={(option) => getOptionLabel(subsectors, option)}
+              getOptionLabel={(option) =>
+                getOptionLabel(subsectorsOpts, option)
+              }
               Input={{
                 error: getIsInputDisabled('subsector_ids'),
               }}
