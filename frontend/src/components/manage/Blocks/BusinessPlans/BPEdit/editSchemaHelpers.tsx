@@ -115,7 +115,7 @@ export const valueSetter = (
   if ([...fieldsForCustomUpdate, 'subsector'].includes(colIdentifier)) {
     const optionsIds = map(data, 'id')
 
-    if (!optionsIds.includes(newVal)) {
+    if (newVal && !optionsIds.includes(newVal)) {
       setPendingEdit?.({
         field: colIdentifier,
         newValue: newVal,
