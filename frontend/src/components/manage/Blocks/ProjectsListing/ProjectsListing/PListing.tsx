@@ -142,6 +142,7 @@ export default function PListing() {
         <form className="flex flex-col gap-6" ref={form} key={key}>
           <div className="flex flex-wrap justify-between gap-x-10 gap-y-4">
             <PListingFilters
+              mode="listing"
               {...{ form, filters, initialFilters, setFilters, setParams }}
             />
             {projectActions}

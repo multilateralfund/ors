@@ -122,7 +122,7 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
             </CustomLink>
             <SubmitButton
               title="Associate"
-              isDisabled={false}
+              isDisabled={associationIds.length === 0}
               onSubmit={associateProject}
               className="h-9"
             />
@@ -134,6 +134,7 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
         <form className="flex flex-col gap-6" ref={form} key={key}>
           <div className="flex flex-wrap justify-between gap-x-10 gap-y-4">
             <PListingFilters
+              mode="association"
               {...{ form, filters, initialFilters, setFilters, setParams }}
             />
           </div>

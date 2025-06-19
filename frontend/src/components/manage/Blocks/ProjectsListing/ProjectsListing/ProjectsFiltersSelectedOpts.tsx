@@ -3,6 +3,7 @@ import { IoClose } from 'react-icons/io5'
 import { filter } from 'lodash'
 
 const ProjectsFiltersSelectedOpts = ({
+  mode,
   commonSlice,
   projectSlice,
   meetings,
@@ -104,7 +105,8 @@ const ProjectsFiltersSelectedOpts = ({
     (areFiltersApplied || filters?.search) && (
       <div className="mt-[6px] flex flex-wrap gap-2">
         {displaySearchTerm()}
-        {displaySelectedOption(formatEntity(countries.data), 'country_id')}
+        {mode === 'listing' &&
+          displaySelectedOption(formatEntity(countries.data), 'country_id')}
         {displaySelectedOption(formatEntity(agencies.data), 'agency_id')}
         {displaySelectedOption(formatEntity(clusters.data), 'cluster_id')}
         {displaySelectedOption(formatEntity(types.data), 'project_type_id')}
