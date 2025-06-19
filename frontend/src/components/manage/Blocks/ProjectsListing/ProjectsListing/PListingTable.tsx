@@ -17,6 +17,8 @@ export type PListingTableProps = {
     projectId: number | null
     projectTitle: string
   }) => void
+  associationIds?: number[]
+  setAssociationIds?: (data: number[]) => void
 }
 
 const PListingTable = ({
@@ -25,6 +27,8 @@ const PListingTable = ({
   mode,
   projectId,
   setProjectData,
+  associationIds,
+  setAssociationIds,
 }: PListingTableProps) => {
   const { count, loaded, loading, results, setParams } = projects
 
@@ -40,9 +44,11 @@ const PListingTable = ({
 
   const { columnDefs, defaultColDef } = getColumnDefs(
     user_permissions,
-    'listing',
+    mode,
     projectId,
     setProjectData,
+    associationIds,
+    setAssociationIds,
   )
 
   const getPaginationSelectorOpts = (): number[] => {
@@ -59,10 +65,21 @@ const PListingTable = ({
     loaded && (
       <ViewTable
         key={JSON.stringify(filters)}
-        className="projects-table"
+        className={`projects-table ${mode === 'association' ? 'projects-association-listing' : ''}`}
+        {...(mode === 'association' && {
+          rowClassRules: {
+            'prev-is-multiple': (params) => {
+              const prev = params.api.getDisplayedRowAtIndex(
+                params.rowIndex - 1,
+              )
+              return !prev?.data?.isOnly
+            },
+          },
+        })}
         columnDefs={columnDefs}
         defaultColDef={defaultColDef}
         domLayout="normal"
+        suppressScrollOnNewData={true}
         enablePagination={true}
         loaded={loaded}
         loading={loading}

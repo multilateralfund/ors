@@ -24,19 +24,41 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
   const commonSlice = useStore((state) => state.common)
   const user_permissions = commonSlice.user_permissions.data || []
 
+  const [associationIds, setAssociationIds] = useState<number[]>([])
+
   const initialFilters = {
     offset: 0,
     limit: PROJECTS_PER_PAGE,
     ordering: '-date_created',
   }
 
-  const projects = useGetProjectsAssociation(initialFilters)
-  const { loading, setParams } = projects
+  const projectsAssociation = useGetProjectsAssociation(initialFilters)
+  const { loading, setParams, results = [] } = projectsAssociation
+
+  const formattedResults = results
+    .map((result) => {
+      const filteredProjects = (result.projects || [])
+        .filter(({ country_id }) => country_id === project.country_id)
+        .map((project, index, arr) => ({
+          ...project,
+          isFirst: index === 0,
+          isLast: index === arr.length - 1,
+          isOnly: arr.length === 1,
+        }))
+
+      return {
+        ...result,
+        projects: filteredProjects,
+      }
+    })
+    .filter((result) => result.projects.length > 0)
+
+  const projects = { ...projectsAssociation, results: formattedResults }
 
   const [filters, setFilters] = useState({ ...initialFilters })
   const key = useMemo(() => JSON.stringify(filters), [filters])
 
-  const { columnDefs, defaultColDef } = getColumnDefs([], 'associate')
+  const { columnDefs, defaultColDef } = getColumnDefs([], 'association')
 
   const selectedProjectData = (
     <ViewTable
@@ -115,7 +137,10 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
               {...{ form, filters, initialFilters, setFilters, setParams }}
             />
           </div>
-          <PListingTable mode="association" {...{ projects, filters }} />
+          <PListingTable
+            mode="association"
+            {...{ projects, filters, associationIds, setAssociationIds }}
+          />
         </form>
       </Box>
     </>

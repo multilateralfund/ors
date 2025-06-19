@@ -331,7 +331,7 @@ export const getFileFromMetadata = async (fileMeta: {
 }
 
 export const getTitleExtras = (project: ProjectTypeApi) => {
-  const { submission_status, version, code, code_legacy } = project
+  const { submission_status, version, code } = project
 
   const status = lowerCase(submission_status)
   const formattedStatus = capitalize(status)
@@ -339,7 +339,7 @@ export const getTitleExtras = (project: ProjectTypeApi) => {
   return (() => {
     switch (true) {
       case status === 'approved':
-        return `, ${code ?? code_legacy} (${formattedStatus})`
+        return `, ${code} (${formattedStatus})`
       case status === 'withdrawn':
         return ` (${formattedStatus})`
       case status === 'draft' && version === 1:

@@ -4,8 +4,9 @@ import { formatNumberColumns } from '../utils'
 
 import { Checkbox } from '@mui/material'
 import { FiEdit } from 'react-icons/fi'
-import { isNil } from 'lodash'
+import { filter, isNil } from 'lodash'
 import {
+  CellClassParams,
   ICellRendererParams,
   ITooltipParams,
   ValueGetterParams,
@@ -20,11 +21,44 @@ const getColumnDefs = (
     projectId: number | null
     projectTitle: string
   }) => void,
+  associationIds?: number[],
+  setAssociationIds?: (data: number[]) => void,
 ) => {
   const canViewProject = user_permissions.includes('view_project')
 
   return {
     columnDefs: [
+      ...(mode === 'association' && associationIds && setAssociationIds
+        ? [
+            {
+              minWidth: 40,
+              maxWidth: 40,
+              cellClass: (props: CellClassParams) =>
+                `ag-text-center ${
+                  props.data.isOnly ? 'single-project' : 'multiple-projects'
+                } ${props.data.isFirst ? 'first-project' : ''}`,
+              cellRenderer: (props: ICellRendererParams) =>
+                props.data.isFirst && (
+                  <Checkbox
+                    checked={associationIds.includes(props.data.id)}
+                    onChange={(event) => {
+                      setAssociationIds(
+                        event.target.checked
+                          ? [...associationIds, props.data.id]
+                          : filter(
+                              associationIds,
+                              (id) => id !== props.data.id,
+                            ),
+                      )
+                    }}
+                    sx={{
+                      color: 'black',
+                    }}
+                  />
+                ),
+            },
+          ]
+        : []),
       {
         headerName: tableColumns.title,
         field: 'title',
@@ -64,9 +98,13 @@ const getColumnDefs = (
               </>
             )}
             <Link
-              className={cx('ml-2 overflow-hidden truncate whitespace-nowrap', {
-                'no-underline': !canViewProject,
-              })}
+              className={cx(
+                'ml-2 overflow-hidden truncate whitespace-nowrap',
+                {
+                  'no-underline': !canViewProject,
+                },
+                { '!ml-10': mode === 'association' && !setAssociationIds },
+              )}
               href={
                 canViewProject ? `/projects-listing/${props.data.id}` : null
               }
