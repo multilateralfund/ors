@@ -9,7 +9,7 @@ import GenerateDBMenu from './GenerateDBMenu'
 import PListingFilters from './PListingFilters'
 import PListingTable from './PListingTable'
 import { useGetProjects } from '../hooks/useGetProjects'
-import { menus, PROJECTS_PER_PAGE } from '../constants'
+import { initialFilters, menus } from '../constants'
 import { useStore } from '@ors/store'
 
 import { Modal, Typography, Button, Box } from '@mui/material'
@@ -22,12 +22,6 @@ export default function PListing() {
 
   const commonSlice = useStore((state) => state.common)
   const user_permissions = commonSlice.user_permissions.data || []
-
-  const initialFilters = {
-    offset: 0,
-    limit: PROJECTS_PER_PAGE,
-    ordering: '-date_created',
-  }
 
   const projects = useGetProjects(initialFilters)
   const { loading, setParams } = projects

@@ -28,28 +28,36 @@ const getColumnDefs = (
 
   return {
     columnDefs: [
-      ...(mode === 'association' && associationIds && setAssociationIds
+      ...(mode === 'association' && associationIds
         ? [
             {
               minWidth: 40,
               maxWidth: 40,
               cellClass: (props: CellClassParams) =>
                 `ag-text-center ${
-                  props.data.isOnly ? 'single-project' : 'multiple-projects'
+                  props.data.isOnly !== false
+                    ? 'single-project'
+                    : 'multiple-projects'
                 } ${props.data.isFirst ? 'first-project' : ''}`,
               cellRenderer: (props: ICellRendererParams) =>
-                props.data.isFirst && (
+                props.data.isFirst !== false && (
                   <Checkbox
-                    checked={associationIds.includes(props.data.id)}
+                    checked={
+                      setAssociationIds
+                        ? associationIds.includes(props.data.id)
+                        : true
+                    }
                     onChange={(event) => {
-                      setAssociationIds(
-                        event.target.checked
-                          ? [...associationIds, props.data.id]
-                          : filter(
-                              associationIds,
-                              (id) => id !== props.data.id,
-                            ),
-                      )
+                      if (setAssociationIds) {
+                        setAssociationIds(
+                          event.target.checked
+                            ? [...associationIds, props.data.id]
+                            : filter(
+                                associationIds,
+                                (id) => id !== props.data.id,
+                              ),
+                        )
+                      }
                     }}
                     sx={{
                       color: 'black',
@@ -62,7 +70,7 @@ const getColumnDefs = (
       {
         headerName: tableColumns.title,
         field: 'title',
-        ...(mode === 'listing' && { tooltipField: 'title' }),
+        tooltipField: 'title',
         cellClass: 'ag-cell-ellipsed',
         minWidth: 300,
         cellRenderer: (props: ICellRendererParams) => (
@@ -103,7 +111,12 @@ const getColumnDefs = (
                 {
                   'no-underline': !canViewProject,
                 },
-                { '!ml-10': mode === 'association' && !setAssociationIds },
+                {
+                  '!ml-10':
+                    mode === 'association' &&
+                    !associationIds &&
+                    !setAssociationIds,
+                },
               )}
               href={
                 canViewProject ? `/projects-listing/${props.data.id}` : null
@@ -117,61 +130,61 @@ const getColumnDefs = (
       {
         headerName: tableColumns.submission_status,
         field: 'submission_status',
-        ...(mode === 'listing' && { tooltipField: 'submission_status' }),
+        tooltipField: 'submission_status',
       },
       {
         headerName: tableColumns.status,
         field: 'status',
-        ...(mode === 'listing' && { tooltipField: 'status' }),
+        tooltipField: 'status',
         cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
         minWidth: 120,
       },
       {
         headerName: tableColumns.country,
         field: 'country',
-        ...(mode === 'listing' && { tooltipField: 'country' }),
+        tooltipField: 'country',
         cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
         minWidth: 150,
       },
       {
         headerName: tableColumns.metacode,
         field: 'metaproject_code',
-        ...(mode === 'listing' && { tooltipField: 'metaproject_code' }),
+        tooltipField: 'metaproject_code',
       },
       {
         headerName: tableColumns.code,
         field: 'code',
-        ...(mode === 'listing' && { tooltipField: 'code' }),
+        tooltipField: 'code',
         cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
         minWidth: 120,
       },
       {
         headerName: tableColumns.cluster,
         field: 'cluster.code',
-        ...(mode === 'listing' && { tooltipField: 'cluster.name' }),
+        tooltipField: 'cluster.name',
       },
       {
         headerName: tableColumns.tranche,
         field: 'tranche',
-        ...(mode === 'listing' && { tooltipField: 'tranche' }),
+        tooltipField: 'tranche',
         minWidth: 70,
       },
       {
         headerName: tableColumns.agency,
         field: 'agency',
-        ...(mode === 'listing' && { tooltipField: 'agency' }),
+        tooltipField: 'agency',
         cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
         minWidth: 110,
       },
       {
         headerName: tableColumns.type,
         field: 'project_type.code',
-        ...(mode === 'listing' && { tooltipField: 'project_type.name' }),
+        tooltipField: 'project_type.name',
       },
       {
         headerName: tableColumns.sector,
         field: 'sector.code',
-        ...(mode === 'listing' && { tooltipField: 'sector.name' }),
+        tooltipField: 'sector.name',
       },
       {
         headerName: tableColumns.total_fund,
@@ -181,13 +194,11 @@ const getColumnDefs = (
           !isNil(params.data.total_fund)
             ? '$' + formatNumberColumns(params, 'total_fund')
             : '',
-        ...(mode === 'listing' && {
-          tooltipValueGetter: (params: ITooltipParams) =>
-            formatNumberColumns(params, 'total_fund', {
-              maximumFractionDigits: 10,
-              minimumFractionDigits: 2,
-            }),
-        }),
+        tooltipValueGetter: (params: ITooltipParams) =>
+          formatNumberColumns(params, 'total_fund', {
+            maximumFractionDigits: 10,
+            minimumFractionDigits: 2,
+          }),
       },
     ],
     defaultColDef: {

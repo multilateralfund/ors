@@ -2,6 +2,18 @@ import { Typography } from '@mui/material'
 import { IoClose } from 'react-icons/io5'
 import { filter } from 'lodash'
 
+export const initialParams = {
+  country_id: [],
+  agency_id: [],
+  cluster_id: [],
+  project_type_id: [],
+  sector_id: [],
+  meeting_id: [],
+  submission_status_id: [],
+  status_id: [],
+  search: '',
+}
+
 const ProjectsFiltersSelectedOpts = ({
   mode,
   commonSlice,
@@ -16,18 +28,6 @@ const ProjectsFiltersSelectedOpts = ({
   const { agencies, countries } = commonSlice
   const { types, clusters, submission_statuses, sectors, statuses } =
     projectSlice
-
-  const initialParams = {
-    country_id: [],
-    agency_id: [],
-    cluster_id: [],
-    project_type_id: [],
-    sector_id: [],
-    meeting_id: [],
-    submission_status_id: [],
-    status_id: [],
-    search: '',
-  }
 
   const areFiltersApplied = Object.values(filters).find(
     (filter) => Array.isArray(filter) && filter.length > 0,

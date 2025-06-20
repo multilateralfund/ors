@@ -10,6 +10,11 @@ textarea {
   @apply min-h-10 rounded-lg bg-white;
 }
 
+.ProjAssociation .MuiInputBase-root,
+.ProjAssociation .MuiAutocomplete-inputRoot {
+  @apply h-8 min-h-8;
+}
+
 .BPList .MuiInputBase-root,
 .BPList .MuiAutocomplete-inputRoot {
   @apply h-[2.25rem] min-h-[2.25rem] !pr-0;

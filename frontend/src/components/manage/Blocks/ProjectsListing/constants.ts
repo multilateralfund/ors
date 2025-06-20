@@ -29,6 +29,12 @@ export const menus = [
 
 export const PROJECTS_PER_PAGE = 100
 
+export const initialFilters = {
+  offset: 0,
+  limit: PROJECTS_PER_PAGE,
+  ordering: '-date_created',
+}
+
 export const tableColumns: { [key: string]: string } = {
   submission_status: 'Submission status',
   project_status: 'Project status',
