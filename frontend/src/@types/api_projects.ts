@@ -159,3 +159,13 @@ export type ProjectType = {
   umbrella_project: boolean
   withdrawn: boolean
 }
+
+export type ProjectAssociationType = {
+  id: number
+  lead_agency: string
+  lead_agency_id: number
+  type: string
+  code: string
+  pcr_project_id: string
+  projects: ProjectType[]
+}

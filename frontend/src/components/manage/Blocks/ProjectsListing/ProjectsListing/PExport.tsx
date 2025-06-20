@@ -43,6 +43,7 @@ export default function PExport() {
       <form className="flex flex-col gap-6" ref={form} key={key}>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <PListingFilters
+            mode="listing"
             {...{ form, filters, initialFilters, setFilters, setParams }}
           />
           <Link
@@ -56,7 +57,7 @@ export default function PExport() {
             Generate DB
           </Link>
         </div>
-        <PListingTable {...{ projects, filters }} />
+        <PListingTable mode="listing" {...{ projects, filters }} />
       </form>
     </>
   )

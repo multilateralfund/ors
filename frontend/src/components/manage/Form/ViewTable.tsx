@@ -160,6 +160,7 @@ function ViewTable(props: TableProps) {
     paginationPageSizeSelector,
     pinnedBottomRowData,
     resizeGridOnRowUpdate = false,
+    alwaysShowHorizontalScroll = true,
     rowBuffer = 20,
     rowCount = 0,
     rowHeight = 36,
@@ -362,7 +363,7 @@ function ViewTable(props: TableProps) {
         rowHeight={rowHeight}
       >
         <AgGridReact
-          alwaysShowHorizontalScroll={true}
+          alwaysShowHorizontalScroll={alwaysShowHorizontalScroll}
           animateRows={false}
           components={components}
           context={gridContext}
