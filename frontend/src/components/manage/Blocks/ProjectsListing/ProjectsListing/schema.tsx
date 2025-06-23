@@ -34,7 +34,7 @@ const getColumnDefs = (
               minWidth: 40,
               maxWidth: 40,
               cellClass: (props: CellClassParams) =>
-                `ag-text-center ${
+                `!pl-0 ag-text-center ${
                   props.data.isOnly !== false
                     ? 'single-project'
                     : 'multiple-projects'

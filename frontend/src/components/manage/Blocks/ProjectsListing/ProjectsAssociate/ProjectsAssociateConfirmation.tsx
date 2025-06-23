@@ -161,6 +161,7 @@ const ProjectsAssociateConfirmation = ({
         <PListingTable
           mode="association"
           filters={initialFilters}
+          enablePagination={false}
           {...{ projects, associationIds }}
         />
       </form>
