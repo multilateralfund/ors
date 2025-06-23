@@ -42,7 +42,6 @@ const ProjectsAssociateConfirmation = ({
   const commonSlice = useStore((state) => state.common)
   const agencies = commonSlice.agencies.data
 
-  const [leadAgencyId, setLeadAgencyId] = useState(null)
   const [errors, setErrors] = useState(null)
 
   const { setParams, results = [] } = projectsAssociation
@@ -59,6 +58,10 @@ const ProjectsAssociateConfirmation = ({
     agencies,
     ({ id }) =>
       metaProjectsLeadAgenciesIds.includes(id) || id === project.agency_id,
+  )
+
+  const [leadAgencyId, setLeadAgencyId] = useState(
+    leadAgencyOptions.length === 1 ? leadAgencyOptions[0] : null,
   )
 
   const selectedProjects = [
@@ -119,8 +122,8 @@ const ProjectsAssociateConfirmation = ({
           Associate projects - confirm details
         </PageHeading>
         <p className="my-0">
-          The following projects will be grouped together. Please verify that
-          the lead agency has been correctly selected.
+          The following projects will be grouped together. Please select a lead
+          agency or verify that it has been correctly selected.
         </p>
       </div>
       <div className="flex flex-wrap items-center justify-between">
