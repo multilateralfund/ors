@@ -12,6 +12,7 @@ import { IoChevronDown, IoSearchOutline } from 'react-icons/io5'
 import { union } from 'lodash'
 
 const ProjectsFilters = ({
+  mode,
   commonSlice,
   projectSlice,
   meetings,
@@ -87,26 +88,28 @@ const ProjectsFilters = ({
           )
         }}
       />
-      <Field
-        Input={{ placeholder: tableColumns.country }}
-        options={getFilterOptions(
-          filters,
-          commonSlice.countries.data,
-          'country_id',
-        )}
-        widget="autocomplete"
-        onChange={(_: any, value: any) => {
-          const country = filters.country_id || []
-          const newValue = union(country, value)
+      {mode === 'listing' && (
+        <Field
+          Input={{ placeholder: tableColumns.country }}
+          options={getFilterOptions(
+            filters,
+            commonSlice.countries.data,
+            'country_id',
+          )}
+          widget="autocomplete"
+          onChange={(_: any, value: any) => {
+            const country = filters.country_id || []
+            const newValue = union(country, value)
 
-          handleFilterChange({ country_id: newValue })
-          handleParamsChange({
-            country_id: newValue.map((item: any) => item.id).join(','),
-            offset: 0,
-          })
-        }}
-        {...defaultProps}
-      />
+            handleFilterChange({ country_id: newValue })
+            handleParamsChange({
+              country_id: newValue.map((item: any) => item.id).join(','),
+              offset: 0,
+            })
+          }}
+          {...defaultProps}
+        />
+      )}
       <Field
         Input={{ placeholder: tableColumns.agency }}
         options={getFilterOptions(

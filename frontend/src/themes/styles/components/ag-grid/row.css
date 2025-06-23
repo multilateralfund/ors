@@ -53,3 +53,20 @@
   inset: 0;
   pointer-events: none;
 }
+
+.ag-table.project-association-table {
+  .ag-center-cols-viewport {
+    min-height: unset !important;
+  }
+
+  .ag-header {
+    height: 0 !important;
+    min-height: 0 !important;
+    border: none;
+  }
+
+  .ag-row {
+    background-color: #fafce9;
+    border-bottom: none;
+  }
+}

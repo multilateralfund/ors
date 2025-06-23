@@ -4,8 +4,9 @@ import { formatNumberColumns } from '../utils'
 
 import { Checkbox } from '@mui/material'
 import { FiEdit } from 'react-icons/fi'
-import { isNil } from 'lodash'
+import { filter, isNil } from 'lodash'
 import {
+  CellClassParams,
   ICellRendererParams,
   ITooltipParams,
   ValueGetterParams,
@@ -14,16 +15,58 @@ import cx from 'classnames'
 
 const getColumnDefs = (
   user_permissions: string[],
+  mode: string,
   projectId?: number | null,
   setProjectData?: (data: {
     projectId: number | null
     projectTitle: string
   }) => void,
+  associationIds?: number[],
+  setAssociationIds?: (data: number[]) => void,
 ) => {
   const canViewProject = user_permissions.includes('view_project')
 
   return {
     columnDefs: [
+      ...(mode === 'association' && associationIds
+        ? [
+            {
+              minWidth: 40,
+              maxWidth: 40,
+              cellClass: (props: CellClassParams) =>
+                `!pl-0 ag-text-center ${
+                  props.data.isOnly !== false
+                    ? 'single-project'
+                    : 'multiple-projects'
+                } ${props.data.isFirst ? 'first-project' : ''}`,
+              cellRenderer: (props: ICellRendererParams) =>
+                props.data.isFirst !== false && (
+                  <Checkbox
+                    checked={
+                      setAssociationIds
+                        ? associationIds.includes(props.data.id)
+                        : true
+                    }
+                    onChange={(event) => {
+                      if (setAssociationIds) {
+                        setAssociationIds(
+                          event.target.checked
+                            ? [...associationIds, props.data.id]
+                            : filter(
+                                associationIds,
+                                (id) => id !== props.data.id,
+                              ),
+                        )
+                      }
+                    }}
+                    sx={{
+                      color: 'black',
+                    }}
+                  />
+                ),
+            },
+          ]
+        : []),
       {
         headerName: tableColumns.title,
         field: 'title',
@@ -32,36 +75,49 @@ const getColumnDefs = (
         minWidth: 300,
         cellRenderer: (props: ICellRendererParams) => (
           <div className="flex items-center gap-1 p-2">
-            {user_permissions.includes('edit_project') && (
-              <Link
-                className="flex h-4 w-4 justify-center"
-                href={`/projects-listing/${props.data.id}/edit`}
-              >
-                <FiEdit size={16} />
-              </Link>
-            )}
-            {projectId !== undefined && setProjectData && (
-              <Checkbox
-                checked={projectId == props.data.id}
-                onChange={(event) => {
-                  setProjectData(
-                    event.target.checked
-                      ? {
-                          projectId: props.data.id,
-                          projectTitle: props.data.title,
-                        }
-                      : { projectId: null, projectTitle: '' },
-                  )
-                }}
-                sx={{
-                  color: 'black',
-                }}
-              />
+            {mode === 'listing' && (
+              <>
+                {user_permissions.includes('edit_project') && (
+                  <Link
+                    className="flex h-4 w-4 justify-center"
+                    href={`/projects-listing/${props.data.id}/edit`}
+                  >
+                    <FiEdit size={16} />
+                  </Link>
+                )}
+                {projectId !== undefined && setProjectData && (
+                  <Checkbox
+                    checked={projectId == props.data.id}
+                    onChange={(event) => {
+                      setProjectData(
+                        event.target.checked
+                          ? {
+                              projectId: props.data.id,
+                              projectTitle: props.data.title,
+                            }
+                          : { projectId: null, projectTitle: '' },
+                      )
+                    }}
+                    sx={{
+                      color: 'black',
+                    }}
+                  />
+                )}
+              </>
             )}
             <Link
-              className={cx('ml-2 overflow-hidden truncate whitespace-nowrap', {
-                'no-underline': !canViewProject,
-              })}
+              className={cx(
+                'ml-2 overflow-hidden truncate whitespace-nowrap',
+                {
+                  'no-underline': !canViewProject,
+                },
+                {
+                  '!ml-10':
+                    mode === 'association' &&
+                    !associationIds &&
+                    !setAssociationIds,
+                },
+              )}
               href={
                 canViewProject ? `/projects-listing/${props.data.id}` : null
               }

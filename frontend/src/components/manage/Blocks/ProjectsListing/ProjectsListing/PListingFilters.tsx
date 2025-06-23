@@ -6,7 +6,7 @@ import ProjectsFiltersSelectedOpts from './ProjectsFiltersSelectedOpts'
 import { getMeetingOptions } from '@ors/components/manage/Utils/utilFunctions'
 import { useStore } from '@ors/store'
 
-const PListingFilters = ({ setFilters, setParams, ...rest }: any) => {
+const PListingFilters = ({ mode, setFilters, setParams, ...rest }: any) => {
   const [commonSlice, projectSlice] = useStore((state) => [
     state.common,
     state.projects,
@@ -22,6 +22,7 @@ const PListingFilters = ({ setFilters, setParams, ...rest }: any) => {
   }
 
   const props = {
+    mode,
     commonSlice,
     projectSlice,
     meetings,

@@ -19,17 +19,15 @@ const ProjectDocumentation = ({
       />
 
       {mode !== 'view' && (
-        <div className="lg:w-1/3">
-          <FileInput
-            {...{ files, setFiles }}
-            extensionsList="Allowed files extensions: .pdf, .doc, .docx"
-            label="Upload completed template and any supporting documentation"
-            value=""
-            clearable={false}
-            inputValue={[]}
-            accept=".pdf,.doc,.docx"
-          />
-        </div>
+        <FileInput
+          {...{ files, setFiles }}
+          extensionsList="Allowed files extensions: .pdf, .doc, .docx"
+          label="Upload completed template and any supporting documentation"
+          value=""
+          clearable={false}
+          inputValue={[]}
+          accept=".pdf,.doc,.docx"
+        />
       )}
     </div>
   )

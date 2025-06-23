@@ -2,7 +2,20 @@ import { Typography } from '@mui/material'
 import { IoClose } from 'react-icons/io5'
 import { filter } from 'lodash'
 
+export const initialParams = {
+  country_id: [],
+  agency_id: [],
+  cluster_id: [],
+  project_type_id: [],
+  sector_id: [],
+  meeting_id: [],
+  submission_status_id: [],
+  status_id: [],
+  search: '',
+}
+
 const ProjectsFiltersSelectedOpts = ({
+  mode,
   commonSlice,
   projectSlice,
   meetings,
@@ -15,18 +28,6 @@ const ProjectsFiltersSelectedOpts = ({
   const { agencies, countries } = commonSlice
   const { types, clusters, submission_statuses, sectors, statuses } =
     projectSlice
-
-  const initialParams = {
-    country_id: [],
-    agency_id: [],
-    cluster_id: [],
-    project_type_id: [],
-    sector_id: [],
-    meeting_id: [],
-    submission_status_id: [],
-    status_id: [],
-    search: '',
-  }
 
   const areFiltersApplied = Object.values(filters).find(
     (filter) => Array.isArray(filter) && filter.length > 0,
@@ -104,7 +105,8 @@ const ProjectsFiltersSelectedOpts = ({
     (areFiltersApplied || filters?.search) && (
       <div className="mt-[6px] flex flex-wrap gap-2">
         {displaySearchTerm()}
-        {displaySelectedOption(formatEntity(countries.data), 'country_id')}
+        {mode === 'listing' &&
+          displaySelectedOption(formatEntity(countries.data), 'country_id')}
         {displaySelectedOption(formatEntity(agencies.data), 'agency_id')}
         {displaySelectedOption(formatEntity(clusters.data), 'cluster_id')}
         {displaySelectedOption(formatEntity(types.data), 'project_type_id')}

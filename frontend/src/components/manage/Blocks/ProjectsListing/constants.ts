@@ -1,7 +1,39 @@
 import { isOptionEqualToValue } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { SpecificFields } from './interfaces'
 
+export const menus = [
+  {
+    title: 'Planning',
+    menuItems: [
+      { title: 'View business plans', url: '/business-plans' },
+      { title: 'New business plan', url: '/business-plans/upload' },
+    ],
+  },
+  {
+    title: 'Approved Projects',
+    menuItems: [
+      { title: 'Update MYA data', url: null },
+      { title: 'Update post ExCom fields', url: null },
+      { title: 'Update enterprises', url: null },
+      { title: 'Transfer a project', url: null },
+    ],
+  },
+  {
+    title: 'Reporting',
+    menuItems: [
+      { title: 'Create Annual Progress Report', url: null },
+      { title: 'Raise a PCR', url: null },
+    ],
+  },
+]
+
 export const PROJECTS_PER_PAGE = 100
+
+export const initialFilters = {
+  offset: 0,
+  limit: PROJECTS_PER_PAGE,
+  ordering: '-date_created',
+}
 
 export const tableColumns: { [key: string]: string } = {
   submission_status: 'Submission status',

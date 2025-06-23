@@ -9,51 +9,19 @@ import GenerateDBMenu from './GenerateDBMenu'
 import PListingFilters from './PListingFilters'
 import PListingTable from './PListingTable'
 import { useGetProjects } from '../hooks/useGetProjects'
-import { PROJECTS_PER_PAGE } from '../constants'
+import { initialFilters, menus } from '../constants'
 import { useStore } from '@ors/store'
 
 import { Modal, Typography, Button, Box } from '@mui/material'
-import { LuCopy } from 'react-icons/lu'
 import { IoIosLink } from 'react-icons/io'
+import { LuCopy } from 'react-icons/lu'
 import cx from 'classnames'
-
-const menus = [
-  {
-    title: 'Planning',
-    menuItems: [
-      { title: 'View business plans', url: '/business-plans' },
-      { title: 'New business plan', url: '/business-plans/upload' },
-    ],
-  },
-  {
-    title: 'Approved Projects',
-    menuItems: [
-      { title: 'Update MYA data', url: null },
-      { title: 'Update post ExCom fields', url: null },
-      { title: 'Update enterprises', url: null },
-      { title: 'Transfer a project', url: null },
-    ],
-  },
-  {
-    title: 'Reporting',
-    menuItems: [
-      { title: 'Create Annual Progress Report', url: null },
-      { title: 'Raise a PCR', url: null },
-    ],
-  },
-]
 
 export default function PListing() {
   const form = useRef<any>()
 
   const commonSlice = useStore((state) => state.common)
   const user_permissions = commonSlice.user_permissions.data || []
-
-  const initialFilters = {
-    offset: 0,
-    limit: PROJECTS_PER_PAGE,
-    ordering: '-date_created',
-  }
 
   const projects = useGetProjects(initialFilters)
   const { loading, setParams } = projects
@@ -84,7 +52,8 @@ export default function PListing() {
           Copy project
         </div>
       )}
-      <div
+      <CustomLink
+        href={projectId ? `/projects-listing/associate/${projectId}` : null}
         className={cx('flex cursor-pointer gap-1 px-2 no-underline', {
           'flex !cursor-default gap-1 px-2 text-gray-400 opacity-60':
             !projectId,
@@ -92,7 +61,7 @@ export default function PListing() {
       >
         <IoIosLink className="mb-1" size={18} />
         Associate project
-      </div>
+      </CustomLink>
       <GenerateDBMenu />
     </div>
   )
@@ -167,11 +136,13 @@ export default function PListing() {
         <form className="flex flex-col gap-6" ref={form} key={key}>
           <div className="flex flex-wrap justify-between gap-x-10 gap-y-4">
             <PListingFilters
+              mode="listing"
               {...{ form, filters, initialFilters, setFilters, setParams }}
             />
             {projectActions}
           </div>
           <PListingTable
+            mode="listing"
             {...{ projects, filters, projectId, setProjectData }}
           />
         </form>

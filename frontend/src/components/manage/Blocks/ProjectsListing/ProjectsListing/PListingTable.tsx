@@ -1,26 +1,35 @@
 'use client'
 
 import type { useGetProjects } from '@ors/components/manage/Blocks/ProjectsListing/hooks/useGetProjects.ts'
+import type { useGetProjectsAssociation } from '../hooks/useGetProjectsAssociation'
 import ViewTable from '@ors/components/manage/Form/ViewTable'
 import getColumnDefs from './schema'
 import { PROJECTS_PER_PAGE } from '../constants'
 import { useStore } from '@ors/store'
 
 export type PListingTableProps = {
-  projects: ReturnType<typeof useGetProjects>
+  projects: ReturnType<typeof useGetProjects | typeof useGetProjectsAssociation>
   filters: Record<string, any>
+  mode: string
   projectId?: number | null
   setProjectData?: (data: {
     projectId: number | null
     projectTitle: string
   }) => void
+  associationIds?: number[]
+  setAssociationIds?: (data: number[]) => void
+  enablePagination?: boolean
 }
 
 const PListingTable = ({
   projects,
   filters,
+  mode,
   projectId,
   setProjectData,
+  associationIds,
+  setAssociationIds,
+  enablePagination,
 }: PListingTableProps) => {
   const { count, loaded, loading, results, setParams } = projects
 
@@ -29,8 +38,11 @@ const PListingTable = ({
 
   const { columnDefs, defaultColDef } = getColumnDefs(
     user_permissions,
+    mode,
     projectId,
     setProjectData,
+    associationIds,
+    setAssociationIds,
   )
 
   const getPaginationSelectorOpts = (): number[] => {
@@ -47,11 +59,22 @@ const PListingTable = ({
     loaded && (
       <ViewTable
         key={JSON.stringify(filters)}
-        className="projects-table"
+        className={`projects-table ${mode === 'association' ? 'projects-association-listing' : ''}`}
+        {...(mode === 'association' && {
+          rowClassRules: {
+            'prev-is-multiple': (params) => {
+              const prev = params.api.getDisplayedRowAtIndex(
+                params.rowIndex - 1,
+              )
+              return !prev?.data?.isOnly
+            },
+          },
+        })}
         columnDefs={columnDefs}
         defaultColDef={defaultColDef}
         domLayout="normal"
-        enablePagination={true}
+        suppressScrollOnNewData={true}
+        enablePagination={enablePagination ?? true}
         loaded={loaded}
         loading={loading}
         paginationPageSize={PROJECTS_PER_PAGE}

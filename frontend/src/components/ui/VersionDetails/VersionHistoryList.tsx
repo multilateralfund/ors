@@ -123,7 +123,7 @@ export default function VersionHistoryList(props: any) {
                 className="font-medium text-secondary hover:cursor-pointer"
                 onClick={showMoreItems}
               >
-                Show more
+                show more...
               </span>
             </div>
           )}

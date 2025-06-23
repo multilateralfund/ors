@@ -5,6 +5,7 @@ import { BpFileInput } from '../types'
 
 import { TextField } from '@mui/material'
 import { IoTrash } from 'react-icons/io5'
+import cx from 'classnames'
 
 const FileInput = (props: BpFileInput) => {
   const {
@@ -46,6 +47,7 @@ const FileInput = (props: BpFileInput) => {
     <div className="flex flex-col">
       {label && <p className="mb-2.5 mt-0 text-xl">{label}</p>}
       <TextField
+        className={cx({ 'md:w-[612px]': label })}
         type="text"
         value={
           value ??
