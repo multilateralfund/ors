@@ -5,20 +5,17 @@ import {
   ProjectData,
   CrossCuttingFields,
   SpecificFields,
-  ProjectTypeApi,
   ProjectFilesObject,
   ProjectFile,
 } from './interfaces'
 import { formatDecimalValue } from '@ors/helpers'
 
 import {
-  capitalize,
   filter,
   find,
   isArray,
   isNaN,
   isNil,
-  lowerCase,
   map,
   omit,
   pick,
@@ -328,30 +325,6 @@ export const getFileFromMetadata = async (fileMeta: {
     res.headers.get('Content-Type') || 'application/octet-stream'
 
   return new File([blob], fileMeta.filename, { type: contentType })
-}
-
-export const getTitleExtras = (project: ProjectTypeApi) => {
-  const { submission_status, version, code } = project
-
-  const status = lowerCase(submission_status)
-  const formattedStatus = capitalize(status)
-
-  return (() => {
-    switch (true) {
-      case status === 'approved':
-        return `, ${code} (${formattedStatus})`
-      case status === 'withdrawn':
-        return ` (${formattedStatus})`
-      case status === 'draft' && version === 1:
-        return ` (${formattedStatus})`
-      case status === 'submitted' && version === 2:
-        return ` (${formattedStatus})`
-      case status === 'recommended' && version === 3:
-        return ` (${formattedStatus})`
-      default:
-        return ''
-    }
-  })()
 }
 
 export const formatErrors = (errors: { [key: string]: string[] }) =>

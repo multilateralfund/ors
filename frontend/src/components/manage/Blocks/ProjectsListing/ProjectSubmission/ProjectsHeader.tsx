@@ -8,12 +8,8 @@ import {
 } from '../ProjectVersions/ProjectVersionsComponents'
 import CreateActionButtons from './CreateActionButtons'
 import EditActionButtons from './EditActionButtons'
-import { RedirectBackButton } from '../HelperComponents'
-import {
-  getDefaultImpactErrors,
-  getIsSaveDisabled,
-  getTitleExtras,
-} from '../utils'
+import { PageTitle, RedirectBackButton } from '../HelperComponents'
+import { getDefaultImpactErrors, getIsSaveDisabled } from '../utils'
 import {
   ProjectData,
   ProjectFile,
@@ -98,15 +94,10 @@ const ProjectsHeader = ({
           <div className="flex gap-2">
             <PageHeading>
               {mode === 'edit' && (
-                <div className="flex gap-2.5">
-                  <span className="font-medium text-[#4D4D4D]">
-                    Edit project:
-                  </span>
-                  <div>
-                    {title ?? 'New project'}
-                    {getTitleExtras(project as ProjectTypeApi)}
-                  </div>
-                </div>
+                <PageTitle
+                  pageTitle="Edit project"
+                  project={project as ProjectTypeApi}
+                />
               )}
               {mode !== 'edit' &&
                 'New project submission ' + pageTitleExtraInfo}

@@ -1,4 +1,5 @@
 import Link from '@ors/components/ui/Link/Link'
+import { ProjectTypeApi } from './interfaces'
 
 import { IoReturnUpBack } from 'react-icons/io5'
 import { Button } from '@mui/material'
@@ -60,3 +61,25 @@ export const RedirectBackButton = () => (
     </Link>
   </div>
 )
+
+export const PageTitle = ({
+  project,
+  pageTitle,
+}: {
+  project: ProjectTypeApi
+  pageTitle: string
+}) => {
+  const { title, submission_status, code, code_legacy } = project
+
+  return (
+    <div className="flex gap-2.5">
+      <span className="whitespace-nowrap font-medium text-[#4D4D4D]">
+        {pageTitle}:
+      </span>
+      <div>
+        {title ?? 'New project'}
+        {submission_status === 'Approved' ? `, ${code ?? code_legacy}` : ''}
+      </div>
+    </div>
+  )
+}

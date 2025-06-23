@@ -7,7 +7,7 @@ import Loading from '@ors/components/theme/Loading/Loading'
 import CustomLink from '@ors/components/ui/Link/Link'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import ProjectView from './ProjectView'
-import { RedirectBackButton } from '../HelperComponents'
+import { PageTitle, RedirectBackButton } from '../HelperComponents'
 import {
   VersionsDropdown,
   HeaderTag,
@@ -16,7 +16,6 @@ import { useGetProject } from '../hooks/useGetProject'
 import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
 import { ProjectSpecificFields } from '../interfaces'
-import { getTitleExtras } from '../utils'
 import { useStore } from '@ors/store'
 
 import { lowerCase } from 'lodash'
@@ -34,7 +33,6 @@ const ProjectViewWrapper = () => {
     cluster_id,
     project_type_id,
     sector_id,
-    title,
     versions,
     version,
     latest_project,
@@ -74,15 +72,7 @@ const ProjectViewWrapper = () => {
                 <RedirectBackButton />
                 <div className="flex gap-2">
                   <PageHeading className="min-w-fit">
-                    <div className="flex gap-2.5">
-                      <span className="font-medium text-[#4D4D4D]">
-                        View project:
-                      </span>
-                      <div>
-                        {title ?? 'New project'}
-                        {getTitleExtras(data)}
-                      </div>
-                    </div>
+                    <PageTitle pageTitle="View project" project={data} />
                   </PageHeading>
                   {(version > 1 ||
                     lowerCase(submission_status) !== 'draft') && (
@@ -98,7 +88,7 @@ const ProjectViewWrapper = () => {
               {user_permissions.includes('edit_project') &&
                 lowerCase(submission_status) !== 'withdrawn' && (
                   <CustomLink
-                    className="mb-4 h-10 text-nowrap px-4 py-2 text-lg uppercase"
+                    className="mb-4 ml-auto h-10 text-nowrap px-4 py-2 text-lg uppercase"
                     href={`/projects-listing/${project_id}/edit`}
                     color="secondary"
                     variant="contained"
