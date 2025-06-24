@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 
 import Link from '@ors/components/ui/Link/Link'
+import AddComponentModal from './AddComponentModal'
 import { IncreaseVersionButton } from '../HelperComponents'
 import {
   checkInvalidValue,
@@ -14,8 +15,8 @@ import { ProjectFile, ProjectTypeApi, SubmitActionButtons } from '../interfaces'
 import { api, uploadFiles } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
-import { Button, Modal, Typography, Box } from '@mui/material'
 import { enqueueSnackbar } from 'notistack'
+import { Button } from '@mui/material'
 import { useLocation } from 'wouter'
 import { lowerCase } from 'lodash'
 import cx from 'classnames'
@@ -43,7 +44,10 @@ const EditActionButtons = ({
 }) => {
   const [_, setLocation] = useLocation()
 
-  const { id, version, submission_status } = project
+  const { id, submission_status } = project
+  const isDraft = lowerCase(submission_status) === 'draft'
+  const isSubmitted = lowerCase(submission_status) === 'submitted'
+  const isRecommended = lowerCase(submission_status) === 'recommended'
 
   const commonSlice = useStore((state) => state.common)
   const user_permissions = commonSlice.user_permissions.data || []
@@ -79,6 +83,7 @@ const EditActionButtons = ({
     hasOdsOdpErrors ||
     getHasNoFiles(files, projectFiles)
   const disableSubmit = isSubmitDisabled || hasErrors
+  const disableApproval = false
 
   const { deletedFilesIds = [], newFiles = [] } = files || {}
 
@@ -197,6 +202,16 @@ const EditActionButtons = ({
     }
   }
 
+  const approveProject = async () => {
+    try {
+    } catch (error) {}
+  }
+
+  const notApproveProject = async () => {
+    try {
+    } catch (error) {}
+  }
+
   const enabledButtonClassname =
     'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow'
 
@@ -214,7 +229,7 @@ const EditActionButtons = ({
           Close
         </Link>
       )}
-      {user_permissions.includes('edit_project') && (
+      {!isRecommended && user_permissions.includes('edit_project') && (
         <Button
           className={cx('px-4 py-2 shadow-none', {
             [enabledButtonClassname]: !isSaveDisabled,
@@ -227,7 +242,7 @@ const EditActionButtons = ({
           Update project
         </Button>
       )}
-      {user_permissions.includes('add_project') && (
+      {!isRecommended && user_permissions.includes('add_project') && (
         <Button
           className={cx('px-4 py-2 shadow-none', enabledButtonClassname)}
           size="large"
@@ -238,13 +253,13 @@ const EditActionButtons = ({
         </Button>
       )}
       {user_permissions.includes('increase_project_version') &&
-        (version === 1 && lowerCase(submission_status) === 'draft' ? (
+        (isDraft ? (
           <IncreaseVersionButton
             title="Submit project"
             onSubmit={submitProject}
             isDisabled={disableSubmit}
           />
-        ) : version === 2 && lowerCase(submission_status) === 'submitted' ? (
+        ) : isSubmitted ? (
           <>
             <IncreaseVersionButton
               title="Recommend project"
@@ -256,57 +271,22 @@ const EditActionButtons = ({
               onSubmit={withdrawProject}
             />
           </>
+        ) : isRecommended ? (
+          <>
+            <IncreaseVersionButton
+              title="Approve"
+              onSubmit={approveProject}
+              isDisabled={disableApproval}
+            />
+            <IncreaseVersionButton
+              title="Not approve"
+              onSubmit={notApproveProject}
+              isDisabled={disableApproval}
+            />
+          </>
         ) : null)}
       {isModalOpen && (
-        <Modal
-          aria-labelledby="add-component-modal-title"
-          open={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          keepMounted
-        >
-          <Box className="flex w-full max-w-lg flex-col absolute-center">
-            <Typography className="mb-4 text-xl">
-              Start from a copy of this project or from a blank submission?
-            </Typography>
-            <div className="ml-auto flex gap-1">
-              <Link
-                component="a"
-                className="no-underline"
-                target="_blank"
-                rel="noopener noreferrer nofollow"
-                href={`/projects-listing/create/${id}/full-copy/additional-component`}
-              >
-                <Button
-                  className="text-base"
-                  onClick={() => setIsModalOpen(false)}
-                >
-                  Copy of project
-                </Button>
-              </Link>
-
-              <Link
-                component="a"
-                className="no-underline"
-                target="_blank"
-                rel="noopener noreferrer nofollow"
-                href={`/projects-listing/create/${id}/partial-copy/additional-component`}
-              >
-                <Button
-                  className="text-base"
-                  onClick={() => setIsModalOpen(false)}
-                >
-                  Blank submission
-                </Button>
-              </Link>
-              <Button
-                className="text-base"
-                onClick={() => setIsModalOpen(false)}
-              >
-                Close
-              </Button>
-            </div>
-          </Box>
-        </Modal>
+        <AddComponentModal {...{ id, isModalOpen, setIsModalOpen }} />
       )}
     </div>
   )

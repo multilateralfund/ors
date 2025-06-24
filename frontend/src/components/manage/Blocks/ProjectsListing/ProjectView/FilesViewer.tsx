@@ -10,7 +10,7 @@ import { TbFiles } from 'react-icons/tb'
 import { filter } from 'lodash'
 
 export function FilesViewer(props: ProjectDocs) {
-  const { bpFiles, files, setFiles, mode } = props
+  const { bpFiles, files, setFiles, mode, isDraftProject } = props
 
   const [currentFiles, setCurrentFiles] = useState<(ProjectFile | File)[]>([])
 
@@ -49,20 +49,22 @@ export function FilesViewer(props: ProjectDocs) {
   return (
     <div className="flex flex-col gap-2">
       <HeaderWithIcon title="File attachments" Icon={TbFiles} />
-      {mode !== 'view' && (
-        <div className="mt-5">
-          <Button
-            disabled
-            className="h-9 border border-solid px-3 py-1 leading-none"
-            // className="h-9 border border-solid border-primary bg-white px-3 py-1 leading-none text-primary"
-            size="large"
-            variant="contained"
-          >
-            Download project template
-          </Button>
-        </div>
+      {mode !== 'view' && isDraftProject && (
+        <>
+          <div className="mt-5">
+            <Button
+              disabled
+              className="h-9 border border-solid px-3 py-1 leading-none"
+              // className="h-9 border border-solid border-primary bg-white px-3 py-1 leading-none text-primary"
+              size="large"
+              variant="contained"
+            >
+              Download project template
+            </Button>
+          </div>
+          <Divider className="mt-4" />
+        </>
       )}
-      <Divider className="mt-4" />
       <div className="mt-3 flex flex-col gap-2.5">
         {currentFiles.length === 0 ? (
           <p className="m-1 ml-0 text-lg font-normal text-gray-500">

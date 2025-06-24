@@ -58,7 +58,6 @@ const ProjectsHeader = ({
     hasMissingRequiredFields ||
     dayjs(project_start_date).isAfter(dayjs(project_end_date)) ||
     hasValidationErrors
-  const isSubmitDisabled = isSaveDisabled
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [showVersionsMenu, setShowVersionsMenu] = useState(false)
@@ -122,10 +121,10 @@ const ProjectsHeader = ({
           ) : (
             <EditActionButtons
               project={project as ProjectTypeApi}
+              isSubmitDisabled={isSaveDisabled}
               {...{
                 projectData,
                 isSaveDisabled,
-                isSubmitDisabled,
                 setIsLoading,
                 files,
                 setProjectFiles,
@@ -147,7 +146,7 @@ const ProjectsHeader = ({
             </span>
           </div>
 
-          <span>|</span>
+          <span className="mt-0.5">|</span>
 
           <div className="flex items-center gap-3">
             <span>Project status:</span>

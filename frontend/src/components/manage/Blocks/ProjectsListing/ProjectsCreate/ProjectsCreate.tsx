@@ -30,7 +30,7 @@ import {
 } from '../utils.ts'
 
 import { Tabs, Tab, Alert, Typography } from '@mui/material'
-import { groupBy, has, isEmpty, map, mapKeys } from 'lodash'
+import { groupBy, has, isEmpty, map, mapKeys, lowerCase } from 'lodash'
 import { MdErrorOutline } from 'react-icons/md'
 
 export const SectionTitle = ({ children }: { children: ReactNode }) => (
@@ -66,6 +66,7 @@ const ProjectsCreate = ({
   const [currentStep, setCurrentStep] = useState<number>(mode !== 'add' ? 1 : 0)
   const [currentTab, setCurrentTab] = useState<number>(0)
 
+  const isDraftProject = lowerCase(project?.submission_status) === 'draft'
   const { projIdentifiers, crossCuttingFields, projectSpecificFields } =
     projectData ?? {}
   const { project_type, sector } = crossCuttingFields
@@ -314,7 +315,10 @@ const ProjectsCreate = ({
       ),
       disabled: areNextSectionsDisabled,
       component: (
-        <ProjectDocumentation {...rest} {...{ projectFiles, files, mode }} />
+        <ProjectDocumentation
+          {...{ projectFiles, files, mode, isDraftProject }}
+          {...rest}
+        />
       ),
       errors: [
         ...(fileErrors

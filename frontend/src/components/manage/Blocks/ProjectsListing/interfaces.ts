@@ -147,6 +147,7 @@ export interface ProjectFiles {
 export interface ProjectDocs extends ProjectFiles {
   mode: string
   bpFiles?: ProjectFile[]
+  isDraftProject?: boolean
 }
 
 export interface ProjectVersions {

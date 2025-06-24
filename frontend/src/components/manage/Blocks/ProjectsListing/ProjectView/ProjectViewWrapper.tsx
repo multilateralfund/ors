@@ -106,7 +106,7 @@ const ProjectViewWrapper = () => {
                 </span>
               </div>
 
-              <span>|</span>
+              <span className="mt-0.5">|</span>
 
               <div className="flex items-center gap-3">
                 <span>Project status:</span>
