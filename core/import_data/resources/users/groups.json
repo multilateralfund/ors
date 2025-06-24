@@ -111,7 +111,7 @@
         ]
     },
     {
-        "name": "CP Viewer",
+        "name": "Country programme viewer",
         "permissions": [
             "has_cp_report_view_access",
             "has_cp_report_export_access"
