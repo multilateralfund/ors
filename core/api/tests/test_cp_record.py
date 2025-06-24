@@ -16,8 +16,10 @@ class TestCPRecordList(BaseTest):
         response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
         assert response.status_code == 403
 
-    def test_get_cp_record_list__invalid_cp_rep_id(self, user, _setup_new_cp_report):
-        self.client.force_authenticate(user=user)
+    def test_get_cp_record_list__invalid_cp_rep_id(
+        self, secretariat_user, _setup_new_cp_report
+    ):
+        self.client.force_authenticate(user=secretariat_user)
 
         # try get cp records list without cp report id
         response = self.client.get(self.url)
@@ -116,9 +118,9 @@ class TestCPRecordList(BaseTest):
         )
 
     def test_get_96_records_list(
-        self, user, _setup_96_cp_report, cp_report_1996, substance
+        self, secretariat_user, _setup_96_cp_report, cp_report_1996, substance
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
         response = self.client.get(self.url, {"cp_report_id": cp_report_1996.id})
         assert response.status_code == 200
         assert len(response.data) == 2  # section_a, country program report

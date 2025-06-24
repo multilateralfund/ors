@@ -16,10 +16,10 @@ from core.api.filters.country_programme import (
     CPReportFilter,
 )
 from core.api.permissions import (
-    IsCountryUser,
-    IsSecretariat,
-    IsViewer,
-    IsCPViewer,
+    DenyAll,
+    HasCPReportViewPermission,
+    HasCPReportEditPermission,
+    HasCPReportDeletePermission,
 )
 from core.api.serializers import CPReportGroupSerializer
 from core.api.serializers.cp_comment import CPCommentSerializer
@@ -60,13 +60,18 @@ User = get_user_model()
 
 
 class BaseCPReportListView(generics.ListAPIView):
-    permission_classes = [IsSecretariat | IsCountryUser | IsViewer | IsCPViewer]
     filterset_class = CPReportFilter
     filter_backends = [
         DjangoFilterBackend,
         filters.OrderingFilter,
     ]
     serializer_class = CPReportListSerializer
+
+    @property
+    def permission_classes(self):
+        if self.request.method in ["GET"]:
+            return [HasCPReportViewPermission]
+        return [DenyAll]
 
     def get_queryset(self):
         user = self.request.user
@@ -77,9 +82,8 @@ class BaseCPReportListView(generics.ListAPIView):
             cp_reports = CPReport.objects
 
         # filter by country for country users
-        if user.user_type in (
-            user.UserType.COUNTRY_USER,
-            user.UserType.COUNTRY_SUBMITTER,
+        if user.has_perm("core.can_view_only_own_country") and not user.has_perm(
+            "core.can_view_all_countries"
         ):
             cp_reports = cp_reports.filter(country=user.country)
 
@@ -101,13 +105,23 @@ class CPReportView(
     lookup_field = "id"
     ordering_fields = ["created_at", "year", "country__name"]
 
+    @property
+    def permission_classes(self):
+        if self.request.method in ["GET"]:
+            return [HasCPReportViewPermission]
+        if self.request.method in ["POST", "PUT", "PATCH"]:
+            return [HasCPReportEditPermission]
+        if self.request.method == "DELETE":
+            return [HasCPReportDeletePermission]
+        return [DenyAll]
+
     def get_queryset(self):
         if self.request.method == "PUT":
             user = self.request.user
             cp_reports = CPReport.objects.filter(country__is_a2=False)
-            if user.user_type in (
-                user.UserType.COUNTRY_USER,
-                user.UserType.COUNTRY_SUBMITTER,
+
+            if user.has_perm("core.can_view_only_own_country") and not user.has_perm(
+                "core.can_view_all_countries"
             ):
                 cp_reports = cp_reports.filter(country=user.country)
 
@@ -121,13 +135,6 @@ class CPReportView(
             return CPReportNoRelatedSerializer
         # "GET":
         return CPReportListSerializer
-
-    def get_permissions(self):
-        # only secretariat can delete reports
-        if self.request.method == "DELETE":
-            return [IsSecretariat()]
-
-        return super().get_permissions()
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
@@ -147,14 +154,14 @@ class CPReportView(
         vald_perm_inst = CPReport(
             country_id=request.data.get("country_id"), year=request.data.get("year")
         )
+        # TODO: FIX check_objs_permissions
         self.check_object_permissions(request, vald_perm_inst)
 
         # Only COUNTRY_SUBMITTER users can finalize versions
         # All other user types and unsafe method permissions are checked via permission
         # classes.
-        if (
-            request.data.get("status") == CPReport.CPReportStatus.FINAL
-            and request.user.user_type == User.UserType.COUNTRY_USER
+        if request.data.get("status") == CPReport.CPReportStatus.FINAL and (
+            not request.user.has_perm("core.can_submit_final_cp_version")
         ):
             raise PermissionDenied(
                 "Only Secretariat and Country Submitters can submit final versions"
@@ -413,9 +420,8 @@ class CPReportView(
         # Only COUNTRY_SUBMITTER users can finalize versions
         # All other user types and unsafe method permissions are checked via permission
         # classes.
-        if (
-            request.data["status"] == CPReport.CPReportStatus.FINAL
-            and request.user.user_type == User.UserType.COUNTRY_USER
+        if request.data["status"] == CPReport.CPReportStatus.FINAL and (
+            not request.user.has_perm("core.can_submit_final_cp_version")
         ):
             raise PermissionDenied(
                 "Only Secretariat and Country Submitters can submit final versions"
@@ -584,18 +590,19 @@ class CPReportStatusUpdateView(generics.GenericAPIView):
     API endpoint that allows updating country programme report status.
     """
 
-    permission_classes = [IsSecretariat | IsCountryUser]
+    permission_classes = [HasCPReportEditPermission]
     serializer_class = CPReportSerializer
     lookup_field = "id"
 
     def get_queryset(self):
         user = self.request.user
         queryset = CPReport.objects.all()
-        if user.user_type in (
-            user.UserType.COUNTRY_USER,
-            user.UserType.COUNTRY_SUBMITTER,
+
+        if user.has_perm("core.can_view_only_own_country") and not user.has_perm(
+            "core.can_view_all_countries"
         ):
             queryset = queryset.filter(country=user.country)
+
         return queryset
 
     @swagger_auto_schema(
@@ -622,9 +629,8 @@ class CPReportStatusUpdateView(generics.GenericAPIView):
         # Only COUNTRY_SUBMITTER users can finalize versions
         # All other user types and unsafe method permissions are checked via permission
         # classes.
-        if (
-            cp_status == CPReport.CPReportStatus.FINAL
-            and request.user.user_type == User.UserType.COUNTRY_USER
+        if cp_status == CPReport.CPReportStatus.FINAL and (
+            not request.user.has_perm("core.can_submit_final_cp_version")
         ):
             raise PermissionDenied(
                 "Only Secretariat and Country Submitters can submit final versions"
@@ -769,7 +775,7 @@ class CPReportCommentsView(generics.GenericAPIView):
     This is called with either POST or PUT on an already-existing CP Report.
     """
 
-    permission_classes = [IsSecretariat | IsCountryUser]
+    permission_classes = [HasCPReportEditPermission]
     serializer_class = CPCommentSerializer
     lookup_field = "id"
     queryset = CPReport.objects.all()
@@ -779,6 +785,7 @@ class CPReportCommentsView(generics.GenericAPIView):
         obj = get_object_or_404(queryset, **filter_kwargs)
 
         # May raise a permission denied
+        # TODO: FIX check_objs_permissions
         self.check_object_permissions(self.request, obj)
 
         return obj
@@ -809,7 +816,6 @@ class CPReportCommentsView(generics.GenericAPIView):
         section = request.data.get("section")
         comment_type = request.data.get("comment_type")
         comment = request.data.get("comment", "")
-        user_type = request.user.user_type
 
         if section not in CPComment.CPCommentSection:
             return Response(
@@ -818,17 +824,14 @@ class CPReportCommentsView(generics.GenericAPIView):
             )
 
         if comment_type == CPComment.CPCommentType.COMMENT_COUNTRY:
-            if user_type not in (
-                User.UserType.COUNTRY_USER,
-                User.UserType.COUNTRY_SUBMITTER,
-            ):
+            if not request.user.has_perm("core.can_cp_country_type_comment"):
                 return Response(
                     {"comment": f"Invalid value {comment}"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
         if comment_type == CPComment.CPCommentType.COMMENT_SECRETARIAT:
-            if user_type != User.UserType.SECRETARIAT:
+            if not request.user.has_perm("core.can_cp_secretariat_type_comment"):
                 return Response(
                     {"comment": f"Invalid value {comment}"},
                     status=status.HTTP_400_BAD_REQUEST,

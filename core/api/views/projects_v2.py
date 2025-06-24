@@ -16,14 +16,12 @@ from rest_framework.views import APIView
 
 from core.api.filters.project import ProjectFilter
 from core.api.permissions import (
-    IsAgencyInputter,
-    IsAgencySubmitter,
-    IsSecretariatViewer,
-    IsSecretariatV1V2EditAccess,
-    IsSecretariatV3EditAccess,
-    IsSecretariatProductionV1V2EditAccess,
-    IsSecretariatProductionV3EditAccess,
-    IsViewer,
+    DenyAll,
+    HasProjectV2ViewAccess,
+    HasProjectV2EditAccess,
+    HasProjectV2SubmitAccess,
+    HasProjectV2AssociateProjectsAccess,
+    HasProjectV2RecommendAccess,
 )
 from core.api.serializers.project_v2 import (
     ProjectV2SubmitSerializer,
@@ -42,7 +40,6 @@ from core.models.project import (
     ProjectFile,
 )
 from core.models.project_metadata import ProjectSubmissionStatus
-from core.models.user import User
 from core.api.views.utils import log_project_history
 
 from core.api.views.projects_export import ProjectsV2Export
@@ -118,49 +115,24 @@ class ProjectV2ViewSet(
     @property
     def permission_classes(self):
         if self.action in ["list", "retrieve", "export"]:
-            return [
-                IsViewer
-                | IsAgencyInputter
-                | IsAgencySubmitter
-                | IsSecretariatViewer
-                | IsSecretariatV1V2EditAccess
-                | IsSecretariatV3EditAccess
-                | IsSecretariatProductionV1V2EditAccess
-                | IsSecretariatProductionV3EditAccess
-            ]
+            return [HasProjectV2ViewAccess]
         if self.action in [
             "create",
             "update",
             "partial_update",
-            "destroy",
         ]:
-            return [
-                IsAgencyInputter
-                | IsAgencySubmitter
-                | IsSecretariatV1V2EditAccess
-                | IsSecretariatProductionV1V2EditAccess
-            ]
+            return [HasProjectV2EditAccess]
         if self.action in [
-            "increase_version",
             "validate_projects_for_submission",
             "submit",
         ]:
-            return [
-                IsAgencySubmitter
-                | IsSecretariatV1V2EditAccess
-                | IsSecretariatProductionV1V2EditAccess
-            ]
+            return [HasProjectV2SubmitAccess]
         if self.action == "associate_projects":
-            return [
-                IsSecretariatV1V2EditAccess
-                | IsSecretariatProductionV1V2EditAccess
-                | IsSecretariatV3EditAccess
-                | IsSecretariatProductionV3EditAccess
-            ]
+            return [HasProjectV2AssociateProjectsAccess]
         if self.action in ["recommend", "withdraw", "send_back_to_draft"]:
-            return [IsSecretariatV1V2EditAccess | IsSecretariatProductionV1V2EditAccess]
+            return [HasProjectV2RecommendAccess]
 
-        return []
+        return [DenyAll]
 
     def filter_permissions_queryset(self, queryset):
         """
@@ -170,19 +142,9 @@ class ProjectV2ViewSet(
         if user.is_superuser:
             return queryset
 
-        if user.user_type in [
-            User.UserType.SECRETARIAT_VIEWER,
-            User.UserType.SECRETARIAT_V1_V2_EDIT_ACCESS,
-            User.UserType.SECRETARIAT_V3_EDIT_ACCESS,
-            User.UserType.SECRETARIAT_PRODUCTION_V1_V2_EDIT_ACCESS,
-            User.UserType.SECRETARIAT_PRODUCTION_V3_EDIT_ACCESS,
-        ]:
+        if user.has_perm("core.can_view_all_agencies"):
             return queryset
-        if user.user_type in [
-            User.UserType.AGENCY_SUBMITTER,
-            User.UserType.AGENCY_INPUTTER,
-            User.UserType.VIEWER,
-        ]:
+        if user.has_perm("core.can_view_only_own_agency"):
             return queryset.filter(
                 Q(agency=user.agency)
                 | (
@@ -283,36 +245,6 @@ class ProjectV2ViewSet(
     @action(methods=["GET"], detail=False)
     def export(self, *args, **kwargs):
         return ProjectsV2Export(self).export_xls()
-
-    @action(methods=["POST"], detail=True)
-    @swagger_auto_schema(
-        operation_description="""
-            This endpoint archives the project by creating a copy of it and
-            increasing the version of the original entry.
-            The related entries (ProjectOdsOdp, ProjectFund, ProjectRBMMeasure,
-            ProjectProgressReport, SubmissionAmount, ProjectComment, ProjectFile)
-            are also duplicated and linked to the archived project.
-            The file itself is also duplicated and linked to the archived project.
-        """,
-        request_body=openapi.Schema(type=openapi.TYPE_OBJECT, properties=None),
-        responses={
-            status.HTTP_200_OK: ProjectDetailsV2Serializer,
-            status.HTTP_400_BAD_REQUEST: "Bad request",
-        },
-    )
-    def increase_version(self, request, *args, **kwargs):
-        project = self.get_object()
-        if project.latest_project:
-            return Response(
-                {"error": "This project already has a latest version."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        project.increase_version(request.user)
-
-        return Response(
-            ProjectDetailsV2Serializer(project).data,
-            status=status.HTTP_200_OK,
-        )
 
     @action(methods=["POST"], detail=True)
     @swagger_auto_schema(
@@ -664,25 +596,10 @@ class ProjectV2FileView(
     @property
     def permission_classes(self):
         if self.request.method in ["GET"]:
-            return [
-                IsViewer
-                | IsAgencyInputter
-                | IsAgencySubmitter
-                | IsSecretariatViewer
-                | IsSecretariatV1V2EditAccess
-                | IsSecretariatV3EditAccess
-                | IsSecretariatProductionV1V2EditAccess
-                | IsSecretariatProductionV3EditAccess
-            ]
+            return [HasProjectV2ViewAccess]
         if self.request.method in ["POST", "DELETE"]:
-            return [
-                IsAgencyInputter
-                | IsAgencySubmitter
-                | IsSecretariatV1V2EditAccess
-                | IsSecretariatProductionV1V2EditAccess
-            ]
-
-        return super().get_permissions()
+            return [HasProjectV2EditAccess]
+        return [DenyAll]
 
     def filter_permissions_queryset(self, queryset):
         """
@@ -692,19 +609,12 @@ class ProjectV2FileView(
         if user.is_superuser:
             return queryset
 
-        if user.user_type in [
-            User.UserType.SECRETARIAT_VIEWER,
-            User.UserType.SECRETARIAT_V1_V2_EDIT_ACCESS,
-            User.UserType.SECRETARIAT_V3_EDIT_ACCESS,
-            User.UserType.SECRETARIAT_PRODUCTION_V1_V2_EDIT_ACCESS,
-            User.UserType.SECRETARIAT_PRODUCTION_V3_EDIT_ACCESS,
-        ]:
+        if user.has_perm("core.can_view_all_agencies"):
             return queryset
-        if user.user_type in [
-            User.UserType.AGENCY_SUBMITTER,
-            User.UserType.AGENCY_INPUTTER,
-            User.UserType.VIEWER,
-        ]:
+
+        if user.has_perm("core.can_view_only_own_agency") and not user.has_perm(
+            "core.can_view_all_agencies"
+        ):
             return queryset.filter(
                 Q(agency=user.agency) | Q(meta_project__lead_agency=user.agency)
             )
@@ -780,6 +690,9 @@ class ProjectV2FileView(
 
 
 class ProjectFilesValidationView(FileCreateMixin, APIView):
+
+    permission_classes = [HasProjectV2EditAccess]
+
     @swagger_auto_schema(
         operation_description="""
         This endpoint is used to validate the files that are being uploaded.
@@ -811,6 +724,7 @@ class ProjectFilesValidationView(FileCreateMixin, APIView):
 class ProjectFilesDownloadView(generics.RetrieveAPIView):
     queryset = ProjectFile.objects.all()
     lookup_field = "id"
+    permission_classes = [HasProjectV2ViewAccess]
 
     def filter_permissions_queryset(self, queryset):
         """
@@ -820,19 +734,12 @@ class ProjectFilesDownloadView(generics.RetrieveAPIView):
         if user.is_superuser:
             return queryset
 
-        if user.user_type in [
-            User.UserType.SECRETARIAT_VIEWER,
-            User.UserType.SECRETARIAT_V1_V2_EDIT_ACCESS,
-            User.UserType.SECRETARIAT_V3_EDIT_ACCESS,
-            User.UserType.SECRETARIAT_PRODUCTION_V1_V2_EDIT_ACCESS,
-            User.UserType.SECRETARIAT_PRODUCTION_V3_EDIT_ACCESS,
-        ]:
+        if user.has_perm("core.can_view_all_agencies"):
             return queryset
-        if user.user_type in [
-            User.UserType.AGENCY_SUBMITTER,
-            User.UserType.AGENCY_INPUTTER,
-            User.UserType.VIEWER,
-        ]:
+
+        if user.has_perm("core.can_view_only_own_agency") and not user.has_perm(
+            "core.can_view_all_agencies"
+        ):
             return queryset.filter(
                 Q(agency=user.agency) | Q(meta_project__lead_agency=user.agency)
             )

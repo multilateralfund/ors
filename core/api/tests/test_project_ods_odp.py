@@ -41,8 +41,10 @@ class TestOdsOdpCreate(BaseProjectUtilityCreate):
     def setup(self, _project_ods_subst_create):
         self.__class__.new_utility_data = _project_ods_subst_create
 
-    def test_ods_blend_create(self, user, _project_ods_blend_create, project):
-        self.client.force_authenticate(user=user)
+    def test_ods_blend_create(
+        self, secretariat_user, _project_ods_blend_create, project
+    ):
+        self.client.force_authenticate(user=secretariat_user)
 
         blend_ods_odp = _project_ods_blend_create
 
@@ -55,8 +57,8 @@ class TestOdsOdpCreate(BaseProjectUtilityCreate):
 
         assert project.ods_odp.count() == 1
 
-    def test_invalid_substance(self, user, _project_ods_subst_create):
-        self.client.force_authenticate(user=user)
+    def test_invalid_substance(self, secretariat_user, _project_ods_subst_create):
+        self.client.force_authenticate(user=secretariat_user)
 
         subst_ods_odp = _project_ods_subst_create
         subst_ods_odp["ods_substance_id"] = 999
@@ -64,8 +66,8 @@ class TestOdsOdpCreate(BaseProjectUtilityCreate):
         response = self.client.post(self.url, subst_ods_odp, format="json")
         assert response.status_code == 400
 
-    def test_subst_and_blend(self, user, _project_ods_subst_create, blend):
-        self.client.force_authenticate(user=user)
+    def test_subst_and_blend(self, secretariat_user, _project_ods_subst_create, blend):
+        self.client.force_authenticate(user=secretariat_user)
 
         subst_ods_odp = _project_ods_subst_create
         subst_ods_odp["ods_blend_id"] = blend.id
@@ -111,8 +113,10 @@ class TestProjectsOdsOdpUpdate:
         response = self.client.patch(ods_subst_url, {"odp": 2.5})
         assert response.status_code == 403
 
-    def test_patch(self, user, ods_subst_url, project_ods_odp_subst, _setup_patch):
-        self.client.force_authenticate(user=user)
+    def test_patch(
+        self, secretariat_user, ods_subst_url, project_ods_odp_subst, _setup_patch
+    ):
+        self.client.force_authenticate(user=secretariat_user)
 
         udpate_data = _setup_patch
 
@@ -124,10 +128,10 @@ class TestProjectsOdsOdpUpdate:
         assert project_ods_odp_subst.ods_substance_id == udpate_data["ods_substance_id"]
 
     def test_patch_subst_to_blend(
-        self, user, ods_subst_url, project_ods_odp_subst, blend
+        self, secretariat_user, ods_subst_url, project_ods_odp_subst, blend
     ):
         # set ods blend wile ods substance is set
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
         response = self.client.patch(ods_subst_url, {"ods_blend_id": blend.id})
         assert response.status_code == 400
 
@@ -135,9 +139,9 @@ class TestProjectsOdsOdpUpdate:
         assert project_ods_odp_subst.ods_blend_id is None
 
     def test_patch_blend_to_subst(
-        self, user, ods_blend_url, project_ods_odp_blend, substance
+        self, secretariat_user, ods_blend_url, project_ods_odp_blend, substance
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.patch(ods_blend_url, {"ods_substance_id": substance.id})
         assert response.status_code == 400
@@ -145,14 +149,14 @@ class TestProjectsOdsOdpUpdate:
         project_ods_odp_blend.refresh_from_db()
         assert project_ods_odp_blend.ods_substance_id is None
 
-    def test_patch_invalid_substance(self, user, ods_subst_url):
-        self.client.force_authenticate(user=user)
+    def test_patch_invalid_substance(self, secretariat_user, ods_subst_url):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.patch(ods_subst_url, {"ods_substance_id": 999})
         assert response.status_code == 400
 
-    def test_patch_invalid_blend(self, user, ods_blend_url):
-        self.client.force_authenticate(user=user)
+    def test_patch_invalid_blend(self, secretariat_user, ods_blend_url):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.patch(ods_blend_url, {"ods_blend_id": 999})
         assert response.status_code == 400

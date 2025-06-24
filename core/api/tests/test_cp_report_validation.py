@@ -25,8 +25,8 @@ def get_empty_report(country_ro):
 class TestCPReportNegativeUseValues(BaseTest):
     url = reverse("country-programme-reports")
 
-    def test_section_a_validation(self, user, country_ro, usage, substance):
-        self.client.force_authenticate(user=user)
+    def test_section_a_validation(self, secretariat_user, country_ro, usage, substance):
+        self.client.force_authenticate(user=secretariat_user)
         report_data = get_empty_report(country_ro)
         report_data["section_a"] = [
             {
@@ -49,8 +49,8 @@ class TestCPReportNegativeUseValues(BaseTest):
         #     ]["quantity"]
         # )
 
-    def test_section_b_validation(self, user, country_ro, usage, blend):
-        self.client.force_authenticate(user=user)
+    def test_section_b_validation(self, secretariat_user, country_ro, usage, blend):
+        self.client.force_authenticate(user=secretariat_user)
         report_data = get_empty_report(country_ro)
         report_data["section_b"] = [
             {

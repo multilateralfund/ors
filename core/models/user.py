@@ -1,9 +1,10 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, PermissionsMixin
+
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 
-class User(AbstractUser):
+class User(AbstractUser, PermissionsMixin):
     class UserType(models.TextChoices):
         AGENCY_INPUTTER = "agency_inputter", _("Agency inputter")
         AGENCY_SUBMITTER = "agency_submitter", _("Agency submitter")

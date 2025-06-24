@@ -22,9 +22,8 @@ class CountryListView(mixins.ListModelMixin, generics.GenericAPIView):
             )
             .select_related("parent")
         )
-        if user.user_type in (
-            user.UserType.COUNTRY_USER,
-            user.UserType.COUNTRY_SUBMITTER,
+        if user.has_perm("core.can_view_only_own_country") and not user.has_perm(
+            "core.can_view_all_countries"
         ):
             queryset = queryset.filter(id=user.country_id)
         return queryset.order_by("name")

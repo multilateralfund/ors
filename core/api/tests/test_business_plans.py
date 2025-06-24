@@ -177,7 +177,6 @@ class TestBPImportValidate:
 
     def test_bp_import_validate_permissions(
         self,
-        user,
         bp_viewer_user,
         bp_editor_user,
         admin_user,

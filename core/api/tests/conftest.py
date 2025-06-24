@@ -2,6 +2,9 @@
 import pytest
 import unicodedata
 
+from django.contrib.auth.models import Group
+from django.core.management import call_command
+
 from pdfminer.high_level import extract_text
 
 from core.api.tests.factories import (
@@ -53,6 +56,7 @@ from core.models.business_plan import BusinessPlan
 from core.models.country_programme_archive import CPReportArchive
 from core.utils import get_meta_project_code, get_project_sub_code
 
+# pylint: disable=C0302,W0613
 
 @pytest.fixture
 def user():
@@ -61,19 +65,28 @@ def user():
 
 @pytest.fixture
 def secretariat_user():
-    return UserFactory(username="UserNoType", email="usernotype@mail.com")
+    secretariat_group = Group.objects.get(name="Secretariat")
+    business_plan_editor_group = Group.objects.get(name="Business plan editor")
+    user = UserFactory(username="SecretariatUser", email="secretariat_user@mail.com")
+    user.groups.add(secretariat_group)
+    user.groups.add(business_plan_editor_group)
+    return user
 
 
 @pytest.fixture
 def second_user():
-    return UserFactory(username="Plebeii", email="restul@cantaretilor.ro")
+    secretariat_group = Group.objects.get(name="Secretariat")
+    user = UserFactory(username="Plebeii", email="restul@cantaretilor.ro")
+    user.groups.add(secretariat_group)
+    return user
 
 
 @pytest.fixture
 def viewer_user():
-    return UserFactory(
-        username="GuraCasca", email="doarmauit@numersi.ro", user_type="viewer"
-    )
+    group = Group.objects.get(name="Viewer")
+    user = UserFactory(username="GuraCasca", email="doarmauit@numersi.ro")
+    user.groups.add(group)
+    return user
 
 
 @pytest.fixture
@@ -87,70 +100,89 @@ def admin_user():
 
 @pytest.fixture
 def secretariat_viewer_user():
-    return UserFactory(
-        username="secretariat_viewer",
-        email="testuser@test.com",
-        user_type="secretariat_viewer",
-    )
+    group = Group.objects.get(name="Secretariat project viewer")
+    user = UserFactory(username="secretariat_viewer", email="testuser@test.com")
+    user.groups.add(group)
+    return user
 
 
 @pytest.fixture
 def secretariat_v1_v2_edit_access_user():
-    return UserFactory(
+    group = Group.objects.get(name="Secretariat project v1/v2 editing access")
+    user = UserFactory(
         username="secretariat_v1_v2_edit_access",
         email="secretariat_v1_v2_edit_access@mail.com",
-        user_type="secretariat_v1_v2_edit_access",
     )
+    user.groups.add(group)
+    return user
 
 
 @pytest.fixture
 def secretariat_v3_edit_access_user():
-    return UserFactory(
+    group = Group.objects.get(name="Secretariat project v3 editing access")
+    user = UserFactory(
         username="secretariat_v3_edit_access",
         email="secretariat_v3_edit_access@mail.com",
-        user_type="secretariat_v3_edit_access",
     )
+    user.groups.add(group)
+    return user
 
 
 @pytest.fixture
 def secretariat_production_v1_v2_edit_access_user():
-    return UserFactory(
+    group = Group.objects.get(
+        name="Secretariat production project v1/v2 editing access"
+    )
+    user = UserFactory(
         username="secretariat_production_v1_v2_edit_access",
         email="secretariat_production_v1_v2_edit_access@mail.com",
-        user_type="secretariat_production_v1_v2_edit_access",
     )
+    user.groups.add(group)
+    return user
 
 
 @pytest.fixture
 def secretariat_production_v3_edit_access_user():
-    return UserFactory(
+    group = Group.objects.get(name="Secretariat production project v3 editing access")
+    user = UserFactory(
         username="secretariat_production_v3_edit_access",
         email="secretariat_production_v3_edit_access@mail.com",
-        user_type="secretariat_production_v3_edit_access",
     )
+    user.groups.add(group)
+    return user
+
+
+@pytest.fixture(scope="session", autouse=True)
+def load_groups_and_permissions(django_db_setup, django_db_blocker):
+    """
+    Loads Groups and Permissions from a file once per test session.
+    """
+    with django_db_blocker.unblock():
+        call_command("import_user_permissions", "all")
 
 
 @pytest.fixture
 def bp_viewer_user():
-    return UserFactory(
-        username="bp_viewer",
-        email="bp_viewer@mail.com",
-        user_type="bp_viewer",
-    )
+    group = Group.objects.get(name="Business plan viewer")
+    user = UserFactory(username="bp_viewer", email="bp_viewer@mail.com")
+    user.groups.add(group)
+    return user
 
 
 @pytest.fixture
 def bp_editor_user():
-    return UserFactory(
-        username="bp_editor",
-        email="bp_editor@mail.com",
-        user_type="bp_editor",
-    )
+    group = Group.objects.get(name="Business plan editor")
+    user = UserFactory(username="bp_editor", email="bp_editor@mail.com")
+    user.groups.add(group)
+    return user
 
 
 @pytest.fixture
 def stakeholder_user():
-    return UserFactory(user_type="stakeholder")
+    group = Group.objects.get(name="Stakeholder")
+    user = UserFactory()
+    user.groups.add(group)
+    return user
 
 
 @pytest.fixture
@@ -165,12 +197,23 @@ def _new_agency():
 
 @pytest.fixture
 def agency_user(agency):
-    return UserFactory(user_type="agency_submitter", agency=agency)
+    group = Group.objects.get(name="Agency submitter")
+    business_plan_viewer_group = Group.objects.get(name="Business plan viewer")
+    user = UserFactory(username="AgencyUser", agency=agency)
+    user.groups.add(group)
+    user.groups.add(business_plan_viewer_group)
+    return user
 
 
 @pytest.fixture
 def agency_inputter_user(agency):
-    return UserFactory(user_type="agency_inputter", agency=agency)
+    group = Group.objects.get(name="Agency inputter")
+    business_plan_viewer_group = Group.objects.get(name="Business plan viewer")
+
+    user = UserFactory(username="AgencyInputterUser", agency=agency)
+    user.groups.add(group)
+    user.groups.add(business_plan_viewer_group)
+    return user
 
 
 @pytest.fixture
@@ -180,17 +223,26 @@ def country_ro():
 
 @pytest.fixture
 def country_user(country_ro):
-    return UserFactory(user_type="country_user", country=country_ro)
+    group = Group.objects.get(name="Country user")
+    user = UserFactory(username="CountryUser", country=country_ro)
+    user.groups.add(group)
+    return user
 
 
 @pytest.fixture
 def country_submitter(country_ro):
-    return UserFactory(user_type="country_submitter", country=country_ro)
+    group = Group.objects.get(name="Country submitter")
+    user = UserFactory(country=country_ro)
+    user.groups.add(group)
+    return user
 
 
 @pytest.fixture
 def treasurer_user():
-    return UserFactory(username="FaraNumar", user_type="treasurer")
+    treasurer_group = Group.objects.get(name="Treasurer")
+    user = UserFactory(username="FaraNumar")
+    user.groups.add(treasurer_group)
+    return user
 
 
 @pytest.fixture
@@ -216,13 +268,13 @@ def cp_report_2005(country_ro, user):
 
 
 @pytest.fixture
-def cp_report_2019(country_ro, user):
+def cp_report_2019(country_ro, secretariat_user):
     return CPReportFactory.create(
         country=country_ro,
         year=2019,
         comment="Valoare eu la toti va dau",
-        created_by=user,
-        version_created_by=user,
+        created_by=secretariat_user,
+        version_created_by=secretariat_user,
     )
 
 

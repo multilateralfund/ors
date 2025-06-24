@@ -12,7 +12,7 @@ from core.api.filters.country_programme import DashboardsCPRecordFilter
 from core.api.serializers.adm import (
     AdmRecordSerializer,
 )
-from core.api.permissions import IsCountryUser, IsSecretariat, IsViewer, IsCPViewer
+from core.api.permissions import HasCPReportViewPermission
 from core.api.serializers.cp_comment import CPCommentSerializer
 from core.api.serializers.cp_emission import CPEmissionSerializer
 from core.api.serializers.cp_generation import CPGenerationSerializer
@@ -65,7 +65,7 @@ class CPRecordBaseListByReportView(views.APIView):
     @param year: int - query filter for year (exact)
     """
 
-    permission_classes = [IsSecretariat | IsCountryUser | IsViewer | IsCPViewer]
+    permission_classes = [HasCPReportViewPermission]
 
     cp_report_class = None
     cp_record_class = None

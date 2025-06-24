@@ -20,8 +20,9 @@ from core.api.filters.business_plan import (
 )
 from core.models import Project
 from core.api.permissions import (
-    IsBPViewer,
-    IsBPEditor,
+    HasBusinessPlanEditAccess,
+    HasBusinessPlanViewAccess,
+    DenyAll,
 )
 
 from core.api.serializers.bp_history import BPHistorySerializer
@@ -47,7 +48,7 @@ class BPChemicalTypeListView(generics.ListAPIView):
     List BP chemical types
     """
 
-    permission_classses = [IsBPViewer | IsBPEditor]
+    permission_classses = [HasBusinessPlanViewAccess]
     queryset = BPChemicalType.objects.all()
     filterset_class = BPChemicalTypeFilter
     serializer_class = BPChemicalTypeSerializer
@@ -73,15 +74,15 @@ class BusinessPlanViewSet(
     @property
     def permission_classes(self):
         if self.action in ["list", "retrieve", "get_years", "get"]:
-            return [IsBPViewer | IsBPEditor]
+            return [HasBusinessPlanViewAccess]
         if self.action in [
             "create",
             "update",
             "partial_update",
             "destroy",
         ]:
-            return [IsBPEditor]
-        return []
+            return [HasBusinessPlanEditAccess]
+        return [DenyAll]
 
     def get_queryset(self):
         if self.action == "get":
@@ -200,10 +201,10 @@ class BPActivityViewSet(
     @property
     def permission_classes(self):
         if self.action in ["list", "retrieve"]:
-            return [IsBPViewer | IsBPEditor]
+            return [HasBusinessPlanViewAccess]
         if self.action in ["validate_for_removal"]:
-            return [IsBPEditor]
-        return []
+            return [HasBusinessPlanEditAccess]
+        return [DenyAll]
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -259,10 +260,10 @@ class BPFileView(
     @property
     def permission_classes(self):
         if self.request.method in ["GET"]:
-            return [IsBPViewer | IsBPEditor]
+            return [HasBusinessPlanViewAccess]
         if self.request.method in ["POST", "DELETE"]:
-            return [IsBPEditor]
-        return super().get_permissions()
+            return [HasBusinessPlanEditAccess]
+        return [DenyAll]
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
@@ -325,7 +326,7 @@ class BPFileView(
 
 
 class BPFileDownloadView(generics.RetrieveAPIView):
-    permission_classes = [IsBPViewer | IsBPEditor]
+    permission_classes = [HasBusinessPlanViewAccess]
     queryset = BPFile.objects.all()
     lookup_field = "id"
 
@@ -344,7 +345,7 @@ class BPFileDownloadView(generics.RetrieveAPIView):
 
 
 class BPImportValidateView(BusinessPlanUtils, generics.GenericAPIView):
-    permission_classes = [IsBPEditor]
+    permission_classes = [HasBusinessPlanEditAccess]
 
     @swagger_auto_schema(
         manual_parameters=IMPORT_PARAMETERS,
@@ -391,7 +392,7 @@ class BPImportView(
     generics.GenericAPIView,
 ):
     serializer_class = BusinessPlanCreateSerializer
-    permission_classes = [IsBPEditor]
+    permission_classes = [HasBusinessPlanEditAccess]
 
     @swagger_auto_schema(
         manual_parameters=IMPORT_PARAMETERS,

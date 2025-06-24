@@ -55,8 +55,8 @@ class TestSubmissionAmountUpdate:
         response = self.client.patch(_sub_amount_url)
         assert response.status_code == 403
 
-    def test_update(self, user, _sub_amount_url, _sub_amount):
-        self.client.force_authenticate(user=user)
+    def test_update(self, secretariat_user, _sub_amount_url, _sub_amount):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.patch(_sub_amount_url, {"amount": 41})
         assert response.status_code == 200

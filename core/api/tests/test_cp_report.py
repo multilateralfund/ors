@@ -1,6 +1,8 @@
 from decimal import Decimal
 
 import pytest
+
+from django.contrib.auth.models import Group
 from django.urls import reverse
 from unittest.mock import patch
 
@@ -90,7 +92,10 @@ def _status_update_url(cp_report_2019):
 @pytest.fixture(name="another_country_user")
 def _another_country_user():
     new_country = CountryFactory.create(name="New Country")
-    return UserFactory.create(country=new_country, user_type="country_user")
+    group = Group.objects.get(name="Country user")
+    user = UserFactory.create(country=new_country)
+    user.groups.add(group)
+    return user
 
 
 class TestCPReportList(BaseTest):
@@ -116,8 +121,10 @@ class TestCPReportList(BaseTest):
         assert response.data[0]["name"] == "Romania2010"
         assert response.data[2]["name"] == "Romania2012"
 
-    def test_get_cp_report_list_country_filter(self, user, _setup_cp_report_list):
-        self.client.force_authenticate(user=user)
+    def test_get_cp_report_list_country_filter(
+        self, secretariat_user, _setup_cp_report_list
+    ):
+        self.client.force_authenticate(user=secretariat_user)
         country = _setup_cp_report_list
         # filter by country id (country = Hungary)
         response = self.client.get(self.url, {"country_id": country.id})
@@ -126,9 +133,9 @@ class TestCPReportList(BaseTest):
         assert country.name in response.data[0]["name"]
 
     def test_get_cp_report_list_country_filter_multiple(
-        self, user, _setup_cp_report_list
+        self, secretariat_user, _setup_cp_report_list
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
         ids = map(
             str,
             Country.objects.filter(name__in=["Romania", "Bulgaria"]).values_list(
@@ -144,16 +151,20 @@ class TestCPReportList(BaseTest):
         assert "Bulgaria" in response.data[0]["name"]
         assert "Romania" in response.data[-1]["name"]
 
-    def test_get_cp_report_list_name_filter(self, user, _setup_cp_report_list):
-        self.client.force_authenticate(user=user)
+    def test_get_cp_report_list_name_filter(
+        self, secretariat_user, _setup_cp_report_list
+    ):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url, {"name": "man", "ordering": "year"})
         assert response.status_code == 200
         assert len(response.data) == 3
         assert response.data[0]["name"] == "Romania2010"
 
-    def test_get_cp_report_list_year_filter(self, user, _setup_cp_report_list):
-        self.client.force_authenticate(user=user)
+    def test_get_cp_report_list_year_filter(
+        self, secretariat_user, _setup_cp_report_list
+    ):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(
             self.url, {"year_max": 2011, "year_min": 2011, "ordering": "country__name"}
@@ -163,8 +174,10 @@ class TestCPReportList(BaseTest):
         assert response.data[0]["name"] == "Bulgaria2011"
         assert response.data[0]["year"] == 2011
 
-    def test_get_cp_report_list_year_filter_range(self, user, _setup_cp_report_list):
-        self.client.force_authenticate(user=user)
+    def test_get_cp_report_list_year_filter_range(
+        self, secretariat_user, _setup_cp_report_list
+    ):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(
             self.url,
@@ -178,8 +191,10 @@ class TestCPReportList(BaseTest):
         assert response.data[-1]["name"] == "Romania2011"
         assert response.data[-1]["year"] == 2011
 
-    def test_get_cp_report_list_status_filter(self, user, _setup_cp_report_list):
-        self.client.force_authenticate(user=user)
+    def test_get_cp_report_list_status_filter(
+        self, secretariat_user, _setup_cp_report_list
+    ):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url, {"status": "draft"})
         assert response.status_code == 200
@@ -223,8 +238,8 @@ class TestCPReportListGroupByYear(BaseTest):
             "Romania",
         ]
 
-    def test_get_cp_report_list_order(self, user, _setup_cp_report_list):
-        self.client.force_authenticate(user=user)
+    def test_get_cp_report_list_order(self, secretariat_user, _setup_cp_report_list):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url, {"ordering": "desc"})
         assert response.status_code == 200
@@ -266,8 +281,8 @@ class TestCPReportListGroupByCountry(BaseTest):
             2010,
         ]
 
-    def test_get_cp_report_list_order(self, user, _setup_cp_report_list):
-        self.client.force_authenticate(user=user)
+    def test_get_cp_report_list_order(self, secretariat_user, _setup_cp_report_list):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url, {"ordering": "desc"})
         assert response.status_code == 200
@@ -301,8 +316,8 @@ class TestCPReportStatusUpdate(BaseTest):
         response = self.client.put(status_update_url, {"status": "draft"})
         assert response.status_code == 403
 
-    def test_invalid_status(self, user, status_update_url):
-        self.client.force_authenticate(user=user)
+    def test_invalid_status(self, secretariat_user, status_update_url):
+        self.client.force_authenticate(user=secretariat_user)
         response = self.client.put(status_update_url, {"status": "invalid"})
         assert response.status_code == 400
         assert "status" in response.data
@@ -500,9 +515,12 @@ class TestCPReportCreate(BaseTest):
         assert response.status_code == 403
 
     def test_create_new_cp_report(
-        self, user, _setup_new_cp_report_create, mock_send_mail_report_create
+        self,
+        secretariat_user,
+        _setup_new_cp_report_create,
+        mock_send_mail_report_create,
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
         response = self.client.post(
             self.url, _setup_new_cp_report_create, format="json"
         )
@@ -512,8 +530,8 @@ class TestCPReportCreate(BaseTest):
         assert response.data["country"] == "Romania"
         assert response.data["status"] == CPReport.CPReportStatus.DRAFT
         assert response.data["version"] == 1
-        assert response.data["created_by"] == user.username
-        assert response.data["version_created_by"] == user.username
+        assert response.data["created_by"] == secretariat_user.username
+        assert response.data["version_created_by"] == secretariat_user.username
         assert response.data["comment"] == "S-a nascut un fenomen"
         cp_report_id = response.data["id"]
 
@@ -553,7 +571,7 @@ class TestCPReportCreate(BaseTest):
         mock_send_mail_report_create.assert_not_called()
 
     def test_create_new_cp_report_with_comments(
-        self, user, _setup_new_cp_report_create
+        self, secretariat_user, _setup_new_cp_report_create
     ):
         data = _setup_new_cp_report_create
         added_comment = "Test create country comment"
@@ -561,7 +579,7 @@ class TestCPReportCreate(BaseTest):
             "mlfs": None,
             "country": added_comment,
         }
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
         response = self.client.post(
             self.url, _setup_new_cp_report_create, format="json"
         )
@@ -578,9 +596,12 @@ class TestCPReportCreate(BaseTest):
         )
 
     def test_create_old_cp_report(
-        self, user, _setup_old_cp_report_create, mock_send_mail_report_create
+        self,
+        secretariat_user,
+        _setup_old_cp_report_create,
+        mock_send_mail_report_create,
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.post(
             self.url, _setup_old_cp_report_create, format="json"
@@ -590,7 +611,7 @@ class TestCPReportCreate(BaseTest):
         assert response.data["year"] == 2000
         assert response.data["country"] == "Romania"
         assert response.data["status"] == CPReport.CPReportStatus.FINAL
-        assert response.data["created_by"] == user.username
+        assert response.data["created_by"] == secretariat_user.username
         cp_report_id = response.data["id"]
 
         # check cp records
@@ -623,9 +644,9 @@ class TestCPReportCreate(BaseTest):
         mock_send_mail_report_create.assert_called_once()
 
     def test_existing_cp_report(
-        self, user, _setup_new_cp_report_create, cp_report_2019
+        self, secretariat_user, _setup_new_cp_report_create, cp_report_2019
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
         data = _setup_new_cp_report_create
         data["country_id"] = cp_report_2019.country_id
         data["year"] = cp_report_2019.year
@@ -635,16 +656,18 @@ class TestCPReportCreate(BaseTest):
         assert response.status_code == 400
         assert "already exists" in response.data["general_error"]
 
-    def test_invalid_country_id(self, user, _setup_new_cp_report_create):
-        self.client.force_authenticate(user=user)
+    def test_invalid_country_id(self, secretariat_user, _setup_new_cp_report_create):
+        self.client.force_authenticate(user=secretariat_user)
         data = _setup_new_cp_report_create
         data["country_id"] = 999
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 400
         assert "country_id" in response.data
 
-    def test_invalid_usage_id(self, user, _setup_new_cp_report_create, substance):
-        self.client.force_authenticate(user=user)
+    def test_invalid_usage_id(
+        self, secretariat_user, _setup_new_cp_report_create, substance
+    ):
+        self.client.force_authenticate(user=secretariat_user)
         data = _setup_new_cp_report_create
         data["section_a"][0]["record_usages"][0]["usage_id"] = 999
         response = self.client.post(self.url, data, format="json")
@@ -655,9 +678,9 @@ class TestCPReportCreate(BaseTest):
         assert "usage_id" in subst_error["record_usages"]["usage_999"]
 
     def test_invalid_usage_quantity(
-        self, user, _setup_new_cp_report_create, substance, usage
+        self, secretariat_user, _setup_new_cp_report_create, substance, usage
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
         data = _setup_new_cp_report_create
         data["section_a"][0]["record_usages"][0]["quantity"] = "abc"
         response = self.client.post(self.url, data, format="json")
@@ -667,8 +690,8 @@ class TestCPReportCreate(BaseTest):
         assert f"usage_{usage.id}" in subst_error["record_usages"]
         assert "quantity" in subst_error["record_usages"][f"usage_{usage.id}"]
 
-    def test_invalid_substance_id(self, user, _setup_new_cp_report_create):
-        self.client.force_authenticate(user=user)
+    def test_invalid_substance_id(self, secretariat_user, _setup_new_cp_report_create):
+        self.client.force_authenticate(user=secretariat_user)
         data = _setup_new_cp_report_create
         data["section_a"][0]["substance_id"] = 999
         data["section_a"][0]["row_id"] = "substance_999"
@@ -678,9 +701,9 @@ class TestCPReportCreate(BaseTest):
         assert "substance_id" in response.data["section_a"]["substance_999"]
 
     def test_invalid_substance_and_blend(
-        self, user, _setup_new_cp_report_create, blend
+        self, secretariat_user, _setup_new_cp_report_create, blend
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
         data = _setup_new_cp_report_create
         data["section_a"][0]["blend_id"] = blend.id
         response = self.client.post(self.url, data, format="json")
@@ -689,9 +712,9 @@ class TestCPReportCreate(BaseTest):
         assert "non_field_errors" in response.data["section_a"]["general_error"]
 
     def test_invalid_current_year_price(
-        self, user, _setup_new_cp_report_create, substance
+        self, secretariat_user, _setup_new_cp_report_create, substance
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
         data = _setup_new_cp_report_create
         data["section_c"][0]["current_year_price"] = "abc"
         response = self.client.post(self.url, data, format="json")
@@ -700,16 +723,16 @@ class TestCPReportCreate(BaseTest):
         assert row_id in response.data["section_c"]
         assert "current_year_price" in response.data["section_c"][row_id]
 
-    def test_invalid_adm_row_id(self, user, _setup_old_cp_report_create):
-        self.client.force_authenticate(user=user)
+    def test_invalid_adm_row_id(self, secretariat_user, _setup_old_cp_report_create):
+        self.client.force_authenticate(user=secretariat_user)
         data = _setup_old_cp_report_create
         data["adm_b"][0]["row_id"] = 999
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 400
         assert "Invalid pk " in response.data["adm_b"]["999"]
 
-    def test_invalid_adm_column_id(self, user, _setup_old_cp_report_create):
-        self.client.force_authenticate(user=user)
+    def test_invalid_adm_column_id(self, secretariat_user, _setup_old_cp_report_create):
+        self.client.force_authenticate(user=secretariat_user)
         data = _setup_old_cp_report_create
         data["adm_b"][0]["column_id"] = 999
         row_id = str(data["adm_b"][0]["row_id"])
@@ -717,8 +740,8 @@ class TestCPReportCreate(BaseTest):
         assert response.status_code == 400
         assert "column_id" in response.data["adm_b"][row_id]["values"]["999"]
 
-    def test_invalid_adm_choice_id(self, user, _setup_old_cp_report_create):
-        self.client.force_authenticate(user=user)
+    def test_invalid_adm_choice_id(self, secretariat_user, _setup_old_cp_report_create):
+        self.client.force_authenticate(user=secretariat_user)
         data = _setup_old_cp_report_create
         data["adm_d"][0]["value_choice_id"] = 999
         row_id = str(data["adm_d"][0]["row_id"])
@@ -726,8 +749,10 @@ class TestCPReportCreate(BaseTest):
         assert response.status_code == 400
         assert "value_choice_id" in response.data["adm_d"][row_id]
 
-    def test_invalid_adm_record_value(self, user, _setup_old_cp_report_create):
-        self.client.force_authenticate(user=user)
+    def test_invalid_adm_record_value(
+        self, secretariat_user, _setup_old_cp_report_create
+    ):
+        self.client.force_authenticate(user=secretariat_user)
         data = _setup_old_cp_report_create
         data["adm_b"][0]["column_id"] = None
         data["adm_b"][0]["value_choice_id"] = None
@@ -738,8 +763,8 @@ class TestCPReportCreate(BaseTest):
         assert response.status_code == 400
         assert "must be specified" in response.data["adm_b"][row_id]
 
-    def test_invalid_adm_record(self, user, _setup_old_cp_report_create):
-        self.client.force_authenticate(user=user)
+    def test_invalid_adm_record(self, secretariat_user, _setup_old_cp_report_create):
+        self.client.force_authenticate(user=secretariat_user)
         data = _setup_old_cp_report_create
         data["adm_b"][0].pop("row_id")
 
@@ -791,7 +816,7 @@ class TestCPReportUpdate(BaseTest):
         second_user,
         _setup_new_cp_report_create,
         cp_report_2019,
-        user,
+        secretariat_user,
         mock_send_mail_report_update,
     ):
         self.url = reverse("country-programme-reports") + f"{cp_report_2019.id}/"
@@ -812,7 +837,7 @@ class TestCPReportUpdate(BaseTest):
         assert response.data["status"] == CPReport.CPReportStatus.DRAFT
         assert response.data["version"] == 1
         assert response.data["comment"] == "Alo Delta Force"
-        assert response.data["created_by"] == user.username
+        assert response.data["created_by"] == secretariat_user.username
         cp_report_id = response.data["id"]
 
         # check cp records
@@ -898,7 +923,7 @@ class TestCPReportUpdate(BaseTest):
         second_user,
         _setup_new_cp_report_create,
         cp_report_2019,
-        user,
+        secretariat_user,
         mock_send_mail_report_update,
     ):
         self.url = reverse("country-programme-reports") + f"{cp_report_2019.id}/"
@@ -918,12 +943,12 @@ class TestCPReportUpdate(BaseTest):
         assert response.data["name"] == "O valoare mare, o mare valoare"
         assert response.data["status"] == CPReport.CPReportStatus.FINAL
         assert response.data["version"] == 2
-        assert response.data["created_by"] == user.username
+        assert response.data["created_by"] == secretariat_user.username
         assert response.data["version_created_by"] == second_user.username
 
         new_id = response.data["id"]
         self.url = reverse("country-programme-reports") + f"{new_id}/"
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
 
         # update again (update status too => new version)
         data["status"] = CPReport.CPReportStatus.DRAFT
@@ -934,8 +959,8 @@ class TestCPReportUpdate(BaseTest):
         assert response.data["name"] == "Sunt destept si calculat"
         assert response.data["status"] == CPReport.CPReportStatus.DRAFT
         assert response.data["version"] == 3
-        assert response.data["created_by"] == user.username
-        assert response.data["version_created_by"] == user.username
+        assert response.data["created_by"] == secretariat_user.username
+        assert response.data["version_created_by"] == secretariat_user.username
 
         new_id = response.data["id"]
         self.url = reverse("country-programme-reports") + f"{new_id}/"
@@ -948,8 +973,8 @@ class TestCPReportUpdate(BaseTest):
         assert response.data["name"] == "Am relatii peste tot"
         assert response.data["status"] == CPReport.CPReportStatus.DRAFT
         assert response.data["version"] == 3
-        assert response.data["created_by"] == user.username
-        assert response.data["version_created_by"] == user.username
+        assert response.data["created_by"] == secretariat_user.username
+        assert response.data["version_created_by"] == secretariat_user.username
 
         new_id = response.data["id"]
         self.url = reverse("country-programme-reports") + f"{new_id}/"
@@ -963,7 +988,7 @@ class TestCPReportUpdate(BaseTest):
         assert response.data["name"] == "De la Frankfurt la Paris"
         assert response.data["status"] == CPReport.CPReportStatus.FINAL
         assert response.data["version"] == 3
-        assert response.data["created_by"] == user.username
+        assert response.data["created_by"] == secretariat_user.username
 
         new_id = response.data["id"]
         self.url = reverse("country-programme-reports") + f"{new_id}/"
@@ -976,8 +1001,8 @@ class TestCPReportUpdate(BaseTest):
         assert response.data["name"] == "Nimeni nu ma poate egala"
         assert response.data["status"] == CPReport.CPReportStatus.FINAL
         assert response.data["version"] == 4
-        assert response.data["created_by"] == user.username
-        assert response.data["version_created_by"] == user.username
+        assert response.data["created_by"] == secretariat_user.username
+        assert response.data["version_created_by"] == secretariat_user.username
 
         # check report archive
         assert CPReportArchive.objects.count() == 3
@@ -995,7 +1020,7 @@ class TestCPReportUpdate(BaseTest):
         assert ar is not None
         assert ar.comment == cp_report_2019.comment
         assert ar.version == 1
-        assert ar.created_by.username == user.username
+        assert ar.created_by.username == secretariat_user.username
 
         # check second archive
         ar = (
@@ -1006,7 +1031,7 @@ class TestCPReportUpdate(BaseTest):
         assert ar is not None
         assert ar.comment == "Sunt din cap până în picioare"
         assert ar.version == 2
-        assert ar.created_by.username == user.username
+        assert ar.created_by.username == secretariat_user.username
         assert ar.version_created_by.username == second_user.username
         assert ar.created_at is not None
 
@@ -1083,14 +1108,14 @@ class TestCPReportUpdate(BaseTest):
 
     def test_update_cp_report_old(
         self,
-        user,
+        secretariat_user,
         _setup_old_cp_report_create,
         cp_report_2005,
         substance,
         mock_send_mail_report_update,
     ):
         self.url = reverse("country-programme-reports") + f"{cp_report_2005.id}/"
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
 
         data = _setup_old_cp_report_create
         data["year"] = cp_report_2005.year
@@ -1178,10 +1203,10 @@ class TestCPReportUpdate(BaseTest):
         assert mock_send_mail_report_update.call_count == 2
 
     def test_update_cp_report_invalid_country(
-        self, user, _setup_new_cp_report_create, cp_report_2019
+        self, secretariat_user, _setup_new_cp_report_create, cp_report_2019
     ):
         self.url = reverse("country-programme-reports") + f"{cp_report_2019.id}/"
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
         data = _setup_new_cp_report_create
         data["country_id"] = 999
         response = self.client.put(self.url, data, format="json")
@@ -1192,10 +1217,10 @@ class TestCPReportUpdate(BaseTest):
         assert CPReportArchive.objects.count() == 0
 
     def test_update_cp_report_invalid_year(
-        self, user, _setup_new_cp_report_create, cp_report_2019
+        self, secretariat_user, _setup_new_cp_report_create, cp_report_2019
     ):
         self.url = reverse("country-programme-reports") + f"{cp_report_2019.id}/"
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
         data = _setup_new_cp_report_create
         data["year"] = _setup_new_cp_report_create["year"] - 1
         response = self.client.put(self.url, data, format="json")
@@ -1204,9 +1229,11 @@ class TestCPReportUpdate(BaseTest):
         # check no archive is created
         assert CPReportArchive.objects.count() == 0
 
-    def test_update_cp_report_invalid_cp_id(self, user, _setup_new_cp_report_create):
+    def test_update_cp_report_invalid_cp_id(
+        self, secretariat_user, _setup_new_cp_report_create
+    ):
         self.url = reverse("country-programme-reports") + "999/"
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
         data = _setup_new_cp_report_create
         response = self.client.put(self.url, data, format="json")
         assert response.status_code == 404
@@ -1215,10 +1242,10 @@ class TestCPReportUpdate(BaseTest):
         assert CPReportArchive.objects.count() == 0
 
     def test_update_cp_report_invalid_usage_id(
-        self, user, _setup_new_cp_report_create, cp_report_2019, substance
+        self, secretariat_user, _setup_new_cp_report_create, cp_report_2019, substance
     ):
         self.url = reverse("country-programme-reports") + f"{cp_report_2019.id}/"
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
         data = _setup_new_cp_report_create
         data["section_a"][0]["record_usages"][0]["usage_id"] = 999
         response = self.client.put(self.url, data, format="json")
@@ -1253,8 +1280,8 @@ class TestCPReportDelete(BaseTest):
         response = self.client.delete(_delete_url)
         assert response.status_code == 403
 
-    def test_delete_first_version(self, user, cp_report_2019, _delete_url):
-        self.client.force_authenticate(user=user)
+    def test_delete_first_version(self, secretariat_user, cp_report_2019, _delete_url):
+        self.client.force_authenticate(user=secretariat_user)
 
         cp_report_2019.status = CPReport.CPReportStatus.DRAFT
         cp_report_2019.save()
@@ -1262,8 +1289,8 @@ class TestCPReportDelete(BaseTest):
         response = self.client.delete(_delete_url)
         assert response.status_code == 400
 
-    def test_delete_final_version(self, user, cp_report_2019, _delete_url):
-        self.client.force_authenticate(user=user)
+    def test_delete_final_version(self, secretariat_user, cp_report_2019, _delete_url):
+        self.client.force_authenticate(user=secretariat_user)
 
         cp_report_2019.status = CPReport.CPReportStatus.FINAL
         cp_report_2019.save()
@@ -1272,9 +1299,9 @@ class TestCPReportDelete(BaseTest):
         assert response.status_code == 400
 
     def test_delete_cp_report_draft(
-        self, cp_report_2019, user, _delete_url, _setup_new_cp_report_create
+        self, cp_report_2019, secretariat_user, _delete_url, _setup_new_cp_report_create
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
         self.url = _delete_url
 
         # set status final
@@ -1323,8 +1350,8 @@ class TestCPReportDelete(BaseTest):
         assert current_report.comment == "N-am interes sa te mint"
         assert current_report.version == 2
         assert current_report.status == CPReport.CPReportStatus.FINAL
-        assert current_report.created_by.username == user.username
-        assert current_report.version_created_by.username == user.username
+        assert current_report.created_by.username == secretariat_user.username
+        assert current_report.version_created_by.username == secretariat_user.username
         assert current_report.created_at is not None
 
         # check record usage archive
@@ -1406,9 +1433,9 @@ class TestGetEmptyForm(BaseTest):
         assert len(response.data["substance_rows"]["section_c"]) == 2
 
     def test_with_cp_report_id(
-        self, user, cp_report_2019, _setup_get_empty_form, _cp_report_format
+        self, secretariat_user, cp_report_2019, _setup_get_empty_form, _cp_report_format
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
         response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
         assert response.status_code == 200
         assert len(response.data["usage_columns"]["section_a"]) == 1
@@ -1418,9 +1445,9 @@ class TestGetEmptyForm(BaseTest):
         assert len(response.data["substance_rows"]["section_c"]) == 2
 
     def test_with_country_and_year(
-        self, user, cp_report_2019, _setup_get_empty_form, _cp_report_format
+        self, secretariat_user, cp_report_2019, _setup_get_empty_form, _cp_report_format
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
         response = self.client.get(
             self.url, {"country_id": cp_report_2019.country_id, "year": 2019}
         )
@@ -1433,13 +1460,13 @@ class TestGetEmptyForm(BaseTest):
 
     def test_with_previous_records(
         self,
-        user,
+        secretariat_user,
         country_ro,
         _setup_get_empty_form,
         _cp_report_format,
         _setup_new_cp_report_create,
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
         response = self.client.post(
             reverse("country-programme-reports"),
             _setup_new_cp_report_create,

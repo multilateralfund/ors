@@ -1,7 +1,6 @@
 import os
 
 from django.conf import settings
-from django.core.exceptions import PermissionDenied
 from django.db import models
 from django.shortcuts import get_object_or_404
 from django.views.static import serve
@@ -16,14 +15,13 @@ from rest_framework import status
 
 from core.api.filters.project import MetaProjectFilter, ProjectFilter
 from core.api.permissions import (
-    IsAgency,
-    IsCountryUser,
-    IsSecretariat,
-    IsViewer,
-    IsBPViewer,
-    IsBPEditor,
+    HasMetaProjectsViewAccess,
+    HasProjectMetaInfoViewAccess,
+    HasProjectStatisticsViewAccess,
+    HasProjectViewAccess,
+    HasProjectEditAccess,
+    DenyAll,
 )
-from core.api.serializers.meeting import MeetingSerializer
 from core.api.serializers.project import (
     ProjectCommentCreateSerializer,
     ProjectFundCreateSerializer,
@@ -44,7 +42,6 @@ from core.api.serializers.project import (
 )
 from core.api.serializers.project_association import MetaProjectSerializer
 from core.api.views.projects_export import ProjectsExport
-from core.models.meeting import Meeting
 from core.models.project import (
     MetaProject,
     Project,
@@ -69,7 +66,7 @@ class MetaProjectListView(generics.ListAPIView):
     List meta projects
     """
 
-    permission_classes = [IsSecretariat | IsAgency | IsCountryUser | IsViewer]
+    permission_classes = [HasMetaProjectsViewAccess]
     queryset = MetaProject.objects.order_by("code", "type")
     filterset_class = MetaProjectFilter
     serializer_class = MetaProjectSerializer
@@ -80,9 +77,7 @@ class ProjectStatusListView(generics.ListAPIView):
     List project status
     """
 
-    permission_classes = [
-        IsSecretariat | IsAgency | IsCountryUser | IsViewer | IsBPViewer | IsBPEditor
-    ]
+    permission_classes = [HasProjectMetaInfoViewAccess]
     queryset = ProjectStatus.objects.all()
     serializer_class = ProjectStatusSerializer
 
@@ -92,9 +87,7 @@ class ProjectSubmissionStatusListView(generics.ListAPIView):
     List project submission status
     """
 
-    permission_classes = [
-        IsSecretariat | IsAgency | IsCountryUser | IsViewer | IsBPViewer | IsBPEditor
-    ]
+    permission_classes = [HasProjectMetaInfoViewAccess]
     queryset = ProjectSubmissionStatus.objects.all()
     serializer_class = ProjectSubmissionStatusSerializer
 
@@ -104,9 +97,7 @@ class ProjectTypeListView(generics.ListAPIView):
     List project type
     """
 
-    permission_classes = [
-        IsSecretariat | IsAgency | IsCountryUser | IsViewer | IsBPViewer | IsBPEditor
-    ]
+    permission_classes = [HasProjectMetaInfoViewAccess]
     serializer_class = ProjectTypeSerializer
 
     def get_queryset(self):
@@ -134,18 +125,8 @@ class ProjectTypeListView(generics.ListAPIView):
         return super().get(request, *args, **kwargs)
 
 
-class ProjectMeetingListView(generics.ListAPIView):
-    permission_classes = [
-        IsSecretariat | IsAgency | IsCountryUser | IsViewer | IsBPViewer | IsBPEditor
-    ]
-    queryset = Meeting.objects.order_by("number").all()
-    serializer_class = MeetingSerializer
-
-
 class ProjectClusterListView(generics.ListAPIView):
-    permission_classes = [
-        IsSecretariat | IsAgency | IsCountryUser | IsViewer | IsBPViewer | IsBPEditor
-    ]
+    permission_classes = [HasProjectMetaInfoViewAccess]
     queryset = ProjectCluster.objects.order_by("sort_order").all()
     serializer_class = ProjectClusterSerializer
 
@@ -156,9 +137,7 @@ class ProjectSpecificFieldsListView(generics.RetrieveAPIView):
     *and the list of required fields for each combination* *to be implemented*.
     """
 
-    permission_classes = [
-        IsSecretariat | IsAgency | IsCountryUser | IsViewer | IsBPViewer | IsBPEditor
-    ]
+    permission_classes = [HasProjectMetaInfoViewAccess]
     serializer_class = ProjectSpecificFieldsSerializer
 
     def get_object(self):
@@ -188,7 +167,6 @@ class ProjectViewSet(
     API endpoint that allows projects to be viewed.
     """
 
-    permission_classes = [IsSecretariat | IsAgency | IsCountryUser | IsViewer]
     filterset_class = ProjectFilter
     filter_backends = [
         DjangoFilterBackend,
@@ -204,6 +182,19 @@ class ProjectViewSet(
         "substance_type",
     ]
     search_fields = ["code", "legacy_code", "meta_project__code", "title"]
+
+    @property
+    def permission_classes(self):
+        if self.action in ["list", "retrieve", "export", "print"]:
+            return [HasProjectViewAccess]
+        if self.action in [
+            "create",
+            "update",
+            "partial_update",
+            "upload",
+        ]:
+            return [HasProjectEditAccess]
+        return [DenyAll]
 
     def get_queryset(self):
         user = self.request.user
@@ -224,15 +215,18 @@ class ProjectViewSet(
             "rbm_measures__measure",
             "ods_odp",
         )
-
-        if "agency" in user.user_type.lower():
-            # filter projects by agency if user is agency
+        if user.has_perm("core.can_view_only_own_agency") and not (
+            user.has_perm("core.can_view_all_agencies")
+            or user.has_perm("core.can_view_all_agencies_old_project_implementation")
+        ):
+            # filter projects by agency if user can view only own agency
             queryset = queryset.filter(agency=user.agency)
 
-        if "country" in user.user_type.lower():
-            # filter projects by country if user is country
+        if user.has_perm("core.can_view_only_own_country") and not user.has_perm(
+            "core.can_view_all_countries"
+        ):
+            # filter projects by country if user can view only own country
             queryset = queryset.filter(country=user.country)
-
         return queryset
 
     def get_serializer_class(self):
@@ -297,22 +291,14 @@ class ProjectViewSet(
         deprecated=True,
     )
     def create(self, request, *args, **kwargs):
-        if "country" in request.user.user_type.lower():
-            raise PermissionDenied("Country users not allowed")
-
         vald_perm_inst = Project(
             agency_id=request.data.get("agency_id"),
             country_id=request.data.get("country_id"),
         )
+        # TODO: FIX check_objs_permissions
         self.check_object_permissions(request, vald_perm_inst)
 
         return super().create(request, *args, **kwargs)
-
-    def update(self, request, *args, **kwargs):
-        if "country" in request.user.user_type.lower():
-            raise PermissionDenied("Country users not allowed")
-
-        return super().update(request, *args, **kwargs)
 
 
 class ProjectFileView(APIView):
@@ -354,7 +340,7 @@ class ProjectOdsOdpViewSet(
     API endpoint that allows project ods odp CreateUpdateDdelete
     """
 
-    permission_classes = [IsSecretariat | IsAgency]
+    permission_classes = [HasProjectEditAccess]
     queryset = ProjectOdsOdp.objects.select_related("ods_substance", "ods_blend").all()
     serializer_class = ProjectOdsOdpCreateSerializer
 
@@ -369,7 +355,7 @@ class ProjectFundViewSet(
     API endpoint that allows project fund CreateUpdateDdelete
     """
 
-    permission_classes = [IsSecretariat | IsAgency]
+    permission_classes = [HasProjectEditAccess]
     queryset = ProjectFund.objects.select_related("meeting").all()
     serializer_class = ProjectFundCreateSerializer
 
@@ -384,7 +370,7 @@ class ProjectCommentViewSet(
     API endpoint that allows comment CreateUpdateDdelete
     """
 
-    permission_classes = [IsSecretariat | IsAgency]
+    permission_classes = [HasProjectEditAccess]
     queryset = ProjectComment.objects.select_related("meeting_of_report").all()
     serializer_class = ProjectCommentCreateSerializer
 
@@ -399,7 +385,7 @@ class ProjectRbmMeasureViewSet(
     API endpoint that allows project rbm measure CreateUpdateDdelete
     """
 
-    permission_classes = [IsSecretariat | IsAgency]
+    permission_classes = [HasProjectEditAccess]
     queryset = ProjectRBMMeasure.objects.select_related("measure").all()
     serializer_class = ProjectRbmMeasureCreateSerializer
 
@@ -414,7 +400,7 @@ class ProjectSubmissionAmountViewSet(
     API endpoint that allows project submission amount CreateUpdateDdelete
     """
 
-    permission_classes = [IsSecretariat | IsAgency]
+    permission_classes = [HasProjectEditAccess]
     queryset = SubmissionAmount.objects.all()
     serializer_class = SubmissionAmountCreateSerializer
 
@@ -424,7 +410,7 @@ class ProjectStatisticsView(generics.ListAPIView):
     API endpoint that allows project statistics to be viewed.
     """
 
-    permission_classes = [IsSecretariat | IsAgency | IsCountryUser | IsViewer]
+    permission_classes = [HasProjectStatisticsViewAccess]
     filterset_class = ProjectFilter
     filter_backends = [
         DjangoFilterBackend,
@@ -437,14 +423,15 @@ class ProjectStatisticsView(generics.ListAPIView):
             "meta_project", "sector", "cluster"
         ).all()
 
-        if "agency" in user.user_type.lower():
-            # filter projects by agency if user is agency
+        if user.has_perm("core.can_view_only_own_agency") and not (
+            user.has_perm("core.can_view_all_agencies")
+            or user.has_perm("core.can_view_all_agencies_old_project_implementation")
+        ):
             queryset = queryset.filter(agency=user.agency)
-
-        if "country" in user.user_type.lower():
-            # filter projects by country if user is country
+        if user.has_perm("core.can_view_only_own_country") and not user.has_perm(
+            "core.can_view_all_countries"
+        ):
             queryset = queryset.filter(country=user.country)
-
         return queryset
 
     def get(self, request, *args, **kwargs):

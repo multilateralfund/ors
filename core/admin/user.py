@@ -7,6 +7,14 @@ from django.core.exceptions import ValidationError
 from django.forms import ModelForm
 from django.utils.translation import gettext_lazy as _
 
+
+from core.api.utils import (
+    COUNTRY_USER_GROUP,
+    COUNTRY_SUBMITTER_GROUP,
+    AGENCY_INPUTTER_GROUP,
+    AGENCY_SUBMITTER_GROUP,
+)
+
 User = get_user_model()
 
 
@@ -17,13 +25,12 @@ class UserEditAdminForm(ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        user_type = cleaned_data["user_type"]
         country = cleaned_data["country"]
         agency = cleaned_data["agency"]
-        if (
-            user_type in (User.UserType.COUNTRY_USER, User.UserType.COUNTRY_SUBMITTER)
-            and not country
-        ):
+        group_names = [group.name for group in cleaned_data["groups"]]
+        if {COUNTRY_USER_GROUP, COUNTRY_SUBMITTER_GROUP}.intersection(
+            group_names
+        ) and not country:
             raise ValidationError(
                 _(
                     "Country users need to be assigned to countries. "
@@ -31,10 +38,9 @@ class UserEditAdminForm(ModelForm):
                 )
             )
 
-        if (
-            user_type in (User.UserType.AGENCY_SUBMITTER, User.UserType.AGENCY_INPUTTER)
-            and not agency
-        ):
+        if {AGENCY_INPUTTER_GROUP, AGENCY_SUBMITTER_GROUP}.intersection(
+            group_names
+        ) and not agency:
             raise ValidationError(
                 _(
                     "Agency users need to be assigned to agencies. "
@@ -63,6 +69,7 @@ class UserAdmin(admin.ModelAdmin):
 
     fields = (
         "email",
+        "groups",
         "first_name",
         "last_name",
         "username",

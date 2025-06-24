@@ -4,9 +4,6 @@ from rest_framework.test import APIClient
 
 from core.api.serializers.project_metadata import ProjectSubSectorSerializer
 
-from core.api.serializers.project_v2 import HISTORY_DESCRIPTION_CREATE
-from core.api.serializers.project_v2 import HISTORY_DESCRIPTION_UPDATE
-
 from core.api.tests.base import BaseTest
 from core.api.tests.factories import (
     AgencyFactory,
@@ -22,27 +19,13 @@ from core.api.tests.factories import (
     ProjectSubSectorFactory,
     ProjectTypeFactory,
     SubstanceFactory,
-    UserFactory,
 )
 from core.models import BPActivity
-
 from core.models.project import Project, ProjectFile
 from core.utils import get_project_sub_code
 
 pytestmark = pytest.mark.django_db
-# pylint: disable=C0302,C8008,W0221,R0913,R0914,R0915,W0613
-
-
-@pytest.fixture(name="other_agency_user")
-def _other_agency_user():
-    other_agency = AgencyFactory.create(name="Agency2", code="AG2")
-    return UserFactory.create(agency=other_agency, user_type="agency_submitter")
-
-
-@pytest.fixture(name="other_country_user")
-def _other_country_user():
-    other_country = CountryFactory.create(name="New Country")
-    return UserFactory.create(country=other_country, user_type="country_user")
+# pylint: disable=C0302,C0415,C8008,W0221,R0913,R0914,R0915,W0613,
 
 
 @pytest.fixture(name="project_url")
@@ -363,7 +346,7 @@ def setup_project_create(
 class TestProjectV2List(BaseTest):
     url = reverse("project-v2-list")
 
-    def test_projest_list_permissions(
+    def test_project_list_permissions(
         self,
         _setup_project_list,
         user,
@@ -872,6 +855,8 @@ class TestCreateProjects(BaseTest):
         agency_inputter_user,
         _setup_project_create,
     ):
+        from core.api.serializers.project_v2 import HISTORY_DESCRIPTION_CREATE
+
         data = _setup_project_create
         self.client.force_authenticate(user=agency_inputter_user)
         response = self.client.post(self.url, data, format="json")
@@ -1065,6 +1050,8 @@ class TestProjectsV2Update:
     def test_project_update_history(
         self, agency_inputter_user, agency_user, _setup_project_create
     ):
+        from core.api.serializers.project_v2 import HISTORY_DESCRIPTION_UPDATE
+
         data = _setup_project_create
         self.client.force_authenticate(user=agency_inputter_user)
         response = self.client.post(TestCreateProjects.url, data, format="json")
@@ -1293,44 +1280,6 @@ class TestProjectFiles:
 
 class TestProjectVersioning:
     client = APIClient()
-
-    def test_increase_version_permissions(
-        self,
-        agency_inputter_user,
-        project,
-        user,
-        viewer_user,
-        agency_user,
-        secretariat_viewer_user,
-        secretariat_v1_v2_edit_access_user,
-        secretariat_production_v1_v2_edit_access_user,
-        secretariat_v3_edit_access_user,
-        secretariat_production_v3_edit_access_user,
-        admin_user,
-    ):
-        url = reverse("project-v2-increase-version", args=(project.id,))
-
-        def _test_user_permissions(user, expected_response_status):
-            self.client.force_authenticate(user=user)
-            response = self.client.post(url)
-            assert response.status_code == expected_response_status
-            return response.data
-
-        # test with unauthenticated user.
-        self.client.force_authenticate(user=None)
-        response = self.client.post(url)
-        assert response.status_code == 403
-
-        _test_user_permissions(user, 403)
-        _test_user_permissions(viewer_user, 403)
-        _test_user_permissions(agency_user, 200)
-        _test_user_permissions(agency_inputter_user, 403)
-        _test_user_permissions(secretariat_viewer_user, 403)
-        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
-        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
-        _test_user_permissions(secretariat_v3_edit_access_user, 403)
-        _test_user_permissions(secretariat_production_v3_edit_access_user, 403)
-        _test_user_permissions(admin_user, 200)
 
     def test_submit_permissions(
         self,
@@ -1781,43 +1730,6 @@ class TestProjectVersioning:
         assert response.status_code == 200
         project.refresh_from_db()
         assert project.submission_status.name == "Draft"
-
-    def test_increase_version(self, agency_user, project, test_file1):
-        self.client.force_authenticate(user=agency_user)
-        url = reverse("project-files-v2", args=(project.id,))
-
-        # upload file
-        data = {"files": [test_file1.open()]}
-        response = self.client.post(url, data, format="multipart")
-        assert response.status_code == 201
-
-        url = reverse("project-v2-increase-version", args=(project.id,))
-        # get project version
-        response = self.client.post(url)
-        assert response.status_code == 200
-        assert response.data["version"] == 2
-        assert len(response.data["versions"]) == 2
-        assert response.data["versions"][0]["version"] == 2
-        assert response.data["versions"][0]["created_by"] == agency_user.username
-        assert response.data["versions"][0]["title"] == project.title
-        assert response.data["versions"][0]["final_version_id"] == project.id
-        assert response.data["versions"][0]["date_created"] == project.date_created
-
-        archived_project = Project.objects.really_all().get(latest_project=project)
-        assert response.data["versions"][1]["version"] == 1
-        assert response.data["versions"][1]["created_by"] == getattr(
-            archived_project.version_created_by, "username", None
-        )
-        assert response.data["versions"][1]["title"] == archived_project.title
-        assert response.data["versions"][1]["final_version_id"] == project.id
-        assert (
-            response.data["versions"][1]["date_created"]
-            == archived_project.date_created
-        )
-
-        project_file = ProjectFile.objects.filter(project=project).first()
-        assert project_file is None
-        ProjectFile.objects.get(project=archived_project)
 
 
 class TestAssociateProject:

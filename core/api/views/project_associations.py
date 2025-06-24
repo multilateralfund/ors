@@ -2,19 +2,9 @@ from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, viewsets, filters
 
-from core.api.permissions import (
-    IsAgencyInputter,
-    IsAgencySubmitter,
-    IsSecretariatViewer,
-    IsSecretariatV1V2EditAccess,
-    IsSecretariatV3EditAccess,
-    IsSecretariatProductionV1V2EditAccess,
-    IsSecretariatProductionV3EditAccess,
-    IsViewer,
-)
+from core.api.permissions import HasProjectV2ViewAccess
 from core.api.serializers.project_association import MetaProjectSerializer
 from core.models.project import MetaProject
-from core.models.user import User
 
 # pylint: disable=R1710
 
@@ -27,6 +17,7 @@ class ProjectAssociationViewSet(
     This viewset allows users to retrieve a list of meta projects and their associated projects.
     """
 
+    permission_classes = [HasProjectV2ViewAccess]
     filter_backends = [
         DjangoFilterBackend,
         filters.OrderingFilter,
@@ -52,21 +43,6 @@ class ProjectAssociationViewSet(
     serializer_class = MetaProjectSerializer
     search_fields = ["projects__title"]
 
-    @property
-    def permission_classes(self):
-        if self.action in ["list"]:
-            return [
-                IsViewer
-                | IsAgencyInputter
-                | IsAgencySubmitter
-                | IsSecretariatViewer
-                | IsSecretariatV1V2EditAccess
-                | IsSecretariatV3EditAccess
-                | IsSecretariatProductionV1V2EditAccess
-                | IsSecretariatProductionV3EditAccess
-            ]
-        return []
-
     def filter_permissions_queryset(self, queryset):
         """
         Filter the queryset based on the user's permissions.
@@ -75,19 +51,10 @@ class ProjectAssociationViewSet(
         if user.is_superuser:
             return queryset
 
-        if user.user_type in [
-            User.UserType.SECRETARIAT_VIEWER,
-            User.UserType.SECRETARIAT_V1_V2_EDIT_ACCESS,
-            User.UserType.SECRETARIAT_V3_EDIT_ACCESS,
-            User.UserType.SECRETARIAT_PRODUCTION_V1_V2_EDIT_ACCESS,
-            User.UserType.SECRETARIAT_PRODUCTION_V3_EDIT_ACCESS,
-        ]:
+        if user.has_perm("core.can_view_all_agencies"):
             return queryset
-        if user.user_type in [
-            User.UserType.AGENCY_SUBMITTER,
-            User.UserType.AGENCY_INPUTTER,
-            User.UserType.VIEWER,
-        ]:
+
+        if user.has_perm("core.can_view_only_own_agency"):
             return queryset.filter(
                 Q(projects__agency=user.agency) | Q(lead_agency=user.agency)
             ).distinct()

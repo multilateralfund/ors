@@ -1,5 +1,7 @@
 import pytest
 from constance import config
+
+from django.contrib.auth.models import Group
 from django.urls import reverse
 from rest_framework.test import APIClient
 from unittest.mock import patch
@@ -22,13 +24,13 @@ class TestCPReportComments:
     COMMENT_COUNTRY = "comment_country"
     COMMENT_SECRETARIAT = "comment_secretariat"
 
-    def test_without_permission_secretariat(self, user, cp_report_2019):
+    def test_without_permission_secretariat(self, secretariat_user, cp_report_2019):
         url = reverse(
             "country-programme-report-comments", kwargs={"id": cp_report_2019.id}
         )
 
         # try to create country comment
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
         data = {
             "section": self.SECTION_A,
             "comment_type": self.COMMENT_COUNTRY,
@@ -53,7 +55,9 @@ class TestCPReportComments:
         assert response.status_code == 400
 
         # try create from another country
-        new_user = UserFactory(user_type="country_user", country=None)
+        group = Group.objects.get(name="Country user")
+        new_user = UserFactory(country=None)
+        new_user.groups.add(group)
         self.client.force_authenticate(user=new_user)
 
         data = {
@@ -65,7 +69,7 @@ class TestCPReportComments:
         assert response.status_code == 403
 
     def test_create_comments(
-        self, user, country_user, cp_report_2019, mock_send_mail_comment
+        self, secretariat_user, country_user, cp_report_2019, mock_send_mail_comment
     ):
         url = reverse(
             "country-programme-report-comments", kwargs={"id": cp_report_2019.id}
@@ -84,7 +88,7 @@ class TestCPReportComments:
         assert response.data["comment_type"] == self.COMMENT_COUNTRY
         assert response.data["comment"] == "Test create country"
 
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
         # create section B secretariat comment
         data = {
             "section": self.SECTION_B,
@@ -143,13 +147,15 @@ class TestCPReportComments:
         assert response.data["comment_type"] == self.COMMENT_COUNTRY
         assert response.data["comment"] == "Test create country submitter"
 
-    def test_config_mail_not_sent(self, user, cp_report_2019, mock_send_mail_comment):
+    def test_config_mail_not_sent(
+        self, secretariat_user, cp_report_2019, mock_send_mail_comment
+    ):
         config.SEND_MAIL = False  # change config
         url = reverse(
             "country-programme-report-comments", kwargs={"id": cp_report_2019.id}
         )
 
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
         # create section A comment
         data = {
             "section": self.SECTION_A,

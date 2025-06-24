@@ -119,9 +119,9 @@ class TestAdmEmptyFormView(BaseTest):
         assert response.status_code == 403
 
     def test_get_empty_form_2005(
-        self, user, cp_report_2005, _setup_empty_form, _cp_report_format
+        self, secretariat_user, cp_report_2005, _setup_empty_form, _cp_report_format
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
 
         # get adm form for 2005 cp report
         response = self.client.get(self.url, {"cp_report_id": cp_report_2005.id})
@@ -157,8 +157,10 @@ class TestAdmEmptyFormView(BaseTest):
         assert len(response.data["adm_d"]["rows"][0]["choices"]) == 3
         assert len(response.data["adm_d"]["rows"][1]["choices"]) == 3
 
-    def test_get_empty_form_2017(self, user, _setup_empty_form, _cp_report_format):
-        self.client.force_authenticate(user=user)
+    def test_get_empty_form_2017(
+        self, secretariat_user, _setup_empty_form, _cp_report_format
+    ):
+        self.client.force_authenticate(user=secretariat_user)
         cp_report_17 = _setup_empty_form
 
         response = self.client.get(self.url, {"cp_report_id": cp_report_17.id})

@@ -31,9 +31,9 @@ class TestVersionsList(BaseTest):
     url = reverse("country-programme-versions")
 
     def test_versions_list(
-        self, user, cp_report_2019, _setup_version_list, cp_report_2005
+        self, secretariat_user, cp_report_2019, _setup_version_list, cp_report_2005
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(
             self.url, {"country_id": cp_report_2019.country_id, "year": 2019}
@@ -48,16 +48,18 @@ class TestVersionsList(BaseTest):
         assert response.status_code == 200
         assert len(response.data) == 6
 
-    def test_versions_list_invalid_country_id(self, user, _setup_version_list):
-        self.client.force_authenticate(user=user)
+    def test_versions_list_invalid_country_id(
+        self, secretariat_user, _setup_version_list
+    ):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url, {"country_id": 999, "year": 2005})
         assert response.status_code == 400
 
     def test_versions_list_without_year(
-        self, user, cp_report_2019, _setup_version_list
+        self, secretariat_user, cp_report_2019, _setup_version_list
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url, {"country_id": cp_report_2019.country_id})
         assert response.status_code == 400
@@ -66,8 +68,10 @@ class TestVersionsList(BaseTest):
 class TestGetOldVersion(BaseTest):
     url = reverse("country-programme-archive-record-list")
 
-    def test_get_old_version_2019(self, user, _setup_old_version_2019, cp_report_2019):
-        self.client.force_authenticate(user=user)
+    def test_get_old_version_2019(
+        self, secretariat_user, _setup_old_version_2019, cp_report_2019
+    ):
+        self.client.force_authenticate(user=secretariat_user)
 
         cp_ar = _setup_old_version_2019
 
@@ -78,8 +82,10 @@ class TestGetOldVersion(BaseTest):
         assert len(response.data["section_a"][0]["excluded_usages"]) == 1
         assert len(response.data["section_b"]) == 1
 
-    def test_get_old_version_2005(self, user, _setup_old_version_2005, cp_report_2005):
-        self.client.force_authenticate(user=user)
+    def test_get_old_version_2005(
+        self, secretariat_user, _setup_old_version_2005, cp_report_2005
+    ):
+        self.client.force_authenticate(user=secretariat_user)
 
         cp_ar = _setup_old_version_2005
 

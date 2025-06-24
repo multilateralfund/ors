@@ -27,8 +27,8 @@ class TestProjectCommentCreate(BaseProjectUtilityCreate):
     def setup(self, _create_project_comment):
         self.__class__.new_utility_data = _create_project_comment
 
-    def test_invalid_meeting(self, user, _create_project_comment):
-        self.client.force_authenticate(user=user)
+    def test_invalid_meeting(self, secretariat_user, _create_project_comment):
+        self.client.force_authenticate(user=secretariat_user)
 
         project_data = _create_project_comment
         project_data["meeting_of_report_id"] = 999
@@ -59,8 +59,10 @@ class TestProjectCommentUpdate:
         response = self.client.patch(project_comment_detail_url)
         assert response.status_code == 403
 
-    def test_update(self, user, project_comment_detail_url, project_comment):
-        self.client.force_authenticate(user=user)
+    def test_update(
+        self, secretariat_user, project_comment_detail_url, project_comment
+    ):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.patch(
             project_comment_detail_url, {"secretariat_comment": "24 de karate"}
