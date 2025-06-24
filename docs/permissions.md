@@ -174,7 +174,3 @@
 | business-plan-activity/                       |  GET    | has_business_plan_view_access            | |
 | business-plan-activity/{id}/                  |  GET    | has_business_plan_view_access            | |
 | business-plan-activity/{id}/validate_for_removal/ |  GET | has_business_plan_view_access           | |
-
-
-
-TODO: FIX check_objs_permissions
