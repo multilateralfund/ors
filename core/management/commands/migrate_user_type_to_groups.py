@@ -4,8 +4,6 @@ from django.contrib.auth.models import Group
 
 from core.models import User
 
-from core.import_data.import_project_resources_v2 import import_project_resources_v2
-
 
 class Command(BaseCommand):
     help = """
