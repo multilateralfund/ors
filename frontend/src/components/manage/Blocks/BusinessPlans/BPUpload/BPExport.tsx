@@ -29,9 +29,9 @@ const BPExport = ({
   const { bp_status, year_end, year_start } = downloadFilters
   const { year_end: headerYearEnd, year_start: headerYearStart } = filters
 
-  const { canExportBp } = useContext(PermissionsContext)
+  const { canViewBp } = useContext(PermissionsContext)
 
-  const isDownloadButtonEnabled = canExportBp && year_start && bp_status
+  const isDownloadButtonEnabled = canViewBp && year_start && bp_status
 
   const downloadUrl = formatApiUrl(
     `/api/business-plan-activity/export/?year_start=${year_start}&year_end=${year_end}&bp_status=${bp_status}&header_year_start=${headerYearStart}&header_year_end=${headerYearEnd}`,
@@ -48,7 +48,7 @@ const BPExport = ({
           setFilters={setDownloadFilters}
         />
       </div>
-      {!canExportBp && (
+      {!canViewBp && (
         <Alert
           className="mt-2 w-fit"
           icon={<IoInformationCircleOutline size={24} />}

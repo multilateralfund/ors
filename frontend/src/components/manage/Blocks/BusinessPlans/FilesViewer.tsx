@@ -13,7 +13,7 @@ import { filter } from 'lodash'
 export function FilesViewer(props: BpDetails | ProjectDocs) {
   const { bpFiles, files, setFiles } = props
 
-  const { canDownloadFiles, canDeleteFiles } = useContext(PermissionsContext)
+  const { canUpdateBp } = useContext(PermissionsContext)
 
   const currentBpFiles = filter(
     bpFiles as (BpFile | ProjectFile)[],
@@ -48,22 +48,16 @@ export function FilesViewer(props: BpDetails | ProjectDocs) {
         ) : (
           currentFiles.map((file, index: number) => (
             <div key={index} className="flex items-center gap-2">
-              {canDownloadFiles ? (
-                <a
-                  className="m-0 flex items-center gap-2.5 no-underline"
-                  href={formatApiUrl(file.download_url)}
-                >
-                  <IoDownloadOutline className="mb-1 min-h-[20px] min-w-[20px] text-secondary" />
-                  <span className="text-lg font-medium text-secondary">
-                    {file.filename}
-                  </span>
-                </a>
-              ) : (
+              <a
+                className="m-0 flex items-center gap-2.5 no-underline"
+                href={formatApiUrl(file.download_url)}
+              >
+                <IoDownloadOutline className="mb-1 min-h-[20px] min-w-[20px] text-secondary" />
                 <span className="text-lg font-medium text-secondary">
                   {file.filename}
                 </span>
-              )}
-              {setFiles && canDeleteFiles && (
+              </a>
+              {setFiles && canUpdateBp && (
                 <IoTrash
                   className="transition-colors mb-1 min-h-[20px] min-w-[20px] text-[#666] ease-in-out hover:cursor-pointer hover:text-inherit"
                   onClick={() => handleDelete(file.id)}

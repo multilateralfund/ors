@@ -22,7 +22,7 @@ const BPTableToolbarButtons = (props: any) => {
   const { bpType } = useStore((state) => state.bpType)
   const { setActiveTab } = useStore((state) => state.bp_current_tab)
 
-  const { canUpdateBp, canExportBp } = useContext(PermissionsContext)
+  const { canUpdateBp } = useContext(PermissionsContext)
 
   const [domNode, setDomNode] = useState<Element>()
 
@@ -56,17 +56,16 @@ const BPTableToolbarButtons = (props: any) => {
               Revise BP
             </CustomLink>
           )}
-          {canExportBp &&
-            downloadUrls?.map((url: string, i: number) => (
-              <DownloadLink
-                key={i}
-                href={url ?? '#'}
-                iconClassname="mb-1"
-                className="text-lg text-[#344054]"
-              >
-                {downloadTexts[i]}
-              </DownloadLink>
-            ))}
+          {downloadUrls?.map((url: string, i: number) => (
+            <DownloadLink
+              key={i}
+              href={url ?? '#'}
+              iconClassname="mb-1"
+              className="text-lg text-[#344054]"
+            >
+              {downloadTexts[i]}
+            </DownloadLink>
+          ))}
         </div>
       </Portal>
     )

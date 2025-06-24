@@ -1,11 +1,9 @@
-import { ChangeEvent, Dispatch, SetStateAction, useContext } from 'react'
+import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
-import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { NavigationButton } from './NavigationButton'
 import { getCurrentPeriodOption } from '../utils'
 import { uploadFiles } from '@ors/helpers'
 
-import { IoInformationCircleOutline } from 'react-icons/io5'
 import { BiTrash } from 'react-icons/bi'
 import { FiFileText } from 'react-icons/fi'
 import { Button, Alert } from '@mui/material'
@@ -28,8 +26,6 @@ const BPImport = ({
   setValidations,
   periodOptions,
 }: IBPImport) => {
-  const { canValidateUploadBp } = useContext(PermissionsContext)
-
   const currentPeriod = getCurrentPeriodOption(
     periodOptions,
     filters?.year_start,
@@ -107,25 +103,12 @@ const BPImport = ({
           </div>
         )}
       </div>
-      {canValidateUploadBp &&
-        file &&
-        currentPeriod?.status.includes(filters?.bp_status) && (
-          <Alert className="BPAlert mt-2 w-fit border-0" severity="warning">
-            <p className="m-0 text-lg">
-              You are about to overwrite the existing data from this Business
-              Plan. Old versions are not kept in the system. Would you like to
-              continue?
-            </p>
-          </Alert>
-        )}
-      {!canValidateUploadBp && (
-        <Alert
-          className="mt-3 w-fit"
-          icon={<IoInformationCircleOutline size={24} />}
-          severity="error"
-        >
+      {file && currentPeriod?.status.includes(filters?.bp_status) && (
+        <Alert className="BPAlert mt-2 w-fit border-0" severity="warning">
           <p className="m-0 text-lg">
-            You are not authorized to validate business plans!
+            You are about to overwrite the existing data from this Business
+            Plan. Old versions are not kept in the system. Would you like to
+            continue?
           </p>
         </Alert>
       )}
@@ -133,9 +116,9 @@ const BPImport = ({
         <Button
           className={cx('mt-5 h-10 px-3 py-1', {
             'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
-              file && canValidateUploadBp,
+              file,
           })}
-          disabled={!file || !canValidateUploadBp}
+          disabled={!file}
           size="large"
           variant="contained"
           onClick={validateBP}

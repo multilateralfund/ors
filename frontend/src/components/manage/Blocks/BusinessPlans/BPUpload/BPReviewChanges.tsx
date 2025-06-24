@@ -43,7 +43,7 @@ const BPReviewChanges = ({
   const { setBPType } = useStore((state) => state.bpType)
   const { fetchYearRanges } = useStore((state) => state.yearRanges)
 
-  const { canUploadBp, canViewBp } = useContext(PermissionsContext)
+  const { canUpdateBp, canViewBp } = useContext(PermissionsContext)
 
   const [expandedItems, setExpandedItems] = useState<Array<string>>([])
   const [importResult, setImportResult] = useState<any>()
@@ -169,9 +169,9 @@ const BPReviewChanges = ({
           <Button
             className={cx('h-10 px-3 py-1', {
               'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
-                errors.length === 0 && canUploadBp,
+                errors.length === 0 && canUpdateBp,
             })}
-            disabled={errors.length > 0 || !canUploadBp}
+            disabled={errors.length > 0 || !canUpdateBp}
             size="large"
             variant="contained"
             onClick={submitBP}
@@ -191,16 +191,14 @@ const BPReviewChanges = ({
             <CircularProgress color="inherit" size="30px" className="ml-1.5" />
           )}
         </div>
-        {canViewBp && (
-          <Link
-            className="no-underline"
-            href={`/business-plans/list/report-info/${getLatestBpYearRange(periodOptions)?.value || currentTriennium}`}
-          >
-            <CancelButton className="h-10 !text-[15px]">
-              Cancel Upload
-            </CancelButton>
-          </Link>
-        )}
+        <Link
+          className="no-underline"
+          href={`/business-plans/list/report-info/${getLatestBpYearRange(periodOptions)?.value || currentTriennium}`}
+        >
+          <CancelButton className="h-10 !text-[15px]">
+            Cancel Upload
+          </CancelButton>
+        </Link>
       </div>
       {keys(importResult).length > 0 && !isLoading && (
         <Alert

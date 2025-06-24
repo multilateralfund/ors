@@ -1,8 +1,7 @@
 'use client'
 
-import { PropsWithChildren, useContext, useEffect } from 'react'
+import { PropsWithChildren, useEffect } from 'react'
 
-import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { getPathPeriod } from '@ors/components/manage/Blocks/Replenishment/utils'
 import { useStore } from '@ors/store'
 import styles from '@ors/app/business-plans/list/styles.module.css'
@@ -11,18 +10,14 @@ import { useLocation, Link } from 'wouter'
 import cx from 'classnames'
 
 const getNavLinks = (pathname: string, period: null | string) => {
-  const { canViewActivities, canViewBp } = useContext(PermissionsContext)
-
   const SECTIONS = [
     {
       label: 'Report Info',
       path: '/business-plans/list/report-info',
-      permissions: canViewBp,
     },
     {
       label: 'Activities',
       path: '/business-plans/list/activities',
-      permissions: canViewActivities,
     },
   ]
 
@@ -30,20 +25,18 @@ const getNavLinks = (pathname: string, period: null | string) => {
     pathname.startsWith(entry.path),
   )
 
-  const result = SECTIONS.filter((entry) => entry.permissions).map(
-    (entry, i) => {
-      const isCurrent = pathname.startsWith(entry.path)
-      return (
-        <Link
-          key={i}
-          className={cx('text-nowrap', { [styles.current]: isCurrent })}
-          href={period != null ? `${entry.path}/${period}` : entry.path}
-        >
-          {entry.label}
-        </Link>
-      )
-    },
-  )
+  const result = SECTIONS.map((entry, i) => {
+    const isCurrent = pathname.startsWith(entry.path)
+    return (
+      <Link
+        key={i}
+        className={cx('text-nowrap', { [styles.current]: isCurrent })}
+        href={period != null ? `${entry.path}/${period}` : entry.path}
+      >
+        {entry.label}
+      </Link>
+    )
+  })
 
   return [currentSection, result]
 }

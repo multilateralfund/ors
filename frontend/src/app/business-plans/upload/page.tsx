@@ -10,9 +10,9 @@ import { Redirect } from 'wouter'
 export default function BusinessPlans() {
   usePageTitle('Business Plans Upload')
 
-  const { canUploadBp, canViewBpYears } = useContext(PermissionsContext)
+  const { canUpdateBp } = useContext(PermissionsContext)
 
-  if (!canUploadBp || !canViewBpYears) {
+  if (!canUpdateBp) {
     return <Redirect to={'/business-plans'} />
   }
 

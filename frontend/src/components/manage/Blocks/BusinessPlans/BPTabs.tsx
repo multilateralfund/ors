@@ -1,6 +1,3 @@
-import { useContext } from 'react'
-
-import PermissionsContext from '@ors/contexts/PermissionsContext'
 import BPDetailsConsolidatedEdit from './BPEditConsolidated/BPDetailsConsolidatedEdit'
 import BPDetails from './BP/BPDetails'
 import { BPTabsInterface } from './types'
@@ -18,8 +15,6 @@ const BPTabs = ({
   const { setActiveTab: setActiveTabStore } = useStore(
     (state) => state.bp_current_tab,
   )
-
-  const { canViewBp, canViewActivities } = useContext(PermissionsContext)
 
   return (
     <>
@@ -40,20 +35,16 @@ const BPTabs = ({
             setActiveTabStore(newValue)
           }}
         >
-          {canViewBp && (
-            <Tab
-              id="business-plan-details"
-              aria-controls="business-plan-details"
-              label="Report Info"
-            />
-          )}
-          {canViewActivities && (
-            <Tab
-              id="business-plan-activities"
-              aria-controls="business-plan-activities"
-              label="Activities"
-            />
-          )}
+          <Tab
+            id="business-plan-details"
+            aria-controls="business-plan-details"
+            label="Report Info"
+          />
+          <Tab
+            id="business-plan-activities"
+            aria-controls="business-plan-activities"
+            label="Activities"
+          />
         </Tabs>
         <div id="bp-table-export-button" className="mb-1.5 self-end" />
       </div>

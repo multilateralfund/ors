@@ -15,10 +15,9 @@ export default function BusinessPlansEditConsolidated() {
 
   const { businessPlan } = useStore((state) => state.businessPlan)
 
-  const { canViewBp, canViewBpYears, canUpdateBp } =
-    useContext(PermissionsContext)
+  const { canViewBp, canUpdateBp } = useContext(PermissionsContext)
 
-  if (!canViewBp || !canViewBpYears || !canUpdateBp) {
+  if (!canViewBp || !canUpdateBp) {
     return <Redirect to={'/business-plans'} />
   }
   return (
