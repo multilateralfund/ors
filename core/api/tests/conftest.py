@@ -66,8 +66,8 @@ def user():
 
 @pytest.fixture
 def secretariat_user():
-    secretariat_group = Group.objects.get(name="Secretariat")
-    business_plan_editor_group = Group.objects.get(name="Business plan editor")
+    secretariat_group = Group.objects.get(name="CP - Secretariat")
+    business_plan_editor_group = Group.objects.get(name="BP - Editor")
     user = UserFactory(username="SecretariatUser", email="secretariat_user@mail.com")
     user.groups.add(secretariat_group)
     user.groups.add(business_plan_editor_group)
@@ -76,7 +76,7 @@ def secretariat_user():
 
 @pytest.fixture
 def second_user():
-    secretariat_group = Group.objects.get(name="Secretariat")
+    secretariat_group = Group.objects.get(name="CP - Secretariat")
     user = UserFactory(username="Plebeii", email="restul@cantaretilor.ro")
     user.groups.add(secretariat_group)
     return user
@@ -84,7 +84,7 @@ def second_user():
 
 @pytest.fixture
 def viewer_user():
-    group = Group.objects.get(name="Viewer")
+    group = Group.objects.get(name="Projects - Agency viewer")
     user = UserFactory(username="GuraCasca", email="doarmauit@numersi.ro")
     user.groups.add(group)
     return user
@@ -101,7 +101,7 @@ def admin_user():
 
 @pytest.fixture
 def secretariat_viewer_user():
-    group = Group.objects.get(name="Secretariat project viewer")
+    group = Group.objects.get(name="Projects - MLFS Viewer")
     user = UserFactory(username="secretariat_viewer", email="testuser@test.com")
     user.groups.add(group)
     return user
@@ -109,7 +109,7 @@ def secretariat_viewer_user():
 
 @pytest.fixture
 def secretariat_v1_v2_edit_access_user():
-    group = Group.objects.get(name="Secretariat project v1/v2 editing access")
+    group = Group.objects.get(name="Projects - MLFS Submission V1/V2")
     user = UserFactory(
         username="secretariat_v1_v2_edit_access",
         email="secretariat_v1_v2_edit_access@mail.com",
@@ -120,7 +120,7 @@ def secretariat_v1_v2_edit_access_user():
 
 @pytest.fixture
 def secretariat_v3_edit_access_user():
-    group = Group.objects.get(name="Secretariat project v3 editing access")
+    group = Group.objects.get(name="Projects - MLFS Submission V3")
     user = UserFactory(
         username="secretariat_v3_edit_access",
         email="secretariat_v3_edit_access@mail.com",
@@ -131,9 +131,7 @@ def secretariat_v3_edit_access_user():
 
 @pytest.fixture
 def secretariat_production_v1_v2_edit_access_user():
-    group = Group.objects.get(
-        name="Secretariat production project v1/v2 editing access"
-    )
+    group = Group.objects.get(name="Projects - MLFS Submission V1/V2 Production")
     user = UserFactory(
         username="secretariat_production_v1_v2_edit_access",
         email="secretariat_production_v1_v2_edit_access@mail.com",
@@ -144,7 +142,7 @@ def secretariat_production_v1_v2_edit_access_user():
 
 @pytest.fixture
 def secretariat_production_v3_edit_access_user():
-    group = Group.objects.get(name="Secretariat production project v3 editing access")
+    group = Group.objects.get(name="Projects - MLFS Submission V3 Production")
     user = UserFactory(
         username="secretariat_production_v3_edit_access",
         email="secretariat_production_v3_edit_access@mail.com",
@@ -164,7 +162,7 @@ def load_groups_and_permissions(django_db_setup, django_db_blocker):
 
 @pytest.fixture
 def bp_viewer_user():
-    group = Group.objects.get(name="Business plan viewer")
+    group = Group.objects.get(name="BP - Viewer")
     user = UserFactory(username="bp_viewer", email="bp_viewer@mail.com")
     user.groups.add(group)
     return user
@@ -172,7 +170,7 @@ def bp_viewer_user():
 
 @pytest.fixture
 def bp_editor_user():
-    group = Group.objects.get(name="Business plan editor")
+    group = Group.objects.get(name="BP - Editor")
     user = UserFactory(username="bp_editor", email="bp_editor@mail.com")
     user.groups.add(group)
     return user
@@ -180,7 +178,7 @@ def bp_editor_user():
 
 @pytest.fixture
 def stakeholder_user():
-    group = Group.objects.get(name="Stakeholder")
+    group = Group.objects.get(name="Replenishment - Viewer")
     user = UserFactory()
     user.groups.add(group)
     return user
@@ -198,8 +196,8 @@ def _new_agency():
 
 @pytest.fixture
 def agency_user(agency):
-    group = Group.objects.get(name="Agency submitter")
-    business_plan_viewer_group = Group.objects.get(name="Business plan viewer")
+    group = Group.objects.get(name="Projects - Agency submitter")
+    business_plan_viewer_group = Group.objects.get(name="BP - Viewer")
     user = UserFactory(username="AgencyUser", agency=agency)
     user.groups.add(group)
     user.groups.add(business_plan_viewer_group)
@@ -208,8 +206,8 @@ def agency_user(agency):
 
 @pytest.fixture
 def agency_inputter_user(agency):
-    group = Group.objects.get(name="Agency inputter")
-    business_plan_viewer_group = Group.objects.get(name="Business plan viewer")
+    group = Group.objects.get(name="Projects - Agency inputter")
+    business_plan_viewer_group = Group.objects.get(name="BP - Viewer")
 
     user = UserFactory(username="AgencyInputterUser", agency=agency)
     user.groups.add(group)
@@ -223,8 +221,16 @@ def country_ro():
 
 
 @pytest.fixture
+def country_viewer_user(country_ro):
+    group = Group.objects.get(name="CP - Viewer")
+    user = UserFactory(username="CountryViewer", country=country_ro)
+    user.groups.add(group)
+    return user
+
+
+@pytest.fixture
 def country_user(country_ro):
-    group = Group.objects.get(name="Country user")
+    group = Group.objects.get(name="CP - Country user")
     user = UserFactory(username="CountryUser", country=country_ro)
     user.groups.add(group)
     return user
@@ -232,7 +238,7 @@ def country_user(country_ro):
 
 @pytest.fixture
 def country_submitter(country_ro):
-    group = Group.objects.get(name="Country submitter")
+    group = Group.objects.get(name="CP - Country submitter")
     user = UserFactory(country=country_ro)
     user.groups.add(group)
     return user
@@ -240,7 +246,7 @@ def country_submitter(country_ro):
 
 @pytest.fixture
 def treasurer_user():
-    treasurer_group = Group.objects.get(name="Treasurer")
+    treasurer_group = Group.objects.get(name="Replenishment - Treasurer")
     user = UserFactory(username="FaraNumar")
     user.groups.add(treasurer_group)
     return user

@@ -55,7 +55,7 @@ class TestCPReportComments:
         assert response.status_code == 400
 
         # try create from another country
-        group = Group.objects.get(name="Country user")
+        group = Group.objects.get(name="CP - Country user")
         new_user = UserFactory(country=None)
         new_user.groups.add(group)
         self.client.force_authenticate(user=new_user)
