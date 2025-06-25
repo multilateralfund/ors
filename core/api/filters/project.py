@@ -1,5 +1,6 @@
 from django_filters import rest_framework as filters
 from django_filters.fields import CSVWidget
+from django_filters.rest_framework import DjangoFilterBackend
 
 from core.models.agency import Agency
 from core.models.country import Country
@@ -17,6 +18,11 @@ from core.models.project_metadata import (
     ProjectType,
 )
 from core.models.utils import SubstancesType
+
+
+class ProjectFilterBackend(DjangoFilterBackend):
+    def get_filterset_class(self, view, queryset=None):
+        return ProjectFilter
 
 
 class MetaProjectFilter(filters.FilterSet):
