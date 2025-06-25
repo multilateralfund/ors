@@ -37,7 +37,7 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture(name="other_agency_user")
 def _other_agency_user():
-    group = Group.objects.get(name="Agency submitter")
+    group = Group.objects.get(name="Projects - Agency submitter")
     other_agency = AgencyFactory.create(name="Agency2", code="AG2")
     user = UserFactory.create(agency=other_agency)
     user.groups.add(group)
@@ -47,7 +47,7 @@ def _other_agency_user():
 @pytest.fixture(name="other_country_user")
 def _other_country_user():
     other_country = CountryFactory.create(name="New Country")
-    group = Group.objects.get(name="Country user")
+    group = Group.objects.get(name="CP - Country user")
     user = UserFactory.create(country=other_country)
     user.groups.add(group)
     return user

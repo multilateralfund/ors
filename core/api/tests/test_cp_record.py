@@ -30,9 +30,14 @@ class TestCPRecordList(BaseTest):
         assert response.status_code == 400
 
     def test_get_new_cp_record_list(
-        self, viewer_user, substance, blend, cp_report_2019, _setup_new_cp_report
+        self,
+        country_viewer_user,
+        substance,
+        blend,
+        cp_report_2019,
+        _setup_new_cp_report,
     ):
-        self.client.force_authenticate(user=viewer_user)
+        self.client.force_authenticate(user=country_viewer_user)
 
         # get cp records list
         response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
@@ -97,10 +102,10 @@ class TestCPRecordList(BaseTest):
         assert response.data["section_f"]["remarks"] == cp_report_2019.comment
 
     def test_get_old_cp_record_list(
-        self, viewer_user, cp_report_2005, _setup_old_cp_report
+        self, country_viewer_user, cp_report_2005, _setup_old_cp_report
     ):
         last_choice = _setup_old_cp_report
-        self.client.force_authenticate(user=viewer_user)
+        self.client.force_authenticate(user=country_viewer_user)
 
         # check response
         response = self.client.get(self.url, {"cp_report_id": cp_report_2005.id})

@@ -17,11 +17,11 @@ from openpyxl.worksheet.page import PageMargins
 
 User = get_user_model()
 
-COUNTRY_USER_GROUP = "Country user"
-COUNTRY_SUBMITTER_GROUP = "Country submitter"
+COUNTRY_USER_GROUP = "CP - Country user"
+COUNTRY_SUBMITTER_GROUP = "CP - Country submitter"
 
-AGENCY_INPUTTER_GROUP = "Agency inputter"
-AGENCY_SUBMITTER_GROUP = "Agency submitter"
+AGENCY_INPUTTER_GROUP = "Projects - Agency inputter"
+AGENCY_SUBMITTER_GROUP = "Projects - Agency submitter"
 
 SECTION_ANNEX_MAPPING = {
     "A": ["A", "B", "C", "D", "E"],
