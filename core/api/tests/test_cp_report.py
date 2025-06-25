@@ -92,7 +92,7 @@ def _status_update_url(cp_report_2019):
 @pytest.fixture(name="another_country_user")
 def _another_country_user():
     new_country = CountryFactory.create(name="New Country")
-    group = Group.objects.get(name="Country user")
+    group = Group.objects.get(name="CP - Country user")
     user = UserFactory.create(country=new_country)
     user.groups.add(group)
     return user
@@ -101,8 +101,8 @@ def _another_country_user():
 class TestCPReportList(BaseTest):
     url = reverse("country-programme-reports")
 
-    def test_get_cp_report_list(self, viewer_user, _setup_cp_report_list):
-        self.client.force_authenticate(user=viewer_user)
+    def test_get_cp_report_list(self, country_viewer_user, _setup_cp_report_list):
+        self.client.force_authenticate(user=country_viewer_user)
 
         # get cp reports list
         response = self.client.get(self.url, {"ordering": "year,country__name"})
@@ -214,8 +214,8 @@ class TestCPReportList(BaseTest):
 class TestCPReportListGroupByYear(BaseTest):
     url = reverse("country-programme-reports-by-year")
 
-    def test_get_cp_report_list(self, viewer_user, _setup_cp_report_list):
-        self.client.force_authenticate(user=viewer_user)
+    def test_get_cp_report_list(self, country_viewer_user, _setup_cp_report_list):
+        self.client.force_authenticate(user=country_viewer_user)
 
         response = self.client.get(self.url)
         assert response.status_code == 200
@@ -255,8 +255,8 @@ class TestCPReportListGroupByYear(BaseTest):
 class TestCPReportListGroupByCountry(BaseTest):
     url = reverse("country-programme-reports-by-country")
 
-    def test_get_cp_report_list(self, viewer_user, _setup_cp_report_list):
-        self.client.force_authenticate(user=viewer_user)
+    def test_get_cp_report_list(self, country_viewer_user, _setup_cp_report_list):
+        self.client.force_authenticate(user=country_viewer_user)
 
         response = self.client.get(self.url)
         assert response.status_code == 200
@@ -1421,9 +1421,9 @@ class TestGetEmptyForm(BaseTest):
     url = reverse("empty-form")
 
     def test_without_cp_report_id(
-        self, viewer_user, _setup_get_empty_form, _cp_report_format
+        self, country_viewer_user, _setup_get_empty_form, _cp_report_format
     ):
-        self.client.force_authenticate(user=viewer_user)
+        self.client.force_authenticate(user=country_viewer_user)
         response = self.client.get(self.url)
         assert response.status_code == 200
         assert len(response.data["usage_columns"]["section_a"]) == 1
