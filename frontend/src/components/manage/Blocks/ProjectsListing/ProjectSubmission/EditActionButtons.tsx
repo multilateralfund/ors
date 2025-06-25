@@ -49,7 +49,8 @@ const EditActionButtons = ({
   const commonSlice = useStore((state) => state.common)
   const user_permissions = commonSlice.user_permissions.data || []
 
-  const { canUpdateProjects } = useContext(PermissionsContext)
+  const { canUpdateProjects, canSubmitProjects, canRecommendProjects } =
+    useContext(PermissionsContext)
 
   const [isModalOpen, setIsModalOpen] = useState(false)
 
@@ -215,7 +216,7 @@ const EditActionButtons = ({
       >
         Close
       </Link>
-      {user_permissions.includes('edit_project') && (
+      {canUpdateProjects && (
         <Button
           className={cx('px-4 py-2 shadow-none', {
             [enabledButtonClassname]: !isSaveDisabled,
@@ -238,14 +239,16 @@ const EditActionButtons = ({
           Add additional component
         </Button>
       )}
-      {user_permissions.includes('increase_project_version') &&
+      {canSubmitProjects &&
         (version === 1 && lowerCase(submission_status) === 'draft' ? (
           <IncreaseVersionButton
             title="Submit project"
             onSubmit={submitProject}
             isDisabled={disableSubmit}
           />
-        ) : version === 2 && lowerCase(submission_status) === 'submitted' ? (
+        ) : version === 2 &&
+          lowerCase(submission_status) === 'submitted' &&
+          canRecommendProjects ? (
           <>
             <IncreaseVersionButton
               title="Recommend project"

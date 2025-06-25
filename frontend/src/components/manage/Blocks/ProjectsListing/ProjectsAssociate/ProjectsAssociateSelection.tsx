@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useRef } from 'react'
+import { useContext, useMemo, useRef } from 'react'
 
 import ViewTable from '@ors/components/manage/Form/ViewTable'
 import CustomLink from '@ors/components/ui/Link/Link'
@@ -14,6 +14,7 @@ import { ProjectTypeApi } from '../interfaces'
 import { initialFilters } from '../constants'
 
 import { find, flatMap } from 'lodash'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 
 const ProjectsAssociateSelection = ({
   project,
@@ -32,6 +33,8 @@ const ProjectsAssociateSelection = ({
   setFilters: (filters: any) => void
   setMode: (mode: string) => void
 }) => {
+  const { canAssociateProjects } = useContext(PermissionsContext)
+
   const form = useRef<any>()
 
   const { results = [], setParams } = projectsAssociation
@@ -103,12 +106,14 @@ const ProjectsAssociateSelection = ({
           >
             Cancel
           </CustomLink>
-          <SubmitButton
-            title="Associate"
-            isDisabled={associationIds.length === 0}
-            onSubmit={associateProject}
-            className="h-9"
-          />
+          {canAssociateProjects && (
+            <SubmitButton
+              title="Associate"
+              isDisabled={associationIds.length === 0}
+              onSubmit={associateProject}
+              className="h-9"
+            />
+          )}
         </div>
       </div>
       <p className="my-0 text-[22px]">Selected project</p>

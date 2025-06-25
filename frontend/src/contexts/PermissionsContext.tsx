@@ -6,6 +6,8 @@ interface PermissionsContextProps {
   canViewProjects: boolean
   canUpdateProjects: boolean
   canAssociateProjects: boolean
+  canSubmitProjects: boolean
+  canRecommendProjects: boolean
 }
 
 const PermissionsContext = createContext<PermissionsContextProps>(

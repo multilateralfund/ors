@@ -27,8 +27,13 @@ const getColumnDefs = (
   associationIds?: number[],
   setAssociationIds?: (data: number[]) => void,
 ) => {
-  const { canViewProjects, canAssociateProjects, canUpdateProjects } =
-    useContext(PermissionsContext)
+  const {
+    canViewProjects,
+    canAssociateProjects,
+    canUpdateProjects,
+    canSubmitProjects,
+    canRecommendProjects,
+  } = useContext(PermissionsContext)
 
   return {
     columnDefs: [
@@ -81,7 +86,9 @@ const getColumnDefs = (
           <div className="flex items-center gap-1 p-2">
             {mode === 'listing' && (
               <>
-                {user_permissions.includes('edit_project') && (
+                {(canUpdateProjects ||
+                  canSubmitProjects ||
+                  canRecommendProjects) && (
                   <Link
                     className="flex h-4 w-4 justify-center"
                     href={`/projects-listing/${props.data.id}/edit`}
@@ -91,8 +98,7 @@ const getColumnDefs = (
                 )}
                 {projectId !== undefined &&
                   setProjectData &&
-                  canAssociateProjects &&
-                  canUpdateProjects && (
+                  (canAssociateProjects || canUpdateProjects) && (
                     <Checkbox
                       checked={projectId == props.data.id}
                       onChange={(event) => {
