@@ -4,6 +4,7 @@ import { useLocation } from 'wouter'
 import { useStore } from '@ors/store'
 
 import useGetBpPeriods from '@ors/components/manage/Blocks/BusinessPlans/BPList/useGetBPPeriods'
+import NotFoundPage from '@ors/app/not-found'
 import {
   getCurrentTriennium,
   getLatestBpYearRange,
@@ -25,6 +26,10 @@ export default function BusinessPlans() {
       )
     }
   }, [periodOptions, setLocation])
+
+  if (yearRanges?.error) {
+    return <NotFoundPage />
+  }
 
   return <></>
 }
