@@ -1,7 +1,8 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useContext, useMemo, useRef, useState } from 'react'
 
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import Loading from '@ors/components/theme/Loading/Loading'
 import CustomLink from '@ors/components/ui/Link/Link'
 import ExpandableMenu from './ExpandableMenu'
@@ -9,8 +10,8 @@ import GenerateDBMenu from './GenerateDBMenu'
 import PListingFilters from './PListingFilters'
 import PListingTable from './PListingTable'
 import { useGetProjects } from '../hooks/useGetProjects'
-import { initialFilters, menus } from '../constants'
-import { useStore } from '@ors/store'
+import { initialFilters } from '../constants'
+import { getMenus } from '../utils'
 
 import { Modal, Typography, Button, Box } from '@mui/material'
 import { IoIosLink } from 'react-icons/io'
@@ -20,8 +21,8 @@ import cx from 'classnames'
 export default function PListing() {
   const form = useRef<any>()
 
-  const commonSlice = useStore((state) => state.common)
-  const user_permissions = commonSlice.user_permissions.data || []
+  const { canViewBp, canUpdateBp, canUpdateProjects, canAssociateProjects } =
+    useContext(PermissionsContext)
 
   const projects = useGetProjects(initialFilters)
   const { loading, setParams } = projects
@@ -40,28 +41,34 @@ export default function PListing() {
 
   const projectActions = (
     <div className="flex flex-wrap items-center gap-3">
-      {user_permissions.includes('add_project') && (
+      {canUpdateProjects && (
         <div
           className={cx('flex cursor-pointer gap-1 px-2 no-underline', {
             'flex !cursor-default gap-1 px-2 text-gray-400 opacity-60':
               !projectId,
           })}
-          onClick={() => setIsCopyModalOpen(true)}
+          onClick={() => {
+            if (projectId) {
+              setIsCopyModalOpen(true)
+            }
+          }}
         >
           <LuCopy className="mb-1" size={18} />
           Copy project
         </div>
       )}
-      <CustomLink
-        href={projectId ? `/projects-listing/associate/${projectId}` : null}
-        className={cx('flex cursor-pointer gap-1 px-2 no-underline', {
-          'flex !cursor-default gap-1 px-2 text-gray-400 opacity-60':
-            !projectId,
-        })}
-      >
-        <IoIosLink className="mb-1" size={18} />
-        Associate project
-      </CustomLink>
+      {canAssociateProjects && (
+        <CustomLink
+          href={projectId ? `/projects-listing/associate/${projectId}` : null}
+          className={cx('flex cursor-pointer gap-1 px-2 no-underline', {
+            'flex !cursor-default gap-1 px-2 text-gray-400 opacity-60':
+              !projectId,
+          })}
+        >
+          <IoIosLink className="mb-1" size={18} />
+          Associate project
+        </CustomLink>
+      )}
       <GenerateDBMenu />
     </div>
   )
@@ -115,12 +122,12 @@ export default function PListing() {
         active={loading}
       />
       <div className="mt-5 flex flex-wrap justify-between gap-y-3">
-        <div className="flex flex-wrap gap-x-2 gap-y-3">
-          {menus.map((menu) => (
+        <div className="mb-2 flex flex-wrap gap-x-2 gap-y-3">
+          {getMenus({ canViewBp, canUpdateBp }).map((menu) => (
             <ExpandableMenu menu={menu} />
           ))}
         </div>
-        {user_permissions.includes('add_project') && (
+        {canUpdateProjects && (
           <CustomLink
             className="mb-4 h-10 min-w-[6.25rem] text-nowrap px-4 py-2 text-lg uppercase"
             href="/projects-listing/create"

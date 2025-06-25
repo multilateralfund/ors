@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useContext, useMemo, useState } from 'react'
 
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import Link from '@ors/components/ui/Link/Link'
 import { IncreaseVersionButton } from '../HelperComponents'
 import {
@@ -47,6 +48,8 @@ const EditActionButtons = ({
 
   const commonSlice = useStore((state) => state.common)
   const user_permissions = commonSlice.user_permissions.data || []
+
+  const { canUpdateProjects } = useContext(PermissionsContext)
 
   const [isModalOpen, setIsModalOpen] = useState(false)
 
@@ -202,18 +205,16 @@ const EditActionButtons = ({
 
   return (
     <div className="container flex w-full flex-wrap gap-x-3 gap-y-2 px-0">
-      {user_permissions.includes('view_project') && (
-        <Link
-          className="border border-solid border-primary bg-white px-4 py-2 text-primary shadow-none hover:bg-primary hover:text-white"
-          color="primary"
-          href={`/projects-listing/${id}`}
-          size="large"
-          variant="contained"
-          button
-        >
-          Close
-        </Link>
-      )}
+      <Link
+        className="border border-solid border-primary bg-white px-4 py-2 text-primary shadow-none hover:bg-primary hover:text-white"
+        color="primary"
+        href={`/projects-listing/${id}`}
+        size="large"
+        variant="contained"
+        button
+      >
+        Close
+      </Link>
       {user_permissions.includes('edit_project') && (
         <Button
           className={cx('px-4 py-2 shadow-none', {
@@ -227,7 +228,7 @@ const EditActionButtons = ({
           Update project
         </Button>
       )}
-      {user_permissions.includes('add_project') && (
+      {canUpdateProjects && (
         <Button
           className={cx('px-4 py-2 shadow-none', enabledButtonClassname)}
           size="large"

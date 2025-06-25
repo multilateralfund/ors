@@ -9,9 +9,19 @@ import cx from 'classnames'
 const ExpandableMenu = ({
   menu,
 }: {
-  menu: { title: string; menuItems: { title: string; url: string | null }[] }
+  menu: {
+    title: string
+    menuItems: {
+      title: string
+      url: string | null
+      permissions?: boolean[]
+    }[]
+  }
 }) => {
   const { title, menuItems } = menu
+  const filteredMenuItems = menuItems.filter(
+    ({ permissions }) => !permissions || permissions.some(Boolean),
+  )
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
@@ -26,19 +36,21 @@ const ExpandableMenu = ({
 
   return (
     <>
-      <Button
-        className="h-10 cursor-pointer bg-white p-4 text-lg font-semibold uppercase tracking-[0.1em] text-typography-primary shadow-[0_4px_12px_0_rgba(0,0,0,0.25)] hover:bg-white hover:text-typography-primary"
-        endIcon={
-          <div className="rounded-full border border-solid border-black bg-[#ebff00]">
-            <MdExpandMore size={16} color="black" />
-          </div>
-        }
-        size="large"
-        variant="contained"
-        onClick={handleOpen}
-      >
-        {title}
-      </Button>
+      {filteredMenuItems.length > 0 && (
+        <Button
+          className="h-10 cursor-pointer bg-white p-4 text-lg font-semibold uppercase tracking-[0.1em] text-typography-primary shadow-[0_4px_12px_0_rgba(0,0,0,0.25)] hover:bg-white hover:text-typography-primary"
+          endIcon={
+            <div className="rounded-full border border-solid border-black bg-[#ebff00]">
+              <MdExpandMore size={16} color="black" />
+            </div>
+          }
+          size="large"
+          variant="contained"
+          onClick={handleOpen}
+        >
+          {title}
+        </Button>
+      )}
 
       <Menu
         anchorEl={anchorEl}
@@ -70,13 +82,13 @@ const ExpandableMenu = ({
           },
         }}
       >
-        {menuItems.map(({ url, title }, index) => (
+        {filteredMenuItems.map(({ url, title }, index) => (
           <MenuItem
             className={cx(
               'rounded-none py-1.5 pl-3 pr-12 hover:bg-mlfs-hlYellow',
               {
                 'border-b-[3px] border-solid border-b-[#62BAF2]':
-                  index !== menuItems.length - 1,
+                  index !== filteredMenuItems.length - 1,
               },
             )}
             onClick={handleClose}

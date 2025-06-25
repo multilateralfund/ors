@@ -54,6 +54,7 @@ import ProjectsEditPage from '@ors/app/projects_listing/[project_id]/edit/page'
 import ProjectsListingProjectPage from '@ors/app/projects_listing/[project_id]/page'
 import ProjectsListingArchiveProjectPage from '@ors/app/projects_listing/[project_id]/archive/page'
 
+import PermissionsProvider from './contexts/PermissionsProvider'
 import NotFoundPage from '@ors/app/not-found'
 
 import RootLayout from './app/layout'
@@ -72,12 +73,22 @@ function RedirectToSection() {
       'has_cp_report_view_access',
       'has_project_v2_view_access',
     ].some((permission) => user_permissions.includes(permission))
+  const isOnlyProjectsUser =
+    user_permissions.includes('has_project_v2_view_access') &&
+    ![
+      'has_replenishment_view_access',
+      'has_cp_report_view_access',
+      'has_business_plan_view_access',
+    ].some((permission) => user_permissions.includes(permission))
 
   if (isTreasurer) {
     return <Redirect to={'/replenishment/dashboard/cummulative'} />
   }
   if (isOnlyBpUser) {
     return <Redirect to={'/business-plans'} />
+  }
+  if (isOnlyProjectsUser) {
+    return <Redirect to={'/projects-listing'} />
   }
   return <Redirect to={'/country-programme/reports'} />
 }
@@ -241,34 +252,54 @@ export default function App() {
           <ProjectsPage />
         </Route>
         <Route path="/projects-listing">
-          <ProjectsListingPage />
+          <PermissionsProvider>
+            <ProjectsListingPage />
+          </PermissionsProvider>
         </Route>
         <Route path="/projects-listing/create">
-          <ProjectsCreatePage />
+          <PermissionsProvider>
+            <ProjectsCreatePage />
+          </PermissionsProvider>
         </Route>
         <Route path="/projects-listing/associate/:project_id">
-          <ProjectsAssociationPage />
+          <PermissionsProvider>
+            <ProjectsAssociationPage />
+          </PermissionsProvider>
         </Route>
         <Route path="/projects-listing/export">
-          <ProjectsExportPage />
+          <PermissionsProvider>
+            <ProjectsExportPage />
+          </PermissionsProvider>
         </Route>
         <Route path="/projects-listing/:project_id">
-          <ProjectsListingProjectPage />
+          <PermissionsProvider>
+            <ProjectsListingProjectPage />
+          </PermissionsProvider>
         </Route>
         <Route path="/projects-listing/:project_id/archive/:version">
-          <ProjectsListingArchiveProjectPage />
+          <PermissionsProvider>
+            <ProjectsListingArchiveProjectPage />
+          </PermissionsProvider>
         </Route>
         <Route path="/projects-listing/:project_id/edit">
-          <ProjectsEditPage mode="edit" />
+          <PermissionsProvider>
+            <ProjectsEditPage mode="edit" />
+          </PermissionsProvider>
         </Route>
         <Route path="/projects-listing/create/:project_id/copy">
-          <ProjectsEditPage mode="copy" />
+          <PermissionsProvider>
+            <ProjectsEditPage mode="copy" />
+          </PermissionsProvider>
         </Route>
         <Route path="/projects-listing/create/:project_id/full-copy/additional-component">
-          <ProjectsEditPage mode="full-link" />
+          <PermissionsProvider>
+            <ProjectsEditPage mode="full-link" />
+          </PermissionsProvider>
         </Route>
         <Route path="/projects-listing/create/:project_id/partial-copy/additional-component">
-          <ProjectsEditPage mode="partial-link" />
+          <PermissionsProvider>
+            <ProjectsEditPage mode="partial-link" />
+          </PermissionsProvider>
         </Route>
         <Route>
           <NotFoundPage />
