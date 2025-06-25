@@ -1,6 +1,3 @@
-import { useContext } from 'react'
-
-import PermissionsContext from '@ors/contexts/PermissionsContext'
 import SimpleField from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleField'
 import VersionHistoryList from '@ors/components/ui/VersionDetails/VersionHistoryList'
 import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
@@ -19,8 +16,6 @@ const BPSummary = (props: any) => {
   const { results, bpFiles, loadedFiles } = props
   const { year_end, year_start, status, meeting_id, decision_id } =
     results[0] || {}
-
-  const { canViewFiles } = useContext(PermissionsContext)
 
   return (
     <div className="flex flex-col gap-6 rounded-lg bg-white p-6">
@@ -57,12 +52,8 @@ const BPSummary = (props: any) => {
           textClassName="text-[1.25rem]"
         />
       </div>
-      {canViewFiles && (
-        <>
-          <Divider />
-          {loadedFiles && <FilesViewer bpFiles={bpFiles || []} />}
-        </>
-      )}
+      <Divider />
+      {loadedFiles && <FilesViewer bpFiles={bpFiles || []} />}
     </div>
   )
 }

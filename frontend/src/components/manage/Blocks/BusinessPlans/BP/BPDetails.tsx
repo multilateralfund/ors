@@ -28,7 +28,7 @@ function BPSummary(props: BpDetails) {
   const { business_plan = {} } = data?.results
   const { agency, year_start } = business_plan
 
-  const { canViewFiles, canUploadFiles } = useContext(PermissionsContext)
+  const { canUpdateBp } = useContext(PermissionsContext)
 
   return (
     <div className="flex flex-col gap-6 rounded-lg bg-gray-100 p-4">
@@ -44,11 +44,11 @@ function BPSummary(props: BpDetails) {
       </div>
       {setFiles ? (
         <>
-          {canViewFiles && <FilesViewer {...{ bpFiles, files, setFiles }} />}
-          {canUploadFiles && <FileInput {...{ files, setFiles }} />}
+          <FilesViewer {...{ bpFiles, files, setFiles }} />
+          {canUpdateBp && <FileInput {...{ files, setFiles }} />}
         </>
       ) : (
-        canViewFiles && <FilesViewer bpFiles={bpFiles} />
+        <FilesViewer bpFiles={bpFiles} />
       )}
     </div>
   )

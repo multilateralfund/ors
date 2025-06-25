@@ -58,7 +58,6 @@ from core.utils import get_meta_project_code, get_project_sub_code
 
 # pylint: disable=C0302,W0613
 
-
 @pytest.fixture
 def user():
     return UserFactory(username="FlorinSalam", email="salam@reggaeton.ta")

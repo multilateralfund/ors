@@ -18,9 +18,9 @@ export default function BusinessPlansDetailsConsolidated() {
   const { period } = useParams<Record<string, string>>()
   const bpType = useSetInitialBpType(yearRanges, period)
 
-  const { canViewBp, canViewBpYears } = useContext(PermissionsContext)
+  const { canViewBp } = useContext(PermissionsContext)
 
-  if (!canViewBp || !canViewBpYears) {
+  if (!canViewBp) {
     return <NotFoundPage />
   }
 

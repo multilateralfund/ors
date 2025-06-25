@@ -62,13 +62,21 @@ import { useStore } from '@ors/store.tsx'
 function RedirectToSection() {
   const user = useStore((state) => state.user)
   const isTreasurer = user && user.data.user_type === 'treasurer'
-  const isBPUser =
-    user && ['bp_editor', 'bp_viewer'].includes(user.data.user_type)
+
+  const commonSlice = useStore((state) => state.common)
+  const user_permissions = commonSlice.user_permissions.data || []
+  const isOnlyBpUser =
+    user_permissions.includes('has_business_plan_view_access') &&
+    ![
+      'has_replenishment_view_access',
+      'has_cp_report_view_access',
+      'has_project_v2_view_access',
+    ].some((permission) => user_permissions.includes(permission))
 
   if (isTreasurer) {
     return <Redirect to={'/replenishment/dashboard/cummulative'} />
   }
-  if (isBPUser) {
+  if (isOnlyBpUser) {
     return <Redirect to={'/business-plans'} />
   }
   return <Redirect to={'/country-programme/reports'} />

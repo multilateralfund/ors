@@ -92,7 +92,7 @@ const useInternalNavSections = () => {
       ].filter(Boolean),
       url: '/country-programme/reports',
     },
-    ...(user_permissions.includes('view_business_plan')
+    ...(user_permissions.includes('has_business_plan_view_access')
       ? [{ label: 'Business plans', url: '/business-plans' }]
       : []),
     ...(userIsAdminOrSecretariat || userIsViewer

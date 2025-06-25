@@ -37,8 +37,7 @@ const BPSummary = (props: {
   const { year_end, year_start, status, meeting_id, decision_id } =
     business_plan || {}
 
-  const { canUpdateBp, canViewFiles, canUploadFiles } =
-    useContext(PermissionsContext)
+  const { canUpdateBp } = useContext(PermissionsContext)
 
   const handleChangeMeeting = (meeting: string) => {
     setBpForm((form: any) => ({ ...form, meeting }))
@@ -124,11 +123,9 @@ const BPSummary = (props: {
           </>
         )}
       </div>
-      {(canViewFiles || canUploadFiles) && <Divider />}
-      {canViewFiles && (
-        <FilesViewer {...{ files, setFiles }} bpFiles={bpFiles || []} />
-      )}
-      {canUploadFiles && <FileInput {...{ files, setFiles }} />}
+      <Divider />
+      <FilesViewer {...{ files, setFiles }} bpFiles={bpFiles || []} />
+      {canUpdateBp && <FileInput {...{ files, setFiles }} />}
     </div>
   )
 }

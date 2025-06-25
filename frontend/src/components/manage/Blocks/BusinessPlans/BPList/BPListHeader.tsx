@@ -31,7 +31,7 @@ const BPListHeader = ({
   const { setBPType, bpType } = useStore((state) => state.bpType)
 
   const [pathname] = useLocation()
-  const { canUploadBp } = useContext(PermissionsContext)
+  const { canUpdateBp } = useContext(PermissionsContext)
   const { yearRanges } = useContext(BPYearRangesContext) as any
   const { periodOptions } = useGetBpPeriods(yearRanges)
   const period = getPathPeriod(pathname)
@@ -101,7 +101,7 @@ const BPListHeader = ({
           />
         </div>
       </div>
-      {canUploadBp && (
+      {canUpdateBp && (
         <CustomLink
           className="h-10 min-w-[6.25rem] text-nowrap px-4 py-2 text-lg uppercase"
           href="/business-plans/upload"
