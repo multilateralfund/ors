@@ -1,9 +1,11 @@
+import { useContext } from 'react'
+
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import Link from '@ors/components/ui/Link/Link'
 import { SubmitButton } from '../HelperComponents'
 import { formatSubmitData } from '../utils'
 import { SubmitActionButtons } from '../interfaces'
 import { api, uploadFiles } from '@ors/helpers'
-import { useStore } from '@ors/store'
 
 import { enqueueSnackbar } from 'notistack'
 import { useLocation, useParams } from 'wouter'
@@ -24,8 +26,7 @@ const CreateActionButtons = ({
   const [_, setLocation] = useLocation()
   const { project_id } = useParams<Record<string, string>>()
 
-  const commonSlice = useStore((state) => state.common)
-  const user_permissions = commonSlice.user_permissions.data || []
+  const { canUpdateProjects } = useContext(PermissionsContext)
 
   const { newFiles = [] } = files || {}
 
@@ -101,7 +102,7 @@ const CreateActionButtons = ({
       >
         Cancel
       </Link>
-      {user_permissions.includes('add_project') && (
+      {canUpdateProjects && (
         <>
           <SubmitButton
             title="Create project (draft)"

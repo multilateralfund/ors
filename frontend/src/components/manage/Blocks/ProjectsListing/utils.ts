@@ -341,3 +341,41 @@ export const getHasNoFiles = (
   files?: ProjectFilesObject,
   projectFiles?: ProjectFile[],
 ) => projectFiles?.length === 0 && files?.newFiles?.length === 0
+
+export const getMenus = (permissions: Record<string, boolean>) => {
+  const { canViewBp, canUpdateBp } = permissions
+
+  return [
+    {
+      title: 'Planning',
+      menuItems: [
+        {
+          title: 'View business plans',
+          url: '/business-plans',
+          permissions: [canViewBp],
+        },
+        {
+          title: 'New business plan',
+          url: '/business-plans/upload',
+          permissions: [canUpdateBp],
+        },
+      ],
+    },
+    {
+      title: 'Approved Projects',
+      menuItems: [
+        { title: 'Update MYA data', url: null },
+        { title: 'Update post ExCom fields', url: null },
+        { title: 'Update enterprises', url: null },
+        { title: 'Transfer a project', url: null },
+      ],
+    },
+    {
+      title: 'Reporting',
+      menuItems: [
+        { title: 'Create Annual Progress Report', url: null },
+        { title: 'Raise a PCR', url: null },
+      ],
+    },
+  ]
+}

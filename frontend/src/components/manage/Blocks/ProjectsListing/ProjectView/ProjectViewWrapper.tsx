@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
@@ -16,16 +16,13 @@ import { useGetProject } from '../hooks/useGetProject'
 import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
 import { ProjectSpecificFields } from '../interfaces'
-import { useStore } from '@ors/store'
 
 import { lowerCase } from 'lodash'
 import { useParams } from 'wouter'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 
 const ProjectViewWrapper = () => {
   const { project_id } = useParams<Record<string, string>>()
-
-  const commonSlice = useStore((state) => state.common)
-  const user_permissions = commonSlice.user_permissions.data || []
 
   const project = useGetProject(project_id)
   const { data, loading } = project
@@ -58,6 +55,9 @@ const ProjectViewWrapper = () => {
     } else setSpecificFields([])
   }, [cluster_id, project_type_id, sector_id])
 
+  const { canUpdateProjects, canSubmitProjects, canRecommendProjects } =
+    useContext(PermissionsContext)
+
   return (
     <>
       <Loading
@@ -85,7 +85,9 @@ const ProjectViewWrapper = () => {
                   )}
                 </div>
               </div>
-              {user_permissions.includes('edit_project') &&
+              {(canUpdateProjects ||
+                canSubmitProjects ||
+                canRecommendProjects) &&
                 lowerCase(submission_status) !== 'withdrawn' && (
                   <CustomLink
                     className="mb-4 ml-auto h-10 text-nowrap px-4 py-2 text-lg uppercase"

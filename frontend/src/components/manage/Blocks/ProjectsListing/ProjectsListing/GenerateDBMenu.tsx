@@ -1,22 +1,33 @@
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import CustomLink from '@ors/components/ui/Link/Link'
 
 import { Menu, MenuItem } from '@mui/material'
 import { GoDatabase } from 'react-icons/go'
 import { MdExpandMore } from 'react-icons/md'
 
-const menuItems = [
-  { title: 'Funding amounts', url: null },
-  { title: 'Project warehouse', url: '/projects-listing/export' },
-  { title: 'MYA warehouse', url: null },
-  { title: 'ExCom provisions', url: null },
-  { title: 'Enterprise warehouse', url: null },
-  { title: 'Projects for blanket and individual consideration', url: null },
-  { title: 'Report on associated projects', url: null },
-]
-
 const GenerateDBMenu = () => {
+  const { canViewProjects } = useContext(PermissionsContext)
+
+  const menuItems = [
+    { title: 'Funding amounts', url: null },
+    {
+      title: 'Project warehouse',
+      url: '/projects-listing/export',
+      permissions: [canViewProjects],
+    },
+    { title: 'MYA warehouse', url: null },
+    { title: 'ExCom provisions', url: null },
+    { title: 'Enterprise warehouse', url: null },
+    { title: 'Projects for blanket and individual consideration', url: null },
+    { title: 'Report on associated projects', url: null },
+  ]
+
+  const filteredMenuItems = menuItems.filter(
+    ({ permissions }) => !permissions || permissions.some(Boolean),
+  )
+
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
 
@@ -68,7 +79,7 @@ const GenerateDBMenu = () => {
           },
         }}
       >
-        {menuItems.map(({ url, title }) => (
+        {filteredMenuItems.map(({ url, title }) => (
           <MenuItem
             className="whitespace-normal rounded-none py-2 pl-3.5 pr-7 hover:bg-white"
             onClick={handleClose}

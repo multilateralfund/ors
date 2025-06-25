@@ -101,7 +101,7 @@ const useInternalNavSections = () => {
     ...(userIsAdminOrSecretariat || userIsViewer
       ? [{ label: 'Projects', url: '/projects' }]
       : []),
-    ...(userIsAdminOrSecretariat || userIsViewer
+    ...(user_permissions.includes('has_project_v2_view_access')
       ? [{ label: 'Projects Listing', url: '/projects-listing' }]
       : []),
     // @ts-ignore

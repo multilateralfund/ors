@@ -1,3 +1,6 @@
+import { useContext } from 'react'
+
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import Link from '@ors/components/ui/Link/Link'
 import { tableColumns } from '../constants'
 import { formatNumberColumns } from '../utils'
@@ -24,7 +27,13 @@ const getColumnDefs = (
   associationIds?: number[],
   setAssociationIds?: (data: number[]) => void,
 ) => {
-  const canViewProject = user_permissions.includes('view_project')
+  const {
+    canViewProjects,
+    canAssociateProjects,
+    canUpdateProjects,
+    canSubmitProjects,
+    canRecommendProjects,
+  } = useContext(PermissionsContext)
 
   return {
     columnDefs: [
@@ -77,7 +86,9 @@ const getColumnDefs = (
           <div className="flex items-center gap-1 p-2">
             {mode === 'listing' && (
               <>
-                {user_permissions.includes('edit_project') && (
+                {(canUpdateProjects ||
+                  canSubmitProjects ||
+                  canRecommendProjects) && (
                   <Link
                     className="flex h-4 w-4 justify-center"
                     href={`/projects-listing/${props.data.id}/edit`}
@@ -85,31 +96,33 @@ const getColumnDefs = (
                     <FiEdit size={16} />
                   </Link>
                 )}
-                {projectId !== undefined && setProjectData && (
-                  <Checkbox
-                    checked={projectId == props.data.id}
-                    onChange={(event) => {
-                      setProjectData(
-                        event.target.checked
-                          ? {
-                              projectId: props.data.id,
-                              projectTitle: props.data.title,
-                            }
-                          : { projectId: null, projectTitle: '' },
-                      )
-                    }}
-                    sx={{
-                      color: 'black',
-                    }}
-                  />
-                )}
+                {projectId !== undefined &&
+                  setProjectData &&
+                  (canAssociateProjects || canUpdateProjects) && (
+                    <Checkbox
+                      checked={projectId == props.data.id}
+                      onChange={(event) => {
+                        setProjectData(
+                          event.target.checked
+                            ? {
+                                projectId: props.data.id,
+                                projectTitle: props.data.title,
+                              }
+                            : { projectId: null, projectTitle: '' },
+                        )
+                      }}
+                      sx={{
+                        color: 'black',
+                      }}
+                    />
+                  )}
               </>
             )}
             <Link
               className={cx(
                 'ml-2 overflow-hidden truncate whitespace-nowrap',
                 {
-                  'no-underline': !canViewProject,
+                  'no-underline': !canViewProjects,
                 },
                 {
                   '!ml-10':
@@ -119,7 +132,7 @@ const getColumnDefs = (
                 },
               )}
               href={
-                canViewProject ? `/projects-listing/${props.data.id}` : null
+                canViewProjects ? `/projects-listing/${props.data.id}` : null
               }
             >
               {props.value}
