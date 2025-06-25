@@ -27,9 +27,9 @@ class TestCPRecordsDiff:
     client = APIClient()
 
     def test_section_a_b_diff(
-        self, user, _setup_new_cp_report_create, substance, blend, usage
+        self, secretariat_user, _setup_new_cp_report_create, substance, blend, usage
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
         # create report with sections A and B
         url = reverse("country-programme-reports")
         data = _setup_new_cp_report_create
@@ -108,8 +108,10 @@ class TestCPRecordsDiff:
                 == 100
             )
 
-    def test_section_c_diff(self, user, _setup_new_cp_report_create, substance, blend):
-        self.client.force_authenticate(user=user)
+    def test_section_c_diff(
+        self, secretariat_user, _setup_new_cp_report_create, substance, blend
+    ):
+        self.client.force_authenticate(user=secretariat_user)
         # create report with section C
         url = reverse("country-programme-reports")
         data = _setup_new_cp_report_create
@@ -162,8 +164,8 @@ class TestCPRecordsDiff:
         assert response.data["section_c"][1]["previous_year_price"] is None
         assert float(response.data["section_c"][1]["previous_year_price_old"]) == 100
 
-    def test_section_d_diff(self, user, _setup_new_cp_report_create):
-        self.client.force_authenticate(user=user)
+    def test_section_d_diff(self, secretariat_user, _setup_new_cp_report_create):
+        self.client.force_authenticate(user=secretariat_user)
         # create report with empty section D
         url = reverse("country-programme-reports")
         data = _setup_new_cp_report_create
@@ -193,8 +195,8 @@ class TestCPRecordsDiff:
         assert float(response.data["section_d"][0]["all_uses"]) == 200
         assert response.data["section_d"][0]["all_uses_old"] is None
 
-    def test_section_e_diff(self, user, _setup_new_cp_report_create):
-        self.client.force_authenticate(user=user)
+    def test_section_e_diff(self, secretariat_user, _setup_new_cp_report_create):
+        self.client.force_authenticate(user=secretariat_user)
         # create report with section E
         url = reverse("country-programme-reports")
         data = _setup_new_cp_report_create

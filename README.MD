@@ -11,3 +11,4 @@ DEV docs/guides:
 
 - [Install for development](docs/install_develop.md)
 - [Development Guide](./docs/development_guide.md)
+- [Backend permissions](docs/permissions.md)

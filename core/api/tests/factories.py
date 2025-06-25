@@ -76,7 +76,6 @@ class UserFactory(factory.django.DjangoModelFactory):
         upper_case=True,
         lower_case=True,
     )
-    user_type = User.UserType.SECRETARIAT
 
 
 class UsageFactory(factory.django.DjangoModelFactory):

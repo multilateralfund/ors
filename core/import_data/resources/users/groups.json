@@ -1,0 +1,195 @@
+[
+    {
+        "name": "Secretariat",
+        "permissions": [
+            "can_view_all_countries",
+            "can_view_all_agencies",
+            "can_submit_final_cp_version",
+            "has_replenishment_view_access",
+            "has_cp_report_view_access",
+            "has_cp_report_edit_access",
+            "has_cp_report_export_access",
+            "has_cp_report_delete_access",
+            "can_cp_secretariat_type_comment",
+            "has_meta_projects_view_access",
+            "has_project_metainfo_view_access",
+            "has_project_statistics_view_access",
+            "has_project_view_access",
+            "has_project_edit_access",
+            "has_sectors_and_subsectors_view_access",
+            "has_sectors_and_subsectors_edit_access"
+        ]
+    },
+    {
+        "name": "Business plan editor",
+        "permissions": [
+            "has_project_metainfo_view_access",
+            "has_business_plan_view_access",
+            "has_business_plan_edit_access",
+            "has_sectors_and_subsectors_view_access",
+            "has_sectors_and_subsectors_edit_access"
+        ]
+    },
+    {
+        "name": "Business plan viewer",
+        "permissions": [
+            "has_project_metainfo_view_access",
+            "has_business_plan_view_access",
+            "has_sectors_and_subsectors_view_access"
+        ]
+    },
+    {
+        "name": "Secretariat project viewer",
+        "permissions": [
+            "has_project_metainfo_view_access",
+            "can_view_all_agencies",
+            "has_project_v2_view_access",
+            "has_sectors_and_subsectors_view_access"
+        ]
+    },
+    {
+        "name": "Secretariat project v1/v2 editing access",
+        "permissions": [
+            "has_project_metainfo_view_access",
+            "can_view_all_agencies",
+            "has_project_v2_view_access",
+            "has_project_v2_edit_access",
+            "has_project_v2_submit_access",
+            "has_project_v2_associate_projects_access",
+            "has_project_v2_recommend_projects_access",
+            "has_sectors_and_subsectors_view_access"
+        ]
+    },
+    {
+        "name": "Secretariat project v3 editing access",
+        "permissions": [
+            "has_project_metainfo_view_access",
+            "can_view_all_agencies",
+            "has_project_v2_view_access",
+            "has_project_v2_associate_projects_access",
+            "has_sectors_and_subsectors_view_access"
+        ]
+
+    },
+    {
+        "name": "Secretariat production project v1/v2 editing access",
+        "permissions": [
+            "has_project_metainfo_view_access",
+            "can_view_all_agencies",
+            "has_project_v2_view_access",
+            "has_project_v2_edit_access",
+            "has_project_v2_submit_access",
+            "has_project_v2_associate_projects_access",
+            "has_project_v2_recommend_projects_access",
+            "has_sectors_and_subsectors_view_access"
+        ]
+    },
+    {
+        "name": "Secretariat production project v3 editing access",
+        "permissions": [
+            "has_project_metainfo_view_access",
+            "can_view_all_agencies",
+            "has_project_v2_view_access",
+            "has_project_v2_associate_projects_access",
+            "has_sectors_and_subsectors_view_access"
+        ]
+    },
+    {
+        "name": "Viewer",
+        "permissions": [
+            "has_replenishment_view_access",
+            "has_cp_report_view_access",
+            "has_cp_report_export_access",
+            "has_meta_projects_view_access",
+            "has_project_metainfo_view_access",
+            "has_project_statistics_view_access",
+            "has_project_v2_view_access",
+            "can_view_only_own_agency",
+            "has_project_view_access",
+            "can_view_all_agencies_old_project_implementation",
+            "has_sectors_and_subsectors_view_access"
+        ]
+    },
+    {
+        "name": "Country programme viewer",
+        "permissions": [
+            "has_cp_report_view_access",
+            "has_cp_report_export_access"
+        ]
+    },
+    {
+        "name": "Agency submitter",
+        "permissions": [
+            "has_replenishment_view_access",
+            "has_meta_projects_view_access",
+            "has_project_metainfo_view_access",
+            "has_project_statistics_view_access",
+            "can_view_only_own_agency",
+            "has_project_v2_view_access",
+            "has_project_v2_edit_access",
+            "has_project_v2_submit_access",
+            "has_project_view_access",
+            "has_project_edit_access",
+            "has_sectors_and_subsectors_view_access",
+            "has_sectors_and_subsectors_edit_access"
+        ]
+    },
+    {
+        "name": "Agency inputter",
+        "permissions": [
+            "has_replenishment_view_access",
+            "has_meta_projects_view_access",
+            "has_project_metainfo_view_access",
+            "has_project_statistics_view_access",
+            "can_view_only_own_agency",
+            "has_project_v2_view_access",
+            "has_project_v2_edit_access",
+            "has_project_view_access",
+            "has_project_edit_access",
+            "has_sectors_and_subsectors_view_access",
+            "has_sectors_and_subsectors_edit_access"
+        ]
+    },
+    {
+        "name": "Country user",
+        "permissions": [
+            "can_view_only_own_country",
+            "has_replenishment_view_access",
+            "has_cp_report_view_access",
+            "has_cp_report_edit_access",
+            "can_cp_country_type_comment",
+            "has_meta_projects_view_access",
+            "has_project_metainfo_view_access",
+            "has_project_statistics_view_access",
+            "has_project_view_access"
+        ]
+    },
+    {
+        "name": "Country submitter",
+        "permissions": [
+            "can_view_only_own_country",
+            "has_replenishment_view_access",
+            "has_cp_report_view_access",
+            "has_cp_report_edit_access",
+            "can_submit_final_cp_version",
+            "can_cp_country_type_comment",
+            "has_meta_projects_view_access",
+            "has_project_metainfo_view_access",
+            "has_project_statistics_view_access",
+            "has_project_view_access"
+        ]
+    },
+    {
+        "name": "Stakeholder",
+        "permissions": [
+            "has_replenishment_view_access"
+        ]
+    },
+    {
+        "name": "Treasurer",
+        "permissions": [
+            "has_replenishment_view_access",
+            "has_replenishment_edit_access"
+        ]
+    }
+]

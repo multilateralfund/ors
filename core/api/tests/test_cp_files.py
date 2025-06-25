@@ -22,8 +22,8 @@ class TestCPFiles:
         response = self.client.post(url, {})
         assert response.status_code == 403
 
-    def test_file_upload_wrong_extension(self, user, country_ro, test_file):
-        self.client.force_authenticate(user=user)
+    def test_file_upload_wrong_extension(self, secretariat_user, country_ro, test_file):
+        self.client.force_authenticate(user=secretariat_user)
         base_url = reverse("country-programme-files")
         params = f"?country_id={country_ro.id}&year=2023"
         url = base_url + params
@@ -33,8 +33,8 @@ class TestCPFiles:
         response = self.client.post(url, data, format="multipart")
         assert response.status_code == 400
 
-    def test_file_upload_duplicate(self, user, country_ro, test_file):
-        self.client.force_authenticate(user=user)
+    def test_file_upload_duplicate(self, secretariat_user, country_ro, test_file):
+        self.client.force_authenticate(user=secretariat_user)
         base_url = reverse("country-programme-files")
         params = f"?country_id={country_ro.id}&year=2023"
         url = base_url + params
@@ -48,8 +48,8 @@ class TestCPFiles:
         response = self.client.post(url, data, format="multipart")
         assert response.status_code == 400
 
-    def test_file_upload(self, user, country_ro, test_file):
-        self.client.force_authenticate(user=user)
+    def test_file_upload(self, secretariat_user, country_ro, test_file):
+        self.client.force_authenticate(user=secretariat_user)
         country_id = country_ro.id
         year = 2023
         base_url = reverse("country-programme-files")
@@ -82,8 +82,8 @@ class TestCPFiles:
         assert response.status_code == 200
         assert response.data == []
 
-    def test_file_list(self, user, country_ro, test_file):
-        self.client.force_authenticate(user=user)
+    def test_file_list(self, secretariat_user, country_ro, test_file):
+        self.client.force_authenticate(user=secretariat_user)
         country_id = country_ro.id
         year = 2023
 
@@ -105,8 +105,8 @@ class TestCPFiles:
         assert response.status_code == 200
         assert response.data != []
 
-    def test_file_download(self, user, country_ro, test_file):
-        self.client.force_authenticate(user=user)
+    def test_file_download(self, secretariat_user, country_ro, test_file):
+        self.client.force_authenticate(user=secretariat_user)
         country_id = country_ro.id
         year = 2023
 

@@ -35,7 +35,11 @@ from core.api.filters.replenishment import (
     ReplenishmentFilter,
     ScaleOfAssessmentFilter,
 )
-from core.api.permissions import IsUserAllowedReplenishment
+from core.api.permissions import (
+    DenyAll,
+    HasReplenishmentViewPermission,
+    HasReplenishmentEditPermission,
+)
 from core.api.serializers import (
     CountrySerializer,
     InvoiceSerializer,
@@ -100,11 +104,10 @@ class ReplenishmentCountriesViewSet(viewsets.GenericViewSet, mixins.ListModelMix
     def get_queryset(self):
         user = self.request.user
         queryset = Country.objects.all()
-        if user.user_type in (
-            user.UserType.COUNTRY_USER,
-            user.UserType.COUNTRY_SUBMITTER,
+        if user.has_perm("core.can_view_only_own_country") and not user.has_perm(
+            "core.can_view_all_countries"
         ):
-            queryset = queryset.filter(id=user.country_id)
+            return queryset.filter(id=user.country_id).order_by("name")
         return queryset.order_by("name")
 
 
@@ -127,7 +130,7 @@ class ReplenishmentCountriesSOAViewSet(viewsets.GenericViewSet, mixins.ListModel
 
 
 class ReplenishmentAsOfDateViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
-    permission_classes = [IsUserAllowedReplenishment]
+    permission_classes = [HasReplenishmentViewPermission]
 
     def list(self, request, *args, **kwargs):
         self.check_permissions(request)
@@ -139,7 +142,7 @@ class ReplenishmentAsOfDateViewSet(viewsets.GenericViewSet, mixins.ListModelMixi
 
 
 class ReplenishmentBudgetYearsViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
-    permission_classes = [IsUserAllowedReplenishment]
+    permission_classes = [HasReplenishmentViewPermission]
 
     def list(self, request, *args, **kwargs):
         self.check_permissions(request)
@@ -156,8 +159,15 @@ class ReplenishmentViewSet(
 
     model = Replenishment
     serializer_class = ReplenishmentSerializer
-    permission_classes = [IsUserAllowedReplenishment]
     filterset_class = ReplenishmentFilter
+
+    @property
+    def permission_classes(self):
+        if self.action in ["list"]:
+            return [HasReplenishmentViewPermission]
+        if self.action in ["create"]:
+            return [HasReplenishmentEditPermission]
+        return [DenyAll]
 
     def get_queryset(self):
         return Replenishment.objects.prefetch_related(
@@ -225,7 +235,14 @@ class ScaleOfAssessmentViewSet(
     model = ScaleOfAssessment
     filterset_class = ScaleOfAssessmentFilter
     serializer_class = ScaleOfAssessmentSerializer
-    permission_classes = [IsUserAllowedReplenishment]
+
+    @property
+    def permission_classes(self):
+        if self.action in ["list", "export"]:
+            return [HasReplenishmentViewPermission]
+        if self.action in ["create"]:
+            return [HasReplenishmentEditPermission]
+        return [DenyAll]
 
     def get_queryset(self):
         return (
@@ -437,7 +454,7 @@ class ScaleOfAssessmentViewSet(
 
 
 class ReplenishmentScaleOfAssessmentVersionFileDownloadView(generics.RetrieveAPIView):
-    permission_classes = [IsUserAllowedReplenishment]
+    permission_classes = [HasReplenishmentViewPermission]
     queryset = ScaleOfAssessmentVersion.objects.all()
     lookup_field = "id"
 
@@ -457,7 +474,7 @@ class ReplenishmentScaleOfAssessmentVersionFileDownloadView(generics.RetrieveAPI
 
 
 class AnnualStatusOfContributionsView(views.APIView):
-    permission_classes = [IsUserAllowedReplenishment]
+    permission_classes = [HasReplenishmentViewPermission]
 
     def get(self, request, *args, **kwargs):
         year = kwargs["year"]
@@ -506,7 +523,7 @@ class AnnualStatusOfContributionsView(views.APIView):
 
 
 class AnnualStatusOfContributionsExportView(views.APIView):
-    permission_classes = [IsUserAllowedReplenishment]
+    permission_classes = [HasReplenishmentViewPermission]
 
     def get(self, request, *args, **kwargs):
         year = kwargs["year"]
@@ -524,7 +541,7 @@ class AnnualStatusOfContributionsExportView(views.APIView):
 
 
 class StatusOfContributionsExportView(views.APIView):
-    permission_classes = [IsUserAllowedReplenishment]
+    permission_classes = [HasReplenishmentViewPermission]
     SUMMARY_WORKSHEET_NAME = "Summary Status of Contributions"
     TRIENIAL_WORKSHEET_NAME = "2024-26 Contributions"
 
@@ -669,7 +686,7 @@ class StatusOfContributionsExportView(views.APIView):
 
 
 class TriennialStatusOfContributionsView(views.APIView):
-    permission_classes = [IsUserAllowedReplenishment]
+    permission_classes = [HasReplenishmentViewPermission]
 
     def get(self, request, *args, **kwargs):
         start_year = kwargs["start_year"]
@@ -718,7 +735,7 @@ class TriennialStatusOfContributionsView(views.APIView):
 
 
 class TriennialStatusOfContributionsExportView(views.APIView):
-    permission_classes = [IsUserAllowedReplenishment]
+    permission_classes = [HasReplenishmentViewPermission]
 
     def get(self, request, *args, **kwargs):
         start_year = kwargs["start_year"]
@@ -737,7 +754,7 @@ class TriennialStatusOfContributionsExportView(views.APIView):
 
 
 class SummaryStatusOfContributionsView(views.APIView):
-    permission_classes = [IsUserAllowedReplenishment]
+    permission_classes = [HasReplenishmentViewPermission]
 
     def get(self, request, *args, **kwargs):
         self.check_permissions(request)
@@ -862,7 +879,7 @@ class SummaryStatusOfContributionsView(views.APIView):
 
 
 class SummaryStatusOfContributionsExportView(views.APIView):
-    permission_classes = [IsUserAllowedReplenishment]
+    permission_classes = [HasReplenishmentViewPermission]
 
     def get(self, request, *args, **kwargs):
         self.check_permissions(request)
@@ -879,7 +896,7 @@ class SummaryStatusOfContributionsExportView(views.APIView):
 
 
 class StatisticsStatusOfContributionsView(views.APIView):
-    permission_classes = [IsUserAllowedReplenishment]
+    permission_classes = [HasReplenishmentViewPermission]
 
     def get(self, request, *args, **kwargs):
         self.check_permissions(request)
@@ -981,7 +998,7 @@ class StatisticsStatusOfContributionsView(views.APIView):
 
 
 class StatisticsExportView(views.APIView):
-    permission_classes = [IsUserAllowedReplenishment]
+    permission_classes = [HasReplenishmentViewPermission]
 
     def get(self, request, *args, **kwargs):
         self.check_permissions(request)
@@ -1069,7 +1086,7 @@ class StatisticsExportView(views.APIView):
 
 
 class StatisticsStatusOfContributionsExportView(views.APIView):
-    permission_classes = [IsUserAllowedReplenishment]
+    permission_classes = [HasReplenishmentViewPermission]
 
     def get(self, request, *args, **kwargs):
         self.check_permissions(request)
@@ -1120,22 +1137,25 @@ class DisputedContributionViewSet(
     mixins.DestroyModelMixin,
 ):
     model = DisputedContribution
-    permission_classes = [IsUserAllowedReplenishment]
+
+    @property
+    def permission_classes(self):
+        if self.action in ["create", "destroy"]:
+            return [HasReplenishmentEditPermission]
+        return [DenyAll]
 
     def get_serializer_class(self):
-        if self.request.method in ["POST", "PUT"]:
+        if self.request.method in ["POST"]:
             return DisputedContributionCreateSerializer
         return DisputedContributionReadSerializer
 
     def get_queryset(self):
         user = self.request.user
         queryset = DisputedContribution.objects.all()
-        if user.user_type in (
-            user.UserType.COUNTRY_USER,
-            user.UserType.COUNTRY_SUBMITTER,
+        if user.has_perm("core.can_view_only_own_country") and not user.has_perm(
+            "core.can_view_all_countries"
         ):
-            queryset = queryset.filter(country_id=user.country_id)
-
+            return queryset.filter(country_id=user.country_id).select_related("country")
         return queryset.select_related("country")
 
     @transaction.atomic
@@ -1189,16 +1209,24 @@ class BilateralAssistanceViewSet(
     mixins.CreateModelMixin,
 ):
     model = BilateralAssistance
-    permission_classes = [IsUserAllowedReplenishment]
+
+    @property
+    def permission_classes(self):
+        if self.action in ["list", "retrieve"]:
+            return [HasReplenishmentViewPermission]
+        if self.action in ["create"]:
+            return [HasReplenishmentEditPermission]
+        return [DenyAll]
 
     def get_queryset(self):
         user = self.request.user
         queryset = BilateralAssistance.objects.all()
-        if user.user_type in (
-            user.UserType.COUNTRY_USER,
-            user.UserType.COUNTRY_SUBMITTER,
+        if user.has_perm("core.can_view_only_own_country") and not user.has_perm(
+            "core.can_view_all_countries"
         ):
-            queryset = queryset.filter(country_id=user.country_id)
+            return queryset.filter(country_id=user.country_id).select_related(
+                "country", "meeting"
+            )
 
         return queryset.select_related("country", "meeting")
 
@@ -1295,7 +1323,7 @@ class BilateralAssistanceViewSet(
 
 
 class ReplenishmentDashboardView(views.APIView):
-    permission_classes = [IsUserAllowedReplenishment]
+    permission_classes = [HasReplenishmentViewPermission]
 
     bilateral_triennial_years = [1994, 1995, 1996, 1997, 1998, 1999]
     bilateral_triennial_start_years = [1994, 1997]
@@ -1477,7 +1505,7 @@ class ReplenishmentDashboardView(views.APIView):
 
 
 class ReplenishmentDashboardExportView(views.APIView):
-    permission_classes = [IsUserAllowedReplenishment]
+    permission_classes = [HasReplenishmentViewPermission]
 
     # Years for which the bilateral assistance is taken from triennial data
     bilateral_triennial_start_years = [1994, 1997]
@@ -1684,9 +1712,16 @@ class ReplenishmentExternalAllocationViewSet(
 
     model = ExternalAllocation
 
-    permission_classes = [IsUserAllowedReplenishment]
     serializer_class = ExternalAllocationSerializer
     ordering_fields = ["year"]
+
+    @property
+    def permission_classes(self):
+        if self.action in ["create", "update", "partial_update", "destroy"]:
+            return [HasReplenishmentEditPermission]
+        if self.action in ["list", "retrieve"]:
+            return [HasReplenishmentViewPermission]
+        return [DenyAll]
 
     def get_queryset(self):
         # Including the is_dashboard_only objects as well
@@ -1759,9 +1794,16 @@ class ReplenishmentExternalIncomeAnnualViewSet(
 
     model = ExternalIncomeAnnual
 
-    permission_classes = [IsUserAllowedReplenishment]
     serializer_class = ExternalIncomeAnnualSerializer
     ordering_fields = ["-year", "quarter"]
+
+    @property
+    def permission_classes(self):
+        if self.action in ["create", "update", "partial_update", "destroy"]:
+            return [HasReplenishmentEditPermission]
+        if self.action in ["list", "retrieve"]:
+            return [HasReplenishmentViewPermission]
+        return [DenyAll]
 
     def get_queryset(self):
         return ExternalIncomeAnnual.objects.all()
@@ -1781,7 +1823,6 @@ class ReplenishmentInvoiceViewSet(
 
     model = Invoice
 
-    permission_classes = [IsUserAllowedReplenishment]
     serializer_class = InvoiceSerializer
     filterset_class = InvoiceFilter
     filter_backends = [
@@ -1799,12 +1840,19 @@ class ReplenishmentInvoiceViewSet(
         "currency",
     ]
 
+    @property
+    def permission_classes(self):
+        if self.action in ["create", "update", "partial_update", "destroy"]:
+            return [HasReplenishmentEditPermission]
+        if self.action in ["list", "retrieve"]:
+            return [HasReplenishmentViewPermission]
+        return [DenyAll]
+
     def get_queryset(self):
         user = self.request.user
         queryset = Invoice.objects.all()
-        if user.user_type in (
-            user.UserType.COUNTRY_USER,
-            user.UserType.COUNTRY_SUBMITTER,
+        if user.has_perm("core.can_view_only_own_country") and not user.has_perm(
+            "core.can_view_all_countries"
         ):
             queryset = queryset.filter(country_id=user.country_id)
 
@@ -1848,7 +1896,10 @@ class ReplenishmentInvoiceViewSet(
                 request.query_params.get("status", None) is not None
                 and request.query_params.get("status") != "not_issued"
             )
-            or request.user.user_type == request.user.UserType.COUNTRY_USER
+            or (
+                request.user.has_perm("core.can_view_only_own_country")
+                and not request.user.has_perm("core.can_view_all_countries")
+            )
         ):
             # If filtered, we should not send the empty invoices
             return Response(
@@ -2008,15 +2059,14 @@ class ReplenishmentInvoiceViewSet(
 
 
 class ReplenishmentInvoiceFileDownloadView(generics.RetrieveAPIView):
-    permission_classes = [IsUserAllowedReplenishment]
+    permission_classes = [HasReplenishmentViewPermission]
     lookup_field = "id"
 
     def get_queryset(self):
         user = self.request.user
         queryset = InvoiceFile.objects.all()
-        if user.user_type in (
-            user.UserType.COUNTRY_USER,
-            user.UserType.COUNTRY_SUBMITTER,
+        if user.has_perm("core.can_view_only_own_country") and not user.has_perm(
+            "core.can_view_all_countries"
         ):
             queryset = queryset.filter(invoice__country_id=user.country_id)
 
@@ -2048,7 +2098,6 @@ class ReplenishmentPaymentViewSet(
 
     model = Payment
 
-    permission_classes = [IsUserAllowedReplenishment]
     serializer_class = PaymentSerializer
     filterset_class = PaymentFilter
     filter_backends = [
@@ -2072,12 +2121,19 @@ class ReplenishmentPaymentViewSet(
         "ferm_gain_or_loss",
     ]
 
+    @property
+    def permission_classes(self):
+        if self.action in ["create", "update", "partial_update", "destroy"]:
+            return [HasReplenishmentEditPermission]
+        if self.action in ["list", "retrieve"]:
+            return [HasReplenishmentViewPermission]
+        return [DenyAll]
+
     def get_queryset(self):
         user = self.request.user
         queryset = Payment.objects.all()
-        if user.user_type in (
-            user.UserType.COUNTRY_USER,
-            user.UserType.COUNTRY_SUBMITTER,
+        if user.has_perm("core.can_view_only_own_country") and not user.has_perm(
+            "core.can_view_all_countries"
         ):
             queryset = queryset.filter(country_id=user.country_id)
 
@@ -2382,15 +2438,14 @@ class ReplenishmentPaymentViewSet(
 
 
 class ReplenishmentPaymentFileDownloadView(generics.RetrieveAPIView):
-    permission_classes = [IsUserAllowedReplenishment]
+    permission_classes = [HasReplenishmentViewPermission]
     lookup_field = "id"
 
     def get_queryset(self):
         user = self.request.user
         queryset = PaymentFile.objects.all()
-        if user.user_type in (
-            user.UserType.COUNTRY_USER,
-            user.UserType.COUNTRY_SUBMITTER,
+        if user.has_perm("core.can_view_only_own_country") and not user.has_perm(
+            "core.can_view_all_countries"
         ):
             queryset = queryset.filter(invoice__country_id=user.country_id)
 
@@ -2416,9 +2471,16 @@ class StatusOfTheFundFileViewSet(
     viewsets.GenericViewSet,
 ):
     serializer_class = StatusOfTheFundFileSerializer
-    permission_classes = [IsUserAllowedReplenishment]
     lookup_field = "id"
     queryset = StatusOfTheFundFile.objects.all()
+
+    @property
+    def permission_classes(self):
+        if self.action in ["create", "destroy"]:
+            return [HasReplenishmentEditPermission]
+        if self.action in ["list", "retrieve"]:
+            return [HasReplenishmentViewPermission]
+        return [DenyAll]
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
@@ -2460,7 +2522,7 @@ class StatusOfTheFundFileViewSet(
 
 
 class ConsolidatedInputDataExportView(views.APIView):
-    permission_classes = [IsUserAllowedReplenishment]
+    permission_classes = [HasReplenishmentViewPermission]
 
     def get(self, request, *args, **kwargs):
         self.check_permissions(request)

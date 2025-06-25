@@ -48,7 +48,7 @@ class TestCPHistory:
 
     def test_create_history(
         self,
-        user,
+        secretariat_user,
         second_user,
         _setup_new_cp_report_create,
         mock_send_mail_report_create,
@@ -56,8 +56,8 @@ class TestCPHistory:
         mock_send_mail_comment,
     ):
         VALIDATION_LIST_FULL_HISTORY = [
-            ("created by user", 5, 1, user.username),
-            ("comments updated", 4, 1, user.username),
+            ("created by user", 5, 1, secretariat_user.username),
+            ("comments updated", 4, 1, secretariat_user.username),
             ("updated by user", 3, 1, second_user.username),
             ("status changed", 2, 1, second_user.username),
             ("comments updated", 1, 1, second_user.username),
@@ -70,7 +70,7 @@ class TestCPHistory:
         ]  # status changed event hidden
 
         # create new cp report
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
         url = reverse("country-programme-reports")
         response = self.client.post(url, _setup_new_cp_report_create, format="json")
         assert response.status_code == 201

@@ -24,8 +24,8 @@ class TestCreateSubAmount(BaseProjectUtilityCreate):
     def setup(self, _create_proj_rbm_measure):
         self.__class__.new_utility_data = _create_proj_rbm_measure
 
-    def test_invalid_measure(self, user, _create_proj_rbm_measure):
-        self.client.force_authenticate(user=user)
+    def test_invalid_measure(self, secretariat_user, _create_proj_rbm_measure):
+        self.client.force_authenticate(user=secretariat_user)
 
         project_data = _create_proj_rbm_measure
         project_data["measure_id"] = 999
@@ -51,8 +51,8 @@ class TestSubmissionAmountUpdate:
         response = self.client.patch(proj_rbm_measure_url, {"value": 41})
         assert response.status_code == 403
 
-    def test_update(self, user, proj_rbm_measure_url, project_rbm_measure):
-        self.client.force_authenticate(user=user)
+    def test_update(self, secretariat_user, proj_rbm_measure_url, project_rbm_measure):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.patch(proj_rbm_measure_url, {"value": 41})
         assert response.status_code == 200
@@ -60,8 +60,8 @@ class TestSubmissionAmountUpdate:
         project_rbm_measure.refresh_from_db()
         assert project_rbm_measure.value == 41
 
-    def test_invalid_measure(self, user, proj_rbm_measure_url):
-        self.client.force_authenticate(user=user)
+    def test_invalid_measure(self, secretariat_user, proj_rbm_measure_url):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.patch(proj_rbm_measure_url, {"measure_id": 999})
         assert response.status_code == 400

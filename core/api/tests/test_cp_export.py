@@ -18,8 +18,10 @@ class TestCPExportXLSX(BaseTest):
         response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
         assert response.status_code == 403
 
-    def test_get_cp_export_new(self, user, cp_report_2019, _setup_new_cp_report):
-        self.client.force_authenticate(user=user)
+    def test_get_cp_export_new(
+        self, secretariat_user, cp_report_2019, _setup_new_cp_report
+    ):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
         assert response.status_code == 200
@@ -37,9 +39,9 @@ class TestCPExportXLSX(BaseTest):
         assert wb["Section A"]["A1"].value == "Country: Romania Year: 2019"
 
     def test_get_cp_export_new_converted(
-        self, user, cp_report_2019, _setup_new_cp_report
+        self, secretariat_user, cp_report_2019, _setup_new_cp_report
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(
             self.url, {"cp_report_id": cp_report_2019.id, "convert_data": 1}
@@ -60,8 +62,10 @@ class TestCPExportXLSX(BaseTest):
         assert "ODP" in wb["Section A"]["A2"].value
         assert "CO₂-eq tonnes" in wb["Section B"]["A2"].value
 
-    def test_get_cp_export_old(self, user, cp_report_2005, _setup_old_cp_report):
-        self.client.force_authenticate(user=user)
+    def test_get_cp_export_old(
+        self, secretariat_user, cp_report_2005, _setup_old_cp_report
+    ):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url, {"cp_report_id": cp_report_2005.id})
         assert response.status_code == 200
@@ -85,8 +89,10 @@ class TestCPExportPDF(BaseTest):
         response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
         assert response.status_code == 403
 
-    def test_get_cp_export_new(self, user, cp_report_2019, _setup_new_cp_report):
-        self.client.force_authenticate(user=user)
+    def test_get_cp_export_new(
+        self, secretariat_user, cp_report_2019, _setup_new_cp_report
+    ):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
         assert response.status_code == 200
@@ -104,8 +110,10 @@ class TestCPExportPDF(BaseTest):
         ]:
             assert name.upper() in text
 
-    def test_get_cp_export_old(self, user, cp_report_2005, _setup_old_cp_report):
-        self.client.force_authenticate(user=user)
+    def test_get_cp_export_old(
+        self, secretariat_user, cp_report_2005, _setup_old_cp_report
+    ):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url, {"cp_report_id": cp_report_2005.id})
         assert response.status_code == 200
@@ -131,8 +139,8 @@ class TestCPExportEmpty(BaseTest):
         response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
         assert response.status_code == 403
 
-    def test_get_cp_export_new(self, user):
-        self.client.force_authenticate(user=user)
+    def test_get_cp_export_new(self, secretariat_user):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url, {"year": "2019"})
         assert response.status_code == 200
@@ -148,8 +156,8 @@ class TestCPExportEmpty(BaseTest):
         ]
         assert wb["Section A"]["A1"].value == "Country: XXXX Year: 2019"
 
-    def test_get_cp_export_old(self, user):
-        self.client.force_authenticate(user=user)
+    def test_get_cp_export_old(self, secretariat_user):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url, {"year": 2005})
         assert response.status_code == 200
@@ -172,8 +180,8 @@ class TestCPArchiveExportXLSX(BaseTest):
         response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
         assert response.status_code == 403
 
-    def test_get_cp_archive_export_new(self, user, _setup_old_version_2019):
-        self.client.force_authenticate(user=user)
+    def test_get_cp_archive_export_new(self, secretariat_user, _setup_old_version_2019):
+        self.client.force_authenticate(user=secretariat_user)
 
         cp_ar = _setup_old_version_2019
 
@@ -192,8 +200,8 @@ class TestCPArchiveExportXLSX(BaseTest):
         ]
         assert wb["Section A"]["A1"].value == "Country: Romania Year: 2019"
 
-    def test_get_cp_export_old(self, user, _setup_old_version_2005):
-        self.client.force_authenticate(user=user)
+    def test_get_cp_export_old(self, secretariat_user, _setup_old_version_2005):
+        self.client.force_authenticate(user=secretariat_user)
 
         cp_ar = _setup_old_version_2005
 
@@ -215,8 +223,10 @@ class TestCPArchiveExportXLSX(BaseTest):
 class TestCPHCFCExtractionExport(BaseTest):
     url = reverse("country-programme-hcfc-export")
 
-    def test_get_cp_export(self, user, _setup_new_cp_report, _cp_report_format):
-        self.client.force_authenticate(user=user)
+    def test_get_cp_export(
+        self, secretariat_user, _setup_new_cp_report, _cp_report_format
+    ):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url, {"min_year": 2019, "max_year": 2020})
         assert response.status_code == 200
@@ -237,8 +247,10 @@ class TestCPHCFCExtractionExport(BaseTest):
 class TestCPHFCExtractionExport(BaseTest):
     url = reverse("country-programme-hfc-export")
 
-    def test_get_cp_export(self, user, _setup_new_cp_report, _cp_report_format):
-        self.client.force_authenticate(user=user)
+    def test_get_cp_export(
+        self, secretariat_user, _setup_new_cp_report, _cp_report_format
+    ):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url, {"min_year": 2019, "max_year": 2020})
         assert response.status_code == 200
@@ -261,8 +273,10 @@ class TestCPHFCExtractionExport(BaseTest):
 class TestCPExtractionALLExport(BaseTest):
     url = reverse("country-programme-extraction-all-export")
 
-    def test_get_cp_export(self, user, _setup_new_cp_report, _cp_report_format):
-        self.client.force_authenticate(user=user)
+    def test_get_cp_export(
+        self, secretariat_user, _setup_new_cp_report, _cp_report_format
+    ):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url, {"min_year": 2019, "max_year": 2019})
         assert response.status_code == 200
@@ -309,8 +323,10 @@ class TestCPExtractionALLExport(BaseTest):
 class TestCPCalculatedAmountExport(BaseTest):
     url = reverse("country-programme-calculated-amount-export")
 
-    def test_get_cp_export(self, user, cp_report_2019, _setup_new_cp_report):
-        self.client.force_authenticate(user=user)
+    def test_get_cp_export(
+        self, secretariat_user, cp_report_2019, _setup_new_cp_report
+    ):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
         assert response.status_code == 200
@@ -325,8 +341,10 @@ class TestCPCalculatedAmountExport(BaseTest):
 class TestCPCalculatedAmountExportPDF(BaseTest):
     url = reverse("country-programme-calculated-amount-print")
 
-    def test_get_cp_export(self, user, cp_report_2019, _setup_new_cp_report):
-        self.client.force_authenticate(user=user)
+    def test_get_cp_export(
+        self, secretariat_user, cp_report_2019, _setup_new_cp_report
+    ):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url, {"cp_report_id": cp_report_2019.id})
         assert response.status_code == 200

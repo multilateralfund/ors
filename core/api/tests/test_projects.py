@@ -1,8 +1,9 @@
 import io
 import openpyxl
+import pytest
 from pathlib import Path
 
-import pytest
+from django.contrib.auth.models import Group
 from django.urls import reverse
 from rest_framework.test import APIClient
 
@@ -36,14 +37,20 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture(name="other_agency_user")
 def _other_agency_user():
+    group = Group.objects.get(name="Agency submitter")
     other_agency = AgencyFactory.create(name="Agency2", code="AG2")
-    return UserFactory.create(agency=other_agency, user_type="agency_submitter")
+    user = UserFactory.create(agency=other_agency)
+    user.groups.add(group)
+    return user
 
 
 @pytest.fixture(name="other_country_user")
 def _other_country_user():
     other_country = CountryFactory.create(name="New Country")
-    return UserFactory.create(country=other_country, user_type="country_user")
+    group = Group.objects.get(name="Country user")
+    user = UserFactory.create(country=other_country)
+    user.groups.add(group)
+    return user
 
 
 @pytest.fixture(name="project_url")
@@ -179,8 +186,8 @@ class TestProjectsUpdate:
         response = self.client.patch(project_url, {"title": "Into the Spell"})
         assert response.status_code == 403
 
-    def test_project_patch(self, user, project_url, project, agency):
-        self.client.force_authenticate(user=user)
+    def test_project_patch(self, secretariat_user, project_url, project, agency):
+        self.client.force_authenticate(user=secretariat_user)
         new_agency = AgencyFactory.create(code="NEWAG")
 
         update_data = {
@@ -208,9 +215,9 @@ class TestProjectsUpdate:
         )
 
     def test_project_patch_ods_odp(
-        self, user, project_url, project, project_ods_odp_subst
+        self, secretariat_user, project_url, project, project_ods_odp_subst
     ):
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
 
         update_data = {
             "title": "Crocodile wearing a vest",
@@ -243,8 +250,10 @@ class TestProjectUpload:
         response = self.client.post(project_upload_url, {})
         assert response.status_code == 403
 
-    def test_upload_file(self, user, project_upload_url, project, test_file):
-        self.client.force_authenticate(user=user)
+    def test_upload_file(
+        self, secretariat_user, project_upload_url, project, test_file
+    ):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.post(
             project_upload_url, {"file": test_file.open()}, format="multipart"
@@ -394,9 +403,11 @@ class TestProjectList(BaseTest):
         for project in response.data:
             assert project["country"] == country_user.country.name
 
-    def test_project_list_agency_filter(self, user, agency, _setup_project_list):
+    def test_project_list_agency_filter(
+        self, secretariat_user, agency, _setup_project_list
+    ):
         new_agency, _, _, _ = _setup_project_list
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url, {"agency_id": agency.id})
         assert response.status_code == 200
@@ -410,8 +421,10 @@ class TestProjectList(BaseTest):
         assert response.status_code == 200
         assert len(response.data) == 10
 
-    def test_project_list_type_filter(self, user, project_type, _setup_project_list):
-        self.client.force_authenticate(user=user)
+    def test_project_list_type_filter(
+        self, secretariat_user, project_type, _setup_project_list
+    ):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url, {"project_type_id": project_type.id})
         assert response.status_code == 200
@@ -422,10 +435,10 @@ class TestProjectList(BaseTest):
             assert project["project_type"]["code"] == project_type.code
 
     def test_project_list_status_filter(
-        self, user, project_status, _setup_project_list
+        self, secretariat_user, project_status, _setup_project_list
     ):
         _, new_project_status, _, _ = _setup_project_list
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url, {"status_id": project_status.id})
         assert response.status_code == 200
@@ -439,9 +452,11 @@ class TestProjectList(BaseTest):
         assert response.status_code == 200
         assert len(response.data) == 10
 
-    def test_project_list_sector_filter(self, user, sector, _setup_project_list):
+    def test_project_list_sector_filter(
+        self, secretariat_user, sector, _setup_project_list
+    ):
         _, _, new_sector, _ = _setup_project_list
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url, {"sector_id": sector.id})
         assert response.status_code == 200
@@ -457,8 +472,10 @@ class TestProjectList(BaseTest):
         assert response.status_code == 200
         assert len(response.data) == 9
 
-    def test_project_list_subsector_filter(self, user, subsector, _setup_project_list):
-        self.client.force_authenticate(user=user)
+    def test_project_list_subsector_filter(
+        self, secretariat_user, subsector, _setup_project_list
+    ):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url, {"subsectors": [subsector.id]})
         assert response.status_code == 200
@@ -466,8 +483,8 @@ class TestProjectList(BaseTest):
         for project in response.data:
             assert project["subsectors"] == [ProjectSubSectorSerializer(subsector).data]
 
-    def test_project_list_subs_type_filter(self, user, _setup_project_list):
-        self.client.force_authenticate(user=user)
+    def test_project_list_subs_type_filter(self, secretariat_user, _setup_project_list):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url, {"substance_type": "HCFC"})
         assert response.status_code == 200
@@ -475,9 +492,11 @@ class TestProjectList(BaseTest):
         for project in response.data:
             assert project["substance_type"] == "HCFC"
 
-    def test_project_list_meet_filter(self, user, _setup_project_list, meeting):
+    def test_project_list_meet_filter(
+        self, secretariat_user, _setup_project_list, meeting
+    ):
         _, _, _, new_meeting = _setup_project_list
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url, {"meeting_id": meeting.id})
         assert response.status_code == 200
@@ -491,8 +510,10 @@ class TestProjectList(BaseTest):
         assert response.status_code == 200
         assert len(response.data) == 10
 
-    def test_project_list_country_filter(self, user, country_ro, _setup_project_list):
-        self.client.force_authenticate(user=user)
+    def test_project_list_country_filter(
+        self, secretariat_user, country_ro, _setup_project_list
+    ):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url, {"country_id": country_ro.id})
         assert response.status_code == 200
@@ -500,8 +521,10 @@ class TestProjectList(BaseTest):
         for project in response.data:
             assert project["country"] == country_ro.name
 
-    def test_project_list_date_received_filter(self, user, _setup_project_list):
-        self.client.force_authenticate(user=user)
+    def test_project_list_date_received_filter(
+        self, secretariat_user, _setup_project_list
+    ):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url, {"date_received_after": "2020-01-03"})
         assert response.status_code == 200
@@ -518,8 +541,8 @@ class TestProjectList(BaseTest):
         assert len(response.data) == 2
         assert response.data[0]["date_received"] == "2020-01-01"
 
-    def test_project_list_search_filter(self, user, _setup_project_list):
-        self.client.force_authenticate(user=user)
+    def test_project_list_search_filter(self, secretariat_user, _setup_project_list):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url, {"search": "Project 26"})
         assert response.status_code == 200
@@ -550,8 +573,10 @@ class TestProjectStatistics(BaseTest):
         assert response.data["projects_count_per_cluster"][0]["count"] == 5
         assert response.data["projects_count_per_cluster"][1]["count"] == 4
 
-    def test_proj_stat_w_filters(self, user, _setup_project_list, project_cluster_kpp):
-        self.client.force_authenticate(user=user)
+    def test_proj_stat_w_filters(
+        self, secretariat_user, _setup_project_list, project_cluster_kpp
+    ):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url, {"cluster_id": project_cluster_kpp.id})
         assert response.status_code == 200
@@ -700,7 +725,7 @@ class TestCreateProjects(BaseTest):
 
     def test_create_project(
         self,
-        user,
+        secretariat_user,
         country_ro,
         agency,
         substance,
@@ -713,7 +738,7 @@ class TestCreateProjects(BaseTest):
         _setup_project_create,
     ):
         data = _setup_project_create
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
 
         # create project
         response = self.client.post(self.url, data, format="json")
@@ -770,9 +795,9 @@ class TestCreateProjects(BaseTest):
         assert len(comments) == 2
         assert comments[0]["meeting_of_report"] == meeting.number
 
-    def test_create_project_project_fk(self, user, _setup_project_create):
+    def test_create_project_project_fk(self, secretariat_user, _setup_project_create):
         data = _setup_project_create
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
         data["subsectors"] = [999]
         # invalid country, agency, subsector, project_type ids
         for field in [
@@ -792,9 +817,9 @@ class TestCreateProjects(BaseTest):
         # check project count
         assert Project.objects.count() == 0
 
-    def test_create_project_ods_fk(self, user, _setup_project_create):
+    def test_create_project_ods_fk(self, secretariat_user, _setup_project_create):
         data = _setup_project_create
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
         # invalid substance, blend ids
         for index, field in [(0, "ods_substance_id"), (1, "ods_blend_id")]:
             initial_value = data["ods_odp"][index][field]
@@ -807,9 +832,11 @@ class TestCreateProjects(BaseTest):
         # check project count
         assert Project.objects.count() == 0
 
-    def test_create_project_submission_category(self, user, _setup_project_create):
+    def test_create_project_submission_category(
+        self, secretariat_user, _setup_project_create
+    ):
         data = _setup_project_create
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
 
         data["submission_category"] = "invalid"
         response = self.client.post(self.url, data, format="json")
@@ -819,9 +846,9 @@ class TestCreateProjects(BaseTest):
         # check project count
         assert Project.objects.count() == 0
 
-    def teste_create_project_rbm_meas_fk(self, user, _setup_project_create):
+    def teste_create_project_rbm_meas_fk(self, secretariat_user, _setup_project_create):
         data = _setup_project_create
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
 
         data["rbm_measures"][0]["measure_id"] = 999
         response = self.client.post(self.url, data, format="json")
@@ -830,9 +857,9 @@ class TestCreateProjects(BaseTest):
         # check project count
         assert Project.objects.count() == 0
 
-    def test_create_project_comments(self, user, _setup_project_create):
+    def test_create_project_comments(self, secretariat_user, _setup_project_create):
         data = _setup_project_create
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
 
         data["comments"][0]["meeting_of_report_id"] = 999
         response = self.client.post(self.url, data, format="json")
@@ -845,8 +872,8 @@ class TestCreateProjects(BaseTest):
 class TestProjectsExport(BaseTest):
     url = reverse("project-export")
 
-    def test_export(self, user, project):
-        self.client.force_authenticate(user=user)
+    def test_export(self, viewer_user, project):
+        self.client.force_authenticate(user=viewer_user)
 
         response = self.client.get(self.url)
         assert response.status_code == 200

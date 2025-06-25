@@ -1,0 +1,170 @@
+[
+    {
+        "permission_codename": "can_view_only_own_country",
+        "permission_name": "Can view only entries from their own country",
+        "app_label": "core",
+        "model_name": "country"
+    },
+    {
+        "permission_codename": "can_view_all_countries",
+        "permission_name": "Can view entries from all countries",
+        "app_label": "core",
+        "model_name": "country"
+    },
+    {
+        "permission_codename": "can_view_only_own_agency",
+        "permission_name": "Can view only entries from their own agency",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
+        "permission_codename": "can_view_all_agencies",
+        "permission_name": "Can view entries from all agencies",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
+        "permission_codename": "can_view_all_agencies_old_project_implementation",
+        "permission_name": "Can view entries from all agencies for the old project implementation",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
+        "permission_codename": "has_replenishment_view_access",
+        "permission_name": "Has replenishment view access",
+        "app_label": "core",
+        "model_name": "replenishment"
+    },
+    {
+        "permission_codename": "has_replenishment_edit_access",
+        "permission_name": "Has replenishment edit access",
+        "app_label": "core",
+        "model_name": "replenishment"
+    },
+    {
+        "permission_codename": "has_cp_report_view_access",
+        "permission_name": "Has CP report view access",
+        "app_label": "core",
+        "model_name": "cpreport"
+    },
+    {
+        "permission_codename": "has_cp_report_edit_access",
+        "permission_name": "Has CP report edit access",
+        "app_label": "core",
+        "model_name": "cpreport"
+    },
+    {
+        "permission_codename": "can_submit_final_cp_version",
+        "permission_name": "Can submit final CP version",
+        "app_label": "core",
+        "model_name": "cpreport"
+    },
+    {
+        "permission_codename": "has_cp_report_delete_access",
+        "permission_name": "Has CP report delete access",
+        "app_label": "core",
+        "model_name": "cpreport"
+    },
+    {
+        "permission_codename": "can_cp_secretariat_type_comment",
+        "permission_name": "Can CP secretariat type comment",
+        "app_label": "core",
+        "model_name": "cpcomment"
+    },
+    {
+        "permission_codename": "can_cp_country_type_comment",
+        "permission_name": "Can CP country type comment",
+        "app_label": "core",
+        "model_name": "cpcomment"
+    },
+    {
+        "permission_codename": "has_cp_report_export_access",
+        "permission_name": "Has CP report export access",
+        "app_label": "core",
+        "model_name": "cpreport"
+    },
+    {
+        "permission_codename": "has_meta_projects_view_access",
+        "permission_name": "Has meta projects view access",
+        "app_label": "core",
+        "model_name": "metaproject"
+    },
+    {
+        "permission_codename": "has_project_metainfo_view_access",
+        "permission_name": "Has project metadata view access",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
+        "permission_codename": "has_project_statistics_view_access",
+        "permission_name": "Has project statistics view access",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
+        "permission_codename": "has_project_v2_view_access",
+        "permission_name": "Has project v2 view access",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
+        "permission_codename": "has_project_v2_edit_access",
+        "permission_name": "Has project v2 edit access",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
+        "permission_codename": "has_project_view_access",
+        "permission_name": "Has project view access",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
+        "permission_codename": "has_project_edit_access",
+        "permission_name": "Has project edit access",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
+        "permission_codename": "has_project_v2_submit_access",
+        "permission_name": "Has project v2 submit access",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
+        "permission_codename": "has_project_v2_associate_projects_access",
+        "permission_name": "Has project v2 associate projects access",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
+        "permission_codename": "has_project_v2_recommend_projects_access",
+        "permission_name": "Has project v2 recommend projects access",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
+        "permission_codename": "has_business_plan_view_access",
+        "permission_name": "Has business plan view access",
+        "app_label": "core",
+        "model_name": "businessplan"
+    },
+    {
+        "permission_codename": "has_business_plan_edit_access",
+        "permission_name": "Has business plan edit access",
+        "app_label": "core",
+        "model_name": "businessplan"
+    },
+    {
+        "permission_codename": "has_sectors_and_subsectors_view_access",
+        "permission_name": "Has sectors and subsectors view access",
+        "app_label": "core",
+        "model_name": "projectsector"
+    },
+    {
+        "permission_codename": "has_sectors_and_subsectors_edit_access",
+        "permission_name": "Has sectors and subsectors edit access",
+        "app_label": "core",
+        "model_name": "projectsector"
+    }
+]

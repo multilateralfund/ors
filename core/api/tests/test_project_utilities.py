@@ -126,8 +126,8 @@ class TestProjectSectorCreate(BaseTest):
         sect_co = ProjectSector.objects.count()
         assert sect_co == 1
 
-    def test_create_sector(self, user, _setup_sector_create):
-        self.client.force_authenticate(user=user)
+    def test_create_sector(self, secretariat_user, _setup_sector_create):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.post(self.url, data=_setup_sector_create)
         assert response.status_code == 201

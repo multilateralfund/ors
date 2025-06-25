@@ -5,11 +5,9 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 
 from core.api.permissions import (
-    IsAgency,
-    IsSecretariat,
-    IsViewer,
-    IsBPEditor,
-    IsBPViewer,
+    DenyAll,
+    HasSectorsAndSubsectorsViewAccess,
+    HasSectorsAndSubsectorsEditAccess,
 )
 from core.api.serializers.project_metadata import (
     ProjectSectorIncludingSubsectorsSerializer,
@@ -34,7 +32,13 @@ class SectorSubsectorBaseView(
     Base class for project
     """
 
-    permission_classes = [IsSecretariat | IsAgency | IsViewer | IsBPEditor | IsBPViewer]
+    @property
+    def permission_classes(self):
+        if self.action in ["list"]:
+            return [HasSectorsAndSubsectorsViewAccess]
+        if self.action in ["create"]:
+            return [HasSectorsAndSubsectorsEditAccess]
+        return [DenyAll]
 
     def get_queryset(self):
         # filter by is_custom for list view

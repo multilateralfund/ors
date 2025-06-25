@@ -7,7 +7,11 @@ from rest_framework import generics, mixins, status
 from rest_framework.response import Response
 
 from core.api.filters.country_programme import CPFileFilter
-from core.api.permissions import IsCountryUser, IsSecretariat, IsViewer, IsCPViewer
+from core.api.permissions import (
+    HasCPReportViewPermission,
+    HasCPReportEditPermission,
+    DenyAll,
+)
 from core.api.serializers.cp_file import CPFileSerializer
 from core.models.country_programme import CPFile
 
@@ -22,7 +26,6 @@ class CPFilesView(
     API endpoint that allows uploading country programme files.
     """
 
-    permission_classes = [IsSecretariat | IsCountryUser | IsViewer | IsCPViewer]
     queryset = CPFile.objects.select_related("country")
     serializer_class = CPFileSerializer
     filterset_class = CPFileFilter
@@ -45,15 +48,22 @@ class CPFilesView(
         ".7z",
     ]
 
+    @property
+    def permission_classes(self):
+        if self.request.method == "GET":
+            return [HasCPReportViewPermission]
+        if self.request.method in ["POST", "DELETE"]:
+            return [HasCPReportEditPermission]
+        return [DenyAll]
+
     def _check_country_user(self):
         user = self.request.user
         country_id = self.request.query_params.get("country_id")
         country_id = int(country_id) if country_id else None
         if (
-            user.user_type
-            in (user.UserType.COUNTRY_USER, user.UserType.COUNTRY_SUBMITTER)
-            and user.country_id != country_id
-        ):
+            user.has_perm("core.can_view_only_own_country")
+            and not user.has_perm("core.can_view_all_countries")
+        ) and user.country_id != country_id:
             raise PermissionDenied("User represents other country")
 
     def get(self, request, *args, **kwargs):
@@ -118,7 +128,7 @@ class CPFilesView(
 
 
 class CPFilesDownloadView(generics.RetrieveAPIView):
-    permission_classes = [IsSecretariat | IsCountryUser | IsViewer | IsCPViewer]
+    permission_classes = [HasCPReportViewPermission]
     queryset = CPFile.objects.all()
     lookup_field = "id"
 

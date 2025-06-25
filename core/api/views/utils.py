@@ -106,9 +106,8 @@ def get_cp_report_from_request(request, cp_report_class):
     try:
         user = request.user
         cp_report_qs = cp_report_class.objects.all()
-        if user.user_type in (
-            user.UserType.COUNTRY_USER,
-            user.UserType.COUNTRY_SUBMITTER,
+        if user.has_perm("core.can_view_only_own_country") and not user.has_perm(
+            "core.can_view_all_countries"
         ):
             cp_report_qs = cp_report_qs.filter(country=user.country)
 

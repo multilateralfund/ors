@@ -6,11 +6,17 @@ from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 
+from core.api.utils import (
+    COUNTRY_USER_GROUP,
+    COUNTRY_SUBMITTER_GROUP,
+)
 from core.forms import CountryUserPasswordResetForm
 from core.import_data.utils import parse_date
 from core.models.country_programme import CPComment, CPReport
 from core.models.meeting import Decision, Meeting
+
 from multilateralfund.celery import app
+
 
 logger = get_task_logger(__name__)
 User = get_user_model()
@@ -29,7 +35,7 @@ def send_mail_comment_submit(cp_comment_id):
         recipients = config.CP_NOTIFICATION_EMAILS
     else:
         recipients = User.objects.filter(
-            user_type__in=[User.UserType.COUNTRY_USER, User.UserType.COUNTRY_SUBMITTER],
+            groups__name__in=[COUNTRY_USER_GROUP, COUNTRY_SUBMITTER_GROUP],
             country=cp_report.country,
         ).values_list("email", flat=True)
     if not recipients:
@@ -103,14 +109,14 @@ def send_mail_set_password_country_user(user_emails):
                 continue
 
             country_inputter = User.objects.filter(
-                email=user_email, user_type=User.UserType.COUNTRY_USER
+                email=user_email, groups__name=COUNTRY_USER_GROUP
             ).first()
             password_inputter = User.objects.make_random_password(length=12)
             country_inputter.set_password(password_inputter)
             country_inputter.save()
 
             country_submitter = User.objects.filter(
-                email=user_email, user_type=User.UserType.COUNTRY_SUBMITTER
+                email=user_email, groups__name=COUNTRY_SUBMITTER_GROUP
             ).first()
             password_submitter = User.objects.make_random_password(length=12)
             country_submitter.set_password(password_submitter)

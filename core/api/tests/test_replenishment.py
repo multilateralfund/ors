@@ -95,11 +95,11 @@ class TestReplenishmentCountries(BaseTest):
 class TestReplenishments(BaseTest):
     url = reverse("replenishment-replenishments-list")
 
-    def test_replenishments_list(self, user):
+    def test_replenishments_list(self, secretariat_user):
         replenishment_1 = ReplenishmentFactory.create(start_year=2018, end_year=2020)
         replenishment_2 = ReplenishmentFactory.create(start_year=2021, end_year=2023)
 
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url)
         assert response.status_code == 200
@@ -112,7 +112,7 @@ class TestReplenishments(BaseTest):
         assert response.data[1]["id"] == replenishment_1.id
         assert response.data[1]["end_year"] == 2020
 
-    def test_replenishments_list_final(self, user):
+    def test_replenishments_list_final(self, secretariat_user):
         replenishment_1 = ReplenishmentFactory.create(start_year=2018, end_year=2020)
         ReplenishmentFactory.create(start_year=2021, end_year=2023)
 
@@ -121,7 +121,7 @@ class TestReplenishments(BaseTest):
             is_final=True,
         )
 
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url, {"is_final": True})
         assert response.status_code == 200
@@ -181,7 +181,7 @@ class TestReplenishments(BaseTest):
 class TestScalesOfAssessment(BaseTest):
     url = reverse("replenishment-scales-of-assessment-list")
 
-    def test_scales_of_assessment_list(self, user):
+    def test_scales_of_assessment_list(self, secretariat_user):
         replenishment_1 = ReplenishmentFactory.create(start_year=2018, end_year=2020)
         replenishment_2 = ReplenishmentFactory.create(start_year=2021, end_year=2023)
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
@@ -195,7 +195,7 @@ class TestScalesOfAssessment(BaseTest):
         soa_1 = ScaleOfAssessmentFactory.create(country=country_1, version=version_1)
         soa_2 = ScaleOfAssessmentFactory.create(country=country_2, version=version_2)
 
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url)
         assert response.status_code == 200
@@ -215,7 +215,7 @@ class TestScalesOfAssessment(BaseTest):
             == soa_2.override_adjusted_scale_of_assessment
         )
 
-    def test_scales_of_assessment_list_filtered(self, user):
+    def test_scales_of_assessment_list_filtered(self, secretariat_user):
         replenishment_1 = ReplenishmentFactory.create(start_year=2018, end_year=2020)
         replenishment_2 = ReplenishmentFactory.create(start_year=2021, end_year=2023)
         version_1 = ScaleOfAssessmentVersionFactory.create(
@@ -227,7 +227,7 @@ class TestScalesOfAssessment(BaseTest):
         soa_1 = ScaleOfAssessmentFactory.create(version=version_1)
         ScaleOfAssessmentFactory.create(version=version_2)
 
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url, {"start_year": replenishment_1.start_year})
         assert response.status_code == 200
@@ -262,7 +262,7 @@ class TestStatusOfContributions:
     client = APIClient()
     fifteen_decimals = decimal.Decimal("0.000000000000001")
 
-    def test_annual_status_of_contributions(self, user):
+    def test_annual_status_of_contributions(self, secretariat_user):
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
         country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
         year_1 = 2020
@@ -294,7 +294,7 @@ class TestStatusOfContributions:
             country=country_2, year=year_1, amount=contribution_3.bilateral_assistance
         )
 
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(
             reverse(
@@ -431,7 +431,7 @@ class TestStatusOfContributions:
             ],
         }
 
-    def test_triennial_status_of_contributions(self, user):
+    def test_triennial_status_of_contributions(self, secretariat_user):
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
         country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
         year_1 = 2020
@@ -464,7 +464,7 @@ class TestStatusOfContributions:
             country=country_2, year=year_1, amount=contribution_3.bilateral_assistance
         )
 
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(
             reverse(
@@ -586,7 +586,7 @@ class TestStatusOfContributions:
             "disputed_contributions_per_country": [],
         }
 
-    def test_summary_status_of_contributions(self, user):
+    def test_summary_status_of_contributions(self, secretariat_user):
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
         country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
 
@@ -637,7 +637,7 @@ class TestStatusOfContributions:
             country=country_2, year=year_3, amount=contribution_4.bilateral_assistance
         )
 
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(
             reverse(
@@ -969,6 +969,11 @@ class TestStatusOfContributions:
 class TestDisputedContributions(BaseTest):
     url = reverse("replenishment-disputed-contributions-list")
 
+    def test_without_login(self, **kwargs):
+        self.client.force_authenticate(user=None)
+        response = self.client.post(self.url, kwargs)
+        assert response.status_code == 403
+
     def test_create_disputed_contributions(self, treasurer_user):
         country = CountryFactory.create(name="Country 1", iso3="XYZ")
 
@@ -1087,7 +1092,7 @@ class TestReplenishmentDashboard(BaseTest):
     year_3 = 2021
     year_4 = 2023
 
-    def test_replenishment_dashboard(self, user):
+    def test_replenishment_dashboard(self, secretariat_user):
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
         country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
 
@@ -1155,7 +1160,7 @@ class TestReplenishmentDashboard(BaseTest):
             information_strategy=decimal.Decimal("100"),
         )
 
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url)
 
@@ -1361,7 +1366,7 @@ class TestReplenishmentDashboardStatistics(BaseTest):
     year_3 = 2021
     year_4 = 2023
 
-    def test_replenishment_dashboard_statistics(self, user):
+    def test_replenishment_dashboard_statistics(self, secretariat_user):
         current_year = datetime.now().year
 
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
@@ -1431,7 +1436,7 @@ class TestReplenishmentDashboardStatistics(BaseTest):
             amount=contribution_4.bilateral_assistance,
         )
 
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url)
 
@@ -2212,7 +2217,7 @@ class TestInvoices(BaseTest):
     year_3 = 2024
     year_4 = 2026
 
-    def test_invoices_list(self, user):
+    def test_invoices_list(self, secretariat_user):
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
         country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
         country_3 = CountryFactory.create(name="Country 3", iso3="DEF")
@@ -2248,7 +2253,7 @@ class TestInvoices(BaseTest):
             year=self.year_2,
         )
 
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
 
         response_1 = self.client.get(
             self.url,
@@ -2422,14 +2427,14 @@ class TestPayments(BaseTest):
     year_3 = 2024
     year_4 = 2026
 
-    def test_payments_list(self, user):
+    def test_payments_list(self, secretariat_user):
         country_1 = CountryFactory.create(name="Country 1", iso3="XYZ")
         country_2 = CountryFactory.create(name="Country 2", iso3="ABC")
 
         PaymentFactory(country=country_1)
         PaymentFactory(country=country_2)
 
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url)
         assert response.status_code == 200
@@ -2616,7 +2621,7 @@ class TestExternalAllocations(BaseTest):
     year_3 = 2024
     year_4 = 2026
 
-    def test_external_allocations_list(self, user):
+    def test_external_allocations_list(self, secretariat_user):
         ExternalAllocation.objects.create(
             year=self.year_1,
             undp=decimal.Decimal("100"),
@@ -2629,7 +2634,7 @@ class TestExternalAllocations(BaseTest):
             comment="test",
         )
 
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url)
         assert response.status_code == 200
@@ -2657,7 +2662,7 @@ class TestExternalIncome(BaseTest):
     year_3 = 2024
     year_4 = 2026
 
-    def test_external_income_list(self, user):
+    def test_external_income_list(self, secretariat_user):
         ExternalIncomeAnnual.objects.create(
             triennial_start_year=self.year_1,
             interest_earned=decimal.Decimal("100"),
@@ -2670,7 +2675,7 @@ class TestExternalIncome(BaseTest):
             miscellaneous_income=decimal.Decimal("200"),
         )
 
-        self.client.force_authenticate(user=user)
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.get(self.url)
         assert response.status_code == 200

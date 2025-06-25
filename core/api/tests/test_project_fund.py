@@ -30,8 +30,8 @@ class TestCreateProjectFund(BaseProjectUtilityCreate):
     def setup(self, _create_project_fund):
         self.__class__.new_utility_data = _create_project_fund
 
-    def test_invalid_meeting(self, user, _create_project_fund):
-        self.client.force_authenticate(user=user)
+    def test_invalid_meeting(self, secretariat_user, _create_project_fund):
+        self.client.force_authenticate(user=secretariat_user)
 
         project_data = _create_project_fund
         project_data["meeting_id"] = 999
@@ -64,8 +64,8 @@ class TestFundUpdate:
         response = self.client.patch(project_fund_url)
         assert response.status_code == 403
 
-    def test_update(self, user, project_fund_url, project_fund):
-        self.client.force_authenticate(user=user)
+    def test_update(self, secretariat_user, project_fund_url, project_fund):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.patch(project_fund_url, {"amount": 41})
         assert response.status_code == 200

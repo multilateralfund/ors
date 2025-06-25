@@ -31,8 +31,8 @@ class BaseProjectUtilityCreate(BaseTest):
         response = self.client.post(self.url, self.new_utility_data, format="json")
         assert response.status_code == 403
 
-    def test_project_utility_create(self, user, project):
-        self.client.force_authenticate(user=user)
+    def test_project_utility_create(self, secretariat_user, project):
+        self.client.force_authenticate(user=secretariat_user)
         response = self.client.post(self.url, self.new_utility_data, format="json")
         assert response.status_code == 201
         for key, value in self.new_utility_data.items():
@@ -40,8 +40,8 @@ class BaseProjectUtilityCreate(BaseTest):
 
         assert getattr(project, self.proj_utility_attr_name).count() == 1
 
-    def test_without_project(self, user):
-        self.client.force_authenticate(user=user)
+    def test_without_project(self, secretariat_user):
+        self.client.force_authenticate(user=secretariat_user)
         self.new_utility_data.pop("project_id")
         response = self.client.post(self.url, self.new_utility_data, format="json")
         assert response.status_code == 400
@@ -63,8 +63,8 @@ class BaseProjectUtilityDelete(BaseTest):
         response = self.client.delete(self.url)
         assert response.status_code == 403
 
-    def test_delete(self, user, project):
-        self.client.force_authenticate(user=user)
+    def test_delete(self, secretariat_user, project):
+        self.client.force_authenticate(user=secretariat_user)
 
         response = self.client.delete(self.url)
         assert response.status_code == 204
