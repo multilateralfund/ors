@@ -219,7 +219,7 @@ const getColumnDefs = (
       cellClass: 'ag-text-center ag-cell-ellipsed',
       minWidth: 90,
       resizable: true,
-      sortable: true,
+      sortable: mode !== 'association',
     },
   }
 }
