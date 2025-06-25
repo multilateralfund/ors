@@ -16,7 +16,7 @@ class MetaProjectSerializer(serializers.ModelSerializer):
     lead_agency_id = serializers.PrimaryKeyRelatedField(
         required=True, queryset=Agency.objects.all().values_list("id", flat=True)
     )
-    projects = ProjectListSerializer(many=True, read_only=True)
+    projects = serializers.SerializerMethodField()
 
     class Meta:
         model = MetaProject
@@ -29,3 +29,8 @@ class MetaProjectSerializer(serializers.ModelSerializer):
             "pcr_project_id",
             "projects",
         ]
+
+    def get_projects(self, obj):
+        # Use filtered_projects if available, otherwise fallback to all projects
+        projects = getattr(obj, "filtered_projects", obj.projects.all())
+        return ProjectListSerializer(projects, many=True).data
