@@ -135,7 +135,12 @@ export interface BPTypeSlice {
 }
 
 export interface BPYearRangesSlice {
-  yearRanges: { loading: boolean; loaded: boolean; data: ApiBPYearRanges }
+  yearRanges: {
+    loading: boolean
+    loaded: boolean
+    data: ApiBPYearRanges
+    error: any
+  }
   fetchYearRanges: () => void
 }
 
