@@ -1,3 +1,6 @@
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+
 from django.db.models import Prefetch, Q
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -69,6 +72,17 @@ class ProjectAssociationViewSet(
         )
         project_filter = ProjectFilter(self.request.GET, queryset=projects_queryset)
         filtered_projects_qs = project_filter.qs
+        project = None
+        project_id = self.request.query_params.get("project_id", None)
+        if project_id:
+            project = Project.objects.filter(id=project_id).first()
+        if project:
+            # Exclude the meta project associated with the given project_id
+            filtered_projects_qs = filtered_projects_qs.exclude(
+                meta_project__id=project.meta_project.id
+            ).filter(
+                country=project.country,
+            )
         search_filter = filters.SearchFilter()
         # SearchFilter expects a view instance, so pass self
         filtered_projects_qs = search_filter.filter_queryset(
@@ -94,6 +108,19 @@ class ProjectAssociationViewSet(
         queryset = [meta for meta in queryset if getattr(meta, "filtered_projects", [])]
         return queryset
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "project_id",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_INTEGER,
+                description="""
+                    Project given for association. The entries will be filtered based on this project's country
+                    and its meta project will be excluded from the results.
+                """,
+            ),
+        ]
+    )
     def list(self, request, *args, **kwargs):
         # Get the filtered MetaProjects with prefetched filtered_project
 
