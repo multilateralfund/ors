@@ -5,6 +5,7 @@ import { useContext, useMemo, useRef } from 'react'
 import ViewTable from '@ors/components/manage/Form/ViewTable'
 import CustomLink from '@ors/components/ui/Link/Link'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import PListingFilters from '../ProjectsListing/PListingFilters'
 import PListingTable from '../ProjectsListing/PListingTable'
 import getColumnDefs from '../ProjectsListing/schema'
@@ -14,7 +15,6 @@ import { ProjectTypeApi } from '../interfaces'
 import { initialFilters } from '../constants'
 
 import { find, flatMap } from 'lodash'
-import PermissionsContext from '@ors/contexts/PermissionsContext'
 
 const ProjectsAssociateSelection = ({
   project,
@@ -33,9 +33,9 @@ const ProjectsAssociateSelection = ({
   setFilters: (filters: any) => void
   setMode: (mode: string) => void
 }) => {
-  const { canAssociateProjects } = useContext(PermissionsContext)
-
   const form = useRef<any>()
+
+  const { canAssociateProjects } = useContext(PermissionsContext)
 
   const { results = [], setParams } = projectsAssociation
 
@@ -67,7 +67,7 @@ const ProjectsAssociateSelection = ({
 
   const key = useMemo(() => JSON.stringify(filters), [filters])
 
-  const { columnDefs, defaultColDef } = getColumnDefs([], 'association')
+  const { columnDefs, defaultColDef } = getColumnDefs('association')
 
   const selectedProjectData = (
     <ViewTable

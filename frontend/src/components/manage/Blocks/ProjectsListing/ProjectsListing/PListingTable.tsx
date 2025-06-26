@@ -5,7 +5,6 @@ import type { useGetProjectsAssociation } from '../hooks/useGetProjectsAssociati
 import ViewTable from '@ors/components/manage/Form/ViewTable'
 import getColumnDefs from './schema'
 import { PROJECTS_PER_PAGE } from '../constants'
-import { useStore } from '@ors/store'
 
 export type PListingTableProps = {
   projects: ReturnType<typeof useGetProjects | typeof useGetProjectsAssociation>
@@ -33,11 +32,7 @@ const PListingTable = ({
 }: PListingTableProps) => {
   const { count, loaded, loading, results, setParams } = projects
 
-  const commonSlice = useStore((state) => state.common)
-  const user_permissions = commonSlice.user_permissions.data || []
-
   const { columnDefs, defaultColDef } = getColumnDefs(
-    user_permissions,
     mode,
     projectId,
     setProjectData,

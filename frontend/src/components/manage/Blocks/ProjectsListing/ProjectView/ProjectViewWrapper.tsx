@@ -6,6 +6,7 @@ import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 import CustomLink from '@ors/components/ui/Link/Link'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import ProjectView from './ProjectView'
 import { PageTitle, RedirectBackButton } from '../HelperComponents'
 import {
@@ -19,10 +20,11 @@ import { ProjectSpecificFields } from '../interfaces'
 
 import { lowerCase } from 'lodash'
 import { useParams } from 'wouter'
-import PermissionsContext from '@ors/contexts/PermissionsContext'
 
 const ProjectViewWrapper = () => {
   const { project_id } = useParams<Record<string, string>>()
+
+  const { canEditProjects } = useContext(PermissionsContext)
 
   const project = useGetProject(project_id)
   const { data, loading } = project
@@ -55,9 +57,6 @@ const ProjectViewWrapper = () => {
     } else setSpecificFields([])
   }, [cluster_id, project_type_id, sector_id])
 
-  const { canUpdateProjects, canSubmitProjects, canRecommendProjects } =
-    useContext(PermissionsContext)
-
   return (
     <>
       <Loading
@@ -85,9 +84,7 @@ const ProjectViewWrapper = () => {
                   )}
                 </div>
               </div>
-              {(canUpdateProjects ||
-                canSubmitProjects ||
-                canRecommendProjects) &&
+              {canEditProjects &&
                 lowerCase(submission_status) !== 'withdrawn' && (
                   <CustomLink
                     className="mb-4 ml-auto h-10 text-nowrap px-4 py-2 text-lg uppercase"

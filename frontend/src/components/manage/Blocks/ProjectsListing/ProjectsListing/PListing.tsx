@@ -2,9 +2,9 @@
 
 import { useContext, useMemo, useRef, useState } from 'react'
 
-import PermissionsContext from '@ors/contexts/PermissionsContext'
 import Loading from '@ors/components/theme/Loading/Loading'
 import CustomLink from '@ors/components/ui/Link/Link'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import ExpandableMenu from './ExpandableMenu'
 import GenerateDBMenu from './GenerateDBMenu'
 import PListingFilters from './PListingFilters'

@@ -1,22 +1,22 @@
-import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
+import { useContext } from 'react'
+
 import ProjectViewWrapper from '@ors/components/manage/Blocks/ProjectsListing/ProjectView/ProjectViewWrapper'
+import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import usePageTitle from '@ors/hooks/usePageTitle'
+import NotFoundPage from '@ors/app/not-found'
 
 import { useParams } from 'wouter'
-import { useContext } from 'react'
-import PermissionsContext from '@ors/contexts/PermissionsContext'
-import NotFoundPage from '@ors/app/not-found'
 
 export default function Project() {
   usePageTitle('Project')
 
+  const { project_id } = useParams<Record<string, string>>()
   const { canViewProjects } = useContext(PermissionsContext)
 
   if (!canViewProjects) {
     return <NotFoundPage />
   }
-
-  const { project_id } = useParams<Record<string, string>>()
 
   return (
     <PageWrapper>

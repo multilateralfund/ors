@@ -1,17 +1,16 @@
 import { useContext } from 'react'
 
-import usePageTitle from '@ors/hooks/usePageTitle'
-
-import PermissionsContext from '@ors/contexts/PermissionsContext'
+import PExport from '@ors/components/manage/Blocks/ProjectsListing/ProjectsListing/PExport'
+import { RedirectBackButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
-import { RedirectBackButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
-import PExport from '@ors/components/manage/Blocks/ProjectsListing/ProjectsListing/PExport'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
+import usePageTitle from '@ors/hooks/usePageTitle'
 import NotFoundPage from '@ors/app/not-found'
 
 export default function Projects() {
-  usePageTitle('Projects')
+  usePageTitle('Projects export')
 
   const { canViewProjects } = useContext(PermissionsContext)
 

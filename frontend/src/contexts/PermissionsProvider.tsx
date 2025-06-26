@@ -29,6 +29,8 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   const canAssociateProjects = user_permissions.includes(
     'has_project_v2_associate_projects_access',
   )
+  const canEditProjects =
+    canUpdateProjects || canSubmitProjects || canRecommendProjects
 
   return (
     <PermissionsContext.Provider
@@ -40,6 +42,7 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
         canSubmitProjects,
         canRecommendProjects,
         canAssociateProjects,
+        canEditProjects,
       }}
     >
       {children}
