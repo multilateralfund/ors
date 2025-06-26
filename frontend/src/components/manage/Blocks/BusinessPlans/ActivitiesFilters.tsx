@@ -1,15 +1,16 @@
-import { InputAdornment, IconButton as MuiIconButton } from '@mui/material'
-import { union } from 'lodash'
+import { useContext } from 'react'
 
 import Field from '@ors/components/manage/Form/Field'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
+import ActivitiesFiltersSelectedOpts from './BPList/ActivitiesFiltersSelectedOpts'
+import { multiYearFilterOptions, tableColumns } from './constants'
 import { debounce } from '@ors/helpers'
 import useFocusOnCtrlF from '@ors/hooks/useFocusOnCtrlF'
 
-import ActivitiesFiltersSelectedOpts from './BPList/ActivitiesFiltersSelectedOpts'
-import { multiYearFilterOptions, tableColumns } from './constants'
-
+import { InputAdornment, IconButton as MuiIconButton } from '@mui/material'
 import { IoChevronDown, IoSearchOutline } from 'react-icons/io5'
+import { union } from 'lodash'
 
 export default function ActivitiesFilters(props: any) {
   const {
@@ -23,6 +24,8 @@ export default function ActivitiesFilters(props: any) {
     initialFilters,
     withAgency = false,
   } = props
+
+  const { canViewMetainfoProjects } = useContext(PermissionsContext)
 
   const searchRef = useFocusOnCtrlF()
 
@@ -137,53 +140,63 @@ export default function ActivitiesFilters(props: any) {
             {...defaultProps}
           />
         )}
-        <Field
-          Input={{ placeholder: tableColumns.project_cluster_id }}
-          getOptionLabel={(option: any) => option?.name}
-          options={getFilterOptions(filters, clusters, 'project_cluster_id')}
-          value={[]}
-          widget="autocomplete"
-          onChange={(_: any, value: any) => {
-            const projectCluster = filters.project_cluster_id || []
-            const newValue = union(projectCluster, value)
+        {canViewMetainfoProjects && (
+          <>
+            <Field
+              Input={{ placeholder: tableColumns.project_cluster_id }}
+              getOptionLabel={(option: any) => option?.name}
+              options={getFilterOptions(
+                filters,
+                clusters,
+                'project_cluster_id',
+              )}
+              value={[]}
+              widget="autocomplete"
+              onChange={(_: any, value: any) => {
+                const projectCluster = filters.project_cluster_id || []
+                const newValue = union(projectCluster, value)
 
-            handleFilterChange({ project_cluster_id: newValue })
-            handleParamsChange({
-              offset: 0,
-              project_cluster_id: newValue
-                .map((item: any) => item.id)
-                .join(','),
-            })
-          }}
-          multiple
-          {...defaultProps}
-        />
-        <Field
-          Input={{ placeholder: tableColumns.project_type_id }}
-          getOptionLabel={(option: any) => option?.name}
-          options={getFilterOptions(
-            filters,
-            bpSlice.types.data,
-            'project_type_id',
-          )}
-          value={[]}
-          widget="autocomplete"
-          isOptionEqualToValue={(option: any, value: any) =>
-            option.id === value
-          }
-          onChange={(_: any, value: any) => {
-            const projectType = filters.project_type_id || []
-            const newValue = union(projectType, value)
+                handleFilterChange({ project_cluster_id: newValue })
+                handleParamsChange({
+                  offset: 0,
+                  project_cluster_id: newValue
+                    .map((item: any) => item.id)
+                    .join(','),
+                })
+              }}
+              multiple
+              {...defaultProps}
+            />
+            <Field
+              Input={{ placeholder: tableColumns.project_type_id }}
+              getOptionLabel={(option: any) => option?.name}
+              options={getFilterOptions(
+                filters,
+                bpSlice.types.data,
+                'project_type_id',
+              )}
+              value={[]}
+              widget="autocomplete"
+              isOptionEqualToValue={(option: any, value: any) =>
+                option.id === value
+              }
+              onChange={(_: any, value: any) => {
+                const projectType = filters.project_type_id || []
+                const newValue = union(projectType, value)
 
-            handleFilterChange({ project_type_id: newValue })
-            handleParamsChange({
-              offset: 0,
-              project_type_id: newValue.map((item: any) => item.id).join(','),
-            })
-          }}
-          multiple
-          {...defaultProps}
-        />
+                handleFilterChange({ project_type_id: newValue })
+                handleParamsChange({
+                  offset: 0,
+                  project_type_id: newValue
+                    .map((item: any) => item.id)
+                    .join(','),
+                })
+              }}
+              multiple
+              {...defaultProps}
+            />
+          </>
+        )}
         <Field
           Input={{ placeholder: tableColumns.sector_id }}
           getOptionLabel={(option: any) => option?.name}

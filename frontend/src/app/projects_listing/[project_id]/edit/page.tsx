@@ -4,9 +4,8 @@ import ProjectsEditWrapper from '@ors/components/manage/Blocks/ProjectsListing/P
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import usePageTitle from '@ors/hooks/usePageTitle'
-import NotFoundPage from '@ors/app/not-found'
 
-import { useParams } from 'wouter'
+import { Redirect, useParams } from 'wouter'
 
 export default function EditProject({ mode }: { mode: string }) {
   const pageTitle = mode === 'edit' ? 'Project edit' : 'Project creation'
@@ -19,7 +18,7 @@ export default function EditProject({ mode }: { mode: string }) {
     (mode === 'edit' && !canEditProjects) ||
     (mode !== 'edit' && !canUpdateProjects)
   ) {
-    return <NotFoundPage />
+    return <Redirect to="/projects-listing" />
   }
 
   return (

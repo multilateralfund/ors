@@ -1,3 +1,7 @@
+import { useContext } from 'react'
+
+import PermissionsContext from '@ors/contexts/PermissionsContext'
+
 import { Typography } from '@mui/material'
 import { IoClose } from 'react-icons/io5'
 import { filter } from 'lodash'
@@ -25,6 +29,8 @@ const ProjectsFiltersSelectedOpts = ({
   handleFilterChange,
   handleParamsChange,
 }: any) => {
+  const { canViewMetainfoProjects } = useContext(PermissionsContext)
+
   const { agencies, countries } = commonSlice
   const { types, clusters, submission_statuses, sectors, statuses } =
     projectSlice
@@ -108,19 +114,23 @@ const ProjectsFiltersSelectedOpts = ({
         {mode === 'listing' &&
           displaySelectedOption(formatEntity(countries.data), 'country_id')}
         {displaySelectedOption(formatEntity(agencies.data), 'agency_id')}
-        {displaySelectedOption(formatEntity(clusters.data), 'cluster_id')}
-        {displaySelectedOption(formatEntity(types.data), 'project_type_id')}
+        {canViewMetainfoProjects &&
+          displaySelectedOption(formatEntity(clusters.data), 'cluster_id')}
+        {canViewMetainfoProjects &&
+          displaySelectedOption(formatEntity(types.data), 'project_type_id')}
         {displaySelectedOption(formatEntity(sectors.data), 'sector_id')}
         {displaySelectedOption(
           formatEntity(meetings, 'value'),
           'meeting_id',
           'value',
         )}
-        {displaySelectedOption(
-          formatEntity(submission_statuses.data),
-          'submission_status_id',
-        )}
-        {displaySelectedOption(formatEntity(statuses.data), 'status_id')}
+        {canViewMetainfoProjects &&
+          displaySelectedOption(
+            formatEntity(submission_statuses.data),
+            'submission_status_id',
+          )}
+        {canViewMetainfoProjects &&
+          displaySelectedOption(formatEntity(statuses.data), 'status_id')}
 
         <Typography
           className="cursor-pointer content-center text-lg font-medium"

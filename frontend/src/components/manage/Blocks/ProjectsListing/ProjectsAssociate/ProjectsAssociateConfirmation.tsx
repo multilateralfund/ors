@@ -1,11 +1,12 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useContext, useRef, useState } from 'react'
 
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { initialParams } from '../ProjectsListing/ProjectsFiltersSelectedOpts'
 import PListingTable from '../ProjectsListing/PListingTable'
 import { SubmitButton } from '../HelperComponents'
@@ -38,6 +39,7 @@ const ProjectsAssociateConfirmation = ({
 }) => {
   const form = useRef<any>()
   const [_, setLocation] = useLocation()
+  const { canAssociateProjects } = useContext(PermissionsContext)
 
   const commonSlice = useStore((state) => state.common)
   const agencies = commonSlice.agencies.data
@@ -86,7 +88,7 @@ const ProjectsAssociateConfirmation = ({
     setErrors(null)
 
     try {
-      await api(`api/projects/v2/associate_projects`, {
+      await api(`api/projects/v2/associate_projects/`, {
         data: {
           project_ids: [...associationIds, project.id],
           lead_agency_id: leadAgencyId,
@@ -152,12 +154,14 @@ const ProjectsAssociateConfirmation = ({
           >
             Cancel
           </Button>
-          <SubmitButton
-            title="Submit"
-            isDisabled={!leadAgencyId}
-            onSubmit={associateProjects}
-            className="h-9"
-          />
+          {canAssociateProjects && (
+            <SubmitButton
+              title="Submit"
+              isDisabled={!leadAgencyId}
+              onSubmit={associateProjects}
+              className="h-9"
+            />
+          )}
         </div>
       </div>
       <form className="flex flex-col gap-6" ref={form}>

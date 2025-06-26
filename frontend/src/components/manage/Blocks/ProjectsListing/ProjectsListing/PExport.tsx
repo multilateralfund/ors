@@ -1,8 +1,9 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useContext, useMemo, useRef, useState } from 'react'
 
 import Loading from '@ors/components/theme/Loading/Loading'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import PListingFilters from './PListingFilters'
 import PListingTable from './PListingTable'
 import { useGetProjects } from '../hooks/useGetProjects'
@@ -12,6 +13,8 @@ import Link from '@ors/components/ui/Link/Link'
 
 export default function PExport() {
   const form = useRef<any>()
+
+  const { canViewProjects } = useContext(PermissionsContext)
 
   const initialFilters = {
     offset: 0,
@@ -46,16 +49,18 @@ export default function PExport() {
             mode="listing"
             {...{ form, filters, initialFilters, setFilters, setParams }}
           />
-          <Link
-            className="px-4 py-2 text-lg uppercase"
-            color="secondary"
-            href={downloadUrl}
-            variant="contained"
-            button
-            download
-          >
-            Generate DB
-          </Link>
+          {canViewProjects && (
+            <Link
+              className="px-4 py-2 text-lg uppercase"
+              color="secondary"
+              href={downloadUrl}
+              variant="contained"
+              button
+              download
+            >
+              Generate DB
+            </Link>
+          )}
         </div>
         <PListingTable mode="listing" {...{ projects, filters }} />
       </form>

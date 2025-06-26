@@ -1,11 +1,14 @@
 'use client'
 
+import { useContext } from 'react'
+
 import Field from '@ors/components/manage/Form/Field'
-import PopoverInput from '../../Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions'
-import { debounce } from '@ors/helpers/Utils/Utils'
-import useFocusOnCtrlF from '@ors/hooks/useFocusOnCtrlF'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
+import PopoverInput from '../../Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
 import { tableColumns } from '../constants'
+import useFocusOnCtrlF from '@ors/hooks/useFocusOnCtrlF'
+import { debounce } from '@ors/helpers/Utils/Utils'
 
 import { InputAdornment, IconButton as MuiIconButton } from '@mui/material'
 import { IoChevronDown, IoSearchOutline } from 'react-icons/io5'
@@ -21,6 +24,8 @@ const ProjectsFilters = ({
   handleFilterChange,
   handleParamsChange,
 }: any) => {
+  const { canViewMetainfoProjects } = useContext(PermissionsContext)
+
   const searchRef = useFocusOnCtrlF()
 
   const defaultProps = {
@@ -130,46 +135,50 @@ const ProjectsFilters = ({
         }}
         {...defaultProps}
       />
-      <Field
-        Input={{ placeholder: tableColumns.cluster }}
-        options={getFilterOptions(
-          filters,
-          projectSlice.clusters.data,
-          'cluster_id',
-        )}
-        widget="autocomplete"
-        onChange={(_: any, value: any) => {
-          const projectCluster = filters.cluster_id || []
-          const newValue = union(projectCluster, value)
+      {canViewMetainfoProjects && (
+        <>
+          <Field
+            Input={{ placeholder: tableColumns.cluster }}
+            options={getFilterOptions(
+              filters,
+              projectSlice.clusters.data,
+              'cluster_id',
+            )}
+            widget="autocomplete"
+            onChange={(_: any, value: any) => {
+              const projectCluster = filters.cluster_id || []
+              const newValue = union(projectCluster, value)
 
-          handleFilterChange({ cluster_id: newValue })
-          handleParamsChange({
-            offset: 0,
-            cluster_id: newValue.map((item: any) => item.id).join(','),
-          })
-        }}
-        {...defaultProps}
-      />
-      <Field
-        Input={{ placeholder: tableColumns.type }}
-        options={getFilterOptions(
-          filters,
-          projectSlice.types.data,
-          'project_type_id',
-        )}
-        widget="autocomplete"
-        onChange={(_: any, value: any) => {
-          const projectType = filters.project_type_id || []
-          const newValue = union(projectType, value)
+              handleFilterChange({ cluster_id: newValue })
+              handleParamsChange({
+                offset: 0,
+                cluster_id: newValue.map((item: any) => item.id).join(','),
+              })
+            }}
+            {...defaultProps}
+          />
+          <Field
+            Input={{ placeholder: tableColumns.type }}
+            options={getFilterOptions(
+              filters,
+              projectSlice.types.data,
+              'project_type_id',
+            )}
+            widget="autocomplete"
+            onChange={(_: any, value: any) => {
+              const projectType = filters.project_type_id || []
+              const newValue = union(projectType, value)
 
-          handleFilterChange({ project_type_id: newValue })
-          handleParamsChange({
-            offset: 0,
-            project_type_id: newValue.map((item: any) => item.id).join(','),
-          })
-        }}
-        {...defaultProps}
-      />
+              handleFilterChange({ project_type_id: newValue })
+              handleParamsChange({
+                offset: 0,
+                project_type_id: newValue.map((item: any) => item.id).join(','),
+              })
+            }}
+            {...defaultProps}
+          />
+        </>
+      )}
       <Field
         Input={{ placeholder: tableColumns.sector }}
         options={getFilterOptions(
@@ -210,52 +219,56 @@ const ProjectsFilters = ({
           }}
         />
       </div>
-      <Field
-        Input={{ placeholder: tableColumns.submission_status }}
-        options={getFilterOptions(
-          filters,
-          projectSlice.submission_statuses.data,
-          'submission_status_id',
-        )}
-        widget="autocomplete"
-        onChange={(_: any, value: any) => {
-          const submissionStatus = filters.submission_status_id || []
-          const newValue = union(submissionStatus, value)
+      {canViewMetainfoProjects && (
+        <>
+          <Field
+            Input={{ placeholder: tableColumns.submission_status }}
+            options={getFilterOptions(
+              filters,
+              projectSlice.submission_statuses.data,
+              'submission_status_id',
+            )}
+            widget="autocomplete"
+            onChange={(_: any, value: any) => {
+              const submissionStatus = filters.submission_status_id || []
+              const newValue = union(submissionStatus, value)
 
-          handleFilterChange({ submission_status_id: newValue })
-          handleParamsChange({
-            submission_status_id: newValue
-              .map((item: any) => item.id)
-              .join(','),
-            offset: 0,
-          })
-        }}
-        {...defaultProps}
-        FieldProps={{ className: 'mb-0 w-full md:w-[10.5rem] BPList' }}
-      />
-      <Field
-        Input={{ placeholder: tableColumns.project_status }}
-        options={getFilterOptions(
-          filters,
-          projectSlice.statuses.data,
-          'status_id',
-        )}
-        widget="autocomplete"
-        onChange={(_: any, value: any) => {
-          const projectStatus = filters.status_id || []
-          const newValue = union(projectStatus, value)
+              handleFilterChange({ submission_status_id: newValue })
+              handleParamsChange({
+                submission_status_id: newValue
+                  .map((item: any) => item.id)
+                  .join(','),
+                offset: 0,
+              })
+            }}
+            {...defaultProps}
+            FieldProps={{ className: 'mb-0 w-full md:w-[10.5rem] BPList' }}
+          />
+          <Field
+            Input={{ placeholder: tableColumns.project_status }}
+            options={getFilterOptions(
+              filters,
+              projectSlice.statuses.data,
+              'status_id',
+            )}
+            widget="autocomplete"
+            onChange={(_: any, value: any) => {
+              const projectStatus = filters.status_id || []
+              const newValue = union(projectStatus, value)
 
-          handleFilterChange({ status_id: newValue })
-          handleParamsChange({
-            offset: 0,
-            status_id: newValue.map((item: any) => item.id).join(','),
-          })
-        }}
-        {...defaultProps}
-        FieldProps={{
-          className: defaultProps.FieldProps.className + ' md:w-[9rem]',
-        }}
-      />
+              handleFilterChange({ status_id: newValue })
+              handleParamsChange({
+                offset: 0,
+                status_id: newValue.map((item: any) => item.id).join(','),
+              })
+            }}
+            {...defaultProps}
+            FieldProps={{
+              className: defaultProps.FieldProps.className + ' md:w-[9rem]',
+            }}
+          />
+        </>
+      )}
     </div>
   )
 }

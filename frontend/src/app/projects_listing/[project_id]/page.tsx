@@ -4,7 +4,8 @@ import ProjectViewWrapper from '@ors/components/manage/Blocks/ProjectsListing/Pr
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import usePageTitle from '@ors/hooks/usePageTitle'
-import NotFoundPage from '@ors/app/not-found'
+
+import { Redirect } from 'wouter'
 
 export default function Project() {
   usePageTitle('Project')
@@ -12,7 +13,7 @@ export default function Project() {
   const { canViewProjects } = useContext(PermissionsContext)
 
   if (!canViewProjects) {
-    return <NotFoundPage />
+    return <Redirect to="/projects-listing" />
   }
 
   return (

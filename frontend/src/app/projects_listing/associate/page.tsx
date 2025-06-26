@@ -5,7 +5,8 @@ import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import usePageTitle from '@ors/hooks/usePageTitle'
-import NotFoundPage from '@ors/app/not-found'
+
+import { Redirect } from 'wouter'
 
 export default function ProjectsAssociationPage() {
   usePageTitle('Projects association')
@@ -14,7 +15,7 @@ export default function ProjectsAssociationPage() {
     useContext(PermissionsContext)
 
   if (!canViewProjects || !canAssociateProjects) {
-    return <NotFoundPage />
+    return <Redirect to="/projects-listing" />
   }
 
   return (

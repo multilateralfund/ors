@@ -7,7 +7,8 @@ import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import usePageTitle from '@ors/hooks/usePageTitle'
-import NotFoundPage from '@ors/app/not-found'
+
+import { Redirect } from 'wouter'
 
 export default function Projects() {
   usePageTitle('Projects export')
@@ -15,7 +16,7 @@ export default function Projects() {
   const { canViewProjects } = useContext(PermissionsContext)
 
   if (!canViewProjects) {
-    return <NotFoundPage />
+    return <Redirect to="/projects-listing" />
   }
 
   return (
