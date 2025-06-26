@@ -48,6 +48,7 @@ class MetaProjectSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "type",
+            "lead_agency",
             "code",
             "pcr_project_id",
         ]
