@@ -7,6 +7,7 @@ from core.api.serializers.project_metadata import ProjectSubSectorSerializer
 from core.api.tests.base import BaseTest
 from core.api.tests.factories import (
     AgencyFactory,
+    BlendFactory,
     BusinessPlanFactory,
     BPActivityFactory,
     CountryFactory,
@@ -235,8 +236,9 @@ def setup_project_create(
     substA = SubstanceFactory.create(
         name="SubstanceA", odp=0.02, gwp=0.05, group=groupA
     )
-    substB = SubstanceFactory.create(
-        name="Substanceb", odp=0.03, gwp=0.02, group=groupA
+    blend = BlendFactory.create(
+        name="Blend 1",
+        sort_order=1,
     )
 
     return {
@@ -331,7 +333,7 @@ def setup_project_create(
                 "sort_order": 1,
             },
             {
-                "ods_substance_id": substB.id,
+                "ods_blend_id": blend.id,
                 "odp": 41.41,
                 "ods_replacement": "ods replacement test 2",
                 "co2_mt": 543.23,
@@ -818,11 +820,13 @@ class TestCreateProjects(BaseTest):
             response.data["ods_odp"][0]["sort_order"]
             == data["ods_odp"][0]["sort_order"]
         )
+        assert response.data["ods_odp"][1]["ods_substance_id"] is None
         assert (
-            response.data["ods_odp"][1]["ods_substance_id"]
-            == data["ods_odp"][1]["ods_substance_id"]
+            response.data["ods_odp"][1]["ods_blend_id"]
+            == data["ods_odp"][1]["ods_blend_id"]
         )
         assert response.data["ods_odp"][1]["odp"] == data["ods_odp"][1]["odp"]
+
         assert (
             response.data["ods_odp"][1]["ods_replacement"]
             == data["ods_odp"][1]["ods_replacement"]
@@ -1020,6 +1024,10 @@ class TestProjectsV2Update:
             ods_substance_id=substance.id,
             odp=0.02,
         )
+        blend = BlendFactory.create(
+            name="test blend",
+            sort_order=1,
+        )
         self.client.force_authenticate(user=agency_user)
         update_data = {
             "title": "Crocodile wearing a vest",
@@ -1030,7 +1038,8 @@ class TestProjectsV2Update:
                 },
                 {
                     "id": project_ods_odp_subst.id,
-                    "ods_substance_id": project_ods_odp_subst.ods_substance_id,
+                    "ods_substance_id": None,
+                    "ods_blend_id": blend.id,
                     "odp": project_ods_odp_subst.odp + 5,
                 },
             ],
@@ -1045,6 +1054,8 @@ class TestProjectsV2Update:
         # This test copied from v1 where it was not supposed to actually
         # update ods_odp, in our case it does update it.
         assert project.ods_odp.first().odp == project_ods_odp_subst.odp + 5
+        assert project.ods_odp.first().ods_substance_id is None
+        assert project.ods_odp.first().ods_blend_id == blend.id
         assert project.ods_odp.last().odp == update_data["ods_odp"][0]["odp"]
 
     def test_project_update_history(

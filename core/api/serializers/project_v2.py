@@ -19,6 +19,10 @@ from core.models.project import (
     ProjectFile,
     ProjectOdsOdp,
 )
+from core.models import (
+    Blend,
+    Substance,
+)
 from core.models.project_metadata import (
     ProjectCluster,
     ProjectSpecificFields,
@@ -395,6 +399,17 @@ class ProjectV2OdsOdpCreateUpdateSerializer(ProjectOdsOdpCreateSerializer):
         read_only=True,
     )
 
+    ods_substance_id = serializers.PrimaryKeyRelatedField(
+        required=False,
+        allow_null=True,
+        queryset=Substance.objects.all().values_list("id", flat=True),
+    )
+    ods_blend_id = serializers.PrimaryKeyRelatedField(
+        required=False,
+        queryset=Blend.objects.all().values_list("id", flat=True),
+        allow_null=True,
+    )
+
     class Meta(ProjectOdsOdpCreateSerializer.Meta):
         fields = ["id"] + ProjectOdsOdpCreateSerializer.Meta.fields
 
@@ -405,14 +420,23 @@ class ProjectV2OdsOdpCreateUpdateSerializer(ProjectOdsOdpCreateSerializer):
             )
         # validate partial updates
         if self.instance:
-            # set ods_substance_id wile ods_blend_id is set
-            if attrs.get("ods_substance_id") and self.instance.ods_blend_id:
+            # set ods_substance_id while ods_blend_id is set
+            if (
+                attrs.get("ods_substance_id") is not None
+                and self.instance.ods_blend_id
+                and not ("ods_blend_id" in attrs and attrs["ods_blend_id"] is None)
+            ):
                 raise serializers.ValidationError(
                     "Cannot update ods_substance_id when ods_blend_id is set"
                 )
-
-            # set ods_blend_id wile ods_substance_id is set
-            if attrs.get("ods_blend_id") and self.instance.ods_substance_id:
+            # set ods_blend_id while ods_substance_id is set
+            if (
+                attrs.get("ods_blend_id") is not None
+                and self.instance.ods_substance_id
+                and not (
+                    "ods_substance_id" in attrs and attrs["ods_substance_id"] is None
+                )
+            ):
                 raise serializers.ValidationError(
                     "Cannot update ods_blend_id when ods_substance_id is set"
                 )
