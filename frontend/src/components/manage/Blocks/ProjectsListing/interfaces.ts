@@ -131,6 +131,7 @@ export type ProjectTypeApi = ProjIdentifiers &
     versions: ProjectVersions[]
     version: number
     latest_project: number | null
+    meta_project: Record<string, any>
     history: ProjectType['history']
   }
 export interface ProjectViewProps {

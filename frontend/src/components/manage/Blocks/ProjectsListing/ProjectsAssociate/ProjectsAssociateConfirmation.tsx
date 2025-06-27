@@ -53,7 +53,8 @@ const ProjectsAssociateConfirmation = ({
   const leadAgencyOptions = filter(
     agencies,
     ({ id }) =>
-      metaProjectsLeadAgenciesIds.includes(id) || id === project.agency_id,
+      metaProjectsLeadAgenciesIds.includes(id) ||
+      id === project?.meta_project?.lead_agency,
   )
 
   const [leadAgencyId, setLeadAgencyId] = useState(
