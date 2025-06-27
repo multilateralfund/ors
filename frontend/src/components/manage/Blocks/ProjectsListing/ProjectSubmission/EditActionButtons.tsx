@@ -27,6 +27,7 @@ const EditActionButtons = ({
   files,
   projectFiles,
   setProjectId,
+  setProjectTitle,
   isSaveDisabled,
   isSubmitDisabled,
   setIsLoading,
@@ -37,6 +38,7 @@ const EditActionButtons = ({
   setProjectFiles,
   specificFields,
 }: SubmitActionButtons & {
+  setProjectTitle: (title: string) => void
   project: ProjectTypeApi
   isSubmitDisabled: boolean
   projectFiles?: ProjectFile[]
@@ -151,6 +153,7 @@ const EditActionButtons = ({
         method: 'PUT',
       })
       setProjectId(result.id)
+      setProjectTitle(result.title)
     } catch (error) {
       await handleErrors(error)
     } finally {
