@@ -19,7 +19,7 @@ import BPTableToolbarButtons from '@ors/components/manage/Blocks/BusinessPlans/B
 import { formatApiUrl } from '@ors/helpers'
 import { filtersToQueryParams } from '../utils'
 
-const ACTIVITIES_PER_PAGE_TABLE = 50
+const ACTIVITIES_PER_PAGE_TABLE = 100
 const ACTIVITIES_PER_PAGE_LIST = 20
 
 export default function BPListActivitiesWrapper(props: any) {

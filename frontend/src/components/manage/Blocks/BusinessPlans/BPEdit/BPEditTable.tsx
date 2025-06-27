@@ -587,6 +587,8 @@ export function BPEditBaseTable(
           resizeGridOnRowUpdate={true}
           rowClassRules={rowClassRules}
           rowData={form}
+          rowsVisible={100}
+          rowBuffer={130}
           singleClickEdit={true}
           suppressScrollOnNewData={true}
           results={results}

@@ -198,7 +198,7 @@ export const BPTable = ({
   }, [gridOptions, yearColumns, withAgency])
 
   const getPaginationSelectorOpts = (): number[] => {
-    const nrResultsOpts = [10, 20, 50, 100]
+    const nrResultsOpts = [10, 20, 50, 80, 100]
     const filteredNrResultsOptions = nrResultsOpts.filter(
       (option) => option < count,
     )
@@ -219,10 +219,10 @@ export const BPTable = ({
         paginationPageSize={bpPerPage || BP_PER_PAGE}
         paginationPageSizeSelector={paginationPageSizeSelectorOpts}
         resizeGridOnRowUpdate={true}
-        rowBuffer={50}
         rowCount={count}
         rowData={results}
-        rowsVisible={20}
+        rowBuffer={120}
+        rowsVisible={90}
         tooltipShowDelay={200}
         context={{ disableValidation: true }}
         components={{
