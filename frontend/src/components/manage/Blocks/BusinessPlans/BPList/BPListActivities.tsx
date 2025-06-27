@@ -20,7 +20,7 @@ import { formatApiUrl } from '@ors/helpers'
 import { filtersToQueryParams } from '../utils'
 
 const ACTIVITIES_PER_PAGE_TABLE = 100
-const ACTIVITIES_PER_PAGE_LIST = 20
+const ACTIVITIES_PER_PAGE_LIST = 50
 
 export default function BPListActivitiesWrapper(props: any) {
   const { period, bpType } = props
