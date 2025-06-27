@@ -145,10 +145,8 @@ def get_subsector(row, sector, subsectors, subsectors_links, warning_messages):
     if not row["Subsector"] or not sector:
         return None
 
-    subsector_other_name = (
-        "other" if sector.name == "Other" else f"other {strip_str(sector.name)}"
-    )
-    subsector_other = subsectors_links.get((sector.name, subsector_other_name))
+    subsector_other_name = "other"
+    subsector_other = subsectors_links.get(("Other", subsector_other_name))
 
     if not strip_str(row["Subsector"]) in subsectors:
         warning_messages.append(
