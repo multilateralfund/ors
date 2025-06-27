@@ -317,6 +317,8 @@ class MeetingAdmin(admin.ModelAdmin):
             "statusofthefundfile",
             "businessplan",
             "triennialcontributionview",
+            "bp_projects",
+            "bilateralassistance",
         ]
         return get_final_display_list(Meeting, exclude)
 
@@ -329,6 +331,7 @@ class DecisionAdmin(admin.ModelAdmin):
         exclude = [
             "project",
             "businessplan",
+            "bp_projects",
         ]
         return get_final_display_list(Decision, exclude)
 

@@ -150,7 +150,7 @@ def get_subsector(row, sector, subsectors, subsectors_links, warning_messages):
     )
     subsector_other = subsectors_links.get((sector.name, subsector_other_name))
 
-    if not row["Subsector"] in subsectors:
+    if not strip_str(row["Subsector"]) in subsectors:
         warning_messages.append(
             f"Subsector '{row['Subsector']}' does not exist in KMS "
             f"and will be set to 'Other'"
@@ -413,25 +413,36 @@ def parse_bp_file(file, year_start, from_validate=False):
     activities_ids = [
         activity["initial_id"] for activity in activities if activity["initial_id"]
     ]
-    projects = (
-        Project.objects.really_all()
-        .exclude(bp_activity__id__in=activities_ids)
-        .filter(bp_activity__id__isnull=False)
-        .select_related("bp_activity")
+    business_plan = getattr(
+        BPActivity.objects.filter(initial_id__in=activities_ids).first(),
+        "business_plan",
+        None,
     )
-    for project in projects:
-        warnings.append(
-            {
-                "warning_type": "data warning",
-                "row_number": "-",
-                "activity_id": "N/A",
-                "warning_message": (
-                    f"Activity with ID {project.bp_activity.id} "
-                    "is linked to a project and the link will be removed."
-                    "Minimal activity information will remain on the project."
-                ),
-            }
+    if business_plan:
+        projects = (
+            Project.objects.really_all()
+            .exclude(bp_activity__id__in=activities_ids)
+            .filter(
+                bp_activity__id__isnull=False, bp_activity__business_plan=business_plan
+            )
+            .select_related("bp_activity")
         )
+        activities_to_remove = list(
+            {project.bp_activity for project in projects if project.bp_activity}
+        )
+        for activity in activities_to_remove:
+            warnings.append(
+                {
+                    "warning_type": "data warning",
+                    "row_number": "-",
+                    "activity_id": activity.get_display_internal_id,
+                    "warning_message": (
+                        "This activity is linked to at least a project and is missing from the file "
+                        "about to be uploaded. If you continue, the activity will be deleted and minimal "
+                        "information will be retained on the project about it."
+                    ),
+                }
+            )
     return activities, errors, warnings
 
 

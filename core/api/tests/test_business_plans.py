@@ -235,7 +235,7 @@ class TestBPImportValidate:
         assert len(response.data["warnings"]) == 1
 
         assert response.data["warnings"][0]["warning_message"] == (
-            "Subsector 'Subsector' does not exist in KMS and will be set to 'Other'"
+            "Subsector 'Subsector new' does not exist in KMS and will be set to 'Other'"
         )
 
         assert len(response.data["errors"]) == 2
