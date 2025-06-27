@@ -1,16 +1,15 @@
 'use client'
 
-import { useContext, useMemo, useRef, useState } from 'react'
+import { useContext, useState } from 'react'
 
-import PermissionsContext from '@ors/contexts/PermissionsContext'
-import Loading from '@ors/components/theme/Loading/Loading'
+import TableViewSelector from '@ors/components/manage/Blocks/Table/BusinessPlansTable/TableViewSelector'
+import { ViewSelectorValuesType } from '@ors/components/manage/Blocks/BusinessPlans/types'
 import CustomLink from '@ors/components/ui/Link/Link'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
+import PListingAssociation from './PListingAssociation'
+import PListingProjects from './PListingProjects'
 import ExpandableMenu from './ExpandableMenu'
 import GenerateDBMenu from './GenerateDBMenu'
-import PListingFilters from './PListingFilters'
-import PListingTable from './PListingTable'
-import { useGetProjects } from '../hooks/useGetProjects'
-import { initialFilters } from '../constants'
 import { getMenus } from '../utils'
 
 import { Modal, Typography, Button, Box } from '@mui/material'
@@ -18,15 +17,11 @@ import { IoIosLink } from 'react-icons/io'
 import { LuCopy } from 'react-icons/lu'
 import cx from 'classnames'
 
-export default function PListing() {
-  const form = useRef<any>()
-
+export default function PListingWrapper() {
   const { canViewBp, canUpdateBp, canUpdateProjects, canAssociateProjects } =
     useContext(PermissionsContext)
 
-  const projects = useGetProjects(initialFilters)
-  const { loading, setParams } = projects
-
+  const [view, setView] = useState<ViewSelectorValuesType>('table')
   const [projectData, setProjectData] = useState<{
     projectId: number | null
     projectTitle: string
@@ -36,16 +31,13 @@ export default function PListing() {
   })
   const { projectId, projectTitle } = projectData
   const [isCopyModalOpen, setIsCopyModalOpen] = useState<boolean>(false)
-  const [filters, setFilters] = useState({ ...initialFilters })
-  const key = useMemo(() => JSON.stringify(filters), [filters])
 
   const projectActions = (
-    <div className="flex flex-wrap items-center gap-3">
+    <div className="mt-1 flex flex-wrap items-center gap-3">
       {canUpdateProjects && (
         <div
           className={cx('flex cursor-pointer gap-1 px-2 no-underline', {
-            'flex !cursor-default gap-1 px-2 text-gray-400 opacity-60':
-              !projectId,
+            '!cursor-default text-gray-400 opacity-60': !projectId,
           })}
           onClick={() => {
             if (projectId) {
@@ -61,8 +53,7 @@ export default function PListing() {
         <CustomLink
           href={projectId ? `/projects-listing/associate/${projectId}` : null}
           className={cx('flex cursor-pointer gap-1 px-2 no-underline', {
-            'flex !cursor-default gap-1 px-2 text-gray-400 opacity-60':
-              !projectId,
+            '!cursor-default text-gray-400 opacity-60': !projectId,
           })}
         >
           <IoIosLink className="mb-1" size={18} />
@@ -70,6 +61,18 @@ export default function PListing() {
         </CustomLink>
       )}
       <GenerateDBMenu />
+    </div>
+  )
+
+  const tableToolbar = (
+    <div className="flex flex-wrap gap-3">
+      {projectActions}
+      <TableViewSelector
+        value={view}
+        changeHandler={(_, value) => {
+          setView(value)
+        }}
+      />
     </div>
   )
 
@@ -117,10 +120,6 @@ export default function PListing() {
 
   return (
     <>
-      <Loading
-        className="!fixed bg-action-disabledBackground"
-        active={loading}
-      />
       <div className="mt-5 flex flex-wrap justify-between gap-y-3">
         <div className="mb-2 flex flex-wrap gap-x-2 gap-y-3">
           {getMenus({ canViewBp, canUpdateBp }).map((menu) => (
@@ -140,19 +139,23 @@ export default function PListing() {
         )}
       </div>
       <Box className="shadow-none">
-        <form className="flex flex-col gap-6" ref={form} key={key}>
-          <div className="flex flex-wrap justify-between gap-x-10 gap-y-4">
-            <PListingFilters
-              mode="listing"
-              {...{ form, filters, initialFilters, setFilters, setParams }}
-            />
-            {projectActions}
-          </div>
-          <PListingTable
-            mode="listing"
-            {...{ projects, filters, projectId, setProjectData }}
+        {view === 'table' ? (
+          <PListingAssociation
+            {...{
+              projectId,
+              setProjectData,
+              tableToolbar,
+            }}
           />
-        </form>
+        ) : (
+          <PListingProjects
+            {...{
+              projectId,
+              setProjectData,
+              tableToolbar,
+            }}
+          />
+        )}
         {isCopyModalOpen && copyProjectModal}
       </Box>
     </>

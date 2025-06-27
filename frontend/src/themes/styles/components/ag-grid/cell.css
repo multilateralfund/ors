@@ -215,21 +215,13 @@
   }
 }
 
-.projects-table.projects-association-listing.ag-table {
-  .ag-header-cell-resize::after {
-    display: none;
-  }
-
+.projects-table.projects-association-table.ag-table {
   .ag-row {
     border-top: none;
     border-bottom: none;
 
     .ag-cell {
       border-bottom: none;
-    }
-
-    .ag-cell:not(.multiple-projects) {
-      border-top: 1px solid #d8dade;
     }
 
     .ag-cell.multiple-projects {
@@ -242,6 +234,18 @@
         border-top: 2px solid #000;
       }
     }
+  }
+}
+
+.projects-table.projects-association.ag-table {
+  .ag-header-cell-resize::after {
+    display: none;
+  }
+
+  .ag-row {
+    .ag-cell:not(.multiple-projects) {
+      border-top: 1px solid #d8dade;
+    }
 
     .ag-cell.single-project {
       border-right: none;
@@ -249,6 +253,14 @@
 
     .ag-cell.multiple-projects {
       background-color: #f2f2f2;
+    }
+  }
+}
+
+.projects-table.projects-association-listing.ag-table {
+  .ag-row:has(.single-project) {
+    .ag-cell {
+      border-top: 1px solid #d8dade;
     }
   }
 }

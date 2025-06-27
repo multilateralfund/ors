@@ -10,13 +10,19 @@ import { ProjectTypeApi } from '../interfaces'
 import { initialFilters } from '../constants'
 
 import { Box } from '@mui/material'
+import { useParams } from 'wouter'
 
 const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
+  const { project_id } = useParams<Record<string, string>>()
+
   const [associationIds, setAssociationIds] = useState<number[]>([])
   const [filters, setFilters] = useState({ ...initialFilters })
   const [mode, setMode] = useState('selection')
 
-  const projectsAssociation = useGetProjectsAssociation(initialFilters)
+  const projectsAssociation = useGetProjectsAssociation(
+    initialFilters,
+    project_id,
+  )
   const { loading } = projectsAssociation
 
   return (
