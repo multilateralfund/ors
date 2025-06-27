@@ -19,7 +19,8 @@ export default function ActivitiesFiltersSelectedOpts(props: any) {
     initialFilters,
     withAgency,
   } = props
-  const { canViewMetainfoProjects } = useContext(PermissionsContext)
+  const { canViewMetainfoProjects, canViewSectorsSubsectors } =
+    useContext(PermissionsContext)
 
   const { agencies, countries } = commonSlice
   const { sectors, subsectors, types } = bpSlice
@@ -115,8 +116,10 @@ export default function ActivitiesFiltersSelectedOpts(props: any) {
           displaySelectedOption(formatEntity(clusters), 'project_cluster_id')}
         {canViewMetainfoProjects &&
           displaySelectedOption(formatEntity(types.data), 'project_type_id')}
-        {displaySelectedOption(formatEntity(sectors.data), 'sector_id')}
-        {displaySelectedOption(formatEntity(subsectors.data), 'subsector_id')}
+        {canViewSectorsSubsectors &&
+          displaySelectedOption(formatEntity(sectors.data), 'sector_id')}
+        {canViewSectorsSubsectors &&
+          displaySelectedOption(formatEntity(subsectors.data), 'subsector_id')}
         {displaySelectedOption(
           formatEntity(multiYearFilterOptions),
           'is_multi_year',

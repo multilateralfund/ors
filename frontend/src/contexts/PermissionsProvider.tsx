@@ -20,6 +20,9 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   const canViewMetainfoProjects = user_permissions.includes(
     'has_project_metainfo_view_access',
   )
+  const canViewSectorsSubsectors = user_permissions.includes(
+    'has_sectors_and_subsectors_view_acces',
+  )
   const canUpdateProjects = user_permissions.includes(
     'has_project_v2_edit_access',
   )
@@ -43,6 +46,7 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
         canUpdateBp,
         canViewProjects,
         canViewMetainfoProjects,
+        canViewSectorsSubsectors,
         canUpdateProjects,
         canSubmitProjects,
         canRecommendProjects,

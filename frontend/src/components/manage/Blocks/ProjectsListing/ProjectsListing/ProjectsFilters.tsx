@@ -24,7 +24,8 @@ const ProjectsFilters = ({
   handleFilterChange,
   handleParamsChange,
 }: any) => {
-  const { canViewMetainfoProjects } = useContext(PermissionsContext)
+  const { canViewMetainfoProjects, canViewSectorsSubsectors } =
+    useContext(PermissionsContext)
 
   const searchRef = useFocusOnCtrlF()
 
@@ -179,26 +180,28 @@ const ProjectsFilters = ({
           />
         </>
       )}
-      <Field
-        Input={{ placeholder: tableColumns.sector }}
-        options={getFilterOptions(
-          filters,
-          projectSlice.sectors.data,
-          'sector_id',
-        )}
-        widget="autocomplete"
-        onChange={(_: any, value: any) => {
-          const sector = filters.sector_id || []
-          const newValue = union(sector, value)
+      {canViewSectorsSubsectors && (
+        <Field
+          Input={{ placeholder: tableColumns.sector }}
+          options={getFilterOptions(
+            filters,
+            projectSlice.sectors.data,
+            'sector_id',
+          )}
+          widget="autocomplete"
+          onChange={(_: any, value: any) => {
+            const sector = filters.sector_id || []
+            const newValue = union(sector, value)
 
-          handleFilterChange({ sector_id: newValue })
-          handleParamsChange({
-            offset: 0,
-            sector_id: newValue.map((item: any) => item.id).join(','),
-          })
-        }}
-        {...defaultProps}
-      />
+            handleFilterChange({ sector_id: newValue })
+            handleParamsChange({
+              offset: 0,
+              sector_id: newValue.map((item: any) => item.id).join(','),
+            })
+          }}
+          {...defaultProps}
+        />
+      )}
       <div className="w-full md:w-[7.76rem]">
         <PopoverInput
           className="!m-0 mb-0 h-[2.25rem] min-h-[2.25rem] w-full truncate border-2 !py-1 !pr-0 text-[15px] md:w-[7.76rem]"

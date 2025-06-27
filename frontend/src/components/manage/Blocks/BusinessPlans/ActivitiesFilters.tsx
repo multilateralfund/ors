@@ -25,7 +25,8 @@ export default function ActivitiesFilters(props: any) {
     withAgency = false,
   } = props
 
-  const { canViewMetainfoProjects } = useContext(PermissionsContext)
+  const { canViewMetainfoProjects, canViewSectorsSubsectors } =
+    useContext(PermissionsContext)
 
   const searchRef = useFocusOnCtrlF()
 
@@ -197,48 +198,56 @@ export default function ActivitiesFilters(props: any) {
             />
           </>
         )}
-        <Field
-          Input={{ placeholder: tableColumns.sector_id }}
-          getOptionLabel={(option: any) => option?.name}
-          options={getFilterOptions(filters, bpSlice.sectors.data, 'sector_id')}
-          value={[]}
-          widget="autocomplete"
-          onChange={(_: any, value: any) => {
-            const sector = filters.sector_id || []
-            const newValue = union(sector, value)
+        {canViewSectorsSubsectors && (
+          <>
+            <Field
+              Input={{ placeholder: tableColumns.sector_id }}
+              getOptionLabel={(option: any) => option?.name}
+              options={getFilterOptions(
+                filters,
+                bpSlice.sectors.data,
+                'sector_id',
+              )}
+              value={[]}
+              widget="autocomplete"
+              onChange={(_: any, value: any) => {
+                const sector = filters.sector_id || []
+                const newValue = union(sector, value)
 
-            handleFilterChange({ sector_id: newValue })
-            handleParamsChange({
-              offset: 0,
-              sector_id: newValue.map((item: any) => item.id).join(','),
-            })
-          }}
-          multiple
-          {...defaultProps}
-        />
-        <Field
-          Input={{ placeholder: tableColumns.subsector_id }}
-          getOptionLabel={(option: any) => option?.name}
-          options={getFilterOptions(
-            filters,
-            bpSlice.subsectors.data,
-            'subsector_id',
-          )}
-          value={[]}
-          widget="autocomplete"
-          onChange={(_: any, value: any) => {
-            const subsector = filters.subsector_id || []
-            const newValue = union(subsector, value)
+                handleFilterChange({ sector_id: newValue })
+                handleParamsChange({
+                  offset: 0,
+                  sector_id: newValue.map((item: any) => item.id).join(','),
+                })
+              }}
+              multiple
+              {...defaultProps}
+            />
+            <Field
+              Input={{ placeholder: tableColumns.subsector_id }}
+              getOptionLabel={(option: any) => option?.name}
+              options={getFilterOptions(
+                filters,
+                bpSlice.subsectors.data,
+                'subsector_id',
+              )}
+              value={[]}
+              widget="autocomplete"
+              onChange={(_: any, value: any) => {
+                const subsector = filters.subsector_id || []
+                const newValue = union(subsector, value)
 
-            handleFilterChange({ subsector_id: newValue })
-            handleParamsChange({
-              offset: 0,
-              subsector_id: newValue.map((item: any) => item.id).join(','),
-            })
-          }}
-          multiple
-          {...defaultProps}
-        />
+                handleFilterChange({ subsector_id: newValue })
+                handleParamsChange({
+                  offset: 0,
+                  subsector_id: newValue.map((item: any) => item.id).join(','),
+                })
+              }}
+              multiple
+              {...defaultProps}
+            />
+          </>
+        )}
         <Field
           Input={{ placeholder: 'I/M' }}
           getOptionLabel={(option: any) => option?.name}

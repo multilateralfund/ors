@@ -5,6 +5,7 @@ interface PermissionsContextProps {
   canUpdateBp: boolean
   canViewProjects: boolean
   canViewMetainfoProjects: boolean
+  canViewSectorsSubsectors: boolean
   canUpdateProjects: boolean
   canSubmitProjects: boolean
   canRecommendProjects: boolean

@@ -29,7 +29,8 @@ const ProjectsFiltersSelectedOpts = ({
   handleFilterChange,
   handleParamsChange,
 }: any) => {
-  const { canViewMetainfoProjects } = useContext(PermissionsContext)
+  const { canViewMetainfoProjects, canViewSectorsSubsectors } =
+    useContext(PermissionsContext)
 
   const { agencies, countries } = commonSlice
   const { types, clusters, submission_statuses, sectors, statuses } =
@@ -118,7 +119,8 @@ const ProjectsFiltersSelectedOpts = ({
           displaySelectedOption(formatEntity(clusters.data), 'cluster_id')}
         {canViewMetainfoProjects &&
           displaySelectedOption(formatEntity(types.data), 'project_type_id')}
-        {displaySelectedOption(formatEntity(sectors.data), 'sector_id')}
+        {canViewSectorsSubsectors &&
+          displaySelectedOption(formatEntity(sectors.data), 'sector_id')}
         {displaySelectedOption(
           formatEntity(meetings, 'value'),
           'meeting_id',
