@@ -63,13 +63,15 @@ export const RedirectBackButton = () => (
 )
 
 export const PageTitle = ({
-  project,
   pageTitle,
+  projectTitle,
+  project,
 }: {
-  project: ProjectTypeApi
   pageTitle: string
+  projectTitle: string
+  project: ProjectTypeApi
 }) => {
-  const { title, submission_status, code, code_legacy } = project
+  const { submission_status, code, code_legacy } = project
 
   return (
     <div className="flex gap-2.5">
@@ -77,7 +79,7 @@ export const PageTitle = ({
         {pageTitle}:
       </span>
       <div>
-        {title ?? 'New project'}
+        {projectTitle ?? 'New project'}
         {submission_status === 'Approved' ? `, ${code ?? code_legacy}` : ''}
       </div>
     </div>

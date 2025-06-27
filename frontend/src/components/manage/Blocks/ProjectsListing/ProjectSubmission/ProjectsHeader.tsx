@@ -96,6 +96,7 @@ const ProjectsHeader = ({
               {mode === 'edit' && (
                 <PageTitle
                   pageTitle="Edit project"
+                  projectTitle={crossCuttingFields?.title}
                   project={project as ProjectTypeApi}
                 />
               )}
