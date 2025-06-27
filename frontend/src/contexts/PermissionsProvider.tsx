@@ -17,6 +17,12 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   const canViewProjects = user_permissions.includes(
     'has_project_v2_view_access',
   )
+  const canViewMetainfoProjects = user_permissions.includes(
+    'has_project_metainfo_view_access',
+  )
+  const canViewSectorsSubsectors = user_permissions.includes(
+    'has_sectors_and_subsectors_view_acces',
+  )
   const canUpdateProjects = user_permissions.includes(
     'has_project_v2_edit_access',
   )
@@ -29,6 +35,9 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   const canAssociateProjects = user_permissions.includes(
     'has_project_v2_associate_projects_access',
   )
+  const canEditProjects =
+    canViewProjects &&
+    (canUpdateProjects || canSubmitProjects || canRecommendProjects)
 
   return (
     <PermissionsContext.Provider
@@ -36,10 +45,13 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
         canViewBp,
         canUpdateBp,
         canViewProjects,
+        canViewMetainfoProjects,
+        canViewSectorsSubsectors,
         canUpdateProjects,
         canSubmitProjects,
         canRecommendProjects,
         canAssociateProjects,
+        canEditProjects,
       }}
     >
       {children}

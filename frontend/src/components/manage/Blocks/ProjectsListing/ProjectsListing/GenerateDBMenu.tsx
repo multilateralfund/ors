@@ -1,11 +1,11 @@
 import React, { useContext, useState } from 'react'
 
-import PermissionsContext from '@ors/contexts/PermissionsContext'
 import CustomLink from '@ors/components/ui/Link/Link'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 
 import { Menu, MenuItem } from '@mui/material'
-import { GoDatabase } from 'react-icons/go'
 import { MdExpandMore } from 'react-icons/md'
+import { GoDatabase } from 'react-icons/go'
 
 const GenerateDBMenu = () => {
   const { canViewProjects } = useContext(PermissionsContext)
@@ -41,11 +41,13 @@ const GenerateDBMenu = () => {
 
   return (
     <>
-      <div className="flex cursor-pointer gap-1 px-2" onClick={handleOpen}>
-        <GoDatabase className="mb-1" size={18} />
-        Generate DB
-        <MdExpandMore size={16} color="black" className="mt-0.5" />
-      </div>
+      {filteredMenuItems.length > 0 && (
+        <div className="flex cursor-pointer gap-1 px-2" onClick={handleOpen}>
+          <GoDatabase className="mb-1" size={18} />
+          Generate DB
+          <MdExpandMore size={16} color="black" className="mt-0.5" />
+        </div>
+      )}
 
       <Menu
         anchorEl={anchorEl}

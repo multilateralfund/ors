@@ -62,7 +62,7 @@ const ProjectsAssociateSelection = ({
 
   const key = useMemo(() => JSON.stringify(filters), [filters])
 
-  const { columnDefs, defaultColDef } = getColumnDefs([], 'association')
+  const { columnDefs, defaultColDef } = getColumnDefs('association')
 
   const selectedProjectData = (
     <ViewTable

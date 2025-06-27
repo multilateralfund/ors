@@ -2,9 +2,9 @@
 
 import { useContext } from 'react'
 
-import PermissionsContext from '@ors/contexts/PermissionsContext'
 import Loading from '@ors/components/theme/Loading/Loading'
 import CustomLink from '@ors/components/ui/Link/Link'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import ExpandableMenu from '../ProjectsListing/ExpandableMenu'
 import ProjectsAssociate from './ProjectsAssociate'
 import { useGetProject } from '../hooks/useGetProject'
@@ -15,11 +15,11 @@ import { useParams } from 'wouter'
 const ProjectsAssociateWrapper = () => {
   const { project_id } = useParams<Record<string, string>>()
 
-  const project = useGetProject(project_id)
-  const { data, loading } = project
-
   const { canViewBp, canUpdateBp, canUpdateProjects } =
     useContext(PermissionsContext)
+
+  const project = useGetProject(project_id)
+  const { data, loading } = project
 
   return (
     <>

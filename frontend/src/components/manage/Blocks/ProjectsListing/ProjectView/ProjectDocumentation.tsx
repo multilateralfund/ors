@@ -1,4 +1,7 @@
+import { useContext } from 'react'
+
 import FileInput from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/FileInput'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { FilesViewer } from './FilesViewer'
 import { ProjectFile, ProjectFiles } from '../interfaces'
 
@@ -11,6 +14,8 @@ const ProjectDocumentation = ({
   projectFiles?: ProjectFile[]
   mode: string
 }) => {
+  const { canUpdateProjects } = useContext(PermissionsContext)
+
   return (
     <div className="flex w-full flex-col gap-4">
       <FilesViewer
@@ -18,7 +23,7 @@ const ProjectDocumentation = ({
         bpFiles={mode === 'edit' || mode === 'view' ? projectFiles : []}
       />
 
-      {mode !== 'view' && (
+      {mode !== 'view' && canUpdateProjects && (
         <FileInput
           {...{ files, setFiles }}
           extensionsList="Allowed files extensions: .pdf, .doc, .docx"
