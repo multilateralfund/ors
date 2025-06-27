@@ -48,7 +48,7 @@ const PListingTable = ({
   )
 
   const getPaginationSelectorOpts = (): number[] => {
-    const nrResultsOpts = [50, 100, 250, 500, 1000]
+    const nrResultsOpts = [100, 250, 500, 1000]
     const filteredNrResultsOptions = nrResultsOpts.filter(
       (option) => option < count,
     )
@@ -83,9 +83,7 @@ const PListingTable = ({
         enablePagination={enablePagination ?? true}
         loaded={loaded}
         loading={loading}
-        paginationPageSize={
-          mode === 'association-listing' ? 50 : PROJECTS_PER_PAGE
-        }
+        paginationPageSize={PROJECTS_PER_PAGE}
         paginationPageSizeSelector={paginationPageSizeSelectorOpts}
         resizeGridOnRowUpdate={true}
         rowBuffer={50}
