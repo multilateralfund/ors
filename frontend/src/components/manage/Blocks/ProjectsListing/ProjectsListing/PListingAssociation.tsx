@@ -17,12 +17,10 @@ export default function PListingAssociation({
 }: PListingProps) {
   const form = useRef<any>()
 
-  const updatedInitialFilters = { ...initialFilters, limit: 50 }
-
-  const [filters, setFilters] = useState({ ...updatedInitialFilters })
+  const [filters, setFilters] = useState({ ...initialFilters })
   const key = useMemo(() => JSON.stringify(filters), [filters])
 
-  const projectsAssociation = useGetProjectsAssociation(updatedInitialFilters)
+  const projectsAssociation = useGetProjectsAssociation(initialFilters)
   const { loading, setParams, results = [] } = projectsAssociation
 
   const formattedResults = results.map((result) => {
@@ -55,8 +53,7 @@ export default function PListingAssociation({
         <div className="flex flex-wrap justify-between gap-x-10 gap-y-4">
           <PListingFilters
             mode="listing"
-            initialFilters={updatedInitialFilters}
-            {...{ form, filters, setFilters, setParams }}
+            {...{ form, filters, setFilters, setParams, initialFilters }}
           />
           {tableToolbar}
         </div>
