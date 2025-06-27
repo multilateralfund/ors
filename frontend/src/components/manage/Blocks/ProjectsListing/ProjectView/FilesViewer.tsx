@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 
 import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { ProjectDocs, ProjectFile } from '../interfaces'
 import { formatApiUrl } from '@ors/helpers'
 
@@ -11,6 +12,8 @@ import { filter } from 'lodash'
 
 export function FilesViewer(props: ProjectDocs) {
   const { bpFiles, files, setFiles, mode } = props
+
+  const { canUpdateProjects } = useContext(PermissionsContext)
 
   const [currentFiles, setCurrentFiles] = useState<(ProjectFile | File)[]>([])
 
@@ -89,7 +92,7 @@ export function FilesViewer(props: ProjectDocs) {
                 </span>
               </a>
 
-              {setFiles && (
+              {setFiles && canUpdateProjects && (
                 <IoTrash
                   className="transition-colors mb-1 min-h-[20px] min-w-[20px] text-[#666] ease-in-out hover:cursor-pointer hover:text-inherit"
                   onClick={() => handleDelete(file)}
