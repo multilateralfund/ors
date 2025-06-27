@@ -326,8 +326,8 @@ def setup_project_specific_fields():
     field1 = ProjectFieldFactory.create(
         import_name="substance",
         label="Substance",
-        read_field_name="ods_substance_name",
-        write_field_name="ods_substance_id",
+        read_field_name="ods_display_name",
+        write_field_name="ods_display_name",
         table="ods_odp",
         data_type="drop_down",
         section="section1",
@@ -389,9 +389,11 @@ class TestProjectSpecificFields(BaseTest):
         assert fields[0]["table"] == field1.table
         assert fields[0]["data_type"] == field1.data_type
         assert fields[0]["section"] == field1.section
-        assert len(fields[0]["options"]) == 1
-        assert fields[0]["options"][0]["id"] == substance.id
-        assert fields[0]["options"][0]["name"] == substance.name
+        assert len(fields[0]["options"]) == 2
+
+        assert fields[0]["options"]["substances"][0]["id"] == substance.id
+        assert fields[0]["options"]["substances"][0]["name"] == substance.name
+        assert fields[0]["options"]["blends"] == []
         assert fields[1]["label"] == field2.label
         assert fields[1]["read_field_name"] == field2.read_field_name
         assert fields[1]["write_field_name"] == field2.write_field_name
