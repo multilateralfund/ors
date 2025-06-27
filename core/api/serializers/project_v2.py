@@ -6,6 +6,7 @@ from core.api.serializers.project import (
     ProjectListSerializer,
     ProjectOdsOdpListSerializer,
     ProjectOdsOdpCreateSerializer,
+    MetaProjectSerializer,
 )
 from core.api.serializers.project_history import ProjectHistorySerializer
 from core.models.agency import Agency
@@ -304,6 +305,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
     meeting_id = serializers.PrimaryKeyRelatedField(
         required=True, queryset=Meeting.objects.all().values_list("id", flat=True)
     )
+    meta_project = MetaProjectSerializer(read_only=True)
     meeting_transf_id = serializers.PrimaryKeyRelatedField(
         required=False, queryset=Meeting.objects.all().values_list("id", flat=True)
     )
@@ -324,6 +326,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
             "cluster_id",
             "latest_file",
             "latest_project",
+            "meta_project",
             "ods_odp",
             "versions",
             "history",

@@ -71,7 +71,11 @@ const ProjectViewWrapper = () => {
                 <RedirectBackButton />
                 <div className="flex gap-2">
                   <PageHeading className="min-w-fit">
-                    <PageTitle pageTitle="View project" project={data} />
+                    <PageTitle
+                      pageTitle="View project"
+                      projectTitle={data.title}
+                      project={data}
+                    />
                   </PageHeading>
                   {(version > 1 ||
                     lowerCase(submission_status) !== 'draft') && (

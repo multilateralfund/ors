@@ -26,6 +26,7 @@ const EditActionButtons = ({
   files,
   projectFiles,
   setProjectId,
+  setProjectTitle,
   isSaveDisabled,
   isSubmitDisabled,
   setIsLoading,
@@ -36,6 +37,7 @@ const EditActionButtons = ({
   setProjectFiles,
   specificFields,
 }: SubmitActionButtons & {
+  setProjectTitle: (title: string) => void
   project: ProjectTypeApi
   isSubmitDisabled: boolean
   projectFiles?: ProjectFile[]
@@ -48,7 +50,7 @@ const EditActionButtons = ({
 
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  const { id, version, submission_status } = project
+  const { id, submission_status } = project
   const { crossCuttingFields, projectSpecificFields } = projectData
   const odsOdpData = projectSpecificFields?.ods_odp ?? []
 
@@ -146,6 +148,7 @@ const EditActionButtons = ({
         method: 'PUT',
       })
       setProjectId(result.id)
+      setProjectTitle(result.title)
     } catch (error) {
       await handleErrors(error)
     } finally {

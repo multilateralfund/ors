@@ -60,9 +60,6 @@ const ProjectsHeader = ({
     hasValidationErrors
   const isSubmitDisabled = isSaveDisabled
 
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [showVersionsMenu, setShowVersionsMenu] = useState(false)
-
   const {
     title,
     versions = [],
@@ -71,11 +68,15 @@ const ProjectsHeader = ({
     submission_status,
   } = project || {}
 
+  const [projectTitle, setProjectTitle] = useState<string>(title ?? 'N/A')
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [showVersionsMenu, setShowVersionsMenu] = useState(false)
+
   const pageTitleExtraInfo =
     mode === 'copy'
       ? '(copy)'
       : mode === 'full-link' || mode === 'partial-link'
-        ? `(component of ${title ?? 'New project'})`
+        ? `(component of ${projectTitle ?? 'New project'})`
         : ''
 
   const Versions = (
@@ -96,6 +97,7 @@ const ProjectsHeader = ({
               {mode === 'edit' && (
                 <PageTitle
                   pageTitle="Edit project"
+                  projectTitle={projectTitle}
                   project={project as ProjectTypeApi}
                 />
               )}
@@ -129,6 +131,7 @@ const ProjectsHeader = ({
                 setIsLoading,
                 files,
                 setProjectFiles,
+                setProjectTitle,
               }}
               {...rest}
             />

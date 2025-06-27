@@ -14,7 +14,7 @@ import { useGetProjectsAssociation } from '../hooks/useGetProjectsAssociation'
 import { ProjectTypeApi } from '../interfaces'
 import { initialFilters } from '../constants'
 
-import { find, flatMap } from 'lodash'
+import { flatMap } from 'lodash'
 
 const ProjectsAssociateSelection = ({
   project,
@@ -39,26 +39,21 @@ const ProjectsAssociateSelection = ({
 
   const { results = [], setParams } = projectsAssociation
 
-  const formattedResults = results
-    .map((result) => {
-      const filteredProjects = (result.projects || [])
-        .filter(({ country_id }) => country_id === project.country_id)
-        .map((project, index, arr) => ({
-          ...project,
-          isFirst: index === 0,
-          isLast: index === arr.length - 1,
-          isOnly: arr.length === 1,
-        }))
-
-      return {
-        ...result,
-        projects: filteredProjects,
-      }
-    })
-    .filter(
-      ({ projects }) =>
-        projects.length > 0 && !find(projects, { id: project.id }),
+  const formattedResults = results.map((result) => {
+    const formattedProjects = (result.projects || []).map(
+      (project, index, arr) => ({
+        ...project,
+        isFirst: index === 0,
+        isLast: index === arr.length - 1,
+        isOnly: arr.length === 1,
+      }),
     )
+
+    return {
+      ...result,
+      projects: formattedProjects,
+    }
+  })
 
   const projects = {
     ...projectsAssociation,

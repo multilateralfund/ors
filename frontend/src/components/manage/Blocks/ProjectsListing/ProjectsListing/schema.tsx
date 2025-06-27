@@ -33,6 +33,15 @@ const getColumnDefs = (
     canEditProjects,
   } = useContext(PermissionsContext)
 
+  const getCellClass = (data: any) => {
+    const projectTypeClass =
+      data.isOnly !== false ? 'single-project' : 'multiple-projects'
+
+    return cx('!pl-0 ag-text-center', projectTypeClass, {
+      'first-project': data.isFirst,
+    })
+  }
+
   return {
     columnDefs: [
       ...(mode === 'association' && associationIds
@@ -41,11 +50,7 @@ const getColumnDefs = (
               minWidth: 40,
               maxWidth: 40,
               cellClass: (props: CellClassParams) =>
-                `!pl-0 ag-text-center ${
-                  props.data.isOnly !== false
-                    ? 'single-project'
-                    : 'multiple-projects'
-                } ${props.data.isFirst ? 'first-project' : ''}`,
+                `!pl-0 ag-text-center ${getCellClass(props.data)}`,
               cellRenderer: (props: ICellRendererParams) =>
                 props.data.isFirst !== false && (
                   <Checkbox
@@ -78,11 +83,13 @@ const getColumnDefs = (
         headerName: tableColumns.title,
         field: 'title',
         tooltipField: 'title',
-        cellClass: 'ag-cell-ellipsed',
         minWidth: 300,
+        cellClass: (props: CellClassParams) =>
+          'ag-cell-ellipsed ' +
+          (mode === 'association-listing' ? getCellClass(props.data) : ''),
         cellRenderer: (props: ICellRendererParams) => (
           <div className="flex items-center gap-1 p-2">
-            {mode === 'listing' && (
+            {mode !== 'association' && (
               <>
                 {canEditProjects && (
                   <Link
@@ -215,7 +222,7 @@ const getColumnDefs = (
       cellClass: 'ag-text-center ag-cell-ellipsed',
       minWidth: 90,
       resizable: true,
-      sortable: mode !== 'association',
+      sortable: mode === 'listing',
     },
   }
 }

@@ -1,6 +1,14 @@
 import { Dispatch, ReactNode, SetStateAction } from 'react'
 import { ProjectType } from '@ors/types/api_projects'
 
+export interface PListingProps {
+  tableToolbar: ReactNode
+  projectId?: number | null
+  setProjectData?: (data: {
+    projectId: number | null
+    projectTitle: string
+  }) => void
+}
 export interface ProjIdentifiers {
   country: number | null
   meeting: number | null
@@ -123,6 +131,7 @@ export type ProjectTypeApi = ProjIdentifiers &
     versions: ProjectVersions[]
     version: number
     latest_project: number | null
+    meta_project: Record<string, any>
     history: ProjectType['history']
   }
 export interface ProjectViewProps {

@@ -11,7 +11,6 @@ import BPDeleteActivityWarning from './BPDeleteActivityWarning'
 import BPResetFieldsWarning from './BPResetFieldsWarning'
 import { editCellRenderer } from '../BPTableHelpers/cellRenderers'
 import { emptyFieldData, updateFieldData } from './editSchemaHelpers'
-import { BasePasteWrapper } from './pasteSupport'
 import useColumnsOptions from './editSchema'
 import { ApiBPYearRange } from '@ors/types/api_bp_get_years'
 import { api, applyTransaction } from '@ors/helpers'
@@ -25,6 +24,7 @@ import {
   IoInformationCircleOutline,
   IoClipboardOutline,
 } from 'react-icons/io5'
+import { BasePasteWrapper } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/pasteSupport/BasePasteWrapper.tsx'
 
 export type PendingEditType = null | {
   field: string
@@ -159,6 +159,7 @@ export function BPEditBaseTable(
         headerComponent: function (props: any) {
           return (
             <BasePasteWrapper
+              form={form}
               label={props.displayName}
               setForm={setForm}
               mutator={function (row: any, value: any) {
@@ -201,6 +202,7 @@ export function BPEditBaseTable(
         headerComponent: function (props: any) {
           return (
             <BasePasteWrapper
+              form={form}
               label={props.displayName}
               setForm={setForm}
               mutator={function (row: any, value: any) {
@@ -243,6 +245,7 @@ export function BPEditBaseTable(
         headerComponent: function (props: any) {
           return (
             <BasePasteWrapper
+              form={form}
               label={props.displayName}
               setForm={setForm}
               mutator={function (row: any, value: any) {
@@ -285,6 +288,7 @@ export function BPEditBaseTable(
         headerComponent: function (props: any) {
           return (
             <BasePasteWrapper
+              form={form}
               label={props.displayName}
               setForm={setForm}
               mutator={function (row: any, value: any) {
@@ -583,6 +587,8 @@ export function BPEditBaseTable(
           resizeGridOnRowUpdate={true}
           rowClassRules={rowClassRules}
           rowData={form}
+          rowsVisible={100}
+          rowBuffer={130}
           singleClickEdit={true}
           suppressScrollOnNewData={true}
           results={results}

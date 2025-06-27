@@ -49,17 +49,14 @@ const ProjectsAssociateConfirmation = ({
   const { setParams, results = [] } = projectsAssociation
 
   const metaProjects = results.filter(({ projects }) =>
-    find(
-      projects,
-      ({ id, country_id }) =>
-        country_id === project.country_id && associationIds.includes(id),
-    ),
+    find(projects, ({ id }) => associationIds.includes(id)),
   )
   const metaProjectsLeadAgenciesIds = map(metaProjects, 'lead_agency_id')
   const leadAgencyOptions = filter(
     agencies,
     ({ id }) =>
-      metaProjectsLeadAgenciesIds.includes(id) || id === project.agency_id,
+      metaProjectsLeadAgenciesIds.includes(id) ||
+      id === project?.meta_project?.lead_agency,
   )
 
   const [leadAgencyId, setLeadAgencyId] = useState(
@@ -68,12 +65,7 @@ const ProjectsAssociateConfirmation = ({
 
   const selectedProjects = [
     project,
-    ...flatMap(metaProjects, (metaProject) =>
-      filter(
-        metaProject.projects,
-        ({ country_id }) => country_id === project.country_id,
-      ),
-    ),
+    ...flatMap(metaProjects, (metaProject) => metaProject.projects),
   ]
   const projects = { ...projectsAssociation, results: selectedProjects }
 

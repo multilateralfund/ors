@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import Loading from '@ors/components/theme/Loading/Loading'
 import ProjectsAssociateSelection from './ProjectsAssociateSelection'
@@ -10,14 +10,29 @@ import { ProjectTypeApi } from '../interfaces'
 import { initialFilters } from '../constants'
 
 import { Box } from '@mui/material'
+import { useParams } from 'wouter'
 
 const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
+  const initialProjectsAssociation = useRef<ReturnType<
+    typeof useGetProjectsAssociation
+  > | null>(null)
+  const { project_id } = useParams<Record<string, string>>()
+
   const [associationIds, setAssociationIds] = useState<number[]>([])
   const [filters, setFilters] = useState({ ...initialFilters })
   const [mode, setMode] = useState('selection')
 
-  const projectsAssociation = useGetProjectsAssociation(initialFilters)
-  const { loading } = projectsAssociation
+  const projectsAssociation = useGetProjectsAssociation(
+    initialFilters,
+    project_id,
+  )
+  const { loading, loaded } = projectsAssociation
+
+  useEffect(() => {
+    if (!initialProjectsAssociation.current && loaded) {
+      initialProjectsAssociation.current = projectsAssociation
+    }
+  }, [projectsAssociation])
 
   return (
     <>
@@ -40,9 +55,13 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
           />
         ) : (
           <ProjectsAssociateConfirmation
+            projectsAssociation={
+              initialProjectsAssociation.current as ReturnType<
+                typeof useGetProjectsAssociation
+              >
+            }
             {...{
               project,
-              projectsAssociation,
               associationIds,
               setAssociationIds,
               setFilters,

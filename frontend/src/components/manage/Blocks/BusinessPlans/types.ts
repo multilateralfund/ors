@@ -80,7 +80,7 @@ export type BPEditTableInterface = {
   isConsolidatedView?: boolean
   loading: boolean
   params: any
-  setForm: Dispatch<SetStateAction<Array<ApiEditBPActivity> | null | undefined>>
+  setForm: (state: ApiEditBPActivity[]) => void
   chemicalTypes: chemicalTypesType
   activitiesRef?: any
   isDataFormatted?: boolean
