@@ -86,10 +86,10 @@ const PListingTable = ({
         paginationPageSize={PROJECTS_PER_PAGE}
         paginationPageSizeSelector={paginationPageSizeSelectorOpts}
         resizeGridOnRowUpdate={true}
-        rowBuffer={50}
+        rowBuffer={100}
         rowCount={count}
         rowData={results}
-        rowsVisible={25}
+        rowsVisible={90}
         tooltipShowDelay={200}
         components={{
           agColumnHeader: undefined,

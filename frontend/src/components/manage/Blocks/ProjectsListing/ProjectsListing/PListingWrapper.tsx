@@ -21,7 +21,7 @@ export default function PListingWrapper() {
   const { canViewBp, canUpdateBp, canUpdateProjects, canAssociateProjects } =
     useContext(PermissionsContext)
 
-  const [view, setView] = useState<ViewSelectorValuesType>('table')
+  const [view, setView] = useState<ViewSelectorValuesType>('list')
   const [projectData, setProjectData] = useState<{
     projectId: number | null
     projectTitle: string
@@ -69,6 +69,7 @@ export default function PListingWrapper() {
       {projectActions}
       <TableViewSelector
         value={view}
+        reverseViewOrder={true}
         changeHandler={(_, value) => {
           setView(value)
         }}
@@ -139,8 +140,8 @@ export default function PListingWrapper() {
         )}
       </div>
       <Box className="shadow-none">
-        {view === 'table' ? (
-          <PListingAssociation
+        {view === 'list' ? (
+          <PListingProjects
             {...{
               projectId,
               setProjectData,
@@ -148,7 +149,7 @@ export default function PListingWrapper() {
             }}
           />
         ) : (
-          <PListingProjects
+          <PListingAssociation
             {...{
               projectId,
               setProjectData,
