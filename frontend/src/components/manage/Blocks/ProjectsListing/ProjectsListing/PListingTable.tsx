@@ -7,6 +7,8 @@ import getColumnDefs from './schema'
 import { PROJECTS_PER_PAGE } from '../constants'
 import { useStore } from '@ors/store'
 
+import cx from 'classnames'
+
 export type PListingTableProps = {
   projects: ReturnType<typeof useGetProjects | typeof useGetProjectsAssociation>
   filters: Record<string, any>
@@ -46,7 +48,7 @@ const PListingTable = ({
   )
 
   const getPaginationSelectorOpts = (): number[] => {
-    const nrResultsOpts = [100, 250, 500, 1000]
+    const nrResultsOpts = [50, 100, 250, 500, 1000]
     const filteredNrResultsOptions = nrResultsOpts.filter(
       (option) => option < count,
     )
@@ -59,8 +61,12 @@ const PListingTable = ({
     loaded && (
       <ViewTable
         key={JSON.stringify(filters)}
-        className={`projects-table ${mode === 'association' ? 'projects-association-listing' : ''}`}
-        {...(mode === 'association' && {
+        className={cx('projects-table', {
+          'projects-association-table': mode !== 'listing',
+          'projects-association-listing': mode === 'association-listing',
+          'projects-association': mode === 'association',
+        })}
+        {...(mode !== 'listing' && {
           rowClassRules: {
             'prev-is-multiple': (params) => {
               const prev = params.api.getDisplayedRowAtIndex(
@@ -77,7 +83,9 @@ const PListingTable = ({
         enablePagination={enablePagination ?? true}
         loaded={loaded}
         loading={loading}
-        paginationPageSize={PROJECTS_PER_PAGE}
+        paginationPageSize={
+          mode === 'association-listing' ? 50 : PROJECTS_PER_PAGE
+        }
         paginationPageSizeSelector={paginationPageSizeSelectorOpts}
         resizeGridOnRowUpdate={true}
         rowBuffer={50}
