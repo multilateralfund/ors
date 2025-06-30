@@ -141,18 +141,59 @@ class ProjectSpecificFieldsListView(generics.RetrieveAPIView):
     serializer_class = ProjectSpecificFieldsSerializer
 
     def get_object(self):
+        project_id = self.request.query_params.get("project_id", None)
+        if project_id:
+            projects_queryset = Project.objects.really_all()
+            project = get_object_or_404(projects_queryset, pk=project_id)
+            if (
+                project.submission_status
+                and project.submission_status.name != "Approved"
+            ):
+                field_model = ProjectSpecificFields._meta.get_field(
+                    "fields"
+                ).related_model
+                queryset = ProjectSpecificFields.objects.select_related(
+                    "cluster", "type", "sector"
+                ).prefetch_related(
+                    models.Prefetch(
+                        "fields",
+                        queryset=field_model.objects.filter(is_actual=False),
+                    )
+                )
+                return get_object_or_404(
+                    queryset,
+                    cluster_id=self.kwargs["cluster_id"],
+                    type_id=self.kwargs["type_id"],
+                    sector_id=self.kwargs["sector_id"],
+                )
+
         queryset = ProjectSpecificFields.objects.select_related(
             "cluster", "type", "sector"
         ).prefetch_related(
             "fields",
         )
-
         return get_object_or_404(
             queryset,
             cluster_id=self.kwargs["cluster_id"],
             type_id=self.kwargs["type_id"],
             sector_id=self.kwargs["sector_id"],
         )
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "project_id",
+                openapi.IN_QUERY,
+                description="""
+                    Giving the project ID allows filtering the fields
+                    (projects not approved don't return actual fields).
+                """,
+                type=openapi.TYPE_INTEGER,
+            ),
+        ]
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
 
 # pylint: disable-next=R0901
