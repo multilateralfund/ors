@@ -1,7 +1,7 @@
 import { useContext } from 'react'
 
-import PermissionsContext from '@ors/contexts/PermissionsContext'
 import Link from '@ors/components/ui/Link/Link'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { SubmitButton } from '../HelperComponents'
 import { formatSubmitData } from '../utils'
 import { SubmitActionButtons } from '../interfaces'
@@ -103,14 +103,12 @@ const CreateActionButtons = ({
         Cancel
       </Link>
       {canUpdateProjects && (
-        <>
-          <SubmitButton
-            title="Create project (draft)"
-            isDisabled={isSaveDisabled}
-            onSubmit={createProject}
-            className="ml-auto"
-          />
-        </>
+        <SubmitButton
+          title="Create project (draft)"
+          isDisabled={isSaveDisabled}
+          onSubmit={createProject}
+          className="ml-auto"
+        />
       )}
     </div>
   )

@@ -314,7 +314,10 @@ const ProjectsCreate = ({
       ),
       disabled: areNextSectionsDisabled,
       component: (
-        <ProjectDocumentation {...rest} {...{ projectFiles, files, mode }} />
+        <ProjectDocumentation
+          {...{ projectFiles, files, mode, project }}
+          {...rest}
+        />
       ),
       errors: [
         ...(fileErrors

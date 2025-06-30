@@ -1,10 +1,11 @@
+import { useContext } from 'react'
+
+import { ProjectIdentifiersSectionProps } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import ProjectIdentifiersFields from './ProjectIdentifiersFields'
 import ProjectBPLinking from './ProjectBPLinking'
-import { ProjectIdentifiersSectionProps } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
 
 import { Divider } from '@mui/material'
-import { useContext } from 'react'
-import PermissionsContext from '@ors/contexts/PermissionsContext'
 
 const ProjectIdentifiersSection = ({
   projectData,

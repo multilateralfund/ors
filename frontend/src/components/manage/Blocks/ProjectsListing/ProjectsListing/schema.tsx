@@ -1,7 +1,7 @@
 import { useContext } from 'react'
 
-import PermissionsContext from '@ors/contexts/PermissionsContext'
 import Link from '@ors/components/ui/Link/Link'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { tableColumns } from '../constants'
 import { formatNumberColumns } from '../utils'
 
@@ -17,7 +17,6 @@ import {
 import cx from 'classnames'
 
 const getColumnDefs = (
-  user_permissions: string[],
   mode: string,
   projectId?: number | null,
   setProjectData?: (data: {
@@ -31,8 +30,7 @@ const getColumnDefs = (
     canViewProjects,
     canAssociateProjects,
     canUpdateProjects,
-    canSubmitProjects,
-    canRecommendProjects,
+    canEditProjects,
   } = useContext(PermissionsContext)
 
   const getCellClass = (data: any) => {
@@ -93,9 +91,7 @@ const getColumnDefs = (
           <div className="flex items-center gap-1 p-2">
             {mode !== 'association' && (
               <>
-                {(canUpdateProjects ||
-                  canSubmitProjects ||
-                  canRecommendProjects) && (
+                {canEditProjects && (
                   <Link
                     className="flex h-4 w-4 justify-center"
                     href={`/projects-listing/${props.data.id}/edit`}
