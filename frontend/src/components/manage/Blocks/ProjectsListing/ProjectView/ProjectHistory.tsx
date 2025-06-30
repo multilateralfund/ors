@@ -1,7 +1,8 @@
 import { ProjectTypeApi } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
 import React from 'react'
 import dayjs from 'dayjs'
-import cx from 'classnames'
+import { FaClockRotateLeft } from 'react-icons/fa6'
+import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader.tsx'
 
 type ProjectHistoryProps = {
   project: ProjectTypeApi
@@ -57,12 +58,6 @@ const HistoryItem = ({ item }: { item: ProjectTypeApi['history'][0] }) => {
 
 const ProjectHistory = ({ project, mode }: ProjectHistoryProps) => {
   const historyItems = project.history
-  const totalItems = historyItems.length
-  const itemsInFirstColumn =
-    Math.ceil(totalItems / 2) + (totalItems % 2 === 0 && totalItems > 0 ? 1 : 0)
-
-  const firstColumnItems = historyItems.slice(0, itemsInFirstColumn)
-  const secondColumnItems = historyItems.slice(itemsInFirstColumn)
 
   const renderCollection = (items: typeof historyItems) => {
     return items.map((item, index) => (
@@ -73,17 +68,13 @@ const ProjectHistory = ({ project, mode }: ProjectHistoryProps) => {
     ))
   }
 
-  const renderedHistory1 = renderCollection(firstColumnItems)
-  const renderedHistory2 = renderCollection(secondColumnItems)
+  const renderedHistory = renderCollection(historyItems)
 
   return (
-    <div className="flex w-full flex-wrap">
-      <div className="flex-full flex w-full flex-col md:w-1/2">
-        {renderedHistory1}
-      </div>
-      <div className="flex-full flex w-full flex-col md:w-1/2">
-        {renderedHistory2}
-      </div>
+    <div>
+      <HeaderWithIcon title="History" Icon={FaClockRotateLeft} />
+      <hr className="mx-0 mb-4 mt-7 h-px border-0 bg-gray-200" />
+      <div className="">{renderedHistory}</div>
     </div>
   )
 }

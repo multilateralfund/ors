@@ -33,8 +33,14 @@ from core.api.views.utils import log_project_history
 # pylint: disable=R1702,W0707
 
 
-HISTORY_DESCRIPTION_CREATE = "Project created."
-HISTORY_DESCRIPTION_UPDATE = "Project updated."
+HISTORY_DESCRIPTION_CREATE = "Create project"
+HISTORY_DESCRIPTION_UPDATE = "Save project details"
+HISTORY_DESCRIPTION_SUBMIT_V1 = "Submit project (Version 1)"
+HISTORY_DESCRIPTION_RECOMMEND_V2 = "Recommend project (Version 2)"
+HISTORY_DESCRIPTION_APPROVE_V3 = "Approve project (Version 3)"
+HISTORY_DESCRIPTION_REJECT_V3 = "Reject project (Version 3)"
+HISTORY_DESCRIPTION_WITHDRAW_V3 = "Withdraw project (Version 3)"
+HISTORY_DESCRIPTION_STATUS_CHANGE = "Project status changed to {}"
 
 
 class ProjectV2FileSerializer(serializers.ModelSerializer):

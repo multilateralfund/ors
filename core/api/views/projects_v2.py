@@ -30,6 +30,10 @@ from core.api.serializers.project_v2 import (
     ProjectDetailsV2Serializer,
     ProjectListV2Serializer,
     ProjectV2CreateUpdateSerializer,
+    HISTORY_DESCRIPTION_RECOMMEND_V2,
+    HISTORY_DESCRIPTION_SUBMIT_V1,
+    HISTORY_DESCRIPTION_WITHDRAW_V3,
+    HISTORY_DESCRIPTION_STATUS_CHANGE,
 )
 from core.api.swagger import FileUploadAutoSchema
 from core.models.agency import Agency
@@ -286,7 +290,7 @@ class ProjectV2ViewSet(
         )
         project.save()
         project.increase_version(request.user)
-        log_project_history(project, request.user, "Project submitted")
+        log_project_history(project, request.user, HISTORY_DESCRIPTION_SUBMIT_V1)
         # TODO: Implement MLFS notifications
         return Response(
             ProjectDetailsV2Serializer(project).data,
@@ -381,7 +385,7 @@ class ProjectV2ViewSet(
         )
         project.save()
         project.increase_version(request.user)
-        log_project_history(project, request.user, "Project recommended")
+        log_project_history(project, request.user, HISTORY_DESCRIPTION_RECOMMEND_V2)
         return Response(
             ProjectDetailsV2Serializer(project).data,
             status=status.HTTP_200_OK,
@@ -412,7 +416,7 @@ class ProjectV2ViewSet(
         project.submission_status = ProjectSubmissionStatus.objects.get(
             name="Withdrawn"
         )
-        log_project_history(project, request.user, "Project withdrawn")
+        log_project_history(project, request.user, HISTORY_DESCRIPTION_WITHDRAW_V3)
         project.save()
         return Response(
             ProjectDetailsV2Serializer(project).data,
@@ -443,7 +447,11 @@ class ProjectV2ViewSet(
             )
         project.submission_status = ProjectSubmissionStatus.objects.get(name="Draft")
         project.save()
-        log_project_history(project, request.user, "Project sent back to draft")
+        log_project_history(
+            project,
+            request.user,
+            HISTORY_DESCRIPTION_STATUS_CHANGE.format(project.submission_status),
+        )
         return Response(
             ProjectDetailsV2Serializer(project).data,
             status=status.HTTP_200_OK,
