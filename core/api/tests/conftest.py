@@ -489,9 +489,7 @@ def sector_other():
 
 @pytest.fixture
 def subsector_other_sector_other(sector_other):
-    return ProjectSubSectorFactory.create(
-        name="Other", code="OTH", sector=sector_other
-    )
+    return ProjectSubSectorFactory.create(name="Other", code="OTH", sector=sector_other)
 
 
 @pytest.fixture

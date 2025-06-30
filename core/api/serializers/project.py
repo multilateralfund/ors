@@ -45,6 +45,7 @@ class MetaProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MetaProject
+        ref_name = "MetaProjectSerializer"
         fields = [
             "id",
             "type",

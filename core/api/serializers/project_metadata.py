@@ -161,6 +161,7 @@ class ProjectFieldSerializer(serializers.ModelSerializer):
             "table",
             "data_type",
             "section",
+            "is_actual",
             "options",
         ]
 
@@ -188,7 +189,7 @@ class ProjectFieldSerializer(serializers.ModelSerializer):
         if obj.read_field_name == "destruction_technology":
             return Project.DestructionTechnology.choices
 
-        if obj.read_field_name == "checklist_regulations":
+        if obj.read_field_name in  ["checklist_regulations", "checklist_regulations_actual"]:
             return Project.Regulations.choices
         return None
 

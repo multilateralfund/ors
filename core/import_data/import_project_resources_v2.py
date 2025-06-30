@@ -22,6 +22,7 @@ from core.models.project import Project
 
 logger = logging.getLogger(__name__)
 
+#pylint: disable=C0301
 NEW_SUBSECTORS = [
     {
         "SEC": "OTH",
@@ -72,6 +73,44 @@ NEW_STATUSES = [
         "STATUS": "Unknow",
         "STATUS_CODE": "UNK",
     },
+]
+
+
+FIELDS_WITH_ACTUAL_VALUES = [
+    "Total number of technicians trained",
+    "Number of female technicians trained",
+    "Total number of trainers trained",
+    "Number of female trainers trained",
+    "Total number of technicians certified",
+    "Number of female technicians certified",
+    "Number of training institutions newly assisted",
+    "Number of tools sets distributed",
+    "Total number of customs officers trained",
+    "Number of female customs officers trained",
+    "Total number of NOU personnel supported",
+    "Number of female NOU personnel supported",
+    "Number of enterprises assisted",
+    "Certification system for technicians established or further enhanced (yes or no)",
+    "Operation of recovery and recycling scheme (yes or no)",
+    "Operation of reclamation scheme (yes or no)",
+    "Establishment or upgrade of Import/export licensing (yes or no)",
+    "Establishment of quota systems (yes or no)",
+    "Ban of equipment (number)",
+    "Ban of substances (number)",
+    "kWh/year saved",
+    "MEPS developed for domestic refrigeration (yes/no)",
+    "MEPS developed for commercial refrigeration (yes/no)",
+    "MEPS developed for residential air-conditioning (yes/no)",
+    "MEPS developed for commercial AC (yes/no)",
+    "Capacity building programmes (checklist (yes/no) for technicians, end-users, operators, consultants, procurement officers and other Government entities)",
+    "EE demonstration project included (yes/no)",
+    "Quantity of controlled substances destroyed (M t)",
+    "Quantity of controlled substances destroyed (CO2-eq t)",
+    "Checklist of regulations or policies enacted",
+    "Quantity of HFC-23 by-product (Generated)",
+    "Quantity of HFC-23 by-product (by product generation rate)",
+    "Quantity of HFC-23 by-product (Destroyed)",
+    "Quantity of HFC-23 by-product (Emitted)",
 ]
 
 
@@ -284,6 +323,12 @@ def import_project_specific_fields(file_path):
             for field_index in range(22, len(row) - 1)
             if row[field_index] != ""
         ]
+        actual_field_names = [
+            f"{field_name} actual"
+            for field_name in field_names
+            if field_name in FIELDS_WITH_ACTUAL_VALUES
+        ]
+        field_names.extend(actual_field_names)
         project_fields = ProjectField.objects.filter(import_name__in=field_names)
         missing_fields = set(field_names) - set(
             project_fields.values_list("import_name", flat=True)
@@ -375,6 +420,7 @@ def import_fields(file_path):
             "table": field_json["TABLE"],
             "data_type": field_json["DATA_TYPE"],
             "section": field_json["SECTION"],
+            "is_actual": field_json.get("IS_ACTUAL", False),
         }
 
         ProjectField.objects.update_or_create(
