@@ -156,6 +156,7 @@ export interface ProjectFiles {
 export interface ProjectDocs extends ProjectFiles {
   mode: string
   bpFiles?: ProjectFile[]
+  project?: ProjectTypeApi
 }
 
 export interface ProjectVersions {
