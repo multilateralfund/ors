@@ -189,7 +189,10 @@ class ProjectFieldSerializer(serializers.ModelSerializer):
         if obj.read_field_name == "destruction_technology":
             return Project.DestructionTechnology.choices
 
-        if obj.read_field_name in  ["checklist_regulations", "checklist_regulations_actual"]:
+        if obj.read_field_name in [
+            "checklist_regulations",
+            "checklist_regulations_actual",
+        ]:
             return Project.Regulations.choices
         return None
 

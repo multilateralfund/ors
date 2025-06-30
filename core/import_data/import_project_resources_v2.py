@@ -22,7 +22,7 @@ from core.models.project import Project
 
 logger = logging.getLogger(__name__)
 
-#pylint: disable=C0301
+# pylint: disable=C0301
 NEW_SUBSECTORS = [
     {
         "SEC": "OTH",

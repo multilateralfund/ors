@@ -23,6 +23,7 @@ from core.models.utils import SubstancesType, get_protected_storage
 
 # pylint: disable=C0302
 
+
 class MetaProject(models.Model):
     class MetaProjectType(models.TextChoices):
         MYA = "Multi-year agreement", "Multi-year agreement"
