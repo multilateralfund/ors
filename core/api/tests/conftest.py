@@ -471,6 +471,11 @@ def project_submitted_status():
 
 
 @pytest.fixture
+def project_approved_status():
+    return ProjectSubmissionStatusFactory.create(name="Approved", code="approved")
+
+
+@pytest.fixture
 def sector():
     return ProjectSectorFactory.create(name="Sector", code="SEC", sort_order=1)
 
