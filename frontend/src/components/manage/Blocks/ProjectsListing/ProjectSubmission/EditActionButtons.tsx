@@ -1,7 +1,7 @@
 import { useContext, useMemo, useState } from 'react'
 
-import PermissionsContext from '@ors/contexts/PermissionsContext'
 import Link from '@ors/components/ui/Link/Link'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { IncreaseVersionButton } from '../HelperComponents'
 import {
   checkInvalidValue,
@@ -13,7 +13,6 @@ import {
 } from '../utils'
 import { ProjectFile, ProjectTypeApi, SubmitActionButtons } from '../interfaces'
 import { api, uploadFiles } from '@ors/helpers'
-import { useStore } from '@ors/store'
 
 import { Button, Modal, Typography, Box } from '@mui/material'
 import { enqueueSnackbar } from 'notistack'
@@ -27,6 +26,7 @@ const EditActionButtons = ({
   files,
   projectFiles,
   setProjectId,
+  setProjectTitle,
   isSaveDisabled,
   isSubmitDisabled,
   setIsLoading,
@@ -37,6 +37,7 @@ const EditActionButtons = ({
   setProjectFiles,
   specificFields,
 }: SubmitActionButtons & {
+  setProjectTitle: (title: string) => void
   project: ProjectTypeApi
   isSubmitDisabled: boolean
   projectFiles?: ProjectFile[]
@@ -44,16 +45,12 @@ const EditActionButtons = ({
 }) => {
   const [_, setLocation] = useLocation()
 
-  const { id, version, submission_status } = project
-
-  const commonSlice = useStore((state) => state.common)
-  const user_permissions = commonSlice.user_permissions.data || []
-
   const { canUpdateProjects, canSubmitProjects, canRecommendProjects } =
     useContext(PermissionsContext)
 
   const [isModalOpen, setIsModalOpen] = useState(false)
 
+  const { id, submission_status } = project
   const { crossCuttingFields, projectSpecificFields } = projectData
   const odsOdpData = projectSpecificFields?.ods_odp ?? []
 
@@ -151,6 +148,7 @@ const EditActionButtons = ({
         method: 'PUT',
       })
       setProjectId(result.id)
+      setProjectTitle(result.title)
     } catch (error) {
       await handleErrors(error)
     } finally {
@@ -239,28 +237,26 @@ const EditActionButtons = ({
           Add additional component
         </Button>
       )}
-      {canSubmitProjects &&
-        (version === 1 && lowerCase(submission_status) === 'draft' ? (
+      {canSubmitProjects && lowerCase(submission_status) === 'draft' && (
+        <IncreaseVersionButton
+          title="Submit project"
+          onSubmit={submitProject}
+          isDisabled={disableSubmit}
+        />
+      )}
+      {canRecommendProjects && lowerCase(submission_status) === 'submitted' && (
+        <>
           <IncreaseVersionButton
-            title="Submit project"
-            onSubmit={submitProject}
+            title="Recommend project"
+            onSubmit={recommendProject}
             isDisabled={disableSubmit}
           />
-        ) : version === 2 &&
-          lowerCase(submission_status) === 'submitted' &&
-          canRecommendProjects ? (
-          <>
-            <IncreaseVersionButton
-              title="Recommend project"
-              onSubmit={recommendProject}
-              isDisabled={disableSubmit}
-            />
-            <IncreaseVersionButton
-              title="Withdraw project"
-              onSubmit={withdrawProject}
-            />
-          </>
-        ) : null)}
+          <IncreaseVersionButton
+            title="Withdraw project"
+            onSubmit={withdrawProject}
+          />
+        </>
+      )}
       {isModalOpen && (
         <Modal
           aria-labelledby="add-component-modal-title"

@@ -235,7 +235,7 @@ class TestBPImportValidate:
         assert len(response.data["warnings"]) == 1
 
         assert response.data["warnings"][0]["warning_message"] == (
-            "Subsector 'Subsector' does not exist in KMS and will be set to 'Other'"
+            "Subsector 'Subsector new' does not exist in KMS and will be set to 'Other'"
         )
 
         assert len(response.data["errors"]) == 2
@@ -370,7 +370,7 @@ class TestBPImport:
         bp_chemical_type,
         substance,
         sector,
-        subsector_other,
+        subsector_other_sector_other,
         _setup_bp_activity_create,
     ):
         self.client.force_authenticate(user=bp_editor_user)
@@ -399,7 +399,7 @@ class TestBPImport:
         assert activity.bp_chemical_type == bp_chemical_type
         assert activity.substances.first() == substance
         assert activity.sector == sector
-        assert activity.subsector == subsector_other
+        assert activity.subsector == subsector_other_sector_other
         assert activity.amount_polyol == 0
         assert activity.status == "A"
         assert activity.is_multi_year is False

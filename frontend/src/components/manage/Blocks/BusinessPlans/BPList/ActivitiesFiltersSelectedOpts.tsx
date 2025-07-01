@@ -1,11 +1,11 @@
-import React from 'react'
+import { useContext } from 'react'
 
-import { Typography } from '@mui/material'
-import { filter } from 'lodash'
-
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { multiYearFilterOptions } from '../constants'
 
+import { Typography } from '@mui/material'
 import { IoClose } from 'react-icons/io5'
+import { filter } from 'lodash'
 
 export default function ActivitiesFiltersSelectedOpts(props: any) {
   const {
@@ -19,6 +19,9 @@ export default function ActivitiesFiltersSelectedOpts(props: any) {
     initialFilters,
     withAgency,
   } = props
+  const { canViewMetainfoProjects, canViewSectorsSubsectors } =
+    useContext(PermissionsContext)
+
   const { agencies, countries } = commonSlice
   const { sectors, subsectors, types } = bpSlice
 
@@ -109,10 +112,14 @@ export default function ActivitiesFiltersSelectedOpts(props: any) {
         {displaySearchTerm()}
         {displaySelectedOption(formatEntity(countries.data), 'country_id')}
         {displaySelectedOption(formatEntity(agencies.data), 'agency_id')}
-        {displaySelectedOption(formatEntity(clusters), 'project_cluster_id')}
-        {displaySelectedOption(formatEntity(sectors.data), 'sector_id')}
-        {displaySelectedOption(formatEntity(subsectors.data), 'subsector_id')}
-        {displaySelectedOption(formatEntity(types.data), 'project_type_id')}
+        {canViewMetainfoProjects &&
+          displaySelectedOption(formatEntity(clusters), 'project_cluster_id')}
+        {canViewMetainfoProjects &&
+          displaySelectedOption(formatEntity(types.data), 'project_type_id')}
+        {canViewSectorsSubsectors &&
+          displaySelectedOption(formatEntity(sectors.data), 'sector_id')}
+        {canViewSectorsSubsectors &&
+          displaySelectedOption(formatEntity(subsectors.data), 'subsector_id')}
         {displaySelectedOption(
           formatEntity(multiYearFilterOptions),
           'is_multi_year',

@@ -1,7 +1,7 @@
 import { useContext } from 'react'
 
-import PermissionsContext from '@ors/contexts/PermissionsContext'
 import Link from '@ors/components/ui/Link/Link'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { tableColumns } from '../constants'
 import { formatNumberColumns } from '../utils'
 
@@ -17,7 +17,6 @@ import {
 import cx from 'classnames'
 
 const getColumnDefs = (
-  user_permissions: string[],
   mode: string,
   projectId?: number | null,
   setProjectData?: (data: {
@@ -31,9 +30,17 @@ const getColumnDefs = (
     canViewProjects,
     canAssociateProjects,
     canUpdateProjects,
-    canSubmitProjects,
-    canRecommendProjects,
+    canEditProjects,
   } = useContext(PermissionsContext)
+
+  const getCellClass = (data: any) => {
+    const projectTypeClass =
+      data.isOnly !== false ? 'single-project' : 'multiple-projects'
+
+    return cx('!pl-0 ag-text-center', projectTypeClass, {
+      'first-project': data.isFirst,
+    })
+  }
 
   return {
     columnDefs: [
@@ -43,11 +50,7 @@ const getColumnDefs = (
               minWidth: 40,
               maxWidth: 40,
               cellClass: (props: CellClassParams) =>
-                `!pl-0 ag-text-center ${
-                  props.data.isOnly !== false
-                    ? 'single-project'
-                    : 'multiple-projects'
-                } ${props.data.isFirst ? 'first-project' : ''}`,
+                `!pl-0 ag-text-center ${getCellClass(props.data)}`,
               cellRenderer: (props: ICellRendererParams) =>
                 props.data.isFirst !== false && (
                   <Checkbox
@@ -80,15 +83,15 @@ const getColumnDefs = (
         headerName: tableColumns.title,
         field: 'title',
         tooltipField: 'title',
-        cellClass: 'ag-cell-ellipsed',
         minWidth: 300,
+        cellClass: (props: CellClassParams) =>
+          'ag-cell-ellipsed ' +
+          (mode === 'association-listing' ? getCellClass(props.data) : ''),
         cellRenderer: (props: ICellRendererParams) => (
           <div className="flex items-center gap-1 p-2">
-            {mode === 'listing' && (
+            {mode !== 'association' && (
               <>
-                {(canUpdateProjects ||
-                  canSubmitProjects ||
-                  canRecommendProjects) && (
+                {canEditProjects && (
                   <Link
                     className="flex h-4 w-4 justify-center"
                     href={`/projects-listing/${props.data.id}/edit`}
@@ -219,7 +222,7 @@ const getColumnDefs = (
       cellClass: 'ag-text-center ag-cell-ellipsed',
       minWidth: 90,
       resizable: true,
-      sortable: mode !== 'association',
+      sortable: mode === 'listing',
     },
   }
 }

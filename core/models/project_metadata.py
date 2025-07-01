@@ -40,6 +40,10 @@ class ProjectField(models.Model):
     table = models.CharField(max_length=255)
     data_type = models.CharField(max_length=255)
     section = models.CharField(max_length=255, blank=True)
+    is_actual = models.BooleanField(
+        default=False,
+        help_text="If True, the field is used for actual data, otherwise for planned data",
+    )
 
     def __str__(self):
         return f"{self.table} - {self.label}"

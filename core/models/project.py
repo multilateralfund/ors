@@ -21,6 +21,8 @@ from core.models.project_metadata import (
 from core.models.substance import Substance
 from core.models.utils import SubstancesType, get_protected_storage
 
+# pylint: disable=C0302
+
 
 class MetaProject(models.Model):
     class MetaProjectType(models.TextChoices):
@@ -407,177 +409,352 @@ class Project(models.Model):
     total_number_of_technicians_trained = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Total number of technicians trained",
+        help_text="Total number of technicians trained (planned)",
+    )
+    total_number_of_technicians_trained_actual = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Total number of technicians trained (actual)",
     )
     number_of_female_technicians_trained = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of female technicians trained",
+        help_text="Number of female technicians trained (planned)",
+    )
+    number_of_female_technicians_trained_actual = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Number of female technicians trained (actual)",
     )
     total_number_of_trainers_trained = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Total number of trainers trained",
+        help_text="Total number of trainers trained (planned)",
+    )
+    total_number_of_trainers_trained_actual = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Total number of trainers trained (actual)",
     )
     number_of_female_trainers_trained = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of female trainers trained",
+        help_text="Number of female trainers trained (planned)",
+    )
+    number_of_female_trainers_trained_actual = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Number of female trainers trained (actual)",
     )
     total_number_of_technicians_certified = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Total number of technicians certified",
+        help_text="Total number of technicians certified (planned)",
+    )
+    total_number_of_technicians_certified_actual = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Total number of technicians certified (actual)",
     )
     number_of_female_technicians_certified = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of female technicians certified",
+        help_text="Number of female technicians certified (planned)",
+    )
+    number_of_female_technicians_certified_actual = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Number of female technicians certified (actual)",
     )
     number_of_training_institutions_newly_assisted = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of training institutions newly assisted",
+        help_text="Number of training institutions newly assisted (planned)",
+    )
+    number_of_training_institutions_newly_assisted_actual = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Number of training institutions newly assisted (actual)",
     )
     number_of_tools_sets_distributed = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of tools sets distributed",
+        help_text="Number of tools sets distributed (planned)",
+    )
+    number_of_tools_sets_distributed_actual = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Number of tools sets distributed (actual)",
     )
     total_number_of_customs_officers_trained = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Total number of customs officers trained",
+        help_text="Total number of customs officers trained (planned)",
+    )
+    total_number_of_customs_officers_trained_actual = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Total number of customs officers trained (actual)",
     )
     number_of_female_customs_officers_trained = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of female customs officers trained",
+        help_text="Number of female customs officers trained (planned)",
+    )
+    number_of_female_customs_officers_trained_actual = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Number of female customs officers trained (actual)",
     )
     total_number_of_nou_personnnel_supported = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Total number of NOU personnel supported",
+        help_text="Total number of NOU personnel supported (planned)",
+    )
+    total_number_of_nou_personnel_supported_actual = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Total number of NOU personnel supported (actual)",
     )
     number_of_female_nou_personnel_supported = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of female NOU personnel supported",
+        help_text="Number of female NOU personnel supported (planned)",
+    )
+    number_of_female_nou_personnel_supported_actual = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Number of female NOU personnel supported (actual)",
     )
     number_of_enterprises_assisted = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Number of enterprises assisted",
+        help_text="Number of enterprises assisted (planned)",
+    )
+    number_of_enterprises_assisted_actual = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Number of enterprises assisted (actual)",
     )
     certification_system_for_technicians = models.BooleanField(
         null=True,
         blank=True,
-        help_text="Certification system for technicians established or further enhanced",
+        help_text="Certification system for technicians established or further enhanced (planned)",
+    )
+    certification_system_for_technicians_actual = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="Certification system for technicians established or further enhanced (actual)",
     )
     operation_of_recovery_and_recycling_scheme = models.BooleanField(
         null=True,
         blank=True,
-        help_text="Operation of recovery and recycling scheme",
+        help_text="Operation of recovery and recycling scheme (planned)",
+    )
+    operation_of_recovery_and_recycling_scheme_actual = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="Operation of recovery and recycling scheme (actual)",
     )
     operation_of_reclamation_scheme = models.BooleanField(
         null=True,
         blank=True,
-        help_text="Operation of reclamation scheme",
+        help_text="Operation of reclamation scheme (planned)",
+    )
+    operation_of_reclamation_scheme_actual = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="Operation of reclamation scheme (actual)",
     )
     establishment_of_imp_exp_licensing = models.BooleanField(
         null=True,
         blank=True,
-        help_text="Establishment or upgrade of import/export licensing",
+        help_text="Establishment or upgrade of import/export licensing (planned)",
+    )
+    establishment_of_imp_exp_licensing_actual = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="Establishment or upgrade of import/export licensing (actual)",
     )
     establishment_of_quota_systems = models.BooleanField(
         null=True,
         blank=True,
-        help_text="Establishment of quota systems",
+        help_text="Establishment of quota systems (planned)",
+    )
+    establishment_of_quota_systems_actual = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="Establishment of quota systems (actual)",
     )
     ban_of_equipment = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Ban of equipment",
+        help_text="Ban of equipment (planned)",
+    )
+    ban_of_equipment_actual = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Ban of equipment (actual)",
     )
     ban_of_substances = models.IntegerField(
         null=True,
         blank=True,
-        help_text="Ban of substances",
+        help_text="Ban of substances (planned)",
+    )
+    ban_of_substances_actual = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Ban of substances (actual)",
     )
     kwh_year_saved = models.FloatField(
         null=True,
         blank=True,
-        help_text="kWh/year saved",
+        help_text="kWh/year saved (planned)",
+    )
+    kwh_year_saved_actual = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="kWh/year saved (actual)",
     )
     meps_developed_domestic_refrigeration = models.BooleanField(
         null=True,
         blank=True,
-        help_text="MEPS developed for domestic refrigeration",
+        help_text="MEPS developed for domestic refrigeration (planned)",
+    )
+    meps_developed_domestic_refrigeration_actual = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="MEPS developed for domestic refrigeration (actual)",
     )
     meps_developed_commercial_refrigeration = models.BooleanField(
         null=True,
         blank=True,
-        help_text="MEPS developed for commercial refrigeration",
+        help_text="MEPS developed for commercial refrigeration (planned)",
+    )
+    meps_developed_commercial_refrigeration_actual = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="MEPS developed for commercial refrigeration (actual)",
     )
     meps_developed_residential_ac = models.BooleanField(
         null=True,
         blank=True,
-        help_text="MEPS developed for residential air-conditioning",
+        help_text="MEPS developed for residential air-conditioning (planned)",
+    )
+    meps_developed_residential_ac_actual = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="MEPS developed for residential air-conditioning (actual)",
     )
     meps_developed_commercial_ac = models.BooleanField(
         null=True,
         blank=True,
-        help_text="MEPS developed for commercial AC",
+        help_text="MEPS developed for commercial AC (planned)",
+    )
+    meps_developed_commercial_ac_actual = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="MEPS developed for commercial AC (actual)",
     )
     capacity_building_programmes = models.BooleanField(
         null=True,
         blank=True,
         help_text="""
             Capacity building programmes for technicians, end-users, operators,
-            consultants, procurement officers and other Government entities",
+            consultants, procurement officers and other Government entities (planned)",
+        """,
+    )
+    capacity_building_programmes_actual = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="""
+            Capacity building programmes for technicians, end-users, operators,
+            consultants, procurement officers and other Government entities (actual)",
         """,
     )
     ee_demonstration_project = models.BooleanField(
         null=True,
         blank=True,
-        help_text="EE demonstration project included",
+        help_text="EE demonstration project included (planned)",
+    )
+    ee_demonstration_project_actual = models.BooleanField(
+        null=True,
+        blank=True,
+        help_text="EE demonstration project included (actual)",
     )
     quantity_controlled_substances_destroyed_mt = models.FloatField(
         null=True,
         blank=True,
-        help_text="Quantity of controlled substances destroyed (Metric tonnes)",
+        help_text="Quantity of controlled substances destroyed (Metric tonnes) (planned)",
+    )
+    quantity_controlled_substances_destroyed_mt_actual = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Quantity of controlled substances destroyed (Metric tonnes) (actual)",
     )
     quantity_controlled_substances_destroyed_co2_eq_t = models.FloatField(
         null=True,
         blank=True,
-        help_text="Quantity of controlled substances destroyed (CO2-eq tonnes)",
+        help_text="Quantity of controlled substances destroyed (CO2-eq tonnes) (planned)",
+    )
+    quantity_controlled_substances_destroyed_co2_eq_t_actual = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Quantity of controlled substances destroyed (CO2-eq tonnes) (actual)",
     )
     checklist_regulations = models.CharField(
         max_length=256,
         null=True,
         blank=True,
         choices=Regulations.choices,
-        help_text="Checklist of regulations or policies enacted",
+        help_text="Checklist of regulations or policies enacted (planned)",
+    )
+    checklist_regulations_actual = models.CharField(
+        max_length=256,
+        null=True,
+        blank=True,
+        choices=Regulations.choices,
+        help_text="Checklist of regulations or policies enacted (actual)",
     )
     quantity_hfc_23_by_product_generated = models.FloatField(
         null=True,
         blank=True,
-        help_text="Quantity of HFC-23 by-product (Generated)",
+        help_text="Quantity of HFC-23 by-product (Generated) (planned)",
+    )
+    quantity_hfc_23_by_product_generated_actual = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Quantity of HFC-23 by-product (Generated) (actual)",
     )
     quantity_hfc_23_by_product_generation_rate = models.FloatField(
         null=True,
         blank=True,
-        help_text="Quantity of HFC-23 by-product (by product generation rate)",
+        help_text="Quantity of HFC-23 by-product (by product generation rate) (planned)",
+    )
+    quantity_hfc_23_by_product_generation_rate_actual = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Quantity of HFC-23 by-product (by product generation rate) (actual)",
     )
     quantity_hfc_23_by_product_destroyed = models.FloatField(
         null=True,
         blank=True,
-        help_text="Quantity of HFC-23 by-product (Destroyed)",
+        help_text="Quantity of HFC-23 by-product (Destroyed) (planned)",
+    )
+    quantity_hfc_23_by_product_destroyed_actual = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Quantity of HFC-23 by-product (Destroyed) (actual)",
     )
     quantity_hfc_23_by_product_emitted = models.FloatField(
         null=True,
         blank=True,
-        help_text="Quantity of HFC-23 by-product (Emitted)",
+        help_text="Quantity of HFC-23 by-product (Emitted) (planned)",
+    )
+    quantity_hfc_23_by_product_emitted_actual = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Quantity of HFC-23 by-product (Emitted) (actual)",
     )
 
     objects = ProjectManager()

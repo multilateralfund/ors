@@ -9,7 +9,7 @@ import {
   EditTagsCellRenderer,
 } from '../BPTableHelpers/cellRenderers'
 import { hasErrors } from '../utils'
-import { chemicalTypesType } from '../types'
+import { BPEditTableInterface, chemicalTypesType } from '../types'
 import { lvcStatuses, multiYearFilterOptions, tableColumns } from '../constants'
 import {
   MYAValueSetter,
@@ -29,7 +29,6 @@ import {
   substancesValueSetter,
   valueSetter,
 } from './editSchemaHelpers'
-import { HeaderPasteWrapper } from './pasteSupport'
 
 import {
   ICellEditorParams,
@@ -38,6 +37,7 @@ import {
 } from 'ag-grid-community'
 import { filter, find, flatMap, get, isNil, map } from 'lodash'
 import { IoTrash } from 'react-icons/io5'
+import { HeaderPasteWrapper } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/pasteSupport/HeaderPasteWrapper.tsx'
 
 const optionTextClassname = 'text-base'
 const optionClassname = '!pl-1.5'
@@ -45,8 +45,8 @@ const optionClassname = '!pl-1.5'
 const useColumnsOptions = (
   yearColumns: any[],
   onRemoveActivity: (props: any) => void,
-  form: Array<ApiEditBPActivity>,
-  setForm: Dispatch<SetStateAction<ApiEditBPActivity[] | null | undefined>>,
+  form: BPEditTableInterface['form'],
+  setForm: BPEditTableInterface['setForm'],
   chemicalTypes: chemicalTypesType,
   activitiesRef: any,
   setPendingEdit: (value: PendingEditType) => void,
@@ -523,11 +523,10 @@ const useColumnsOptions = (
           headerComponent: function (props: any) {
             return (
               <HeaderPasteWrapper
-                addTopMargin={true}
                 field={props.column.colDef.field}
                 label={props.displayName}
                 setForm={setForm}
-                activitiesRef={activitiesRef}
+                form={form}
               />
             )
           },

@@ -1,11 +1,12 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useContext, useRef, useState } from 'react'
 
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { initialParams } from '../ProjectsListing/ProjectsFiltersSelectedOpts'
 import PListingTable from '../ProjectsListing/PListingTable'
 import { SubmitButton } from '../HelperComponents'
@@ -38,6 +39,7 @@ const ProjectsAssociateConfirmation = ({
 }) => {
   const form = useRef<any>()
   const [_, setLocation] = useLocation()
+  const { canAssociateProjects } = useContext(PermissionsContext)
 
   const commonSlice = useStore((state) => state.common)
   const agencies = commonSlice.agencies.data
@@ -47,17 +49,14 @@ const ProjectsAssociateConfirmation = ({
   const { setParams, results = [] } = projectsAssociation
 
   const metaProjects = results.filter(({ projects }) =>
-    find(
-      projects,
-      ({ id, country_id }) =>
-        country_id === project.country_id && associationIds.includes(id),
-    ),
+    find(projects, ({ id }) => associationIds.includes(id)),
   )
   const metaProjectsLeadAgenciesIds = map(metaProjects, 'lead_agency_id')
   const leadAgencyOptions = filter(
     agencies,
     ({ id }) =>
-      metaProjectsLeadAgenciesIds.includes(id) || id === project.agency_id,
+      metaProjectsLeadAgenciesIds.includes(id) ||
+      id === project?.meta_project?.lead_agency,
   )
 
   const [leadAgencyId, setLeadAgencyId] = useState(
@@ -66,12 +65,7 @@ const ProjectsAssociateConfirmation = ({
 
   const selectedProjects = [
     project,
-    ...flatMap(metaProjects, (metaProject) =>
-      filter(
-        metaProject.projects,
-        ({ country_id }) => country_id === project.country_id,
-      ),
-    ),
+    ...flatMap(metaProjects, (metaProject) => metaProject.projects),
   ]
   const projects = { ...projectsAssociation, results: selectedProjects }
 
@@ -86,7 +80,7 @@ const ProjectsAssociateConfirmation = ({
     setErrors(null)
 
     try {
-      await api(`api/projects/v2/associate_projects`, {
+      await api(`api/projects/v2/associate_projects/`, {
         data: {
           project_ids: [...associationIds, project.id],
           lead_agency_id: leadAgencyId,
@@ -152,12 +146,14 @@ const ProjectsAssociateConfirmation = ({
           >
             Cancel
           </Button>
-          <SubmitButton
-            title="Submit"
-            isDisabled={!leadAgencyId}
-            onSubmit={associateProjects}
-            className="h-9"
-          />
+          {canAssociateProjects && (
+            <SubmitButton
+              title="Submit"
+              isDisabled={!leadAgencyId}
+              onSubmit={associateProjects}
+              className="h-9"
+            />
+          )}
         </div>
       </div>
       <form className="flex flex-col gap-6" ref={form}>

@@ -2,8 +2,9 @@ import { ToggleButton, ToggleButtonGroup } from '@mui/material'
 
 import { ViewSelectorValuesType } from '../../BusinessPlans/types'
 
-import { FaList } from 'react-icons/fa6'
 import { MdOutlineTableChart } from 'react-icons/md'
+import { FaList } from 'react-icons/fa6'
+import { reverse } from 'lodash'
 
 interface TableViewSelectorProps {
   changeHandler: (
@@ -11,6 +12,7 @@ interface TableViewSelectorProps {
     value: ViewSelectorValuesType,
   ) => void
   value: ViewSelectorValuesType
+  reverseViewOrder?: boolean
 }
 
 const TableViewSelectorLabels: Record<string, any> = {
@@ -21,8 +23,12 @@ const TableViewSelectorLabels: Record<string, any> = {
 export default function TableViewSelector({
   changeHandler,
   value,
+  reverseViewOrder = false,
 }: TableViewSelectorProps) {
   const viewOptions = ['table', 'list']
+  const updatedViewOption = reverseViewOrder
+    ? reverse(viewOptions)
+    : viewOptions
 
   return (
     <ToggleButtonGroup
@@ -32,7 +38,7 @@ export default function TableViewSelector({
       onChange={changeHandler}
       exclusive
     >
-      {viewOptions.map((viewOpt) => (
+      {updatedViewOption.map((viewOpt) => (
         <ToggleButton
           key={viewOpt}
           className="h-[2.25rem] rounded-none border-primary bg-white py-[11px] text-base tracking-wide text-primary first:rounded-l-lg last:rounded-r-lg"
