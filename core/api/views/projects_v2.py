@@ -43,7 +43,7 @@ from core.models.project import (
     ProjectOdsOdp,
     ProjectFile,
 )
-from core.models.project_metadata import ProjectSubmissionStatus
+from core.models.project_metadata import ProjectSubmissionStatus, ProjectSpecificFields
 from core.api.views.utils import log_project_history
 
 from core.api.views.projects_export import ProjectsV2Export
@@ -118,7 +118,7 @@ class ProjectV2ViewSet(
 
     @property
     def permission_classes(self):
-        if self.action in ["list", "retrieve", "export"]:
+        if self.action in ["list", "retrieve", "export", "list_previous_tranches"]:
             return [HasProjectV2ViewAccess]
         if self.action in [
             "create",
@@ -527,6 +527,99 @@ class ProjectV2ViewSet(
                     Cleaned up {count} empty meta projects.
                 """,
             },
+            status=status.HTTP_200_OK,
+        )
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "include_validation",
+                openapi.IN_QUERY,
+                description="If set to true, the response will include validation information for the projects.",
+                type=openapi.TYPE_BOOLEAN,
+            )
+        ],
+        operation_description="List previous tranches of the project.",
+    )
+    @action(methods=["GET"], detail=True)
+    def list_previous_tranches(self, request, *args, **kwargs):
+        """
+        List previous tranches of the project.
+        This is used to get the previous tranche for the project.
+        """
+        project = self.get_object()
+        try:
+            int(project.tranche)
+        except (ValueError, TypeError):
+            previous_tranches = Project.objects.none()
+        else:
+            previous_tranches = (
+                Project.objects.all()
+                .exclude(
+                    id=project.id,
+                )
+                .filter(
+                    meta_project=project.meta_project,
+                    tranche=project.tranche - 1,
+                    submission_status__name="Approved",
+                )
+            )
+            previous_tranches = previous_tranches.select_related(
+                "agency",
+                "country",
+                "project_type",
+                "status",
+                "submission_status",
+                "sector",
+            ).prefetch_related(
+                "coop_agencies",
+                "subsectors",
+                "funds",
+                "comments",
+                "files",
+                "subsectors__sector",
+            )
+
+        if request.query_params.get("include_validation", "false").lower() == "true":
+            # Include validation information for each project
+            data = []
+            for tranche in previous_tranches:
+                serializer_data = ProjectListV2Serializer(tranche).data
+                warnings = []
+                errors = []
+                specific_field = ProjectSpecificFields.objects.filter(
+                    cluster=tranche.cluster,
+                    type=tranche.project_type,
+                    sector=tranche.sector,
+                ).first()
+                errors = []
+                warnings = []
+                if specific_field:
+                    # at least one actual field should be filled
+                    one_field_filled = False
+                    for field in specific_field.fields.filter(is_actual=True):
+                        if getattr(tranche, field.read_field_name) is not None:
+                            one_field_filled = True
+                        else:
+                            warnings.append(
+                                {
+                                    "field": field.read_field_name,
+                                    "message": f"{field.label} is not filled.",
+                                }
+                            )
+                    if not one_field_filled:
+                        errors.append(
+                            {
+                                "field": "fields",
+                                "message": "At least one actual indicator should be filled.",
+                            }
+                        )
+                serializer_data["warnings"] = warnings
+                serializer_data["errors"] = errors
+                data.append(serializer_data)
+            return Response(data, status=status.HTTP_200_OK)
+        return Response(
+            ProjectListV2Serializer(previous_tranches, many=True).data,
             status=status.HTTP_200_OK,
         )
 

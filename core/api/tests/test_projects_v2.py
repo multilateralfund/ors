@@ -13,8 +13,10 @@ from core.api.tests.factories import (
     CountryFactory,
     MeetingFactory,
     ProjectFactory,
+    ProjectFieldFactory,
     ProjectOdsOdpFactory,
     ProjectSectorFactory,
+    ProjectSpecificFieldsFactory,
     ProjectStatusFactory,
     ProjectSubmissionStatusFactory,
     ProjectSubSectorFactory,
@@ -1837,3 +1839,193 @@ class TestAssociateProject:
         project2.refresh_from_db()
         assert project.meta_project == project2.meta_project
         assert project.meta_project.lead_agency == agency
+
+
+class TestProjectListPreviousTranches:
+
+    client = APIClient()
+
+    def _prepare_projects(self, project1, project2, project_approved_status):
+        # Create two projects with different tranches
+        project1.tranche = 2
+        project1.save()
+        project2.tranche = 1
+        project2.submission_status = project_approved_status
+        project2.meta_project = project1.meta_project
+        project2.save()
+
+    def test_project_list_previous_tranches_permissions(
+        self,
+        user,
+        project,
+        project_approved_status,
+        project2,
+        viewer_user,
+        agency_user,
+        agency_inputter_user,
+        secretariat_viewer_user,
+        secretariat_v1_v2_edit_access_user,
+        secretariat_production_v1_v2_edit_access_user,
+        secretariat_v3_edit_access_user,
+        secretariat_production_v3_edit_access_user,
+        admin_user,
+    ):
+        self._prepare_projects(project, project2, project_approved_status)
+
+        def _test_user_permissions(user, expected_response_status):
+            self.client.force_authenticate(user=user)
+            response = self.client.get(
+                reverse("project-v2-list-previous-tranches", args=(project.id,))
+            )
+            assert response.status_code == expected_response_status
+            return response.data
+
+        # test with unauthenticated user
+        self.client.force_authenticate(user=None)
+        response = self.client.get(
+            reverse("project-v2-list-previous-tranches", args=(project.id,))
+        )
+        viewer_user.agency = agency_user.agency
+        viewer_user.save()
+        assert response.status_code == 403
+        _test_user_permissions(user, 403)
+        _test_user_permissions(viewer_user, 200)
+        _test_user_permissions(agency_user, 200)
+        _test_user_permissions(agency_inputter_user, 200)
+        _test_user_permissions(secretariat_viewer_user, 200)
+        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_v3_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_v3_edit_access_user, 200)
+        _test_user_permissions(admin_user, 200)
+
+    def test_project_list_previous_tranches(
+        self,
+        project,
+        project_approved_status,
+        project_draft_status,
+        project2,
+        secretariat_v1_v2_edit_access_user,
+    ):
+        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        self._prepare_projects(project, project2, project_approved_status)
+
+        response = self.client.get(
+            reverse("project-v2-list-previous-tranches", args=(project.id,))
+        )
+        assert response.status_code == 200, response.data
+        assert len(response.data) == 1
+        assert response.data[0]["id"] == project2.id
+        assert response.data[0]["tranche"] == 1
+
+        # test with project2 without meta_project
+        project2.meta_project = None
+        project2.save()
+        response = self.client.get(
+            reverse("project-v2-list-previous-tranches", args=(project.id,))
+        )
+        assert response.status_code == 200, response.data
+        assert len(response.data) == 0
+
+        # test with project2 with different tranche
+        project2.tranche = 3
+        project2.meta_project = project.meta_project
+        project2.save()
+        response = self.client.get(
+            reverse("project-v2-list-previous-tranches", args=(project.id,))
+        )
+        assert response.status_code == 200, response.data
+        assert len(response.data) == 0
+
+        # test with project2 with different submission status
+        project2.submission_status = project_draft_status
+        project2.tranche = 1
+        project2.save()
+        response = self.client.get(
+            reverse("project-v2-list-previous-tranches", args=(project.id,))
+        )
+        assert response.status_code == 200, response.data
+        assert len(response.data) == 0
+
+    def test_project_list_previous_tranches_include_validation(
+        self,
+        project,
+        project_approved_status,
+        project_draft_status,
+        project2,
+        secretariat_v1_v2_edit_access_user,
+    ):
+        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        self._prepare_projects(project, project2, project_approved_status)
+
+        # set project specific fields
+
+        project_specific_fields = ProjectSpecificFieldsFactory.create(
+            cluster=project.cluster,
+            type=project.project_type,
+            sector=project.sector,
+        )
+        field1 = ProjectFieldFactory.create(
+            import_name="number_of_female_technicians_trained",
+            label="Number of female technicians trained",
+            read_field_name="number_of_female_technicians",
+            write_field_name="number_of_female_technicians",
+            table="project",
+            data_type="number",
+            section="Impact",
+        )
+        field2 = ProjectFieldFactory.create(
+            import_name="number_of_female_technicians_trained_actual",
+            label="Number of female technicians trained",
+            read_field_name="number_of_female_technicians_trained_actual",
+            write_field_name="number_of_female_technicians_trained_actual",
+            table="project",
+            data_type="number",
+            section="Impact",
+            is_actual=True,
+        )
+        field3 = ProjectFieldFactory.create(
+            import_name="total_number_of_trainers_trained_actual",
+            label="Total number of trainers trained actual",
+            read_field_name="total_number_of_trainers_trained_actual",
+            write_field_name="total_number_of_trainers_trained_actual",
+            table="project",
+            data_type="number",
+            section="Impact",
+            is_actual=True,
+        )
+        project_specific_fields.fields.add(field1, field2, field3)
+
+        response = self.client.get(
+            reverse("project-v2-list-previous-tranches", args=(project.id,)),
+            {"include_validation": "true"},
+        )
+        assert response.status_code == 200, response.data
+        assert len(response.data) == 1
+        assert response.data[0]["id"] == project2.id
+        assert response.data[0]["tranche"] == 1
+        assert len(response.data[0]["errors"]) == 1
+        assert (
+            response.data[0]["errors"][0]["message"]
+            == "At least one actual indicator should be filled."
+        )
+        assert response.data[0]["warnings"]
+        assert "number_of_female_technicians_trained_actual" in [
+            x["field"] for x in response.data[0]["warnings"]
+        ]
+        assert "total_number_of_trainers_trained_actual" in [
+            x["field"] for x in response.data[0]["warnings"]
+        ]
+
+        project2.total_number_of_trainers_trained_actual = 10
+        project2.save()
+
+        response = self.client.get(
+            reverse("project-v2-list-previous-tranches", args=(project.id,)),
+            {"include_validation": "true"},
+        )
+        assert response.status_code == 200, response.data
+        assert len(response.data) == 1
+        assert response.data[0]["id"] == project2.id
+        assert len(response.data[0]["errors"]) == 0
+        assert len(response.data[0]["warnings"]) == 1
