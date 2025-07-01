@@ -39,7 +39,7 @@ const ProjectOdsOdpTable = ({
     )
     if (index === -1) return fields
 
-    const initialOdsNameField: ProjectSpecificFields = {
+    const initialOdsDisplayNameField: ProjectSpecificFields = {
       ...cloneDeep(fields[index]),
       label: 'Ods display name',
       data_type: 'text',
@@ -47,7 +47,7 @@ const ProjectOdsOdpTable = ({
 
     return [
       ...fields.slice(0, index + 1),
-      initialOdsNameField,
+      initialOdsDisplayNameField,
       ...fields.slice(index + 1),
     ]
   }
