@@ -865,6 +865,7 @@ class ProjectOdsOdp(models.Model):
         GENERAL = "general", "General"
         PRODUCTION = "production", "Production"
         INDIRECT = "indirect", "Indirect"
+        OTHER = "other", "Other type"
 
     ods_substance = models.ForeignKey(
         Substance,

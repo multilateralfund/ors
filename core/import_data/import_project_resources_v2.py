@@ -23,6 +23,17 @@ from core.models.project import Project
 logger = logging.getLogger(__name__)
 
 # pylint: disable=C0301
+
+SUBSTANCE_FIELDS = [
+    "Substance - baseline technology",
+    "Replacement technology/ies",
+    "Phase out (CO2-eq t)",
+    "Phase out (ODP t)",
+    "Phase out (Mt)",
+    "Ods type",
+    "Sort order",
+]
+
 NEW_SUBSECTORS = [
     {
         "SEC": "OTH",
@@ -323,13 +334,23 @@ def import_project_specific_fields(file_path):
             for field_index in range(22, len(row) - 1)
             if row[field_index] != ""
         ]
+
+        # check if ods odp fields are present; if they are all fields should be added,
+        #  regardless of the information in the file
+        if set(field_names) & set(SUBSTANCE_FIELDS):
+            field_names.extend(SUBSTANCE_FIELDS)
+
+        # search for fields that also have an actual field that is not in the file
+        # and add them to the list of fields to be added (for Impact fields)
         actual_field_names = [
             f"{field_name} actual"
             for field_name in field_names
             if field_name in FIELDS_WITH_ACTUAL_VALUES
         ]
         field_names.extend(actual_field_names)
+
         project_fields = ProjectField.objects.filter(import_name__in=field_names)
+
         missing_fields = set(field_names) - set(
             project_fields.values_list("import_name", flat=True)
         )

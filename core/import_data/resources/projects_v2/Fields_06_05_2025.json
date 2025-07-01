@@ -47,8 +47,8 @@
     {
         "IMPORT_NAME": "Substance - baseline technology",
         "LABEL": "Substance - baseline technology",
-        "WRITE_FIELD_NAME": "ods_substance_id",
-        "READ_FIELD_NAME": "ods_substance_name",
+        "WRITE_FIELD_NAME": "ods_display_name",
+        "READ_FIELD_NAME": "ods_display_name",
         "TABLE": "ods_odp",
         "DATA_TYPE": "drop_down",
         "SECTION": "Substance Details"
@@ -87,6 +87,34 @@
         "READ_FIELD_NAME": "phase_out_mt",
         "TABLE": "ods_odp",
         "DATA_TYPE": "decimal",
+        "SECTION": "Substance Details"
+    },
+    {
+        "IMPORT_NAME": "Phase out (Mt)",
+        "LABEL": "Phase out (Mt)",
+        "WRITE_FIELD_NAME": "phase_out_mt",
+        "READ_FIELD_NAME": "phase_out_mt",
+        "TABLE": "ods_odp",
+        "DATA_TYPE": "decimal",
+        "SECTION": "Substance Details"
+    },
+    {
+        "IMPORT_NAME": "Ods type",
+        "LABEL": "Ods type",
+        "WRITE_FIELD_NAME": "ods_type",
+        "READ_FIELD_NAME": "ods_type",
+        "TABLE": "ods_odp",
+        "DATA_TYPE": "drop_down",
+        "SECTION": "Substance Details"
+    },
+    {
+        "IMPORT_NAME": "Sort order",
+        "LABEL": "Sort order",
+        "WRITE_FIELD_NAME": "sort_order",
+        "READ_FIELD_NAME": "sort_order",
+        "HIDDEN": true,
+        "TABLE": "ods_odp",
+        "DATA_TYPE": "number",
         "SECTION": "Substance Details"
     },
     {

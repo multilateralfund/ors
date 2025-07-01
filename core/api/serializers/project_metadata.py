@@ -3,11 +3,14 @@ from rest_framework import serializers
 from core.models import (
     Group,
     Substance,
+    ProjectOdsOdp,
 )
 from core.api.serializers.chemicals import (
     GroupSerializer,
     SubstanceSerializer,
+    BlendSerializer,
 )
+from core.models.blend import Blend
 from core.models.project_metadata import (
     ProjectCluster,
     ProjectField,
@@ -184,11 +187,33 @@ class ProjectFieldSerializer(serializers.ModelSerializer):
 
         if obj.read_field_name == "group":
             return GroupSerializer(Group.objects.all().order_by("name"), many=True).data
+        if obj.read_field_name == "ods_type":
+            return [
+                (
+                    ProjectOdsOdp.ProjectOdsOdpType.OTHER.value,
+                    ProjectOdsOdp.ProjectOdsOdpType.OTHER.label,
+                ),
+                (
+                    ProjectOdsOdp.ProjectOdsOdpType.PRODUCTION.value,
+                    ProjectOdsOdp.ProjectOdsOdpType.PRODUCTION.label,
+                ),
+            ]
+        if obj.read_field_name == "ods_display_name":
+            data = {}
 
-        if obj.read_field_name == "ods_substance_name":
-            return SubstanceSerializer(
+            data["substances"] = SubstanceSerializer(
                 Substance.objects.all().order_by("name"), many=True
             ).data
+            for entry in data["substances"]:
+                entry["baseline_type"] = "substance"
+
+            data["blends"] = BlendSerializer(
+                Blend.objects.all().order_by("name"), many=True
+            ).data
+            for entry in data["blends"]:
+                entry["baseline_type"] = "blend"
+
+            return data
 
         if obj.read_field_name == "is_sme":
             return [
