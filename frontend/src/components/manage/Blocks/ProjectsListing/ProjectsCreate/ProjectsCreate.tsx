@@ -82,7 +82,9 @@ const ProjectsCreate = ({
     getSectionFields(specificFields, 'Impact'),
   ]
   const groupedFields = groupBy(substanceDetailsFields, 'table')
-  const odsOdpFields = groupedFields['ods_odp'] || []
+  const odsOdpFields = (groupedFields['ods_odp'] || []).filter(
+    (field) => field.read_field_name !== 'sort_order',
+  )
 
   const isSpecificInfoTabDisalbed =
     areProjectSpecificTabsDisabled ||

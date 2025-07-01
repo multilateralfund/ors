@@ -59,7 +59,9 @@ const ProjectsEdit = ({
 
   const groupedFields = groupBy(specificFields, 'table')
   const projectFields = groupedFields['project'] || []
-  const odsOdpFields = groupedFields['ods_odp'] || []
+  const odsOdpFields = (groupedFields['ods_odp'] || []).filter(
+    (field) => field.read_field_name !== 'sort_order',
+  )
 
   const fieldsValuesLoaded = useRef<boolean>(false)
 

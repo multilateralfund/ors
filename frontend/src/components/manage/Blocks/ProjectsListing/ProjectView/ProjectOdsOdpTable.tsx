@@ -7,7 +7,7 @@ import {
 } from '../interfaces'
 import { formatNumberColumns, formatOptions } from '../utils'
 
-import { find, map } from 'lodash'
+import { cloneDeep, find, map } from 'lodash'
 import {
   ValueGetterParams,
   ITooltipParams,
@@ -27,11 +27,36 @@ const ProjectOdsOdpTable = ({
     resizable: true,
   }
 
+  const hasCfc = data.some(
+    (entry) => entry.ods_display_name?.toLowerCase() === 'cfc',
+  )
+
+  const getFormattedFields = () => {
+    if (!hasCfc) return fields
+
+    const index = fields.findIndex(
+      (field) => field.write_field_name === 'ods_display_name',
+    )
+    if (index === -1) return fields
+
+    const initialOdsDisplayNameField: ProjectSpecificFields = {
+      ...cloneDeep(fields[index]),
+      label: 'Ods display name',
+      data_type: 'text',
+    }
+
+    return [
+      ...fields.slice(0, index + 1),
+      initialOdsDisplayNameField,
+      ...fields.slice(index + 1),
+    ]
+  }
+
   const getFieldName = (
     params: ITooltipParams | ValueGetterParams,
     options: OptionsType[],
     field: string,
-  ) => find(options, { id: params.data[field] })?.name
+  ) => find(options, { name: params.data[field] })?.name
 
   const fieldColumnMapping = {
     drop_down: (fieldObj: ProjectSpecificFields) => {
@@ -120,7 +145,7 @@ const ProjectOdsOdpTable = ({
       withSeparators={true}
       className="mb-4"
       columnDefs={[
-        ...map(fields, (field) =>
+        ...map(getFormattedFields(), (field) =>
           (
             fieldColumnMapping[field.data_type as FieldType] ??
             fieldColumnMapping['text']

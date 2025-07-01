@@ -15,7 +15,9 @@ const ProjectSpecificInfo = ({ project, specificFields }: ProjectViewProps) => {
 
   const groupedFields = groupBy(substanceFields, 'table')
   const projectFields = groupedFields['project'] || []
-  const odsOdpFields = groupedFields[field] || []
+  const odsOdpFields = (groupedFields[field] || []).filter(
+    (field) => field.read_field_name !== 'sort_order',
+  )
 
   return (
     <>
