@@ -813,7 +813,7 @@ class TestCreateProjects(BaseTest):
             response.data["ods_odp"][0]["phase_out_mt"]
             == data["ods_odp"][0]["phase_out_mt"]
         )
-        assert response.data["ods_odp"][0]["ods_type"] == data["ods_odp"][0]["ods_type"]
+        assert response.data["ods_odp"][0]["ods_type"] == "Production"
         assert (
             response.data["ods_odp"][0]["sort_order"]
             == data["ods_odp"][0]["sort_order"]
@@ -832,7 +832,7 @@ class TestCreateProjects(BaseTest):
             response.data["ods_odp"][1]["phase_out_mt"]
             == data["ods_odp"][1]["phase_out_mt"]
         )
-        assert response.data["ods_odp"][1]["ods_type"] == data["ods_odp"][1]["ods_type"]
+        assert response.data["ods_odp"][1]["ods_type"] == "General"
         assert (
             response.data["ods_odp"][1]["sort_order"]
             == data["ods_odp"][1]["sort_order"]

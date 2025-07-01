@@ -140,6 +140,15 @@ class ProjectSpecificFieldsListView(generics.RetrieveAPIView):
     permission_classes = [HasProjectMetaInfoViewAccess]
     serializer_class = ProjectSpecificFieldsSerializer
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        project_id = self.request.query_params.get("project_id")
+        if project_id is not None:
+            projects_queryset = Project.objects.really_all()
+            project = get_object_or_404(projects_queryset, pk=project_id)
+            context["project_submission_status_name"] = project.submission_status.name
+        return context
+
     def get_object(self):
         project_id = self.request.query_params.get("project_id", None)
         if project_id:

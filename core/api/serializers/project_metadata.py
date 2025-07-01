@@ -150,6 +150,7 @@ class ProjectFieldSerializer(serializers.ModelSerializer):
     """
 
     options = serializers.SerializerMethodField()
+    editable = serializers.SerializerMethodField()
 
     class Meta:
         model = ProjectField
@@ -163,7 +164,22 @@ class ProjectFieldSerializer(serializers.ModelSerializer):
             "section",
             "is_actual",
             "options",
+            "editable",
         ]
+
+    def get_editable(self, obj):
+        """
+        Returns whether the field is editable based on the project type.
+        """
+        project_submission_status_name = self.context.get(
+            "project_submission_status_name"
+        )
+        if not project_submission_status_name or obj.section != "Impact":
+            return None
+        if project_submission_status_name == "Approved":
+            return obj.is_actual
+        else:
+            return not obj.is_actual
 
     def get_options(self, obj):
 
@@ -198,10 +214,27 @@ class ProjectFieldSerializer(serializers.ModelSerializer):
 
 
 class ProjectSpecificFieldsSerializer(serializers.ModelSerializer):
-    fields = ProjectFieldSerializer(many=True, read_only=True)
+    field_objs = serializers.SerializerMethodField()
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        # Rename _fields to fields in output
+        ret["fields"] = ret.pop("field_objs")
+        return ret
+
+    def get_field_objs(self, obj):
+        project_submission_status_name = self.context.get(
+            "project_submission_status_name"
+        )
+        return ProjectFieldSerializer(
+            obj.fields.all(),
+            many=True,
+            read_only=True,
+            context={"project_submission_status_name": project_submission_status_name},
+        ).data
 
     class Meta:
         model = ProjectSpecificFields
         fields = [
-            "fields",
+            "field_objs",
         ]
