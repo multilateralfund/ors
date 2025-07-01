@@ -7,12 +7,15 @@ import {
   SpecificFields,
   ProjectFilesObject,
   ProjectFile,
+  OptionsType,
 } from './interfaces'
 import { formatDecimalValue } from '@ors/helpers'
 
 import {
+  concat,
   filter,
   find,
+  get,
   isArray,
   isNaN,
   isNil,
@@ -81,10 +84,19 @@ export const getIsSaveDisabled = (
   return !canLinkToBp || !(project_type && sector && title)
 }
 
-export const formatOptions = (field: ProjectSpecificFields) =>
-  map(field.options, (option) =>
-    isArray(option) ? { id: option[0], name: option[1] } : option,
-  )
+export const formatOptions = (field: ProjectSpecificFields): OptionsType[] => {
+  const options = field.options as
+    | OptionsType[]
+    | Record<'substances' | 'blends', OptionsType[]>
+
+  return field.write_field_name === 'ods_display_name' && !isArray(options)
+    ? concat(options.substances, options.blends).map((option) => {
+        return { ...option, id: `${option.baseline_type}-${option.id}` }
+      })
+    : map(options, (option) =>
+        isArray(option) ? { id: option[0], name: option[1] } : option,
+      )
+}
 
 export const getSectionFields = (
   fields: ProjectSpecificFields[],
@@ -125,9 +137,19 @@ export const formatSubmitData = (
     specificFieldsAvailable,
   )
 
-  const crtOdsOdpFields = map(projectSpecificFields.ods_odp, (field) =>
-    pick(field, specificFieldsAvailable),
-  )
+  const crtOdsOdpFields = map(projectSpecificFields.ods_odp, (field, index) => {
+    const odsDisplayName = get(field, 'ods_display_name') ?? ''
+    const baselineTechValue = odsDisplayName.split('-')?.[1]
+    const baselineTechObj = odsDisplayName.includes('substance')
+      ? { ods_substance_id: baselineTechValue, ods_blend_id: null }
+      : { ods_substance_id: null, ods_blend_id: baselineTechValue }
+
+    return {
+      ...omit(pick(field, specificFieldsAvailable), 'ods_display_name'),
+      ...baselineTechObj,
+      sort_order: index + 1,
+    }
+  })
 
   return {
     agency: projIdentifiers?.is_lead_agency

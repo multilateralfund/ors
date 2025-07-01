@@ -67,6 +67,7 @@ export interface SpecificFields {
 }
 
 export type OdsOdpFields = {
+  ods_display_name: string
   ods_substance_id: number | null
   odp: string
   ods_replacement: string
@@ -79,7 +80,12 @@ export type OdsOdpFields = {
 
 export type FieldType = 'text' | 'drop_down' | 'decimal' | 'number' | 'boolean'
 
-export type OptionsType = { id: number; name: string; name_alt?: string }
+export type OptionsType = {
+  id: number | string
+  name: string
+  name_alt?: string
+  baseline_type?: string
+}
 export type BooleanOptionsType = { id: boolean; name: string }
 
 export type ProjectSpecificFields = {

@@ -26,7 +26,9 @@ const ProjectSubstanceDetails = ({
 
   const groupedFields = groupBy(sectionFields, 'table')
   const projectFields = groupedFields['project'] || []
-  const odsOdpFields = groupedFields[field] || []
+  const odsOdpFields = (groupedFields[field] || []).filter(
+    (field) => field.read_field_name !== 'sort_order',
+  )
 
   const onAddSubstance = () => {
     const initialOdsOdp = getDefaultValues<OdsOdpFields>(odsOdpFields)
