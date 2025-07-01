@@ -9,7 +9,6 @@ from dataclasses import field
 from django.db.models import Model
 from rest_framework.viewsets import GenericViewSet
 
-from core.api.serializers.project_v2 import ProjectDetailsV2Serializer
 from core.models.country import Country
 from core.models.agency import Agency
 from core.models.project import Project
@@ -24,7 +23,7 @@ from core.models.project_metadata import ProjectSector
 from core.models.project_metadata import ProjectSubSector
 from core.models.project_metadata import ProjectStatus
 
-from core.api.export.base import configure_sheet_print, WriteOnlyBase
+from core.api.export.base import configure_sheet_print
 from core.api.export.projects import ProjectWriter
 from core.api.serializers.project import ProjectExportSerializer
 from core.api.utils import workbook_response, workbook_pdf_response
@@ -89,115 +88,6 @@ class MultiModelSheetDefinition(SheetDefinition):
 
     def get_data(self):
         return list(chain(*(self.data_getter(model) for model in self.models)))
-
-
-class ProjectsV2ProjectExport:
-    wb: openpyxl.Workbook
-    project: Project
-
-    def __init__(self, project_id):
-        self.project = Project.objects.get(pk=project_id)
-        self.setup_workbook()
-
-    def setup_workbook(self):
-        wb = openpyxl.Workbook()
-        # delete default sheet
-        del wb[wb.sheetnames[0]]
-        self.wb = wb
-
-    def build_identifiers(self, data):
-        sheet = self.add_sheet("Identifiers")
-        headers = [
-            {
-                "id": "country",
-                "headerName": "Country",
-            },
-            {
-                "id": "meeting",
-                "headerName": "Meeting number",
-            },
-            {
-                "id": "agency",
-                "headerName": "Agency",
-            },
-            {
-                "id": "cluster",
-                "headerName": "Cluster",
-                "method": lambda r, h: r[h["id"]]["name"],
-                "column_width": WriteOnlyBase.COLUMN_WIDTH * 1.5,
-            },
-            {
-                "id": "submission_status",
-                "headerName": "Submission status",
-            },
-        ]
-        WriteOnlyBase(sheet, headers).write([data])
-
-    def build_cross_cutting(self, data):
-        sheet = self.add_sheet("Cross-cutting")
-        headers = [
-            {
-                "id": "title",
-                "headerName": "Title",
-            },
-            {
-                "id": "description",
-                "headerName": "Description",
-            },
-            {
-                "id": "project_type",
-                "headerName": "Type",
-                "method": lambda r, h: r[h["id"]]["name"],
-            },
-            {
-                "id": "sector",
-                "headerName": "Sector",
-                "method": lambda r, h: r[h["id"]]["name"],
-            },
-            {
-                "id": "subsectors_list",
-                "headerName": "Subsectors",
-                "column_width": WriteOnlyBase.COLUMN_WIDTH * 1.5,
-            },
-            {
-                "id": "is_lvc",
-                "headerName": "LVC/Non-LVC",
-                "method": lambda r, h: r[h["id"]] and "LVC" or "Non-LVC",
-                "column_width": WriteOnlyBase.COLUMN_WIDTH * 1.5,
-            },
-            {
-                "id": "total_fund",
-                "headerName": "Project funding",
-            },
-            {
-                "id": "support_cost_psc",
-                "headerName": "Project support cost",
-            },
-            {
-                "id": "project_start_date",
-                "headerName": "Project start date",
-            },
-            {
-                "id": "project_end_date",
-                "headerName": "Project end date",
-            },
-        ]
-        WriteOnlyBase(sheet, headers).write([data])
-
-    def build_xls(self):
-        serializer = ProjectDetailsV2Serializer(self.project)
-        data = serializer.data
-        self.build_identifiers(data)
-        self.build_cross_cutting(data)
-
-    def add_sheet(self, name):
-        sheet = self.wb.create_sheet(name)
-        configure_sheet_print(sheet, "landscape")
-        return sheet
-
-    def export_xls(self):
-        self.build_xls()
-        return workbook_response(f"Project {self.project.id}", self.wb)
 
 
 class ProjectsV2Export(ProjectsExport):

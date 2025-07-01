@@ -48,7 +48,8 @@ from core.models.project import (
 from core.models.project_metadata import ProjectSubmissionStatus, ProjectSpecificFields
 from core.api.views.utils import log_project_history
 
-from core.api.views.projects_export import ProjectsV2Export, ProjectsV2ProjectExport
+from core.api.views.projects_export import ProjectsV2Export
+from core.api.views.project_v2_export import ProjectsV2ProjectExport
 
 
 class ProjectDestructionTechnologyView(APIView):
@@ -857,7 +858,6 @@ class ProjectV2FileView(
 
 
 class ProjectFilesValidationView(FileCreateMixin, APIView):
-
     permission_classes = [HasProjectV2EditAccess]
 
     @swagger_auto_schema(

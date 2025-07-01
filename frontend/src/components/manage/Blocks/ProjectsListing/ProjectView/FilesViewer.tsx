@@ -55,7 +55,7 @@ export function FilesViewer(props: ProjectDocs) {
       {mode !== 'view' &&
         (!project || project?.submission_status === 'Draft') && (
           <>
-            <div className="mt-5">
+            <div className="mt-5 flex gap-4">
               <Button
                 disabled
                 className="h-9 border border-solid px-3 py-1 leading-none"
@@ -65,6 +65,14 @@ export function FilesViewer(props: ProjectDocs) {
               >
                 Download project template
               </Button>
+              <a
+                className="justify-content-center flex h-9 items-center rounded-lg border border-solid border-white bg-primary px-3 py-1 font-[500] uppercase leading-none text-white no-underline hover:border-mlfs-hlYellow hover:text-mlfs-hlYellow"
+                href={formatApiUrl(
+                  `/api/projects/v2/export?project_id=${project?.id}`,
+                )}
+              >
+                Download Excel
+              </a>
             </div>
             <Divider className="mt-4" />
           </>
