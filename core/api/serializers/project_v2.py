@@ -297,12 +297,26 @@ class ProjectListV2Serializer(ProjectListSerializer):
         return data
 
 
+class ProjectV2OdsOdpListSerializer(ProjectOdsOdpListSerializer):
+    """
+    ProjectOdsOdpListSerializer class
+    """
+
+    ods_type = serializers.SerializerMethodField()
+
+    class Meta(ProjectOdsOdpListSerializer.Meta):
+        fields = ProjectOdsOdpListSerializer.Meta.fields
+
+    def get_ods_type(self, obj):
+        return obj.get_ods_type_display()
+
+
 class ProjectDetailsV2Serializer(ProjectListV2Serializer):
     """
     ProjectSerializer class
     """
 
-    ods_odp = ProjectOdsOdpListSerializer(many=True, read_only=True)
+    ods_odp = ProjectV2OdsOdpListSerializer(many=True, read_only=True)
     country_id = serializers.PrimaryKeyRelatedField(
         required=True, queryset=Country.objects.all().values_list("id", flat=True)
     )
@@ -601,6 +615,40 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
             "tranche",
             "title",
             "total_fund",
+            "total_number_of_technicians_trained_actual",
+            "number_of_female_technicians_trained_actual",
+            "total_number_of_trainers_trained_actual",
+            "number_of_female_trainers_trained_actual",
+            "total_number_of_technicians_certified_actual",
+            "number_of_female_technicians_certified_actual",
+            "number_of_training_institutions_newly_assisted_actual",
+            "number_of_tools_sets_distributed_actual",
+            "total_number_of_customs_officers_trained_actual",
+            "number_of_female_customs_officers_trained_actual",
+            "total_number_of_nou_personnel_supported_actual",
+            "number_of_female_nou_personnel_supported_actual",
+            "number_of_enterprises_assisted_actual",
+            "certification_system_for_technicians_actual",
+            "operation_of_recovery_and_recycling_scheme_actual",
+            "operation_of_reclamation_scheme_actual",
+            "establishment_of_imp_exp_licensing_actual",
+            "establishment_of_quota_systems_actual",
+            "ban_of_equipment_actual",
+            "ban_of_substances_actual",
+            "kwh_year_saved_actual",
+            "meps_developed_domestic_refrigeration_actual",
+            "meps_developed_commercial_refrigeration_actual",
+            "meps_developed_residential_ac_actual",
+            "meps_developed_commercial_ac_actual",
+            "capacity_building_programmes_actual",
+            "ee_demonstration_project_actual",
+            "quantity_controlled_substances_destroyed_mt_actual",
+            "quantity_controlled_substances_destroyed_co2_eq_t_actual",
+            "checklist_regulations_actual",
+            "quantity_hfc_23_by_product_generated_actual",
+            "quantity_hfc_23_by_product_generation_rate_actual",
+            "quantity_hfc_23_by_product_destroyed_actual",
+            "quantity_hfc_23_by_product_emitted_actual",
         ]
         extra_kwargs = {"associate_project_id": {"write_only": True}}
 
