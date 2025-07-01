@@ -178,8 +178,7 @@ class ProjectFieldSerializer(serializers.ModelSerializer):
             return None
         if project_submission_status_name == "Approved":
             return obj.is_actual
-        else:
-            return not obj.is_actual
+        return not obj.is_actual
 
     def get_options(self, obj):
 
