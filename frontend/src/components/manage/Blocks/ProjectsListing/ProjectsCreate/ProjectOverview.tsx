@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 
 import Link from '@ors/components/ui/Link/Link'
 import ErrorAlert from '@ors/components/theme/Alerts/ErrorAlert'
@@ -8,20 +8,15 @@ import {
   SpecificFieldsSectionProps,
   ProjectData,
   TrancheErrors,
-  ProjectTypeApi,
+  TrancheDataType,
 } from '../interfaces'
-import { api } from '@ors/helpers'
 
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5'
 import { Typography, Divider } from '@mui/material'
 import { FaExternalLinkAlt } from 'react-icons/fa'
-import { enqueueSnackbar } from 'notistack'
 import { SlReload } from 'react-icons/sl'
-import { useParams } from 'wouter'
-import { debounce } from 'lodash'
+import { map } from 'lodash'
 import cx from 'classnames'
-
-type TrancheDataType = ProjectTypeApi & { errors: Record<string, string>[] }
 
 const ProjectOverview = ({
   projectData,
@@ -30,73 +25,11 @@ const ProjectOverview = ({
   errors = {},
   hasSubmitted,
   trancheErrors,
-  setTrancheErrors,
 }: SpecificFieldsSectionProps & TrancheErrors) => {
-  const { project_id } = useParams<Record<string, string>>()
-  const { errorText, isError } = trancheErrors
-
   const [open, setOpen] = useState(false)
-  const [tranchesData, setTranchesData] = useState<TrancheDataType[]>([])
 
+  const { errorText, isError, tranchesData } = trancheErrors || {}
   const tranche = projectData.projectSpecificFields?.tranche ?? 0
-
-  const getTrancheErrors = async () => {
-    setTrancheErrors({ errorText: '', isError: false })
-
-    try {
-      const result = await api(
-        `api/projects/v2/${project_id}/list_previous_tranches/?tranche=${tranche}&include_validation=true`,
-        {
-          withStoreCache: false,
-        },
-        false,
-      )
-
-      if (result.length === 0) {
-        setTrancheErrors({
-          errorText:
-            'A new tranche cannot be created unless a previous one exists.',
-          isError: true,
-        })
-      } else {
-        const tranches = result.map((entry: TrancheDataType) => {
-          return { title: entry.title, id: entry.id, errors: entry.errors }
-        })
-        setTranchesData(tranches)
-
-        const trancheError = tranches.find(
-          (tranche: TrancheDataType) => tranche.errors.length > 0,
-        )
-
-        if (trancheError) {
-          setTrancheErrors({
-            errorText: trancheError.errors[0].message,
-            isError: false,
-          })
-        }
-      }
-    } catch (error) {
-      enqueueSnackbar(
-        <>
-          An error occurred during previous tranches validation. Please try
-          again.
-        </>,
-        {
-          variant: 'error',
-        },
-      )
-    }
-  }
-
-  const debouncedGetTrancheErrors = debounce(getTrancheErrors, 0)
-
-  useEffect(() => {
-    if (!project_id || tranche <= 1) {
-      setTrancheErrors({ errorText: '', isError: false })
-    } else {
-      debouncedGetTrancheErrors()
-    }
-  }, [tranche, project_id])
 
   const OpenedTrancheError = () => (
     <div className="transition-opacity flex flex-col gap-6 opacity-100 duration-300 ease-in-out">
@@ -115,7 +48,7 @@ const ProjectOverview = ({
         }
       />
       <div className="flex flex-col">
-        {tranchesData.map((tranche) => {
+        {map(tranchesData, (tranche: TrancheDataType) => {
           const hasErrors = tranche.errors.length > 0
 
           return (

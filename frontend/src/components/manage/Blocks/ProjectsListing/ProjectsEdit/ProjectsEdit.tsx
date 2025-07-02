@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
 
 import ProjectsHeader from '../ProjectSubmission/ProjectsHeader'
 import ProjectsCreate from '../ProjectsCreate/ProjectsCreate'
@@ -20,15 +20,19 @@ import {
   ProjectSpecificFields,
   ProjectTypeApi,
   SpecificFields,
+  TrancheDataType,
   TrancheErrorType,
 } from '../interfaces'
 import {
   initialCrossCuttingFields,
   initialProjectIdentifiers,
 } from '../constants'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { useStore } from '@ors/store'
+import { api } from '@ors/helpers'
 
-import { groupBy, map } from 'lodash'
+import { debounce, groupBy, map } from 'lodash'
+import { enqueueSnackbar } from 'notistack'
 
 const ProjectsEdit = ({
   project,
@@ -39,6 +43,7 @@ const ProjectsEdit = ({
 }) => {
   const project_id = project.id.toString()
 
+  const { canViewProjects } = useContext(PermissionsContext)
   const userSlice = useStore((state) => state.user)
   const { agency_id } = userSlice.data
 
@@ -111,6 +116,7 @@ const ProjectsEdit = ({
   const [trancheErrors, setTrancheErrors] = useState<TrancheErrorType>({
     errorText: '',
     isError: false,
+    tranchesData: [],
   })
 
   const nonFieldsErrors = getNonFieldErrors(errors)
@@ -192,6 +198,66 @@ const ProjectsEdit = ({
     }
   }, [specificFields, fieldsValuesLoaded])
 
+  const tranche = projectData.projectSpecificFields?.tranche ?? 0
+
+  const getTrancheErrors = async () => {
+    setTrancheErrors({ errorText: '', isError: false, tranchesData: [] })
+
+    try {
+      const result = await api(
+        `api/projects/v2/${project_id}/list_previous_tranches/?tranche=${tranche}&include_validation=true`,
+        {
+          withStoreCache: false,
+        },
+        false,
+      )
+
+      if (result.length === 0) {
+        setTrancheErrors({
+          errorText:
+            'A new tranche cannot be created unless a previous one exists.',
+          isError: true,
+          tranchesData: [],
+        })
+      } else {
+        const tranches = result.map((entry: TrancheDataType) => {
+          return { title: entry.title, id: entry.id, errors: entry.errors }
+        })
+        const trancheError = tranches.find(
+          (tranche: TrancheDataType) => tranche.errors.length > 0,
+        )
+
+        if (trancheError) {
+          setTrancheErrors({
+            errorText: trancheError.errors[0].message,
+            isError: false,
+            tranchesData: tranches,
+          })
+        }
+      }
+    } catch (error) {
+      enqueueSnackbar(
+        <>
+          An error occurred during previous tranches validation. Please try
+          again.
+        </>,
+        {
+          variant: 'error',
+        },
+      )
+    }
+  }
+
+  const debouncedGetTrancheErrors = debounce(getTrancheErrors, 0)
+
+  useEffect(() => {
+    if (mode !== 'edit' || tranche <= 1) {
+      setTrancheErrors({ errorText: '', isError: false, tranchesData: [] })
+    } else if (mode === 'edit' && canViewProjects) {
+      debouncedGetTrancheErrors()
+    }
+  }, [tranche, project_id])
+
   return (
     specificFieldsLoaded && (
       <>
@@ -227,7 +293,6 @@ const ProjectsEdit = ({
             hasSubmitted,
             fileErrors,
             trancheErrors,
-            setTrancheErrors,
           }}
         />
         <ProjectSubmissionFooter

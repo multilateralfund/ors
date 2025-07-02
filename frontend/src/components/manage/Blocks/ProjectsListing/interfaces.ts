@@ -216,9 +216,16 @@ export type ProjectIdentifiersSectionProps = {
   mode: string
 }
 
-export type TrancheErrorType = { errorText: string; isError: boolean }
+export type TrancheErrorType = {
+  errorText: string
+  isError: boolean
+  tranchesData: []
+}
 
 export type TrancheErrors = {
-  trancheErrors: TrancheErrorType
-  setTrancheErrors: (errors: TrancheErrorType) => void
+  trancheErrors?: TrancheErrorType
+}
+
+export type TrancheDataType = ProjectTypeApi & {
+  errors: Record<string, string>[]
 }

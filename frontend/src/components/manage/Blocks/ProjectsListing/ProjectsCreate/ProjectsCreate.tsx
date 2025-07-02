@@ -53,7 +53,6 @@ const ProjectsCreate = ({
   project,
   fileErrors,
   trancheErrors,
-  setTrancheErrors,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
@@ -127,7 +126,7 @@ const ProjectsCreate = ({
   const overviewErrors = specificFieldsErrors['Header'] || {}
   const substanceDetailsErrors = specificFieldsErrors['Substance Details'] || {}
   const impactErrors = specificFieldsErrors['Impact'] || {}
-  const { errorText, isError } = trancheErrors
+  const { errorText, isError } = trancheErrors || {}
 
   const fieldsForValidation = map(odsOdpFields, 'write_field_name')
   const odsOdpData = projectSpecificFields?.ods_odp ?? []
@@ -268,7 +267,6 @@ const ProjectsCreate = ({
             substanceDetailsErrors,
             odsOdpErrors,
             trancheErrors,
-            setTrancheErrors,
           }}
         />
       ),

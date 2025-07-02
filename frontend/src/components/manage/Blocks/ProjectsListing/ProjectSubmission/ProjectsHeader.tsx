@@ -41,7 +41,7 @@ const ProjectsHeader = ({
   setOtherErrors: (value: string) => void
   setProjectId: (id: number | null) => void
   specificFields: ProjectSpecificFields[]
-  trancheErrors: TrancheErrorType
+  trancheErrors?: TrancheErrorType
   project?: ProjectTypeApi
   setProjectFiles?: (value: ProjectFile[]) => void
 }) => {
@@ -61,7 +61,7 @@ const ProjectsHeader = ({
     hasMissingRequiredFields ||
     dayjs(project_start_date).isAfter(dayjs(project_end_date)) ||
     hasValidationErrors
-  const isSubmitDisabled = isSaveDisabled || !!trancheErrors.errorText
+  const isSubmitDisabled = isSaveDisabled || !!trancheErrors?.errorText
 
   const {
     title,
