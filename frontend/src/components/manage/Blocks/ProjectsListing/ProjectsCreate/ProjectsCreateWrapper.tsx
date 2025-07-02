@@ -11,6 +11,7 @@ import {
   ProjectFilesObject,
   ProjectSpecificFields,
   ProjectTypeApi,
+  TrancheErrorType,
 } from '../interfaces.ts'
 import {
   initialCrossCuttingFields,
@@ -61,6 +62,10 @@ const ProjectsCreateWrapper = () => {
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
   const [otherErrors, setOtherErrors] = useState<string>('')
+  const [trancheErrors, setTrancheErrors] = useState<TrancheErrorType>({
+    errorText: '',
+    isError: false,
+  })
 
   const nonFieldsErrors = getNonFieldErrors(errors)
 
@@ -83,6 +88,7 @@ const ProjectsCreateWrapper = () => {
           setFileErrors,
           setOtherErrors,
           specificFields,
+          trancheErrors,
         }}
       />
       <ProjectsCreate
@@ -97,6 +103,8 @@ const ProjectsCreateWrapper = () => {
           setErrors,
           hasSubmitted,
           fileErrors,
+          trancheErrors,
+          setTrancheErrors,
         }}
       />
       <ProjectSubmissionFooter

@@ -15,6 +15,7 @@ import {
   ProjectTypeApi,
   ProjectFiles,
   ProjectDataProps,
+  TrancheErrors,
 } from '../interfaces.ts'
 import {
   canGoToSecondStep,
@@ -51,9 +52,12 @@ const ProjectsCreate = ({
   hasSubmitted,
   project,
   fileErrors,
+  trancheErrors,
+  setTrancheErrors,
   ...rest
 }: ProjectDataProps &
-  ProjectFiles & {
+  ProjectFiles &
+  TrancheErrors & {
     specificFields: ProjectSpecificFields[]
     mode: string
     errors: { [key: string]: [] }
@@ -86,7 +90,7 @@ const ProjectsCreate = ({
     (field) => field.read_field_name !== 'sort_order',
   )
 
-  const isSpecificInfoTabDisalbed =
+  const isSpecificInfoTabDisabled =
     areProjectSpecificTabsDisabled ||
     (overviewFields.length < 1 && substanceDetailsFields.length < 1)
   const isImpactTabDisabled =
@@ -123,6 +127,7 @@ const ProjectsCreate = ({
   const overviewErrors = specificFieldsErrors['Header'] || {}
   const substanceDetailsErrors = specificFieldsErrors['Substance Details'] || {}
   const impactErrors = specificFieldsErrors['Impact'] || {}
+  const { errorText, isError } = trancheErrors
 
   const fieldsForValidation = map(odsOdpFields, 'write_field_name')
   const odsOdpData = projectSpecificFields?.ods_odp ?? []
@@ -240,16 +245,17 @@ const ProjectsCreate = ({
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div>Specific Information</div>
-          {!isSpecificInfoTabDisalbed &&
+          {!isSpecificInfoTabDisabled &&
             (hasSectionErrors(overviewErrors) ||
               hasSectionErrors(substanceDetailsErrors) ||
               formattedOdsOdpErrors.length > 0 ||
+              errorText ||
               (mode === 'edit' && odsOdpData.length === 0)) && (
               <SectionErrorIndicator errors={[]} />
             )}
         </div>
       ),
-      disabled: isSpecificInfoTabDisalbed,
+      disabled: isSpecificInfoTabDisabled,
       component: (
         <ProjectSpecificInfoSection
           {...{
@@ -261,6 +267,8 @@ const ProjectsCreate = ({
             overviewErrors,
             substanceDetailsErrors,
             odsOdpErrors,
+            trancheErrors,
+            setTrancheErrors,
           }}
         />
       ),
@@ -278,6 +286,7 @@ const ProjectsCreate = ({
             ]
           : []),
         ...formattedOdsOdpErrors,
+        ...(errorText && isError ? [{ message: errorText }] : []),
       ],
     },
     {

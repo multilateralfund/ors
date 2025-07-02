@@ -362,7 +362,10 @@ export const formatErrors = (errors: { [key: string]: string[] }) =>
 export const getHasNoFiles = (
   files?: ProjectFilesObject,
   projectFiles?: ProjectFile[],
-) => projectFiles?.length === 0 && files?.newFiles?.length === 0
+) =>
+  files?.newFiles?.length === 0 &&
+  (projectFiles?.length === 0 ||
+    files?.deletedFilesIds?.length === projectFiles?.length)
 
 export const getMenus = (permissions: Record<string, boolean>) => {
   const { canViewBp, canUpdateBp } = permissions

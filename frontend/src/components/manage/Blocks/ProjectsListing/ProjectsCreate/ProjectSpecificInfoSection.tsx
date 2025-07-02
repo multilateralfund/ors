@@ -4,6 +4,7 @@ import { SectionTitle } from './ProjectsCreate'
 import {
   ProjectDataProps,
   ProjectSpecificFields,
+  TrancheErrors,
 } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
 
 import { Divider } from '@mui/material'
@@ -14,14 +15,17 @@ const ProjectSpecificInfoSection = ({
   overviewErrors,
   substanceDetailsErrors,
   odsOdpErrors,
+  trancheErrors,
+  setTrancheErrors,
   ...rest
-}: ProjectDataProps & {
-  overviewFields: ProjectSpecificFields[]
-  substanceDetailsFields: ProjectSpecificFields[]
-  overviewErrors?: { [key: string]: string[] }
-  substanceDetailsErrors?: { [key: string]: string[] }
-  odsOdpErrors: { [key: string]: [] }[]
-}) => {
+}: ProjectDataProps &
+  TrancheErrors & {
+    overviewFields: ProjectSpecificFields[]
+    substanceDetailsFields: ProjectSpecificFields[]
+    overviewErrors?: { [key: string]: string[] }
+    substanceDetailsErrors?: { [key: string]: string[] }
+    odsOdpErrors: { [key: string]: [] }[]
+  }) => {
   return (
     <>
       {overviewFields.length > 0 && (
@@ -30,6 +34,7 @@ const ProjectSpecificInfoSection = ({
           <ProjectOverview
             sectionFields={overviewFields}
             errors={overviewErrors}
+            {...{ trancheErrors, setTrancheErrors }}
             {...rest}
           />
         </>

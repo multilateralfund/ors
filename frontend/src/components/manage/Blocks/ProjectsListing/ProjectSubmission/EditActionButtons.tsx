@@ -72,10 +72,17 @@ const EditActionButtons = ({
   const hasOdsOdpErrors =
     odsOdpData.some((data) => Object.values(data).some(checkInvalidValue)) ||
     odsOdpData.length === 0
-  const impactErrors = specificErrors['Impact'] || {}
+
+  const {
+    Header: headerErrors = {},
+    'Substance Details': substanceErrors = {},
+    Impact: impactErrors = {},
+  } = specificErrors
 
   const hasErrors =
     hasSectionErrors(crossCuttingErrors) ||
+    hasSectionErrors(headerErrors) ||
+    hasSectionErrors(substanceErrors) ||
     hasSectionErrors(impactErrors) ||
     hasOdsOdpErrors ||
     getHasNoFiles(files, projectFiles)
@@ -153,6 +160,7 @@ const EditActionButtons = ({
       await handleErrors(error)
     } finally {
       setIsLoading(false)
+      setHasSubmitted(false)
     }
   }
 

@@ -219,7 +219,7 @@ export const TextWidget = <T,>(
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
 
   return (
-    <div>
+    <div className="w-full md:w-auto">
       <Label>{field.label}</Label>
       <TextareaAutosize
         value={value as string}

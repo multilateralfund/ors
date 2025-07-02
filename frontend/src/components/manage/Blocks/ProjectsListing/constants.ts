@@ -47,7 +47,7 @@ export const defaultPropsSimpleField = {
 }
 
 export const textAreaClassname =
-  'min-h-[20px] w-[415px] min-w-[350px] max-w-full rounded-lg border bg-white p-2 pb-10 shadow-none'
+  'min-h-[20px] w-full max-w-[320px] md:max-w-full md:w-[415px] md:min-w-[350px] rounded-lg border bg-white p-2 pb-10 shadow-none'
 
 export const additionalProperties: Record<string, Record<string, unknown>> = {
   ods_substance_id: {

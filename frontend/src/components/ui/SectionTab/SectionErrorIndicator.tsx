@@ -30,7 +30,10 @@ export default function SectionErrorIndicator({
           setShowTooltip(false)
         }}
       >
-        <IoAlertCircle className="rounded-full bg-[#002A3C]" color="#EBFF00" />
+        <IoAlertCircle
+          className="mb-1 rounded-full bg-[#002A3C]"
+          color="#EBFF00"
+        />
       </div>
       <Popover
         anchorEl={anchorEl}

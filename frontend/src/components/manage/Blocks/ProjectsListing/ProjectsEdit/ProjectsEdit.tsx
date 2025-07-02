@@ -20,6 +20,7 @@ import {
   ProjectSpecificFields,
   ProjectTypeApi,
   SpecificFields,
+  TrancheErrorType,
 } from '../interfaces'
 import {
   initialCrossCuttingFields,
@@ -107,6 +108,10 @@ const ProjectsEdit = ({
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
   const [otherErrors, setOtherErrors] = useState<string>('')
+  const [trancheErrors, setTrancheErrors] = useState<TrancheErrorType>({
+    errorText: '',
+    isError: false,
+  })
 
   const nonFieldsErrors = getNonFieldErrors(errors)
 
@@ -204,6 +209,7 @@ const ProjectsEdit = ({
             setOtherErrors,
             setProjectFiles,
             specificFields,
+            trancheErrors,
           }}
         />
         <ProjectsCreate
@@ -220,6 +226,8 @@ const ProjectsEdit = ({
             setErrors,
             hasSubmitted,
             fileErrors,
+            trancheErrors,
+            setTrancheErrors,
           }}
         />
         <ProjectSubmissionFooter

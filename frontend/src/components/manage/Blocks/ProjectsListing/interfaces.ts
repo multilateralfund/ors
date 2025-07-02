@@ -215,3 +215,10 @@ export type ProjectIdentifiersSectionProps = {
   hasSubmitted: boolean
   mode: string
 }
+
+export type TrancheErrorType = { errorText: string; isError: boolean }
+
+export type TrancheErrors = {
+  trancheErrors: TrancheErrorType
+  setTrancheErrors: (errors: TrancheErrorType) => void
+}

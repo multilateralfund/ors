@@ -104,7 +104,7 @@ const ProjectViewWrapper = () => {
             <div className="mt-4 flex gap-3">
               <div className="flex items-center gap-3">
                 <span>Submission status:</span>
-                <span className="rounded border border-solid border-[#002A3C] p-1 font-medium uppercase leading-none text-[#002A3C]">
+                <span className="rounded border border-solid border-[#002A3C] p-1 pb-0.5 font-medium uppercase leading-none text-[#002A3C]">
                   {submission_status}
                 </span>
               </div>
@@ -113,7 +113,7 @@ const ProjectViewWrapper = () => {
 
               <div className="flex items-center gap-3">
                 <span>Project status:</span>
-                <span className="rounded border border-solid border-[#002A3C] p-1 font-medium uppercase leading-none text-[#002A3C]">
+                <span className="rounded border border-solid border-[#002A3C] p-1 pb-0.5 font-medium uppercase leading-none text-[#002A3C]">
                   {status}
                 </span>
               </div>
