@@ -541,7 +541,11 @@ class ProjectV2ViewSet(
             openapi.Parameter(
                 "tranche",
                 openapi.IN_QUERY,
-                description="The new tranche number given to the project. Used to filter previous tranches. If not provided, tranche will be used from the project.",
+                description="""
+                    The new tranche number given to the project.
+                    Used to filter previous tranches.
+                    If not provided, tranche will be used from the project.
+                """,
                 type=openapi.TYPE_INTEGER,
             ),
         ],
