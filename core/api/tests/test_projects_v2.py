@@ -1918,6 +1918,16 @@ class TestProjectListPreviousTranches:
         assert response.data[0]["id"] == project2.id
         assert response.data[0]["tranche"] == 1
 
+        # test with tranche query parameter
+        response = self.client.get(
+            reverse("project-v2-list-previous-tranches", args=(project.id,)),
+            {"tranche": 2},
+        )
+        assert response.status_code == 200, response.data
+        assert len(response.data) == 1
+        assert response.data[0]["id"] == project2.id
+        assert response.data[0]["tranche"] == 1
+
         # test with project2 without meta_project
         project2.meta_project = None
         project2.save()

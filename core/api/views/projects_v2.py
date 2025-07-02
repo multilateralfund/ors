@@ -537,7 +537,13 @@ class ProjectV2ViewSet(
                 openapi.IN_QUERY,
                 description="If set to true, the response will include validation information for the projects.",
                 type=openapi.TYPE_BOOLEAN,
-            )
+            ),
+            openapi.Parameter(
+                "tranche",
+                openapi.IN_QUERY,
+                description="The new tranche number given to the project. Used to filter previous tranches. If not provided, tranche will be used from the project.",
+                type=openapi.TYPE_INTEGER,
+            ),
         ],
         operation_description="List previous tranches of the project.",
     )
@@ -548,8 +554,13 @@ class ProjectV2ViewSet(
         This is used to get the previous tranche for the project.
         """
         project = self.get_object()
+        if not request.query_params.get("tranche"):
+            # If tranche is not provided, use the tranche from the project
+            tranche = project.tranche
+        else:
+            tranche = request.query_params.get("tranche")
         try:
-            int(project.tranche)
+            tranche = int(tranche)
         except (ValueError, TypeError):
             previous_tranches = Project.objects.none()
         else:
@@ -560,7 +571,7 @@ class ProjectV2ViewSet(
                 )
                 .filter(
                     meta_project=project.meta_project,
-                    tranche=project.tranche - 1,
+                    tranche=tranche - 1,
                     submission_status__name="Approved",
                 )
             )
@@ -583,14 +594,14 @@ class ProjectV2ViewSet(
         if request.query_params.get("include_validation", "false").lower() == "true":
             # Include validation information for each project
             data = []
-            for tranche in previous_tranches:
-                serializer_data = ProjectListV2Serializer(tranche).data
+            for previous_tranche in previous_tranches:
+                serializer_data = ProjectListV2Serializer(previous_tranche).data
                 warnings = []
                 errors = []
                 specific_field = ProjectSpecificFields.objects.filter(
-                    cluster=tranche.cluster,
-                    type=tranche.project_type,
-                    sector=tranche.sector,
+                    cluster=previous_tranche.cluster,
+                    type=previous_tranche.project_type,
+                    sector=previous_tranche.sector,
                 ).first()
                 errors = []
                 warnings = []
@@ -598,7 +609,7 @@ class ProjectV2ViewSet(
                     # at least one actual field should be filled
                     one_field_filled = False
                     for field in specific_field.fields.filter(is_actual=True):
-                        if getattr(tranche, field.read_field_name) is not None:
+                        if getattr(previous_tranche, field.read_field_name) is not None:
                             one_field_filled = True
                         else:
                             warnings.append(
