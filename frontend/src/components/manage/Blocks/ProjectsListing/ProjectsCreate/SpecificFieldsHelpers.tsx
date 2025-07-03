@@ -176,11 +176,12 @@ export const AutocompleteWidget = <T,>(
     : value
 
   return (
-    <div>
+    <div className="flex h-full flex-col justify-between">
       <Label>{field.label}</Label>
       <Field
         widget="autocomplete"
         options={options}
+        disabled={field.editable === false}
         value={formattedValue}
         onChange={(_: React.SyntheticEvent, value) =>
           changeHandler[field.data_type]<T, SpecificFields>(
@@ -236,6 +237,7 @@ export const TextWidget = <T,>(
       <Label>{field.label}</Label>
       <TextareaAutosize
         value={value as string}
+        disabled={field.editable === false}
         onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
           changeHandler[field.data_type]<T, SpecificFields>(
             event,
@@ -277,11 +279,12 @@ const NumberWidget = <T,>(
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
 
   return (
-    <div>
+    <div className="flex h-full flex-col justify-between">
       <Label>{field.label}</Label>
       <SimpleInput
         id={value as string}
         value={value ?? ''}
+        disabled={field.editable === false}
         onChange={(value) =>
           changeHandler[field.data_type]<T, SpecificFields>(
             value,
@@ -327,6 +330,7 @@ const BooleanWidget = <T,>(
       <Checkbox
         className="pb-1 pl-2 pt-0"
         checked={value as boolean}
+        disabled={field.editable === false}
         onChange={(_: React.SyntheticEvent, value) =>
           changeHandler[field.data_type]<T, SpecificFields>(
             value,

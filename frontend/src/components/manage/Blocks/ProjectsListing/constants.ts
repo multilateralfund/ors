@@ -107,6 +107,27 @@ export const validationFieldsPairs: [
   ],
   [
     'number_of_female_nou_personnel_supported',
-    'total_number_of_nou_personnnel_supported',
+    'total_number_of_nou_personnel_supported',
+  ],
+
+  [
+    'number_of_female_technicians_trained_actual',
+    'total_number_of_technicians_trained_actual',
+  ],
+  [
+    'number_of_female_trainers_trained_actual',
+    'total_number_of_trainers_trained_actual',
+  ],
+  [
+    'number_of_female_technicians_certified_actual',
+    'total_number_of_technicians_certified_actual',
+  ],
+  [
+    'number_of_female_customs_officers_trained_actual',
+    'total_number_of_customs_officers_trained_actual',
+  ],
+  [
+    'number_of_female_nou_personnel_supported_actual',
+    'total_number_of_nou_personnel_supported_actual',
   ],
 ]
