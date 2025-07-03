@@ -221,7 +221,12 @@ const ProjectsEdit = ({
         })
       } else {
         const tranches = result.map((entry: TrancheDataType) => {
-          return { title: entry.title, id: entry.id, errors: entry.errors }
+          return {
+            title: entry.title,
+            id: entry.id,
+            errors: entry.errors,
+            warnings: entry.warnings,
+          }
         })
         const trancheError = tranches.find(
           (tranche: TrancheDataType) => tranche.errors.length > 0,
@@ -230,6 +235,12 @@ const ProjectsEdit = ({
         if (trancheError) {
           setTrancheErrors({
             errorText: trancheError.errors[0].message,
+            isError: false,
+            tranchesData: tranches,
+          })
+        } else {
+          setTrancheErrors({
+            errorText: '',
             isError: false,
             tranchesData: tranches,
           })
@@ -293,6 +304,7 @@ const ProjectsEdit = ({
             hasSubmitted,
             fileErrors,
             trancheErrors,
+            getTrancheErrors,
           }}
         />
         <ProjectSubmissionFooter

@@ -25,6 +25,7 @@ const ProjectOverview = ({
   errors = {},
   hasSubmitted,
   trancheErrors,
+  getTrancheErrors,
 }: SpecificFieldsSectionProps & TrancheErrors) => {
   const [open, setOpen] = useState(false)
 
@@ -75,7 +76,14 @@ const ProjectOverview = ({
             </div>
           )
         })}
-        <div className="mt-4 flex items-center gap-2 text-lg normal-case leading-none">
+        <div
+          className="mt-4 flex items-center gap-2 text-lg normal-case leading-none"
+          onClick={() => {
+            if (getTrancheErrors) {
+              getTrancheErrors()
+            }
+          }}
+        >
           <SlReload />
           Refresh status
         </div>
@@ -104,6 +112,7 @@ const ProjectOverview = ({
             setProjectData,
             field,
             errors,
+            !!errorText,
             hasSubmitted,
           ),
         )}

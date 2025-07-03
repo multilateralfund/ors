@@ -3,6 +3,7 @@ import { useContext, useState } from 'react'
 import Loading from '@ors/components/theme/Loading/Loading'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import Link from '@ors/components/ui/Link/Link'
+import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import { useEditLocalStorageConsolidated } from './useLocalStorageConsolidated'
 import { RedirectToBpList } from '../RedirectToBpList'
 import { tableColumns } from '../constants'
@@ -158,16 +159,10 @@ export default function BPHeaderEditConsolidated({
   const headerActions = (
     <div className="flex items-center">
       <div className="container flex w-full justify-between gap-x-4 px-0">
-        <Link
-          className="border border-solid border-primary bg-white px-4 py-2 text-primary shadow-none hover:bg-primary hover:text-white"
-          color="primary"
+        <CancelLinkButton
+          title="Cancel"
           href={`/business-plans/list/${activeTab === 0 ? 'report-info' : 'activities'}/${period}`}
-          size="large"
-          variant="contained"
-          button
-        >
-          Cancel
-        </Link>
+        />
         {canUpdateBp && (
           <Button
             className="px-4 py-2 shadow-none hover:text-white"

@@ -1,8 +1,8 @@
 import { ButtonHTMLAttributes } from 'react'
 
-import cx from 'classnames'
-
 import Link, { LinkProps } from '@ors/components/ui/Link/Link'
+
+import cx from 'classnames'
 
 import {
   IoAddCircle,
@@ -144,6 +144,28 @@ function DeleteButton(props: DeleteButtonProps) {
   )
 }
 
+interface CancelLinkButtonProps extends BaseButtonProps {
+  title: string
+  href: string
+}
+
+const CancelLinkButton = (props: CancelLinkButtonProps) => {
+  const { title, href } = props
+
+  return (
+    <Link
+      className="border border-solid border-primary bg-white px-4 py-2 text-primary shadow-none hover:bg-primary hover:text-white"
+      color="primary"
+      href={href}
+      size="large"
+      variant="contained"
+      button
+    >
+      {title}
+    </Link>
+  )
+}
+
 export {
   AddButton,
   BaseButton,
@@ -152,4 +174,5 @@ export {
   DownloadLink,
   PrintButton,
   SubmitButton,
+  CancelLinkButton,
 }

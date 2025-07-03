@@ -135,6 +135,7 @@ const ProjectsHeader = ({
                 files,
                 setProjectFiles,
                 setProjectTitle,
+                trancheErrors,
               }}
               {...rest}
             />

@@ -16,6 +16,7 @@ const ProjectSpecificInfoSection = ({
   substanceDetailsErrors,
   odsOdpErrors,
   trancheErrors,
+  getTrancheErrors,
   ...rest
 }: ProjectDataProps &
   TrancheErrors & {
@@ -34,6 +35,7 @@ const ProjectSpecificInfoSection = ({
             sectionFields={overviewFields}
             errors={overviewErrors}
             trancheErrors={trancheErrors}
+            getTrancheErrors={getTrancheErrors}
             {...rest}
           />
         </>

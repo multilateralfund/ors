@@ -69,6 +69,7 @@ const ProjectSubstanceDetails = ({
           setProjectData,
           field,
           errors,
+          false,
           hasSubmitted,
         ),
       )}
@@ -83,6 +84,7 @@ const ProjectSubstanceDetails = ({
                     setProjectData,
                     odsOdpField,
                     odsOdpErrors,
+                    false,
                     hasSubmitted,
                     sectionIdentifier,
                     field,

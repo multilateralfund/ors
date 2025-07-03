@@ -1,7 +1,9 @@
 import { useContext, useMemo, useState } from 'react'
 
 import Link from '@ors/components/ui/Link/Link'
+import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
+import SubmitTranchesWarningModal from './SubmitTranchesWarningModal'
 import { IncreaseVersionButton } from '../HelperComponents'
 import {
   checkInvalidValue,
@@ -11,7 +13,13 @@ import {
   getSpecificFieldsErrors,
   hasSectionErrors,
 } from '../utils'
-import { ProjectFile, ProjectTypeApi, SubmitActionButtons } from '../interfaces'
+import {
+  ProjectFile,
+  ProjectTypeApi,
+  SubmitActionButtons,
+  TrancheDataType,
+  TrancheErrorType,
+} from '../interfaces'
 import { api, uploadFiles } from '@ors/helpers'
 
 import { Button, Modal, Typography, Box } from '@mui/material'
@@ -36,19 +44,26 @@ const EditActionButtons = ({
   setErrors,
   setProjectFiles,
   specificFields,
+  trancheErrors,
 }: SubmitActionButtons & {
   setProjectTitle: (title: string) => void
   project: ProjectTypeApi
   isSubmitDisabled: boolean
   projectFiles?: ProjectFile[]
   setProjectFiles: (value: ProjectFile[]) => void
+  trancheErrors?: TrancheErrorType
 }) => {
   const [_, setLocation] = useLocation()
 
   const { canUpdateProjects, canSubmitProjects, canRecommendProjects } =
     useContext(PermissionsContext)
 
+  const showSubmitTranchesWarningModal = trancheErrors?.tranchesData?.find(
+    (tranche: TrancheDataType) => tranche.warnings.length > 0,
+  )
+
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isTrancheWarningOpen, setIsTrancheWarningOpen] = useState(false)
 
   const { id, submission_status } = project
   const { crossCuttingFields, projectSpecificFields } = projectData
@@ -179,6 +194,14 @@ const EditActionButtons = ({
     }
   }
 
+  const onSubmitProject = () => {
+    if (showSubmitTranchesWarningModal) {
+      setIsTrancheWarningOpen(true)
+    } else {
+      submitProject()
+    }
+  }
+
   const recommendProject = async () => {
     await editProject()
     try {
@@ -212,16 +235,7 @@ const EditActionButtons = ({
 
   return (
     <div className="container flex w-full flex-wrap gap-x-3 gap-y-2 px-0">
-      <Link
-        className="border border-solid border-primary bg-white px-4 py-2 text-primary shadow-none hover:bg-primary hover:text-white"
-        color="primary"
-        href={`/projects-listing/${id}`}
-        size="large"
-        variant="contained"
-        button
-      >
-        Close
-      </Link>
+      <CancelLinkButton title="Close" href={`/projects-listing/${id}`} />
       {canUpdateProjects && (
         <Button
           className={cx('px-4 py-2 shadow-none', {
@@ -248,7 +262,7 @@ const EditActionButtons = ({
       {canSubmitProjects && lowerCase(submission_status) === 'draft' && (
         <IncreaseVersionButton
           title="Submit project"
-          onSubmit={submitProject}
+          onSubmit={onSubmitProject}
           isDisabled={disableSubmit}
         />
       )}
@@ -315,6 +329,11 @@ const EditActionButtons = ({
             </div>
           </Box>
         </Modal>
+      )}
+      {showSubmitTranchesWarningModal && isTrancheWarningOpen && (
+        <SubmitTranchesWarningModal
+          {...{ submitProject, isTrancheWarningOpen, setIsTrancheWarningOpen }}
+        />
       )}
     </div>
   )

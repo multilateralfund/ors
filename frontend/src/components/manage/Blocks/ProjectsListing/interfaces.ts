@@ -224,8 +224,10 @@ export type TrancheErrorType = {
 
 export type TrancheErrors = {
   trancheErrors?: TrancheErrorType
+  getTrancheErrors?: () => void
 }
 
 export type TrancheDataType = ProjectTypeApi & {
   errors: Record<string, string>[]
+  warnings: Record<string, string>[]
 }

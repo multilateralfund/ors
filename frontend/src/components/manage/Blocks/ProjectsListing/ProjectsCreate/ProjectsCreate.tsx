@@ -53,6 +53,7 @@ const ProjectsCreate = ({
   project,
   fileErrors,
   trancheErrors,
+  getTrancheErrors,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
@@ -267,6 +268,7 @@ const ProjectsCreate = ({
             substanceDetailsErrors,
             odsOdpErrors,
             trancheErrors,
+            getTrancheErrors,
           }}
         />
       ),
