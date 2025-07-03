@@ -622,6 +622,45 @@ def project2(
 
 
 @pytest.fixture
+def project3(
+    country_ro,
+    agency,
+    project_type,
+    project_status,
+    project_draft_status,
+    sector,
+    subsector,
+    meeting,
+    project_cluster_kpp,
+    meta_project_mya,
+):
+    code = get_project_sub_code(
+        country_ro, project_cluster_kpp, agency, project_type, sector, meeting, None
+    )
+    project = ProjectFactory.create(
+        meta_project=meta_project_mya,
+        title="Karma to Burn",
+        country=country_ro,
+        agency=agency,
+        project_type=project_type,
+        status=project_status,
+        submission_status=project_draft_status,
+        sector=sector,
+        subsectors=[subsector],
+        meeting=meeting,
+        substance_type="HCFC",
+        cluster=project_cluster_kpp,
+        fund_disbursed=123.1,
+        total_fund_transferred=123.1,
+        date_approved="2019-03-14",
+        serial_number=1,
+        code=code,
+    )
+
+    return project
+
+
+@pytest.fixture
 def project_rbm_measure(project, rbm_measure):
     return ProjectRBMMeasureFactory(project=project, measure=rbm_measure, value=10)
 

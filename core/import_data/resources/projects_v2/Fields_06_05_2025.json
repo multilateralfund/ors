@@ -446,7 +446,8 @@
         "READ_FIELD_NAME": "ban_of_substances_actual",
         "TABLE": "project",
         "DATA_TYPE": "number",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "IS_ACTUAL": true
     },
     {
         "IMPORT_NAME": "kWh/year saved",

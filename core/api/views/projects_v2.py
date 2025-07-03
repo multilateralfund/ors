@@ -4,6 +4,7 @@ import urllib
 
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
@@ -13,6 +14,7 @@ from rest_framework.response import Response
 from rest_framework import parsers
 from rest_framework.decorators import action
 from rest_framework.views import APIView
+
 
 from core.api.filters.project import ProjectFilter
 from core.api.permissions import (
@@ -118,7 +120,13 @@ class ProjectV2ViewSet(
 
     @property
     def permission_classes(self):
-        if self.action in ["list", "retrieve", "export", "list_previous_tranches"]:
+        if self.action in [
+            "list",
+            "retrieve",
+            "export",
+            "list_previous_tranches",
+            "list_associated_projects",
+        ]:
             return [HasProjectV2ViewAccess]
         if self.action in [
             "create",
@@ -127,7 +135,6 @@ class ProjectV2ViewSet(
         ]:
             return [HasProjectV2EditAccess]
         if self.action in [
-            "validate_projects_for_submission",
             "submit",
         ]:
             return [HasProjectV2SubmitAccess]
@@ -271,10 +278,11 @@ class ProjectV2ViewSet(
     )
     def submit(self, request, *args, **kwargs):
         """
-        Submit the project for review.
-        The project is checked for validity (check version, status and if the required fields are filled).
-        If the project is valid, it is marked as submitted and the version is increased, creating an
-        archived version of the project.
+        Submits the project and its associated projects for review.
+        The projects are checked for validity (check version, status and if the required fields are filled).
+        Previous tranches of the projects (if they exist) are checked if at least one actual field is filled.
+        If all the projects are valid, they are marked as submitted and the version is increased, creating
+        archived versions of the projects.
         The related entries (ProjectOdsOdp, ProjectFund, ProjectRBMMeasure,
         ProjectProgressReport, SubmissionAmount, ProjectComment, ProjectFile)
         are also duplicated and linked to the archived project.
@@ -282,76 +290,50 @@ class ProjectV2ViewSet(
         to inform them about the new submission. (TO BE IMPLEMENTED)
         """
         project = self.get_object()
-        serializer = ProjectV2SubmitSerializer(project, data={}, partial=True)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        project.submission_status = ProjectSubmissionStatus.objects.get(
-            name="Submitted"
-        )
-        project.save()
-        project.increase_version(request.user)
-        log_project_history(project, request.user, HISTORY_DESCRIPTION_SUBMIT_V1)
-        # TODO: Implement MLFS notifications
-        return Response(
-            ProjectDetailsV2Serializer(project).data,
-            status=status.HTTP_200_OK,
+
+        associated_projects = Project.objects.filter(
+            meta_project=project.meta_project,
+            submission_status=project.submission_status,
         )
 
-    @action(methods=["POST"], detail=False)
-    @swagger_auto_schema(
-        operation_description="""
-        Receives a list of project ids and checks if they are valid for submission.
-        A project is valid for submission if it is in 'Draft' status and version 1.
-        Also, it checks if the required fields are filled and there is at least one
-        file attached to the project.
-        """,
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                "project_ids": openapi.Schema(
-                    type=openapi.TYPE_ARRAY,
-                    items=openapi.Items(type=openapi.TYPE_INTEGER),
-                ),
-            },
-            required=["project_ids", "lead_agency_id"],
-        ),
-        responses={
-            status.HTTP_200_OK: ProjectDetailsV2Serializer,
-            status.HTTP_400_BAD_REQUEST: "Bad request",
-        },
-    )
-    def validate_projects_for_submission(self, request, *args, **kwargs):
-        """
-        Receives a list of project ids and checks if they are valid for submission.
-        A project is valid for submission if it is in 'Draft' status and version 1.
-        Also, it checks if the required fields are filled and there is at least one
-        file attached to the project.
-        """
-        projects = (
-            Project.objects.really_all()
-            .filter(id__in=self.request.data.get("project_ids", []))
-            .order_by("id")
+        associated_projects = sorted(
+            associated_projects, key=lambda p: 0 if p.id == project.id else 1
         )
+
+        has_errors = False
         data = []
-        for project in projects:
-            serializer = ProjectV2SubmitSerializer(project, data={}, partial=True)
+        for associated_project in associated_projects:
+            project_data = {}
+            project_data["id"] = associated_project.id
+            project_data["title"] = associated_project.title
+            project_data["errors"] = {}
+            serializer = ProjectV2SubmitSerializer(
+                associated_project, data={}, partial=True
+            )
             if not serializer.is_valid():
-                data.append(
-                    {
-                        "id": project.id,
-                        "valid": False,
-                        "errors": serializer.errors,
-                    }
+                has_errors = True
+                project_data["errors"] = serializer.errors
+            data.append(project_data)
+        if has_errors:
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+        submission_status = ProjectSubmissionStatus.objects.get(name="Submitted")
+        with transaction.atomic():
+            for associated_project in associated_projects:
+                associated_project.submission_status = submission_status
+                associated_project.save()
+                if associated_project.version == 1:
+                    # Some v2 projects may be returned to Draft and for those the
+                    # version should not be increased
+                    associated_project.increase_version(request.user)
+                log_project_history(
+                    associated_project, request.user, HISTORY_DESCRIPTION_SUBMIT_V1
                 )
-            else:
-                data.append(
-                    {
-                        "id": project.id,
-                        "valid": True,
-                        "errors": {},
-                    }
-                )
-        return Response(data, status=status.HTTP_200_OK)
+
+        return Response(
+            ProjectListV2Serializer(associated_projects, many=True).data,
+            status=status.HTTP_200_OK,
+        )
 
     @action(methods=["POST"], detail=True)
     @swagger_auto_schema(
@@ -635,6 +617,71 @@ class ProjectV2ViewSet(
             return Response(data, status=status.HTTP_200_OK)
         return Response(
             ProjectListV2Serializer(previous_tranches, many=True).data,
+            status=status.HTTP_200_OK,
+        )
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "include_validation",
+                openapi.IN_QUERY,
+                description="If set to true, the response will include validation information for the projects.",
+                type=openapi.TYPE_BOOLEAN,
+            ),
+            openapi.Parameter(
+                "include_project",
+                openapi.IN_QUERY,
+                description="If set to true, the response will include the project details.",
+                type=openapi.TYPE_BOOLEAN,
+            )
+        ],
+        operation_description="""
+            List all projects associated with the meta project
+            and the same submission status as the current project.
+            This is used to get all projects associated with the meta project.
+        """,
+    )
+    @action(methods=["GET"], detail=True)
+    def list_associated_projects(self, request, *args, **kwargs):
+        """
+        List all projects associated with the meta project
+        and the same submission status as the current project.
+        This is used to get all projects associated with the meta project.
+        """
+        project = self.get_object()
+        if not project.meta_project:
+            return Project.objects.none()
+        associated_projects = Project.objects.filter(
+            meta_project=project.meta_project,
+            submission_status=project.submission_status,
+        )
+        if not request.query_params.get("include_project", "false").lower() == "true":
+            associated_projects = associated_projects.exclude(
+                id=project.id,
+            )
+        else:
+            # If include_project is true, set project as the first item in the list
+            associated_projects = sorted(
+                associated_projects, key=lambda p: 0 if p.id == project.id else 1
+            )
+
+        if request.query_params.get("include_validation", "false").lower() == "true":
+            # Include validation information for each project
+            data = []
+            for associated_project in associated_projects:
+                project_data = ProjectListV2Serializer(associated_project).data
+                serializer = ProjectV2SubmitSerializer(
+                    associated_project, data={}, partial=True
+                )
+                if not serializer.is_valid():
+                    project_data["errors"] = serializer.errors
+                else:
+                    project_data["errors"] = {}
+                data.append(project_data)
+
+            return Response(data, status=status.HTTP_200_OK)
+        return Response(
+            ProjectListV2Serializer(associated_projects, many=True).data,
             status=status.HTTP_200_OK,
         )
 

@@ -122,11 +122,11 @@
 | projects/v2/                                  |  POST   | has_project_v2_edit_access     | 
 | projects/v2/associate_projects/               |  POST   | has_project_v2_associate_projects_access | 
 | projects/v2/export/                           |  GET    | has_project_v2_view_access     | 
-| projects/v2/validate_projects_for_submission/ |  POST   | has_project_v2_submit_access   | Entries filtered for 'can_view_only_own_agency'.
 | projects/v2/{id}/                             |  GET    | has_project_v2_view_access     | Entries filtered for 'can_view_only_own_agency'.
 | projects/v2/{id}/                             |  PUT    | has_project_v2_edit_access     | Entries filtered for 'can_view_only_own_agency'.
 | projects/v2/{id}/                             |  PATCH  | has_project_v2_edit_access     | Entries filtered for 'can_view_only_own_agency'.
 | projects/v2/{id}/list_previous_tranches/      |  GET    | has_project_v2_view_access     | Entries filtered for 'can_view_only_own_agency'.
+| projects/v2/{id}/list_associated_projects/    |  GET    | has_project_v2_view_access     | Entries filtered for 'can_view_only_own_agency'.
 | projects/v2/{id}/recommend/                   |  POST   | has_project_v2_recommend_projects_access | Entries filtered for 'can_view_only_own_agency'.
 | projects/v2/{id}/recommend/                   |  POST   | has_project_v2_recommend_projects_access |
 | projects/v2/{id}/send_back_to_draft/          |  POST   | has_project_v2_recommend_projects_access |
