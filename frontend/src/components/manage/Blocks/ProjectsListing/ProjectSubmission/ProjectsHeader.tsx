@@ -17,6 +17,7 @@ import {
   ProjectFilesObject,
   ProjectSpecificFields,
   ProjectTypeApi,
+  TrancheErrorType,
 } from '../interfaces'
 
 import { CircularProgress } from '@mui/material'
@@ -28,6 +29,7 @@ const ProjectsHeader = ({
   project,
   files,
   setProjectFiles = () => {},
+  trancheErrors,
   ...rest
 }: {
   projectData: ProjectData
@@ -39,6 +41,7 @@ const ProjectsHeader = ({
   setOtherErrors: (value: string) => void
   setProjectId: (id: number | null) => void
   specificFields: ProjectSpecificFields[]
+  trancheErrors?: TrancheErrorType
   project?: ProjectTypeApi
   setProjectFiles?: (value: ProjectFile[]) => void
 }) => {
@@ -58,7 +61,7 @@ const ProjectsHeader = ({
     hasMissingRequiredFields ||
     dayjs(project_start_date).isAfter(dayjs(project_end_date)) ||
     hasValidationErrors
-  const isSubmitDisabled = isSaveDisabled
+  const isSubmitDisabled = isSaveDisabled || !!trancheErrors?.errorText
 
   const [projectTitle, setProjectTitle] = useState<string>(
     project?.title ?? 'N/A',
@@ -120,6 +123,7 @@ const ProjectsHeader = ({
                 files,
                 setProjectFiles,
                 setProjectTitle,
+                trancheErrors,
               }}
               {...rest}
             />

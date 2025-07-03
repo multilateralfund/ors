@@ -8,6 +8,7 @@ import {
 } from '../interfaces'
 
 import { IoTrash } from 'react-icons/io5'
+import { Divider } from '@mui/material'
 import { groupBy } from 'lodash'
 
 const ProjectSubstanceDetails = ({
@@ -68,33 +69,38 @@ const ProjectSubstanceDetails = ({
           setProjectData,
           field,
           errors,
+          false,
           hasSubmitted,
         ),
       )}
       <div className="flex flex-col gap-y-2">
-        <div className="flex flex-col flex-wrap gap-x-20 gap-y-7">
+        <div className="flex flex-col flex-wrap gap-x-20 gap-y-10">
           {odsOdpData.map((_, index) => (
-            <div className="align-center flex flex-row flex-wrap gap-12">
-              {odsOdpFields.map((odsOdpField) =>
-                widgets[odsOdpField.data_type]<ProjectData>(
-                  projectData,
-                  setProjectData,
-                  odsOdpField,
-                  odsOdpErrors,
-                  hasSubmitted,
-                  sectionIdentifier,
-                  field,
-                  index,
-                ),
-              )}
-              <IoTrash
-                className="mt-12 min-h-[16px] min-w-[16px] cursor-pointer fill-gray-400"
-                size={16}
-                onClick={() => {
-                  onRemoveOdsOdp(index)
-                }}
-              />
-            </div>
+            <>
+              <div className="align-center flex flex-row flex-wrap gap-x-12 gap-y-4">
+                {odsOdpFields.map((odsOdpField) =>
+                  widgets[odsOdpField.data_type]<ProjectData>(
+                    projectData,
+                    setProjectData,
+                    odsOdpField,
+                    odsOdpErrors,
+                    false,
+                    hasSubmitted,
+                    sectionIdentifier,
+                    field,
+                    index,
+                  ),
+                )}
+                <IoTrash
+                  className="mt-12 min-h-[16px] min-w-[16px] cursor-pointer fill-gray-400"
+                  size={16}
+                  onClick={() => {
+                    onRemoveOdsOdp(index)
+                  }}
+                />
+              </div>
+              {index !== odsOdpData.length - 1 && <Divider />}
+            </>
           ))}
         </div>
       </div>

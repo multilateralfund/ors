@@ -140,3 +140,9 @@ export const VersionsList = ({
     )
   )
 }
+
+export const ErrorTag = () => (
+  <div className="h-[17px] rounded bg-[#801F00] p-1 pt-0.5 text-sm leading-none text-white">
+    Incomplete
+  </div>
+)

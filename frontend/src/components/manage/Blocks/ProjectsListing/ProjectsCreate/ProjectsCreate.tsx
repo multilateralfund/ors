@@ -15,6 +15,7 @@ import {
   ProjectTypeApi,
   ProjectFiles,
   ProjectDataProps,
+  TrancheErrors,
 } from '../interfaces.ts'
 import {
   canGoToSecondStep,
@@ -51,9 +52,12 @@ const ProjectsCreate = ({
   hasSubmitted,
   project,
   fileErrors,
+  trancheErrors,
+  getTrancheErrors,
   ...rest
 }: ProjectDataProps &
-  ProjectFiles & {
+  ProjectFiles &
+  TrancheErrors & {
     specificFields: ProjectSpecificFields[]
     mode: string
     errors: { [key: string]: [] }
@@ -86,7 +90,7 @@ const ProjectsCreate = ({
     (field) => field.read_field_name !== 'sort_order',
   )
 
-  const isSpecificInfoTabDisalbed =
+  const isSpecificInfoTabDisabled =
     areProjectSpecificTabsDisabled ||
     (overviewFields.length < 1 && substanceDetailsFields.length < 1)
   const isImpactTabDisabled =
@@ -123,6 +127,7 @@ const ProjectsCreate = ({
   const overviewErrors = specificFieldsErrors['Header'] || {}
   const substanceDetailsErrors = specificFieldsErrors['Substance Details'] || {}
   const impactErrors = specificFieldsErrors['Impact'] || {}
+  const { errorText, isError } = trancheErrors || {}
 
   const fieldsForValidation = map(odsOdpFields, 'write_field_name')
   const odsOdpData = projectSpecificFields?.ods_odp ?? []
@@ -184,7 +189,7 @@ const ProjectsCreate = ({
       ariaControls: 'project-identifiers',
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
-          <div>Identifiers</div>
+          <div className="leading-tight">Identifiers</div>
           {(hasSectionErrors(projIdentifiersErrors) ||
             hasSectionErrors(bpErrors)) && (
             <SectionErrorIndicator errors={[]} />
@@ -214,7 +219,7 @@ const ProjectsCreate = ({
       ariaControls: 'project-cross-cutting-section',
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
-          <div>Cross-Cutting</div>
+          <div className="leading-tight">Cross-Cutting</div>
           {!areNextSectionsDisabled && hasSectionErrors(crossCuttingErrors) && (
             <SectionErrorIndicator errors={[]} />
           )}
@@ -239,17 +244,18 @@ const ProjectsCreate = ({
       ariaControls: 'project-specific-info-section',
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
-          <div>Specific Information</div>
-          {!isSpecificInfoTabDisalbed &&
+          <div className="leading-tight">Specific Information</div>
+          {!isSpecificInfoTabDisabled &&
             (hasSectionErrors(overviewErrors) ||
               hasSectionErrors(substanceDetailsErrors) ||
               formattedOdsOdpErrors.length > 0 ||
+              errorText ||
               (mode === 'edit' && odsOdpData.length === 0)) && (
               <SectionErrorIndicator errors={[]} />
             )}
         </div>
       ),
-      disabled: isSpecificInfoTabDisalbed,
+      disabled: isSpecificInfoTabDisabled,
       component: (
         <ProjectSpecificInfoSection
           {...{
@@ -261,6 +267,8 @@ const ProjectsCreate = ({
             overviewErrors,
             substanceDetailsErrors,
             odsOdpErrors,
+            trancheErrors,
+            getTrancheErrors,
           }}
         />
       ),
@@ -278,6 +286,7 @@ const ProjectsCreate = ({
             ]
           : []),
         ...formattedOdsOdpErrors,
+        ...(errorText && isError ? [{ message: errorText }] : []),
       ],
     },
     {
@@ -286,7 +295,7 @@ const ProjectsCreate = ({
       ariaControls: 'project-impact-section',
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
-          <div>Impact</div>
+          <div className="leading-tight">Impact</div>
           {!isImpactTabDisabled && hasSectionErrors(impactErrors) && (
             <SectionErrorIndicator errors={[]} />
           )}
@@ -308,7 +317,7 @@ const ProjectsCreate = ({
       ariaControls: 'project-documentation-section',
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
-          <div>Documentation</div>
+          <div className="leading-tight">Documentation</div>
           {!areNextSectionsDisabled && (fileErrors || hasNoFiles) ? (
             <SectionErrorIndicator errors={[]} />
           ) : null}
@@ -346,7 +355,7 @@ const ProjectsCreate = ({
             ariaControls: 'project-history-section',
             label: (
               <div className="relative flex items-center justify-between gap-x-2">
-                <div>History</div>
+                <div className="leading-tight">History</div>
               </div>
             ),
             disabled: false,
