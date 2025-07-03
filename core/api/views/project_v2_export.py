@@ -1,11 +1,14 @@
-import openpyxl
+from typing import List
 
+import openpyxl
 
 from core.api.serializers.project_v2 import ProjectDetailsV2Serializer
 from core.api.serializers.business_plan import BPActivityExportSerializer
 
 from core.models.project import Project
 from core.models.business_plan import BPActivity
+from core.models.project_metadata import ProjectSpecificFields
+from core.models.project_metadata import ProjectField
 
 from core.api.export.base import configure_sheet_print, WriteOnlyBase
 from core.api.export.business_plan import BPActivitiesWriter
@@ -95,8 +98,13 @@ def get_headers_cross_cutting():
     ]
 
 
-def get_headers_specific_information():
-    return []
+def get_headers_specific_information(fields: List[ProjectField]):
+    result = []
+
+    for field in fields:
+        result.append({"id": field.read_field_name, "headerName": field.label})
+
+    return result
 
 
 def get_headers_impact():
@@ -149,7 +157,19 @@ class ProjectsV2ProjectExport:
 
     def build_specific_information(self, data):
         sheet = self.add_sheet("Specific information")
-        WriteOnlyBase(sheet, get_headers_specific_information()).write([data])
+
+        project_specific_fields_obj = ProjectSpecificFields.objects.filter(
+            cluster=self.project.cluster,
+            type=self.project.project_type,
+            sector=self.project.sector,
+        ).first()
+
+        fields = project_specific_fields_obj.fields.all()
+
+        WriteOnlyBase(
+            sheet,
+            get_headers_specific_information(fields),
+        ).write([data])
 
     def build_impact(self, data):
         sheet = self.add_sheet("Impact")
