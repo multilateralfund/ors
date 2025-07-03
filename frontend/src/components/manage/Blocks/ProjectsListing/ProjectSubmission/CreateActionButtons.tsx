@@ -1,6 +1,6 @@
 import { useContext } from 'react'
 
-import Link from '@ors/components/ui/Link/Link'
+import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { SubmitButton } from '../HelperComponents'
 import { formatSubmitData } from '../utils'
@@ -92,16 +92,7 @@ const CreateActionButtons = ({
 
   return (
     <div className="flex flex-wrap items-center gap-2.5">
-      <Link
-        className="border border-solid border-primary bg-white px-4 py-2 text-primary shadow-none hover:bg-primary hover:text-white"
-        color="primary"
-        href="/projects-listing"
-        size="large"
-        variant="contained"
-        button
-      >
-        Cancel
-      </Link>
+      <CancelLinkButton title="Cancel" href="/projects-listing" />
       {canUpdateProjects && (
         <SubmitButton
           title="Create project (draft)"

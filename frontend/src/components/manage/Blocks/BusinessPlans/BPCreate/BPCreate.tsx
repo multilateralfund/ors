@@ -22,7 +22,7 @@ import { BPEditBaseTable } from '@ors/components/manage/Blocks/BusinessPlans/BPE
 import { FilesViewer } from '@ors/components/manage/Blocks/Section/ReportInfo/FilesViewer'
 import SimpleField from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleField'
 import Field from '@ors/components/manage/Form/Field'
-import Link from '@ors/components/ui/Link/Link'
+import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import VersionHistoryList from '@ors/components/ui/VersionDetails/VersionHistoryList'
 import { api } from '@ors/helpers'
 import { useStore } from '@ors/store'
@@ -108,16 +108,7 @@ function BPCreateHeader(props: PropsWithChildren) {
       <div className="ml-auto">
         <div className="flex items-center">
           <div className="container flex w-full justify-between gap-x-4 px-0">
-            <Link
-              className="border border-solid border-primary bg-white px-4 py-2 text-primary shadow-none hover:bg-primary hover:text-white"
-              color="primary"
-              href={`/business-plans/`}
-              size="large"
-              variant="contained"
-              button
-            >
-              Cancel
-            </Link>
+            <CancelLinkButton title="Cancel" href="/business-plans" />
             <Button
               className="px-4 py-2 shadow-none hover:text-white"
               size="large"

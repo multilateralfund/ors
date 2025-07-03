@@ -16,6 +16,7 @@ import {
   ProjectFilesObject,
   ProjectSpecificFields,
   ProjectTypeApi,
+  TrancheErrorType,
 } from '../interfaces'
 
 import { CircularProgress } from '@mui/material'
@@ -28,6 +29,7 @@ const ProjectsHeader = ({
   project,
   files,
   setProjectFiles = () => {},
+  trancheErrors,
   ...rest
 }: {
   projectData: ProjectData
@@ -39,6 +41,7 @@ const ProjectsHeader = ({
   setOtherErrors: (value: string) => void
   setProjectId: (id: number | null) => void
   specificFields: ProjectSpecificFields[]
+  trancheErrors?: TrancheErrorType
   project?: ProjectTypeApi
   setProjectFiles?: (value: ProjectFile[]) => void
 }) => {
@@ -58,7 +61,7 @@ const ProjectsHeader = ({
     hasMissingRequiredFields ||
     dayjs(project_start_date).isAfter(dayjs(project_end_date)) ||
     hasValidationErrors
-  const isSubmitDisabled = isSaveDisabled
+  const isSubmitDisabled = isSaveDisabled || !!trancheErrors?.errorText
 
   const {
     title,
@@ -132,6 +135,7 @@ const ProjectsHeader = ({
                 files,
                 setProjectFiles,
                 setProjectTitle,
+                trancheErrors,
               }}
               {...rest}
             />
@@ -145,7 +149,7 @@ const ProjectsHeader = ({
         <div className="mt-4 flex gap-3">
           <div className="flex items-center gap-3">
             <span>Submission status:</span>
-            <span className="rounded border border-solid border-[#002A3C] p-1 font-medium uppercase leading-none text-[#002A3C]">
+            <span className="rounded border border-solid border-[#002A3C] p-1 pb-0.5 font-medium uppercase leading-none text-[#002A3C]">
               {project?.submission_status}
             </span>
           </div>
@@ -154,7 +158,7 @@ const ProjectsHeader = ({
 
           <div className="flex items-center gap-3">
             <span>Project status:</span>
-            <span className="rounded border border-solid border-[#002A3C] p-1 font-medium uppercase leading-none text-[#002A3C]">
+            <span className="rounded border border-solid border-[#002A3C] p-1 pb-0.5 font-medium uppercase leading-none text-[#002A3C]">
               {project?.status}
             </span>
           </div>

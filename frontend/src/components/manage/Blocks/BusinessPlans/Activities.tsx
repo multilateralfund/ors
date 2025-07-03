@@ -188,7 +188,7 @@ function OpenActivity({
   return (
     <div className="transition-opacity flex w-full flex-col gap-4 opacity-100 duration-300 ease-in-out">
       <h4 className="m-0 flex items-center gap-4 border-0 border-b border-solid border-primary pb-4">
-        <div className="flex h-5 w-5 items-center justify-center rounded-full border border-solid border-primary bg-mlfs-hlYellowTint">
+        <div className="flex h-5 w-5 items-center justify-center rounded-full border border-solid border-primary bg-[#EBFF00]">
           <IoChevronDown className="text-primary" size={14} />
         </div>
         {activity.title}
@@ -331,7 +331,7 @@ function ClosedActivity({
   return (
     <div className="transition-opacity flex w-full flex-col-reverse justify-between gap-4 opacity-100 duration-300 ease-in-out lg:flex-row">
       <div className="flex flex-wrap items-center gap-4">
-        <div className="flex h-5 w-5 items-center justify-center rounded-full border border-solid border-primary bg-mlfs-hlYellowTint">
+        <div className="flex h-5 w-5 items-center justify-center rounded-full border border-solid border-primary bg-[#EBFF00]">
           <IoChevronUp className="text-primary" size={14} />
         </div>
         <span className="flex items-center gap-2">
