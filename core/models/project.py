@@ -506,7 +506,7 @@ class Project(models.Model):
         blank=True,
         help_text="Number of female customs officers trained (actual)",
     )
-    total_number_of_nou_personnnel_supported = models.IntegerField(
+    total_number_of_nou_personnel_supported = models.IntegerField(
         null=True,
         blank=True,
         help_text="Total number of NOU personnel supported (planned)",

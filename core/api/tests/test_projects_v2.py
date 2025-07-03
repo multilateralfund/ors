@@ -56,6 +56,14 @@ def _project_file(project, test_file):
     return project_file
 
 
+@pytest.fixture(name="project2_file")
+def _project2_file(project2, test_file):
+    project_file = ProjectFile(project=project2)
+    project_file.file.save("scott.txt", test_file.open())
+    project_file.save()
+    return project_file
+
+
 @pytest.fixture(name="test_file1")
 def _test_file1(tmp_path):
     p = tmp_path / "project_file1.docx"
@@ -286,7 +294,7 @@ def setup_project_create(
         "number_of_tools_sets_distributed": 4,
         "total_number_of_customs_officers_trained": 23,
         "number_of_female_customs_officers_trained": 2,
-        "total_number_of_nou_personnnel_supported": 2,
+        "total_number_of_nou_personnel_supported": 2,
         "number_of_female_nou_personnel_supported": 43,
         "number_of_enterprises_assisted": 43,
         "certification_system_for_technicians": True,
@@ -714,7 +722,7 @@ class TestCreateProjects(BaseTest):
             "number_of_tools_sets_distributed",
             "total_number_of_customs_officers_trained",
             "number_of_female_customs_officers_trained",
-            "total_number_of_nou_personnnel_supported",
+            "total_number_of_nou_personnel_supported",
             "number_of_female_nou_personnel_supported",
             "number_of_enterprises_assisted",
             "certification_system_for_technicians",
@@ -1399,92 +1407,113 @@ class TestProjectVersioning:
         assert project.submission_status.name == "Submitted"
         assert project.version == 2
 
-    def test_validate_projects_for_submission_permissions(
+    def test_submit_project_with_associated_projects(
         self,
-        agency_inputter_user,
         project,
-        user,
-        viewer_user,
-        agency_user,
-        secretariat_viewer_user,
-        secretariat_v1_v2_edit_access_user,
-        secretariat_production_v1_v2_edit_access_user,
-        secretariat_v3_edit_access_user,
-        secretariat_production_v3_edit_access_user,
-        admin_user,
-    ):
-        url = reverse("project-v2-validate-projects-for-submission")
-        data = {
-            "project_ids": [project.id],
-        }
-
-        def _test_user_permissions(user, expected_response_status):
-            self.client.force_authenticate(user=user)
-            response = self.client.post(url, data, format="json")
-            assert response.status_code == expected_response_status
-            return response.data
-
-        # test with unauthenticated user
-        self.client.force_authenticate(user=None)
-        response = self.client.post(url, data, format="json")
-        assert response.status_code == 403
-        assert response.data == {
-            "detail": "Authentication credentials were not provided."
-        }
-        _test_user_permissions(user, 403)
-        _test_user_permissions(viewer_user, 403)
-        _test_user_permissions(agency_inputter_user, 403)
-        _test_user_permissions(agency_user, 200)
-        _test_user_permissions(secretariat_viewer_user, 403)
-        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
-        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
-        _test_user_permissions(secretariat_v3_edit_access_user, 403)
-        _test_user_permissions(secretariat_production_v3_edit_access_user, 403)
-        _test_user_permissions(admin_user, 200)
-
-    def test_validate_projects_for_submission(
-        self,
-        agency_user,
         project_draft_status,
+        project2,
+        project3,
+        project_approved_status,
         project_file,
-        project_cluster_kip,
-        test_file1,
+        project2_file,
+        agency_user,
     ):
-        project1 = ProjectFactory.create(
-            agency=agency_user.agency,
-            cluster=project_cluster_kip,
-            submission_status=project_draft_status,
-            is_lvc=False,
-            total_fund=2340000,
-            support_cost_psc=23,
-            project_start_date="2023-10-01",
-            project_end_date="2024-09-30",
-        )
-        project_file = ProjectFile(project=project1)
-        project_file.file.save("scott.txt", test_file1.open())
-        project_file.save()
-        project2 = ProjectFactory.create(
-            agency=agency_user.agency,
-            submission_status=project_draft_status,
-            is_lvc=False,
-            project_start_date="2023-10-01",
-            project_end_date="2024-09-30",
-        )
-
         self.client.force_authenticate(user=agency_user)
-        url = reverse("project-v2-validate-projects-for-submission")
-        data = {
-            "project_ids": [project1.id, project2.id],
-        }
-        response = self.client.post(url, data, format="json")
-        assert response.status_code == 200, response.data
-        assert response.data[0]["id"] == project1.id
-        assert response.data[0]["valid"] is True
-        assert response.data[0]["errors"] == {}
+        url = reverse("project-v2-submit", args=(project2.id,))
 
-        assert response.data[1]["id"] == project2.id
-        assert response.data[1]["valid"] is False
-        assert len(response.data[1]["errors"]) == 4
+        # setup projects for submission
+        project2.submission_status = project_draft_status
+        project2.save()
+        project.submission_status = project_draft_status
+        project.meta_project = project2.meta_project
+        project.save()
+        project.tranche = 2
+        project.save()
+        project3.submission_status = project_approved_status
+        project3.tranche = 1
+        project3.meta_project = project.meta_project
+        project3.save()
+
+        project_specific_fields = ProjectSpecificFieldsFactory.create(
+            cluster=project3.cluster,
+            type=project3.project_type,
+            sector=project3.sector,
+        )
+        field = ProjectFieldFactory.create(
+            import_name="number_of_female_technicians_trained_actual",
+            label="Number of female technicians trained",
+            read_field_name="number_of_female_technicians_trained_actual",
+            write_field_name="number_of_female_technicians_trained_actual",
+            table="project",
+            data_type="number",
+            section="Impact",
+            is_actual=True,
+        )
+        project_specific_fields.fields.add(field)
+
+        # submit project and expect failure due to missing required fields
+        response = self.client.post(url)
+        assert response.status_code == 400
+        assert len(response.data) == 2
+
+        # check project 2
+        assert response.data[0]["id"] == project2.id
+        assert len(response.data[0]["errors"]) == 5
+
+        # check project 1
+        assert response.data[1]["id"] == project.id
+        assert len(response.data[1]["errors"]) == 6
+        assert "previous_tranches" in response.data[1]["errors"]
+
+        # set required fields
+        project.is_lvc = False
+        project.project_start_date = "2023-10-01"
+        project.project_end_date = "2024-09-30"
+        project.total_fund = 2340000
+        project.support_cost_psc = 23
+        project.save()
+
+        project3.number_of_female_technicians_trained_actual = 3
+        project3.save()
+
+        # set required fields
+        project2.is_lvc = False
+        project2.project_start_date = "2023-10-01"
+        project2.project_end_date = "2024-09-30"
+        project2.total_fund = 2340000
+        project2.support_cost_psc = 23
+        project2.save()
+
+        url = reverse("project-v2-submit", args=(project.id,))
+
+        # submit project
+        response = self.client.post(url)
+        assert response.status_code == 200
+
+        # check if the project is archived
+        archived_project = Project.objects.really_all().get(latest_project=project)
+        assert archived_project.submission_status.name == "Submitted"
+        assert archived_project.version == 1
+
+        archived_project2 = Project.objects.really_all().get(latest_project=project2)
+        assert archived_project2.submission_status.name == "Submitted"
+        assert archived_project2.version == 1
+
+        # check if the project file is archived
+        assert ProjectFile.objects.filter(project=project).count() == 0
+        assert ProjectFile.objects.filter(project=archived_project).count() == 1
+
+        assert ProjectFile.objects.filter(project=project2).count() == 0
+        assert ProjectFile.objects.filter(project=archived_project2).count() == 1
+
+        # check project
+        project.refresh_from_db()
+        project2.refresh_from_db()
+        assert project.submission_status.name == "Submitted"
+        assert project.version == 2
+
+        assert project2.submission_status.name == "Submitted"
+        assert project2.version == 2
 
     def test_recommend_permissions(
         self,
@@ -2039,3 +2068,150 @@ class TestProjectListPreviousTranches:
         assert response.data[0]["id"] == project2.id
         assert len(response.data[0]["errors"]) == 0
         assert len(response.data[0]["warnings"]) == 1
+
+
+class TestProjectListAssocitatedProjects:
+
+    client = APIClient()
+
+    def _prepare_projects(self, project1, project2, project_draft_status):
+        # Create two projects with different tranches
+        project1.submission_status = project_draft_status
+        project1.save()
+        project1.submission_status = project_draft_status
+        project1.meta_project = project2.meta_project
+        project1.save()
+
+    def test_list_associated_projects_permissions(
+        self,
+        user,
+        project,
+        project_draft_status,
+        project2,
+        viewer_user,
+        agency_user,
+        agency_inputter_user,
+        secretariat_viewer_user,
+        secretariat_v1_v2_edit_access_user,
+        secretariat_production_v1_v2_edit_access_user,
+        secretariat_v3_edit_access_user,
+        secretariat_production_v3_edit_access_user,
+        admin_user,
+    ):
+        self._prepare_projects(project, project2, project_draft_status)
+
+        def _test_user_permissions(user, expected_response_status):
+            self.client.force_authenticate(user=user)
+            response = self.client.get(
+                reverse("project-v2-list-associated-projects", args=(project2.id,))
+            )
+            assert response.status_code == expected_response_status
+            return response.data
+
+        # test with unauthenticated user
+        self.client.force_authenticate(user=None)
+        response = self.client.get(
+            reverse("project-v2-list-associated-projects", args=(project2.id,))
+        )
+        viewer_user.agency = agency_user.agency
+        viewer_user.save()
+        assert response.status_code == 403
+        _test_user_permissions(user, 403)
+        _test_user_permissions(viewer_user, 200)
+        _test_user_permissions(agency_user, 200)
+        _test_user_permissions(agency_inputter_user, 200)
+        _test_user_permissions(secretariat_viewer_user, 200)
+        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_v3_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_v3_edit_access_user, 200)
+        _test_user_permissions(admin_user, 200)
+
+    def test_list_associated_projects(
+        self,
+        project,
+        project_draft_status,
+        project2,
+        project3,
+        project_approved_status,
+        secretariat_v1_v2_edit_access_user,
+    ):
+        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+        self._prepare_projects(project, project2, project_draft_status)
+
+        project.tranche = 2
+        project.save()
+        project3.submission_status = project_approved_status
+        project3.save()
+
+        response = self.client.get(
+            reverse("project-v2-list-associated-projects", args=(project2.id,))
+        )
+        assert response.status_code == 200, response.data
+        assert len(response.data) == 1
+        assert response.data[0]["id"] == project.id
+
+        response = self.client.get(
+            reverse("project-v2-list-associated-projects", args=(project2.id,)),
+            {"include_project": "true"},
+        )
+
+        assert response.status_code == 200, response.data
+        assert len(response.data) == 2
+        assert response.data[0]["id"] == project2.id
+        assert response.data[1]["id"] == project.id
+
+        response = self.client.get(
+            reverse("project-v2-list-associated-projects", args=(project2.id,)),
+            {"include_project": "true", "include_validation": "true"},
+        )
+
+        # test validation with expecting previous_tranche for project
+        assert response.status_code == 200, response.data
+        assert len(response.data) == 2
+        assert response.data[0]["id"] == project2.id
+        assert response.data[1]["id"] == project.id
+        assert len(response.data[0]["errors"]) == 6
+        assert len(response.data[1]["errors"]) == 7
+        assert response.data[1]["errors"]["tranche"][0] == (
+            "Project must have at least one previous tranche entry."
+        )
+
+        # test validation with expecting previous_tranche for project2
+        project3.submission_status = project_approved_status
+        project3.tranche = 1
+        project3.meta_project = project.meta_project
+        project3.save()
+
+        project_specific_fields = ProjectSpecificFieldsFactory.create(
+            cluster=project3.cluster,
+            type=project3.project_type,
+            sector=project3.sector,
+        )
+        field = ProjectFieldFactory.create(
+            import_name="number_of_female_technicians_trained_actual",
+            label="Number of female technicians trained",
+            read_field_name="number_of_female_technicians_trained_actual",
+            write_field_name="number_of_female_technicians_trained_actual",
+            table="project",
+            data_type="number",
+            section="Impact",
+            is_actual=True,
+        )
+        project_specific_fields.fields.add(field)
+
+        response = self.client.get(
+            reverse("project-v2-list-associated-projects", args=(project2.id,)),
+            {"include_project": "true", "include_validation": "true"},
+        )
+
+        # test validation with expecting previous_tranche for project
+        assert response.status_code == 200, response.data
+        assert len(response.data) == 2
+        assert response.data[0]["id"] == project2.id
+        assert response.data[1]["id"] == project.id
+        assert len(response.data[0]["errors"]) == 6
+        assert len(response.data[1]["errors"]) == 7
+        assert response.data[1]["errors"]["previous_tranches"][0] == (
+            f"Previous tranche {project3.title}({project3.id}): At least one actual indicator should be filled."
+        )

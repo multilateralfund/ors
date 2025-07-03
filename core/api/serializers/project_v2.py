@@ -206,7 +206,7 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "number_of_tools_sets_distributed",
             "total_number_of_customs_officers_trained",
             "number_of_female_customs_officers_trained",
-            "total_number_of_nou_personnnel_supported",
+            "total_number_of_nou_personnel_supported",
             "number_of_female_nou_personnel_supported",
             "number_of_enterprises_assisted",
             "certification_system_for_technicians",
@@ -576,7 +576,7 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
             "number_of_tools_sets_distributed",
             "total_number_of_customs_officers_trained",
             "number_of_female_customs_officers_trained",
-            "total_number_of_nou_personnnel_supported",
+            "total_number_of_nou_personnel_supported",
             "number_of_female_nou_personnel_supported",
             "number_of_enterprises_assisted",
             "certification_system_for_technicians",
@@ -825,7 +825,8 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
 
         if project_specific_fields_obj:
             for field in project_specific_fields_obj.fields.filter(
-                section__in=["Header", "Substance Details", "Impact"]
+                section__in=["Header", "Substance Details", "Impact"],
+                is_actual=False,
             ):
                 if field.table == "ods_odp":
                     project_ods_odp_entries = self.instance.ods_odp.all()
@@ -850,21 +851,59 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
             )
         return errors
 
+    def validate_previous_tranches(self, errors):
+        """
+        Validate that the project's previous tranches have at least one actual field completed
+        """
+        try:
+            tranche = int(self.instance.tranche)
+        except (ValueError, TypeError):
+            return errors
+        previous_tranches = Project.objects.filter(
+            meta_project=self.instance.meta_project,
+            tranche=tranche - 1,
+            submission_status__name="Approved",
+        )
+        if self.instance.tranche > 1 > len(previous_tranches):
+            errors["tranche"] = "Project must have at least one previous tranche entry."
+        for previous_tranche in previous_tranches:
+            specific_field_entry = ProjectSpecificFields.objects.filter(
+                cluster=previous_tranche.cluster,
+                type=previous_tranche.project_type,
+                sector=previous_tranche.sector,
+            ).first()
+            if specific_field_entry:
+                one_field_filled = False
+                for field in specific_field_entry.fields.filter(is_actual=True):
+                    if getattr(previous_tranche, field.read_field_name) is not None:
+                        one_field_filled = True
+
+                if not one_field_filled:
+                    if "previous_tranches" not in errors:
+                        errors["previous_tranches"] = []
+                    errors["previous_tranches"].append(
+                        f"Previous tranche {previous_tranche.title}({previous_tranche.id}): "
+                        "At least one actual indicator should be filled."
+                    )
+        return errors
+
     def validate(self, attrs):
         """
         Validate the project submission
         """
         errors = {}
-        if self.instance.version != 1:
-            errors["version"] = "Project can only be submitted if it is version 1."
         if self.instance.submission_status.name != "Draft":
             errors["submission_status"] = (
                 "Project can only be submitted if its status is Draft."
             )
 
         self.validate_required_fields(errors)
+
+        self.validate_previous_tranches(errors)
+
         if errors:
             raise serializers.ValidationError(errors)
+
         return attrs
 
 
