@@ -46,6 +46,7 @@ const ProjectViewWrapper = () => {
         project_type_id,
         sector_id,
         setSpecificFields,
+        project_id,
       )
     } else setSpecificFields([])
   }, [cluster_id, project_type_id, sector_id])

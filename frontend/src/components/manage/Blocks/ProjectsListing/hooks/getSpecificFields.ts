@@ -8,12 +8,17 @@ export const fetchSpecificFields = async (
   project_type: number,
   sector: number,
   setFields: Dispatch<SetStateAction<ProjectSpecificFields[]>>,
+  project_id?: string | null,
   setSpecificFieldsLoaded?: (isLoaded: boolean) => void,
 ) => {
+  let url = `/api/project-cluster/${cluster}/type/${project_type}/sector/${sector}/fields/`
+
+  if (project_id) {
+    url += `?project_id=${project_id}`
+  }
+
   try {
-    const res = await api(
-      `/api/project-cluster/${cluster}/type/${project_type}/sector/${sector}/fields/`,
-    )
+    const res = await api(url)
     setFields(res.fields || [])
   } catch (e) {
     console.error('Error at loading project specific fields')

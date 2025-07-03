@@ -54,11 +54,7 @@ export const getDefaultValues = <T>(
               ? (data[field.write_field_name] ?? false)
               : data[field.write_field_name]
       } else {
-        acc[field.write_field_name] = ['drop_down', 'boolean'].includes(
-          field.data_type,
-        )
-          ? null
-          : ''
+        acc[field.write_field_name] = field.data_type === 'text' ? '' : null
       }
       return acc
     },
@@ -254,8 +250,9 @@ export const getDefaultImpactErrors = (
     validationFieldsPairs
       .filter(
         ([key, totalKey]) =>
+          totalKey in projectSpecificFields &&
           (projectSpecificFields[key] ?? 0) >
-          (projectSpecificFields[totalKey] ?? 0),
+            (projectSpecificFields[totalKey] ?? 0),
       )
       .map(([key]) => [key, [errorMsg]]),
   )
@@ -283,13 +280,15 @@ export const getSpecificFieldsErrors = (
   const fieldNames = map(
     filter(
       specificFields,
-      ({ table, section }) => table === 'project' && section !== 'MYA',
+      ({ table, section, editable }) =>
+        table === 'project' && section !== 'MYA' && editable !== false,
     ),
     'write_field_name',
   ) as string[]
 
   const defaultImpactErrors =
     getDefaultImpactErrors(projectSpecificFields) ?? {}
+
   const sectionErrors =
     mode === 'edit'
       ? (getFieldErrors(fieldNames, projectSpecificFields) ?? {})

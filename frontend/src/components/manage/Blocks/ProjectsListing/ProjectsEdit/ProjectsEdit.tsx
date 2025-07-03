@@ -169,6 +169,7 @@ const ProjectsEdit = ({
         project_type,
         sector,
         setSpecificFields,
+        mode === 'edit' ? project_id : null,
         setSpecificFieldsLoaded,
       )
     } else setSpecificFields([])

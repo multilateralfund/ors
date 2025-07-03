@@ -41,16 +41,24 @@ export interface SpecificFields {
   ods_odp: OdsOdpFields[]
   total_number_of_technicians_trained: string
   number_of_female_technicians_trained: string
+  total_number_of_technicians_trained_actual: string
+  number_of_female_technicians_trained_actual: string
   total_number_of_trainers_trained: string
   number_of_female_trainers_trained: string
+  total_number_of_trainers_trained_actual: string
+  number_of_female_trainers_trained_actual: string
   total_number_of_technicians_certified: string
   number_of_female_technicians_certified: string
+  total_number_of_technicians_certified_actual: string
+  number_of_female_technicians_certified_actual: string
   number_of_training_institutions_newly_assisted: string
   certification_system_for_technicians: boolean | null
   operation_of_recovery_and_recycling_scheme: boolean | null
   operation_of_reclamation_scheme: boolean | null
   total_number_of_customs_officers_trained: string
   number_of_female_customs_officers_trained: string
+  total_number_of_customs_officers_trained_actual: string
+  number_of_female_customs_officers_trained_actual: string
   establishment_of_imp_exp_licensing: boolean | null
   establishment_of_quota_systems: boolean | null
   ban_of_equipment: string
@@ -69,8 +77,10 @@ export interface SpecificFields {
   quantity_hfc_23_byquantity_hfc_23_by_product_generation_rate_product_generated: string
   quantity_hfc_23_by_product_destroyed: string
   quantity_hfc_23_by_product_emitted: string
-  total_number_of_nou_personnnel_supported: string
+  total_number_of_nou_personnel_supported: string
   number_of_female_nou_personnel_supported: string
+  total_number_of_nou_personnel_supported_actual: string
+  number_of_female_nou_personnel_supported_actual: string
   number_of_enterprises_assisted: string
 }
 
@@ -105,6 +115,7 @@ export type ProjectSpecificFields = {
   data_type: FieldType
   section: string
   options: OptionsType[]
+  editable: boolean | null
 }
 
 export type SpecificFieldsSectionProps = ProjectDataProps & {
