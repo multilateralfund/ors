@@ -1,8 +1,7 @@
 import { useContext, useMemo, useState } from 'react'
 
-import Link from '@ors/components/ui/Link/Link'
+import AddComponentModal from './AddComponentModal'
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
-import PermissionsContext from '@ors/contexts/PermissionsContext'
 import SubmitTranchesWarningModal from './SubmitTranchesWarningModal'
 import { IncreaseVersionButton } from '../HelperComponents'
 import {
@@ -20,10 +19,11 @@ import {
   TrancheDataType,
   TrancheErrorType,
 } from '../interfaces'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { api, uploadFiles } from '@ors/helpers'
 
-import { Button, Modal, Typography, Box } from '@mui/material'
 import { enqueueSnackbar } from 'notistack'
+import { Button } from '@mui/material'
 import { useLocation } from 'wouter'
 import { lowerCase } from 'lodash'
 import cx from 'classnames'
@@ -280,55 +280,7 @@ const EditActionButtons = ({
         </>
       )}
       {isModalOpen && (
-        <Modal
-          aria-labelledby="add-component-modal-title"
-          open={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          keepMounted
-        >
-          <Box className="flex w-full max-w-lg flex-col absolute-center">
-            <Typography className="mb-4 text-xl">
-              Start from a copy of this project or from a blank submission?
-            </Typography>
-            <div className="ml-auto flex gap-1">
-              <Link
-                component="a"
-                className="no-underline"
-                target="_blank"
-                rel="noopener noreferrer nofollow"
-                href={`/projects-listing/create/${id}/full-copy/additional-component`}
-              >
-                <Button
-                  className="text-base"
-                  onClick={() => setIsModalOpen(false)}
-                >
-                  Copy of project
-                </Button>
-              </Link>
-
-              <Link
-                component="a"
-                className="no-underline"
-                target="_blank"
-                rel="noopener noreferrer nofollow"
-                href={`/projects-listing/create/${id}/partial-copy/additional-component`}
-              >
-                <Button
-                  className="text-base"
-                  onClick={() => setIsModalOpen(false)}
-                >
-                  Blank submission
-                </Button>
-              </Link>
-              <Button
-                className="text-base"
-                onClick={() => setIsModalOpen(false)}
-              >
-                Close
-              </Button>
-            </div>
-          </Box>
-        </Modal>
+        <AddComponentModal {...{ id, isModalOpen, setIsModalOpen }} />
       )}
       {showSubmitTranchesWarningModal && isTrancheWarningOpen && (
         <SubmitTranchesWarningModal

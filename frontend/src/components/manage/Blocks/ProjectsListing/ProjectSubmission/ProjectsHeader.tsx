@@ -2,13 +2,14 @@ import { useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
-import {
-  HeaderTag,
-  VersionsDropdown,
-} from '../ProjectVersions/ProjectVersionsComponents'
 import CreateActionButtons from './CreateActionButtons'
 import EditActionButtons from './EditActionButtons'
-import { PageTitle, RedirectBackButton } from '../HelperComponents'
+import {
+  PageTitle,
+  ProjectStatusInfo,
+  RedirectBackButton,
+  VersionsList,
+} from '../HelperComponents'
 import { getDefaultImpactErrors, getIsSaveDisabled } from '../utils'
 import {
   ProjectData,
@@ -20,7 +21,6 @@ import {
 } from '../interfaces'
 
 import { CircularProgress } from '@mui/material'
-import { lowerCase } from 'lodash'
 import dayjs from 'dayjs'
 
 const ProjectsHeader = ({
@@ -63,15 +63,9 @@ const ProjectsHeader = ({
     hasValidationErrors
   const isSubmitDisabled = isSaveDisabled || !!trancheErrors?.errorText
 
-  const {
-    title,
-    versions = [],
-    version = 0,
-    latest_project = null,
-    submission_status,
-  } = project || {}
-
-  const [projectTitle, setProjectTitle] = useState<string>(title ?? 'N/A')
+  const [projectTitle, setProjectTitle] = useState<string>(
+    project?.title ?? 'N/A',
+  )
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [showVersionsMenu, setShowVersionsMenu] = useState(false)
 
@@ -82,14 +76,6 @@ const ProjectsHeader = ({
         ? `(component of ${projectTitle ?? 'New project'})`
         : ''
 
-  const Versions = (
-    <>
-      <VersionsDropdown
-        {...{ versions, showVersionsMenu, setShowVersionsMenu }}
-      />
-      <HeaderTag {...{ latest_project, version }} />
-    </>
-  )
   return (
     <HeaderTitle>
       <div className="align-center flex flex-wrap justify-between gap-x-4 gap-y-4">
@@ -107,9 +93,11 @@ const ProjectsHeader = ({
               {mode !== 'edit' &&
                 'New project submission ' + pageTitleExtraInfo}
             </PageHeading>
-            {mode === 'edit' &&
-              (version > 1 || lowerCase(submission_status) !== 'draft') &&
-              Versions}
+            {mode === 'edit' && project && (
+              <VersionsList
+                {...{ project, showVersionsMenu, setShowVersionsMenu }}
+              />
+            )}
           </div>
         </div>
         <div className="ml-auto flex items-center gap-2.5">
@@ -145,25 +133,7 @@ const ProjectsHeader = ({
           )}
         </div>
       </div>
-      {mode === 'edit' && (
-        <div className="mt-4 flex gap-3">
-          <div className="flex items-center gap-3">
-            <span>Submission status:</span>
-            <span className="rounded border border-solid border-[#002A3C] p-1 pb-0.5 font-medium uppercase leading-none text-[#002A3C]">
-              {project?.submission_status}
-            </span>
-          </div>
-
-          <span>|</span>
-
-          <div className="flex items-center gap-3">
-            <span>Project status:</span>
-            <span className="rounded border border-solid border-[#002A3C] p-1 pb-0.5 font-medium uppercase leading-none text-[#002A3C]">
-              {project?.status}
-            </span>
-          </div>
-        </div>
-      )}
+      {mode === 'edit' && project && <ProjectStatusInfo {...{ project }} />}
     </HeaderTitle>
   )
 }

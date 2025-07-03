@@ -1,8 +1,15 @@
+import { Dispatch, SetStateAction } from 'react'
+
 import Link from '@ors/components/ui/Link/Link'
+import {
+  HeaderTag,
+  VersionsDropdown,
+} from './ProjectVersions/ProjectVersionsComponents'
 import { ProjectTypeApi } from './interfaces'
 
 import { IoReturnUpBack } from 'react-icons/io5'
 import { Button } from '@mui/material'
+import { lowerCase } from 'lodash'
 import cx from 'classnames'
 
 type ButtonProps = {
@@ -83,6 +90,54 @@ export const PageTitle = ({
         {submission_status === 'Approved' ? `, ${code ?? code_legacy}` : ''}
       </div>
     </div>
+  )
+}
+
+export const ProjectStatusInfo = ({ project }: { project: ProjectTypeApi }) => (
+  <div className="mt-4 flex gap-3">
+    <div className="flex items-center gap-3">
+      <span>Submission status:</span>
+      <span className="rounded border border-solid border-[#002A3C] px-1 py-0.5 font-medium uppercase leading-tight text-[#002A3C]">
+        {project.submission_status}
+      </span>
+    </div>
+
+    <span>|</span>
+
+    <div className="flex items-center gap-3">
+      <span>Project status:</span>
+      <span className="rounded border border-solid border-[#002A3C] px-1 py-0.5 font-medium uppercase leading-tight text-[#002A3C]">
+        {project.status}
+      </span>
+    </div>
+  </div>
+)
+
+export const VersionsList = ({
+  project,
+  showVersionsMenu,
+  setShowVersionsMenu,
+}: {
+  project: ProjectTypeApi
+  showVersionsMenu: boolean
+  setShowVersionsMenu: Dispatch<SetStateAction<boolean>>
+}) => {
+  const {
+    versions = [],
+    version = 0,
+    latest_project = null,
+    submission_status,
+  } = project
+
+  return (
+    (version > 1 || lowerCase(submission_status) !== 'draft') && (
+      <>
+        <VersionsDropdown
+          {...{ versions, showVersionsMenu, setShowVersionsMenu }}
+        />
+        <HeaderTag {...{ latest_project, version }} />
+      </>
+    )
   )
 }
 

@@ -8,11 +8,12 @@ import CustomLink from '@ors/components/ui/Link/Link'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import ProjectView from './ProjectView'
-import { PageTitle, RedirectBackButton } from '../HelperComponents'
 import {
-  VersionsDropdown,
-  HeaderTag,
-} from '../ProjectVersions/ProjectVersionsComponents'
+  PageTitle,
+  ProjectStatusInfo,
+  RedirectBackButton,
+  VersionsList,
+} from '../HelperComponents'
 import { useGetProject } from '../hooks/useGetProject'
 import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
@@ -28,16 +29,8 @@ const ProjectViewWrapper = () => {
 
   const project = useGetProject(project_id)
   const { data, loading } = project
-  const {
-    cluster_id,
-    project_type_id,
-    sector_id,
-    versions,
-    version,
-    latest_project,
-    submission_status,
-    status,
-  } = data || {}
+  const { cluster_id, project_type_id, sector_id, submission_status } =
+    data || {}
 
   const { data: projectFiles } = useGetProjectFiles(project_id)
 
@@ -77,14 +70,11 @@ const ProjectViewWrapper = () => {
                       project={data}
                     />
                   </PageHeading>
-                  {(version > 1 ||
-                    lowerCase(submission_status) !== 'draft') && (
-                    <>
-                      <VersionsDropdown
-                        {...{ versions, showVersionsMenu, setShowVersionsMenu }}
-                      />
-                      <HeaderTag {...{ latest_project, version }} />
-                    </>
+                  {project && (
+                    <VersionsList
+                      project={data}
+                      {...{ showVersionsMenu, setShowVersionsMenu }}
+                    />
                   )}
                 </div>
               </div>
@@ -101,23 +91,7 @@ const ProjectViewWrapper = () => {
                   </CustomLink>
                 )}
             </div>
-            <div className="mt-4 flex gap-3">
-              <div className="flex items-center gap-3">
-                <span>Submission status:</span>
-                <span className="rounded border border-solid border-[#002A3C] p-1 pb-0.5 font-medium uppercase leading-none text-[#002A3C]">
-                  {submission_status}
-                </span>
-              </div>
-
-              <span>|</span>
-
-              <div className="flex items-center gap-3">
-                <span>Project status:</span>
-                <span className="rounded border border-solid border-[#002A3C] p-1 pb-0.5 font-medium uppercase leading-none text-[#002A3C]">
-                  {status}
-                </span>
-              </div>
-            </div>
+            <ProjectStatusInfo project={data} />
           </HeaderTitle>
           <ProjectView project={data} {...{ projectFiles, specificFields }} />
         </>
