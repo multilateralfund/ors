@@ -254,8 +254,9 @@ export const getDefaultImpactErrors = (
     validationFieldsPairs
       .filter(
         ([key, totalKey]) =>
+          totalKey in projectSpecificFields &&
           (projectSpecificFields[key] ?? 0) >
-          (projectSpecificFields[totalKey] ?? 0),
+            (projectSpecificFields[totalKey] ?? 0),
       )
       .map(([key]) => [key, [errorMsg]]),
   )

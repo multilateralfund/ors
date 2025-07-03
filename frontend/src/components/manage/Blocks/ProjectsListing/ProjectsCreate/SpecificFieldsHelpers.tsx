@@ -129,14 +129,15 @@ export const changeHandler: Record<FieldType, FieldHandler> = {
     const formattedVal = value.target.value
 
     if (formattedVal === '' || !isNaN(parseInt(formattedVal))) {
-      const finalVal = formattedVal ? parseInt(formattedVal) : ''
+      const finalVal = formattedVal ? parseInt(formattedVal) : null
       onFieldChange(finalVal, field, setState, section, subField, index)
     } else {
       value.preventDefault()
     }
   },
   decimal: (value, field, setState, section, subField, index) => {
-    const formattedVal = value.target.value
+    const val = value.target.value
+    const formattedVal = val === '' ? null : val
 
     if (!isNaN(Number(formattedVal))) {
       onFieldChange(formattedVal, field, setState, section, subField, index)
