@@ -49,6 +49,7 @@ from core.models.project_metadata import ProjectSubmissionStatus, ProjectSpecifi
 from core.api.views.utils import log_project_history
 
 from core.api.views.projects_export import ProjectsV2Export
+from core.api.views.project_v2_export import ProjectsV2ProjectExport
 
 
 class ProjectDestructionTechnologyView(APIView):
@@ -254,7 +255,11 @@ class ProjectV2ViewSet(
         )
 
     @action(methods=["GET"], detail=False)
-    def export(self, *args, **kwargs):
+    def export(self, request, *args, **kwargs):
+        project_id = request.query_params.get("project_id")
+
+        if project_id:
+            return ProjectsV2ProjectExport(project_id).export_xls()
         return ProjectsV2Export(self).export_xls()
 
     @action(methods=["POST"], detail=True)
@@ -853,7 +858,6 @@ class ProjectV2FileView(
 
 
 class ProjectFilesValidationView(FileCreateMixin, APIView):
-
     permission_classes = [HasProjectV2EditAccess]
 
     @swagger_auto_schema(
