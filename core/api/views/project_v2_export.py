@@ -156,20 +156,37 @@ class ProjectsV2ProjectExport:
         WriteOnlyBase(sheet, get_headers_cross_cutting()).write([data])
 
     def build_specific_information(self, data):
-        sheet = self.add_sheet("Specific information")
-
         project_specific_fields_obj = ProjectSpecificFields.objects.filter(
             cluster=self.project.cluster,
             type=self.project.project_type,
             sector=self.project.sector,
         ).first()
 
-        fields = project_specific_fields_obj.fields.all()
+        fields = project_specific_fields_obj.fields.filter(section__in=["Header"])
+        if fields:
+            sheet = self.add_sheet("Specific information - Overview")
+            WriteOnlyBase(
+                sheet,
+                get_headers_specific_information(fields),
+            ).write([data])
 
-        WriteOnlyBase(
-            sheet,
-            get_headers_specific_information(fields),
-        ).write([data])
+        fields = project_specific_fields_obj.fields.filter(
+            section__in=["Substance Details"]
+        )
+        if fields:
+            sheet = self.add_sheet("Specific information - Substance details")
+            WriteOnlyBase(
+                sheet,
+                get_headers_specific_information(fields),
+            ).write(data.get("ods_odp", []))
+
+        fields = project_specific_fields_obj.fields.filter(section__in=["Impact"])
+        if fields:
+            sheet = self.add_sheet("Impact")
+            WriteOnlyBase(
+                sheet,
+                get_headers_specific_information(fields),
+            ).write([data])
 
     def build_impact(self, data):
         sheet = self.add_sheet("Impact")
