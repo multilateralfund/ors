@@ -70,7 +70,7 @@ const EditActionButtons = ({
   const odsOdpData = projectSpecificFields?.ods_odp ?? []
 
   const crossCuttingErrors = useMemo(
-    () => getCrossCuttingErrors(crossCuttingFields, {}, 'edit'),
+    () => getCrossCuttingErrors(crossCuttingFields, {}, 'edit', project),
     [crossCuttingFields],
   )
   const specificErrors = useMemo(
@@ -80,8 +80,9 @@ const EditActionButtons = ({
         specificFields,
         {},
         'edit',
+        project,
       ),
-    [projectSpecificFields],
+    [projectSpecificFields, project],
   )
 
   const hasOdsOdpErrors =

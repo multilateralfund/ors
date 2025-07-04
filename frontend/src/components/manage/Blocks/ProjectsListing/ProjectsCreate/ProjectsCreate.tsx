@@ -110,7 +110,13 @@ const ProjectsCreate = ({
   )
 
   const crossCuttingErrors = useMemo(
-    () => getCrossCuttingErrors(crossCuttingFields, errors, mode),
+    () =>
+      getCrossCuttingErrors(
+        crossCuttingFields,
+        errors,
+        mode,
+        mode === 'edit' ? project : undefined,
+      ),
     [crossCuttingFields, errors, mode],
   )
 
@@ -121,8 +127,9 @@ const ProjectsCreate = ({
         specificFields,
         errors,
         mode,
+        project,
       ),
-    [projectSpecificFields, specificFields, errors, mode],
+    [projectSpecificFields, specificFields, errors, mode, project],
   )
   const overviewErrors = specificFieldsErrors['Header'] || {}
   const substanceDetailsErrors = specificFieldsErrors['Substance Details'] || {}
@@ -132,12 +139,15 @@ const ProjectsCreate = ({
   const fieldsForValidation = map(odsOdpFields, 'write_field_name')
   const odsOdpData = projectSpecificFields?.ods_odp ?? []
 
+  const errorMessageExtension =
+    project?.submission_status === 'Draft' ? ' for submission' : ''
+
   const odsOpdDataErrors =
     mode === 'edit'
       ? map(odsOdpData, (odsOdp) => {
           const errors = map(fieldsForValidation, (field) =>
             checkInvalidValue(odsOdp[field])
-              ? [field, ['This field is required for submission.']]
+              ? [field, [`This field is required${errorMessageExtension}.`]]
               : null,
           ).filter(Boolean) as [string, string[]][]
 
@@ -170,7 +180,7 @@ const ProjectsCreate = ({
       if (fieldLabels.length === 0) return null
 
       return {
-        message: `Substance ${Number(id) + 1} - ${fieldLabels.join(', ')}: ${fieldLabels.length > 1 ? 'These fields are' : 'This field is'} required for submission.`,
+        message: `Substance ${Number(id) + 1} - ${fieldLabels.join(', ')}: ${fieldLabels.length > 1 ? 'These fields are' : 'This field is'} required${errorMessageExtension}.`,
       }
     },
   ).filter(Boolean)
@@ -280,8 +290,7 @@ const ProjectsCreate = ({
         ...(mode === 'edit' && odsOdpData.length === 0
           ? [
               {
-                message:
-                  'At least a substance must be provided for submission.',
+                message: `At least a substance must be provided${errorMessageExtension}.`,
               },
             ]
           : []),
@@ -341,7 +350,7 @@ const ProjectsCreate = ({
         ...(hasNoFiles
           ? [
               {
-                message: 'At least a file must be provided for submission.',
+                message: `At least a file must be provided${errorMessageExtension}.`,
               },
             ]
           : []),
