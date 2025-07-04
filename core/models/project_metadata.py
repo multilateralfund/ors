@@ -44,6 +44,10 @@ class ProjectField(models.Model):
         default=False,
         help_text="If True, the field is used for actual data, otherwise for planned data",
     )
+    sort_order = models.IntegerField(
+        default=0,
+        help_text="Sort order of the field in the project form",
+    )
 
     def __str__(self):
         return f"{self.table} - {self.label}"

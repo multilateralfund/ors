@@ -331,6 +331,7 @@ def setup_project_specific_fields():
         table="ods_odp",
         data_type="drop_down",
         section="section1",
+        sort_order=1,
     )
     substance = SubstanceFactory.create()
     field2 = ProjectFieldFactory.create(
@@ -341,6 +342,7 @@ def setup_project_specific_fields():
         table="project",
         data_type="boolean",
         section="section2",
+        sort_order=2,
     )
 
     project_specific_fields.fields.add(field1, field2)
@@ -389,6 +391,7 @@ class TestProjectSpecificFields(BaseTest):
         assert fields[0]["table"] == field1.table
         assert fields[0]["data_type"] == field1.data_type
         assert fields[0]["section"] == field1.section
+        assert fields[0]["sort_order"] == field1.sort_order
         assert len(fields[0]["options"]) == 2
 
         assert fields[0]["options"]["substances"][0]["id"] == substance.id
@@ -400,6 +403,7 @@ class TestProjectSpecificFields(BaseTest):
         assert fields[1]["table"] == field2.table
         assert fields[1]["data_type"] == field2.data_type
         assert fields[1]["section"] == field2.section
+        assert fields[1]["sort_order"] == field2.sort_order
 
 
 @pytest.fixture(name="_setup_rbm_measures")

@@ -6,7 +6,8 @@
         "READ_FIELD_NAME": "group",
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
-        "SECTION": "Header"
+        "SECTION": "Header",
+        "SORT_ORDER": 1
     },
     {
         "IMPORT_NAME": "Destruction Technology",
@@ -15,7 +16,8 @@
         "READ_FIELD_NAME": "destruction_technology",
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
-        "SECTION": "Header"
+        "SECTION": "Header",
+        "SORT_ORDER": 2
     },
     {
         "IMPORT_NAME": "Production Control Type",
@@ -24,7 +26,8 @@
         "READ_FIELD_NAME": "production_control_type",
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
-        "SECTION": "Header"
+        "SECTION": "Header",
+        "SORT_ORDER": 3
     },
     {
         "IMPORT_NAME": "Tranche Number",
@@ -33,7 +36,8 @@
         "READ_FIELD_NAME": "tranche",
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
-        "SECTION": "Header"
+        "SECTION": "Header",
+        "SORT_ORDER": 4
     },
     {
         "IMPORT_NAME": "SME/ Non-SME",
@@ -42,7 +46,8 @@
         "READ_FIELD_NAME": "is_sme",
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
-        "SECTION": "Header"
+        "SECTION": "Header",
+        "SORT_ORDER": 5
     },
     {
         "IMPORT_NAME": "Substance - baseline technology",
@@ -51,7 +56,8 @@
         "READ_FIELD_NAME": "ods_display_name",
         "TABLE": "ods_odp",
         "DATA_TYPE": "drop_down",
-        "SECTION": "Substance Details"
+        "SECTION": "Substance Details",
+        "SORT_ORDER": 6
     },
     {
         "IMPORT_NAME": "Replacement technology/ies",
@@ -60,7 +66,8 @@
         "READ_FIELD_NAME": "ods_replacement",
         "TABLE": "ods_odp",
         "DATA_TYPE": "text",
-        "SECTION": "Substance Details"
+        "SECTION": "Substance Details",
+        "SORT_ORDER": 7
     },
     {
         "IMPORT_NAME": "Phase out (CO2-eq t)",
@@ -69,7 +76,8 @@
         "READ_FIELD_NAME": "co2_mt",
         "TABLE": "ods_odp",
         "DATA_TYPE": "decimal",
-        "SECTION": "Substance Details"
+        "SECTION": "Substance Details",
+        "SORT_ORDER": 8
     },
     {
         "IMPORT_NAME": "Phase out (ODP t)",
@@ -78,7 +86,8 @@
         "READ_FIELD_NAME": "odp",
         "TABLE": "ods_odp",
         "DATA_TYPE": "decimal",
-        "SECTION": "Substance Details"
+        "SECTION": "Substance Details",
+        "SORT_ORDER": 9
     },
     {
         "IMPORT_NAME": "Phase out (Mt)",
@@ -87,7 +96,8 @@
         "READ_FIELD_NAME": "phase_out_mt",
         "TABLE": "ods_odp",
         "DATA_TYPE": "decimal",
-        "SECTION": "Substance Details"
+        "SECTION": "Substance Details",
+        "SORT_ORDER": 10
     },
     {
         "IMPORT_NAME": "Phase out (Mt)",
@@ -96,7 +106,8 @@
         "READ_FIELD_NAME": "phase_out_mt",
         "TABLE": "ods_odp",
         "DATA_TYPE": "decimal",
-        "SECTION": "Substance Details"
+        "SECTION": "Substance Details",
+        "SORT_ORDER": 11
     },
     {
         "IMPORT_NAME": "Ods type",
@@ -105,7 +116,8 @@
         "READ_FIELD_NAME": "ods_type",
         "TABLE": "ods_odp",
         "DATA_TYPE": "drop_down",
-        "SECTION": "Substance Details"
+        "SECTION": "Substance Details",
+        "SORT_ORDER": 12
     },
     {
         "IMPORT_NAME": "Sort order",
@@ -115,7 +127,8 @@
         "HIDDEN": true,
         "TABLE": "ods_odp",
         "DATA_TYPE": "number",
-        "SECTION": "Substance Details"
+        "SECTION": "Substance Details",
+        "SORT_ORDER": 13
     },
     {
         "IMPORT_NAME": "Product Manufactured",
@@ -124,7 +137,8 @@
         "READ_FIELD_NAME": "products_manufactured",
         "TABLE": "project",
         "DATA_TYPE": "text",
-        "SECTION": "Substance Details"
+        "SECTION": "Substance Details",
+        "SORT_ORDER": 14
     },
     {
         "IMPORT_NAME": "Total number of technicians trained",
@@ -133,7 +147,8 @@
         "READ_FIELD_NAME": "total_number_of_technicians_trained",
         "TABLE": "project",
         "DATA_TYPE": "number",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 15
     },
     {
         "IMPORT_NAME": "Total number of technicians trained actual",
@@ -143,7 +158,8 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 16
     },
     {
         "IMPORT_NAME": "Number of female technicians trained",
@@ -152,7 +168,8 @@
         "READ_FIELD_NAME": "number_of_female_technicians_trained",
         "TABLE": "project",
         "DATA_TYPE": "number",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 17
     },
     {
         "IMPORT_NAME": "Number of female technicians trained actual",
@@ -162,7 +179,8 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 18
     },
     {
         "IMPORT_NAME": "Total number of trainers trained",
@@ -171,7 +189,8 @@
         "READ_FIELD_NAME": "total_number_of_trainers_trained",
         "TABLE": "project",
         "DATA_TYPE": "number",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 19
     },
     {
         "IMPORT_NAME": "Total number of trainers trained actual",
@@ -181,7 +200,8 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 20
     },
     {
         "IMPORT_NAME": "Number of female trainers trained",
@@ -190,7 +210,8 @@
         "READ_FIELD_NAME": "number_of_female_trainers_trained",
         "TABLE": "project",
         "DATA_TYPE": "number",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 21
     },
     {
         "IMPORT_NAME": "Number of female trainers trained actual",
@@ -200,7 +221,8 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 22
     },
     {
         "IMPORT_NAME": "Total number of technicians certified",
@@ -209,7 +231,8 @@
         "READ_FIELD_NAME": "total_number_of_technicians_certified",
         "TABLE": "project",
         "DATA_TYPE": "number",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 23
     },
     {
         "IMPORT_NAME": "Total number of technicians certified actual",
@@ -219,7 +242,8 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 24
     },
     {
         "IMPORT_NAME": "Number of female technicians certified",
@@ -228,7 +252,8 @@
         "READ_FIELD_NAME": "number_of_female_technicians_certified",
         "TABLE": "project",
         "DATA_TYPE": "number",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 25
     },
     {
         "IMPORT_NAME": "Number of female technicians certified actual",
@@ -238,7 +263,8 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 26
     }, 
     {
         "IMPORT_NAME": "Number of training institutions newly assisted",
@@ -247,7 +273,8 @@
         "READ_FIELD_NAME": "number_of_training_institutions_newly_assisted",
         "TABLE": "project",
         "DATA_TYPE": "number",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 27
     },
     {
         "IMPORT_NAME": "Number of training institutions newly assisted actual",
@@ -257,7 +284,8 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 28
     },
     {
         "IMPORT_NAME": "Number of tools sets distributed",
@@ -266,7 +294,8 @@
         "READ_FIELD_NAME": "number_of_tools_sets_distributed",
         "TABLE": "project",
         "DATA_TYPE": "number",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 29
     },
     {
         "IMPORT_NAME": "Number of tools sets distributed actual",
@@ -276,7 +305,8 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 30
     },
     {
         "IMPORT_NAME": "Certification system for technicians established or further enhanced (yes or no)",
@@ -285,7 +315,8 @@
         "READ_FIELD_NAME": "certification_system_for_technicians",
         "TABLE": "project",
         "DATA_TYPE": "boolean",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 31
     },
     {
         "IMPORT_NAME": "Certification system for technicians established or further enhanced (yes or no) actual",
@@ -295,7 +326,8 @@
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 32
     }, 
     {
         "IMPORT_NAME": "Operation of recovery and recycling scheme (yes or no)",
@@ -304,7 +336,8 @@
         "READ_FIELD_NAME": "operation_of_recovery_and_recycling_scheme",
         "TABLE": "project",
         "DATA_TYPE": "boolean",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 33
     },
     {
         "IMPORT_NAME": "Operation of recovery and recycling scheme (yes or no) actual",
@@ -314,7 +347,8 @@
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 34
     },
     {
         "IMPORT_NAME": "Operation of reclamation scheme (yes or no)",
@@ -323,7 +357,8 @@
         "READ_FIELD_NAME": "operation_of_reclamation_scheme",
         "TABLE": "project",
         "DATA_TYPE": "boolean",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 35
     },
     {
         "IMPORT_NAME": "Operation of reclamation scheme (yes or no) actual",
@@ -333,7 +368,8 @@
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 36
     },
     {
         "IMPORT_NAME": "Total number of customs officers trained",
@@ -342,7 +378,8 @@
         "READ_FIELD_NAME": "total_number_of_customs_officers_trained",
         "TABLE": "project",
         "DATA_TYPE": "number",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 37
     },
     {
         "IMPORT_NAME": "Total number of customs officers trained actual",
@@ -352,7 +389,8 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 38
     },
     {
         "IMPORT_NAME": "Number of female customs officers trained",
@@ -361,7 +399,8 @@
         "READ_FIELD_NAME": "number_of_female_customs_officers_trained",
         "TABLE": "project",
         "DATA_TYPE": "number",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 39
     },
     {
         "IMPORT_NAME": "Number of female customs officers trained actual",
@@ -371,7 +410,8 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 40
     },
     {
         "IMPORT_NAME": "Establishment or upgrade of Import/export licensing (yes or no)",
@@ -380,7 +420,8 @@
         "READ_FIELD_NAME": "establishment_of_imp_exp_licensing",
         "TABLE": "project",
         "DATA_TYPE": "boolean",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 41
     },
     {
         "IMPORT_NAME": "Establishment or upgrade of Import/export licensing (yes or no) actual",
@@ -390,7 +431,8 @@
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 42
     },
     {
         "IMPORT_NAME": "Establishment of quota systems (yes or no)",
@@ -399,7 +441,8 @@
         "READ_FIELD_NAME": "establishment_of_quota_systems",
         "TABLE": "project",
         "DATA_TYPE": "boolean",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 43
     },
     {
         "IMPORT_NAME": "Establishment of quota systems (yes or no) actual",
@@ -409,7 +452,8 @@
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 44
     },
     {
         "IMPORT_NAME": "Ban of equipment (number)",
@@ -418,7 +462,8 @@
         "READ_FIELD_NAME": "ban_of_equipment",
         "TABLE": "project",
         "DATA_TYPE": "number",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 45
     },
     {
         "IMPORT_NAME": "Ban of equipment (number) actual",
@@ -428,7 +473,8 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 46
     },
     {
         "IMPORT_NAME": "Ban of substances (number)",
@@ -437,7 +483,8 @@
         "READ_FIELD_NAME": "ban_of_substances",
         "TABLE": "project",
         "DATA_TYPE": "number",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 47
     },
     {
         "IMPORT_NAME": "Ban of substances (number) actual",
@@ -447,7 +494,8 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 48
     },
     {
         "IMPORT_NAME": "kWh/year saved",
@@ -456,7 +504,8 @@
         "READ_FIELD_NAME": "kwh_year_saved",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 49
     },
     {
         "IMPORT_NAME": "kWh/year saved actual",
@@ -466,7 +515,8 @@
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 50
     },
     {
         "IMPORT_NAME": "MEPS developed for domestic refrigeration (yes/no)",
@@ -475,7 +525,8 @@
         "READ_FIELD_NAME": "meps_developed_domestic_refrigeration",
         "TABLE": "project",
         "DATA_TYPE": "boolean",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 51
     },
     {
         "IMPORT_NAME": "MEPS developed for domestic refrigeration (yes/no) actual",
@@ -485,7 +536,8 @@
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 52
     },
     {
         "IMPORT_NAME": "MEPS developed for commercial refrigeration (yes/no)",
@@ -494,7 +546,8 @@
         "READ_FIELD_NAME": "meps_developed_commercial_refrigeration",
         "TABLE": "project",
         "DATA_TYPE": "boolean",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 53
     },
     {
         "IMPORT_NAME": "MEPS developed for commercial refrigeration (yes/no) actual",
@@ -504,7 +557,8 @@
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 54
     },
     {
         "IMPORT_NAME": "MEPS developed for residential air-conditioning (yes/no)",
@@ -513,7 +567,8 @@
         "READ_FIELD_NAME": "meps_developed_residential_ac",
         "TABLE": "project",
         "DATA_TYPE": "boolean",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 55
     },
     {
         "IMPORT_NAME": "MEPS developed for residential air-conditioning (yes/no) actual",
@@ -523,7 +578,8 @@
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 56
     },
     {
         "IMPORT_NAME": "MEPS developed for commercial AC (yes/no)",
@@ -532,7 +588,8 @@
         "READ_FIELD_NAME": "meps_developed_commercial_ac",
         "TABLE": "project",
         "DATA_TYPE": "boolean",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 57
     },
     {
         "IMPORT_NAME": "MEPS developed for commercial AC (yes/no) actual",
@@ -542,7 +599,8 @@
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 58
     },
     {
         "IMPORT_NAME": "Capacity building programmes (checklist (yes/no) for technicians, end-users, operators, consultants, procurement officers and other Government entities)",
@@ -551,7 +609,8 @@
         "READ_FIELD_NAME": "capacity_building_programmes",
         "TABLE": "project",
         "DATA_TYPE": "boolean",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 59
     },
     {
         "IMPORT_NAME": "Capacity building programmes (checklist (yes/no) for technicians, end-users, operators, consultants, procurement officers and other Government entities) actual",
@@ -561,7 +620,8 @@
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 60
     }, 
     {
         "IMPORT_NAME": "EE demonstration project included (yes/no)",
@@ -570,7 +630,8 @@
         "READ_FIELD_NAME": "ee_demonstration_project",
         "TABLE": "project",
         "DATA_TYPE": "boolean",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 61
     },
     {
         "IMPORT_NAME": "EE demonstration project included (yes/no) actual",
@@ -580,7 +641,8 @@
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
-        "IS_ACTUAL": true 
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 62
     },
     {
         "IMPORT_NAME": "Quantity of controlled substances destroyed (M t)",
@@ -589,7 +651,8 @@
         "READ_FIELD_NAME": "quantity_controlled_substances_destroyed_mt",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 63
     },
     {
         "IMPORT_NAME": "Quantity of controlled substances destroyed (M t) actual",
@@ -599,7 +662,8 @@
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 64
     },
     {
         "IMPORT_NAME": "Quantity of controlled substances destroyed (CO2-eq t)",
@@ -608,7 +672,8 @@
         "READ_FIELD_NAME": "quantity_controlled_substances_destroyed_co2_eq_t",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 65
     },
     {
         "IMPORT_NAME": "Quantity of controlled substances destroyed (CO2-eq t) actual",
@@ -618,7 +683,8 @@
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 66
     },
     {
         "IMPORT_NAME": "Checklist of regulations or policies enacted",
@@ -627,7 +693,8 @@
         "READ_FIELD_NAME": "checklist_regulations",
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 67
     },
     {
         "IMPORT_NAME": "Checklist of regulations or policies enacted actual",
@@ -637,7 +704,8 @@
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 68
     },
     {
         "IMPORT_NAME": "Quantity of HFC-23 by-product (Generated)",
@@ -646,7 +714,8 @@
         "READ_FIELD_NAME": "quantity_hfc_23_by_product_generated",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 69
     },
     {
         "IMPORT_NAME": "Quantity of HFC-23 by-product (Generated) actual",
@@ -656,7 +725,8 @@
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 70
     },
     {
         "IMPORT_NAME": "Quantity of HFC-23 by-product (by product generation rate)",
@@ -665,7 +735,8 @@
         "READ_FIELD_NAME": "quantity_hfc_23_by_product_generation_rate",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 71
     },
     {
         "IMPORT_NAME": "Quantity of HFC-23 by-product (by product generation rate) actual",
@@ -675,7 +746,8 @@
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 72
     },
     {
         "IMPORT_NAME": "Quantity of HFC-23 by-product (Destroyed)",
@@ -684,7 +756,8 @@
         "READ_FIELD_NAME": "quantity_hfc_23_by_product_destroyed",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 73
     },
     {
         "IMPORT_NAME": "Quantity of HFC-23 by-product (Destroyed) actual",
@@ -694,7 +767,8 @@
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 74
     },
     {
         "IMPORT_NAME": "Quantity of HFC-23 by-product (Emitted)",
@@ -704,7 +778,8 @@
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "Impact",
-        "IS_ACTUAL": false
+        "IS_ACTUAL": false,
+        "SORT_ORDER": 75
     },
     {
         "IMPORT_NAME": "Quantity of HFC-23 by-product (Emitted) actual",
@@ -714,26 +789,29 @@
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 76
     },
     {
         "IMPORT_NAME": "Total number of NOU personnel supported",
         "LABEL": "Total number of NOU personnel supported",
-        "WRITE_FIELD_NAME": "total_number_of_nou_personnnel_supported",
-        "READ_FIELD_NAME": "total_number_of_nou_personnnel_supported",
+        "WRITE_FIELD_NAME": "total_number_of_nou_personnel_supported",
+        "READ_FIELD_NAME": "total_number_of_nou_personnel_supported",
         "TABLE": "project",
         "DATA_TYPE": "number",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 77
     },
     {
         "IMPORT_NAME": "Total number of NOU personnel supported actual",
         "LABEL": "Total number of NOU personnel supported (actual)",
-        "WRITE_FIELD_NAME": "total_number_of_nou_personnnel_supported_actual",
-        "READ_FIELD_NAME": "total_number_of_nou_personnnel_supported_actual",
+        "WRITE_FIELD_NAME": "total_number_of_nou_personnel_supported_actual",
+        "READ_FIELD_NAME": "total_number_of_nou_personnel_supported_actual",
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 78
     },
     {
         "IMPORT_NAME": "Number of female NOU personnel supported",
@@ -742,7 +820,8 @@
         "READ_FIELD_NAME": "number_of_female_nou_personnel_supported",
         "TABLE": "project",
         "DATA_TYPE": "number",
-        "SECTION": "Impact"
+        "SECTION": "Impact",
+        "SORT_ORDER": 79
     },
     {
         "IMPORT_NAME": "Number of female NOU personnel supported actual",
@@ -752,7 +831,8 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 80
     },
     {
         "IMPORT_NAME": "Number of enterprises assisted",
@@ -761,7 +841,8 @@
         "READ_FIELD_NAME": "number_of_enterprises_assisted",
         "TABLE": "project",
         "DATA_TYPE": "number",
-        "SECTION": "MYA"
+        "SECTION": "MYA",
+        "SORT_ORDER": 81
     },
     {
         "IMPORT_NAME": "Number of enterprises assisted actual",
@@ -771,7 +852,8 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "MYA",
-        "IS_ACTUAL": true
+        "IS_ACTUAL": true,
+        "SORT_ORDER": 82
     },
     {
         "IMPORT_NAME": "Start date (MYA)",
@@ -780,7 +862,8 @@
         "READ_FIELD_NAME": "mya_start_date",
         "TABLE": "project",
         "DATA_TYPE": "date",
-        "SECTION": "MYA"
+        "SECTION": "MYA",
+        "SORT_ORDER": 83
     },
     {
         "IMPORT_NAME": "End date (MYA)",
@@ -789,7 +872,8 @@
         "READ_FIELD_NAME": "mya_end_date",
         "TABLE": "project",
         "DATA_TYPE": "date",
-        "SECTION": "MYA"
+        "SECTION": "MYA",
+        "SORT_ORDER": 84
     },
     {
         "IMPORT_NAME": "Project Funding (MYA)",
@@ -798,7 +882,8 @@
         "READ_FIELD_NAME": "mya_project_funding",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
-        "SECTION": "MYA"
+        "SECTION": "MYA",
+        "SORT_ORDER": 85
     },
     {
         "IMPORT_NAME": "Support Cost (MYA)",
@@ -807,7 +892,8 @@
         "READ_FIELD_NAME": "mya_support_cost",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
-        "SECTION": "MYA"
+        "SECTION": "MYA",
+        "SORT_ORDER": 86
     },
     {
         "IMPORT_NAME": "Number of enterprises",
@@ -816,7 +902,8 @@
         "READ_FIELD_NAME": "number_of_enterprises",
         "TABLE": "project",
         "DATA_TYPE": "number",
-        "SECTION": "MYA"
+        "SECTION": "MYA",
+        "SORT_ORDER": 87
     },
     {
         "IMPORT_NAME": "Aggregated consumption",
@@ -825,7 +912,8 @@
         "READ_FIELD_NAME": "aggregated_consumption",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
-        "SECTION": "MYA"
+        "SECTION": "MYA",
+        "SORT_ORDER": 88
     },
     {
         "IMPORT_NAME": "Targets",
@@ -834,7 +922,8 @@
         "READ_FIELD_NAME": "targets",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
-        "SECTION": "MYA"
+        "SECTION": "MYA",
+        "SORT_ORDER": 89
     },
     {
         "IMPORT_NAME": "Starting Point",
@@ -843,7 +932,8 @@
         "READ_FIELD_NAME": "starting_point",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
-        "SECTION": "MYA"
+        "SECTION": "MYA",
+        "SORT_ORDER": 90
     },
     {
         "IMPORT_NAME": "Baseline",
@@ -852,7 +942,8 @@
         "READ_FIELD_NAME": "baseline",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
-        "SECTION": "MYA"
+        "SECTION": "MYA",
+        "SORT_ORDER": 91
     },
     {
         "IMPORT_NAME": "Phase out (CO2-eq t) (MYA)",
@@ -861,7 +952,8 @@
         "READ_FIELD_NAME": "mya_phase_out_co2_eq_t",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
-        "SECTION": "MYA"
+        "SECTION": "MYA",
+        "SORT_ORDER": 92
     },
     {
         "IMPORT_NAME": "Phase out (ODP t) (MYA)",
@@ -870,7 +962,8 @@
         "READ_FIELD_NAME": "mya_phase_out_odp_t",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
-        "SECTION": "MYA"
+        "SECTION": "MYA",
+        "SORT_ORDER": 93
     },
     {
         "IMPORT_NAME": "Phase out (Mt) (MYA)",
@@ -879,7 +972,8 @@
         "READ_FIELD_NAME": "mya_phase_out_mt",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
-        "SECTION": "MYA"
+        "SECTION": "MYA",
+        "SORT_ORDER": 94
     },
     {
         "IMPORT_NAME": "Cost effectiveness (US$/ Kg)",
@@ -888,7 +982,8 @@
         "READ_FIELD_NAME": "cost_effectiveness",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
-        "SECTION": "MYA"
+        "SECTION": "MYA",
+        "SORT_ORDER": 95
     },
     {
         "IMPORT_NAME": "Cost effectiveness (US$/ CO2-eq)",
@@ -897,7 +992,8 @@
         "READ_FIELD_NAME": "cost_effectiveness_co2",
         "TABLE": "project",
         "DATA_TYPE": "decimal",
-        "SECTION": "MYA"
+        "SECTION": "MYA",
+        "SORT_ORDER": 96
     },
     {
         "IMPORT_NAME": "Number of Production Lines assisted",
@@ -906,6 +1002,7 @@
         "READ_FIELD_NAME": "number_of_production_lines_assisted",
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
-        "SECTION": "MYA"
+        "SECTION": "MYA",
+        "SORT_ORDER": 97
     }
 ]

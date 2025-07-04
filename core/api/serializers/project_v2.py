@@ -337,6 +337,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
         required=False,
         queryset=ProjectCluster.objects.all().values_list("id", flat=True),
     )
+    checklist_regulations_actual = serializers.SerializerMethodField()
     versions = serializers.SerializerMethodField()
     history = serializers.SerializerMethodField()
 
@@ -389,6 +390,9 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
             "quantity_hfc_23_by_product_destroyed_actual",
             "quantity_hfc_23_by_product_emitted_actual",
         ]
+
+    def get_checklist_regulations_actual(self, obj):
+        return obj.get_checklist_regulations_actual_display()
 
     def get_history(self, obj):
         queryset = obj.project_history.all().select_related("project", "user")
@@ -466,6 +470,7 @@ class ProjectV2OdsOdpCreateUpdateSerializer(ProjectOdsOdpCreateSerializer):
         queryset=Blend.objects.all().values_list("id", flat=True),
         allow_null=True,
     )
+    ods_type = serializers.CharField(required=False, allow_null=True)
 
     class Meta(ProjectOdsOdpCreateSerializer.Meta):
         fields = ["id"] + ProjectOdsOdpCreateSerializer.Meta.fields
@@ -760,8 +765,9 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
 
         ods_odp_to_create = []
         incoming_ids = set()
-
         for ods_odp in ods_odp_data:
+            if not ods_odp.get("ods_type", None):
+                ods_odp.pop("ods_type", None)
             item_id = ods_odp.get("id")
             if item_id and item_id in existing_ods_odp_map:
                 incoming_ids.add(item_id)

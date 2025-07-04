@@ -168,6 +168,7 @@ class ProjectFieldSerializer(serializers.ModelSerializer):
             "is_actual",
             "options",
             "editable",
+            "sort_order",
         ]
 
     def get_editable(self, obj):

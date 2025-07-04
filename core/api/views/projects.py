@@ -31,6 +31,7 @@ from core.api.serializers.project import (
 )
 from core.api.serializers.project_metadata import (
     ProjectClusterSerializer,
+    ProjectField,
     ProjectSpecificFieldsSerializer,
     ProjectStatusSerializer,
     ProjectSubmissionStatusSerializer,
@@ -151,6 +152,9 @@ class ProjectSpecificFieldsListView(generics.RetrieveAPIView):
 
     def get_object(self):
         project_id = self.request.query_params.get("project_id", None)
+        include_actuals = (
+            self.request.query_params.get("include_actuals", "false").lower() == "true"
+        )
         if project_id:
             projects_queryset = Project.objects.really_all()
             project = get_object_or_404(projects_queryset, pk=project_id)
@@ -158,29 +162,29 @@ class ProjectSpecificFieldsListView(generics.RetrieveAPIView):
                 project.submission_status
                 and project.submission_status.name != "Approved"
             ):
-                field_model = ProjectSpecificFields._meta.get_field(
-                    "fields"
-                ).related_model
-                queryset = ProjectSpecificFields.objects.select_related(
-                    "cluster", "type", "sector"
-                ).prefetch_related(
-                    models.Prefetch(
-                        "fields",
-                        queryset=field_model.objects.filter(is_actual=False),
-                    )
+                include_actuals = False
+            else:
+                include_actuals = True
+        if not include_actuals:
+            queryset = ProjectSpecificFields.objects.select_related(
+                "cluster", "type", "sector"
+            ).prefetch_related(
+                models.Prefetch(
+                    "fields",
+                    queryset=ProjectField.objects.filter(is_actual=False).order_by(
+                        "sort_order"
+                    ),
                 )
-                return get_object_or_404(
-                    queryset,
-                    cluster_id=self.kwargs["cluster_id"],
-                    type_id=self.kwargs["type_id"],
-                    sector_id=self.kwargs["sector_id"],
+            )
+        else:
+            queryset = ProjectSpecificFields.objects.select_related(
+                "cluster", "type", "sector"
+            ).prefetch_related(
+                models.Prefetch(
+                    "fields",
+                    queryset=ProjectField.objects.order_by("sort_order"),
                 )
-
-        queryset = ProjectSpecificFields.objects.select_related(
-            "cluster", "type", "sector"
-        ).prefetch_related(
-            "fields",
-        )
+            )
         return get_object_or_404(
             queryset,
             cluster_id=self.kwargs["cluster_id"],
@@ -198,6 +202,12 @@ class ProjectSpecificFieldsListView(generics.RetrieveAPIView):
                     (projects not approved don't return actual fields).
                 """,
                 type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                "include_actuals",
+                openapi.IN_QUERY,
+                description="Include actual fields in the response. Is ignored if project_id is provided.",
+                type=openapi.TYPE_BOOLEAN,
             ),
         ]
     )
