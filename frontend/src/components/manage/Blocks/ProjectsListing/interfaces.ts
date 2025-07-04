@@ -116,6 +116,7 @@ export type ProjectSpecificFields = {
   section: string
   options: OptionsType[]
   editable: boolean | null
+  sort_order: number
 }
 
 export type SpecificFieldsSectionProps = ProjectDataProps & {
