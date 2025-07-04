@@ -193,7 +193,8 @@ const ProjectCrossCuttingFields = ({
     event: ChangeEvent<HTMLInputElement>,
     field: string,
   ) => {
-    const value = event.target.value || null
+    const initialValue = event.target.value
+    const value = initialValue === '' ? null : initialValue
 
     if (!isNaN(Number(value))) {
       setProjectData((prevData) => ({
@@ -385,7 +386,7 @@ const ProjectCrossCuttingFields = ({
             <Label>{tableColumns.total_fund}</Label>
             <SimpleInput
               id={total_fund as string}
-              value={total_fund}
+              value={total_fund ?? ''}
               onChange={(event) =>
                 handleChangeNumericValues(event, 'total_fund')
               }
@@ -398,7 +399,7 @@ const ProjectCrossCuttingFields = ({
             <Label>{tableColumns.support_cost_psc}</Label>
             <SimpleInput
               id={support_cost_psc as string}
-              value={support_cost_psc}
+              value={support_cost_psc ?? ''}
               onChange={(event) =>
                 handleChangeNumericValues(event, 'support_cost_psc')
               }

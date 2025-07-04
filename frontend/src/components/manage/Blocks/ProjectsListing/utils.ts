@@ -8,6 +8,7 @@ import {
   ProjectFilesObject,
   ProjectFile,
   OptionsType,
+  ProjectTypeApi,
 } from './interfaces'
 import { formatDecimalValue } from '@ors/helpers'
 
@@ -194,10 +195,15 @@ export const getProjIdentifiersErrors = (
 export const checkInvalidValue = (value: any) =>
   isNil(value) || value === '' || value.length === 0
 
-const getFieldErrors = (fields: string[], data: any) =>
+const getFieldErrors = (
+  fields: string[],
+  data: any,
+  project: ProjectTypeApi | undefined,
+) =>
   fields.reduce((acc: any, field) => {
     acc[field] = checkInvalidValue(data[field as keyof typeof fields])
-      ? ['title', 'project_type', 'sector'].includes(field)
+      ? ['title', 'project_type', 'sector'].includes(field) ||
+        project?.submission_status !== 'Draft'
         ? ['This field is required.']
         : ['This field is required for submission.']
       : []
@@ -209,6 +215,7 @@ export const getCrossCuttingErrors = (
   crossCuttingFields: CrossCuttingFields,
   errors: { [key: string]: [] },
   mode: string,
+  project: ProjectTypeApi | undefined,
 ) => {
   const requiredFields = [
     'title',
@@ -233,7 +240,7 @@ export const getCrossCuttingErrors = (
     mode === 'edit' ? requiredFields : requiredFields.slice(0, 3)
 
   return {
-    ...getFieldErrors(fieldsToCheck, crossCuttingFields),
+    ...getFieldErrors(fieldsToCheck, crossCuttingFields, project),
     ...(dayjs(project_end_date).isBefore(dayjs(project_start_date)) && {
       project_end_date: ['Start date cannot be later than end date.'],
     }),
@@ -276,6 +283,7 @@ export const getSpecificFieldsErrors = (
   specificFields: ProjectSpecificFields[],
   errors: { [key: string]: [] },
   mode: string,
+  project?: ProjectTypeApi,
 ) => {
   const fieldNames = map(
     filter(
@@ -290,8 +298,8 @@ export const getSpecificFieldsErrors = (
     getDefaultImpactErrors(projectSpecificFields) ?? {}
 
   const sectionErrors =
-    mode === 'edit'
-      ? (getFieldErrors(fieldNames, projectSpecificFields) ?? {})
+    mode === 'edit' && project
+      ? (getFieldErrors(fieldNames, projectSpecificFields, project) ?? {})
       : {}
   const updatedErrors = { ...sectionErrors, ...defaultImpactErrors, ...errors }
 
