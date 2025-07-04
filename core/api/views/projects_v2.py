@@ -638,7 +638,7 @@ class ProjectV2ViewSet(
                 openapi.IN_QUERY,
                 description="If set to true, the response will include the project details.",
                 type=openapi.TYPE_BOOLEAN,
-            )
+            ),
         ],
         operation_description="""
             List all projects associated with the meta project

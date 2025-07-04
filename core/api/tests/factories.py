@@ -419,6 +419,7 @@ class ProjectFieldFactory(factory.django.DjangoModelFactory):
     table = factory.Faker("pystr", max_chars=100)
     data_type = factory.Faker("pystr", max_chars=100)
     section = factory.Faker("pystr", max_chars=100)
+    sort_order = factory.Faker("random_int", min=1, max=100)
 
 
 class MetaProjectFactory(factory.django.DjangoModelFactory):

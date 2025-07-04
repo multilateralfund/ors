@@ -427,6 +427,8 @@ def import_fields(file_path):
 
     @param file_path = str (file path for import file)
     """
+
+    ProjectField.objects.all().delete()
     with open(file_path, "r", encoding="utf8") as f:
         fields_json = json.load(f)
 
@@ -442,6 +444,7 @@ def import_fields(file_path):
             "data_type": field_json["DATA_TYPE"],
             "section": field_json["SECTION"],
             "is_actual": field_json.get("IS_ACTUAL", False),
+            "sort_order": field_json["SORT_ORDER"],
         }
 
         ProjectField.objects.update_or_create(

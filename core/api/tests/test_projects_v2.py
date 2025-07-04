@@ -2012,6 +2012,7 @@ class TestProjectListPreviousTranches:
             table="project",
             data_type="number",
             section="Impact",
+            sort_order=1,
         )
         field2 = ProjectFieldFactory.create(
             import_name="number_of_female_technicians_trained_actual",
@@ -2022,6 +2023,7 @@ class TestProjectListPreviousTranches:
             data_type="number",
             section="Impact",
             is_actual=True,
+            sort_order=2,
         )
         field3 = ProjectFieldFactory.create(
             import_name="total_number_of_trainers_trained_actual",
@@ -2032,6 +2034,7 @@ class TestProjectListPreviousTranches:
             data_type="number",
             section="Impact",
             is_actual=True,
+            sort_order=3,
         )
         project_specific_fields.fields.add(field1, field2, field3)
 
