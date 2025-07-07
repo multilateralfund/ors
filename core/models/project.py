@@ -130,6 +130,10 @@ class Project(models.Model):
         null=True,
         blank=True,
     )
+    production = models.BooleanField(
+        default=False,
+        help_text="If the project is a production project, it will be used for production analysis",
+    )
 
     bp_activity = models.ForeignKey(
         "BPActivity",

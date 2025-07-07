@@ -121,6 +121,14 @@ class ProjectCluster(models.Model):
             as production projects
         """,
     )
+    production = models.BooleanField(
+        default=False,
+        null=True,
+        help_text="""
+            If True, projects with this cluster will be considered as production projects.
+            If Null, the cluster allows both values.
+        """,
+    )
     sort_order = models.FloatField(null=True, blank=True)
 
     objects = ProjectClusterManager()
