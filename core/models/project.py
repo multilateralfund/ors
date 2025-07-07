@@ -159,6 +159,7 @@ class Project(models.Model):
         related_name="bp_projects",
     )
     bp_activity_title = models.CharField(max_length=255, blank=True)
+    bp_activity_json = models.JSONField(blank=True, null=True)
 
     latest_project = models.ForeignKey(
         "self",

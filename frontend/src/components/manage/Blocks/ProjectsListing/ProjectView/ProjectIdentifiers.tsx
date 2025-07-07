@@ -3,9 +3,30 @@ import { booleanDetailItem, detailItem } from './ViewHelperComponents'
 import { ProjectTypeApi } from '../interfaces'
 import { tableColumns } from '../constants'
 
+import { BPTable } from '@ors/components/manage/Blocks/Table/BusinessPlansTable/BusinessPlansTable'
+
 import { Divider } from '@mui/material'
 
 const ProjectIdentifiers = ({ project }: { project: ProjectTypeApi }) => {
+  const bpActivity = {
+    ...project.bp_activity,
+    get display_internal_id(): string {
+      const countryAbbr = this.country?.abbr ?? ''
+      const agency = this.agency?.name ?? ''
+      const id = this.id?.toString() ?? ''
+      return `${agency}-${countryAbbr}-0000${id}`
+    },
+  }
+  const bp = bpActivity?.business_plan
+
+  const bpYearRange = bp
+    ? {
+        year_start: bp.year_start,
+        year_end: bp.year_end,
+        status: bp.status,
+      }
+    : {}
+
   return (
     <>
       <SectionTitle>Identifiers</SectionTitle>
@@ -26,7 +47,28 @@ const ProjectIdentifiers = ({ project }: { project: ProjectTypeApi }) => {
       <Divider className="my-6" />
 
       <SectionTitle>Business Plan</SectionTitle>
-      {detailItem(tableColumns.bp_activity, project.bp_activity?.toString())}
+      {bp ? (
+        <>
+          <div>
+            Business plan {bp.name} {' - '}
+            <span>(Meeting: {bp.meeting_number})</span>
+            {bp.decision_id ? (
+              <span>(Decision: {bp.decision_number})</span>
+            ) : null}
+          </div>
+          <BPTable
+            yearRanges={[bpYearRange]}
+            results={[bpActivity]}
+            isProjectsSection={true}
+            loaded={true}
+            loading={false}
+            filters={{
+              year_start: bp.year_start,
+              year_end: bp.year_end,
+            }}
+          />
+        </>
+      ) : null}
     </>
   )
 }

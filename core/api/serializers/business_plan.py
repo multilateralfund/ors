@@ -82,6 +82,8 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
     updated_by = serializers.StringRelatedField(
         read_only=True, source="updated_by.username"
     )
+    meeting_number = serializers.SerializerMethodField()
+    decision_number = serializers.SerializerMethodField()
 
     class Meta:
         model = BusinessPlan
@@ -91,11 +93,23 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
             "status",
             "year_start",
             "year_end",
+            "meeting_number",
             "meeting_id",
             "decision_id",
+            "decision_number",
             "updated_at",
             "updated_by",
         ]
+
+    def get_meeting_number(self, obj):
+        if obj.meeting:
+            return obj.meeting.number
+        return None
+
+    def get_decision_number(self, obj):
+        if obj.decision:
+            return obj.decision.number
+        return None
 
 
 class BPActivityExportSerializer(serializers.ModelSerializer):

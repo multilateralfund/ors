@@ -82,8 +82,10 @@ const LinkedBPTable = ({
       {bp ? (
         <div>
           Business plan {bp.name} {' - '}
-          <span>(Meeting: {bp.meeting_id})</span>
-          {bp.decision_id ? <span>(Decision: {bp.decision_id})</span> : null}
+          <span>(Meeting: {bp.meeting_number})</span>
+          {bp.decision_id ? (
+            <span>(Decision: {bp.decision_number})</span>
+          ) : null}
         </div>
       ) : null}
       <LatestEndorsedBPActivities
