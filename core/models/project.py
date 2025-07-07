@@ -34,7 +34,19 @@ class MetaProject(models.Model):
     )
     type = models.CharField(max_length=255, choices=MetaProjectType.choices)
     code = models.CharField(max_length=255, null=True, blank=True)
+    new_code = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text="""
+        New code generated for the metaproject. The code will include all clusters,
+        unlike the old code which allows only one.
+        Format: country_code/cluster_code1/cluster_code2/.../serial_number
+        """,
+    )
     pcr_project_id = models.CharField(max_length=255, null=True, blank=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.type} {self.pcr_project_id}"

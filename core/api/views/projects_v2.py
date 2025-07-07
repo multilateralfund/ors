@@ -496,7 +496,6 @@ class ProjectV2ViewSet(
         if not meta_project:
             # Create a new meta project if none exists
             meta_project = MetaProject.objects.create()
-            # TODO: we will need to select the lead agency in this case
 
         # Associate all projects with the meta project
         project_objs.update(meta_project=meta_project)

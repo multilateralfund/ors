@@ -20,6 +20,7 @@ from core.models.project import (
     ProjectFile,
     ProjectOdsOdp,
 )
+from core.utils import get_meta_project_code, get_meta_project_new_code
 from core.models import (
     Blend,
     Substance,
@@ -714,6 +715,12 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
         else:
             project.meta_project = MetaProject.objects.create(
                 lead_agency=project.agency,
+                code=get_meta_project_code(
+                    project.country,
+                    project.cluster,
+                    project.serial_number_legacy,
+                ),
+                new_code=get_meta_project_new_code([project]),
             )
         project.save()
         log_project_history(project, user, HISTORY_DESCRIPTION_CREATE)

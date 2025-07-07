@@ -2,8 +2,7 @@
 
 # the max year for the cp reports to be imported
 # if the year is greater than this value, the cp report will not be imported
-from core.models.project import Project
-
+from core.models.project import MetaProject, Project
 
 IMPORT_DB_MAX_YEAR = 2018
 # the records from 95-04 are the oldest records that we have
@@ -29,6 +28,29 @@ def get_meta_project_code(country, cluster, serial_number=None):
             + 1
         )
     return f"{country_code}/{cluster_code}/{serial_number}"
+
+
+def get_meta_project_new_code(projects):
+    """
+    Get a new meta project code based on the existing projects
+
+    @param projects: QuerySet of Project objects
+
+    @return: str
+    """
+    country = projects[0].country if projects else None
+    country_code = country.iso3 or country.abbr if country else "-"
+    clusters_codes = sorted(
+        list({getattr(project.cluster, "code", "-") for project in projects})
+    )
+
+    new_code_clusters = "/".join(clusters_codes)
+    code_prefix = f"{country_code}/{new_code_clusters}"
+
+    # Count existing MetaProjects with new_code starting with this prefix
+    count = MetaProject.objects.filter(new_code__startswith=code_prefix).count()
+    serial_number = count + 1
+    return f"{code_prefix}/{serial_number}"
 
 
 def get_project_sub_code(
