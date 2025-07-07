@@ -4,6 +4,7 @@ import { useContext, useEffect, useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
+import NotFound from '@ors/components/theme/Views/NotFound'
 import CustomLink from '@ors/components/ui/Link/Link'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
@@ -50,6 +51,10 @@ const ProjectViewWrapper = () => {
       )
     } else setSpecificFields([])
   }, [cluster_id, project_type_id, sector_id])
+
+  if (project?.error) {
+    return <NotFound />
+  }
 
   return (
     <>
