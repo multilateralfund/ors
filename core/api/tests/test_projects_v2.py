@@ -318,6 +318,7 @@ def setup_project_create(
         "quantity_hfc_23_by_product_generation_rate": 12.32,
         "quantity_hfc_23_by_product_destroyed": 2.31,
         "quantity_hfc_23_by_product_emitted": 23.32,
+        "production": True,
         "production_control_type": "reduction",
         "products_manufactured": "test products manufactured",
         "programme_officer": "Officer",
@@ -797,6 +798,7 @@ class TestCreateProjects(BaseTest):
         assert response.data["project_type"]["name"] == project_type.name
         assert response.data["project_type"]["code"] == project_type.code
         assert response.data["production_control_type"] == "Reduction"
+        assert response.data["production"] is True
         assert response.data["sector_id"] == data["sector"]
         assert response.data["sector"]["id"] == subsector.sector.id
         assert response.data["sector"]["name"] == subsector.sector.name
@@ -1002,12 +1004,14 @@ class TestProjectsV2Update:
         update_data = {
             "title": "Into the Spell",
             "agency": new_agency.id,
+            "production": True,
         }
         response = self.client.patch(project_url, update_data, format="json")
         assert response.status_code == 200, response.data
 
         project.refresh_from_db()
         assert project.title == "Into the Spell"
+        assert project.production is True
         assert project.code == get_project_sub_code(
             project.country,
             project.cluster,

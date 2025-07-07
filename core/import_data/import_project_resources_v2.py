@@ -142,11 +142,17 @@ def import_project_clusters(file_path):
         if row["Action"] == "Rename":
             ProjectCluster.objects.filter(name=row["Old name"]).update(name=row["Name"])
 
+        production = False
+        if row["Production"] == "Y":
+            production = True
+        elif row["Production"] == "Both":
+            production = None
         cluster_data = {
             "name": row["Name"],
             "code": row["Acronym"],
             "category": row["Category"].upper(),
             "group": row["Dashboard group"],
+            "production": production,
             "sort_order": index,
         }
         ProjectCluster.objects.update_or_create(

@@ -39,6 +39,7 @@ class ProjectClusterSerializer(serializers.ModelSerializer):
             "name",
             "code",
             "category",
+            "production",
             "sort_order",
         ]
 
