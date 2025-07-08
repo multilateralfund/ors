@@ -2,16 +2,16 @@ import { SubmitButton } from '../HelperComponents'
 import { Typography, Box, Button, Modal } from '@mui/material'
 
 const SubmitTranchesWarningModal = ({
-  submitProject,
+  setIsSubmitModalOpen,
   isTrancheWarningOpen,
   setIsTrancheWarningOpen,
 }: {
-  submitProject: () => void
+  setIsSubmitModalOpen: (isModalOpen: boolean) => void
   isTrancheWarningOpen: boolean
-  setIsTrancheWarningOpen: (isModalOpen: boolean) => void
+  setIsTrancheWarningOpen: (isWarningOpen: boolean) => void
 }) => {
   const onSubmit = () => {
-    submitProject()
+    setIsSubmitModalOpen(true)
     setIsTrancheWarningOpen(false)
   }
 
@@ -32,12 +32,12 @@ const SubmitTranchesWarningModal = ({
           with the submission of the current tranche?
         </Typography>
         <div className="ml-auto flex gap-1">
-          <SubmitButton title="Submit" onSubmit={onSubmit} />
+          <SubmitButton title="Continue" onSubmit={onSubmit} />
           <Button
             className="border border-solid border-[#F2F2F2] bg-[#F2F2F2] text-base leading-none text-[#4D4D4D] hover:border-primary hover:bg-[#F2F2F2] hover:text-[#4D4D4D]"
             onClick={() => setIsTrancheWarningOpen(false)}
           >
-            Close
+            Cancel
           </Button>
         </div>
       </Box>
