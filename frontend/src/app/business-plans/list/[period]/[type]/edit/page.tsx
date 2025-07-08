@@ -5,6 +5,7 @@ import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import usePageTitle from '@ors/hooks/usePageTitle'
 import { useStore } from '@ors/store'
+
 import { Redirect } from 'wouter'
 
 export default function BusinessPlansEditConsolidated() {

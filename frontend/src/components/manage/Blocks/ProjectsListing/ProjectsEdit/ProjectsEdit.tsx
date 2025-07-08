@@ -20,7 +20,7 @@ import {
   ProjectSpecificFields,
   ProjectTypeApi,
   SpecificFields,
-  TrancheDataType,
+  RelatedProjectsType,
   TrancheErrorType,
 } from '../interfaces'
 import {
@@ -117,6 +117,7 @@ const ProjectsEdit = ({
     errorText: '',
     isError: false,
     tranchesData: [],
+    loaded: false,
   })
 
   const nonFieldsErrors = getNonFieldErrors(errors)
@@ -144,7 +145,7 @@ const ProjectsEdit = ({
             crossCuttingFields: {
               project_type: project.project_type_id,
               sector: project.sector_id,
-              subsector_ids: map(project.subsectors, 'id'),
+              subsector_ids: map(project.subsectors ?? [], 'id'),
               is_lvc: project.is_lvc,
               title: project.title,
               description: project.description,
@@ -202,7 +203,12 @@ const ProjectsEdit = ({
   const tranche = projectData.projectSpecificFields?.tranche ?? 0
 
   const getTrancheErrors = async () => {
-    setTrancheErrors({ errorText: '', isError: false, tranchesData: [] })
+    setTrancheErrors({
+      errorText: '',
+      isError: false,
+      tranchesData: [],
+      loaded: false,
+    })
 
     try {
       const result = await api(
@@ -219,9 +225,10 @@ const ProjectsEdit = ({
             'A new tranche cannot be created unless a previous one exists.',
           isError: true,
           tranchesData: [],
+          loaded: true,
         })
       } else {
-        const tranches = result.map((entry: TrancheDataType) => {
+        const tranches = result.map((entry: RelatedProjectsType) => {
           return {
             title: entry.title,
             id: entry.id,
@@ -230,24 +237,23 @@ const ProjectsEdit = ({
           }
         })
         const trancheError = tranches.find(
-          (tranche: TrancheDataType) => tranche.errors.length > 0,
+          (tranche: RelatedProjectsType) => tranche.errors.length > 0,
         )
 
-        if (trancheError) {
-          setTrancheErrors({
-            errorText: trancheError.errors[0].message,
-            isError: false,
-            tranchesData: tranches,
-          })
-        } else {
-          setTrancheErrors({
-            errorText: '',
-            isError: false,
-            tranchesData: tranches,
-          })
-        }
+        setTrancheErrors({
+          errorText: trancheError ? trancheError.errors[0].message : '',
+          isError: false,
+          tranchesData: tranches,
+          loaded: true,
+        })
       }
     } catch (error) {
+      setTrancheErrors({
+        errorText: '',
+        isError: false,
+        tranchesData: [],
+        loaded: true,
+      })
       enqueueSnackbar(
         <>
           An error occurred during previous tranches validation. Please try
@@ -264,7 +270,12 @@ const ProjectsEdit = ({
 
   useEffect(() => {
     if (mode !== 'edit' || tranche <= 1) {
-      setTrancheErrors({ errorText: '', isError: false, tranchesData: [] })
+      setTrancheErrors({
+        errorText: '',
+        isError: false,
+        tranchesData: [],
+        loaded: true,
+      })
     } else if (mode === 'edit' && canViewProjects) {
       debouncedGetTrancheErrors()
     }

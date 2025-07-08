@@ -47,15 +47,18 @@ export const getDefaultValues = <T>(
   reduce(
     fields,
     (acc: any, field) => {
+      const dataType = field.data_type
+      const fieldName = field.write_field_name
+
       if (data) {
-        acc[field.write_field_name] =
-          field.data_type === 'drop_down'
+        acc[fieldName] =
+          dataType === 'drop_down'
             ? getFieldId<T>(field, data)
-            : field.data_type === 'boolean'
-              ? (data[field.write_field_name] ?? false)
-              : data[field.write_field_name]
+            : dataType === 'boolean'
+              ? (data[fieldName] ?? false)
+              : data[fieldName]
       } else {
-        acc[field.write_field_name] = field.data_type === 'text' ? '' : null
+        acc[fieldName] = dataType === 'text' ? '' : null
       }
       return acc
     },
@@ -117,6 +120,16 @@ export const formatNumberColumns = (
     : ''
 }
 
+const normalizeValues = (data: Record<string, any>) =>
+  Object.fromEntries(
+    Object.entries(data).map(([key, value]) => [
+      key,
+      value === '' || (Array.isArray(value) && value.length === 0)
+        ? null
+        : value,
+    ]),
+  )
+
 export const formatSubmitData = (
   projectData: ProjectData,
   specificFields: ProjectSpecificFields[],
@@ -158,9 +171,11 @@ export const formatSubmitData = (
       'is_lead_agency',
     ]),
     bp_activity: bpLinking.bpId,
-    ...crossCuttingFields,
-    ...crtProjectSpecificFields,
-    ods_odp: map(crtOdsOdpFields, (ods_odp) => omit(ods_odp, 'id')),
+    ...normalizeValues(crossCuttingFields),
+    ...normalizeValues(crtProjectSpecificFields),
+    ods_odp: map(crtOdsOdpFields, (ods_odp) =>
+      omit(normalizeValues(ods_odp), 'id'),
+    ),
   }
 }
 

@@ -1,0 +1,111 @@
+import { useEffect, useState } from 'react'
+
+import Loading from '@ors/components/theme/Loading/Loading'
+import CustomLink from '@ors/components/ui/Link/Link'
+import { CancelButton } from '../HelperComponents'
+import { useGetProjectsForSubmission } from '../hooks/useGetProjectsForSubmission'
+import { ProjectTypeApi, RelatedProjectsType } from '../interfaces'
+
+import { Modal, Typography, Box, Divider } from '@mui/material'
+import { FaExternalLinkAlt } from 'react-icons/fa'
+import { debounce, map } from 'lodash'
+
+const SubmitProjectModal = ({
+  id,
+  isModalOpen,
+  setIsModalOpen,
+  editProject,
+}: {
+  id: number
+  isModalOpen: boolean
+  setIsModalOpen: (isOpen: boolean) => void
+  editProject: (withNavigation: boolean) => void
+}) => {
+  const [associatedProjects, setAssociatedProjects] = useState<
+    RelatedProjectsType[]
+  >([])
+  const [loaded, setLoaded] = useState<boolean>(false)
+
+  const debouncedGetProjectsForSubmission = debounce(() => {
+    useGetProjectsForSubmission(id, setAssociatedProjects, setLoaded)
+  }, 0)
+
+  useEffect(() => {
+    debouncedGetProjectsForSubmission()
+  }, [])
+
+  const onEditProject = () => {
+    editProject(true)
+    setIsModalOpen(false)
+  }
+
+  return (
+    <div key={JSON.stringify(associatedProjects)}>
+      <Loading
+        className="!fixed bg-action-disabledBackground"
+        active={!loaded}
+      />
+      <Modal
+        aria-labelledby="submit-modal"
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        keepMounted
+      >
+        <Box className="flex w-full max-w-2xl flex-col px-0 absolute-center">
+          <Typography className="mx-6 mb-4 mt-1 text-2xl font-medium">
+            Submit project
+          </Typography>
+          <div className="mb-4 flex flex-col gap-6 bg-[#F5F5F5] p-6">
+            <div className="flex flex-col">
+              <span className="text-lg">
+                Changes made to this project will be saved.
+              </span>
+              <span className="text-lg">
+                Together with this project, you will be submitting the following
+                projects:
+              </span>
+            </div>
+            <div className="flex flex-col rounded-lg bg-white p-4">
+              {map(
+                associatedProjects,
+                (project: ProjectTypeApi, index: number) => (
+                  <div key={project.id}>
+                    <span className="flex items-center gap-2 text-lg normal-case leading-tight !text-inherit">
+                      <FaExternalLinkAlt
+                        size={16}
+                        className="min-h-[16px] min-w-[16px]"
+                      />
+                      {project.title}
+                    </span>
+                    {index !== associatedProjects.length - 1 && (
+                      <Divider className="my-3" />
+                    )}
+                  </div>
+                ),
+              )}
+            </div>
+            <span className="text-lg">
+              Please ensure these projects are complete and ready to be
+              submitted to the Secretariat.
+            </span>
+          </div>
+          <div className="ml-auto mr-6 flex flex-wrap gap-3">
+            <CustomLink
+              className="h-10 px-4 py-2 text-lg uppercase"
+              onClick={onEditProject}
+              href={null}
+              color="secondary"
+              variant="contained"
+              button
+            >
+              Submit associated projects
+            </CustomLink>
+            <CancelButton onClick={() => setIsModalOpen(false)} />
+          </div>
+        </Box>
+      </Modal>
+    </div>
+  )
+}
+
+export default SubmitProjectModal

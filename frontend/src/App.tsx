@@ -51,6 +51,7 @@ import ProjectsAssociationPage from '@ors/app/projects_listing/associate/page'
 import ProjectsExportPage from '@ors/app/projects_listing/export/page'
 import ProjectsCreatePage from '@ors/app/projects_listing/create/page'
 import ProjectsEditPage from '@ors/app/projects_listing/[project_id]/edit/page'
+import ProjectsSubmitPage from '@ors/app/projects_listing/[project_id]/submit/page'
 import ProjectsListingProjectPage from '@ors/app/projects_listing/[project_id]/page'
 import ProjectsListingArchiveProjectPage from '@ors/app/projects_listing/[project_id]/archive/page'
 
@@ -284,6 +285,11 @@ export default function App() {
         <Route path="/projects-listing/:project_id/edit">
           <PermissionsProvider>
             <ProjectsEditPage mode="edit" />
+          </PermissionsProvider>
+        </Route>
+        <Route path="/projects-listing/:project_id/submit">
+          <PermissionsProvider>
+            <ProjectsSubmitPage />
           </PermissionsProvider>
         </Route>
         <Route path="/projects-listing/create/:project_id/copy">

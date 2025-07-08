@@ -1,22 +1,16 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 
-import Link from '@ors/components/ui/Link/Link'
 import ErrorAlert from '@ors/components/theme/Alerts/ErrorAlert'
 import { widgets } from './SpecificFieldsHelpers'
-import { ErrorTag } from '../HelperComponents'
+import { ErrorTag, RelatedProjects } from '../HelperComponents'
 import {
   SpecificFieldsSectionProps,
   ProjectData,
   TrancheErrors,
-  TrancheDataType,
 } from '../interfaces'
 
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5'
-import { Typography, Divider } from '@mui/material'
-import { FaExternalLinkAlt } from 'react-icons/fa'
-import { SlReload } from 'react-icons/sl'
-import { map } from 'lodash'
-import cx from 'classnames'
+import { Typography } from '@mui/material'
 
 const ProjectOverview = ({
   projectData,
@@ -29,7 +23,7 @@ const ProjectOverview = ({
 }: SpecificFieldsSectionProps & TrancheErrors) => {
   const [open, setOpen] = useState(false)
 
-  const { errorText, isError, tranchesData } = trancheErrors || {}
+  const { errorText, isError, tranchesData, loaded } = trancheErrors || {}
   const tranche = projectData.projectSpecificFields?.tranche ?? 0
 
   const OpenedTrancheError = () => (
@@ -48,46 +42,11 @@ const ProjectOverview = ({
           </Typography>
         }
       />
-      <div className="flex flex-col">
-        {map(tranchesData, (tranche: TrancheDataType) => {
-          const hasErrors = tranche.errors.length > 0
-
-          return (
-            <div key={tranche.id}>
-              <Link
-                component="a"
-                className={cx(
-                  'flex items-center gap-2 text-lg normal-case leading-tight !text-inherit no-underline',
-                  { '!text-[#801F00]': hasErrors },
-                )}
-                href={`/projects-listing/${tranche.id}/edit`}
-                target="_blank"
-                rel="noopener noreferrer nofollow"
-                onClick={(e: React.SyntheticEvent) => e.stopPropagation()}
-              >
-                <FaExternalLinkAlt
-                  size={16}
-                  className="min-h-[16px] min-w-[16px]"
-                />
-                {tranche.title}
-                {hasErrors && <ErrorTag />}
-              </Link>
-              <Divider className="my-3" />
-            </div>
-          )
-        })}
-        <div
-          className="mt-4 flex items-center gap-2 text-lg normal-case leading-none"
-          onClick={() => {
-            if (getTrancheErrors) {
-              getTrancheErrors()
-            }
-          }}
-        >
-          <SlReload />
-          Refresh status
-        </div>
-      </div>
+      <RelatedProjects
+        data={tranchesData}
+        getErrors={getTrancheErrors}
+        isLoaded={loaded}
+      />
     </div>
   )
 

@@ -1,8 +1,9 @@
 import { useContext, useMemo, useState } from 'react'
 
-import AddComponentModal from './AddComponentModal'
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import SubmitTranchesWarningModal from './SubmitTranchesWarningModal'
+import SubmitProjectModal from './SubmitProjectModal'
+import AddComponentModal from './AddComponentModal'
 import { IncreaseVersionButton } from '../HelperComponents'
 import {
   checkInvalidValue,
@@ -16,7 +17,7 @@ import {
   ProjectFile,
   ProjectTypeApi,
   SubmitActionButtons,
-  TrancheDataType,
+  RelatedProjectsType,
   TrancheErrorType,
 } from '../interfaces'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
@@ -59,11 +60,12 @@ const EditActionButtons = ({
     useContext(PermissionsContext)
 
   const showSubmitTranchesWarningModal = trancheErrors?.tranchesData?.find(
-    (tranche: TrancheDataType) => tranche.warnings.length > 0,
+    (tranche: RelatedProjectsType) => tranche.warnings.length > 0,
   )
 
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isComponentModalOpen, setIsComponentModalOpen] = useState(false)
   const [isTrancheWarningOpen, setIsTrancheWarningOpen] = useState(false)
+  const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
 
   const { id, submission_status } = project
   const { crossCuttingFields, projectSpecificFields } = projectData
@@ -127,7 +129,7 @@ const EditActionButtons = ({
     })
   }
 
-  const editProject = async () => {
+  const editProject = async (withNavigation: boolean = false) => {
     setIsLoading(true)
     setFileErrors('')
     setOtherErrors('')
@@ -172,6 +174,10 @@ const EditActionButtons = ({
       })
       setProjectId(result.id)
       setProjectTitle(result.title)
+
+      if (withNavigation) {
+        setLocation(`/projects-listing/${id}/submit`)
+      }
     } catch (error) {
       await handleErrors(error)
     } finally {
@@ -180,26 +186,11 @@ const EditActionButtons = ({
     }
   }
 
-  const submitProject = async () => {
-    await editProject()
-    try {
-      await api(`api/projects/v2/${id}/submit`, {
-        method: 'POST',
-      })
-      setLocation(`/projects-listing/${id}`)
-    } catch (error) {
-      await handleErrors(error)
-    } finally {
-      setIsLoading(false)
-      setHasSubmitted(true)
-    }
-  }
-
   const onSubmitProject = () => {
     if (showSubmitTranchesWarningModal) {
       setIsTrancheWarningOpen(true)
     } else {
-      submitProject()
+      setIsSubmitModalOpen(true)
     }
   }
 
@@ -244,7 +235,9 @@ const EditActionButtons = ({
           })}
           size="large"
           variant="contained"
-          onClick={editProject}
+          onClick={() => {
+            editProject()
+          }}
           disabled={isSaveDisabled}
         >
           Update project
@@ -255,7 +248,7 @@ const EditActionButtons = ({
           className={cx('px-4 py-2 shadow-none', enabledButtonClassname)}
           size="large"
           variant="contained"
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => setIsComponentModalOpen(true)}
         >
           Add additional component
         </Button>
@@ -280,12 +273,27 @@ const EditActionButtons = ({
           />
         </>
       )}
-      {isModalOpen && (
-        <AddComponentModal {...{ id, isModalOpen, setIsModalOpen }} />
+      {isComponentModalOpen && (
+        <AddComponentModal
+          id={id}
+          isModalOpen={isComponentModalOpen}
+          setIsModalOpen={setIsComponentModalOpen}
+        />
+      )}
+      {isSubmitModalOpen && (
+        <SubmitProjectModal
+          isModalOpen={isSubmitModalOpen}
+          setIsModalOpen={setIsSubmitModalOpen}
+          {...{ id, editProject }}
+        />
       )}
       {showSubmitTranchesWarningModal && isTrancheWarningOpen && (
         <SubmitTranchesWarningModal
-          {...{ submitProject, isTrancheWarningOpen, setIsTrancheWarningOpen }}
+          {...{
+            isTrancheWarningOpen,
+            setIsTrancheWarningOpen,
+            setIsSubmitModalOpen,
+          }}
         />
       )}
     </div>

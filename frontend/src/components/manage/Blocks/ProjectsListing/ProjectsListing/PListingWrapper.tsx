@@ -10,6 +10,7 @@ import PListingAssociation from './PListingAssociation'
 import PListingProjects from './PListingProjects'
 import ExpandableMenu from './ExpandableMenu'
 import GenerateDBMenu from './GenerateDBMenu'
+import { CancelButton } from '../HelperComponents'
 import { getMenus } from '../utils'
 
 import { Modal, Typography, Button, Box } from '@mui/material'
@@ -105,15 +106,7 @@ export default function PListingWrapper() {
           >
             Copy Project
           </CustomLink>
-          <Button
-            className="h-10 border border-solid border-[#F2F2F2] bg-[#F2F2F2] px-4 py-2 text-[#4D4D4D] shadow-none hover:border-primary hover:bg-[#F2F2F2] hover:text-[#4D4D4D]"
-            color="primary"
-            size="large"
-            variant="contained"
-            onClick={() => setIsCopyModalOpen(false)}
-          >
-            Cancel
-          </Button>
+          <CancelButton onClick={() => setIsCopyModalOpen(false)} />
         </div>
       </Box>
     </Modal>

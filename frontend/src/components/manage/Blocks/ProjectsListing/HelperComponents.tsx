@@ -5,11 +5,13 @@ import {
   HeaderTag,
   VersionsDropdown,
 } from './ProjectVersions/ProjectVersionsComponents'
-import { ProjectTypeApi } from './interfaces'
+import { ProjectTypeApi, RelatedProjectsType } from './interfaces'
 
+import { Button, CircularProgress, Divider } from '@mui/material'
+import { FaExternalLinkAlt } from 'react-icons/fa'
 import { IoReturnUpBack } from 'react-icons/io5'
-import { Button } from '@mui/material'
-import { lowerCase } from 'lodash'
+import { SlReload } from 'react-icons/sl'
+import { lowerCase, map } from 'lodash'
 import cx from 'classnames'
 
 type ButtonProps = {
@@ -69,6 +71,18 @@ export const RedirectBackButton = () => (
   </div>
 )
 
+export const CancelButton = ({ onClick }: { onClick: any }) => (
+  <Button
+    className="h-10 border border-solid border-[#F2F2F2] bg-[#F2F2F2] px-4 py-2 text-[#4D4D4D] shadow-none hover:border-primary hover:bg-[#F2F2F2] hover:text-[#4D4D4D]"
+    color="primary"
+    size="large"
+    variant="contained"
+    onClick={onClick}
+  >
+    Cancel
+  </Button>
+)
+
 export const PageTitle = ({
   pageTitle,
   projectTitle,
@@ -76,12 +90,12 @@ export const PageTitle = ({
 }: {
   pageTitle: string
   projectTitle: string
-  project: ProjectTypeApi
+  project?: ProjectTypeApi
 }) => {
-  const { submission_status, code, code_legacy } = project
+  const { submission_status, code, code_legacy } = project || {}
 
   return (
-    <div className="flex gap-2.5">
+    <div className="flex flex-wrap gap-2.5">
       <span className="whitespace-nowrap font-medium text-[#4D4D4D]">
         {pageTitle}:
       </span>
@@ -144,5 +158,68 @@ export const VersionsList = ({
 export const ErrorTag = () => (
   <div className="h-[17px] rounded bg-[#801F00] p-1 pt-0.5 text-sm leading-none text-white">
     Incomplete
+  </div>
+)
+
+export const RelatedProjects = ({
+  data,
+  getErrors,
+  isLoaded,
+  canRefreshStatus = true,
+}: {
+  data?: RelatedProjectsType[]
+  getErrors?: () => void
+  isLoaded?: boolean
+  canRefreshStatus: boolean
+}) => (
+  <div className="flex flex-col">
+    {map(data, (entry) => {
+      const hasErrors = entry.errors.length > 0
+
+      return (
+        <div key={entry.id}>
+          <Link
+            component="a"
+            className={cx(
+              'flex items-center gap-2 text-lg normal-case leading-tight no-underline',
+              {
+                '!text-inherit': !hasErrors,
+                '!text-[#801F00]': hasErrors,
+              },
+            )}
+            href={`/projects-listing/${entry.id}/edit`}
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            onClick={(e: React.SyntheticEvent) => e.stopPropagation()}
+          >
+            <FaExternalLinkAlt
+              size={16}
+              className="min-h-[16px] min-w-[16px]"
+            />
+            {entry.title}
+            {hasErrors && <ErrorTag />}
+          </Link>
+          <Divider className="my-3" />
+        </div>
+      )
+    })}
+    {canRefreshStatus && (
+      <div className="mt-4 flex items-center gap-2">
+        <div
+          className="flex cursor-pointer items-center gap-2 text-lg normal-case leading-none"
+          onClick={() => {
+            if (getErrors) {
+              getErrors()
+            }
+          }}
+        >
+          <SlReload />
+          Refresh status
+        </div>
+        {!isLoaded && (
+          <CircularProgress color="inherit" size="16px" className="ml-1.5" />
+        )}
+      </div>
+    )}
   </div>
 )
