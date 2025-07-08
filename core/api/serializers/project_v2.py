@@ -303,10 +303,15 @@ class ProjectListV2Serializer(ProjectListSerializer):
         return data
 
     def get_bp_activity(self, obj: Project):
+        result = None
+
         if obj.bp_activity:
-            return BPActivityDetailSerializer(obj.bp_activity).data
+            result = BPActivityDetailSerializer(obj.bp_activity).data
+
         elif obj.bp_activity_json:
-            return obj.bp_activity_json
+            result = obj.bp_activity_json
+
+        return result
 
 
 class ProjectV2OdsOdpListSerializer(ProjectOdsOdpListSerializer):
@@ -687,12 +692,6 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
         subsectors_data = validated_data.pop("subsector_ids", [])
         associate_project_id = validated_data.pop("associate_project_id", None)
         bp_activity = validated_data.get("bp_activity", None)
-        business_plan = getattr(bp_activity, "business_plan", None)
-        validated_data["bp_year_start"] = getattr(business_plan, "year_start", None)
-        validated_data["bp_year_end"] = getattr(business_plan, "year_end", None)
-        validated_data["bp_meeting"] = getattr(business_plan, "meeting", None)
-        validated_data["bp_decision"] = getattr(business_plan, "decision", None)
-        validated_data["bp_activity_title"] = getattr(bp_activity, "title", "")
         if bp_activity:
             activity_serializer = BPActivityDetailSerializer(bp_activity)
             validated_data["bp_activity_json"] = activity_serializer.data
@@ -748,16 +747,9 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
         subsectors_data = validated_data.pop("subsector_ids", None)
         ods_odp_data = validated_data.pop("ods_odp", [])
         bp_activity = validated_data.get("bp_activity", None)
-        if instance.bp_activity != bp_activity:
-            business_plan = getattr(bp_activity, "business_plan", None)
-            validated_data["bp_year_start"] = getattr(business_plan, "year_start", None)
-            validated_data["bp_year_end"] = getattr(business_plan, "year_end", None)
-            validated_data["bp_meeting"] = getattr(business_plan, "meeting", None)
-            validated_data["bp_decision"] = getattr(business_plan, "decision", None)
-            validated_data["bp_activity_title"] = getattr(bp_activity, "title", "")
-            if bp_activity:
-                activity_serializer = BPActivityDetailSerializer(bp_activity)
-                validated_data["bp_activity_json"] = activity_serializer.data
+        if bp_activity and (instance.bp_activity != bp_activity):
+            activity_serializer = BPActivityDetailSerializer(bp_activity)
+            validated_data["bp_activity_json"] = activity_serializer.data
 
         super().update(instance, validated_data)
 

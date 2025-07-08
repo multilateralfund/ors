@@ -151,7 +151,7 @@ def setup_project_list(
             ProjectFactory.create(
                 title=f"Project {i}",
                 serial_number=i + 1,
-                date_received=f"2020-01-{i+1}",
+                date_received=f"2020-01-{i + 1}",
                 **project_data,
             )
 
@@ -373,7 +373,6 @@ class TestProjectV2List(BaseTest):
         secretariat_production_v3_edit_access_user,
         admin_user,
     ):
-
         def _test_user_permissions(user, expected_response_status, expected_count=None):
             self.client.force_authenticate(user=user)
             response = self.client.get(self.url)
@@ -758,7 +757,10 @@ class TestCreateProjects(BaseTest):
             "total_fund",
         ]
         for field in fields:
-            assert response.data[field] == data[field]
+            if field == "bp_activity":
+                assert response.data[field]["id"] == data[field]
+            else:
+                assert response.data[field] == data[field]
 
     def test_create_project(
         self,
@@ -1373,7 +1375,6 @@ class TestProjectVersioning:
         project_file,
         project_draft_status,
     ):
-
         self.client.force_authenticate(user=agency_user)
         url = reverse("project-v2-submit", args=(project.id,))
 
@@ -1587,7 +1588,6 @@ class TestProjectVersioning:
         project_file,
         project_submitted_status,
     ):
-
         self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
         url = reverse("project-v2-recommend", args=(project.id,))
 
@@ -1680,7 +1680,6 @@ class TestProjectVersioning:
         project,
         project_submitted_status,
     ):
-
         self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
         url = reverse("project-v2-withdraw", args=(project.id,))
 
@@ -1755,7 +1754,6 @@ class TestProjectVersioning:
         project,
         project_submitted_status,
     ):
-
         self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
         url = reverse("project-v2-send-back-to-draft", args=(project.id,))
 
@@ -1875,7 +1873,6 @@ class TestAssociateProject:
 
 
 class TestProjectListPreviousTranches:
-
     client = APIClient()
 
     def _prepare_projects(self, project1, project2, project_approved_status):
@@ -2078,7 +2075,6 @@ class TestProjectListPreviousTranches:
 
 
 class TestProjectListAssocitatedProjects:
-
     client = APIClient()
 
     def _prepare_projects(self, project1, project2, project_draft_status):

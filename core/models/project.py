@@ -142,23 +142,6 @@ class Project(models.Model):
         null=True,
         blank=True,
     )
-    bp_year_start = models.IntegerField(null=True, blank=True)
-    bp_year_end = models.IntegerField(null=True, blank=True)
-    bp_meeting = models.ForeignKey(
-        Meeting,
-        on_delete=models.PROTECT,
-        null=True,
-        blank=True,
-        related_name="bp_projects",
-    )
-    bp_decision = models.ForeignKey(
-        Decision,
-        on_delete=models.PROTECT,
-        null=True,
-        blank=True,
-        related_name="bp_projects",
-    )
-    bp_activity_title = models.CharField(max_length=255, blank=True)
     bp_activity_json = models.JSONField(blank=True, null=True)
 
     latest_project = models.ForeignKey(
