@@ -120,6 +120,21 @@ def get_headers_impact():
     ]
 
 
+def get_activity_data(data):
+    """Serialize Activity if it exists, otherwise use the saved json."""
+    result = None
+
+    if data.get("bp_activity"):
+        activity = BPActivity.objects.get(id=data["bp_activity"])
+        if activity:
+            result = BPActivityExportSerializer(activity).data
+
+    if not result:
+        result = data.get("bp_activity_json")
+
+    return result
+
+
 class ProjectsV2ProjectExport:
     wb: openpyxl.Workbook
     project: Project
@@ -139,17 +154,14 @@ class ProjectsV2ProjectExport:
         WriteOnlyBase(sheet, get_headers_identifiers()).write([data])
 
     def build_bp(self, data):
-        if data["bp_activity"]:
-            activity = BPActivity.objects.get(id=data["bp_activity"])
-        else:
-            return
-        sheet = self.add_sheet("Identifiers - BP Activity")
-
-        data = BPActivityExportSerializer(activity).data
-        writer = BPActivitiesWriter(self.wb, min_year=None, max_year=None)
-        del self.wb[writer.sheet.title]
-        writer.sheet = sheet
-        writer.write([data])
+        activity_data = get_activity_data(data)
+        if activity_data:
+            sheet = self.add_sheet("Identifiers - BP Activity")
+            writer = BPActivitiesWriter(self.wb, min_year=None, max_year=None)
+            # The BPActivitiesWriter creates a sheet that we don't need, replace it with our own
+            del self.wb[writer.sheet.title]
+            writer.sheet = sheet
+            writer.write([data])
 
     def build_cross_cutting(self, data):
         sheet = self.add_sheet("Cross-cutting")
