@@ -26,6 +26,8 @@ const SubmitProjectModal = ({
   >([])
   const [loaded, setLoaded] = useState<boolean>(false)
 
+  const hasAssociatedPojects = associatedProjects.length > 0
+
   const debouncedGetProjectsForSubmission = debounce(() => {
     useGetProjectsForSubmission(id, setAssociatedProjects, setLoaded)
   }, 0)
@@ -58,35 +60,36 @@ const SubmitProjectModal = ({
           <div className="mb-4 flex flex-col gap-6 bg-[#F5F5F5] p-6">
             <div className="flex flex-col">
               <span className="text-lg">
-                Changes made to this project will be saved.
-              </span>
-              <span className="text-lg">
-                Together with this project, you will be submitting the following
-                projects:
+                {hasAssociatedPojects
+                  ? 'All changes made to this project will be saved. The following associated projects will be submitted along with it:'
+                  : 'You are submitting this project to the MLFS. All changes will be saved.'}
               </span>
             </div>
-            <div className="flex flex-col rounded-lg bg-white p-4">
-              {map(
-                associatedProjects,
-                (project: ProjectTypeApi, index: number) => (
-                  <div key={project.id}>
-                    <span className="flex items-center gap-2 text-lg normal-case leading-tight !text-inherit">
-                      <FaExternalLinkAlt
-                        size={16}
-                        className="min-h-[16px] min-w-[16px]"
-                      />
-                      {project.title}
-                    </span>
-                    {index !== associatedProjects.length - 1 && (
-                      <Divider className="my-3" />
-                    )}
-                  </div>
-                ),
-              )}
-            </div>
+            {hasAssociatedPojects && (
+              <div className="flex flex-col rounded-lg bg-white p-4">
+                {map(
+                  associatedProjects,
+                  (project: ProjectTypeApi, index: number) => (
+                    <div key={project.id}>
+                      <span className="flex items-center gap-2 text-lg normal-case leading-tight !text-inherit">
+                        <FaExternalLinkAlt
+                          size={16}
+                          className="min-h-[16px] min-w-[16px]"
+                        />
+                        {project.title}
+                      </span>
+                      {index !== associatedProjects.length - 1 && (
+                        <Divider className="my-3" />
+                      )}
+                    </div>
+                  ),
+                )}
+              </div>
+            )}
             <span className="text-lg">
-              Please ensure these projects are complete and ready to be
-              submitted to the Secretariat.
+              {hasAssociatedPojects
+                ? 'Please ensure these projects are complete and ready to be submitted to the Secretariat.'
+                : 'Are you sure there are no other components or associated projects which need to be submitted together with this one?'}
             </span>
           </div>
           <div className="ml-auto mr-6 flex flex-wrap gap-3">
@@ -98,7 +101,9 @@ const SubmitProjectModal = ({
               variant="contained"
               button
             >
-              Submit associated projects
+              {hasAssociatedPojects
+                ? 'Submit associated projects'
+                : 'Submit project'}
             </CustomLink>
             <CancelButton onClick={() => setIsModalOpen(false)} />
           </div>
