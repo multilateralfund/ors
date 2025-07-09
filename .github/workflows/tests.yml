@@ -23,7 +23,7 @@ jobs:
       - name: "Start services"
         run: |
           docker compose build --pull
-          docker compose up -d 
+          docker compose up -d
           docker compose exec -T app wait_for_services.sh
       - name: "Top"
         run: |
@@ -32,3 +32,7 @@ jobs:
         id: "backendTests"
         run: |
           docker compose exec -T app pytest -vv --cov
+      - name: Display container logs if tests fail
+        if: failure()
+        run: |
+          docker compose logs
