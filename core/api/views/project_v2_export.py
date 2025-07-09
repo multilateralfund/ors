@@ -107,25 +107,12 @@ def get_headers_specific_information(fields: List[ProjectField]):
     return result
 
 
-def get_headers_impact():
-    return [
-        {
-            "id": "total_number_of_nou_personnnel_supported",
-            "headerName": "Total number of NOU personnel supported",
-        },
-        {
-            "id": "number_of_female_nou_personnel_supported",
-            "headerName": "Number of female NOU personnel supported",
-        },
-    ]
-
-
 def get_activity_data(data):
     """Serialize Activity if it exists, otherwise use the saved json."""
     result = None
 
     if data.get("bp_activity"):
-        activity = BPActivity.objects.get(id=data["bp_activity"])
+        activity = BPActivity.objects.get(id=data["bp_activity"]["id"])
         if activity:
             result = BPActivityExportSerializer(activity).data
 
@@ -161,7 +148,7 @@ class ProjectsV2ProjectExport:
             # The BPActivitiesWriter creates a sheet that we don't need, replace it with our own
             del self.wb[writer.sheet.title]
             writer.sheet = sheet
-            writer.write([data])
+            writer.write([activity_data])
 
     def build_cross_cutting(self, data):
         sheet = self.add_sheet("Cross-cutting")
@@ -211,10 +198,6 @@ class ProjectsV2ProjectExport:
                 data,
             )
 
-    def build_impact(self, data):
-        sheet = self.add_sheet("Impact")
-        WriteOnlyBase(sheet, get_headers_impact()).write([data])
-
     def build_xls(self):
         serializer = ProjectDetailsV2Serializer(self.project)
         data = serializer.data
@@ -222,7 +205,6 @@ class ProjectsV2ProjectExport:
         self.build_bp(data)
         self.build_cross_cutting(data)
         self.build_specific_information(data)
-        self.build_impact(data)
 
     def add_sheet(self, name):
         sheet = self.wb.create_sheet(name)
