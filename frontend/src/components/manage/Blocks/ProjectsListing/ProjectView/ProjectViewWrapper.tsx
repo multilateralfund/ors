@@ -65,11 +65,11 @@ const ProjectViewWrapper = () => {
       {!loading && data && (
         <>
           <HeaderTitle>
-            <div className="align-center flex flex-wrap justify-between gap-3">
+            <div className="flex flex-wrap justify-between gap-3">
               <div className="flex flex-col">
                 <RedirectBackButton />
                 <div className="flex gap-2">
-                  <PageHeading className="min-w-fit">
+                  <PageHeading>
                     <PageTitle
                       pageTitle="View project"
                       projectTitle={data.title}
@@ -87,7 +87,7 @@ const ProjectViewWrapper = () => {
               {canEditProjects &&
                 lowerCase(submission_status) !== 'withdrawn' && (
                   <CustomLink
-                    className="mb-4 ml-auto h-10 text-nowrap px-4 py-2 text-lg uppercase"
+                    className="ml-auto mt-auto h-10 text-nowrap px-4 py-2 text-lg uppercase"
                     href={`/projects-listing/${project_id}/edit`}
                     color="secondary"
                     variant="contained"

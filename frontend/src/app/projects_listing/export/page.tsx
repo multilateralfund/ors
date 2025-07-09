@@ -1,7 +1,10 @@
 import { useContext } from 'react'
 
 import PExport from '@ors/components/manage/Blocks/ProjectsListing/ProjectsListing/PExport'
-import { RedirectBackButton } from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
+import {
+  PageTitle,
+  RedirectBackButton,
+} from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
@@ -24,10 +27,7 @@ export default function Projects() {
       <HeaderTitle>
         <RedirectBackButton />
         <PageHeading className="min-w-fit">
-          <div className="flex gap-2.5">
-            <span className="font-medium text-[#4D4D4D]">Generate DB:</span>
-            <div>Project warehouse</div>
-          </div>
+          <PageTitle pageTitle="Generate DB" projectTitle="Project warehouse" />
         </PageHeading>
       </HeaderTitle>
       <PExport />
