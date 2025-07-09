@@ -167,7 +167,7 @@ class ProjectsV2ProjectExport:
             WriteOnlyBase(
                 sheet,
                 get_headers_specific_information(fields),
-            ).write([data])
+            ).write(data)
 
     def build_specific_information(self, data):
         project_specific_fields_obj = ProjectSpecificFields.objects.filter(
@@ -181,7 +181,7 @@ class ProjectsV2ProjectExport:
                 project_specific_fields_obj,
                 "Header",
                 "Specific information - Overview",
-                data,
+                [data],
             )
 
             self._write_project_specific_fields(
@@ -195,7 +195,7 @@ class ProjectsV2ProjectExport:
                 project_specific_fields_obj,
                 "Impact",
                 "Impact",
-                data,
+                [data],
             )
 
     def build_xls(self):
