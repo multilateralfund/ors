@@ -157,7 +157,7 @@ export interface BPErrorsSlice {
 }
 
 export interface ProjectsSlice {
-  clusters: SliceData
+  clusters: SliceData<Cluster[]>
   meetings: SliceData<MeetingType[]>
   sectors: SliceData<ProjectSectorType[]>
   statuses: SliceData<ProjectStatusType[]>
@@ -262,6 +262,15 @@ export type Country = {
   name: string
   name_alt: string
   is_lvc: boolean
+}
+
+export type Cluster = {
+  id: number
+  name: string
+  code: string
+  category: string
+  production: boolean
+  sort_order: number
 }
 
 export type CPVersionInfo = {

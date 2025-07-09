@@ -135,6 +135,7 @@ const ProjectsEdit = ({
             : project.agency_id,
         is_lead_agency: agency_id ? project.agency_id === agency_id : true,
         cluster: project.cluster_id,
+        production: project.production,
       },
       ...(mode !== 'partial-link'
         ? {
@@ -145,7 +146,7 @@ const ProjectsEdit = ({
             crossCuttingFields: {
               project_type: project.project_type_id,
               sector: project.sector_id,
-              subsector_ids: map(project.subsectors ?? [], 'id'),
+              subsector_ids: map(project.subsectors, 'id'),
               is_lvc: project.is_lvc,
               title: project.title,
               description: project.description,

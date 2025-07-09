@@ -16,6 +16,7 @@ export interface ProjIdentifiers {
   side_agency: number | null
   is_lead_agency: boolean
   cluster: number | null
+  production: boolean
 }
 export interface CrossCuttingFields {
   project_type: number | null

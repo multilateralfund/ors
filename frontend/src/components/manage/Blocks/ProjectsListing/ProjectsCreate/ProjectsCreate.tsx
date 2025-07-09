@@ -67,7 +67,9 @@ const ProjectsCreate = ({
     project?: ProjectTypeApi
     projectFiles?: ProjectFile[]
   }) => {
-  const [currentStep, setCurrentStep] = useState<number>(mode !== 'add' ? 1 : 0)
+  const [currentStep, setCurrentStep] = useState<number>(
+    mode !== 'add' && mode !== 'partial-link' ? 1 : 0,
+  )
   const [currentTab, setCurrentTab] = useState<number>(0)
 
   const { projIdentifiers, crossCuttingFields, projectSpecificFields } =

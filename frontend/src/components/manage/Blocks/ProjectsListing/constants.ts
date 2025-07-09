@@ -33,6 +33,7 @@ export const tableColumns: { [key: string]: string } = {
   bp_activity: 'BP activity',
   project_type: 'Project type',
   subsector_ids: 'Sub-sector(s)',
+  production: 'Production',
 }
 
 export const defaultProps = {
@@ -62,6 +63,7 @@ export const initialProjectIdentifiers = {
   current_agency: null,
   side_agency: null,
   cluster: null,
+  production: false,
 }
 
 export const initialCrossCuttingFields = {
