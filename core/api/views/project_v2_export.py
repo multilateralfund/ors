@@ -167,6 +167,21 @@ class ProjectsV2ProjectExport:
         sheet = self.add_sheet("Cross-cutting")
         WriteOnlyBase(sheet, get_headers_cross_cutting()).write([data])
 
+    def _write_project_specific_fields(
+        self,
+        fields_obj: ProjectSpecificFields,
+        fields_section: str,
+        sheet_name: str,
+        data,
+    ):
+        fields = fields_obj.fields.filter(section__in=[fields_section])
+        if fields:
+            sheet = self.add_sheet(sheet_name)
+            WriteOnlyBase(
+                sheet,
+                get_headers_specific_information(fields),
+            ).write([data])
+
     def build_specific_information(self, data):
         project_specific_fields_obj = ProjectSpecificFields.objects.filter(
             cluster=self.project.cluster,
@@ -174,31 +189,27 @@ class ProjectsV2ProjectExport:
             sector=self.project.sector,
         ).first()
 
-        fields = project_specific_fields_obj.fields.filter(section__in=["Header"])
-        if fields:
-            sheet = self.add_sheet("Specific information - Overview")
-            WriteOnlyBase(
-                sheet,
-                get_headers_specific_information(fields),
-            ).write([data])
+        if project_specific_fields_obj:
+            self._write_project_specific_fields(
+                project_specific_fields_obj,
+                "Header",
+                "Specific information - Overview",
+                data,
+            )
 
-        fields = project_specific_fields_obj.fields.filter(
-            section__in=["Substance Details"]
-        )
-        if fields:
-            sheet = self.add_sheet("Specific information - Substance details")
-            WriteOnlyBase(
-                sheet,
-                get_headers_specific_information(fields),
-            ).write(data.get("ods_odp", []))
+            self._write_project_specific_fields(
+                project_specific_fields_obj,
+                "Substance Details",
+                "Specific information - Substance details",
+                data.get("ods_odp", []),
+            )
 
-        fields = project_specific_fields_obj.fields.filter(section__in=["Impact"])
-        if fields:
-            sheet = self.add_sheet("Impact")
-            WriteOnlyBase(
-                sheet,
-                get_headers_specific_information(fields),
-            ).write([data])
+            self._write_project_specific_fields(
+                project_specific_fields_obj,
+                "Impact",
+                "Impact",
+                data,
+            )
 
     def build_impact(self, data):
         sheet = self.add_sheet("Impact")
