@@ -1,5 +1,5 @@
 import { SectionTitle } from '../ProjectsCreate/ProjectsCreate'
-import { detailItem } from './ViewHelperComponents'
+import { booleanDetailItem, detailItem } from './ViewHelperComponents'
 import { ProjectTypeApi } from '../interfaces'
 import { tableColumns } from '../constants'
 
@@ -15,6 +15,7 @@ const ProjectIdentifiers = ({ project }: { project: ProjectTypeApi }) => {
           {detailItem(tableColumns.meeting, project.meeting)}
           {detailItem(tableColumns.agency, project.agency)}
           {detailItem(tableColumns.cluster, project.cluster?.name)}
+          {booleanDetailItem(tableColumns.production, project.production)}
           {detailItem(
             tableColumns.submission_status,
             project.submission_status,

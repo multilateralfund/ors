@@ -20,6 +20,7 @@ import {
   isArray,
   isNaN,
   isNil,
+  isNull,
   map,
   omit,
   pick,
@@ -31,6 +32,7 @@ import {
   ValueGetterParams,
 } from 'ag-grid-community'
 import dayjs from 'dayjs'
+import { Cluster } from '@ors/types/store'
 
 const getFieldId = <T>(field: ProjectSpecificFields, data: T) => {
   const fieldName = field.read_field_name === 'group' ? 'name_alt' : 'name'
@@ -124,9 +126,7 @@ const normalizeValues = (data: Record<string, any>) =>
   Object.fromEntries(
     Object.entries(data).map(([key, value]) => [
       key,
-      value === '' || (Array.isArray(value) && value.length === 0)
-        ? null
-        : value,
+      value === '' ? null : value,
     ]),
   )
 
@@ -426,3 +426,6 @@ export const getMenus = (permissions: Record<string, boolean>) => {
     },
   ]
 }
+
+export const getProduction = (clusters: Cluster[], clusterId: number | null) =>
+  find(clusters, (cluster) => cluster.id === clusterId)?.production

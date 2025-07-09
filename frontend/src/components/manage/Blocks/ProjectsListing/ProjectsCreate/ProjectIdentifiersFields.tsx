@@ -17,13 +17,13 @@ import {
 } from '@ors/components/manage/Utils/utilFunctions'
 import { changeHandler } from './SpecificFieldsHelpers'
 import { defaultProps, tableColumns } from '../constants'
-
+import { getProduction } from '../utils'
 import { useStore } from '@ors/store'
-import { Country } from '@ors/types/store'
+import { Cluster, Country } from '@ors/types/store'
 import { parseNumber } from '@ors/helpers'
 
 import { Button, Checkbox, FormControlLabel } from '@mui/material'
-import { find, filter } from 'lodash'
+import { find, filter, isNil, isNull } from 'lodash'
 import cx from 'classnames'
 
 const ProjectIdentifiersFields = ({
@@ -44,6 +44,7 @@ const ProjectIdentifiersFields = ({
   const projectSlice = useStore((state) => state.projects)
   const userSlice = useStore((state) => state.user)
   const { agency_id } = userSlice.data
+  const clusters = projectSlice.clusters.data
 
   const agencyOptions = filter(
     commonSlice.agencies.data,
@@ -75,6 +76,35 @@ const ProjectIdentifiersFields = ({
         ...prevData.crossCuttingFields,
         is_lvc:
           find(commonSlice.countries.data, { id: country?.id })?.is_lvc ?? null,
+      },
+    }))
+  }
+
+  const handleChangeCluster = (cluster: Cluster) => {
+    changeHandler['drop_down']<ProjectData, ProjIdentifiers>(
+      cluster,
+      'cluster',
+      setProjectData,
+      sectionIdentifier,
+    )
+
+    const isProduction = getProduction(clusters, cluster?.id)
+
+    setProjectData((prevData) => ({
+      ...prevData,
+      [sectionIdentifier]: {
+        ...prevData[sectionIdentifier],
+        production: !isNil(isProduction) ? isProduction : false,
+      },
+    }))
+  }
+
+  const handleChangeProduction = (event: ChangeEvent<HTMLInputElement>) => {
+    setProjectData((prevData) => ({
+      ...prevData,
+      [sectionIdentifier]: {
+        ...prevData[sectionIdentifier],
+        production: event.target.checked,
       },
     }))
   }
@@ -174,19 +204,10 @@ const ProjectIdentifiersFields = ({
             <Label>{tableColumns.cluster}</Label>
             <Field
               widget="autocomplete"
-              options={projectSlice.clusters.data}
+              options={clusters}
               value={projIdentifiers?.cluster}
-              onChange={(_, value) =>
-                changeHandler['drop_down']<ProjectData, ProjIdentifiers>(
-                  value,
-                  'cluster',
-                  setProjectData,
-                  sectionIdentifier,
-                )
-              }
-              getOptionLabel={(option) =>
-                getOptionLabel(projectSlice.clusters.data, option)
-              }
+              onChange={(_, value) => handleChangeCluster(value)}
+              getOptionLabel={(option) => getOptionLabel(clusters, option)}
               disabled={!areNextSectionsDisabled}
               Input={{
                 error: getIsInputDisabled('cluster'),
@@ -202,8 +223,12 @@ const ProjectIdentifiersFields = ({
             label="Production"
             control={
               <Checkbox
-                checked={false}
-                disabled={true}
+                checked={!!projIdentifiers?.production}
+                disabled={
+                  !areNextSectionsDisabled ||
+                  !isNull(getProduction(clusters, projIdentifiers.cluster))
+                }
+                onChange={handleChangeProduction}
                 size="small"
                 sx={{
                   color: 'black',
