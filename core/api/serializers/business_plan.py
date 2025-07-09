@@ -82,6 +82,12 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
     updated_by = serializers.StringRelatedField(
         read_only=True, source="updated_by.username"
     )
+    meeting_number = serializers.SlugRelatedField(
+        "number", read_only=True, source="meeting"
+    )
+    decision_number = serializers.SlugRelatedField(
+        "number", read_only=True, source="decision"
+    )
 
     class Meta:
         model = BusinessPlan
@@ -91,8 +97,10 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
             "status",
             "year_start",
             "year_end",
+            "meeting_number",
             "meeting_id",
             "decision_id",
+            "decision_number",
             "updated_at",
             "updated_by",
         ]

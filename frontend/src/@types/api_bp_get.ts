@@ -12,7 +12,9 @@ export type ApiBaseBP = {
   year_start: number
   year_end: number
   meeting_id: number
+  meeting_number: null | number
   decision_id: null | number
+  decision_number: null | number
   updated_at: string
   updated_by: string
 }

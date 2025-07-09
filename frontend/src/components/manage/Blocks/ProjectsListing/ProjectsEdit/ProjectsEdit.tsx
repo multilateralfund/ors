@@ -141,7 +141,7 @@ const ProjectsEdit = ({
         ? {
             bpLinking: {
               isLinkedToBP: !!project.bp_activity,
-              bpId: project.bp_activity,
+              bpId: project.bp_activity?.id ?? null,
             },
             crossCuttingFields: {
               project_type: project.project_type_id,

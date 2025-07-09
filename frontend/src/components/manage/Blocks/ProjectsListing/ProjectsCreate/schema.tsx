@@ -15,33 +15,37 @@ import {
 
 const bpLinkColumnDefs = (
   yearColumns: any[],
-  setProjectData: Dispatch<SetStateAction<ProjectData>>,
+  setProjectData?: Dispatch<SetStateAction<ProjectData>>,
 ) => [
-  {
-    headerName: 'Select',
-    field: '',
-    minWidth: 80,
-    maxWidth: 80,
-    sortable: false,
-    cellClass: 'ag-text-center',
-    cellRenderer: (params: ICellRendererParams<LinkableActivity>) => (
-      <Checkbox
-        checked={params.data?.selected}
-        onChange={(event) => {
-          setProjectData((prevData) => ({
-            ...prevData,
-            bpLinking: {
-              ...prevData.bpLinking,
-              bpId: event.target.checked ? params.data!.id : null,
-            },
-          }))
-        }}
-        sx={{
-          color: 'black',
-        }}
-      />
-    ),
-  },
+  ...(setProjectData
+    ? [
+        {
+          headerName: 'Select',
+          field: '',
+          minWidth: 80,
+          maxWidth: 80,
+          sortable: false,
+          cellClass: 'ag-text-center',
+          cellRenderer: (params: ICellRendererParams<LinkableActivity>) => (
+            <Checkbox
+              checked={params.data?.selected}
+              onChange={(event) => {
+                setProjectData((prevData) => ({
+                  ...prevData,
+                  bpLinking: {
+                    ...prevData.bpLinking,
+                    bpId: event.target.checked ? params.data!.id : null,
+                  },
+                }))
+              }}
+              sx={{
+                color: 'black',
+              }}
+            />
+          ),
+        },
+      ]
+    : []),
   {
     headerName: 'Activity ID',
     field: 'display_internal_id',

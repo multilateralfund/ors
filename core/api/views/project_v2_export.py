@@ -120,6 +120,21 @@ def get_headers_impact():
     ]
 
 
+def get_activity_data(data):
+    """Serialize Activity if it exists, otherwise use the saved json."""
+    result = None
+
+    if data.get("bp_activity"):
+        activity = BPActivity.objects.get(id=data["bp_activity"])
+        if activity:
+            result = BPActivityExportSerializer(activity).data
+
+    if not result:
+        result = data.get("bp_activity_json")
+
+    return result
+
+
 class ProjectsV2ProjectExport:
     wb: openpyxl.Workbook
     project: Project
@@ -139,21 +154,33 @@ class ProjectsV2ProjectExport:
         WriteOnlyBase(sheet, get_headers_identifiers()).write([data])
 
     def build_bp(self, data):
-        if data["bp_activity"]:
-            activity = BPActivity.objects.get(id=data["bp_activity"])
-        else:
-            return
-        sheet = self.add_sheet("Identifiers - BP Activity")
-
-        data = BPActivityExportSerializer(activity).data
-        writer = BPActivitiesWriter(self.wb, min_year=None, max_year=None)
-        del self.wb[writer.sheet.title]
-        writer.sheet = sheet
-        writer.write([data])
+        activity_data = get_activity_data(data)
+        if activity_data:
+            sheet = self.add_sheet("Identifiers - BP Activity")
+            writer = BPActivitiesWriter(self.wb, min_year=None, max_year=None)
+            # The BPActivitiesWriter creates a sheet that we don't need, replace it with our own
+            del self.wb[writer.sheet.title]
+            writer.sheet = sheet
+            writer.write([data])
 
     def build_cross_cutting(self, data):
         sheet = self.add_sheet("Cross-cutting")
         WriteOnlyBase(sheet, get_headers_cross_cutting()).write([data])
+
+    def _write_project_specific_fields(
+        self,
+        fields_obj: ProjectSpecificFields,
+        fields_section: str,
+        sheet_name: str,
+        data,
+    ):
+        fields = fields_obj.fields.filter(section__in=[fields_section])
+        if fields:
+            sheet = self.add_sheet(sheet_name)
+            WriteOnlyBase(
+                sheet,
+                get_headers_specific_information(fields),
+            ).write([data])
 
     def build_specific_information(self, data):
         project_specific_fields_obj = ProjectSpecificFields.objects.filter(
@@ -162,31 +189,27 @@ class ProjectsV2ProjectExport:
             sector=self.project.sector,
         ).first()
 
-        fields = project_specific_fields_obj.fields.filter(section__in=["Header"])
-        if fields:
-            sheet = self.add_sheet("Specific information - Overview")
-            WriteOnlyBase(
-                sheet,
-                get_headers_specific_information(fields),
-            ).write([data])
+        if project_specific_fields_obj:
+            self._write_project_specific_fields(
+                project_specific_fields_obj,
+                "Header",
+                "Specific information - Overview",
+                data,
+            )
 
-        fields = project_specific_fields_obj.fields.filter(
-            section__in=["Substance Details"]
-        )
-        if fields:
-            sheet = self.add_sheet("Specific information - Substance details")
-            WriteOnlyBase(
-                sheet,
-                get_headers_specific_information(fields),
-            ).write(data.get("ods_odp", []))
+            self._write_project_specific_fields(
+                project_specific_fields_obj,
+                "Substance Details",
+                "Specific information - Substance details",
+                data.get("ods_odp", []),
+            )
 
-        fields = project_specific_fields_obj.fields.filter(section__in=["Impact"])
-        if fields:
-            sheet = self.add_sheet("Impact")
-            WriteOnlyBase(
-                sheet,
-                get_headers_specific_information(fields),
-            ).write([data])
+            self._write_project_specific_fields(
+                project_specific_fields_obj,
+                "Impact",
+                "Impact",
+                data,
+            )
 
     def build_impact(self, data):
         sheet = self.add_sheet("Impact")

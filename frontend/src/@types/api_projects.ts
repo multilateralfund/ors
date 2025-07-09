@@ -1,4 +1,5 @@
 import { ApiUser } from '@ors/types/api_auth_user.ts'
+import { ApiBPActivity } from './api_bp_get'
 
 export type ProjectSubSectorType = {
   id: number
@@ -27,7 +28,7 @@ export type ProjectType = {
   application: any
   approval_meeting: number
   approval_meeting_id: number
-  bp_activity: number
+  bp_activity: ApiBPActivity | null
   capital_cost: number
   cluster: any
   cluster_id: number
