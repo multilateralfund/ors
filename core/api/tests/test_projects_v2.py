@@ -387,6 +387,8 @@ class TestProjectV2List(BaseTest):
 
         # test with authenticated user
         _test_user_permissions(user, 403)
+        viewer_user.agency = None
+        viewer_user.save()
         _test_user_permissions(
             viewer_user, 200, 0
         )  # because user has no agency defined

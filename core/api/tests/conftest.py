@@ -83,9 +83,11 @@ def second_user():
 
 
 @pytest.fixture
-def viewer_user():
+def viewer_user(agency):
     group = Group.objects.get(name="Projects - Agency viewer")
-    user = UserFactory(username="GuraCasca", email="doarmauit@numersi.ro")
+    user = UserFactory(
+        username="GuraCasca", email="doarmauit@numersi.ro", agency=agency
+    )
     user.groups.add(group)
     return user
 

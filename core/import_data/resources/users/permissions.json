@@ -24,6 +24,12 @@
         "model_name": "project"
     },
     {
+        "permission_codename": "can_view_production_projects",
+        "permission_name": "Can view production projects",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
         "permission_codename": "can_view_all_agencies_old_project_implementation",
         "permission_name": "Can view entries from all agencies for the old project implementation",
         "app_label": "core",
@@ -110,6 +116,24 @@
     {
         "permission_codename": "has_project_v2_edit_access",
         "permission_name": "Has project v2 edit access",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
+        "permission_codename": "has_project_v2_draft_edit_access",
+        "permission_name": "Has project v2 edit access for draft projects",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
+        "permission_codename": "has_project_v2_version1_version2_edit_access",
+        "permission_name": "Has project v2 edit access for version 1/version2 projects",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
+        "permission_codename": "has_project_v2_version3_edit_access",
+        "permission_name": "Has project v2 edit access for version 3 projects",
         "app_label": "core",
         "model_name": "project"
     },
