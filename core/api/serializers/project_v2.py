@@ -772,7 +772,7 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         user = self.context["request"].user
         subsectors_data = validated_data.pop("subsector_ids", None)
-        ods_odp_data = validated_data.pop("ods_odp", [])
+        ods_odp_data = validated_data.pop("ods_odp", None)
         bp_activity = validated_data.get("bp_activity", None)
         if bp_activity and (instance.bp_activity != bp_activity):
             activity_serializer = BPActivityDetailSerializer(bp_activity)
@@ -781,7 +781,7 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
         super().update(instance, validated_data)
 
         # update, create, delete ods_odp
-        if ods_odp_data:
+        if ods_odp_data is not None:
             self._update_or_create_ods_odp(instance, ods_odp_data)
 
         # set new subcode
@@ -903,6 +903,7 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
             "cluster",
             "project_type",
             "sector",
+            "subsectors",
             "country",
             "agency",
             "meeting",
@@ -915,6 +916,11 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
             "support_cost_psc",
         ]
         for field in mandatory_fields_at_submission:
+            if field == "subsectors":
+                if not self.instance.subsectors.exists():
+                    errors["subsectors"] = (
+                        "At least one subsector is required for submission."
+                    )
             if getattr(self.instance, field) is None:
                 errors[field] = (
                     f"{field.replace('_', ' ').title()} is required for submission."
@@ -935,12 +941,28 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
                 if field.table == "ods_odp":
                     project_ods_odp_entries = self.instance.ods_odp.all()
                     if not project_ods_odp_entries:
-                        errors[field.write_field_name] = (
-                            f"{field.label} is required for submission."
-                        )
+                        if field.write_field_name == "ods_display_name":
+
+                            errors["ods_display_name"] = (
+                                "Ods name is required for submission."
+                            )
+                        else:
+                            errors[field.write_field_name] = (
+                                f"{field.label} is required for submission."
+                            )
                     else:
                         for ods_odp in project_ods_odp_entries:
-                            if getattr(ods_odp, field.write_field_name) is None:
+                            if field.write_field_name == "ods_display_name":
+                                if (
+                                    getattr(ods_odp, "ods_substance") is None
+                                    and getattr(ods_odp, "ods_blend") is None
+                                    and getattr(ods_odp, "ods_display_name") is None
+                                ):
+                                    errors["ods_display_name"] = (
+                                        "Ods name is required for submission."
+                                    )
+
+                            elif getattr(ods_odp, field.write_field_name) is None:
                                 errors[f"{field.write_field_name}_ods_odp"] = (
                                     f"{field.label} is required for submission."
                                 )
