@@ -28,6 +28,7 @@ from core.api.permissions import (
 from core.api.serializers.project_v2 import (
     ProjectV2SubmitSerializer,
     ProjectV2RecommendSerializer,
+    ProjectV2ProjectIncludeFileSerializer,
     ProjectV2FileSerializer,
     ProjectDetailsV2Serializer,
     ProjectListV2Serializer,
@@ -996,6 +997,111 @@ class ProjectV2FileView(
         file_ids = request.data.get("file_ids")
         queryset.filter(id__in=file_ids).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ProjectV2FileIncludePreviousVersionsView(
+    mixins.ListModelMixin,
+    generics.GenericAPIView,
+):
+    """
+    API endpoint returns a the list of files, grouped by project and version.
+    Includes given project and its previous versions.
+    """
+
+    queryset = Project.objects.really_all()
+    serializer_class = ProjectV2ProjectIncludeFileSerializer
+    permission_classes = [HasProjectV2ViewAccess]
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        # get the queryset for edit permissions to set editable on serializer
+        projects_edit_queryset = self.filter_permissions_queryset(
+            Project.objects.really_all(), results_for_edit=True
+        )
+
+        edit_queryset = ProjectFile.objects.filter(project__in=projects_edit_queryset)
+        context["edit_queryset_ids"] = set(edit_queryset.values_list("id", flat=True))
+        return context
+
+    def filter_permissions_queryset(self, queryset, results_for_edit=False):
+        """
+        Filter the queryset based on the user's permissions.
+        """
+
+        def _check_if_user_has_edit_access(user):
+            return (
+                HasProjectV2EditAccess().has_permission(self.request, self)
+                or HasProjectV2SubmitAccess().has_permission(self.request, self)
+                or user.has_perm("core.has_project_v2_version3_edit_access")
+            )
+
+        user = self.request.user
+        if user.is_superuser:
+            return queryset
+
+        if results_for_edit:
+            user_has_any_edit_access = _check_if_user_has_edit_access(user)
+            if not user_has_any_edit_access:
+                return queryset.none()
+            allowed_versions = set()
+            queryset_filters = {}
+
+            if user.has_perm("core.has_project_v2_draft_edit_access"):
+                queryset_filters["submission_status__name"] = "Draft"
+                allowed_versions.update([1, 2])
+            if user.has_perm("core.has_project_v2_version1_version2_edit_access"):
+                queryset_filters.pop("submission_status__name", None)
+                allowed_versions.update([1, 2])
+            if user.has_perm("core.has_project_v2_version3_edit_access"):
+                queryset_filters.pop("submission_status__name", None)
+                allowed_versions.add(3)
+
+            if allowed_versions:
+                queryset_filters["version__in"] = list(allowed_versions)
+            queryset = queryset.filter(**queryset_filters)
+
+        if not user.has_perm("core.can_view_production_projects"):
+            queryset = queryset.filter(production=False)
+
+        if user.has_perm("core.can_view_all_agencies"):
+            return queryset
+
+        if user.has_perm("core.can_view_only_own_agency") and not user.has_perm(
+            "core.can_view_all_agencies"
+        ):
+            return queryset.filter(
+                Q(agency=user.agency)
+                | (
+                    Q(meta_project__lead_agency=user.agency)
+                    & Q(meta_project__lead_agency__isnull=False)
+                )
+            )
+        return queryset.none()
+
+    def get_queryset(self, results_for_edit=False):
+        projects = self.filter_permissions_queryset(
+            Project.objects.really_all(), results_for_edit=results_for_edit
+        )
+        project = get_object_or_404(projects, pk=self.kwargs.get("project_id"))
+
+        if project.latest_project:
+            projects = projects.filter(
+                latest_project=project.latest_project, version__lte=project.version
+            )
+        else:
+            projects = projects.filter(
+                Q(latest_project=project) | Q(id=project.id)
+            ).order_by("-version")
+
+        projects.prefetch_related(
+            "files",
+        )
+        return projects
+
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class ProjectFilesValidationView(FileCreateMixin, APIView):

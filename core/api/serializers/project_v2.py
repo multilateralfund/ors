@@ -83,6 +83,24 @@ class ProjectV2FileSerializer(serializers.ModelSerializer):
         return obj.id in edit_queryset_ids
 
 
+class ProjectV2ProjectIncludeFileSerializer(serializers.ModelSerializer):
+    """
+    Serializer for including files in the project list serializer.
+    This serializer is used to include the latest file of the project.
+    """
+
+    files = ProjectV2FileSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Project
+        fields = [
+            "id",
+            "title",
+            "version",
+            "files",
+        ]
+
+
 class ProjectListV2Serializer(ProjectListSerializer):
     group = serializers.SlugRelatedField("name_alt", read_only=True)
     group_id = serializers.PrimaryKeyRelatedField(
