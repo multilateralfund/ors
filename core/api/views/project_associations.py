@@ -57,6 +57,9 @@ class ProjectAssociationViewSet(
         if user.is_superuser:
             return queryset
 
+        if not user.has_perm("core.can_view_production_projects"):
+            queryset = queryset.filter(production=False)
+
         if user.has_perm("core.can_view_all_agencies"):
             return queryset
 

@@ -32,6 +32,8 @@ from core.api.serializers.project_v2 import (
     ProjectDetailsV2Serializer,
     ProjectListV2Serializer,
     ProjectV2CreateUpdateSerializer,
+    ProjectV2EditActualFieldsSerializer,
+    HISTORY_DESCRIPTION_UPDATE_ACTUAL_FIELDS,
     HISTORY_DESCRIPTION_RECOMMEND_V2,
     HISTORY_DESCRIPTION_SUBMIT_V1,
     HISTORY_DESCRIPTION_WITHDRAW_V3,
@@ -50,6 +52,8 @@ from core.api.views.utils import log_project_history
 
 from core.api.views.projects_export import ProjectsV2Export
 from core.api.views.project_v2_export import ProjectsV2ProjectExport
+
+# pylint: disable=C0302
 
 
 class ProjectDestructionTechnologyView(APIView):
@@ -119,6 +123,17 @@ class ProjectV2ViewSet(
 
     search_fields = ["code", "legacy_code", "meta_project__code", "title"]
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        # get the queryset for edit permissions to set editable on serializer
+        projects_edit_queryset = self.filter_permissions_queryset(
+            Project.objects.really_all(), results_for_edit=True
+        )
+        context["edit_queryset_ids"] = set(
+            projects_edit_queryset.values_list("id", flat=True)
+        )
+        return context
+
     @property
     def permission_classes(self):
         if self.action in [
@@ -133,6 +148,7 @@ class ProjectV2ViewSet(
             "create",
             "update",
             "partial_update",
+            "edit_actual_fields",
         ]:
             return [HasProjectV2EditAccess]
         if self.action in [
@@ -146,13 +162,47 @@ class ProjectV2ViewSet(
 
         return [DenyAll]
 
-    def filter_permissions_queryset(self, queryset):
+    def filter_permissions_queryset(self, queryset, results_for_edit=False):
         """
         Filter the queryset based on the user's permissions.
         """
+
+        def _check_if_user_has_edit_access(user):
+            return (
+                HasProjectV2EditAccess().has_permission(self.request, self)
+                or HasProjectV2SubmitAccess().has_permission(self.request, self)
+                or user.has_perm("core.has_project_v2_version3_edit_access")
+            )
+
         user = self.request.user
         if user.is_superuser:
             return queryset
+
+        if self.action in ["edit_actual_fields"]:
+            queryset.filter(submission_status__name="Approved")
+        if self.action in ["update", "partial_update", "submit"] or results_for_edit:
+            user_has_any_edit_access = _check_if_user_has_edit_access(user)
+            if not user_has_any_edit_access:
+                return queryset.none()
+            allowed_versions = set()
+            queryset_filters = {}
+            if user.has_perm("core.has_project_v2_draft_edit_access"):
+                queryset_filters["submission_status__name"] = "Draft"
+                allowed_versions.update([1, 2])
+            if user.has_perm("core.has_project_v2_version1_version2_edit_access"):
+                queryset_filters.pop("submission_status__name", None)
+                allowed_versions.update([1, 2])
+            if user.has_perm("core.has_project_v2_version3_edit_access"):
+
+                queryset_filters.pop("submission_status__name", None)
+                allowed_versions.add(3)
+
+            if allowed_versions:
+                queryset_filters["version__in"] = list(allowed_versions)
+            queryset = queryset.filter(**queryset_filters)
+
+        if not user.has_perm("core.can_view_production_projects"):
+            queryset = queryset.filter(production=False)
 
         if user.has_perm("core.can_view_all_agencies"):
             return queryset
@@ -196,6 +246,12 @@ class ProjectV2ViewSet(
             "ods_odp",
         )
         return queryset
+
+    def get_object(self):
+        if self.action == "export":
+            project_id = self.request.query_params.get("project_id")
+            return get_object_or_404(self.get_queryset(), id=project_id)
+        return super().get_object()
 
     def get_serializer_class(self):
         serializer = ProjectDetailsV2Serializer
@@ -254,12 +310,26 @@ class ProjectV2ViewSet(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
 
+    @swagger_auto_schema(
+        operation_description="""
+        V2 projects endpoint for exporting projects.
+        """,
+        manual_parameters=[
+            openapi.Parameter(
+                "project_id",
+                openapi.IN_QUERY,
+                description="ID of the project to export. If not provided, all projects will be exported.",
+                type=openapi.TYPE_INTEGER,
+            ),
+        ],
+    )
     @action(methods=["GET"], detail=False)
     def export(self, request, *args, **kwargs):
         project_id = request.query_params.get("project_id")
 
         if project_id:
-            return ProjectsV2ProjectExport(project_id).export_xls()
+            project = self.get_object()
+            return ProjectsV2ProjectExport(project).export_xls()
         return ProjectsV2Export(self).export_xls()
 
     @action(methods=["POST"], detail=True)
@@ -358,9 +428,6 @@ class ProjectV2ViewSet(
         },
     )
     def recommend(self, request, *args, **kwargs):
-        """
-        This method is not implemented in the V2 API.
-        """
         project = self.get_object()
         serializer = ProjectV2RecommendSerializer(
             project, data=request.data, partial=True
@@ -405,6 +472,34 @@ class ProjectV2ViewSet(
         )
         log_project_history(project, request.user, HISTORY_DESCRIPTION_WITHDRAW_V3)
         project.save()
+        return Response(
+            ProjectDetailsV2Serializer(project).data,
+            status=status.HTTP_200_OK,
+        )
+
+    @action(methods=["PUT"], detail=True)
+    @swagger_auto_schema(
+        operation_description="""
+        Allows editing only the actual fields of the project. Available only for 'Approved' projects.
+        """,
+        request_body=ProjectV2EditActualFieldsSerializer,
+        responses={
+            status.HTTP_200_OK: ProjectDetailsV2Serializer,
+            status.HTTP_400_BAD_REQUEST: "Bad request",
+        },
+    )
+    def edit_actual_fields(self, request, *args, **kwargs):
+        project = self.get_object()
+        serializer = ProjectV2EditActualFieldsSerializer(
+            project, data=request.data, partial=True
+        )
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        log_project_history(
+            project, request.user, HISTORY_DESCRIPTION_UPDATE_ACTUAL_FIELDS
+        )
+
         return Response(
             ProjectDetailsV2Serializer(project).data,
             status=status.HTTP_200_OK,
@@ -470,9 +565,8 @@ class ProjectV2ViewSet(
         },
     )
     def associate_projects(self, request, *args, **kwargs):
-        project_objs = Project.objects.filter(
-            id__in=request.data.get("project_ids", [])
-        )
+        projects = self.filter_permissions_queryset(Project.objects.all())
+        project_objs = projects.filter(id__in=request.data.get("project_ids", []))
 
         if len(project_objs) != len(request.data.get("project_ids", [])):
             return Response(
@@ -768,13 +862,56 @@ class ProjectV2FileView(
             return [HasProjectV2EditAccess]
         return [DenyAll]
 
-    def filter_permissions_queryset(self, queryset):
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        # get the queryset for edit permissions to set editable on serializer
+        projects_edit_queryset = self.filter_permissions_queryset(
+            Project.objects.really_all(), results_for_edit=True
+        )
+
+        edit_queryset = ProjectFile.objects.filter(project__in=projects_edit_queryset)
+        context["edit_queryset_ids"] = set(edit_queryset.values_list("id", flat=True))
+        return context
+
+    def filter_permissions_queryset(self, queryset, results_for_edit=False):
         """
         Filter the queryset based on the user's permissions.
         """
+
+        def _check_if_user_has_edit_access(user):
+            return (
+                HasProjectV2EditAccess().has_permission(self.request, self)
+                or HasProjectV2SubmitAccess().has_permission(self.request, self)
+                or user.has_perm("core.has_project_v2_version3_edit_access")
+            )
+
         user = self.request.user
         if user.is_superuser:
             return queryset
+
+        if self.request.method in ["POST", "DELETE"] or results_for_edit:
+            user_has_any_edit_access = _check_if_user_has_edit_access(user)
+            if not user_has_any_edit_access:
+                return queryset.none()
+            allowed_versions = set()
+            queryset_filters = {}
+
+            if user.has_perm("core.has_project_v2_draft_edit_access"):
+                queryset_filters["submission_status__name"] = "Draft"
+                allowed_versions.update([1, 2])
+            if user.has_perm("core.has_project_v2_version1_version2_edit_access"):
+                queryset_filters.pop("submission_status__name", None)
+                allowed_versions.update([1, 2])
+            if user.has_perm("core.has_project_v2_version3_edit_access"):
+                queryset_filters.pop("submission_status__name", None)
+                allowed_versions.add(3)
+
+            if allowed_versions:
+                queryset_filters["version__in"] = list(allowed_versions)
+            queryset = queryset.filter(**queryset_filters)
+
+        if not user.has_perm("core.can_view_production_projects"):
+            queryset = queryset.filter(production=False)
 
         if user.has_perm("core.can_view_all_agencies"):
             return queryset
@@ -783,13 +920,18 @@ class ProjectV2FileView(
             "core.can_view_all_agencies"
         ):
             return queryset.filter(
-                Q(agency=user.agency) | Q(meta_project__lead_agency=user.agency)
+                Q(agency=user.agency)
+                | (
+                    Q(meta_project__lead_agency=user.agency)
+                    & Q(meta_project__lead_agency__isnull=False)
+                )
             )
-
         return queryset.none()
 
-    def get_queryset(self):
-        projects = self.filter_permissions_queryset(Project.objects.really_all())
+    def get_queryset(self, results_for_edit=False):
+        projects = self.filter_permissions_queryset(
+            Project.objects.really_all(), results_for_edit=results_for_edit
+        )
         project = get_object_or_404(projects, pk=self.kwargs.get("project_id"))
         queryset = ProjectFile.objects.filter(project=project)
         return queryset
@@ -900,6 +1042,9 @@ class ProjectFilesDownloadView(generics.RetrieveAPIView):
         if user.is_superuser:
             return queryset
 
+        if not user.has_perm("core.can_view_production_projects"):
+            queryset = queryset.filter(production=False)
+
         if user.has_perm("core.can_view_all_agencies"):
             return queryset
 
@@ -907,7 +1052,11 @@ class ProjectFilesDownloadView(generics.RetrieveAPIView):
             "core.can_view_all_agencies"
         ):
             return queryset.filter(
-                Q(agency=user.agency) | Q(meta_project__lead_agency=user.agency)
+                Q(agency=user.agency)
+                | (
+                    Q(meta_project__lead_agency=user.agency)
+                    & Q(meta_project__lead_agency__isnull=False)
+                )
             )
 
         return queryset.none()

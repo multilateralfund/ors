@@ -83,9 +83,11 @@ def second_user():
 
 
 @pytest.fixture
-def viewer_user():
+def viewer_user(agency):
     group = Group.objects.get(name="Projects - Agency viewer")
-    user = UserFactory(username="GuraCasca", email="doarmauit@numersi.ro")
+    user = UserFactory(
+        username="GuraCasca", email="doarmauit@numersi.ro", agency=agency
+    )
     user.groups.add(group)
     return user
 
@@ -213,6 +215,11 @@ def agency_inputter_user(agency):
     user.groups.add(group)
     user.groups.add(business_plan_viewer_group)
     return user
+
+
+@pytest.fixture
+def new_country():
+    return CountryFactory.create(iso3="NwC")
 
 
 @pytest.fixture
@@ -452,8 +459,18 @@ def project_type():
 
 
 @pytest.fixture
+def new_project_type():
+    return ProjectTypeFactory.create(code="NewType")
+
+
+@pytest.fixture
 def project_status():
     return ProjectStatusFactory.create(name="Project Status", code="PS")
+
+
+@pytest.fixture
+def submitted_status():
+    return ProjectStatusFactory.create(code="NEWSUB")
 
 
 @pytest.fixture
@@ -468,6 +485,11 @@ def project_submitted_status():
     return ProjectSubmissionStatusFactory.create(
         name="Submitted", code="submitted", color="#00FF00"
     )
+
+
+@pytest.fixture
+def new_project_approved_status():
+    return ProjectSubmissionStatusFactory.create(code="approved", name="Approved")
 
 
 @pytest.fixture
@@ -505,6 +527,11 @@ def subsector_other(sector):
 
 
 @pytest.fixture
+def new_sector():
+    return ProjectSectorFactory.create(name="New Sector")
+
+
+@pytest.fixture
 def rbm_measure():
     return RbmMeasureFactory.create(name="RBM Measure", sort_order=1)
 
@@ -512,6 +539,11 @@ def rbm_measure():
 @pytest.fixture
 def meeting():
     return MeetingFactory.create(number=1, date="2019-03-14")
+
+
+@pytest.fixture
+def new_meeting():
+    return MeetingFactory.create(number=3, date="2020-03-14")
 
 
 @pytest.fixture

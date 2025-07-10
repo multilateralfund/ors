@@ -126,8 +126,8 @@ class ProjectsV2ProjectExport:
     wb: openpyxl.Workbook
     project: Project
 
-    def __init__(self, project_id):
-        self.project = Project.objects.get(pk=project_id)
+    def __init__(self, project):
+        self.project = project
         self.setup_workbook()
 
     def setup_workbook(self):

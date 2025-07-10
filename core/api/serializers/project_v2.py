@@ -37,11 +37,12 @@ from core.models.project_metadata import (
 from core.utils import get_project_sub_code
 from core.api.views.utils import log_project_history
 
-# pylint: disable=R1702,W0707
+# pylint: disable=C0302,R1702,W0707
 
 
 HISTORY_DESCRIPTION_CREATE = "Create project"
 HISTORY_DESCRIPTION_UPDATE = "Save project details"
+HISTORY_DESCRIPTION_UPDATE_ACTUAL_FIELDS = "Save project details (Actual fields)"
 HISTORY_DESCRIPTION_SUBMIT_V1 = "Submit project (Version 1)"
 HISTORY_DESCRIPTION_RECOMMEND_V2 = "Recommend project (Version 2)"
 HISTORY_DESCRIPTION_APPROVE_V3 = "Approve project (Version 3)"
@@ -57,6 +58,7 @@ class ProjectV2FileSerializer(serializers.ModelSerializer):
         required=True,
         queryset=Project.objects.all().values_list("id", flat=True),
     )
+    editable = serializers.SerializerMethodField()
 
     class Meta:
         model = ProjectFile
@@ -67,6 +69,7 @@ class ProjectV2FileSerializer(serializers.ModelSerializer):
             "date_created",
             "download_url",
             "project_id",
+            "editable",
         ]
 
     def get_name(self, obj):
@@ -74,6 +77,10 @@ class ProjectV2FileSerializer(serializers.ModelSerializer):
 
     def get_download_url(self, obj):
         return reverse("project-files-v2-download", args=(obj.project_id, obj.id))
+
+    def get_editable(self, obj):
+        edit_queryset_ids = self.context.get("edit_queryset_ids", set())
+        return obj.id in edit_queryset_ids
 
 
 class ProjectListV2Serializer(ProjectListSerializer):
@@ -91,6 +98,15 @@ class ProjectListV2Serializer(ProjectListSerializer):
     destruction_technology = serializers.SerializerMethodField()
     production_control_type = serializers.SerializerMethodField()
     checklist_regulations = serializers.SerializerMethodField()
+    editable = serializers.SerializerMethodField()
+
+    def get_editable(self, obj):
+        """
+        Check if the project is editable based on the user's permissions.
+        """
+        if obj.id in self.context.get("edit_queryset_ids", set()):
+            return True
+        return False
 
     bp_activity = serializers.SerializerMethodField()
 
@@ -157,6 +173,7 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "decision_id",
             "description",
             "destruction_technology",
+            "editable",
             "ee_demonstration_project",
             "effectiveness_cost",
             "establishment_of_imp_exp_licensing",
@@ -357,6 +374,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
     checklist_regulations_actual = serializers.SerializerMethodField()
     versions = serializers.SerializerMethodField()
     history = serializers.SerializerMethodField()
+    editable = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
@@ -390,6 +408,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
             "operation_of_reclamation_scheme_actual",
             "establishment_of_imp_exp_licensing_actual",
             "establishment_of_quota_systems_actual",
+            "editable",
             "ban_of_equipment_actual",
             "ban_of_substances_actual",
             "kwh_year_saved_actual",
@@ -407,6 +426,14 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
             "quantity_hfc_23_by_product_destroyed_actual",
             "quantity_hfc_23_by_product_emitted_actual",
         ]
+
+    def get_editable(self, obj):
+        """
+        Check if the project is editable based on the user's permissions.
+        """
+        if obj.id in self.context.get("edit_queryset_ids", set()):
+            return True
+        return False
 
     def get_checklist_regulations_actual(self, obj):
         return obj.get_checklist_regulations_actual_display()
@@ -804,6 +831,60 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
 
         if ids_to_delete:
             instance.ods_odp.filter(id__in=ids_to_delete).delete()
+
+
+class ProjectV2EditActualFieldsSerializer(serializers.ModelSerializer):
+    """
+    ProjectSerializer class for editing actual fields
+    """
+
+    class Meta:
+        model = Project
+        fields = [
+            "ban_of_equipment_actual",
+            "ban_of_substances_actual",
+            "capacity_building_programmes_actual",
+            "certification_system_for_technicians_actual",
+            "checklist_regulations_actual",
+            "ee_demonstration_project_actual",
+            "establishment_of_imp_exp_licensing_actual",
+            "establishment_of_quota_systems_actual",
+            "kwh_year_saved_actual",
+            "meps_developed_domestic_refrigeration_actual",
+            "meps_developed_commercial_refrigeration_actual",
+            "meps_developed_residential_ac_actual",
+            "meps_developed_commercial_ac_actual",
+            "number_of_female_nou_personnel_supported_actual",
+            "number_of_enterprises_assisted_actual",
+            "number_of_female_customs_officers_trained_actual",
+            "number_of_female_technicians_trained_actual",
+            "number_of_female_trainers_trained_actual",
+            "number_of_female_technicians_certified_actual",
+            "number_of_training_institutions_newly_assisted_actual",
+            "number_of_tools_sets_distributed_actual",
+            "operation_of_recovery_and_recycling_scheme_actual",
+            "operation_of_reclamation_scheme_actual",
+            "quantity_hfc_23_by_product_generated_actual",
+            "quantity_hfc_23_by_product_generation_rate_actual",
+            "quantity_hfc_23_by_product_destroyed_actual",
+            "quantity_hfc_23_by_product_emitted_actual",
+            "quantity_controlled_substances_destroyed_mt_actual",
+            "quantity_controlled_substances_destroyed_co2_eq_t_actual",
+            "total_number_of_technicians_trained_actual",
+            "total_number_of_trainers_trained_actual",
+            "total_number_of_technicians_certified_actual",
+            "total_number_of_customs_officers_trained_actual",
+            "total_number_of_nou_personnel_supported_actual",
+        ]
+
+    def update(self, instance, validated_data):
+        """
+        Update the actual fields of the project
+        """
+        for field, value in validated_data.items():
+            setattr(instance, field, value)
+        instance.save()
+        return instance
 
 
 class ProjectV2SubmitSerializer(serializers.ModelSerializer):
