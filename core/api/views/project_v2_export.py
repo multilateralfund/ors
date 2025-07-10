@@ -1,6 +1,9 @@
 from typing import List
+import logging
 
 import openpyxl
+
+from rest_framework import serializers
 
 from core.api.serializers.project_v2 import ProjectDetailsV2Serializer
 from core.api.serializers.business_plan import BPActivityExportSerializer
@@ -14,6 +17,9 @@ from core.api.export.base import configure_sheet_print, WriteOnlyBase
 from core.api.export.business_plan import BPActivitiesWriter
 
 from core.api.utils import workbook_response
+
+
+logger = logging.getLogger(__name__)
 
 
 def get_headers_identifiers():
@@ -107,17 +113,66 @@ def get_headers_specific_information(fields: List[ProjectField]):
     return result
 
 
+def dict_as_obj(d):
+    class Dummy:
+        pass
+
+    inst = Dummy()
+    for key, value in d.items():
+        if isinstance(value, dict):
+            setattr(inst, key, dict_as_obj(value))
+        else:
+            setattr(inst, key, value)
+
+    return inst
+
+
+def get_activity_data_from_json(data):
+    result = {}
+    serializer = BPActivityExportSerializer()
+    data_as_obj = dict_as_obj(data)
+    for field, handler in serializer.get_fields().items():
+        if field == "chemical_detail":
+            value = "/".join(data.get("substances", []))
+        elif isinstance(handler, serializers.ChoiceField):
+            value = f"{data[field]}"
+        elif isinstance(handler, serializers.SlugRelatedField):
+            value = data[field][handler.slug_field] if data[field] else None
+        elif isinstance(handler, serializers.SerializerMethodField):
+            method_field = handler.method_name or f"get_{field}"
+            value_getter = getattr(serializer, method_field, lambda x: x)
+            value = value_getter(data_as_obj)
+        else:
+            value = data.get(field, None)
+        result[field] = value
+    return result
+
+
+def get_activity_data_from_instance(data):
+    result = None
+    try:
+        activity = BPActivity.objects.get(id=data["bp_activity"]["id"])
+        result = BPActivityExportSerializer(activity).data
+    except BPActivity.DoesNotExist:
+        logger.warning(
+            "Linked activity (%s) missing for project %s. Fallback to JSON.",
+            data["bp_activity"]["id"],
+            data["id"],
+        )
+    return result
+
+
 def get_activity_data(data):
     """Serialize Activity if it exists, otherwise use the saved json."""
     result = None
 
     if data.get("bp_activity"):
-        activity = BPActivity.objects.get(id=data["bp_activity"]["id"])
-        if activity:
-            result = BPActivityExportSerializer(activity).data
+        result = get_activity_data_from_instance(data)
 
     if not result:
-        result = data.get("bp_activity_json")
+        bp_data = data.get("bp_activity_json")
+        if bp_data:
+            result = get_activity_data_from_json(bp_data)
 
     return result
 

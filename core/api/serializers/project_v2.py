@@ -408,6 +408,7 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
             "ods_odp",
             "versions",
             "history",
+            "bp_activity_json",
             "total_number_of_technicians_trained_actual",
             "number_of_female_technicians_trained_actual",
             "total_number_of_trainers_trained_actual",
