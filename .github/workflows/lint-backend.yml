@@ -17,4 +17,4 @@ jobs:
       - name: "Lint backend code"
         run: |
           cp .env.test.example .env
-          pylint --django-settings-module=multilateralfund.settings --rcfile ./.pylintrc "**/*.py"
+          pylint "**/*.py"
