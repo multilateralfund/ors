@@ -91,8 +91,59 @@ docstring-code-format = false
 # enabled.
 docstring-code-line-length = "dynamic"
 
-[tool.pylint]
-args = [
-    "--load-plugins", "pylint_django",
-    "--django-settings-module=multilateralfund.settings"
+[tool.pylint.main]
+ignore = [
+  "wsgi.py",
+  "manage.py",
 ]
+
+ignore-paths = [
+  "core/migrations",
+  "venv",
+  "frontend",
+]
+
+load-plugins = [
+  "pylint_django",
+  "pylint_secure_coding_standard",
+]
+
+django-settings-module = "multilateralfund.settings"
+
+
+[tool.pylint."MESSAGES CONTROL"]
+disable = [
+  "missing-docstring",
+  "too-few-public-methods",
+  "wrong-import-order",
+  "logging-fstring-interpolation",
+  "logging-not-lazy",
+  "invalid-name",
+  "avoid-assert",
+  "fixme",
+  "consider-using-f-string",
+  "duplicate-code",
+  "too-many-ancestors",
+  "too-many-positional-arguments",
+]
+
+
+[tool.pylint.FORMAT]
+max-line-length = "120"
+
+[tool.pylint.DESIGN]
+# Maximum number of arguments for function / method
+max-args = "6"
+
+# Maximum number of locals for function / method body
+max-locals = "20"
+
+# Maximum number of branch for function / method body
+max-branches = "20"
+
+[tool.pylint.SIMILARITIES]
+# Minimum lines number of a similarity.
+min-similarity-lines = "6"
+
+[tool.pylint.REPORTS]
+msg-template = "{path}:{line}: [{msg_id}({symbol}), {obj}] {msg}"
