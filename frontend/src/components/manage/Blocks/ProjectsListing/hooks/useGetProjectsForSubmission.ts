@@ -5,7 +5,7 @@ import { map } from 'lodash'
 
 export const useGetProjectsForSubmission = async (
   id: number,
-  setAssociatedProjects: (projects: RelatedProjectsType[]) => void,
+  setAssociatedProjects: (projects: RelatedProjectsType[] | null) => void,
   setLoaded: (loaded: boolean) => void,
   include_validation: boolean = false,
   include_project: boolean = false,
@@ -33,7 +33,7 @@ export const useGetProjectsForSubmission = async (
     setAssociatedProjects(formattedProjects)
   } catch (e) {
     console.error('Error at loading projects for submission')
-    setAssociatedProjects([])
+    setAssociatedProjects(null)
   } finally {
     setLoaded(true)
   }

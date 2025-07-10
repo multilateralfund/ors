@@ -20,7 +20,7 @@ import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
 import { ProjectSpecificFields } from '../interfaces'
 
-import { lowerCase } from 'lodash'
+import { isNull, lowerCase } from 'lodash'
 import { useParams } from 'wouter'
 
 const ProjectViewWrapper = () => {
@@ -30,8 +30,13 @@ const ProjectViewWrapper = () => {
 
   const project = useGetProject(project_id)
   const { data, loading } = project
-  const { cluster_id, project_type_id, sector_id, submission_status } =
-    data || {}
+  const {
+    cluster_id,
+    project_type_id,
+    sector_id,
+    submission_status,
+    latest_project,
+  } = data || {}
 
   const { data: projectFiles } = useGetProjectFiles(project_id)
 
@@ -85,6 +90,7 @@ const ProjectViewWrapper = () => {
                 </div>
               </div>
               {canEditProjects &&
+                isNull(latest_project) &&
                 lowerCase(submission_status) !== 'withdrawn' && (
                   <CustomLink
                     className="ml-auto mt-auto h-10 text-nowrap px-4 py-2 text-lg uppercase"

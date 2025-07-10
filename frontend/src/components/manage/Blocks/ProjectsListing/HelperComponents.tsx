@@ -140,9 +140,10 @@ export const VersionsList = ({
     latest_project = null,
     submission_status,
   } = project
+  const isDraft = lowerCase(submission_status) === 'draft'
 
   return (
-    lowerCase(submission_status) !== 'draft' && (
+    (!isDraft || (isDraft && version === 2)) && (
       <>
         <VersionsDropdown
           {...{ versions, showVersionsMenu, setShowVersionsMenu }}

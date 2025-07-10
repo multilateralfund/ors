@@ -3,6 +3,7 @@
 import { useContext } from 'react'
 
 import Loading from '@ors/components/theme/Loading/Loading'
+import NotFound from '@ors/components/theme/Views/NotFound'
 import CustomLink from '@ors/components/ui/Link/Link'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import ExpandableMenu from '../ProjectsListing/ExpandableMenu'
@@ -20,6 +21,10 @@ const ProjectsAssociateWrapper = () => {
 
   const project = useGetProject(project_id)
   const { data, loading } = project
+
+  if (project?.error) {
+    return <NotFound />
+  }
 
   return (
     <>

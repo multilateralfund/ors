@@ -7,15 +7,15 @@ import ProjectsSubmit from './ProjectsSubmit'
 import { useGetProjectsForSubmission } from '../hooks/useGetProjectsForSubmission'
 import { RelatedProjectsType } from '../interfaces'
 
-import { useParams } from 'wouter'
-import { debounce } from 'lodash'
+import { Redirect, useParams } from 'wouter'
+import { debounce, isNull } from 'lodash'
 
 const ProjectsSubmitWrapper = () => {
   const { project_id } = useParams<Record<string, string>>()
   const isFirstRender = useRef(false)
 
   const [associatedProjects, setAssociatedProjects] = useState<
-    RelatedProjectsType[]
+    RelatedProjectsType[] | null
   >([])
   const [loaded, setLoaded] = useState<boolean>(false)
 
@@ -37,15 +37,21 @@ const ProjectsSubmitWrapper = () => {
     }
   }, [])
 
+  if (loaded && isNull(associatedProjects)) {
+    return <Redirect to="/projects-listing" />
+  }
+
   return (
     <>
       <Loading
         className="!fixed bg-action-disabledBackground"
         active={!loaded && !isFirstRender.current}
       />
-      <ProjectsSubmit
-        {...{ associatedProjects, loaded, setLoaded, setAssociatedProjects }}
-      />
+      {associatedProjects && (
+        <ProjectsSubmit
+          {...{ associatedProjects, loaded, setLoaded, setAssociatedProjects }}
+        />
+      )}
     </>
   )
 }

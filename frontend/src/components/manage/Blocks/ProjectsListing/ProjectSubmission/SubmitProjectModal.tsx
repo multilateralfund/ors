@@ -22,11 +22,12 @@ const SubmitProjectModal = ({
   editProject: (withNavigation: boolean) => void
 }) => {
   const [associatedProjects, setAssociatedProjects] = useState<
-    RelatedProjectsType[]
+    RelatedProjectsType[] | null
   >([])
   const [loaded, setLoaded] = useState<boolean>(false)
 
-  const hasAssociatedPojects = associatedProjects.length > 0
+  const hasAssociatedPojects =
+    associatedProjects && associatedProjects.length > 0
 
   const debouncedGetProjectsForSubmission = debounce(() => {
     useGetProjectsForSubmission(id, setAssociatedProjects, setLoaded)

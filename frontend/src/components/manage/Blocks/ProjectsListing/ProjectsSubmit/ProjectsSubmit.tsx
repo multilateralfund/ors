@@ -17,8 +17,8 @@ import { RelatedProjectsType } from '../interfaces'
 import { api } from '@ors/helpers'
 
 import { Box, CircularProgress, Typography } from '@mui/material'
-import { useParams } from 'wouter'
-import { find } from 'lodash'
+import { Redirect, useParams } from 'wouter'
+import { find, lowerCase } from 'lodash'
 
 const ProjectsSubmit = ({
   associatedProjects,
@@ -29,7 +29,7 @@ const ProjectsSubmit = ({
   associatedProjects: RelatedProjectsType[] | undefined
   loaded: boolean
   setLoaded: (loaded: boolean) => void
-  setAssociatedProjects: (projects: RelatedProjectsType[]) => void
+  setAssociatedProjects: (projects: RelatedProjectsType[] | null) => void
 }) => {
   const { project_id } = useParams<Record<string, string>>()
   const parsedProjectId = parseInt(project_id)
@@ -41,6 +41,12 @@ const ProjectsSubmit = ({
     associatedProjects,
     ({ id }) => id === parsedProjectId,
   )
+  const { submission_status, title, version } = currentProject || {}
+  const isDraft = lowerCase(submission_status) === 'draft'
+
+  if (currentProject && (!isDraft || (isDraft && version === 2))) {
+    return <Redirect to="/projects-listing" />
+  }
 
   const hasErrors = find(associatedProjects, ({ errors }) => errors.length > 0)
   const isSubmitSuccessful = hasSubmitErrors === false
@@ -76,10 +82,7 @@ const ProjectsSubmit = ({
         <div className="align-center flex flex-col flex-wrap justify-between">
           <RedirectBackButton />
           <PageHeading className="min-w-fit">
-            <PageTitle
-              pageTitle="Submit project"
-              projectTitle={currentProject?.title ?? ''}
-            />
+            <PageTitle pageTitle="Submit project" projectTitle={title ?? ''} />
           </PageHeading>
         </div>
       </HeaderTitle>
