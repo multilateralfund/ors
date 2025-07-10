@@ -55,6 +55,7 @@ from core.api.views.project_v2_export import ProjectsV2ProjectExport
 
 # pylint: disable=C0302
 
+
 class ProjectDestructionTechnologyView(APIView):
     """
     View to return a list of all Project DestructionTechnology choices
@@ -165,6 +166,14 @@ class ProjectV2ViewSet(
         """
         Filter the queryset based on the user's permissions.
         """
+
+        def _check_if_user_has_edit_access(user):
+            return (
+                HasProjectV2EditAccess().has_permission(self.request, self)
+                or HasProjectV2SubmitAccess().has_permission(self.request, self)
+                or user.has_perm("core.has_project_v2_version3_edit_access")
+            )
+
         user = self.request.user
         if user.is_superuser:
             return queryset
@@ -172,9 +181,11 @@ class ProjectV2ViewSet(
         if self.action in ["edit_actual_fields"]:
             queryset.filter(submission_status__name="Approved")
         if self.action in ["update", "partial_update", "submit"] or results_for_edit:
+            user_has_any_edit_access = _check_if_user_has_edit_access(user)
+            if not user_has_any_edit_access:
+                return queryset.none()
             allowed_versions = set()
             queryset_filters = {}
-
             if user.has_perm("core.has_project_v2_draft_edit_access"):
                 queryset_filters["submission_status__name"] = "Draft"
                 allowed_versions.update([1, 2])
@@ -182,6 +193,7 @@ class ProjectV2ViewSet(
                 queryset_filters.pop("submission_status__name", None)
                 allowed_versions.update([1, 2])
             if user.has_perm("core.has_project_v2_version3_edit_access"):
+
                 queryset_filters.pop("submission_status__name", None)
                 allowed_versions.add(3)
 
@@ -234,6 +246,12 @@ class ProjectV2ViewSet(
             "ods_odp",
         )
         return queryset
+
+    def get_object(self):
+        if self.action == "export":
+            project_id = self.request.query_params.get("project_id")
+            return get_object_or_404(self.get_queryset(), id=project_id)
+        return super().get_object()
 
     def get_serializer_class(self):
         serializer = ProjectDetailsV2Serializer
@@ -292,6 +310,19 @@ class ProjectV2ViewSet(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
 
+    @swagger_auto_schema(
+        operation_description="""
+        V2 projects endpoint for exporting projects.
+        """,
+        manual_parameters=[
+            openapi.Parameter(
+                "project_id",
+                openapi.IN_QUERY,
+                description="ID of the project to export. If not provided, all projects will be exported.",
+                type=openapi.TYPE_INTEGER,
+            ),
+        ],
+    )
     @action(methods=["GET"], detail=False)
     def export(self, request, *args, **kwargs):
         project_id = request.query_params.get("project_id")
@@ -846,12 +877,22 @@ class ProjectV2FileView(
         """
         Filter the queryset based on the user's permissions.
         """
+
+        def _check_if_user_has_edit_access(user):
+            return (
+                HasProjectV2EditAccess().has_permission(self.request, self)
+                or HasProjectV2SubmitAccess().has_permission(self.request, self)
+                or user.has_perm("core.has_project_v2_version3_edit_access")
+            )
+
         user = self.request.user
         if user.is_superuser:
             return queryset
 
         if self.request.method in ["POST", "DELETE"] or results_for_edit:
-
+            user_has_any_edit_access = _check_if_user_has_edit_access(user)
+            if not user_has_any_edit_access:
+                return queryset.none()
             allowed_versions = set()
             queryset_filters = {}
 
