@@ -112,6 +112,7 @@ from core.api.views.projects_v2 import (
     ProjectOdsOdpTypeView,
     ProjectV2ViewSet,
     ProjectV2FileView,
+    ProjectV2FileIncludePreviousVersionsView,
     ProjectFilesDownloadView,
     ProjectFilesValidationView,
 )
@@ -486,6 +487,11 @@ urlpatterns = [
         "project/<int:project_id>/files/v2/",
         ProjectV2FileView.as_view(),
         name="project-files-v2",
+    ),
+    path(
+        "project/<int:project_id>/files/include_previous_versions/v2/",
+        ProjectV2FileIncludePreviousVersionsView.as_view(),
+        name="project-v2-file-include-previous-versions",
     ),
     path(
         "project/<int:project_id>/files/<int:id>/download/v2/",

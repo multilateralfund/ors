@@ -60,6 +60,14 @@ def _project2_file(project2, test_file):
     return project_file
 
 
+@pytest.fixture(name="project3_file")
+def _project3_file(project3, test_file):
+    project_file = ProjectFile(project=project3)
+    project_file.file.save("project3_text.txt", test_file.open())
+    project_file.save()
+    return project_file
+
+
 @pytest.fixture(name="test_file1")
 def _test_file1(tmp_path):
     p = tmp_path / "project_file1.docx"
@@ -1375,6 +1383,157 @@ class TestProjectFiles:
 
         assert response.status_code == 200
         assert response.content == my_file.file.read()
+
+
+class TestProjectV2FileIncludePreviousVersions:
+    client = APIClient()
+
+    def _prepare_projects_with_files(
+        self, project, project2, project_file, project2_file, project3, project3_file
+    ):
+        project.version = 3
+        project.save()
+        project2.version = 2
+        project2.meta_project = project.meta_project
+        project2.latest_project = project
+        project2.save()
+        project3.version = 1
+        project3.meta_project = project.meta_project
+        project3.latest_project = project
+        project3.save()
+        project_file.project = project
+        project_file.save()
+        project2_file.project = project2
+        project2_file.save()
+        project3_file.project = project3
+        project3_file.save()
+
+    def test_permissions(
+        self,
+        project,
+        project_file,
+        project2,
+        project2_file,
+        project3,
+        project3_file,
+        user,
+        viewer_user,
+        agency_user,
+        agency_inputter_user,
+        secretariat_viewer_user,
+        secretariat_v1_v2_edit_access_user,
+        secretariat_production_v1_v2_edit_access_user,
+        secretariat_v3_edit_access_user,
+        secretariat_production_v3_edit_access_user,
+        admin_user,
+    ):
+        url = reverse("project-v2-file-include-previous-versions", args=(project.id,))
+        self._prepare_projects_with_files(
+            project, project2, project_file, project2_file, project3, project3_file
+        )
+
+        def _test_user_permissions(user, expected_response_status):
+            self.client.force_authenticate(user=user)
+            response = self.client.get(url)
+            assert response.status_code == expected_response_status
+            return response.data
+
+        # Unauthenticated
+        self.client.force_authenticate(user=None)
+        response = self.client.get(url)
+        assert response.status_code == 403
+
+        # Authenticated users
+        _test_user_permissions(user, 403)
+        _test_user_permissions(viewer_user, 200)
+        _test_user_permissions(agency_user, 200)
+        _test_user_permissions(agency_inputter_user, 200)
+        _test_user_permissions(secretariat_viewer_user, 200)
+        _test_user_permissions(secretariat_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 200)
+        _test_user_permissions(secretariat_v3_edit_access_user, 200)
+        _test_user_permissions(secretariat_production_v3_edit_access_user, 200)
+        _test_user_permissions(admin_user, 200)
+
+    def test_endpoint_returns_files_grouped_by_project_and_version(
+        self,
+        secretariat_v1_v2_edit_access_user,
+        project,
+        project2,
+        project_file,
+        project2_file,
+        project3,
+        project3_file,
+    ):
+        url = reverse("project-v2-file-include-previous-versions", args=(project.id,))
+        self._prepare_projects_with_files(
+            project, project2, project_file, project2_file, project3, project3_file
+        )
+        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+
+        response = self.client.get(url)
+        assert response.status_code == 200
+        data = response.data
+        assert len(data) == 3
+        assert data[0]["id"] == project.id
+        assert data[1]["id"] == project2.id
+        assert data[2]["id"] == project3.id
+
+        for entry in data:
+            if entry["id"] == project.id:
+                assert any(f["id"] == project_file.id for f in entry["files"])
+            if entry["id"] == project2.id:
+                assert any(f["id"] == project2_file.id for f in entry["files"])
+            if entry["id"] == project3.id:
+                assert any(f["id"] == project3_file.id for f in entry["files"])
+
+    def test_only_one_project(
+        self,
+        secretariat_v1_v2_edit_access_user,
+        project,
+        project_file,
+        project2,
+        project2_file,
+        project3,
+        project3_file,
+    ):
+        self._prepare_projects_with_files(
+            project, project2, project_file, project2_file, project3, project3_file
+        )
+        url = reverse("project-v2-file-include-previous-versions", args=(project3.id,))
+        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+
+        response = self.client.get(url)
+        assert response.status_code == 200
+        data = response.data
+        assert len(data) == 1
+        assert data[0]["id"] == project3.id
+        assert any(f["id"] == project3_file.id for f in data[0]["files"])
+
+    def test_project_version2_retrival(
+        self,
+        secretariat_v1_v2_edit_access_user,
+        project,
+        project2,
+        project_file,
+        project2_file,
+        project3,
+        project3_file,
+    ):
+        self._prepare_projects_with_files(
+            project, project2, project_file, project2_file, project3, project3_file
+        )
+        url = reverse("project-v2-file-include-previous-versions", args=(project2.id,))
+        self.client.force_authenticate(user=secretariat_v1_v2_edit_access_user)
+
+        response = self.client.get(url)
+        assert response.status_code == 200
+        data = response.data
+        assert len(data) == 2
+        assert data[0]["id"] == project2.id  # project2 is the latest version
+        assert data[1]["id"] == project3.id  # project3 is the archived version
+        assert any(f["id"] == project2_file.id for f in data[0]["files"])
+        assert any(f["id"] == project3_file.id for f in data[1]["files"])
 
 
 class TestProjectVersioning:
