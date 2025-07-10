@@ -41,10 +41,10 @@ const ProjectsSubmit = ({
     associatedProjects,
     ({ id }) => id === parsedProjectId,
   )
-  const { submission_status, title, version } = currentProject || {}
+  const { submission_status, title } = currentProject || {}
   const isDraft = lowerCase(submission_status) === 'draft'
 
-  if (currentProject && (!isDraft || (isDraft && version === 2))) {
+  if (currentProject && !isDraft) {
     return <Redirect to="/projects-listing" />
   }
 

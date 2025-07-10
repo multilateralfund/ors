@@ -3,7 +3,6 @@
 import { useContext } from 'react'
 
 import Loading from '@ors/components/theme/Loading/Loading'
-import NotFound from '@ors/components/theme/Views/NotFound'
 import CustomLink from '@ors/components/ui/Link/Link'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import ExpandableMenu from '../ProjectsListing/ExpandableMenu'
@@ -11,7 +10,7 @@ import ProjectsAssociate from './ProjectsAssociate'
 import { useGetProject } from '../hooks/useGetProject'
 import { getMenus } from '../utils'
 
-import { useParams } from 'wouter'
+import { Redirect, useParams } from 'wouter'
 
 const ProjectsAssociateWrapper = () => {
   const { project_id } = useParams<Record<string, string>>()
@@ -23,7 +22,7 @@ const ProjectsAssociateWrapper = () => {
   const { data, loading } = project
 
   if (project?.error) {
-    return <NotFound />
+    return <Redirect to="/projects-listing" />
   }
 
   return (

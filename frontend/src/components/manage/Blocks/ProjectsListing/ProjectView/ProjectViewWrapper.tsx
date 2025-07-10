@@ -20,11 +20,12 @@ import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
 import { ProjectSpecificFields } from '../interfaces'
 
+import { Redirect, useLocation, useParams } from 'wouter'
 import { isNull, lowerCase } from 'lodash'
-import { useParams } from 'wouter'
 
 const ProjectViewWrapper = () => {
   const { project_id } = useParams<Record<string, string>>()
+  const [location] = useLocation()
 
   const { canEditProjects } = useContext(PermissionsContext)
 
@@ -36,6 +37,7 @@ const ProjectViewWrapper = () => {
     sector_id,
     submission_status,
     latest_project,
+    version,
   } = data || {}
 
   const { data: projectFiles } = useGetProjectFiles(project_id)
@@ -59,6 +61,12 @@ const ProjectViewWrapper = () => {
 
   if (project?.error) {
     return <NotFound />
+  }
+
+  if (data && latest_project && !location.includes('archive')) {
+    return (
+      <Redirect to={`/projects-listing/${project_id}/archive/${version}`} />
+    )
   }
 
   return (
