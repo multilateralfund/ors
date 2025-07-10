@@ -1,8 +1,10 @@
 import { useContext, useMemo, useState } from 'react'
 
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
+import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import SubmitTranchesWarningModal from './SubmitTranchesWarningModal'
 import SubmitProjectModal from './SubmitProjectModal'
+import ChangeStatusModal from './ChangeStatusModal'
 import AddComponentModal from './AddComponentModal'
 import { IncreaseVersionButton } from '../HelperComponents'
 import {
@@ -23,10 +25,11 @@ import {
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { api, uploadFiles } from '@ors/helpers'
 
+import { Button, ButtonProps, Divider, MenuProps } from '@mui/material'
+import { MdKeyboardArrowDown } from 'react-icons/md'
 import { enqueueSnackbar } from 'notistack'
-import { Button } from '@mui/material'
+import { find, lowerCase } from 'lodash'
 import { useLocation } from 'wouter'
-import { lowerCase } from 'lodash'
 import cx from 'classnames'
 
 const EditActionButtons = ({
@@ -66,6 +69,8 @@ const EditActionButtons = ({
   const [isComponentModalOpen, setIsComponentModalOpen] = useState(false)
   const [isTrancheWarningOpen, setIsTrancheWarningOpen] = useState(false)
   const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false)
+  const [isSendToDraftModalOpen, setIsSendToDraftModalOpen] = useState(false)
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false)
 
   const { id, submission_status } = project
   const { crossCuttingFields, projectSpecificFields } = projectData
@@ -87,9 +92,14 @@ const EditActionButtons = ({
     [projectSpecificFields, project],
   )
 
+  const hasOdsOdpFields = find(
+    specificFields,
+    (field) => field.table === 'ods_odp',
+  )
   const hasOdsOdpErrors =
-    odsOdpData.some((data) => Object.values(data).some(checkInvalidValue)) ||
-    odsOdpData.length === 0
+    hasOdsOdpFields &&
+    (odsOdpData.some((data) => Object.values(data).some(checkInvalidValue)) ||
+      odsOdpData.length === 0)
 
   const {
     Header: headerErrors = {},
@@ -194,10 +204,18 @@ const EditActionButtons = ({
     }
   }
 
+  const onSendBackToDraftProject = () => {
+    setIsSendToDraftModalOpen(true)
+  }
+
+  const onWithdrawProject = () => {
+    setIsWithdrawModalOpen(true)
+  }
+
   const recommendProject = async () => {
     await editProject()
     try {
-      await api(`api/projects/v2/${id}/recommend`, {
+      await api(`api/projects/v2/${id}/recommend/`, {
         method: 'POST',
       })
       setLocation(`/projects-listing/${id}`)
@@ -209,9 +227,29 @@ const EditActionButtons = ({
     }
   }
 
-  const withdrawProject = async () => {
+  const sendProjectBackToDraft = async () => {
+    await editProject()
     try {
-      await api(`api/projects/v2/${id}/withdraw`, {
+      await api(`api/projects/v2/${id}/send_back_to_draft/`, {
+        method: 'POST',
+      })
+      setLocation(`/projects-listing/${id}`)
+    } catch (error) {
+      enqueueSnackbar(
+        <>Could not send project back to draft. Please try again.</>,
+        {
+          variant: 'error',
+        },
+      )
+    } finally {
+      setIsSendToDraftModalOpen(false)
+    }
+  }
+
+  const withdrawProject = async () => {
+    await editProject()
+    try {
+      await api(`api/projects/v2/${id}/withdraw/`, {
         method: 'POST',
       })
       setLocation(`/projects-listing/${id}`)
@@ -219,11 +257,25 @@ const EditActionButtons = ({
       enqueueSnackbar(<>Could not withdraw project. Please try again.</>, {
         variant: 'error',
       })
+    } finally {
+      setIsWithdrawModalOpen(false)
     }
   }
 
   const enabledButtonClassname =
     'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow'
+  const dropdownItemClassname = 'bg-transparent font-medium normal-case'
+
+  const DropDownButtonProps: ButtonProps = {
+    endIcon: <MdKeyboardArrowDown />,
+    size: 'large',
+    variant: 'contained',
+  }
+  const DropDownMenuProps: Omit<MenuProps, 'open'> = {
+    PaperProps: {
+      className: 'mt-1 border border-solid border-black rounded-lg',
+    },
+  }
 
   return (
     <div className="container flex w-full flex-wrap gap-x-3 gap-y-2 px-0">
@@ -261,17 +313,34 @@ const EditActionButtons = ({
         />
       )}
       {canRecommendProjects && lowerCase(submission_status) === 'submitted' && (
-        <>
-          <IncreaseVersionButton
-            title="Recommend project"
-            onSubmit={recommendProject}
-            isDisabled={disableSubmit}
-          />
-          <IncreaseVersionButton
-            title="Withdraw project"
-            onSubmit={withdrawProject}
-          />
-        </>
+        <Dropdown
+          className="bg-primary px-4 py-2 text-white shadow-none hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow"
+          ButtonProps={DropDownButtonProps}
+          MenuProps={DropDownMenuProps}
+          label={<>Edit project</>}
+        >
+          <Dropdown.Item
+            disabled={disableSubmit}
+            className={cx(dropdownItemClassname, 'text-primary')}
+            onClick={recommendProject}
+          >
+            Recommend project
+          </Dropdown.Item>
+          <Divider className="m-0" />
+          <Dropdown.Item
+            className={cx(dropdownItemClassname, 'text-red-900')}
+            onClick={onSendBackToDraftProject}
+          >
+            Send project back to draft
+          </Dropdown.Item>
+          <Divider className="m-0" />
+          <Dropdown.Item
+            className={cx(dropdownItemClassname, 'text-red-900')}
+            onClick={onWithdrawProject}
+          >
+            Withdraw project
+          </Dropdown.Item>
+        </Dropdown>
       )}
       {isComponentModalOpen && (
         <AddComponentModal
@@ -285,6 +354,22 @@ const EditActionButtons = ({
           isModalOpen={isSubmitModalOpen}
           setIsModalOpen={setIsSubmitModalOpen}
           {...{ id, editProject }}
+        />
+      )}
+      {isWithdrawModalOpen && (
+        <ChangeStatusModal
+          mode="withdraw"
+          isModalOpen={isWithdrawModalOpen}
+          setIsModalOpen={setIsWithdrawModalOpen}
+          onAction={withdrawProject}
+        />
+      )}
+      {isSendToDraftModalOpen && (
+        <ChangeStatusModal
+          mode="sendToDraft"
+          isModalOpen={isSendToDraftModalOpen}
+          setIsModalOpen={setIsSendToDraftModalOpen}
+          onAction={sendProjectBackToDraft}
         />
       )}
       {showSubmitTranchesWarningModal && isTrancheWarningOpen && (

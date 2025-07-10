@@ -20,18 +20,25 @@ import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
 import { ProjectSpecificFields } from '../interfaces'
 
-import { lowerCase } from 'lodash'
-import { useParams } from 'wouter'
+import { Redirect, useLocation, useParams } from 'wouter'
+import { isNull, lowerCase } from 'lodash'
 
 const ProjectViewWrapper = () => {
   const { project_id } = useParams<Record<string, string>>()
+  const [location] = useLocation()
 
   const { canEditProjects } = useContext(PermissionsContext)
 
   const project = useGetProject(project_id)
   const { data, loading } = project
-  const { cluster_id, project_type_id, sector_id, submission_status } =
-    data || {}
+  const {
+    cluster_id,
+    project_type_id,
+    sector_id,
+    submission_status,
+    latest_project,
+    version,
+  } = data || {}
 
   const { data: projectFiles } = useGetProjectFiles(project_id)
 
@@ -56,6 +63,12 @@ const ProjectViewWrapper = () => {
     return <NotFound />
   }
 
+  if (data && latest_project && !location.includes('archive')) {
+    return (
+      <Redirect to={`/projects-listing/${project_id}/archive/${version}`} />
+    )
+  }
+
   return (
     <>
       <Loading
@@ -65,11 +78,11 @@ const ProjectViewWrapper = () => {
       {!loading && data && (
         <>
           <HeaderTitle>
-            <div className="align-center flex flex-wrap justify-between gap-3">
+            <div className="flex flex-wrap justify-between gap-3">
               <div className="flex flex-col">
                 <RedirectBackButton />
                 <div className="flex gap-2">
-                  <PageHeading className="min-w-fit">
+                  <PageHeading>
                     <PageTitle
                       pageTitle="View project"
                       projectTitle={data.title}
@@ -85,9 +98,10 @@ const ProjectViewWrapper = () => {
                 </div>
               </div>
               {canEditProjects &&
+                isNull(latest_project) &&
                 lowerCase(submission_status) !== 'withdrawn' && (
                   <CustomLink
-                    className="mb-4 ml-auto h-10 text-nowrap px-4 py-2 text-lg uppercase"
+                    className="ml-auto mt-auto h-10 text-nowrap px-4 py-2 text-lg uppercase"
                     href={`/projects-listing/${project_id}/edit`}
                     color="secondary"
                     variant="contained"

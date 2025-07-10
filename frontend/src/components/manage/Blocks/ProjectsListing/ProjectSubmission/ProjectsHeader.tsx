@@ -100,7 +100,7 @@ const ProjectsHeader = ({
             )}
           </div>
         </div>
-        <div className="ml-auto flex items-center gap-2.5">
+        <div className="ml-auto mt-auto flex items-center gap-2.5">
           {mode !== 'edit' ? (
             <CreateActionButtons
               {...{

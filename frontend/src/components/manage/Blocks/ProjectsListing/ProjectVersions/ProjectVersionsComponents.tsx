@@ -44,7 +44,7 @@ export const VersionsDropdown = ({
       </div>
       <div
         className={cx(
-          'absolute left-0 z-10 max-h-[200px] origin-top overflow-y-auto rounded-none border border-solid border-primary bg-gray-A100 opacity-0 transition-all',
+          'absolute right-0 z-10 max-h-[200px] origin-top overflow-y-auto rounded-none border border-solid border-primary bg-gray-A100 opacity-0 transition-all',
           {
             'collapse scale-y-0': !showVersionsMenu,
             'scale-y-100 opacity-100': showVersionsMenu,
@@ -82,7 +82,7 @@ export const HeaderTag = ({
   latest_project: number | null
   version: number
 }) => (
-  <span className="self-baseline rounded bg-mlfs-hlYellow p-1 font-medium uppercase leading-none">
+  <span className="self-baseline whitespace-nowrap rounded bg-mlfs-hlYellow p-1 font-medium uppercase leading-none">
     {latest_project ? `Version ${version}` : 'Latest'}
   </span>
 )

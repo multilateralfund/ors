@@ -95,20 +95,18 @@ export const PageTitle = ({
   const { submission_status, code, code_legacy } = project || {}
 
   return (
-    <div className="flex flex-wrap gap-2.5">
-      <span className="whitespace-nowrap font-medium text-[#4D4D4D]">
-        {pageTitle}:
-      </span>
-      <div>
+    <>
+      <span className="font-medium text-[#4D4D4D]">{pageTitle}: </span>
+      <span>
         {projectTitle ?? 'New project'}
         {submission_status === 'Approved' ? `, ${code ?? code_legacy}` : ''}
-      </div>
-    </div>
+      </span>
+    </>
   )
 }
 
 export const ProjectStatusInfo = ({ project }: { project: ProjectTypeApi }) => (
-  <div className="mt-4 flex gap-3">
+  <div className="mt-4 flex flex-wrap gap-3">
     <div className="flex items-center gap-3">
       <span>Submission status:</span>
       <span className="rounded border border-solid border-[#002A3C] px-1 py-0.5 font-medium uppercase leading-tight text-[#002A3C]">
@@ -142,9 +140,10 @@ export const VersionsList = ({
     latest_project = null,
     submission_status,
   } = project
+  const isDraft = lowerCase(submission_status) === 'draft'
 
   return (
-    (version > 1 || lowerCase(submission_status) !== 'draft') && (
+    (!isDraft || (isDraft && version === 2)) && (
       <>
         <VersionsDropdown
           {...{ versions, showVersionsMenu, setShowVersionsMenu }}

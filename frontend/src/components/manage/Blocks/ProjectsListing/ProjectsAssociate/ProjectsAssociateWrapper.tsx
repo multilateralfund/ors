@@ -10,7 +10,7 @@ import ProjectsAssociate from './ProjectsAssociate'
 import { useGetProject } from '../hooks/useGetProject'
 import { getMenus } from '../utils'
 
-import { useParams } from 'wouter'
+import { Redirect, useParams } from 'wouter'
 
 const ProjectsAssociateWrapper = () => {
   const { project_id } = useParams<Record<string, string>>()
@@ -20,6 +20,10 @@ const ProjectsAssociateWrapper = () => {
 
   const project = useGetProject(project_id)
   const { data, loading } = project
+
+  if (project?.error) {
+    return <Redirect to="/projects-listing" />
+  }
 
   return (
     <>
