@@ -894,7 +894,8 @@ class ProjectOdsOdp(models.Model):
     ods_type = models.CharField(
         max_length=256,
         choices=ProjectOdsOdpType.choices,
-        default=ProjectOdsOdpType.GENERAL,
+        null=True,
+        blank=True,
     )
     project = models.ForeignKey(
         Project, on_delete=models.CASCADE, related_name="ods_odp"
@@ -906,6 +907,15 @@ class ProjectOdsOdp(models.Model):
         if self.ods_replacement:
             return_str = f"{return_str} replacement: {self.ods_replacement}"
         return return_str
+
+    def get_ods_display_name(self, obj):
+        if obj.ods_display_name:
+            return obj.ods_display_name
+        if obj.ods_substance:
+            return obj.ods_substance.name
+        if obj.ods_blend:
+            return obj.ods_blend.name
+        return None
 
 
 class ProjectFund(models.Model):
