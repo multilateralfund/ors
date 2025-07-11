@@ -494,6 +494,7 @@ class TestProjectVersioning:
         project,
         project_recommended_status,
         project_approved_status,
+        project_ongoing_status,
         decision,
         user,
         viewer_user,
@@ -549,6 +550,7 @@ class TestProjectVersioning:
         decision,
         project_recommended_status,
         project_approved_status,
+        project_ongoing_status,
     ):
         self.client.force_authenticate(user=secretariat_v3_edit_access_user)
         url = reverse("project-v2-approve", args=(project.id,))
@@ -582,6 +584,7 @@ class TestProjectVersioning:
 
         project.refresh_from_db()
         assert project.submission_status == project_approved_status
+        assert project.status == project_ongoing_status
 
     def test_send_back_to_draft_permissions(
         self,

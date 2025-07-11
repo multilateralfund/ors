@@ -52,7 +52,11 @@ from core.models.project import (
     ProjectOdsOdp,
     ProjectFile,
 )
-from core.models.project_metadata import ProjectSubmissionStatus, ProjectSpecificFields
+from core.models.project_metadata import (
+    ProjectStatus,
+    ProjectSubmissionStatus,
+    ProjectSpecificFields,
+)
 from core.api.views.utils import log_project_history
 
 from core.api.views.projects_export import ProjectsV2Export
@@ -549,6 +553,7 @@ class ProjectV2ViewSet(
                 status=status.HTTP_400_BAD_REQUEST,
             )
         project.submission_status = ProjectSubmissionStatus.objects.get(name="Approved")
+        project.status = ProjectStatus.objects.get(code="ONG")
         log_project_history(project, request.user, HISTORY_DESCRIPTION_APPROVE_V3)
         project.save()
         return Response(
@@ -785,11 +790,12 @@ class ProjectV2ViewSet(
                 "subsectors__sector",
             )
 
+        context = self.get_serializer_context()
         if request.query_params.get("include_validation", "false").lower() == "true":
             # Include validation information for each project
             data = []
             for previous_tranche in previous_tranches:
-                serializer_data = ProjectListV2Serializer(previous_tranche).data
+                serializer_data = ProjectListV2Serializer(previous_tranche, context=context).data
                 warnings = []
                 errors = []
                 specific_field = ProjectSpecificFields.objects.filter(
@@ -824,7 +830,7 @@ class ProjectV2ViewSet(
                 data.append(serializer_data)
             return Response(data, status=status.HTTP_200_OK)
         return Response(
-            ProjectListV2Serializer(previous_tranches, many=True).data,
+            ProjectListV2Serializer(previous_tranches, many=True, context=context).data,
             status=status.HTTP_200_OK,
         )
 
@@ -872,12 +878,12 @@ class ProjectV2ViewSet(
             associated_projects = sorted(
                 associated_projects, key=lambda p: 0 if p.id == project.id else 1
             )
-
+        context = self.get_serializer_context()
         if request.query_params.get("include_validation", "false").lower() == "true":
             # Include validation information for each project
             data = []
             for associated_project in associated_projects:
-                project_data = ProjectListV2Serializer(associated_project).data
+                project_data = ProjectListV2Serializer(associated_project, context=context).data
                 serializer = ProjectV2SubmitSerializer(
                     associated_project, data={}, partial=True
                 )
@@ -889,7 +895,7 @@ class ProjectV2ViewSet(
 
             return Response(data, status=status.HTTP_200_OK)
         return Response(
-            ProjectListV2Serializer(associated_projects, many=True).data,
+            ProjectListV2Serializer(associated_projects, many=True, context=context).data,
             status=status.HTTP_200_OK,
         )
 
