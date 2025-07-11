@@ -117,6 +117,7 @@ export type ProjectSpecificFields = {
   section: string
   options: OptionsType[]
   editable: boolean | null
+  is_actual: boolean
   sort_order: number
 }
 
@@ -140,6 +141,7 @@ export type ProjectFile = {
   date_created: string
   download_url: string
   project_id: number
+  editable: boolean
 }
 
 export type ProjectTypeApi = ProjIdentifiers &

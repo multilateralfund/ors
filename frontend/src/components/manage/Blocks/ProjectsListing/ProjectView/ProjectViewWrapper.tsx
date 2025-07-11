@@ -38,6 +38,7 @@ const ProjectViewWrapper = () => {
     submission_status,
     latest_project,
     version,
+    editable,
   } = data || {}
 
   const { data: projectFiles } = useGetProjectFiles(project_id)
@@ -98,6 +99,7 @@ const ProjectViewWrapper = () => {
                 </div>
               </div>
               {canEditProjects &&
+                editable &&
                 isNull(latest_project) &&
                 lowerCase(submission_status) !== 'withdrawn' && (
                   <CustomLink

@@ -130,6 +130,11 @@ const normalizeValues = (data: Record<string, any>) =>
     ]),
   )
 
+const formatActualData = (data: Record<string, any>) =>
+  Object.fromEntries(
+    Object.entries(data).map(([key, value]) => [key, !value ? null : value]),
+  )
+
 export const formatSubmitData = (
   projectData: ProjectData,
   specificFields: ProjectSpecificFields[],
@@ -140,7 +145,9 @@ export const formatSubmitData = (
     crossCuttingFields,
     projectSpecificFields,
   } = projectData
-  const specificFieldsAvailable = map(specificFields, 'write_field_name')
+
+  const filteredFields = filter(specificFields, (field) => !field.is_actual)
+  const specificFieldsAvailable = map(filteredFields, 'write_field_name')
 
   const crtProjectSpecificFields = pick(
     projectSpecificFields,
@@ -176,6 +183,25 @@ export const formatSubmitData = (
     ods_odp: map(crtOdsOdpFields, (ods_odp) =>
       omit(normalizeValues(ods_odp), 'id'),
     ),
+  }
+}
+
+export const getActualData = (
+  projectData: ProjectData,
+  specificFields: ProjectSpecificFields[],
+) => {
+  const { projectSpecificFields } = projectData
+
+  const filteredFields = filter(specificFields, (field) => field.is_actual)
+  const specificFieldsAvailable = map(filteredFields, 'write_field_name')
+
+  const crtProjectSpecificFields = pick(
+    projectSpecificFields,
+    specificFieldsAvailable,
+  )
+
+  return {
+    ...formatActualData(crtProjectSpecificFields),
   }
 }
 
@@ -263,8 +289,14 @@ export const getCrossCuttingErrors = (
   }
 }
 
+export const hasSpecificField = (
+  specificFields: ProjectSpecificFields[],
+  field: string,
+) => find(specificFields, (crtField) => crtField.write_field_name === field)
+
 export const getDefaultImpactErrors = (
   projectSpecificFields: SpecificFields,
+  specificFields: ProjectSpecificFields[],
 ) => {
   const errorMsg = 'Number cannot be greater than the total one.'
 
@@ -272,7 +304,8 @@ export const getDefaultImpactErrors = (
     validationFieldsPairs
       .filter(
         ([key, totalKey]) =>
-          totalKey in projectSpecificFields &&
+          hasSpecificField(specificFields, key) &&
+          hasSpecificField(specificFields, totalKey) &&
           (projectSpecificFields[key] ?? 0) >
             (projectSpecificFields[totalKey] ?? 0),
       )
@@ -310,7 +343,7 @@ export const getSpecificFieldsErrors = (
   ) as string[]
 
   const defaultImpactErrors =
-    getDefaultImpactErrors(projectSpecificFields) ?? {}
+    getDefaultImpactErrors(projectSpecificFields, specificFields) ?? {}
 
   const sectionErrors =
     mode === 'edit' && project

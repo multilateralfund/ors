@@ -103,12 +103,14 @@ export function FilesViewer(props: ProjectDocs) {
                 </span>
               </a>
 
-              {setFiles && canUpdateProjects && (
-                <IoTrash
-                  className="transition-colors mb-1 min-h-[20px] min-w-[20px] text-[#666] ease-in-out hover:cursor-pointer hover:text-inherit"
-                  onClick={() => handleDelete(file)}
-                />
-              )}
+              {setFiles &&
+                canUpdateProjects &&
+                ('editable' in file ? file.editable : true) && (
+                  <IoTrash
+                    className="transition-colors mb-1 min-h-[20px] min-w-[20px] text-[#666] ease-in-out hover:cursor-pointer hover:text-inherit"
+                    onClick={() => handleDelete(file)}
+                  />
+                )}
             </div>
           ))
         )}
