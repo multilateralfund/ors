@@ -2,6 +2,7 @@
 import pytest
 import unicodedata
 
+from django.urls import reverse
 from django.contrib.auth.models import Group
 from django.core.management import call_command
 
@@ -51,6 +52,7 @@ from core.api.tests.factories import (
 from core.models import BPActivity
 from core.models import CPEmission
 from core.models import CPReport
+from core.models import ProjectFile
 from core.models.adm import AdmRecordArchive
 from core.models.business_plan import BusinessPlan
 from core.models.country_programme_archive import CPReportArchive
@@ -576,6 +578,68 @@ def meta_project_mya(country_ro, project_cluster_kip):
     code = get_meta_project_code(country_ro, project_cluster_kip)
 
     return MetaProjectFactory.create(code=code, type="Multi-year agreement")
+
+
+@pytest.fixture(name="project_url")
+def _project_url(project):
+    return reverse("project-v2-detail", args=(project.id,))
+
+
+@pytest.fixture(name="project_upload_url")
+def _project_upload_url(project):
+    return reverse("project-upload", args=(project.id,))
+
+
+@pytest.fixture(name="test_file")
+def _test_file(tmp_path):
+    p = tmp_path / "scott.txt"
+    p.write_text("Living on a Prayer!")
+    return p
+
+
+@pytest.fixture(name="project_file")
+def _project_file(project, test_file):
+    project_file = ProjectFile(project=project)
+    project_file.file.save("scott.txt", test_file.open())
+    project_file.save()
+    return project_file
+
+
+@pytest.fixture(name="project2_file")
+def _project2_file(project2, test_file):
+    project_file = ProjectFile(project=project2)
+    project_file.file.save("scott.txt", test_file.open())
+    project_file.save()
+    return project_file
+
+
+@pytest.fixture(name="project3_file")
+def _project3_file(project3, test_file):
+    project_file = ProjectFile(project=project3)
+    project_file.file.save("project3_text.txt", test_file.open())
+    project_file.save()
+    return project_file
+
+
+@pytest.fixture(name="test_file1")
+def _test_file1(tmp_path):
+    p = tmp_path / "project_file1.docx"
+    p.write_text("This is the first project test file")
+    return p
+
+
+@pytest.fixture(name="test_file2")
+def _test_file2(tmp_path):
+    p = tmp_path / "project_file2.pdf"
+    p.write_text("This is the second project test file")
+    return p
+
+
+@pytest.fixture(name="wrong_format_file3")
+def _wrong_format_file3(tmp_path):
+    p = tmp_path / "project_file3.csv"
+    p.write_text("This is the third project test file")
+    return p
 
 
 @pytest.fixture

@@ -35,6 +35,7 @@ from core.api.serializers.project_v2 import (
     ProjectListV2Serializer,
     ProjectV2CreateUpdateSerializer,
     ProjectV2EditActualFieldsSerializer,
+    ProjectV2EditApprovalFieldsSerializer,
     HISTORY_DESCRIPTION_UPDATE_ACTUAL_FIELDS,
     HISTORY_DESCRIPTION_RECOMMEND_V2,
     HISTORY_DESCRIPTION_REJECT_V3,
@@ -162,7 +163,7 @@ class ProjectV2ViewSet(
             return [HasProjectV2AssociateProjectsAccess]
         if self.action in ["recommend", "withdraw", "send_back_to_draft"]:
             return [HasProjectV2RecommendAccess]
-        if self.action in ["reject"]:
+        if self.action in ["reject", "edit_approval_fields"]:
             return [HasProjectV2ApproveAccess]
 
         return [DenyAll]
@@ -538,6 +539,37 @@ class ProjectV2ViewSet(
             project, request.user, HISTORY_DESCRIPTION_UPDATE_ACTUAL_FIELDS
         )
 
+        return Response(
+            ProjectDetailsV2Serializer(project).data,
+            status=status.HTTP_200_OK,
+        )
+
+    @action(methods=["PUT"], detail=True)
+    @swagger_auto_schema(
+        operation_description="""
+        Allows editing only the approval fields of the project.
+        """,
+        request_body=ProjectV2EditApprovalFieldsSerializer,
+        responses={
+            status.HTTP_200_OK: ProjectDetailsV2Serializer,
+            status.HTTP_400_BAD_REQUEST: "Bad request",
+        },
+    )
+    def edit_approval_fields(self, request, *args, **kwargs):
+        project = self.get_object()
+        serializer = ProjectV2EditApprovalFieldsSerializer(
+            project,
+            data=request.data,
+            partial=True,
+            context=self.get_serializer_context(),
+        )
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.save()
+        log_project_history(
+            project, request.user, HISTORY_DESCRIPTION_UPDATE_ACTUAL_FIELDS
+        )
+        project.refresh_from_db()
         return Response(
             ProjectDetailsV2Serializer(project).data,
             status=status.HTTP_200_OK,
