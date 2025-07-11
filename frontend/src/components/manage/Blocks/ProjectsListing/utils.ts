@@ -130,6 +130,11 @@ const normalizeValues = (data: Record<string, any>) =>
     ]),
   )
 
+const formatActualData = (data: Record<string, any>) =>
+  Object.fromEntries(
+    Object.entries(data).map(([key, value]) => [key, !value ? null : value]),
+  )
+
 export const formatSubmitData = (
   projectData: ProjectData,
   specificFields: ProjectSpecificFields[],
@@ -140,7 +145,9 @@ export const formatSubmitData = (
     crossCuttingFields,
     projectSpecificFields,
   } = projectData
-  const specificFieldsAvailable = map(specificFields, 'write_field_name')
+
+  const filteredFields = filter(specificFields, (field) => !field.is_actual)
+  const specificFieldsAvailable = map(filteredFields, 'write_field_name')
 
   const crtProjectSpecificFields = pick(
     projectSpecificFields,
@@ -176,6 +183,25 @@ export const formatSubmitData = (
     ods_odp: map(crtOdsOdpFields, (ods_odp) =>
       omit(normalizeValues(ods_odp), 'id'),
     ),
+  }
+}
+
+export const getActualData = (
+  projectData: ProjectData,
+  specificFields: ProjectSpecificFields[],
+) => {
+  const { projectSpecificFields } = projectData
+
+  const filteredFields = filter(specificFields, (field) => field.is_actual)
+  const specificFieldsAvailable = map(filteredFields, 'write_field_name')
+
+  const crtProjectSpecificFields = pick(
+    projectSpecificFields,
+    specificFieldsAvailable,
+  )
+
+  return {
+    ...formatActualData(crtProjectSpecificFields),
   }
 }
 

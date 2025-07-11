@@ -91,7 +91,7 @@ const getColumnDefs = (
           <div className="flex items-center gap-1 p-2">
             {mode !== 'association' && (
               <>
-                {canEditProjects && (
+                {canEditProjects && props.data.editable && (
                   <Link
                     className="flex h-4 w-4 justify-center"
                     href={`/projects-listing/${props.data.id}/edit`}

@@ -58,6 +58,7 @@ export type ProjectType = {
   date_received: any
   decision: string
   description: any
+  editable: boolean
   effectiveness_cost: any
   excom_provision: string
   export_to: number

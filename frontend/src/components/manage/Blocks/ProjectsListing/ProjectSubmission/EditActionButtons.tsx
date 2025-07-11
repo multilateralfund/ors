@@ -10,6 +10,7 @@ import { IncreaseVersionButton } from '../HelperComponents'
 import {
   checkInvalidValue,
   formatSubmitData,
+  getActualData,
   getCrossCuttingErrors,
   getHasNoFiles,
   getSpecificFieldsErrors,
@@ -75,6 +76,10 @@ const EditActionButtons = ({
   const { id, submission_status } = project
   const { crossCuttingFields, projectSpecificFields } = projectData
   const odsOdpData = projectSpecificFields?.ods_odp ?? []
+
+  const isDraft = lowerCase(submission_status) === 'draft'
+  const isSubmitted = lowerCase(submission_status) === 'submitted'
+  const isApproved = lowerCase(submission_status) === 'approved'
 
   const crossCuttingErrors = useMemo(
     () => getCrossCuttingErrors(crossCuttingFields, {}, 'edit', project),
@@ -167,21 +172,20 @@ const EditActionButtons = ({
         })
       }
 
-      const res = await api(
-        `/api/project/${id}/files/v2/`,
-        {
-          withStoreCache: false,
-        },
-        false,
-      )
-      setProjectFiles(res)
-
       const data = formatSubmitData(projectData, specificFields)
-
       const result = await api(`api/projects/v2/${id}`, {
         data: data,
         method: 'PUT',
       })
+
+      if (isApproved) {
+        const actualData = getActualData(projectData, specificFields)
+        await api(`api/projects/v2/${id}/edit_actual_fields/`, {
+          data: actualData,
+          method: 'PUT',
+        })
+      }
+
       setProjectId(result.id)
       setProjectTitle(result.title)
 
@@ -191,6 +195,20 @@ const EditActionButtons = ({
     } catch (error) {
       await handleErrors(error)
     } finally {
+      try {
+        const res = await api(
+          `/api/project/${id}/files/v2/`,
+          {
+            withStoreCache: false,
+          },
+          false,
+        )
+        setProjectFiles(res)
+      } catch (error) {
+        enqueueSnackbar(<>Could not fetch updated files.</>, {
+          variant: 'error',
+        })
+      }
       setIsLoading(false)
       setHasSubmitted(false)
     }
@@ -275,6 +293,7 @@ const EditActionButtons = ({
     PaperProps: {
       className: 'mt-1 border border-solid border-black rounded-lg',
     },
+    transitionDuration: 0,
   }
 
   return (
@@ -295,7 +314,7 @@ const EditActionButtons = ({
           Update project
         </Button>
       )}
-      {canUpdateProjects && (
+      {canUpdateProjects && (isDraft || isSubmitted) && (
         <Button
           className={cx('px-4 py-2 shadow-none', enabledButtonClassname)}
           size="large"
@@ -305,14 +324,14 @@ const EditActionButtons = ({
           Add additional component
         </Button>
       )}
-      {canSubmitProjects && lowerCase(submission_status) === 'draft' && (
+      {canSubmitProjects && isDraft && (
         <IncreaseVersionButton
           title="Submit project"
           onSubmit={onSubmitProject}
           isDisabled={disableSubmit}
         />
       )}
-      {canRecommendProjects && lowerCase(submission_status) === 'submitted' && (
+      {canRecommendProjects && isSubmitted && (
         <Dropdown
           className="bg-primary px-4 py-2 text-white shadow-none hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow"
           ButtonProps={DropDownButtonProps}

@@ -54,7 +54,7 @@ const SubmitProjectModal = ({
         onClose={() => setIsModalOpen(false)}
         keepMounted
       >
-        <Box className="flex w-full max-w-2xl flex-col px-0 absolute-center">
+        <Box className="flex w-full max-w-lg flex-col px-0 absolute-center md:max-w-2xl">
           <Typography className="mx-6 mb-4 mt-1 text-2xl font-medium">
             Submit project
           </Typography>

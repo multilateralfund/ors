@@ -20,7 +20,8 @@ const ProjectsEditWrapper = ({ mode }: { mode: string }) => {
   if (
     data &&
     ((mode !== 'copy' && data.submission_status === 'Withdrawn') ||
-      !isNull(data?.latest_project))
+      !isNull(data?.latest_project) ||
+      (mode === 'edit' && !data.editable))
   ) {
     return <Redirect to={`/projects-listing/${project_id}`} />
   }
