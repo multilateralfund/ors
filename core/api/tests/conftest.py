@@ -471,6 +471,11 @@ def project_status():
 
 
 @pytest.fixture
+def project_ongoing_status():
+    return ProjectStatusFactory.create(name="Ongoing", code="ONG")
+
+
+@pytest.fixture
 def submitted_status():
     return ProjectStatusFactory.create(code="NEWSUB")
 
