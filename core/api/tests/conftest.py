@@ -482,14 +482,17 @@ def project_draft_status():
 
 @pytest.fixture
 def project_submitted_status():
-    return ProjectSubmissionStatusFactory.create(
-        name="Submitted", code="submitted", color="#00FF00"
-    )
+    return ProjectSubmissionStatusFactory.create(name="Submitted", code="")
 
 
 @pytest.fixture
-def new_project_approved_status():
-    return ProjectSubmissionStatusFactory.create(code="approved", name="Approved")
+def project_recommended_status():
+    return ProjectSubmissionStatusFactory.create(name="Recommended", code="")
+
+
+@pytest.fixture
+def project_not_approved_status():
+    return ProjectSubmissionStatusFactory.create(name="Not approved", code="")
 
 
 @pytest.fixture
