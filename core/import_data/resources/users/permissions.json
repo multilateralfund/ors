@@ -168,6 +168,12 @@
         "model_name": "project"
     },
     {
+        "permission_codename": "has_project_v2_approve_projects_access",
+        "permission_name": "Has project v2 approve projects access",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
         "permission_codename": "has_business_plan_view_access",
         "permission_name": "Has business plan view access",
         "app_label": "core",

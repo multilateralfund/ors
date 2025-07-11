@@ -101,7 +101,7 @@ def setup_project_list(
     submitted_status,
     project_draft_status,
     project_submitted_status,
-    new_project_approved_status,
+    project_approved_status,
     subsector,
     meeting,
     new_meeting,
@@ -228,7 +228,7 @@ def setup_project_list(
     )
 
     proj_data["version"] = 3
-    proj_data["submission_status"] = new_project_approved_status
+    proj_data["submission_status"] = project_approved_status
     projects.append(
         ProjectFactory.create(
             title="Project 29",
@@ -1931,6 +1931,83 @@ class TestProjectVersioning:
         assert response.status_code == 200
         project.refresh_from_db()
         assert project.submission_status.name == "Withdrawn"
+
+    def test_reject_permissions(
+        self,
+        agency_inputter_user,
+        project,
+        project_recommended_status,
+        project_not_approved_status,
+        user,
+        viewer_user,
+        agency_user,
+        secretariat_viewer_user,
+        secretariat_v1_v2_edit_access_user,
+        secretariat_production_v1_v2_edit_access_user,
+        secretariat_v3_edit_access_user,
+        secretariat_production_v3_edit_access_user,
+        admin_user,
+    ):
+        project.version = 3
+        project.submission_status = project_recommended_status
+        project.save()
+
+        url = reverse("project-v2-reject", args=(project.id,))
+
+        def _test_user_permissions(user, expected_response_status):
+            self.client.force_authenticate(user=user)
+            response = self.client.post(url)
+            assert response.status_code == expected_response_status
+            return response.data
+
+        # test with unauthenticated user
+        self.client.force_authenticate(user=None)
+        response = self.client.post(url)
+        assert response.status_code == 403
+
+        _test_user_permissions(user, 403)
+        _test_user_permissions(viewer_user, 403)
+        _test_user_permissions(agency_user, 403)
+        _test_user_permissions(agency_inputter_user, 403)
+        _test_user_permissions(secretariat_viewer_user, 403)
+        _test_user_permissions(secretariat_v1_v2_edit_access_user, 403)
+        _test_user_permissions(secretariat_production_v1_v2_edit_access_user, 403)
+        _test_user_permissions(secretariat_v3_edit_access_user, 200)
+        project.submission_status = project_recommended_status
+        project.save()
+
+        _test_user_permissions(secretariat_production_v3_edit_access_user, 200)
+        project.submission_status = project_recommended_status
+        project.save()
+        _test_user_permissions(admin_user, 200)
+
+    def test_reject_project(
+        self,
+        secretariat_v3_edit_access_user,
+        project,
+        project_recommended_status,
+        project_not_approved_status,
+    ):
+        self.client.force_authenticate(user=secretariat_v3_edit_access_user)
+        url = reverse("project-v2-reject", args=(project.id,))
+
+        # submit project and expect failure due to bad submission status
+        response = self.client.post(url)
+        assert response.status_code == 400
+        assert response.data
+
+        # set required fields
+        project.version = 3
+        project.submission_status = project_recommended_status
+        project.save()
+
+        self.client.force_authenticate(user=secretariat_v3_edit_access_user)
+        url = reverse("project-v2-reject", args=(project.id,))
+
+        response = self.client.post(url)
+        assert response.status_code == 200
+        project.refresh_from_db()
+        assert project.submission_status == project_not_approved_status
 
     def test_send_back_to_draft_permissions(
         self,
