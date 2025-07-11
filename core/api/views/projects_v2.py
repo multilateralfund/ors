@@ -39,6 +39,7 @@ from core.api.serializers.project_v2 import (
     HISTORY_DESCRIPTION_UPDATE_ACTUAL_FIELDS,
     HISTORY_DESCRIPTION_RECOMMEND_V2,
     HISTORY_DESCRIPTION_REJECT_V3,
+    HISTORY_DESCRIPTION_APPROVE_V3,
     HISTORY_DESCRIPTION_SUBMIT_V1,
     HISTORY_DESCRIPTION_WITHDRAW_V3,
     HISTORY_DESCRIPTION_STATUS_CHANGE,
@@ -57,7 +58,7 @@ from core.api.views.utils import log_project_history
 from core.api.views.projects_export import ProjectsV2Export
 from core.api.views.project_v2_export import ProjectsV2ProjectExport
 
-# pylint: disable=C0302,R0911
+# pylint: disable=C0302,R0911,R0904
 
 
 class ProjectDestructionTechnologyView(APIView):
@@ -163,7 +164,7 @@ class ProjectV2ViewSet(
             return [HasProjectV2AssociateProjectsAccess]
         if self.action in ["recommend", "withdraw", "send_back_to_draft"]:
             return [HasProjectV2RecommendAccess]
-        if self.action in ["reject", "edit_approval_fields"]:
+        if self.action in ["approve", "reject", "edit_approval_fields"]:
             return [HasProjectV2ApproveAccess]
 
         return [DenyAll]
@@ -510,6 +511,45 @@ class ProjectV2ViewSet(
             name="Not approved"
         )
         log_project_history(project, request.user, HISTORY_DESCRIPTION_REJECT_V3)
+        project.save()
+        return Response(
+            ProjectDetailsV2Serializer(project).data,
+            status=status.HTTP_200_OK,
+        )
+
+    @action(methods=["POST"], detail=True)
+    @swagger_auto_schema(
+        operation_description="""
+        Approve the project.
+        The project is checked for validity (status should be 'Recommended' and version should be 3).
+        The project is checked if the mandatory approval fields are filled.
+        If the project is valid, it is marked as Approved.
+        """,
+        request_body=openapi.Schema(type=openapi.TYPE_OBJECT, properties=None),
+        responses={
+            status.HTTP_200_OK: ProjectDetailsV2Serializer,
+            status.HTTP_400_BAD_REQUEST: "Bad request",
+        },
+    )
+    def approve(self, request, *args, **kwargs):
+        project = self.get_object()
+        context = self.get_serializer_context()
+        context["enforce_validation"] = True
+        serializer = ProjectV2EditApprovalFieldsSerializer(
+            project, data=request.data, partial=True, context=context
+        )
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if project.submission_status.name != "Recommended" or project.version != 3:
+            return Response(
+                {
+                    "error": """Project can be approved only """
+                    """if the project is in 'Recommended' status and version 3."""
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        project.submission_status = ProjectSubmissionStatus.objects.get(name="Approved")
+        log_project_history(project, request.user, HISTORY_DESCRIPTION_APPROVE_V3)
         project.save()
         return Response(
             ProjectDetailsV2Serializer(project).data,
