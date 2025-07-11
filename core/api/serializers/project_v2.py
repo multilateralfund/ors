@@ -42,6 +42,7 @@ from core.api.views.utils import log_project_history
 
 HISTORY_DESCRIPTION_CREATE = "Create project"
 HISTORY_DESCRIPTION_UPDATE = "Save project details"
+HISTORY_DESCRIPTION_UPDATE_APPROVAL_FIELDS = "Save project details (Approval fields)"
 HISTORY_DESCRIPTION_UPDATE_ACTUAL_FIELDS = "Save project details (Actual fields)"
 HISTORY_DESCRIPTION_SUBMIT_V1 = "Submit project (Version 1)"
 HISTORY_DESCRIPTION_RECOMMEND_V2 = "Recommend project (Version 2)"
@@ -49,6 +50,37 @@ HISTORY_DESCRIPTION_APPROVE_V3 = "Approve project (Version 3)"
 HISTORY_DESCRIPTION_REJECT_V3 = "Reject project (Version 3)"
 HISTORY_DESCRIPTION_WITHDRAW_V3 = "Withdraw project (Version 3)"
 HISTORY_DESCRIPTION_STATUS_CHANGE = "Project status changed to {}"
+
+
+class UpdateOdsOdpEntries:
+
+    def _update_or_create_ods_odp(self, instance, ods_odp_data):
+        existing_ods_odp_map = {obj.id: obj for obj in instance.ods_odp.all()}
+
+        ods_odp_to_create = []
+        incoming_ids = set()
+        for ods_odp in ods_odp_data:
+            if not ods_odp.get("ods_type", None):
+                ods_odp.pop("ods_type", None)
+            item_id = ods_odp.get("id")
+            if item_id and item_id in existing_ods_odp_map:
+                incoming_ids.add(item_id)
+                ods_odp_instance = existing_ods_odp_map[item_id]
+                serializer = ProjectV2OdsOdpCreateUpdateSerializer(
+                    instance=ods_odp_instance, data=ods_odp, partial=True
+                )
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+            else:
+                ods_odp_to_create.append(ProjectOdsOdp(project=instance, **ods_odp))
+
+        if ods_odp_to_create:
+            ProjectOdsOdp.objects.bulk_create(ods_odp_to_create)
+
+        ids_to_delete = set(existing_ods_odp_map.keys()) - incoming_ids
+
+        if ids_to_delete:
+            instance.ods_odp.filter(id__in=ids_to_delete).delete()
 
 
 class ProjectV2FileSerializer(serializers.ModelSerializer):
@@ -569,7 +601,7 @@ class ProjectV2OdsOdpCreateUpdateSerializer(ProjectOdsOdpCreateSerializer):
         return super(ProjectOdsOdpListSerializer, self).validate(attrs)
 
 
-class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
+class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSerializer):
     """
     ProjectSerializer class
     """
@@ -823,34 +855,6 @@ class ProjectV2CreateUpdateSerializer(serializers.ModelSerializer):
 
         return instance
 
-    def _update_or_create_ods_odp(self, instance, ods_odp_data):
-        existing_ods_odp_map = {obj.id: obj for obj in instance.ods_odp.all()}
-
-        ods_odp_to_create = []
-        incoming_ids = set()
-        for ods_odp in ods_odp_data:
-            if not ods_odp.get("ods_type", None):
-                ods_odp.pop("ods_type", None)
-            item_id = ods_odp.get("id")
-            if item_id and item_id in existing_ods_odp_map:
-                incoming_ids.add(item_id)
-                ods_odp_instance = existing_ods_odp_map[item_id]
-                serializer = ProjectV2OdsOdpCreateUpdateSerializer(
-                    instance=ods_odp_instance, data=ods_odp, partial=True
-                )
-                serializer.is_valid(raise_exception=True)
-                serializer.save()
-            else:
-                ods_odp_to_create.append(ProjectOdsOdp(project=instance, **ods_odp))
-
-        if ods_odp_to_create:
-            ProjectOdsOdp.objects.bulk_create(ods_odp_to_create)
-
-        ids_to_delete = set(existing_ods_odp_map.keys()) - incoming_ids
-
-        if ids_to_delete:
-            instance.ods_odp.filter(id__in=ids_to_delete).delete()
-
 
 class ProjectV2EditActualFieldsSerializer(serializers.ModelSerializer):
     """
@@ -896,13 +900,45 @@ class ProjectV2EditActualFieldsSerializer(serializers.ModelSerializer):
             "total_number_of_nou_personnel_supported_actual",
         ]
 
+
+class ProjectV2EditApprovalFieldsSerializer(
+    UpdateOdsOdpEntries, serializers.ModelSerializer
+):
+    """
+    ProjectSerializer class for editing actual fields
+    """
+
+    ods_odp = ProjectV2OdsOdpListSerializer(many=True)
+
+    class Meta:
+        model = Project
+        fields = [
+            "meeting",  # *
+            "decision",  # *
+            "excom_provision",  # *
+            "date_completion",  # *
+            "total_fund_approved",
+            "support_cost_psc",
+            "programme_officer",
+            "ods_odp",
+            "pcr_waived",
+            "ad_hoc_pcr",
+        ]
+
     def update(self, instance, validated_data):
         """
-        Update the actual fields of the project
+        Update the project with the validated data
         """
-        for field, value in validated_data.items():
-            setattr(instance, field, value)
-        instance.save()
+        user = self.context["request"].user
+        # update, create, delete ods_odp
+        if "ods_odp" in validated_data:
+            ods_odp_data = validated_data.pop("ods_odp")
+            self._update_or_create_ods_odp(instance, ods_odp_data)
+
+        super().update(instance, validated_data)
+
+        log_project_history(instance, user, HISTORY_DESCRIPTION_UPDATE_APPROVAL_FIELDS)
+
         return instance
 
 
