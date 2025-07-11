@@ -941,6 +941,27 @@ class ProjectV2EditApprovalFieldsSerializer(
 
         return instance
 
+    def validate(self, attrs):
+        """
+        Validate the project approval fields
+        """
+        enforce_validation = self.context.get("enforce_validation", False)
+        attrs = super().validate(attrs)
+        if not enforce_validation:
+            return attrs
+        errors = {}
+        if self.instance.meeting is None:
+            errors["meeting"] = "Meeting is required for approval."
+        if self.instance.decision is None:
+            errors["decision"] = "Decision is required for approval."
+        if self.instance.excom_provision is None:
+            errors["excom_provision"] = "Excom provision is required for approval."
+        if self.instance.date_completion is None:
+            errors["date_completion"] = "Date of completion is required for approval."
+        if not errors:
+            return attrs
+        raise serializers.ValidationError(errors)
+
 
 class ProjectV2SubmitSerializer(serializers.ModelSerializer):
     """

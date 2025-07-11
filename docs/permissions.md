@@ -135,6 +135,7 @@
 | projects/v2/{id}/submit/                      |  POST   | has_project_v2_submit_access   | Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.  Further filtering using `has_project_v2_draft_edit_access`, `has_project_v2_version1_version2_edit_access` and `has_project_v2_version3_edit_access` (matches editable from GET). ! Just the given project is filtered, associated/previous tranches don't have permissions over them.
 | projects/v2/{id}/withdraw/                    |  POST   | has_project_v2_recommend_projects_access |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
 | projects/v2/{id}/reject/                      |  POST   | has_project_v2_approve_projects_access   |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
+| projects/v2/{id}/approve/                     |  POST   | has_project_v2_approve_projects_access   |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
 | projects/                                     |  GET    | has_project_view_access                  | Entries filtered for `can_view_only_own_agency`. Entries filtered for `can_view_only_own_country` |
 | projects/                                     |  POST   | has_project_edit_access                  | Entries filtered for `can_view_only_own_agency`. |
 | projects/export/                              |  GET    | has_project_view_access                  | |
