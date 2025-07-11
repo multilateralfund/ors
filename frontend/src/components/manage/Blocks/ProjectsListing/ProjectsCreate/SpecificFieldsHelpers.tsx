@@ -285,6 +285,7 @@ const NumberWidget = <T,>(
         id={value as string}
         value={value ?? ''}
         disabled={field.editable === false}
+        type="text"
         onChange={(value) =>
           changeHandler[field.data_type]<T, SpecificFields>(
             value,
@@ -295,7 +296,6 @@ const NumberWidget = <T,>(
             index,
           )
         }
-        type="text"
         {...getFieldDefaultProps(
           getIsInputDisabled(
             hasSubmitted,

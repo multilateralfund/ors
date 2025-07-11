@@ -44,9 +44,9 @@ const ProjectsSubmit = ({
   const { submission_status, title, editable } = currentProject || {}
   const isDraft = lowerCase(submission_status) === 'draft'
 
-  if (currentProject && !(isDraft && editable)) {
-    return <Redirect to="/projects-listing" />
-  }
+  // if (currentProject && !(isDraft && editable)) {
+  //   return <Redirect to="/projects-listing" />
+  // }
 
   const hasErrors = find(associatedProjects, ({ errors }) => errors.length > 0)
   const isSubmitSuccessful = hasSubmitErrors === false
