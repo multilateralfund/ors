@@ -19,7 +19,7 @@ export const fetchSpecificFields = async (
     const res = await api(url)
     const formattedFields = (res.fields || []).sort(
       (field1: ProjectSpecificFields, field2: ProjectSpecificFields) =>
-        (field2.sort_order ?? 0) - (field1.sort_order ?? 0),
+        (field1.sort_order ?? 0) - (field2.sort_order ?? 0),
     )
 
     setFields(formattedFields)

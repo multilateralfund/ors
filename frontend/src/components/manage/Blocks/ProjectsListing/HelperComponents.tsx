@@ -180,7 +180,7 @@ export const RelatedProjects = ({
           <Link
             component="a"
             className={cx(
-              'flex items-center gap-2 text-lg normal-case leading-tight no-underline',
+              'flex w-fit items-center gap-2 text-lg normal-case leading-tight no-underline',
               {
                 '!text-inherit': !hasErrors,
                 '!text-[#801F00]': hasErrors,

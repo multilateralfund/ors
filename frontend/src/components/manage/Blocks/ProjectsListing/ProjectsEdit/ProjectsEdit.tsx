@@ -11,6 +11,7 @@ import {
   getDefaultValues,
   getFileFromMetadata,
   getNonFieldErrors,
+  hasSpecificField,
 } from '../utils'
 import {
   OdsOdpFields,
@@ -31,7 +32,7 @@ import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { useStore } from '@ors/store'
 import { api } from '@ors/helpers'
 
-import { debounce, groupBy, map } from 'lodash'
+import { debounce, groupBy, map, filter, find, replace } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 
 const ProjectsEdit = ({
@@ -107,18 +108,21 @@ const ProjectsEdit = ({
     }
   }, [projectFiles])
 
+  const defaultTrancheErrors = {
+    errorText: '',
+    isError: false,
+    tranchesData: [],
+    loaded: false,
+  }
+
   const [projectId, setProjectId] = useState<number | null>(null)
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
 
   const [errors, setErrors] = useState<{ [key: string]: [] }>({})
   const [fileErrors, setFileErrors] = useState<string>('')
   const [otherErrors, setOtherErrors] = useState<string>('')
-  const [trancheErrors, setTrancheErrors] = useState<TrancheErrorType>({
-    errorText: '',
-    isError: false,
-    tranchesData: [],
-    loaded: false,
-  })
+  const [trancheErrors, setTrancheErrors] =
+    useState<TrancheErrorType>(defaultTrancheErrors)
 
   const nonFieldsErrors = getNonFieldErrors(errors)
 
@@ -204,12 +208,7 @@ const ProjectsEdit = ({
   const tranche = projectData.projectSpecificFields?.tranche ?? 0
 
   const getTrancheErrors = async () => {
-    setTrancheErrors({
-      errorText: '',
-      isError: false,
-      tranchesData: [],
-      loaded: false,
-    })
+    setTrancheErrors(defaultTrancheErrors)
 
     try {
       const result = await api(
@@ -230,11 +229,25 @@ const ProjectsEdit = ({
         })
       } else {
         const tranches = result.map((entry: RelatedProjectsType) => {
+          const filteredWarnings = filter(entry.warnings, (warning) => {
+            const crtField = find(
+              projectFields,
+              (field) =>
+                field.write_field_name ===
+                replace(warning.field, /_?actual_?/g, ''),
+            )
+
+            return (
+              !crtField ||
+              (crtField.section !== 'MYA' && crtField.data_type !== 'boolean')
+            )
+          })
+
           return {
             title: entry.title,
             id: entry.id,
             errors: entry.errors,
-            warnings: entry.warnings,
+            warnings: filteredWarnings,
           }
         })
         const trancheError = tranches.find(
@@ -270,7 +283,9 @@ const ProjectsEdit = ({
   const debouncedGetTrancheErrors = debounce(getTrancheErrors, 0)
 
   useEffect(() => {
-    if (mode !== 'edit' || tranche <= 1) {
+    const hasTrancheField = hasSpecificField(specificFields, 'tranche')
+
+    if (mode !== 'edit' || tranche <= 1 || !hasTrancheField) {
       setTrancheErrors({
         errorText: '',
         isError: false,
@@ -280,7 +295,7 @@ const ProjectsEdit = ({
     } else if (mode === 'edit' && canViewProjects) {
       debouncedGetTrancheErrors()
     }
-  }, [tranche, project_id])
+  }, [tranche, project_id, specificFields])
 
   return (
     specificFieldsLoaded && (

@@ -60,7 +60,7 @@ const ProjectsAssociateConfirmation = ({
   )
 
   const [leadAgencyId, setLeadAgencyId] = useState(
-    leadAgencyOptions.length === 1 ? leadAgencyOptions[0] : null,
+    leadAgencyOptions.length === 1 ? leadAgencyOptions[0].id : null,
   )
 
   const selectedProjects = [
@@ -82,7 +82,7 @@ const ProjectsAssociateConfirmation = ({
     try {
       await api(`api/projects/v2/associate_projects/`, {
         data: {
-          project_ids: [...associationIds, project.id],
+          project_ids: map(projects.results, 'id'),
           lead_agency_id: leadAgencyId,
         },
         method: 'POST',

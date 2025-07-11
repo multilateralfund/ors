@@ -94,7 +94,7 @@ const EditActionButtons = ({
         'edit',
         project,
       ),
-    [projectSpecificFields, project],
+    [projectSpecificFields, project, specificFields],
   )
 
   const hasOdsOdpFields = find(

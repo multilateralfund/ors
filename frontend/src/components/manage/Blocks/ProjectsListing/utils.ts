@@ -289,8 +289,14 @@ export const getCrossCuttingErrors = (
   }
 }
 
+export const hasSpecificField = (
+  specificFields: ProjectSpecificFields[],
+  field: string,
+) => find(specificFields, (crtField) => crtField.write_field_name === field)
+
 export const getDefaultImpactErrors = (
   projectSpecificFields: SpecificFields,
+  specificFields: ProjectSpecificFields[],
 ) => {
   const errorMsg = 'Number cannot be greater than the total one.'
 
@@ -298,7 +304,8 @@ export const getDefaultImpactErrors = (
     validationFieldsPairs
       .filter(
         ([key, totalKey]) =>
-          totalKey in projectSpecificFields &&
+          hasSpecificField(specificFields, key) &&
+          hasSpecificField(specificFields, totalKey) &&
           (projectSpecificFields[key] ?? 0) >
             (projectSpecificFields[totalKey] ?? 0),
       )
@@ -336,7 +343,7 @@ export const getSpecificFieldsErrors = (
   ) as string[]
 
   const defaultImpactErrors =
-    getDefaultImpactErrors(projectSpecificFields) ?? {}
+    getDefaultImpactErrors(projectSpecificFields, specificFields) ?? {}
 
   const sectionErrors =
     mode === 'edit' && project

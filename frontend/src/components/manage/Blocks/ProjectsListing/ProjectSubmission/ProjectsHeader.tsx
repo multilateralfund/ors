@@ -30,6 +30,7 @@ const ProjectsHeader = ({
   files,
   setProjectFiles = () => {},
   trancheErrors,
+  specificFields,
   ...rest
 }: {
   projectData: ProjectData
@@ -49,7 +50,10 @@ const ProjectsHeader = ({
     projectData
   const { project_start_date, project_end_date } = crossCuttingFields
 
-  const defaultImpactErrors = getDefaultImpactErrors(projectSpecificFields)
+  const defaultImpactErrors = getDefaultImpactErrors(
+    projectSpecificFields,
+    specificFields,
+  )
   const hasValidationErrors = Object.values(defaultImpactErrors).some(
     (errors) => errors.length > 0,
   )
@@ -61,6 +65,7 @@ const ProjectsHeader = ({
     hasMissingRequiredFields ||
     dayjs(project_start_date).isAfter(dayjs(project_end_date)) ||
     hasValidationErrors
+
   const isSubmitDisabled = isSaveDisabled || !!trancheErrors?.errorText
 
   const [projectTitle, setProjectTitle] = useState<string>(
@@ -109,6 +114,7 @@ const ProjectsHeader = ({
                 setIsLoading,
                 files,
                 mode,
+                specificFields,
               }}
               {...rest}
             />
@@ -124,6 +130,7 @@ const ProjectsHeader = ({
                 setProjectFiles,
                 setProjectTitle,
                 trancheErrors,
+                specificFields,
               }}
               {...rest}
             />
