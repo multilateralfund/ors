@@ -72,7 +72,7 @@ const ProjectsEdit = ({
 
   const fieldsValuesLoaded = useRef<boolean>(false)
 
-  const { data } = useGetProjectFiles(project_id)
+  const data = useGetProjectFiles(parseInt(project_id))
 
   const [projectFiles, setProjectFiles] = useState<ProjectFile[]>([])
   const [files, setFiles] = useState<ProjectFilesObject>({
@@ -83,7 +83,7 @@ const ProjectsEdit = ({
   useEffect(() => {
     setProjectFiles(data)
 
-    if (mode !== 'edit' && data?.length > 0) {
+    if ((mode === 'copy' || mode === 'full-link') && data?.length > 0) {
       const loadFiles = async () => {
         const resolvedFiles = await Promise.all(
           data.map((file: ProjectFile) => getFileFromMetadata(file)),

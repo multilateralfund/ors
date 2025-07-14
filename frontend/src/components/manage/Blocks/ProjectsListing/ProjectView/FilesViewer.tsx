@@ -96,6 +96,7 @@ export function FilesViewer(props: ProjectDocs) {
                   target: '_blank',
                   rel: 'noopener noreferrer',
                 })}
+                download={(file as ProjectFile).filename || file.name}
               >
                 <IoDownloadOutline className="mb-1 min-h-[20px] min-w-[20px] text-secondary" />
                 <span className="text-lg font-medium text-secondary">

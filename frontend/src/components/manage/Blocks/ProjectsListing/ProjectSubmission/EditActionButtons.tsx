@@ -9,6 +9,7 @@ import AddComponentModal from './AddComponentModal'
 import { IncreaseVersionButton } from '../HelperComponents'
 import {
   checkInvalidValue,
+  formatFiles,
   formatSubmitData,
   getActualData,
   getCrossCuttingErrors,
@@ -197,13 +198,13 @@ const EditActionButtons = ({
     } finally {
       try {
         const res = await api(
-          `/api/project/${id}/files/v2/`,
+          `/api/project/${id}/files/include_previous_versions/v2/`,
           {
             withStoreCache: false,
           },
           false,
         )
-        setProjectFiles(res)
+        setProjectFiles(formatFiles(res, id))
       } catch (error) {
         enqueueSnackbar(<>Could not fetch updated files.</>, {
           variant: 'error',

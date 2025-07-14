@@ -144,6 +144,13 @@ export type ProjectFile = {
   editable: boolean
 }
 
+export type ProjectAllVersionsFiles = {
+  id: number
+  title: string
+  version: number
+  files: ProjectFile[]
+}
+
 export type ProjectTypeApi = ProjIdentifiers &
   CrossCuttingFields &
   SpecificFields &

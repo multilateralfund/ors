@@ -9,18 +9,20 @@ import {
   ProjectFile,
   OptionsType,
   ProjectTypeApi,
+  ProjectAllVersionsFiles,
 } from './interfaces'
-import { formatDecimalValue } from '@ors/helpers'
+import { formatApiUrl, formatDecimalValue } from '@ors/helpers'
+import { Cluster } from '@ors/types/store'
 
 import {
   concat,
   filter,
   find,
+  flatMap,
   get,
   isArray,
   isNaN,
   isNil,
-  isNull,
   map,
   omit,
   pick,
@@ -32,7 +34,6 @@ import {
   ValueGetterParams,
 } from 'ag-grid-community'
 import dayjs from 'dayjs'
-import { Cluster } from '@ors/types/store'
 
 const getFieldId = <T>(field: ProjectSpecificFields, data: T) => {
   const fieldName = field.read_field_name === 'group' ? 'name_alt' : 'name'
@@ -390,7 +391,9 @@ export const getFileFromMetadata = async (fileMeta: {
   download_url: string
   filename: string
 }): Promise<File> => {
-  const res = await fetch(fileMeta.download_url)
+  const res = await fetch(formatApiUrl(fileMeta.download_url), {
+    credentials: 'include',
+  })
 
   if (!res.ok) {
     throw new Error(`Failed to fetch file: ${res.statusText}`)
@@ -462,3 +465,21 @@ export const getMenus = (permissions: Record<string, boolean>) => {
 
 export const getProduction = (clusters: Cluster[], clusterId: number | null) =>
   find(clusters, (cluster) => cluster.id === clusterId)?.production
+
+export const formatFiles = (
+  files: ProjectAllVersionsFiles[] = [],
+  project_id: number,
+) => {
+  const sortedFiles = files.sort(
+    (file1, file2) => file1.version - file2.version,
+  )
+
+  return flatMap(sortedFiles, (file) =>
+    map(file.files, (crtFile) => {
+      return {
+        ...crtFile,
+        editable: crtFile.editable && file.id === project_id,
+      }
+    }),
+  )
+}
