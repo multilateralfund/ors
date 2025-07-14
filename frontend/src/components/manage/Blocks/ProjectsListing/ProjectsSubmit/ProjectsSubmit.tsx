@@ -5,6 +5,7 @@ import { useState } from 'react'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import ErrorAlert from '@ors/components/theme/Alerts/ErrorAlert'
 import CustomLink from '@ors/components/ui/Link/Link'
+import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import {
   PageTitle,
@@ -44,9 +45,9 @@ const ProjectsSubmit = ({
   const { submission_status, title, editable } = currentProject || {}
   const isDraft = lowerCase(submission_status) === 'draft'
 
-  // if (currentProject && !(isDraft && editable)) {
-  //   return <Redirect to="/projects-listing" />
-  // }
+  if (currentProject && !(isDraft && editable)) {
+    return <Redirect to="/projects-listing" />
+  }
 
   const hasErrors = find(associatedProjects, ({ errors }) => errors.length > 0)
   const isSubmitSuccessful = hasSubmitErrors === false
@@ -79,11 +80,24 @@ const ProjectsSubmit = ({
   return (
     <>
       <HeaderTitle>
-        <div className="align-center flex flex-col flex-wrap justify-between">
-          <RedirectBackButton />
-          <PageHeading className="min-w-fit">
-            <PageTitle pageTitle="Submit project" projectTitle={title ?? ''} />
-          </PageHeading>
+        <div className="align-center flex flex-wrap justify-between gap-x-4 gap-y-4">
+          <div className="flex flex-col">
+            <RedirectBackButton />
+            <div className="flex gap-2">
+              <PageHeading>
+                <PageTitle
+                  pageTitle="Submit project"
+                  projectTitle={title ?? ''}
+                />
+              </PageHeading>
+            </div>
+          </div>
+          <div className="ml-auto mt-auto flex items-center gap-2.5">
+            <CancelLinkButton
+              title="Cancel"
+              href={`/projects-listing/${project_id}`}
+            />
+          </div>
         </div>
       </HeaderTitle>
       <Box className="flex flex-col gap-6 border border-solid border-primary p-6">
