@@ -915,6 +915,7 @@ class ProjectV2EditApprovalFieldsSerializer(
         fields = [
             "meeting",  # *
             "decision",  # *
+            "funding_window",
             "excom_provision",  # *
             "date_completion",  # *
             "total_fund_approved",
