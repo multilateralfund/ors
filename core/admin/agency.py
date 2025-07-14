@@ -12,6 +12,7 @@ class AgencyAdmin(admin.ModelAdmin):
 
     def get_list_display(self, request):
         exclude = [
+            "metaproject",
             "project",
             "coop_projects",
             "bpactivity",
@@ -21,4 +22,5 @@ class AgencyAdmin(admin.ModelAdmin):
             "user",
             "bpfile",
         ]
-        return get_final_display_list(Agency, exclude)
+        fields = get_final_display_list(Agency, exclude)
+        return fields
