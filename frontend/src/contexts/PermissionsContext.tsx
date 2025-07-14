@@ -9,6 +9,7 @@ interface PermissionsContextProps {
   canUpdateProjects: boolean
   canSubmitProjects: boolean
   canRecommendProjects: boolean
+  canApproveProjects: boolean
   canAssociateProjects: boolean
   canEditProjects: boolean
 }
