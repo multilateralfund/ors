@@ -74,6 +74,12 @@ const ProjectsEdit = ({
 
   const data = useGetProjectFiles(parseInt(project_id))
 
+  const { fetchProjectFields } = useStore((state) => state.projectFields)
+
+  useEffect(() => {
+    fetchProjectFields()
+  }, [])
+
   const [projectFiles, setProjectFiles] = useState<ProjectFile[]>([])
   const [files, setFiles] = useState<ProjectFilesObject>({
     deletedFilesIds: [],

@@ -121,6 +121,11 @@ export type ProjectSpecificFields = {
   sort_order: number
 }
 
+export type ProjectFields = ProjectSpecificFields & {
+  editable_in_versions: number[]
+  visible_in_versions: number[]
+}
+
 export type SpecificFieldsSectionProps = ProjectDataProps & {
   sectionFields: ProjectSpecificFields[]
 }
