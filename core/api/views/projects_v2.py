@@ -795,7 +795,9 @@ class ProjectV2ViewSet(
             # Include validation information for each project
             data = []
             for previous_tranche in previous_tranches:
-                serializer_data = ProjectListV2Serializer(previous_tranche, context=context).data
+                serializer_data = ProjectListV2Serializer(
+                    previous_tranche, context=context
+                ).data
                 warnings = []
                 errors = []
                 specific_field = ProjectSpecificFields.objects.filter(
@@ -883,7 +885,9 @@ class ProjectV2ViewSet(
             # Include validation information for each project
             data = []
             for associated_project in associated_projects:
-                project_data = ProjectListV2Serializer(associated_project, context=context).data
+                project_data = ProjectListV2Serializer(
+                    associated_project, context=context
+                ).data
                 serializer = ProjectV2SubmitSerializer(
                     associated_project, data={}, partial=True
                 )
@@ -895,7 +899,9 @@ class ProjectV2ViewSet(
 
             return Response(data, status=status.HTTP_200_OK)
         return Response(
-            ProjectListV2Serializer(associated_projects, many=True, context=context).data,
+            ProjectListV2Serializer(
+                associated_projects, many=True, context=context
+            ).data,
             status=status.HTTP_200_OK,
         )
 

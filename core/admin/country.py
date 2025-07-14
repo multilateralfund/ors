@@ -18,6 +18,7 @@ class CountryAdmin(admin.ModelAdmin):
 
     def get_list_display(self, request):
         exclude = [
+            "bilateral_assistances",
             "cpreport",
             "project",
             "bpactivity",
@@ -36,4 +37,5 @@ class CountryAdmin(admin.ModelAdmin):
             "disputed_contributions",
             "finalreportsview",
         ]
-        return get_final_display_list(Country, exclude)
+        fields = get_final_display_list(Country, exclude)
+        return fields
