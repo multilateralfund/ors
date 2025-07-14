@@ -61,7 +61,10 @@ from core.api.views.cp_archive import (
     CPRecordsArchiveListView,
     CPReportVersionsListView,
 )
-from core.api.views.projects_metadata import ProjectClusterTypeSectorAssociationView
+from core.api.views.projects_metadata import (
+    ProjectClusterTypeSectorAssociationView,
+    ProjectFieldView,
+)
 from core.api.views.cp_emissions_generations import DashboardsCPEmissionsView
 from core.api.views.cp_files import CPFilesDownloadView, CPFilesView
 from core.api.views.cp_prices import DashboardsCPPricesView, CPPricesView
@@ -249,6 +252,11 @@ urlpatterns = [
         "substances/",
         SubstancesListView.as_view(),
         name="substances-list",
+    ),
+    path(
+        "project-fields/",
+        ProjectFieldView.as_view(),
+        name="project-fields",
     ),
     path(
         "project-cluster-types-sectors/",

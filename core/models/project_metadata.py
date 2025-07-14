@@ -48,9 +48,33 @@ class ProjectField(models.Model):
         default=0,
         help_text="Sort order of the field in the project form",
     )
+    editable_in_versions = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Comma-separated list of project versions where the field is editable. Values: 1,2,3",
+    )
+    visible_in_versions = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Comma-separated list of project versions where the field is visible. Values: 1,2,3",
+    )
 
     def __str__(self):
         return f"{self.table} - {self.label}"
+
+    def get_editable_versions(self):
+        return (
+            [int(v) for v in self.editable_in_versions.split(",") if v.strip()]
+            if self.editable_in_versions
+            else []
+        )
+
+    def get_visible_versions(self):
+        return (
+            [int(v) for v in self.visible_in_versions.split(",") if v.strip()]
+            if self.visible_in_versions
+            else []
+        )
 
 
 class ProjectSpecificFields(models.Model):

@@ -350,6 +350,41 @@ def setup_project_specific_fields():
     return cluster1, project_type1, sector1, field1, field2, substance
 
 
+class TestProjectFields(BaseTest):
+    url = reverse("project-fields")
+
+    def test_project_fields_list_user(self, viewer_user):
+        field1 = ProjectFieldFactory.create(
+            import_name="Test Field 1",
+            label="Test Field 1",
+            read_field_name="test_field_1",
+            write_field_name="test_field_1",
+            table="project",
+            data_type="text",
+            section="section1",
+            sort_order=1,
+            editable_in_versions="1,2",
+            visible_in_versions="1,2,3",
+        )
+        self.client.force_authenticate(user=viewer_user)
+
+        response = self.client.get(self.url)
+        assert response.status_code == 200
+        assert len(response.data) > 0
+        assert response.data[0]["id"] == field1.id
+        assert response.data[0]["label"] == field1.label
+        assert response.data[0]["read_field_name"] == field1.read_field_name
+        assert response.data[0]["write_field_name"] == field1.write_field_name
+        assert response.data[0]["table"] == field1.table
+        assert response.data[0]["data_type"] == field1.data_type
+        assert response.data[0]["section"] == field1.section
+        assert response.data[0]["sort_order"] == field1.sort_order
+        assert (
+            response.data[0]["editable_in_versions"] == field1.get_editable_versions()
+        )
+        assert response.data[0]["visible_in_versions"] == field1.get_visible_versions()
+
+
 class TestProjectSpecificFields(BaseTest):
 
     def test_without_login(self, _setup_project_specific_fields):

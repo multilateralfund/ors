@@ -1,6 +1,24 @@
-from core.models.project_metadata import ProjectSpecificFields
+from core.api.serializers.project_metadata import ProjectFieldListSerializer
+from core.models.project_metadata import ProjectSpecificFields, ProjectField
 from rest_framework import generics, mixins, status
 from rest_framework.response import Response
+
+
+class ProjectFieldView(mixins.ListModelMixin, generics.GenericAPIView):
+    """
+    List project fields
+    """
+
+    queryset = ProjectField.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        """
+        Handle GET requests to list project fields.
+        """
+        queryset = self.get_queryset()
+        serializer = ProjectFieldListSerializer(queryset, many=True)
+        result = serializer.data
+        return Response(result, status=status.HTTP_200_OK)
 
 
 class ProjectClusterTypeSectorAssociationView(

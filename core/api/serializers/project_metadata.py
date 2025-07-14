@@ -148,13 +148,13 @@ class ProjectTypeSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "allowed_sectors"]
 
 
-class ProjectFieldSerializer(serializers.ModelSerializer):
+class ProjectFieldListSerializer(serializers.ModelSerializer):
     """
-    ProjectFieldSerializer class
+    ProjectFieldListSerializer class
     """
 
-    options = serializers.SerializerMethodField()
-    editable = serializers.SerializerMethodField()
+    editable_in_versions = serializers.SerializerMethodField()
+    visible_in_versions = serializers.SerializerMethodField()
 
     class Meta:
         model = ProjectField
@@ -167,6 +167,47 @@ class ProjectFieldSerializer(serializers.ModelSerializer):
             "data_type",
             "section",
             "is_actual",
+            "sort_order",
+            "editable_in_versions",
+            "visible_in_versions",
+        ]
+
+    def get_editable_in_versions(self, obj):
+        """
+        Returns a list of versions where the field is editable.
+        """
+        return obj.get_editable_versions()
+
+    def get_visible_in_versions(self, obj):
+        """
+        Returns a list of versions where the field is visible.
+        """
+        return obj.get_visible_versions()
+
+
+class ProjectFieldSerializer(ProjectFieldListSerializer):
+    """
+    ProjectFieldSerializer class
+    """
+
+    options = serializers.SerializerMethodField()
+    editable = serializers.SerializerMethodField()
+    editable_in_versions = serializers.SerializerMethodField()
+    visible_in_versions = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProjectField
+        fields = [
+            "id",
+            "label",
+            "read_field_name",
+            "write_field_name",
+            "table",
+            "data_type",
+            "section",
+            "is_actual",
+            "editable_in_versions",
+            "visible_in_versions",
             "options",
             "editable",
             "sort_order",
@@ -186,6 +227,9 @@ class ProjectFieldSerializer(serializers.ModelSerializer):
         return not obj.is_actual
 
     def get_options(self, obj):
+        """
+        ! Returns options only for specific fields.
+        """
 
         if obj.read_field_name == "group":
             return GroupSerializer(Group.objects.all().order_by("name"), many=True).data
