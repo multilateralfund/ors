@@ -85,6 +85,7 @@ export interface IPopoverInputProps {
   withClear?: boolean
   withInputPlaceholder?: boolean
   label?: string
+  disabled?: boolean
 }
 
 export interface IPopoverContentProps extends IPopoverInputProps {

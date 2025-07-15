@@ -1,6 +1,6 @@
 'use client'
 
-import { useContext, useEffect, useRef, useState } from 'react'
+import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import ProjectsHeader from '../ProjectSubmission/ProjectsHeader'
 import ProjectsCreate from '../ProjectsCreate/ProjectsCreate'
@@ -74,11 +74,28 @@ const ProjectsEdit = ({
 
   const data = useGetProjectFiles(parseInt(project_id))
 
-  const { fetchProjectFields } = useStore((state) => state.projectFields)
+  const {
+    fetchProjectFields,
+    projectFields: allFields,
+    setViewableFields,
+    setEditableFields,
+  } = useStore((state) => state.projectFields)
+
+  const debouncedFetchProjectFields = useMemo(
+    () => debounce(() => fetchProjectFields?.(), 0),
+    [fetchProjectFields],
+  )
 
   useEffect(() => {
-    fetchProjectFields()
+    debouncedFetchProjectFields()
   }, [])
+
+  useEffect(() => {
+    if (allFields && allFields.loaded && allFields.data) {
+      setViewableFields?.(project.version)
+      setEditableFields?.(project.version)
+    }
+  }, [allFields, setViewableFields, setEditableFields])
 
   const [projectFiles, setProjectFiles] = useState<ProjectFile[]>([])
   const [files, setFiles] = useState<ProjectFilesObject>({

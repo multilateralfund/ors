@@ -3,6 +3,7 @@ import type { CreateSliceProps, ProjectsFieldsSlice } from '@ors/types/store'
 import { fetchSliceData } from '@ors/helpers/Store/Store'
 
 import { filter } from 'lodash'
+import { produce } from 'immer'
 
 export const createProjectFieldsSlice = ({
   get,
@@ -10,18 +11,32 @@ export const createProjectFieldsSlice = ({
 }: CreateSliceProps): ProjectsFieldsSlice => {
   return {
     projectFields: defaultSliceData,
-    getEditableFields: (version: number) => {
+    viewableFields: [],
+    editableFields: [],
+    setViewableFields: (version: number) => {
       const fields = get().projectFields.projectFields?.data ?? []
 
-      return filter(fields, ({ editable_in_versions }) =>
-        editable_in_versions?.includes(version),
+      const viewableFields = filter(fields, ({ visible_in_versions }) =>
+        visible_in_versions?.includes(version),
+      ).map((field) => field.write_field_name)
+
+      set(
+        produce((state) => {
+          state.projectFields.viewableFields = viewableFields
+        }),
       )
     },
-    getViewableFields: (version: number) => {
+    setEditableFields: (version: number) => {
       const fields = get().projectFields.projectFields?.data ?? []
 
-      return filter(fields, ({ visible_in_versions }) =>
-        visible_in_versions?.includes(version),
+      const editableFields = filter(fields, ({ editable_in_versions }) =>
+        editable_in_versions?.includes(version),
+      ).map((field) => field.write_field_name)
+
+      set(
+        produce((state) => {
+          state.projectFields.editableFields = editableFields
+        }),
       )
     },
     fetchProjectFields: async () => {
@@ -30,7 +45,11 @@ export const createProjectFieldsSlice = ({
         slice: 'projectFields.projectFields',
       })
 
-      set({ projectFields: fields })
+      set(
+        produce((state) => {
+          state.projectFields.projectFields = fields
+        }),
+      )
     },
   }
 }
