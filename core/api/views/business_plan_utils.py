@@ -308,7 +308,10 @@ def parse_bp_file(file, year_start, from_validate=False):
         for subsector in ProjectSubSector.objects.select_related("sector")
     }
     subsectors = [
-        strip_str(subsector.name) for subsector in ProjectSubSector.objects.all()
+        strip_str(subsector.name)
+        for subsector in ProjectSubSector.objects.exclude(
+            name__istartswith="Other"
+        ).union(ProjectSubSector.objects.filter(name__iexact="Other"))
     ]
     substance_dict = {
         strip_str(substance.name): substance for substance in Substance.objects.all()
