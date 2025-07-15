@@ -1076,8 +1076,11 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
                 sector=previous_tranche.sector,
             ).first()
             if specific_field_entry:
+                fields = specific_field_entry.fields.filter(is_actual=True)
+                if not fields.exists():
+                    continue
                 one_field_filled = False
-                for field in specific_field_entry.fields.filter(is_actual=True):
+                for field in fields:
                     if getattr(previous_tranche, field.read_field_name) is not None:
                         one_field_filled = True
 
