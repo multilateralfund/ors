@@ -5,8 +5,9 @@ import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import ActivitiesFiltersSelectedOpts from './BPList/ActivitiesFiltersSelectedOpts'
 import { multiYearFilterOptions, tableColumns } from './constants'
-import { debounce } from '@ors/helpers'
+import { filterSubsectors } from './utils'
 import useFocusOnCtrlF from '@ors/hooks/useFocusOnCtrlF'
+import { debounce } from '@ors/helpers'
 
 import { InputAdornment, IconButton as MuiIconButton } from '@mui/material'
 import { IoChevronDown, IoSearchOutline } from 'react-icons/io5'
@@ -228,7 +229,7 @@ export default function ActivitiesFilters(props: any) {
               getOptionLabel={(option: any) => option?.name}
               options={getFilterOptions(
                 filters,
-                bpSlice.subsectors.data,
+                filterSubsectors(bpSlice.subsectors.data),
                 'subsector_id',
               )}
               value={[]}
