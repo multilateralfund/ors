@@ -468,8 +468,11 @@ export const getProduction = (clusters: Cluster[], clusterId: number | null) =>
 
 export const formatFiles = (
   files: ProjectAllVersionsFiles[] = [],
-  project_id: number,
+  project: ProjectTypeApi,
 ) => {
+  const { id, version, submission_status } = project
+  const isReturnedToDraft = version === 2 && submission_status === 'Draft'
+
   const sortedFiles = files.sort(
     (file1, file2) => file1.version - file2.version,
   )
@@ -478,7 +481,10 @@ export const formatFiles = (
     map(file.files, (crtFile) => {
       return {
         ...crtFile,
-        editable: crtFile.editable && file.id === project_id,
+        editable:
+          crtFile.editable &&
+          ((!isReturnedToDraft && file.id === id) ||
+            (isReturnedToDraft && file.version === 1)),
       }
     }),
   )

@@ -204,7 +204,7 @@ const EditActionButtons = ({
           },
           false,
         )
-        setProjectFiles(formatFiles(res, id))
+        setProjectFiles(formatFiles(res, project))
       } catch (error) {
         enqueueSnackbar(<>Could not fetch updated files.</>, {
           variant: 'error',

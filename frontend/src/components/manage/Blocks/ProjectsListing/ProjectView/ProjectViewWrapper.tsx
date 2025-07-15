@@ -41,7 +41,7 @@ const ProjectViewWrapper = () => {
     editable,
   } = data || {}
 
-  const projectFiles = useGetProjectFiles(parseInt(project_id))
+  const projectFiles = useGetProjectFiles(data)
 
   const [specificFields, setSpecificFields] = useState<ProjectSpecificFields[]>(
     [],

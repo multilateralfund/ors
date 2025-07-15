@@ -1,17 +1,20 @@
 import { useMemo } from 'react'
 
+import { ProjectTypeApi } from '../interfaces'
 import { formatFiles } from '../utils'
 import useApi from '@ors/hooks/useApi'
 
-export function useGetProjectFiles(project_id: number) {
+export function useGetProjectFiles(project: ProjectTypeApi) {
+  const { id } = project
+
   const { data } = useApi({
     options: {
       withStoreCache: false,
     },
-    path: `/api/project/${project_id}/files/include_previous_versions/v2/`,
+    path: `/api/project/${id}/files/include_previous_versions/v2/`,
   })
 
-  const formattedFiles = useMemo(() => formatFiles(data, project_id), [data])
+  const formattedFiles = useMemo(() => formatFiles(data, project), [data])
 
   return formattedFiles
 }

@@ -72,7 +72,7 @@ const ProjectsEdit = ({
 
   const fieldsValuesLoaded = useRef<boolean>(false)
 
-  const data = useGetProjectFiles(parseInt(project_id))
+  const data = useGetProjectFiles(project)
 
   const [projectFiles, setProjectFiles] = useState<ProjectFile[]>([])
   const [files, setFiles] = useState<ProjectFilesObject>({
