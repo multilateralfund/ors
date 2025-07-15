@@ -809,8 +809,11 @@ class ProjectV2ViewSet(
                 warnings = []
                 if specific_field:
                     # at least one actual field should be filled
+                    fields = specific_field.fields.filter(is_actual=True)
+                    if not fields.exists():
+                        continue
                     one_field_filled = False
-                    for field in specific_field.fields.filter(is_actual=True):
+                    for field in fields:
                         if getattr(previous_tranche, field.read_field_name) is not None:
                             one_field_filled = True
                         else:
