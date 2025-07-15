@@ -16,7 +16,6 @@ import {
   VersionsList,
 } from '../HelperComponents'
 import { useGetProject } from '../hooks/useGetProject'
-import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
 import { ProjectSpecificFields } from '../interfaces'
 
@@ -40,8 +39,6 @@ const ProjectViewWrapper = () => {
     version,
     editable,
   } = data || {}
-
-  const projectFiles = useGetProjectFiles(data)
 
   const [specificFields, setSpecificFields] = useState<ProjectSpecificFields[]>(
     [],
@@ -115,7 +112,7 @@ const ProjectViewWrapper = () => {
             </div>
             <ProjectStatusInfo project={data} />
           </HeaderTitle>
-          <ProjectView project={data} {...{ projectFiles, specificFields }} />
+          <ProjectView project={data} {...{ specificFields }} />
         </>
       )}
     </>

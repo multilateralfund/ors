@@ -8,6 +8,7 @@ import ProjectSpecificInfo from './ProjectSpecificInfo'
 import ProjectApproval from './ProjectApproval'
 import ProjectImpact from './ProjectImpact'
 import ProjectDocumentation from './ProjectDocumentation'
+import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { ProjectFile, ProjectViewProps } from '../interfaces'
 import { getSectionFields } from '../utils'
 
@@ -17,11 +18,7 @@ import ProjectHistory from '@ors/components/manage/Blocks/ProjectsListing/Projec
 import { IoDownloadOutline } from 'react-icons/io5'
 import { formatApiUrl } from '@ors/helpers'
 
-const ProjectView = ({
-  project,
-  projectFiles,
-  specificFields,
-}: ProjectViewProps & { projectFiles: ProjectFile[] }) => {
+const ProjectView = ({ project, specificFields }: ProjectViewProps) => {
   const [activeTab, setActiveTab] = useState(0)
 
   const [overviewFields, substanceDetailsFields, impactFields] = [
@@ -29,6 +26,9 @@ const ProjectView = ({
     getSectionFields(specificFields, 'Substance Details'),
     getSectionFields(specificFields, 'Impact'),
   ]
+
+  const projectFiles = useGetProjectFiles(project)
+
   return (
     <>
       <div className="flex items-center justify-between">
