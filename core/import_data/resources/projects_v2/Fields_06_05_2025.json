@@ -6,7 +6,7 @@
         "READ_FIELD_NAME": "production",
         "TABLE": "project",
         "DATA_TYPE": "boolean",
-        "SECTION": "Header",
+        "SECTION": "Identifiers",
         "SORT_ORDER": 1,
         "EDITABLE_IN_VERSIONS": [1],
         "VISIBLE_IN_VERSIONS": [1,2,3]
@@ -18,7 +18,7 @@
         "READ_FIELD_NAME": "bp_activity",
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
-        "SECTION": "Header",
+        "SECTION": "Identifiers",
         "SORT_ORDER": 2,
         "EDITABLE_IN_VERSIONS": [1,2],
         "VISIBLE_IN_VERSIONS": [1,2,3]
@@ -30,7 +30,7 @@
         "READ_FIELD_NAME": "country",
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
-        "SECTION": "Header",
+        "SECTION": "Identifiers",
         "SORT_ORDER": 3,
         "EDITABLE_IN_VERSIONS": [1],
         "VISIBLE_IN_VERSIONS": [1,2,3]
@@ -42,7 +42,7 @@
         "READ_FIELD_NAME": "agency",
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
-        "SECTION": "Header",
+        "SECTION": "Identifiers",
         "SORT_ORDER": 4,
         "EDITABLE_IN_VERSIONS": [1],
         "VISIBLE_IN_VERSIONS": [1,2,3]
@@ -90,7 +90,7 @@
         "READ_FIELD_NAME": "cluster",
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
-        "SECTION": "Cross-Cutting",
+        "SECTION": "Identifiers",
         "SORT_ORDER": 8,
         "EDITABLE_IN_VERSIONS": [1],
         "VISIBLE_IN_VERSIONS": [1,2,3]
@@ -102,7 +102,7 @@
         "READ_FIELD_NAME": "meeting",
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
-        "SECTION": "Header",
+        "SECTION": "Identifiers",
         "SORT_ORDER": 9,
         "EDITABLE_IN_VERSIONS": [1,2,3],
         "VISIBLE_IN_VERSIONS": [1,2,3]
