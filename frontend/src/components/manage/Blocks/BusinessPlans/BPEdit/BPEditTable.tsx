@@ -12,6 +12,7 @@ import BPResetFieldsWarning from './BPResetFieldsWarning'
 import { editCellRenderer } from '../BPTableHelpers/cellRenderers'
 import { emptyFieldData, updateFieldData } from './editSchemaHelpers'
 import useColumnsOptions from './editSchema'
+import { filterSubsectors } from '../utils'
 import { ApiBPYearRange } from '@ors/types/api_bp_get_years'
 import { api, applyTransaction } from '@ors/helpers'
 import { useStore } from '@ors/store'
@@ -56,7 +57,7 @@ export function BPEditBaseTable(
   const clusters = projectSlice.clusters.data
   const types = bpSlice.types.data
   const sectors = bpSlice.sectors.data
-  const subsectors = bpSlice.subsectors.data
+  const subsectors = filterSubsectors(bpSlice.subsectors.data)
 
   const [deleteErrors, setDeleteErrors] = useState<string[]>([])
   const [activityToDelete, setActivityToDelete] = useState<Record<
