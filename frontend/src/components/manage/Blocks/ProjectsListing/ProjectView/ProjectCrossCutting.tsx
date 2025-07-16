@@ -37,10 +37,10 @@ const ProjectCrossCutting = ({ project }: { project: ProjectTypeApi }) => {
           project.description,
           'self-start',
         )}
-        {/* {detailItem(
-        tableColumns.individual_consideration,
-        individual_consideration?.name,
-        )} */}
+        {detailItem(
+          tableColumns.individual_consideration,
+          individual_consideration?.name,
+        )}
       </div>
 
       <Divider className="my-6" />

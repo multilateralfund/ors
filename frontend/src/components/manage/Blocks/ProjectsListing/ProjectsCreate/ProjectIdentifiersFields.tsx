@@ -58,10 +58,8 @@ const ProjectIdentifiersFields = ({
   const { viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
   )
-
   const canEditMeeting = editableFields.includes('meeting')
-
-  console.log(viewableFields, editableFields)
+  const canEditAgency = editableFields.includes('agency')
 
   const sectionDefaultProps = {
     ...defaultProps,
@@ -208,9 +206,7 @@ const ProjectIdentifiersFields = ({
                   getOptionLabel(agencyOptions, option)
                 }
                 disabled={
-                  !!agency_id ||
-                  !areNextSectionsDisabled ||
-                  !editableFields.includes('agency')
+                  !!agency_id || !areNextSectionsDisabled || !canEditAgency
                 }
                 Input={{
                   error:
@@ -246,72 +242,79 @@ const ProjectIdentifiersFields = ({
               />
             </div>
           )}
-          <FormControlLabel
-            className="w-fit self-end"
-            label="Production"
-            control={
-              <Checkbox
-                checked={!!projIdentifiers?.production}
-                disabled={
-                  !areNextSectionsDisabled ||
-                  !isNull(getProduction(clusters, projIdentifiers.cluster))
-                }
-                onChange={handleChangeProduction}
-                size="small"
-                sx={{
-                  color: 'black',
-                }}
-              />
-            }
-            componentsProps={{
-              typography: { fontSize: '1.05rem' },
-            }}
-          />
+          {viewableFields.includes('production') && (
+            <FormControlLabel
+              className="w-fit self-end"
+              label="Production"
+              control={
+                <Checkbox
+                  checked={!!projIdentifiers?.production}
+                  disabled={
+                    !areNextSectionsDisabled ||
+                    !isNull(getProduction(clusters, projIdentifiers.cluster)) ||
+                    !editableFields.includes('production')
+                  }
+                  onChange={handleChangeProduction}
+                  size="small"
+                  sx={{
+                    color: 'black',
+                  }}
+                />
+              }
+              componentsProps={{
+                typography: { fontSize: '1.05rem' },
+              }}
+            />
+          )}
         </div>
-        <FormControlLabel
-          className="w-fit"
-          label="Confirm you are the lead agency submitting on behalf of a cooperating agency."
-          control={
-            <Checkbox
-              checked={projIdentifiers?.is_lead_agency}
-              disabled={!areNextSectionsDisabled}
-              onChange={handleChangeIsLeadAgency}
-              size="small"
-              sx={{
-                color: 'black',
-              }}
-            />
-          }
-          componentsProps={{
-            typography: { fontSize: '1.05rem' },
-          }}
-        />
-        {!projIdentifiers.is_lead_agency && (
+        {viewableFields.includes('agency') && (
           <>
-            <Label>Lead agency</Label>
-            <Field
-              widget="autocomplete"
-              options={leadAgencyOptions}
-              value={projIdentifiers?.side_agency}
-              onChange={(_, value) =>
-                changeHandler['drop_down']<ProjectData, ProjIdentifiers>(
-                  value,
-                  'side_agency',
-                  setProjectData,
-                  sectionIdentifier,
-                )
+            <FormControlLabel
+              className="w-fit"
+              label="Confirm you are the lead agency submitting on behalf of a cooperating agency."
+              control={
+                <Checkbox
+                  checked={projIdentifiers?.is_lead_agency}
+                  disabled={!areNextSectionsDisabled || !canEditAgency}
+                  onChange={handleChangeIsLeadAgency}
+                  size="small"
+                  sx={{
+                    color: 'black',
+                  }}
+                />
               }
-              getOptionLabel={(option) =>
-                getOptionLabel(leadAgencyOptions, option)
-              }
-              disabled={!areNextSectionsDisabled}
-              Input={{
-                error:
-                  !projIdentifiers.is_lead_agency &&
-                  getIsInputDisabled('agency'),
+              componentsProps={{
+                typography: { fontSize: '1.05rem' },
               }}
-              {...sectionDefaultProps}
             />
+            {!projIdentifiers.is_lead_agency && (
+              <>
+                <Label>Lead agency</Label>
+                <Field
+                  widget="autocomplete"
+                  options={leadAgencyOptions}
+                  value={projIdentifiers?.side_agency}
+                  onChange={(_, value) =>
+                    changeHandler['drop_down']<ProjectData, ProjIdentifiers>(
+                      value,
+                      'side_agency',
+                      setProjectData,
+                      sectionIdentifier,
+                    )
+                  }
+                  getOptionLabel={(option) =>
+                    getOptionLabel(leadAgencyOptions, option)
+                  }
+                  disabled={!areNextSectionsDisabled || !canEditAgency}
+                  Input={{
+                    error:
+                      !projIdentifiers.is_lead_agency &&
+                      getIsInputDisabled('agency'),
+                  }}
+                  {...sectionDefaultProps}
+                />
+              </>
+            )}
           </>
         )}
         <div className="flex flex-wrap items-center gap-2.5">

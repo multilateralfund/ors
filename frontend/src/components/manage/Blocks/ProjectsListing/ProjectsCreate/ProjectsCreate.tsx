@@ -28,10 +28,12 @@ import {
   getSpecificFieldsErrors,
   getHasNoFiles,
   hasSectionErrors,
+  hasIdentifierFields,
 } from '../utils.ts'
+import { useStore } from '@ors/store.tsx'
 
+import { find, groupBy, has, isArray, isEmpty, map, mapKeys } from 'lodash'
 import { Tabs, Tab, Alert, Typography } from '@mui/material'
-import { groupBy, has, isEmpty, map, mapKeys } from 'lodash'
 import { MdErrorOutline } from 'react-icons/md'
 
 export const SectionTitle = ({ children }: { children: ReactNode }) => (
@@ -91,7 +93,15 @@ const ProjectsCreate = ({
   const odsOdpFields = (groupedFields['ods_odp'] || []).filter(
     (field) => field.read_field_name !== 'sort_order',
   )
+  const { projectFields, viewableFields } = useStore(
+    (state) => state.projectFields,
+  )
+  const allFields = isArray(projectFields) ? projectFields : projectFields?.data
 
+  const isCrossCuttingTabDisabled = !find(
+    allFields,
+    (field) => field.section === 'Cross-Cutting',
+  )
   const isSpecificInfoTabDisabled =
     areProjectSpecificTabsDisabled ||
     (overviewFields.length < 1 && substanceDetailsFields.length < 1)
@@ -208,6 +218,7 @@ const ProjectsCreate = ({
           )}
         </div>
       ),
+      disabled: !hasIdentifierFields(allFields, viewableFields, true),
       component: (
         <ProjectIdentifiersSection
           {...{
@@ -237,7 +248,7 @@ const ProjectsCreate = ({
           )}
         </div>
       ),
-      disabled: areNextSectionsDisabled,
+      disabled: areNextSectionsDisabled || isCrossCuttingTabDisabled,
       component: (
         <ProjectCrossCuttingFields
           {...{

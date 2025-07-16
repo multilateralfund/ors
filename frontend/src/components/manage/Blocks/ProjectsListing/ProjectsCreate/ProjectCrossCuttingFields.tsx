@@ -23,7 +23,7 @@ import {
 import { ProjectSubSectorType } from '@ors/types/api_project_subsector.ts'
 import { api } from '@ors/helpers'
 
-import { TextareaAutosize, Divider } from '@mui/material'
+import { TextareaAutosize, Divider, Checkbox } from '@mui/material'
 import { debounce, filter, find, includes, some } from 'lodash'
 import cx from 'classnames'
 import dayjs from 'dayjs'
@@ -47,7 +47,7 @@ const ProjectCrossCuttingFields = ({
     support_cost_psc,
     project_start_date,
     project_end_date,
-    // individual_consideration,
+    individual_consideration,
   } = crossCuttingFields
   const { cluster } = projectData.projIdentifiers
 
@@ -449,19 +449,17 @@ const ProjectCrossCuttingFields = ({
             />
           </div>
         </div>
-        {/* <div className="flex">
-        <Label>Blanket consideration</Label>
-        <Checkbox
-          className="pb-1 pl-2 pt-0"
-          checked={!individual_consideration}
-          onChange={(_, value) =>
-            handleChangeBlanketConsideration(value)
-          }
-          sx={{
-            color: 'black',
-          }}
-        />
-      </div> */}
+        <div className="flex">
+          <Label>Blanket consideration</Label>
+          <Checkbox
+            className="pb-1 pl-2 pt-0"
+            checked={!individual_consideration}
+            onChange={(_, value) => handleChangeBlanketConsideration(value)}
+            sx={{
+              color: 'black',
+            }}
+          />
+        </div>
       </div>
     </>
   )

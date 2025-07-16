@@ -10,6 +10,7 @@ import {
   OptionsType,
   ProjectTypeApi,
   ProjectAllVersionsFiles,
+  ProjectFields,
 } from './interfaces'
 import { formatApiUrl, formatDecimalValue } from '@ors/helpers'
 import { Cluster } from '@ors/types/store'
@@ -482,4 +483,24 @@ export const formatFiles = (
       }
     }),
   )
+}
+
+export const hasIdentifierFields = (
+  projectFields: ProjectFields[] = [],
+  viewableFields: string[] = [],
+  withBp: boolean,
+) => {
+  const identifierFields = filter(viewableFields, (field) => {
+    const crtFieldData = find(
+      projectFields,
+      (projField) => projField.write_field_name === field,
+    )
+
+    return (
+      crtFieldData?.section === 'Identifiers' &&
+      (withBp ? true : field !== 'bp_activity')
+    )
+  })
+
+  return identifierFields.length > 0
 }
