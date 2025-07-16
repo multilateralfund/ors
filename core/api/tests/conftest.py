@@ -548,7 +548,7 @@ def rbm_measure():
 
 @pytest.fixture
 def meeting():
-    return MeetingFactory.create(number=1, date="2019-03-14")
+    return MeetingFactory.create(number=1, date="2019-03-14", end_date="2019-03-15")
 
 
 @pytest.fixture
@@ -678,7 +678,6 @@ def project(
         cluster=project_cluster_kpp,
         fund_disbursed=123.1,
         total_fund_transferred=123.1,
-        date_approved="2019-03-14",
         serial_number=1,
         code=code,
     )

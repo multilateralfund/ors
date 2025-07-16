@@ -172,6 +172,10 @@ class Project(models.Model):
         null=True,
         blank=True,
     )
+    lead_agency_submitting_on_behalf = models.BooleanField(
+        default=False,
+        help_text="True if the user is the lead agency submitting on behalf of a cooperating agency.",
+    )
     agency = models.ForeignKey(Agency, on_delete=models.CASCADE)
     national_agency = models.CharField(max_length=255, null=True, blank=True)
     coop_agencies = models.ManyToManyField(

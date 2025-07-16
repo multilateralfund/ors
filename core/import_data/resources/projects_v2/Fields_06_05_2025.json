@@ -48,6 +48,32 @@
         "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
+
+
+        "IMPORT_NAME": "Confirm you are the lead agency submitting on behalf of a cooperating agency.",
+        "LABEL": "Confirm you are the lead agency submitting on behalf of a cooperating agency.",
+        "WRITE_FIELD_NAME": "lead_agency_submitting_on_behalf",
+        "READ_FIELD_NAME": "lead_agency_submitting_on_behalf",
+        "TABLE": "project",
+        "DATA_TYPE": "boolean",
+        "SECTION": "Identifiers",
+        "SORT_ORDER": 5,
+        "EDITABLE_IN_VERSIONS": [1],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
+    },
+    {
+        "IMPORT_NAME": "Lead Agency",
+        "LABEL": "Lead Agency",
+        "WRITE_FIELD_NAME": "lead_agency",
+        "READ_FIELD_NAME": "lead_agency",
+        "TABLE": "project",
+        "DATA_TYPE": "boolean",
+        "SECTION": "Identifiers",
+        "SORT_ORDER": 5,
+        "EDITABLE_IN_VERSIONS": [1],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
+    },
+    {
         "IMPORT_NAME": "Title",
         "LABEL": "Title",
         "WRITE_FIELD_NAME": "title",
@@ -210,6 +236,18 @@
         "READ_FIELD_NAME": "pcr_waived",
         "TABLE": "project",
         "DATA_TYPE": "boolean",
+        "SECTION": "Approval",
+        "SORT_ORDER": 18,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
+    },
+    {
+        "IMPORT_NAME": "Approval date",
+        "LABEL": "Approval date",
+        "WRITE_FIELD_NAME": "date_approved",
+        "READ_FIELD_NAME": "date_approved",
+        "TABLE": "project",
+        "DATA_TYPE": "date",
         "SECTION": "Approval",
         "SORT_ORDER": 18,
         "EDITABLE_IN_VERSIONS": [3],
