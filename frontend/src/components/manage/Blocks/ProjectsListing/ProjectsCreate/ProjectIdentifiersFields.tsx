@@ -17,7 +17,7 @@ import {
 } from '@ors/components/manage/Utils/utilFunctions'
 import { changeHandler } from './SpecificFieldsHelpers'
 import { defaultProps, disabledClassName, tableColumns } from '../constants'
-import { getProduction } from '../utils'
+import { canEditField, canViewField, getProduction } from '../utils'
 import { useStore } from '@ors/store'
 import { Cluster, Country } from '@ors/types/store'
 import { parseNumber } from '@ors/helpers'
@@ -58,8 +58,9 @@ const ProjectIdentifiersFields = ({
   const { viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
   )
-  const canEditMeeting = editableFields.includes('meeting')
-  const canEditAgency = editableFields.includes('agency')
+
+  const canEditMeeting = canEditField(editableFields, 'meeting')
+  const canEditAgency = canEditField(editableFields, 'agency')
 
   const sectionDefaultProps = {
     ...defaultProps,
@@ -143,7 +144,7 @@ const ProjectIdentifiersFields = ({
       <SectionTitle>Identifiers</SectionTitle>
       <div className="flex flex-col gap-y-2">
         <div className="flex flex-wrap gap-x-20 gap-y-3">
-          {viewableFields.includes('country') && (
+          {canViewField(viewableFields, 'country') && (
             <div>
               <Label>{tableColumns.country}</Label>
               <Field
@@ -158,7 +159,7 @@ const ProjectIdentifiersFields = ({
                   !areNextSectionsDisabled ||
                   mode === 'partial-link' ||
                   mode === 'full-link' ||
-                  !editableFields.includes('country')
+                  !canEditField(editableFields, 'country')
                 }
                 Input={{
                   error: getIsInputDisabled('country'),
@@ -167,7 +168,7 @@ const ProjectIdentifiersFields = ({
               />
             </div>
           )}
-          {viewableFields.includes('meeting') && (
+          {canViewField(viewableFields, 'meeting') && (
             <div className="w-32">
               <Label>{tableColumns.meeting}</Label>
               <PopoverInput
@@ -187,7 +188,7 @@ const ProjectIdentifiersFields = ({
               />
             </div>
           )}
-          {viewableFields.includes('agency') && (
+          {canViewField(viewableFields, 'agency') && (
             <div>
               <Label>{tableColumns.agency}</Label>
               <Field
@@ -219,7 +220,7 @@ const ProjectIdentifiersFields = ({
           )}
         </div>
         <div className="flex flex-wrap gap-x-20 gap-y-3">
-          {viewableFields.includes('cluster') && (
+          {canViewField(viewableFields, 'cluster') && (
             <div>
               <Label>{tableColumns.cluster}</Label>
               <Field
@@ -230,7 +231,7 @@ const ProjectIdentifiersFields = ({
                 getOptionLabel={(option) => getOptionLabel(clusters, option)}
                 disabled={
                   !areNextSectionsDisabled ||
-                  !editableFields.includes('cluster')
+                  !canEditField(editableFields, 'cluster')
                 }
                 Input={{
                   error: getIsInputDisabled('cluster'),
@@ -242,7 +243,7 @@ const ProjectIdentifiersFields = ({
               />
             </div>
           )}
-          {viewableFields.includes('production') && (
+          {canViewField(viewableFields, 'production') && (
             <FormControlLabel
               className="w-fit self-end"
               label="Production"
@@ -252,7 +253,7 @@ const ProjectIdentifiersFields = ({
                   disabled={
                     !areNextSectionsDisabled ||
                     !isNull(getProduction(clusters, projIdentifiers.cluster)) ||
-                    !editableFields.includes('production')
+                    !canEditField(editableFields, 'production')
                   }
                   onChange={handleChangeProduction}
                   size="small"
@@ -267,7 +268,7 @@ const ProjectIdentifiersFields = ({
             />
           )}
         </div>
-        {viewableFields.includes('agency') && (
+        {canViewField(viewableFields, 'agency') && (
           <>
             <FormControlLabel
               className="w-fit"

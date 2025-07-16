@@ -14,6 +14,7 @@ import {
 } from './interfaces'
 import { formatApiUrl, formatDecimalValue } from '@ors/helpers'
 import { Cluster } from '@ors/types/store'
+import { useStore } from '@ors/store'
 
 import {
   concat,
@@ -491,24 +492,36 @@ export const formatFiles = (
   )
 }
 
-export const hasIdentifierFields = (
-  projectFields: ProjectFields[] = [],
-  viewableFields: string[] = [],
-  withBp: boolean,
+export const canViewField = (viewableFields: string[], field: string) =>
+  viewableFields.includes(field)
+
+export const canEditField = (editableFields: string[], field: string) =>
+  editableFields.includes(field)
+
+export const hasFields = (
+  projectFields: any,
+  viewableFields: string[],
+  section: string,
+  includeAllFields: boolean = true,
+  excludedFields?: string[],
+  fieldToCheck: string = 'section',
 ) => {
-  const identifierFields = filter(viewableFields, (field) => {
+  const allFields = isArray(projectFields) ? projectFields : projectFields?.data
+
+  const fields = filter(viewableFields, (field) => {
     const crtFieldData = find(
-      projectFields,
+      allFields,
       (projField) => projField.write_field_name === field,
     )
 
     return (
-      crtFieldData?.section === 'Identifiers' &&
-      (withBp ? true : field !== 'bp_activity')
+      crtFieldData?.[fieldToCheck] === section &&
+      (includeAllFields ? true : !excludedFields?.includes(field))
     )
   })
 
-  return identifierFields.length > 0
+  return fields.length > 0
 }
+
 export const pluralizeWord = (data: any[] = [], word: string) =>
   data.length > 1 ? word + 's' : word

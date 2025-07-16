@@ -92,8 +92,10 @@ const ProjectsEdit = ({
 
   useEffect(() => {
     if (allFields && allFields.loaded && allFields.data) {
-      setViewableFields?.(project.version)
-      setEditableFields?.(project.version)
+      const version = mode === 'edit' ? project.version : 1
+
+      setViewableFields?.(version)
+      setEditableFields?.(version)
     }
   }, [allFields, setViewableFields, setEditableFields])
 

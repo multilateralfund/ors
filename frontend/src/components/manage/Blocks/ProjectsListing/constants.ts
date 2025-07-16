@@ -135,4 +135,4 @@ export const validationFieldsPairs: [
 ]
 
 export const disabledClassName =
-  '!bg-white text-[#9ca3af] !border border-solid !border-[#00000042] !cursor-default'
+  '!bg-white !text-[#9ca3af] !border border-solid !border-[#00000042] !cursor-default'

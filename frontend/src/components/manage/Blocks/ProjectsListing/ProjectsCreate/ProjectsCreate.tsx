@@ -28,11 +28,11 @@ import {
   getSpecificFieldsErrors,
   getHasNoFiles,
   hasSectionErrors,
-  hasIdentifierFields,
+  hasFields,
 } from '../utils.ts'
 import { useStore } from '@ors/store.tsx'
 
-import { find, groupBy, has, isArray, isEmpty, map, mapKeys } from 'lodash'
+import { groupBy, has, isEmpty, map, mapKeys } from 'lodash'
 import { Tabs, Tab, Alert, Typography } from '@mui/material'
 import { MdErrorOutline } from 'react-icons/md'
 import { useParams } from 'wouter'
@@ -96,15 +96,11 @@ const ProjectsCreate = ({
   const odsOdpFields = (groupedFields['ods_odp'] || []).filter(
     (field) => field.read_field_name !== 'sort_order',
   )
+
   const { projectFields, viewableFields } = useStore(
     (state) => state.projectFields,
   )
-  const allFields = isArray(projectFields) ? projectFields : projectFields?.data
 
-  const isCrossCuttingTabDisabled = !find(
-    allFields,
-    (field) => field.section === 'Cross-Cutting',
-  )
   const isSpecificInfoTabDisabled =
     areProjectSpecificTabsDisabled ||
     (overviewFields.length < 1 && substanceDetailsFields.length < 1)
@@ -222,7 +218,7 @@ const ProjectsCreate = ({
           )}
         </div>
       ),
-      disabled: !hasIdentifierFields(allFields, viewableFields, true),
+      disabled: !hasFields(projectFields, viewableFields, 'Identifiers'),
       component: (
         <ProjectIdentifiersSection
           {...{
@@ -252,7 +248,9 @@ const ProjectsCreate = ({
           )}
         </div>
       ),
-      disabled: areNextSectionsDisabled || isCrossCuttingTabDisabled,
+      disabled:
+        areNextSectionsDisabled ||
+        !hasFields(projectFields, viewableFields, 'Cross-Cutting'),
       component: (
         <ProjectCrossCuttingFields
           {...{
@@ -282,7 +280,10 @@ const ProjectsCreate = ({
             )}
         </div>
       ),
-      disabled: isSpecificInfoTabDisabled,
+      disabled:
+        isSpecificInfoTabDisabled ||
+        (!hasFields(projectFields, viewableFields, 'Header') &&
+          !hasFields(projectFields, viewableFields, 'Substance Details')),
       component: (
         <ProjectSpecificInfoSection
           {...{
