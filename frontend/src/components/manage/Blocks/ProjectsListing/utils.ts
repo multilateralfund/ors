@@ -489,3 +489,6 @@ export const formatFiles = (
     }),
   )
 }
+
+export const pluralizeWord = (data: any[] = [], word: string) =>
+  data.length > 1 ? word + 's' : word

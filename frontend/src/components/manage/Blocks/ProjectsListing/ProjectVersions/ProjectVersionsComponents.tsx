@@ -3,7 +3,6 @@ import { Dispatch, SetStateAction } from 'react'
 import Link from '@ors/components/ui/Link/Link'
 import { ProjectVersions } from '../interfaces'
 import useClickOutside from '@ors/hooks/useClickOutside'
-import { formattedDateFromTimestamp } from '@ors/helpers'
 
 import { IoChevronDown } from 'react-icons/io5'
 import cx from 'classnames'
@@ -20,7 +19,6 @@ export const VersionsDropdown = ({
   const formattedVersions = versions.map((version, idx) => ({
     id: version.id,
     label: `Version ${version.version}`,
-    formattedDate: formattedDateFromTimestamp(version.date_created),
     url:
       idx == 0
         ? `/projects-listing/${version.id}`
@@ -57,15 +55,14 @@ export const VersionsDropdown = ({
             href={info.url}
             className="flex items-center gap-x-2 rounded-none px-2 py-2 text-black no-underline hover:bg-primary hover:text-white"
           >
-            <div className="flex w-56 items-center justify-between hover:text-white">
-              <div>{info.label}</div>
+            <div className="flex w-40 items-center justify-between hover:text-white">
+              <div className="ml-1">{info.label}</div>
               <div className="flex items-center">
                 {idx == 0 && (
-                  <span className="mx-2 rounded-md bg-gray-400 p-1 text-xs uppercase text-white">
+                  <span className="mx-1 rounded-md bg-gray-400 p-1 text-xs uppercase text-white">
                     Latest
                   </span>
                 )}
-                {info.formattedDate}
               </div>
             </div>
           </Link>

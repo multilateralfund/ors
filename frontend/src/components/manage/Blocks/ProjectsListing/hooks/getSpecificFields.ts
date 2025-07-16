@@ -17,10 +17,14 @@ export const fetchSpecificFields = async (
 
   try {
     const res = await api(url)
-    const formattedFields = (res.fields || []).sort(
-      (field1: ProjectSpecificFields, field2: ProjectSpecificFields) =>
-        (field1.sort_order ?? 0) - (field2.sort_order ?? 0),
-    )
+    const formattedFields = (res.fields || [])
+      .filter((field: ProjectSpecificFields) =>
+        ['Header', 'Substance Details', 'Impact'].includes(field.section),
+      )
+      .sort(
+        (field1: ProjectSpecificFields, field2: ProjectSpecificFields) =>
+          (field1.sort_order ?? 0) - (field2.sort_order ?? 0),
+      )
 
     setFields(formattedFields)
   } catch (e) {

@@ -1,4 +1,6 @@
+import { ProjectSubSectorType } from '@ors/types/api_project_subsector'
 import { useStore } from '@ors/store'
+
 import { filter, find, keys, reduce, reverse, uniq } from 'lodash'
 
 export const filtersToQueryParams = (filters: any) => {
@@ -57,5 +59,5 @@ export const hasErrors = (rowErrors: any, column: string) => {
   return uniq(colsWithErrors).includes(column)
 }
 
-export const filterSubsectors = (subsectors: any) =>
+export const filterSubsectors = (subsectors: ProjectSubSectorType[]) =>
   filter(subsectors, (subsector) => !subsector.name.startsWith('Other '))

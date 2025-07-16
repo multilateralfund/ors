@@ -5,6 +5,7 @@ import CustomLink from '@ors/components/ui/Link/Link'
 import { CancelButton } from '../HelperComponents'
 import { useGetProjectsForSubmission } from '../hooks/useGetProjectsForSubmission'
 import { ProjectTypeApi, RelatedProjectsType } from '../interfaces'
+import { pluralizeWord } from '../utils'
 
 import { Modal, Typography, Box, Divider } from '@mui/material'
 import { FaExternalLinkAlt } from 'react-icons/fa'
@@ -62,8 +63,8 @@ const SubmitProjectModal = ({
             <div className="flex flex-col">
               <span className="text-lg">
                 {hasAssociatedPojects
-                  ? 'All changes made to this project will be saved. The following associated projects will be submitted along with it:'
-                  : 'You are submitting this project to the MLFS. All changes will be saved.'}
+                  ? `Together with this project, you will be submitting the following ${pluralizeWord(associatedProjects, 'project')}:`
+                  : 'You are submitting this project to the MLFS.'}
               </span>
             </div>
             {hasAssociatedPojects && (
@@ -89,7 +90,7 @@ const SubmitProjectModal = ({
             )}
             <span className="text-lg">
               {hasAssociatedPojects
-                ? 'Please ensure these projects are complete and ready to be submitted to the Secretariat.'
+                ? `Please ensure ${associatedProjects.length > 1 ? 'these projects are' : 'this project is'} complete and ready to be submitted to the Secretariat.`
                 : 'Are you sure there are no other components or associated projects which need to be submitted together with this one?'}
             </span>
           </div>
