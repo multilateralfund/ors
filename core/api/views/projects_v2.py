@@ -62,7 +62,7 @@ from core.api.views.utils import log_project_history
 from core.api.views.projects_export import ProjectsV2Export
 from core.api.views.project_v2_export import ProjectsV2ProjectExport
 
-# pylint: disable=C0302,R0911,R0904
+# pylint: disable=C0302,R0911,R0904,R1702
 
 
 class ProjectDestructionTechnologyView(APIView):
@@ -809,24 +809,29 @@ class ProjectV2ViewSet(
                 warnings = []
                 if specific_field:
                     # at least one actual field should be filled
-                    one_field_filled = False
-                    for field in specific_field.fields.filter(is_actual=True):
-                        if getattr(previous_tranche, field.read_field_name) is not None:
-                            one_field_filled = True
-                        else:
-                            warnings.append(
+                    fields = specific_field.fields.filter(is_actual=True)
+                    if fields.exists():
+                        one_field_filled = False
+                        for field in fields:
+                            if (
+                                getattr(previous_tranche, field.read_field_name)
+                                is not None
+                            ):
+                                one_field_filled = True
+                            else:
+                                warnings.append(
+                                    {
+                                        "field": field.read_field_name,
+                                        "message": f"{field.label} is not filled.",
+                                    }
+                                )
+                        if not one_field_filled:
+                            errors.append(
                                 {
-                                    "field": field.read_field_name,
-                                    "message": f"{field.label} is not filled.",
+                                    "field": "fields",
+                                    "message": "At least one actual indicator should be filled.",
                                 }
                             )
-                    if not one_field_filled:
-                        errors.append(
-                            {
-                                "field": "fields",
-                                "message": "At least one actual indicator should be filled.",
-                            }
-                        )
                 serializer_data["warnings"] = warnings
                 serializer_data["errors"] = errors
                 data.append(serializer_data)

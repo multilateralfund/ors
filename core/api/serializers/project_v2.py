@@ -1076,18 +1076,20 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
                 sector=previous_tranche.sector,
             ).first()
             if specific_field_entry:
-                one_field_filled = False
-                for field in specific_field_entry.fields.filter(is_actual=True):
-                    if getattr(previous_tranche, field.read_field_name) is not None:
-                        one_field_filled = True
+                fields = specific_field_entry.fields.filter(is_actual=True)
+                if fields.exists():
+                    one_field_filled = False
+                    for field in fields:
+                        if getattr(previous_tranche, field.read_field_name) is not None:
+                            one_field_filled = True
 
-                if not one_field_filled:
-                    if "previous_tranches" not in errors:
-                        errors["previous_tranches"] = []
-                    errors["previous_tranches"].append(
-                        f"Previous tranche {previous_tranche.title}({previous_tranche.id}): "
-                        "At least one actual indicator should be filled."
-                    )
+                    if not one_field_filled:
+                        if "previous_tranches" not in errors:
+                            errors["previous_tranches"] = []
+                        errors["previous_tranches"].append(
+                            f"Previous tranche {previous_tranche.title}({previous_tranche.id}): "
+                            "At least one actual indicator should be filled."
+                        )
         return errors
 
     def validate(self, attrs):

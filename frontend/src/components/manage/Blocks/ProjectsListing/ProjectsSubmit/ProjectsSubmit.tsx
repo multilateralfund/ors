@@ -15,6 +15,7 @@ import {
 } from '../HelperComponents'
 import { useGetProjectsForSubmission } from '../hooks/useGetProjectsForSubmission'
 import { RelatedProjectsType } from '../interfaces'
+import { pluralizeWord } from '../utils'
 import { api } from '@ors/helpers'
 
 import { Box, CircularProgress, Typography } from '@mui/material'
@@ -22,7 +23,7 @@ import { Redirect, useParams } from 'wouter'
 import { find, lowerCase } from 'lodash'
 
 const ProjectsSubmit = ({
-  associatedProjects,
+  associatedProjects = [],
   loaded,
   setLoaded,
   setAssociatedProjects,
@@ -34,6 +35,9 @@ const ProjectsSubmit = ({
 }) => {
   const { project_id } = useParams<Record<string, string>>()
   const parsedProjectId = parseInt(project_id)
+
+  const hasAssociatedProjects = associatedProjects.length > 1
+  const formattedText = pluralizeWord(associatedProjects, 'project')
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [hasSubmitErrors, setHasSubmitErrors] = useState<boolean>()
@@ -104,12 +108,14 @@ const ProjectsSubmit = ({
         {!isSubmitSuccessful ? (
           <span className="text-[22px]">
             {hasErrors || hasSubmitErrors
-              ? 'Some associated projects need adjustments before submission:'
-              : 'The following associated projects will be submitted:'}
+              ? `${hasAssociatedProjects ? 'Some associated projects need' : 'A project needs'} adjustments before submission:`
+              : `The following ${hasAssociatedProjects ? 'associated' : ''} ${formattedText} will be submitted:`}
           </span>
         ) : (
           <span className="text-[22px]">
-            The following projects have been successfully submitted:
+            The following {formattedText}
+            {hasAssociatedProjects ? ' have ' : ' has '}
+            been successfully submitted:
           </span>
         )}
         <RelatedProjects
@@ -139,8 +145,8 @@ const ProjectsSubmit = ({
           <ErrorAlert
             content={
               <Typography className="text-lg leading-none">
-                An error occurred during projects' submission. Please check the
-                projects and try again.
+                An error occurred during the {formattedText} submission. Please
+                check the {formattedText} and try again.
               </Typography>
             }
           />

@@ -419,12 +419,18 @@ export const formatErrors = (errors: { [key: string]: string[] }) =>
     )
 
 export const getHasNoFiles = (
+  id: number,
   files?: ProjectFilesObject,
   projectFiles?: ProjectFile[],
-) =>
-  files?.newFiles?.length === 0 &&
-  (projectFiles?.length === 0 ||
-    files?.deletedFilesIds?.length === projectFiles?.length)
+) => {
+  const crtVersionFiles = filter(
+    projectFiles,
+    (file) =>
+      file.project_id === id && !files?.deletedFilesIds?.includes(file.id),
+  )
+
+  return files?.newFiles?.length === 0 && crtVersionFiles.length === 0
+}
 
 export const getMenus = (permissions: Record<string, boolean>) => {
   const { canViewBp, canUpdateBp } = permissions
@@ -504,3 +510,5 @@ export const hasIdentifierFields = (
 
   return identifierFields.length > 0
 }
+export const pluralizeWord = (data: any[] = [], word: string) =>
+  data.length > 1 ? word + 's' : word

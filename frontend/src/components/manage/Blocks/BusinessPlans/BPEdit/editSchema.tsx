@@ -8,7 +8,7 @@ import {
   editCellRenderer,
   EditTagsCellRenderer,
 } from '../BPTableHelpers/cellRenderers'
-import { hasErrors } from '../utils'
+import { filterSubsectors, hasErrors } from '../utils'
 import { BPEditTableInterface, chemicalTypesType } from '../types'
 import { lvcStatuses, multiYearFilterOptions, tableColumns } from '../constants'
 import {
@@ -64,7 +64,7 @@ const useColumnsOptions = (
   const clusters = projectSlice.clusters.data
   const types = bpSlice.types.data
   const sectors = bpSlice.sectors.data
-  const subsectors = bpSlice.subsectors.data
+  const subsectors = filterSubsectors(bpSlice.subsectors.data)
   const substances = cpReportsSlice.substances.data
   const statuses =
     commonSlice.settings.data.business_plan_activity_statuses.map((status) => ({

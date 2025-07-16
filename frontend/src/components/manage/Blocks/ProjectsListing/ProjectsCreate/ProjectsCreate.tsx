@@ -35,6 +35,7 @@ import { useStore } from '@ors/store.tsx'
 import { find, groupBy, has, isArray, isEmpty, map, mapKeys } from 'lodash'
 import { Tabs, Tab, Alert, Typography } from '@mui/material'
 import { MdErrorOutline } from 'react-icons/md'
+import { useParams } from 'wouter'
 
 export const SectionTitle = ({ children }: { children: ReactNode }) => (
   <div className="mb-4 text-xl uppercase tracking-[1px] text-typography-sectionTitle">
@@ -69,6 +70,8 @@ const ProjectsCreate = ({
     project?: ProjectTypeApi
     projectFiles?: ProjectFile[]
   }) => {
+  const { project_id } = useParams<Record<string, string>>()
+
   const [currentStep, setCurrentStep] = useState<number>(
     mode !== 'add' && mode !== 'partial-link' ? 1 : 0,
   )
@@ -202,7 +205,8 @@ const ProjectsCreate = ({
     (error) => mapKeys(error, (_, key) => getFieldLabel(specificFields, key)),
   )
 
-  const hasNoFiles = mode === 'edit' && getHasNoFiles(files, projectFiles)
+  const hasNoFiles =
+    mode === 'edit' && getHasNoFiles(parseInt(project_id), files, projectFiles)
 
   const steps = [
     {
@@ -363,7 +367,7 @@ const ProjectsCreate = ({
         ...(hasNoFiles
           ? [
               {
-                message: `At least a file must be provided${errorMessageExtension}.`,
+                message: `At least one file must be attached to this version${errorMessageExtension}.`,
               },
             ]
           : []),
