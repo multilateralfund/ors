@@ -4,10 +4,15 @@ import { ProjectTypeApi } from '../interfaces'
 import { tableColumns } from '../constants'
 
 import { BPTable } from '@ors/components/manage/Blocks/Table/BusinessPlansTable/BusinessPlansTable'
+import { canViewField } from '../utils'
+import { useStore } from '@ors/store'
 
 import { Divider } from '@mui/material'
 
 const ProjectIdentifiers = ({ project }: { project: ProjectTypeApi }) => {
+  const { viewableFields } = useStore((state) => state.projectFields)
+  const canViewBpSection = canViewField(viewableFields, 'bp_activity')
+
   const bpActivity = {
     ...project.bp_activity,
     get display_internal_id(): string {
@@ -32,11 +37,16 @@ const ProjectIdentifiers = ({ project }: { project: ProjectTypeApi }) => {
       <SectionTitle>Identifiers</SectionTitle>
       <div className="flex w-full flex-col gap-4">
         <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
-          {detailItem(tableColumns.country, project.country)}
-          {detailItem(tableColumns.meeting, project.meeting)}
-          {detailItem(tableColumns.agency, project.agency)}
-          {detailItem(tableColumns.cluster, project.cluster?.name)}
-          {booleanDetailItem(tableColumns.production, project.production)}
+          {canViewField(viewableFields, 'country') &&
+            detailItem(tableColumns.country, project.country)}
+          {canViewField(viewableFields, 'meeting') &&
+            detailItem(tableColumns.meeting, project.meeting)}
+          {canViewField(viewableFields, 'agency') &&
+            detailItem(tableColumns.agency, project.agency)}
+          {canViewField(viewableFields, 'cluster') &&
+            detailItem(tableColumns.cluster, project.cluster?.name)}
+          {canViewField(viewableFields, 'production') &&
+            booleanDetailItem(tableColumns.production, project.production)}
           {detailItem(
             tableColumns.submission_status,
             project.submission_status,
@@ -44,31 +54,34 @@ const ProjectIdentifiers = ({ project }: { project: ProjectTypeApi }) => {
         </div>
       </div>
 
-      <Divider className="my-6" />
-
-      <SectionTitle>Business Plan</SectionTitle>
-      {bp ? (
+      {canViewBpSection && (
         <>
-          <div>
-            Business plan {bp.name} {' - '}
-            <span>(Meeting: {bp.meeting_number})</span>
-            {bp.decision_id ? (
-              <span>(Decision: {bp.decision_number})</span>
-            ) : null}
-          </div>
-          <BPTable
-            yearRanges={[bpYearRange]}
-            results={[bpActivity]}
-            isProjectsSection={true}
-            loaded={true}
-            loading={false}
-            filters={{
-              year_start: bp.year_start,
-              year_end: bp.year_end,
-            }}
-          />
+          <Divider className="my-6" />
+          <SectionTitle>Business Plan</SectionTitle>
+          {bp ? (
+            <>
+              <div>
+                Business plan {bp.name} {' - '}
+                <span>(Meeting: {bp.meeting_number})</span>
+                {bp.decision_id ? (
+                  <span>(Decision: {bp.decision_number})</span>
+                ) : null}
+              </div>
+              <BPTable
+                yearRanges={[bpYearRange]}
+                results={[bpActivity]}
+                isProjectsSection={true}
+                loaded={true}
+                loading={false}
+                filters={{
+                  year_start: bp.year_start,
+                  year_end: bp.year_end,
+                }}
+              />
+            </>
+          ) : null}
         </>
-      ) : null}
+      )}
     </>
   )
 }

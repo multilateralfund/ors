@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import ProjectsHeader from '../ProjectSubmission/ProjectsHeader.tsx'
 import ProjectsCreate from './ProjectsCreate.tsx'
@@ -19,11 +19,34 @@ import {
 import { getDefaultValues, getNonFieldErrors } from '../utils.ts'
 import { useStore } from '@ors/store.tsx'
 
-import { groupBy } from 'lodash'
+import { debounce, groupBy } from 'lodash'
 
 const ProjectsCreateWrapper = () => {
   const userSlice = useStore((state) => state.user)
   const { agency_id } = userSlice.data
+
+  const {
+    fetchProjectFields,
+    projectFields: allFields,
+    setViewableFields,
+    setEditableFields,
+  } = useStore((state) => state.projectFields)
+
+  const debouncedFetchProjectFields = useMemo(
+    () => debounce(() => fetchProjectFields?.(), 0),
+    [fetchProjectFields],
+  )
+
+  useEffect(() => {
+    debouncedFetchProjectFields()
+  }, [])
+
+  useEffect(() => {
+    if (allFields && allFields.loaded && allFields.data) {
+      setViewableFields?.(1)
+      setEditableFields?.(1)
+    }
+  }, [allFields, setViewableFields, setEditableFields])
 
   const [specificFields, setSpecificFields] = useState<ProjectSpecificFields[]>(
     [],

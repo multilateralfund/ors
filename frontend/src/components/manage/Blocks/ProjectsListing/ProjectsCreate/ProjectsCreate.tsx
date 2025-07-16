@@ -328,7 +328,9 @@ const ProjectsCreate = ({
           )}
         </div>
       ),
-      disabled: isImpactTabDisabled,
+      disabled:
+        isImpactTabDisabled ||
+        !hasFields(projectFields, viewableFields, 'Impact'),
       component: (
         <ProjectImpact
           sectionFields={impactFields}

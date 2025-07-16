@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
+import ProjectHistory from '@ors/components/manage/Blocks/ProjectsListing/ProjectView/ProjectHistory.tsx'
 import ProjectIdentifiers from './ProjectIdentifiers'
 import ProjectCrossCutting from './ProjectCrossCutting'
 import ProjectSpecificInfo from './ProjectSpecificInfo'
@@ -9,13 +10,13 @@ import ProjectApproval from './ProjectApproval'
 import ProjectImpact from './ProjectImpact'
 import ProjectDocumentation from './ProjectDocumentation'
 import { ProjectFile, ProjectViewProps } from '../interfaces'
-import { getSectionFields } from '../utils'
-
-import { Tabs, Tab } from '@mui/material'
-import { lowerCase } from 'lodash'
-import ProjectHistory from '@ors/components/manage/Blocks/ProjectsListing/ProjectView/ProjectHistory.tsx'
-import { IoDownloadOutline } from 'react-icons/io5'
+import { getSectionFields, hasFields } from '../utils'
 import { formatApiUrl } from '@ors/helpers'
+import { useStore } from '@ors/store'
+
+import { IoDownloadOutline } from 'react-icons/io5'
+import { debounce, lowerCase } from 'lodash'
+import { Tabs, Tab } from '@mui/material'
 
 const ProjectView = ({
   project,
@@ -24,11 +25,36 @@ const ProjectView = ({
 }: ProjectViewProps & { projectFiles: ProjectFile[] }) => {
   const [activeTab, setActiveTab] = useState(0)
 
+  const {
+    fetchProjectFields,
+    projectFields: allFields,
+    viewableFields,
+    setViewableFields,
+    setEditableFields,
+  } = useStore((state) => state.projectFields)
+
+  const debouncedFetchProjectFields = useMemo(
+    () => debounce(() => fetchProjectFields?.(), 0),
+    [fetchProjectFields],
+  )
+
+  useEffect(() => {
+    debouncedFetchProjectFields()
+  }, [])
+
+  useEffect(() => {
+    if (allFields && allFields.loaded && allFields.data) {
+      setViewableFields?.(project.version)
+      setEditableFields?.(project.version)
+    }
+  }, [allFields, setViewableFields, setEditableFields])
+
   const [overviewFields, substanceDetailsFields, impactFields] = [
     getSectionFields(specificFields, 'Header'),
     getSectionFields(specificFields, 'Substance Details'),
     getSectionFields(specificFields, 'Impact'),
   ]
+
   return (
     <>
       <div className="flex items-center justify-between">
@@ -51,17 +77,23 @@ const ProjectView = ({
             id="project-identifiers"
             aria-controls="project-identifiers"
             label="Identifiers"
+            disabled={!hasFields(allFields, viewableFields, 'Identifiers')}
           />
           <Tab
             id="project-cross-cutting"
             aria-controls="project-cross-cutting"
             label="Cross-Cutting"
+            disabled={!hasFields(allFields, viewableFields, 'Cross-Cutting')}
           />
           <Tab
             id="project-specific-info"
             aria-controls="project-specific-info"
             label="Specific Information"
-            disabled={!substanceDetailsFields.length && !overviewFields.length}
+            disabled={
+              (!substanceDetailsFields.length && !overviewFields.length) ||
+              (!hasFields(allFields, viewableFields, 'Header') &&
+                !hasFields(allFields, viewableFields, 'Substance Details'))
+            }
             classes={{
               disabled: 'text-gray-200',
             }}
@@ -70,7 +102,10 @@ const ProjectView = ({
             id="project-impact"
             aria-controls="project-impact"
             label="Impact"
-            disabled={!impactFields.length}
+            disabled={
+              !impactFields.length ||
+              !hasFields(allFields, viewableFields, 'Impact')
+            }
             classes={{
               disabled: 'text-gray-200',
             }}
@@ -85,11 +120,12 @@ const ProjectView = ({
             aria-controls="project-history-section"
             label="History"
           />
-          {lowerCase(project.submission_status) === 'approved' && (
+          {project.version > 2 && (
             <Tab
               id="project-approval"
               aria-controls="project-approval"
               label="Approval"
+              disabled={!hasFields(allFields, viewableFields, 'Approval')}
             />
           )}
         </Tabs>
