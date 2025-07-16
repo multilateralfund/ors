@@ -253,6 +253,7 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "latest_file",
             "lead_agency",
             "lead_agency_id",
+            "lead_agency_submitting_on_behalf",
             "loan",
             "local_ownership",
             "meps_developed_domestic_refrigeration",
@@ -672,6 +673,7 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             "kwh_year_saved",
             "kwh_year_saved_actual",
             "lead_agency",
+            "lead_agency_submitting_on_behalf",
             "meeting",
             "meps_developed_domestic_refrigeration",
             "meps_developed_domestic_refrigeration_actual",
@@ -761,6 +763,7 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
     @transaction.atomic
     def create(self, validated_data):
         _ = validated_data.pop("request", None)
+        lead_agency = validated_data.pop("lead_agency", None)
         user = self.context["request"].user
         status = ProjectStatus.objects.get(code="NEWSUB")
         submission_status = ProjectSubmissionStatus.objects.get(name="Draft")
@@ -806,7 +809,7 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
                 associate_project.save()
         else:
             project.meta_project = MetaProject.objects.create(
-                lead_agency=project.agency,
+                lead_agency=lead_agency,
                 code=get_meta_project_code(
                     project.country,
                     project.cluster,
@@ -924,6 +927,7 @@ class ProjectV2EditApprovalFieldsSerializer(
             "ods_odp",
             "pcr_waived",
             "ad_hoc_pcr",
+            "date_approved",
         ]
 
     def update(self, instance, validated_data):
@@ -931,6 +935,7 @@ class ProjectV2EditApprovalFieldsSerializer(
         Update the project with the validated data
         """
         user = self.context["request"].user
+        validated_data["date_approved"] = validated_data["meeting"].end_date
         # update, create, delete ods_odp
         if "ods_odp" in validated_data:
             ods_odp_data = validated_data.pop("ods_odp")
