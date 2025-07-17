@@ -1004,8 +1004,8 @@
         "SECTION": "Impact",
         "IS_ACTUAL": true,
         "SORT_ORDER": 80,
-        "EDITABLE_IN_VERSIONS": [1,2,3],
-        "VISIBLE_IN_VERSIONS": [1,2,3]
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "MEPS developed for commercial AC (yes/no)",
