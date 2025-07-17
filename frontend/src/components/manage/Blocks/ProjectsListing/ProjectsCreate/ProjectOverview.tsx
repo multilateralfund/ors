@@ -29,7 +29,8 @@ const ProjectOverview = ({
     (state) => state.projectFields,
   )
 
-  const { errorText, isError, tranchesData, loaded } = trancheErrors || {}
+  const { errorText, isError, tranchesData, loaded, shouldDisplaySection } =
+    trancheErrors || {}
   const tranche = projectData.projectSpecificFields?.tranche ?? 0
 
   const OpenedTrancheError = () => (
@@ -40,14 +41,16 @@ const ProjectOverview = ({
           <IoChevronUp className="text-primary" size={14} />
         </div>
       </div>
-      <ErrorAlert
-        content={
-          <Typography className="text-lg leading-none">
-            Please complete the previous tranche's impact indicators before
-            submitting this project.
-          </Typography>
-        }
-      />
+      {errorText && (
+        <ErrorAlert
+          content={
+            <Typography className="text-lg leading-none">
+              Please complete the previous tranche's impact indicators before
+              submitting this project.
+            </Typography>
+          }
+        />
+      )}
       <RelatedProjects
         data={tranchesData}
         getErrors={getTrancheErrors}
@@ -60,7 +63,7 @@ const ProjectOverview = ({
     <div className="transition-opacity flex items-center justify-between gap-2 opacity-100 duration-300 ease-in-out">
       <div className="flex flex-row items-center gap-2.5 text-lg">
         <span className="leading-none">Previous tranche information</span>
-        <ErrorTag />
+        {errorText && <ErrorTag />}
       </div>
       <div className="flex min-h-5 min-w-5 items-center justify-center rounded-full border border-solid border-primary bg-[#EBFF00]">
         <IoChevronDown className="text-primary" size={14} />
@@ -85,7 +88,7 @@ const ProjectOverview = ({
             ),
         )}
       </div>
-      {tranche > 1 && errorText && !isError && (
+      {tranche > 1 && shouldDisplaySection && !isError && (
         <div
           className="transition-transform mt-6 w-full max-w-[850px] transform cursor-pointer rounded-lg p-4 duration-300 ease-in-out"
           style={{ boxShadow: '0px 10px 20px 0px rgba(0, 0, 0, 0.2)' }}

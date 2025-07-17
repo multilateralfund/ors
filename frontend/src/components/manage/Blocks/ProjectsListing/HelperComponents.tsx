@@ -206,7 +206,9 @@ export const RelatedProjects = ({
       <div className="mt-4 flex items-center gap-2">
         <div
           className="flex cursor-pointer items-center gap-2 text-lg normal-case leading-none"
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation()
+
             if (getErrors) {
               getErrors()
             }
