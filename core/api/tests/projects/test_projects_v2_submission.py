@@ -4,6 +4,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 
 from core.api.tests.factories import (
+    ProjectComponentsFactory,
     ProjectFieldFactory,
     ProjectSpecificFieldsFactory,
 )
@@ -137,12 +138,14 @@ class TestProjectVersioning:
         url = reverse("project-v2-submit", args=(project2.id,))
 
         # setup projects for submission
+
         project2.submission_status = project_draft_status
+        project2.component = ProjectComponentsFactory()
         project2.save()
         project.submission_status = project_draft_status
         project.meta_project = project2.meta_project
-        project.save()
         project.tranche = 2
+        project.component = project2.component
         project.save()
         project3.submission_status = project_approved_status
         project3.tranche = 1
