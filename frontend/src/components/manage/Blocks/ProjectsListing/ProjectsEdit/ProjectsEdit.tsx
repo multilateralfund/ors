@@ -1,6 +1,6 @@
 'use client'
 
-import { useContext, useEffect, useRef, useState } from 'react'
+import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import ProjectsHeader from '../ProjectSubmission/ProjectsHeader'
 import ProjectsCreate from '../ProjectsCreate/ProjectsCreate'
@@ -65,7 +65,11 @@ const ProjectsEdit = ({
   const { project_type, sector } = crossCuttingFields
 
   const groupedFields = groupBy(specificFields, 'table')
-  const projectFields = groupedFields['project'] || []
+  const fieldsOfProject = groupedFields['project'] || []
+  const projectFields =
+    mode === 'edit'
+      ? fieldsOfProject
+      : filter(fieldsOfProject, (field) => !field.is_actual)
   const odsOdpFields = (groupedFields['ods_odp'] || []).filter(
     (field) => field.read_field_name !== 'sort_order',
   )
@@ -73,6 +77,32 @@ const ProjectsEdit = ({
   const fieldsValuesLoaded = useRef<boolean>(false)
 
   const data = useGetProjectFiles(parseInt(project_id))
+
+  const {
+    fetchProjectFields,
+    projectFields: allFields,
+    setViewableFields,
+    setEditableFields,
+  } = useStore((state) => state.projectFields)
+
+  const debouncedFetchProjectFields = useMemo(
+    () => debounce(() => fetchProjectFields?.(), 0),
+    [fetchProjectFields],
+  )
+
+  useEffect(() => {
+    debouncedFetchProjectFields()
+  }, [])
+
+  useEffect(() => {
+    if (allFields && allFields.loaded && allFields.data) {
+      const version = mode === 'edit' ? project.version : 1
+      const submissionStatus =
+        mode === 'edit' ? project.submission_status : undefined
+      setViewableFields?.(version)
+      setEditableFields?.(version, submissionStatus)
+    }
+  }, [allFields, setViewableFields, setEditableFields])
 
   const [projectFiles, setProjectFiles] = useState<ProjectFile[]>([])
   const [files, setFiles] = useState<ProjectFilesObject>({

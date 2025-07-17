@@ -1,3 +1,4 @@
+import { ProjectFields } from '@ors/components/manage/Blocks/ProjectsListing/interfaces'
 import type { CPReport, CPReportDiff } from './api_country-programme_records'
 import type { EmptyFormType } from './api_empty-form'
 import type { ApiSubstance } from './api_substances'
@@ -167,6 +168,20 @@ export interface ProjectsSlice {
   substances_groups: SliceData<ProjectSubstancesGroupsType[]>
 }
 
+export interface ProjectsFieldsSlice {
+  projectFields: {
+    loading: boolean
+    loaded: boolean
+    data: ProjectFields[]
+    error: any
+  }
+  viewableFields: string[]
+  editableFields: string[]
+  setViewableFields: (version: number) => void
+  setEditableFields: (version: number, submissionStatus?: string) => void
+  fetchProjectFields: () => Promise<void>
+}
+
 export interface BusinessPlanSlice {
   sectors: SliceData
   subsectors: SliceData
@@ -243,6 +258,7 @@ export type StoreState = {
   filters: FiltersSlice
   internalError: any
   projects: ProjectsSlice
+  projectFields: ProjectsFieldsSlice
   settings: SettingsSlice
   theme: ThemeSlice
   user: UserSlice

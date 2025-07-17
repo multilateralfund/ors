@@ -133,3 +133,6 @@ export const validationFieldsPairs: [
     'total_number_of_nou_personnel_supported_actual',
   ],
 ]
+
+export const disabledClassName =
+  '!bg-white !text-[#9ca3af] !border border-solid !border-[#00000042] !cursor-default'

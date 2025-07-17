@@ -3,11 +3,13 @@ import { useState } from 'react'
 import ErrorAlert from '@ors/components/theme/Alerts/ErrorAlert'
 import { widgets } from './SpecificFieldsHelpers'
 import { ErrorTag, RelatedProjects } from '../HelperComponents'
+import { canViewField } from '../utils'
 import {
   SpecificFieldsSectionProps,
   ProjectData,
   TrancheErrors,
 } from '../interfaces'
+import { useStore } from '@ors/store'
 
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5'
 import { Typography } from '@mui/material'
@@ -22,6 +24,10 @@ const ProjectOverview = ({
   getTrancheErrors,
 }: SpecificFieldsSectionProps & TrancheErrors) => {
   const [open, setOpen] = useState(false)
+
+  const { viewableFields, editableFields } = useStore(
+    (state) => state.projectFields,
+  )
 
   const { errorText, isError, tranchesData, loaded } = trancheErrors || {}
   const tranche = projectData.projectSpecificFields?.tranche ?? 0
@@ -65,15 +71,18 @@ const ProjectOverview = ({
   return (
     <>
       <div className="flex flex-wrap gap-x-20 gap-y-5">
-        {sectionFields.map((field) =>
-          widgets[field.data_type]<ProjectData>(
-            projectData,
-            setProjectData,
-            field,
-            errors,
-            !!errorText,
-            hasSubmitted,
-          ),
+        {sectionFields.map(
+          (field) =>
+            canViewField(viewableFields, field.write_field_name) &&
+            widgets[field.data_type]<ProjectData>(
+              projectData,
+              setProjectData,
+              field,
+              errors,
+              !!errorText,
+              hasSubmitted,
+              editableFields,
+            ),
         )}
       </div>
       {tranche > 1 && errorText && !isError && (

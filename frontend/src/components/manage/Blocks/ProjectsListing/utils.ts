@@ -10,9 +10,11 @@ import {
   OptionsType,
   ProjectTypeApi,
   ProjectAllVersionsFiles,
+  ProjectFields,
 } from './interfaces'
 import { formatApiUrl, formatDecimalValue } from '@ors/helpers'
 import { Cluster } from '@ors/types/store'
+import { useStore } from '@ors/store'
 
 import {
   concat,
@@ -488,6 +490,38 @@ export const formatFiles = (
       }
     }),
   )
+}
+
+export const canViewField = (viewableFields: string[], field: string) =>
+  viewableFields.includes(field)
+
+export const canEditField = (editableFields: string[], field: string) =>
+  editableFields.includes(field)
+
+export const hasFields = (
+  projectFields: any,
+  viewableFields: string[],
+  section: string,
+  includeAllFields: boolean = true,
+  excludedFields?: string[],
+  fieldToCheck: string = 'section',
+) => {
+  const allFields = isArray(projectFields) ? projectFields : projectFields?.data
+
+  const fields = filter(viewableFields, (field) => {
+    const crtFieldData = find(
+      allFields,
+      (projField) =>
+        projField.write_field_name === field && field !== 'sort_order',
+    )
+
+    return (
+      crtFieldData?.[fieldToCheck] === section &&
+      (includeAllFields ? true : !excludedFields?.includes(field))
+    )
+  })
+
+  return fields.length > 0
 }
 
 export const pluralizeWord = (data: any[] = [], word: string) =>

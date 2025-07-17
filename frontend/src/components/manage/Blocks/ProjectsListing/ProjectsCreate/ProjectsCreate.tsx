@@ -28,10 +28,12 @@ import {
   getSpecificFieldsErrors,
   getHasNoFiles,
   hasSectionErrors,
+  hasFields,
 } from '../utils.ts'
+import { useStore } from '@ors/store.tsx'
 
-import { Tabs, Tab, Alert, Typography } from '@mui/material'
 import { groupBy, has, isEmpty, map, mapKeys } from 'lodash'
+import { Tabs, Tab, Alert, Typography } from '@mui/material'
 import { MdErrorOutline } from 'react-icons/md'
 import { useParams } from 'wouter'
 
@@ -93,6 +95,10 @@ const ProjectsCreate = ({
   const groupedFields = groupBy(substanceDetailsFields, 'table')
   const odsOdpFields = (groupedFields['ods_odp'] || []).filter(
     (field) => field.read_field_name !== 'sort_order',
+  )
+
+  const { projectFields, viewableFields } = useStore(
+    (state) => state.projectFields,
   )
 
   const isSpecificInfoTabDisabled =
@@ -196,7 +202,9 @@ const ProjectsCreate = ({
   )
 
   const hasNoFiles =
-    mode === 'edit' && getHasNoFiles(parseInt(project_id), files, projectFiles)
+    mode === 'edit' &&
+    getHasNoFiles(parseInt(project_id), files, projectFiles) &&
+    (project?.version ?? 0) < 3
 
   const steps = [
     {
@@ -212,6 +220,7 @@ const ProjectsCreate = ({
           )}
         </div>
       ),
+      disabled: !hasFields(projectFields, viewableFields, 'Identifiers'),
       component: (
         <ProjectIdentifiersSection
           {...{
@@ -241,13 +250,16 @@ const ProjectsCreate = ({
           )}
         </div>
       ),
-      disabled: areNextSectionsDisabled,
+      disabled:
+        areNextSectionsDisabled ||
+        !hasFields(projectFields, viewableFields, 'Cross-Cutting'),
       component: (
         <ProjectCrossCuttingFields
           {...{
             projectData,
             setProjectData,
             hasSubmitted,
+            project,
           }}
           errors={crossCuttingErrors}
         />
@@ -271,7 +283,10 @@ const ProjectsCreate = ({
             )}
         </div>
       ),
-      disabled: isSpecificInfoTabDisabled,
+      disabled:
+        isSpecificInfoTabDisabled ||
+        (!hasFields(projectFields, viewableFields, 'Header') &&
+          !hasFields(projectFields, viewableFields, 'Substance Details')),
       component: (
         <ProjectSpecificInfoSection
           {...{
@@ -316,7 +331,9 @@ const ProjectsCreate = ({
           )}
         </div>
       ),
-      disabled: isImpactTabDisabled,
+      disabled:
+        isImpactTabDisabled ||
+        !hasFields(projectFields, viewableFields, 'Impact'),
       component: (
         <ProjectImpact
           sectionFields={impactFields}

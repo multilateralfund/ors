@@ -16,8 +16,8 @@ import {
   getMeetingOptions,
 } from '@ors/components/manage/Utils/utilFunctions'
 import { changeHandler } from './SpecificFieldsHelpers'
-import { defaultProps, tableColumns } from '../constants'
-import { getProduction } from '../utils'
+import { defaultProps, disabledClassName, tableColumns } from '../constants'
+import { canEditField, canViewField, getProduction } from '../utils'
 import { useStore } from '@ors/store'
 import { Cluster, Country } from '@ors/types/store'
 import { parseNumber } from '@ors/helpers'
@@ -54,6 +54,13 @@ const ProjectIdentifiersFields = ({
     commonSlice.agencies.data,
     (agency) => agency.id !== projIdentifiers.current_agency,
   )
+
+  const { viewableFields, editableFields } = useStore(
+    (state) => state.projectFields,
+  )
+
+  const canEditMeeting = canEditField(editableFields, 'meeting')
+  const canEditAgency = canEditField(editableFields, 'agency')
 
   const sectionDefaultProps = {
     ...defaultProps,
@@ -137,153 +144,178 @@ const ProjectIdentifiersFields = ({
       <SectionTitle>Identifiers</SectionTitle>
       <div className="flex flex-col gap-y-2">
         <div className="flex flex-wrap gap-x-20 gap-y-3">
-          <div>
-            <Label>{tableColumns.country}</Label>
-            <Field
-              widget="autocomplete"
-              options={commonSlice.countries.data}
-              value={projIdentifiers?.country}
-              onChange={(_, value) => handleChangeCountry(value)}
-              getOptionLabel={(option) =>
-                getOptionLabel(commonSlice.countries.data, option)
-              }
-              disabled={
-                !areNextSectionsDisabled ||
-                mode === 'partial-link' ||
-                mode === 'full-link'
-              }
-              Input={{
-                error: getIsInputDisabled('country'),
-              }}
-              {...sectionDefaultProps}
-            />
-          </div>
-          <div className="w-32">
-            <Label>{tableColumns.meeting}</Label>
-            <PopoverInput
-              label={getMeetingNr(
-                projIdentifiers?.meeting ?? undefined,
-              )?.toString()}
-              options={getMeetingOptions()}
-              onChange={handleChangeMeeting}
-              onClear={() => handleChangeMeeting()}
-              className={cx('!m-0 h-10 !py-1', {
-                'border-red-500': getIsInputDisabled('meeting'),
-              })}
-              clearBtnClassName="right-1"
-              withClear={true}
-            />
-          </div>
-          <div>
-            <Label>{tableColumns.agency}</Label>
-            <Field
-              widget="autocomplete"
-              options={agencyOptions}
-              value={projIdentifiers?.current_agency}
-              onChange={(_, value) =>
-                changeHandler['drop_down']<ProjectData, ProjIdentifiers>(
-                  value,
-                  'current_agency',
-                  setProjectData,
-                  sectionIdentifier,
-                )
-              }
-              getOptionLabel={(option) => getOptionLabel(agencyOptions, option)}
-              disabled={!!agency_id || !areNextSectionsDisabled}
-              Input={{
-                error:
-                  projIdentifiers.is_lead_agency &&
-                  getIsInputDisabled('agency'),
-              }}
-              {...sectionDefaultProps}
-            />
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-x-20 gap-y-3">
-          <div>
-            <Label>{tableColumns.cluster}</Label>
-            <Field
-              widget="autocomplete"
-              options={clusters}
-              value={projIdentifiers?.cluster}
-              onChange={(_, value) => handleChangeCluster(value)}
-              getOptionLabel={(option) => getOptionLabel(clusters, option)}
-              disabled={!areNextSectionsDisabled}
-              Input={{
-                error: getIsInputDisabled('cluster'),
-              }}
-              {...defaultProps}
-              FieldProps={{
-                className: defaultProps.FieldProps.className + ' w-[20rem]',
-              }}
-            />
-          </div>
-          <FormControlLabel
-            className="w-fit self-end"
-            label="Production"
-            control={
-              <Checkbox
-                checked={!!projIdentifiers?.production}
+          {canViewField(viewableFields, 'country') && (
+            <div>
+              <Label>{tableColumns.country}</Label>
+              <Field
+                widget="autocomplete"
+                options={commonSlice.countries.data}
+                value={projIdentifiers?.country}
+                onChange={(_, value) => handleChangeCountry(value)}
+                getOptionLabel={(option) =>
+                  getOptionLabel(commonSlice.countries.data, option)
+                }
                 disabled={
                   !areNextSectionsDisabled ||
-                  !isNull(getProduction(clusters, projIdentifiers.cluster))
+                  mode === 'partial-link' ||
+                  mode === 'full-link' ||
+                  !canEditField(editableFields, 'country')
                 }
-                onChange={handleChangeProduction}
-                size="small"
-                sx={{
-                  color: 'black',
+                Input={{
+                  error: getIsInputDisabled('country'),
+                }}
+                {...sectionDefaultProps}
+              />
+            </div>
+          )}
+          {canViewField(viewableFields, 'meeting') && (
+            <div className="w-32">
+              <Label>{tableColumns.meeting}</Label>
+              <PopoverInput
+                label={getMeetingNr(
+                  projIdentifiers?.meeting ?? undefined,
+                )?.toString()}
+                options={getMeetingOptions()}
+                onChange={handleChangeMeeting}
+                onClear={() => handleChangeMeeting()}
+                disabled={!canEditMeeting}
+                className={cx('!m-0 h-10 !py-1', {
+                  'border-red-500': getIsInputDisabled('meeting'),
+                  [disabledClassName]: !canEditMeeting,
+                })}
+                clearBtnClassName="right-1"
+                withClear={canEditMeeting}
+              />
+            </div>
+          )}
+          {canViewField(viewableFields, 'agency') && (
+            <div>
+              <Label>{tableColumns.agency}</Label>
+              <Field
+                widget="autocomplete"
+                options={agencyOptions}
+                value={projIdentifiers?.current_agency}
+                onChange={(_, value) =>
+                  changeHandler['drop_down']<ProjectData, ProjIdentifiers>(
+                    value,
+                    'current_agency',
+                    setProjectData,
+                    sectionIdentifier,
+                  )
+                }
+                getOptionLabel={(option) =>
+                  getOptionLabel(agencyOptions, option)
+                }
+                disabled={
+                  !!agency_id || !areNextSectionsDisabled || !canEditAgency
+                }
+                Input={{
+                  error:
+                    projIdentifiers.is_lead_agency &&
+                    getIsInputDisabled('agency'),
+                }}
+                {...sectionDefaultProps}
+              />
+            </div>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-x-20 gap-y-3">
+          {canViewField(viewableFields, 'cluster') && (
+            <div>
+              <Label>{tableColumns.cluster}</Label>
+              <Field
+                widget="autocomplete"
+                options={clusters}
+                value={projIdentifiers?.cluster}
+                onChange={(_, value) => handleChangeCluster(value)}
+                getOptionLabel={(option) => getOptionLabel(clusters, option)}
+                disabled={
+                  !areNextSectionsDisabled ||
+                  !canEditField(editableFields, 'cluster')
+                }
+                Input={{
+                  error: getIsInputDisabled('cluster'),
+                }}
+                {...defaultProps}
+                FieldProps={{
+                  className: defaultProps.FieldProps.className + ' w-[20rem]',
                 }}
               />
-            }
-            componentsProps={{
-              typography: { fontSize: '1.05rem' },
-            }}
-          />
+            </div>
+          )}
+          {canViewField(viewableFields, 'production') && (
+            <FormControlLabel
+              className="w-fit self-end"
+              label="Production"
+              control={
+                <Checkbox
+                  checked={!!projIdentifiers?.production}
+                  disabled={
+                    !areNextSectionsDisabled ||
+                    !isNull(getProduction(clusters, projIdentifiers.cluster)) ||
+                    !canEditField(editableFields, 'production')
+                  }
+                  onChange={handleChangeProduction}
+                  size="small"
+                  sx={{
+                    color: 'black',
+                  }}
+                />
+              }
+              componentsProps={{
+                typography: { fontSize: '1.05rem' },
+              }}
+            />
+          )}
         </div>
-        <FormControlLabel
-          className="w-fit"
-          label="Confirm you are the lead agency submitting on behalf of a cooperating agency."
-          control={
-            <Checkbox
-              checked={projIdentifiers?.is_lead_agency}
-              disabled={!areNextSectionsDisabled}
-              onChange={handleChangeIsLeadAgency}
-              size="small"
-              sx={{
-                color: 'black',
-              }}
-            />
-          }
-          componentsProps={{
-            typography: { fontSize: '1.05rem' },
-          }}
-        />
-        {!projIdentifiers.is_lead_agency && (
+        {canViewField(viewableFields, 'agency') && (
           <>
-            <Label>Lead agency</Label>
-            <Field
-              widget="autocomplete"
-              options={leadAgencyOptions}
-              value={projIdentifiers?.side_agency}
-              onChange={(_, value) =>
-                changeHandler['drop_down']<ProjectData, ProjIdentifiers>(
-                  value,
-                  'side_agency',
-                  setProjectData,
-                  sectionIdentifier,
-                )
+            <FormControlLabel
+              className="w-fit"
+              label="Confirm you are the lead agency submitting on behalf of a cooperating agency."
+              control={
+                <Checkbox
+                  checked={projIdentifiers?.is_lead_agency}
+                  disabled={!areNextSectionsDisabled || !canEditAgency}
+                  onChange={handleChangeIsLeadAgency}
+                  size="small"
+                  sx={{
+                    color: 'black',
+                  }}
+                />
               }
-              getOptionLabel={(option) =>
-                getOptionLabel(leadAgencyOptions, option)
-              }
-              disabled={!areNextSectionsDisabled}
-              Input={{
-                error:
-                  !projIdentifiers.is_lead_agency &&
-                  getIsInputDisabled('agency'),
+              componentsProps={{
+                typography: { fontSize: '1.05rem' },
               }}
-              {...sectionDefaultProps}
             />
+            {!projIdentifiers.is_lead_agency && (
+              <>
+                <Label>Lead agency</Label>
+                <Field
+                  widget="autocomplete"
+                  options={leadAgencyOptions}
+                  value={projIdentifiers?.side_agency}
+                  onChange={(_, value) =>
+                    changeHandler['drop_down']<ProjectData, ProjIdentifiers>(
+                      value,
+                      'side_agency',
+                      setProjectData,
+                      sectionIdentifier,
+                    )
+                  }
+                  getOptionLabel={(option) =>
+                    getOptionLabel(leadAgencyOptions, option)
+                  }
+                  disabled={!areNextSectionsDisabled || !canEditAgency}
+                  Input={{
+                    error:
+                      !projIdentifiers.is_lead_agency &&
+                      getIsInputDisabled('agency'),
+                  }}
+                  {...sectionDefaultProps}
+                />
+              </>
+            )}
           </>
         )}
         <div className="flex flex-wrap items-center gap-2.5">
