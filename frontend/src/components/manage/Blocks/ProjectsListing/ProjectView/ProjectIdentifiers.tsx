@@ -79,7 +79,9 @@ const ProjectIdentifiers = ({ project }: { project: ProjectTypeApi }) => {
                 }}
               />
             </>
-          ) : null}
+          ) : (
+            '-'
+          )}
         </>
       )}
     </>

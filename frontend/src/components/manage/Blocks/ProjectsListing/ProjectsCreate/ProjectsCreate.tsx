@@ -202,7 +202,9 @@ const ProjectsCreate = ({
   )
 
   const hasNoFiles =
-    mode === 'edit' && getHasNoFiles(parseInt(project_id), files, projectFiles)
+    mode === 'edit' &&
+    getHasNoFiles(parseInt(project_id), files, projectFiles) &&
+    (project?.version ?? 0) < 3
 
   const steps = [
     {

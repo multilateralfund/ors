@@ -26,11 +26,16 @@ export const createProjectFieldsSlice = ({
         }),
       )
     },
-    setEditableFields: (version: number) => {
+    setEditableFields: (version: number, submissionStatus?: string) => {
       const fields = get().projectFields.projectFields?.data ?? []
 
-      const editableFields = filter(fields, ({ editable_in_versions }) =>
-        editable_in_versions?.includes(version),
+      const editableFields = filter(
+        fields,
+        ({ editable_in_versions, is_actual, section }) =>
+          editable_in_versions?.includes(version) &&
+          (section !== 'Impact' ||
+            submissionStatus !== 'Approved' ||
+            is_actual),
       ).map((field) => field.write_field_name)
 
       set(

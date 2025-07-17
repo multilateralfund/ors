@@ -178,7 +178,7 @@ export interface ProjectsFieldsSlice {
   viewableFields: string[]
   editableFields: string[]
   setViewableFields: (version: number) => void
-  setEditableFields: (version: number) => void
+  setEditableFields: (version: number, submissionStatus?: string) => void
   fetchProjectFields: () => Promise<void>
 }
 

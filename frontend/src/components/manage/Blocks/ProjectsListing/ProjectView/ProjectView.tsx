@@ -45,7 +45,7 @@ const ProjectView = ({
   useEffect(() => {
     if (allFields && allFields.loaded && allFields.data) {
       setViewableFields?.(project.version)
-      setEditableFields?.(project.version)
+      setEditableFields?.(project.version, project.submission_status)
     }
   }, [allFields, setViewableFields, setEditableFields])
 

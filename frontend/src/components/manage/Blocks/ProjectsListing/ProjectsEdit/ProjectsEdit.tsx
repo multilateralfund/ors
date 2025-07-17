@@ -65,7 +65,11 @@ const ProjectsEdit = ({
   const { project_type, sector } = crossCuttingFields
 
   const groupedFields = groupBy(specificFields, 'table')
-  const projectFields = groupedFields['project'] || []
+  const fieldsOfProject = groupedFields['project'] || []
+  const projectFields =
+    mode === 'edit'
+      ? fieldsOfProject
+      : filter(fieldsOfProject, (field) => !field.is_actual)
   const odsOdpFields = (groupedFields['ods_odp'] || []).filter(
     (field) => field.read_field_name !== 'sort_order',
   )
@@ -93,9 +97,10 @@ const ProjectsEdit = ({
   useEffect(() => {
     if (allFields && allFields.loaded && allFields.data) {
       const version = mode === 'edit' ? project.version : 1
-
+      const submissionStatus =
+        mode === 'edit' ? project.submission_status : undefined
       setViewableFields?.(version)
-      setEditableFields?.(version)
+      setEditableFields?.(version, submissionStatus)
     }
   }, [allFields, setViewableFields, setEditableFields])
 
