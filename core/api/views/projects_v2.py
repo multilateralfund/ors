@@ -207,6 +207,14 @@ class ProjectV2ViewSet(
 
                 queryset_filters.pop("submission_status__name", None)
                 allowed_versions.add(3)
+            if not user.has_perm("core.has_project_v2_edit_approved_access"):
+                queryset = queryset.exclude(
+                    submission_status__name__in=[
+                        "Approved",
+                        "Withdrawn",
+                        "Not approved",
+                    ]
+                )
 
             if allowed_versions:
                 queryset_filters["version__in"] = list(allowed_versions)
@@ -1033,6 +1041,15 @@ class ProjectV2FileView(
                 queryset_filters.pop("submission_status__name", None)
                 allowed_versions.add(3)
 
+            if not user.has_perm("core.has_project_v2_edit_approved_access"):
+                queryset = queryset.exclude(
+                    submission_status__name__in=[
+                        "Approved",
+                        "Withdrawn",
+                        "Not approved",
+                    ]
+                )
+
             if allowed_versions:
                 queryset_filters["version__in"] = list(allowed_versions)
             queryset = queryset.filter(**queryset_filters)
@@ -1181,6 +1198,15 @@ class ProjectV2FileIncludePreviousVersionsView(
             if user.has_perm("core.has_project_v2_version3_edit_access"):
                 queryset_filters.pop("submission_status__name", None)
                 allowed_versions.add(3)
+
+            if not user.has_perm("core.has_project_v2_edit_approved_access"):
+                queryset = queryset.exclude(
+                    submission_status__name__in=[
+                        "Approved",
+                        "Withdrawn",
+                        "Not approved",
+                    ]
+                )
 
             if allowed_versions:
                 queryset_filters["version__in"] = list(allowed_versions)

@@ -343,6 +343,7 @@ class TestProjectV2List(BaseTest):
         secretariat_production_v1_v2_edit_access_user,
         secretariat_v3_edit_access_user,
         secretariat_production_v3_edit_access_user,
+        mlfs_admin_user,
         admin_user,
     ):
         def _test_user_permissions(user, expected_response_status, expected_count=None):
@@ -407,6 +408,8 @@ class TestProjectV2List(BaseTest):
         for project in response_data:
             if project["version"] < 3:
                 assert project["editable"] is False
+            elif project["submission_status"] == "Approved":
+                assert project["editable"] is False
             else:
                 assert project["editable"] is True
         response_data = _test_user_permissions(
@@ -415,8 +418,20 @@ class TestProjectV2List(BaseTest):
         for project in response_data:
             if project["version"] < 3:
                 assert project["editable"] is False
+            elif project["submission_status"] == "Approved":
+                assert project["editable"] is False
             else:
                 assert project["editable"] is True
+
+        response_data = _test_user_permissions(mlfs_admin_user, 200, 13)
+        for project in response_data:
+            if project["version"] < 3:
+                assert project["editable"] is True
+            elif project["submission_status"] == "Approved":
+                assert project["editable"] is True
+            else:
+                assert project["editable"] is True
+
         response_data = _test_user_permissions(admin_user, 200, 13)
         for project in response_data:
             assert project["editable"] is True
