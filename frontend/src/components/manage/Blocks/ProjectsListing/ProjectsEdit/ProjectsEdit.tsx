@@ -188,7 +188,7 @@ const ProjectsEdit = ({
               project_end_date: project.project_end_date,
               total_fund: project.total_fund,
               support_cost_psc: project.support_cost_psc,
-              individual_consideration: project.individual_consideration,
+              individual_consideration: true,
             },
           }
         : {

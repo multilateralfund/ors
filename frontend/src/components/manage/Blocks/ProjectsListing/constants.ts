@@ -51,8 +51,13 @@ export const textAreaClassname =
   'min-h-[20px] w-full max-w-[320px] md:max-w-full md:w-[415px] md:min-w-[350px] rounded-lg border bg-white p-2 pb-10 shadow-none'
 
 export const additionalProperties: Record<string, Record<string, unknown>> = {
-  ods_substance_id: {
-    FieldProps: { className: defaultProps.FieldProps.className + ' w-full' },
+  ods_display_name: {
+    FieldProps: {
+      className: defaultProps.FieldProps.className + ' w-full',
+    },
+  },
+  ods_type: {
+    FieldProps: { className: defaultProps.FieldProps.className + ' w-[145px]' },
   },
 }
 
