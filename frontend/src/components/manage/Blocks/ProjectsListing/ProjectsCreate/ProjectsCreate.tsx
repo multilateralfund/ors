@@ -257,6 +257,7 @@ const ProjectsCreate = ({
             projectData,
             setProjectData,
             hasSubmitted,
+            project,
           }}
           errors={crossCuttingErrors}
         />

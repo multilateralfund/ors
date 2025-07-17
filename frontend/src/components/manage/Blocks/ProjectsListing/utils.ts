@@ -511,7 +511,8 @@ export const hasFields = (
   const fields = filter(viewableFields, (field) => {
     const crtFieldData = find(
       allFields,
-      (projField) => projField.write_field_name === field,
+      (projField) =>
+        projField.write_field_name === field && field !== 'sort_order',
     )
 
     return (

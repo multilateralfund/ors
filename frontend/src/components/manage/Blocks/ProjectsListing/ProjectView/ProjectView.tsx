@@ -15,8 +15,8 @@ import { formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
 import { IoDownloadOutline } from 'react-icons/io5'
-import { debounce, lowerCase } from 'lodash'
 import { Tabs, Tab } from '@mui/material'
+import { debounce } from 'lodash'
 
 const ProjectView = ({
   project,
@@ -55,6 +55,10 @@ const ProjectView = ({
     getSectionFields(specificFields, 'Impact'),
   ]
 
+  const classes = {
+    disabled: 'text-gray-200',
+  }
+
   return (
     <>
       <div className="flex items-center justify-between">
@@ -77,13 +81,13 @@ const ProjectView = ({
             id="project-identifiers"
             aria-controls="project-identifiers"
             label="Identifiers"
-            disabled={!hasFields(allFields, viewableFields, 'Identifiers')}
           />
           <Tab
             id="project-cross-cutting"
             aria-controls="project-cross-cutting"
             label="Cross-Cutting"
             disabled={!hasFields(allFields, viewableFields, 'Cross-Cutting')}
+            classes={classes}
           />
           <Tab
             id="project-specific-info"
@@ -94,9 +98,7 @@ const ProjectView = ({
               (!hasFields(allFields, viewableFields, 'Header') &&
                 !hasFields(allFields, viewableFields, 'Substance Details'))
             }
-            classes={{
-              disabled: 'text-gray-200',
-            }}
+            classes={classes}
           />
           <Tab
             id="project-impact"
@@ -106,9 +108,7 @@ const ProjectView = ({
               !impactFields.length ||
               !hasFields(allFields, viewableFields, 'Impact')
             }
-            classes={{
-              disabled: 'text-gray-200',
-            }}
+            classes={classes}
           />
           <Tab
             id="project-documentation"
@@ -126,6 +126,7 @@ const ProjectView = ({
               aria-controls="project-approval"
               label="Approval"
               disabled={!hasFields(allFields, viewableFields, 'Approval')}
+              classes={classes}
             />
           )}
         </Tabs>

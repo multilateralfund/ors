@@ -64,7 +64,7 @@ const ProjectSpecificInfo = ({ project, specificFields }: ProjectViewProps) => {
         <>
           <SectionTitle>Substance Details</SectionTitle>
           <div className="flex w-full flex-col gap-4">
-            <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-y-4 border-0 md:grid-cols-3 lg:grid-cols-4">
               {map(
                 projectFields,
                 (field) =>
