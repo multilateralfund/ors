@@ -14,7 +14,7 @@ export const useGetProjectsForSubmission = async (
     setLoaded(false)
 
     const projects = await api(
-      `/api/projects/v2/${id}/list_associated_projects/?include_validation=${include_validation}&include_project=${include_project}`,
+      `/api/projects/v2/${id}/list_associated_projects/?only_components=true&include_validation=${include_validation}&include_project=${include_project}`,
     )
 
     const formattedProjects = map(projects, (project) => {

@@ -20,6 +20,7 @@ import { api } from '@ors/helpers'
 
 import { Box, CircularProgress, Typography } from '@mui/material'
 import { Redirect, useParams } from 'wouter'
+import { FaCheck } from 'react-icons/fa6'
 import { find, lowerCase } from 'lodash'
 
 const ProjectsSubmit = ({
@@ -112,7 +113,10 @@ const ProjectsSubmit = ({
               : `The following ${hasAssociatedProjects ? 'associated' : ''} ${formattedText} will be submitted:`}
           </span>
         ) : (
-          <span className="text-[22px]">
+          <span className="flex items-center gap-1.5 text-[22px]">
+            <div className="flex h-5 min-h-5 min-w-5 items-center justify-center rounded-full border border-solid border-primary bg-[#EBFF00]">
+              <FaCheck className="text-primary" size={14} />
+            </div>
             The following {formattedText}
             {hasAssociatedProjects ? ' have ' : ' has '}
             been successfully submitted:
