@@ -251,8 +251,6 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "hcfc_stage",
             "kwh_year_saved",
             "latest_file",
-            "lead_agency",
-            "lead_agency_id",
             "lead_agency_submitting_on_behalf",
             "loan",
             "local_ownership",
@@ -614,6 +612,11 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
         write_only=True,
         queryset=ProjectSubSector.objects.all(),
     )
+    lead_agency = serializers.PrimaryKeyRelatedField(
+        required=False,
+        allow_null=True,
+        queryset=Agency.objects.all().values_list("id", flat=True),
+    )
 
     # This field is not on the Project model, but is used for input only
     associate_project_id = serializers.IntegerField(
@@ -809,7 +812,7 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
                 associate_project.save()
         else:
             project.meta_project = MetaProject.objects.create(
-                lead_agency=lead_agency,
+                lead_agency_id=lead_agency,
                 code=get_meta_project_code(
                     project.country,
                     project.cluster,

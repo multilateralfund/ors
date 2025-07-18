@@ -284,11 +284,6 @@ class ProjectListSerializer(serializers.ModelSerializer):
     agency_id = serializers.PrimaryKeyRelatedField(
         required=True, queryset=Agency.objects.all().values_list("id", flat=True)
     )
-    lead_agency = serializers.SlugRelatedField("name", read_only=True)
-    lead_agency_id = serializers.PrimaryKeyRelatedField(
-        required=False,
-        queryset=Agency.objects.all().values_list("id", flat=True),
-    )
     latest_file = ProjectFileSerializer(many=False, read_only=True)
     coop_agencies = AgencySerializer(many=True, read_only=True)
     sector = ProjectSectorSerializer(read_only=True)
@@ -378,8 +373,6 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "issue_description",
             "hcfc_stage",
             "latest_file",
-            "lead_agency",
-            "lead_agency_id",
             "loan",
             "local_ownership",
             "metaproject_code",
