@@ -104,7 +104,7 @@ const SubmitProjectModal = ({
               button
             >
               {hasAssociatedPojects
-                ? 'Submit associated projects'
+                ? `Submit associated ${pluralizeWord(associatedProjects, 'project')}`
                 : 'Submit project'}
             </CustomLink>
             <CancelButton onClick={() => setIsModalOpen(false)} />
