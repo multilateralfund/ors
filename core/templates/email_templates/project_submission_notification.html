@@ -1,0 +1,27 @@
+{% extends 'registration/base.html' %}
+{% load settings_value %}
+
+{% block content %}
+  <p>Dear MLFS user,</p>
+  <p>
+    The following projects have been submitted for review:
+  </p>
+
+  {% for project in projects %}
+    <p>
+      <strong>Project Title:</strong> {{ project.title }}<br/>
+      <strong>Country:</strong> {{ project.country }}<br/>
+      <strong>Cluster:</strong> {{ project.cluster }}<br/>
+      <strong>Project Type:</strong> {{ project.project_type }}<br/>
+      <strong>Sector:</strong> {{ project.sector }}<br/>
+
+      <strong>Lead Agency:</strong> {{ project.meta_project.lead_agency }}<br/>
+      <strong>Agency:</strong> {{ project.agency }}<br
+
+      <a href="{% frontend_host %}/projects-listing/{{ project.id }}/" target="_blank">
+        View Project Details
+      </a>
+    </p>
+  {% endfor %}
+
+{% endblock %}

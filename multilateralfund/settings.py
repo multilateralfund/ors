@@ -234,6 +234,11 @@ CONSTANCE_CONFIG = {
         "Email addresses that receive email notifications (comma-separated)",
         str,
     ),
+    "PROJECT_SUBMISSION_NOTIFICATION_EMAILS": (
+        "",
+        "Email addresses that receive project submission notifications (comma-separated)",
+        str,
+    ),
     "DEFAULT_REPLENISHMENT_AS_OF_DATE": (
         datetime(2024, 5, 27),
         "Default 'As Of Date' for replenishment",

@@ -2,9 +2,11 @@ import requests
 from celery.utils.log import get_task_logger
 from constance import config
 from django.conf import settings
+from django.core.mail import EmailMultiAlternatives
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
+from django.template import loader
 
 from core.api.utils import (
     COUNTRY_USER_GROUP,
@@ -14,6 +16,7 @@ from core.forms import CountryUserPasswordResetForm
 from core.import_data.utils import parse_date
 from core.models.country_programme import CPComment, CPReport
 from core.models.meeting import Decision, Meeting
+from core.models import Project
 
 from multilateralfund.celery import app
 
@@ -21,6 +24,42 @@ from multilateralfund.celery import app
 logger = get_task_logger(__name__)
 User = get_user_model()
 # pylint: disable=W0718
+
+
+# Projects
+@app.task()
+def send_project_submission_notification(project_ids):
+    projects = Project.objects.filter(id__in=project_ids)
+
+    recipients = config.PROJECT_SUBMISSION_NOTIFICATION_EMAILS
+    if type(recipients) is str:
+        recipients = recipients.split(",")
+    if not recipients:
+        return
+
+    context = {
+        "projects": projects,
+    }
+    subject_template_name = (
+        "email_templates/project_submission_notification_subject.txt",
+    )
+    email_template_name = ("email_templates/project_submission_notification.txt",)
+    html_email_template_name = ("email_templates/project_submission_notification.html",)
+    subject = loader.render_to_string(subject_template_name, context)
+    # Email subject *must not* contain newlines
+    subject = "".join(subject.splitlines())
+    body = loader.render_to_string(email_template_name, context)
+
+    email_message = EmailMultiAlternatives(
+        subject,
+        body,
+        None,
+        recipients,
+    )
+
+    html_email = loader.render_to_string(html_email_template_name, context)
+    email_message.attach_alternative(html_email, "text/html")
+    email_message.send()
 
 
 # Country Programme
