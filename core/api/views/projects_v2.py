@@ -207,6 +207,14 @@ class ProjectV2ViewSet(
 
                 queryset_filters.pop("submission_status__name", None)
                 allowed_versions.add(3)
+            if not user.has_perm("core.has_project_v2_edit_approved_access"):
+                queryset = queryset.exclude(
+                    submission_status__name__in=[
+                        "Approved",
+                        "Withdrawn",
+                        "Not approved",
+                    ]
+                )
 
             if allowed_versions:
                 queryset_filters["version__in"] = list(allowed_versions)
@@ -364,7 +372,7 @@ class ProjectV2ViewSet(
     )
     def submit(self, request, *args, **kwargs):
         """
-        Submits the project and its associated projects for review.
+        Submits the project and its components projects for review.
         The projects are checked for validity (check version, status and if the required fields are filled).
         Previous tranches of the projects (if they exist) are checked if at least one actual field is filled.
         If all the projects are valid, they are marked as submitted and the version is increased, creating
@@ -381,6 +389,15 @@ class ProjectV2ViewSet(
             meta_project=project.meta_project,
             submission_status=project.submission_status,
         )
+
+        if project.component:
+            # If the project is a component, include only components of the project
+            associated_projects = associated_projects.filter(
+                component=project.component,
+            )
+        else:
+            # If the project is not a component, keep only the main project
+            associated_projects = associated_projects.filter(id=project.id)
 
         associated_projects = sorted(
             associated_projects, key=lambda p: 0 if p.id == project.id else 1
@@ -855,6 +872,12 @@ class ProjectV2ViewSet(
                 description="If set to true, the response will include the project details.",
                 type=openapi.TYPE_BOOLEAN,
             ),
+            openapi.Parameter(
+                "only_components",
+                openapi.IN_QUERY,
+                description="If set to true, the response will include only components of the meta project.",
+                type=openapi.TYPE_BOOLEAN,
+            ),
         ],
         operation_description="""
             List all projects associated with the meta project
@@ -876,6 +899,14 @@ class ProjectV2ViewSet(
             meta_project=project.meta_project,
             submission_status=project.submission_status,
         )
+        if (
+            request.query_params.get("only_components", "false").lower() == "true"
+            and project.component
+        ):
+            # If only_components is true, include only components of the project
+            associated_projects = associated_projects.filter(
+                component=project.component,
+            )
         if not request.query_params.get("include_project", "false").lower() == "true":
             associated_projects = associated_projects.exclude(
                 id=project.id,
@@ -1033,6 +1064,15 @@ class ProjectV2FileView(
                 queryset_filters.pop("submission_status__name", None)
                 allowed_versions.add(3)
 
+            if not user.has_perm("core.has_project_v2_edit_approved_access"):
+                queryset = queryset.exclude(
+                    submission_status__name__in=[
+                        "Approved",
+                        "Withdrawn",
+                        "Not approved",
+                    ]
+                )
+
             if allowed_versions:
                 queryset_filters["version__in"] = list(allowed_versions)
             queryset = queryset.filter(**queryset_filters)
@@ -1181,6 +1221,15 @@ class ProjectV2FileIncludePreviousVersionsView(
             if user.has_perm("core.has_project_v2_version3_edit_access"):
                 queryset_filters.pop("submission_status__name", None)
                 allowed_versions.add(3)
+
+            if not user.has_perm("core.has_project_v2_edit_approved_access"):
+                queryset = queryset.exclude(
+                    submission_status__name__in=[
+                        "Approved",
+                        "Withdrawn",
+                        "Not approved",
+                    ]
+                )
 
             if allowed_versions:
                 queryset_filters["version__in"] = list(allowed_versions)

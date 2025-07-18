@@ -120,6 +120,12 @@
         "model_name": "project"
     },
     {
+        "permission_codename": "has_project_v2_edit_approved_access",
+        "permission_name": "Has project v2 edit approved access",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
         "permission_codename": "has_project_v2_draft_edit_access",
         "permission_name": "Has project v2 edit access for draft projects",
         "app_label": "core",

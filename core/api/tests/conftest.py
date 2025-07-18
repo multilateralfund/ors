@@ -95,6 +95,17 @@ def viewer_user(agency):
 
 
 @pytest.fixture
+def mlfs_admin_user():
+    group = Group.objects.get(name="Projects - MLFS Admin")
+    user = UserFactory(
+        username="Projects - MLFS Admin",
+        email="mlfs_admin@mail.com",
+    )
+    user.groups.add(group)
+    return user
+
+
+@pytest.fixture
 def admin_user():
     return UserFactory(
         username="Admin",

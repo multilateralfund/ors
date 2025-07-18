@@ -2,6 +2,7 @@ import factory.fuzzy
 from django.contrib.auth import get_user_model
 
 from core.models import (
+    ProjectComponents,
     Replenishment,
     ScaleOfAssessment,
     AnnualContributionStatus,
@@ -387,6 +388,11 @@ class DecisionFactory(factory.django.DjangoModelFactory):
     meeting = factory.SubFactory(MeetingFactory)
     number = factory.Faker("random_int", min=1, max=100)
     description = factory.Faker("pystr", max_chars=100)
+
+
+class ProjectComponentsFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ProjectComponents
 
 
 class ProjectClusterFactory(factory.django.DjangoModelFactory):
