@@ -30,7 +30,6 @@ const ProjectView = ({
     projectFields: allFields,
     viewableFields,
     setViewableFields,
-    setEditableFields,
   } = useStore((state) => state.projectFields)
 
   const debouncedFetchProjectFields = useMemo(
@@ -44,10 +43,9 @@ const ProjectView = ({
 
   useEffect(() => {
     if (allFields && allFields.loaded && allFields.data) {
-      setViewableFields?.(project.version)
-      setEditableFields?.(project.version, project.submission_status)
+      setViewableFields?.(project.version, project.submission_status)
     }
-  }, [allFields, setViewableFields, setEditableFields])
+  }, [allFields, setViewableFields])
 
   const [overviewFields, substanceDetailsFields, impactFields] = [
     getSectionFields(specificFields, 'Header'),

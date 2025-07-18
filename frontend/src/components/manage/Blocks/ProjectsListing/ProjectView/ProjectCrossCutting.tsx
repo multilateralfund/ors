@@ -112,7 +112,6 @@ const ProjectCrossCutting = ({ project }: { project: ProjectTypeApi }) => {
               </div>
             </div>
             {canViewField(viewableFields, 'individual_consideration') &&
-              project.submission_status !== 'Draft' &&
               detailItem(
                 tableColumns.individual_consideration,
                 individual_consideration?.name,
