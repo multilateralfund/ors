@@ -69,7 +69,7 @@ const bpLinkColumnDefs = (
     minWidth: 70,
     cellClass: 'ag-text-center ag-cell-ellipsed',
     valueGetter: (params: ValueGetterParams<LinkableActivity>) =>
-      params.data?.project_type.code ?? params.data?.project_type.name,
+      params.data?.project_type?.code ?? params.data?.project_type?.name,
   },
   {
     headerName: tableColumns.bp_chemical_type_id,

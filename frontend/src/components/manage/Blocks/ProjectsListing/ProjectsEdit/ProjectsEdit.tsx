@@ -144,7 +144,6 @@ const ProjectsEdit = ({
     isError: false,
     tranchesData: [],
     loaded: false,
-    shouldDisplaySection: isEditMode,
   }
 
   const [projectId, setProjectId] = useState<number | null>(null)
@@ -256,7 +255,6 @@ const ProjectsEdit = ({
           isError: true,
           tranchesData: [],
           loaded: true,
-          shouldDisplaySection: isEditMode,
         })
       } else {
         const tranches = result.map((entry: RelatedProjectsType) => {
@@ -290,7 +288,6 @@ const ProjectsEdit = ({
           isError: false,
           tranchesData: tranches,
           loaded: true,
-          shouldDisplaySection: isEditMode,
         })
       }
     } catch (error) {
@@ -299,7 +296,6 @@ const ProjectsEdit = ({
         isError: false,
         tranchesData: [],
         loaded: true,
-        shouldDisplaySection: isEditMode,
       })
       enqueueSnackbar(
         <>
@@ -324,7 +320,6 @@ const ProjectsEdit = ({
         isError: false,
         tranchesData: [],
         loaded: true,
-        shouldDisplaySection: isEditMode,
       })
     } else if (isEditMode && canViewProjects) {
       debouncedGetTrancheErrors()

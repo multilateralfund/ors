@@ -29,8 +29,7 @@ const ProjectOverview = ({
     (state) => state.projectFields,
   )
 
-  const { errorText, isError, tranchesData, loaded, shouldDisplaySection } =
-    trancheErrors || {}
+  const { errorText, isError, tranchesData = [], loaded } = trancheErrors || {}
   const tranche = projectData.projectSpecificFields?.tranche ?? 0
 
   const OpenedTrancheError = () => (
@@ -88,7 +87,7 @@ const ProjectOverview = ({
             ),
         )}
       </div>
-      {tranche > 1 && shouldDisplaySection && !isError && (
+      {tranche > 1 && tranchesData.length > 0 && !isError && (
         <div
           className="transition-transform mt-6 w-full max-w-[850px] transform cursor-pointer rounded-lg p-4 duration-300 ease-in-out"
           style={{ boxShadow: '0px 10px 20px 0px rgba(0, 0, 0, 0.2)' }}
