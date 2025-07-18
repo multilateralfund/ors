@@ -13,11 +13,14 @@ export const createProjectFieldsSlice = ({
     projectFields: defaultSliceData,
     viewableFields: [],
     editableFields: [],
-    setViewableFields: (version: number) => {
+    setViewableFields: (version: number, submissionStatus?: string) => {
       const fields = get().projectFields.projectFields?.data ?? []
 
-      const viewableFields = filter(fields, ({ visible_in_versions }) =>
-        visible_in_versions?.includes(version),
+      const viewableFields = filter(
+        fields,
+        ({ visible_in_versions }) =>
+          visible_in_versions?.includes(version) &&
+          (submissionStatus !== 'Draft' || visible_in_versions.includes(1)),
       ).map((field) => field.write_field_name)
 
       set(
@@ -26,17 +29,33 @@ export const createProjectFieldsSlice = ({
         }),
       )
     },
-    setEditableFields: (version: number, submissionStatus?: string) => {
+    setEditableFields: (
+      version: number,
+      submissionStatus?: string,
+      canEditAll?: boolean,
+    ) => {
       const fields = get().projectFields.projectFields?.data ?? []
 
-      const editableFields = filter(
-        fields,
-        ({ editable_in_versions, is_actual, section }) =>
-          editable_in_versions?.includes(version) &&
-          (section !== 'Impact' ||
-            submissionStatus !== 'Approved' ||
-            is_actual),
-      ).map((field) => field.write_field_name)
+      const editableFields = fields
+        .filter(({ editable_in_versions, is_actual, section }) => {
+          const isEditableInVersion = editable_in_versions?.includes(version)
+          const areActualFieldsEditable =
+            section !== 'Impact' || submissionStatus !== 'Approved' || is_actual
+          const isDraftEditable =
+            submissionStatus !== 'Draft' || editable_in_versions?.includes(1)
+          const isVersion3Editable = version === 3 && canEditAll
+          const isWithdrawnEditable =
+            submissionStatus === 'Withdrawn' && canEditAll
+
+          return (
+            (isEditableInVersion &&
+              areActualFieldsEditable &&
+              isDraftEditable) ||
+            isVersion3Editable ||
+            isWithdrawnEditable
+          )
+        })
+        .map((field) => field.write_field_name)
 
       set(
         produce((state) => {

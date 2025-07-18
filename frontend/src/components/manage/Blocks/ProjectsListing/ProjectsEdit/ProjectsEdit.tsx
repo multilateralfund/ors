@@ -45,7 +45,8 @@ const ProjectsEdit = ({
   const project_id = project.id.toString()
   const isEditMode = mode === 'edit'
 
-  const { canViewProjects } = useContext(PermissionsContext)
+  const { canViewProjects, canEditApprovedProjects } =
+    useContext(PermissionsContext)
 
   const [projectData, setProjectData] = useState<ProjectData>({
     projIdentifiers: initialProjectIdentifiers,
@@ -98,8 +99,9 @@ const ProjectsEdit = ({
       const submissionStatus = isEditMode
         ? project.submission_status
         : undefined
-      setViewableFields?.(version)
-      setEditableFields?.(version, submissionStatus)
+
+      setViewableFields?.(version, submissionStatus)
+      setEditableFields?.(version, submissionStatus, canEditApprovedProjects)
     }
   }, [allFields, setViewableFields, setEditableFields])
 
@@ -185,12 +187,16 @@ const ProjectsEdit = ({
               project_end_date: project.project_end_date,
               total_fund: project.total_fund,
               support_cost_psc: project.support_cost_psc,
-              individual_consideration: true,
+              individual_consideration:
+                mode === 'edit' ? project.individual_consideration : true,
             },
           }
         : {
             bpLinking: { isLinkedToBP: false, bpId: null },
-            crossCuttingFields: initialCrossCuttingFields,
+            crossCuttingFields: {
+              ...initialCrossCuttingFields,
+              is_lvc: project.is_lvc,
+            },
           }),
     }))
   }, [])

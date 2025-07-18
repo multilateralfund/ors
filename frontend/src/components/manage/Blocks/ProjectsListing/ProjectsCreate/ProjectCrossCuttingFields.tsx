@@ -519,25 +519,24 @@ const ProjectCrossCuttingFields = ({
                 </div>
               )}
             </div>
-            {canViewField(viewableFields, 'individual_consideration') &&
-              project?.submission_status !== 'Draft' && (
-                <div className="flex">
-                  <Label>Blanket consideration</Label>
-                  <Checkbox
-                    className="pb-1 pl-2 pt-0"
-                    checked={!individual_consideration}
-                    onChange={(_, value) =>
-                      handleChangeBlanketConsideration(value)
-                    }
-                    disabled={
-                      !canEditField(editableFields, 'individual_consideration')
-                    }
-                    sx={{
-                      color: 'black',
-                    }}
-                  />
-                </div>
-              )}
+            {canViewField(viewableFields, 'individual_consideration') && (
+              <div className="flex">
+                <Label>Blanket consideration</Label>
+                <Checkbox
+                  className="pb-1 pl-2 pt-0"
+                  checked={!individual_consideration}
+                  onChange={(_, value) =>
+                    handleChangeBlanketConsideration(value)
+                  }
+                  disabled={
+                    !canEditField(editableFields, 'individual_consideration')
+                  }
+                  sx={{
+                    color: 'black',
+                  }}
+                />
+              </div>
+            )}
           </div>
         </>
       )}
