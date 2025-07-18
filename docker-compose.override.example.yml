@@ -13,3 +13,11 @@ services:
     environment:
       # Control how many resources to give the nginx
       - NGINX_WORKER_PROCESSES=4
+
+  postfix:
+    image: dbck/mailtrap
+    container_name: "mlf.mailtrap"
+    stdin_open: true
+    tty: true
+    ports:
+    - 81:80

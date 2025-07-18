@@ -1,7 +1,7 @@
 import os
 import urllib
 
-
+from constance import config
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from django.db import transaction
@@ -14,7 +14,6 @@ from rest_framework.response import Response
 from rest_framework import parsers
 from rest_framework.decorators import action
 from rest_framework.views import APIView
-
 
 from core.api.filters.project import ProjectFilter
 from core.api.permissions import (
@@ -57,6 +56,7 @@ from core.models.project_metadata import (
     ProjectSubmissionStatus,
     ProjectSpecificFields,
 )
+from core.tasks import send_project_submission_notification
 from core.api.views.utils import log_project_history
 
 from core.api.views.projects_export import ProjectsV2Export
@@ -432,6 +432,11 @@ class ProjectV2ViewSet(
                 log_project_history(
                     associated_project, request.user, HISTORY_DESCRIPTION_SUBMIT_V1
                 )
+        # Send email notification to the secretariat team
+        if config.SEND_MAIL:
+            send_project_submission_notification.delay(
+                [project.id for project in associated_projects]
+            )
 
         return Response(
             ProjectListV2Serializer(associated_projects, many=True).data,

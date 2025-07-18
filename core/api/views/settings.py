@@ -59,6 +59,7 @@ class SettingsView(views.APIView):
             },
             "send_mail": config.SEND_MAIL,
             "cp_notification_emails": ",".join(config.CP_NOTIFICATION_EMAILS),
+            "project_submission_notification_emails": config.PROJECT_SUBMISSION_NOTIFICATION_EMAILS,
         }
         return Response(settings)
 
