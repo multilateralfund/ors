@@ -90,6 +90,7 @@ export type ProjectType = {
   issue: boolean
   issue_description: any
   latest_file: any
+  lead_agency: string
   lead_agency_id: number
   loan: boolean
   local_ownership: number

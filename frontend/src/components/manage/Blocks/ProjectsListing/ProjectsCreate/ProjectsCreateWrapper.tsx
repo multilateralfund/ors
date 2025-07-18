@@ -63,7 +63,8 @@ const ProjectsCreateWrapper = () => {
   const [projectData, setProjectData] = useState<ProjectData>({
     projIdentifiers: {
       ...initialProjectIdentifiers,
-      current_agency: agency_id ?? null,
+      agency: agency_id ?? null,
+      lead_agency: agency_id ?? null,
     },
     bpLinking: { isLinkedToBP: false, bpId: null },
     crossCuttingFields: initialCrossCuttingFields,

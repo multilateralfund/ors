@@ -18,6 +18,7 @@ export const tableColumns: { [key: string]: string } = {
   cluster: 'Cluster',
   tranche: 'Tranche number',
   agency: 'Agency',
+  lead_agency: 'Lead agency',
   title: 'Title',
   type: 'Type',
   sector: 'Sector',
@@ -62,11 +63,11 @@ export const additionalProperties: Record<string, Record<string, unknown>> = {
 }
 
 export const initialProjectIdentifiers = {
-  is_lead_agency: true,
+  lead_agency_submitting_on_behalf: false,
   country: null,
   meeting: null,
-  current_agency: null,
-  side_agency: null,
+  agency: null,
+  lead_agency: null,
   cluster: null,
   production: false,
 }

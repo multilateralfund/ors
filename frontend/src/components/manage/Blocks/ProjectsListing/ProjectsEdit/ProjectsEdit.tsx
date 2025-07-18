@@ -46,8 +46,6 @@ const ProjectsEdit = ({
   const isEditMode = mode === 'edit'
 
   const { canViewProjects } = useContext(PermissionsContext)
-  const userSlice = useStore((state) => state.user)
-  const { agency_id } = userSlice.data
 
   const [projectData, setProjectData] = useState<ProjectData>({
     projIdentifiers: initialProjectIdentifiers,
@@ -163,12 +161,10 @@ const ProjectsEdit = ({
       projIdentifiers: {
         country: project.country_id,
         meeting: mode !== 'partial-link' ? project.meeting_id : null,
-        current_agency: agency_id ?? project.agency_id,
-        side_agency:
-          !agency_id || project.agency_id === agency_id
-            ? null
-            : project.agency_id,
-        is_lead_agency: agency_id ? project.agency_id === agency_id : true,
+        agency: project.agency_id,
+        lead_agency: project.meta_project.lead_agency,
+        lead_agency_submitting_on_behalf:
+          project.lead_agency_submitting_on_behalf,
         cluster: project.cluster_id,
         production: project.production,
       },

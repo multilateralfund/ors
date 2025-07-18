@@ -10,11 +10,9 @@ import {
   OptionsType,
   ProjectTypeApi,
   ProjectAllVersionsFiles,
-  ProjectFields,
 } from './interfaces'
 import { formatApiUrl, formatDecimalValue } from '@ors/helpers'
 import { Cluster } from '@ors/types/store'
-import { useStore } from '@ors/store'
 
 import {
   concat,
@@ -75,8 +73,8 @@ export const canGoToSecondStep = (projIdentifiers: ProjIdentifiers) =>
     projIdentifiers.country &&
     projIdentifiers.meeting &&
     projIdentifiers.cluster &&
-    ((projIdentifiers.is_lead_agency && projIdentifiers.current_agency) ||
-      (!projIdentifiers.is_lead_agency && projIdentifiers.side_agency))
+    projIdentifiers.agency &&
+    projIdentifiers.lead_agency
   )
 
 export const getIsSaveDisabled = (
@@ -172,14 +170,7 @@ export const formatSubmitData = (
   })
 
   return {
-    agency: projIdentifiers?.is_lead_agency
-      ? projIdentifiers.current_agency
-      : projIdentifiers.side_agency,
-    ...omit(projIdentifiers, [
-      'current_agency',
-      'side_agency',
-      'is_lead_agency',
-    ]),
+    ...projIdentifiers,
     bp_activity: bpLinking.bpId,
     ...normalizeValues(crossCuttingFields),
     ...normalizeValues(crtProjectSpecificFields),
@@ -212,13 +203,17 @@ export const getProjIdentifiersErrors = (
   projIdentifiers: ProjIdentifiers,
   errors: { [key: string]: [] },
 ) => {
-  const requiredFields = ['country', 'meeting', 'agency', 'cluster']
+  const requiredFields = [
+    'country',
+    'meeting',
+    'agency',
+    'cluster',
+    'lead_agency',
+  ]
 
   const filteredErrors = Object.fromEntries(
     Object.entries(errors).filter(([key]) => requiredFields.includes(key)),
   )
-
-  const { current_agency, side_agency, is_lead_agency } = projIdentifiers
 
   return {
     ...requiredFields.reduce((acc: any, field) => {
@@ -228,10 +223,6 @@ export const getProjIdentifiersErrors = (
 
       return acc
     }, {}),
-    agency:
-      (is_lead_agency && !current_agency) || (!is_lead_agency && !side_agency)
-        ? ['This field is required.']
-        : [],
     ...filteredErrors,
   }
 }
