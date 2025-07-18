@@ -1,9 +1,8 @@
-import { SectionTitle } from '../ProjectsCreate/ProjectsCreate'
+import { BPTable } from '@ors/components/manage/Blocks/Table/BusinessPlansTable/BusinessPlansTable'
 import { booleanDetailItem, detailItem } from './ViewHelperComponents'
+import { SectionTitle } from '../ProjectsCreate/ProjectsCreate'
 import { ProjectTypeApi } from '../interfaces'
 import { tableColumns } from '../constants'
-
-import { BPTable } from '@ors/components/manage/Blocks/Table/BusinessPlansTable/BusinessPlansTable'
 import { canViewField } from '../utils'
 import { useStore } from '@ors/store'
 

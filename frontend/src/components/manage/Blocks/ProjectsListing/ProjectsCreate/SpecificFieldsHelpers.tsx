@@ -44,14 +44,21 @@ const getIsInputDisabled = (
 const getFieldDefaultProps = (
   isError: boolean,
   editableFields: string[],
-  field: string,
+  field: ProjectSpecificFields,
 ) => {
+  const fieldName = field.write_field_name
+  const isOdp = field.table === 'ods_odp'
+
   return {
     ...{
       ...defaultPropsSimpleField,
       className: cx(defaultPropsSimpleField.className, {
+        'w-[125px]': isOdp,
         'border-red-500': isError,
-        [disabledClassName]: !canEditField(editableFields, field),
+        [disabledClassName]: !canEditField(editableFields, fieldName),
+      }),
+      containerClassName: cx(defaultPropsSimpleField.containerClassName, {
+        'w-[125px]': isOdp,
       }),
     },
   }
@@ -257,6 +264,7 @@ export const TextWidget = <T,>(
           )
         }
         className={cx(textAreaClassname, {
+          'md:w-[255px] md:min-w-[255px]': field.table === 'ods_odp',
           'border-red-500': getIsInputDisabled(
             hasSubmitted,
             errors,
@@ -314,7 +322,7 @@ const NumberWidget = <T,>(
             index,
           ),
           editableFields,
-          field.write_field_name,
+          field,
         )}
       />
     </div>

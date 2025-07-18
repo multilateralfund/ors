@@ -17,13 +17,15 @@ export const fetchSpecificFields = async (
 
   try {
     const res = await api(url)
-    const formattedFields = (res.fields || [])
-      .filter((field: ProjectSpecificFields) =>
+    const formattedFields = ((res.fields as ProjectSpecificFields[]) || [])
+      .filter((field) =>
         ['Header', 'Substance Details', 'Impact'].includes(field.section),
       )
+      .map((field) => {
+        return { ...field, label: field.label.replace(/(?<=CO)2/g, '₂') }
+      })
       .sort(
-        (field1: ProjectSpecificFields, field2: ProjectSpecificFields) =>
-          (field1.sort_order ?? 0) - (field2.sort_order ?? 0),
+        (field1, field2) => (field1.sort_order ?? 0) - (field2.sort_order ?? 0),
       )
 
     setFields(formattedFields)

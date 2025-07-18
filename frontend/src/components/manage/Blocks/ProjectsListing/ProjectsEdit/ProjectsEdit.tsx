@@ -43,10 +43,9 @@ const ProjectsEdit = ({
   mode: string
 }) => {
   const project_id = project.id.toString()
+  const isEditMode = mode === 'edit'
 
   const { canViewProjects } = useContext(PermissionsContext)
-  const userSlice = useStore((state) => state.user)
-  const { agency_id } = userSlice.data
 
   const [projectData, setProjectData] = useState<ProjectData>({
     projIdentifiers: initialProjectIdentifiers,
@@ -66,10 +65,9 @@ const ProjectsEdit = ({
 
   const groupedFields = groupBy(specificFields, 'table')
   const fieldsOfProject = groupedFields['project'] || []
-  const projectFields =
-    mode === 'edit'
-      ? fieldsOfProject
-      : filter(fieldsOfProject, (field) => !field.is_actual)
+  const projectFields = isEditMode
+    ? fieldsOfProject
+    : filter(fieldsOfProject, (field) => !field.is_actual)
   const odsOdpFields = (groupedFields['ods_odp'] || []).filter(
     (field) => field.read_field_name !== 'sort_order',
   )
@@ -96,9 +94,10 @@ const ProjectsEdit = ({
 
   useEffect(() => {
     if (allFields && allFields.loaded && allFields.data) {
-      const version = mode === 'edit' ? project.version : 1
-      const submissionStatus =
-        mode === 'edit' ? project.submission_status : undefined
+      const version = isEditMode ? project.version : 1
+      const submissionStatus = isEditMode
+        ? project.submission_status
+        : undefined
       setViewableFields?.(version)
       setEditableFields?.(version, submissionStatus)
     }
@@ -130,7 +129,7 @@ const ProjectsEdit = ({
   }, [data])
 
   useEffect(() => {
-    if (mode === 'edit') {
+    if (isEditMode) {
       setFiles({
         deletedFilesIds: [],
         newFiles: [],
@@ -162,12 +161,10 @@ const ProjectsEdit = ({
       projIdentifiers: {
         country: project.country_id,
         meeting: mode !== 'partial-link' ? project.meeting_id : null,
-        current_agency: agency_id ?? project.agency_id,
-        side_agency:
-          !agency_id || project.agency_id === agency_id
-            ? null
-            : project.agency_id,
-        is_lead_agency: agency_id ? project.agency_id === agency_id : true,
+        agency: project.agency_id,
+        lead_agency: project.meta_project.lead_agency,
+        lead_agency_submitting_on_behalf:
+          project.lead_agency_submitting_on_behalf,
         cluster: project.cluster_id,
         production: project.production,
       },
@@ -188,7 +185,7 @@ const ProjectsEdit = ({
               project_end_date: project.project_end_date,
               total_fund: project.total_fund,
               support_cost_psc: project.support_cost_psc,
-              individual_consideration: project.individual_consideration,
+              individual_consideration: true,
             },
           }
         : {
@@ -205,7 +202,7 @@ const ProjectsEdit = ({
         project_type,
         sector,
         setSpecificFields,
-        mode === 'edit' ? project_id : null,
+        isEditMode ? project_id : null,
         setSpecificFieldsLoaded,
       )
     } else setSpecificFields([])
@@ -238,8 +235,6 @@ const ProjectsEdit = ({
   const tranche = projectData.projectSpecificFields?.tranche ?? 0
 
   const getTrancheErrors = async () => {
-    setTrancheErrors(defaultTrancheErrors)
-
     try {
       const result = await api(
         `api/projects/v2/${project_id}/list_previous_tranches/?tranche=${tranche}&include_validation=true`,
@@ -322,7 +317,7 @@ const ProjectsEdit = ({
         tranchesData: [],
         loaded: true,
       })
-    } else if (mode === 'edit' && canViewProjects) {
+    } else if (isEditMode && canViewProjects) {
       debouncedGetTrancheErrors()
     }
   }, [tranche, project_id, specificFields])
@@ -367,7 +362,7 @@ const ProjectsEdit = ({
         />
         <ProjectSubmissionFooter
           successMessage={
-            mode === 'edit'
+            isEditMode
               ? 'Updated project successfully.'
               : 'Submission was successful.'
           }

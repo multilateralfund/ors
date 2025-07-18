@@ -38,6 +38,11 @@ const ProjectSpecificInfo = ({ project, specificFields }: ProjectViewProps) => {
     'table',
   )
 
+  const data =
+    project?.[field]?.sort(
+      (field1, field2) => (field1.sort_order ?? 0) - (field2.sort_order ?? 0),
+    ) || []
+
   return (
     <>
       {canViewOverviewSection && (
@@ -73,10 +78,7 @@ const ProjectSpecificInfo = ({ project, specificFields }: ProjectViewProps) => {
               )}
             </div>
             {canViewSubstanceSection && odsOdpFields.length > 0 && (
-              <ProjectOdsOdpTable
-                data={project?.[field] || []}
-                fields={odsOdpFields}
-              />
+              <ProjectOdsOdpTable data={data} fields={odsOdpFields} />
             )}
           </div>
         </>

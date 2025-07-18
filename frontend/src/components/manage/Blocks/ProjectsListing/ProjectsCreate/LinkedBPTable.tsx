@@ -57,10 +57,7 @@ const LinkedBPTable = ({
     year_start: period?.year_start,
     year_end: period?.year_start + 2,
     country_id: projIdentifiers.country,
-    agency_id: [
-      projIdentifiers.current_agency,
-      projIdentifiers.side_agency,
-    ].filter((v) => !!v),
+    agency_id: projIdentifiers.agency,
     project_cluster_id: projIdentifiers.cluster,
     limit: ACTIVITIES_PER_PAGE_TABLE,
     offset: 0,

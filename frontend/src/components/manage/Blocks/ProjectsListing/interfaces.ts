@@ -12,9 +12,9 @@ export interface PListingProps {
 export interface ProjIdentifiers {
   country: number | null
   meeting: number | null
-  current_agency: number | null
-  side_agency: number | null
-  is_lead_agency: boolean
+  agency: number | null
+  lead_agency: number | null
+  lead_agency_submitting_on_behalf: boolean
   cluster: number | null
   production: boolean
 }

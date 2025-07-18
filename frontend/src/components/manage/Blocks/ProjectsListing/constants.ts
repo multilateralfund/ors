@@ -18,6 +18,7 @@ export const tableColumns: { [key: string]: string } = {
   cluster: 'Cluster',
   tranche: 'Tranche number',
   agency: 'Agency',
+  lead_agency: 'Lead agency',
   title: 'Title',
   type: 'Type',
   sector: 'Sector',
@@ -51,17 +52,22 @@ export const textAreaClassname =
   'min-h-[20px] w-full max-w-[320px] md:max-w-full md:w-[415px] md:min-w-[350px] rounded-lg border bg-white p-2 pb-10 shadow-none'
 
 export const additionalProperties: Record<string, Record<string, unknown>> = {
-  ods_substance_id: {
-    FieldProps: { className: defaultProps.FieldProps.className + ' w-full' },
+  ods_display_name: {
+    FieldProps: {
+      className: defaultProps.FieldProps.className + ' w-full',
+    },
+  },
+  ods_type: {
+    FieldProps: { className: defaultProps.FieldProps.className + ' w-[145px]' },
   },
 }
 
 export const initialProjectIdentifiers = {
-  is_lead_agency: true,
+  lead_agency_submitting_on_behalf: false,
   country: null,
   meeting: null,
-  current_agency: null,
-  side_agency: null,
+  agency: null,
+  lead_agency: null,
   cluster: null,
   production: false,
 }
