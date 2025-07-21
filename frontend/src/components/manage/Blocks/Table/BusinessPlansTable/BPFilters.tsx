@@ -2,24 +2,21 @@
 
 import ActivitiesFilters from '@ors/components/manage/Blocks/BusinessPlans/ActivitiesFilters'
 import TableDateSwitcher from '@ors/components/manage/Blocks/Table/BusinessPlansTable/TableDateSwitcher'
-import { useStore } from '@ors/store'
-
 import TableViewSelector from './TableViewSelector'
+import { useStore } from '@ors/store'
 
 const ACTIVITIES_PER_PAGE_TABLE = 100
 const ACTIVITIES_PER_PAGE_LIST = 20
 
 export default function BPFilters({
   displayOptions,
-  filters,
-  form,
   gridOptions,
-  initialFilters,
   setDisplayOptions,
   setFilters,
   setGridOptions,
   setParams,
   withAgency = false,
+  ...rest
 }: any) {
   const commonSlice = useStore((state) => state.common)
   const bpSlice = useStore((state) => state.businessPlans)
@@ -37,15 +34,15 @@ export default function BPFilters({
   return (
     <div className="bp-table-toolbar mb-6 flex flex-col justify-between gap-x-[7rem] gap-y-4 md:flex-row md:items-center">
       <ActivitiesFilters
-        bpSlice={bpSlice}
-        clusters={clusters}
-        commonSlice={commonSlice}
-        filters={filters}
-        form={form}
-        handleFilterChange={handleFilterChange}
-        handleParamsChange={handleParamsChange}
-        initialFilters={initialFilters}
-        withAgency={withAgency}
+        {...{
+          bpSlice,
+          clusters,
+          commonSlice,
+          handleFilterChange,
+          handleParamsChange,
+          withAgency,
+        }}
+        {...rest}
       />
       <div className="flex gap-4 self-start">
         <TableDateSwitcher changeHandler={setGridOptions} value={gridOptions} />
