@@ -13,6 +13,7 @@ import { tableColumns } from '../../BusinessPlans/constants'
 
 const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
   {
+    cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
     field: 'country.name',
     headerName: tableColumns.country_id,
     minWidth: 150,
@@ -28,6 +29,7 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
   ...(withAgency
     ? [
         {
+          cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
           field: 'agency.name',
           headerName: tableColumns.agency_id,
           minWidth: 110,
@@ -37,6 +39,7 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
       ]
     : []),
   {
+    cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
     field: 'lvc_status',
     headerName: tableColumns.lvc_status,
     minWidth: 90,
@@ -44,6 +47,7 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
     tooltipField: 'lvc_status',
   },
   {
+    cellClass: 'ag-text-center ag-cell-ellipsed',
     field: 'project_cluster.code',
     headerName: tableColumns.project_cluster_id,
     minWidth: 70,
@@ -62,6 +66,7 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
         }),
   },
   {
+    cellClass: 'ag-text-center ag-cell-ellipsed',
     field: 'project_type.code',
     headerName: tableColumns.project_type_id,
     minWidth: 70,
@@ -79,6 +84,7 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
         }),
   },
   {
+    cellClass: 'ag-text-center ag-cell-ellipsed',
     field: 'sector.code',
     headerName: tableColumns.sector_id,
     minWidth: 70,
@@ -95,6 +101,7 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
         }),
   },
   {
+    cellClass: 'ag-text-center ag-cell-ellipsed',
     field: 'subsector.code',
     headerName: tableColumns.subsector_id,
     minWidth: 100,
@@ -112,6 +119,7 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
         }),
   },
   {
+    cellClass: 'ag-cell-ellipsed',
     field: 'title',
     headerName: tableColumns.title,
     minWidth: 200,
@@ -126,6 +134,7 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
 ]
 
 const getReqByModelColumn = (isDiff: boolean) => ({
+  cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
   field: 'required_by_model',
   headerName: tableColumns.required_by_model,
   minWidth: 150,
@@ -140,6 +149,7 @@ const getReqByModelColumn = (isDiff: boolean) => ({
 })
 
 const getStatusColumn = (isDiff: boolean) => ({
+  cellClass: 'ag-text-center',
   field: 'status',
   headerName: tableColumns.status,
   minWidth: 100,
@@ -153,6 +163,7 @@ const getStatusColumn = (isDiff: boolean) => ({
 })
 
 const getIsMultiYearColumn = (isDiff: boolean) => ({
+  cellClass: 'ag-text-center',
   field: 'is_multi_year',
   headerName: tableColumns.is_multi_year,
   minWidth: 100,
@@ -170,6 +181,7 @@ const getIsMultiYearColumn = (isDiff: boolean) => ({
 
 const getRemarksColumnsDefs = (isDiff: boolean) => [
   {
+    cellClass: 'ag-cell-ellipsed',
     headerName: tableColumns.remarks,
     minWidth: 200,
     sortable: !isDiff,
@@ -226,6 +238,7 @@ const allColumnDefs = (
   return [
     ...defaultColDef.slice(0, 5),
     {
+      cellClass: 'ag-text-center ag-cell-ellipsed',
       field: 'bp_chemical_type.name',
       headerName: tableColumns.bp_chemical_type_id,
       minWidth: 100,
@@ -295,7 +308,6 @@ const allColumnDefs = (
 
 const defaultColDef = {
   headerClass: 'ag-text-center',
-  cellClass: 'ag-cell-ellipsed',
   resizable: true,
 }
 

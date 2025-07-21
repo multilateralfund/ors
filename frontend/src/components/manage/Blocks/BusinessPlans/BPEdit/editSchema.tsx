@@ -161,13 +161,14 @@ const useColumnsOptions = (
         },
         {
           field: 'display_internal_id',
-
+          cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
           headerName: 'Activity ID',
           minWidth: 150,
           editable: false,
           tooltipField: 'display_internal_id',
         },
         {
+          cellClass: 'ag-text-center ag-cell-centered ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select country' },
@@ -196,6 +197,7 @@ const useColumnsOptions = (
         ...(isConsolidatedView
           ? [
               {
+                cellClass: 'ag-text-center ag-cell-centered ag-cell-ellipsed',
                 cellEditor: 'agSelectCellEditor',
                 cellEditorParams: {
                   Input: { placeholder: 'Select agency' },
@@ -225,6 +227,7 @@ const useColumnsOptions = (
             ]
           : []),
         {
+          cellClass: 'ag-text-center ag-cell-centered ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select status' },
@@ -248,6 +251,7 @@ const useColumnsOptions = (
           valueSetter: (params: any) => lvcValueSetter(params, 'lvc_status'),
         },
         {
+          cellClass: 'ag-text-center ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select cluster' },
@@ -285,6 +289,7 @@ const useColumnsOptions = (
             ),
         },
         {
+          cellClass: 'ag-text-center ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: (params: ICellEditorParams) => {
             const projectTypeOfCluster = getProjectTypesOfCluster(params)
@@ -323,6 +328,7 @@ const useColumnsOptions = (
             ),
         },
         {
+          cellClass: 'ag-text-center ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select chemical' },
@@ -407,6 +413,7 @@ const useColumnsOptions = (
           wrapText: true,
         },
         {
+          cellClass: 'ag-text-center ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: (params: ICellEditorParams) => {
             const sectorOfProjectType = getSectorsOfProjectType(params)
@@ -446,6 +453,7 @@ const useColumnsOptions = (
             ),
         },
         {
+          cellClass: 'ag-text-center ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: (params: ICellEditorParams) => {
             const subsectorsOfSector = getSubsectorsOfSector(params)
@@ -485,6 +493,7 @@ const useColumnsOptions = (
             ),
         },
         {
+          cellClass: 'ag-cell-ellipsed',
           field: 'title',
           headerName: tableColumns.title,
           minWidth: 200,
@@ -495,6 +504,7 @@ const useColumnsOptions = (
           tooltipField: 'title',
         },
         {
+          cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
           field: 'required_by_model',
           headerComponent: function (props: any) {
             return (
@@ -516,6 +526,7 @@ const useColumnsOptions = (
         },
         ...yearColumns,
         {
+          cellClass: 'ag-text-center',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select A/P' },
@@ -537,6 +548,7 @@ const useColumnsOptions = (
           valueSetter: (params: any) => statusValueSetter(params, statuses),
         },
         {
+          cellClass: 'ag-text-center',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select I/M' },
@@ -563,6 +575,7 @@ const useColumnsOptions = (
             MYAValueSetter(params, multiYearFilterOptions),
         },
         {
+          cellClass: 'ag-cell-ellipsed',
           field: 'remarks',
           headerName: tableColumns.remarks,
           minWidth: 200,
@@ -579,7 +592,6 @@ const useColumnsOptions = (
       ],
       defaultColDef: {
         headerClass: 'ag-text-center',
-        cellClass: 'ag-cell-ellipsed',
         editable: true,
         enableCellChangeFlash: false,
         resizable: true,

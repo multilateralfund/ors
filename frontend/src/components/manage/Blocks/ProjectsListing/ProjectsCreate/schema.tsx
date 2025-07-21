@@ -52,6 +52,7 @@ const bpLinkColumnDefs = (
     tooltipField: 'display_internal_id',
     minWidth: 150,
     sortable: false,
+    cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
   },
   {
     headerName: tableColumns.lvc_status,
@@ -59,12 +60,14 @@ const bpLinkColumnDefs = (
     tooltipField: 'lvc_status',
     minWidth: 90,
     sortable: false,
+    cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
   },
   {
     headerName: tableColumns.project_type_id,
     field: 'project_type.code',
     tooltipField: 'project_type.name',
     minWidth: 70,
+    cellClass: 'ag-text-center ag-cell-ellipsed',
     valueGetter: (params: ValueGetterParams<LinkableActivity>) =>
       params.data?.project_type?.code ?? params.data?.project_type?.name,
   },
@@ -73,6 +76,7 @@ const bpLinkColumnDefs = (
     field: 'bp_chemical_type.name',
     tooltipField: 'bp_chemical_type.name',
     minWidth: 100,
+    cellClass: 'ag-text-center ag-cell-ellipsed',
   },
   {
     headerName: tableColumns.substances,
@@ -109,6 +113,7 @@ const bpLinkColumnDefs = (
     field: 'sector.code',
     tooltipField: 'sector.name',
     minWidth: 70,
+    cellClass: 'ag-text-center ag-cell-ellipsed',
     valueGetter: (params: ValueGetterParams<LinkableActivity>) =>
       params.data?.sector?.code ?? params.data?.sector?.name,
   },
@@ -117,6 +122,7 @@ const bpLinkColumnDefs = (
     field: 'subsector.code',
     tooltipField: 'subsector.name',
     minWidth: 100,
+    cellClass: 'ag-text-center ag-cell-ellipsed',
     valueGetter: (params: ValueGetterParams<LinkableActivity>) =>
       params.data?.subsector?.code ?? params.data?.subsector?.name,
   },
@@ -125,12 +131,14 @@ const bpLinkColumnDefs = (
     field: 'title',
     tooltipField: 'title',
     minWidth: 200,
+    cellClass: 'ag-cell-ellipsed',
   },
   {
     headerName: tableColumns.required_by_model,
     field: 'required_by_model',
     tooltipField: 'required_by_model',
     minWidth: 150,
+    cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
   },
   ...yearColumns,
   {
@@ -138,12 +146,14 @@ const bpLinkColumnDefs = (
     field: 'status',
     tooltipField: 'status_display',
     minWidth: 100,
+    cellClass: 'ag-text-center',
   },
   {
     headerName: tableColumns.is_multi_year,
     field: 'is_multi_year',
     tooltipField: 'is_multi_year_display',
     minWidth: 100,
+    cellClass: 'ag-text-center',
     valueGetter: ({ data }: ValueGetterParams<LinkableActivity>) =>
       data?.is_multi_year ? 'M' : 'I',
   },
@@ -152,12 +162,12 @@ const bpLinkColumnDefs = (
     field: 'remarks',
     tooltipField: 'remarks',
     minWidth: 200,
+    cellClass: 'ag-cell-ellipsed',
   },
 ]
 
 const defaultColDefBpLink = {
   headerClass: 'ag-text-center',
-  cellClass: 'ag-cell-ellipsed',
   resizable: true,
   sortable: true,
 }
