@@ -27,7 +27,8 @@ const ProjectViewWrapper = () => {
   const { project_id } = useParams<Record<string, string>>()
   const [location] = useLocation()
 
-  const { canEditProjects } = useContext(PermissionsContext)
+  const { canEditProjects, canEditApprovedProjects } =
+    useContext(PermissionsContext)
 
   const project = useGetProject(project_id)
   const { data, loading } = project
@@ -40,6 +41,7 @@ const ProjectViewWrapper = () => {
     version,
     editable,
   } = data || {}
+  const isWithdrawn = lowerCase(submission_status) === 'withdrawn'
 
   const projectFiles = useGetProjectFiles(parseInt(project_id))
 
@@ -101,7 +103,7 @@ const ProjectViewWrapper = () => {
               {canEditProjects &&
                 editable &&
                 isNull(latest_project) &&
-                lowerCase(submission_status) !== 'withdrawn' && (
+                (!isWithdrawn || canEditApprovedProjects) && (
                   <CustomLink
                     className="ml-auto mt-auto h-10 text-nowrap px-4 py-2 text-lg uppercase"
                     href={`/projects-listing/${project_id}/edit`}
