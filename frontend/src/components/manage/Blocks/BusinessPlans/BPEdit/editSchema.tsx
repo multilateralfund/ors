@@ -160,8 +160,8 @@ const useColumnsOptions = (
           minWidth: 20,
         },
         {
-          field: 'display_internal_id',
           cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
+          field: 'display_internal_id',
           headerName: 'Activity ID',
           minWidth: 150,
           editable: false,
