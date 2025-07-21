@@ -83,7 +83,7 @@ class TestBPExport(BaseTest):
         sheet = wb["Activities"]
         internal_id = str(bp_activity.initial_id).zfill(9)
         sort_order = (
-            f"{bp_activity.agency.name}-{bp_activity.country.abbr}-{internal_id}"
+            f"{bp_activity.agency.name}-{bp_activity.country.iso3}-{internal_id}"
         )
         assert sheet["A2"].value == sort_order
         assert sheet["B2"].value == bp_activity.country.name

@@ -155,7 +155,7 @@ class BPActivity(models.Model):
     @property
     def get_display_internal_id(self):
         agency_code = self.agency.name
-        country_code = self.country.abbr or self.country.name
+        country_code = self.country.iso3 or self.country.name
         # add 0 padding to internal_id to make it 9 digits
         internal_id = str(self.initial_id).zfill(9)
         return f"{agency_code}-{country_code}-{internal_id}"

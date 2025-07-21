@@ -4,11 +4,15 @@ Dear MLFS user,
 
 The following projects have been submitted for MLFS review:
 
-Project Name: {{ project.name }}
-Project ID: {{ project.id }}
-Project Type: {{ project.type }}
-Country: {{ project.country }}
-Cluster:</strong> {{ project.cluster }}
-Sector:</strong> {{ project.sector }}
-Lead Implementing Agency:{{ project.meta_project.lead_agency }}
-Link: {% frontend_host %}/project/{{ project.id }}/
+{% for project in projects %}
+
+    Project title: {{ project.title }}
+    Country: {{ project.country }}
+    Cluster: {{ project.cluster }}
+    Project type: {{ project.project_type }}
+    Sector: {{ project.sector }}
+    Lead agency: {{ project.meta_project.lead_agency }}
+    Agency: {{ project.agency }}
+    Link: {% frontend_host %}/projects-listing/{{ project.id }}/
+
+{% endfor %}
