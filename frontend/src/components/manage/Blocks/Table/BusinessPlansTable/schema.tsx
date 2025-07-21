@@ -15,7 +15,6 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
   {
     cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
     field: 'country.name',
-    headerClass: 'ag-text-center',
     headerName: tableColumns.country_id,
     minWidth: 150,
     sortable: !isDiff,
@@ -32,7 +31,6 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
         {
           cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
           field: 'agency.name',
-          headerClass: 'ag-text-center',
           headerName: tableColumns.agency_id,
           minWidth: 110,
           sortable: true,
@@ -43,7 +41,6 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
   {
     cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
     field: 'lvc_status',
-    headerClass: 'ag-text-center',
     headerName: tableColumns.lvc_status,
     minWidth: 90,
     sortable: false,
@@ -52,7 +49,6 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
   {
     cellClass: 'ag-text-center ag-cell-ellipsed',
     field: 'project_cluster.code',
-    headerClass: 'ag-text-center',
     headerName: tableColumns.project_cluster_id,
     minWidth: 70,
     sortable: !isDiff,
@@ -72,7 +68,6 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
   {
     cellClass: 'ag-text-center ag-cell-ellipsed',
     field: 'project_type.code',
-    headerClass: 'ag-text-center',
     headerName: tableColumns.project_type_id,
     minWidth: 70,
     sortable: !isDiff,
@@ -91,7 +86,6 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
   {
     cellClass: 'ag-text-center ag-cell-ellipsed',
     field: 'sector.code',
-    headerClass: 'ag-text-center',
     headerName: tableColumns.sector_id,
     minWidth: 70,
     sortable: !isDiff,
@@ -109,7 +103,6 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
   {
     cellClass: 'ag-text-center ag-cell-ellipsed',
     field: 'subsector.code',
-    headerClass: 'ag-text-center',
     headerName: tableColumns.subsector_id,
     minWidth: 100,
     sortable: !isDiff,
@@ -128,7 +121,6 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
   {
     cellClass: 'ag-cell-ellipsed',
     field: 'title',
-    headerClass: 'ag-text-center',
     headerName: tableColumns.title,
     minWidth: 200,
     sortable: !isDiff,
@@ -144,7 +136,6 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
 const getReqByModelColumn = (isDiff: boolean) => ({
   cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
   field: 'required_by_model',
-  headerClass: 'ag-text-center',
   headerName: tableColumns.required_by_model,
   minWidth: 150,
   sortable: !isDiff,
@@ -160,7 +151,6 @@ const getReqByModelColumn = (isDiff: boolean) => ({
 const getStatusColumn = (isDiff: boolean) => ({
   cellClass: 'ag-text-center',
   field: 'status',
-  headerClass: 'ag-text-center',
   headerName: tableColumns.status,
   minWidth: 100,
   sortable: !isDiff,
@@ -175,7 +165,6 @@ const getStatusColumn = (isDiff: boolean) => ({
 const getIsMultiYearColumn = (isDiff: boolean) => ({
   cellClass: 'ag-text-center',
   field: 'is_multi_year',
-  headerClass: 'ag-text-center',
   headerName: tableColumns.is_multi_year,
   minWidth: 100,
   sortable: !isDiff,
@@ -193,7 +182,6 @@ const getIsMultiYearColumn = (isDiff: boolean) => ({
 const getRemarksColumnsDefs = (isDiff: boolean) => [
   {
     cellClass: 'ag-cell-ellipsed',
-    headerClass: 'ag-text-center',
     headerName: tableColumns.remarks,
     minWidth: 200,
     sortable: !isDiff,
@@ -216,8 +204,7 @@ const valuesColumnDefs = (
 ) => [
   ...getDefaultColumnDefs(isDiff, withAgency),
   yearColumns.find(
-    (column: { headerName: string }) =>
-      column.headerName === 'Value ($000) adjusted',
+    (column: { headerName: string }) => column.headerName === 'Value (US $)',
   ) || [],
   getStatusColumn(isDiff),
   getIsMultiYearColumn(isDiff),
@@ -231,9 +218,9 @@ const odpColumnDefs = (
   ...getDefaultColumnDefs(isDiff, withAgency),
   ...(yearColumns.filter(
     (column: { headerName: string }) =>
-      column.headerName === 'ODP adjusted' ||
-      column.headerName === 'MT for HFC adjusted' ||
-      column.headerName === 'CO2-EQ adjusted',
+      column.headerName === 'ODP' ||
+      column.headerName === 'MT for HFC' ||
+      column.headerName === 'CO2-eq tonnes',
   ) || []),
 ]
 
@@ -253,7 +240,6 @@ const allColumnDefs = (
     {
       cellClass: 'ag-text-center ag-cell-ellipsed',
       field: 'bp_chemical_type.name',
-      headerClass: 'ag-text-center',
       headerName: tableColumns.bp_chemical_type_id,
       minWidth: 100,
       sortable: !isDiff,
@@ -268,7 +254,6 @@ const allColumnDefs = (
     {
       cellClass: !isDiff && 'ag-tags-cell-content',
       field: 'substances_display',
-      headerClass: 'ag-text-center',
       headerName: tableColumns.substances,
       minWidth: 130,
       sortable: !isDiff,
@@ -283,7 +268,6 @@ const allColumnDefs = (
     {
       cellClass: 'ag-text-center',
       field: 'amount_polyol',
-      headerClass: 'ag-text-center',
       headerName: tableColumns.amount_polyol,
       minWidth: 120,
       sortable: !isDiff,
@@ -323,6 +307,7 @@ const allColumnDefs = (
 }
 
 const defaultColDef = {
+  headerClass: 'ag-text-center',
   resizable: true,
 }
 
