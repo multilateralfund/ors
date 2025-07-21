@@ -174,3 +174,23 @@ class TestProjectV2ExportXLSX(BaseTest):
         response: FileResponse = self.client.get(self.url)
         assert response.status_code == HTTPStatus.OK
         validate_projects_export(project, response)
+
+
+
+class TestProjectV2ExportDOCX(BaseTest):
+    url = reverse("project-v2-export")
+
+    def test_export_project_anon(self, project):
+        self.client.force_authenticate(user=None)
+        response: Response = self.client.get(self.url, {"project_id": project.id})
+        assert response.status_code == HTTPStatus.FORBIDDEN, response.data
+
+    def test_export_project_agency_submitter(
+        self, project_with_linked_bp, agency_inputter_user
+    ):
+        self.client.force_authenticate(user=agency_inputter_user)
+        response: FileResponse = self.client.get(
+            self.url, {"project_id": project_with_linked_bp.id, "format": "docx" }
+        )
+        assert response.status_code == HTTPStatus.OK
+        validate_single_project_export(project_with_linked_bp, response)
