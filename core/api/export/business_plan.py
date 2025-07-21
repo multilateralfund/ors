@@ -20,28 +20,28 @@ class BPActivitiesWriter(BaseWriter):
                     [
                         {
                             "id": f"value_usd_{year}",
-                            "headerName": f"Value ($000) {label} adjusted",
+                            "headerName": f"Value (US $) {label}",
                             "type": "number",
                             "method": self.get_value,
                             "cell_format": "$###,###,##0.00#############",
                         },
                         {
                             "id": f"value_odp_{year}",
-                            "headerName": f"ODP {label} adjusted",
+                            "headerName": f"ODP {label}",
                             "type": "number",
                             "method": self.get_value,
                             "align": "right",
                         },
                         {
                             "id": f"value_mt_{year}",
-                            "headerName": f"MT for HFC {label} adjusted",
+                            "headerName": f"MT for HFC {label}",
                             "type": "number",
                             "method": self.get_value,
                             "align": "right",
                         },
                         {
                             "id": f"value_co2_{year}",
-                            "headerName": f"CO2-EQ {label} adjusted",
+                            "headerName": f"CO2-EQ {label} tonnes",
                             "type": "number",
                             "method": self.get_value,
                             "align": "right",
