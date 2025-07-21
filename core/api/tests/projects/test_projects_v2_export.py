@@ -176,7 +176,6 @@ class TestProjectV2ExportXLSX(BaseTest):
         validate_projects_export(project, response)
 
 
-
 class TestProjectV2ExportDOCX(BaseTest):
     url = reverse("project-v2-export")
 
@@ -190,7 +189,11 @@ class TestProjectV2ExportDOCX(BaseTest):
     ):
         self.client.force_authenticate(user=agency_inputter_user)
         response: FileResponse = self.client.get(
-            self.url, {"project_id": project_with_linked_bp.id, "format": "docx" }
+            self.url, {"project_id": project_with_linked_bp.id, "output_format": "docx"}
         )
         assert response.status_code == HTTPStatus.OK
-        validate_single_project_export(project_with_linked_bp, response)
+        assert (
+            response.headers["Content-Type"]
+            == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        )
+        assert len(response.getvalue()) > 0

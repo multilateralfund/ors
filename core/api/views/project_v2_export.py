@@ -277,12 +277,15 @@ class ProjectsV2ProjectExport:
         return workbook_response(f"Project {self.project.id}", self.wb)
 
 
-    
-
 class ProjectsV2ProjectExportDocx:
     doc: docx.Document
     project: Project
-    template_path = pathlib.Path(__file__).parent.parent / "export" / "templates" / "Word Template for data entered into the system during project submission online.docx"
+    template_path = (
+        pathlib.Path(__file__).parent.parent
+        / "export"
+        / "templates"
+        / "Word Template for data entered into the system during project submission online.docx"
+    )
 
     def __init__(self, project):
         self.project = project
@@ -293,8 +296,5 @@ class ProjectsV2ProjectExportDocx:
         out = io.BytesIO()
         self.doc.save(out)
         out.seek(0)
-        res = FileResponse(
-            out, as_attachment=True, filename=f"{self.project.id}.docx"
-        )
+        res = FileResponse(out, as_attachment=True, filename=f"{self.project.id}.docx")
         return res
-
