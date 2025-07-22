@@ -130,7 +130,7 @@ export default function ActivitiesFilters(props: any) {
             getOptionLabel={(option: any) => option?.name}
             options={getFilterOptions(
               filters,
-              getFieldOptions(commonSlice.agencies.data, 'agency_id'),
+              getFieldOptions(commonSlice.all_agencies.data, 'agency_id'),
               'agency_id',
             )}
             value={[]}

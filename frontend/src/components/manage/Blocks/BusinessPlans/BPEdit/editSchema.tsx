@@ -59,7 +59,7 @@ const useColumnsOptions = (
   const { results: clusterOptions } = useGetClusterOptions()
 
   const countries = commonSlice.countries.data
-  const agencies = commonSlice.agencies.data
+  const agencies = commonSlice.all_agencies.data
   const clusters = projectSlice.clusters.data
   const types = bpSlice.types.data
   const sectors = bpSlice.sectors.data
