@@ -23,7 +23,8 @@ import { ApiAgency } from '@ors/types/api_agencies'
 import { Cluster, Country } from '@ors/types/store'
 import { parseNumber } from '@ors/helpers'
 
-import { Button, Checkbox, FormControlLabel } from '@mui/material'
+import { Alert, Button, Checkbox, FormControlLabel } from '@mui/material'
+import { IoInformationCircleOutline } from 'react-icons/io5'
 import { find, isNil, isNull } from 'lodash'
 import cx from 'classnames'
 
@@ -329,6 +330,17 @@ const ProjectIdentifiersFields = ({
               }}
               {...sectionDefaultProps}
             />
+            {canUpdateLeadAgency && (
+              <Alert
+                className="mt-2 w-fit bg-mlfs-bannerColor px-2 py-0"
+                icon={<IoInformationCircleOutline size={20} />}
+                severity="info"
+              >
+                When submitting on behalf of a cooperating agency, selecting
+                either the agency or the lead agency will automatically update
+                the other.
+              </Alert>
+            )}
           </>
         )}
         <div className="flex flex-wrap items-center gap-2.5">
