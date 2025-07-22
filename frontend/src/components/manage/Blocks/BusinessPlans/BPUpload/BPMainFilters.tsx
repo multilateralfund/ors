@@ -84,7 +84,7 @@ const BPMainFilters = ({
       >
         <Label isRequired={isFirstStepUpload}>Triennium</Label>
         <SimpleSelect
-          className="!gap-x-0"
+          className="!justify-start !gap-x-0"
           menuClassName="min-w-full"
           initialIndex={filters ? Math.max(currentPeriodIndex, 0) : 0}
           inputClassName="gap-x-4 h-10"
