@@ -59,6 +59,7 @@ function useAppState(user: ApiUser | null | undefined) {
           settings,
           user_permissions,
           agencies,
+          allAgencies,
           countries,
           // Projects data
           statuses,
@@ -77,6 +78,7 @@ function useAppState(user: ApiUser | null | undefined) {
           api('api/settings/', {}, false),
           api('api/user/permissions/', {}, false),
           api('api/agencies/', {}, false),
+          api('api/agencies/?include_all_agencies_option=true', {}, false),
           api('api/countries/', {}, false),
           api('api/project-statuses/', {}, false),
           api('api/project-submission-statuses/', {}, false),
@@ -102,6 +104,7 @@ function useAppState(user: ApiUser | null | undefined) {
 
         const common = {
           agencies: getInitialSliceData(agencies),
+          all_agencies: getInitialSliceData(allAgencies),
           countries: getInitialSliceData<Country[]>(countries),
           countries_for_create: getInitialSliceData<Country[]>(
             countries.filter((c: Country) => c.has_cp_report && !c.is_a2),
