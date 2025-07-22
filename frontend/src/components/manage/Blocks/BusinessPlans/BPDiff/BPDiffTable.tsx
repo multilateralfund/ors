@@ -123,7 +123,7 @@ export default function BPDiffTable({
     return [
       {
         children: valuesUSD,
-        headerName: 'Value ($000)',
+        headerName: 'Value (US $)',
       },
       {
         children: valuesODP,

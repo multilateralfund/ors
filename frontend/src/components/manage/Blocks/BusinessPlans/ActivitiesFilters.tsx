@@ -11,7 +11,8 @@ import { debounce } from '@ors/helpers'
 
 import { InputAdornment, IconButton as MuiIconButton } from '@mui/material'
 import { IoChevronDown, IoSearchOutline } from 'react-icons/io5'
-import { union } from 'lodash'
+import { filter, map, union, uniq } from 'lodash'
+import { CircularProgress } from '@mui/material'
 
 export default function ActivitiesFilters(props: any) {
   const {
@@ -24,6 +25,7 @@ export default function ActivitiesFilters(props: any) {
     handleParamsChange,
     initialFilters,
     withAgency = false,
+    allActivities,
   } = props
 
   const { canViewMetainfoProjects, canViewSectorsSubsectors } =
@@ -41,6 +43,11 @@ export default function ActivitiesFilters(props: any) {
         },
       },
     },
+  }
+
+  const getFieldOptions = (data: any, field: string) => {
+    const crtData = uniq(map(allActivities.results, field))
+    return filter(data, (entry) => crtData.includes(entry.id))
   }
 
   return (
@@ -76,7 +83,7 @@ export default function ActivitiesFilters(props: any) {
               </InputAdornment>
             ),
           }}
-          onKeyDown={(event: any) => {
+          onKeyDown={(_: any) => {
             debounce(
               () => {
                 const search = form.current.search.value
@@ -99,7 +106,7 @@ export default function ActivitiesFilters(props: any) {
           getOptionLabel={(option: any) => option?.name}
           options={getFilterOptions(
             filters,
-            commonSlice.countries.data,
+            getFieldOptions(commonSlice.countries.data, 'country_id'),
             'country_id',
           )}
           value={[]}
@@ -149,7 +156,7 @@ export default function ActivitiesFilters(props: any) {
               getOptionLabel={(option: any) => option?.name}
               options={getFilterOptions(
                 filters,
-                clusters,
+                getFieldOptions(clusters, 'project_cluster_id'),
                 'project_cluster_id',
               )}
               value={[]}
@@ -174,7 +181,7 @@ export default function ActivitiesFilters(props: any) {
               getOptionLabel={(option: any) => option?.name}
               options={getFilterOptions(
                 filters,
-                bpSlice.types.data,
+                getFieldOptions(bpSlice.types.data, 'project_type_id'),
                 'project_type_id',
               )}
               value={[]}
@@ -206,7 +213,7 @@ export default function ActivitiesFilters(props: any) {
               getOptionLabel={(option: any) => option?.name}
               options={getFilterOptions(
                 filters,
-                bpSlice.sectors.data,
+                getFieldOptions(bpSlice.sectors.data, 'sector_id'),
                 'sector_id',
               )}
               value={[]}
@@ -229,7 +236,10 @@ export default function ActivitiesFilters(props: any) {
               getOptionLabel={(option: any) => option?.name}
               options={getFilterOptions(
                 filters,
-                filterSubsectors(bpSlice.subsectors.data),
+                getFieldOptions(
+                  filterSubsectors(bpSlice.subsectors.data),
+                  'subsector_id',
+                ),
                 'subsector_id',
               )}
               value={[]}
@@ -254,7 +264,7 @@ export default function ActivitiesFilters(props: any) {
           getOptionLabel={(option: any) => option?.name}
           options={getFilterOptions(
             filters,
-            multiYearFilterOptions,
+            getFieldOptions(multiYearFilterOptions, 'is_multi_year'),
             'is_multi_year',
           )}
           value={[]}
@@ -277,6 +287,9 @@ export default function ActivitiesFilters(props: any) {
           multiple
           {...defaultProps}
         />
+        {!allActivities.loaded && (
+          <CircularProgress color="inherit" size="20px" className="ml-1.5" />
+        )}
       </div>
       <ActivitiesFiltersSelectedOpts
         {...{
