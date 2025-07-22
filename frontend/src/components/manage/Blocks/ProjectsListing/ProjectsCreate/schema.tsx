@@ -138,7 +138,7 @@ const bpLinkColumnDefs = (
     field: 'required_by_model',
     tooltipField: 'required_by_model',
     minWidth: 150,
-    cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
+    cellClass: 'ag-cell-ellipsed',
   },
   ...yearColumns,
   {

@@ -126,7 +126,7 @@ const ValuesTable: React.FC<Props> = ({
           <th colSpan={tableData.years.length}>
             {isCo2 ? (
               <>
-                CO<sub>2</sub>-eq tonnes
+                CO<sub>2</sub>-eq
               </>
             ) : (
               <div className="pb-1">{header}</div>
@@ -168,7 +168,7 @@ const ValuesTable: React.FC<Props> = ({
         <>
           {renderTable('ODP', tableData.odpValues)}
           {renderTable('MT for HFC', tableData.mtValues)}
-          {renderTable('CO2-eq tonnes', tableData.co2Values, true)}
+          {renderTable('CO2-eq', tableData.co2Values, true)}
         </>
       )}
     </div>
