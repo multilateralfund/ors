@@ -331,7 +331,7 @@ export function BPEditBaseTable(
         headerName: 'CO2-EQ',
         headerGroupComponent: () => (
           <span>
-            CO<sub>2</sub>-eq tonnes
+            CO<sub>2</sub>-eq
           </span>
         ),
       },

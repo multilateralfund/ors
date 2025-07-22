@@ -13,7 +13,7 @@ import { tableColumns } from '../../BusinessPlans/constants'
 
 const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
   {
-    cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
+    cellClass: 'ag-cell-ellipsed',
     field: 'country.name',
     headerName: tableColumns.country_id,
     minWidth: 150,
@@ -134,7 +134,7 @@ const getDefaultColumnDefs = (isDiff: boolean, withAgency: boolean) => [
 ]
 
 const getReqByModelColumn = (isDiff: boolean) => ({
-  cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
+  cellClass: 'ag-cell-ellipsed',
   field: 'required_by_model',
   headerName: tableColumns.required_by_model,
   minWidth: 150,
@@ -220,7 +220,7 @@ const odpColumnDefs = (
     (column: { headerName: string }) =>
       column.headerName === 'ODP' ||
       column.headerName === 'MT for HFC' ||
-      column.headerName === 'CO2-eq tonnes',
+      column.headerName === 'CO2-eq',
   ) || []),
 ]
 

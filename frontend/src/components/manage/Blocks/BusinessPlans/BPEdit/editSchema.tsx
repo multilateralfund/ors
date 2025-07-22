@@ -168,7 +168,7 @@ const useColumnsOptions = (
           tooltipField: 'display_internal_id',
         },
         {
-          cellClass: 'ag-text-center ag-cell-centered ag-cell-ellipsed',
+          cellClass: 'ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select country' },
@@ -504,7 +504,7 @@ const useColumnsOptions = (
           tooltipField: 'title',
         },
         {
-          cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
+          cellClass: 'ag-cell-ellipsed',
           field: 'required_by_model',
           headerComponent: function (props: any) {
             return (

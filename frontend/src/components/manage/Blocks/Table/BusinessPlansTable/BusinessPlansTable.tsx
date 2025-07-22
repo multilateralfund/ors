@@ -170,10 +170,10 @@ export const BPTable = ({
       },
       {
         children: valuesCO2,
-        headerName: 'CO2-eq tonnes',
+        headerName: 'CO2-eq',
         headerGroupComponent: () => (
           <span>
-            CO<sub>2</sub>-eq tonnes
+            CO<sub>2</sub>-eq
           </span>
         ),
       },
