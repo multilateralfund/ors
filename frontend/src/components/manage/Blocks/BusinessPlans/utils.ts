@@ -13,7 +13,7 @@ export const filtersToQueryParams = (filters: any) => {
 }
 
 export const getAgencyByName = (commonSlice: any, agency: string) =>
-  commonSlice.agencies.data.find((item: any) => item.name === agency)
+  commonSlice.all_agencies.data.find((item: any) => item.name === agency)
 
 export const getDecisionOptions = (meeting_id: number) => {
   const bpSlice = useStore((state) => state.businessPlans)
