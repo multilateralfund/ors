@@ -41,7 +41,7 @@ class BPActivitiesWriter(BaseWriter):
                         },
                         {
                             "id": f"value_co2_{year}",
-                            "headerName": f"CO2-EQ {label} tonnes",
+                            "headerName": f"CO₂-eq {label}",
                             "type": "number",
                             "method": self.get_value,
                             "align": "right",
