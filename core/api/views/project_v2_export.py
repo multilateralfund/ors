@@ -1,5 +1,7 @@
 from typing import List
 
+from datetime import datetime
+
 import io
 import pathlib
 import logging
@@ -14,6 +16,7 @@ from rest_framework import serializers
 from core.api.serializers.project_v2 import ProjectDetailsV2Serializer
 from core.api.serializers.business_plan import BPActivityExportSerializer
 
+from core.models.user import User
 from core.models.project import Project
 from core.models.business_plan import BPActivity
 from core.models.project_metadata import ProjectSpecificFields
@@ -277,9 +280,18 @@ class ProjectsV2ProjectExport:
         return workbook_response(f"Project {self.project.id}", self.wb)
 
 
+def document_response(doc, filename):
+    out = io.BytesIO()
+    doc.save(out)
+    out.seek(0)
+    res = FileResponse(out, as_attachment=True, filename=filename)
+    return res
+
+
 class ProjectsV2ProjectExportDocx:
-    doc: docx.Document
+    user = User
     project: Project
+    doc: docx.Document
     template_path = (
         pathlib.Path(__file__).parent.parent
         / "export"
@@ -287,14 +299,48 @@ class ProjectsV2ProjectExportDocx:
         / "Word Template for data entered into the system during project submission online.docx"
     )
 
-    def __init__(self, project):
+    def __init__(self, project, user):
+        self.user = user
         self.project = project
         with self.template_path.open("rb") as tpl:
             self.doc = docx.Document(tpl)
 
+    def build_document(self):
+        for p in self.doc.paragraphs:
+            p_style = {
+                "italic": False,
+                "bold": False,
+                "underline": False,
+            }
+
+            if p.runs:
+                for k in p_style:
+                    p_style[k] = getattr(p.runs[0], k, False)
+
+            if p.text.startswith("Generated on"):
+                now = datetime.utcnow().strftime("%d/%m/%Y")
+                user = self.user.get_full_name() or self.user.username
+                agency = self.user.agency.name if self.user.agency else ""
+                p.text = f"Generated on {now} by {user}" + (
+                    'of "{agency}"' if agency else ""
+                )
+            elif p.text.startswith("Project Title"):
+                p.text = self.project.title
+            elif p.text.startswith("Country:"):
+                p.text = f"{p.text} {self.project.country.name}"
+            elif p.text.startswith("Agency:"):
+                p.text = f"{p.text} {self.project.agency.name}"
+            elif p.text.startswith("Cluster:"):
+                p.text = f"{p.text} {self.project.cluster.name}"
+            elif p.text.startswith("Amount:"):
+                p.text = f"{p.text} (PSC) {self.project.total_psc_cost}"
+            elif p.text.startswith("Project Description:"):
+                p.text = f"{p.text} {self.project.description}"
+
+            if p.runs:
+                for k, v in p_style.items():
+                    setattr(p.runs[0], k, v)
+
     def export_docx(self):
-        out = io.BytesIO()
-        self.doc.save(out)
-        out.seek(0)
-        res = FileResponse(out, as_attachment=True, filename=f"{self.project.id}.docx")
-        return res
+        self.build_document()
+        return document_response(self.doc, filename=f"{self.project.id}.docx")

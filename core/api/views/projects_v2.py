@@ -352,8 +352,8 @@ class ProjectV2ViewSet(
             project = self.get_object()
             if output_format == "xlsx":
                 return ProjectsV2ProjectExport(project).export_xls()
-            elif output_format == "docx":
-                return ProjectsV2ProjectExportDocx(project).export_docx()
+            if output_format == "docx":
+                return ProjectsV2ProjectExportDocx(project, request.user).export_docx()
         return ProjectsV2Export(self).export_xls()
 
     @action(methods=["POST"], detail=True)
