@@ -408,7 +408,7 @@ class ProjectsV2ProjectExportDocx:
         table = self.find_table(
             "Related tranches (metacode and linked projects) Only MYA"
         )
-        if table:
+        if table and self.project.tranche and self.project.tranche > 1:
             related_projects = Project.objects.filter(
                 meta_project__id=self.project.meta_project.id,
                 tranche=self.project.tranche - 1,
