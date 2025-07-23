@@ -31,7 +31,6 @@ from core.api.export.business_plan import BPActivitiesWriter
 
 from core.api.utils import workbook_response
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -127,6 +126,7 @@ def get_headers_specific_information(fields: List[ProjectField]):
 
 
 def dict_as_obj(d):
+
     class Dummy:
         pass
 
@@ -384,26 +384,65 @@ class ProjectsV2ProjectExportDocx:
             for c_idx, cell in enumerate(row.cells):
                 cell.text = str(d.get(row_data[c_idx], "") or "")
 
+    def _write_impact_target_actual(self, headers, table, data):
+        planned_headers = {}
+        actual_headers = {}
+        for header in headers:
+            if header["id"].endswith("_actual"):
+                planned_name = header["id"].split("_actual")[0]
+                actual_headers[planned_name] = header
+            else:
+                planned_headers[header["id"]] = header
+
+        for field_id, header in planned_headers.items():
+            row = table.add_row()
+            row_data = [
+                header["headerName"],
+                data[field_id],
+                data[actual_headers[field_id]["id"]],
+            ]
+            for c_idx, cell in enumerate(row.cells):
+                cell.text = str(row_data[c_idx] or "")
+
+    def build_related_tranches(self):
+        table = self.find_table(
+            "Related tranches (metacode and linked projects) Only MYA"
+        )
+        if table:
+            related_projects = Project.objects.filter(
+                meta_project__id=self.project.meta_project.id,
+                tranche=self.project.tranche - 1,
+            )
+            row = table.add_row()
+            for project in related_projects:
+                row_data = [
+                    project.meta_project.new_code,
+                    project.code,
+                    project.status.name,
+                ]
+                for c_idx, cell in enumerate(row.cells):
+                    cell.text = str(row_data[c_idx] or "")
+
     def build_cross_cutting(self, data):
         table = self.find_table("Cross-cutting fields")
         self._write_header_to_table(get_headers_cross_cutting()[2:], table, data)
 
+    def _get_fields_for_section(
+        self, fields_obj: ProjectSpecificFields, section_name: str, **filters
+    ):
+        return fields_obj.fields.filter(section__in=[section_name], **filters)
+
     def _write_project_specific_fields(
         self,
-        fields_obj: ProjectSpecificFields,
-        fields_section: str,
-        after_paragraph: str,
-        data,
+        table=None,
+        fields=None,
+        data=None,
         writer=None,
     ):
-        if not writer:
-            writer = self._write_header_to_table
-        if data:
-            fields = fields_obj.fields.filter(section__in=[fields_section])
-            table = self.find_table(after_paragraph)
-            if table and fields:
-                headers = get_headers_specific_information(fields)
-                writer(headers, table, data)
+        writer = self._write_header_to_table if not writer else writer
+        if data and table and fields:
+            headers = get_headers_specific_information(fields)
+            writer(headers, table, data)
 
     def build_specific_information(self, data):
         project_specific_fields_obj = ProjectSpecificFields.objects.filter(
@@ -414,23 +453,37 @@ class ProjectsV2ProjectExportDocx:
 
         if project_specific_fields_obj:
             self._write_project_specific_fields(
-                project_specific_fields_obj,
-                "Header",
-                "Project specific fields header",
-                data,
+                table=self.find_table("Project specific fields header"),
+                fields=self._get_fields_for_section(
+                    project_specific_fields_obj, "Header"
+                ),
+                data=data,
             )
             self._write_project_specific_fields(
-                project_specific_fields_obj,
-                "Substance Details",
-                "Substance details Page and tables",
-                data.get("ods_odp", []),
+                table=self.find_table("Substance details Page and tables"),
+                fields=self._get_fields_for_section(
+                    project_specific_fields_obj, "Substance Details"
+                ),
+                data=data.get("ods_odp", []),
                 writer=self._write_substance_table,
             )
             self._write_project_specific_fields(
-                project_specific_fields_obj,
-                "Impact",
-                "Impact (tabular)",
-                data,
+                table=self.find_table("Impact (tabular)"),
+                fields=self._get_fields_for_section(
+                    project_specific_fields_obj,
+                    "Impact",
+                    is_actual=False,
+                ),
+                data=data,
+            )
+            self._write_project_specific_fields(
+                table=self.find_table("Impact (previous MYA tranches) If applicable"),
+                fields=self._get_fields_for_section(
+                    project_specific_fields_obj,
+                    "Impact",
+                ),
+                data=data,
+                writer=self._write_impact_target_actual,
             )
 
     def build_document(self):
@@ -438,6 +491,7 @@ class ProjectsV2ProjectExportDocx:
         data = serializer.data
 
         self.build_front_page(data)
+        self.build_related_tranches()
         self.build_cross_cutting(data)
         self.build_specific_information(data)
 
