@@ -84,12 +84,14 @@ const ProjectIdentifiers = ({ project }: { project: ProjectTypeApi }) => {
             project.submission_status,
           )}
         </div>
-        <div className="flex gap-3">
-          <div className="flex h-[18px] min-h-[18px] w-[18px] min-w-[18px] items-center justify-center rounded-full border border-solid border-primary bg-[#EBFF00]">
-            <FaInfo className="text-primary" size={12} />
+        {project.lead_agency_submitting_on_behalf && (
+          <div className="flex gap-3">
+            <div className="flex h-[18px] min-h-[18px] w-[18px] min-w-[18px] items-center justify-center rounded-full border border-solid border-primary bg-[#EBFF00]">
+              <FaInfo className="text-primary" size={12} />
+            </div>
+            The lead agency submitted on behalf of the cooperating agency.
           </div>
-          The lead agency submitted on behalf of the cooperating agency.
-        </div>
+        )}
       </div>
 
       {canViewBpSection && (
