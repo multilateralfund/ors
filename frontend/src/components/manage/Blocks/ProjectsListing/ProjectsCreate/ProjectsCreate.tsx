@@ -16,6 +16,7 @@ import {
   ProjectFiles,
   ProjectDataProps,
   TrancheErrors,
+  RelatedProjectsType,
 } from '../interfaces.ts'
 import {
   canGoToSecondStep,
@@ -57,6 +58,7 @@ const ProjectsCreate = ({
   fileErrors,
   trancheErrors,
   getTrancheErrors,
+  associatedProjects,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
@@ -69,6 +71,7 @@ const ProjectsCreate = ({
     fileErrors: string
     project?: ProjectTypeApi
     projectFiles?: ProjectFile[]
+    associatedProjects?: RelatedProjectsType[] | null
   }) => {
   const { project_id } = useParams<Record<string, string>>()
 
@@ -231,6 +234,7 @@ const ProjectsCreate = ({
             setCurrentTab,
             hasSubmitted,
             mode,
+            associatedProjects,
           }}
           isNextBtnEnabled={canLinkToBp}
           errors={projIdentifiersErrors}

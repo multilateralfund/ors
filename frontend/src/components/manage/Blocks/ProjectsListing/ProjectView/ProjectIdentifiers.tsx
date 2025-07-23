@@ -1,16 +1,47 @@
+import { useEffect, useState } from 'react'
+
 import { BPTable } from '@ors/components/manage/Blocks/Table/BusinessPlansTable/BusinessPlansTable'
 import { booleanDetailItem, detailItem } from './ViewHelperComponents'
 import { SectionTitle } from '../ProjectsCreate/ProjectsCreate'
-import { ProjectTypeApi } from '../interfaces'
+import { RelatedProjects } from '../HelperComponents'
+import { useGetProjectsForSubmission } from '../hooks/useGetProjectsForSubmission'
+import { ProjectTypeApi, RelatedProjectsType } from '../interfaces'
 import { tableColumns } from '../constants'
 import { canViewField } from '../utils'
 import { useStore } from '@ors/store'
 
+import { FaInfo } from 'react-icons/fa6'
 import { Divider } from '@mui/material'
+import { debounce } from 'lodash'
 
 const ProjectIdentifiers = ({ project }: { project: ProjectTypeApi }) => {
   const { viewableFields } = useStore((state) => state.projectFields)
   const canViewBpSection = canViewField(viewableFields, 'bp_activity')
+
+  const commonSlice = useStore((state) => state.common)
+  const leadAgency =
+    commonSlice.agencies.data.find(
+      (agency) => agency.id === project.meta_project.lead_agency,
+    )?.name ?? ''
+
+  const [associatedProjects, setAssociatedProjects] = useState<
+    RelatedProjectsType[] | null
+  >([])
+
+  const debouncedGetProjectsForSubmission = debounce(() => {
+    useGetProjectsForSubmission(
+      project.id,
+      setAssociatedProjects,
+      undefined,
+      false,
+      false,
+      false,
+    )
+  }, 0)
+
+  useEffect(() => {
+    debouncedGetProjectsForSubmission()
+  }, [])
 
   const bpActivity = {
     ...project.bp_activity,
@@ -42,6 +73,8 @@ const ProjectIdentifiers = ({ project }: { project: ProjectTypeApi }) => {
             detailItem(tableColumns.meeting, project.meeting)}
           {canViewField(viewableFields, 'agency') &&
             detailItem(tableColumns.agency, project.agency)}
+          {canViewField(viewableFields, 'lead_agency') &&
+            detailItem(tableColumns.lead_agency, leadAgency)}
           {canViewField(viewableFields, 'cluster') &&
             detailItem(tableColumns.cluster, project.cluster?.name)}
           {canViewField(viewableFields, 'production') &&
@@ -50,6 +83,12 @@ const ProjectIdentifiers = ({ project }: { project: ProjectTypeApi }) => {
             tableColumns.submission_status,
             project.submission_status,
           )}
+        </div>
+        <div className="flex gap-3">
+          <div className="flex h-[18px] min-h-[18px] w-[18px] min-w-[18px] items-center justify-center rounded-full border border-solid border-primary bg-[#EBFF00]">
+            <FaInfo className="text-primary" size={12} />
+          </div>
+          The lead agency submitted on behalf of the cooperating agency.
         </div>
       </div>
 
@@ -83,6 +122,18 @@ const ProjectIdentifiers = ({ project }: { project: ProjectTypeApi }) => {
           )}
         </>
       )}
+      {/* {associatedProjects && associatedProjects.length > 0 && (
+        <>
+          <Divider className="my-6" />
+          <SectionTitle>Associated projects</SectionTitle>
+          <RelatedProjects
+            data={associatedProjects}
+            isLoaded={true}
+            canRefreshStatus={false}
+            mode="view"
+          />
+        </>
+      )} */}
     </>
   )
 }

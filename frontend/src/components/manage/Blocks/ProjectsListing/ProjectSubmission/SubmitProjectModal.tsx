@@ -2,14 +2,13 @@ import { useEffect, useState } from 'react'
 
 import Loading from '@ors/components/theme/Loading/Loading'
 import CustomLink from '@ors/components/ui/Link/Link'
-import { CancelButton } from '../HelperComponents'
+import { CancelButton, RelatedProjects } from '../HelperComponents'
 import { useGetProjectsForSubmission } from '../hooks/useGetProjectsForSubmission'
-import { ProjectTypeApi, RelatedProjectsType } from '../interfaces'
+import { RelatedProjectsType } from '../interfaces'
 import { pluralizeWord } from '../utils'
 
-import { Modal, Typography, Box, Divider } from '@mui/material'
-import { FaExternalLinkAlt } from 'react-icons/fa'
-import { debounce, map } from 'lodash'
+import { Modal, Typography, Box } from '@mui/material'
+import { debounce } from 'lodash'
 
 const SubmitProjectModal = ({
   id,
@@ -69,23 +68,11 @@ const SubmitProjectModal = ({
             </div>
             {hasAssociatedPojects && (
               <div className="flex flex-col rounded-lg bg-white p-4">
-                {map(
-                  associatedProjects,
-                  (project: ProjectTypeApi, index: number) => (
-                    <div key={project.id}>
-                      <span className="flex items-center gap-2 text-lg normal-case leading-tight !text-inherit">
-                        <FaExternalLinkAlt
-                          size={16}
-                          className="min-h-[16px] min-w-[16px]"
-                        />
-                        {project.title}
-                      </span>
-                      {index !== associatedProjects.length - 1 && (
-                        <Divider className="my-3" />
-                      )}
-                    </div>
-                  ),
-                )}
+                <RelatedProjects
+                  data={associatedProjects}
+                  isLoaded={loaded}
+                  canRefreshStatus={false}
+                />
               </div>
             )}
             <span className="text-lg">

@@ -7,6 +7,7 @@ import ProjectsCreate from '../ProjectsCreate/ProjectsCreate'
 import ProjectSubmissionFooter from '../ProjectSubmission/ProjectSubmissionFooter'
 import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
+import { useGetProjectsForSubmission } from '../hooks/useGetProjectsForSubmission'
 import {
   getDefaultValues,
   getFileFromMetadata,
@@ -139,6 +140,27 @@ const ProjectsEdit = ({
     }
   }, [projectFiles])
 
+  const [associatedProjects, setAssociatedProjects] = useState<
+    RelatedProjectsType[] | null
+  >([])
+
+  const debouncedGetProjectsForSubmission = debounce(() => {
+    useGetProjectsForSubmission(
+      project.id,
+      setAssociatedProjects,
+      undefined,
+      false,
+      false,
+      false,
+    )
+  }, 0)
+
+  useEffect(() => {
+    if (mode === 'edit') {
+      debouncedGetProjectsForSubmission()
+    }
+  }, [])
+
   const defaultTrancheErrors = {
     errorText: '',
     isError: false,
@@ -241,6 +263,10 @@ const ProjectsEdit = ({
   const tranche = projectData.projectSpecificFields?.tranche ?? 0
 
   const getTrancheErrors = async () => {
+    setTrancheErrors((prevErrors) => {
+      return { ...prevErrors, loaded: false }
+    })
+
     try {
       const result = await api(
         `api/projects/v2/${project_id}/list_previous_tranches/?tranche=${tranche}&include_validation=true`,
@@ -364,6 +390,7 @@ const ProjectsEdit = ({
             fileErrors,
             trancheErrors,
             getTrancheErrors,
+            associatedProjects,
           }}
         />
         <ProjectSubmissionFooter
