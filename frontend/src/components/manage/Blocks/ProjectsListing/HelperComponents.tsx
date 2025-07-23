@@ -205,7 +205,7 @@ export const RelatedProjects = ({
       )
     })}
     {canRefreshStatus && (
-      <div className="mt-6 flex items-center gap-2">
+      <div className="mt-8 flex items-center gap-2">
         <div
           className="flex cursor-pointer items-center gap-2 text-lg normal-case leading-none"
           onClick={(e) => {
