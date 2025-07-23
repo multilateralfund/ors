@@ -1,7 +1,7 @@
 import os
 import urllib
 
-
+from constance import config
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from django.db import transaction
@@ -14,7 +14,6 @@ from rest_framework.response import Response
 from rest_framework import parsers
 from rest_framework.decorators import action
 from rest_framework.views import APIView
-
 
 from core.api.filters.project import ProjectFilter
 from core.api.permissions import (
@@ -57,12 +56,13 @@ from core.models.project_metadata import (
     ProjectSubmissionStatus,
     ProjectSpecificFields,
 )
+from core.tasks import send_project_submission_notification
 from core.api.views.utils import log_project_history
 
 from core.api.views.projects_export import ProjectsV2Export
 from core.api.views.project_v2_export import ProjectsV2ProjectExport
 
-# pylint: disable=C0302,R0911,R0904
+# pylint: disable=C0302,R0911,R0904,R1702
 
 
 class ProjectDestructionTechnologyView(APIView):
@@ -207,6 +207,14 @@ class ProjectV2ViewSet(
 
                 queryset_filters.pop("submission_status__name", None)
                 allowed_versions.add(3)
+            if not user.has_perm("core.has_project_v2_edit_approved_access"):
+                queryset = queryset.exclude(
+                    submission_status__name__in=[
+                        "Approved",
+                        "Withdrawn",
+                        "Not approved",
+                    ]
+                )
 
             if allowed_versions:
                 queryset_filters["version__in"] = list(allowed_versions)
@@ -364,7 +372,7 @@ class ProjectV2ViewSet(
     )
     def submit(self, request, *args, **kwargs):
         """
-        Submits the project and its associated projects for review.
+        Submits the project and its components projects for review.
         The projects are checked for validity (check version, status and if the required fields are filled).
         Previous tranches of the projects (if they exist) are checked if at least one actual field is filled.
         If all the projects are valid, they are marked as submitted and the version is increased, creating
@@ -381,6 +389,15 @@ class ProjectV2ViewSet(
             meta_project=project.meta_project,
             submission_status=project.submission_status,
         )
+
+        if project.component:
+            # If the project is a component, include only components of the project
+            associated_projects = associated_projects.filter(
+                component=project.component,
+            )
+        else:
+            # If the project is not a component, keep only the main project
+            associated_projects = associated_projects.filter(id=project.id)
 
         associated_projects = sorted(
             associated_projects, key=lambda p: 0 if p.id == project.id else 1
@@ -415,6 +432,11 @@ class ProjectV2ViewSet(
                 log_project_history(
                     associated_project, request.user, HISTORY_DESCRIPTION_SUBMIT_V1
                 )
+        # Send email notification to the secretariat team
+        if config.SEND_MAIL:
+            send_project_submission_notification.delay(
+                [project.id for project in associated_projects]
+            )
 
         return Response(
             ProjectListV2Serializer(associated_projects, many=True).data,
@@ -809,24 +831,29 @@ class ProjectV2ViewSet(
                 warnings = []
                 if specific_field:
                     # at least one actual field should be filled
-                    one_field_filled = False
-                    for field in specific_field.fields.filter(is_actual=True):
-                        if getattr(previous_tranche, field.read_field_name) is not None:
-                            one_field_filled = True
-                        else:
-                            warnings.append(
+                    fields = specific_field.fields.filter(is_actual=True)
+                    if fields.exists():
+                        one_field_filled = False
+                        for field in fields:
+                            if (
+                                getattr(previous_tranche, field.read_field_name)
+                                is not None
+                            ):
+                                one_field_filled = True
+                            else:
+                                warnings.append(
+                                    {
+                                        "field": field.read_field_name,
+                                        "message": f"{field.label} is not filled.",
+                                    }
+                                )
+                        if not one_field_filled:
+                            errors.append(
                                 {
-                                    "field": field.read_field_name,
-                                    "message": f"{field.label} is not filled.",
+                                    "field": "fields",
+                                    "message": "At least one actual indicator should be filled.",
                                 }
                             )
-                    if not one_field_filled:
-                        errors.append(
-                            {
-                                "field": "fields",
-                                "message": "At least one actual indicator should be filled.",
-                            }
-                        )
                 serializer_data["warnings"] = warnings
                 serializer_data["errors"] = errors
                 data.append(serializer_data)
@@ -850,6 +877,12 @@ class ProjectV2ViewSet(
                 description="If set to true, the response will include the project details.",
                 type=openapi.TYPE_BOOLEAN,
             ),
+            openapi.Parameter(
+                "only_components",
+                openapi.IN_QUERY,
+                description="If set to true, the response will include only components of the meta project.",
+                type=openapi.TYPE_BOOLEAN,
+            ),
         ],
         operation_description="""
             List all projects associated with the meta project
@@ -871,6 +904,14 @@ class ProjectV2ViewSet(
             meta_project=project.meta_project,
             submission_status=project.submission_status,
         )
+        if (
+            request.query_params.get("only_components", "false").lower() == "true"
+            and project.component
+        ):
+            # If only_components is true, include only components of the project
+            associated_projects = associated_projects.filter(
+                component=project.component,
+            )
         if not request.query_params.get("include_project", "false").lower() == "true":
             associated_projects = associated_projects.exclude(
                 id=project.id,
@@ -1028,6 +1069,15 @@ class ProjectV2FileView(
                 queryset_filters.pop("submission_status__name", None)
                 allowed_versions.add(3)
 
+            if not user.has_perm("core.has_project_v2_edit_approved_access"):
+                queryset = queryset.exclude(
+                    submission_status__name__in=[
+                        "Approved",
+                        "Withdrawn",
+                        "Not approved",
+                    ]
+                )
+
             if allowed_versions:
                 queryset_filters["version__in"] = list(allowed_versions)
             queryset = queryset.filter(**queryset_filters)
@@ -1176,6 +1226,15 @@ class ProjectV2FileIncludePreviousVersionsView(
             if user.has_perm("core.has_project_v2_version3_edit_access"):
                 queryset_filters.pop("submission_status__name", None)
                 allowed_versions.add(3)
+
+            if not user.has_perm("core.has_project_v2_edit_approved_access"):
+                queryset = queryset.exclude(
+                    submission_status__name__in=[
+                        "Approved",
+                        "Withdrawn",
+                        "Not approved",
+                    ]
+                )
 
             if allowed_versions:
                 queryset_filters["version__in"] = list(allowed_versions)

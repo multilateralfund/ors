@@ -124,7 +124,7 @@ const EditActionButtons = ({
     hasSectionErrors(substanceErrors) ||
     hasSectionErrors(impactErrors) ||
     hasOdsOdpErrors ||
-    getHasNoFiles(files, projectFiles)
+    getHasNoFiles(id, files, projectFiles)
   const disableSubmit = isSubmitDisabled || hasErrors
   const disableApprovalActions = true
 

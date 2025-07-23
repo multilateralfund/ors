@@ -1,12 +1,13 @@
 'use client'
 
-import { useContext, useEffect, useRef, useState } from 'react'
+import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import ProjectsHeader from '../ProjectSubmission/ProjectsHeader'
 import ProjectsCreate from '../ProjectsCreate/ProjectsCreate'
 import ProjectSubmissionFooter from '../ProjectSubmission/ProjectSubmissionFooter'
 import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
+import { useGetProjectsForSubmission } from '../hooks/useGetProjectsForSubmission'
 import {
   getDefaultValues,
   getFileFromMetadata,
@@ -43,10 +44,10 @@ const ProjectsEdit = ({
   mode: string
 }) => {
   const project_id = project.id.toString()
+  const isEditMode = mode === 'edit'
 
-  const { canViewProjects } = useContext(PermissionsContext)
-  const userSlice = useStore((state) => state.user)
-  const { agency_id } = userSlice.data
+  const { canViewProjects, canEditApprovedProjects } =
+    useContext(PermissionsContext)
 
   const [projectData, setProjectData] = useState<ProjectData>({
     projIdentifiers: initialProjectIdentifiers,
@@ -65,7 +66,10 @@ const ProjectsEdit = ({
   const { project_type, sector } = crossCuttingFields
 
   const groupedFields = groupBy(specificFields, 'table')
-  const projectFields = groupedFields['project'] || []
+  const fieldsOfProject = groupedFields['project'] || []
+  const projectFields = isEditMode
+    ? fieldsOfProject
+    : filter(fieldsOfProject, (field) => !field.is_actual)
   const odsOdpFields = (groupedFields['ods_odp'] || []).filter(
     (field) => field.read_field_name !== 'sort_order',
   )
@@ -73,6 +77,34 @@ const ProjectsEdit = ({
   const fieldsValuesLoaded = useRef<boolean>(false)
 
   const data = useGetProjectFiles(parseInt(project_id))
+
+  const {
+    fetchProjectFields,
+    projectFields: allFields,
+    setViewableFields,
+    setEditableFields,
+  } = useStore((state) => state.projectFields)
+
+  const debouncedFetchProjectFields = useMemo(
+    () => debounce(() => fetchProjectFields?.(), 0),
+    [fetchProjectFields],
+  )
+
+  useEffect(() => {
+    debouncedFetchProjectFields()
+  }, [])
+
+  useEffect(() => {
+    if (allFields && allFields.loaded && allFields.data) {
+      const version = isEditMode ? project.version : 1
+      const submissionStatus = isEditMode
+        ? project.submission_status
+        : undefined
+
+      setViewableFields?.(version, submissionStatus)
+      setEditableFields?.(version, submissionStatus, canEditApprovedProjects)
+    }
+  }, [allFields, setViewableFields, setEditableFields])
 
   const [projectFiles, setProjectFiles] = useState<ProjectFile[]>([])
   const [files, setFiles] = useState<ProjectFilesObject>({
@@ -100,13 +132,34 @@ const ProjectsEdit = ({
   }, [data])
 
   useEffect(() => {
-    if (mode === 'edit') {
+    if (isEditMode) {
       setFiles({
         deletedFilesIds: [],
         newFiles: [],
       })
     }
   }, [projectFiles])
+
+  const [associatedProjects, setAssociatedProjects] = useState<
+    RelatedProjectsType[] | null
+  >([])
+
+  const debouncedGetProjectsForSubmission = debounce(() => {
+    useGetProjectsForSubmission(
+      project.id,
+      setAssociatedProjects,
+      undefined,
+      false,
+      false,
+      false,
+    )
+  }, 0)
+
+  useEffect(() => {
+    if (mode === 'edit') {
+      debouncedGetProjectsForSubmission()
+    }
+  }, [])
 
   const defaultTrancheErrors = {
     errorText: '',
@@ -132,12 +185,10 @@ const ProjectsEdit = ({
       projIdentifiers: {
         country: project.country_id,
         meeting: mode !== 'partial-link' ? project.meeting_id : null,
-        current_agency: agency_id ?? project.agency_id,
-        side_agency:
-          !agency_id || project.agency_id === agency_id
-            ? null
-            : project.agency_id,
-        is_lead_agency: agency_id ? project.agency_id === agency_id : true,
+        agency: project.agency_id,
+        lead_agency: project.meta_project.lead_agency,
+        lead_agency_submitting_on_behalf:
+          project.lead_agency_submitting_on_behalf,
         cluster: project.cluster_id,
         production: project.production,
       },
@@ -158,12 +209,16 @@ const ProjectsEdit = ({
               project_end_date: project.project_end_date,
               total_fund: project.total_fund,
               support_cost_psc: project.support_cost_psc,
-              individual_consideration: project.individual_consideration,
+              individual_consideration:
+                mode === 'edit' ? project.individual_consideration : true,
             },
           }
         : {
             bpLinking: { isLinkedToBP: false, bpId: null },
-            crossCuttingFields: initialCrossCuttingFields,
+            crossCuttingFields: {
+              ...initialCrossCuttingFields,
+              is_lvc: project.is_lvc,
+            },
           }),
     }))
   }, [])
@@ -175,7 +230,7 @@ const ProjectsEdit = ({
         project_type,
         sector,
         setSpecificFields,
-        mode === 'edit' ? project_id : null,
+        isEditMode ? project_id : null,
         setSpecificFieldsLoaded,
       )
     } else setSpecificFields([])
@@ -208,7 +263,9 @@ const ProjectsEdit = ({
   const tranche = projectData.projectSpecificFields?.tranche ?? 0
 
   const getTrancheErrors = async () => {
-    setTrancheErrors(defaultTrancheErrors)
+    setTrancheErrors((prevErrors) => {
+      return { ...prevErrors, loaded: false }
+    })
 
     try {
       const result = await api(
@@ -292,7 +349,7 @@ const ProjectsEdit = ({
         tranchesData: [],
         loaded: true,
       })
-    } else if (mode === 'edit' && canViewProjects) {
+    } else if (isEditMode && canViewProjects) {
       debouncedGetTrancheErrors()
     }
   }, [tranche, project_id, specificFields])
@@ -333,11 +390,12 @@ const ProjectsEdit = ({
             fileErrors,
             trancheErrors,
             getTrancheErrors,
+            associatedProjects,
           }}
         />
         <ProjectSubmissionFooter
           successMessage={
-            mode === 'edit'
+            isEditMode
               ? 'Updated project successfully.'
               : 'Submission was successful.'
           }

@@ -82,6 +82,8 @@ class BaseWriter:
 
                 if header_type == "number":
                     value = float(value or 0)
+                elif header_type == "int":
+                    value = int(value or 0)
                 elif header_type == "bool":
                     value = "Yes" if value else "No"
                 else:
@@ -286,6 +288,8 @@ class WriteOnlyBase:
 
                 if header_type == "number":
                     value = float(value or 0)
+                elif header_type == "int":
+                    value = int(value or 0)
                 elif header_type == "bool":
                     value = "Yes" if value else "No"
                 else:

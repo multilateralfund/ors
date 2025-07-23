@@ -451,6 +451,12 @@ def import_fields(file_path):
             "section": field_json["SECTION"],
             "is_actual": field_json.get("IS_ACTUAL", False),
             "sort_order": field_json["SORT_ORDER"],
+            "editable_in_versions": ",".join(
+                [str(version) for version in field_json["EDITABLE_IN_VERSIONS"]]
+            ),
+            "visible_in_versions": ",".join(
+                [str(version) for version in field_json["VISIBLE_IN_VERSIONS"]]
+            ),
         }
 
         ProjectField.objects.update_or_create(

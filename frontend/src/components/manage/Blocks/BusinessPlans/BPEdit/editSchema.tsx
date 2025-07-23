@@ -1,14 +1,13 @@
-import { Dispatch, SetStateAction, useCallback, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import { PendingEditType } from './BPEditTable'
 import { useGetClusterOptions } from '../useGetClusterOptions'
-import { ApiEditBPActivity } from '@ors/types/api_bp_get'
 import { useStore } from '@ors/store'
 import {
   editCellRenderer,
   EditTagsCellRenderer,
 } from '../BPTableHelpers/cellRenderers'
-import { hasErrors } from '../utils'
+import { filterSubsectors, hasErrors } from '../utils'
 import { BPEditTableInterface, chemicalTypesType } from '../types'
 import { lvcStatuses, multiYearFilterOptions, tableColumns } from '../constants'
 import {
@@ -64,7 +63,7 @@ const useColumnsOptions = (
   const clusters = projectSlice.clusters.data
   const types = bpSlice.types.data
   const sectors = bpSlice.sectors.data
-  const subsectors = bpSlice.subsectors.data
+  const subsectors = filterSubsectors(bpSlice.subsectors.data)
   const substances = cpReportsSlice.substances.data
   const statuses =
     commonSlice.settings.data.business_plan_activity_statuses.map((status) => ({
@@ -163,14 +162,13 @@ const useColumnsOptions = (
         {
           cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
           field: 'display_internal_id',
-          headerClass: 'ag-text-center',
           headerName: 'Activity ID',
           minWidth: 150,
           editable: false,
           tooltipField: 'display_internal_id',
         },
         {
-          cellClass: 'ag-text-center ag-cell-centered ag-cell-ellipsed',
+          cellClass: 'ag-cell-ellipsed',
           cellEditor: 'agSelectCellEditor',
           cellEditorParams: {
             Input: { placeholder: 'Select country' },
@@ -186,7 +184,6 @@ const useColumnsOptions = (
               editCellRenderer(props, props.data.country?.name),
           }),
           field: 'country_id',
-          headerClass: 'ag-text-center',
           headerComponentParams: {
             details: <sup className="font-bold">*</sup>,
           },
@@ -217,7 +214,6 @@ const useColumnsOptions = (
                     editCellRenderer(props, props.data.agency?.name),
                 }),
                 field: 'agency_id',
-                headerClass: 'ag-text-center',
                 headerComponentParams: {
                   details: <sup className="font-bold">*</sup>,
                 },
@@ -248,7 +244,6 @@ const useColumnsOptions = (
               editCellRenderer(props, props.data.lvc_status),
           }),
           field: 'lvc_status',
-          headerClass: 'ag-text-center',
           headerName: tableColumns.lvc_status,
           minWidth: 100,
           tooltipField: 'lvc_status',
@@ -278,7 +273,6 @@ const useColumnsOptions = (
               ),
           }),
           field: 'project_cluster_id',
-          headerClass: 'ag-text-center',
           headerName: tableColumns.project_cluster_id,
           minWidth: 120,
           tooltipField: 'project_cluster.name',
@@ -319,7 +313,6 @@ const useColumnsOptions = (
               ),
           }),
           field: 'project_type_id',
-          headerClass: 'ag-text-center',
           headerName: tableColumns.project_type_id,
           minWidth: 120,
           tooltipField: 'project_type.name',
@@ -352,7 +345,6 @@ const useColumnsOptions = (
               editCellRenderer(props, props.data.bp_chemical_type?.name),
           }),
           field: 'bp_chemical_type_id',
-          headerClass: 'ag-text-center',
           headerName: tableColumns.bp_chemical_type_id,
           minWidth: 120,
           tooltipField: 'bp_chemical_type.name',
@@ -382,7 +374,6 @@ const useColumnsOptions = (
               field: 'substances',
             }),
           field: 'substances',
-          headerClass: 'ag-text-center',
           headerName: tableColumns.substances,
           minWidth: 150,
           valueSetter: (params: any) =>
@@ -399,7 +390,6 @@ const useColumnsOptions = (
           }),
           dataType: 'number',
           field: 'amount_polyol',
-          headerClass: 'ag-text-center',
           headerName: tableColumns.amount_polyol,
           minWidth: 120,
           cellRenderer: (props: any) =>
@@ -448,7 +438,6 @@ const useColumnsOptions = (
               ),
           }),
           field: 'sector_id',
-          headerClass: 'ag-text-center',
           headerName: tableColumns.sector_id,
           minWidth: 120,
           tooltipField: 'sector.name',
@@ -489,7 +478,6 @@ const useColumnsOptions = (
               ),
           }),
           field: 'subsector_id',
-          headerClass: 'ag-text-center',
           headerName: tableColumns.subsector_id,
           minWidth: 120,
           tooltipField: 'subsector.name',
@@ -507,7 +495,6 @@ const useColumnsOptions = (
         {
           cellClass: 'ag-cell-ellipsed',
           field: 'title',
-          headerClass: 'ag-text-center',
           headerName: tableColumns.title,
           minWidth: 200,
           ...(hasErrors(rowErrors, 'title') && {
@@ -517,9 +504,8 @@ const useColumnsOptions = (
           tooltipField: 'title',
         },
         {
-          cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-centered',
+          cellClass: 'ag-cell-ellipsed',
           field: 'required_by_model',
-          headerClass: 'ag-text-center',
           headerComponent: function (props: any) {
             return (
               <HeaderPasteWrapper
@@ -556,7 +542,6 @@ const useColumnsOptions = (
               editCellRenderer(props, props.data.status),
           }),
           field: 'status',
-          headerClass: 'ag-text-center',
           headerName: tableColumns.status,
           minWidth: 120,
           tooltipField: 'status_display',
@@ -576,7 +561,6 @@ const useColumnsOptions = (
             optionTextClassname,
           },
           field: 'is_multi_year',
-          headerClass: 'ag-text-center',
           headerName: tableColumns.is_multi_year,
           minWidth: 120,
           ...(hasErrors(rowErrors, 'is_multi_year') && {
@@ -593,7 +577,6 @@ const useColumnsOptions = (
         {
           cellClass: 'ag-cell-ellipsed',
           field: 'remarks',
-          headerClass: 'ag-text-center',
           headerName: tableColumns.remarks,
           minWidth: 200,
           ...(hasErrors(rowErrors, 'remarks') && {
@@ -608,6 +591,7 @@ const useColumnsOptions = (
         },
       ],
       defaultColDef: {
+        headerClass: 'ag-text-center',
         editable: true,
         enableCellChangeFlash: false,
         resizable: true,

@@ -154,7 +154,7 @@ class BPActivityExportSerializer(serializers.ModelSerializer):
 
     def get_display_internal_id(self, obj):
         agency_code = obj.agency.name
-        country_code = obj.country.abbr or obj.country.name
+        country_code = obj.country.iso3 or obj.country.name
         # add 0 padding to internal_id to make it 9 digits
         internal_id = str(obj.initial_id).zfill(9)
         return f"{agency_code}-{country_code}-{internal_id}"
@@ -263,7 +263,7 @@ class BPActivityListSerializer(BPActivityDetailSerializer):
 
     def get_display_internal_id(self, obj):
         agency_code = obj.agency.name
-        country_code = obj.country.abbr or obj.country.name
+        country_code = obj.country.iso3 or obj.country.name
         # add 0 padding to internal_id to make it 9 digits
         internal_id = str(obj.initial_id).zfill(9)
         return f"{agency_code}-{country_code}-{internal_id}"

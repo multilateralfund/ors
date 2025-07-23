@@ -126,7 +126,7 @@ const ValuesTable: React.FC<Props> = ({
           <th colSpan={tableData.years.length}>
             {isCo2 ? (
               <>
-                CO<sub>2</sub>-EQ adjusted
+                CO<sub>2</sub>-eq
               </>
             ) : (
               <div className="pb-1">{header}</div>
@@ -163,12 +163,12 @@ const ValuesTable: React.FC<Props> = ({
   return (
     <div className="grid grid-cols-1 gap-4 border-0 border-b border-solid border-gray-200 pb-4 md:grid-cols-2 lg:grid-cols-3">
       {(isAllView || isValuesView) &&
-        renderTable('Value ($000) adjusted', tableData.usdValues)}
+        renderTable('Value (US $)', tableData.usdValues)}
       {(isAllView || !isValuesView) && (
         <>
-          {renderTable('ODP adjusted', tableData.odpValues)}
-          {renderTable('MT for HFC adjusted', tableData.mtValues)}
-          {renderTable('CO2-EQ adjusted', tableData.co2Values, true)}
+          {renderTable('ODP', tableData.odpValues)}
+          {renderTable('MT for HFC', tableData.mtValues)}
+          {renderTable('CO2-eq', tableData.co2Values, true)}
         </>
       )}
     </div>

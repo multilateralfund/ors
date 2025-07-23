@@ -207,6 +207,7 @@
             "has_project_statistics_view_access",
             "has_project_v2_view_access",
             "has_project_v2_edit_access",
+            "has_project_v2_edit_approved_access",
             "has_project_view_access",
             "has_project_edit_access",
             "has_sectors_and_subsectors_view_access",

@@ -95,6 +95,17 @@ def viewer_user(agency):
 
 
 @pytest.fixture
+def mlfs_admin_user():
+    group = Group.objects.get(name="Projects - MLFS Admin")
+    user = UserFactory(
+        username="Projects - MLFS Admin",
+        email="mlfs_admin@mail.com",
+    )
+    user.groups.add(group)
+    return user
+
+
+@pytest.fixture
 def admin_user():
     return UserFactory(
         username="Admin",
@@ -548,7 +559,7 @@ def rbm_measure():
 
 @pytest.fixture
 def meeting():
-    return MeetingFactory.create(number=1, date="2019-03-14")
+    return MeetingFactory.create(number=1, date="2019-03-14", end_date="2019-03-15")
 
 
 @pytest.fixture
@@ -678,7 +689,6 @@ def project(
         cluster=project_cluster_kpp,
         fund_disbursed=123.1,
         total_fund_transferred=123.1,
-        date_approved="2019-03-14",
         serial_number=1,
         code=code,
     )

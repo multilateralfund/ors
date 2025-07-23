@@ -194,7 +194,14 @@ class BPActivityViewSet(
         filters.OrderingFilter,
         filters.SearchFilter,
     ]
-    search_fields = ["title"]
+    search_fields = [
+        "title",
+        "required_by_model",
+        "lvc_status",
+        "remarks",
+        "bp_chemical_type__name",
+        "substances__name",
+    ]
     ordering = ["agency__name", "country__abbr", "initial_id"]
     ordering_fields = BPACTIVITY_ORDERING_FIELDS
 

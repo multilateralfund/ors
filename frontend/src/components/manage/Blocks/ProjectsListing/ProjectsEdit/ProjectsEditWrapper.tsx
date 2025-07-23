@@ -1,6 +1,9 @@
 'use client'
 
+import { useContext } from 'react'
+
 import Loading from '@ors/components/theme/Loading/Loading'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import ProjectsEdit from './ProjectsEdit'
 import { useGetProject } from '../hooks/useGetProject'
 
@@ -9,6 +12,8 @@ import { isNull } from 'lodash'
 
 const ProjectsEditWrapper = ({ mode }: { mode: string }) => {
   const { project_id } = useParams<Record<string, string>>()
+
+  const { canEditApprovedProjects } = useContext(PermissionsContext)
 
   const project = useGetProject(project_id)
   const { data, loading } = project
@@ -19,7 +24,9 @@ const ProjectsEditWrapper = ({ mode }: { mode: string }) => {
 
   if (
     data &&
-    ((mode !== 'copy' && data.submission_status === 'Withdrawn') ||
+    ((mode !== 'copy' &&
+      data.submission_status === 'Withdrawn' &&
+      (mode !== 'edit' || !canEditApprovedProjects)) ||
       !isNull(data?.latest_project) ||
       (mode === 'edit' && !data.editable))
   ) {

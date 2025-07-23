@@ -61,7 +61,8 @@ export const getDefaultValues = <T>(
               ? (data[fieldName] ?? false)
               : data[fieldName]
       } else {
-        acc[fieldName] = dataType === 'text' ? '' : null
+        acc[fieldName] =
+          dataType === 'text' ? '' : dataType === 'boolean' ? false : null
       }
       return acc
     },
@@ -73,8 +74,8 @@ export const canGoToSecondStep = (projIdentifiers: ProjIdentifiers) =>
     projIdentifiers.country &&
     projIdentifiers.meeting &&
     projIdentifiers.cluster &&
-    ((projIdentifiers.is_lead_agency && projIdentifiers.current_agency) ||
-      (!projIdentifiers.is_lead_agency && projIdentifiers.side_agency))
+    projIdentifiers.agency &&
+    projIdentifiers.lead_agency
   )
 
 export const getIsSaveDisabled = (
@@ -170,14 +171,7 @@ export const formatSubmitData = (
   })
 
   return {
-    agency: projIdentifiers?.is_lead_agency
-      ? projIdentifiers.current_agency
-      : projIdentifiers.side_agency,
-    ...omit(projIdentifiers, [
-      'current_agency',
-      'side_agency',
-      'is_lead_agency',
-    ]),
+    ...projIdentifiers,
     bp_activity: bpLinking.bpId,
     ...normalizeValues(crossCuttingFields),
     ...normalizeValues(crtProjectSpecificFields),
@@ -210,13 +204,17 @@ export const getProjIdentifiersErrors = (
   projIdentifiers: ProjIdentifiers,
   errors: { [key: string]: [] },
 ) => {
-  const requiredFields = ['country', 'meeting', 'agency', 'cluster']
+  const requiredFields = [
+    'country',
+    'meeting',
+    'agency',
+    'cluster',
+    'lead_agency',
+  ]
 
   const filteredErrors = Object.fromEntries(
     Object.entries(errors).filter(([key]) => requiredFields.includes(key)),
   )
-
-  const { current_agency, side_agency, is_lead_agency } = projIdentifiers
 
   return {
     ...requiredFields.reduce((acc: any, field) => {
@@ -226,10 +224,6 @@ export const getProjIdentifiersErrors = (
 
       return acc
     }, {}),
-    agency:
-      (is_lead_agency && !current_agency) || (!is_lead_agency && !side_agency)
-        ? ['This field is required.']
-        : [],
     ...filteredErrors,
   }
 }
@@ -418,12 +412,18 @@ export const formatErrors = (errors: { [key: string]: string[] }) =>
     )
 
 export const getHasNoFiles = (
+  id: number,
   files?: ProjectFilesObject,
   projectFiles?: ProjectFile[],
-) =>
-  files?.newFiles?.length === 0 &&
-  (projectFiles?.length === 0 ||
-    files?.deletedFilesIds?.length === projectFiles?.length)
+) => {
+  const crtVersionFiles = filter(
+    projectFiles,
+    (file) =>
+      file.project_id === id && !files?.deletedFilesIds?.includes(file.id),
+  )
+
+  return files?.newFiles?.length === 0 && crtVersionFiles.length === 0
+}
 
 export const getMenus = (permissions: Record<string, boolean>) => {
   const { canViewBp, canUpdateBp } = permissions
@@ -483,3 +483,38 @@ export const formatFiles = (
     }),
   )
 }
+
+export const canViewField = (viewableFields: string[], field: string) =>
+  viewableFields.includes(field)
+
+export const canEditField = (editableFields: string[], field: string) =>
+  editableFields.includes(field)
+
+export const hasFields = (
+  projectFields: any,
+  viewableFields: string[],
+  section: string,
+  includeAllFields: boolean = true,
+  excludedFields?: string[],
+  fieldToCheck: string = 'section',
+) => {
+  const allFields = isArray(projectFields) ? projectFields : projectFields?.data
+
+  const fields = filter(viewableFields, (field) => {
+    const crtFieldData = find(
+      allFields,
+      (projField) =>
+        projField.write_field_name === field && field !== 'sort_order',
+    )
+
+    return (
+      crtFieldData?.[fieldToCheck] === section &&
+      (includeAllFields ? true : !excludedFields?.includes(field))
+    )
+  })
+
+  return fields.length > 0
+}
+
+export const pluralizeWord = (data: any[] = [], word: string) =>
+  data.length > 1 ? word + 's' : word

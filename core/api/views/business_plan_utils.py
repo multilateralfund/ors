@@ -244,17 +244,17 @@ def get_bp_activity_data(
         if year == year_start + 3:
             year_value = year - 1
             is_after = True
-            value_usd = row[f"Value ($000) after {year_value} adjusted"]
-            value_odp = row[f"ODP after {year_value} adjusted"]
-            value_mt = row[f"MT for HFC after {year_value} adjusted"]
-            value_co2 = row[f"CO2-EQ after {year_value} adjusted"]
+            value_usd = row[f"Value (US $) after {year_value}"]
+            value_odp = row[f"ODP after {year_value}"]
+            value_mt = row[f"MT for HFC after {year_value}"]
+            value_co2 = row[f"CO₂-eq after {year_value}"]
         else:
             year_value = year
             is_after = False
-            value_usd = row[f"Value ($000) {year_value} adjusted"]
-            value_odp = row[f"ODP {year_value} adjusted"]
-            value_mt = row[f"MT for HFC {year_value} adjusted"]
-            value_co2 = row[f"CO2-EQ {year_value} adjusted"]
+            value_usd = row[f"Value (US $) {year_value}"]
+            value_odp = row[f"ODP {year_value}"]
+            value_mt = row[f"MT for HFC {year_value}"]
+            value_co2 = row[f"CO₂-eq {year_value}"]
         # if these values are not numbers we will set them to be '0'
 
         value_usd = check_year_values(
@@ -308,7 +308,10 @@ def parse_bp_file(file, year_start, from_validate=False):
         for subsector in ProjectSubSector.objects.select_related("sector")
     }
     subsectors = [
-        strip_str(subsector.name) for subsector in ProjectSubSector.objects.all()
+        strip_str(subsector.name)
+        for subsector in ProjectSubSector.objects.exclude(
+            name__istartswith="Other"
+        ).union(ProjectSubSector.objects.filter(name__iexact="Other"))
     ]
     substance_dict = {
         strip_str(substance.name): substance for substance in Substance.objects.all()

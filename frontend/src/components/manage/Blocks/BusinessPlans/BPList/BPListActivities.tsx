@@ -7,17 +7,18 @@ import { useGetActivities } from '@ors/components/manage/Blocks/BusinessPlans/us
 import Loading from '@ors/components/theme/Loading/Loading'
 import { Pagination } from '@ors/components/ui/Pagination/Pagination'
 import BPYearRangesContext from '@ors/contexts/BusinessPlans/BPYearRangesContext'
-import { useStore } from '@ors/store'
-
 import BPFilters from '../../Table/BusinessPlansTable/BPFilters'
 import { BPTable } from '../../Table/BusinessPlansTable/BusinessPlansTable'
 import { TableDataSelectorValuesType } from '../../Table/BusinessPlansTable/TableDateSwitcher'
 import { ViewSelectorValuesType } from '../types'
+import { filtersToQueryParams } from '../utils'
 import BPListHeader from './BPListHeader'
 import BPListTabs from './BPListTabs'
 import BPTableToolbarButtons from '@ors/components/manage/Blocks/BusinessPlans/BPTableToolbarButtons'
 import { formatApiUrl } from '@ors/helpers'
-import { filtersToQueryParams } from '../utils'
+import { useStore } from '@ors/store'
+
+import { omit } from 'lodash'
 
 const ACTIVITIES_PER_PAGE_TABLE = 100
 const ACTIVITIES_PER_PAGE_LIST = 50
@@ -37,6 +38,7 @@ export default function BPListActivitiesWrapper(props: any) {
   }
 
   const activities = useGetActivities(initialFilters)
+  const allActivities = useGetActivities(omit(initialFilters, 'limit'))
   const { setParams, loading, params } = activities
 
   const exportParams = useMemo(() => filtersToQueryParams(params), [params])
@@ -58,6 +60,7 @@ export default function BPListActivitiesWrapper(props: any) {
       <BPListActivities
         {...{
           activities,
+          allActivities,
           initialFilters,
           period,
           yearRanges,
@@ -68,7 +71,8 @@ export default function BPListActivitiesWrapper(props: any) {
 }
 
 function BPListActivities(props: any) {
-  const { activities, initialFilters, period, yearRanges } = props
+  const { activities, allActivities, initialFilters, period, yearRanges } =
+    props
   const { count, loaded, loading, results, setParams } = activities
 
   const form = useRef<any>()
@@ -99,6 +103,7 @@ function BPListActivities(props: any) {
         setFilters,
         setGridOptions,
         setParams,
+        allActivities,
       }}
     />
   )

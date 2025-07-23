@@ -1,5 +1,331 @@
 [
     {
+        "IMPORT_NAME": "Production",
+        "LABEL": "Production",
+        "WRITE_FIELD_NAME": "production",
+        "READ_FIELD_NAME": "production",
+        "TABLE": "project",
+        "DATA_TYPE": "boolean",
+        "SECTION": "Identifiers",
+        "SORT_ORDER": 1,
+        "EDITABLE_IN_VERSIONS": [1],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
+    },
+    {
+        "IMPORT_NAME": "Business plan activity",
+        "LABEL": "Business plan activity",
+        "WRITE_FIELD_NAME": "bp_activity",
+        "READ_FIELD_NAME": "bp_activity",
+        "TABLE": "project",
+        "DATA_TYPE": "drop_down",
+        "SECTION": "Identifiers",
+        "SORT_ORDER": 2,
+        "EDITABLE_IN_VERSIONS": [1,2],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
+    },
+    {
+        "IMPORT_NAME": "Country",
+        "LABEL": "Country",
+        "WRITE_FIELD_NAME": "country",
+        "READ_FIELD_NAME": "country",
+        "TABLE": "project",
+        "DATA_TYPE": "drop_down",
+        "SECTION": "Identifiers",
+        "SORT_ORDER": 3,
+        "EDITABLE_IN_VERSIONS": [1],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
+    },
+    {
+        "IMPORT_NAME": "Agency",
+        "LABEL": "Agency",
+        "WRITE_FIELD_NAME": "agency",
+        "READ_FIELD_NAME": "agency",
+        "TABLE": "project",
+        "DATA_TYPE": "drop_down",
+        "SECTION": "Identifiers",
+        "SORT_ORDER": 4,
+        "EDITABLE_IN_VERSIONS": [1],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
+    },
+    {
+
+
+        "IMPORT_NAME": "Confirm you are the lead agency submitting on behalf of a cooperating agency.",
+        "LABEL": "Confirm you are the lead agency submitting on behalf of a cooperating agency.",
+        "WRITE_FIELD_NAME": "lead_agency_submitting_on_behalf",
+        "READ_FIELD_NAME": "lead_agency_submitting_on_behalf",
+        "TABLE": "project",
+        "DATA_TYPE": "boolean",
+        "SECTION": "Identifiers",
+        "SORT_ORDER": 5,
+        "EDITABLE_IN_VERSIONS": [1],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
+    },
+    {
+        "IMPORT_NAME": "Lead Agency",
+        "LABEL": "Lead Agency",
+        "WRITE_FIELD_NAME": "lead_agency",
+        "READ_FIELD_NAME": "lead_agency",
+        "TABLE": "project",
+        "DATA_TYPE": "boolean",
+        "SECTION": "Identifiers",
+        "SORT_ORDER": 5,
+        "EDITABLE_IN_VERSIONS": [1],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
+    },
+    {
+        "IMPORT_NAME": "Title",
+        "LABEL": "Title",
+        "WRITE_FIELD_NAME": "title",
+        "READ_FIELD_NAME": "title",
+        "TABLE": "project",
+        "DATA_TYPE": "text",
+        "SECTION": "Cross-Cutting",
+        "SORT_ORDER": 5,
+        "EDITABLE_IN_VERSIONS": [1,2],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
+    },
+    {
+        "IMPORT_NAME": "Description",
+        "LABEL": "Description",
+        "WRITE_FIELD_NAME": "description",
+        "READ_FIELD_NAME": "description",
+        "TABLE": "project",
+        "DATA_TYPE": "text",
+        "SECTION": "Cross-Cutting",
+        "SORT_ORDER": 6,
+        "EDITABLE_IN_VERSIONS": [1,2],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
+    },
+    {
+        "IMPORT_NAME": "Type",
+        "LABEL": "Type",
+        "WRITE_FIELD_NAME": "project_type",
+        "READ_FIELD_NAME": "project_type",
+        "TABLE": "project",
+        "DATA_TYPE": "drop_down",
+        "SECTION": "Cross-Cutting",
+        "SORT_ORDER": 7,
+        "EDITABLE_IN_VERSIONS": [1],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
+    },
+    {
+        "IMPORT_NAME": "Cluster",
+        "LABEL": "Cluster",
+        "WRITE_FIELD_NAME": "cluster",
+        "READ_FIELD_NAME": "cluster",
+        "TABLE": "project",
+        "DATA_TYPE": "drop_down",
+        "SECTION": "Identifiers",
+        "SORT_ORDER": 8,
+        "EDITABLE_IN_VERSIONS": [1],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
+    },
+    {
+        "IMPORT_NAME": "Meeting Number",
+        "LABEL": "Meeting Number",
+        "WRITE_FIELD_NAME": "meeting",
+        "READ_FIELD_NAME": "meeting",
+        "TABLE": "project",
+        "DATA_TYPE": "drop_down",
+        "SECTION": "Identifiers",
+        "SORT_ORDER": 9,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
+    },
+    {
+        "IMPORT_NAME": "Decision",
+        "LABEL": "Decision",
+        "WRITE_FIELD_NAME": "decision",
+        "READ_FIELD_NAME": "decision",
+        "TABLE": "project",
+        "DATA_TYPE": "drop_down",
+        "SECTION": "Approval",
+        "SORT_ORDER": 10,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
+    },
+    {
+        "IMPORT_NAME": "Sector",
+        "LABEL": "Sector",
+        "WRITE_FIELD_NAME": "sector",
+        "READ_FIELD_NAME": "sector",
+        "TABLE": "project",
+        "DATA_TYPE": "drop_down",
+        "SECTION": "Cross-Cutting",
+        "SORT_ORDER": 11,
+        "EDITABLE_IN_VERSIONS": [1],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
+    },
+    {
+        "IMPORT_NAME": "Subsectors",
+        "LABEL": "Sub-sector(s)",
+        "WRITE_FIELD_NAME": "subsectors",
+        "READ_FIELD_NAME": "subsectors",
+        "TABLE": "project",
+        "DATA_TYPE": "drop_down",
+        "SECTION": "Cross-Cutting",
+        "SORT_ORDER": 12,
+        "EDITABLE_IN_VERSIONS": [1],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
+    },
+    {
+        "IMPORT_NAME": "Project Funding",
+        "LABEL": "Project Funding",
+        "WRITE_FIELD_NAME": "total_fund",
+        "READ_FIELD_NAME": "total_fund",
+        "TABLE": "project",
+        "DATA_TYPE": "drop_down",
+        "SECTION": "Cross-Cutting",
+        "SORT_ORDER": 13,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
+    },
+    {
+        "IMPORT_NAME": "Date of completion",
+        "LABEL": "Date of completion",
+        "WRITE_FIELD_NAME": "date_completion",
+        "READ_FIELD_NAME": "date_completion",
+        "TABLE": "project",
+        "DATA_TYPE": "date",
+        "SECTION": "Approval",
+        "SORT_ORDER": 14,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
+    },
+    {
+        "IMPORT_NAME": "Programme Officer Name",
+        "LABEL": "Programme Officer Name",
+        "WRITE_FIELD_NAME": "programme_officer",
+        "READ_FIELD_NAME": "programme_officer",
+        "TABLE": "project",
+        "DATA_TYPE": "text",
+        "SECTION": "Approval",
+        "SORT_ORDER": 15,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
+    },
+    {
+        "IMPORT_NAME": "Excom Provision",
+        "LABEL":"Excom Provision",
+        "WRITE_FIELD_NAME": "excom_provision",
+        "READ_FIELD_NAME": "excom_provision",
+        "TABLE": "project",
+        "DATA_TYPE": "text",
+        "SECTION": "Approval",
+        "SORT_ORDER": 16,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
+    },
+    {
+        "IMPORT_NAME": "Ad-hoc PCR",
+        "LABEL": "Ad-hoc PCR",
+        "WRITE_FIELD_NAME": "ad_hoc_pcr",
+        "READ_FIELD_NAME": "ad_hoc_pcr",
+        "TABLE": "project",
+        "DATA_TYPE": "boolean",
+        "SECTION": "Approval",
+        "SORT_ORDER": 17,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
+    },
+    {
+        "IMPORT_NAME": "PCR waived",
+        "LABEL": "PCR waived",
+        "WRITE_FIELD_NAME": "pcr_waived",
+        "READ_FIELD_NAME": "pcr_waived",
+        "TABLE": "project",
+        "DATA_TYPE": "boolean",
+        "SECTION": "Approval",
+        "SORT_ORDER": 18,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
+    },
+    {
+        "IMPORT_NAME": "Approval date",
+        "LABEL": "Approval date",
+        "WRITE_FIELD_NAME": "date_approved",
+        "READ_FIELD_NAME": "date_approved",
+        "TABLE": "project",
+        "DATA_TYPE": "date",
+        "SECTION": "Approval",
+        "SORT_ORDER": 18,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
+    },
+    {
+        "IMPORT_NAME": "Funding window",
+        "LABEL": "Funding window",
+        "WRITE_FIELD_NAME": "funding_window",
+        "READ_FIELD_NAME": "funding_window",
+        "TABLE": "project",
+        "DATA_TYPE": "text",
+        "SECTION": "Approval",
+        "SORT_ORDER": 19,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
+    },
+    {
+        "IMPORT_NAME": "Project Support Cost",
+        "LABEL": "Project Support Cost",
+        "WRITE_FIELD_NAME": "support_cost_psc",
+        "READ_FIELD_NAME": "support_cost_psc",
+        "TABLE": "project",
+        "DATA_TYPE": "decimal",
+        "SECTION": "Cross-Cutting",
+        "SORT_ORDER": 20,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
+    },
+    {
+        "IMPORT_NAME": "LVC/non-LVC",
+        "LABEL": "LVC/non-LVC",
+        "WRITE_FIELD_NAME": "is_lvc",
+        "READ_FIELD_NAME": "is_lvc",
+        "TABLE": "project",
+        "DATA_TYPE": "drop_down",
+        "SECTION": "Cross-Cutting",
+        "SORT_ORDER": 21,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
+    },
+    {
+        "IMPORT_NAME": "Blanket or Individual consideration",
+        "LABEL": "Blanket or Individual consideration",
+        "WRITE_FIELD_NAME": "individual_consideration",
+        "READ_FIELD_NAME": "individual_consideration",
+        "TABLE": "project",
+        "DATA_TYPE": "boolean",
+        "SECTION": "Cross-Cutting",
+        "SORT_ORDER": 22,
+        "EDITABLE_IN_VERSIONS": [2,3],
+        "VISIBLE_IN_VERSIONS": [2,3]
+    },
+    {
+        "IMPORT_NAME": "Project start date",
+        "LABEL": "Project start date",
+        "WRITE_FIELD_NAME": "project_start_date",
+        "READ_FIELD_NAME": "project_start_date",
+        "TABLE": "project",
+        "DATA_TYPE": "date",
+        "SECTION": "Cross-Cutting",
+        "SORT_ORDER": 23,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
+    },
+    {
+        "IMPORT_NAME": "Project end date",
+        "LABEL": "Project end date",
+        "WRITE_FIELD_NAME": "project_end_date",
+        "READ_FIELD_NAME": "project_end_date",
+        "TABLE": "project",
+        "DATA_TYPE": "date",
+        "SECTION": "Cross-Cutting",
+        "SORT_ORDER": 24,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
+    },
+    {
         "IMPORT_NAME": "Annex group of substances",
         "LABEL": "Annex and group of substances",
         "WRITE_FIELD_NAME": "group",
@@ -7,7 +333,9 @@
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
         "SECTION": "Header",
-        "SORT_ORDER": 1
+        "SORT_ORDER": 25,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Destruction Technology",
@@ -17,7 +345,9 @@
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
         "SECTION": "Header",
-        "SORT_ORDER": 2
+        "SORT_ORDER": 26,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Production Control Type",
@@ -27,7 +357,9 @@
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
         "SECTION": "Header",
-        "SORT_ORDER": 3
+        "SORT_ORDER": 27,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Tranche Number",
@@ -37,7 +369,9 @@
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
         "SECTION": "Header",
-        "SORT_ORDER": 4
+        "SORT_ORDER": 28,
+        "EDITABLE_IN_VERSIONS": [1],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "SME/ Non-SME",
@@ -47,7 +381,9 @@
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
         "SECTION": "Header",
-        "SORT_ORDER": 5
+        "SORT_ORDER": 29,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Substance - baseline technology",
@@ -57,7 +393,9 @@
         "TABLE": "ods_odp",
         "DATA_TYPE": "drop_down",
         "SECTION": "Substance Details",
-        "SORT_ORDER": 6
+        "SORT_ORDER": 30,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Replacement technology/ies",
@@ -67,7 +405,9 @@
         "TABLE": "ods_odp",
         "DATA_TYPE": "text",
         "SECTION": "Substance Details",
-        "SORT_ORDER": 7
+        "SORT_ORDER": 31,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Phase out (CO2-eq t)",
@@ -77,7 +417,9 @@
         "TABLE": "ods_odp",
         "DATA_TYPE": "decimal",
         "SECTION": "Substance Details",
-        "SORT_ORDER": 8
+        "SORT_ORDER": 32,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Phase out (ODP t)",
@@ -87,7 +429,9 @@
         "TABLE": "ods_odp",
         "DATA_TYPE": "decimal",
         "SECTION": "Substance Details",
-        "SORT_ORDER": 9
+        "SORT_ORDER": 33,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Phase out (Mt)",
@@ -97,17 +441,9 @@
         "TABLE": "ods_odp",
         "DATA_TYPE": "decimal",
         "SECTION": "Substance Details",
-        "SORT_ORDER": 10
-    },
-    {
-        "IMPORT_NAME": "Phase out (Mt)",
-        "LABEL": "Phase out (Mt)",
-        "WRITE_FIELD_NAME": "phase_out_mt",
-        "READ_FIELD_NAME": "phase_out_mt",
-        "TABLE": "ods_odp",
-        "DATA_TYPE": "decimal",
-        "SECTION": "Substance Details",
-        "SORT_ORDER": 11
+        "SORT_ORDER": 34,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Ods type",
@@ -117,7 +453,9 @@
         "TABLE": "ods_odp",
         "DATA_TYPE": "drop_down",
         "SECTION": "Substance Details",
-        "SORT_ORDER": 12
+        "SORT_ORDER": 35,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Sort order",
@@ -128,7 +466,9 @@
         "TABLE": "ods_odp",
         "DATA_TYPE": "number",
         "SECTION": "Substance Details",
-        "SORT_ORDER": 13
+        "SORT_ORDER": 36,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Product Manufactured",
@@ -138,7 +478,9 @@
         "TABLE": "project",
         "DATA_TYPE": "text",
         "SECTION": "Substance Details",
-        "SORT_ORDER": 14
+        "SORT_ORDER": 37,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Total number of technicians trained",
@@ -148,7 +490,9 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact",
-        "SORT_ORDER": 15
+        "SORT_ORDER": 38,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Total number of technicians trained actual",
@@ -159,7 +503,9 @@
         "DATA_TYPE": "number",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 16
+        "SORT_ORDER": 39,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "Number of female technicians trained",
@@ -169,7 +515,9 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact",
-        "SORT_ORDER": 17
+        "SORT_ORDER": 40,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Number of female technicians trained actual",
@@ -180,7 +528,9 @@
         "DATA_TYPE": "number",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 18
+        "SORT_ORDER": 41,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "Total number of trainers trained",
@@ -190,7 +540,9 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact",
-        "SORT_ORDER": 19
+        "SORT_ORDER": 42,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Total number of trainers trained actual",
@@ -201,7 +553,9 @@
         "DATA_TYPE": "number",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 20
+        "SORT_ORDER": 43,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "Number of female trainers trained",
@@ -211,7 +565,9 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact",
-        "SORT_ORDER": 21
+        "SORT_ORDER": 44,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Number of female trainers trained actual",
@@ -222,7 +578,9 @@
         "DATA_TYPE": "number",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 22
+        "SORT_ORDER": 45,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "Total number of technicians certified",
@@ -232,7 +590,9 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact",
-        "SORT_ORDER": 23
+        "SORT_ORDER": 46,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Total number of technicians certified actual",
@@ -243,7 +603,9 @@
         "DATA_TYPE": "number",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 24
+        "SORT_ORDER": 47,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "Number of female technicians certified",
@@ -253,7 +615,9 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact",
-        "SORT_ORDER": 25
+        "SORT_ORDER": 48,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Number of female technicians certified actual",
@@ -264,7 +628,9 @@
         "DATA_TYPE": "number",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 26
+        "SORT_ORDER": 49,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     }, 
     {
         "IMPORT_NAME": "Number of training institutions newly assisted",
@@ -274,7 +640,9 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact",
-        "SORT_ORDER": 27
+        "SORT_ORDER": 50,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Number of training institutions newly assisted actual",
@@ -285,7 +653,9 @@
         "DATA_TYPE": "number",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 28
+        "SORT_ORDER": 51,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "Number of tools sets distributed",
@@ -295,7 +665,9 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact",
-        "SORT_ORDER": 29
+        "SORT_ORDER": 52,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Number of tools sets distributed actual",
@@ -306,7 +678,9 @@
         "DATA_TYPE": "number",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 30
+        "SORT_ORDER": 53,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "Certification system for technicians established or further enhanced (yes or no)",
@@ -316,7 +690,9 @@
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
-        "SORT_ORDER": 31
+        "SORT_ORDER": 54,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Certification system for technicians established or further enhanced (yes or no) actual",
@@ -327,7 +703,9 @@
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 32
+        "SORT_ORDER": 55,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     }, 
     {
         "IMPORT_NAME": "Operation of recovery and recycling scheme (yes or no)",
@@ -337,7 +715,9 @@
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
-        "SORT_ORDER": 33
+        "SORT_ORDER": 56,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Operation of recovery and recycling scheme (yes or no) actual",
@@ -348,7 +728,9 @@
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 34
+        "SORT_ORDER": 57,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "Operation of reclamation scheme (yes or no)",
@@ -358,7 +740,9 @@
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
-        "SORT_ORDER": 35
+        "SORT_ORDER": 58,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Operation of reclamation scheme (yes or no) actual",
@@ -369,7 +753,9 @@
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 36
+        "SORT_ORDER": 59,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "Total number of customs officers trained",
@@ -379,7 +765,9 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact",
-        "SORT_ORDER": 37
+        "SORT_ORDER": 60,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Total number of customs officers trained actual",
@@ -390,7 +778,9 @@
         "DATA_TYPE": "number",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 38
+        "SORT_ORDER": 61,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "Number of female customs officers trained",
@@ -400,7 +790,9 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact",
-        "SORT_ORDER": 39
+        "SORT_ORDER": 62,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Number of female customs officers trained actual",
@@ -411,7 +803,9 @@
         "DATA_TYPE": "number",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 40
+        "SORT_ORDER": 63,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "Establishment or upgrade of Import/export licensing (yes or no)",
@@ -421,7 +815,9 @@
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
-        "SORT_ORDER": 41
+        "SORT_ORDER": 64,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Establishment or upgrade of Import/export licensing (yes or no) actual",
@@ -432,7 +828,9 @@
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 42
+        "SORT_ORDER": 65,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "Establishment of quota systems (yes or no)",
@@ -442,7 +840,9 @@
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
-        "SORT_ORDER": 43
+        "SORT_ORDER": 66,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Establishment of quota systems (yes or no) actual",
@@ -453,7 +853,9 @@
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 44
+        "SORT_ORDER": 67,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "Ban of equipment (number)",
@@ -463,7 +865,9 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact",
-        "SORT_ORDER": 45
+        "SORT_ORDER": 68,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Ban of equipment (number) actual",
@@ -474,7 +878,9 @@
         "DATA_TYPE": "number",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 46
+        "SORT_ORDER": 69,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "Ban of substances (number)",
@@ -484,7 +890,9 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact",
-        "SORT_ORDER": 47
+        "SORT_ORDER": 70,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Ban of substances (number) actual",
@@ -495,7 +903,9 @@
         "DATA_TYPE": "number",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 48
+        "SORT_ORDER": 71,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "kWh/year saved",
@@ -505,7 +915,9 @@
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "Impact",
-        "SORT_ORDER": 49
+        "SORT_ORDER": 73,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "kWh/year saved actual",
@@ -516,7 +928,9 @@
         "DATA_TYPE": "decimal",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 50
+        "SORT_ORDER": 74,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "MEPS developed for domestic refrigeration (yes/no)",
@@ -526,7 +940,9 @@
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
-        "SORT_ORDER": 51
+        "SORT_ORDER": 75,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "MEPS developed for domestic refrigeration (yes/no) actual",
@@ -537,7 +953,9 @@
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 52
+        "SORT_ORDER": 76,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "MEPS developed for commercial refrigeration (yes/no)",
@@ -547,7 +965,9 @@
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
-        "SORT_ORDER": 53
+        "SORT_ORDER": 77,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "MEPS developed for commercial refrigeration (yes/no) actual",
@@ -558,7 +978,9 @@
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 54
+        "SORT_ORDER": 78,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "MEPS developed for residential air-conditioning (yes/no)",
@@ -568,7 +990,9 @@
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
-        "SORT_ORDER": 55
+        "SORT_ORDER": 79,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "MEPS developed for residential air-conditioning (yes/no) actual",
@@ -579,7 +1003,9 @@
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 56
+        "SORT_ORDER": 80,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "MEPS developed for commercial AC (yes/no)",
@@ -589,7 +1015,9 @@
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
-        "SORT_ORDER": 57
+        "SORT_ORDER": 81,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "MEPS developed for commercial AC (yes/no) actual",
@@ -600,7 +1028,9 @@
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 58
+        "SORT_ORDER": 82,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "Capacity building programmes (checklist (yes/no) for technicians, end-users, operators, consultants, procurement officers and other Government entities)",
@@ -610,7 +1040,9 @@
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
-        "SORT_ORDER": 59
+        "SORT_ORDER": 83,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Capacity building programmes (checklist (yes/no) for technicians, end-users, operators, consultants, procurement officers and other Government entities) actual",
@@ -621,7 +1053,9 @@
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 60
+        "SORT_ORDER": 84,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     }, 
     {
         "IMPORT_NAME": "EE demonstration project included (yes/no)",
@@ -631,7 +1065,9 @@
         "TABLE": "project",
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
-        "SORT_ORDER": 61
+        "SORT_ORDER": 85,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "EE demonstration project included (yes/no) actual",
@@ -642,7 +1078,9 @@
         "DATA_TYPE": "boolean",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 62
+        "SORT_ORDER": 86,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "Quantity of controlled substances destroyed (M t)",
@@ -652,7 +1090,9 @@
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "Impact",
-        "SORT_ORDER": 63
+        "SORT_ORDER": 87,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Quantity of controlled substances destroyed (M t) actual",
@@ -663,7 +1103,9 @@
         "DATA_TYPE": "decimal",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 64
+        "SORT_ORDER": 88,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "Quantity of controlled substances destroyed (CO2-eq t)",
@@ -673,7 +1115,9 @@
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "Impact",
-        "SORT_ORDER": 65
+        "SORT_ORDER": 89,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Quantity of controlled substances destroyed (CO2-eq t) actual",
@@ -684,7 +1128,9 @@
         "DATA_TYPE": "decimal",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 66
+        "SORT_ORDER": 90,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "Checklist of regulations or policies enacted",
@@ -694,7 +1140,9 @@
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
         "SECTION": "Impact",
-        "SORT_ORDER": 67
+        "SORT_ORDER": 91,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Checklist of regulations or policies enacted actual",
@@ -705,7 +1153,9 @@
         "DATA_TYPE": "drop_down",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 68
+        "SORT_ORDER": 92,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "Quantity of HFC-23 by-product (Generated)",
@@ -715,7 +1165,9 @@
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "Impact",
-        "SORT_ORDER": 69
+        "SORT_ORDER": 93,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Quantity of HFC-23 by-product (Generated) actual",
@@ -726,7 +1178,9 @@
         "DATA_TYPE": "decimal",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 70
+        "SORT_ORDER": 94,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "Quantity of HFC-23 by-product (by product generation rate)",
@@ -736,7 +1190,9 @@
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "Impact",
-        "SORT_ORDER": 71
+        "SORT_ORDER": 95,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Quantity of HFC-23 by-product (by product generation rate) actual",
@@ -747,7 +1203,9 @@
         "DATA_TYPE": "decimal",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 72
+        "SORT_ORDER": 96,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "Quantity of HFC-23 by-product (Destroyed)",
@@ -757,7 +1215,9 @@
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "Impact",
-        "SORT_ORDER": 73
+        "SORT_ORDER": 97,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Quantity of HFC-23 by-product (Destroyed) actual",
@@ -768,7 +1228,9 @@
         "DATA_TYPE": "decimal",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 74
+        "SORT_ORDER": 98,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "Quantity of HFC-23 by-product (Emitted)",
@@ -779,7 +1241,9 @@
         "DATA_TYPE": "decimal",
         "SECTION": "Impact",
         "IS_ACTUAL": false,
-        "SORT_ORDER": 75
+        "SORT_ORDER": 99,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Quantity of HFC-23 by-product (Emitted) actual",
@@ -790,7 +1254,9 @@
         "DATA_TYPE": "decimal",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 76
+        "SORT_ORDER": 100,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "Total number of NOU personnel supported",
@@ -800,7 +1266,9 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact",
-        "SORT_ORDER": 77
+        "SORT_ORDER": 101,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Total number of NOU personnel supported actual",
@@ -811,7 +1279,9 @@
         "DATA_TYPE": "number",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 78
+        "SORT_ORDER": 102,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "Number of female NOU personnel supported",
@@ -821,7 +1291,9 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "Impact",
-        "SORT_ORDER": 79
+        "SORT_ORDER": 103,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Number of female NOU personnel supported actual",
@@ -832,7 +1304,9 @@
         "DATA_TYPE": "number",
         "SECTION": "Impact",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 80
+        "SORT_ORDER": 104,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "Number of enterprises assisted",
@@ -842,7 +1316,9 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "MYA",
-        "SORT_ORDER": 81
+        "SORT_ORDER": 105,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Number of enterprises assisted actual",
@@ -853,7 +1329,9 @@
         "DATA_TYPE": "number",
         "SECTION": "MYA",
         "IS_ACTUAL": true,
-        "SORT_ORDER": 82
+        "SORT_ORDER": 106,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
     },
     {
         "IMPORT_NAME": "Start date (MYA)",
@@ -863,7 +1341,9 @@
         "TABLE": "project",
         "DATA_TYPE": "date",
         "SECTION": "MYA",
-        "SORT_ORDER": 83
+        "SORT_ORDER": 107,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "End date (MYA)",
@@ -873,7 +1353,9 @@
         "TABLE": "project",
         "DATA_TYPE": "date",
         "SECTION": "MYA",
-        "SORT_ORDER": 84
+        "SORT_ORDER": 108,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Project Funding (MYA)",
@@ -883,7 +1365,9 @@
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "MYA",
-        "SORT_ORDER": 85
+        "SORT_ORDER": 109,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Support Cost (MYA)",
@@ -893,7 +1377,9 @@
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "MYA",
-        "SORT_ORDER": 86
+        "SORT_ORDER": 110,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Number of enterprises",
@@ -903,7 +1389,9 @@
         "TABLE": "project",
         "DATA_TYPE": "number",
         "SECTION": "MYA",
-        "SORT_ORDER": 87
+        "SORT_ORDER": 111,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Aggregated consumption",
@@ -913,7 +1401,9 @@
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "MYA",
-        "SORT_ORDER": 88
+        "SORT_ORDER": 112,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Targets",
@@ -923,7 +1413,9 @@
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "MYA",
-        "SORT_ORDER": 89
+        "SORT_ORDER": 113,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Starting Point",
@@ -933,7 +1425,9 @@
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "MYA",
-        "SORT_ORDER": 90
+        "SORT_ORDER": 114,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Baseline",
@@ -943,7 +1437,9 @@
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "MYA",
-        "SORT_ORDER": 91
+        "SORT_ORDER": 115,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Phase out (CO2-eq t) (MYA)",
@@ -953,7 +1449,9 @@
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "MYA",
-        "SORT_ORDER": 92
+        "SORT_ORDER": 116,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Phase out (ODP t) (MYA)",
@@ -963,7 +1461,9 @@
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "MYA",
-        "SORT_ORDER": 93
+        "SORT_ORDER": 117,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Phase out (Mt) (MYA)",
@@ -973,7 +1473,9 @@
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "MYA",
-        "SORT_ORDER": 94
+        "SORT_ORDER": 118,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Cost effectiveness (US$/ Kg)",
@@ -983,7 +1485,9 @@
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "MYA",
-        "SORT_ORDER": 95
+        "SORT_ORDER": 119,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Cost effectiveness (US$/ CO2-eq)",
@@ -993,7 +1497,9 @@
         "TABLE": "project",
         "DATA_TYPE": "decimal",
         "SECTION": "MYA",
-        "SORT_ORDER": 96
+        "SORT_ORDER": 120,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
         "IMPORT_NAME": "Number of Production Lines assisted",
@@ -1003,6 +1509,8 @@
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
         "SECTION": "MYA",
-        "SORT_ORDER": 97
+        "SORT_ORDER": 121,
+        "EDITABLE_IN_VERSIONS": [1,2,3],
+        "VISIBLE_IN_VERSIONS": [1,2,3]
     }
 ]

@@ -4,6 +4,8 @@ import { ProjectIdentifiersSectionProps } from '@ors/components/manage/Blocks/Pr
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import ProjectIdentifiersFields from './ProjectIdentifiersFields'
 import ProjectBPLinking from './ProjectBPLinking'
+import { canEditField, canViewField, hasFields } from '../utils'
+import { useStore } from '@ors/store'
 
 import { Divider } from '@mui/material'
 
@@ -15,23 +17,40 @@ const ProjectIdentifiersSection = ({
 }: ProjectIdentifiersSectionProps) => {
   const { canViewBp } = useContext(PermissionsContext)
 
+  const { projectFields, viewableFields, editableFields } = useStore(
+    (state) => state.projectFields,
+  )
+
+  const hasIdentifiers = hasFields(
+    projectFields,
+    viewableFields,
+    'Identifiers',
+    false,
+    ['bp_activity'],
+  )
+  const canViewBpSection =
+    canViewBp && canViewField(viewableFields, 'bp_activity')
+
   return (
     <>
-      <ProjectIdentifiersFields
-        {...{ projectData, setProjectData, areNextSectionsDisabled }}
-        {...rest}
-      />
-      {canViewBp && (
-        <>
-          <Divider className="my-6" />
-          <ProjectBPLinking
-            {...{
-              projectData,
-              setProjectData,
-            }}
-            isDisabled={areNextSectionsDisabled}
-          />
-        </>
+      {hasIdentifiers && (
+        <ProjectIdentifiersFields
+          {...{ projectData, setProjectData, areNextSectionsDisabled }}
+          {...rest}
+        />
+      )}
+      {hasIdentifiers && canViewBpSection && <Divider className="my-6" />}
+      {canViewBpSection && (
+        <ProjectBPLinking
+          {...{
+            projectData,
+            setProjectData,
+          }}
+          isDisabled={
+            areNextSectionsDisabled ||
+            !canEditField(editableFields, 'bp_activity')
+          }
+        />
       )}
     </>
   )

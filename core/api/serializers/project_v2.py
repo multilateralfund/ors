@@ -251,8 +251,7 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "hcfc_stage",
             "kwh_year_saved",
             "latest_file",
-            "lead_agency",
-            "lead_agency_id",
+            "lead_agency_submitting_on_behalf",
             "loan",
             "local_ownership",
             "meps_developed_domestic_refrigeration",
@@ -613,6 +612,11 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
         write_only=True,
         queryset=ProjectSubSector.objects.all(),
     )
+    lead_agency = serializers.PrimaryKeyRelatedField(
+        required=False,
+        allow_null=True,
+        queryset=Agency.objects.all().values_list("id", flat=True),
+    )
 
     # This field is not on the Project model, but is used for input only
     associate_project_id = serializers.IntegerField(
@@ -672,6 +676,7 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             "kwh_year_saved",
             "kwh_year_saved_actual",
             "lead_agency",
+            "lead_agency_submitting_on_behalf",
             "meeting",
             "meps_developed_domestic_refrigeration",
             "meps_developed_domestic_refrigeration_actual",
@@ -761,6 +766,7 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
     @transaction.atomic
     def create(self, validated_data):
         _ = validated_data.pop("request", None)
+        lead_agency = validated_data.pop("lead_agency", None)
         user = self.context["request"].user
         status = ProjectStatus.objects.get(code="NEWSUB")
         submission_status = ProjectSubmissionStatus.objects.get(name="Draft")
@@ -806,7 +812,7 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
                 associate_project.save()
         else:
             project.meta_project = MetaProject.objects.create(
-                lead_agency=project.agency,
+                lead_agency_id=lead_agency,
                 code=get_meta_project_code(
                     project.country,
                     project.cluster,
@@ -915,6 +921,7 @@ class ProjectV2EditApprovalFieldsSerializer(
         fields = [
             "meeting",  # *
             "decision",  # *
+            "funding_window",
             "excom_provision",  # *
             "date_completion",  # *
             "total_fund_approved",
@@ -923,6 +930,7 @@ class ProjectV2EditApprovalFieldsSerializer(
             "ods_odp",
             "pcr_waived",
             "ad_hoc_pcr",
+            "date_approved",
         ]
 
     def update(self, instance, validated_data):
@@ -930,6 +938,7 @@ class ProjectV2EditApprovalFieldsSerializer(
         Update the project with the validated data
         """
         user = self.context["request"].user
+        validated_data["date_approved"] = validated_data["meeting"].end_date
         # update, create, delete ods_odp
         if "ods_odp" in validated_data:
             ods_odp_data = validated_data.pop("ods_odp")
@@ -1075,18 +1084,20 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
                 sector=previous_tranche.sector,
             ).first()
             if specific_field_entry:
-                one_field_filled = False
-                for field in specific_field_entry.fields.filter(is_actual=True):
-                    if getattr(previous_tranche, field.read_field_name) is not None:
-                        one_field_filled = True
+                fields = specific_field_entry.fields.filter(is_actual=True)
+                if fields.exists():
+                    one_field_filled = False
+                    for field in fields:
+                        if getattr(previous_tranche, field.read_field_name) is not None:
+                            one_field_filled = True
 
-                if not one_field_filled:
-                    if "previous_tranches" not in errors:
-                        errors["previous_tranches"] = []
-                    errors["previous_tranches"].append(
-                        f"Previous tranche {previous_tranche.title}({previous_tranche.id}): "
-                        "At least one actual indicator should be filled."
-                    )
+                    if not one_field_filled:
+                        if "previous_tranches" not in errors:
+                            errors["previous_tranches"] = []
+                        errors["previous_tranches"].append(
+                            f"Previous tranche {previous_tranche.title}({previous_tranche.id}): "
+                            "At least one actual indicator should be filled."
+                        )
         return errors
 
     def validate(self, attrs):

@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction } from 'react'
+import { Dispatch, ReactNode, SetStateAction } from 'react'
 
 import Link from '@ors/components/ui/Link/Link'
 import {
@@ -7,9 +7,9 @@ import {
 } from './ProjectVersions/ProjectVersionsComponents'
 import { ProjectTypeApi, RelatedProjectsType } from './interfaces'
 
+import { IoChevronDown, IoChevronUp, IoReturnUpBack } from 'react-icons/io5'
 import { Button, CircularProgress, Divider } from '@mui/material'
 import { FaExternalLinkAlt } from 'react-icons/fa'
-import { IoReturnUpBack } from 'react-icons/io5'
 import { SlReload } from 'react-icons/sl'
 import { lowerCase, map } from 'lodash'
 import cx from 'classnames'
@@ -165,14 +165,16 @@ export const RelatedProjects = ({
   getErrors,
   isLoaded,
   canRefreshStatus = true,
+  mode = 'edit',
 }: {
   data?: RelatedProjectsType[]
   getErrors?: () => void
   isLoaded?: boolean
   canRefreshStatus?: boolean
+  mode?: string
 }) => (
   <div className="flex flex-col">
-    {map(data, (entry) => {
+    {map(data, (entry, index) => {
       const hasErrors = entry.errors.length > 0
 
       return (
@@ -186,7 +188,7 @@ export const RelatedProjects = ({
                 '!text-[#801F00]': hasErrors,
               },
             )}
-            href={`/projects-listing/${entry.id}/edit`}
+            href={`/projects-listing/${entry.id}${mode === 'edit' ? '/edit' : ''}`}
             target="_blank"
             rel="noopener noreferrer nofollow"
             onClick={(e: React.SyntheticEvent) => e.stopPropagation()}
@@ -198,15 +200,17 @@ export const RelatedProjects = ({
             {entry.title}
             {hasErrors && <ErrorTag />}
           </Link>
-          <Divider className="my-3" />
+          {index !== (data?.length ?? 0) - 1 && <Divider className="my-3" />}
         </div>
       )
     })}
     {canRefreshStatus && (
-      <div className="mt-4 flex items-center gap-2">
+      <div className="mt-8 flex items-center gap-2">
         <div
           className="flex cursor-pointer items-center gap-2 text-lg normal-case leading-none"
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation()
+
             if (getErrors) {
               getErrors()
             }
@@ -220,5 +224,58 @@ export const RelatedProjects = ({
         )}
       </div>
     )}
+  </div>
+)
+
+export const ClosedList = ({
+  title,
+  errorText,
+}: {
+  title: string
+  errorText?: string
+}) => (
+  <div className="transition-opacity flex items-center justify-between gap-2 opacity-100 duration-300 ease-in-out">
+    <div className="flex flex-row items-center gap-2.5 text-lg">
+      <span className="leading-none">{title}</span>
+      {errorText && <ErrorTag />}
+    </div>
+    <div className="flex min-h-5 min-w-5 items-center justify-center rounded-full border border-solid border-primary bg-[#EBFF00]">
+      <IoChevronDown className="text-primary" size={14} />
+    </div>
+  </div>
+)
+
+export const OpenedList = ({
+  title,
+  data,
+  errorText,
+  errorAlert,
+  getTrancheErrors,
+  loaded,
+  canRefreshStatus,
+  mode,
+}: {
+  title: string
+  data: RelatedProjectsType[]
+  errorText?: string
+  errorAlert?: ReactNode
+  getTrancheErrors?: () => void
+  loaded?: boolean
+  canRefreshStatus?: boolean
+  mode?: string
+}) => (
+  <div className="transition-opacity flex flex-col gap-6 opacity-100 duration-300 ease-in-out">
+    <div className="flex items-center justify-between gap-2 text-lg">
+      <span>{title}</span>
+      <div className="flex min-h-5 min-w-5 items-center justify-center rounded-full border border-solid border-primary bg-[#EBFF00]">
+        <IoChevronUp className="text-primary" size={14} />
+      </div>
+    </div>
+    {errorText && errorAlert}
+    <RelatedProjects
+      getErrors={getTrancheErrors}
+      isLoaded={loaded}
+      {...{ data, canRefreshStatus, mode }}
+    />
   </div>
 )

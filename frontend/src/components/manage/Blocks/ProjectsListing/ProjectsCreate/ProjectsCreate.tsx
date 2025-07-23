@@ -16,6 +16,7 @@ import {
   ProjectFiles,
   ProjectDataProps,
   TrancheErrors,
+  RelatedProjectsType,
 } from '../interfaces.ts'
 import {
   canGoToSecondStep,
@@ -28,11 +29,14 @@ import {
   getSpecificFieldsErrors,
   getHasNoFiles,
   hasSectionErrors,
+  hasFields,
 } from '../utils.ts'
+import { useStore } from '@ors/store.tsx'
 
-import { Tabs, Tab, Alert, Typography } from '@mui/material'
 import { groupBy, has, isEmpty, map, mapKeys } from 'lodash'
+import { Tabs, Tab, Alert, Typography } from '@mui/material'
 import { MdErrorOutline } from 'react-icons/md'
+import { useParams } from 'wouter'
 
 export const SectionTitle = ({ children }: { children: ReactNode }) => (
   <div className="mb-4 text-xl uppercase tracking-[1px] text-typography-sectionTitle">
@@ -54,6 +58,7 @@ const ProjectsCreate = ({
   fileErrors,
   trancheErrors,
   getTrancheErrors,
+  associatedProjects,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
@@ -66,7 +71,10 @@ const ProjectsCreate = ({
     fileErrors: string
     project?: ProjectTypeApi
     projectFiles?: ProjectFile[]
+    associatedProjects?: RelatedProjectsType[] | null
   }) => {
+  const { project_id } = useParams<Record<string, string>>()
+
   const [currentStep, setCurrentStep] = useState<number>(
     mode !== 'add' && mode !== 'partial-link' ? 1 : 0,
   )
@@ -90,6 +98,10 @@ const ProjectsCreate = ({
   const groupedFields = groupBy(substanceDetailsFields, 'table')
   const odsOdpFields = (groupedFields['ods_odp'] || []).filter(
     (field) => field.read_field_name !== 'sort_order',
+  )
+
+  const { projectFields, viewableFields } = useStore(
+    (state) => state.projectFields,
   )
 
   const isSpecificInfoTabDisabled =
@@ -192,7 +204,10 @@ const ProjectsCreate = ({
     (error) => mapKeys(error, (_, key) => getFieldLabel(specificFields, key)),
   )
 
-  const hasNoFiles = mode === 'edit' && getHasNoFiles(files, projectFiles)
+  const hasNoFiles =
+    mode === 'edit' &&
+    getHasNoFiles(parseInt(project_id), files, projectFiles) &&
+    (project?.version ?? 0) < 3
 
   const steps = [
     {
@@ -208,6 +223,7 @@ const ProjectsCreate = ({
           )}
         </div>
       ),
+      disabled: !hasFields(projectFields, viewableFields, 'Identifiers'),
       component: (
         <ProjectIdentifiersSection
           {...{
@@ -218,6 +234,7 @@ const ProjectsCreate = ({
             setCurrentTab,
             hasSubmitted,
             mode,
+            associatedProjects,
           }}
           isNextBtnEnabled={canLinkToBp}
           errors={projIdentifiersErrors}
@@ -237,13 +254,16 @@ const ProjectsCreate = ({
           )}
         </div>
       ),
-      disabled: areNextSectionsDisabled,
+      disabled:
+        areNextSectionsDisabled ||
+        !hasFields(projectFields, viewableFields, 'Cross-Cutting'),
       component: (
         <ProjectCrossCuttingFields
           {...{
             projectData,
             setProjectData,
             hasSubmitted,
+            project,
           }}
           errors={crossCuttingErrors}
         />
@@ -267,7 +287,10 @@ const ProjectsCreate = ({
             )}
         </div>
       ),
-      disabled: isSpecificInfoTabDisabled,
+      disabled:
+        isSpecificInfoTabDisabled ||
+        (!hasFields(projectFields, viewableFields, 'Header') &&
+          !hasFields(projectFields, viewableFields, 'Substance Details')),
       component: (
         <ProjectSpecificInfoSection
           {...{
@@ -312,7 +335,9 @@ const ProjectsCreate = ({
           )}
         </div>
       ),
-      disabled: isImpactTabDisabled,
+      disabled:
+        isImpactTabDisabled ||
+        !hasFields(projectFields, viewableFields, 'Impact'),
       component: (
         <ProjectImpact
           sectionFields={impactFields}
@@ -352,7 +377,7 @@ const ProjectsCreate = ({
         ...(hasNoFiles
           ? [
               {
-                message: `At least a file must be provided${errorMessageExtension}.`,
+                message: `At least one file must be attached to this version${errorMessageExtension}.`,
               },
             ]
           : []),

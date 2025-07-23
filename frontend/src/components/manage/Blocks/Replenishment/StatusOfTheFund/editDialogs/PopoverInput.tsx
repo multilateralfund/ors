@@ -117,6 +117,7 @@ export default function PopoverInput({
   withClear,
   withInputPlaceholder = true,
   label,
+  disabled = false,
 }: IPopoverInputProps) {
   const uniqueId = useId()
   const [anchorEl, setAnchorEl] = useState<HTMLInputElement | null>(null)
@@ -165,6 +166,7 @@ export default function PopoverInput({
           style={STYLE}
           value={label ?? selectedEntry}
           readOnly={true}
+          disabled={disabled}
           onClick={openPopover}
         />
         {withClear && (label || selectedEntry) && (

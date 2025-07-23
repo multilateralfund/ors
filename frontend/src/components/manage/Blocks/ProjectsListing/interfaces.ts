@@ -12,9 +12,9 @@ export interface PListingProps {
 export interface ProjIdentifiers {
   country: number | null
   meeting: number | null
-  current_agency: number | null
-  side_agency: number | null
-  is_lead_agency: boolean
+  agency: number | null
+  lead_agency: number | null
+  lead_agency_submitting_on_behalf: boolean
   cluster: number | null
   production: boolean
 }
@@ -119,6 +119,11 @@ export type ProjectSpecificFields = {
   editable: boolean | null
   is_actual: boolean
   sort_order: number
+}
+
+export type ProjectFields = ProjectSpecificFields & {
+  editable_in_versions: number[]
+  visible_in_versions: number[]
 }
 
 export type SpecificFieldsSectionProps = ProjectDataProps & {
@@ -236,6 +241,7 @@ export type ProjectIdentifiersSectionProps = {
   errors: { [key: string]: string[] }
   hasSubmitted: boolean
   mode: string
+  associatedProjects?: RelatedProjectsType[] | null
 }
 
 export type TrancheErrorType = {

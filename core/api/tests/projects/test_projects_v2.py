@@ -184,6 +184,7 @@ def _project_file_url(project_file):
 @pytest.fixture(name="_setup_project_create")
 def setup_project_create(
     country_ro,
+    new_agency,
     agency,
     project_type,
     meeting,
@@ -236,7 +237,6 @@ def setup_project_create(
         "country": country_ro.id,
         "description": "Description",
         "date_completion": "2020-01-01",
-        "date_approved": "2023-10-01",
         "decision": decision.id,
         "destruction_technology": "D1",
         "excom_provision": "test excom provision",
@@ -245,7 +245,7 @@ def setup_project_create(
         "individual_consideration": False,
         "is_lvc": True,
         "is_sme": False,
-        "lead_agency": agency.id,
+        "lead_agency": new_agency.id,
         "meeting": meeting.id,
         "mya_start_date": "2023-10-01",
         "mya_end_date": "2024-09-30",
@@ -343,6 +343,7 @@ class TestProjectV2List(BaseTest):
         secretariat_production_v1_v2_edit_access_user,
         secretariat_v3_edit_access_user,
         secretariat_production_v3_edit_access_user,
+        mlfs_admin_user,
         admin_user,
     ):
         def _test_user_permissions(user, expected_response_status, expected_count=None):
@@ -407,6 +408,8 @@ class TestProjectV2List(BaseTest):
         for project in response_data:
             if project["version"] < 3:
                 assert project["editable"] is False
+            elif project["submission_status"] == "Approved":
+                assert project["editable"] is False
             else:
                 assert project["editable"] is True
         response_data = _test_user_permissions(
@@ -415,8 +418,20 @@ class TestProjectV2List(BaseTest):
         for project in response_data:
             if project["version"] < 3:
                 assert project["editable"] is False
+            elif project["submission_status"] == "Approved":
+                assert project["editable"] is False
             else:
                 assert project["editable"] is True
+
+        response_data = _test_user_permissions(mlfs_admin_user, 200, 13)
+        for project in response_data:
+            if project["version"] < 3:
+                assert project["editable"] is True
+            elif project["submission_status"] == "Approved":
+                assert project["editable"] is True
+            else:
+                assert project["editable"] is True
+
         response_data = _test_user_permissions(admin_user, 200, 13)
         for project in response_data:
             assert project["editable"] is True
@@ -714,7 +729,6 @@ class TestCreateProjects(BaseTest):
             "number_of_production_lines_assisted",
             "description",
             "date_completion",
-            "date_approved",
             "destruction_technology",
             "excom_provision",
             "funding_window",
@@ -784,6 +798,7 @@ class TestCreateProjects(BaseTest):
         agency_inputter_user,
         country_ro,
         agency,
+        new_agency,
         project2,
         project_type,
         subsector,
@@ -809,7 +824,6 @@ class TestCreateProjects(BaseTest):
         assert response.data["checklist_regulations"] == "PR1"
         assert response.data["decision_id"] == decision.id
         assert response.data["destruction_technology"] == "D1"
-        assert response.data["lead_agency"] == agency.name
         assert response.data["group_id"] == data["group"]
         assert response.data["meeting_id"] == data["meeting"]
         assert response.data["project_type"]["id"] == data["project_type"]
@@ -1222,6 +1236,7 @@ class TestProjectsV2Update:
         )
         assert response.data["pcr_waived"] is True
         assert response.data["ad_hoc_pcr"] is False
+        assert response.data["date_approved"] == meeting.end_date
 
 
 class TestProjectFiles:
