@@ -45,7 +45,7 @@ def setup_project_list(
     project_cluster_kpp,
     project_cluster_kip,
 ):
-    new_subsector = ProjectSubSectorFactory.create(sector=new_sector)
+    new_subsector = ProjectSubSectorFactory.create(sectors=[new_sector])
     projects = []
     projects_data = [
         {
@@ -297,7 +297,7 @@ def setup_project_create(
         "project_end_date": "2024-09-30",
         "project_start_date": "2023-10-01",
         "project_type": project_type.id,
-        "sector": subsector.sector.id,
+        "sector": subsector.sectors.first().id,
         "starting_point": 543.4,
         "subsector_ids": [subsector.id],
         "support_cost_psc": 23,
@@ -833,9 +833,10 @@ class TestCreateProjects(BaseTest):
         assert response.data["production_control_type"] == "Reduction"
         assert response.data["production"] is True
         assert response.data["sector_id"] == data["sector"]
-        assert response.data["sector"]["id"] == subsector.sector.id
-        assert response.data["sector"]["name"] == subsector.sector.name
-        assert response.data["sector"]["code"] == subsector.sector.code
+        sector = subsector.sectors.first()
+        assert response.data["sector"]["id"] == sector.id
+        assert response.data["sector"]["name"] == sector.name
+        assert response.data["sector"]["code"] == sector.code
         assert response.data["is_sme"] == "Non-SME"
         assert response.data["starting_point"] == data["starting_point"]
         assert response.data["subsectors"] == [

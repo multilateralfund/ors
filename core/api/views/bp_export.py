@@ -53,8 +53,18 @@ class BPActivityExportView(generics.GenericAPIView):
         return BPActivityExportSerializer(queryset, many=True).data
 
     def get_subsector_data(self):
-        queryset = ProjectSubSector.objects.values_list("name", "sector__code")
-        return [{"name": name, "sector_code": sector} for name, sector in queryset]
+        queryset = (
+            ProjectSubSector.objects.all().prefetch_related("sectors").order_by("name")
+        )
+        return [
+            {
+                "name": subsector.name,
+                "sector_code_list": ",".join(
+                    [sector.code for sector in subsector.sectors.all()]
+                ),
+            }
+            for subsector in queryset
+        ]
 
     def get_names(self, cls_name):
         queryset = (
