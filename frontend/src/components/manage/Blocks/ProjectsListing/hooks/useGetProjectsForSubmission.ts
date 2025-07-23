@@ -6,15 +6,16 @@ import { map } from 'lodash'
 export const useGetProjectsForSubmission = async (
   id: number,
   setAssociatedProjects: (projects: RelatedProjectsType[] | null) => void,
-  setLoaded: (loaded: boolean) => void,
+  setLoaded?: (loaded: boolean) => void,
   include_validation: boolean = false,
   include_project: boolean = false,
+  only_components: boolean = true,
 ) => {
   try {
-    setLoaded(false)
+    setLoaded?.(false)
 
     const projects = await api(
-      `/api/projects/v2/${id}/list_associated_projects/?only_components=true&include_validation=${include_validation}&include_project=${include_project}`,
+      `/api/projects/v2/${id}/list_associated_projects/?only_components=${only_components}&include_validation=${include_validation}&include_project=${include_project}`,
     )
 
     const formattedProjects = map(projects, (project) => {
@@ -35,6 +36,6 @@ export const useGetProjectsForSubmission = async (
     console.error('Error at loading projects for submission')
     setAssociatedProjects(null)
   } finally {
-    setLoaded(true)
+    setLoaded?.(true)
   }
 }

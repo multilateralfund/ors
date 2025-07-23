@@ -61,7 +61,8 @@ export const getDefaultValues = <T>(
               ? (data[fieldName] ?? false)
               : data[fieldName]
       } else {
-        acc[fieldName] = dataType === 'text' ? '' : null
+        acc[fieldName] =
+          dataType === 'text' ? '' : dataType === 'boolean' ? false : null
       }
       return acc
     },

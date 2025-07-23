@@ -1,4 +1,4 @@
-import { ChangeEvent } from 'react'
+import { ChangeEvent, useState } from 'react'
 
 import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
 import Field from '@ors/components/manage/Form/Field'
@@ -16,12 +16,13 @@ import {
   getMeetingOptions,
 } from '@ors/components/manage/Utils/utilFunctions'
 import { changeHandler } from './SpecificFieldsHelpers'
+import { ClosedList, OpenedList } from '../HelperComponents'
 import { defaultProps, disabledClassName, tableColumns } from '../constants'
 import { canEditField, canViewField, getProduction } from '../utils'
-import { useStore } from '@ors/store'
 import { ApiAgency } from '@ors/types/api_agencies'
 import { Cluster, Country } from '@ors/types/store'
 import { parseNumber } from '@ors/helpers'
+import { useStore } from '@ors/store'
 
 import { Alert, Button, Checkbox, FormControlLabel } from '@mui/material'
 import { IoInformationCircleOutline } from 'react-icons/io5'
@@ -38,9 +39,15 @@ const ProjectIdentifiersFields = ({
   errors,
   hasSubmitted,
   mode,
+  associatedProjects,
 }: ProjectIdentifiersSectionProps) => {
   const sectionIdentifier = 'projIdentifiers'
   const projIdentifiers = projectData[sectionIdentifier]
+
+  const [openAssociatedProjects, setOpenAssociatedProjects] = useState(true)
+
+  const hasAssociatedProjects =
+    associatedProjects && associatedProjects.length > 0
 
   const commonSlice = useStore((state) => state.common)
   const projectSlice = useStore((state) => state.projects)
@@ -372,6 +379,25 @@ const ProjectIdentifiersFields = ({
           )}
         </div>
       </div>
+      {/* {hasAssociatedProjects && (
+        <div
+          className="transition-transform mt-6 w-full max-w-[850px] transform cursor-pointer rounded-lg p-4 duration-300 ease-in-out"
+          style={{ boxShadow: '0px 10px 20px 0px rgba(0, 0, 0, 0.2)' }}
+          onClick={() => setOpenAssociatedProjects(!openAssociatedProjects)}
+        >
+          {openAssociatedProjects ? (
+            <OpenedList
+              title="Associated projects"
+              data={associatedProjects}
+              canRefreshStatus={false}
+              loaded={true}
+              mode="view"
+            />
+          ) : (
+            <ClosedList title="Associated projects" />
+          )}
+        </div>
+      )} */}
     </>
   )
 }

@@ -241,6 +241,7 @@ export type ProjectIdentifiersSectionProps = {
   errors: { [key: string]: string[] }
   hasSubmitted: boolean
   mode: string
+  associatedProjects?: RelatedProjectsType[] | null
 }
 
 export type TrancheErrorType = {
