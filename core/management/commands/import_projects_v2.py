@@ -77,11 +77,12 @@ def migrate_subsectors_sector_data():
         else:
             subsectors_with_the_same_name_list[subsector.name].append(subsector)
 
-    for name, subsectors_with_the_same_name in subsectors_with_the_same_name_list.items():
+    for (
+        name,
+        subsectors_with_the_same_name,
+    ) in subsectors_with_the_same_name_list.items():
         if len(subsectors_with_the_same_name) > 1:
-            logger.info(
-                f"Subsector {name} has multiple entries, migrating to sectors."
-            )
+            logger.info(f"Subsector {name} has multiple entries, migrating to sectors.")
             first_subsector = subsectors_with_the_same_name[0]
             sectors = [subsector.sector for subsector in subsectors_with_the_same_name]
             first_subsector.sectors.set(sectors)
