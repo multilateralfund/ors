@@ -9,6 +9,10 @@ import logging
 import openpyxl
 import docx
 
+from docx.table import Table
+from docx.oxml.table import CT_Tbl
+from docx.oxml.text.paragraph import CT_P
+
 from django.http import FileResponse
 
 from rest_framework import serializers
@@ -305,7 +309,21 @@ class ProjectsV2ProjectExportDocx:
         with self.template_path.open("rb") as tpl:
             self.doc = docx.Document(tpl)
 
-    def build_document(self):
+    def find_table(self, after_p_text=""):
+        found = None
+
+        if after_p_text:
+            found_p = False
+            for e in self.doc.element.body:
+                if isinstance(e, CT_P) and e.text.strip() == after_p_text:
+                    found_p = True
+                elif isinstance(e, CT_Tbl) and found_p:
+                    found = Table(e, self.doc)
+                    break
+
+        return found
+
+    def build_front_page(self, data):
         for p in self.doc.paragraphs:
             p_style = {
                 "italic": False,
@@ -327,19 +345,101 @@ class ProjectsV2ProjectExportDocx:
             elif p.text.startswith("Project Title"):
                 p.text = self.project.title
             elif p.text.startswith("Country:"):
-                p.text = f"{p.text} {self.project.country.name}"
+                p.text = f"{p.text} {data['country']}"
             elif p.text.startswith("Agency:"):
-                p.text = f"{p.text} {self.project.agency.name}"
+                p.text = f"{p.text} {data['agency']}"
             elif p.text.startswith("Cluster:"):
-                p.text = f"{p.text} {self.project.cluster.name}"
+                p.text = f"{p.text} {data['cluster']['name']}"
             elif p.text.startswith("Amount:"):
-                p.text = f"{p.text} (PSC) {self.project.total_psc_cost}"
+                p.text = f"{p.text} {data['total_fund']}"
             elif p.text.startswith("Project Description:"):
-                p.text = f"{p.text} {self.project.description}"
+                p.text = f"{p.text} {data['description']}"
 
             if p.runs:
                 for k, v in p_style.items():
                     setattr(p.runs[0], k, v)
+
+    def _write_header_to_table(self, headers, table, data):
+        for header in headers:
+            row = table.add_row()
+            for c_idx, cell in enumerate(row.cells):
+                if c_idx == 0:
+                    cell.text = header["headerName"]
+                elif c_idx == 1 and header.get("method"):
+                    cell.text = header["method"](data, header)
+                elif c_idx == 1:
+                    cell.text = str(data[header["id"]] or "")
+
+    def _write_substance_table(self, _, table, data):
+        for d in data:
+            row = table.add_row()
+            row_data = [
+                "ods_display_name",
+                "???",
+                "ods_replacement",
+                "phase_out_mt",
+                "co2_mt",
+                "odp",
+            ]
+            for c_idx, cell in enumerate(row.cells):
+                cell.text = str(d.get(row_data[c_idx], "") or "")
+
+    def build_cross_cutting(self, data):
+        table = self.find_table("Cross-cutting fields")
+        self._write_header_to_table(get_headers_cross_cutting()[2:], table, data)
+
+    def _write_project_specific_fields(
+        self,
+        fields_obj: ProjectSpecificFields,
+        fields_section: str,
+        after_paragraph: str,
+        data,
+        writer=None,
+    ):
+        if not writer:
+            writer = self._write_header_to_table
+        if data:
+            fields = fields_obj.fields.filter(section__in=[fields_section])
+            table = self.find_table(after_paragraph)
+            if table and fields:
+                headers = get_headers_specific_information(fields)
+                writer(headers, table, data)
+
+    def build_specific_information(self, data):
+        project_specific_fields_obj = ProjectSpecificFields.objects.filter(
+            cluster=self.project.cluster,
+            type=self.project.project_type,
+            sector=self.project.sector,
+        ).first()
+
+        if project_specific_fields_obj:
+            self._write_project_specific_fields(
+                project_specific_fields_obj,
+                "Header",
+                "Project specific fields header",
+                data,
+            )
+            self._write_project_specific_fields(
+                project_specific_fields_obj,
+                "Substance Details",
+                "Substance details Page and tables",
+                data.get("ods_odp", []),
+                writer=self._write_substance_table,
+            )
+            self._write_project_specific_fields(
+                project_specific_fields_obj,
+                "Impact",
+                "Impact (tabular)",
+                data,
+            )
+
+    def build_document(self):
+        serializer = ProjectDetailsV2Serializer(self.project)
+        data = serializer.data
+
+        self.build_front_page(data)
+        self.build_cross_cutting(data)
+        self.build_specific_information(data)
 
     def export_docx(self):
         self.build_document()

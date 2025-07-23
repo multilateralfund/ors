@@ -192,8 +192,9 @@ class TestProjectV2ExportDOCX(BaseTest):
             self.url, {"project_id": project_with_linked_bp.id, "output_format": "docx"}
         )
         assert response.status_code == HTTPStatus.OK
+        assert len(response.getvalue()) > 0
+        assert response.filename == f"{project_with_linked_bp.id}.docx"
         assert (
             response.headers["Content-Type"]
             == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )
-        assert len(response.getvalue()) > 0
