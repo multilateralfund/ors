@@ -3,6 +3,8 @@ from http import HTTPStatus
 
 import openpyxl
 import pytest
+import docx
+
 from django.http.response import FileResponse
 from django.urls import reverse
 from rest_framework.response import Response
@@ -15,8 +17,46 @@ from core.models.business_plan import BPActivity
 from core.models.project import Project
 from core.models.project import ProjectOdsOdp
 from core.models.substance import Substance
+from core.models.user import User
 
 pytestmark = pytest.mark.django_db
+
+
+def validate_docx_export(project: Project, user: User, response: FileResponse):
+    assert response.status_code == HTTPStatus.OK
+    assert response.filename == f"{project.id}.docx"
+    assert (
+        response.headers["Content-Type"]
+        == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    )
+
+    f = io.BytesIO(response.getvalue())
+    doc = docx.Document(f)
+    assert f.tell() > 0
+
+    to_find = [
+        x
+        for x in [
+            user.get_full_name() or user.username,
+            project.title,
+            project.country.name,
+            project.agency.name,
+            project.cluster.name,
+            project.total_fund,
+            project.description,
+        ]
+        if x
+    ]
+    result = [False for v in to_find]
+
+    for p in doc.paragraphs:
+        for i, v in enumerate(to_find):
+            if result[i] is False:
+                if v in p.text:
+                    result[i] = True
+
+    for t, r in zip(to_find, result):
+        assert r is True, f"Could not locate {t} in output."
 
 
 def validate_single_project_export(project: Project, response: FileResponse):
@@ -174,3 +214,21 @@ class TestProjectV2ExportXLSX(BaseTest):
         response: FileResponse = self.client.get(self.url)
         assert response.status_code == HTTPStatus.OK
         validate_projects_export(project, response)
+
+
+class TestProjectV2ExportDOCX(BaseTest):
+    url = reverse("project-v2-export")
+
+    def test_export_project_anon(self, project):
+        self.client.force_authenticate(user=None)
+        response: Response = self.client.get(self.url, {"project_id": project.id})
+        assert response.status_code == HTTPStatus.FORBIDDEN, response.data
+
+    def test_export_project_agency_submitter(
+        self, project_with_linked_bp, agency_inputter_user
+    ):
+        self.client.force_authenticate(user=agency_inputter_user)
+        response: FileResponse = self.client.get(
+            self.url, {"project_id": project_with_linked_bp.id, "output_format": "docx"}
+        )
+        validate_docx_export(project_with_linked_bp, agency_inputter_user, response)

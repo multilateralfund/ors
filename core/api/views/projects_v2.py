@@ -61,6 +61,7 @@ from core.api.views.utils import log_project_history
 
 from core.api.views.projects_export import ProjectsV2Export
 from core.api.views.project_v2_export import ProjectsV2ProjectExport
+from core.api.views.project_v2_export import ProjectsV2ProjectExportDocx
 
 # pylint: disable=C0302,R0911,R0904,R1702
 
@@ -345,10 +346,14 @@ class ProjectV2ViewSet(
     @action(methods=["GET"], detail=False)
     def export(self, request, *args, **kwargs):
         project_id = request.query_params.get("project_id")
+        output_format = request.query_params.get("output_format", "xlsx")
 
         if project_id:
             project = self.get_object()
-            return ProjectsV2ProjectExport(project).export_xls()
+            if output_format == "xlsx":
+                return ProjectsV2ProjectExport(project).export_xls()
+            if output_format == "docx":
+                return ProjectsV2ProjectExportDocx(project, request.user).export_docx()
         return ProjectsV2Export(self).export_xls()
 
     @action(methods=["POST"], detail=True)
