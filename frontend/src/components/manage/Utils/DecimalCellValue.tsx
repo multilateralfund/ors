@@ -25,7 +25,7 @@ function getDecimalCellValue(
   }
 
   const formattedValue =
-    props.context?.unit === 'gwp'
+    props.context?.unit === 'gwp' || props.isCo2
       ? formatDecimalValue(valueToFormat, {
           maximumFractionDigits: 0,
           minimumFractionDigits: 0,
@@ -101,7 +101,17 @@ function getDecimalCellValue(
               </span>
             </div>
           ) : (
-            <span>{formatDecimalValue(value, defaultDecimals)}</span>
+            <span>
+              {formatDecimalValue(
+                value,
+                props.isCo2
+                  ? {
+                      maximumFractionDigits: 0,
+                      minimumFractionDigits: 0,
+                    }
+                  : defaultDecimals,
+              )}
+            </span>
           )
     }
   }

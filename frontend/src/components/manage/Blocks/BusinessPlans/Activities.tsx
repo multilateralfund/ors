@@ -147,11 +147,21 @@ const ValuesTable: React.FC<Props> = ({
                 TransitionProps={{ timeout: 0 }}
                 placement={'bottom'}
                 title={formatDecimalValue(parseFloat(value.toString()), {
-                  maximumFractionDigits: 10,
-                  minimumFractionDigits: 2,
+                  maximumFractionDigits: isCo2 ? 0 : 10,
+                  minimumFractionDigits: isCo2 ? 0 : 2,
                 })}
               >
-                <span>{formatDecimalValue(parseFloat(value.toString()))}</span>
+                <span>
+                  {formatDecimalValue(
+                    parseFloat(value.toString()),
+                    isCo2
+                      ? {
+                          maximumFractionDigits: 0,
+                          minimumFractionDigits: 0,
+                        }
+                      : undefined,
+                  )}
+                </span>
               </Tooltip>
             </td>
           ))}

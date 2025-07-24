@@ -61,6 +61,16 @@ export const BPTable = ({
     const value = params.data.values.find((value: any) =>
       getYearColsValue(value, year, isAfterMaxYear),
     )
+
+    if (field === 'value_co2') {
+      return value && value[field] !== null
+        ? formatDecimalValue(parseFloat(value[field]), {
+            maximumFractionDigits: 0,
+            minimumFractionDigits: 0,
+          })
+        : '0'
+    }
+
     if (value && value[field] !== null) {
       return formatDecimalValue(
         parseFloat(value[field]),
