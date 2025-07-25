@@ -216,7 +216,7 @@ const ProjectCrossCuttingFields = ({
         },
       }))
     }
-  }, [subsectors, project_type, sector])
+  }, [JSON.stringify(subsectors), project_type, sector])
 
   const sectionDefaultProps = {
     ...defaultProps,
