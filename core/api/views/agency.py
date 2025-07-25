@@ -2,7 +2,7 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics
 
-from core.api.serializers.agency import AgencySerializer
+from core.api.serializers.agency import AgencySerializer, BusinessPlanAgencySerializer
 from core.models.agency import Agency
 
 
@@ -40,3 +40,22 @@ class AgencyListView(generics.ListAPIView):
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
+
+
+class BusinessPlanAgencyListView(AgencyListView):
+    """
+    List agencies for business plan users
+    """
+
+    serializer_class = BusinessPlanAgencySerializer
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        queryset = queryset.exclude(
+            name__in=[
+                "China (FECO)",
+            ]
+        )
+
+        return queryset.order_by("name")

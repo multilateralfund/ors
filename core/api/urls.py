@@ -36,7 +36,7 @@ from core.api.views import (
     ConsolidatedInputDataExportView,
     UserPermissionsView,
 )
-from core.api.views.agency import AgencyListView
+from core.api.views.agency import AgencyListView, BusinessPlanAgencyListView
 from core.api.views.bp_export import BPActivityExportView
 from core.api.views.business_plan import (
     BPChemicalTypeListView,
@@ -124,7 +124,7 @@ from core.api.views.rbm_measures import RBMMeasureListView
 from core.api.views.sector_subsector import ProjectSectorView, ProjectSubSectorView
 from core.api.views.settings import SettingsView
 from core.api.views.usages import UsageListView
-from core.api.views.countries import CountryListView
+from core.api.views.countries import CountryListView, BusinessPlanCountryListView
 
 router = routers.SimpleRouter()
 router.register("projects/v2", ProjectV2ViewSet, basename="project-v2")
@@ -520,6 +520,16 @@ urlpatterns = [
         "business-plan/upload/",
         BPImportView.as_view(),
         name="bp-upload",
+    ),
+    path(
+        "business-plan/agencies/",
+        BusinessPlanAgencyListView.as_view(),
+        name="bp-agencies-list",
+    ),
+    path(
+        "business-plan/countries/",
+        BusinessPlanCountryListView.as_view(),
+        name="business-plan-countries-list",
     ),
     path(
         "business-plan/bp-chemical-types/",
