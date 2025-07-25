@@ -1,4 +1,4 @@
-import { ChangeEvent, useState } from 'react'
+import { ChangeEvent, useContext, useState } from 'react'
 
 import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
 import Field from '@ors/components/manage/Form/Field'
@@ -15,6 +15,7 @@ import {
   getMeetingNr,
   getMeetingOptions,
 } from '@ors/components/manage/Utils/utilFunctions'
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import { changeHandler } from './SpecificFieldsHelpers'
 import { ClosedList, OpenedList } from '../HelperComponents'
 import { defaultProps, disabledClassName, tableColumns } from '../constants'
@@ -50,9 +51,12 @@ const ProjectIdentifiersFields = ({
     associatedProjects && associatedProjects.length > 0
 
   const commonSlice = useStore((state) => state.common)
-  const projectSlice = useStore((state) => state.projects)
-  const clusters = projectSlice.clusters.data
   const agencies = commonSlice.agencies.data
+
+  const projectSlice = useStore((state) => state.projects)
+  const crtClusters = projectSlice.clusters.data
+  const { clusters: allClusters } = useContext(ProjectsDataContext)
+  const clusters = mode === 'edit' ? allClusters : crtClusters
 
   const canUpdateLeadAgency = mode === 'add' || mode === 'copy'
 
@@ -113,7 +117,7 @@ const ProjectIdentifiersFields = ({
       sectionIdentifier,
     )
 
-    const isProduction = getProduction(clusters, cluster?.id)
+    const isProduction = getProduction(crtClusters, cluster?.id)
 
     setProjectData((prevData) => ({
       ...prevData,
@@ -242,7 +246,7 @@ const ProjectIdentifiersFields = ({
               <Label>{tableColumns.cluster}</Label>
               <Field
                 widget="autocomplete"
-                options={clusters}
+                options={crtClusters}
                 value={projIdentifiers?.cluster}
                 onChange={(_, value) => handleChangeCluster(value)}
                 getOptionLabel={(option) => getOptionLabel(clusters, option)}

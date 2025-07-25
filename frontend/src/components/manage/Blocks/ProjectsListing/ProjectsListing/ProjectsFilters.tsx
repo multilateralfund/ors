@@ -4,6 +4,7 @@ import { useContext } from 'react'
 
 import Field from '@ors/components/manage/Form/Field'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions'
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import PopoverInput from '../../Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
 import { tableColumns } from '../constants'
@@ -26,6 +27,7 @@ const ProjectsFilters = ({
 }: any) => {
   const { canViewMetainfoProjects, canViewSectorsSubsectors } =
     useContext(PermissionsContext)
+  const { clusters, project_types, sectors } = useContext(ProjectsDataContext)
 
   const searchRef = useFocusOnCtrlF()
 
@@ -140,11 +142,7 @@ const ProjectsFilters = ({
         <>
           <Field
             Input={{ placeholder: tableColumns.cluster }}
-            options={getFilterOptions(
-              filters,
-              projectSlice.clusters.data,
-              'cluster_id',
-            )}
+            options={getFilterOptions(filters, clusters, 'cluster_id')}
             widget="autocomplete"
             onChange={(_: any, value: any) => {
               const projectCluster = filters.cluster_id || []
@@ -162,7 +160,7 @@ const ProjectsFilters = ({
             Input={{ placeholder: tableColumns.type }}
             options={getFilterOptions(
               filters,
-              projectSlice.types.data,
+              project_types,
               'project_type_id',
             )}
             widget="autocomplete"
@@ -183,11 +181,7 @@ const ProjectsFilters = ({
       {canViewSectorsSubsectors && (
         <Field
           Input={{ placeholder: tableColumns.sector }}
-          options={getFilterOptions(
-            filters,
-            projectSlice.sectors.data,
-            'sector_id',
-          )}
+          options={getFilterOptions(filters, sectors, 'sector_id')}
           widget="autocomplete"
           onChange={(_: any, value: any) => {
             const sector = filters.sector_id || []

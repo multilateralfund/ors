@@ -4,4 +4,5 @@ export type ProjectSubSectorType = {
   code: string
   sort_order: number
   sector_id: number
+  obsolete: boolean
 }

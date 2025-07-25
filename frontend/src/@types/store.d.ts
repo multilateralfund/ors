@@ -291,6 +291,7 @@ export type Cluster = {
   category: string
   production: boolean
   sort_order: number
+  obsolete: boolean
 }
 
 export type CPVersionInfo = {

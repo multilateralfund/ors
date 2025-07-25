@@ -21,8 +21,8 @@ const ProjectIdentifiers = ({ project }: { project: ProjectTypeApi }) => {
   const commonSlice = useStore((state) => state.common)
   const leadAgency =
     commonSlice.agencies.data.find(
-      (agency) => agency.id === project.meta_project.lead_agency,
-    )?.name ?? ''
+      (agency) => agency.id === project.meta_project?.lead_agency,
+    )?.name ?? '-'
 
   const [associatedProjects, setAssociatedProjects] = useState<
     RelatedProjectsType[] | null
