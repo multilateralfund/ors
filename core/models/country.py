@@ -73,6 +73,86 @@ class Country(models.Model):
 
         return False
 
+    @staticmethod
+    def get_business_plan_countries():
+        """
+        Returns a list of business plan countries.
+        """
+        regions_subregions_entries = (
+            Country.objects.filter(
+                location_type__in=[
+                    Country.LocationType.REGION,
+                    Country.LocationType.SUBREGION,
+                ]
+            )
+            .exclude(
+                name__in=[
+                    "Africa",
+                    "Europe",
+                    "Asia and the Pacific",
+                    "Global",
+                    "Latin America and the Caribbean",
+                ]
+            )
+            .values_list("id", flat=True)
+        )
+        return (
+            Country.objects.with_has_cp_report()
+            .filter(
+                is_a2=False,
+            )
+            .exclude(id__in=regions_subregions_entries)
+            .exclude(
+                name__in=[
+                    "Andorra",
+                    "Australia",
+                    "Austria",
+                    "Azerbaijan",
+                    "Belarus",
+                    "Belgium",
+                    "Cyprus",
+                    "Czechia",
+                    "Denmark",
+                    "European Union",
+                    "Finland",
+                    "Germany",
+                    "Greece",
+                    "Holy See",
+                    "Hungary",
+                    "Iceland",
+                    "Ireland",
+                    "Israel",
+                    "Italy",
+                    "Japan",
+                    "Latvia",
+                    "Liechtenstein",
+                    "Lithuania",
+                    "Luxembourg",
+                    "Malta",
+                    "Monaco",
+                    "Netherlands (Kingdom of the)",
+                    "New Zealand",
+                    "Norway",
+                    "Poland",
+                    "Portugal",
+                    "Republic of Korea",
+                    "Russian Federation",
+                    "San Marino",
+                    "Singapore",
+                    "Slovakia",
+                    "Slovenia",
+                    "Spain",
+                    "State of Palestine",
+                    "Sweden",
+                    "Switzerland",
+                    "Tajikistan",
+                    "United Kingdom of Great Britain and Northern Ireland",
+                    "Uzbekistan",
+                ]
+            )
+        )
+        select_related("parent")
+
     class Meta:
         verbose_name_plural = "Countries"
         ordering = ("name",)
