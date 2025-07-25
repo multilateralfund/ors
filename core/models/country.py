@@ -97,8 +97,7 @@ class Country(models.Model):
             .values_list("id", flat=True)
         )
         return (
-            Country.objects.with_has_cp_report()
-            .filter(
+            Country.objects.filter(
                 is_a2=False,
             )
             .exclude(id__in=regions_subregions_entries)

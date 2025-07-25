@@ -75,6 +75,18 @@ class BPActivityExportView(generics.GenericAPIView):
         queryset = queryset.values_list("name", flat=True).distinct().order_by("name")
         return [{"name": name} for name in queryset]
 
+    def get_agency_names(self):
+        queryset = Agency.objects.exclude(
+            name__in=[
+                "China (FECO)",
+            ]
+        )
+        return [{"name": obj.get_name_display()} for obj in queryset]
+
+    def get_country_names(self):
+        queryset = Country.get_business_plan_countries()
+        return [{"name": obj.name, "abbr": obj.abbr} for obj in queryset]
+
     def get_name_and_codes(self, cls_name, code_name, filter_obsoletes=False):
         queryset = cls_name.objects.all()
         if filter_obsoletes:
@@ -186,12 +198,12 @@ class BPActivityExportView(generics.GenericAPIView):
         exporter.write(data)
 
         exporter = ModelNameCodeWriter(wb, "Countries")
-        data = self.get_name_and_codes(Country, "abbr")
+        data = self.get_country_names()
         exporter.write(data)
         self.add_data_validation(wb, "B", "Countries", len(data), show_error=True)
 
         exporter = ModelNameWriter(wb, "Agencies")
-        data = self.get_names(Agency)
+        data = self.get_agency_names()
         exporter.write(data)
         self.add_data_validation(wb, "C", "Agencies", len(data), show_error=True)
 
