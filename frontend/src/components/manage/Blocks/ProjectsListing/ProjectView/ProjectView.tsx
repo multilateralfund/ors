@@ -15,8 +15,78 @@ import { formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
 import { IoDownloadOutline } from 'react-icons/io5'
-import { Tabs, Tab } from '@mui/material'
+import { Tabs, Tab, Tooltip } from '@mui/material'
 import { debounce } from 'lodash'
+
+import { AiFillFileExcel, AiFillFilePdf } from 'react-icons/ai'
+
+import useClickOutside from '@ors/hooks/useClickOutside'
+
+import cx from 'classnames'
+
+const ProjectDownloads = ({
+  project,
+}: {
+  project: ProjectViewProps['project']
+}) => {
+  const [showMenu, setShowMenu] = useState(false)
+
+  const toggleShowMenu = () => setShowMenu((prev) => !prev)
+
+  const ref = useClickOutside<HTMLDivElement>(() => {
+    setShowMenu(false)
+  })
+
+  const urlXLS = formatApiUrl(
+    `/api/projects/v2/export?project_id=${project.id}`,
+  )
+  const urlDOC = formatApiUrl(
+    `/api/projects/v2/export?project_id=${project.id}&output_format=docx`,
+  )
+
+  return (
+    <div className="relative">
+      <div
+        className="flex cursor-pointer items-center justify-between text-nowrap"
+        ref={ref}
+        onClick={toggleShowMenu}
+      >
+        <Tooltip placement="top" title="Download">
+          <div className="flex items-center justify-between gap-x-2">
+            <span>Download</span>
+            <IoDownloadOutline className="text-xl text-secondary" />
+          </div>
+        </Tooltip>
+      </div>
+      <div
+        className={cx(
+          'absolute left-0 z-10 max-h-[200px] origin-top overflow-y-auto rounded-md border border-solid border-gray-300 bg-gray-A100 opacity-0 transition-all',
+          {
+            'collapse scale-y-0': !showMenu,
+            'scale-y-100 opacity-100': showMenu,
+          },
+        )}
+      >
+        <a
+          className="flex items-center gap-x-2 text-nowrap px-2 py-1 text-base text-black no-underline transition-all hover:bg-primary hover:text-mlfs-hlYellow"
+          href={urlXLS}
+          target="_blank"
+        >
+          <AiFillFileExcel className="fill-green-700" size={24} />
+          <span>XLSX</span>
+        </a>
+        <a
+          className="flex items-center gap-x-2 text-nowrap px-2 py-1 text-base text-black no-underline transition-all hover:bg-primary hover:text-mlfs-hlYellow"
+          href={urlDOC}
+          target="_blank"
+        >
+          <AiFillFilePdf className="fill-red-700" size={24} />
+          <span>DOCX</span>
+        </a>
+      </div>
+    </div>
+  )
+}
 
 const ProjectView = ({
   project,
@@ -130,17 +200,7 @@ const ProjectView = ({
         </Tabs>
         <div>
           <div className="flex items-center justify-between gap-x-2">
-            <a
-              className={
-                'm-0 flex items-center gap-2.5 text-primary no-underline'
-              }
-              href={formatApiUrl(
-                `/api/projects/v2/export?project_id=${project.id}`,
-              )}
-            >
-              Download
-            </a>
-            <IoDownloadOutline className="text-xl text-secondary" />
+            <ProjectDownloads project={project} />
           </div>
         </div>
       </div>
