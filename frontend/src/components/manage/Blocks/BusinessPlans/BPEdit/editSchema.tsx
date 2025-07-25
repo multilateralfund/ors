@@ -1,5 +1,6 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useContext, useMemo } from 'react'
 
+import BPDataContext from '@ors/contexts/BusinessPlans/BPDataContext'
 import { PendingEditType } from './BPEditTable'
 import { useGetClusterOptions } from '../useGetClusterOptions'
 import { useStore } from '@ors/store'
@@ -57,9 +58,8 @@ const useColumnsOptions = (
   const bpSlice = useStore((state) => state.businessPlans)
 
   const { results: clusterOptions } = useGetClusterOptions()
+  const { agencies, countries } = useContext(BPDataContext)
 
-  const countries = commonSlice.countries.data
-  const agencies = commonSlice.agencies.data
   const clusters = projectSlice.clusters.data
   const types = bpSlice.types.data
   const sectors = bpSlice.sectors.data

@@ -18,7 +18,6 @@ export default function BPFilters({
   withAgency = false,
   ...rest
 }: any) {
-  const commonSlice = useStore((state) => state.common)
   const bpSlice = useStore((state) => state.businessPlans)
   const projects = useStore((state) => state.projects)
   const clusters = projects.clusters.data || []
@@ -37,7 +36,6 @@ export default function BPFilters({
         {...{
           bpSlice,
           clusters,
-          commonSlice,
           handleFilterChange,
           handleParamsChange,
           withAgency,

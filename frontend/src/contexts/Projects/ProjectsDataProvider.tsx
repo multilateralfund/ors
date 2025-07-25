@@ -3,9 +3,9 @@ import { PropsWithChildren } from 'react'
 import ProjectsDataContext from './ProjectsDataContext'
 import useApi from '@ors/hooks/useApi'
 
-interface PermissionsProviderProps extends PropsWithChildren {}
+interface ProjectsDataProviderProps extends PropsWithChildren {}
 
-const ProjectsDataProvider = (props: PermissionsProviderProps) => {
+const ProjectsDataProvider = (props: ProjectsDataProviderProps) => {
   const { children } = props
 
   const { data: clusters } = useApi({

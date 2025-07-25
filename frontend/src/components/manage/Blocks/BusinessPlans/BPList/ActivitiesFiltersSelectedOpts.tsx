@@ -1,5 +1,6 @@
 import { useContext } from 'react'
 
+import BPDataContext from '@ors/contexts/BusinessPlans/BPDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { multiYearFilterOptions } from '../constants'
 
@@ -11,7 +12,6 @@ export default function ActivitiesFiltersSelectedOpts(props: any) {
   const {
     bpSlice,
     clusters,
-    commonSlice,
     filters,
     form,
     handleFilterChange,
@@ -21,8 +21,8 @@ export default function ActivitiesFiltersSelectedOpts(props: any) {
   } = props
   const { canViewMetainfoProjects, canViewSectorsSubsectors } =
     useContext(PermissionsContext)
+  const { agencies, countries } = useContext(BPDataContext)
 
-  const { agencies, countries } = commonSlice
   const { sectors, subsectors, types } = bpSlice
 
   const initialParams = {
@@ -110,8 +110,8 @@ export default function ActivitiesFiltersSelectedOpts(props: any) {
     (areFiltersApplied || filters?.search) && (
       <div className="mt-[6px] flex flex-wrap gap-2">
         {displaySearchTerm()}
-        {displaySelectedOption(formatEntity(countries.data), 'country_id')}
-        {displaySelectedOption(formatEntity(agencies.data), 'agency_id')}
+        {displaySelectedOption(formatEntity(countries), 'country_id')}
+        {displaySelectedOption(formatEntity(agencies), 'agency_id')}
         {canViewMetainfoProjects &&
           displaySelectedOption(formatEntity(clusters), 'project_cluster_id')}
         {canViewMetainfoProjects &&

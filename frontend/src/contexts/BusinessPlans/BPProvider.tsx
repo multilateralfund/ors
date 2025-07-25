@@ -1,16 +1,14 @@
-import { ApiBPGet } from '@ors/types/api_bp_get'
+import { useContext, useMemo } from 'react'
 
-import { useMemo } from 'react'
+import { getAgencyByName } from '@ors/components/manage/Blocks/BusinessPlans/utils'
+import BPDataContext from './BPDataContext'
+import BPContext from './BPContext'
+import { BPProviderProps } from './types'
+import { ApiBPGet } from '@ors/types/api_bp_get'
+import useApi from '@ors/hooks/useApi'
 
 import { capitalize } from 'lodash'
 import { useParams } from 'wouter'
-
-import { getAgencyByName } from '@ors/components/manage/Blocks/BusinessPlans/utils'
-import useApi from '@ors/hooks/useApi'
-import { useStore } from '@ors/store'
-
-import BPContext from './BPContext'
-import { BPProviderProps } from './types'
 
 const BP_PER_PAGE = 20
 
@@ -19,11 +17,12 @@ function BPProvider(props: BPProviderProps) {
 
   const pathParams = useParams<{ agency: string; period: string }>()
   const { agency, period } = pathParams
-  const commonSlice = useStore((state) => state.common)
+
+  const { agencies } = useContext(BPDataContext)
 
   const currentAgency = useMemo(
-    () => getAgencyByName(commonSlice, agency),
-    [agency, commonSlice],
+    () => getAgencyByName(agencies, agency),
+    [agency, agencies],
   )
 
   const { data, loaded, loading, params, setParams } = useApi<ApiBPGet>({
