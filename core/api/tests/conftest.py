@@ -818,7 +818,7 @@ def business_plan():
 
 @pytest.fixture
 def bp_chemical_type():
-    return BPChemicalTypeFactory(name="BPChemicalType")
+    return BPChemicalTypeFactory(name="BPChemicalType", obsolete=False)
 
 
 @pytest.fixture

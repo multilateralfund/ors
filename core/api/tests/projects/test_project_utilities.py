@@ -67,6 +67,7 @@ class TestProjectSectorList(BaseTest):
             "sort_order": sector.sort_order,
             "allowed_types": [],
             "subsectors": [],
+            "obsolete": sector.obsolete,
         }
 
 
@@ -121,6 +122,7 @@ class TestProjectSectorCreate(BaseTest):
             "sort_order": sector.sort_order,
             "allowed_types": [],
             "subsectors": [],
+            "obsolete": sector.obsolete,
         }
 
         sect_co = ProjectSector.objects.count()
@@ -169,6 +171,7 @@ class TestProjectSubsectorList(BaseTest):
             "code": subsector.code,
             "sort_order": subsector.sort_order,
             "sectors": [sector.id],
+            "obsolete": subsector.obsolete,
         }
 
 
@@ -257,6 +260,7 @@ class TestProjectType(BaseTest):
             "code": project_type.code,
             "sort_order": project_type.sort_order,
             "allowed_sectors": [],
+            "obsolete": project_type.obsolete,
         }
 
 

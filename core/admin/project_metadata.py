@@ -1,5 +1,4 @@
 from admin_auto_filters.filters import AutocompleteFilterFactory
-
 from django.contrib import admin
 
 from core.admin.utils import get_final_display_list
@@ -18,6 +17,12 @@ from core.models.project_metadata import (
 @admin.register(ProjectCluster)
 class ProjectClusterAdmin(admin.ModelAdmin):
     search_fields = ["name", "code"]
+    list_filter = [
+        "category",
+        "group",
+        "obsolete",
+        "production",
+    ]
 
     def get_list_display(self, request):
         exclude = ["project", "bpactivity", "project_specific_fields"]
@@ -64,6 +69,9 @@ class ProjectSectorAdmin(admin.ModelAdmin):
     search_fields = [
         "name",
     ]
+    list_filter = [
+        "obsolete",
+    ]
 
     def get_list_display(self, request):
         exclude = [
@@ -104,6 +112,7 @@ class ProjectSubSectorAdmin(admin.ModelAdmin):
     ]
     list_filter = [
         AutocompleteFilterFactory("sector", "sector"),
+        "obsolete",
     ]
 
     def get_list_display(self, request):
@@ -115,6 +124,9 @@ class ProjectSubSectorAdmin(admin.ModelAdmin):
 class ProjectTypeAdmin(admin.ModelAdmin):
     search_fields = [
         "name",
+    ]
+    list_filter = [
+        "obsolete",
     ]
 
     def get_list_display(self, request):

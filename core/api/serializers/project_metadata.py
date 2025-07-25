@@ -41,6 +41,7 @@ class ProjectClusterSerializer(serializers.ModelSerializer):
             "category",
             "production",
             "sort_order",
+            "obsolete",
         ]
 
 
@@ -89,6 +90,7 @@ class ProjectSectorSerializer(serializers.ModelSerializer):
             "code",
             "sort_order",
             "allowed_types",
+            "obsolete",
         ]
         read_only_fields = ["id", "allowed_types"]
 
@@ -130,6 +132,7 @@ class ProjectSubSectorSerializer(serializers.ModelSerializer):
             "code",
             "sort_order",
             "sectors",
+            "obsolete",
         ]
 
     def create(self, validated_data):
@@ -153,6 +156,7 @@ class ProjectTypeSerializer(serializers.ModelSerializer):
             "code",
             "sort_order",
             "allowed_sectors",
+            "obsolete",
         ]
         read_only_fields = ["id", "allowed_sectors"]
 

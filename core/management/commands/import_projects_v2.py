@@ -3,9 +3,14 @@ import logging
 from django.core.management import BaseCommand
 from django.db import transaction
 
-from core.models.business_plan import BPActivity
+from core.models.business_plan import BPActivity, BPChemicalType
 from core.models.project import MetaProject, Project
-from core.models.project_metadata import ProjectSubSector
+from core.models.project_metadata import (
+    ProjectCluster,
+    ProjectSector,
+    ProjectSubSector,
+    ProjectType,
+)
 from core.utils import get_meta_project_new_code, get_meta_project_code
 
 logger = logging.getLogger(__name__)
@@ -60,6 +65,88 @@ def set_meta_project_for_existing_projects():
 
     Project.objects.bulk_update(projects_without_meta_projects, ["meta_project"])
     logger.info("✅ Successfully set MetaProject for existing projects.")
+
+
+def mark_obsolete_values():
+
+    BP_CHEMICAL_TYPE_OBSOLETES = ["MBR", "PRO MBR"]
+
+    PROJECT_CLUSTER_OBSOLETES = [
+        "CFC Individual",
+        "CFC Phase-out Plans",
+        "CFC Production Phase out Plans",
+        "Country Programme",
+        "Other ODS Individual",
+        "Other ODS Production Phase out Plans",
+        "Other ODS Sector Plans",
+    ]
+    PROJECT_SECTOR_OBSOLETES = [
+        "Fumigant",
+        "Pre-CAP",
+        "Process agent",
+        "Sterilant",
+        "Tobacco Fluffing",
+    ]
+
+    PROJECT_TYPES_OBSOLETES = [
+        "DOC",
+        "Country programme preparation",
+    ]
+
+    PROJECT_SUBSECTOR_OBSOLETES = [
+        "Banking",
+        "CFC closure",
+        "CFC conversion",
+        "CFC-113",
+        "Combined CFC-113 and TCA",
+        "Commercial Refrigeration",
+        "CTC",
+        "CTC phase out",
+        "Domestic Refrigeration",
+        "End-user",
+        "Halon closure",
+        "Halon conversion",
+        "Industrial and commercial AC (ICR)",
+        "MB closure",
+        "Methyl bromide",
+        "Network",
+        "Non-investment programme",
+        "ODS closure",
+        "Other Aerosol",
+        "Other Pre-CAP",
+        "Other Process agent",
+        "Other Sterilant",
+        "Other Tobacco Fluffing",
+        "Policy paper",
+        "Sterilant",
+        "TCA",
+        "TCA closure",
+        "Tobacco fluffing",
+        "Transportation refrigeration",
+    ]
+
+    BPChemicalType.objects.filter(name__in=BP_CHEMICAL_TYPE_OBSOLETES).update(
+        obsolete=True
+    )
+    logger.info("✅ Successfully marked obsolete values in BPChemicalType.")
+
+    ProjectCluster.objects.filter(name__in=PROJECT_CLUSTER_OBSOLETES).update(
+        obsolete=True
+    )
+    logger.info("✅ Successfully marked obsolete values in ProjectCluster.")
+
+    ProjectSector.objects.filter(name__in=PROJECT_SECTOR_OBSOLETES).update(
+        obsolete=True
+    )
+    logger.info("✅ Successfully marked obsolete values in ProjectSector.")
+
+    ProjectType.objects.filter(name__in=PROJECT_TYPES_OBSOLETES).update(obsolete=True)
+    logger.info("✅ Successfully marked obsolete values in ProjectType.")
+
+    ProjectSubSector.objects.filter(name__in=PROJECT_SUBSECTOR_OBSOLETES).update(
+        obsolete=True
+    )
+    logger.info("✅ Successfully marked obsolete values in ProjectSubSector.")
 
 
 def migrate_subsectors_sector_data():
@@ -142,6 +229,7 @@ class Command(BaseCommand):
             choices=[
                 "set-new-code-meta-projects",
                 "set-meta-project-for-existing-projects",
+                "mark_obsolete_values",
                 "migrate-subsectors-sector-data",
             ],
         )
@@ -153,6 +241,8 @@ class Command(BaseCommand):
             set_new_code_meta_projects()
         elif imp_type in ["set-meta-project-for-existing-projects"]:
             set_meta_project_for_existing_projects()
+        elif imp_type == "mark_obsolete_values":
+            mark_obsolete_values()
         elif imp_type == "migrate-subsectors-sector-data":
             migrate_subsectors_sector_data()
         else:

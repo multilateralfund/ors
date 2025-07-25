@@ -102,6 +102,13 @@ class ProjectSectorView(SectorSubsectorBaseView):
                         cluster_id=cluster_id, type_id=type_id
                     ).values_list("sector_id", flat=True)
                 ).order_by("sort_order")
+
+            include_obsoletes = (
+                self.request.query_params.get("include_obsoletes", "false").lower()
+                == "true"
+            )
+            if not include_obsoletes:
+                queryset = queryset.filter(obsolete=False)
         return queryset
 
     @swagger_auto_schema(
@@ -117,6 +124,13 @@ class ProjectSectorView(SectorSubsectorBaseView):
                 openapi.IN_QUERY,
                 description="Filter sector by type ID. Must be used with cluster_id.",
                 type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                "include_obsoletes",
+                openapi.IN_QUERY,
+                description="Include obsolete sectors in the response",
+                type=openapi.TYPE_BOOLEAN,
+                default=False,
             ),
         ]
     )
@@ -154,7 +168,12 @@ class ProjectSubSectorView(SectorSubsectorBaseView):
             sector_id = int(self.request.query_params.get("sector_id", ""))
         except (ValueError, TypeError):
             sector_id = None
-
+        include_obsoletes = (
+            self.request.query_params.get("include_obsoletes", "false").lower()
+            == "true"
+        )
+        if not include_obsoletes:
+            queryset = queryset.filter(obsolete=False)
         if not sector_id:
             return queryset
         return queryset.filter(sectors__id=sector_id).order_by("sort_order")
@@ -172,6 +191,13 @@ class ProjectSubSectorView(SectorSubsectorBaseView):
                 openapi.IN_QUERY,
                 description="Filter sub-sectors by name",
                 type=openapi.TYPE_STRING,
+            ),
+            openapi.Parameter(
+                "include_obsoletes",
+                openapi.IN_QUERY,
+                description="Include obsolete sub-sectors in the response. Defaults to false.",
+                type=openapi.TYPE_BOOLEAN,
+                default=False,
             ),
         ]
     )

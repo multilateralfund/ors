@@ -54,7 +54,9 @@ class BPActivityExportView(generics.GenericAPIView):
 
     def get_subsector_data(self):
         queryset = (
-            ProjectSubSector.objects.all().prefetch_related("sectors").order_by("name")
+            ProjectSubSector.objects.filter(obsolete=False)
+            .prefetch_related("sectors")
+            .order_by("name")
         )
         return [
             {
@@ -66,14 +68,18 @@ class BPActivityExportView(generics.GenericAPIView):
             for subsector in queryset
         ]
 
-    def get_names(self, cls_name):
-        queryset = (
-            cls_name.objects.values_list("name", flat=True).distinct().order_by("name")
-        )
+    def get_names(self, cls_name, filter_obsoletes=False):
+        queryset = cls_name.objects.all()
+        if filter_obsoletes:
+            queryset = queryset.filter(obsolete=False)
+        queryset = queryset.values_list("name", flat=True).distinct().order_by("name")
         return [{"name": name} for name in queryset]
 
-    def get_name_and_codes(self, cls_name, code_name):
-        queryset = cls_name.objects.values_list("name", code_name).order_by("name")
+    def get_name_and_codes(self, cls_name, code_name, filter_obsoletes=False):
+        queryset = cls_name.objects.all()
+        if filter_obsoletes:
+            queryset = queryset.filter(obsolete=False)
+        queryset = queryset.values_list("name", code_name).order_by("name")
         return [{"name": name, "acronym": acronym} for name, acronym in queryset]
 
     def add_data_validation(
@@ -190,22 +196,22 @@ class BPActivityExportView(generics.GenericAPIView):
         self.add_data_validation(wb, "C", "Agencies", len(data), show_error=True)
 
         exporter = ModelNameWriter(wb, "Clusters", 4)
-        data = self.get_names(ProjectCluster)
+        data = self.get_names(ProjectCluster, filter_obsoletes=True)
         exporter.write(data)
         self.add_data_validation(wb, "I", "Clusters", len(data))
 
         exporter = ModelNameWriter(wb, "ChemicalTypes")
-        data = self.get_names(BPChemicalType)
+        data = self.get_names(BPChemicalType, filter_obsoletes=True)
         exporter.write(data)
         self.add_data_validation(wb, "F", "ChemicalTypes", len(data))
 
         exporter = ModelNameCodeWriter(wb, "ProjectTypes")
-        data = self.get_name_and_codes(ProjectType, "code")
+        data = self.get_name_and_codes(ProjectType, "code", filter_obsoletes=True)
         exporter.write(data)
         self.add_data_validation(wb, "E", "ProjectTypes", len(data))
 
         exporter = ModelNameCodeWriter(wb, "Sectors")
-        data = self.get_name_and_codes(ProjectSector, "code")
+        data = self.get_name_and_codes(ProjectSector, "code", filter_obsoletes=True)
         exporter.write(data)
         self.add_data_validation(wb, "J", "Sectors", len(data))
 

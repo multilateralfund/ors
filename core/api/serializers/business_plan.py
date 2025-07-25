@@ -37,6 +37,7 @@ class BPChemicalTypeSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
+            "obsolete",
         ]
 
 
@@ -300,11 +301,21 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
         # get all related obj IDs only once for validation
         self.agency_ids = Agency.objects.values_list("id", flat=True)
         self.country_ids = Country.objects.values_list("id", flat=True)
-        self.project_type_ids = ProjectType.objects.values_list("id", flat=True)
-        self.bp_chemical_type_ids = BPChemicalType.objects.values_list("id", flat=True)
-        self.project_cluster_ids = ProjectCluster.objects.values_list("id", flat=True)
-        self.sector_ids = ProjectSector.objects.values_list("id", flat=True)
-        self.subsector_ids = ProjectSubSector.objects.values_list("id", flat=True)
+        self.project_type_ids = ProjectType.objects.filter(obsolete=False).values_list(
+            "id", flat=True
+        )
+        self.bp_chemical_type_ids = BPChemicalType.objects.filter(
+            obsolete=False
+        ).values_list("id", flat=True)
+        self.project_cluster_ids = ProjectCluster.objects.filter(
+            obsolete=False
+        ).values_list("id", flat=True)
+        self.sector_ids = ProjectSector.objects.filter(obsolete=False).values_list(
+            "id", flat=True
+        )
+        self.subsector_ids = ProjectSubSector.objects.filter(
+            obsolete=False
+        ).values_list("id", flat=True)
         self.substance_ids = Substance.objects.values_list("id", flat=True)
 
     def validate_agency_id(self, agency_id):

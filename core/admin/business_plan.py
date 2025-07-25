@@ -48,6 +48,9 @@ class BPChemicalTypeAdmin(admin.ModelAdmin):
     search_fields = [
         "name",
     ]
+    list_filter = [
+        "obsolete",
+    ]
 
     def get_list_display(self, request):
         exclude = ["bpactivity"]

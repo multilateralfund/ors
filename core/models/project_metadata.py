@@ -154,6 +154,10 @@ class ProjectCluster(models.Model):
         """,
     )
     sort_order = models.FloatField(null=True, blank=True)
+    obsolete = models.BooleanField(
+        default=False,
+        help_text="If True, the cluster is obsolete and should not be used for new entries.",
+    )
 
     objects = ProjectClusterManager()
 
@@ -173,6 +177,10 @@ class ProjectType(models.Model):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=10, null=True, blank=True)
     sort_order = models.FloatField(null=True, blank=True)
+    obsolete = models.BooleanField(
+        default=False,
+        help_text="If True, the type is obsolete and should not be used for new entries.",
+    )
     objects = ProjectTypeManager()
 
     def __str__(self):
@@ -214,6 +222,10 @@ class ProjectSector(models.Model):
     is_custom = models.BooleanField(
         default=False,
         help_text="Custom sector created by user, not from the official list.",
+    )
+    obsolete = models.BooleanField(
+        default=False,
+        help_text="If True, the sector is obsolete and should not be used for new entries.",
     )
 
     objects = ProjectSectorManager()
@@ -278,6 +290,10 @@ class ProjectSubSector(models.Model):
     is_custom = models.BooleanField(
         default=False,
         help_text="Custom sector created by user, not from the official list.",
+    )
+    obsolete = models.BooleanField(
+        default=False,
+        help_text="If True, the subsector is obsolete and should not be used for new entries.",
     )
 
     objects = ProjectSubSectorManager()

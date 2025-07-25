@@ -32,7 +32,9 @@ from core.models.project_metadata import (
     ProjectSpecificFields,
     ProjectStatus,
     ProjectSubmissionStatus,
+    ProjectSector,
     ProjectSubSector,
+    ProjectType,
 )
 from core.utils import get_project_sub_code
 from core.api.views.utils import log_project_history
@@ -617,6 +619,21 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
         allow_null=True,
         queryset=Agency.objects.all().values_list("id", flat=True),
     )
+    cluster = serializers.PrimaryKeyRelatedField(
+        required=False,
+        allow_null=True,
+        queryset=ProjectCluster.objects.filter(obsolete=False),
+    )
+    sector = serializers.PrimaryKeyRelatedField(
+        required=False,
+        allow_null=True,
+        queryset=ProjectSector.objects.filter(obsolete=False),
+    )
+    project_type = serializers.PrimaryKeyRelatedField(
+        required=False,
+        allow_null=True,
+        queryset=ProjectType.objects.filter(obsolete=False),
+    )
 
     # This field is not on the Project model, but is used for input only
     associate_project_id = serializers.IntegerField(
@@ -762,6 +779,20 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
         return ProjectDetailsV2Serializer(context=self.context).to_representation(
             instance
         )
+
+    def validate_subsector_ids(self, value):
+        """
+        Validate that all subsector ids are not obsolete.
+        """
+        if value:
+            obsolete_subsectors = ProjectSubSector.objects.filter(
+                id__in=[x.id for x in value], obsolete=True
+            )
+            if obsolete_subsectors.exists():
+                raise serializers.ValidationError(
+                    "One or more subsector ids are obsolete."
+                )
+        return value
 
     @transaction.atomic
     def create(self, validated_data):

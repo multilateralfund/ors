@@ -17,6 +17,10 @@ from core.models.utils import get_protected_storage
 
 class BPChemicalType(models.Model):
     name = models.CharField(max_length=255)
+    obsolete = models.BooleanField(
+        default=False,
+        help_text="If True, the chemical type is obsolete and should not be used in new entries",
+    )
 
     def __str__(self):
         return self.name
@@ -100,7 +104,6 @@ class BPActivity(models.Model):
         non_lvc = "Non-LVC", "Non-LVC"
         regional = "Regional", "Regional"
         status_global = "Global", "Global"
-        ndr = "NDR", "NDR"
         undefined = "Undefined", "Undefined"
 
     class Status(models.TextChoices):
