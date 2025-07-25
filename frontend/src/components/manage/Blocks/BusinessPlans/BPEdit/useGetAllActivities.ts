@@ -1,9 +1,8 @@
-import { useMemo } from 'react'
+import { useContext, useMemo } from 'react'
 
-import useApi from '@ors/hooks/useApi'
-import { useStore } from '@ors/store'
-
+import BPDataContext from '@ors/contexts/BusinessPlans/BPDataContext'
 import { getAgencyByName } from '../utils'
+import useApi from '@ors/hooks/useApi'
 
 export function useGetAllActivities(pathParams: {
   agency: string
@@ -11,11 +10,11 @@ export function useGetAllActivities(pathParams: {
 }) {
   const { agency, period } = pathParams
 
-  const commonSlice = useStore((state) => state.common)
+  const { agencies } = useContext(BPDataContext)
 
   const currentAgency = useMemo(
-    () => getAgencyByName(commonSlice, agency),
-    [agency, commonSlice],
+    () => getAgencyByName(agencies, agency),
+    [agency, agencies],
   )
 
   const { data, loading, params, setParams } = useApi({

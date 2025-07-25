@@ -56,6 +56,7 @@ import ProjectsListingProjectPage from '@ors/app/projects_listing/[project_id]/p
 import ProjectsListingArchiveProjectPage from '@ors/app/projects_listing/[project_id]/archive/page'
 
 import ProjectsDataProvider from './contexts/Projects/ProjectsDataProvider'
+import BPDataProvider from './contexts/BusinessPlans/BPDataProvider'
 import PermissionsProvider from './contexts/PermissionsProvider'
 import NotFoundPage from '@ors/app/not-found'
 
@@ -115,32 +116,42 @@ export default function App() {
           </LoginLayout>
         </Route>
         <Route path="/business-plans/upload">
-          <BPListLayout>
-            <BPUpload />
-          </BPListLayout>
+          <BPDataProvider>
+            <BPListLayout>
+              <BPUpload />
+            </BPListLayout>
+          </BPDataProvider>
         </Route>
         <Route path="/business-plans/list/report-info/:period">
-          <BPListLayout>
-            <BusinessPlansDetailsConsolidated />
-          </BPListLayout>
+          <BPDataProvider>
+            <BPListLayout>
+              <BusinessPlansDetailsConsolidated />
+            </BPListLayout>
+          </BPDataProvider>
         </Route>
         <Route path="/business-plans/list/:period/:type/edit">
-          <BPListLayout>
-            <BPListActivitiesPeriodTypeEditPage />
-          </BPListLayout>
+          <BPDataProvider>
+            <BPListLayout>
+              <BPListActivitiesPeriodTypeEditPage />
+            </BPListLayout>
+          </BPDataProvider>
         </Route>
         <Route path="/business-plans/list/activities/:period">
-          <BPListLayout>
-            <BPListActivitiesPeriodPage />
-          </BPListLayout>
+          <BPDataProvider>
+            <BPListLayout>
+              <BPListActivitiesPeriodPage />
+            </BPListLayout>
+          </BPDataProvider>
         </Route>
         {/* <Route path="/business-plans/:agency/:period/:status?">
           <BPAgencyPeriodStatusPage />
         </Route> */}
         <Route path="/business-plans">
-          <BPListLayout>
-            <BPPage />
-          </BPListLayout>
+          <BPDataProvider>
+            <BPListLayout>
+              <BPPage />
+            </BPListLayout>
+          </BPDataProvider>
         </Route>
         <Route path="/country-programme/reports">
           <CountryProgrammePage />
