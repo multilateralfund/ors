@@ -24,6 +24,7 @@ import {
 } from '../interfaces'
 import { ProjectSubSectorType } from '@ors/types/api_project_subsector.ts'
 import { ProjectTypeType } from '@ors/types/api_project_types'
+import { ProjectSectorType } from '@ors/types/api_project_sector'
 import { api } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
@@ -74,12 +75,16 @@ const ProjectCrossCuttingFields = ({
   const [projectTypesOpts, setProjectTypesOpts] = useState<ProjectTypeType[]>(
     [],
   )
-  const [sectorsOpts, setSectorsOpts] = useState([])
+  const crtProjectTypesOpts = filter(projectTypesOpts, (opt) => !opt.obsolete)
+  const projectTypes = mode === 'edit' ? projectTypesOpts : crtProjectTypesOpts
+
+  const [sectorsOpts, setSectorsOpts] = useState<ProjectSectorType[]>([])
+  const crtSectorsOpts = filter(sectorsOpts, (opt) => !opt.obsolete)
+  const sectors = mode === 'edit' ? sectorsOpts : crtSectorsOpts
+
   const [subsectorsOpts, setSubsectorsOpts] = useState<ProjectSubSectorType[]>(
     [],
   )
-  const crtProjectTypesOpts = filter(projectTypesOpts, (opt) => !opt.obsolete)
-  const projectTypes = mode === 'edit' ? projectTypesOpts : crtProjectTypesOpts
 
   const fetchProjectTypes = async () => {
     try {
@@ -112,6 +117,7 @@ const ProjectCrossCuttingFields = ({
           params: {
             cluster_id: cluster,
             type_id: project_type,
+            include_obsoletes: true,
           },
           withStoreCache: true,
         },
@@ -180,7 +186,7 @@ const ProjectCrossCuttingFields = ({
   useEffect(() => {
     if (
       !project_type ||
-      (sectorsOpts.length > 0 && !find(sectorsOpts, { id: sector }))
+      (sectors.length > 0 && !find(sectors, { id: sector }))
     ) {
       setProjectData((prevData) => ({
         ...prevData,
@@ -190,7 +196,7 @@ const ProjectCrossCuttingFields = ({
         },
       }))
     }
-  }, [sectorsOpts, project_type])
+  }, [sectors, project_type])
 
   const sectionDefaultProps = {
     ...defaultProps,
@@ -357,17 +363,15 @@ const ProjectCrossCuttingFields = ({
                   <Label>{tableColumns.sector}</Label>
                   <Field
                     widget="autocomplete"
-                    options={sectorsOpts}
-                    value={some(sectorsOpts, { id: sector }) ? sector : null}
+                    options={crtSectorsOpts}
+                    value={some(sectors, { id: sector }) ? sector : null}
                     onChange={(_, value) =>
                       changeHandler['drop_down']<
                         ProjectData,
                         CrossCuttingFields
                       >(value, 'sector', setProjectData, sectionIdentifier)
                     }
-                    getOptionLabel={(option) =>
-                      getOptionLabel(sectorsOpts, option)
-                    }
+                    getOptionLabel={(option) => getOptionLabel(sectors, option)}
                     disabled={!canEditField(editableFields, 'sector')}
                     Input={{
                       error: getIsInputDisabled('sector'),

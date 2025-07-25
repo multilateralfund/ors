@@ -49,18 +49,16 @@ const ProjectsEdit = ({
 
   const { canViewProjects, canEditApprovedProjects } =
     useContext(PermissionsContext)
-  const { clusters, project_types } = useContext(ProjectsDataContext)
+  const { clusters, project_types, sectors } = useContext(ProjectsDataContext)
 
-  const isObsoleteCluster = find(
-    clusters,
-    (cluster) => cluster.id === project.cluster_id,
-  )?.obsolete
-  const shouldEmptyCluster = mode !== 'edit' && isObsoleteCluster
-  const isObsoleteProjectType = find(
-    project_types,
-    (type) => type.id === project.project_type_id,
-  )?.obsolete
-  const shouldEmptyProjectType = mode !== 'edit' && isObsoleteProjectType
+  const shouldEmptyField = (data: any, crtDataId: number) => {
+    const isObsoleteField = find(
+      data,
+      (entry) => entry.id === crtDataId,
+    )?.obsolete
+    return mode !== 'edit' && isObsoleteField
+  }
+  const shouldEmptyCluster = shouldEmptyField(clusters, project.cluster_id)
 
   const [projectData, setProjectData] = useState<ProjectData>({
     projIdentifiers: initialProjectIdentifiers,
@@ -212,10 +210,15 @@ const ProjectsEdit = ({
               bpId: project.bp_activity?.id ?? null,
             },
             crossCuttingFields: {
-              project_type: !shouldEmptyProjectType
+              project_type: !shouldEmptyField(
+                project_types,
+                project.project_type_id,
+              )
                 ? project.project_type_id
                 : null,
-              sector: project.sector_id,
+              sector: !shouldEmptyField(sectors, project.sector_id)
+                ? project.sector_id
+                : null,
               subsector_ids: map(project.subsectors, 'id'),
               is_lvc: project.is_lvc,
               title: project.title,

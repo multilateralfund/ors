@@ -27,7 +27,7 @@ const ProjectsFilters = ({
 }: any) => {
   const { canViewMetainfoProjects, canViewSectorsSubsectors } =
     useContext(PermissionsContext)
-  const { clusters, project_types } = useContext(ProjectsDataContext)
+  const { clusters, project_types, sectors } = useContext(ProjectsDataContext)
 
   const searchRef = useFocusOnCtrlF()
 
@@ -181,11 +181,7 @@ const ProjectsFilters = ({
       {canViewSectorsSubsectors && (
         <Field
           Input={{ placeholder: tableColumns.sector }}
-          options={getFilterOptions(
-            filters,
-            projectSlice.sectors.data,
-            'sector_id',
-          )}
+          options={getFilterOptions(filters, sectors, 'sector_id')}
           widget="autocomplete"
           onChange={(_: any, value: any) => {
             const sector = filters.sector_id || []
