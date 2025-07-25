@@ -253,6 +253,7 @@ class TestProjectType(BaseTest):
             "code": project_type.code,
             "sort_order": project_type.sort_order,
             "allowed_sectors": [],
+            "obsolete": project_type.obsolete,
         }
 
 

@@ -4,6 +4,13 @@ from django.core.management import BaseCommand
 from django.db import transaction
 
 from core.models.project import MetaProject, Project
+from core.models.business_plan import BPChemicalType
+from core.models.project import MetaProject, Project
+from core.models.project_metadata import (
+    ProjectCluster,
+    ProjectSector,
+    ProjectType,
+)
 from core.utils import get_meta_project_new_code, get_meta_project_code
 
 logger = logging.getLogger(__name__)
@@ -60,6 +67,51 @@ def set_meta_project_for_existing_projects():
     logger.info("✅ Successfully set MetaProject for existing projects.")
 
 
+def mark_obsolete_values():
+
+    BP_CHEMICAL_TYPE_OBSOLETES = ["MBR", "PRO MBR"]
+
+    PROJECT_CLUSTER_OBSOLETES = [
+        "CFC Individual",
+        "CFC Phase-out Plans",
+        "CFC Production Phase out Plans",
+        "Country Programme",
+        "Other ODS Individual",
+        "Other ODS Production Phase out Plans",
+        "Other ODS Sector Plans",
+    ]
+    PROJECT_SECTOR_OBSOLETES = [
+        "Fumigant",
+        "Pre-CAP",
+        "Process agent",
+        "Sterilant",
+        "Tobacco Fluffing",
+    ]
+
+    PROJECT_TYPES_OBSOLETES = [
+        "DOC",
+        "Country programme preparation",
+    ]
+
+    BPChemicalType.objects.filter(name__in=BP_CHEMICAL_TYPE_OBSOLETES).update(
+        obsolete=True
+    )
+    logger.info("✅ Successfully marked obsolete values in BPChemicalType.")
+
+    ProjectCluster.objects.filter(name__in=PROJECT_CLUSTER_OBSOLETES).update(
+        obsolete=True
+    )
+    logger.info("✅ Successfully marked obsolete values in ProjectCluster.")
+
+    ProjectSector.objects.filter(name__in=PROJECT_SECTOR_OBSOLETES).update(
+        obsolete=True
+    )
+    logger.info("✅ Successfully marked obsolete values in ProjectSector.")
+
+    ProjectType.objects.filter(name__in=PROJECT_TYPES_OBSOLETES).update(obsolete=True)
+    logger.info("✅ Successfully marked obsolete values in ProjectType.")
+
+
 class Command(BaseCommand):
     help = """
         Import projects v2.
@@ -78,6 +130,7 @@ class Command(BaseCommand):
             choices=[
                 "set-new-code-meta-projects",
                 "set-meta-project-for-existing-projects",
+                "mark_obsolete_values",
             ],
         )
 
@@ -88,5 +141,7 @@ class Command(BaseCommand):
             set_new_code_meta_projects()
         elif imp_type in ["set-meta-project-for-existing-projects"]:
             set_meta_project_for_existing_projects()
+        elif imp_type == "mark_obsolete_values":
+            mark_obsolete_values()
         else:
             logger.error(f"Unknown import type: {imp_type}")

@@ -292,17 +292,20 @@ def parse_bp_file(file, year_start, from_validate=False):
     countries = {strip_str(country.name): country for country in Country.objects.all()}
     project_types = {
         strip_str(project_type.name): project_type
-        for project_type in ProjectType.objects.all()
+        for project_type in ProjectType.objects.filter(obsolete=False)
     }
     bp_chemical_types = {
         strip_str(bp_chemical_type.name): bp_chemical_type
-        for bp_chemical_type in BPChemicalType.objects.all()
+        for bp_chemical_type in BPChemicalType.objects.filter(obsolete=False)
     }
     project_clusters = {
         strip_str(project_cluster.name): project_cluster
-        for project_cluster in ProjectCluster.objects.all()
+        for project_cluster in ProjectCluster.objects.filter(obsolete=False)
     }
-    sectors = {strip_str(sector.name): sector for sector in ProjectSector.objects.all()}
+    sectors = {
+        strip_str(sector.name): sector
+        for sector in ProjectSector.objects.filter(obsolete=False)
+    }
     subsectors_links = {
         (subsector.sector.name, strip_str(subsector.name)): subsector
         for subsector in ProjectSubSector.objects.select_related("sector")

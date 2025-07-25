@@ -110,6 +110,13 @@ class ProjectTypeListView(generics.ListAPIView):
                     cluster_id=cluster_id
                 ).values_list("type_id", flat=True)
             )
+
+        include_obsoletes = (
+            self.request.query_params.get("include_obsoletes", "false").lower()
+            == "true"
+        )
+        if not include_obsoletes:
+            queryset = queryset.filter(obsolete=False)
         return queryset
 
     @swagger_auto_schema(
@@ -120,6 +127,12 @@ class ProjectTypeListView(generics.ListAPIView):
                 description="Filter project types by cluster ID",
                 type=openapi.TYPE_INTEGER,
             ),
+            openapi.Parameter(
+                "include_obsoletes",
+                openapi.IN_QUERY,
+                description="Include obsolete types. By default, only non-obsolete types are returned.",
+                type=openapi.TYPE_BOOLEAN,
+            ),
         ]
     )
     def get(self, request, *args, **kwargs):
@@ -128,8 +141,33 @@ class ProjectTypeListView(generics.ListAPIView):
 
 class ProjectClusterListView(generics.ListAPIView):
     permission_classes = [HasProjectMetaInfoViewAccess]
-    queryset = ProjectCluster.objects.order_by("sort_order").all()
     serializer_class = ProjectClusterSerializer
+
+    def get_queryset(self):
+        queryset = ProjectCluster.objects.all()
+        include_obsoletes = (
+            self.request.query_params.get("include_obsoletes", "false").lower()
+            == "true"
+        )
+        if not include_obsoletes:
+            queryset = queryset.filter(obsolete=False)
+        return queryset.order_by("sort_order")
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "include_obsoletes",
+                openapi.IN_QUERY,
+                description="Include obsolete clusters. By default, only non-obsolete clusters are returned.",
+                type=openapi.TYPE_BOOLEAN,
+            ),
+        ]
+    )
+    def get(self, request, *args, **kwargs):
+        """
+        List project clusters
+        """
+        return super().get(request, *args, **kwargs)
 
 
 class ProjectSpecificFieldsListView(generics.RetrieveAPIView):

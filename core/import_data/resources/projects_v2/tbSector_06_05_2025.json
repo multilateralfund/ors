@@ -72,7 +72,7 @@
     "SORT_SECTOR": 14
   },
   {
-    "SEC": "",
+    "SEC": "CAP",
     "SECTOR": "Compliance Assistance Programme",
     "SORT_SECTOR": 15,
     "ACTION": "RENAME",

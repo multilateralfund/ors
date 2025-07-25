@@ -2,6 +2,7 @@ from admin_auto_filters.filters import AutocompleteFilterFactory
 from django.contrib import admin
 
 from core.admin.utils import get_final_display_list
+from core.models.project import ProjectCluster
 from core.models.business_plan import (
     BPChemicalType,
     BusinessPlan,
@@ -47,6 +48,9 @@ class BPValueAdmin(admin.ModelAdmin):
 class BPChemicalTypeAdmin(admin.ModelAdmin):
     search_fields = [
         "name",
+    ]
+    list_filter = [
+        "obsolete",
     ]
 
     def get_list_display(self, request):

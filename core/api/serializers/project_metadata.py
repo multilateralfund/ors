@@ -41,6 +41,7 @@ class ProjectClusterSerializer(serializers.ModelSerializer):
             "category",
             "production",
             "sort_order",
+            "obsolete",
         ]
 
 
@@ -144,6 +145,7 @@ class ProjectTypeSerializer(serializers.ModelSerializer):
             "code",
             "sort_order",
             "allowed_sectors",
+            "obsolete",
         ]
         read_only_fields = ["id", "allowed_sectors"]
 

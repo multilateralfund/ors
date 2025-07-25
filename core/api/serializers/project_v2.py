@@ -32,7 +32,9 @@ from core.models.project_metadata import (
     ProjectSpecificFields,
     ProjectStatus,
     ProjectSubmissionStatus,
+    ProjectSector,
     ProjectSubSector,
+    ProjectType,
 )
 from core.utils import get_project_sub_code
 from core.api.views.utils import log_project_history
@@ -616,6 +618,21 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
         required=False,
         allow_null=True,
         queryset=Agency.objects.all().values_list("id", flat=True),
+    )
+    cluster = serializers.PrimaryKeyRelatedField(
+        required=False,
+        allow_null=True,
+        queryset=ProjectCluster.objects.filter(obsolete=False),
+    )
+    sector = serializers.PrimaryKeyRelatedField(
+        required=False,
+        allow_null=True,
+        queryset=ProjectSector.objects.filter(obsolete=False),
+    )
+    project_type = serializers.PrimaryKeyRelatedField(
+        required=False,
+        allow_null=True,
+        queryset=ProjectType.objects.filter(obsolete=False),
     )
 
     # This field is not on the Project model, but is used for input only
