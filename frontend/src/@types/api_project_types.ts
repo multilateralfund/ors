@@ -4,4 +4,5 @@ export type ProjectTypeType = {
   code: string
   sort_order: number
   allowed_sectors: number[]
+  obsolete: boolean
 }

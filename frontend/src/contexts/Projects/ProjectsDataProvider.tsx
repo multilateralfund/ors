@@ -18,10 +18,21 @@ const ProjectsDataProvider = (props: PermissionsProviderProps) => {
     path: 'api/project-clusters/',
   })
 
+  const { data: project_types } = useApi({
+    options: {
+      params: {
+        include_obsoletes: true,
+      },
+      withStoreCache: false,
+    },
+    path: 'api/project-types/',
+  })
+
   return (
     <ProjectsDataContext.Provider
       value={{
         clusters,
+        project_types,
       }}
     >
       {children}

@@ -32,10 +32,10 @@ const ProjectsFiltersSelectedOpts = ({
 }: any) => {
   const { canViewMetainfoProjects, canViewSectorsSubsectors } =
     useContext(PermissionsContext)
-  const { clusters } = useContext(ProjectsDataContext)
+  const { clusters, project_types } = useContext(ProjectsDataContext)
 
   const { agencies, countries } = commonSlice
-  const { types, submission_statuses, sectors, statuses } = projectSlice
+  const { submission_statuses, sectors, statuses } = projectSlice
 
   const areFiltersApplied = Object.values(filters).find(
     (filter) => Array.isArray(filter) && filter.length > 0,
@@ -119,7 +119,7 @@ const ProjectsFiltersSelectedOpts = ({
         {canViewMetainfoProjects &&
           displaySelectedOption(formatEntity(clusters), 'cluster_id')}
         {canViewMetainfoProjects &&
-          displaySelectedOption(formatEntity(types.data), 'project_type_id')}
+          displaySelectedOption(formatEntity(project_types), 'project_type_id')}
         {canViewSectorsSubsectors &&
           displaySelectedOption(formatEntity(sectors.data), 'sector_id')}
         {displaySelectedOption(

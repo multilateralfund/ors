@@ -49,13 +49,18 @@ const ProjectsEdit = ({
 
   const { canViewProjects, canEditApprovedProjects } =
     useContext(PermissionsContext)
-  const { clusters } = useContext(ProjectsDataContext)
+  const { clusters, project_types } = useContext(ProjectsDataContext)
 
   const isObsoleteCluster = find(
     clusters,
     (cluster) => cluster.id === project.cluster_id,
   )?.obsolete
   const shouldEmptyCluster = mode !== 'edit' && isObsoleteCluster
+  const isObsoleteProjectType = find(
+    project_types,
+    (type) => type.id === project.project_type_id,
+  )?.obsolete
+  const shouldEmptyProjectType = mode !== 'edit' && isObsoleteProjectType
 
   const [projectData, setProjectData] = useState<ProjectData>({
     projIdentifiers: initialProjectIdentifiers,
@@ -194,7 +199,7 @@ const ProjectsEdit = ({
         country: project.country_id,
         meeting: mode !== 'partial-link' ? project.meeting_id : null,
         agency: project.agency_id,
-        lead_agency: project.meta_project.lead_agency,
+        lead_agency: project.meta_project?.lead_agency,
         lead_agency_submitting_on_behalf:
           project.lead_agency_submitting_on_behalf,
         cluster: !shouldEmptyCluster ? project.cluster_id : null,
@@ -207,7 +212,9 @@ const ProjectsEdit = ({
               bpId: project.bp_activity?.id ?? null,
             },
             crossCuttingFields: {
-              project_type: project.project_type_id,
+              project_type: !shouldEmptyProjectType
+                ? project.project_type_id
+                : null,
               sector: project.sector_id,
               subsector_ids: map(project.subsectors, 'id'),
               is_lvc: project.is_lvc,

@@ -21,9 +21,9 @@ import {
   BooleanOptionsType,
   ProjectDataProps,
   ProjectData,
-  ProjectTypeApi,
 } from '../interfaces'
 import { ProjectSubSectorType } from '@ors/types/api_project_subsector.ts'
+import { ProjectTypeType } from '@ors/types/api_project_types'
 import { api } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
@@ -37,8 +37,8 @@ const ProjectCrossCuttingFields = ({
   setProjectData,
   errors = {},
   hasSubmitted,
-  project,
-}: ProjectDataProps & { project?: ProjectTypeApi }) => {
+  mode,
+}: ProjectDataProps & { mode: string }) => {
   const sectionIdentifier = 'crossCuttingFields'
   const crossCuttingFields = projectData[sectionIdentifier]
   const {
@@ -71,18 +71,22 @@ const ProjectCrossCuttingFields = ({
     ['title', 'description'],
   )
 
-  const [projectTypesOpts, setProjectTypesOpts] = useState([])
+  const [projectTypesOpts, setProjectTypesOpts] = useState<ProjectTypeType[]>(
+    [],
+  )
   const [sectorsOpts, setSectorsOpts] = useState([])
   const [subsectorsOpts, setSubsectorsOpts] = useState<ProjectSubSectorType[]>(
     [],
   )
+  const crtProjectTypesOpts = filter(projectTypesOpts, (opt) => !opt.obsolete)
+  const projectTypes = mode === 'edit' ? projectTypesOpts : crtProjectTypesOpts
 
   const fetchProjectTypes = async () => {
     try {
       const res = await api(
         'api/project-types/',
         {
-          params: { cluster_id: cluster },
+          params: { cluster_id: cluster, include_obsoletes: true },
           withStoreCache: true,
         },
         false,
@@ -160,8 +164,8 @@ const ProjectCrossCuttingFields = ({
   }, [sector])
 
   useEffect(() => {
-    if (projectTypesOpts.length > 0) {
-      if (!find(projectTypesOpts, { id: project_type })) {
+    if (projectTypes.length > 0) {
+      if (!find(projectTypes, { id: project_type })) {
         setProjectData((prevData) => ({
           ...prevData,
           [sectionIdentifier]: {
@@ -171,7 +175,7 @@ const ProjectCrossCuttingFields = ({
         }))
       }
     }
-  }, [projectTypesOpts])
+  }, [projectTypes])
 
   useEffect(() => {
     if (
@@ -320,9 +324,9 @@ const ProjectCrossCuttingFields = ({
                   <Label>{tableColumns.type}</Label>
                   <Field
                     widget="autocomplete"
-                    options={projectTypesOpts}
+                    options={crtProjectTypesOpts}
                     value={
-                      some(projectTypesOpts, { id: project_type })
+                      some(projectTypes, { id: project_type })
                         ? project_type
                         : null
                     }
@@ -338,7 +342,7 @@ const ProjectCrossCuttingFields = ({
                       )
                     }
                     getOptionLabel={(option: any) =>
-                      getOptionLabel(projectTypesOpts, option)
+                      getOptionLabel(projectTypes, option)
                     }
                     disabled={!canEditField(editableFields, 'project_type')}
                     Input={{

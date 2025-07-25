@@ -27,7 +27,7 @@ import { useStore } from '@ors/store'
 
 import { Alert, Button, Checkbox, FormControlLabel } from '@mui/material'
 import { IoInformationCircleOutline } from 'react-icons/io5'
-import { filter, find, isNil, isNull } from 'lodash'
+import { find, isNil, isNull } from 'lodash'
 import cx from 'classnames'
 
 const ProjectIdentifiersFields = ({
