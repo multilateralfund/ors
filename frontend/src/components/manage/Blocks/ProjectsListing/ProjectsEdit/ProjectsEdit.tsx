@@ -29,6 +29,7 @@ import {
   initialCrossCuttingFields,
   initialProjectIdentifiers,
 } from '../constants'
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { useStore } from '@ors/store'
 import { api } from '@ors/helpers'
@@ -48,6 +49,13 @@ const ProjectsEdit = ({
 
   const { canViewProjects, canEditApprovedProjects } =
     useContext(PermissionsContext)
+  const { clusters } = useContext(ProjectsDataContext)
+
+  const isObsoleteCluster = find(
+    clusters,
+    (cluster) => cluster.id === project.cluster_id,
+  )?.obsolete
+  const shouldEmptyCluster = mode !== 'edit' && isObsoleteCluster
 
   const [projectData, setProjectData] = useState<ProjectData>({
     projIdentifiers: initialProjectIdentifiers,
@@ -189,8 +197,8 @@ const ProjectsEdit = ({
         lead_agency: project.meta_project.lead_agency,
         lead_agency_submitting_on_behalf:
           project.lead_agency_submitting_on_behalf,
-        cluster: project.cluster_id,
-        production: project.production,
+        cluster: !shouldEmptyCluster ? project.cluster_id : null,
+        production: !shouldEmptyCluster ? project.production : false,
       },
       ...(mode !== 'partial-link'
         ? {
@@ -233,7 +241,10 @@ const ProjectsEdit = ({
         isEditMode ? project_id : null,
         setSpecificFieldsLoaded,
       )
-    } else setSpecificFields([])
+    } else {
+      setSpecificFields([])
+      setSpecificFieldsLoaded(true)
+    }
 
     if (mode === 'partial-link') {
       setSpecificFieldsLoaded(true)

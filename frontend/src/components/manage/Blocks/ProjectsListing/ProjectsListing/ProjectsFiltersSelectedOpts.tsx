@@ -1,5 +1,6 @@
 import { useContext } from 'react'
 
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 
 import { Typography } from '@mui/material'
@@ -31,10 +32,10 @@ const ProjectsFiltersSelectedOpts = ({
 }: any) => {
   const { canViewMetainfoProjects, canViewSectorsSubsectors } =
     useContext(PermissionsContext)
+  const { clusters } = useContext(ProjectsDataContext)
 
   const { agencies, countries } = commonSlice
-  const { types, clusters, submission_statuses, sectors, statuses } =
-    projectSlice
+  const { types, submission_statuses, sectors, statuses } = projectSlice
 
   const areFiltersApplied = Object.values(filters).find(
     (filter) => Array.isArray(filter) && filter.length > 0,
@@ -116,7 +117,7 @@ const ProjectsFiltersSelectedOpts = ({
           displaySelectedOption(formatEntity(countries.data), 'country_id')}
         {displaySelectedOption(formatEntity(agencies.data), 'agency_id')}
         {canViewMetainfoProjects &&
-          displaySelectedOption(formatEntity(clusters.data), 'cluster_id')}
+          displaySelectedOption(formatEntity(clusters), 'cluster_id')}
         {canViewMetainfoProjects &&
           displaySelectedOption(formatEntity(types.data), 'project_type_id')}
         {canViewSectorsSubsectors &&

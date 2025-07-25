@@ -8,18 +8,13 @@ import PListingFilters from './PListingFilters'
 import PListingTable from './PListingTable'
 import { useGetProjects } from '../hooks/useGetProjects'
 import { formatApiUrl } from '@ors/helpers'
-import { PROJECTS_PER_PAGE } from '../constants'
+import { initialFilters } from '../constants'
 import Link from '@ors/components/ui/Link/Link'
 
 export default function PExport() {
   const form = useRef<any>()
 
   const { canViewProjects } = useContext(PermissionsContext)
-
-  const initialFilters = {
-    offset: 0,
-    limit: PROJECTS_PER_PAGE,
-  }
 
   const downloadUrlBase = '/api/projects/v2/export'
 
