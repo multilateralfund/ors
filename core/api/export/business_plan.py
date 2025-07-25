@@ -177,8 +177,8 @@ class ProjectSubsectorWriter(BaseWriter):
                 "column_width": self.COLUMN_WIDTH * 2,
             },
             {
-                "id": "sector_code",
-                "headerName": "Subsector of following sector",
+                "id": "sector_code_list",
+                "headerName": "Subsector of following sectors",
             },
         ]
         sheet = wb.create_sheet("SubSectors")

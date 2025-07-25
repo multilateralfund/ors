@@ -157,7 +157,8 @@ class ProjectSubSectorView(SectorSubsectorBaseView):
 
     def get_existing_object(self, request):
         name = request.data["name"]
-        sector_id = request.data["sector_id"]
+        sectors_list = request.data.getlist("sectors", [])
+        sector_id = sectors_list[0] if sectors_list else None
 
         return ProjectSubSector.objects.find_by_name_and_sector(name, sector_id)
 
@@ -175,7 +176,7 @@ class ProjectSubSectorView(SectorSubsectorBaseView):
             queryset = queryset.filter(obsolete=False)
         if not sector_id:
             return queryset
-        return queryset.filter(sector_id=sector_id).order_by("sort_order")
+        return queryset.filter(sectors__id=sector_id).order_by("sort_order")
 
     @swagger_auto_schema(
         manual_parameters=[

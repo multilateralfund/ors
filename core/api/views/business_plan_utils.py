@@ -306,12 +306,13 @@ def parse_bp_file(file, year_start, from_validate=False):
         strip_str(sector.name): sector
         for sector in ProjectSector.objects.filter(obsolete=False)
     }
-    subsectors_links = {
-        (subsector.sector.name, strip_str(subsector.name)): subsector
-        for subsector in ProjectSubSector.objects.filter(obsolete=False).select_related(
-            "sector"
-        )
-    }
+    subsectors_links = {}
+    for subsector in ProjectSubSector.objects.filter(obsolete=False).prefetch_related("sectors"):
+        # create a mapping of subsector name to subsector object
+        # with sector name as a key to avoid duplicates
+        for sector in subsector.sectors.all():
+            subsectors_links[(sector.name, strip_str(subsector.name))] = subsector
+
     subsectors = [
         strip_str(subsector.name)
         for subsector in ProjectSubSector.objects.exclude(

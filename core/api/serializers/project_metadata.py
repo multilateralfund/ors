@@ -108,7 +108,7 @@ class ProjectSectorIncludingSubsectorsSerializer(ProjectSectorSerializer):
         ]
 
     def get_subsectors(self, obj):
-        subsectors = ProjectSubSector.objects.filter(sector=obj).order_by("sort_order")
+        subsectors = ProjectSubSector.objects.filter(sectors=obj).order_by("sort_order")
         return ProjectSubSectorSerializer(subsectors, many=True).data
 
 
@@ -117,8 +117,10 @@ class ProjectSubSectorSerializer(serializers.ModelSerializer):
     ProjectSubSectorSerializer class
     """
 
-    sector_id = serializers.PrimaryKeyRelatedField(
-        required=True, queryset=ProjectSector.objects.all().values_list("id", flat=True)
+    sectors = serializers.PrimaryKeyRelatedField(
+        many=True,
+        required=False,
+        queryset=ProjectSector.objects.all().values_list("id", flat=True),
     )
     name = serializers.CharField(required=True)
 
@@ -129,9 +131,16 @@ class ProjectSubSectorSerializer(serializers.ModelSerializer):
             "name",
             "code",
             "sort_order",
-            "sector_id",
+            "sectors",
             "obsolete",
         ]
+
+    def create(self, validated_data):
+        sectors = validated_data.pop("sectors", [])
+        subsector = super().create(validated_data)
+        subsector.sectors.set(sectors)
+        subsector.save()
+        return subsector
 
 
 class ProjectTypeSerializer(serializers.ModelSerializer):

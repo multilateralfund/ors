@@ -282,7 +282,7 @@ def setup_project_list(
     new_project_type = ProjectTypeFactory.create(code="NewType")
     new_project_status = ProjectStatusFactory.create(code="NEWSUB")
     new_sector = ProjectSectorFactory.create(name="New Sector")
-    new_subsectors = [ProjectSubSectorFactory.create(sector=new_sector)]
+    new_subsectors = [ProjectSubSectorFactory.create(sectors=[new_sector])]
     new_meeting = MeetingFactory.create(number=3, date="2020-03-14")
 
     projects_data = [
@@ -633,7 +633,7 @@ def setup_project_create(
         "country_id": country_ro.id,
         "agency_id": agency.id,
         "coop_agencies_id": coop_agencies,
-        "sector_id": subsector.sector_id,
+        "sector_id": subsector.sectors.first().id,
         "subsector_ids": [subsector.id],
         "project_type_id": project_type.id,
         "status_id": statuses[0].id,
@@ -747,9 +747,10 @@ class TestCreateProjects(BaseTest):
         assert response.data["country"] == country_ro.name
         assert response.data["agency"] == agency.name
         assert len(response.data["coop_agencies"]) == 2
-        assert response.data["sector"]["id"] == subsector.sector.id
-        assert response.data["sector"]["name"] == subsector.sector.name
-        assert response.data["sector"]["code"] == subsector.sector.code
+        sector = subsector.sectors.first()
+        assert response.data["sector"]["id"] == sector.id
+        assert response.data["sector"]["name"] == sector.name
+        assert response.data["sector"]["code"] == sector.code
         assert response.data["subsectors"] == [
             ProjectSubSectorSerializer(subsector).data
         ]
@@ -765,7 +766,7 @@ class TestCreateProjects(BaseTest):
             project_cluster_kip,
             agency,
             project_type,
-            subsector.sector,
+            sector,
             meeting,
             None,
             1,

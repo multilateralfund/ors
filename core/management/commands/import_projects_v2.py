@@ -3,8 +3,8 @@ import logging
 from django.core.management import BaseCommand
 from django.db import transaction
 
+from core.models.business_plan import BPActivity, BPChemicalType
 from core.models.project import MetaProject, Project
-from core.models.business_plan import BPChemicalType
 from core.models.project_metadata import (
     ProjectCluster,
     ProjectSector,
@@ -65,7 +65,6 @@ def set_meta_project_for_existing_projects():
 
     Project.objects.bulk_update(projects_without_meta_projects, ["meta_project"])
     logger.info("✅ Successfully set MetaProject for existing projects.")
-
 
 def mark_obsolete_values():
 
@@ -148,6 +147,66 @@ def mark_obsolete_values():
     )
     logger.info("✅ Successfully marked obsolete values in ProjectSubSector.")
 
+def migrate_subsectors_sector_data():
+    """
+    Subsectors has a FK to Sector, but Subsectors can be used in multiple sectors.
+    This script migrates sector to sectors in the subsector model and migrates the existing
+    data to only one entry.
+    """
+    logger.info("⏳ Migrating subsectors sector data...")
+
+    subsectors_with_the_same_name_list = {}
+    for subsector in ProjectSubSector.objects.all():
+        if subsector.name not in subsectors_with_the_same_name_list:
+            subsectors_with_the_same_name_list[subsector.name] = [subsector]
+        else:
+            subsectors_with_the_same_name_list[subsector.name].append(subsector)
+
+    for (
+        name,
+        subsectors_with_the_same_name,
+    ) in subsectors_with_the_same_name_list.items():
+        if len(subsectors_with_the_same_name) > 1:
+            logger.info(f"Subsector {name} has multiple entries, migrating to sectors.")
+            first_subsector = subsectors_with_the_same_name[0]
+            sectors = [subsector.sector for subsector in subsectors_with_the_same_name]
+            first_subsector.sectors.set(sectors)
+            first_subsector.save()
+
+            for subsector_to_delete in subsectors_with_the_same_name[1:]:
+                projects_with_subsector = Project.objects.filter(
+                    subsectors=subsector_to_delete
+                )
+                for project in projects_with_subsector:
+                    # Add the first subsector to the project
+                    project.subsectors.add(first_subsector)
+                    project.subsectors.remove(subsector_to_delete)
+                    project.save()
+                    logger.info(
+                        f"Adding subsector {first_subsector.name} to project {project.code}"
+                    )
+
+                bp_activities_with_subsector = BPActivity.objects.filter(
+                    subsector=subsector_to_delete
+                )
+                for activity in bp_activities_with_subsector:
+                    # Add the first subsector to the activity
+                    activity.subsector = first_subsector
+                    activity.save()
+                    logger.info(
+                        f"Adding subsector {first_subsector.name} to BPActivity {activity.id}"
+                    )
+            for subsector in subsectors_with_the_same_name[1:]:
+                logger.info(
+                    f"Deleting subsector {subsector.name} with ID {subsector.id}"
+                )
+                subsector.delete()
+        else:
+            first_subsector = subsectors_with_the_same_name[0]
+            sectors = [subsector.sector for subsector in subsectors_with_the_same_name]
+            first_subsector.sectors.set(sectors)
+            first_subsector.save()
+    logger.info("✅ Successfully migrated subsectors sector data.")
 
 class Command(BaseCommand):
     help = """
@@ -168,6 +227,7 @@ class Command(BaseCommand):
                 "set-new-code-meta-projects",
                 "set-meta-project-for-existing-projects",
                 "mark_obsolete_values",
+                "migrate-subsectors-sector-data",
             ],
         )
 
@@ -180,5 +240,7 @@ class Command(BaseCommand):
             set_meta_project_for_existing_projects()
         elif imp_type == "mark_obsolete_values":
             mark_obsolete_values()
+        elif imp_type == "migrate-subsectors-sector-data":
+            migrate_subsectors_sector_data()
         else:
             logger.error(f"Unknown import type: {imp_type}")

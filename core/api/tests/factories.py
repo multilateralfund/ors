@@ -368,7 +368,13 @@ class ProjectSubSectorFactory(factory.django.DjangoModelFactory):
     name = factory.Faker("pystr", max_chars=100)
     code = factory.Faker("pystr", max_chars=10)
     sort_order = factory.Faker("random_int", min=1, max=100)
-    sector = factory.SubFactory(ProjectSectorFactory)
+    sector = factory.SubFactory(ProjectSectorFactory)  # kept for backward compatibility
+
+    # pylint: disable=E1101
+    @factory.post_generation
+    def sectors(obj, _, extracted, **kwargs):
+        if extracted:
+            obj.sectors.set(extracted)
 
 
 class MeetingFactory(factory.django.DjangoModelFactory):

@@ -258,14 +258,27 @@ class ProjectSubSectorManager(models.Manager):
         name_str = name.strip()
         return self.filter(
             models.Q(name__iexact=name_str) | models.Q(code__iexact=name_str),
-            sector_id=sector_id,
+            sectors__id=sector_id,
         ).first()
 
 
 class ProjectSubSector(models.Model):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=10, null=True, blank=True)
-    sector = models.ForeignKey(ProjectSector, on_delete=models.CASCADE)
+    sector = models.ForeignKey(
+        ProjectSector,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        help_text="""
+        Deprecated: replaced by sectors. Kept for now to ensure no issues arise at import""",
+    )
+    sectors = models.ManyToManyField(
+        ProjectSector,
+        blank=True,
+        related_name="subsectors",
+        help_text="List of sectors that this subsector belongs to",
+    )
     sort_order = models.FloatField(null=True, blank=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
