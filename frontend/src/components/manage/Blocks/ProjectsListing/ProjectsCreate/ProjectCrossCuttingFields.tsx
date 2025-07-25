@@ -184,7 +184,7 @@ const ProjectCrossCuttingFields = ({
         }))
       }
     }
-  }, [projectTypes])
+  }, [JSON.stringify(projectTypes)])
 
   useEffect(() => {
     if (
@@ -199,7 +199,7 @@ const ProjectCrossCuttingFields = ({
         },
       }))
     }
-  }, [sectors, project_type])
+  }, [JSON.stringify(sectors), project_type])
 
   useEffect(() => {
     if (
