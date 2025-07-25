@@ -49,7 +49,8 @@ const ProjectsEdit = ({
 
   const { canViewProjects, canEditApprovedProjects } =
     useContext(PermissionsContext)
-  const { clusters, project_types, sectors } = useContext(ProjectsDataContext)
+  const { clusters, project_types, sectors, subsectors } =
+    useContext(ProjectsDataContext)
 
   const shouldEmptyField = (data: any, crtDataId: number) => {
     const isObsoleteField = find(
@@ -59,6 +60,11 @@ const ProjectsEdit = ({
     return mode !== 'edit' && isObsoleteField
   }
   const shouldEmptyCluster = shouldEmptyField(clusters, project.cluster_id)
+  const shouldEmptySubsector =
+    mode !== 'edit' &&
+    find(subsectors, (subsector) =>
+      map(project.subsectors, 'id').includes(subsector.id),
+    )?.obsolete
 
   const [projectData, setProjectData] = useState<ProjectData>({
     projIdentifiers: initialProjectIdentifiers,
@@ -219,7 +225,9 @@ const ProjectsEdit = ({
               sector: !shouldEmptyField(sectors, project.sector_id)
                 ? project.sector_id
                 : null,
-              subsector_ids: map(project.subsectors, 'id'),
+              subsector_ids: !shouldEmptySubsector
+                ? map(project.subsectors, 'id')
+                : [],
               is_lvc: project.is_lvc,
               title: project.title,
               description: project.description,

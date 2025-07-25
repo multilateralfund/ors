@@ -85,6 +85,8 @@ const ProjectCrossCuttingFields = ({
   const [subsectorsOpts, setSubsectorsOpts] = useState<ProjectSubSectorType[]>(
     [],
   )
+  const crtSubsectorsOpts = filter(subsectorsOpts, (opt) => !opt.obsolete)
+  const subsectors = mode === 'edit' ? subsectorsOpts : crtSubsectorsOpts
 
   const fetchProjectTypes = async () => {
     try {
@@ -147,6 +149,7 @@ const ProjectCrossCuttingFields = ({
         {
           params: {
             sector_id: sector,
+            include_obsoletes: true,
           },
           withStoreCache: true,
         },
@@ -197,6 +200,23 @@ const ProjectCrossCuttingFields = ({
       }))
     }
   }, [sectors, project_type])
+
+  useEffect(() => {
+    if (
+      !project_type ||
+      !sector ||
+      (subsectors.length > 0 &&
+        !find(subsectors, (subsector) => subsector_ids.includes(subsector.id)))
+    ) {
+      setProjectData((prevData) => ({
+        ...prevData,
+        [sectionIdentifier]: {
+          ...prevData[sectionIdentifier],
+          subsector_ids: [],
+        },
+      }))
+    }
+  }, [subsectors, project_type, sector])
 
   const sectionDefaultProps = {
     ...defaultProps,
@@ -388,9 +408,9 @@ const ProjectCrossCuttingFields = ({
                   <Field
                     widget="autocomplete"
                     multiple={true}
-                    options={subsectorsOpts}
+                    options={crtSubsectorsOpts}
                     value={
-                      filter(subsectorsOpts, (subsector) =>
+                      filter(subsectors, (subsector) =>
                         includes(subsector_ids, subsector.id),
                       ) as ProjectSubSectorType[]
                     }
@@ -398,7 +418,7 @@ const ProjectCrossCuttingFields = ({
                       handleChangeSubSector(value as ProjectSubSectorType[])
                     }
                     getOptionLabel={(option) =>
-                      getOptionLabel(subsectorsOpts, option)
+                      getOptionLabel(subsectors, option)
                     }
                     disabled={!canEditField(editableFields, 'subsectors')}
                     Input={{

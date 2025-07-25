@@ -38,12 +38,23 @@ const ProjectsDataProvider = (props: PermissionsProviderProps) => {
     path: 'api/project-sector/',
   })
 
+  const { data: subsectors } = useApi({
+    options: {
+      params: {
+        include_obsoletes: true,
+      },
+      withStoreCache: false,
+    },
+    path: 'api/project-subsector/',
+  })
+
   return (
     <ProjectsDataContext.Provider
       value={{
         clusters,
         project_types,
         sectors,
+        subsectors,
       }}
     >
       {children}
