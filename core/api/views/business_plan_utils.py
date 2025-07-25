@@ -307,7 +307,9 @@ def parse_bp_file(file, year_start, from_validate=False):
         for sector in ProjectSector.objects.filter(obsolete=False)
     }
     subsectors_links = {}
-    for subsector in ProjectSubSector.objects.filter(obsolete=False).prefetch_related("sectors"):
+    for subsector in ProjectSubSector.objects.filter(obsolete=False).prefetch_related(
+        "sectors"
+    ):
         # create a mapping of subsector name to subsector object
         # with sector name as a key to avoid duplicates
         for sector in subsector.sectors.all():

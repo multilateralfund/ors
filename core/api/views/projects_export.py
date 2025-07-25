@@ -207,7 +207,7 @@ class ProjectsV2Export(ProjectsExport):
             ),
             SheetDefinition(
                 ProjectSubSector,
-                self.get_names,
+                partial(self.get_names, filter_obsoletes=True),
                 ModelNameWriter,
                 "Subsectors",
                 "K",

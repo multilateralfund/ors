@@ -53,8 +53,11 @@ class BPActivityExportView(generics.GenericAPIView):
         return BPActivityExportSerializer(queryset, many=True).data
 
     def get_subsector_data(self):
-        queryset = ProjectSubSector.objects.filter(obsolete=False).prefetch_related(
-             "sectors").order_by("name")
+        queryset = (
+            ProjectSubSector.objects.filter(obsolete=False)
+            .prefetch_related("sectors")
+            .order_by("name")
+        )
         return [
             {
                 "name": subsector.name,

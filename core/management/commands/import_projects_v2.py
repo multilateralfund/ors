@@ -66,6 +66,7 @@ def set_meta_project_for_existing_projects():
     Project.objects.bulk_update(projects_without_meta_projects, ["meta_project"])
     logger.info("✅ Successfully set MetaProject for existing projects.")
 
+
 def mark_obsolete_values():
 
     BP_CHEMICAL_TYPE_OBSOLETES = ["MBR", "PRO MBR"]
@@ -147,6 +148,7 @@ def mark_obsolete_values():
     )
     logger.info("✅ Successfully marked obsolete values in ProjectSubSector.")
 
+
 def migrate_subsectors_sector_data():
     """
     Subsectors has a FK to Sector, but Subsectors can be used in multiple sectors.
@@ -207,6 +209,7 @@ def migrate_subsectors_sector_data():
             first_subsector.sectors.set(sectors)
             first_subsector.save()
     logger.info("✅ Successfully migrated subsectors sector data.")
+
 
 class Command(BaseCommand):
     help = """
