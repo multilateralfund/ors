@@ -278,6 +278,10 @@ class ProjectSubSector(models.Model):
         default=False,
         help_text="Custom sector created by user, not from the official list.",
     )
+    obsolete = models.BooleanField(
+        default=False,
+        help_text="If True, the subsector is obsolete and should not be used for new entries.",
+    )
 
     objects = ProjectSubSectorManager()
 

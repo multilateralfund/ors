@@ -167,7 +167,12 @@ class ProjectSubSectorView(SectorSubsectorBaseView):
             sector_id = int(self.request.query_params.get("sector_id", ""))
         except (ValueError, TypeError):
             sector_id = None
-
+        include_obsoletes = (
+            self.request.query_params.get("include_obsoletes", "false").lower()
+            == "true"
+        )
+        if not include_obsoletes:
+            queryset = queryset.filter(obsolete=False)
         if not sector_id:
             return queryset
         return queryset.filter(sector_id=sector_id).order_by("sort_order")
@@ -185,6 +190,13 @@ class ProjectSubSectorView(SectorSubsectorBaseView):
                 openapi.IN_QUERY,
                 description="Filter sub-sectors by name",
                 type=openapi.TYPE_STRING,
+            ),
+            openapi.Parameter(
+                "include_obsoletes",
+                openapi.IN_QUERY,
+                description="Include obsolete sub-sectors in the response. Defaults to false.",
+                type=openapi.TYPE_BOOLEAN,
+                default=False,
             ),
         ]
     )

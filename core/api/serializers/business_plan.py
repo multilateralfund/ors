@@ -313,7 +313,9 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
         self.sector_ids = ProjectSector.objects.filter(obsolete=False).values_list(
             "id", flat=True
         )
-        self.subsector_ids = ProjectSubSector.objects.values_list("id", flat=True)
+        self.subsector_ids = ProjectSubSector.objects.filter(
+            obsolete=False
+        ).values_list("id", flat=True)
         self.substance_ids = Substance.objects.values_list("id", flat=True)
 
     def validate_agency_id(self, agency_id):

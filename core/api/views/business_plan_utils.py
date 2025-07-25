@@ -308,7 +308,9 @@ def parse_bp_file(file, year_start, from_validate=False):
     }
     subsectors_links = {
         (subsector.sector.name, strip_str(subsector.name)): subsector
-        for subsector in ProjectSubSector.objects.select_related("sector")
+        for subsector in ProjectSubSector.objects.filter(obsolete=False).select_related(
+            "sector"
+        )
     }
     subsectors = [
         strip_str(subsector.name)

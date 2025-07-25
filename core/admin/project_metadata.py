@@ -112,6 +112,7 @@ class ProjectSubSectorAdmin(admin.ModelAdmin):
     ]
     list_filter = [
         AutocompleteFilterFactory("sector", "sector"),
+        "obsolete",
     ]
 
     def get_list_display(self, request):

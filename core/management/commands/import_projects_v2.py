@@ -5,10 +5,10 @@ from django.db import transaction
 
 from core.models.project import MetaProject, Project
 from core.models.business_plan import BPChemicalType
-from core.models.project import MetaProject, Project
 from core.models.project_metadata import (
     ProjectCluster,
     ProjectSector,
+    ProjectSubSector,
     ProjectType,
 )
 from core.utils import get_meta_project_new_code, get_meta_project_code
@@ -93,6 +93,38 @@ def mark_obsolete_values():
         "Country programme preparation",
     ]
 
+    PROJECT_SUBSECTOR_OBSOLETES = [
+        "Banking",
+        "CFC closure",
+        "CFC conversion",
+        "CFC-113",
+        "Combined CFC-113 and TCA",
+        "Commercial Refrigeration",
+        "CTC",
+        "CTC phase out",
+        "Domestic Refrigeration",
+        "End-user",
+        "Halon closure",
+        "Halon conversion",
+        "Industrial and commercial AC (ICR)",
+        "MB closure",
+        "Methyl bromide",
+        "Network",
+        "Non-investment programme",
+        "ODS closure",
+        "Other Aerosol",
+        "Other Pre-CAP",
+        "Other Process agent",
+        "Other Sterilant",
+        "Other Tobacco Fluffing",
+        "Policy paper",
+        "Sterilant",
+        "TCA",
+        "TCA closure",
+        "Tobacco fluffing",
+        "Transportation refrigeration",
+    ]
+
     BPChemicalType.objects.filter(name__in=BP_CHEMICAL_TYPE_OBSOLETES).update(
         obsolete=True
     )
@@ -110,6 +142,11 @@ def mark_obsolete_values():
 
     ProjectType.objects.filter(name__in=PROJECT_TYPES_OBSOLETES).update(obsolete=True)
     logger.info("✅ Successfully marked obsolete values in ProjectType.")
+
+    ProjectSubSector.objects.filter(name__in=PROJECT_SUBSECTOR_OBSOLETES).update(
+        obsolete=True
+    )
+    logger.info("✅ Successfully marked obsolete values in ProjectSubSector.")
 
 
 class Command(BaseCommand):

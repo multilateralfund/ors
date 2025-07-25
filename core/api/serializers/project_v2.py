@@ -780,6 +780,20 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             instance
         )
 
+    def validate_subsector_ids(self, value):
+        """
+        Validate that all subsector ids are not obsolete.
+        """
+        if value:
+            obsolete_subsectors = ProjectSubSector.objects.filter(
+                id__in=[x.id for x in value], obsolete=True
+            )
+            if obsolete_subsectors.exists():
+                raise serializers.ValidationError(
+                    "One or more subsector ids are obsolete."
+                )
+        return value
+
     @transaction.atomic
     def create(self, validated_data):
         _ = validated_data.pop("request", None)
