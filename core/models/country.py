@@ -151,7 +151,6 @@ class Country(models.Model):
                 ]
             )
         )
-        select_related("parent")
 
     class Meta:
         verbose_name_plural = "Countries"

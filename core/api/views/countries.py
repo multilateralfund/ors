@@ -15,9 +15,13 @@ class CountryListView(mixins.ListModelMixin, generics.GenericAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        queryset = Country.objects.filter(
-            is_a2=False,
-        ).select_related("parent")
+        queryset = (
+            Country.objects.with_has_cp_report()
+            .filter(
+                is_a2=False,
+            )
+            .select_related("parent")
+        )
         if user.has_perm("core.can_view_only_own_country") and not user.has_perm(
             "core.can_view_all_countries"
         ):
