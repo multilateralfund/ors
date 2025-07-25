@@ -80,12 +80,16 @@ const shouldEmptySector = (
   params: ValueSetterParams,
   newVal: number,
   opts: any,
+  isParentUpdated: boolean,
 ) => {
   const projectTypesOpts = getClusterTypesOpts(
-    params.data?.project_cluster_id,
+    isParentUpdated ? params.data?.project_cluster_id : newVal,
     opts,
   )
-  const sectorOpts = getTypeSectorsOpts(newVal, projectTypesOpts)
+  const sectorOpts = getTypeSectorsOpts(
+    isParentUpdated ? newVal : params.data?.project_type_id,
+    projectTypesOpts,
+  )
   const sectorOptsIds = map(sectorOpts, 'sector_id')
 
   return !sectorOptsIds.includes(params.data?.sector_id)
@@ -95,8 +99,28 @@ const shouldEmptySubsector = (
   params: ValueSetterParams,
   newVal: number,
   opts: any,
+  extraOpts: any,
+  fieldUpdated: string,
 ) => {
-  const subsectorOpts = getSectorSubsectorsOpts(newVal, opts)
+  const projectTypesOpts = getClusterTypesOpts(
+    fieldUpdated === 'project_cluster'
+      ? newVal
+      : params.data?.project_cluster_id,
+    opts,
+  )
+  const sectorOpts = getTypeSectorsOpts(
+    fieldUpdated === 'project_type' ? newVal : params.data?.project_type_id,
+    projectTypesOpts,
+  )
+  const sectorOptsIds = map(sectorOpts, 'sector_id')
+  const updatedSectorOpts = extraOpts.filter((opt: any) =>
+    sectorOptsIds.includes(opt.id),
+  )
+
+  const subsectorOpts = getSectorSubsectorsOpts(
+    fieldUpdated === 'sector' ? newVal : params.data?.sector_id,
+    updatedSectorOpts,
+  )
   const subsectorOptsIds = map(subsectorOpts, 'id')
 
   return !subsectorOptsIds.includes(params.data?.subsector_id)
@@ -108,6 +132,7 @@ export const valueSetter = (
   data: any,
   opts?: any,
   setPendingEdit?: (value: PendingEditType) => void,
+  extraOpts?: any,
 ) => {
   const newVal = params.newValue
   const fieldsForCustomUpdate = ['project_cluster', 'project_type', 'sector']
@@ -121,6 +146,7 @@ export const valueSetter = (
         newValue: newVal,
         rowId: params.data?.row_id,
         isOtherValue: true,
+        fieldsToUpdate: [colIdentifier],
       })
 
       return false
@@ -130,26 +156,78 @@ export const valueSetter = (
   if (!fieldsForCustomUpdate.includes(colIdentifier)) {
     updateFieldData(data, params.data, colIdentifier, newVal)
   } else {
+    let fieldsToUpdate: string[] = []
+
     const shouldUpdateChildren = {
-      project_cluster:
-        !isNil(params.data?.project_type_id) &&
-        shouldEmptyProjectType(params, newVal, opts),
-      project_type:
-        !isNil(params.data?.sector_id) &&
-        shouldEmptySector(params, newVal, opts),
-      sector:
-        !isNil(params.data?.subsector_id) &&
-        shouldEmptySubsector(params, newVal, opts),
+      project_cluster: () => {
+        if (
+          !isNil(params.data?.project_type_id) &&
+          shouldEmptyProjectType(params, newVal, opts)
+        ) {
+          fieldsToUpdate = [...fieldsToUpdate, 'project_cluster']
+        }
+
+        if (
+          !isNil(params.data?.sector_id) &&
+          shouldEmptySector(params, newVal, opts, false)
+        ) {
+          fieldsToUpdate = [...fieldsToUpdate, 'project_type']
+        }
+
+        if (
+          !isNil(params.data?.subsector_id) &&
+          shouldEmptySubsector(
+            params,
+            newVal,
+            opts,
+            extraOpts,
+            'project_cluster',
+          )
+        ) {
+          fieldsToUpdate = [...fieldsToUpdate, 'sector']
+        }
+
+        return fieldsToUpdate
+      },
+      project_type: () => {
+        if (
+          !isNil(params.data?.sector_id) &&
+          shouldEmptySector(params, newVal, opts, true)
+        ) {
+          fieldsToUpdate = [...fieldsToUpdate, 'project_type']
+        }
+
+        if (
+          !isNil(params.data?.subsector_id) &&
+          shouldEmptySubsector(params, newVal, opts, extraOpts, 'project_type')
+        ) {
+          fieldsToUpdate = [...fieldsToUpdate, 'sector']
+        }
+
+        return fieldsToUpdate
+      },
+      sector: () => {
+        if (
+          !isNil(params.data?.subsector_id) &&
+          shouldEmptySubsector(params, newVal, opts, extraOpts, 'sector')
+        ) {
+          fieldsToUpdate = ['sector']
+        }
+
+        return fieldsToUpdate
+      },
     }
 
     if (
-      shouldUpdateChildren[colIdentifier as keyof typeof shouldUpdateChildren]
+      shouldUpdateChildren[colIdentifier as keyof typeof shouldUpdateChildren]()
+        .length > 0
     ) {
       setPendingEdit?.({
         field: colIdentifier,
         newValue: newVal,
         rowId: params.data?.row_id,
         isOtherValue: false,
+        fieldsToUpdate: fieldsToUpdate,
       })
 
       return false

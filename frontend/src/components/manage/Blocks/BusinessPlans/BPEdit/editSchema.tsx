@@ -286,6 +286,7 @@ const useColumnsOptions = (
               clusters,
               clusterOptions,
               setPendingEdit,
+              sectors,
             ),
         },
         {
@@ -325,6 +326,7 @@ const useColumnsOptions = (
               getProjectTypesOfCluster(params),
               clusterOptions,
               setPendingEdit,
+              sectors,
             ),
         },
         {
@@ -448,8 +450,9 @@ const useColumnsOptions = (
               params,
               'sector',
               getSectorsOfProjectType(params),
-              sectors,
+              clusterOptions,
               setPendingEdit,
+              sectors,
             ),
         },
         {
@@ -490,6 +493,7 @@ const useColumnsOptions = (
               getSubsectorsOfSector(params),
               null,
               setPendingEdit,
+              sectors,
             ),
         },
         {
