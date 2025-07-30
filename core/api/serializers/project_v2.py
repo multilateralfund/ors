@@ -152,6 +152,8 @@ class ProjectListV2Serializer(ProjectListSerializer):
     checklist_regulations = serializers.SerializerMethodField()
     editable = serializers.SerializerMethodField()
 
+    metaproject_new_code = serializers.SerializerMethodField()
+
     def get_editable(self, obj):
         """
         Check if the project is editable based on the user's permissions.
@@ -261,6 +263,7 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "meps_developed_residential_ac",
             "meps_developed_commercial_ac",
             "metaproject_code",
+            "metaproject_new_code",
             "metaproject_category",
             "meeting",
             "meeting_id",
@@ -380,6 +383,14 @@ class ProjectListV2Serializer(ProjectListSerializer):
             result = obj.bp_activity_json
 
         return result
+
+    def get_metaproject_new_code(self, obj):
+        """
+        Get the new code for the metaproject.
+        """
+        if obj.meta_project:
+            return obj.meta_project.new_code
+        return None
 
 
 class ProjectV2OdsOdpListSerializer(ProjectOdsOdpListSerializer):
