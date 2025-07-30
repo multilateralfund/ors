@@ -324,11 +324,11 @@ class ProjectV2ViewSet(
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(request=request)
-        headers = self.get_success_headers(serializer.data)
-        return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers
-        )
+        project, warnings = serializer.save(request=request)
+        response_data = ProjectDetailsV2Serializer(project).data
+        headers = self.get_success_headers(response_data)
+        response_data["warnings"] = warnings
+        return Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
 
     @swagger_auto_schema(
         operation_description="""

@@ -1035,6 +1035,30 @@ class TestCreateProjects(BaseTest):
             response.data["meta_project"]["id"] == meta_project.id
         )  # meta project is used now
 
+        # test warning message
+        project3 = ProjectFactory.create(
+            title="Project test 3",
+            cluster=project_cluster_kip,
+            agency=agency,
+            country=country_ro,
+            status=project_ongoing_status,
+        )
+        meta_project2 = MetaProjectFactory.create(
+            lead_agency=agency,
+        )
+        project3.meta_project = meta_project2
+        project3.save()
+        meta_project2.new_code = get_meta_project_new_code([project3])
+        meta_project2.code = get_meta_project_code(
+            new_country, project_cluster_kip, new_agency
+        )
+        meta_project2.save()
+        response = self.client.post(self.url, data, format="json")
+        assert response.status_code == 201, response.data
+        assert response.data["warnings"] == [
+            "Multiple meta projects found for the same country and cluster. Using the first one found."
+        ]
+
 
 class TestProjectsV2Update:
     client = APIClient()

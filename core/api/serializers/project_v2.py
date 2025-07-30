@@ -817,6 +817,8 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             projects__status__code__in=status_codes,
             projects__latest_project__isnull=True,
         ).distinct()
+        warnings = []
+        meta_project_obj = None
         for meta_project in meta_projects:
             countries = meta_project.new_code.split("/")[:1]
             clusters = meta_project.new_code.split("/")[1:-1]
@@ -826,20 +828,31 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             cluster_code = project.cluster.code if project.cluster else "-"
 
             if country_code in countries and cluster_code in clusters:
-                return meta_project
-
-        return MetaProject.objects.create(
-            lead_agency_id=lead_agency,
-            code=get_meta_project_code(
-                project.country,
-                project.cluster,
-                project.serial_number_legacy,
+                if meta_project_obj and len(warnings) == 0:
+                    warnings.append(
+                        "Multiple meta projects found for the same country and cluster. "
+                        "Using the first one found."
+                    )
+                else:
+                    meta_project_obj = meta_project
+        if meta_project_obj:
+            return (meta_project_obj, warnings)
+        return (
+            MetaProject.objects.create(
+                lead_agency_id=lead_agency,
+                code=get_meta_project_code(
+                    project.country,
+                    project.cluster,
+                    project.serial_number_legacy,
+                ),
+                new_code=get_meta_project_new_code([project]),
             ),
-            new_code=get_meta_project_new_code([project]),
+            [],
         )
 
     @transaction.atomic
     def create(self, validated_data):
+        warnings = []
         _ = validated_data.pop("request", None)
         lead_agency = validated_data.pop("lead_agency", None)
         user = self.context["request"].user
@@ -886,11 +899,12 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
                 associate_project.component = component
                 associate_project.save()
         else:
-            project.meta_project = self.get_meta_project(project, lead_agency)
+            meta_project, warnings = self.get_meta_project(project, lead_agency)
+            project.meta_project = meta_project
         project.save()
         log_project_history(project, user, HISTORY_DESCRIPTION_CREATE)
 
-        return project
+        return (project, warnings)
 
     @transaction.atomic
     def update(self, instance, validated_data):
