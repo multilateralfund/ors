@@ -56,7 +56,10 @@ from core.models import ProjectFile
 from core.models.adm import AdmRecordArchive
 from core.models.business_plan import BusinessPlan
 from core.models.country_programme_archive import CPReportArchive
-from core.utils import get_meta_project_code, get_project_sub_code
+from core.utils import (
+    get_meta_project_code,
+    get_project_sub_code,
+)
 
 # pylint: disable=C0302,W0613
 
@@ -484,6 +487,11 @@ def project_status():
 @pytest.fixture
 def project_ongoing_status():
     return ProjectStatusFactory.create(name="Ongoing", code="ONG")
+
+
+@pytest.fixture
+def project_closed_status():
+    return ProjectStatusFactory.create(name="Closed", code="CLO")
 
 
 @pytest.fixture

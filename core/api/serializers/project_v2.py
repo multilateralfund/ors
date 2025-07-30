@@ -794,6 +794,39 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
                 )
         return value
 
+    def get_meta_project(self, project, lead_agency):
+        """
+        Get the meta project for the project.
+        """
+        status_codes = ProjectStatus.objects.exclude(code="CLO").values_list(
+            "code", flat=True
+        )
+        meta_projects = MetaProject.objects.filter(
+            lead_agency=lead_agency,
+            projects__status__code__in=status_codes,
+            projects__latest_project__isnull=True,
+        ).distinct()
+        for meta_project in meta_projects:
+            countries = meta_project.new_code.split("/")[:1]
+            clusters = meta_project.new_code.split("/")[1:-1]
+            country_code = (
+                project.country.iso3 or project.country.abbr if project.country else "-"
+            )
+            cluster_code = project.cluster.code if project.cluster else "-"
+
+            if country_code in countries and cluster_code in clusters:
+                return meta_project
+
+        return MetaProject.objects.create(
+            lead_agency_id=lead_agency,
+            code=get_meta_project_code(
+                project.country,
+                project.cluster,
+                project.serial_number_legacy,
+            ),
+            new_code=get_meta_project_new_code([project]),
+        )
+
     @transaction.atomic
     def create(self, validated_data):
         _ = validated_data.pop("request", None)
@@ -834,7 +867,7 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
         if associate_project_id:
             associate_project = Project.objects.get(id=associate_project_id)
             project.meta_project = associate_project.meta_project
-            if project.component:
+            if associate_project.component:
                 project.component = associate_project.component
             else:
                 component = ProjectComponents.objects.create()
@@ -842,15 +875,7 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
                 associate_project.component = component
                 associate_project.save()
         else:
-            project.meta_project = MetaProject.objects.create(
-                lead_agency_id=lead_agency,
-                code=get_meta_project_code(
-                    project.country,
-                    project.cluster,
-                    project.serial_number_legacy,
-                ),
-                new_code=get_meta_project_new_code([project]),
-            )
+            project.meta_project = self.get_meta_project(project, lead_agency)
         project.save()
         log_project_history(project, user, HISTORY_DESCRIPTION_CREATE)
 

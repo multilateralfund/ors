@@ -10,6 +10,7 @@ from core.api.tests.factories import (
     BusinessPlanFactory,
     BPActivityFactory,
     ProjectFactory,
+    MetaProjectFactory,
     ProjectOdsOdpFactory,
     ProjectStatusFactory,
     ProjectSubmissionStatusFactory,
@@ -17,8 +18,13 @@ from core.api.tests.factories import (
     SubstanceFactory,
 )
 from core.models import BPActivity
-from core.models.project import Project, ProjectFile
-from core.utils import get_project_sub_code
+from core.models.project import MetaProject, Project, ProjectFile
+from core.utils import (
+    get_project_sub_code,
+    get_meta_project_code,
+    get_meta_project_new_code,
+)
+
 
 pytestmark = pytest.mark.django_db
 # pylint: disable=C0302,C0415,C8008,W0221,R0912,R0913,R0913,R0914,R0915,W0613,
@@ -948,6 +954,86 @@ class TestCreateProjects(BaseTest):
 
         # check project count
         assert Project.objects.count() == 0
+
+    def test_meta_project_creation(
+        self,
+        agency,
+        new_agency,
+        new_country,
+        meeting,
+        country_ro,
+        project_cluster_kpp,
+        project_cluster_kip,
+        project_closed_status,
+        project_ongoing_status,
+        project_type,
+        sector,
+        subsector,
+        admin_user,
+        _setup_project_create,
+    ):
+        data = {
+            "cluster": project_cluster_kip.id,
+            "country": country_ro.id,
+            "meeting": meeting.id,
+            "agency": agency.id,
+            "lead_agency": agency.id,
+            "sector": sector.id,
+            "subsector_ids": [],
+            "project_type": project_type.id,
+            "title": "Meta Project Test",
+            "description": "This is a test meta project",
+        }
+
+        # setup objects
+        meta_project = MetaProjectFactory.create(
+            lead_agency=agency,
+        )
+        project = ProjectFactory.create(
+            title="Project test 1",
+            cluster=project_cluster_kip,
+            agency=agency,
+            country=country_ro,
+            status=project_closed_status,
+        )
+        project.meta_project = meta_project
+        project.save()
+        meta_project.new_code = get_meta_project_new_code([project])
+        meta_project.code = get_meta_project_code(country_ro, project_cluster_kip)
+        meta_project.save()
+
+        # create project and expect a new meta project to be created
+        # as the meta project does not have a project with a different status from closed
+        self.client.force_authenticate(user=admin_user)
+        response = self.client.post(self.url, data, format="json")
+        assert response.status_code == 201, response.data
+        created_meta_project_id = response.data["meta_project"]["id"]
+        # created a new meta project
+        assert MetaProject.objects.count() == 2
+
+        # remove created meta project
+        MetaProject.objects.filter(id=created_meta_project_id).delete()
+
+        # add an ongoing project to the existing meta project
+        project2 = ProjectFactory.create(
+            title="Project test 2",
+            cluster=project_cluster_kip,
+            agency=agency,
+            country=country_ro,
+            status=project_ongoing_status,
+        )
+        project2.meta_project = meta_project
+        project2.save()
+        meta_project.new_code = get_meta_project_new_code([project, project2])
+        meta_project.save()
+
+        response = self.client.post(self.url, data, format="json")
+
+        assert response.status_code == 201, response.data
+        assert MetaProject.objects.count() == 1  # no new meta project created
+        assert (
+            response.data["meta_project"]["id"] == meta_project.id
+        )  # meta project is used now
 
 
 class TestProjectsV2Update:
