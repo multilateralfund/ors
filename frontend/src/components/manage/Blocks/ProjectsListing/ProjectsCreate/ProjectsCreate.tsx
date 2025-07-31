@@ -58,7 +58,7 @@ const ProjectsCreate = ({
   fileErrors,
   trancheErrors,
   getTrancheErrors,
-  associatedProjects,
+  relatedProjects,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
@@ -71,7 +71,10 @@ const ProjectsCreate = ({
     fileErrors: string
     project?: ProjectTypeApi
     projectFiles?: ProjectFile[]
-    associatedProjects?: RelatedProjectsType[] | null
+    relatedProjects?: {
+      title: string
+      data: RelatedProjectsType[] | null
+    }[]
   }) => {
   const { project_id } = useParams<Record<string, string>>()
 
@@ -234,7 +237,7 @@ const ProjectsCreate = ({
             setCurrentTab,
             hasSubmitted,
             mode,
-            associatedProjects,
+            relatedProjects,
           }}
           isNextBtnEnabled={canLinkToBp}
           errors={projIdentifiersErrors}

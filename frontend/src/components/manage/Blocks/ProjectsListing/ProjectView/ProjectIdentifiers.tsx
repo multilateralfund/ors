@@ -1,18 +1,16 @@
-import { useEffect, useState } from 'react'
-
 import { BPTable } from '@ors/components/manage/Blocks/Table/BusinessPlansTable/BusinessPlansTable'
 import { booleanDetailItem, detailItem } from './ViewHelperComponents'
 import { SectionTitle } from '../ProjectsCreate/ProjectsCreate'
 import { RelatedProjects } from '../HelperComponents'
-import { useGetProjectsForSubmission } from '../hooks/useGetProjectsForSubmission'
-import { ProjectTypeApi, RelatedProjectsType } from '../interfaces'
+import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
+import { ProjectTypeApi } from '../interfaces'
 import { tableColumns } from '../constants'
 import { canViewField } from '../utils'
 import { useStore } from '@ors/store'
 
 import { FaInfo } from 'react-icons/fa6'
 import { Divider } from '@mui/material'
-import { debounce } from 'lodash'
+import { map } from 'lodash'
 
 const ProjectIdentifiers = ({ project }: { project: ProjectTypeApi }) => {
   const { viewableFields } = useStore((state) => state.projectFields)
@@ -24,24 +22,7 @@ const ProjectIdentifiers = ({ project }: { project: ProjectTypeApi }) => {
       (agency) => agency.id === project.meta_project?.lead_agency,
     )?.name ?? '-'
 
-  const [associatedProjects, setAssociatedProjects] = useState<
-    RelatedProjectsType[] | null
-  >([])
-
-  const debouncedGetProjectsForSubmission = debounce(() => {
-    useGetProjectsForSubmission(
-      project.id,
-      setAssociatedProjects,
-      undefined,
-      false,
-      false,
-      false,
-    )
-  }, 0)
-
-  useEffect(() => {
-    debouncedGetProjectsForSubmission()
-  }, [])
+  const relatedProjects = useGetRelatedProjects(project, 'view')
 
   const bpActivity = {
     ...project.bp_activity,
@@ -124,18 +105,23 @@ const ProjectIdentifiers = ({ project }: { project: ProjectTypeApi }) => {
           )}
         </>
       )}
-      {/* {associatedProjects && associatedProjects.length > 0 && (
-        <>
-          <Divider className="my-6" />
-          <SectionTitle>Associated projects</SectionTitle>
-          <RelatedProjects
-            data={associatedProjects}
-            isLoaded={true}
-            canRefreshStatus={false}
-            mode="view"
-          />
-        </>
-      )} */}
+      {map(
+        relatedProjects,
+        ({ data, title }) =>
+          data &&
+          data.length > 0 && (
+            <>
+              <Divider className="my-6" />
+              <SectionTitle>{title}</SectionTitle>
+              <RelatedProjects
+                data={data}
+                isLoaded={true}
+                canRefreshStatus={false}
+                mode="view"
+              />
+            </>
+          ),
+      )}
     </>
   )
 }
