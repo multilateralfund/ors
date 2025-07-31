@@ -207,6 +207,7 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "code_legacy",
             "compliance",
             "comments",
+            "component",
             "contingency_cost",
             "coop_agencies",
             "correspondance_no",
