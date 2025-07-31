@@ -21,9 +21,10 @@ import {
   BooleanOptionsType,
   ProjectDataProps,
   ProjectData,
-  ProjectTypeApi,
 } from '../interfaces'
 import { ProjectSubSectorType } from '@ors/types/api_project_subsector.ts'
+import { ProjectTypeType } from '@ors/types/api_project_types'
+import { ProjectSectorType } from '@ors/types/api_project_sector'
 import { api } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
@@ -37,8 +38,8 @@ const ProjectCrossCuttingFields = ({
   setProjectData,
   errors = {},
   hasSubmitted,
-  project,
-}: ProjectDataProps & { project?: ProjectTypeApi }) => {
+  mode,
+}: ProjectDataProps & { mode: string }) => {
   const sectionIdentifier = 'crossCuttingFields'
   const crossCuttingFields = projectData[sectionIdentifier]
   const {
@@ -71,18 +72,28 @@ const ProjectCrossCuttingFields = ({
     ['title', 'description'],
   )
 
-  const [projectTypesOpts, setProjectTypesOpts] = useState([])
-  const [sectorsOpts, setSectorsOpts] = useState([])
+  const [projectTypesOpts, setProjectTypesOpts] = useState<ProjectTypeType[]>(
+    [],
+  )
+  const crtProjectTypesOpts = filter(projectTypesOpts, (opt) => !opt.obsolete)
+  const projectTypes = mode === 'edit' ? projectTypesOpts : crtProjectTypesOpts
+
+  const [sectorsOpts, setSectorsOpts] = useState<ProjectSectorType[]>([])
+  const crtSectorsOpts = filter(sectorsOpts, (opt) => !opt.obsolete)
+  const sectors = mode === 'edit' ? sectorsOpts : crtSectorsOpts
+
   const [subsectorsOpts, setSubsectorsOpts] = useState<ProjectSubSectorType[]>(
     [],
   )
+  const crtSubsectorsOpts = filter(subsectorsOpts, (opt) => !opt.obsolete)
+  const subsectors = mode === 'edit' ? subsectorsOpts : crtSubsectorsOpts
 
   const fetchProjectTypes = async () => {
     try {
       const res = await api(
         'api/project-types/',
         {
-          params: { cluster_id: cluster },
+          params: { cluster_id: cluster, include_obsoletes: true },
           withStoreCache: true,
         },
         false,
@@ -108,6 +119,7 @@ const ProjectCrossCuttingFields = ({
           params: {
             cluster_id: cluster,
             type_id: project_type,
+            include_obsoletes: true,
           },
           withStoreCache: true,
         },
@@ -137,6 +149,7 @@ const ProjectCrossCuttingFields = ({
         {
           params: {
             sector_id: sector,
+            include_obsoletes: true,
           },
           withStoreCache: true,
         },
@@ -160,8 +173,8 @@ const ProjectCrossCuttingFields = ({
   }, [sector])
 
   useEffect(() => {
-    if (projectTypesOpts.length > 0) {
-      if (!find(projectTypesOpts, { id: project_type })) {
+    if (projectTypes.length > 0) {
+      if (!find(projectTypes, { id: project_type })) {
         setProjectData((prevData) => ({
           ...prevData,
           [sectionIdentifier]: {
@@ -171,12 +184,12 @@ const ProjectCrossCuttingFields = ({
         }))
       }
     }
-  }, [projectTypesOpts])
+  }, [JSON.stringify(projectTypes)])
 
   useEffect(() => {
     if (
       !project_type ||
-      (sectorsOpts.length > 0 && !find(sectorsOpts, { id: sector }))
+      (sectors.length > 0 && !find(sectors, { id: sector }))
     ) {
       setProjectData((prevData) => ({
         ...prevData,
@@ -186,7 +199,24 @@ const ProjectCrossCuttingFields = ({
         },
       }))
     }
-  }, [sectorsOpts, project_type])
+  }, [JSON.stringify(sectors), project_type])
+
+  useEffect(() => {
+    if (
+      !project_type ||
+      !sector ||
+      (subsectors.length > 0 &&
+        !find(subsectors, (subsector) => subsector_ids.includes(subsector.id)))
+    ) {
+      setProjectData((prevData) => ({
+        ...prevData,
+        [sectionIdentifier]: {
+          ...prevData[sectionIdentifier],
+          subsector_ids: [],
+        },
+      }))
+    }
+  }, [JSON.stringify(subsectors), project_type, sector])
 
   const sectionDefaultProps = {
     ...defaultProps,
@@ -320,9 +350,9 @@ const ProjectCrossCuttingFields = ({
                   <Label>{tableColumns.type}</Label>
                   <Field
                     widget="autocomplete"
-                    options={projectTypesOpts}
+                    options={crtProjectTypesOpts}
                     value={
-                      some(projectTypesOpts, { id: project_type })
+                      some(projectTypes, { id: project_type })
                         ? project_type
                         : null
                     }
@@ -338,7 +368,7 @@ const ProjectCrossCuttingFields = ({
                       )
                     }
                     getOptionLabel={(option: any) =>
-                      getOptionLabel(projectTypesOpts, option)
+                      getOptionLabel(projectTypes, option)
                     }
                     disabled={!canEditField(editableFields, 'project_type')}
                     Input={{
@@ -353,17 +383,15 @@ const ProjectCrossCuttingFields = ({
                   <Label>{tableColumns.sector}</Label>
                   <Field
                     widget="autocomplete"
-                    options={sectorsOpts}
-                    value={some(sectorsOpts, { id: sector }) ? sector : null}
+                    options={crtSectorsOpts}
+                    value={some(sectors, { id: sector }) ? sector : null}
                     onChange={(_, value) =>
                       changeHandler['drop_down']<
                         ProjectData,
                         CrossCuttingFields
                       >(value, 'sector', setProjectData, sectionIdentifier)
                     }
-                    getOptionLabel={(option) =>
-                      getOptionLabel(sectorsOpts, option)
-                    }
+                    getOptionLabel={(option) => getOptionLabel(sectors, option)}
                     disabled={!canEditField(editableFields, 'sector')}
                     Input={{
                       error: getIsInputDisabled('sector'),
@@ -380,9 +408,9 @@ const ProjectCrossCuttingFields = ({
                   <Field
                     widget="autocomplete"
                     multiple={true}
-                    options={subsectorsOpts}
+                    options={crtSubsectorsOpts}
                     value={
-                      filter(subsectorsOpts, (subsector) =>
+                      filter(subsectors, (subsector) =>
                         includes(subsector_ids, subsector.id),
                       ) as ProjectSubSectorType[]
                     }
@@ -390,7 +418,7 @@ const ProjectCrossCuttingFields = ({
                       handleChangeSubSector(value as ProjectSubSectorType[])
                     }
                     getOptionLabel={(option) =>
-                      getOptionLabel(subsectorsOpts, option)
+                      getOptionLabel(subsectors, option)
                     }
                     disabled={!canEditField(editableFields, 'subsectors')}
                     Input={{

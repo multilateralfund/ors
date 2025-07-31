@@ -29,6 +29,7 @@ import {
   initialCrossCuttingFields,
   initialProjectIdentifiers,
 } from '../constants'
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { useStore } from '@ors/store'
 import { api } from '@ors/helpers'
@@ -48,6 +49,22 @@ const ProjectsEdit = ({
 
   const { canViewProjects, canEditApprovedProjects } =
     useContext(PermissionsContext)
+  const { clusters, project_types, sectors, subsectors } =
+    useContext(ProjectsDataContext)
+
+  const shouldEmptyField = (data: any, crtDataId: number) => {
+    const isObsoleteField = find(
+      data,
+      (entry) => entry.id === crtDataId,
+    )?.obsolete
+    return mode !== 'edit' && isObsoleteField
+  }
+  const shouldEmptyCluster = shouldEmptyField(clusters, project.cluster_id)
+  const shouldEmptySubsector =
+    mode !== 'edit' &&
+    find(subsectors, (subsector) =>
+      map(project.subsectors, 'id').includes(subsector.id),
+    )?.obsolete
 
   const [projectData, setProjectData] = useState<ProjectData>({
     projIdentifiers: initialProjectIdentifiers,
@@ -186,11 +203,11 @@ const ProjectsEdit = ({
         country: project.country_id,
         meeting: mode !== 'partial-link' ? project.meeting_id : null,
         agency: project.agency_id,
-        lead_agency: project.meta_project.lead_agency,
+        lead_agency: project.meta_project?.lead_agency,
         lead_agency_submitting_on_behalf:
           project.lead_agency_submitting_on_behalf,
-        cluster: project.cluster_id,
-        production: project.production,
+        cluster: !shouldEmptyCluster ? project.cluster_id : null,
+        production: !shouldEmptyCluster ? project.production : false,
       },
       ...(mode !== 'partial-link'
         ? {
@@ -199,9 +216,18 @@ const ProjectsEdit = ({
               bpId: project.bp_activity?.id ?? null,
             },
             crossCuttingFields: {
-              project_type: project.project_type_id,
-              sector: project.sector_id,
-              subsector_ids: map(project.subsectors, 'id'),
+              project_type: !shouldEmptyField(
+                project_types,
+                project.project_type_id,
+              )
+                ? project.project_type_id
+                : null,
+              sector: !shouldEmptyField(sectors, project.sector_id)
+                ? project.sector_id
+                : null,
+              subsector_ids: !shouldEmptySubsector
+                ? map(project.subsectors, 'id')
+                : [],
               is_lvc: project.is_lvc,
               title: project.title,
               description: project.description,
@@ -233,7 +259,10 @@ const ProjectsEdit = ({
         isEditMode ? project_id : null,
         setSpecificFieldsLoaded,
       )
-    } else setSpecificFields([])
+    } else {
+      setSpecificFields([])
+      setSpecificFieldsLoaded(true)
+    }
 
     if (mode === 'partial-link') {
       setSpecificFieldsLoaded(true)

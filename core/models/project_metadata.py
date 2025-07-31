@@ -154,6 +154,10 @@ class ProjectCluster(models.Model):
         """,
     )
     sort_order = models.FloatField(null=True, blank=True)
+    obsolete = models.BooleanField(
+        default=False,
+        help_text="If True, the cluster is obsolete and should not be used for new entries.",
+    )
 
     objects = ProjectClusterManager()
 
@@ -173,6 +177,10 @@ class ProjectType(models.Model):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=10, null=True, blank=True)
     sort_order = models.FloatField(null=True, blank=True)
+    obsolete = models.BooleanField(
+        default=False,
+        help_text="If True, the type is obsolete and should not be used for new entries.",
+    )
     objects = ProjectTypeManager()
 
     def __str__(self):
@@ -215,6 +223,10 @@ class ProjectSector(models.Model):
         default=False,
         help_text="Custom sector created by user, not from the official list.",
     )
+    obsolete = models.BooleanField(
+        default=False,
+        help_text="If True, the sector is obsolete and should not be used for new entries.",
+    )
 
     objects = ProjectSectorManager()
 
@@ -246,14 +258,27 @@ class ProjectSubSectorManager(models.Manager):
         name_str = name.strip()
         return self.filter(
             models.Q(name__iexact=name_str) | models.Q(code__iexact=name_str),
-            sector_id=sector_id,
+            sectors__id=sector_id,
         ).first()
 
 
 class ProjectSubSector(models.Model):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=10, null=True, blank=True)
-    sector = models.ForeignKey(ProjectSector, on_delete=models.CASCADE)
+    sector = models.ForeignKey(
+        ProjectSector,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        help_text="""
+        Deprecated: replaced by sectors. Kept for now to ensure no issues arise at import""",
+    )
+    sectors = models.ManyToManyField(
+        ProjectSector,
+        blank=True,
+        related_name="subsectors",
+        help_text="List of sectors that this subsector belongs to",
+    )
     sort_order = models.FloatField(null=True, blank=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -265,6 +290,10 @@ class ProjectSubSector(models.Model):
     is_custom = models.BooleanField(
         default=False,
         help_text="Custom sector created by user, not from the official list.",
+    )
+    obsolete = models.BooleanField(
+        default=False,
+        help_text="If True, the subsector is obsolete and should not be used for new entries.",
     )
 
     objects = ProjectSubSectorManager()

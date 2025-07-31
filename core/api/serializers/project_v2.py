@@ -32,7 +32,9 @@ from core.models.project_metadata import (
     ProjectSpecificFields,
     ProjectStatus,
     ProjectSubmissionStatus,
+    ProjectSector,
     ProjectSubSector,
+    ProjectType,
 )
 from core.utils import get_project_sub_code
 from core.api.views.utils import log_project_history
@@ -150,6 +152,8 @@ class ProjectListV2Serializer(ProjectListSerializer):
     checklist_regulations = serializers.SerializerMethodField()
     editable = serializers.SerializerMethodField()
 
+    metaproject_new_code = serializers.SerializerMethodField()
+
     def get_editable(self, obj):
         """
         Check if the project is editable based on the user's permissions.
@@ -259,6 +263,7 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "meps_developed_residential_ac",
             "meps_developed_commercial_ac",
             "metaproject_code",
+            "metaproject_new_code",
             "metaproject_category",
             "meeting",
             "meeting_id",
@@ -378,6 +383,14 @@ class ProjectListV2Serializer(ProjectListSerializer):
             result = obj.bp_activity_json
 
         return result
+
+    def get_metaproject_new_code(self, obj):
+        """
+        Get the new code for the metaproject.
+        """
+        if obj.meta_project:
+            return obj.meta_project.new_code
+        return None
 
 
 class ProjectV2OdsOdpListSerializer(ProjectOdsOdpListSerializer):
@@ -617,6 +630,21 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
         allow_null=True,
         queryset=Agency.objects.all().values_list("id", flat=True),
     )
+    cluster = serializers.PrimaryKeyRelatedField(
+        required=False,
+        allow_null=True,
+        queryset=ProjectCluster.objects.filter(obsolete=False),
+    )
+    sector = serializers.PrimaryKeyRelatedField(
+        required=False,
+        allow_null=True,
+        queryset=ProjectSector.objects.filter(obsolete=False),
+    )
+    project_type = serializers.PrimaryKeyRelatedField(
+        required=False,
+        allow_null=True,
+        queryset=ProjectType.objects.filter(obsolete=False),
+    )
 
     # This field is not on the Project model, but is used for input only
     associate_project_id = serializers.IntegerField(
@@ -763,8 +791,68 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             instance
         )
 
+    def validate_subsector_ids(self, value):
+        """
+        Validate that all subsector ids are not obsolete.
+        """
+        if value:
+            obsolete_subsectors = ProjectSubSector.objects.filter(
+                id__in=[x.id for x in value], obsolete=True
+            )
+            if obsolete_subsectors.exists():
+                raise serializers.ValidationError(
+                    "One or more subsector ids are obsolete."
+                )
+        return value
+
+    def get_meta_project(self, project, lead_agency):
+        """
+        Get the meta project for the project.
+        """
+        status_codes = ProjectStatus.objects.exclude(code="CLO").values_list(
+            "code", flat=True
+        )
+        meta_projects = MetaProject.objects.filter(
+            lead_agency=lead_agency,
+            projects__status__code__in=status_codes,
+            projects__latest_project__isnull=True,
+        ).distinct()
+        warnings = []
+        meta_project_obj = None
+        for meta_project in meta_projects:
+            countries = meta_project.new_code.split("/")[:1]
+            clusters = meta_project.new_code.split("/")[1:-1]
+            country_code = (
+                project.country.iso3 or project.country.abbr if project.country else "-"
+            )
+            cluster_code = project.cluster.code if project.cluster else "-"
+
+            if country_code in countries and cluster_code in clusters:
+                if meta_project_obj and len(warnings) == 0:
+                    warnings.append(
+                        "Multiple meta projects found for the same country and cluster. "
+                        "Using the first one found."
+                    )
+                else:
+                    meta_project_obj = meta_project
+        if meta_project_obj:
+            return (meta_project_obj, warnings)
+        return (
+            MetaProject.objects.create(
+                lead_agency_id=lead_agency,
+                code=get_meta_project_code(
+                    project.country,
+                    project.cluster,
+                    project.serial_number_legacy,
+                ),
+                new_code=get_meta_project_new_code([project]),
+            ),
+            [],
+        )
+
     @transaction.atomic
     def create(self, validated_data):
+        warnings = []
         _ = validated_data.pop("request", None)
         lead_agency = validated_data.pop("lead_agency", None)
         user = self.context["request"].user
@@ -803,7 +891,7 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
         if associate_project_id:
             associate_project = Project.objects.get(id=associate_project_id)
             project.meta_project = associate_project.meta_project
-            if project.component:
+            if associate_project.component:
                 project.component = associate_project.component
             else:
                 component = ProjectComponents.objects.create()
@@ -811,19 +899,12 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
                 associate_project.component = component
                 associate_project.save()
         else:
-            project.meta_project = MetaProject.objects.create(
-                lead_agency_id=lead_agency,
-                code=get_meta_project_code(
-                    project.country,
-                    project.cluster,
-                    project.serial_number_legacy,
-                ),
-                new_code=get_meta_project_new_code([project]),
-            )
+            meta_project, warnings = self.get_meta_project(project, lead_agency)
+            project.meta_project = meta_project
         project.save()
         log_project_history(project, user, HISTORY_DESCRIPTION_CREATE)
 
-        return project
+        return (project, warnings)
 
     @transaction.atomic
     def update(self, instance, validated_data):

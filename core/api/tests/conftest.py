@@ -56,7 +56,10 @@ from core.models import ProjectFile
 from core.models.adm import AdmRecordArchive
 from core.models.business_plan import BusinessPlan
 from core.models.country_programme_archive import CPReportArchive
-from core.utils import get_meta_project_code, get_project_sub_code
+from core.utils import (
+    get_meta_project_code,
+    get_project_sub_code,
+)
 
 # pylint: disable=C0302,W0613
 
@@ -487,6 +490,11 @@ def project_ongoing_status():
 
 
 @pytest.fixture
+def project_closed_status():
+    return ProjectStatusFactory.create(name="Closed", code="CLO")
+
+
+@pytest.fixture
 def submitted_status():
     return ProjectStatusFactory.create(code="NEWSUB")
 
@@ -525,9 +533,11 @@ def sector():
 
 @pytest.fixture
 def subsector(sector):
-    return ProjectSubSectorFactory.create(
-        name="Subsector", code="SUB", sector=sector, sort_order=1
+    subsector = ProjectSubSectorFactory.create(
+        name="Subsector", code="SUB", sort_order=1
     )
+    subsector.sectors.add(sector)
+    return subsector
 
 
 @pytest.fixture
@@ -537,14 +547,18 @@ def sector_other():
 
 @pytest.fixture
 def subsector_other_sector_other(sector_other):
-    return ProjectSubSectorFactory.create(name="Other", code="OTH", sector=sector_other)
+    subsector = ProjectSubSectorFactory.create(name="Other", code="OTH")
+    subsector.sectors.add(sector_other)
+    return subsector
 
 
 @pytest.fixture
 def subsector_other(sector):
-    return ProjectSubSectorFactory.create(
-        name=f"Other {sector.name}", code=f"OTH{sector.code}", sector=sector
+    subsector = ProjectSubSectorFactory.create(
+        name=f"Other {sector.name}", code=f"OTH{sector.code}"
     )
+    subsector.sectors.add(sector)
+    return subsector
 
 
 @pytest.fixture
@@ -812,7 +826,7 @@ def business_plan():
 
 @pytest.fixture
 def bp_chemical_type():
-    return BPChemicalTypeFactory(name="BPChemicalType")
+    return BPChemicalTypeFactory(name="BPChemicalType", obsolete=False)
 
 
 @pytest.fixture

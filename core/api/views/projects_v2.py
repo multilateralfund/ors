@@ -61,6 +61,7 @@ from core.api.views.utils import log_project_history
 
 from core.api.views.projects_export import ProjectsV2Export
 from core.api.views.project_v2_export import ProjectsV2ProjectExport
+from core.api.views.project_v2_export import ProjectsV2ProjectExportDocx
 
 # pylint: disable=C0302,R0911,R0904,R1702
 
@@ -323,11 +324,11 @@ class ProjectV2ViewSet(
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(request=request)
-        headers = self.get_success_headers(serializer.data)
-        return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers
-        )
+        project, warnings = serializer.save(request=request)
+        response_data = ProjectDetailsV2Serializer(project).data
+        headers = self.get_success_headers(response_data)
+        response_data["warnings"] = warnings
+        return Response(response_data, status=status.HTTP_201_CREATED, headers=headers)
 
     @swagger_auto_schema(
         operation_description="""
@@ -345,10 +346,14 @@ class ProjectV2ViewSet(
     @action(methods=["GET"], detail=False)
     def export(self, request, *args, **kwargs):
         project_id = request.query_params.get("project_id")
+        output_format = request.query_params.get("output_format", "xlsx")
 
         if project_id:
             project = self.get_object()
-            return ProjectsV2ProjectExport(project).export_xls()
+            if output_format == "xlsx":
+                return ProjectsV2ProjectExport(project).export_xls()
+            if output_format == "docx":
+                return ProjectsV2ProjectExportDocx(project, request.user).export_docx()
         return ProjectsV2Export(self).export_xls()
 
     @action(methods=["POST"], detail=True)

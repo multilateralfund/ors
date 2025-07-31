@@ -26,22 +26,20 @@ pytestmark = pytest.mark.django_db
 class TestBPChemicalTypeList(BaseTest):
     url = reverse("bp-chemical-type-list")
 
-    def test_bp_chemical_type_list(self, user, bp_chemical_type):
-        self.client.force_authenticate(user=user)
+    def test_bp_chemical_type_list(self, bp_viewer_user, bp_chemical_type):
+        self.client.force_authenticate(user=bp_viewer_user)
 
         # get all BP chemical types
-        other_bp_chemical_type = BPChemicalTypeFactory()
+        other_bp_chemical_type = BPChemicalTypeFactory(obsolete=True)
         response = self.client.get(self.url)
         assert response.status_code == 200
-        assert len(response.data) == 2
+        assert len(response.data) == 1
+        # default only non-obsolete chemical types are returned
         assert response.data == [
             {
                 "id": bp_chemical_type.id,
                 "name": bp_chemical_type.name,
-            },
-            {
-                "id": other_bp_chemical_type.id,
-                "name": other_bp_chemical_type.name,
+                "obsolete": bp_chemical_type.obsolete,
             },
         ]
 
@@ -53,8 +51,17 @@ class TestBPChemicalTypeList(BaseTest):
             {
                 "id": bp_chemical_type.id,
                 "name": bp_chemical_type.name,
+                "obsolete": bp_chemical_type.obsolete,
             }
         ]
+
+        response = self.client.get(self.url, {"include_obsoletes": "true"})
+        assert response.status_code == 200
+        assert len(response.data) == 2
+        assert response.data[0]["id"] == bp_chemical_type.id
+        assert response.data[0]["name"] == bp_chemical_type.name
+        assert response.data[1]["id"] == other_bp_chemical_type.id
+        assert response.data[1]["name"] == other_bp_chemical_type.name
 
 
 @pytest.fixture(name="_setup_bp_list")
@@ -607,7 +614,9 @@ def setup_bp_activity_list(
     for i in range(4):
         countries.append(CountryFactory.create(name=f"Country{i}", iso3=f"CO{i}"))
         sector = ProjectSectorFactory.create(name=f"Sector{i}")
-        subsector = ProjectSubSectorFactory.create(name=f"Subsector{i}", sector=sector)
+        subsector = ProjectSubSectorFactory.create(
+            name=f"Subsector{i}", sectors=[sector]
+        )
         subsectors.append(subsector)
         project_types.append(ProjectTypeFactory.create(name=f"Type{i}"))
         clusters.append(ProjectClusterFactory.create(name=f"Cluster{i}", code=f"CL{i}"))
@@ -623,7 +632,7 @@ def setup_bp_activity_list(
                 "project_cluster": clusters[i],
                 "project_type": project_types[i],
                 "bp_chemical_type": bp_chemical_type,
-                "sector": subsectors[i].sector,
+                "sector": subsectors[i].sectors.first(),
                 "subsector": subsectors[i],
                 "status": "A",
                 "is_multi_year": i % 2 == 0,

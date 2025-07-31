@@ -29,7 +29,9 @@
     "TYPE": "PS",
     "TYPE_PRO": "Project support",
     "SORT_TYPE": 5,
-    "OUTDATED": false
+    "OUTDATED": false,
+    "ACTION": "RENAME",
+    "OLD_NAME": "Project Support"
   },
   {
     "TYPE": "INS",

@@ -2,6 +2,7 @@ import { useContext } from 'react'
 
 import Field from '@ors/components/manage/Form/Field'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions'
+import BPDataContext from '@ors/contexts/BusinessPlans/BPDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import ActivitiesFiltersSelectedOpts from './BPList/ActivitiesFiltersSelectedOpts'
 import { multiYearFilterOptions, tableColumns } from './constants'
@@ -18,7 +19,6 @@ export default function ActivitiesFilters(props: any) {
   const {
     bpSlice,
     clusters,
-    commonSlice,
     filters,
     form,
     handleFilterChange,
@@ -30,6 +30,7 @@ export default function ActivitiesFilters(props: any) {
 
   const { canViewMetainfoProjects, canViewSectorsSubsectors } =
     useContext(PermissionsContext)
+  const { agencies, countries } = useContext(BPDataContext)
 
   const searchRef = useFocusOnCtrlF()
 
@@ -106,7 +107,7 @@ export default function ActivitiesFilters(props: any) {
           getOptionLabel={(option: any) => option?.name}
           options={getFilterOptions(
             filters,
-            getFieldOptions(commonSlice.countries.data, 'country_id'),
+            getFieldOptions(countries, 'country_id'),
             'country_id',
           )}
           value={[]}
@@ -130,7 +131,7 @@ export default function ActivitiesFilters(props: any) {
             getOptionLabel={(option: any) => option?.name}
             options={getFilterOptions(
               filters,
-              getFieldOptions(commonSlice.agencies.data, 'agency_id'),
+              getFieldOptions(agencies, 'agency_id'),
               'agency_id',
             )}
             value={[]}
@@ -295,7 +296,6 @@ export default function ActivitiesFilters(props: any) {
         {...{
           bpSlice,
           clusters,
-          commonSlice,
           filters,
           form,
           handleFilterChange,

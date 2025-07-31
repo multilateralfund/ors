@@ -4,7 +4,7 @@ from django.urls import reverse
 from rest_framework import serializers
 
 from core.api.serializers import CountrySerializer
-from core.api.serializers.agency import AgencySerializer
+from core.api.serializers.agency import BusinessPlanAgencySerializer
 from core.api.serializers.base import Many2ManyListField
 from core.api.serializers.project_metadata import (
     ProjectClusterSerializer,
@@ -37,6 +37,7 @@ class BPChemicalTypeSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
+            "obsolete",
         ]
 
 
@@ -107,7 +108,7 @@ class BusinessPlanSerializer(serializers.ModelSerializer):
 
 
 class BPActivityExportSerializer(serializers.ModelSerializer):
-    agency = serializers.SlugRelatedField("name", read_only=True)
+    agency = serializers.SerializerMethodField()
     lvc_status = serializers.ChoiceField(choices=BPActivity.LVCStatus.choices)
     project_type = serializers.SlugRelatedField("name", read_only=True)
     status = serializers.ChoiceField(choices=BPActivity.Status.choices)
@@ -149,11 +150,19 @@ class BPActivityExportSerializer(serializers.ModelSerializer):
             "values",
         ]
 
+    def get_agency(self, obj):
+        if obj.agency.name == "Treasurer (Cash Pool)":
+            return "Treasurer"
+        return obj.agency.name
+
     def get_chemical_detail(self, obj):
         return "/".join(chem.name for chem in obj.substances.all())
 
     def get_display_internal_id(self, obj):
-        agency_code = obj.agency.name
+        if obj.agency.name == "Treasurer (Cash Pool)":
+            agency_code = "Treasurer"
+        else:
+            agency_code = obj.agency.name
         country_code = obj.country.iso3 or obj.country.name
         # add 0 padding to internal_id to make it 9 digits
         internal_id = str(obj.initial_id).zfill(9)
@@ -164,7 +173,7 @@ class BPActivityExportSerializer(serializers.ModelSerializer):
 
 
 class BPActivityDetailSerializer(serializers.ModelSerializer):
-    agency = AgencySerializer()
+    agency = BusinessPlanAgencySerializer()
     country = CountrySerializer()
     business_plan = BusinessPlanSerializer(read_only=True)
     lvc_status = serializers.ChoiceField(choices=BPActivity.LVCStatus.choices)
@@ -262,7 +271,10 @@ class BPActivityListSerializer(BPActivityDetailSerializer):
         return obj.business_plan.status
 
     def get_display_internal_id(self, obj):
-        agency_code = obj.agency.name
+        if obj.agency.name == "Treasurer (Cash Pool)":
+            agency_code = "Treasurer"
+        else:
+            agency_code = obj.agency.name
         country_code = obj.country.iso3 or obj.country.name
         # add 0 padding to internal_id to make it 9 digits
         internal_id = str(obj.initial_id).zfill(9)
@@ -298,13 +310,30 @@ class BPActivityCreateSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # get all related obj IDs only once for validation
-        self.agency_ids = Agency.objects.values_list("id", flat=True)
-        self.country_ids = Country.objects.values_list("id", flat=True)
-        self.project_type_ids = ProjectType.objects.values_list("id", flat=True)
-        self.bp_chemical_type_ids = BPChemicalType.objects.values_list("id", flat=True)
-        self.project_cluster_ids = ProjectCluster.objects.values_list("id", flat=True)
-        self.sector_ids = ProjectSector.objects.values_list("id", flat=True)
-        self.subsector_ids = ProjectSubSector.objects.values_list("id", flat=True)
+        self.agency_ids = Agency.objects.exclude(
+            name__in=[
+                "China (FECO)",
+            ]
+        ).values_list("id", flat=True)
+
+        self.country_ids = Country.get_business_plan_countries().values_list(
+            "id", flat=True
+        )
+        self.project_type_ids = ProjectType.objects.filter(obsolete=False).values_list(
+            "id", flat=True
+        )
+        self.bp_chemical_type_ids = BPChemicalType.objects.filter(
+            obsolete=False
+        ).values_list("id", flat=True)
+        self.project_cluster_ids = ProjectCluster.objects.filter(
+            obsolete=False
+        ).values_list("id", flat=True)
+        self.sector_ids = ProjectSector.objects.filter(obsolete=False).values_list(
+            "id", flat=True
+        )
+        self.subsector_ids = ProjectSubSector.objects.filter(
+            obsolete=False
+        ).values_list("id", flat=True)
         self.substance_ids = Substance.objects.values_list("id", flat=True)
 
     def validate_agency_id(self, agency_id):

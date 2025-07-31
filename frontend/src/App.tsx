@@ -55,6 +55,8 @@ import ProjectsSubmitPage from '@ors/app/projects_listing/[project_id]/submit/pa
 import ProjectsListingProjectPage from '@ors/app/projects_listing/[project_id]/page'
 import ProjectsListingArchiveProjectPage from '@ors/app/projects_listing/[project_id]/archive/page'
 
+import ProjectsDataProvider from './contexts/Projects/ProjectsDataProvider'
+import BPDataProvider from './contexts/BusinessPlans/BPDataProvider'
 import PermissionsProvider from './contexts/PermissionsProvider'
 import NotFoundPage from '@ors/app/not-found'
 
@@ -114,32 +116,42 @@ export default function App() {
           </LoginLayout>
         </Route>
         <Route path="/business-plans/upload">
-          <BPListLayout>
-            <BPUpload />
-          </BPListLayout>
+          <BPDataProvider>
+            <BPListLayout>
+              <BPUpload />
+            </BPListLayout>
+          </BPDataProvider>
         </Route>
         <Route path="/business-plans/list/report-info/:period">
-          <BPListLayout>
-            <BusinessPlansDetailsConsolidated />
-          </BPListLayout>
+          <BPDataProvider>
+            <BPListLayout>
+              <BusinessPlansDetailsConsolidated />
+            </BPListLayout>
+          </BPDataProvider>
         </Route>
         <Route path="/business-plans/list/:period/:type/edit">
-          <BPListLayout>
-            <BPListActivitiesPeriodTypeEditPage />
-          </BPListLayout>
+          <BPDataProvider>
+            <BPListLayout>
+              <BPListActivitiesPeriodTypeEditPage />
+            </BPListLayout>
+          </BPDataProvider>
         </Route>
         <Route path="/business-plans/list/activities/:period">
-          <BPListLayout>
-            <BPListActivitiesPeriodPage />
-          </BPListLayout>
+          <BPDataProvider>
+            <BPListLayout>
+              <BPListActivitiesPeriodPage />
+            </BPListLayout>
+          </BPDataProvider>
         </Route>
         {/* <Route path="/business-plans/:agency/:period/:status?">
           <BPAgencyPeriodStatusPage />
         </Route> */}
         <Route path="/business-plans">
-          <BPListLayout>
-            <BPPage />
-          </BPListLayout>
+          <BPDataProvider>
+            <BPListLayout>
+              <BPPage />
+            </BPListLayout>
+          </BPDataProvider>
         </Route>
         <Route path="/country-programme/reports">
           <CountryProgrammePage />
@@ -254,57 +266,79 @@ export default function App() {
         </Route>
         <Route path="/projects-listing">
           <PermissionsProvider>
-            <ProjectsListingPage />
+            <ProjectsDataProvider>
+              <ProjectsListingPage />
+            </ProjectsDataProvider>
           </PermissionsProvider>
         </Route>
         <Route path="/projects-listing/create">
           <PermissionsProvider>
-            <ProjectsCreatePage />
+            <ProjectsDataProvider>
+              <ProjectsCreatePage />
+            </ProjectsDataProvider>
           </PermissionsProvider>
         </Route>
         <Route path="/projects-listing/associate/:project_id">
           <PermissionsProvider>
-            <ProjectsAssociationPage />
+            <ProjectsDataProvider>
+              <ProjectsAssociationPage />
+            </ProjectsDataProvider>
           </PermissionsProvider>
         </Route>
         <Route path="/projects-listing/export">
           <PermissionsProvider>
-            <ProjectsExportPage />
+            <ProjectsDataProvider>
+              <ProjectsExportPage />
+            </ProjectsDataProvider>
           </PermissionsProvider>
         </Route>
         <Route path="/projects-listing/:project_id">
           <PermissionsProvider>
-            <ProjectsListingProjectPage />
+            <ProjectsDataProvider>
+              <ProjectsListingProjectPage />
+            </ProjectsDataProvider>
           </PermissionsProvider>
         </Route>
         <Route path="/projects-listing/:project_id/archive/:version">
           <PermissionsProvider>
-            <ProjectsListingArchiveProjectPage />
+            <ProjectsDataProvider>
+              <ProjectsListingArchiveProjectPage />
+            </ProjectsDataProvider>
           </PermissionsProvider>
         </Route>
         <Route path="/projects-listing/:project_id/edit">
           <PermissionsProvider>
-            <ProjectsEditPage mode="edit" />
+            <ProjectsDataProvider>
+              <ProjectsEditPage mode="edit" />
+            </ProjectsDataProvider>
           </PermissionsProvider>
         </Route>
         <Route path="/projects-listing/:project_id/submit">
           <PermissionsProvider>
-            <ProjectsSubmitPage />
+            <ProjectsDataProvider>
+              <ProjectsSubmitPage />
+            </ProjectsDataProvider>
           </PermissionsProvider>
         </Route>
         <Route path="/projects-listing/create/:project_id/copy">
           <PermissionsProvider>
-            <ProjectsEditPage mode="copy" />
+            <ProjectsDataProvider>
+              <ProjectsEditPage mode="copy" />
+            </ProjectsDataProvider>
           </PermissionsProvider>
         </Route>
         <Route path="/projects-listing/create/:project_id/full-copy/additional-component">
           <PermissionsProvider>
-            <ProjectsEditPage mode="full-link" />
+            <ProjectsDataProvider>
+              <ProjectsEditPage mode="full-link" />
+            </ProjectsDataProvider>
           </PermissionsProvider>
         </Route>
         <Route path="/projects-listing/create/:project_id/partial-copy/additional-component">
           <PermissionsProvider>
-            <ProjectsEditPage mode="partial-link" />
+            <ProjectsDataProvider>
+              <ProjectsEditPage mode="partial-link" />
+            </ProjectsDataProvider>
           </PermissionsProvider>
         </Route>
         <Route>

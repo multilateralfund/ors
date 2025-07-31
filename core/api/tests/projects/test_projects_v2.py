@@ -10,6 +10,7 @@ from core.api.tests.factories import (
     BusinessPlanFactory,
     BPActivityFactory,
     ProjectFactory,
+    MetaProjectFactory,
     ProjectOdsOdpFactory,
     ProjectStatusFactory,
     ProjectSubmissionStatusFactory,
@@ -17,8 +18,13 @@ from core.api.tests.factories import (
     SubstanceFactory,
 )
 from core.models import BPActivity
-from core.models.project import Project, ProjectFile
-from core.utils import get_project_sub_code
+from core.models.project import MetaProject, Project, ProjectFile
+from core.utils import (
+    get_project_sub_code,
+    get_meta_project_code,
+    get_meta_project_new_code,
+)
+
 
 pytestmark = pytest.mark.django_db
 # pylint: disable=C0302,C0415,C8008,W0221,R0912,R0913,R0913,R0914,R0915,W0613,
@@ -45,7 +51,7 @@ def setup_project_list(
     project_cluster_kpp,
     project_cluster_kip,
 ):
-    new_subsector = ProjectSubSectorFactory.create(sector=new_sector)
+    new_subsector = ProjectSubSectorFactory.create(sectors=[new_sector])
     projects = []
     projects_data = [
         {
@@ -297,7 +303,7 @@ def setup_project_create(
         "project_end_date": "2024-09-30",
         "project_start_date": "2023-10-01",
         "project_type": project_type.id,
-        "sector": subsector.sector.id,
+        "sector": subsector.sectors.first().id,
         "starting_point": 543.4,
         "subsector_ids": [subsector.id],
         "support_cost_psc": 23,
@@ -833,9 +839,10 @@ class TestCreateProjects(BaseTest):
         assert response.data["production_control_type"] == "Reduction"
         assert response.data["production"] is True
         assert response.data["sector_id"] == data["sector"]
-        assert response.data["sector"]["id"] == subsector.sector.id
-        assert response.data["sector"]["name"] == subsector.sector.name
-        assert response.data["sector"]["code"] == subsector.sector.code
+        sector = subsector.sectors.first()
+        assert response.data["sector"]["id"] == sector.id
+        assert response.data["sector"]["name"] == sector.name
+        assert response.data["sector"]["code"] == sector.code
         assert response.data["is_sme"] == "Non-SME"
         assert response.data["starting_point"] == data["starting_point"]
         assert response.data["subsectors"] == [
@@ -947,6 +954,110 @@ class TestCreateProjects(BaseTest):
 
         # check project count
         assert Project.objects.count() == 0
+
+    def test_meta_project_creation(
+        self,
+        agency,
+        new_agency,
+        new_country,
+        meeting,
+        country_ro,
+        project_cluster_kpp,
+        project_cluster_kip,
+        project_closed_status,
+        project_ongoing_status,
+        project_type,
+        sector,
+        subsector,
+        admin_user,
+        _setup_project_create,
+    ):
+        data = {
+            "cluster": project_cluster_kip.id,
+            "country": country_ro.id,
+            "meeting": meeting.id,
+            "agency": agency.id,
+            "lead_agency": agency.id,
+            "sector": sector.id,
+            "subsector_ids": [],
+            "project_type": project_type.id,
+            "title": "Meta Project Test",
+            "description": "This is a test meta project",
+        }
+
+        # setup objects
+        meta_project = MetaProjectFactory.create(
+            lead_agency=agency,
+        )
+        project = ProjectFactory.create(
+            title="Project test 1",
+            cluster=project_cluster_kip,
+            agency=agency,
+            country=country_ro,
+            status=project_closed_status,
+        )
+        project.meta_project = meta_project
+        project.save()
+        meta_project.new_code = get_meta_project_new_code([project])
+        meta_project.code = get_meta_project_code(country_ro, project_cluster_kip)
+        meta_project.save()
+
+        # create project and expect a new meta project to be created
+        # as the meta project does not have a project with a different status from closed
+        self.client.force_authenticate(user=admin_user)
+        response = self.client.post(self.url, data, format="json")
+        assert response.status_code == 201, response.data
+        created_meta_project_id = response.data["meta_project"]["id"]
+        # created a new meta project
+        assert MetaProject.objects.count() == 2
+
+        # remove created meta project
+        MetaProject.objects.filter(id=created_meta_project_id).delete()
+
+        # add an ongoing project to the existing meta project
+        project2 = ProjectFactory.create(
+            title="Project test 2",
+            cluster=project_cluster_kip,
+            agency=agency,
+            country=country_ro,
+            status=project_ongoing_status,
+        )
+        project2.meta_project = meta_project
+        project2.save()
+        meta_project.new_code = get_meta_project_new_code([project, project2])
+        meta_project.save()
+
+        response = self.client.post(self.url, data, format="json")
+
+        assert response.status_code == 201, response.data
+        assert MetaProject.objects.count() == 1  # no new meta project created
+        assert (
+            response.data["meta_project"]["id"] == meta_project.id
+        )  # meta project is used now
+
+        # test warning message
+        project3 = ProjectFactory.create(
+            title="Project test 3",
+            cluster=project_cluster_kip,
+            agency=agency,
+            country=country_ro,
+            status=project_ongoing_status,
+        )
+        meta_project2 = MetaProjectFactory.create(
+            lead_agency=agency,
+        )
+        project3.meta_project = meta_project2
+        project3.save()
+        meta_project2.new_code = get_meta_project_new_code([project3])
+        meta_project2.code = get_meta_project_code(
+            new_country, project_cluster_kip, new_agency
+        )
+        meta_project2.save()
+        response = self.client.post(self.url, data, format="json")
+        assert response.status_code == 201, response.data
+        assert response.data["warnings"] == [
+            "Multiple meta projects found for the same country and cluster. Using the first one found."
+        ]
 
 
 class TestProjectsV2Update:

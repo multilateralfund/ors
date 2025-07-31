@@ -1,3 +1,6 @@
+AGENCY_NAME_MAPPING = {
+    "Treasurer": "Treasurer (Cash Pool)",
+}
 COUNTRY_NAME_MAPPING = {
     "Brunei Darussalan": "Brunei Darussalam",
     "Cap Verde": "Cabo Verde",

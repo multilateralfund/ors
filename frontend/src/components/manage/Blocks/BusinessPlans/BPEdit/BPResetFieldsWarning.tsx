@@ -17,6 +17,8 @@ const BPResetFieldsWarning = ({
   setPendingEdit: (value: PendingEditType) => void
   updateFields: () => void
 }) => {
+  const { isOtherValue, field, fieldsToUpdate } = pendingEdit ?? {}
+
   const handleUpdateFields = () => {
     updateFields()
     setPendingEdit(null)
@@ -39,15 +41,18 @@ const BPResetFieldsWarning = ({
     subsector: { colName: 'subsector', affectedColsText: '' },
   }
 
-  const field = pendingEdit?.field as keyof typeof textHelper
+  const crtField = (
+    isOtherValue ? field : fieldsToUpdate?.[0]
+  ) as keyof typeof textHelper
 
-  const commonText = `will reset the ${textHelper[field]?.affectedColsText} as
-    ${pendingEdit?.field === 'sector' ? 'it is' : 'they are'} no longer valid
+  const commonText = `will reset the ${textHelper[crtField]?.affectedColsText} as
+    ${crtField === 'sector' ? 'it is' : 'they are'} no longer valid
     for the current selection.`
 
-  const infoText = !pendingEdit?.isOtherValue ? (
+  const infoText = !isOtherValue ? (
     <>
-      Changing the {textHelper[field]?.colName} {commonText}
+      Changing the {textHelper[field as keyof typeof textHelper]?.colName}{' '}
+      {commonText}
     </>
   ) : (
     <>
@@ -72,7 +77,7 @@ const BPResetFieldsWarning = ({
       onClose={handleCancel}
     >
       <DialogTitle id="alert-dialog-title">
-        {pendingEdit?.isOtherValue
+        {isOtherValue
           ? 'Added value will be converted'
           : 'Dependent data will be cleared'}
       </DialogTitle>

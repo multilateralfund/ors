@@ -9,7 +9,10 @@ from drf_yasg import openapi
 from rest_framework import status
 
 from core.api.utils import PROJECT_SECTOR_TYPE_MAPPING
-from core.import_data.mapping_names_dict import COUNTRY_NAME_MAPPING
+from core.import_data.mapping_names_dict import (
+    AGENCY_NAME_MAPPING,
+    COUNTRY_NAME_MAPPING,
+)
 from core.models import (
     Agency,
     BPActivity,
@@ -89,7 +92,8 @@ def get_error_messages(row, agencies, countries):
     error_messages = []
     not_found_error = "does not exist in KMS"
 
-    agency = agencies.get(strip_str(row["Agency"]))
+    agency_name = AGENCY_NAME_MAPPING.get((row["Agency"]), row["Agency"])
+    agency = agencies.get(strip_str(agency_name))
     country_name = COUNTRY_NAME_MAPPING.get(row["Country"], row["Country"])
     country = countries.get(strip_str(country_name))
 
@@ -288,25 +292,43 @@ def parse_bp_file(file, year_start, from_validate=False):
     df = pd.read_excel(file, dtype=str).replace({np.nan: ""})
 
     # get all objects from db at once
-    agencies = {strip_str(agency.name): agency for agency in Agency.objects.all()}
-    countries = {strip_str(country.name): country for country in Country.objects.all()}
+    agencies = {
+        strip_str(agency.name): agency
+        for agency in Agency.objects.exclude(
+            name__in=[
+                "China (FECO)",
+            ]
+        )
+    }
+    countries = {
+        strip_str(country.name): country
+        for country in Country.get_business_plan_countries()
+    }
     project_types = {
         strip_str(project_type.name): project_type
-        for project_type in ProjectType.objects.all()
+        for project_type in ProjectType.objects.filter(obsolete=False)
     }
     bp_chemical_types = {
         strip_str(bp_chemical_type.name): bp_chemical_type
-        for bp_chemical_type in BPChemicalType.objects.all()
+        for bp_chemical_type in BPChemicalType.objects.filter(obsolete=False)
     }
     project_clusters = {
         strip_str(project_cluster.name): project_cluster
-        for project_cluster in ProjectCluster.objects.all()
+        for project_cluster in ProjectCluster.objects.filter(obsolete=False)
     }
-    sectors = {strip_str(sector.name): sector for sector in ProjectSector.objects.all()}
-    subsectors_links = {
-        (subsector.sector.name, strip_str(subsector.name)): subsector
-        for subsector in ProjectSubSector.objects.select_related("sector")
+    sectors = {
+        strip_str(sector.name): sector
+        for sector in ProjectSector.objects.filter(obsolete=False)
     }
+    subsectors_links = {}
+    for subsector in ProjectSubSector.objects.filter(obsolete=False).prefetch_related(
+        "sectors"
+    ):
+        # create a mapping of subsector name to subsector object
+        # with sector name as a key to avoid duplicates
+        for sector in subsector.sectors.all():
+            subsectors_links[(sector.name, strip_str(subsector.name))] = subsector
+
     subsectors = [
         strip_str(subsector.name)
         for subsector in ProjectSubSector.objects.exclude(

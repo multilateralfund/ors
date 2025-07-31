@@ -111,16 +111,19 @@ class ProjectsV2Export(ProjectsExport):
         queryset = cls_name.objects.values_list("name", code_name).order_by("name")
         return [{"name": name, "acronym": acronym} for name, acronym in queryset]
 
-    def get_by_prop_name(self, cls_name, prop_name):
+    def get_by_prop_name(self, cls_name, prop_name, filter_obsoletes=False):
+        queryset = cls_name.objects.all()
+        if filter_obsoletes:
+            queryset = queryset.filter(obsolete=False)
         queryset = (
-            cls_name.objects.values_list(prop_name, flat=True)
-            .distinct()
-            .order_by(prop_name)
+            queryset.values_list(prop_name, flat=True).distinct().order_by(prop_name)
         )
         return [{"name": name} for name in queryset]
 
-    def get_names(self, cls_name):
-        return self.get_by_prop_name(cls_name, "name")
+    def get_names(self, cls_name, filter_obsoletes=False):
+        return self.get_by_prop_name(
+            cls_name, "name", filter_obsoletes=filter_obsoletes
+        )
 
     def get_codes(self, cls_name):
         return self.get_by_prop_name(cls_name, "code")
@@ -159,7 +162,11 @@ class ProjectsV2Export(ProjectsExport):
                 enforce_validation=False,
             ),
             SheetDefinition(
-                ProjectCluster, self.get_names, ModelNameWriter, "Clusters", "D"
+                ProjectCluster,
+                partial(self.get_names, filter_obsoletes=True),
+                ModelNameWriter,
+                "Clusters",
+                "D",
             ),
             SheetDefinition(
                 MetaProject.MetaProjectType,
@@ -169,7 +176,11 @@ class ProjectsV2Export(ProjectsExport):
                 "E",
             ),
             SheetDefinition(
-                ProjectType, self.get_names, ModelNameWriter, "Project types", "F"
+                ProjectType,
+                partial(self.get_names, filter_obsoletes=True),
+                ModelNameWriter,
+                "Project types",
+                "F",
             ),
             SheetDefinition(
                 Project,
@@ -181,7 +192,7 @@ class ProjectsV2Export(ProjectsExport):
             SheetDefinition(Agency, self.get_names, ModelNameWriter, "Agencies", "H"),
             SheetDefinition(
                 ProjectSector,
-                self.get_names,
+                partial(self.get_names, filter_obsoletes=True),
                 ModelNameWriter,
                 "Sectors",
                 "I",
@@ -196,7 +207,7 @@ class ProjectsV2Export(ProjectsExport):
             ),
             SheetDefinition(
                 ProjectSubSector,
-                self.get_names,
+                partial(self.get_names, filter_obsoletes=True),
                 ModelNameWriter,
                 "Subsectors",
                 "K",

@@ -21,5 +21,6 @@ class TestAgencyList(BaseTest):
             {
                 "id": agency.id,
                 "name": agency.name,
+                "name_display": agency.get_name_display(),
             }
         ]

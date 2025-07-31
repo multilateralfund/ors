@@ -32,6 +32,7 @@ export type PendingEditType = null | {
   newValue: number
   rowId: number
   isOtherValue: boolean
+  fieldsToUpdate: string[]
 }
 
 export function BPEditBaseTable(
@@ -278,6 +279,7 @@ export function BPEditBaseTable(
         },
         cellRendererParams: () => ({
           tooltipClassName: 'bp-table-tooltip',
+          isCo2: true,
         }),
         dataType: 'number',
         field: `value_co2_${isAfterMaxYear ? `${yearRangeSelected.year_end}_after` : year}`,
@@ -516,16 +518,17 @@ export function BPEditBaseTable(
 
   const getUpdatedFieldData = (data: any) => {
     if (pendingEdit) {
+      const { isOtherValue, fieldsToUpdate, newValue } = pendingEdit
+
       const optionsFieldMapping = {
         project_cluster: clusters,
         project_type: types,
         sector: sectors,
-        ...(pendingEdit.isOtherValue && { subsector: subsectors }),
+        ...(isOtherValue && { subsector: subsectors }),
       }
 
-      const field = pendingEdit.field
-      const options =
-        optionsFieldMapping[field as keyof typeof optionsFieldMapping]
+      const field = pendingEdit.field as keyof typeof optionsFieldMapping
+      const options = optionsFieldMapping[field]
 
       const resetFieldsMapping = {
         project_cluster: ['project_type', 'sector', 'subsector'],
@@ -533,13 +536,18 @@ export function BPEditBaseTable(
         sector: ['subsector'],
       }
 
-      const valueForUpdate = pendingEdit.isOtherValue
+      const valueForUpdate = isOtherValue
         ? find(options, (option) => option.name === 'Other')?.id
-        : pendingEdit.newValue
+        : newValue
 
       updateFieldData(options, data, field, valueForUpdate)
-      resetFieldsMapping[field as keyof typeof resetFieldsMapping]?.forEach(
-        (field) => emptyFieldData(data, field),
+
+      const fieldForReset = (
+        isOtherValue ? field : fieldsToUpdate[0]
+      ) as keyof typeof resetFieldsMapping
+
+      resetFieldsMapping[fieldForReset]?.forEach((field) =>
+        emptyFieldData(data, field),
       )
 
       return data

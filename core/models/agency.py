@@ -27,3 +27,8 @@ class Agency(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_name_display(self):
+        if self.name == "Treasurer (Cash Pool)":
+            return "Treasurer"
+        return self.name

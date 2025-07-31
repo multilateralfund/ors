@@ -32,6 +32,5 @@ export const lvcStatuses = [
   { id: 'Non-LVC', name: 'Non-LVC' },
   { id: 'Regional', name: 'Regional' },
   { id: 'Global', name: 'Global' },
-  { id: 'NDR', name: 'NDR' },
   { id: 'Undefined', name: 'Undefined' },
 ]

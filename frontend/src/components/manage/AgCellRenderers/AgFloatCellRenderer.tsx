@@ -15,7 +15,10 @@ import {
 } from '@ors/helpers/Utils/Utils'
 
 export default function AgFloatCellRenderer(
-  props: CustomCellRendererProps & { tooltipClassName: string },
+  props: CustomCellRendererProps & {
+    tooltipClassName: string
+    isCo2?: boolean
+  },
 ) {
   if (props.data.rowType === 'skeleton') {
     return <AgSkeletonCellRenderer {...props} />

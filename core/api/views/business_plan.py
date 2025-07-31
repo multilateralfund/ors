@@ -45,13 +45,38 @@ from core.models.business_plan import BPFile
 
 class BPChemicalTypeListView(generics.ListAPIView):
     """
-    List BP chemical types
+    List BP chemical types, excluding obsolete values by default.
     """
 
-    permission_classses = [HasBusinessPlanViewAccess]
-    queryset = BPChemicalType.objects.all()
+    permission_classes = [HasBusinessPlanViewAccess]
+
+    def get_queryset(self):
+        # By default, exclude obsolete values unless explicitly filtered
+        queryset = BPChemicalType.objects.all()
+        include_obsoletes = self.request.query_params.get("include_obsoletes", None)
+        if not include_obsoletes:
+            queryset = queryset.filter(obsolete=False)
+        return queryset
+
     filterset_class = BPChemicalTypeFilter
     serializer_class = BPChemicalTypeSerializer
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "include_obsoletes",
+                openapi.IN_QUERY,
+                type=openapi.TYPE_BOOLEAN,
+                description="Include obsolete chemical types. By default, only non-obsolete types are returned.",
+            ),
+        ],
+    )
+    def get(self, request, *args, **kwargs):
+        """
+        Override get method to handle the queryset filtering.
+        """
+        self.queryset = self.get_queryset()
+        return super().get(request, *args, **kwargs)
 
 
 class BusinessPlanViewSet(

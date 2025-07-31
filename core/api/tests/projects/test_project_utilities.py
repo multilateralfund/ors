@@ -67,6 +67,7 @@ class TestProjectSectorList(BaseTest):
             "sort_order": sector.sort_order,
             "allowed_types": [],
             "subsectors": [],
+            "obsolete": sector.obsolete,
         }
 
 
@@ -121,6 +122,7 @@ class TestProjectSectorCreate(BaseTest):
             "sort_order": sector.sort_order,
             "allowed_types": [],
             "subsectors": [],
+            "obsolete": sector.obsolete,
         }
 
         sect_co = ProjectSector.objects.count()
@@ -138,13 +140,17 @@ class TestProjectSectorCreate(BaseTest):
 @pytest.fixture(name="_setup_project_subsector_list")
 def setup_project_subsector_list(sector):
     ProjectSubSectorFactory.create(
-        name="Subsector0", code="SUBSEC0", sort_order=0, sector=sector
+        name="Subsector0", code="SUBSEC0", sort_order=0, sectors=[sector]
     )
     ProjectSubSectorFactory.create(
-        name="Subsector2", code="SUBSEC2", sort_order=2, sector=sector
+        name="Subsector2", code="SUBSEC2", sort_order=2, sectors=[sector]
     )
     ProjectSubSectorFactory.create(
-        name="Subsector3", code="SUBSEC3", sort_order=3, sector=sector, is_custom=True
+        name="Subsector3",
+        code="SUBSEC3",
+        sort_order=3,
+        sectors=[sector],
+        is_custom=True,
     )
 
 
@@ -164,7 +170,8 @@ class TestProjectSubsectorList(BaseTest):
             "name": subsector.name,
             "code": subsector.code,
             "sort_order": subsector.sort_order,
-            "sector_id": sector.id,
+            "sectors": [sector.id],
+            "obsolete": subsector.obsolete,
         }
 
 
@@ -172,7 +179,7 @@ class TestProjectSubsectorList(BaseTest):
 def setup_subsector_create(sector):
     return {
         "name": "Subsectoru la Mafioti",
-        "sector_id": sector.id,
+        "sectors": [sector.id],
     }
 
 
@@ -198,7 +205,7 @@ class TestProjectSubsectorCreate(BaseTest):
         self.client.force_authenticate(user=agency_user)
 
         data = _setup_subsector_create
-        data["sector_id"] = 999
+        data["sectors"] = [999]
 
         response = self.client.post(self.url, data=data)
         assert response.status_code == 400
@@ -214,13 +221,13 @@ class TestProjectSubsectorCreate(BaseTest):
         assert response.status_code == 201
         assert response.data["name"] == "Subsectoru la Mafioti"
         assert response.data["code"] == f"CUST{response.data['id']}"
-        assert response.data["sector_id"] == sector.id
+        assert response.data["sectors"][0] == sector.id
 
     def test_create_duplicate_subsector(self, agency_user, subsector, sector):
         self.client.force_authenticate(user=agency_user)
 
         response = self.client.post(
-            self.url, data={"name": subsector.name, "sector_id": sector.id}
+            self.url, data={"name": subsector.name, "sectors": [sector.id]}
         )
         assert response.status_code == 201
         assert response.data["id"] == subsector.id
@@ -253,6 +260,7 @@ class TestProjectType(BaseTest):
             "code": project_type.code,
             "sort_order": project_type.sort_order,
             "allowed_sectors": [],
+            "obsolete": project_type.obsolete,
         }
 
 

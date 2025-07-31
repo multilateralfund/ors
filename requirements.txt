@@ -34,3 +34,4 @@ xlrd==2.0.1
 celery==5.4.0
 redis==5.0.4
 rabbitmq-server==0.0.1
+python-docx==1.2.0

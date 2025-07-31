@@ -1,13 +1,26 @@
 from typing import List
+
+from datetime import datetime
+
+import io
+import pathlib
 import logging
 
 import openpyxl
+import docx
+
+from docx.table import Table
+from docx.oxml.table import CT_Tbl
+from docx.oxml.text.paragraph import CT_P
+
+from django.http import FileResponse
 
 from rest_framework import serializers
 
 from core.api.serializers.project_v2 import ProjectDetailsV2Serializer
 from core.api.serializers.business_plan import BPActivityExportSerializer
 
+from core.models.user import User
 from core.models.project import Project
 from core.models.business_plan import BPActivity
 from core.models.project_metadata import ProjectSpecificFields
@@ -17,7 +30,6 @@ from core.api.export.base import configure_sheet_print, WriteOnlyBase
 from core.api.export.business_plan import BPActivitiesWriter
 
 from core.api.utils import workbook_response
-
 
 logger = logging.getLogger(__name__)
 
@@ -114,6 +126,7 @@ def get_headers_specific_information(fields: List[ProjectField]):
 
 
 def dict_as_obj(d):
+
     class Dummy:
         pass
 
@@ -269,3 +282,219 @@ class ProjectsV2ProjectExport:
     def export_xls(self):
         self.build_xls()
         return workbook_response(f"Project {self.project.id}", self.wb)
+
+
+def document_response(doc, filename):
+    out = io.BytesIO()
+    doc.save(out)
+    out.seek(0)
+    res = FileResponse(out, as_attachment=True, filename=filename)
+    return res
+
+
+class ProjectsV2ProjectExportDocx:
+    user = User
+    project: Project
+    doc: docx.Document
+    template_path = (
+        pathlib.Path(__file__).parent.parent
+        / "export"
+        / "templates"
+        / "Word Template for data entered into the system during project submission online.docx"
+    )
+
+    def __init__(self, project, user):
+        self.user = user
+        self.project = project
+        with self.template_path.open("rb") as tpl:
+            self.doc = docx.Document(tpl)
+
+    def find_table(self, after_p_text=""):
+        found = None
+
+        if after_p_text:
+            found_p = False
+            for e in self.doc.element.body:
+                if isinstance(e, CT_P) and e.text.strip() == after_p_text:
+                    found_p = True
+                elif isinstance(e, CT_Tbl) and found_p:
+                    found = Table(e, self.doc)
+                    break
+
+        return found
+
+    def build_front_page(self, data):
+        for p in self.doc.paragraphs:
+            p_style = {
+                "italic": False,
+                "bold": False,
+                "underline": False,
+            }
+
+            if p.runs:
+                for k in p_style:
+                    p_style[k] = getattr(p.runs[0], k, False)
+
+            if p.text.startswith("Generated on"):
+                now = datetime.utcnow().strftime("%d/%m/%Y")
+                user = self.user.get_full_name() or self.user.username
+                agency = self.user.agency.name if self.user.agency else ""
+                p.text = f"Generated on {now} by {user}" + (
+                    'of "{agency}"' if agency else ""
+                )
+            elif p.text.startswith("Project Title"):
+                p.text = self.project.title
+            elif p.text.startswith("Country:"):
+                p.text = f"{p.text} {data['country']}"
+            elif p.text.startswith("Agency:"):
+                p.text = f"{p.text} {data['agency']}"
+            elif p.text.startswith("Cluster:"):
+                p.text = f"{p.text} {data['cluster']['name']}"
+            elif p.text.startswith("Amount:"):
+                p.text = f"{p.text} {data['total_fund']}"
+            elif p.text.startswith("Project Description:"):
+                p.text = f"{p.text} {data['description']}"
+
+            if p.runs:
+                for k, v in p_style.items():
+                    setattr(p.runs[0], k, v)
+
+    def _write_header_to_table(self, headers, table, data):
+        for header in headers:
+            row = table.add_row()
+            for c_idx, cell in enumerate(row.cells):
+                if c_idx == 0:
+                    cell.text = header["headerName"]
+                elif c_idx == 1 and header.get("method"):
+                    cell.text = header["method"](data, header)
+                elif c_idx == 1:
+                    cell.text = str(data[header["id"]] or "")
+
+    def _write_substance_table(self, _, table, data):
+        for d in data:
+            row = table.add_row()
+            row_data = [
+                "ods_display_name",
+                "???",
+                "ods_replacement",
+                "phase_out_mt",
+                "co2_mt",
+                "odp",
+            ]
+            for c_idx, cell in enumerate(row.cells):
+                cell.text = str(d.get(row_data[c_idx], "") or "")
+
+    def _write_impact_target_actual(self, headers, table, data):
+        planned_headers = {}
+        actual_headers = {}
+        for header in headers:
+            if header["id"].endswith("_actual"):
+                planned_name = header["id"].split("_actual")[0]
+                actual_headers[planned_name] = header
+            else:
+                planned_headers[header["id"]] = header
+
+        for field_id, header in planned_headers.items():
+            row = table.add_row()
+            row_data = [
+                header["headerName"],
+                data[field_id],
+                data[actual_headers[field_id]["id"]],
+            ]
+            for c_idx, cell in enumerate(row.cells):
+                cell.text = str(row_data[c_idx] or "")
+
+    def build_related_tranches(self):
+        table = self.find_table(
+            "Related tranches (metacode and linked projects) Only MYA"
+        )
+        if table and self.project.tranche and self.project.tranche > 1:
+            related_projects = Project.objects.filter(
+                meta_project__id=self.project.meta_project.id,
+                tranche=self.project.tranche - 1,
+            )
+            row = table.add_row()
+            for project in related_projects:
+                row_data = [
+                    project.meta_project.new_code,
+                    project.code,
+                    project.status.name,
+                ]
+                for c_idx, cell in enumerate(row.cells):
+                    cell.text = str(row_data[c_idx] or "")
+
+    def build_cross_cutting(self, data):
+        table = self.find_table("Cross-cutting fields")
+        self._write_header_to_table(get_headers_cross_cutting()[2:], table, data)
+
+    def _get_fields_for_section(
+        self, fields_obj: ProjectSpecificFields, section_name: str, **filters
+    ):
+        return fields_obj.fields.filter(section__in=[section_name], **filters)
+
+    def _write_project_specific_fields(
+        self,
+        table=None,
+        fields=None,
+        data=None,
+        writer=None,
+    ):
+        writer = self._write_header_to_table if not writer else writer
+        if data and table and fields:
+            headers = get_headers_specific_information(fields)
+            writer(headers, table, data)
+
+    def build_specific_information(self, data):
+        project_specific_fields_obj = ProjectSpecificFields.objects.filter(
+            cluster=self.project.cluster,
+            type=self.project.project_type,
+            sector=self.project.sector,
+        ).first()
+
+        if project_specific_fields_obj:
+            self._write_project_specific_fields(
+                table=self.find_table("Project specific fields header"),
+                fields=self._get_fields_for_section(
+                    project_specific_fields_obj, "Header"
+                ),
+                data=data,
+            )
+            self._write_project_specific_fields(
+                table=self.find_table("Substance details Page and tables"),
+                fields=self._get_fields_for_section(
+                    project_specific_fields_obj, "Substance Details"
+                ),
+                data=data.get("ods_odp", []),
+                writer=self._write_substance_table,
+            )
+            self._write_project_specific_fields(
+                table=self.find_table("Impact (tabular)"),
+                fields=self._get_fields_for_section(
+                    project_specific_fields_obj,
+                    "Impact",
+                    is_actual=False,
+                ),
+                data=data,
+            )
+            self._write_project_specific_fields(
+                table=self.find_table("Impact (previous MYA tranches) If applicable"),
+                fields=self._get_fields_for_section(
+                    project_specific_fields_obj,
+                    "Impact",
+                ),
+                data=data,
+                writer=self._write_impact_target_actual,
+            )
+
+    def build_document(self):
+        serializer = ProjectDetailsV2Serializer(self.project)
+        data = serializer.data
+
+        self.build_front_page(data)
+        self.build_related_tranches()
+        self.build_cross_cutting(data)
+        self.build_specific_information(data)
+
+    def export_docx(self):
+        self.build_document()
+        return document_response(self.doc, filename=f"{self.project.id}.docx")
