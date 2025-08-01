@@ -1,5 +1,4 @@
 import type { IValidationContext } from '@ors/contexts/Validation/types'
-import { UserType, isCountryUserType } from '@ors/types/user_types'
 
 import { useContext } from 'react'
 import React, { useMemo, useState } from 'react'
@@ -15,6 +14,7 @@ import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import Link from '@ors/components/ui/Link/Link'
 import ValidationContext from '@ors/contexts/Validation/ValidationContext'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { formattedDateFromTimestamp, uploadFiles } from '@ors/helpers'
 import api from '@ors/helpers/Api/_api'
 import useClickOutside from '@ors/hooks/useClickOutside'
@@ -26,7 +26,6 @@ import { useEditLocalStorage } from './useLocalStorage'
 
 import { IoChevronDown } from 'react-icons/io5'
 import { MdKeyboardArrowDown } from 'react-icons/md'
-import PermissionsContext from '@ors/contexts/PermissionsContext'
 
 const DropDownButtonProps: ButtonProps = {
   endIcon: <MdKeyboardArrowDown />,
@@ -436,6 +435,7 @@ const EditHeaderActions = ({
   setErrors,
   validation,
 }: EditHeaderActionsProps) => {
+  const { isCPCountryUserType } = useContext(PermissionsContext)
   const [_, setLocation] = useLocation()
   const { cacheInvalidateReport, fetchBundle, report } = useStore(
     (state) => state.cp_reports,
@@ -564,7 +564,7 @@ const EditHeaderActions = ({
 
   function getSubmitFinalTooltipTitle() {
     if (!canSubmitFinalCPReport && isDraft) {
-      return isCountryUserType[user_type as UserType]
+      return isCPCountryUserType
         ? 'Only Country Submitter users can submit Final versions'
         : 'Only Secretariat users can submit Final versions'
     }

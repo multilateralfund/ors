@@ -1,6 +1,4 @@
-import { UserType, isCountryUserType } from '@ors/types/user_types'
-
-import React, { ChangeEvent } from 'react'
+import React, { useContext, ChangeEvent } from 'react'
 
 import { TextField, Divider } from '@mui/material'
 import Typography from '@mui/material/Typography'
@@ -16,6 +14,8 @@ import Field from '@ors/components/manage/Form/Field'
 import IconButton from '@ors/components/ui/IconButton/IconButton'
 import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
 import { useStore } from '@ors/store'
+
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 
 import { IoTrash } from 'react-icons/io5'
 import { BsFilesAlt } from 'react-icons/bs'
@@ -108,9 +108,11 @@ function FileInput(props: {
 }
 
 const CountrySelect: React.FC = (props: any) => {
-  const { countryFieldProps, isEdit, report, user_country, user_type } = props
+  const { countryFieldProps, isEdit, report, user_country } = props
 
-  if (isCountryUserType[user_type as UserType]) {
+  const { isCPCountryUserType } = useContext(PermissionsContext)
+
+  if (isCPCountryUserType) {
     return (
       <SimpleInput
         id="country"
@@ -155,11 +157,9 @@ const ReportInfoCreate = (props: any) => {
     showCloneDialog,
     yearFieldProps,
   } = props
-  const {
-    country: user_country,
-    user_type,
-    username,
-  } = useStore((state) => state.user.data)
+  const { country: user_country, username } = useStore(
+    (state) => state.user.data,
+  )
   const alreadyUploadedFiles = useStore(
     (state: any) => state?.cp_reports?.report?.files?.data,
   )
@@ -214,7 +214,6 @@ const ReportInfoCreate = (props: any) => {
                   Sections={Sections}
                   form={form}
                   setForm={setForm}
-                  user_type={user_type}
                 />
               )}
               <CountrySelect
@@ -225,7 +224,6 @@ const ReportInfoCreate = (props: any) => {
                 report={report}
                 setForm={setForm}
                 user_country={user_country}
-                user_type={user_type}
               />
             </div>
           </div>

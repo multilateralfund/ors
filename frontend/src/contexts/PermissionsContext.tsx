@@ -17,6 +17,9 @@ interface PermissionsContextProps {
   canAssociateProjects: boolean
   canEditProjects: boolean
   canEditApprovedProjects: boolean
+  canCommentCPCountry: boolean
+  canCommentCPSecretariat: boolean
+  isCPCountryUserType: boolean
 }
 
 const PermissionsContext = createContext<PermissionsContextProps>(

@@ -1,7 +1,7 @@
 'use client'
 import type { SimpleSelectProps } from '@ors/components/ui/SimpleSelect/SimpleSelect'
+import type { UserType } from '@ors/types/user_types'
 import { Country, FiltersType, StatusFilterTypes } from '@ors/types/store'
-import { UserType, isCountryUserType } from '@ors/types/user_types'
 
 import React, { useContext, useEffect, useMemo, useState } from 'react'
 
@@ -29,12 +29,12 @@ import SimpleTable from '@ors/components/ui/SimpleTable/SimpleTable'
 import { formatApiUrl, getResults, removeTrailingSlash } from '@ors/helpers'
 import useApi from '@ors/hooks/useApi'
 import { useStore } from '@ors/store'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 
 import Portal from '../../Utils/Portal'
 
 import { IoChevronDownCircle, IoClose, IoEllipse } from 'react-icons/io5'
 import { DownloadLink } from '@ors/components/ui/Button/Button'
-import PermissionsContext from '@ors/contexts/PermissionsContext'
 
 interface SectionProps {
   filters: any
@@ -174,6 +174,7 @@ const CountryYearFilterPills = (props: any) => {
 }
 
 const SubmissionItem = (props: any) => {
+  const { isCPCountryUserType } = useContext(PermissionsContext)
   const { filters, group, reports, user_type } = props
   const { canEditCPReports } = useContext(PermissionsContext)
 
@@ -181,9 +182,7 @@ const SubmissionItem = (props: any) => {
   const countriesById = new Map<number, any>(
     countries.map((country: any) => [country.id, country]),
   )
-  const [showAllReports, setShowAllReports] = useState(
-    isCountryUserType[user_type as UserType],
-  )
+  const [showAllReports, setShowAllReports] = useState(isCPCountryUserType)
   const denseLayout =
     filters.range.length === 2 && filters.range[1] - filters.range[0] <= 2
 
@@ -254,19 +253,18 @@ const SubmissionItem = (props: any) => {
         })}
       </div>
 
-      {reports.length > REPORTS_PER_COUNTRY &&
-        !isCountryUserType[user_type as UserType] && (
-          <div
-            className="w-fit cursor-pointer font-medium"
-            onClick={toggleReportsVisibility}
-          >
-            {!showAllReports ? (
-              <span key="load-more-button">View More</span>
-            ) : (
-              <span key="load-less-button">Show Less</span>
-            )}
-          </div>
-        )}
+      {reports.length > REPORTS_PER_COUNTRY && !isCPCountryUserType && (
+        <div
+          className="w-fit cursor-pointer font-medium"
+          onClick={toggleReportsVisibility}
+        >
+          {!showAllReports ? (
+            <span key="load-more-button">View More</span>
+          ) : (
+            <span key="load-less-button">Show Less</span>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -274,6 +272,7 @@ const SubmissionItem = (props: any) => {
 const SubmissionSection = function SubmissionSection(
   props: { submissionApi: any } & SectionProps,
 ) {
+  const { isCPCountryUserType } = useContext(PermissionsContext)
   const { filters, maxYear, minYear, setFilters, submissionApi, user_type } =
     props
   const [pagination, setPagination] = useState({
@@ -314,7 +313,7 @@ const SubmissionSection = function SubmissionSection(
         className="!fixed bg-action-disabledBackground bg-mui-box-background/70 !duration-300"
         active={loading || !loaded}
       />
-      {!isCountryUserType[user_type as UserType] && (
+      {!isCPCountryUserType && (
         <Portal domNode="portalSortBy">
           <SortBy options={orderOptions} onChange={handleOrderChange} />
         </Portal>
@@ -500,6 +499,7 @@ const StatusFilter = (props: any) => {
 }
 
 const CountrySelect = (props: { filters: any; setFilters: any }) => {
+  const { isCPCountryUserType } = useContext(PermissionsContext)
   const { filters, setFilters } = props
   const { country: user_country, user_type } = useStore(
     (state) => state.user.data,
@@ -514,7 +514,7 @@ const CountrySelect = (props: { filters: any; setFilters: any }) => {
         getOptionLabel={(option) => (option as Country).name}
         options={countries}
         popupIcon={<IoChevronDownCircle color="black" size={24} />}
-        value={isCountryUserType[user_type as UserType] ? country : null}
+        value={isCPCountryUserType ? country : null}
         widget="autocomplete"
         Input={{
           placeholder: 'Select country...',
@@ -531,7 +531,7 @@ const CountrySelect = (props: { filters: any; setFilters: any }) => {
           }
         }}
       />
-      {isCountryUserType[user_type as UserType] && (
+      {isCPCountryUserType && (
         <div className="absolute inset-0 top-0 z-10 -mt-1 bg-white bg-opacity-60"></div>
       )}
     </div>
@@ -544,6 +544,7 @@ const YearSelect = (props: {
   onChange: any
   range: [number, number]
 }) => {
+  const { isCPCountryUserType } = useContext(PermissionsContext)
   const { maxYear, minYear, onChange, range } = props
   const { user_type } = useStore((state) => state.user.data)
 
@@ -558,7 +559,7 @@ const YearSelect = (props: {
         widget="yearRange"
         onChange={onChange}
       />
-      {isCountryUserType[user_type as UserType] && (
+      {isCPCountryUserType && (
         <div className="absolute inset-0 top-0 z-10 -mt-1 bg-white bg-opacity-60"></div>
       )}
     </div>
@@ -759,6 +760,7 @@ const useGetResourcesApi = () => {
 }
 
 export default function CPListing() {
+  const { isCPCountryUserType } = useContext(PermissionsContext)
   const { setActiveTab: setCpActiveTab } = useStore(
     (state) => state.cp_current_tab,
   )
@@ -866,7 +868,7 @@ export default function CPListing() {
                     'bg-primary text-mlfs-hlYellow px-3 py-2 rounded-b-none',
                 }}
               />
-              {!isCountryUserType[user_type as UserType] && (
+              {!isCPCountryUserType && (
                 <Tab
                   id="submissions-log"
                   className="rounded-b-none px-3 py-2"
@@ -891,7 +893,7 @@ export default function CPListing() {
               user_type={user_type}
             />
           )}
-          {activeTab === 1 && !isCountryUserType[user_type as UserType] && (
+          {activeTab === 1 && !isCPCountryUserType && (
             <LogSection
               filters={filters}
               logApi={logApi}

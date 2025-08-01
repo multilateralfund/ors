@@ -10,6 +10,7 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
 
   const commonSlice = useStore((state) => state.common)
   const user_permissions = commonSlice.user_permissions.data || []
+  const user_permissions_as_set = new Set(user_permissions)
 
   const canViewCPReports = user_permissions.includes(
     'has_cp_report_view_access',
@@ -54,6 +55,20 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   const canEditApprovedProjects = user_permissions.includes(
     'has_project_v2_edit_approved_access',
   )
+
+  const canCommentCPCountry = user_permissions.includes(
+    'can_cp_country_type_comment',
+  )
+
+  const canCommentCPSecretariat = user_permissions.includes(
+    'can_cp_secretariat_type_comment',
+  )
+
+  const isCPCountryUserType = new Set([
+    'can_view_only_own_country',
+    'has_cp_report_view_access',
+  ]).isSubsetOf(user_permissions_as_set)
+
   const canEditProjects =
     canViewProjects &&
     (canUpdateProjects ||
@@ -80,6 +95,9 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
         canAssociateProjects,
         canEditProjects,
         canEditApprovedProjects,
+        canCommentCPCountry,
+        canCommentCPSecretariat,
+        isCPCountryUserType,
       }}
     >
       {children}

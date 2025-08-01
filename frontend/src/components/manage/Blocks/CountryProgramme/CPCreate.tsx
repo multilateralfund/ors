@@ -1,7 +1,6 @@
 'use client'
 
 import { Country } from '@ors/types/store'
-import { UserType, isCountryUserType } from '@ors/types/user_types'
 
 import React, {
   ChangeEvent,
@@ -174,13 +173,14 @@ const TableProps: CPCreateTableProps = {
 }
 
 const CPCreate: React.FC = () => {
+  const { isCPCountryUserType, canEditCPReports } =
+    useContext(PermissionsContext)
   const tabsEl = React.useRef<HTMLDivElement>(null)
   const [_, setLocation] = useLocation()
   const { enqueueSnackbar } = useSnackbar()
   const { report } = useStore((state) => state.cp_reports)
 
   const user = useStore((state) => state.user)
-  const { canEditCPReports } = useContext(PermissionsContext)
 
   const all_countries = useStore(
     (state) => state.common.countries_for_listing.data,
@@ -471,7 +471,7 @@ const CPCreate: React.FC = () => {
   useEffect(() => {
     const user_type = user.data.user_type
 
-    if (isCountryUserType[user_type as UserType]) {
+    if (isCPCountryUserType) {
       const country_id = user.data.country_id
       const user_country = user.data.country
 
