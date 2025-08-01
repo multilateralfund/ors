@@ -4,6 +4,8 @@ interface PermissionsContextProps {
   canViewCPReports: boolean
   canEditCPReports: boolean
   canSubmitFinalCPReport: boolean
+  canDeleteCPReports: boolean
+  canExportCPReports: boolean
   canViewBp: boolean
   canUpdateBp: boolean
   canViewProjects: boolean

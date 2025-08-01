@@ -1,11 +1,7 @@
 'use client'
 import type { SimpleSelectProps } from '@ors/components/ui/SimpleSelect/SimpleSelect'
 import { Country, FiltersType, StatusFilterTypes } from '@ors/types/store'
-import {
-  UserType,
-  isCountryUserType,
-  userCanExportData,
-} from '@ors/types/user_types'
+import { UserType, isCountryUserType } from '@ors/types/user_types'
 
 import React, { useContext, useEffect, useMemo, useState } from 'react'
 
@@ -571,7 +567,7 @@ const YearSelect = (props: {
 
 const DisplayAll = (props: any) => {
   const { displayAll, setDisplayAll, submissionApi } = props
-  const { user_type } = useStore((state) => state.user.data)
+  const { canExportCPReports } = useContext(PermissionsContext)
 
   const toggleDisplayAll = () => {
     setDisplayAll(!displayAll)
@@ -586,7 +582,7 @@ const DisplayAll = (props: any) => {
     // eslint-disable-next-line
   }, [displayAll])
 
-  if (!userCanExportData[user_type as UserType]) {
+  if (!canExportCPReports) {
     return null
   }
 
@@ -769,7 +765,8 @@ export default function CPListing() {
   setCpActiveTab(0)
   const settings = useStore((state) => state.common.settings.data)
   const { user_type } = useStore((state) => state.user.data)
-  const { canEditCPReports } = useContext(PermissionsContext)
+  const { canEditCPReports, canExportCPReports } =
+    useContext(PermissionsContext)
 
   const [activeTab, setActiveTab] = useState(0)
 
@@ -815,7 +812,7 @@ export default function CPListing() {
             New submission
           </Link>
         )}
-        {userCanExportData[user_type as UserType] && (
+        {canExportCPReports && (
           <Link
             className="px-4 py-2 text-lg uppercase"
             color="secondary"
@@ -826,7 +823,7 @@ export default function CPListing() {
             Export
           </Link>
         )}
-        {userCanExportData[user_type as UserType] && activeTab === 1 && (
+        {canExportCPReports && activeTab === 1 && (
           <Button
             className="px-4 py-2 text-lg uppercase"
             color="secondary"

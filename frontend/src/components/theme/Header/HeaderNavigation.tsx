@@ -1,4 +1,4 @@
-import { UserType, userCanExportData } from '@ors/types/user_types'
+import { UserType } from '@ors/types/user_types'
 
 import { useState } from 'react'
 import { useLocation } from 'wouter'
@@ -78,10 +78,10 @@ const useInternalNavSections = () => {
         user_permissions.includes('has_cp_report_edit_access')
           ? { label: 'Add new report', url: '/country-programme/create' }
           : null,
-        userCanExportData[user_type as UserType]
+        user_permissions.includes('has_cp_report_export_access')
           ? { label: 'Export data', url: '/country-programme/export-data' }
           : null,
-        userCanExportData[user_type as UserType]
+        user_permissions.includes('has_cp_report_export_access')
           ? { label: 'Settings', url: '/country-programme/settings' }
           : null,
       ].filter(Boolean),

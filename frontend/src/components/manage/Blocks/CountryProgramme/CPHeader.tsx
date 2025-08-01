@@ -1,9 +1,5 @@
 import type { IValidationContext } from '@ors/contexts/Validation/types'
-import {
-  UserType,
-  isCountryUserType,
-  userCanDeleteCurrentDraft,
-} from '@ors/types/user_types'
+import { UserType, isCountryUserType } from '@ors/types/user_types'
 
 import { useContext } from 'react'
 import React, { useMemo, useState } from 'react'
@@ -244,8 +240,7 @@ const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
     (state) => state.cp_reports,
   )
   const { enqueueSnackbar } = useSnackbar()
-  const { user_type } = useStore((state) => state.user.data)
-  const { canEditCPReports, canSubmitFinalCPReport } =
+  const { canEditCPReports, canSubmitFinalCPReport, canDeleteCPReports } =
     useContext(PermissionsContext)
 
   const [showConfirm, setShowConfirm] = useState(false)
@@ -255,8 +250,7 @@ const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
 
   const hasMultipleVersions =
     (report.versions?.data?.length || 0) > 1 && report.data?.version !== 1
-  const userCanSeeEditButton =
-    userCanDeleteCurrentDraft[user_type as UserType] && hasMultipleVersions
+  const userCanSeeEditButton = canDeleteCPReports && hasMultipleVersions
 
   const localStorage = useEditLocalStorage(report)
 
@@ -448,7 +442,7 @@ const EditHeaderActions = ({
   )
   const { enqueueSnackbar } = useSnackbar()
   const { user_type } = useStore((state) => state.user.data)
-  const { canEditCPReports, canSubmitFinalCPReport } =
+  const { canEditCPReports, canSubmitFinalCPReport, canDeleteCPReports } =
     useContext(PermissionsContext)
 
   const [showConfirm, setShowConfirm] = useState(false)
@@ -480,8 +474,7 @@ const EditHeaderActions = ({
 
   const hasMultipleVersions =
     (report.versions?.data?.length || 0) > 1 && report.data?.version !== 1
-  const userCanSeeUpdateButton =
-    userCanDeleteCurrentDraft[user_type as UserType] && hasMultipleVersions
+  const userCanSeeUpdateButton = canDeleteCPReports && hasMultipleVersions
 
   if (!canEditCPReports) return null
 

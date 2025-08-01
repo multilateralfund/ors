@@ -20,6 +20,12 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   const canSubmitFinalCPReport = user_permissions.includes(
     'can_submit_final_cp_version',
   )
+  const canDeleteCPReports = user_permissions.includes(
+    'has_cp_report_delete_access',
+  )
+  const canExportCPReports = user_permissions.includes(
+    'has_cp_report_export_access',
+  )
 
   const canViewBp = user_permissions.includes('has_business_plan_view_access')
   const canUpdateBp = user_permissions.includes('has_business_plan_edit_access')
@@ -61,6 +67,8 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
         canViewCPReports,
         canEditCPReports,
         canSubmitFinalCPReport,
+        canDeleteCPReports,
+        canExportCPReports,
         canViewBp,
         canUpdateBp,
         canViewProjects,
