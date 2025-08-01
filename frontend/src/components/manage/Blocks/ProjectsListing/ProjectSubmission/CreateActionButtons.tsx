@@ -6,6 +6,7 @@ import { SubmitButton } from '../HelperComponents'
 import { formatSubmitData } from '../utils'
 import { SubmitActionButtons } from '../interfaces'
 import { api, uploadFiles } from '@ors/helpers'
+import { useStore } from '@ors/store'
 
 import { enqueueSnackbar } from 'notistack'
 import { useLocation, useParams } from 'wouter'
@@ -27,6 +28,7 @@ const CreateActionButtons = ({
   const { project_id } = useParams<Record<string, string>>()
 
   const { canUpdateProjects } = useContext(PermissionsContext)
+  const { setWarnings } = useStore((state) => state.projectWarnings)
 
   const { newFiles = [] } = files || {}
 
@@ -55,6 +57,7 @@ const CreateActionButtons = ({
         method: 'POST',
       })
       setProjectId(result.id)
+      setWarnings({ id: result.id, warnings: result.warnings })
 
       if (newFiles.length > 0) {
         await uploadFiles(

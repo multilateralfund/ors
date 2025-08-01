@@ -186,6 +186,16 @@ export interface ProjectsFieldsSlice {
   fetchProjectFields: () => Promise<void>
 }
 
+export type ProjectWarningsType = {
+  id: number | null
+  warnings: string[]
+}
+
+export interface ProjectWarningsTypeSlice {
+  warnings: ProjectWarningsType
+  setWarnings: (warnings: ProjectWarningsType) => void
+}
+
 export interface BusinessPlanSlice {
   sectors: SliceData
   subsectors: SliceData
@@ -263,6 +273,7 @@ export type StoreState = {
   internalError: any
   projects: ProjectsSlice
   projectFields: ProjectsFieldsSlice
+  projectWarnings: ProjectWarningsTypeSlice
   settings: SettingsSlice
   theme: ThemeSlice
   user: UserSlice

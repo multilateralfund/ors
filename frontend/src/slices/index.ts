@@ -9,6 +9,7 @@ import { createCommonSlice } from '@ors/slices/createCommonSlice'
 import { createFiltersSlice } from '@ors/slices/createCpFiltersSlice'
 import { createProjectSlice } from '@ors/slices/createProjectSlice'
 import { createProjectFieldsSlice } from './createProjectFieldsSlice'
+import { createProjectWarningsSlice } from './createProjectWarningsSlice'
 import { createSettingsSlice } from '@ors/slices/createSettingsSlice'
 import { createThemeSlice } from '@ors/slices/createThemeSlice'
 import { createUserSlice } from '@ors/slices/createUserSlice'
@@ -40,6 +41,7 @@ export default function createSlices(props: CreateSliceProps) {
     internalError: props.initialState.internalError || null,
     projects: { ...createProjectSlice(props) },
     projectFields: { ...createProjectFieldsSlice(props) },
+    projectWarnings: { ...createProjectWarningsSlice(props) },
     settings: { ...createSettingsSlice(props) },
     theme: { ...createThemeSlice(props) },
     user: { ...createUserSlice(props) },
