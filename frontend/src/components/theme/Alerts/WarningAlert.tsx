@@ -1,15 +1,13 @@
-import { ReactNode } from 'react'
+import { IoMdCheckmarkCircleOutline } from 'react-icons/io'
+import { Alert, Typography } from '@mui/material'
 
-import { IoInformationCircleOutline } from 'react-icons/io5'
-import { Alert } from '@mui/material'
-
-const WarningAlert = ({ content }: { content: ReactNode }) => (
+const WarningAlert = ({ content }: { content: string }) => (
   <Alert
-    className="mb-2 w-fit bg-mlfs-bannerColor px-2 py-0"
-    icon={<IoInformationCircleOutline size={20} />}
+    className="flex w-fit items-center border-0 bg-mlfs-bannerColor text-primary"
     severity="info"
+    icon={<IoMdCheckmarkCircleOutline color="#002A3C" />}
   >
-    {content}
+    <Typography className="text-lg leading-none">{content}</Typography>
   </Alert>
 )
 

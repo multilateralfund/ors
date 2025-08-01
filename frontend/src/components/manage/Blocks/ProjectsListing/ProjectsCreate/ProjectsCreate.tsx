@@ -445,7 +445,7 @@ const ProjectsCreate = ({
                   project?.submission_status === 'Draft' &&
                   warnings.id === parseInt(project_id) &&
                   warnings.warnings.length > 0 && (
-                    <WarningAlert content={<>{warnings.warnings[0]}</>} />
+                    <WarningAlert content={warnings.warnings[0]} />
                   )}
                 {errors && errors.length > 0 && (
                   <Alert
