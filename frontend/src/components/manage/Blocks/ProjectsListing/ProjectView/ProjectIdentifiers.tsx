@@ -105,7 +105,7 @@ const ProjectIdentifiers = ({ project }: { project: ProjectTypeApi }) => {
           )}
         </>
       )}
-      {map(
+      {/* {map(
         relatedProjects,
         ({ data, title }) =>
           data &&
@@ -121,7 +121,7 @@ const ProjectIdentifiers = ({ project }: { project: ProjectTypeApi }) => {
               />
             </>
           ),
-      )}
+      )} */}
     </>
   )
 }

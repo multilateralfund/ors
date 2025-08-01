@@ -571,7 +571,8 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
             instances = BPActivity.objects.filter(
                 initial_id__in=[
                     activity_id for activity_id, _ in initial_update_activities
-                ], business_plan=business_plan
+                ],
+                business_plan=business_plan,
             )
             instances_ids = [instance.initial_id for instance in instances]
             for identifier, activity_data in initial_update_activities:
@@ -580,7 +581,7 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
         else:
             instances = BPActivity.objects.filter(
                 id__in=[activity_id for activity_id, _ in initial_update_activities],
-                business_plan=business_plan
+                business_plan=business_plan,
             )
             instances_ids = [instance.id for instance in instances]
             for identifier, activity_data in initial_update_activities:
