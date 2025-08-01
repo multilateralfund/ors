@@ -278,7 +278,7 @@ export default function App() {
             </ProjectsDataProvider>
           </PermissionsProvider>
         </Route>
-        <Route path="/projects-listing/associate/:project_id">
+        <Route path="/projects-listing/:project_id/associate">
           <PermissionsProvider>
             <ProjectsDataProvider>
               <ProjectsAssociationPage />

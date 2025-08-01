@@ -52,7 +52,7 @@ export default function PListingWrapper() {
       )}
       {canAssociateProjects && (
         <CustomLink
-          href={projectId ? `/projects-listing/associate/${projectId}` : null}
+          href={projectId ? `/projects-listing/${projectId}/associate` : null}
           className={cx('flex cursor-pointer gap-1 px-2 no-underline', {
             '!cursor-default text-gray-400 opacity-60': !projectId,
           })}

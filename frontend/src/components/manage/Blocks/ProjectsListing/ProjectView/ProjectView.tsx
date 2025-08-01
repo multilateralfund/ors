@@ -127,6 +127,67 @@ const ProjectView = ({
     disabled: 'text-gray-200',
   }
 
+  const tabs = [
+    {
+      id: 'project-identifiers',
+      ariaControls: 'project-identifiers',
+      label: 'Identifiers',
+      component: <ProjectIdentifiers {...{ project, specificFields }} />,
+    },
+    {
+      id: 'project-cross-cutting',
+      ariaControls: 'project-cross-cutting',
+      label: 'Cross-Cutting',
+      disabled: !hasFields(allFields, viewableFields, 'Cross-Cutting'),
+      classes: classes,
+      component: <ProjectCrossCutting {...{ project }} />,
+    },
+    {
+      id: 'project-specific-info',
+      ariaControls: 'project-specific-info',
+      label: 'Specific Information',
+      disabled:
+        (!substanceDetailsFields.length && !overviewFields.length) ||
+        (!hasFields(allFields, viewableFields, 'Header') &&
+          !hasFields(allFields, viewableFields, 'Substance Details')),
+      classes: classes,
+      component: <ProjectSpecificInfo {...{ project, specificFields }} />,
+    },
+    {
+      id: 'project-impact',
+      ariaControls: 'project-impact',
+      label: 'Impact',
+      disabled:
+        !impactFields.length || !hasFields(allFields, viewableFields, 'Impact'),
+      classes: classes,
+      component: <ProjectImpact {...{ project, specificFields }} />,
+    },
+    {
+      id: 'project-documentation',
+      ariaControls: 'project-documentation',
+      label: 'Documentation',
+      component: <ProjectDocumentation {...{ projectFiles }} mode="view" />,
+    },
+    ...(project.version === 3
+      ? [
+          {
+            id: 'project-approval',
+            ariacontrols: 'project-approval',
+            label: 'Approval',
+            disabled: !hasFields(allFields, viewableFields, 'Approval'),
+            classes: classes,
+            component: <ProjectApproval {...{ project }} />,
+          },
+        ]
+      : []),
+    {
+      id: 'project-history-section',
+      ariaControls: 'project-history-section',
+      label: 'History',
+      component: <ProjectHistory mode="view" project={project} />,
+    },
+  ]
+
   return (
     <>
       <div className="flex items-center justify-between">
@@ -145,58 +206,15 @@ const ProjectView = ({
             setActiveTab(newValue)
           }}
         >
-          <Tab
-            id="project-identifiers"
-            aria-controls="project-identifiers"
-            label="Identifiers"
-          />
-          <Tab
-            id="project-cross-cutting"
-            aria-controls="project-cross-cutting"
-            label="Cross-Cutting"
-            disabled={!hasFields(allFields, viewableFields, 'Cross-Cutting')}
-            classes={classes}
-          />
-          <Tab
-            id="project-specific-info"
-            aria-controls="project-specific-info"
-            label="Specific Information"
-            disabled={
-              (!substanceDetailsFields.length && !overviewFields.length) ||
-              (!hasFields(allFields, viewableFields, 'Header') &&
-                !hasFields(allFields, viewableFields, 'Substance Details'))
-            }
-            classes={classes}
-          />
-          <Tab
-            id="project-impact"
-            aria-controls="project-impact"
-            label="Impact"
-            disabled={
-              !impactFields.length ||
-              !hasFields(allFields, viewableFields, 'Impact')
-            }
-            classes={classes}
-          />
-          <Tab
-            id="project-documentation"
-            aria-controls="project-documentation"
-            label="Documentation"
-          />
-          <Tab
-            id="project-history-section"
-            aria-controls="project-history-section"
-            label="History"
-          />
-          {project.version > 2 && (
+          {tabs.map(({ id, ariaControls, label, disabled, classes }) => (
             <Tab
-              id="project-approval"
-              aria-controls="project-approval"
-              label="Approval"
-              disabled={!hasFields(allFields, viewableFields, 'Approval')}
+              id={id}
+              aria-controls={ariaControls}
+              label={label}
+              disabled={disabled}
               classes={classes}
             />
-          )}
+          ))}
         </Tabs>
         <div>
           <div className="flex items-center justify-between gap-x-2">
@@ -205,19 +223,9 @@ const ProjectView = ({
         </div>
       </div>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
-        {activeTab === 0 && (
-          <ProjectIdentifiers {...{ project, specificFields }} />
-        )}
-        {activeTab === 1 && <ProjectCrossCutting {...{ project }} />}
-        {activeTab === 2 && (
-          <ProjectSpecificInfo {...{ project, specificFields }} />
-        )}
-        {activeTab === 3 && <ProjectImpact {...{ project, specificFields }} />}
-        {activeTab === 4 && (
-          <ProjectDocumentation {...{ projectFiles }} mode="view" />
-        )}
-        {activeTab === 5 && <ProjectHistory mode={'view'} project={project} />}
-        {activeTab === 6 && <ProjectApproval {...{ project }} />}
+        {tabs
+          .filter((_, index) => index === activeTab)
+          .map(({ component }) => component)}
       </div>
     </>
   )
