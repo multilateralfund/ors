@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import Loading from '@ors/components/theme/Loading/Loading'
 import ProjectsSubmit from './ProjectsSubmit'
-import { useGetProjectsForSubmission } from '../hooks/useGetProjectsForSubmission'
+import { useGetAssociatedProjects } from '../hooks/useGetAssociatedProjects'
 import { RelatedProjectsType } from '../interfaces'
 
 import { Redirect, useParams } from 'wouter'
@@ -19,18 +19,19 @@ const ProjectsSubmitWrapper = () => {
   >([])
   const [loaded, setLoaded] = useState<boolean>(false)
 
-  const debouncedGetProjectsForSubmission = debounce(() => {
-    useGetProjectsForSubmission(
+  const debouncedGetAssociatedProjects = debounce(() => {
+    useGetAssociatedProjects(
       parseInt(project_id),
       setAssociatedProjects,
       setLoaded,
+      'only_components',
       true,
       true,
     )
   }, 0)
 
   useEffect(() => {
-    debouncedGetProjectsForSubmission()
+    debouncedGetAssociatedProjects()
 
     if (!isFirstRender.current) {
       isFirstRender.current = true

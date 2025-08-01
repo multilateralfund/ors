@@ -13,7 +13,7 @@ import {
   RelatedProjects,
   SubmitButton,
 } from '../HelperComponents'
-import { useGetProjectsForSubmission } from '../hooks/useGetProjectsForSubmission'
+import { useGetAssociatedProjects } from '../hooks/useGetAssociatedProjects'
 import { RelatedProjectsType } from '../interfaces'
 import { pluralizeWord } from '../utils'
 import { api } from '@ors/helpers'
@@ -58,10 +58,11 @@ const ProjectsSubmit = ({
   const isSubmitSuccessful = hasSubmitErrors === false
 
   const getErrors = () => {
-    useGetProjectsForSubmission(
+    useGetAssociatedProjects(
       parsedProjectId,
       setAssociatedProjects,
       setLoaded,
+      'only_components',
       true,
       true,
     )

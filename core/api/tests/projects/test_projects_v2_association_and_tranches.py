@@ -386,7 +386,8 @@ class TestProjectListAssocitatedProjects:
         project3.save()
 
         response = self.client.get(
-            reverse("project-v2-list-associated-projects", args=(project2.id,))
+            reverse("project-v2-list-associated-projects", args=(project2.id,)),
+            {"filter_by_project_status": "true"},
         )
         assert response.status_code == 200, response.data
         assert len(response.data) == 1
@@ -394,7 +395,7 @@ class TestProjectListAssocitatedProjects:
 
         response = self.client.get(
             reverse("project-v2-list-associated-projects", args=(project2.id,)),
-            {"include_project": "true"},
+            {"include_project": "true", "filter_by_project_status": "true"},
         )
 
         assert response.status_code == 200, response.data
@@ -404,7 +405,11 @@ class TestProjectListAssocitatedProjects:
 
         response = self.client.get(
             reverse("project-v2-list-associated-projects", args=(project2.id,)),
-            {"include_project": "true", "include_validation": "true"},
+            {
+                "include_project": "true",
+                "include_validation": "true",
+                "filter_by_project_status": "true",
+            },
         )
 
         # test validation with expecting previous_tranche for project
@@ -443,7 +448,11 @@ class TestProjectListAssocitatedProjects:
 
         response = self.client.get(
             reverse("project-v2-list-associated-projects", args=(project2.id,)),
-            {"include_project": "true", "include_validation": "true"},
+            {
+                "include_project": "true",
+                "include_validation": "true",
+                "filter_by_project_status": "true",
+            },
         )
 
         # test validation with expecting previous_tranche for project

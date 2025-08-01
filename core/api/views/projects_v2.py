@@ -883,40 +883,68 @@ class ProjectV2ViewSet(
                 type=openapi.TYPE_BOOLEAN,
             ),
             openapi.Parameter(
-                "only_components",
+                "included_entries",
                 openapi.IN_QUERY,
-                description="If set to true, the response will include only components of the meta project.",
+                description=(
+                    "Filter associated projects by 'component' status.\n"
+                    "* 'all' (default): all associated projects; components and non-components;\n"
+                    "* 'only_components': only component projects;\n"
+                    "* 'exclude_components': exclude component projects.\n"
+                ),
+                type=openapi.TYPE_STRING,
+                enum=["all", "only_components", "exclude_components"],
+            ),
+            openapi.Parameter(
+                "filter_by_project_status",
+                openapi.IN_QUERY,
+                description="""
+                    If set to true, the response will include only projects with
+                    the same submission status as the current project.
+                """,
                 type=openapi.TYPE_BOOLEAN,
             ),
         ],
         operation_description="""
-            List all projects associated with the meta project
-            and the same submission status as the current project.
-            This is used to get all projects associated with the meta project.
+            List all projects associated with the meta project, with the
+            option to retrieve components, non-components or all.
+            This endpoint can be used to get all projects associated with the meta project.
         """,
     )
     @action(methods=["GET"], detail=True)
     def list_associated_projects(self, request, *args, **kwargs):
         """
-        List all projects associated with the meta project
-        and the same submission status as the current project.
-        This is used to get all projects associated with the meta project.
+        List all projects associated with the meta project, with the
+        option to retrieve components, non-components or all.
+        This endpoint can be used to get all projects associated with the meta project.
         """
         project = self.get_object()
         if not project.meta_project:
             return Project.objects.none()
         associated_projects = Project.objects.filter(
             meta_project=project.meta_project,
-            submission_status=project.submission_status,
         )
         if (
-            request.query_params.get("only_components", "false").lower() == "true"
-            and project.component
+            request.query_params.get("filter_by_project_status", "false").lower()
+            == "true"
         ):
-            # If only_components is true, include only components of the project
             associated_projects = associated_projects.filter(
-                component=project.component,
+                submission_status=project.submission_status
             )
+        included_entries = request.query_params.get("included_entries", "all").lower()
+        if included_entries == "only_components":
+            if not project.component:
+                # If the project is not a component, return an empty queryset
+                associated_projects = Project.objects.filter(id=project.id)
+            else:
+                associated_projects = associated_projects.filter(
+                    component=project.component
+                )
+        elif included_entries == "exclude_components":
+            if project.component:
+                associated_projects = associated_projects.exclude(
+                    component=project.component
+                )
+
         if not request.query_params.get("include_project", "false").lower() == "true":
             associated_projects = associated_projects.exclude(
                 id=project.id,
