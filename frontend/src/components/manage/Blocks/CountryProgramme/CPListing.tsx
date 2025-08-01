@@ -5,10 +5,9 @@ import {
   UserType,
   isCountryUserType,
   userCanExportData,
-  userCanSubmitReport,
 } from '@ors/types/user_types'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react'
 
 import {
   Box,
@@ -39,6 +38,7 @@ import Portal from '../../Utils/Portal'
 
 import { IoChevronDownCircle, IoClose, IoEllipse } from 'react-icons/io5'
 import { DownloadLink } from '@ors/components/ui/Button/Button'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 
 interface SectionProps {
   filters: any
@@ -179,7 +179,7 @@ const CountryYearFilterPills = (props: any) => {
 
 const SubmissionItem = (props: any) => {
   const { filters, group, reports, user_type } = props
-  const canEditReport = userCanSubmitReport[user_type as UserType]
+  const { canEditCPReports } = useContext(PermissionsContext)
 
   const countries = useStore((state) => state.common.countries_for_listing.data)
   const countriesById = new Map<number, any>(
@@ -224,7 +224,7 @@ const SubmissionItem = (props: any) => {
           let reportURL = `/country-programme/${country?.iso3}/${report.year}`
           if (report.is_archive) {
             reportURL = `${reportURL}/archive/${report.version}`
-          } else if (report.status === 'draft' && canEditReport) {
+          } else if (report.status === 'draft' && canEditCPReports) {
             reportURL = `${reportURL}/edit`
           }
 
@@ -769,6 +769,7 @@ export default function CPListing() {
   setCpActiveTab(0)
   const settings = useStore((state) => state.common.settings.data)
   const { user_type } = useStore((state) => state.user.data)
+  const { canEditCPReports } = useContext(PermissionsContext)
 
   const [activeTab, setActiveTab] = useState(0)
 
@@ -803,7 +804,7 @@ export default function CPListing() {
   return (
     <>
       <div className="container mb-6 flex items-center justify-end gap-x-6 lg:mb-4 lg:gap-x-4 print:hidden">
-        {userCanSubmitReport[user_type as UserType] && (
+        {canEditCPReports && (
           <Link
             className="px-4 py-2 text-lg uppercase"
             color="secondary"

@@ -11,6 +11,16 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   const commonSlice = useStore((state) => state.common)
   const user_permissions = commonSlice.user_permissions.data || []
 
+  const canViewCPReports = user_permissions.includes(
+    'has_cp_report_view_access',
+  )
+  const canEditCPReports = user_permissions.includes(
+    'has_cp_report_edit_access',
+  )
+  const canSubmitFinalCPReport = user_permissions.includes(
+    'can_submit_final_cp_version',
+  )
+
   const canViewBp = user_permissions.includes('has_business_plan_view_access')
   const canUpdateBp = user_permissions.includes('has_business_plan_edit_access')
 
@@ -48,6 +58,9 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   return (
     <PermissionsContext.Provider
       value={{
+        canViewCPReports,
+        canEditCPReports,
+        canSubmitFinalCPReport,
         canViewBp,
         canUpdateBp,
         canViewProjects,

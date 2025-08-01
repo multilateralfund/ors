@@ -1,9 +1,4 @@
-import {
-  UserType,
-  userCanExportData,
-  userCanSubmitReport,
-  userCanViewReports,
-} from '@ors/types/user_types'
+import { UserType, userCanExportData } from '@ors/types/user_types'
 
 import { useState } from 'react'
 import { useLocation } from 'wouter'
@@ -77,10 +72,10 @@ const useInternalNavSections = () => {
     {
       label: 'Online CP Reporting',
       menu: [
-        userCanViewReports[user_type as UserType]
+        user_permissions.includes('has_cp_report_view_access')
           ? { label: 'View reports', url: '/country-programme/reports' }
           : null,
-        userCanSubmitReport[user_type as UserType]
+        user_permissions.includes('has_cp_report_edit_access')
           ? { label: 'Add new report', url: '/country-programme/create' }
           : null,
         userCanExportData[user_type as UserType]

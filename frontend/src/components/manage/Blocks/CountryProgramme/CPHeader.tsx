@@ -3,8 +3,6 @@ import {
   UserType,
   isCountryUserType,
   userCanDeleteCurrentDraft,
-  userCanSubmitFinalReport,
-  userCanSubmitReport,
 } from '@ors/types/user_types'
 
 import { useContext } from 'react'
@@ -32,6 +30,7 @@ import { useEditLocalStorage } from './useLocalStorage'
 
 import { IoChevronDown } from 'react-icons/io5'
 import { MdKeyboardArrowDown } from 'react-icons/md'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 
 const DropDownButtonProps: ButtonProps = {
   endIcon: <MdKeyboardArrowDown />,
@@ -246,6 +245,8 @@ const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
   )
   const { enqueueSnackbar } = useSnackbar()
   const { user_type } = useStore((state) => state.user.data)
+  const { canEditCPReports, canSubmitFinalCPReport } =
+    useContext(PermissionsContext)
 
   const [showConfirm, setShowConfirm] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -348,7 +349,7 @@ const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
       {!!report.data && (
         <div className="container flex w-full justify-between gap-x-4 px-0">
           <div className="flex justify-between gap-x-4">
-            {userCanSubmitReport[user_type as UserType] && (
+            {canEditCPReports && (
               <>
                 {isDraft && userCanSeeEditButton && (
                   <Dropdown
@@ -382,7 +383,7 @@ const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
                 {isDraft && (
                   <Button
                     color="primary"
-                    disabled={!userCanSubmitFinalReport[user_type as UserType]}
+                    disabled={!canSubmitFinalCPReport}
                     size="small"
                     variant="contained"
                     onClick={handleShowConfirmation}
@@ -447,6 +448,8 @@ const EditHeaderActions = ({
   )
   const { enqueueSnackbar } = useSnackbar()
   const { user_type } = useStore((state) => state.user.data)
+  const { canEditCPReports, canSubmitFinalCPReport } =
+    useContext(PermissionsContext)
 
   const [showConfirm, setShowConfirm] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -480,7 +483,7 @@ const EditHeaderActions = ({
   const userCanSeeUpdateButton =
     userCanDeleteCurrentDraft[user_type as UserType] && hasMultipleVersions
 
-  if (!userCanSubmitReport[user_type as UserType]) return null
+  if (!canEditCPReports) return null
 
   function getReportSubmitter(status?: 'draft' | 'final') {
     return async () => {
@@ -567,7 +570,7 @@ const EditHeaderActions = ({
   }
 
   function getSubmitFinalTooltipTitle() {
-    if (!userCanSubmitFinalReport[user_type as UserType] && isDraft) {
+    if (!canSubmitFinalCPReport && isDraft) {
       return isCountryUserType[user_type as UserType]
         ? 'Only Country Submitter users can submit Final versions'
         : 'Only Secretariat users can submit Final versions'
@@ -631,9 +634,7 @@ const EditHeaderActions = ({
                 color="secondary"
                 size="large"
                 variant="contained"
-                disabled={
-                  !userCanSubmitFinalReport[user_type as UserType] && isDraft
-                }
+                disabled={!canSubmitFinalCPReport && isDraft}
                 onClick={handleShowConfirmation}
               >
                 {isDraft ? 'Submit final version' : 'Submit new version'}

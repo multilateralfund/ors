@@ -154,10 +154,14 @@ export default function App() {
           </BPDataProvider>
         </Route>
         <Route path="/country-programme/reports">
-          <CountryProgrammePage />
+          <PermissionsProvider>
+            <CountryProgrammePage />
+          </PermissionsProvider>
         </Route>
         <Route path="/country-programme/create">
-          <CPCreatePage />
+          <PermissionsProvider>
+            <CPCreatePage />
+          </PermissionsProvider>
         </Route>
         <Route path="/country-programme/:iso3/:year/archive/:version_nr">
           <CPArchivePage />
@@ -166,13 +170,17 @@ export default function App() {
           <CPDiffPage />
         </Route>
         <Route path="/country-programme/:iso3/:year/edit">
-          <CPEditPage />
+          <PermissionsProvider>
+            <CPEditPage />
+          </PermissionsProvider>
         </Route>
         <Route path="/country-programme/:iso3/:year/print">
           <CPPrintPage />
         </Route>
         <Route path="/country-programme/:iso3/:year">
-          <CPViewPage />
+          <PermissionsProvider>
+            <CPViewPage />
+          </PermissionsProvider>
         </Route>
         <Route path="/country-programme/export-data">
           <CPExportPage />

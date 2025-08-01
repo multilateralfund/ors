@@ -1,24 +1,21 @@
 'use client'
 
 import { Country } from '@ors/types/store'
-import {
-  UserType,
-  isCountryUserType,
-  userCanSubmitReport,
-} from '@ors/types/user_types'
+import { UserType, isCountryUserType } from '@ors/types/user_types'
 
 import React, {
   ChangeEvent,
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useState,
 } from 'react'
 
-import { Alert, Button, Tabs, Tooltip, Typography } from '@mui/material'
+import { Alert, Button, Tabs, Typography } from '@mui/material'
 import cx from 'classnames'
 import { produce } from 'immer'
-import { filter, get, includes } from 'lodash'
+import { filter, includes } from 'lodash'
 import { useLocation } from 'wouter'
 import { useSnackbar } from 'notistack'
 
@@ -36,6 +33,7 @@ import api from '@ors/helpers/Api/_api'
 import { getResults } from '@ors/helpers/Api/Api'
 import { defaultSliceData } from '@ors/helpers/Store/Store'
 import useApi from '@ors/hooks/useApi'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import useMakeClassInstance from '@ors/hooks/useMakeClassInstance'
 import useVisibilityChange from '@ors/hooks/useVisibilityChange'
 import SectionA from '@ors/models/SectionA'
@@ -65,7 +63,7 @@ import {
 } from './typesCPCreate'
 import { useCreateLocalStorage } from './useLocalStorage'
 
-import { IoClose, IoExpand, IoLink } from 'react-icons/io5'
+import { IoClose, IoExpand } from 'react-icons/io5'
 
 const TableProps: CPCreateTableProps = {
   Toolbar: ({
@@ -182,8 +180,7 @@ const CPCreate: React.FC = () => {
   const { report } = useStore((state) => state.cp_reports)
 
   const user = useStore((state) => state.user)
-  const { user_type } = user.data
-  const canCreateReport = userCanSubmitReport[user_type as UserType]
+  const { canEditCPReports } = useContext(PermissionsContext)
 
   const all_countries = useStore(
     (state) => state.common.countries_for_listing.data,
@@ -582,7 +579,7 @@ const CPCreate: React.FC = () => {
     handleSetForm(storedData)
   }
 
-  if (!canCreateReport) {
+  if (!canEditCPReports) {
     return <NotFoundPage />
   }
 
