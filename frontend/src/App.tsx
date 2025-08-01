@@ -1,5 +1,7 @@
 import { Switch, Route, Redirect } from 'wouter'
 
+import { useContext } from 'react'
+
 import LoginLayout from '@ors/app/login/layout'
 
 import LoginPage from '@ors/app/login/page'
@@ -57,6 +59,7 @@ import ProjectsListingArchiveProjectPage from '@ors/app/projects_listing/[projec
 
 import ProjectsDataProvider from './contexts/Projects/ProjectsDataProvider'
 import BPDataProvider from './contexts/BusinessPlans/BPDataProvider'
+import PermissionsContext from './contexts/PermissionsContext'
 import NotFoundPage from '@ors/app/not-found'
 
 import RootLayout from './app/layout'
@@ -64,7 +67,7 @@ import { useStore } from '@ors/store.tsx'
 
 function RedirectToSection() {
   const user = useStore((state) => state.user)
-  const isTreasurer = user && user.data.user_type === 'treasurer'
+  const { canEditReplenishment } = useContext(PermissionsContext)
 
   const commonSlice = useStore((state) => state.common)
   const user_permissions = commonSlice.user_permissions.data || []
@@ -83,7 +86,7 @@ function RedirectToSection() {
       'has_business_plan_view_access',
     ].some((permission) => user_permissions.includes(permission))
 
-  if (isTreasurer) {
+  if (canEditReplenishment) {
     return <Redirect to={'/replenishment/dashboard/cummulative'} />
   }
   if (isOnlyBpUser) {

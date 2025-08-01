@@ -69,6 +69,13 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
     'has_cp_report_view_access',
   ]).isSubsetOf(user_permissions_as_set)
 
+  const canViewReplenishment = user_permissions.includes(
+    'has_replenishment_view_access',
+  )
+  const canEditReplenishment = user_permissions.includes(
+    'has_replenishment_edit_access',
+  )
+
   const canEditProjects =
     canViewProjects &&
     (canUpdateProjects ||
@@ -86,6 +93,8 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
         canExportCPReports,
         canViewBp,
         canUpdateBp,
+        canViewReplenishment,
+        canEditReplenishment,
         canViewProjects,
         canViewMetainfoProjects,
         canViewSectorsSubsectors,

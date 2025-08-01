@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useContext, useState } from 'react'
-import { useLocation } from "wouter";
+import { useLocation } from 'wouter'
 import { enqueueSnackbar } from 'notistack'
 
 import ConfirmDialog from '@ors/components/manage/Blocks/Replenishment/ConfirmDialog'
@@ -16,8 +16,10 @@ import soAContext from '@ors/contexts/Replenishment/SoAContext'
 import { api } from '@ors/helpers'
 
 import { ReplenishmentHeadingProps } from './types'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 
 export default function ReplenishmentHeading(props: ReplenishmentHeadingProps) {
+  const { canViewReplenishment } = useContext(PermissionsContext)
   const { extraPeriodOptions, showPeriodSelector } = props
   const [showAddNewSOA, setShowAddNewSOA] = useState(false)
   const [pathname, setLocation] = useLocation()
@@ -62,9 +64,7 @@ export default function ReplenishmentHeading(props: ReplenishmentHeadingProps) {
 
   const isLastPeriod = period === replenishmentContext?.periodOptions[0]?.value
   const showAddPeriod =
-    soaContext?.version?.is_final &&
-    isLastPeriod &&
-    (replenishmentContext?.isTreasurer || replenishmentContext?.isSecretariat)
+    soaContext?.version?.is_final && isLastPeriod && canViewReplenishment
 
   return (
     <HeaderTitle>

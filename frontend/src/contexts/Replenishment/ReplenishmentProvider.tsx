@@ -32,12 +32,11 @@ function filterCountries(countries: Country[]) {
 }
 
 function ReplenishmentProvider(props: { children: React.ReactNode }) {
-  const { isCPCountryUserType } = useContext(PermissionsContext)
+  const { isCPCountryUserType, canEditReplenishment } =
+    useContext(PermissionsContext)
 
   const { children } = props
   const user = useStore((state) => state.user)
-  const isTreasurer = user.data.user_type === 'treasurer'
-  const isSecretariat = user.data.user_type === 'secretariat'
 
   const [periods, setPeriods] = useState<ApiReplenishment[]>([])
   const [asOfDate, setAsOfDate] = useState<ApiAsOfDate>({
@@ -128,8 +127,7 @@ function ReplenishmentProvider(props: { children: React.ReactNode }) {
         countries,
         countriesSOA,
         isCountryUser: isCPCountryUserType,
-        isSecretariat,
-        isTreasurer,
+        isTreasurer: canEditReplenishment,
         periodOptions,
         periods,
         refetchData,

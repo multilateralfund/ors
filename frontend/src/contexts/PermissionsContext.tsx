@@ -8,6 +8,8 @@ interface PermissionsContextProps {
   canExportCPReports: boolean
   canViewBp: boolean
   canUpdateBp: boolean
+  canViewReplenishment: boolean
+  canEditReplenishment: boolean
   canViewProjects: boolean
   canViewMetainfoProjects: boolean
   canViewSectorsSubsectors: boolean
