@@ -381,7 +381,7 @@ const ProjectIdentifiersFields = ({
           )}
         </div>
       </div>
-      {map(
+      {/* {map(
         relatedProjects,
         ({ data, title }, index) =>
           data &&
@@ -411,7 +411,7 @@ const ProjectIdentifiersFields = ({
               )}
             </div>
           ),
-      )}
+      )} */}
     </>
   )
 }
