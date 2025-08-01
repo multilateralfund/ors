@@ -10,6 +10,23 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
 
   const commonSlice = useStore((state) => state.common)
   const user_permissions = commonSlice.user_permissions.data || []
+  const user_permissions_as_set = new Set(user_permissions)
+
+  const canViewCPReports = user_permissions.includes(
+    'has_cp_report_view_access',
+  )
+  const canEditCPReports = user_permissions.includes(
+    'has_cp_report_edit_access',
+  )
+  const canSubmitFinalCPReport = user_permissions.includes(
+    'can_submit_final_cp_version',
+  )
+  const canDeleteCPReports = user_permissions.includes(
+    'has_cp_report_delete_access',
+  )
+  const canExportCPReports = user_permissions.includes(
+    'has_cp_report_export_access',
+  )
 
   const canViewBp = user_permissions.includes('has_business_plan_view_access')
   const canUpdateBp = user_permissions.includes('has_business_plan_edit_access')
@@ -38,6 +55,20 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   const canEditApprovedProjects = user_permissions.includes(
     'has_project_v2_edit_approved_access',
   )
+
+  const canCommentCPCountry = user_permissions.includes(
+    'can_cp_country_type_comment',
+  )
+
+  const canCommentCPSecretariat = user_permissions.includes(
+    'can_cp_secretariat_type_comment',
+  )
+
+  const isCPCountryUserType = new Set([
+    'can_view_only_own_country',
+    'has_cp_report_view_access',
+  ]).isSubsetOf(user_permissions_as_set)
+
   const canEditProjects =
     canViewProjects &&
     (canUpdateProjects ||
@@ -48,6 +79,11 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   return (
     <PermissionsContext.Provider
       value={{
+        canViewCPReports,
+        canEditCPReports,
+        canSubmitFinalCPReport,
+        canDeleteCPReports,
+        canExportCPReports,
         canViewBp,
         canUpdateBp,
         canViewProjects,
@@ -59,6 +95,9 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
         canAssociateProjects,
         canEditProjects,
         canEditApprovedProjects,
+        canCommentCPCountry,
+        canCommentCPSecretariat,
+        isCPCountryUserType,
       }}
     >
       {children}

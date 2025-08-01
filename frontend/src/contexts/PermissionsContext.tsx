@@ -1,6 +1,11 @@
 import { createContext } from 'react'
 
 interface PermissionsContextProps {
+  canViewCPReports: boolean
+  canEditCPReports: boolean
+  canSubmitFinalCPReport: boolean
+  canDeleteCPReports: boolean
+  canExportCPReports: boolean
   canViewBp: boolean
   canUpdateBp: boolean
   canViewProjects: boolean
@@ -12,6 +17,9 @@ interface PermissionsContextProps {
   canAssociateProjects: boolean
   canEditProjects: boolean
   canEditApprovedProjects: boolean
+  canCommentCPCountry: boolean
+  canCommentCPSecretariat: boolean
+  isCPCountryUserType: boolean
 }
 
 const PermissionsContext = createContext<PermissionsContextProps>(

@@ -57,7 +57,6 @@ import ProjectsListingArchiveProjectPage from '@ors/app/projects_listing/[projec
 
 import ProjectsDataProvider from './contexts/Projects/ProjectsDataProvider'
 import BPDataProvider from './contexts/BusinessPlans/BPDataProvider'
-import PermissionsProvider from './contexts/PermissionsProvider'
 import NotFoundPage from '@ors/app/not-found'
 
 import RootLayout from './app/layout'
@@ -265,81 +264,59 @@ export default function App() {
           <ProjectsPage />
         </Route>
         <Route path="/projects-listing">
-          <PermissionsProvider>
-            <ProjectsDataProvider>
-              <ProjectsListingPage />
-            </ProjectsDataProvider>
-          </PermissionsProvider>
+          <ProjectsDataProvider>
+            <ProjectsListingPage />
+          </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/create">
-          <PermissionsProvider>
-            <ProjectsDataProvider>
-              <ProjectsCreatePage />
-            </ProjectsDataProvider>
-          </PermissionsProvider>
+          <ProjectsDataProvider>
+            <ProjectsCreatePage />
+          </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/associate/:project_id">
-          <PermissionsProvider>
-            <ProjectsDataProvider>
-              <ProjectsAssociationPage />
-            </ProjectsDataProvider>
-          </PermissionsProvider>
+          <ProjectsDataProvider>
+            <ProjectsAssociationPage />
+          </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/export">
-          <PermissionsProvider>
-            <ProjectsDataProvider>
-              <ProjectsExportPage />
-            </ProjectsDataProvider>
-          </PermissionsProvider>
+          <ProjectsDataProvider>
+            <ProjectsExportPage />
+          </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/:project_id">
-          <PermissionsProvider>
-            <ProjectsDataProvider>
-              <ProjectsListingProjectPage />
-            </ProjectsDataProvider>
-          </PermissionsProvider>
+          <ProjectsDataProvider>
+            <ProjectsListingProjectPage />
+          </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/:project_id/archive/:version">
-          <PermissionsProvider>
-            <ProjectsDataProvider>
-              <ProjectsListingArchiveProjectPage />
-            </ProjectsDataProvider>
-          </PermissionsProvider>
+          <ProjectsDataProvider>
+            <ProjectsListingArchiveProjectPage />
+          </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/:project_id/edit">
-          <PermissionsProvider>
-            <ProjectsDataProvider>
-              <ProjectsEditPage mode="edit" />
-            </ProjectsDataProvider>
-          </PermissionsProvider>
+          <ProjectsDataProvider>
+            <ProjectsEditPage mode="edit" />
+          </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/:project_id/submit">
-          <PermissionsProvider>
-            <ProjectsDataProvider>
-              <ProjectsSubmitPage />
-            </ProjectsDataProvider>
-          </PermissionsProvider>
+          <ProjectsDataProvider>
+            <ProjectsSubmitPage />
+          </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/create/:project_id/copy">
-          <PermissionsProvider>
-            <ProjectsDataProvider>
-              <ProjectsEditPage mode="copy" />
-            </ProjectsDataProvider>
-          </PermissionsProvider>
+          <ProjectsDataProvider>
+            <ProjectsEditPage mode="copy" />
+          </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/create/:project_id/full-copy/additional-component">
-          <PermissionsProvider>
-            <ProjectsDataProvider>
-              <ProjectsEditPage mode="full-link" />
-            </ProjectsDataProvider>
-          </PermissionsProvider>
+          <ProjectsDataProvider>
+            <ProjectsEditPage mode="full-link" />
+          </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/create/:project_id/partial-copy/additional-component">
-          <PermissionsProvider>
-            <ProjectsDataProvider>
-              <ProjectsEditPage mode="partial-link" />
-            </ProjectsDataProvider>
-          </PermissionsProvider>
+          <ProjectsDataProvider>
+            <ProjectsEditPage mode="partial-link" />
+          </ProjectsDataProvider>
         </Route>
         <Route>
           <NotFoundPage />

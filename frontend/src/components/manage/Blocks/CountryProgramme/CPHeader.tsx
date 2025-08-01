@@ -1,11 +1,4 @@
 import type { IValidationContext } from '@ors/contexts/Validation/types'
-import {
-  UserType,
-  isCountryUserType,
-  userCanDeleteCurrentDraft,
-  userCanSubmitFinalReport,
-  userCanSubmitReport,
-} from '@ors/types/user_types'
 
 import { useContext } from 'react'
 import React, { useMemo, useState } from 'react'
@@ -21,6 +14,7 @@ import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import Link from '@ors/components/ui/Link/Link'
 import ValidationContext from '@ors/contexts/Validation/ValidationContext'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { formattedDateFromTimestamp, uploadFiles } from '@ors/helpers'
 import api from '@ors/helpers/Api/_api'
 import useClickOutside from '@ors/hooks/useClickOutside'
@@ -245,7 +239,8 @@ const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
     (state) => state.cp_reports,
   )
   const { enqueueSnackbar } = useSnackbar()
-  const { user_type } = useStore((state) => state.user.data)
+  const { canEditCPReports, canSubmitFinalCPReport, canDeleteCPReports } =
+    useContext(PermissionsContext)
 
   const [showConfirm, setShowConfirm] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -254,8 +249,7 @@ const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
 
   const hasMultipleVersions =
     (report.versions?.data?.length || 0) > 1 && report.data?.version !== 1
-  const userCanSeeEditButton =
-    userCanDeleteCurrentDraft[user_type as UserType] && hasMultipleVersions
+  const userCanSeeEditButton = canDeleteCPReports && hasMultipleVersions
 
   const localStorage = useEditLocalStorage(report)
 
@@ -348,7 +342,7 @@ const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
       {!!report.data && (
         <div className="container flex w-full justify-between gap-x-4 px-0">
           <div className="flex justify-between gap-x-4">
-            {userCanSubmitReport[user_type as UserType] && (
+            {canEditCPReports && (
               <>
                 {isDraft && userCanSeeEditButton && (
                   <Dropdown
@@ -382,7 +376,7 @@ const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
                 {isDraft && (
                   <Button
                     color="primary"
-                    disabled={!userCanSubmitFinalReport[user_type as UserType]}
+                    disabled={!canSubmitFinalCPReport}
                     size="small"
                     variant="contained"
                     onClick={handleShowConfirmation}
@@ -441,12 +435,15 @@ const EditHeaderActions = ({
   setErrors,
   validation,
 }: EditHeaderActionsProps) => {
+  const { isCPCountryUserType } = useContext(PermissionsContext)
   const [_, setLocation] = useLocation()
   const { cacheInvalidateReport, fetchBundle, report } = useStore(
     (state) => state.cp_reports,
   )
   const { enqueueSnackbar } = useSnackbar()
   const { user_type } = useStore((state) => state.user.data)
+  const { canEditCPReports, canSubmitFinalCPReport, canDeleteCPReports } =
+    useContext(PermissionsContext)
 
   const [showConfirm, setShowConfirm] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -477,10 +474,9 @@ const EditHeaderActions = ({
 
   const hasMultipleVersions =
     (report.versions?.data?.length || 0) > 1 && report.data?.version !== 1
-  const userCanSeeUpdateButton =
-    userCanDeleteCurrentDraft[user_type as UserType] && hasMultipleVersions
+  const userCanSeeUpdateButton = canDeleteCPReports && hasMultipleVersions
 
-  if (!userCanSubmitReport[user_type as UserType]) return null
+  if (!canEditCPReports) return null
 
   function getReportSubmitter(status?: 'draft' | 'final') {
     return async () => {
@@ -567,8 +563,8 @@ const EditHeaderActions = ({
   }
 
   function getSubmitFinalTooltipTitle() {
-    if (!userCanSubmitFinalReport[user_type as UserType] && isDraft) {
-      return isCountryUserType[user_type as UserType]
+    if (!canSubmitFinalCPReport && isDraft) {
+      return isCPCountryUserType
         ? 'Only Country Submitter users can submit Final versions'
         : 'Only Secretariat users can submit Final versions'
     }
@@ -631,9 +627,7 @@ const EditHeaderActions = ({
                 color="secondary"
                 size="large"
                 variant="contained"
-                disabled={
-                  !userCanSubmitFinalReport[user_type as UserType] && isDraft
-                }
+                disabled={!canSubmitFinalCPReport && isDraft}
                 onClick={handleShowConfirmation}
               >
                 {isDraft ? 'Submit final version' : 'Submit new version'}

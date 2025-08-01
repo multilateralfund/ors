@@ -1,6 +1,12 @@
 'use client'
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 
 import { Tabs, Typography } from '@mui/material'
 import cx from 'classnames'
@@ -43,8 +49,8 @@ import { ITableProps } from './typesCPView'
 import { useEditLocalStorage } from './useLocalStorage'
 
 import { IoClose, IoExpand } from 'react-icons/io5'
-import { userCanSubmitReport, UserType } from '@ors/types/user_types'
 import parseComments from '@ors/components/manage/Blocks/CountryProgramme/parseComments.ts'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 
 function defaults(arr: Array<any>, value: any) {
   if (arr?.length > 0) return arr
@@ -508,8 +514,7 @@ function CPEdit() {
 export default function CPEditWrapper(props: { iso3: string; year: number }) {
   const { iso3, year } = props
 
-  const { user_type } = useStore((state) => state.user.data)
-  const canEditReport = userCanSubmitReport[user_type as UserType]
+  const { canEditCPReports } = useContext(PermissionsContext)
 
   const countries = useStore((state) => state.common.countries_for_listing.data)
   const country = countries.filter((country) => country.iso3 === iso3)[0]
@@ -540,7 +545,7 @@ export default function CPEditWrapper(props: { iso3: string; year: number }) {
     fetchBundle(country.id, year, false)
   }, [country, year, fetchBundle])
 
-  if (!canEditReport) {
+  if (!canEditCPReports) {
     return <NotFoundPage />
   }
 
