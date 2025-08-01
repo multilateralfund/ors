@@ -4,6 +4,7 @@ import { Dispatch, ReactNode, SetStateAction, useMemo, useState } from 'react'
 
 import ProjectHistory from '@ors/components/manage/Blocks/ProjectsListing/ProjectView/ProjectHistory.tsx'
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
+import WarningAlert from '@ors/components/theme/Alerts/WarningAlert.tsx'
 import ProjectIdentifiersSection from './ProjectIdentifiersSection.tsx'
 import ProjectCrossCuttingFields from './ProjectCrossCuttingFields'
 import ProjectSpecificInfoSection from './ProjectSpecificInfoSection.tsx'
@@ -103,6 +104,7 @@ const ProjectsCreate = ({
     (field) => field.read_field_name !== 'sort_order',
   )
 
+  const { warnings } = useStore((state) => state.projectWarnings)
   const { projectFields, viewableFields } = useStore(
     (state) => state.projectFields,
   )
@@ -439,6 +441,12 @@ const ProjectsCreate = ({
           .map(({ component, errors }) => {
             return (
               <>
+                {mode === 'edit' &&
+                  project?.submission_status === 'Draft' &&
+                  warnings.id === parseInt(project_id) &&
+                  warnings.warnings.length > 0 && (
+                    <WarningAlert content={<>{warnings.warnings[0]}</>} />
+                  )}
                 {errors && errors.length > 0 && (
                   <Alert
                     className="mb-5 w-fit border-0 bg-[#FAECD1] text-[#291B00]"
