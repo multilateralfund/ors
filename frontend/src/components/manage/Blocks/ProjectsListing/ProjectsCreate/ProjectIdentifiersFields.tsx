@@ -15,6 +15,7 @@ import {
   getMeetingNr,
   getMeetingOptions,
 } from '@ors/components/manage/Utils/utilFunctions'
+import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import { changeHandler } from './SpecificFieldsHelpers'
 import { ClosedList, OpenedList } from '../HelperComponents'
@@ -25,8 +26,7 @@ import { Cluster, Country } from '@ors/types/store'
 import { parseNumber } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
-import { Alert, Button, Checkbox, FormControlLabel } from '@mui/material'
-import { IoInformationCircleOutline } from 'react-icons/io5'
+import { Button, Checkbox, FormControlLabel, Typography } from '@mui/material'
 import { find, isNil, isNull, map } from 'lodash'
 import cx from 'classnames'
 
@@ -340,15 +340,17 @@ const ProjectIdentifiersFields = ({
               {...sectionDefaultProps}
             />
             {canUpdateLeadAgency && (
-              <Alert
-                className="mt-2 w-fit bg-mlfs-bannerColor px-2 py-0"
-                icon={<IoInformationCircleOutline size={20} />}
-                severity="info"
-              >
-                When submitting on behalf of a cooperating agency, selecting
-                either the agency or the lead agency will automatically update
-                the other.
-              </Alert>
+              <CustomAlert
+                type="info"
+                alertClassName="mt-2 px-2 py-0"
+                content={
+                  <Typography className="pt-1 text-lg leading-none">
+                    When submitting on behalf of a cooperating agency, selecting
+                    either the agency or the lead agency will automatically
+                    update the other.
+                  </Typography>
+                }
+              />
             )}
           </>
         )}

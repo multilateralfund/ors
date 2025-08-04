@@ -3,7 +3,7 @@
 import { useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
-import ErrorAlert from '@ors/components/theme/Alerts/ErrorAlert'
+import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import CustomLink from '@ors/components/ui/Link/Link'
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
@@ -147,7 +147,8 @@ const ProjectsSubmit = ({
           </div>
         )}
         {hasSubmitErrors && (
-          <ErrorAlert
+          <CustomAlert
+            type="error"
             content={
               <Typography className="text-lg leading-none">
                 An error occurred during the {formattedText} submission. Please
