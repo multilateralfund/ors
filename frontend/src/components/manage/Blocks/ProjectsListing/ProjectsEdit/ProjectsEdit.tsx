@@ -4,7 +4,7 @@ import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import ProjectsHeader from '../ProjectSubmission/ProjectsHeader'
 import ProjectsCreate from '../ProjectsCreate/ProjectsCreate'
-import ProjectSubmissionFooter from '../ProjectSubmission/ProjectSubmissionFooter'
+import ProjectFormFooter from '../ProjectSubmission/ProjectFormFooter'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
 import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
@@ -403,7 +403,7 @@ const ProjectsEdit = ({
             relatedProjects,
           }}
         />
-        <ProjectSubmissionFooter
+        <ProjectFormFooter
           successMessage={
             isEditMode
               ? 'Updated project successfully.'

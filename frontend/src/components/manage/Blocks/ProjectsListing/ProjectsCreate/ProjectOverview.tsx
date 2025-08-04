@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import ErrorAlert from '@ors/components/theme/Alerts/ErrorAlert'
+import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import { ClosedList, OpenedList } from '../HelperComponents'
 import { widgets } from './SpecificFieldsHelpers'
 import { canViewField } from '../utils'
@@ -59,7 +59,8 @@ const ProjectOverview = ({
               title="Previous tranche information"
               data={tranchesData}
               errorAlert={
-                <ErrorAlert
+                <CustomAlert
+                  type="error"
                   content={
                     <Typography className="text-lg leading-none">
                       Please complete the previous tranche's impact indicators

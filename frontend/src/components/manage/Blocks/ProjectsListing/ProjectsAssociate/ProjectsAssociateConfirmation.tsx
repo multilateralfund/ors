@@ -6,6 +6,7 @@ import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
+import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { initialParams } from '../ProjectsListing/ProjectsFiltersSelectedOpts'
 import PListingTable from '../ProjectsListing/PListingTable'
@@ -16,9 +17,8 @@ import { ProjectTypeApi } from '../interfaces'
 import { useStore } from '@ors/store'
 import { api } from '@ors/helpers'
 
-import { Button, Alert, Typography } from '@mui/material'
 import { filter, find, flatMap, map } from 'lodash'
-import { MdErrorOutline } from 'react-icons/md'
+import { Button, Typography } from '@mui/material'
 import { enqueueSnackbar } from 'notistack'
 import { useLocation } from 'wouter'
 
@@ -165,13 +165,11 @@ const ProjectsAssociateConfirmation = ({
         />
       </form>
       {errors && (
-        <Alert
-          className="mb-5 w-fit border-0 bg-[#FAECD1] text-[#291B00]"
-          severity="error"
-          icon={<MdErrorOutline color="#291B00" />}
-        >
-          <Typography className="text-lg">{errors}</Typography>
-        </Alert>
+        <CustomAlert
+          type="error"
+          alertClassName="mb-5"
+          content={<Typography className="text-lg">{errors}</Typography>}
+        />
       )}
     </>
   )
