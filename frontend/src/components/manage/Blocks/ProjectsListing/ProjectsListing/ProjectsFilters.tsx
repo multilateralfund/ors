@@ -198,7 +198,7 @@ const ProjectsFilters = ({
       )}
       <div className="w-full md:w-[7.76rem]">
         <PopoverInput
-          className="!m-0 mb-0 h-[2.25rem] min-h-[2.25rem] w-full truncate border-2 !py-1 !pr-0 text-[15px] md:w-[7.76rem]"
+          className="!m-0 mb-0 h-[2.25rem] min-h-[2.25rem] w-full truncate border-2 !py-1 !pr-0 text-[16px] md:w-[7.76rem]"
           label="Meeting"
           options={meetings}
           onChange={(value: any) => {

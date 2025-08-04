@@ -126,6 +126,8 @@ const EditActionButtons = ({
     hasOdsOdpErrors ||
     getHasNoFiles(id, files, projectFiles)
   const disableSubmit = isSubmitDisabled || hasErrors
+  const disableUpdate =
+    isRecommended || isApproved ? disableSubmit : isSaveDisabled
   const disableApprovalActions = true
 
   const { deletedFilesIds = [], newFiles = [] } = files || {}
@@ -315,14 +317,14 @@ const EditActionButtons = ({
       {canUpdateProjects && (
         <Button
           className={cx('px-4 py-2 shadow-none', {
-            [enabledButtonClassname]: !isSaveDisabled,
+            [enabledButtonClassname]: !disableUpdate,
           })}
           size="large"
           variant="contained"
           onClick={() => {
             editProject()
           }}
-          disabled={isSaveDisabled}
+          disabled={disableUpdate}
         >
           Update project
         </Button>
@@ -374,7 +376,7 @@ const EditActionButtons = ({
           </Dropdown.Item>
         </Dropdown>
       )}
-      {canApproveProjects && isRecommended && (
+      {/* {canApproveProjects && isRecommended && (
         <Dropdown
           className={dropDownClassName}
           ButtonProps={DropDownButtonProps}
@@ -397,7 +399,7 @@ const EditActionButtons = ({
             Not approve project
           </Dropdown.Item>
         </Dropdown>
-      )}
+      )} */}
       {isComponentModalOpen && (
         <AddComponentModal
           id={id}
