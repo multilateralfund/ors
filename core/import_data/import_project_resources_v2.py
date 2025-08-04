@@ -174,9 +174,14 @@ def clean_up_project_statuses():
         ProjectStatus.objects.filter(code="UNK").delete()
 
     # change the status 'N/A' into 'New submission' and delete status 'N/A'
-    Project.objects.filter(status__code="NA").update(
-        status=ProjectStatus.objects.get(code="NEWSUB")
+
+    new_submission_status, _ = ProjectStatus.objects.update_or_create(
+        name="New submission",
+        defaults={
+            "code": "NEWSUB",
+        },
     )
+    Project.objects.filter(status__code="NA").update(status=new_submission_status)
     ProjectStatus.objects.filter(code="NA").delete()
 
     ProjectStatus.objects.filter(code="NEWSUB").update(name="New submission")

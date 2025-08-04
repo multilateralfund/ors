@@ -4,6 +4,7 @@ import { Dispatch, ReactNode, SetStateAction, useMemo, useState } from 'react'
 
 import ProjectHistory from '@ors/components/manage/Blocks/ProjectsListing/ProjectView/ProjectHistory.tsx'
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
+import CustomAlert from '@ors/components/theme/Alerts/CustomAlert.tsx'
 import ProjectIdentifiersSection from './ProjectIdentifiersSection.tsx'
 import ProjectCrossCuttingFields from './ProjectCrossCuttingFields'
 import ProjectSpecificInfoSection from './ProjectSpecificInfoSection.tsx'
@@ -34,8 +35,7 @@ import {
 import { useStore } from '@ors/store.tsx'
 
 import { groupBy, has, isEmpty, map, mapKeys } from 'lodash'
-import { Tabs, Tab, Alert, Typography } from '@mui/material'
-import { MdErrorOutline } from 'react-icons/md'
+import { Tabs, Tab, Typography } from '@mui/material'
 import { useParams } from 'wouter'
 
 export const SectionTitle = ({ children }: { children: ReactNode }) => (
@@ -58,7 +58,7 @@ const ProjectsCreate = ({
   fileErrors,
   trancheErrors,
   getTrancheErrors,
-  associatedProjects,
+  relatedProjects,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
@@ -71,7 +71,10 @@ const ProjectsCreate = ({
     fileErrors: string
     project?: ProjectTypeApi
     projectFiles?: ProjectFile[]
-    associatedProjects?: RelatedProjectsType[] | null
+    relatedProjects?: {
+      title: string
+      data: RelatedProjectsType[] | null
+    }[]
   }) => {
   const { project_id } = useParams<Record<string, string>>()
 
@@ -100,6 +103,7 @@ const ProjectsCreate = ({
     (field) => field.read_field_name !== 'sort_order',
   )
 
+  const { warnings } = useStore((state) => state.projectWarnings)
   const { projectFields, viewableFields } = useStore(
     (state) => state.projectFields,
   )
@@ -234,7 +238,7 @@ const ProjectsCreate = ({
             setCurrentTab,
             hasSubmitted,
             mode,
-            associatedProjects,
+            relatedProjects,
           }}
           isNextBtnEnabled={canLinkToBp}
           errors={projIdentifiersErrors}
@@ -436,27 +440,43 @@ const ProjectsCreate = ({
           .map(({ component, errors }) => {
             return (
               <>
+                {mode === 'edit' &&
+                  project?.submission_status === 'Draft' &&
+                  warnings.id === parseInt(project_id) &&
+                  warnings.warnings.length > 0 && (
+                    <CustomAlert
+                      type="info"
+                      alertClassName="mb-3"
+                      content={
+                        <Typography className="text-lg leading-none">
+                          {warnings.warnings[0]}
+                        </Typography>
+                      }
+                    />
+                  )}
                 {errors && errors.length > 0 && (
-                  <Alert
-                    className="mb-5 w-fit border-0 bg-[#FAECD1] text-[#291B00]"
-                    severity="error"
-                    icon={<MdErrorOutline color="#291B00" />}
-                  >
-                    <Typography className="text-lg">
-                      Please make sure all the sections are valid.
-                    </Typography>
-                    <Typography>
-                      <div className="mt-1">
-                        {errors.map((err, idx) =>
-                          err ? (
-                            <div key={idx} className="py-1.5">
-                              {'\u2022'} {err.message}
-                            </div>
-                          ) : null,
-                        )}
-                      </div>
-                    </Typography>
-                  </Alert>
+                  <CustomAlert
+                    type="error"
+                    alertClassName="mb-5"
+                    content={
+                      <>
+                        <Typography className="text-lg">
+                          Please make sure all the sections are valid.
+                        </Typography>
+                        <Typography>
+                          <div className="mt-1">
+                            {errors.map((err, idx) =>
+                              err ? (
+                                <div key={idx} className="py-1.5">
+                                  {'\u2022'} {err.message}
+                                </div>
+                              ) : null,
+                            )}
+                          </div>
+                        </Typography>
+                      </>
+                    }
+                  />
                 )}
                 {component}
               </>

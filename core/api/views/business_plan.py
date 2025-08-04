@@ -438,7 +438,6 @@ class BPImportView(
         bp_status = request.query_params.get("status")
         meeting_id = request.query_params.get("meeting_id")
         decision_id = request.query_params.get("decision_id")
-
         ret_code, ret_data = self.import_bp(files, year_start)
         if ret_code != status.HTTP_200_OK:
             return Response("Data import failed", status=ret_code)

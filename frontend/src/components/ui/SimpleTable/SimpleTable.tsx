@@ -14,12 +14,12 @@ import {
   Typography,
 } from '@mui/material'
 
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import Link from '@ors/components/ui/Link/Link'
 import { useStore } from '@ors/store'
 
 import { FiEdit, FiEye } from 'react-icons/fi'
 import { IoEllipse } from 'react-icons/io5'
-import { userCanSubmitReport, UserType } from '@ors/types/user_types'
 
 interface Data {
   country: string
@@ -196,8 +196,7 @@ export default function SimpleTable(props: any) {
   const [orderBy, setOrderBy] = React.useState<keyof Data>('created_at')
   const [loading, setLoading] = React.useState(false)
 
-  const { user_type } = useStore((state) => state.user.data)
-  const canEditReport = userCanSubmitReport[user_type as UserType]
+  const { canEditCPReports } = React.useContext(PermissionsContext)
 
   const rows = data.map((item: any) => {
     return createData(
@@ -298,7 +297,7 @@ export default function SimpleTable(props: any) {
                         >
                           <FiEye size={16} />
                         </Link>
-                        {canEditReport && (
+                        {canEditCPReports && (
                           <>
                             <span>/</span>
                             <Link

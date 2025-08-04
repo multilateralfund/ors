@@ -4,10 +4,10 @@ import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import ProjectsHeader from '../ProjectSubmission/ProjectsHeader'
 import ProjectsCreate from '../ProjectsCreate/ProjectsCreate'
-import ProjectSubmissionFooter from '../ProjectSubmission/ProjectSubmissionFooter'
+import ProjectFormFooter from '../ProjectSubmission/ProjectFormFooter'
+import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
 import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
-import { useGetProjectsForSubmission } from '../hooks/useGetProjectsForSubmission'
 import {
   getDefaultValues,
   getFileFromMetadata,
@@ -157,26 +157,7 @@ const ProjectsEdit = ({
     }
   }, [projectFiles])
 
-  const [associatedProjects, setAssociatedProjects] = useState<
-    RelatedProjectsType[] | null
-  >([])
-
-  const debouncedGetProjectsForSubmission = debounce(() => {
-    useGetProjectsForSubmission(
-      project.id,
-      setAssociatedProjects,
-      undefined,
-      false,
-      false,
-      false,
-    )
-  }, 0)
-
-  useEffect(() => {
-    if (mode === 'edit') {
-      debouncedGetProjectsForSubmission()
-    }
-  }, [])
+  const relatedProjects = useGetRelatedProjects(project, mode)
 
   const defaultTrancheErrors = {
     errorText: '',
@@ -419,10 +400,10 @@ const ProjectsEdit = ({
             fileErrors,
             trancheErrors,
             getTrancheErrors,
-            associatedProjects,
+            relatedProjects,
           }}
         />
-        <ProjectSubmissionFooter
+        <ProjectFormFooter
           successMessage={
             isEditMode
               ? 'Updated project successfully.'

@@ -15,6 +15,7 @@ import {
   getMeetingNr,
   getMeetingOptions,
 } from '@ors/components/manage/Utils/utilFunctions'
+import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import { changeHandler } from './SpecificFieldsHelpers'
 import { ClosedList, OpenedList } from '../HelperComponents'
@@ -25,9 +26,8 @@ import { Cluster, Country } from '@ors/types/store'
 import { parseNumber } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
-import { Alert, Button, Checkbox, FormControlLabel } from '@mui/material'
-import { IoInformationCircleOutline } from 'react-icons/io5'
-import { find, isNil, isNull } from 'lodash'
+import { Button, Checkbox, FormControlLabel, Typography } from '@mui/material'
+import { find, isNil, isNull, map } from 'lodash'
 import cx from 'classnames'
 
 const ProjectIdentifiersFields = ({
@@ -40,15 +40,13 @@ const ProjectIdentifiersFields = ({
   errors,
   hasSubmitted,
   mode,
-  associatedProjects,
+  relatedProjects,
 }: ProjectIdentifiersSectionProps) => {
   const sectionIdentifier = 'projIdentifiers'
   const projIdentifiers = projectData[sectionIdentifier]
 
+  const [openComponentProjects, setOpenComponentProjects] = useState(true)
   const [openAssociatedProjects, setOpenAssociatedProjects] = useState(true)
-
-  const hasAssociatedProjects =
-    associatedProjects && associatedProjects.length > 0
 
   const commonSlice = useStore((state) => state.common)
   const agencies = commonSlice.agencies.data
@@ -342,15 +340,17 @@ const ProjectIdentifiersFields = ({
               {...sectionDefaultProps}
             />
             {canUpdateLeadAgency && (
-              <Alert
-                className="mt-2 w-fit bg-mlfs-bannerColor px-2 py-0"
-                icon={<IoInformationCircleOutline size={20} />}
-                severity="info"
-              >
-                When submitting on behalf of a cooperating agency, selecting
-                either the agency or the lead agency will automatically update
-                the other.
-              </Alert>
+              <CustomAlert
+                type="info"
+                alertClassName="mt-2 px-2 py-0"
+                content={
+                  <Typography className="pt-1 text-lg leading-none">
+                    When submitting on behalf of a cooperating agency, selecting
+                    either the agency or the lead agency will automatically
+                    update the other.
+                  </Typography>
+                }
+              />
             )}
           </>
         )}
@@ -383,24 +383,36 @@ const ProjectIdentifiersFields = ({
           )}
         </div>
       </div>
-      {/* {hasAssociatedProjects && (
-        <div
-          className="transition-transform mt-6 w-full max-w-[850px] transform cursor-pointer rounded-lg p-4 duration-300 ease-in-out"
-          style={{ boxShadow: '0px 10px 20px 0px rgba(0, 0, 0, 0.2)' }}
-          onClick={() => setOpenAssociatedProjects(!openAssociatedProjects)}
-        >
-          {openAssociatedProjects ? (
-            <OpenedList
-              title="Associated projects"
-              data={associatedProjects}
-              canRefreshStatus={false}
-              loaded={true}
-              mode="view"
-            />
-          ) : (
-            <ClosedList title="Associated projects" />
-          )}
-        </div>
+      {/* {map(
+        relatedProjects,
+        ({ data, title }, index) =>
+          data &&
+          data.length > 0 && (
+            <div
+              className="transition-transform mt-6 w-full max-w-[850px] transform cursor-pointer rounded-lg p-4 duration-300 ease-in-out"
+              style={{ boxShadow: '0px 10px 20px 0px rgba(0, 0, 0, 0.2)' }}
+              onClick={() => {
+                if (index === 0) {
+                  setOpenComponentProjects(!openComponentProjects)
+                } else {
+                  setOpenAssociatedProjects(!openAssociatedProjects)
+                }
+              }}
+            >
+              {(index === 0 && openComponentProjects) ||
+              (index === 1 && openAssociatedProjects) ? (
+                <OpenedList
+                  title={title}
+                  data={data}
+                  canRefreshStatus={false}
+                  loaded={true}
+                  mode="view"
+                />
+              ) : (
+                <ClosedList title={title} />
+              )}
+            </div>
+          ),
       )} */}
     </>
   )

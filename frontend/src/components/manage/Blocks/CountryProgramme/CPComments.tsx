@@ -1,13 +1,14 @@
 'use client'
 
 import { CommentData } from '@ors/types/store'
-import {
-  UserType,
-  userCanCommentCountry,
-  userCanCommentSecretariat,
-} from '@ors/types/user_types'
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, {
+  useContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
 
 import { Alert } from '@mui/material'
 import Button from '@mui/material/Button'
@@ -19,6 +20,8 @@ import { debounce } from '@ors/helpers'
 import api from '@ors/helpers/Api/_api'
 import { useStore } from '@ors/store'
 
+import PermissionsContext from '@ors/contexts/PermissionsContext'
+
 import {
   CPCommentState,
   CPCommentsForEditProps,
@@ -28,21 +31,24 @@ import parseComments from '@ors/components/manage/Blocks/CountryProgramme/parseC
 
 type Label = keyof CPCommentState
 
-const COMMENTS_META = {
-  country: {
-    label: 'Country',
-    user_check: userCanCommentCountry,
-  },
-  mlfs: {
-    label: 'MLFS',
-    user_check: userCanCommentSecretariat,
-  },
+const useCommentsMeta = () => {
+  const { canCommentCPCountry, canCommentCPSecretariat } =
+    useContext(PermissionsContext)
+  return {
+    country: {
+      label: 'Country',
+      has_permission: canCommentCPCountry,
+    },
+    mlfs: {
+      label: 'MLFS',
+      has_permission: canCommentCPSecretariat,
+    },
+  }
 }
 
 const CPComments = (props: CPCommentsProps) => {
   const { section, viewOnly } = props
   const user = useStore((state) => state.user)
-  const user_type: UserType = user.data.user_type
   const { cacheInvalidateReport, report, setReport } = useStore(
     (state) => state.cp_reports,
   )
@@ -53,6 +59,8 @@ const CPComments = (props: CPCommentsProps) => {
   const [error, setError] = useState(null)
   const [texts, setTexts] = useState<CPCommentState>(initialTexts)
   const [latestVersion, setLatestVersion] = useState(false)
+
+  const commentsMeta = useCommentsMeta()
 
   useEffect(() => {
     if (report.data) {
@@ -84,10 +92,10 @@ const CPComments = (props: CPCommentsProps) => {
       }
 
       const data: CommentData = {
-        comment: userCanCommentCountry[userType as UserType]
+        comment: commentsMeta.country.has_permission
           ? comments.country
           : comments.secretariat,
-        comment_type: userCanCommentCountry[userType as UserType]
+        comment_type: commentsMeta.country.has_permission
           ? 'comment_country'
           : 'comment_secretariat',
         section: section,
@@ -144,7 +152,7 @@ const CPComments = (props: CPCommentsProps) => {
     <div className="-mx-6 -mb-6 mt-6 flex w-auto flex-wrap justify-around gap-6 rounded-b-lg bg-gray-100 px-6 pb-6">
       {orderedUsers.map((user) => {
         const canEditComment =
-          COMMENTS_META[user].user_check[user_type as UserType] &&
+          commentsMeta[user].has_permission &&
           latestVersion &&
           viewOnly === false &&
           report.data?.status !== 'draft'
@@ -161,7 +169,7 @@ const CPComments = (props: CPCommentsProps) => {
               />
             )}
             <label className="py-4 text-2xl font-medium">
-              Comment {COMMENTS_META[user].label}
+              Comment {commentsMeta[user].label}
             </label>
             <div className="CPComments relative">
               <TextareaAutosize
@@ -195,7 +203,7 @@ const CPComments = (props: CPCommentsProps) => {
                 </div>
               )}
             </div>
-            {error && COMMENTS_META[user].user_check[user_type as UserType] && (
+            {error && commentsMeta[user].has_permission && (
               <Alert severity="error">
                 <Typography>Something went wrong. Please try again.</Typography>
               </Alert>
@@ -208,12 +216,12 @@ const CPComments = (props: CPCommentsProps) => {
 }
 
 function CPCommentsForEdit(props: CPCommentsForEditProps) {
+  const commentsMeta = useCommentsMeta()
   const { form, section, setForm } = props
 
   const sectionKey = `comments_${section}` as keyof typeof form
 
   const user = useStore((state) => state.user)
-  const user_type: UserType = user.data.user_type
   const { report } = useStore((state) => state.cp_reports)
   const [initialTexts, setInitialTexts] = useState<CPCommentState>({
     country: '',
@@ -284,8 +292,7 @@ function CPCommentsForEdit(props: CPCommentsForEditProps) {
   return (
     <div className="-mx-6 -mb-6 mt-6 flex w-auto flex-wrap justify-around gap-6 rounded-b-lg bg-gray-100 px-6 pb-6">
       {orderedUsers.map((user) => {
-        const canEditComment =
-          COMMENTS_META[user].user_check[user_type as UserType]
+        const canEditComment = commentsMeta[user].has_permission
         const disabledBtn = texts[user] === initialTexts[user]
         return (
           <div
@@ -299,7 +306,7 @@ function CPCommentsForEdit(props: CPCommentsForEditProps) {
               />
             )}
             <label className="py-4 text-2xl font-medium">
-              Comment {COMMENTS_META[user].label}
+              Comment {commentsMeta[user].label}
             </label>
             <div className="CPComments relative">
               <TextareaAutosize
@@ -324,7 +331,7 @@ function CPCommentsForEdit(props: CPCommentsForEditProps) {
                 </div>
               )}
             </div>
-            {error && COMMENTS_META[user].user_check[user_type as UserType] && (
+            {error && commentsMeta[user].has_permission && (
               <Alert severity="error">
                 <Typography>Something went wrong. Please try again.</Typography>
               </Alert>

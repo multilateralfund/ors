@@ -19,6 +19,7 @@ import { getCurrentView } from '@ors/helpers/View/View'
 import { StoreProvider } from '@ors/store'
 import ThemeProvider from '@ors/themes/ThemeProvider'
 import useSearchParams from '@ors/hooks/useSearchParams'
+import PermissionsProvider from '../contexts/PermissionsProvider'
 
 import '../themes/styles/global.css'
 import { ProjectStatusType } from '@ors/types/api_project_statuses.ts'
@@ -211,9 +212,11 @@ export default function RootLayout({
         }}
       >
         <ThemeProvider>
-          <LoginWrapper appState={appState} setCurrentUser={setCurrentUser}>
-            {children}
-          </LoginWrapper>
+          <PermissionsProvider>
+            <LoginWrapper appState={appState} setCurrentUser={setCurrentUser}>
+              {children}
+            </LoginWrapper>
+          </PermissionsProvider>
         </ThemeProvider>
       </StoreProvider>
     </div>

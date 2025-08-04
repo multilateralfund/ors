@@ -1,11 +1,4 @@
-import {
-  UserType,
-  userCanExportData,
-  userCanSubmitReport,
-  userCanViewReports,
-} from '@ors/types/user_types'
-
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import { useLocation } from 'wouter'
 import Link from '@ors/components/ui/Link/Link'
 
@@ -24,6 +17,7 @@ import { matchPath } from '@ors/helpers/Url/Url'
 import { useStore } from '@ors/store'
 
 import { IoChevronDown, IoChevronUp, IoClose, IoMenu } from 'react-icons/io5'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 
 const EXTERNAL_BASE_URL = 'https://www.multilateralfund.org'
 const makeExternalUrl = (path: string) => `${EXTERNAL_BASE_URL}${path}`
@@ -65,43 +59,38 @@ const makeInternalNavItem = (
 }
 
 const useInternalNavSections = () => {
-  const { user_type } = useStore((state) => state.user?.data)
-  const commonSlice = useStore((state) => state.common)
-  const user_permissions = commonSlice.user_permissions.data || []
+  const P = useContext(PermissionsContext)
 
   const [pathname] = useLocation()
   const nI = makeInternalNavItem.bind(null, pathname)
-  const userIsViewer = user_type === 'viewer'
-  const userIsAdminOrSecretariat = ['admin', 'secretariat'].includes(user_type)
+
   return [
     {
       label: 'Online CP Reporting',
       menu: [
-        userCanViewReports[user_type as UserType]
+        P.canViewCPReports
           ? { label: 'View reports', url: '/country-programme/reports' }
           : null,
-        userCanSubmitReport[user_type as UserType]
+        P.canEditCPReports
           ? { label: 'Add new report', url: '/country-programme/create' }
           : null,
-        userCanExportData[user_type as UserType]
+        P.canExportCPReports
           ? { label: 'Export data', url: '/country-programme/export-data' }
           : null,
-        userCanExportData[user_type as UserType]
+        P.canExportCPReports
           ? { label: 'Settings', url: '/country-programme/settings' }
           : null,
       ].filter(Boolean),
       url: '/country-programme/reports',
     },
-    ...(user_permissions.includes('has_business_plan_view_access')
+    ...(P.canViewBp
       ? [{ label: 'Business plans', url: '/business-plans' }]
       : []),
-    ...(userIsAdminOrSecretariat || userIsViewer
+    ...(P.canViewV1Projects
       ? [{ label: 'Project submissions', url: '/project-submissions' }]
       : []),
-    ...(userIsAdminOrSecretariat || userIsViewer
-      ? [{ label: 'Projects', url: '/projects' }]
-      : []),
-    ...(user_permissions.includes('has_project_v2_view_access')
+    ...(P.canViewV1Projects ? [{ label: 'Projects', url: '/projects' }] : []),
+    ...(P.canViewProjects
       ? [{ label: 'Projects Listing', url: '/projects-listing' }]
       : []),
     // @ts-ignore
@@ -109,13 +98,10 @@ const useInternalNavSections = () => {
 }
 
 const useInternalNavSectionsReplenishment = () => {
-  const { user_type } = useStore((state) => state.user?.data)
+  const { canViewReplenishment } = useContext(PermissionsContext)
   const [pathname] = useLocation()
   const nI = makeInternalNavItem.bind(null, pathname)
-  const userIsAdminOrSecretariat = ['admin', 'secretariat'].includes(user_type)
-  const userCanAccessReplenishment =
-    userIsAdminOrSecretariat || ['treasurer'].includes(user_type)
-  return userCanAccessReplenishment
+  return canViewReplenishment
     ? [
         {
           label: 'Contributions',

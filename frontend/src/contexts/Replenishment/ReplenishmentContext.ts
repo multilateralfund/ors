@@ -1,4 +1,8 @@
-import { ApiAsOfDate, ApiBudgetYears, ApiReplenishments } from '@ors/types/api_replenishment_replenishments'
+import {
+  ApiAsOfDate,
+  ApiBudgetYears,
+  ApiReplenishments,
+} from '@ors/types/api_replenishment_replenishments'
 import { Country } from '@ors/types/store'
 
 import { createContext } from 'react'
@@ -9,7 +13,6 @@ interface ReplenishmentContextType {
   countries: Country[]
   countriesSOA: Country[]
   isCountryUser: boolean
-  isSecretariat: boolean
   isTreasurer: boolean
   periodOptions: { label: string; value: string }[]
   periods: ApiReplenishments

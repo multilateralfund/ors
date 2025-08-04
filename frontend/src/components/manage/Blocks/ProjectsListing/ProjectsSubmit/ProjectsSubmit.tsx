@@ -3,7 +3,7 @@
 import { useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
-import ErrorAlert from '@ors/components/theme/Alerts/ErrorAlert'
+import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import CustomLink from '@ors/components/ui/Link/Link'
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
@@ -13,7 +13,7 @@ import {
   RelatedProjects,
   SubmitButton,
 } from '../HelperComponents'
-import { useGetProjectsForSubmission } from '../hooks/useGetProjectsForSubmission'
+import { useGetAssociatedProjects } from '../hooks/useGetAssociatedProjects'
 import { RelatedProjectsType } from '../interfaces'
 import { pluralizeWord } from '../utils'
 import { api } from '@ors/helpers'
@@ -58,10 +58,11 @@ const ProjectsSubmit = ({
   const isSubmitSuccessful = hasSubmitErrors === false
 
   const getErrors = () => {
-    useGetProjectsForSubmission(
+    useGetAssociatedProjects(
       parsedProjectId,
       setAssociatedProjects,
       setLoaded,
+      'only_components',
       true,
       true,
     )
@@ -146,7 +147,8 @@ const ProjectsSubmit = ({
           </div>
         )}
         {hasSubmitErrors && (
-          <ErrorAlert
+          <CustomAlert
+            type="error"
             content={
               <Typography className="text-lg leading-none">
                 An error occurred during the {formattedText} submission. Please

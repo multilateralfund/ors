@@ -1,6 +1,4 @@
-import { UserType, isCountryUserType } from '@ors/types/user_types'
-
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 
 import {
   Button,
@@ -20,12 +18,12 @@ import {
 import Loading from '@ors/components/theme/Loading/Loading'
 import { debounce } from '@ors/helpers'
 import useApi from '@ors/hooks/useApi'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 
 interface CloneSubstancesDialogProps {
   Sections: any
   form: CPBaseForm
   setForm: React.Dispatch<React.SetStateAction<CPBaseForm>>
-  user_type: UserType
 }
 
 function indexKey(elem: {
@@ -135,9 +133,8 @@ const CloneSubstancesDialog: React.FC<CloneSubstancesDialogProps> = ({
   Sections,
   form,
   setForm,
-  user_type,
 }) => {
-  const isCountryUser = isCountryUserType[user_type as UserType]
+  const { isCPCountryUserType } = useContext(PermissionsContext)
   const [open, setOpen] = useState(false)
   const selectedCountry = form.country
 
@@ -167,14 +164,14 @@ const CloneSubstancesDialog: React.FC<CloneSubstancesDialogProps> = ({
     loaded && !loading && !!data && !!selectedCountry && !!substancePrices.data
 
   useEffect(() => {
-    if (isCountryUser) {
+    if (isCPCountryUserType) {
       const timer = setTimeout(() => {
         setOpen(true)
       }, 1000)
 
       return () => clearTimeout(timer)
     }
-  }, [isCountryUser])
+  }, [isCPCountryUserType])
 
   const handleClose = () => {
     setOpen(false)

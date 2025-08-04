@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import Loading from '@ors/components/theme/Loading/Loading'
 import CustomLink from '@ors/components/ui/Link/Link'
 import { CancelButton, RelatedProjects } from '../HelperComponents'
-import { useGetProjectsForSubmission } from '../hooks/useGetProjectsForSubmission'
+import { useGetAssociatedProjects } from '../hooks/useGetAssociatedProjects'
 import { RelatedProjectsType } from '../interfaces'
 import { pluralizeWord } from '../utils'
 
@@ -29,12 +29,17 @@ const SubmitProjectModal = ({
   const hasAssociatedPojects =
     associatedProjects && associatedProjects.length > 0
 
-  const debouncedGetProjectsForSubmission = debounce(() => {
-    useGetProjectsForSubmission(id, setAssociatedProjects, setLoaded)
+  const debouncedGetAssociatedProjects = debounce(() => {
+    useGetAssociatedProjects(
+      id,
+      setAssociatedProjects,
+      setLoaded,
+      'only_components',
+    )
   }, 0)
 
   useEffect(() => {
-    debouncedGetProjectsForSubmission()
+    debouncedGetAssociatedProjects()
   }, [])
 
   const onEditProject = () => {

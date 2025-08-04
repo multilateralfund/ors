@@ -28,7 +28,7 @@ from core.models import (
 from core.models.business_plan import BPFile
 from core.models.meeting import Decision, Meeting
 
-# pylint: disable=R0902
+# pylint: disable=R0902,R0915
 
 
 class BPChemicalTypeSerializer(serializers.ModelSerializer):
@@ -526,7 +526,14 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
         create_activities = []
         initial_update_activities = []
         update_activities = []
-
+        if from_import:
+            initial_instances = BPActivity.objects.filter(
+                business_plan=business_plan
+            ).values_list("initial_id", flat=True)
+        else:
+            initial_instances = BPActivity.objects.filter(
+                business_plan=business_plan
+            ).values_list("id", flat=True)
         for activity in activities:
             if from_import:
                 identifier = activity.get("initial_id", None)
@@ -541,8 +548,19 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
                 activity.pop("sector_code", "")
                 activity["business_plan_id"] = business_plan.id
                 create_activity_objs.append(BPActivity(**activity))
+            elif identifier not in initial_instances:
+                # if the activity is not found, create a new one
+                create_activities.append(copy.deepcopy(activity))
+                activity.pop("values", [])
+                activity.pop("substances", [])
+                activity.pop("project_type_code", "")
+                activity.pop("sector_code", "")
+                activity["business_plan_id"] = business_plan.id
+                create_activity_objs.append(BPActivity(**activity))
             else:
+                # if the activity is found, update it
                 initial_update_activities.append((identifier, copy.deepcopy(activity)))
+
         # bulk create new activities for this bp
         create_activity_objs = BPActivity.objects.bulk_create(
             create_activity_objs, batch_size=1000
@@ -553,7 +571,8 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
             instances = BPActivity.objects.filter(
                 initial_id__in=[
                     activity_id for activity_id, _ in initial_update_activities
-                ]
+                ],
+                business_plan=business_plan,
             )
             instances_ids = [instance.initial_id for instance in instances]
             for identifier, activity_data in initial_update_activities:
@@ -561,7 +580,8 @@ class BusinessPlanCreateSerializer(serializers.ModelSerializer):
                     update_activities.append((identifier, activity_data))
         else:
             instances = BPActivity.objects.filter(
-                id__in=[activity_id for activity_id, _ in initial_update_activities]
+                id__in=[activity_id for activity_id, _ in initial_update_activities],
+                business_plan=business_plan,
             )
             instances_ids = [instance.id for instance in instances]
             for identifier, activity_data in initial_update_activities:
