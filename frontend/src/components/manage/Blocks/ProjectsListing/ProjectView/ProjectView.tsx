@@ -9,18 +9,18 @@ import ProjectSpecificInfo from './ProjectSpecificInfo'
 import ProjectApproval from './ProjectApproval'
 import ProjectImpact from './ProjectImpact'
 import ProjectDocumentation from './ProjectDocumentation'
+import ProjectRelatedProjects from './ProjectRelatedProjects'
+import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
 import { ProjectFile, ProjectViewProps } from '../interfaces'
 import { getSectionFields, hasFields } from '../utils'
+import useClickOutside from '@ors/hooks/useClickOutside'
 import { formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
+import { AiFillFileExcel, AiFillFilePdf } from 'react-icons/ai'
 import { IoDownloadOutline } from 'react-icons/io5'
 import { Tabs, Tab, Tooltip } from '@mui/material'
 import { debounce } from 'lodash'
-
-import { AiFillFileExcel, AiFillFilePdf } from 'react-icons/ai'
-
-import useClickOutside from '@ors/hooks/useClickOutside'
 
 import cx from 'classnames'
 
@@ -123,6 +123,8 @@ const ProjectView = ({
     getSectionFields(specificFields, 'Impact'),
   ]
 
+  const relatedProjects = useGetRelatedProjects(project, 'view')
+
   const classes = {
     disabled: 'text-gray-200',
   }
@@ -180,6 +182,12 @@ const ProjectView = ({
           },
         ]
       : []),
+    {
+      id: 'project-related-projects-section',
+      ariaControls: 'project-related-projects-section',
+      label: 'Related projects',
+      component: <ProjectRelatedProjects {...{ relatedProjects }} />,
+    },
     {
       id: 'project-history-section',
       ariaControls: 'project-history-section',

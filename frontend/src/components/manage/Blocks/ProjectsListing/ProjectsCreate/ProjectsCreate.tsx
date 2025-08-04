@@ -10,6 +10,7 @@ import ProjectCrossCuttingFields from './ProjectCrossCuttingFields'
 import ProjectSpecificInfoSection from './ProjectSpecificInfoSection.tsx'
 import ProjectImpact from './ProjectImpact.tsx'
 import ProjectDocumentation from '../ProjectView/ProjectDocumentation.tsx'
+import ProjectRelatedProjects from '../ProjectView/ProjectRelatedProjects.tsx'
 import {
   ProjectFile,
   ProjectSpecificFields,
@@ -17,7 +18,7 @@ import {
   ProjectFiles,
   ProjectDataProps,
   TrancheErrors,
-  RelatedProjectsType,
+  RelatedProjectsSectionType,
 } from '../interfaces.ts'
 import {
   canGoToSecondStep,
@@ -71,10 +72,7 @@ const ProjectsCreate = ({
     fileErrors: string
     project?: ProjectTypeApi
     projectFiles?: ProjectFile[]
-    relatedProjects?: {
-      title: string
-      data: RelatedProjectsType[] | null
-    }[]
+    relatedProjects?: RelatedProjectsSectionType[]
   }) => {
   const { project_id } = useParams<Record<string, string>>()
 
@@ -215,7 +213,6 @@ const ProjectsCreate = ({
 
   const steps = [
     {
-      step: 0,
       id: 'project-identifiers',
       ariaControls: 'project-identifiers',
       label: (
@@ -238,7 +235,6 @@ const ProjectsCreate = ({
             setCurrentTab,
             hasSubmitted,
             mode,
-            relatedProjects,
           }}
           isNextBtnEnabled={canLinkToBp}
           errors={projIdentifiersErrors}
@@ -247,7 +243,6 @@ const ProjectsCreate = ({
       errors: formatErrors({ ...projIdentifiersErrors, ...bpErrors }),
     },
     {
-      step: 1,
       id: 'project-cross-cutting-section',
       ariaControls: 'project-cross-cutting-section',
       label: (
@@ -275,7 +270,6 @@ const ProjectsCreate = ({
       errors: formatErrors(crossCuttingErrors),
     },
     {
-      step: 2,
       id: 'project-specific-info-section',
       ariaControls: 'project-specific-info-section',
       label: (
@@ -328,7 +322,6 @@ const ProjectsCreate = ({
       ],
     },
     {
-      step: 3,
       id: 'project-impact-section',
       ariaControls: 'project-impact-section',
       label: (
@@ -352,7 +345,6 @@ const ProjectsCreate = ({
       errors: formatErrors(impactErrors),
     },
     {
-      step: 4,
       id: 'project-documentation-section',
       ariaControls: 'project-documentation-section',
       label: (
@@ -390,7 +382,16 @@ const ProjectsCreate = ({
     ...(project && mode === 'edit'
       ? [
           {
-            step: 5,
+            id: 'project-related-projects-section',
+            ariaControls: 'project-related-projects-section',
+            label: 'Related projects',
+            component: <ProjectRelatedProjects {...{ relatedProjects }} />,
+          },
+        ]
+      : []),
+    ...(project && mode === 'edit'
+      ? [
+          {
             id: 'project-history-section',
             ariaControls: 'project-history-section',
             label: (
@@ -436,7 +437,7 @@ const ProjectsCreate = ({
       </Tabs>
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {steps
-          .filter(({ step }) => step === currentTab)
+          .filter((_, index) => index === currentTab)
           .map(({ component, errors }) => {
             return (
               <>

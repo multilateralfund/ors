@@ -241,10 +241,6 @@ export type ProjectIdentifiersSectionProps = {
   errors: { [key: string]: string[] }
   hasSubmitted: boolean
   mode: string
-  relatedProjects?: {
-    title: string
-    data: RelatedProjectsType[] | null
-  }[]
 }
 
 export type TrancheErrorType = {
@@ -262,4 +258,11 @@ export type TrancheErrors = {
 export type RelatedProjectsType = ProjectTypeApi & {
   errors: Record<string, string>[]
   warnings: Record<string, string>[]
+}
+
+export type RelatedProjectsSectionType = {
+  title: string
+  data: RelatedProjectsType[] | null
+  setData: (data: RelatedProjectsType[] | null) => void
+  queryParams: string
 }
