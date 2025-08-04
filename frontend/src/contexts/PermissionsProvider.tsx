@@ -30,6 +30,10 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
 
   const canViewBp = user_permissions.includes('has_business_plan_view_access')
   const canUpdateBp = user_permissions.includes('has_business_plan_edit_access')
+  const isBpAdmin =
+    canUpdateBp && user_permissions.includes('can_view_all_agencies')
+
+  const canViewV1Projects = user_permissions.includes('has_project_view_access')
 
   const canViewProjects = user_permissions.includes(
     'has_project_v2_view_access',
@@ -95,6 +99,7 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
         canUpdateBp,
         canViewReplenishment,
         canEditReplenishment,
+        canViewV1Projects,
         canViewProjects,
         canViewMetainfoProjects,
         canViewSectorsSubsectors,
@@ -107,6 +112,7 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
         canCommentCPCountry,
         canCommentCPSecretariat,
         isCPCountryUserType,
+        isBpAdmin,
       }}
     >
       {children}

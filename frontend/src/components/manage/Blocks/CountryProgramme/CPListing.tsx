@@ -1,6 +1,5 @@
 'use client'
 import type { SimpleSelectProps } from '@ors/components/ui/SimpleSelect/SimpleSelect'
-import type { UserType } from '@ors/types/user_types'
 import { Country, FiltersType, StatusFilterTypes } from '@ors/types/store'
 
 import React, { useContext, useEffect, useMemo, useState } from 'react'
@@ -43,7 +42,6 @@ interface SectionProps {
   minYear: any
   section?: number
   setFilters: any
-  user_type?: UserType
 }
 
 type ReportResponse = {
@@ -175,7 +173,7 @@ const CountryYearFilterPills = (props: any) => {
 
 const SubmissionItem = (props: any) => {
   const { isCPCountryUserType } = useContext(PermissionsContext)
-  const { filters, group, reports, user_type } = props
+  const { filters, group, reports } = props
   const { canEditCPReports } = useContext(PermissionsContext)
 
   const countries = useStore((state) => state.common.countries_for_listing.data)
@@ -273,8 +271,7 @@ const SubmissionSection = function SubmissionSection(
   props: { submissionApi: any } & SectionProps,
 ) {
   const { isCPCountryUserType } = useContext(PermissionsContext)
-  const { filters, maxYear, minYear, setFilters, submissionApi, user_type } =
-    props
+  const { filters, maxYear, minYear, setFilters, submissionApi } = props
   const [pagination, setPagination] = useState({
     page: 1,
     rowsPerPage: SUBMISSIONS_PER_PAGE,
@@ -364,7 +361,6 @@ const SubmissionSection = function SubmissionSection(
               loaded={loaded}
               loading={loading}
               reports={countryData.reports}
-              user_type={user_type}
             />
           )
         })}
@@ -501,9 +497,7 @@ const StatusFilter = (props: any) => {
 const CountrySelect = (props: { filters: any; setFilters: any }) => {
   const { isCPCountryUserType } = useContext(PermissionsContext)
   const { filters, setFilters } = props
-  const { country: user_country, user_type } = useStore(
-    (state) => state.user.data,
-  )
+  const { country: user_country } = useStore((state) => state.user.data)
   const countries = useStore((state) => state.common.countries_for_listing.data)
   const country = countries.find((c) => c.name === user_country)
 
@@ -546,7 +540,6 @@ const YearSelect = (props: {
 }) => {
   const { isCPCountryUserType } = useContext(PermissionsContext)
   const { maxYear, minYear, onChange, range } = props
-  const { user_type } = useStore((state) => state.user.data)
 
   return (
     <div className="relative">
@@ -766,7 +759,6 @@ export default function CPListing() {
   )
   setCpActiveTab(0)
   const settings = useStore((state) => state.common.settings.data)
-  const { user_type } = useStore((state) => state.user.data)
   const { canEditCPReports, canExportCPReports } =
     useContext(PermissionsContext)
 
@@ -890,7 +882,6 @@ export default function CPListing() {
               minYear={minYear}
               setFilters={handleFiltersChange}
               submissionApi={submissionApi}
-              user_type={user_type}
             />
           )}
           {activeTab === 1 && !isCPCountryUserType && (
@@ -900,7 +891,6 @@ export default function CPListing() {
               maxYear={maxYear}
               minYear={minYear}
               setFilters={handleFiltersChange}
-              user_type={user_type}
             />
           )}
         </div>

@@ -469,8 +469,6 @@ const CPCreate: React.FC = () => {
   }, [renderedSections.length, activeTab])
 
   useEffect(() => {
-    const user_type = user.data.user_type
-
     if (isCPCountryUserType) {
       const country_id = user.data.country_id
       const user_country = user.data.country

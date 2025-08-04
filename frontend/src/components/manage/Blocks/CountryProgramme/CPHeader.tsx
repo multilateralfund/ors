@@ -441,7 +441,6 @@ const EditHeaderActions = ({
     (state) => state.cp_reports,
   )
   const { enqueueSnackbar } = useSnackbar()
-  const { user_type } = useStore((state) => state.user.data)
   const { canEditCPReports, canSubmitFinalCPReport, canDeleteCPReports } =
     useContext(PermissionsContext)
 

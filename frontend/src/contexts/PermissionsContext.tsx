@@ -10,6 +10,7 @@ interface PermissionsContextProps {
   canUpdateBp: boolean
   canViewReplenishment: boolean
   canEditReplenishment: boolean
+  canViewV1Projects: boolean
   canViewProjects: boolean
   canViewMetainfoProjects: boolean
   canViewSectorsSubsectors: boolean
@@ -22,6 +23,7 @@ interface PermissionsContextProps {
   canCommentCPCountry: boolean
   canCommentCPSecretariat: boolean
   isCPCountryUserType: boolean
+  isBpAdmin: boolean
 }
 
 const PermissionsContext = createContext<PermissionsContextProps>(

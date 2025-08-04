@@ -212,9 +212,11 @@ export default function RootLayout({
         }}
       >
         <ThemeProvider>
-          <LoginWrapper appState={appState} setCurrentUser={setCurrentUser}>
-            <PermissionsProvider>{children}</PermissionsProvider>
-          </LoginWrapper>
+          <PermissionsProvider>
+            <LoginWrapper appState={appState} setCurrentUser={setCurrentUser}>
+              {children}
+            </LoginWrapper>
+          </PermissionsProvider>
         </ThemeProvider>
       </StoreProvider>
     </div>

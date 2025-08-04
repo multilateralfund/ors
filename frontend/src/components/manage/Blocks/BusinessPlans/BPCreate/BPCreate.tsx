@@ -7,6 +7,7 @@ import React, {
   ChangeEventHandler,
   PropsWithChildren,
   useCallback,
+  useContext,
 } from 'react'
 
 import { Button, Tab, Tabs } from '@mui/material'
@@ -26,6 +27,7 @@ import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import VersionHistoryList from '@ors/components/ui/VersionDetails/VersionHistoryList'
 import { api } from '@ors/helpers'
 import { useStore } from '@ors/store'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 
 import SimpleInput from '../../Section/ReportInfo/SimpleInput'
 import useGetBpPeriods from '../BPList/useGetBPPeriods'
@@ -126,10 +128,11 @@ function BPCreateHeader(props: PropsWithChildren) {
 
 function AgencyField() {
   const ctx = useBPCreate()
+  const { isBpAdmin } = useContext(PermissionsContext)
+
   const dispatch = useBPCreateDispatch()
 
   const agencies = useStore((state) => state?.common.agencies.data)
-  const { user_type } = useStore((state) => state.user?.data)
 
   function handleChangeReportingAgency(
     _: React.ChangeEvent,
@@ -151,7 +154,7 @@ function AgencyField() {
 
   return (
     <>
-      {['admin', 'secretariat'].includes(user_type) ? (
+      {isBpAdmin ? (
         <div className="flex h-full flex-col justify-end">
           <label
             className="mb-2 block text-lg font-normal text-gray-900"
