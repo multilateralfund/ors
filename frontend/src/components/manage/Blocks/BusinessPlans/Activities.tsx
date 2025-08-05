@@ -118,6 +118,7 @@ const ValuesTable: React.FC<Props> = ({
   const renderTable = (
     header: string,
     data: (number | string)[],
+    hasNoDecimals?: boolean,
     isCo2?: boolean,
   ) => (
     <table className={cx(styles.replTable, '')}>
@@ -147,14 +148,14 @@ const ValuesTable: React.FC<Props> = ({
                 TransitionProps={{ timeout: 0 }}
                 placement={'bottom'}
                 title={formatDecimalValue(parseFloat(value.toString()), {
-                  maximumFractionDigits: isCo2 ? 0 : 10,
-                  minimumFractionDigits: isCo2 ? 0 : 2,
+                  maximumFractionDigits: hasNoDecimals ? 0 : 10,
+                  minimumFractionDigits: hasNoDecimals ? 0 : 2,
                 })}
               >
                 <span>
                   {formatDecimalValue(
                     parseFloat(value.toString()),
-                    isCo2
+                    hasNoDecimals
                       ? {
                           maximumFractionDigits: 0,
                           minimumFractionDigits: 0,
@@ -173,12 +174,12 @@ const ValuesTable: React.FC<Props> = ({
   return (
     <div className="grid grid-cols-1 gap-4 border-0 border-b border-solid border-gray-200 pb-4 md:grid-cols-2 lg:grid-cols-3">
       {(isAllView || isValuesView) &&
-        renderTable('Value (US $)', tableData.usdValues)}
+        renderTable('Value (US $)', tableData.usdValues, true)}
       {(isAllView || !isValuesView) && (
         <>
           {renderTable('ODP', tableData.odpValues)}
           {renderTable('MT for HFC', tableData.mtValues)}
-          {renderTable('CO2-eq', tableData.co2Values, true)}
+          {renderTable('CO2-eq', tableData.co2Values, true, true)}
         </>
       )}
     </div>
