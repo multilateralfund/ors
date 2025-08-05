@@ -1,4 +1,4 @@
-import { ChangeEvent, useContext, useState } from 'react'
+import { ChangeEvent, useContext } from 'react'
 
 import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
 import Field from '@ors/components/manage/Form/Field'
@@ -18,7 +18,6 @@ import {
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import { changeHandler } from './SpecificFieldsHelpers'
-import { ClosedList, OpenedList } from '../HelperComponents'
 import { defaultProps, disabledClassName, tableColumns } from '../constants'
 import { canEditField, canViewField, getProduction } from '../utils'
 import { ApiAgency } from '@ors/types/api_agencies'
@@ -27,7 +26,7 @@ import { parseNumber } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
 import { Button, Checkbox, FormControlLabel, Typography } from '@mui/material'
-import { find, isNil, isNull, map } from 'lodash'
+import { find, isNil, isNull } from 'lodash'
 import cx from 'classnames'
 
 const ProjectIdentifiersFields = ({
@@ -40,13 +39,9 @@ const ProjectIdentifiersFields = ({
   errors,
   hasSubmitted,
   mode,
-  relatedProjects,
 }: ProjectIdentifiersSectionProps) => {
   const sectionIdentifier = 'projIdentifiers'
   const projIdentifiers = projectData[sectionIdentifier]
-
-  const [openComponentProjects, setOpenComponentProjects] = useState(true)
-  const [openAssociatedProjects, setOpenAssociatedProjects] = useState(true)
 
   const commonSlice = useStore((state) => state.common)
   const agencies = commonSlice.agencies.data
@@ -383,37 +378,6 @@ const ProjectIdentifiersFields = ({
           )}
         </div>
       </div>
-      {/* {map(
-        relatedProjects,
-        ({ data, title }, index) =>
-          data &&
-          data.length > 0 && (
-            <div
-              className="transition-transform mt-6 w-full max-w-[850px] transform cursor-pointer rounded-lg p-4 duration-300 ease-in-out"
-              style={{ boxShadow: '0px 10px 20px 0px rgba(0, 0, 0, 0.2)' }}
-              onClick={() => {
-                if (index === 0) {
-                  setOpenComponentProjects(!openComponentProjects)
-                } else {
-                  setOpenAssociatedProjects(!openAssociatedProjects)
-                }
-              }}
-            >
-              {(index === 0 && openComponentProjects) ||
-              (index === 1 && openAssociatedProjects) ? (
-                <OpenedList
-                  title={title}
-                  data={data}
-                  canRefreshStatus={false}
-                  loaded={true}
-                  mode="view"
-                />
-              ) : (
-                <ClosedList title={title} />
-              )}
-            </div>
-          ),
-      )} */}
     </>
   )
 }

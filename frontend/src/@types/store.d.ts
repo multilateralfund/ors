@@ -1,4 +1,4 @@
-import { ProjectFields } from '@ors/components/manage/Blocks/ProjectsListing/interfaces'
+import { ProjectSpecificFields } from '@ors/components/manage/Blocks/ProjectsListing/interfaces'
 import type { CPReport, CPReportDiff } from './api_country-programme_records'
 import type { EmptyFormType } from './api_empty-form'
 import type { ApiSubstance } from './api_substances'
@@ -172,7 +172,7 @@ export interface ProjectsFieldsSlice {
   projectFields: {
     loading: boolean
     loaded: boolean
-    data: ProjectFields[]
+    data: ProjectSpecificFields[]
     error: any
   }
   viewableFields: string[]

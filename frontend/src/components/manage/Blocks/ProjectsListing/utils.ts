@@ -331,8 +331,10 @@ export const getSpecificFieldsErrors = (
   const fieldNames = map(
     filter(
       specificFields,
-      ({ table, section, editable }) =>
-        table === 'project' && section !== 'MYA' && editable !== false,
+      ({ table, section, editable_in_versions }) =>
+        table === 'project' &&
+        section !== 'MYA' &&
+        editable_in_versions.includes(project?.version ?? 0),
     ),
     'write_field_name',
   ) as string[]

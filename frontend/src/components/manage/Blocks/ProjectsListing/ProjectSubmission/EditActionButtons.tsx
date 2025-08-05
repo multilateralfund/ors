@@ -61,8 +61,12 @@ const EditActionButtons = ({
 }) => {
   const [_, setLocation] = useLocation()
 
-  const { canUpdateProjects, canSubmitProjects, canRecommendProjects } =
-    useContext(PermissionsContext)
+  const {
+    canUpdateProjects,
+    canSubmitProjects,
+    canRecommendProjects,
+    canApproveProjects,
+  } = useContext(PermissionsContext)
 
   const showSubmitTranchesWarningModal = trancheErrors?.tranchesData?.find(
     (tranche: RelatedProjectsType) => tranche.warnings.length > 0,
@@ -80,6 +84,7 @@ const EditActionButtons = ({
 
   const isDraft = lowerCase(submission_status) === 'draft'
   const isSubmitted = lowerCase(submission_status) === 'submitted'
+  const isRecommended = lowerCase(submission_status) === 'recommended'
   const isApproved = lowerCase(submission_status) === 'approved'
 
   const crossCuttingErrors = useMemo(
@@ -91,6 +96,18 @@ const EditActionButtons = ({
       getSpecificFieldsErrors(
         projectSpecificFields,
         specificFields,
+        {},
+        'edit',
+        project,
+      ),
+    [projectSpecificFields, project, specificFields],
+  )
+
+  const specificErrorsApproval = useMemo(
+    () =>
+      getSpecificFieldsErrors(
+        projectSpecificFields,
+        specificFields.filter(({ is_actual }) => !is_actual),
         {},
         'edit',
         project,
@@ -113,14 +130,22 @@ const EditActionButtons = ({
     Impact: impactErrors = {},
   } = specificErrors
 
-  const hasErrors =
+  const commonErrors =
     hasSectionErrors(crossCuttingErrors) ||
     hasSectionErrors(headerErrors) ||
     hasSectionErrors(substanceErrors) ||
-    hasSectionErrors(impactErrors) ||
     hasOdsOdpErrors ||
     getHasNoFiles(id, files, projectFiles)
+  const hasErrors =
+    commonErrors ||
+    (isApproved
+      ? hasSectionErrors(specificErrorsApproval['Impact'] || {})
+      : hasSectionErrors(impactErrors))
+
   const disableSubmit = isSubmitDisabled || hasErrors
+  const disableUpdate =
+    isRecommended || isApproved ? disableSubmit : isSaveDisabled
+  const disableApprovalActions = true
 
   const { deletedFilesIds = [], newFiles = [] } = files || {}
 
@@ -281,8 +306,14 @@ const EditActionButtons = ({
     }
   }
 
+  const approveProject = () => {}
+
+  const notApproveProject = () => {}
+
   const enabledButtonClassname =
     'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow'
+  const dropDownClassName =
+    'bg-primary px-4 py-2 text-white shadow-none hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow'
   const dropdownItemClassname = 'bg-transparent font-medium normal-case'
 
   const DropDownButtonProps: ButtonProps = {
@@ -303,14 +334,14 @@ const EditActionButtons = ({
       {canUpdateProjects && (
         <Button
           className={cx('px-4 py-2 shadow-none', {
-            [enabledButtonClassname]: !isSaveDisabled,
+            [enabledButtonClassname]: !disableUpdate,
           })}
           size="large"
           variant="contained"
           onClick={() => {
             editProject()
           }}
-          disabled={isSaveDisabled}
+          disabled={disableUpdate}
         >
           Update project
         </Button>
@@ -334,7 +365,7 @@ const EditActionButtons = ({
       )}
       {canRecommendProjects && isSubmitted && (
         <Dropdown
-          className="bg-primary px-4 py-2 text-white shadow-none hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow"
+          className={dropDownClassName}
           ButtonProps={DropDownButtonProps}
           MenuProps={DropDownMenuProps}
           label={<>Edit project</>}
@@ -362,6 +393,30 @@ const EditActionButtons = ({
           </Dropdown.Item>
         </Dropdown>
       )}
+      {/* {canApproveProjects && isRecommended && (
+        <Dropdown
+          className={dropDownClassName}
+          ButtonProps={DropDownButtonProps}
+          MenuProps={DropDownMenuProps}
+          label={<>Edit project</>}
+        >
+          <Dropdown.Item
+            disabled={disableApprovalActions}
+            className={cx(dropdownItemClassname, 'text-primary')}
+            onClick={approveProject}
+          >
+            Approve project
+          </Dropdown.Item>
+          <Divider className="m-0" />
+          <Dropdown.Item
+            disabled={disableApprovalActions}
+            className={cx(dropdownItemClassname, 'text-red-900')}
+            onClick={notApproveProject}
+          >
+            Not approve project
+          </Dropdown.Item>
+        </Dropdown>
+      )} */}
       {isComponentModalOpen && (
         <AddComponentModal
           id={id}

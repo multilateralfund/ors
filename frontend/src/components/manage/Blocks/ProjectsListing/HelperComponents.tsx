@@ -164,12 +164,14 @@ export const RelatedProjects = ({
   data,
   getErrors,
   isLoaded,
+  withDividers = true,
   canRefreshStatus = true,
   mode = 'edit',
 }: {
   data?: RelatedProjectsType[]
   getErrors?: () => void
   isLoaded?: boolean
+  withDividers?: boolean
   canRefreshStatus?: boolean
   mode?: string
 }) => (
@@ -184,6 +186,7 @@ export const RelatedProjects = ({
             className={cx(
               'flex w-fit items-center gap-2 text-lg normal-case leading-tight no-underline',
               {
+                'py-3': !withDividers,
                 '!text-inherit': !hasErrors,
                 '!text-[#801F00]': hasErrors,
               },
@@ -200,7 +203,9 @@ export const RelatedProjects = ({
             {entry.title}
             {hasErrors && <ErrorTag />}
           </Link>
-          {index !== (data?.length ?? 0) - 1 && <Divider className="my-3" />}
+          {withDividers && index !== (data?.length ?? 0) - 1 && (
+            <Divider className="my-3" />
+          )}
         </div>
       )
     })}

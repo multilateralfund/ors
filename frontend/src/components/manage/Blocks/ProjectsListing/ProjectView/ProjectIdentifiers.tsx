@@ -1,8 +1,6 @@
 import { BPTable } from '@ors/components/manage/Blocks/Table/BusinessPlansTable/BusinessPlansTable'
 import { booleanDetailItem, detailItem } from './ViewHelperComponents'
 import { SectionTitle } from '../ProjectsCreate/ProjectsCreate'
-import { RelatedProjects } from '../HelperComponents'
-import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
 import { ProjectTypeApi } from '../interfaces'
 import { tableColumns } from '../constants'
 import { canViewField } from '../utils'
@@ -10,7 +8,6 @@ import { useStore } from '@ors/store'
 
 import { FaInfo } from 'react-icons/fa6'
 import { Divider } from '@mui/material'
-import { map } from 'lodash'
 
 const ProjectIdentifiers = ({ project }: { project: ProjectTypeApi }) => {
   const { viewableFields } = useStore((state) => state.projectFields)
@@ -21,8 +18,6 @@ const ProjectIdentifiers = ({ project }: { project: ProjectTypeApi }) => {
     commonSlice.agencies.data.find(
       (agency) => agency.id === project.meta_project?.lead_agency,
     )?.name ?? '-'
-
-  const relatedProjects = useGetRelatedProjects(project, 'view')
 
   const bpActivity = {
     ...project.bp_activity,
@@ -105,23 +100,6 @@ const ProjectIdentifiers = ({ project }: { project: ProjectTypeApi }) => {
           )}
         </>
       )}
-      {/* {map(
-        relatedProjects,
-        ({ data, title }) =>
-          data &&
-          data.length > 0 && (
-            <>
-              <Divider className="my-6" />
-              <SectionTitle>{title}</SectionTitle>
-              <RelatedProjects
-                data={data}
-                isLoaded={true}
-                canRefreshStatus={false}
-                mode="view"
-              />
-            </>
-          ),
-      )} */}
     </>
   )
 }
