@@ -17,7 +17,7 @@ import {
 export default function AgFloatCellRenderer(
   props: CustomCellRendererProps & {
     tooltipClassName: string
-    isCo2?: boolean
+    hasNoDecimals?: boolean
   },
 ) {
   if (props.data.rowType === 'skeleton') {
