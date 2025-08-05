@@ -119,9 +119,6 @@ export type ProjectSpecificFields = {
   editable: boolean | null
   is_actual: boolean
   sort_order: number
-}
-
-export type ProjectFields = ProjectSpecificFields & {
   editable_in_versions: number[]
   visible_in_versions: number[]
 }

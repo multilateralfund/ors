@@ -103,6 +103,18 @@ const EditActionButtons = ({
     [projectSpecificFields, project, specificFields],
   )
 
+  const specificErrorsApproval = useMemo(
+    () =>
+      getSpecificFieldsErrors(
+        projectSpecificFields,
+        specificFields.filter(({ is_actual }) => !is_actual),
+        {},
+        'edit',
+        project,
+      ),
+    [projectSpecificFields, project, specificFields],
+  )
+
   const hasOdsOdpFields = find(
     specificFields,
     (field) => field.table === 'ods_odp',
@@ -118,13 +130,18 @@ const EditActionButtons = ({
     Impact: impactErrors = {},
   } = specificErrors
 
-  const hasErrors =
+  const commonErrors =
     hasSectionErrors(crossCuttingErrors) ||
     hasSectionErrors(headerErrors) ||
     hasSectionErrors(substanceErrors) ||
-    hasSectionErrors(impactErrors) ||
     hasOdsOdpErrors ||
     getHasNoFiles(id, files, projectFiles)
+  const hasErrors =
+    commonErrors ||
+    (isApproved
+      ? hasSectionErrors(specificErrorsApproval['Impact'] || {})
+      : hasSectionErrors(impactErrors))
+
   const disableSubmit = isSubmitDisabled || hasErrors
   const disableUpdate =
     isRecommended || isApproved ? disableSubmit : isSaveDisabled
