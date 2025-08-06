@@ -30,7 +30,7 @@ const ProjectApproval = ({ project }: { project: ProjectTypeApi }) => {
         detailItem(
           'Excom Provision',
           project.excom_provision,
-          'whitespace-nowrap mr-6',
+          'whitespace-nowrap',
         )}
       <div className="mt-4 flex flex-col gap-4">
         <div className="flex w-full flex-col gap-4">

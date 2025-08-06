@@ -33,6 +33,7 @@ import {
   getHasNoFiles,
   hasSectionErrors,
   hasFields,
+  getApprovalErrors,
 } from '../utils.ts'
 import { useStore } from '@ors/store.tsx'
 
@@ -61,7 +62,7 @@ const ProjectsCreate = ({
   trancheErrors,
   getTrancheErrors,
   relatedProjects,
-  approvalFields,
+  approvalFields = [],
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
@@ -84,8 +85,12 @@ const ProjectsCreate = ({
   )
   const [currentTab, setCurrentTab] = useState<number>(0)
 
-  const { projIdentifiers, crossCuttingFields, projectSpecificFields } =
-    projectData ?? {}
+  const {
+    projIdentifiers,
+    crossCuttingFields,
+    projectSpecificFields,
+    approvalFields: approvalData,
+  } = projectData ?? {}
   const { project_type, sector } = crossCuttingFields
 
   const canLinkToBp = canGoToSecondStep(projIdentifiers)
@@ -137,6 +142,14 @@ const ProjectsCreate = ({
         mode === 'edit' ? project : undefined,
       ),
     [crossCuttingFields, errors, mode],
+  )
+
+  const approvalErrors = useMemo(
+    () =>
+      mode === 'edit'
+        ? getApprovalErrors(approvalData, approvalFields, errors, project)
+        : {},
+    [approvalData, errors],
   )
 
   const specificFieldsErrors = useMemo(
@@ -382,9 +395,7 @@ const ProjectsCreate = ({
           : []),
       ],
     },
-    ...(project &&
-    mode === 'edit' &&
-    project.submission_status === 'Recommended'
+    ...(project && mode === 'edit' && project.version === 3
       ? [
           {
             id: 'project-approval-section',
@@ -392,14 +403,17 @@ const ProjectsCreate = ({
             label: (
               <div className="relative flex items-center justify-between gap-x-2">
                 <div className="leading-tight">Approval</div>
-                {/* {!areNextSectionsDisabled && hasSectionErrors(crossCuttingErrors) && (
-            <SectionErrorIndicator errors={[]} />
-          )} */}
+                {!areNextSectionsDisabled &&
+                  approvalFields.length > 0 &&
+                  hasSectionErrors(approvalErrors) && (
+                    <SectionErrorIndicator errors={[]} />
+                  )}
               </div>
             ),
-            // disabled:
-            //   areNextSectionsDisabled ||
-            //   !hasFields(projectFields, viewableFields, 'Cross-Cutting'),
+            disabled:
+              areNextSectionsDisabled ||
+              approvalFields.length < 1 ||
+              !hasFields(projectFields, viewableFields, 'Approval'),
             component: (
               <ProjectApprovalFields
                 sectionFields={approvalFields as ProjectSpecificFields[]}
@@ -408,10 +422,10 @@ const ProjectsCreate = ({
                   setProjectData,
                   hasSubmitted,
                 }}
-                // errors={crossCuttingErrors}
+                errors={approvalErrors}
               />
             ),
-            // errors: formatErrors(crossCuttingErrors),
+            errors: formatErrors(approvalErrors),
           },
         ]
       : []),

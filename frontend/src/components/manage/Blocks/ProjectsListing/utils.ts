@@ -336,6 +336,48 @@ export const getCrossCuttingErrors = (
   }
 }
 
+export const getApprovalErrors = (
+  approvalFields: SpecificFields,
+  specificFields: ProjectSpecificFields[] | undefined = [],
+  errors: { [key: string]: [] },
+  project: ProjectTypeApi | undefined,
+) => {
+  const requiredFields = [
+    'meeting',
+    'decision',
+    'excom_provision',
+    'date_completion',
+  ]
+
+  const filteredErrors = Object.fromEntries(
+    Object.entries(errors).filter(([key]) => requiredFields.includes(key)),
+  )
+
+  const allErrors = {
+    ...getFieldErrors(requiredFields, approvalFields, project),
+    ...filteredErrors,
+  }
+
+  const allFields = [
+    ...specificFields,
+    { write_field_name: 'meeting', label: 'Meeting' },
+  ]
+  return Object.entries(allErrors).reduce(
+    (acc, [key, errMsg]) => {
+      const field = allFields.find(
+        ({ write_field_name }) => write_field_name === key,
+      )
+
+      if (field) {
+        acc[field.label || key] = errMsg as string[]
+      }
+
+      return acc
+    },
+    {} as Record<string, string[]>,
+  )
+}
+
 export const hasSpecificField = (
   specificFields: ProjectSpecificFields[],
   field: string,

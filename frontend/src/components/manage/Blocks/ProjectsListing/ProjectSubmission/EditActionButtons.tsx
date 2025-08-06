@@ -13,6 +13,7 @@ import {
   formatFiles,
   formatSubmitData,
   getActualData,
+  getApprovalErrors,
   getCrossCuttingErrors,
   getHasNoFiles,
   getSpecificFieldsErrors,
@@ -83,7 +84,11 @@ const EditActionButtons = ({
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false)
 
   const { id, submission_status } = project
-  const { crossCuttingFields, projectSpecificFields } = projectData
+  const {
+    crossCuttingFields,
+    projectSpecificFields,
+    approvalFields: approvalData,
+  } = projectData
   const odsOdpData = projectSpecificFields?.ods_odp ?? []
 
   const submissionStatus = lowerCase(submission_status)
@@ -95,6 +100,10 @@ const EditActionButtons = ({
   const crossCuttingErrors = useMemo(
     () => getCrossCuttingErrors(crossCuttingFields, {}, 'edit', project),
     [crossCuttingFields],
+  )
+  const approvalErrors = useMemo(
+    () => getApprovalErrors(approvalData, approvalFields, {}, project),
+    [approvalData],
   )
   const specificErrors = useMemo(
     () =>
@@ -148,9 +157,12 @@ const EditActionButtons = ({
       : hasSectionErrors(impactErrors))
 
   const disableSubmit = isSubmitDisabled || hasErrors
-  const disableUpdate =
-    isRecommended || isApproved ? disableSubmit : isSaveDisabled
-  const disableApprovalActions = false
+  const disableUpdate = project.version === 3 ? disableSubmit : isSaveDisabled
+  const disableApprovalActions =
+    hasOdsOdpErrors ||
+    hasSectionErrors(approvalErrors) ||
+    crossCuttingErrors['total_fund'].length > 0 ||
+    crossCuttingErrors['support_cost_psc'].length > 0
 
   const { deletedFilesIds = [], newFiles = [] } = files || {}
 
@@ -335,12 +347,19 @@ const EditActionButtons = ({
     }
   }
 
-  const approveProject = () => {
-    editApprovalFields()
-  }
-
-  const notApproveProject = () => {
-    editApprovalFields()
+  const approveRejectProject = async (action: string) => {
+    await editApprovalFields()
+    try {
+      await api(`api/projects/v2/${id}/${action}/`, {
+        method: 'POST',
+      })
+      setLocation(`/projects-listing/${id}`)
+    } catch (error) {
+      await handleErrors(error)
+    } finally {
+      setIsLoading(false)
+      setHasSubmitted(true)
+    }
   }
 
   const enabledButtonClassname =
@@ -436,7 +455,7 @@ const EditActionButtons = ({
           <Dropdown.Item
             disabled={disableApprovalActions}
             className={cx(dropdownItemClassname, 'text-primary')}
-            onClick={approveProject}
+            onClick={() => approveRejectProject('approve')}
           >
             Approve project
           </Dropdown.Item>
@@ -444,7 +463,7 @@ const EditActionButtons = ({
           <Dropdown.Item
             disabled={disableApprovalActions}
             className={cx(dropdownItemClassname, 'text-red-900')}
-            onClick={notApproveProject}
+            onClick={() => approveRejectProject('reject')}
           >
             Not approve project
           </Dropdown.Item>

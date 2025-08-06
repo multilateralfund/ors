@@ -46,8 +46,7 @@ const ProjectsEdit = ({
 }) => {
   const project_id = project.id.toString()
   const isEditMode = mode === 'edit'
-  const isRecommended =
-    isEditMode && project.submission_status === 'Recommended'
+  const isVersion3 = isEditMode && project.version === 3
 
   const { canViewProjects, canEditApprovedProjects } =
     useContext(PermissionsContext)
@@ -246,7 +245,7 @@ const ProjectsEdit = ({
         setSpecificFields,
         isEditMode ? project_id : null,
         setSpecificFieldsLoaded,
-        isRecommended ? setApprovalFields : noop,
+        isVersion3 ? setApprovalFields : noop,
       )
     } else {
       setSpecificFields([])
@@ -276,10 +275,10 @@ const ProjectsEdit = ({
             }),
           },
         }),
-        ...(isRecommended && {
+        ...(isVersion3 && {
           approvalFields: {
             ...getDefaultValues<ProjectTypeApi>(approvalFields, project),
-            meeting: project.meeting,
+            meeting: project.meeting_id,
             decision: project.decision_id,
           },
         }),
