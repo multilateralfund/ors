@@ -336,7 +336,9 @@ def parse_bp_file(file, year_start, from_validate=False):
         ).union(ProjectSubSector.objects.filter(name__iexact="Other"))
     ]
     substance_dict = {
-        strip_str(substance.name): substance for substance in Substance.objects.all()
+        strip_str(substance.name): substance
+        # Only allow HCFCs, HFCs and Other.
+        for substance in Substance.objects.filter(group_id__in=[6, 10, 11])
     }
 
     types_mapping = {
