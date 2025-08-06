@@ -85,7 +85,7 @@ class BPActivityExportView(generics.GenericAPIView):
 
     def get_country_names(self):
         queryset = Country.get_business_plan_countries()
-        return [{"name": obj.name, "abbr": obj.abbr} for obj in queryset]
+        return [{"name": obj.name, "acronym": obj.iso3 or obj.abbr} for obj in queryset]
 
     def get_name_and_codes(self, cls_name, code_name, filter_obsoletes=False):
         queryset = cls_name.objects.all()
