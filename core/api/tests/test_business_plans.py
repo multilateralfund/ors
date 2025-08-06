@@ -257,14 +257,14 @@ class TestBPImportValidate:
         )
 
     def test_bp_import_validate_multiple_warnings(
-        self, bp_editor_user, subsector_other, _setup_bp_activity_create
+        self, bp_editor_user, subsector_other, _setup_bp_activity_create, groupOther
     ):
         self.client.force_authenticate(user=bp_editor_user)
         file_path = "core/api/tests/files/Test_BP2025-2027_multiple_warnings.xlsx"
 
         ProjectClusterFactory(name="Other", code="OTH")
         ProjectSectorFactory(name="Other", code="OTH")
-        SubstanceFactory(name="Other substances")
+        SubstanceFactory(name="Other substances", group=groupOther)
 
         with open(file_path, "rb") as f:
             data = {"Test_BP2025-2027.xlsx": f}
@@ -375,7 +375,7 @@ class TestBPImport:
         country_ro,
         project_type,
         bp_chemical_type,
-        substance,
+        substance_hcfc,
         sector,
         subsector_other_sector_other,
         _setup_bp_activity_create,
@@ -404,7 +404,7 @@ class TestBPImport:
         assert activity.lvc_status == "LVC"
         assert activity.project_type == project_type
         assert activity.bp_chemical_type == bp_chemical_type
-        assert activity.substances.first() == substance
+        assert activity.substances.first() == substance_hcfc
         assert activity.sector == sector
         assert activity.subsector == subsector_other_sector_other
         assert activity.amount_polyol == 0
@@ -440,7 +440,7 @@ class TestBPUpdate:
         agency_inputter_user,
         admin_user,
         _setup_bp_activity_create,
-        substance,
+        substance_hcfc,
     ):
         def _test_permissions(test_user, expected_status):
             business_plan = BusinessPlanFactory()
@@ -448,7 +448,7 @@ class TestBPUpdate:
             url = reverse("businessplan-list") + f"{business_plan.id}/"
             activity_data = _setup_bp_activity_create
             activity_data.pop("initial_id", None)  # remove initial_id for update
-            activity_data["substances"] = [substance.id]
+            activity_data["substances"] = [substance_hcfc.id]
             activity_data["business_plan_id"] = business_plan.id
             activity_data["title"] = "Title test"
             activity_data["status"] = "P"
@@ -544,7 +544,7 @@ class TestBPUpdate:
         bp_editor_user,
         _setup_bp_activity_create,
         business_plan,
-        substance,
+        substance_hcfc,
     ):
         self.client.force_authenticate(user=bp_editor_user)
 
@@ -553,7 +553,7 @@ class TestBPUpdate:
         activity_data = _setup_bp_activity_create
         substance2 = SubstanceFactory.create(name="substance2")
         activity_data.pop("initial_id", None)
-        activity_data["substances"] = [substance.id, substance2.id]
+        activity_data["substances"] = [substance_hcfc.id, substance2.id]
         activity_data["business_plan_id"] = other_business_plan.id  # should be ignored
         activity_data["title"] = "Planu 2"
         activity_data["status"] = "P"
@@ -584,7 +584,7 @@ class TestBPUpdate:
         activities = response.data["activities"]
         assert activities[0]["business_plan_id"] == response.data["id"]
         assert activities[0]["title"] == "Planu 2"
-        assert activities[0]["substances"] == [substance.id, substance2.id]
+        assert activities[0]["substances"] == [substance_hcfc.id, substance2.id]
         assert activities[0]["status"] == "P"
         assert activities[0]["is_multi_year"] is True
         assert activities[0]["remarks"] == "Merge rau"
@@ -600,7 +600,7 @@ def setup_bp_activity_list(
     subsector,
     project_type,
     bp_chemical_type,
-    substance,
+    substance_hcfc,
     project_cluster_kpp,
 ):
     countries = [country_ro]
@@ -640,7 +640,7 @@ def setup_bp_activity_list(
                 "remarks": f"Merge bine, bine, bine ca aeroplanu{i}",
             }
             bp_activity = BPActivityFactory.create(**data)
-            bp_activity.substances.set([substance])
+            bp_activity.substances.set([substance_hcfc])
             for i in range(business_plan.year_start, business_plan.year_end + 1):
                 BPActivityValueFactory.create(
                     bp_activity=bp_activity,

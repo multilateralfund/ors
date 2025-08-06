@@ -435,18 +435,25 @@ def groupA():
         name="group A", annex="A", name_alt="group A A", group_id="AI"
     )
 
+
 @pytest.fixture
 def groupHCFC():
     return GroupFactory.create(
-        id=6,
-        name="C/I", annex="C", name_alt="Annex C, Group I", group_id="CI"
+        id=6, name="C/I", annex="C", name_alt="Annex C, Group I", group_id="CI"
+    )
+
+
+@pytest.fixture
+def groupOther():
+    return GroupFactory.create(
+        id=11, name="Other", annex="unknown", name_alt="Other", group_id="uncontrolled"
     )
 
 
 @pytest.fixture
 def substance(excluded_usage, groupA, time_frames):
     substance = SubstanceFactory.create(
-        name="HCFC-substance",
+        name="CFC-substance",
         sort_order=1,
         group=groupA,
         odp=0.02,
@@ -458,6 +465,7 @@ def substance(excluded_usage, groupA, time_frames):
         time_frame=time_frames[(2000, None)],
     )
     return substance
+
 
 @pytest.fixture
 def substance_hcfc(excluded_usage, groupHCFC, time_frames):
