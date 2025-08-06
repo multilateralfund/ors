@@ -468,7 +468,6 @@ const ProjectCrossCuttingFields = ({
                     }
                     disabled={!canEditField(editableFields, 'total_fund')}
                     type="text"
-                    {...defaultPropsSimpleField}
                     {...getFieldDefaultProps('total_fund')}
                   />
                 </div>
@@ -484,7 +483,6 @@ const ProjectCrossCuttingFields = ({
                     }
                     disabled={!canEditField(editableFields, 'support_cost_psc')}
                     type="text"
-                    {...defaultPropsSimpleField}
                     {...getFieldDefaultProps('support_cost_psc')}
                   />
                 </div>

@@ -1,8 +1,10 @@
 import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
-import Field from '@ors/components/manage/Form/Field'
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
+import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
+import { DateInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
+import { canEditField, formatOptions } from '../utils'
 import {
   ProjectSpecificFields,
   FieldType,
@@ -16,12 +18,13 @@ import {
   textAreaClassname,
   additionalProperties,
   disabledClassName,
+  textFieldClassName,
 } from '../constants'
-import { canEditField, formatOptions } from '../utils'
 
-import { Checkbox, TextareaAutosize } from '@mui/material'
 import { find, get, isObject, isBoolean, isNil, isArray } from 'lodash'
+import { Checkbox, TextareaAutosize } from '@mui/material'
 import cx from 'classnames'
+import dayjs from 'dayjs'
 
 const getIsInputDisabled = (
   hasSubmitted: boolean,
@@ -53,6 +56,7 @@ const getFieldDefaultProps = (
     ...{
       ...defaultPropsSimpleField,
       className: cx(defaultPropsSimpleField.className, {
+        '!ml-0 h-10': field.data_type === 'date',
         'w-[125px]': isOdp,
         'border-red-500': isError,
         [disabledClassName]: !canEditField(editableFields, fieldName),
@@ -165,6 +169,10 @@ export const changeHandler: Record<FieldType, FieldHandler> = {
   boolean: (value, field, setState, section, subField, index) => {
     onFieldChange(value, field, setState, section, subField, index)
   },
+  date: (value, field, setState, section, subField, index) => {
+    const formattedVal = value.target.value || null
+    onFieldChange(formattedVal, field, setState, section, subField, index)
+  },
 }
 
 const identifier = 'projectSpecificFields'
@@ -195,7 +203,7 @@ export const AutocompleteWidget = <T,>(
       <Field
         widget="autocomplete"
         options={options}
-        disabled={!canEditField(editableFields, field.write_field_name)}
+        disabled={!canEditField(editableFields, fieldName)}
         value={formattedValue}
         onChange={(_: React.SyntheticEvent, value) =>
           changeHandler[field.data_type]<T, SpecificFields>(
@@ -248,11 +256,68 @@ export const TextWidget = <T,>(
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
 
   return (
+    <div
+      className={cx({
+        'w-full': fieldName === 'programme_officer',
+      })}
+    >
+      <Label>{field.label}</Label>
+      <SimpleInput
+        id={fieldName}
+        value={value}
+        type="text"
+        disabled={!canEditField(editableFields, fieldName)}
+        onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
+          changeHandler[field.data_type]<T, SpecificFields>(
+            event,
+            fieldName,
+            setFields,
+            sectionIdentifier,
+            subField,
+            index,
+          )
+        }
+        {...getFieldDefaultProps(
+          getIsInputDisabled(
+            hasSubmitted,
+            errors,
+            hasTrancheErrors,
+            field.label,
+            index,
+          ),
+          editableFields,
+          field,
+        )}
+        containerClassName={
+          defaultPropsSimpleField.containerClassName +
+          (fieldName === 'programme_officer' ? textFieldClassName : '')
+        }
+      />
+    </div>
+  )
+}
+
+export const TextAreaWidget = <T,>(
+  fields: T,
+  setFields: Dispatch<SetStateAction<T>>,
+  field: ProjectSpecificFields,
+  errors: { [key: string]: string[] } | { [key: string]: string[] }[],
+  hasTrancheErrors: boolean,
+  hasSubmitted: boolean,
+  editableFields: string[],
+  sectionIdentifier: keyof T = identifier as keyof T,
+  subField?: string,
+  index?: number,
+) => {
+  const fieldName = field.write_field_name
+  const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
+
+  return (
     <div className="w-full md:w-auto">
       <Label>{field.label}</Label>
       <TextareaAutosize
         value={value as string}
-        disabled={!canEditField(editableFields, field.write_field_name)}
+        disabled={!canEditField(editableFields, fieldName)}
         onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
           changeHandler[field.data_type]<T, SpecificFields>(
             event,
@@ -299,14 +364,14 @@ const NumberWidget = <T,>(
     <div className="flex h-full flex-col justify-between">
       <Label>{field.label}</Label>
       <SimpleInput
-        id={value as string}
+        id={fieldName}
         value={value ?? ''}
-        disabled={!canEditField(editableFields, field.write_field_name)}
+        disabled={!canEditField(editableFields, fieldName)}
         type="text"
         onChange={(value) =>
           changeHandler[field.data_type]<T, SpecificFields>(
             value,
-            field.write_field_name,
+            fieldName,
             setFields,
             sectionIdentifier,
             subField,
@@ -349,8 +414,8 @@ const BooleanWidget = <T,>(
       <Label>{field.label}</Label>
       <Checkbox
         className="pb-1 pl-2 pt-0"
-        checked={value as boolean}
-        disabled={!canEditField(editableFields, field.write_field_name)}
+        checked={Boolean(value)}
+        disabled={!canEditField(editableFields, fieldName)}
         onChange={(_: React.SyntheticEvent, value) =>
           changeHandler[field.data_type]<T, SpecificFields>(
             value,
@@ -377,10 +442,61 @@ const BooleanWidget = <T,>(
   )
 }
 
+const DateWidget = <T,>(
+  fields: T,
+  setFields: Dispatch<SetStateAction<T>>,
+  field: ProjectSpecificFields,
+  errors: { [key: string]: string[] } | { [key: string]: string[] }[],
+  hasTrancheErrors: boolean,
+  hasSubmitted: boolean,
+  editableFields: string[],
+  sectionIdentifier: keyof T = identifier as keyof T,
+  subField?: string,
+  index?: number,
+) => {
+  const fieldName = field.write_field_name
+  const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
+
+  return (
+    <div>
+      <Label>{field.label}</Label>
+      <DateInput
+        id={fieldName}
+        value={value}
+        disabled={!canEditField(editableFields, fieldName)}
+        formatValue={(value) => dayjs(value).format('MM/DD/YYYY')}
+        onChange={(value) =>
+          changeHandler[field.data_type]<T, SpecificFields>(
+            value,
+            fieldName,
+            setFields,
+            sectionIdentifier,
+            subField,
+            index,
+          )
+        }
+        {...getFieldDefaultProps(
+          getIsInputDisabled(
+            hasSubmitted,
+            errors,
+            hasTrancheErrors,
+            field.label,
+            index,
+          ),
+          editableFields,
+          field,
+        )}
+      />
+    </div>
+  )
+}
+
 export const widgets = {
   drop_down: AutocompleteWidget,
-  text: TextWidget,
+  text: TextAreaWidget,
+  simpleText: TextWidget,
   number: NumberWidget,
   decimal: NumberWidget,
   boolean: BooleanWidget,
+  date: DateWidget,
 }

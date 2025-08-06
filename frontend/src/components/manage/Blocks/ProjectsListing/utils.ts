@@ -132,6 +132,24 @@ const normalizeValues = (data: Record<string, any>) =>
     ]),
   )
 
+const normalizeOdsOdp = (
+  projectSpecificFields: SpecificFields,
+  specificFieldsAvailable: string[],
+) =>
+  map(projectSpecificFields.ods_odp, (field, index) => {
+    const odsDisplayName = get(field, 'ods_display_name') ?? ''
+    const baselineTechValue = odsDisplayName.split('-')?.[1]
+    const baselineTechObj = odsDisplayName.includes('substance')
+      ? { ods_substance_id: baselineTechValue, ods_blend_id: undefined }
+      : { ods_substance_id: undefined, ods_blend_id: baselineTechValue }
+
+    return {
+      ...omit(pick(field, specificFieldsAvailable), 'ods_display_name'),
+      ...baselineTechObj,
+      sort_order: index + 1,
+    }
+  })
+
 const formatActualData = (data: Record<string, any>) =>
   Object.fromEntries(
     Object.entries(data).map(([key, value]) => [key, !value ? null : value]),
@@ -155,25 +173,59 @@ export const formatSubmitData = (
     projectSpecificFields,
     specificFieldsAvailable,
   )
-
-  const crtOdsOdpFields = map(projectSpecificFields.ods_odp, (field, index) => {
-    const odsDisplayName = get(field, 'ods_display_name') ?? ''
-    const baselineTechValue = odsDisplayName.split('-')?.[1]
-    const baselineTechObj = odsDisplayName.includes('substance')
-      ? { ods_substance_id: baselineTechValue, ods_blend_id: null }
-      : { ods_substance_id: null, ods_blend_id: baselineTechValue }
-
-    return {
-      ...omit(pick(field, specificFieldsAvailable), 'ods_display_name'),
-      ...baselineTechObj,
-      sort_order: index + 1,
-    }
-  })
+  const crtOdsOdpFields = normalizeOdsOdp(
+    projectSpecificFields,
+    specificFieldsAvailable,
+  )
 
   return {
     ...projIdentifiers,
     bp_activity: bpLinking.bpId,
     ...normalizeValues(crossCuttingFields),
+    ...normalizeValues(crtProjectSpecificFields),
+    ods_odp: map(crtOdsOdpFields, (ods_odp) =>
+      omit(normalizeValues(ods_odp), 'id'),
+    ),
+  }
+}
+
+export const formatApprovalData = (
+  projectData: ProjectData,
+  specificFields: ProjectSpecificFields[],
+) => {
+  const {
+    projIdentifiers,
+    crossCuttingFields,
+    projectSpecificFields,
+    approvalFields,
+  } = projectData
+
+  const fields = filter(
+    specificFields,
+    (field) => field.table === 'ods_odp' || field.section === 'Approval',
+  )
+  const specificFieldsAvailable = [
+    ...map(fields, 'write_field_name'),
+    'total_fund',
+    'support_cost_psc',
+    'meeting',
+  ]
+
+  const crtProjectSpecificFields = pick(
+    {
+      ...projIdentifiers,
+      ...crossCuttingFields,
+      ...projectSpecificFields,
+      ...approvalFields,
+    },
+    specificFieldsAvailable,
+  )
+  const crtOdsOdpFields = normalizeOdsOdp(
+    projectSpecificFields,
+    specificFieldsAvailable,
+  )
+
+  return {
     ...normalizeValues(crtProjectSpecificFields),
     ods_odp: map(crtOdsOdpFields, (ods_odp) =>
       omit(normalizeValues(ods_odp), 'id'),

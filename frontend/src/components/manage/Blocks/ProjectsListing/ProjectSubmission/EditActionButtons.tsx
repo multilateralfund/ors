@@ -9,6 +9,7 @@ import AddComponentModal from './AddComponentModal'
 import { IncreaseVersionButton } from '../HelperComponents'
 import {
   checkInvalidValue,
+  formatApprovalData,
   formatFiles,
   formatSubmitData,
   getActualData,
@@ -23,6 +24,7 @@ import {
   SubmitActionButtons,
   RelatedProjectsType,
   TrancheErrorType,
+  ProjectSpecificFields,
 } from '../interfaces'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { api, uploadFiles } from '@ors/helpers'
@@ -51,6 +53,7 @@ const EditActionButtons = ({
   setProjectFiles,
   specificFields,
   trancheErrors,
+  approvalFields = [],
 }: SubmitActionButtons & {
   setProjectTitle: (title: string) => void
   project: ProjectTypeApi
@@ -58,6 +61,7 @@ const EditActionButtons = ({
   projectFiles?: ProjectFile[]
   setProjectFiles: (value: ProjectFile[]) => void
   trancheErrors?: TrancheErrorType
+  approvalFields?: ProjectSpecificFields[]
 }) => {
   const [_, setLocation] = useLocation()
 
@@ -82,10 +86,11 @@ const EditActionButtons = ({
   const { crossCuttingFields, projectSpecificFields } = projectData
   const odsOdpData = projectSpecificFields?.ods_odp ?? []
 
-  const isDraft = lowerCase(submission_status) === 'draft'
-  const isSubmitted = lowerCase(submission_status) === 'submitted'
-  const isRecommended = lowerCase(submission_status) === 'recommended'
-  const isApproved = lowerCase(submission_status) === 'approved'
+  const submissionStatus = lowerCase(submission_status)
+  const isDraft = submissionStatus === 'draft'
+  const isSubmitted = submissionStatus === 'submitted'
+  const isRecommended = submissionStatus === 'recommended'
+  const isApproved = submissionStatus === 'approved'
 
   const crossCuttingErrors = useMemo(
     () => getCrossCuttingErrors(crossCuttingFields, {}, 'edit', project),
@@ -145,7 +150,7 @@ const EditActionButtons = ({
   const disableSubmit = isSubmitDisabled || hasErrors
   const disableUpdate =
     isRecommended || isApproved ? disableSubmit : isSaveDisabled
-  const disableApprovalActions = true
+  const disableApprovalActions = false
 
   const { deletedFilesIds = [], newFiles = [] } = files || {}
 
@@ -306,9 +311,37 @@ const EditActionButtons = ({
     }
   }
 
-  const approveProject = () => {}
+  const editApprovalFields = async () => {
+    setIsLoading(true)
+    setOtherErrors('')
+    setErrors({})
 
-  const notApproveProject = () => {}
+    try {
+      const data = formatApprovalData(projectData, [
+        ...specificFields,
+        ...approvalFields,
+      ])
+      const result = await api(`api/projects/v2/${id}/edit_approval_fields/`, {
+        data: data,
+        method: 'PUT',
+      })
+
+      setProjectId(result.id)
+    } catch (error) {
+      await handleErrors(error)
+    } finally {
+      setIsLoading(false)
+      setHasSubmitted(true)
+    }
+  }
+
+  const approveProject = () => {
+    editApprovalFields()
+  }
+
+  const notApproveProject = () => {
+    editApprovalFields()
+  }
 
   const enabledButtonClassname =
     'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow'
@@ -393,7 +426,7 @@ const EditActionButtons = ({
           </Dropdown.Item>
         </Dropdown>
       )}
-      {/* {canApproveProjects && isRecommended && (
+      {canApproveProjects && isRecommended && (
         <Dropdown
           className={dropDownClassName}
           ButtonProps={DropDownButtonProps}
@@ -416,7 +449,7 @@ const EditActionButtons = ({
             Not approve project
           </Dropdown.Item>
         </Dropdown>
-      )} */}
+      )}
       {isComponentModalOpen && (
         <AddComponentModal
           id={id}

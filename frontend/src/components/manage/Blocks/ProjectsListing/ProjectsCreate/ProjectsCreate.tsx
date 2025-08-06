@@ -10,6 +10,7 @@ import ProjectCrossCuttingFields from './ProjectCrossCuttingFields'
 import ProjectSpecificInfoSection from './ProjectSpecificInfoSection.tsx'
 import ProjectImpact from './ProjectImpact.tsx'
 import ProjectDocumentation from '../ProjectView/ProjectDocumentation.tsx'
+import ProjectApprovalFields from './ProjectApprovalFields.tsx'
 import ProjectRelatedProjects from '../ProjectView/ProjectRelatedProjects.tsx'
 import {
   ProjectFile,
@@ -60,6 +61,7 @@ const ProjectsCreate = ({
   trancheErrors,
   getTrancheErrors,
   relatedProjects,
+  approvalFields,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
@@ -73,6 +75,7 @@ const ProjectsCreate = ({
     project?: ProjectTypeApi
     projectFiles?: ProjectFile[]
     relatedProjects?: RelatedProjectsSectionType[]
+    approvalFields?: ProjectSpecificFields[]
   }) => {
   const { project_id } = useParams<Record<string, string>>()
 
@@ -379,6 +382,39 @@ const ProjectsCreate = ({
           : []),
       ],
     },
+    ...(project &&
+    mode === 'edit' &&
+    project.submission_status === 'Recommended'
+      ? [
+          {
+            id: 'project-approval-section',
+            ariaControls: 'project-approval-section',
+            label: (
+              <div className="relative flex items-center justify-between gap-x-2">
+                <div className="leading-tight">Approval</div>
+                {/* {!areNextSectionsDisabled && hasSectionErrors(crossCuttingErrors) && (
+            <SectionErrorIndicator errors={[]} />
+          )} */}
+              </div>
+            ),
+            // disabled:
+            //   areNextSectionsDisabled ||
+            //   !hasFields(projectFields, viewableFields, 'Cross-Cutting'),
+            component: (
+              <ProjectApprovalFields
+                sectionFields={approvalFields as ProjectSpecificFields[]}
+                {...{
+                  projectData,
+                  setProjectData,
+                  hasSubmitted,
+                }}
+                // errors={crossCuttingErrors}
+              />
+            ),
+            // errors: formatErrors(crossCuttingErrors),
+          },
+        ]
+      : []),
     ...(project && mode === 'edit'
       ? [
           {

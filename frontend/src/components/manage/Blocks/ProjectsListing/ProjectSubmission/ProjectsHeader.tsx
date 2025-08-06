@@ -31,6 +31,7 @@ const ProjectsHeader = ({
   setProjectFiles = () => {},
   trancheErrors,
   specificFields,
+  approvalFields,
   ...rest
 }: {
   projectData: ProjectData
@@ -45,6 +46,7 @@ const ProjectsHeader = ({
   trancheErrors?: TrancheErrorType
   project?: ProjectTypeApi
   setProjectFiles?: (value: ProjectFile[]) => void
+  approvalFields?: ProjectSpecificFields[]
 }) => {
   const { projIdentifiers, crossCuttingFields, projectSpecificFields } =
     projectData
@@ -131,6 +133,7 @@ const ProjectsHeader = ({
                 setProjectTitle,
                 trancheErrors,
                 specificFields,
+                approvalFields,
               }}
               {...rest}
             />

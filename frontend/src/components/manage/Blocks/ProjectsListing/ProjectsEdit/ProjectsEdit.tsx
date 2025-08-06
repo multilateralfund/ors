@@ -34,7 +34,7 @@ import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { useStore } from '@ors/store'
 import { api } from '@ors/helpers'
 
-import { debounce, groupBy, map, filter, find, replace } from 'lodash'
+import { debounce, groupBy, map, filter, find, replace, noop } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 
 const ProjectsEdit = ({
@@ -46,6 +46,8 @@ const ProjectsEdit = ({
 }) => {
   const project_id = project.id.toString()
   const isEditMode = mode === 'edit'
+  const isRecommended =
+    isEditMode && project.submission_status === 'Recommended'
 
   const { canViewProjects, canEditApprovedProjects } =
     useContext(PermissionsContext)
@@ -71,12 +73,16 @@ const ProjectsEdit = ({
     bpLinking: { isLinkedToBP: false, bpId: null },
     crossCuttingFields: initialCrossCuttingFields,
     projectSpecificFields: {} as SpecificFields,
+    approvalFields: {} as SpecificFields,
   })
   const [specificFields, setSpecificFields] = useState<ProjectSpecificFields[]>(
     [],
   )
   const [specificFieldsLoaded, setSpecificFieldsLoaded] =
     useState<boolean>(false)
+  const [approvalFields, setApprovalFields] = useState<ProjectSpecificFields[]>(
+    [],
+  )
 
   const { projIdentifiers, crossCuttingFields } = projectData
   const { cluster } = projIdentifiers
@@ -216,8 +222,9 @@ const ProjectsEdit = ({
               project_end_date: project.project_end_date,
               total_fund: project.total_fund,
               support_cost_psc: project.support_cost_psc,
-              individual_consideration:
-                mode === 'edit' ? project.individual_consideration : true,
+              individual_consideration: isEditMode
+                ? project.individual_consideration
+                : true,
             },
           }
         : {
@@ -239,6 +246,7 @@ const ProjectsEdit = ({
         setSpecificFields,
         isEditMode ? project_id : null,
         setSpecificFieldsLoaded,
+        isRecommended ? setApprovalFields : noop,
       )
     } else {
       setSpecificFields([])
@@ -251,7 +259,11 @@ const ProjectsEdit = ({
   }, [cluster, project_type, sector])
 
   useEffect(() => {
-    if (specificFields.length > 0 && !fieldsValuesLoaded.current) {
+    if (
+      !fieldsValuesLoaded.current &&
+      specificFields.length > 0 &&
+      approvalFields.length > 0
+    ) {
       setProjectData((prevData) => ({
         ...prevData,
         ...(mode !== 'partial-link' && {
@@ -262,6 +274,13 @@ const ProjectsEdit = ({
                 ...getDefaultValues<OdsOdpFields>(odsOdpFields, ods),
               }
             }),
+          },
+        }),
+        ...(isRecommended && {
+          approvalFields: {
+            ...getDefaultValues<ProjectTypeApi>(approvalFields, project),
+            meeting: project.meeting,
+            decision: project.decision_id,
           },
         }),
       }))
@@ -382,6 +401,7 @@ const ProjectsEdit = ({
             setProjectFiles,
             specificFields,
             trancheErrors,
+            approvalFields,
           }}
         />
         <ProjectsCreate
@@ -401,6 +421,7 @@ const ProjectsEdit = ({
             trancheErrors,
             getTrancheErrors,
             relatedProjects,
+            approvalFields,
           }}
         />
         <ProjectFormFooter
