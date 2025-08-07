@@ -34,7 +34,7 @@ import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { useStore } from '@ors/store'
 import { api } from '@ors/helpers'
 
-import { debounce, groupBy, map, filter, find, replace, noop } from 'lodash'
+import { debounce, groupBy, map, filter, find, replace, isArray } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 
 const ProjectsEdit = ({
@@ -79,9 +79,6 @@ const ProjectsEdit = ({
   )
   const [specificFieldsLoaded, setSpecificFieldsLoaded] =
     useState<boolean>(false)
-  const [approvalFields, setApprovalFields] = useState<ProjectSpecificFields[]>(
-    [],
-  )
 
   const { projIdentifiers, crossCuttingFields } = projectData
   const { cluster } = projIdentifiers
@@ -127,6 +124,12 @@ const ProjectsEdit = ({
       setEditableFields?.(version, submissionStatus, canEditApprovedProjects)
     }
   }, [allFields, setViewableFields, setEditableFields])
+
+  const approvalFields = isVersion3
+    ? ((isArray(allFields) ? allFields : allFields?.data)?.filter(
+        (field) => field.section === 'Approval',
+      ) ?? [])
+    : []
 
   const [projectFiles, setProjectFiles] = useState<ProjectFile[]>([])
   const [files, setFiles] = useState<ProjectFilesObject>({
@@ -245,7 +248,6 @@ const ProjectsEdit = ({
         setSpecificFields,
         isEditMode ? project_id : null,
         setSpecificFieldsLoaded,
-        isVersion3 ? setApprovalFields : noop,
       )
     } else {
       setSpecificFields([])
@@ -261,16 +263,23 @@ const ProjectsEdit = ({
     if (!fieldsValuesLoaded.current && specificFields.length > 0) {
       setProjectData((prevData) => ({
         ...prevData,
-        ...(mode !== 'partial-link' && {
-          projectSpecificFields: {
-            ...getDefaultValues<ProjectTypeApi>(projectFields, project),
-            ods_odp: map(project.ods_odp, (ods) => {
-              return {
-                ...getDefaultValues<OdsOdpFields>(odsOdpFields, ods),
-              }
+        ...(mode !== 'partial-link'
+          ? {
+              projectSpecificFields: {
+                ...getDefaultValues<ProjectTypeApi>(projectFields, project),
+                ods_odp: map(project.ods_odp, (ods) => {
+                  return {
+                    ...getDefaultValues<OdsOdpFields>(odsOdpFields, ods),
+                  }
+                }),
+              },
+            }
+          : {
+              projectSpecificFields: {
+                ...getDefaultValues<ProjectTypeApi>(projectFields),
+                ods_odp: [],
+              },
             }),
-          },
-        }),
         ...(isVersion3 &&
           approvalFields.length > 0 && {
             approvalFields: {

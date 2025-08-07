@@ -129,9 +129,11 @@ const ProjectView = ({
     getSectionFields(specificFields, 'Impact'),
   ]
   const approvalFields =
-    (isArray(allFields) ? allFields : allFields?.data)?.filter(
-      (field) => field.section === 'Approval',
-    ) ?? []
+    project.version === 3
+      ? ((isArray(allFields) ? allFields : allFields?.data)?.filter(
+          (field) => field.section === 'Approval',
+        ) ?? [])
+      : []
 
   const relatedProjects = useGetRelatedProjects(project, 'view')
 

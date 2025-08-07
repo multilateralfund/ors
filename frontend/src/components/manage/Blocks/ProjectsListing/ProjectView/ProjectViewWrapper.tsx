@@ -21,7 +21,7 @@ import { fetchSpecificFields } from '../hooks/getSpecificFields'
 import { ProjectSpecificFields } from '../interfaces'
 
 import { Redirect, useLocation, useParams } from 'wouter'
-import { isNull, lowerCase, noop } from 'lodash'
+import { isNull } from 'lodash'
 
 const ProjectViewWrapper = () => {
   const { project_id } = useParams<Record<string, string>>()
@@ -47,9 +47,6 @@ const ProjectViewWrapper = () => {
   const [specificFields, setSpecificFields] = useState<ProjectSpecificFields[]>(
     [],
   )
-  const [approvalFields, setApprovalFields] = useState<ProjectSpecificFields[]>(
-    [],
-  )
   const [showVersionsMenu, setShowVersionsMenu] = useState<boolean>(false)
 
   useEffect(() => {
@@ -60,8 +57,6 @@ const ProjectViewWrapper = () => {
         sector_id,
         setSpecificFields,
         project_id,
-        noop,
-        version === 3 ? setApprovalFields : noop,
       )
     } else setSpecificFields([])
   }, [cluster_id, project_type_id, sector_id])
@@ -122,10 +117,7 @@ const ProjectViewWrapper = () => {
             </div>
             <ProjectStatusInfo project={data} />
           </HeaderTitle>
-          <ProjectView
-            project={data}
-            {...{ projectFiles, specificFields, approvalFields }}
-          />
+          <ProjectView project={data} {...{ projectFiles, specificFields }} />
         </>
       )}
     </>

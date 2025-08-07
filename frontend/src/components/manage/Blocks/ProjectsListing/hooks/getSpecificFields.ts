@@ -1,7 +1,6 @@
 import { Dispatch, SetStateAction } from 'react'
 
 import { ProjectSpecificFields } from '../interfaces'
-import { getSectionFields } from '../utils'
 import { api } from '@ors/helpers'
 
 export const fetchSpecificFields = async (
@@ -11,7 +10,6 @@ export const fetchSpecificFields = async (
   setFields: Dispatch<SetStateAction<ProjectSpecificFields[]>>,
   project_id?: string | null,
   setSpecificFieldsLoaded?: (isLoaded: boolean) => void,
-  setApprovalFields?: (fields: ProjectSpecificFields[]) => void,
 ) => {
   let url = `/api/project-cluster/${cluster}/type/${project_type}/sector/${sector}/fields/?`
 
@@ -30,14 +28,11 @@ export const fetchSpecificFields = async (
     const specificFields = formattedFields.filter((field) =>
       ['Header', 'Substance Details', 'Impact'].includes(field.section),
     )
-    const approvalFields = getSectionFields(formattedFields, 'Approval')
 
     setFields(specificFields)
-    setApprovalFields?.(approvalFields)
   } catch (e) {
     console.error('Error at loading project specific fields')
     setFields([])
-    setApprovalFields?.([])
   } finally {
     setSpecificFieldsLoaded?.(true)
   }

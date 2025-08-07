@@ -37,7 +37,7 @@ import {
 } from '../utils.ts'
 import { useStore } from '@ors/store.tsx'
 
-import { groupBy, has, isArray, isEmpty, map, mapKeys } from 'lodash'
+import { groupBy, has, isEmpty, map, mapKeys } from 'lodash'
 import { Tabs, Tab, Typography } from '@mui/material'
 import { useParams } from 'wouter'
 
@@ -62,6 +62,7 @@ const ProjectsCreate = ({
   trancheErrors,
   getTrancheErrors,
   relatedProjects,
+  approvalFields = [],
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
@@ -75,6 +76,7 @@ const ProjectsCreate = ({
     project?: ProjectTypeApi
     projectFiles?: ProjectFile[]
     relatedProjects?: RelatedProjectsSectionType[]
+    approvalFields?: ProjectSpecificFields[]
   }) => {
   const { project_id } = useParams<Record<string, string>>()
 
@@ -111,10 +113,6 @@ const ProjectsCreate = ({
   const { projectFields, viewableFields } = useStore(
     (state) => state.projectFields,
   )
-  const approvalFields =
-    (isArray(projectFields) ? projectFields : projectFields?.data)?.filter(
-      (field) => field.section === 'Approval',
-    ) ?? []
 
   const isSpecificInfoTabDisabled =
     areProjectSpecificTabsDisabled ||
@@ -151,7 +149,7 @@ const ProjectsCreate = ({
       mode === 'edit'
         ? getApprovalErrors(approvalData, approvalFields, errors, project)
         : {},
-    [approvalData, errors, approvalFields],
+    [approvalData, errors],
   )
 
   const specificFieldsErrors = useMemo(

@@ -337,7 +337,7 @@ export const getCrossCuttingErrors = (
 }
 
 export const getApprovalErrors = (
-  approvalFields: SpecificFields,
+  approvalData: SpecificFields,
   specificFields: ProjectSpecificFields[] | undefined = [],
   errors: { [key: string]: [] },
   project: ProjectTypeApi | undefined,
@@ -354,7 +354,7 @@ export const getApprovalErrors = (
   )
 
   const allErrors = {
-    ...getFieldErrors(requiredFields, approvalFields, project),
+    ...getFieldErrors(requiredFields, approvalData, project),
     ...filteredErrors,
   }
 
