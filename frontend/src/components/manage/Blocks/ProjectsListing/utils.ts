@@ -428,7 +428,9 @@ export const getSpecificFieldsErrors = (
       ({ table, section, editable_in_versions }) =>
         table === 'project' &&
         section !== 'MYA' &&
-        editable_in_versions.includes(project?.version ?? 0),
+        editable_in_versions.includes(
+          project && mode === 'edit' ? project.version : 1,
+        ),
     ),
     'write_field_name',
   ) as string[]
