@@ -707,6 +707,7 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             "lead_agency",
             "lead_agency_submitting_on_behalf",
             "meeting",
+            "meeting_approved",
             "meps_developed_domestic_refrigeration",
             "meps_developed_domestic_refrigeration_actual",
             "meps_developed_commercial_refrigeration",
@@ -1001,12 +1002,12 @@ class ProjectV2EditApprovalFieldsSerializer(
     class Meta:
         model = Project
         fields = [
-            "meeting",  # *
+            "meeting_approved",  # *
             "decision",  # *
             "funding_window",
             "excom_provision",  # *
             "date_completion",  # *
-            "total_fund_approved",
+            "total_fund",
             "support_cost_psc",
             "programme_officer",
             "ods_odp",
@@ -1020,7 +1021,7 @@ class ProjectV2EditApprovalFieldsSerializer(
         Update the project with the validated data
         """
         user = self.context["request"].user
-        validated_data["date_approved"] = validated_data["meeting"].end_date
+        validated_data["date_approved"] = validated_data["meeting_approved"].end_date
         # update, create, delete ods_odp
         if "ods_odp" in validated_data:
             ods_odp_data = validated_data.pop("ods_odp")
