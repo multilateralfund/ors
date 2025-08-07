@@ -23,7 +23,8 @@ class BPActivitiesWriter(BaseWriter):
                             "headerName": f"Value (US $) {label}",
                             "type": "number",
                             "method": self.get_value,
-                            "cell_format": "$###,###,##0.00#############",
+                            "cell_format": "###,###,##0",
+                            "align": "right",
                         },
                         {
                             "id": f"value_odp_{year}",

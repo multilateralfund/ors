@@ -62,7 +62,7 @@ export const BPTable = ({
       getYearColsValue(value, year, isAfterMaxYear),
     )
 
-    if (field === 'value_co2') {
+    if (field === 'value_co2' || field === 'value_usd') {
       return value && value[field] !== null
         ? formatDecimalValue(parseFloat(value[field]), {
             maximumFractionDigits: 0,

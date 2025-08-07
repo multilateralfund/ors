@@ -64,7 +64,9 @@ const useColumnsOptions = (
   const types = bpSlice.types.data
   const sectors = bpSlice.sectors.data
   const subsectors = filterSubsectors(bpSlice.subsectors.data)
-  const substances = cpReportsSlice.substances.data
+  const substances = cpReportsSlice.substances.data.filter((subst) =>
+    [6, 10, 11].includes(subst.group_id),
+  )
   const statuses =
     commonSlice.settings.data.business_plan_activity_statuses.map((status) => ({
       id: status[0],

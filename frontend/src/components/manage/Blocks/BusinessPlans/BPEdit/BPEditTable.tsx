@@ -150,6 +150,7 @@ export function BPEditBaseTable(
         },
         cellRendererParams: () => ({
           tooltipClassName: 'bp-table-tooltip',
+          hasNoDecimals: true,
         }),
         dataType: 'number',
         field: `value_usd_${isAfterMaxYear ? `${yearRangeSelected.year_end}_after` : year}`,
@@ -279,7 +280,7 @@ export function BPEditBaseTable(
         },
         cellRendererParams: () => ({
           tooltipClassName: 'bp-table-tooltip',
-          isCo2: true,
+          hasNoDecimals: true,
         }),
         dataType: 'number',
         field: `value_co2_${isAfterMaxYear ? `${yearRangeSelected.year_end}_after` : year}`,

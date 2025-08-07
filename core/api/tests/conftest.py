@@ -437,11 +437,42 @@ def groupA():
 
 
 @pytest.fixture
+def groupHCFC():
+    return GroupFactory.create(
+        id=6, name="C/I", annex="C", name_alt="Annex C, Group I", group_id="CI"
+    )
+
+
+@pytest.fixture
+def groupOther():
+    return GroupFactory.create(
+        id=11, name="Other", annex="unknown", name_alt="Other", group_id="uncontrolled"
+    )
+
+
+@pytest.fixture
 def substance(excluded_usage, groupA, time_frames):
+    substance = SubstanceFactory.create(
+        name="HCFC-substance0",
+        sort_order=1,
+        group=groupA,
+        odp=0.02,
+        gwp=0.05,
+    )
+    ExcludedUsageSubstFactory.create(
+        substance=substance,
+        usage=excluded_usage,
+        time_frame=time_frames[(2000, None)],
+    )
+    return substance
+
+
+@pytest.fixture
+def substance_hcfc(excluded_usage, groupHCFC, time_frames):
     substance = SubstanceFactory.create(
         name="HCFC-substance",
         sort_order=1,
-        group=groupA,
+        group=groupHCFC,
         odp=0.02,
         gwp=0.05,
     )
@@ -1147,7 +1178,7 @@ def setup_bp_activity_create(
     project_type,
     bp_chemical_type,
     project_cluster_kpp,
-    substance,
+    substance_hcfc,
 ):
     ProjectSpecificFieldsFactory.create(
         cluster=project_cluster_kpp,
@@ -1164,7 +1195,7 @@ def setup_bp_activity_create(
         "project_type_code": project_type.code,
         "bp_chemical_type_id": bp_chemical_type.id,
         "project_cluster_id": project_cluster_kpp.id,
-        "substances": [substance.id],
+        "substances": [substance_hcfc.id],
         "sector_id": sector.id,
         "sector_code": sector.code,
         "subsector_id": subsector.id,
