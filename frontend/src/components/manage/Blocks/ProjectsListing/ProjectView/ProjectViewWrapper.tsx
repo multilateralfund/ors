@@ -21,7 +21,7 @@ import { fetchSpecificFields } from '../hooks/getSpecificFields'
 import { ProjectSpecificFields } from '../interfaces'
 
 import { Redirect, useLocation, useParams } from 'wouter'
-import { isNull, lowerCase } from 'lodash'
+import { isNull, lowerCase, noop } from 'lodash'
 
 const ProjectViewWrapper = () => {
   const { project_id } = useParams<Record<string, string>>()
@@ -41,11 +41,13 @@ const ProjectViewWrapper = () => {
     version,
     editable,
   } = data || {}
-  const isWithdrawn = lowerCase(submission_status) === 'withdrawn'
 
   const projectFiles = useGetProjectFiles(parseInt(project_id))
 
   const [specificFields, setSpecificFields] = useState<ProjectSpecificFields[]>(
+    [],
+  )
+  const [approvalFields, setApprovalFields] = useState<ProjectSpecificFields[]>(
     [],
   )
   const [showVersionsMenu, setShowVersionsMenu] = useState<boolean>(false)
@@ -58,6 +60,8 @@ const ProjectViewWrapper = () => {
         sector_id,
         setSpecificFields,
         project_id,
+        noop,
+        version === 3 ? setApprovalFields : noop,
       )
     } else setSpecificFields([])
   }, [cluster_id, project_type_id, sector_id])
@@ -103,7 +107,8 @@ const ProjectViewWrapper = () => {
               {canEditProjects &&
                 editable &&
                 isNull(latest_project) &&
-                (!isWithdrawn || canEditApprovedProjects) && (
+                (!['Withdrawn', 'Not approved'].includes(submission_status) ||
+                  canEditApprovedProjects) && (
                   <CustomLink
                     className="ml-auto mt-auto h-10 text-nowrap px-4 py-2 text-lg uppercase"
                     href={`/projects-listing/${project_id}/edit`}
@@ -117,7 +122,10 @@ const ProjectViewWrapper = () => {
             </div>
             <ProjectStatusInfo project={data} />
           </HeaderTitle>
-          <ProjectView project={data} {...{ projectFiles, specificFields }} />
+          <ProjectView
+            project={data}
+            {...{ projectFiles, specificFields, approvalFields }}
+          />
         </>
       )}
     </>

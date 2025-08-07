@@ -178,9 +178,16 @@ export interface ProjectViewProps {
   specificFields: ProjectSpecificFields[]
 }
 
+export type DetailItemClassname = {
+  containerClassName?: string
+  className?: string
+  fieldClassName?: string
+}
+
 export type ViewModesHandler = (
   data: ProjectTypeApi,
   field: ProjectSpecificFields,
+  classNames?: DetailItemClassname | undefined,
 ) => ReactNode
 
 export type ProjectFilesObject = {

@@ -11,8 +11,12 @@ import ProjectImpact from './ProjectImpact'
 import ProjectDocumentation from './ProjectDocumentation'
 import ProjectRelatedProjects from './ProjectRelatedProjects'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
-import { ProjectFile, ProjectViewProps } from '../interfaces'
 import { getSectionFields, hasFields } from '../utils'
+import {
+  ProjectFile,
+  ProjectViewProps,
+  ProjectSpecificFields,
+} from '../interfaces'
 import useClickOutside from '@ors/hooks/useClickOutside'
 import { formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store'
@@ -92,7 +96,11 @@ const ProjectView = ({
   project,
   projectFiles,
   specificFields,
-}: ProjectViewProps & { projectFiles: ProjectFile[] }) => {
+  approvalFields,
+}: ProjectViewProps & {
+  approvalFields: ProjectSpecificFields[]
+  projectFiles: ProjectFile[]
+}) => {
   const [activeTab, setActiveTab] = useState(0)
 
   const {
@@ -176,9 +184,16 @@ const ProjectView = ({
             id: 'project-approval',
             ariacontrols: 'project-approval',
             label: 'Approval',
-            disabled: !hasFields(allFields, viewableFields, 'Approval'),
+            disabled:
+              !approvalFields.length ||
+              !hasFields(allFields, viewableFields, 'Approval'),
             classes: classes,
-            component: <ProjectApproval {...{ project }} />,
+            component: (
+              <ProjectApproval
+                specificFields={approvalFields}
+                {...{ project }}
+              />
+            ),
           },
         ]
       : []),

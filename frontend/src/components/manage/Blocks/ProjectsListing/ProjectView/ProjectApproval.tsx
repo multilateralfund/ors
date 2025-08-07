@@ -1,50 +1,37 @@
-import {
-  booleanDetailItem,
-  dateDetailItem,
-  detailItem,
-} from './ViewHelperComponents'
-import { ProjectTypeApi } from '../interfaces'
+import { detailItem, viewModesHandler } from './ViewHelperComponents'
+import { ProjectViewProps } from '../interfaces'
+import { tableColumns } from '../constants'
 import { canViewField } from '../utils'
 import { useStore } from '@ors/store'
 
-const ProjectApproval = ({ project }: { project: ProjectTypeApi }) => {
+import { map } from 'lodash'
+
+const ProjectApproval = ({ project, specificFields }: ProjectViewProps) => {
   const { viewableFields } = useStore((state) => state.projectFields)
 
   return (
-    <>
-      <div className="mb-4 flex flex-col gap-4">
-        <div className="flex w-full flex-col gap-4">
-          <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
-            {canViewField(viewableFields, 'programme_officer') &&
-              detailItem('Programme officer name', project.programme_officer)}
-            {canViewField(viewableFields, 'funding_window') &&
-              detailItem('Funding window', project.funding_window)}
-            {canViewField(viewableFields, 'decision') &&
-              detailItem('Decision number', project.decision)}
-            {canViewField(viewableFields, 'date_approved') &&
-              dateDetailItem('Approval date', project.date_approved)}
-          </div>
-        </div>
-      </div>
-      {canViewField(viewableFields, 'excom_provision') &&
-        detailItem(
-          'Excom Provision',
-          project.excom_provision,
-          'whitespace-nowrap',
+    <div className="flex w-full flex-col gap-4">
+      <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3">
+        {canViewField(viewableFields, 'meeting') &&
+          detailItem(tableColumns.meeting, project.meeting)}
+        {map(
+          specificFields,
+          (field) =>
+            canViewField(viewableFields, field.write_field_name) &&
+            viewModesHandler[field.data_type](
+              project,
+              field,
+              field.write_field_name === 'excom_provision'
+                ? {
+                    containerClassName: 'col-span-full w-full',
+                    className: 'whitespace-nowrap',
+                    fieldClassName: 'max-w-[50%]',
+                  }
+                : undefined,
+            ),
         )}
-      <div className="mt-4 flex flex-col gap-4">
-        <div className="flex w-full flex-col gap-4">
-          <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
-            {canViewField(viewableFields, 'ad_hoc_pcr') &&
-              booleanDetailItem('Ad-hoc PCR', project.ad_hoc_pcr)}
-            {canViewField(viewableFields, 'pcr_waived') &&
-              booleanDetailItem('PCR waived', project.pcr_waived)}
-            {canViewField(viewableFields, 'date_completion') &&
-              dateDetailItem('Date of completion', project.date_completion)}
-          </div>
-        </div>
       </div>
-    </>
+    </div>
   )
 }
 
