@@ -499,7 +499,7 @@ const ProjectsCreate = ({
                       type="info"
                       alertClassName="mb-3"
                       content={
-                        <Typography className="text-lg leading-none">
+                        <Typography className="pt-0.5 text-lg leading-none">
                           {warnings.warnings[0]}
                         </Typography>
                       }

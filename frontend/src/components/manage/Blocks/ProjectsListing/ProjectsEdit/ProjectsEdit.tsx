@@ -258,11 +258,7 @@ const ProjectsEdit = ({
   }, [cluster, project_type, sector])
 
   useEffect(() => {
-    if (
-      !fieldsValuesLoaded.current &&
-      specificFields.length > 0 &&
-      approvalFields.length > 0
-    ) {
+    if (!fieldsValuesLoaded.current && specificFields.length > 0) {
       setProjectData((prevData) => ({
         ...prevData,
         ...(mode !== 'partial-link' && {
@@ -275,13 +271,14 @@ const ProjectsEdit = ({
             }),
           },
         }),
-        ...(isVersion3 && {
-          approvalFields: {
-            ...getDefaultValues<ProjectTypeApi>(approvalFields, project),
-            meeting: project.meeting_id,
-            decision: project.decision_id,
-          },
-        }),
+        ...(isVersion3 &&
+          approvalFields.length > 0 && {
+            approvalFields: {
+              ...getDefaultValues<ProjectTypeApi>(approvalFields, project),
+              meeting: project.meeting_id,
+              decision: project.decision_id,
+            },
+          }),
       }))
 
       fieldsValuesLoaded.current = true

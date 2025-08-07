@@ -44,14 +44,13 @@ export const createProjectFieldsSlice = ({
           const isDraftEditable =
             submissionStatus !== 'Draft' || editable_in_versions?.includes(1)
           const isVersion3Editable = version === 3 && canEditAll
-          const isStatusEditable =
-            ['Withdrawn', 'Not approved'].includes(submissionStatus ?? '') &&
-            canEditAll
+          const isWithdrawnEditable =
+            submissionStatus === 'Withdrawn' && canEditAll
 
           return (
             (isEditableInVersion && areFieldsEditable && isDraftEditable) ||
             isVersion3Editable ||
-            isStatusEditable
+            isWithdrawnEditable
           )
         })
         .map((field) => field.write_field_name)
