@@ -147,7 +147,7 @@ const ProjectOdsOdpTable = ({
       columnDefs={[
         ...map(getFormattedFields(), (field) =>
           (
-            fieldColumnMapping[field.data_type as FieldType] ??
+            fieldColumnMapping[field.data_type as Exclude<FieldType, 'date'>] ??
             fieldColumnMapping['text']
           )(field),
         ),
