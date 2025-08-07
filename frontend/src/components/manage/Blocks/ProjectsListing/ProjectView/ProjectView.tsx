@@ -24,7 +24,7 @@ import { useStore } from '@ors/store'
 import { AiFillFileExcel, AiFillFilePdf } from 'react-icons/ai'
 import { IoDownloadOutline } from 'react-icons/io5'
 import { Tabs, Tab, Tooltip } from '@mui/material'
-import { debounce } from 'lodash'
+import { debounce, isArray } from 'lodash'
 
 import cx from 'classnames'
 
@@ -96,9 +96,7 @@ const ProjectView = ({
   project,
   projectFiles,
   specificFields,
-  approvalFields,
 }: ProjectViewProps & {
-  approvalFields: ProjectSpecificFields[]
   projectFiles: ProjectFile[]
 }) => {
   const [activeTab, setActiveTab] = useState(0)
@@ -130,6 +128,10 @@ const ProjectView = ({
     getSectionFields(specificFields, 'Substance Details'),
     getSectionFields(specificFields, 'Impact'),
   ]
+  const approvalFields =
+    (isArray(allFields) ? allFields : allFields?.data)?.filter(
+      (field) => field.section === 'Approval',
+    ) ?? []
 
   const relatedProjects = useGetRelatedProjects(project, 'view')
 
