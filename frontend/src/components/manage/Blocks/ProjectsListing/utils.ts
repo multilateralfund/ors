@@ -208,7 +208,6 @@ export const formatApprovalData = (
     ...map(fields, 'write_field_name'),
     'total_fund',
     'support_cost_psc',
-    'meeting',
   ]
 
   const crtProjectSpecificFields = pick(
@@ -343,7 +342,7 @@ export const getApprovalErrors = (
   project: ProjectTypeApi | undefined,
 ) => {
   const requiredFields = [
-    'meeting',
+    'meeting_approval',
     'decision',
     'excom_provision',
     'date_completion',
@@ -358,13 +357,9 @@ export const getApprovalErrors = (
     ...filteredErrors,
   }
 
-  const allFields = [
-    ...specificFields,
-    { write_field_name: 'meeting', label: 'Meeting' },
-  ]
   return Object.entries(allErrors).reduce(
     (acc, [key, errMsg]) => {
-      const field = allFields.find(
+      const field = specificFields.find(
         ({ write_field_name }) => write_field_name === key,
       )
 

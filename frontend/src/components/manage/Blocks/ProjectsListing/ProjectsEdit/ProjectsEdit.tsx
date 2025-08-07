@@ -284,7 +284,6 @@ const ProjectsEdit = ({
           approvalFields.length > 0 && {
             approvalFields: {
               ...getDefaultValues<ProjectTypeApi>(approvalFields, project),
-              meeting: project.meeting_id,
               decision: project.decision_id,
             },
           }),
