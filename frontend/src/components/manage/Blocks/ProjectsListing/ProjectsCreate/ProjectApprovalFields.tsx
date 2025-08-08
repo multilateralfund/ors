@@ -33,7 +33,7 @@ const ProjectApprovalFields = ({
   const { viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
   )
-  const canEditMeeting = canEditField(editableFields, 'meeting_approval')
+  const canEditMeeting = canEditField(editableFields, 'meeting_approved')
 
   const getIsInputDisabled = (field: keyof typeof errors) =>
     hasSubmitted && errors[field]?.length > 0
@@ -55,7 +55,7 @@ const ProjectApprovalFields = ({
       ...prevData,
       [sectionIdentifier]: {
         ...prevData[sectionIdentifier],
-        meeting_approval: parseNumber(meeting),
+        meeting_approved: parseNumber(meeting),
       },
     }))
   }
@@ -79,19 +79,19 @@ const ProjectApprovalFields = ({
 
   return (
     <div className="flex flex-wrap gap-x-20 gap-y-5">
-      {canViewField(viewableFields, 'meeting_approval') && (
+      {canViewField(viewableFields, 'meeting_approved') && (
         <div className="w-32">
           <Label>{tableColumns.meeting}</Label>
           <PopoverInput
             label={getMeetingNr(
-              crtSectionData?.meeting_approval ?? undefined,
+              crtSectionData?.meeting_approved ?? undefined,
             )?.toString()}
             options={getMeetingOptions()}
             onChange={handleChangeMeeting}
             onClear={() => handleChangeMeeting()}
             disabled={!canEditMeeting}
             className={cx('!m-0 h-10 !py-1', {
-              'border-red-500': getIsInputDisabled('meeting_approval'),
+              'border-red-500': getIsInputDisabled('meeting_approved'),
               [disabledClassName]: !canEditMeeting,
             })}
             clearBtnClassName="right-1"
@@ -115,7 +115,7 @@ const ProjectApprovalFields = ({
       {sectionFields
         .filter(
           (field) =>
-            !['meeting_approval', 'decision', 'date_approved'].includes(
+            !['meeting_approved', 'decision', 'date_approved'].includes(
               field.write_field_name,
             ),
         )

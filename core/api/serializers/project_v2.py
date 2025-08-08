@@ -270,6 +270,8 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "meeting_id",
             "meeting_transf",
             "meeting_transf_id",
+            "meeting_approved",
+            "meeting_approved_id",
             "mya_code",
             "mya_subsector",
             "mya_start_date",
@@ -392,6 +394,14 @@ class ProjectListV2Serializer(ProjectListSerializer):
         if obj.meta_project:
             return obj.meta_project.new_code
         return None
+
+
+class ProjectV2OdsOdpEditApprovalFieldsSerializer(ProjectOdsOdpListSerializer):
+
+    ods_type = serializers.CharField(required=False, allow_null=True)
+
+    class Meta(ProjectOdsOdpListSerializer.Meta):
+        fields = ProjectOdsOdpListSerializer.Meta.fields
 
 
 class ProjectV2OdsOdpListSerializer(ProjectOdsOdpListSerializer):
@@ -997,7 +1007,7 @@ class ProjectV2EditApprovalFieldsSerializer(
     ProjectSerializer class for editing actual fields
     """
 
-    ods_odp = ProjectV2OdsOdpListSerializer(many=True)
+    ods_odp = ProjectV2OdsOdpEditApprovalFieldsSerializer(many=True)
 
     class Meta:
         model = Project
@@ -1043,7 +1053,7 @@ class ProjectV2EditApprovalFieldsSerializer(
             return attrs
         errors = {}
         if self.instance.meeting is None:
-            errors["meeting"] = "Meeting is required for approval."
+            errors["meeting_approved"] = "Meeting is required for approval."
         if self.instance.decision is None:
             errors["decision"] = "Decision is required for approval."
         if self.instance.excom_provision is None:

@@ -342,7 +342,7 @@ export const getApprovalErrors = (
   project: ProjectTypeApi | undefined,
 ) => {
   const requiredFields = [
-    'meeting_approval',
+    'meeting_approved',
     'decision',
     'excom_provision',
     'date_completion',

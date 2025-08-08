@@ -134,18 +134,6 @@
         "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
-        "IMPORT_NAME": "Decision",
-        "LABEL": "Decision",
-        "WRITE_FIELD_NAME": "decision",
-        "READ_FIELD_NAME": "decision",
-        "TABLE": "project",
-        "DATA_TYPE": "drop_down",
-        "SECTION": "Approval",
-        "SORT_ORDER": 10,
-        "EDITABLE_IN_VERSIONS": [3],
-        "VISIBLE_IN_VERSIONS": [3]
-    },
-    {
         "IMPORT_NAME": "Sector",
         "LABEL": "Sector",
         "WRITE_FIELD_NAME": "sector",
@@ -182,14 +170,26 @@
         "VISIBLE_IN_VERSIONS": [1,2,3]
     },
     {
-        "IMPORT_NAME": "Meeting Number",
-        "LABEL": "Meeting Number",
-        "WRITE_FIELD_NAME": "meeting_approval",
-        "READ_FIELD_NAME": "meeting_approval",
+        "IMPORT_NAME": "Meeting number",
+        "LABEL": "Meeting number",
+        "WRITE_FIELD_NAME": "meeting_approved",
+        "READ_FIELD_NAME": "meeting_approved",
         "TABLE": "project",
         "DATA_TYPE": "drop_down",
         "SECTION": "Approval",
-        "SORT_ORDER": 13,
+        "SORT_ORDER": 9,
+        "EDITABLE_IN_VERSIONS": [3],
+        "VISIBLE_IN_VERSIONS": [3]
+    },
+    {
+        "IMPORT_NAME": "Decision",
+        "LABEL": "Decision",
+        "WRITE_FIELD_NAME": "decision",
+        "READ_FIELD_NAME": "decision",
+        "TABLE": "project",
+        "DATA_TYPE": "drop_down",
+        "SECTION": "Approval",
+        "SORT_ORDER": 10,
         "EDITABLE_IN_VERSIONS": [3],
         "VISIBLE_IN_VERSIONS": [3]
     },
