@@ -1264,7 +1264,7 @@ class TestProjectsV2Update:
     ):
         url = reverse("project-v2-edit-approval-fields", args=(project.id,))
         data = {
-            "meeting": meeting.id,
+            "meeting_approved": meeting.id,
             "decision": decision.id,
         }
 
@@ -1299,11 +1299,11 @@ class TestProjectsV2Update:
     ):
         url = reverse("project-v2-edit-approval-fields", args=(project.id,))
         data = {
-            "meeting": meeting.id,
+            "meeting_approved": meeting.id,
             "decision": decision.id,
             "excom_provision": "test excom_provision",
             "date_completion": "2023-10-01",
-            "total_fund_approved": 12345.54,
+            "total_fund": 12345.54,
             "support_cost_psc": 1232.43,
             "programme_officer": "test officer",
             "ods_odp": [
@@ -1326,7 +1326,7 @@ class TestProjectsV2Update:
         assert response.data["decision_id"] == decision.id
         assert response.data["excom_provision"] == data["excom_provision"]
         assert response.data["date_completion"] == data["date_completion"]
-        assert response.data["total_fund_approved"] == data["total_fund_approved"]
+        assert response.data["total_fund"] == data["total_fund"]
         assert response.data["support_cost_psc"] == data["support_cost_psc"]
         assert response.data["programme_officer"] == data["programme_officer"]
         assert len(response.data["ods_odp"]) == 1

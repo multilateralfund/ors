@@ -35,6 +35,7 @@ export const tableColumns: { [key: string]: string } = {
   project_type: 'Project type',
   subsector_ids: 'Sub-sector(s)',
   production: 'Production',
+  decision: 'Decision',
 }
 
 export const defaultProps = {
@@ -48,8 +49,11 @@ export const defaultPropsSimpleField = {
   containerClassName: '!h-fit w-40',
 }
 
+export const textFieldClassName =
+  ' min-h-[20px] w-full max-w-[320px] md:max-w-full md:w-[415px] md:min-w-[350px]'
+
 export const textAreaClassname =
-  'min-h-[20px] w-full max-w-[320px] md:max-w-full md:w-[415px] md:min-w-[350px] rounded-lg border bg-white p-2 pb-10 shadow-none'
+  'rounded-lg border bg-white p-2 pb-10 shadow-none' + textFieldClassName
 
 export const additionalProperties: Record<string, Record<string, unknown>> = {
   ods_display_name: {

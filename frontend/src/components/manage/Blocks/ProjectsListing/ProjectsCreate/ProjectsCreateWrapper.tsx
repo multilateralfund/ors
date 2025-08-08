@@ -11,6 +11,7 @@ import {
   ProjectFilesObject,
   ProjectSpecificFields,
   ProjectTypeApi,
+  SpecificFields,
 } from '../interfaces.ts'
 import {
   initialCrossCuttingFields,
@@ -69,6 +70,7 @@ const ProjectsCreateWrapper = () => {
     bpLinking: { isLinkedToBP: false, bpId: null },
     crossCuttingFields: initialCrossCuttingFields,
     projectSpecificFields: initialProjectSpecificFields,
+    approvalFields: {} as SpecificFields,
   })
 
   const { projIdentifiers, crossCuttingFields } = projectData

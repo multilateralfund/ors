@@ -11,8 +11,12 @@ import ProjectImpact from './ProjectImpact'
 import ProjectDocumentation from './ProjectDocumentation'
 import ProjectRelatedProjects from './ProjectRelatedProjects'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
-import { ProjectFile, ProjectViewProps } from '../interfaces'
 import { getSectionFields, hasFields } from '../utils'
+import {
+  ProjectFile,
+  ProjectViewProps,
+  ProjectSpecificFields,
+} from '../interfaces'
 import useClickOutside from '@ors/hooks/useClickOutside'
 import { formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store'
@@ -20,7 +24,7 @@ import { useStore } from '@ors/store'
 import { AiFillFileExcel, AiFillFilePdf } from 'react-icons/ai'
 import { IoDownloadOutline } from 'react-icons/io5'
 import { Tabs, Tab, Tooltip } from '@mui/material'
-import { debounce } from 'lodash'
+import { debounce, isArray } from 'lodash'
 
 import cx from 'classnames'
 
@@ -92,7 +96,9 @@ const ProjectView = ({
   project,
   projectFiles,
   specificFields,
-}: ProjectViewProps & { projectFiles: ProjectFile[] }) => {
+}: ProjectViewProps & {
+  projectFiles: ProjectFile[]
+}) => {
   const [activeTab, setActiveTab] = useState(0)
 
   const {
@@ -122,6 +128,12 @@ const ProjectView = ({
     getSectionFields(specificFields, 'Substance Details'),
     getSectionFields(specificFields, 'Impact'),
   ]
+  const approvalFields =
+    project.version === 3
+      ? ((isArray(allFields) ? allFields : allFields?.data)?.filter(
+          (field) => field.section === 'Approval',
+        ) ?? [])
+      : []
 
   const relatedProjects = useGetRelatedProjects(project, 'view')
 
@@ -176,9 +188,16 @@ const ProjectView = ({
             id: 'project-approval',
             ariacontrols: 'project-approval',
             label: 'Approval',
-            disabled: !hasFields(allFields, viewableFields, 'Approval'),
+            disabled:
+              !approvalFields.length ||
+              !hasFields(allFields, viewableFields, 'Approval'),
             classes: classes,
-            component: <ProjectApproval {...{ project }} />,
+            component: (
+              <ProjectApproval
+                specificFields={approvalFields}
+                {...{ project }}
+              />
+            ),
           },
         ]
       : []),

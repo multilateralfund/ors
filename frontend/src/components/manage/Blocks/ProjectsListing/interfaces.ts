@@ -83,6 +83,10 @@ export interface SpecificFields {
   total_number_of_nou_personnel_supported_actual: string
   number_of_female_nou_personnel_supported_actual: string
   number_of_enterprises_assisted: string
+  meeting: number | null
+  meeting_approved: number | null
+  decision: string | null
+  decision_id: string | null
 }
 
 export type OdsOdpFields = {
@@ -97,7 +101,13 @@ export type OdsOdpFields = {
   sort_order: number | null
 }
 
-export type FieldType = 'text' | 'drop_down' | 'decimal' | 'number' | 'boolean'
+export type FieldType =
+  | 'text'
+  | 'drop_down'
+  | 'decimal'
+  | 'number'
+  | 'boolean'
+  | 'date'
 
 export type OptionsType = {
   id: number | string
@@ -169,9 +179,16 @@ export interface ProjectViewProps {
   specificFields: ProjectSpecificFields[]
 }
 
+export type DetailItemClassname = {
+  containerClassName?: string
+  className?: string
+  fieldClassName?: string
+}
+
 export type ViewModesHandler = (
   data: ProjectTypeApi,
   field: ProjectSpecificFields,
+  classNames?: DetailItemClassname | undefined,
 ) => ReactNode
 
 export type ProjectFilesObject = {
@@ -202,6 +219,7 @@ export interface ProjectData {
   projIdentifiers: ProjIdentifiers
   crossCuttingFields: CrossCuttingFields
   projectSpecificFields: SpecificFields
+  approvalFields: SpecificFields
   bpLinking: {
     isLinkedToBP: boolean
     bpId: number | null

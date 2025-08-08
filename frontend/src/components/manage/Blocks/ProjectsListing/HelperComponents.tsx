@@ -92,14 +92,16 @@ export const PageTitle = ({
   projectTitle: string
   project?: ProjectTypeApi
 }) => {
-  const { submission_status, code, code_legacy } = project || {}
+  const { submission_status = '', code, code_legacy } = project || {}
 
   return (
     <>
       <span className="font-medium text-[#4D4D4D]">{pageTitle}: </span>
       <span>
         {projectTitle ?? 'New project'}
-        {submission_status === 'Approved' ? `, ${code ?? code_legacy}` : ''}
+        {['Approved', 'Not approved'].includes(submission_status)
+          ? `, ${code ?? code_legacy}`
+          : ''}
       </span>
     </>
   )

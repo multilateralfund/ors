@@ -270,6 +270,8 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "meeting_id",
             "meeting_transf",
             "meeting_transf_id",
+            "meeting_approved",
+            "meeting_approved_id",
             "mya_code",
             "mya_subsector",
             "mya_start_date",
@@ -392,6 +394,14 @@ class ProjectListV2Serializer(ProjectListSerializer):
         if obj.meta_project:
             return obj.meta_project.new_code
         return None
+
+
+class ProjectV2OdsOdpEditApprovalFieldsSerializer(ProjectOdsOdpListSerializer):
+
+    ods_type = serializers.CharField(required=False, allow_null=True)
+
+    class Meta(ProjectOdsOdpListSerializer.Meta):
+        fields = ProjectOdsOdpListSerializer.Meta.fields
 
 
 class ProjectV2OdsOdpListSerializer(ProjectOdsOdpListSerializer):
@@ -707,6 +717,7 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             "lead_agency",
             "lead_agency_submitting_on_behalf",
             "meeting",
+            "meeting_approved",
             "meps_developed_domestic_refrigeration",
             "meps_developed_domestic_refrigeration_actual",
             "meps_developed_commercial_refrigeration",
@@ -996,17 +1007,17 @@ class ProjectV2EditApprovalFieldsSerializer(
     ProjectSerializer class for editing actual fields
     """
 
-    ods_odp = ProjectV2OdsOdpListSerializer(many=True)
+    ods_odp = ProjectV2OdsOdpEditApprovalFieldsSerializer(many=True)
 
     class Meta:
         model = Project
         fields = [
-            "meeting",  # *
+            "meeting_approved",  # *
             "decision",  # *
             "funding_window",
             "excom_provision",  # *
             "date_completion",  # *
-            "total_fund_approved",
+            "total_fund",
             "support_cost_psc",
             "programme_officer",
             "ods_odp",
@@ -1020,7 +1031,7 @@ class ProjectV2EditApprovalFieldsSerializer(
         Update the project with the validated data
         """
         user = self.context["request"].user
-        validated_data["date_approved"] = validated_data["meeting"].end_date
+        validated_data["date_approved"] = validated_data["meeting_approved"].end_date
         # update, create, delete ods_odp
         if "ods_odp" in validated_data:
             ods_odp_data = validated_data.pop("ods_odp")
@@ -1042,7 +1053,7 @@ class ProjectV2EditApprovalFieldsSerializer(
             return attrs
         errors = {}
         if self.instance.meeting is None:
-            errors["meeting"] = "Meeting is required for approval."
+            errors["meeting_approved"] = "Meeting is required for approval."
         if self.instance.decision is None:
             errors["decision"] = "Decision is required for approval."
         if self.instance.excom_provision is None:

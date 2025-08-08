@@ -21,7 +21,7 @@ import { fetchSpecificFields } from '../hooks/getSpecificFields'
 import { ProjectSpecificFields } from '../interfaces'
 
 import { Redirect, useLocation, useParams } from 'wouter'
-import { isNull, lowerCase } from 'lodash'
+import { isNull } from 'lodash'
 
 const ProjectViewWrapper = () => {
   const { project_id } = useParams<Record<string, string>>()
@@ -41,7 +41,6 @@ const ProjectViewWrapper = () => {
     version,
     editable,
   } = data || {}
-  const isWithdrawn = lowerCase(submission_status) === 'withdrawn'
 
   const projectFiles = useGetProjectFiles(parseInt(project_id))
 
@@ -103,7 +102,8 @@ const ProjectViewWrapper = () => {
               {canEditProjects &&
                 editable &&
                 isNull(latest_project) &&
-                (!isWithdrawn || canEditApprovedProjects) && (
+                (!['Withdrawn', 'Not approved'].includes(submission_status) ||
+                  canEditApprovedProjects) && (
                   <CustomLink
                     className="ml-auto mt-auto h-10 text-nowrap px-4 py-2 text-lg uppercase"
                     href={`/projects-listing/${project_id}/edit`}

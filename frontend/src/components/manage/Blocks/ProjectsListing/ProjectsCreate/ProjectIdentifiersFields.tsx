@@ -56,7 +56,6 @@ const ProjectIdentifiersFields = ({
   const { viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
   )
-
   const canEditMeeting = canEditField(editableFields, 'meeting')
 
   const sectionDefaultProps = {

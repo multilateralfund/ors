@@ -34,7 +34,7 @@ import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { useStore } from '@ors/store'
 import { api } from '@ors/helpers'
 
-import { debounce, groupBy, map, filter, find, replace } from 'lodash'
+import { debounce, groupBy, map, filter, find, replace, isArray } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
 
 const ProjectsEdit = ({
@@ -46,6 +46,7 @@ const ProjectsEdit = ({
 }) => {
   const project_id = project.id.toString()
   const isEditMode = mode === 'edit'
+  const isVersion3 = isEditMode && project.version === 3
 
   const { canViewProjects, canEditApprovedProjects } =
     useContext(PermissionsContext)
@@ -71,6 +72,7 @@ const ProjectsEdit = ({
     bpLinking: { isLinkedToBP: false, bpId: null },
     crossCuttingFields: initialCrossCuttingFields,
     projectSpecificFields: {} as SpecificFields,
+    approvalFields: {} as SpecificFields,
   })
   const [specificFields, setSpecificFields] = useState<ProjectSpecificFields[]>(
     [],
@@ -122,6 +124,12 @@ const ProjectsEdit = ({
       setEditableFields?.(version, submissionStatus, canEditApprovedProjects)
     }
   }, [allFields, setViewableFields, setEditableFields])
+
+  const approvalFields = isVersion3
+    ? ((isArray(allFields) ? allFields : allFields?.data)?.filter(
+        (field) => field.section === 'Approval',
+      ) ?? [])
+    : []
 
   const [projectFiles, setProjectFiles] = useState<ProjectFile[]>([])
   const [files, setFiles] = useState<ProjectFilesObject>({
@@ -216,8 +224,9 @@ const ProjectsEdit = ({
               project_end_date: project.project_end_date,
               total_fund: project.total_fund,
               support_cost_psc: project.support_cost_psc,
-              individual_consideration:
-                mode === 'edit' ? project.individual_consideration : true,
+              individual_consideration: isEditMode
+                ? project.individual_consideration
+                : true,
             },
           }
         : {
@@ -251,19 +260,33 @@ const ProjectsEdit = ({
   }, [cluster, project_type, sector])
 
   useEffect(() => {
-    if (specificFields.length > 0 && !fieldsValuesLoaded.current) {
+    if (!fieldsValuesLoaded.current && specificFields.length > 0) {
       setProjectData((prevData) => ({
         ...prevData,
-        ...(mode !== 'partial-link' && {
-          projectSpecificFields: {
-            ...getDefaultValues<ProjectTypeApi>(projectFields, project),
-            ods_odp: map(project.ods_odp, (ods) => {
-              return {
-                ...getDefaultValues<OdsOdpFields>(odsOdpFields, ods),
-              }
+        ...(mode !== 'partial-link'
+          ? {
+              projectSpecificFields: {
+                ...getDefaultValues<ProjectTypeApi>(projectFields, project),
+                ods_odp: map(project.ods_odp, (ods) => {
+                  return {
+                    ...getDefaultValues<OdsOdpFields>(odsOdpFields, ods),
+                  }
+                }),
+              },
+            }
+          : {
+              projectSpecificFields: {
+                ...getDefaultValues<ProjectTypeApi>(projectFields),
+                ods_odp: [],
+              },
             }),
-          },
-        }),
+        ...(isVersion3 &&
+          approvalFields.length > 0 && {
+            approvalFields: {
+              ...getDefaultValues<ProjectTypeApi>(approvalFields, project),
+              decision: project.decision_id,
+            },
+          }),
       }))
 
       fieldsValuesLoaded.current = true
@@ -382,6 +405,7 @@ const ProjectsEdit = ({
             setProjectFiles,
             specificFields,
             trancheErrors,
+            approvalFields,
           }}
         />
         <ProjectsCreate
@@ -401,6 +425,7 @@ const ProjectsEdit = ({
             trancheErrors,
             getTrancheErrors,
             relatedProjects,
+            approvalFields,
           }}
         />
         <ProjectFormFooter

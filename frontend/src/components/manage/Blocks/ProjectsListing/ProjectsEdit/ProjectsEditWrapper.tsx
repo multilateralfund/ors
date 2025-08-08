@@ -25,7 +25,7 @@ const ProjectsEditWrapper = ({ mode }: { mode: string }) => {
   if (
     data &&
     ((mode !== 'copy' &&
-      data.submission_status === 'Withdrawn' &&
+      ['Withdrawn', 'Not approved'].includes(data.submission_status) &&
       (mode !== 'edit' || !canEditApprovedProjects)) ||
       !isNull(data?.latest_project) ||
       (mode === 'edit' && !data.editable))
