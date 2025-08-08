@@ -67,7 +67,11 @@ export const viewModesHandler: Record<FieldType, ViewModesHandler> = {
   decimal: (data, field) =>
     numberDetailItem(field.label, data[field.read_field_name]),
   drop_down: (data, field) => {
-    const value = data[field.read_field_name]
+    const readFieldName = field.read_field_name
+    const updatedFieldName =
+      readFieldName === 'decision' ? 'decision_id' : readFieldName
+
+    const value = data[updatedFieldName]
     const formattedValue = isBoolean(value)
       ? find(field.options, { id: data[field.write_field_name] })?.name || '-'
       : value

@@ -420,9 +420,10 @@ export const getSpecificFieldsErrors = (
   const fieldNames = map(
     filter(
       specificFields,
-      ({ table, section, editable_in_versions }) =>
+      ({ table, section, editable_in_versions, data_type }) =>
         table === 'project' &&
         section !== 'MYA' &&
+        data_type !== 'boolean' &&
         editable_in_versions.includes(
           project && mode === 'edit' ? project.version : 1,
         ),

@@ -95,7 +95,8 @@ const EditActionButtons = ({
   const isDraft = submissionStatus === 'draft'
   const isSubmitted = submissionStatus === 'submitted'
   const isRecommended = submissionStatus === 'recommended'
-  const isApproved = submissionStatus === 'approved'
+  const isAfterApproval =
+    submissionStatus === 'approved' || submissionStatus === 'not approved'
 
   const crossCuttingErrors = useMemo(
     () => getCrossCuttingErrors(crossCuttingFields, {}, 'edit', project),
@@ -149,10 +150,11 @@ const EditActionButtons = ({
     hasSectionErrors(headerErrors) ||
     hasSectionErrors(substanceErrors) ||
     hasOdsOdpErrors ||
-    getHasNoFiles(id, files, projectFiles)
+    (getHasNoFiles(id, files, projectFiles) && (project?.version ?? 0) < 3)
+
   const hasErrors =
     commonErrors ||
-    (isApproved
+    (isAfterApproval
       ? hasSectionErrors(specificErrorsApproval['Impact'] || {})
       : hasSectionErrors(impactErrors))
 
@@ -221,7 +223,7 @@ const EditActionButtons = ({
         method: 'PUT',
       })
 
-      if (isApproved) {
+      if (isAfterApproval) {
         const actualData = getActualData(projectData, specificFields)
         await api(`api/projects/v2/${id}/edit_actual_fields/`, {
           data: actualData,
