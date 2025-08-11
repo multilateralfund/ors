@@ -244,7 +244,7 @@ const EditActionButtons = ({
         setLocation(`/projects-listing/${id}/submit`)
       }
 
-      if (isAfterApproval) {
+      if (canApproveProjects && isAfterApproval) {
         await editApprovalFields()
       }
     } catch (error) {
