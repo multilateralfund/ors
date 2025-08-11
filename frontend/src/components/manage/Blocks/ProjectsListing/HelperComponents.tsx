@@ -99,9 +99,7 @@ export const PageTitle = ({
       <span className="font-medium text-[#4D4D4D]">{pageTitle}: </span>
       <span>
         {projectTitle ?? 'New project'}
-        {['Approved', 'Not approved'].includes(submission_status)
-          ? `, ${code ?? code_legacy}`
-          : ''}
+        {submission_status === 'Approved' ? `, ${code ?? code_legacy}` : ''}
       </span>
     </>
   )

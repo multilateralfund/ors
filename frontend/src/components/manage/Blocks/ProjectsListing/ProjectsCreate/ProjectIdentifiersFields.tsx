@@ -338,10 +338,10 @@ const ProjectIdentifiersFields = ({
                 type="info"
                 alertClassName="mt-2 px-2 py-0"
                 content={
-                  <Typography className="pt-1 text-lg leading-none">
-                    When submitting on behalf of a cooperating agency, selecting
-                    either the agency or the lead agency will automatically
-                    update the other.
+                  <Typography className="pt-0.5 text-lg leading-none">
+                    Unless submitting on behalf of a cooperating agency,
+                    selecting either the agency or the lead agency will
+                    automatically update the other.
                   </Typography>
                 }
               />

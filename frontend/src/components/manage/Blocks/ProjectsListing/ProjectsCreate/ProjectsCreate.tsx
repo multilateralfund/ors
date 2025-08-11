@@ -149,7 +149,7 @@ const ProjectsCreate = ({
       mode === 'edit'
         ? getApprovalErrors(approvalData, approvalFields, errors, project)
         : {},
-    [approvalData, errors],
+    [approvalData, approvalFields, errors],
   )
 
   const specificFieldsErrors = useMemo(

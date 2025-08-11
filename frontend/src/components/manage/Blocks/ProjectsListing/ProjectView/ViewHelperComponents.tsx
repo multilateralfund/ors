@@ -1,7 +1,7 @@
 import { DetailItemClassname, FieldType, ViewModesHandler } from '../interfaces'
 import { formatDecimalValue } from '@ors/helpers'
 
-import { find, isBoolean, isNil } from 'lodash'
+import { capitalize, find, isBoolean, isNil } from 'lodash'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 
@@ -58,7 +58,7 @@ export const dateDetailItem = (fieldName: string, fieldValue: string) => (
 export const viewModesHandler: Record<FieldType, ViewModesHandler> = {
   text: (data, field, classNames) =>
     detailItem(
-      field.label,
+      capitalize(field.label),
       data[field.read_field_name],
       'self-start',
       classNames,

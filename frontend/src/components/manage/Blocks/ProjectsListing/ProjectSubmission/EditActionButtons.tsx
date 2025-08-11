@@ -95,8 +95,8 @@ const EditActionButtons = ({
   const isDraft = submissionStatus === 'draft'
   const isSubmitted = submissionStatus === 'submitted'
   const isRecommended = submissionStatus === 'recommended'
-  const isAfterApproval =
-    submissionStatus === 'approved' || submissionStatus === 'not approved'
+  const isApproved = submissionStatus === 'approved'
+  const isAfterApproval = isApproved || submissionStatus === 'not approved'
 
   const crossCuttingErrors = useMemo(
     () => getCrossCuttingErrors(crossCuttingFields, {}, 'edit', project),
@@ -104,8 +104,9 @@ const EditActionButtons = ({
   )
   const approvalErrors = useMemo(
     () => getApprovalErrors(approvalData, approvalFields, {}, project),
-    [approvalData],
+    [approvalData, approvalFields],
   )
+
   const specificErrors = useMemo(
     () =>
       getSpecificFieldsErrors(
@@ -159,7 +160,12 @@ const EditActionButtons = ({
       : hasSectionErrors(impactErrors))
 
   const disableSubmit = isSubmitDisabled || hasErrors
-  const disableUpdate = project.version === 3 ? disableSubmit : isSaveDisabled
+  const disableUpdate =
+    project.version === 3
+      ? isAfterApproval
+        ? disableSubmit || hasSectionErrors(approvalErrors)
+        : disableSubmit
+      : isSaveDisabled
   const disableApprovalActions =
     hasOdsOdpErrors ||
     hasSectionErrors(approvalErrors) ||
@@ -223,12 +229,16 @@ const EditActionButtons = ({
         method: 'PUT',
       })
 
-      if (isAfterApproval) {
+      if (isApproved) {
         const actualData = getActualData(projectData, specificFields)
         await api(`api/projects/v2/${id}/edit_actual_fields/`, {
           data: actualData,
           method: 'PUT',
         })
+      }
+
+      if (isAfterApproval) {
+        await editApprovalFields()
       }
 
       setProjectId(result.id)

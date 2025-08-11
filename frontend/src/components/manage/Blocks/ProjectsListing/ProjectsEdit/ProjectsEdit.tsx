@@ -94,6 +94,7 @@ const ProjectsEdit = ({
   )
 
   const fieldsValuesLoaded = useRef<boolean>(false)
+  const approvalFieldsValuesLoaded = useRef<boolean>(false)
 
   const data = useGetProjectFiles(parseInt(project_id))
 
@@ -103,6 +104,8 @@ const ProjectsEdit = ({
     setViewableFields,
     setEditableFields,
   } = useStore((state) => state.projectFields)
+  const projectSlice = useStore((state) => state.projects)
+  const meetings = projectSlice.meetings.data
 
   const debouncedFetchProjectFields = useMemo(
     () => debounce(() => fetchProjectFields?.(), 0),
@@ -260,6 +263,27 @@ const ProjectsEdit = ({
   }, [cluster, project_type, sector])
 
   useEffect(() => {
+    if (
+      !approvalFieldsValuesLoaded.current &&
+      approvalFields.length > 0 &&
+      isVersion3
+    ) {
+      setProjectData((prevData) => ({
+        ...prevData,
+        approvalFields: {
+          ...getDefaultValues<ProjectTypeApi>(approvalFields, project),
+          meeting_approved: find(
+            meetings,
+            (option) => option.number === project.meeting_approved,
+          )?.id,
+          decision: project.decision_id,
+        },
+      }))
+      approvalFieldsValuesLoaded.current = true
+    }
+  }, [approvalFields])
+
+  useEffect(() => {
     if (!fieldsValuesLoaded.current && specificFields.length > 0) {
       setProjectData((prevData) => ({
         ...prevData,
@@ -280,13 +304,6 @@ const ProjectsEdit = ({
                 ods_odp: [],
               },
             }),
-        ...(isVersion3 &&
-          approvalFields.length > 0 && {
-            approvalFields: {
-              ...getDefaultValues<ProjectTypeApi>(approvalFields, project),
-              decision: project.decision_id,
-            },
-          }),
       }))
 
       fieldsValuesLoaded.current = true
