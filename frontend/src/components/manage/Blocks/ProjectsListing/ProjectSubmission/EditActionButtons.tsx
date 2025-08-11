@@ -237,15 +237,15 @@ const EditActionButtons = ({
         })
       }
 
-      if (isAfterApproval) {
-        await editApprovalFields()
-      }
-
       setProjectId(result.id)
       setProjectTitle(result.title)
 
       if (withNavigation) {
         setLocation(`/projects-listing/${id}/submit`)
+      }
+
+      if (isAfterApproval) {
+        await editApprovalFields()
       }
     } catch (error) {
       await handleErrors(error)
@@ -353,6 +353,7 @@ const EditActionButtons = ({
       setProjectId(result.id)
     } catch (error) {
       await handleErrors(error)
+      setProjectId(null)
     } finally {
       setIsLoading(false)
       setHasSubmitted(true)
