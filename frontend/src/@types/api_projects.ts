@@ -161,6 +161,7 @@ export type ProjectType = {
   tranche: any
   umbrella_project: boolean
   withdrawn: boolean
+  decision_id: number
 }
 
 export type ProjectAssociationType = {

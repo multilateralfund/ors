@@ -9,9 +9,11 @@ import AddComponentModal from './AddComponentModal'
 import { IncreaseVersionButton } from '../HelperComponents'
 import {
   checkInvalidValue,
+  formatApprovalData,
   formatFiles,
   formatSubmitData,
   getActualData,
+  getApprovalErrors,
   getCrossCuttingErrors,
   getHasNoFiles,
   getSpecificFieldsErrors,
@@ -23,6 +25,7 @@ import {
   SubmitActionButtons,
   RelatedProjectsType,
   TrancheErrorType,
+  ProjectSpecificFields,
 } from '../interfaces'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { api, uploadFiles } from '@ors/helpers'
@@ -51,6 +54,7 @@ const EditActionButtons = ({
   setProjectFiles,
   specificFields,
   trancheErrors,
+  approvalFields = [],
 }: SubmitActionButtons & {
   setProjectTitle: (title: string) => void
   project: ProjectTypeApi
@@ -58,6 +62,7 @@ const EditActionButtons = ({
   projectFiles?: ProjectFile[]
   setProjectFiles: (value: ProjectFile[]) => void
   trancheErrors?: TrancheErrorType
+  approvalFields?: ProjectSpecificFields[]
 }) => {
   const [_, setLocation] = useLocation()
 
@@ -79,18 +84,29 @@ const EditActionButtons = ({
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false)
 
   const { id, submission_status } = project
-  const { crossCuttingFields, projectSpecificFields } = projectData
+  const {
+    crossCuttingFields,
+    projectSpecificFields,
+    approvalFields: approvalData,
+  } = projectData
   const odsOdpData = projectSpecificFields?.ods_odp ?? []
 
-  const isDraft = lowerCase(submission_status) === 'draft'
-  const isSubmitted = lowerCase(submission_status) === 'submitted'
-  const isRecommended = lowerCase(submission_status) === 'recommended'
-  const isApproved = lowerCase(submission_status) === 'approved'
+  const submissionStatus = lowerCase(submission_status)
+  const isDraft = submissionStatus === 'draft'
+  const isSubmitted = submissionStatus === 'submitted'
+  const isRecommended = submissionStatus === 'recommended'
+  const isApproved = submissionStatus === 'approved'
+  const isAfterApproval = isApproved || submissionStatus === 'not approved'
 
   const crossCuttingErrors = useMemo(
     () => getCrossCuttingErrors(crossCuttingFields, {}, 'edit', project),
     [crossCuttingFields],
   )
+  const approvalErrors = useMemo(
+    () => getApprovalErrors(approvalData, approvalFields, {}, project),
+    [approvalData, approvalFields],
+  )
+
   const specificErrors = useMemo(
     () =>
       getSpecificFieldsErrors(
@@ -135,17 +151,26 @@ const EditActionButtons = ({
     hasSectionErrors(headerErrors) ||
     hasSectionErrors(substanceErrors) ||
     hasOdsOdpErrors ||
-    getHasNoFiles(id, files, projectFiles)
+    (getHasNoFiles(id, files, projectFiles) && (project?.version ?? 0) < 3)
+
   const hasErrors =
     commonErrors ||
-    (isApproved
+    (isAfterApproval
       ? hasSectionErrors(specificErrorsApproval['Impact'] || {})
       : hasSectionErrors(impactErrors))
 
   const disableSubmit = isSubmitDisabled || hasErrors
   const disableUpdate =
-    isRecommended || isApproved ? disableSubmit : isSaveDisabled
-  const disableApprovalActions = true
+    project.version === 3
+      ? isAfterApproval
+        ? disableSubmit || hasSectionErrors(approvalErrors)
+        : disableSubmit
+      : isSaveDisabled
+  const disableApprovalActions =
+    hasOdsOdpErrors ||
+    hasSectionErrors(approvalErrors) ||
+    crossCuttingErrors['total_fund'].length > 0 ||
+    crossCuttingErrors['support_cost_psc'].length > 0
 
   const { deletedFilesIds = [], newFiles = [] } = files || {}
 
@@ -217,6 +242,10 @@ const EditActionButtons = ({
 
       if (withNavigation) {
         setLocation(`/projects-listing/${id}/submit`)
+      }
+
+      if (isAfterApproval) {
+        await editApprovalFields()
       }
     } catch (error) {
       await handleErrors(error)
@@ -306,9 +335,45 @@ const EditActionButtons = ({
     }
   }
 
-  const approveProject = () => {}
+  const editApprovalFields = async () => {
+    setIsLoading(true)
+    setOtherErrors('')
+    setErrors({})
 
-  const notApproveProject = () => {}
+    try {
+      const data = formatApprovalData(projectData, [
+        ...specificFields,
+        ...approvalFields,
+      ])
+      const result = await api(`api/projects/v2/${id}/edit_approval_fields/`, {
+        data: data,
+        method: 'PUT',
+      })
+
+      setProjectId(result.id)
+    } catch (error) {
+      await handleErrors(error)
+      setProjectId(null)
+    } finally {
+      setIsLoading(false)
+      setHasSubmitted(true)
+    }
+  }
+
+  const approveRejectProject = async (action: string) => {
+    await editApprovalFields()
+    try {
+      await api(`api/projects/v2/${id}/${action}/`, {
+        method: 'POST',
+      })
+      setLocation(`/projects-listing/${id}`)
+    } catch (error) {
+      await handleErrors(error)
+    } finally {
+      setIsLoading(false)
+      setHasSubmitted(true)
+    }
+  }
 
   const enabledButtonClassname =
     'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow'
@@ -393,7 +458,7 @@ const EditActionButtons = ({
           </Dropdown.Item>
         </Dropdown>
       )}
-      {/* {canApproveProjects && isRecommended && (
+      {canApproveProjects && isRecommended && (
         <Dropdown
           className={dropDownClassName}
           ButtonProps={DropDownButtonProps}
@@ -403,7 +468,7 @@ const EditActionButtons = ({
           <Dropdown.Item
             disabled={disableApprovalActions}
             className={cx(dropdownItemClassname, 'text-primary')}
-            onClick={approveProject}
+            onClick={() => approveRejectProject('approve')}
           >
             Approve project
           </Dropdown.Item>
@@ -411,12 +476,12 @@ const EditActionButtons = ({
           <Dropdown.Item
             disabled={disableApprovalActions}
             className={cx(dropdownItemClassname, 'text-red-900')}
-            onClick={notApproveProject}
+            onClick={() => approveRejectProject('reject')}
           >
             Not approve project
           </Dropdown.Item>
         </Dropdown>
-      )} */}
+      )}
       {isComponentModalOpen && (
         <AddComponentModal
           id={id}

@@ -253,6 +253,7 @@ class ProjectV2ViewSet(
             "sector",
             "meeting",
             "meeting_transf",
+            "meeting_approved",
             "meta_project",
         ).prefetch_related(
             "coop_agencies",

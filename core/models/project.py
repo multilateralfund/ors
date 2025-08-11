@@ -250,6 +250,13 @@ class Project(models.Model):
     total_grant = models.FloatField(null=True, blank=True)
 
     date_approved = models.DateField(null=True, blank=True)
+    meeting_approved = models.ForeignKey(
+        Meeting,
+        on_delete=models.CASCADE,
+        related_name="projects_approved",
+        null=True,
+        blank=True,
+    )
     date_completion = models.DateField(null=True, blank=True)
     date_actual = models.DateField(null=True, blank=True)
     date_per_agreement = models.DateField(null=True, blank=True)

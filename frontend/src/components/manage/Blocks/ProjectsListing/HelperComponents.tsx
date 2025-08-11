@@ -92,7 +92,7 @@ export const PageTitle = ({
   projectTitle: string
   project?: ProjectTypeApi
 }) => {
-  const { submission_status, code, code_legacy } = project || {}
+  const { submission_status = '', code, code_legacy } = project || {}
 
   return (
     <>

@@ -202,12 +202,13 @@ def import_project_type(file_path):
             ProjectType.objects.filter(name=type_json["OLD_NAME"]).update(
                 name=type_json["TYPE_PRO"]
             )
-        type_data = {
-            "code": type_json["TYPE"],
-            "name": type_json["TYPE_PRO"],
-            "sort_order": type_json["SORT_TYPE"],
-        }
-        ProjectType.objects.update_or_create(name=type_data["name"], defaults=type_data)
+        else:
+            type_data = {
+                "code": type_json["TYPE"],
+                "name": type_json["TYPE_PRO"],
+                "sort_order": type_json["SORT_TYPE"],
+            }
+            ProjectType.objects.update_or_create(name=type_data["name"], defaults=type_data)
 
 
 def import_sector(file_path):
@@ -503,7 +504,7 @@ def import_project_resources_v2():
     import_cluster_type_sector_links(file_path)
     logger.info("✔ cluster type sector links imported")
 
-    file_path = IMPORT_RESOURCES_DIR / "projects_v2" / "Fields_06_05_2025.json"
+    file_path = IMPORT_RESOURCES_DIR / "projects_v2" / "Fields_07_08_2025.json"
     import_fields(file_path)
     logger.info("✔ fields imported")
 

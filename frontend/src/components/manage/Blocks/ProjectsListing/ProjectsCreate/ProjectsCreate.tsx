@@ -10,6 +10,7 @@ import ProjectCrossCuttingFields from './ProjectCrossCuttingFields'
 import ProjectSpecificInfoSection from './ProjectSpecificInfoSection.tsx'
 import ProjectImpact from './ProjectImpact.tsx'
 import ProjectDocumentation from '../ProjectView/ProjectDocumentation.tsx'
+import ProjectApprovalFields from './ProjectApprovalFields.tsx'
 import ProjectRelatedProjects from '../ProjectView/ProjectRelatedProjects.tsx'
 import {
   ProjectFile,
@@ -32,6 +33,7 @@ import {
   getHasNoFiles,
   hasSectionErrors,
   hasFields,
+  getApprovalErrors,
 } from '../utils.ts'
 import { useStore } from '@ors/store.tsx'
 
@@ -60,6 +62,7 @@ const ProjectsCreate = ({
   trancheErrors,
   getTrancheErrors,
   relatedProjects,
+  approvalFields = [],
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
@@ -73,6 +76,7 @@ const ProjectsCreate = ({
     project?: ProjectTypeApi
     projectFiles?: ProjectFile[]
     relatedProjects?: RelatedProjectsSectionType[]
+    approvalFields?: ProjectSpecificFields[]
   }) => {
   const { project_id } = useParams<Record<string, string>>()
 
@@ -81,8 +85,12 @@ const ProjectsCreate = ({
   )
   const [currentTab, setCurrentTab] = useState<number>(0)
 
-  const { projIdentifiers, crossCuttingFields, projectSpecificFields } =
-    projectData ?? {}
+  const {
+    projIdentifiers,
+    crossCuttingFields,
+    projectSpecificFields,
+    approvalFields: approvalData,
+  } = projectData ?? {}
   const { project_type, sector } = crossCuttingFields
 
   const canLinkToBp = canGoToSecondStep(projIdentifiers)
@@ -134,6 +142,14 @@ const ProjectsCreate = ({
         mode === 'edit' ? project : undefined,
       ),
     [crossCuttingFields, errors, mode],
+  )
+
+  const approvalErrors = useMemo(
+    () =>
+      mode === 'edit'
+        ? getApprovalErrors(approvalData, approvalFields, errors, project)
+        : {},
+    [approvalData, approvalFields, errors],
   )
 
   const specificFieldsErrors = useMemo(
@@ -379,6 +395,40 @@ const ProjectsCreate = ({
           : []),
       ],
     },
+    ...(project && mode === 'edit' && project.version === 3
+      ? [
+          {
+            id: 'project-approval-section',
+            ariaControls: 'project-approval-section',
+            label: (
+              <div className="relative flex items-center justify-between gap-x-2">
+                <div className="leading-tight">Approval</div>
+                {!areNextSectionsDisabled &&
+                  approvalFields.length > 0 &&
+                  hasSectionErrors(approvalErrors) && (
+                    <SectionErrorIndicator errors={[]} />
+                  )}
+              </div>
+            ),
+            disabled:
+              areNextSectionsDisabled ||
+              approvalFields.length < 1 ||
+              !hasFields(projectFields, viewableFields, 'Approval'),
+            component: (
+              <ProjectApprovalFields
+                sectionFields={approvalFields as ProjectSpecificFields[]}
+                {...{
+                  projectData,
+                  setProjectData,
+                  hasSubmitted,
+                }}
+                errors={approvalErrors}
+              />
+            ),
+            errors: formatErrors(approvalErrors),
+          },
+        ]
+      : []),
     ...(project && mode === 'edit'
       ? [
           {
@@ -449,7 +499,7 @@ const ProjectsCreate = ({
                       type="info"
                       alertClassName="mb-3"
                       content={
-                        <Typography className="text-lg leading-none">
+                        <Typography className="pt-0.5 text-lg leading-none">
                           {warnings.warnings[0]}
                         </Typography>
                       }

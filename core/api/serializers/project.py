@@ -318,6 +318,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
     cluster = ProjectClusterSerializer(read_only=True)
     title = serializers.CharField(required=True)
     meeting = serializers.SerializerMethodField()
+    meeting_approved = serializers.SerializerMethodField()
     meeting_transf = serializers.SerializerMethodField()
     decision = serializers.SlugField(source="number", read_only=True)
     substance_category = serializers.SerializerMethodField()
@@ -382,6 +383,8 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "meeting_id",
             "meeting_transf",
             "meeting_transf_id",
+            "meeting_approved",
+            "meeting_approved_id",
             "mya_code",
             "mya_subsector",
             "national_agency",
@@ -447,6 +450,11 @@ class ProjectListSerializer(serializers.ModelSerializer):
     def get_meeting_transf(self, obj):
         if obj.meeting_transf:
             return obj.meeting_transf.number
+        return None
+
+    def get_meeting_approved(self, obj):
+        if obj.meeting_approved:
+            return obj.meeting_approved.number
         return None
 
     def get_substance_category(self, obj):
