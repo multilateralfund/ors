@@ -264,9 +264,9 @@ const ProjectsEdit = ({
 
   useEffect(() => {
     if (
+      isVersion3 &&
       !approvalFieldsValuesLoaded.current &&
-      approvalFields.length > 0 &&
-      isVersion3
+      approvalFields.length > 0
     ) {
       setProjectData((prevData) => ({
         ...prevData,
@@ -281,7 +281,7 @@ const ProjectsEdit = ({
       }))
       approvalFieldsValuesLoaded.current = true
     }
-  }, [approvalFields])
+  }, [approvalFields, approvalFieldsValuesLoaded])
 
   useEffect(() => {
     if (!fieldsValuesLoaded.current && specificFields.length > 0) {
