@@ -7,12 +7,8 @@ import {
   getMeetingNr,
   getMeetingOptions,
 } from '@ors/components/manage/Utils/utilFunctions'
-import { changeHandler, widgets } from './SpecificFieldsHelpers'
-import {
-  ProjectData,
-  SpecificFields,
-  SpecificFieldsSectionProps,
-} from '../interfaces'
+import { widgets } from './SpecificFieldsHelpers'
+import { ProjectData, SpecificFieldsSectionProps } from '../interfaces'
 import { canEditField, canViewField } from '../utils'
 import {
   defaultPropsSimpleField,
@@ -64,6 +60,24 @@ const ProjectApprovalFields = ({
     }))
   }
 
+  const handleChangeDecision = (event: ChangeEvent<HTMLInputElement>) => {
+    const initialValue = event.target.value
+
+    if (initialValue === '' || !isNaN(parseInt(initialValue))) {
+      const finalVal = initialValue ? parseInt(initialValue).toString() : null
+
+      setProjectData((prevData) => ({
+        ...prevData,
+        [sectionIdentifier]: {
+          ...prevData[sectionIdentifier],
+          decision: finalVal,
+        },
+      }))
+    } else {
+      event.preventDefault()
+    }
+  }
+
   return (
     <div className="flex flex-wrap gap-x-20 gap-y-5">
       {canViewField(viewableFields, 'meeting_approved') && (
@@ -92,14 +106,7 @@ const ProjectApprovalFields = ({
           <SimpleInput
             id="Decision"
             value={crtSectionData.decision ?? ''}
-            onChange={(event: ChangeEvent<HTMLTextAreaElement>) =>
-              changeHandler['text']<ProjectData, SpecificFields>(
-                event,
-                'decision',
-                setProjectData,
-                sectionIdentifier,
-              )
-            }
+            onChange={handleChangeDecision}
             disabled={!canEditField(editableFields, 'decision')}
             type="text"
             {...getFieldDefaultProps('decision')}
