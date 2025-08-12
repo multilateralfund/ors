@@ -1,4 +1,5 @@
 import { viewModesHandler } from './ViewHelperComponents'
+import { viewColumnsClassName } from '../constants'
 import { ProjectViewProps } from '../interfaces'
 import { canViewField } from '../utils'
 import { useStore } from '@ors/store'
@@ -10,7 +11,7 @@ const ProjectApproval = ({ project, specificFields }: ProjectViewProps) => {
 
   return (
     <div className="flex w-full flex-col gap-4">
-      <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3">
+      <div className={viewColumnsClassName}>
         {map(
           specificFields,
           (field) =>
@@ -20,7 +21,7 @@ const ProjectApproval = ({ project, specificFields }: ProjectViewProps) => {
               field,
               field.write_field_name === 'excom_provision'
                 ? {
-                    containerClassName: 'col-span-full w-full',
+                    containerClassName: '!basis-full w-full',
                     className: 'whitespace-nowrap',
                     fieldClassName: 'max-w-[50%]',
                   }

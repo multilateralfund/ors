@@ -88,7 +88,7 @@ const ProjectsHeader = ({
       <div className="align-center flex flex-wrap justify-between gap-x-4 gap-y-4">
         <div className="flex flex-col">
           <RedirectBackButton />
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2 sm:flex-nowrap">
             <PageHeading>
               {mode === 'edit' && (
                 <PageTitle

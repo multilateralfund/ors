@@ -1,5 +1,6 @@
 import { viewModesHandler } from './ViewHelperComponents'
 import { canViewField, getSectionFields } from '../utils'
+import { viewColumnsClassName } from '../constants'
 import { ProjectViewProps } from '../interfaces'
 import { useStore } from '@ors/store'
 
@@ -12,7 +13,7 @@ const ProjectImpact = ({ project, specificFields }: ProjectViewProps) => {
 
   return (
     <div className="flex w-full flex-col gap-4 opacity-100">
-      <div className="grid grid-cols-2 gap-x-6 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
+      <div className={viewColumnsClassName}>
         {map(
           fields,
           (field) =>
