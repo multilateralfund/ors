@@ -279,5 +279,8 @@ export type RelatedProjectsSectionType = {
   title: string
   data: RelatedProjectsType[] | null
   setData: (data: RelatedProjectsType[] | null) => void
+  loaded: boolean
+  setLoaded: (loaded: boolean) => void
   queryParams: string
+  noResultsText: string
 }

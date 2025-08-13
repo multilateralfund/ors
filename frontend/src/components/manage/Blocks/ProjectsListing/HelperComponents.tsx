@@ -164,14 +164,14 @@ export const RelatedProjects = ({
   data,
   getErrors,
   isLoaded,
-  withDividers = true,
+  withExtraProjectInfo = false,
   canRefreshStatus = true,
   mode = 'edit',
 }: {
   data?: RelatedProjectsType[]
   getErrors?: () => void
   isLoaded?: boolean
-  withDividers?: boolean
+  withExtraProjectInfo?: boolean
   canRefreshStatus?: boolean
   mode?: string
 }) => (
@@ -180,13 +180,13 @@ export const RelatedProjects = ({
       const hasErrors = entry.errors.length > 0
 
       return (
-        <div key={entry.id}>
+        <div key={entry.id} className={cx({ 'py-3': withExtraProjectInfo })}>
           <Link
             component="a"
             className={cx(
               'flex w-fit items-center gap-2 text-lg normal-case leading-tight no-underline',
               {
-                'py-3': !withDividers,
+                'pb-2.5': withExtraProjectInfo,
                 '!text-inherit': !hasErrors,
                 '!text-[#801F00]': hasErrors,
               },
@@ -203,8 +203,20 @@ export const RelatedProjects = ({
             {entry.title}
             {hasErrors && <ErrorTag />}
           </Link>
-          {withDividers && index !== (data?.length ?? 0) - 1 && (
-            <Divider className="my-3" />
+          {withExtraProjectInfo ? (
+            <div className="ml-6 flex flex-wrap gap-3">
+              <div className="flex items-center gap-2.5">
+                <span>Agency:</span>
+                <h4 className="m-0"> {entry.agency}</h4>
+              </div>
+              <span>|</span>
+              <div className="flex items-center gap-2.5">
+                <span>Project status:</span>
+                <h4 className="m-0"> {entry.status}</h4>
+              </div>
+            </div>
+          ) : (
+            index !== (data?.length ?? 0) - 1 && <Divider className="my-3" />
           )}
         </div>
       )

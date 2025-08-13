@@ -9,31 +9,41 @@ const useGetRelatedProjects = (project: ProjectTypeApi, mode: string) => {
   const [componentProjects, setComponentProjects] = useState<
     RelatedProjectsType[] | null
   >([])
+  const [loadedComponentProjects, setLoadedComponentProjects] =
+    useState<boolean>(false)
   const [associatedProjects, setAssociatedProjects] = useState<
     RelatedProjectsType[] | null
   >([])
+  const [loadedAssociatedProjects, setLoadedAssociatedProjects] =
+    useState<boolean>(false)
 
   const relatedProjects = [
     {
       title: 'Components',
       data: componentProjects,
       setData: setComponentProjects,
+      loaded: loadedComponentProjects,
+      setLoaded: setLoadedComponentProjects,
       queryParams: 'only_components',
+      noResultsText: "This project doesn't have additional components.",
     },
     {
       title: 'Associated projects',
       data: associatedProjects,
       setData: setAssociatedProjects,
+      loaded: loadedAssociatedProjects,
+      setLoaded: setLoadedAssociatedProjects,
       queryParams: 'exclude_components',
+      noResultsText: 'No associated projects available.',
     },
   ]
 
   const debouncedGetAssociatedProjects = debounce(() => {
-    relatedProjects.map(({ setData, queryParams }) => {
+    relatedProjects.map(({ setData, setLoaded, queryParams }) => {
       useGetAssociatedProjects(
         project.id,
         setData,
-        undefined,
+        setLoaded,
         queryParams,
         false,
         false,
