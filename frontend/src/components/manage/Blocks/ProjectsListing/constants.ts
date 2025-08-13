@@ -146,3 +146,6 @@ export const validationFieldsPairs: [
 
 export const disabledClassName =
   '!bg-white !text-[#9ca3af] !border border-solid !border-[#00000042] !cursor-default'
+
+export const viewColumnsClassName =
+  'flex flex-wrap gap-x-7 gap-y-5 [&>*]:basis-[calc(50%-14px)] md:[&>*]:basis-[calc(33.333%-19px)] lg:[&>*]:basis-[calc(25%-21px)]'

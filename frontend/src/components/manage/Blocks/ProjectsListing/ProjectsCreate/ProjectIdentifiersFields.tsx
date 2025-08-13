@@ -281,34 +281,34 @@ const ProjectIdentifiersFields = ({
             />
           )}
         </div>
-        {canViewField(viewableFields, 'lead_agency_submitting_on_behalf') && (
-          <FormControlLabel
-            className="w-fit"
-            label="Confirm you are the lead agency submitting on behalf of a cooperating agency."
-            control={
-              <Checkbox
-                checked={projIdentifiers?.lead_agency_submitting_on_behalf}
-                disabled={
-                  !canUpdateLeadAgency ||
-                  !areNextSectionsDisabled ||
-                  !canEditField(
-                    editableFields,
-                    'lead_agency_submitting_on_behalf',
-                  )
-                }
-                onChange={handleChangeSubmitOnBehalf}
-                size="small"
-                sx={{
-                  color: 'black',
-                }}
-              />
-            }
-            componentsProps={{
-              typography: { fontSize: '1.05rem' },
-            }}
-          />
-        )}
-        {canViewField(viewableFields, 'lead_agency') && (
+        {canViewField(viewableFields, 'lead_agency_submitting_on_behalf') &&
+          canUpdateLeadAgency && (
+            <FormControlLabel
+              className="w-fit"
+              label="Confirm you are the lead agency submitting on behalf of a cooperating agency."
+              control={
+                <Checkbox
+                  checked={projIdentifiers?.lead_agency_submitting_on_behalf}
+                  disabled={
+                    !areNextSectionsDisabled ||
+                    !canEditField(
+                      editableFields,
+                      'lead_agency_submitting_on_behalf',
+                    )
+                  }
+                  onChange={handleChangeSubmitOnBehalf}
+                  size="small"
+                  sx={{
+                    color: 'black',
+                  }}
+                />
+              }
+              componentsProps={{
+                typography: { fontSize: '1.05rem' },
+              }}
+            />
+          )}
+        {canViewField(viewableFields, 'lead_agency') && canUpdateLeadAgency && (
           <>
             <Label>{tableColumns.lead_agency}</Label>
             <Field
@@ -324,7 +324,6 @@ const ProjectIdentifiersFields = ({
               }}
               getOptionLabel={(option) => getOptionLabel(agencies, option)}
               disabled={
-                !canUpdateLeadAgency ||
                 !areNextSectionsDisabled ||
                 !canEditField(editableFields, 'lead_agency')
               }

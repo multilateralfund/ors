@@ -101,7 +101,7 @@ const ProjectsSubmit = ({
           <div className="ml-auto mt-auto flex items-center gap-2.5">
             <CancelLinkButton
               title="Cancel"
-              href={`/projects-listing/${project_id}`}
+              href={`/projects-listing/${project_id}/edit`}
             />
           </div>
         </div>

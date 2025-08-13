@@ -1,12 +1,11 @@
 import { BPTable } from '@ors/components/manage/Blocks/Table/BusinessPlansTable/BusinessPlansTable'
 import { booleanDetailItem, detailItem } from './ViewHelperComponents'
 import { SectionTitle } from '../ProjectsCreate/ProjectsCreate'
+import { tableColumns, viewColumnsClassName } from '../constants'
 import { ProjectTypeApi } from '../interfaces'
-import { tableColumns } from '../constants'
 import { canViewField } from '../utils'
 import { useStore } from '@ors/store'
 
-import { FaInfo } from 'react-icons/fa6'
 import { Divider } from '@mui/material'
 
 const ProjectIdentifiers = ({ project }: { project: ProjectTypeApi }) => {
@@ -42,7 +41,7 @@ const ProjectIdentifiers = ({ project }: { project: ProjectTypeApi }) => {
     <>
       <SectionTitle>Identifiers</SectionTitle>
       <div className="flex w-full flex-col gap-4">
-        <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
+        <div className={viewColumnsClassName}>
           {canViewField(viewableFields, 'country') &&
             detailItem(tableColumns.country, project.country)}
           {canViewField(viewableFields, 'meeting') &&
@@ -60,14 +59,6 @@ const ProjectIdentifiers = ({ project }: { project: ProjectTypeApi }) => {
             project.submission_status,
           )}
         </div>
-        {project.lead_agency_submitting_on_behalf && (
-          <div className="flex gap-3">
-            <div className="flex h-[18px] min-h-[18px] w-[18px] min-w-[18px] items-center justify-center rounded-full border border-solid border-primary bg-[#EBFF00]">
-              <FaInfo className="text-primary" size={12} />
-            </div>
-            The lead agency submitted on behalf of the cooperating agency.
-          </div>
-        )}
       </div>
 
       {canViewBpSection && (

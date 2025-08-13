@@ -2,6 +2,7 @@ import { SectionTitle } from '../ProjectsCreate/ProjectsCreate'
 import ProjectOdsOdpTable from './ProjectOdsOdpTable'
 import { viewModesHandler } from './ViewHelperComponents'
 import { canViewField, getSectionFields, hasFields } from '../utils'
+import { viewColumnsClassName } from '../constants'
 import { ProjectViewProps } from '../interfaces'
 import { useStore } from '@ors/store'
 
@@ -49,7 +50,7 @@ const ProjectSpecificInfo = ({ project, specificFields }: ProjectViewProps) => {
         <>
           <SectionTitle>Overview</SectionTitle>
           <div className="flex w-full flex-col gap-4">
-            <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
+            <div className={viewColumnsClassName}>
               {map(
                 headerFields,
                 (field) =>
@@ -69,7 +70,11 @@ const ProjectSpecificInfo = ({ project, specificFields }: ProjectViewProps) => {
         <>
           <SectionTitle>Substance Details</SectionTitle>
           <div className="flex w-full flex-col gap-4">
-            <div className="grid grid-cols-2 gap-y-4 border-0 md:grid-cols-3 lg:grid-cols-4">
+            <div
+              className={
+                projectFields.length > 1 ? viewColumnsClassName : 'w-1/2'
+              }
+            >
               {map(
                 projectFields,
                 (field) =>

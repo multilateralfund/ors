@@ -8,6 +8,7 @@ import {
   blanketOrIndConsiderationOpts,
   lvcNonLvcOpts,
   tableColumns,
+  viewColumnsClassName,
 } from '../constants'
 import { BooleanOptionsType, ProjectTypeApi } from '../interfaces'
 import { canViewField, hasFields } from '../utils'
@@ -72,7 +73,7 @@ const ProjectCrossCutting = ({ project }: { project: ProjectTypeApi }) => {
 
           <div className="flex flex-col gap-4">
             <div className="flex w-full flex-col gap-4">
-              <div className="grid grid-cols-2 gap-y-4 border-0 pb-3 md:grid-cols-3 lg:grid-cols-4">
+              <div className={viewColumnsClassName}>
                 {canViewField(viewableFields, 'project_type') &&
                   detailItem(tableColumns.type, project.project_type?.name)}
                 {canViewField(viewableFields, 'sector') &&
@@ -84,7 +85,7 @@ const ProjectCrossCutting = ({ project }: { project: ProjectTypeApi }) => {
               </div>
             </div>
             <div className="flex w-full flex-col gap-4">
-              <div className="grid grid-cols-2 gap-y-4 border-0 md:grid-cols-3 lg:grid-cols-4">
+              <div className={viewColumnsClassName}>
                 {canViewField(viewableFields, 'total_fund') &&
                   numberDetailItem(
                     tableColumns.total_fund,
@@ -98,7 +99,7 @@ const ProjectCrossCutting = ({ project }: { project: ProjectTypeApi }) => {
               </div>
             </div>
             <div className="flex w-full flex-col gap-4">
-              <div className="grid grid-cols-2 gap-y-4 border-0 md:grid-cols-3 lg:grid-cols-4">
+              <div className={viewColumnsClassName}>
                 {canViewField(viewableFields, 'project_start_date') &&
                   dateDetailItem(
                     tableColumns.project_start_date,
