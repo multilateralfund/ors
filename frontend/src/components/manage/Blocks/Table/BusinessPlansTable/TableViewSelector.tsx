@@ -1,4 +1,4 @@
-import { ToggleButton, ToggleButtonGroup } from '@mui/material'
+import { ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material'
 
 import { ViewSelectorValuesType } from '../../BusinessPlans/types'
 
@@ -13,6 +13,7 @@ interface TableViewSelectorProps {
   ) => void
   value: ViewSelectorValuesType
   reverseViewOrder?: boolean
+  tooltipText?: string[]
 }
 
 const TableViewSelectorLabels: Record<string, any> = {
@@ -24,11 +25,41 @@ export default function TableViewSelector({
   changeHandler,
   value,
   reverseViewOrder = false,
+  tooltipText,
 }: TableViewSelectorProps) {
   const viewOptions = ['table', 'list']
   const updatedViewOption = reverseViewOrder
     ? reverse(viewOptions)
     : viewOptions
+
+  const ToggleButtonComponent = ({
+    viewOpt,
+    index,
+    tooltipText,
+  }: {
+    viewOpt: string
+    index: number
+    tooltipText?: string[]
+  }) => {
+    const toggleButton = (
+      <ToggleButton
+        key={viewOpt}
+        className="h-[2.25rem] rounded-none border-primary bg-white py-[11px] text-base tracking-wide text-primary first:rounded-l-lg last:rounded-r-lg"
+        value={viewOpt}
+        classes={{
+          selected: '!bg-primary !text-mlfs-hlYellow',
+        }}
+      >
+        {TableViewSelectorLabels[viewOpt]}
+      </ToggleButton>
+    )
+
+    return tooltipText ? (
+      <Tooltip title={tooltipText[index]}>{toggleButton}</Tooltip>
+    ) : (
+      toggleButton
+    )
+  }
 
   return (
     <ToggleButtonGroup
@@ -38,17 +69,11 @@ export default function TableViewSelector({
       onChange={changeHandler}
       exclusive
     >
-      {updatedViewOption.map((viewOpt) => (
-        <ToggleButton
+      {updatedViewOption.map((viewOpt, index) => (
+        <ToggleButtonComponent
           key={viewOpt}
-          className="h-[2.25rem] rounded-none border-primary bg-white py-[11px] text-base tracking-wide text-primary first:rounded-l-lg last:rounded-r-lg"
-          value={viewOpt}
-          classes={{
-            selected: '!bg-primary !text-mlfs-hlYellow',
-          }}
-        >
-          {TableViewSelectorLabels[viewOpt]}
-        </ToggleButton>
+          {...{ viewOpt, tooltipText, index }}
+        />
       ))}
     </ToggleButtonGroup>
   )

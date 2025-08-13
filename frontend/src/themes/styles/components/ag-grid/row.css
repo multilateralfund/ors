@@ -66,7 +66,18 @@
   }
 
   .ag-row {
+    background-color: #faecd199;
+    font-style: italic;
+  }
+
+  .ag-row:first-child {
+    background-color: #fafce9 !important;
+    font-style: normal !important;
+  }
+}
+
+.projects-table.projects-association.ag-table {
+  .ag-row.is-current-project {
     background-color: #fafce9;
-    border-bottom: none;
   }
 }

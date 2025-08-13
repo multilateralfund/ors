@@ -17,7 +17,7 @@ import { initialFilters } from '../constants'
 import { flatMap } from 'lodash'
 
 const ProjectsAssociateSelection = ({
-  project,
+  crtProjects,
   projectsAssociation,
   associationIds,
   setAssociationIds,
@@ -25,7 +25,7 @@ const ProjectsAssociateSelection = ({
   setFilters,
   setMode,
 }: {
-  project: ProjectTypeApi
+  crtProjects: ProjectTypeApi[]
   projectsAssociation: ReturnType<typeof useGetProjectsAssociation>
   associationIds: number[]
   setAssociationIds: (ids: number[]) => void
@@ -73,7 +73,7 @@ const ProjectsAssociateSelection = ({
       domLayout="autoHeight"
       rowHeight={50}
       headerHeight={0}
-      rowData={[project]}
+      rowData={crtProjects}
       rowCount={1}
       components={{
         agColumnHeader: undefined,

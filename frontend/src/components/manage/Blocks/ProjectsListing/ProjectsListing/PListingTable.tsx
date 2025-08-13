@@ -69,6 +69,7 @@ const PListingTable = ({
               )
               return !prev?.data?.isOnly
             },
+            'is-current-project': (params) => params?.data?.is_current_project,
           },
         })}
         columnDefs={columnDefs}

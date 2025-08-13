@@ -6,11 +6,13 @@ import Loading from '@ors/components/theme/Loading/Loading'
 import ProjectsAssociateSelection from './ProjectsAssociateSelection'
 import ProjectsAssociateConfirmation from './ProjectsAssociateConfirmation'
 import { useGetProjectsAssociation } from '../hooks/useGetProjectsAssociation'
-import { ProjectTypeApi } from '../interfaces'
+import { useGetAssociatedProjects } from '../hooks/useGetAssociatedProjects'
+import { ProjectTypeApi, RelatedProjectsType } from '../interfaces'
 import { initialFilters } from '../constants'
 
 import { Box } from '@mui/material'
 import { useParams } from 'wouter'
+import { debounce } from 'lodash'
 
 const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
   const initialProjectsAssociation = useRef<ReturnType<
@@ -28,6 +30,42 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
   )
   const { loading, loaded } = projectsAssociation
 
+  const [associatedProjects, setAssociatedProjects] = useState<
+    RelatedProjectsType[] | null
+  >([])
+  const [loadedAssociatedProjects, setLoadedAssociatedProjects] =
+    useState<boolean>(false)
+
+  const debouncedGetAssociatedProjects = debounce(() => {
+    useGetAssociatedProjects(
+      parseInt(project_id),
+      setAssociatedProjects,
+      setLoadedAssociatedProjects,
+      'all',
+      false,
+      false,
+      false,
+    )
+  }, 0)
+
+  useEffect(() => {
+    debouncedGetAssociatedProjects()
+  }, [])
+
+  const allCrtProjects =
+    associatedProjects && associatedProjects.length > 0
+      ? [project, ...associatedProjects]
+      : [project]
+  const crtProjectsSelection = allCrtProjects.map((project, index) => {
+    return {
+      ...project,
+      title: (index === 0 ? '' : '[associated] ') + project.title,
+    }
+  })
+  const crtProjectsConfirmation = allCrtProjects.map((project) => {
+    return { ...project, is_current_project: true }
+  })
+
   useEffect(() => {
     if (!initialProjectsAssociation.current && loaded) {
       initialProjectsAssociation.current = projectsAssociation
@@ -38,13 +76,13 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
     <>
       <Loading
         className="!fixed bg-action-disabledBackground"
-        active={loading}
+        active={loading || !loadedAssociatedProjects}
       />
       <Box className="my-2 flex flex-col gap-6 shadow-none">
         {mode === 'selection' ? (
           <ProjectsAssociateSelection
+            crtProjects={crtProjectsSelection}
             {...{
-              project,
               projectsAssociation,
               associationIds,
               setAssociationIds,
@@ -60,8 +98,8 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
                 typeof useGetProjectsAssociation
               >
             }
+            crtProjects={crtProjectsConfirmation}
             {...{
-              project,
               associationIds,
               setAssociationIds,
               setFilters,
