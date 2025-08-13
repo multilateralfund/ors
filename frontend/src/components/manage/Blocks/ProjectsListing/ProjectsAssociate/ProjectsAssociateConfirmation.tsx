@@ -23,14 +23,14 @@ import { enqueueSnackbar } from 'notistack'
 import { useLocation } from 'wouter'
 
 const ProjectsAssociateConfirmation = ({
-  project,
+  crtProjects,
   projectsAssociation,
   associationIds,
   setAssociationIds,
   setFilters,
   setMode,
 }: {
-  project: ProjectTypeApi
+  crtProjects: ProjectTypeApi[]
   projectsAssociation: ReturnType<typeof useGetProjectsAssociation>
   associationIds: number[]
   setAssociationIds: (ids: number[]) => void
@@ -56,7 +56,7 @@ const ProjectsAssociateConfirmation = ({
     agencies,
     ({ id }) =>
       metaProjectsLeadAgenciesIds.includes(id) ||
-      id === project?.meta_project?.lead_agency,
+      id === crtProjects[0]?.meta_project?.lead_agency,
   )
 
   const [leadAgencyId, setLeadAgencyId] = useState(
@@ -64,7 +64,7 @@ const ProjectsAssociateConfirmation = ({
   )
 
   const selectedProjects = [
-    project,
+    ...crtProjects,
     ...flatMap(metaProjects, (metaProject) => metaProject.projects),
   ]
   const projects = { ...projectsAssociation, results: selectedProjects }

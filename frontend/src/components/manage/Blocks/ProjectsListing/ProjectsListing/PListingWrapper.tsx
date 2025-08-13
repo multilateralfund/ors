@@ -71,6 +71,7 @@ export default function PListingWrapper() {
       <TableViewSelector
         value={view}
         reverseViewOrder={true}
+        tooltipText={['List projects', 'List associated projects']}
         changeHandler={(_, value) => {
           setView(value)
         }}
