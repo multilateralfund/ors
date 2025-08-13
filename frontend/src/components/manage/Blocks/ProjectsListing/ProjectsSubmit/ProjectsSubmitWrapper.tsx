@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import Loading from '@ors/components/theme/Loading/Loading'
 import ProjectsSubmit from './ProjectsSubmit'
 import { useGetAssociatedProjects } from '../hooks/useGetAssociatedProjects'
-import { RelatedProjectsType } from '../interfaces'
+import { AssociatedProjectsType } from '../interfaces'
 
 import { Redirect, useParams } from 'wouter'
 import { debounce, isNull } from 'lodash'
@@ -14,16 +14,16 @@ const ProjectsSubmitWrapper = () => {
   const { project_id } = useParams<Record<string, string>>()
   const isFirstRender = useRef(false)
 
-  const [associatedProjects, setAssociatedProjects] = useState<
-    RelatedProjectsType[] | null
-  >([])
-  const [loaded, setLoaded] = useState<boolean>(false)
+  const [association, setAssociation] = useState<AssociatedProjectsType>({
+    projects: [],
+    loaded: false,
+  })
+  const { projects: associatedProjects = [], loaded } = association
 
   const debouncedGetAssociatedProjects = debounce(() => {
     useGetAssociatedProjects(
       parseInt(project_id),
-      setAssociatedProjects,
-      setLoaded,
+      setAssociation,
       'only_components',
       true,
       true,
@@ -49,9 +49,7 @@ const ProjectsSubmitWrapper = () => {
         active={!loaded && !isFirstRender.current}
       />
       {associatedProjects && (
-        <ProjectsSubmit
-          {...{ associatedProjects, loaded, setLoaded, setAssociatedProjects }}
-        />
+        <ProjectsSubmit {...{ associatedProjects, loaded, setAssociation }} />
       )}
     </>
   )
