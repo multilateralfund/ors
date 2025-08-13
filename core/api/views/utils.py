@@ -1014,6 +1014,10 @@ class StatisticsStatusOfContributionsAggregator:
     TriennialContributionView data.
     """
 
+    # Special cases for these two triennials, where we should use the view data
+    bilateral_triennial_years = [1994, 1995, 1996, 1997, 1998, 1999]
+    bilateral_triennial_start_years = [1994, 1997]
+
     def get_soc_data(self):
         return (
             TriennialContributionView.objects.values("start_year", "end_year")
@@ -1022,16 +1026,26 @@ class StatisticsStatusOfContributionsAggregator:
                     "current_agreed_contributions", default=0
                 ),
                 cash_payments_sum=models.Sum("cash_payments", default=0),
-                bilateral_assistance_sum=models.Subquery(
-                    BilateralAssistance.objects.filter(
-                        year__gte=models.OuterRef("start_year"),
-                        year__lte=models.OuterRef("end_year"),
-                    )
-                    # Group by replenishment start year
-                    .annotate(start_year_replenishment=models.OuterRef("start_year"))
-                    .values("start_year_replenishment")
-                    .annotate(total=models.Sum("amount", default=0))
-                    .values("total")[:1]
+                bilateral_assistance_sum=models.Case(
+                    # For 1994-1996 and 1997-1999 triennials, use view data
+                    models.When(
+                        start_year__in=self.bilateral_triennial_start_years,
+                        then=models.Sum("bilateral_assistance", default=0),
+                    ),
+                    default=models.Subquery(
+                        BilateralAssistance.objects.filter(
+                            year__gte=models.OuterRef("start_year"),
+                            year__lte=models.OuterRef("end_year"),
+                        )
+                        # Group by replenishment start year
+                        .annotate(
+                            start_year_replenishment=models.OuterRef("start_year")
+                        )
+                        .values("start_year_replenishment")
+                        .annotate(total=models.Sum("amount", default=0))
+                        .values("total")[:1]
+                    ),
+                    output_field=models.DecimalField,
                 ),
                 promissory_notes_sum=models.Sum("promissory_notes", default=0),
                 outstanding_contributions_sum=models.Sum(
@@ -1043,7 +1057,9 @@ class StatisticsStatusOfContributionsAggregator:
                         year__lte=models.OuterRef("end_year"),
                     )
                     # Group by replenishment start year
-                    .annotate(start_year_replenishment=models.OuterRef("start_year"))
+                    .annotate(
+                        start_year_replenishment=models.OuterRef("start_year")
+                    )
                     .values("start_year_replenishment")
                     .annotate(total=models.Sum("amount"))
                     .values("total")[:1]
