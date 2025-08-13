@@ -1045,7 +1045,7 @@ class StatisticsStatusOfContributionsAggregator:
                         .annotate(total=models.Sum("amount", default=0))
                         .values("total")[:1]
                     ),
-                    output_field=models.DecimalField,
+                    output_field=models.DecimalField(),
                 ),
                 promissory_notes_sum=models.Sum("promissory_notes", default=0),
                 outstanding_contributions_sum=models.Sum(
