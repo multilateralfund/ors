@@ -55,7 +55,7 @@ const SubmitProjectModal = ({
       />
       <Modal
         aria-labelledby="submit-modal"
-        open={isModalOpen}
+        open={isModalOpen && loaded}
         onClose={() => setIsModalOpen(false)}
         keepMounted
       >
