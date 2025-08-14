@@ -36,11 +36,11 @@ const ProjectsSettings = () => {
     emailAddresses: settings.data?.project_submission_notification_emails || '',
     errors: null,
   })
-  const [recommandationEmail, setRecommandationEmail] =
+  const [recommendationEmail, setRecommendationEmail] =
     useState<EmailSettingsType>({
-      withNotifications: settings.data?.send_recommandation_email || false,
+      withNotifications: settings.data?.send_recommendation_email || false,
       emailAddresses:
-        settings.data?.project_recommandation_notification_emails || '',
+        settings.data?.project_recommendation_notification_emails || '',
       errors: null,
     })
 
@@ -56,16 +56,16 @@ const ProjectsSettings = () => {
         },
       },
       {
-        type: 'recommandation',
-        emailSettings: recommandationEmail,
-        setEmailSettings: setRecommandationEmail,
+        type: 'recommendation',
+        emailSettings: recommendationEmail,
+        setEmailSettings: setRecommendationEmail,
         fieldsForUpdate: {
-          send_email: 'send_recommandation_email',
-          notification_emails: 'project_recommandation_notification_emails',
+          send_email: 'send_recommendation_email',
+          notification_emails: 'project_recommendation_notification_emails',
         },
       },
     ],
-    [submissionEmail, recommandationEmail],
+    [submissionEmail, recommendationEmail],
   )
 
   const handleWithNotificationsChange = async (
