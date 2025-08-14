@@ -88,7 +88,7 @@ const ProjectsAssociateConfirmation = ({
         method: 'POST',
       })
 
-      setLocation(`/projects-listing`)
+      setLocation(`/projects-listing/listing`)
     } catch (error) {
       const errors = await error.json()
 

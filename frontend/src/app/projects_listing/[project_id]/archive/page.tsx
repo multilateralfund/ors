@@ -14,7 +14,7 @@ export default function Project() {
   const { canViewProjects } = useContext(PermissionsContext)
 
   if (!canViewProjects) {
-    return <Redirect to="/projects-listing" />
+    return <Redirect to="/projects-listing/listing" />
   }
 
   return (

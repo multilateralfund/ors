@@ -19,7 +19,7 @@ const ProjectsEditWrapper = ({ mode }: { mode: string }) => {
   const { data, loading } = project
 
   if (project?.error) {
-    return <Redirect to="/projects-listing" />
+    return <Redirect to="/projects-listing/listing" />
   }
 
   if (

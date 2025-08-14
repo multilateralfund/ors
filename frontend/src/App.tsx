@@ -51,6 +51,7 @@ import ProjectSubmissionsEditPage from '@ors/app/project-submissions/edit/page'
 import ProjectsListingPage from '@ors/app/projects_listing/page'
 import ProjectsAssociationPage from '@ors/app/projects_listing/associate/page'
 import ProjectsExportPage from '@ors/app/projects_listing/export/page'
+import ProjectsSettingsPage from '@ors/app/projects_listing/settings/page'
 import ProjectsCreatePage from '@ors/app/projects_listing/create/page'
 import ProjectsEditPage from '@ors/app/projects_listing/[project_id]/edit/page'
 import ProjectsSubmitPage from '@ors/app/projects_listing/[project_id]/submit/page'
@@ -93,7 +94,7 @@ function RedirectToSection() {
     return <Redirect to={'/business-plans'} />
   }
   if (isOnlyProjectsUser) {
-    return <Redirect to={'/projects-listing'} />
+    return <Redirect to={'/projects-listing/listing'} />
   }
   return <Redirect to={'/country-programme/reports'} />
 }
@@ -267,6 +268,9 @@ export default function App() {
           <ProjectsPage />
         </Route>
         <Route path="/projects-listing">
+          <Redirect to="/projects-listing/listing" replace />
+        </Route>
+        <Route path="/projects-listing/listing">
           <ProjectsDataProvider>
             <ProjectsListingPage />
           </ProjectsDataProvider>
@@ -284,6 +288,11 @@ export default function App() {
         <Route path="/projects-listing/export">
           <ProjectsDataProvider>
             <ProjectsExportPage />
+          </ProjectsDataProvider>
+        </Route>
+        <Route path="/projects-listing/settings">
+          <ProjectsDataProvider>
+            <ProjectsSettingsPage />
           </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/:project_id">

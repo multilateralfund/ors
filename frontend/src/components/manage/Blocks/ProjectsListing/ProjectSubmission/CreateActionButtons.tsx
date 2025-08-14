@@ -95,7 +95,7 @@ const CreateActionButtons = ({
 
   return (
     <div className="flex flex-wrap items-center gap-2.5">
-      <CancelLinkButton title="Cancel" href="/projects-listing" />
+      <CancelLinkButton title="Cancel" href="/projects-listing/listing" />
       {canUpdateProjects && (
         <SubmitButton
           title="Create project (draft)"

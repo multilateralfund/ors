@@ -94,7 +94,7 @@ const ProjectsAssociateSelection = ({
           <CustomLink
             className="h-9 border border-solid border-primary bg-white px-4 py-2 text-primary shadow-none"
             color="primary"
-            href="/projects-listing"
+            href="/projects-listing/listing"
             size="large"
             variant="contained"
             button
