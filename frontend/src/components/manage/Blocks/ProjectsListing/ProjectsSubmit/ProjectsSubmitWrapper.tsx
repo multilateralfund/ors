@@ -39,7 +39,7 @@ const ProjectsSubmitWrapper = () => {
   }, [])
 
   if (loaded && isNull(associatedProjects)) {
-    return <Redirect to="/projects-listing" />
+    return <Redirect to="/projects-listing/listing" />
   }
 
   return (

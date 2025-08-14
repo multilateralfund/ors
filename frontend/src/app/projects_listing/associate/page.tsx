@@ -15,7 +15,7 @@ export default function ProjectsAssociationPage() {
     useContext(PermissionsContext)
 
   if (!canViewProjects || !canAssociateProjects) {
-    return <Redirect to="/projects-listing" />
+    return <Redirect to="/projects-listing/listing" />
   }
 
   return (

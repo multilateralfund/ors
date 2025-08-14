@@ -12,7 +12,7 @@ export default function CreateProject() {
   const { canUpdateProjects } = useContext(PermissionsContext)
 
   if (!canUpdateProjects) {
-    return <Redirect to="/projects-listing" />
+    return <Redirect to="/projects-listing/listing" />
   }
 
   return (

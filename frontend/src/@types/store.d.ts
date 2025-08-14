@@ -324,6 +324,8 @@ export type Settings = {
   business_plan_activity_statuses: [string, string][]
   business_plan_statuses: [string, string][]
   cp_notification_emails: string
+  project_submission_notification_emails: string
+  project_recommendation_notification_emails: string
   cp_reports: {
     max_year: number
     min_year: number
@@ -334,6 +336,8 @@ export type Settings = {
   project_submission_categories: [string, string][]
   project_substance_types: [string, string][]
   send_mail: boolean
+  send_submission_email: boolean
+  send_recommendation_email: boolean
   submission_amount_statuses: [string, string][]
   year_section_mapping: { max_year: number; sections: string[] }[]
 }

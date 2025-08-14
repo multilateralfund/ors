@@ -49,7 +49,7 @@ const ProjectsSubmit = ({
   const isDraft = lowerCase(submission_status) === 'draft'
 
   if (currentProject && !(isDraft && editable)) {
-    return <Redirect to="/projects-listing" />
+    return <Redirect to="/projects-listing/listing" />
   }
 
   const hasErrors = find(associatedProjects, ({ errors }) => errors.length > 0)
@@ -157,7 +157,7 @@ const ProjectsSubmit = ({
         {isSubmitSuccessful && (
           <CustomLink
             className="h-9 w-fit text-nowrap px-4 py-2 text-lg uppercase"
-            href={`/projects-listing`}
+            href="/projects-listing/listing"
             color="secondary"
             variant="contained"
             button
