@@ -11,6 +11,7 @@ import { useGetProject } from '../hooks/useGetProject'
 import { getMenus } from '../utils'
 
 import { Redirect, useParams } from 'wouter'
+import { isNull } from 'lodash'
 
 const ProjectsAssociateWrapper = () => {
   const { project_id } = useParams<Record<string, string>>()
@@ -21,8 +22,8 @@ const ProjectsAssociateWrapper = () => {
   const project = useGetProject(project_id)
   const { data, loading } = project
 
-  if (project?.error) {
-    return <Redirect to="/projects-listing" />
+  if (project?.error || (data && !isNull(data.latest_project))) {
+    return <Redirect to="/projects-listing/listing" />
   }
 
   return (

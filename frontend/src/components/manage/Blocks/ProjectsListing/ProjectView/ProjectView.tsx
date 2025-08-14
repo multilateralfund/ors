@@ -24,7 +24,7 @@ import { useStore } from '@ors/store'
 import { AiFillFileExcel, AiFillFilePdf } from 'react-icons/ai'
 import { IoDownloadOutline } from 'react-icons/io5'
 import { Tabs, Tab, Tooltip } from '@mui/material'
-import { debounce, isArray } from 'lodash'
+import { debounce, isArray, isNull } from 'lodash'
 
 import cx from 'classnames'
 
@@ -201,18 +201,26 @@ const ProjectView = ({
           },
         ]
       : []),
-    {
-      id: 'project-related-projects-section',
-      ariaControls: 'project-related-projects-section',
-      label: 'Related projects',
-      component: <ProjectRelatedProjects {...{ relatedProjects }} />,
-    },
-    {
-      id: 'project-history-section',
-      ariaControls: 'project-history-section',
-      label: 'History',
-      component: <ProjectHistory mode="view" project={project} />,
-    },
+    ...(isNull(project.latest_project)
+      ? [
+          {
+            id: 'project-related-projects-section',
+            ariaControls: 'project-related-projects-section',
+            label: 'Related projects',
+            component: <ProjectRelatedProjects {...{ relatedProjects }} />,
+          },
+        ]
+      : []),
+    ...(isNull(project.latest_project)
+      ? [
+          {
+            id: 'project-history-section',
+            ariaControls: 'project-history-section',
+            label: 'History',
+            component: <ProjectHistory mode="view" project={project} />,
+          },
+        ]
+      : []),
   ]
 
   return (
