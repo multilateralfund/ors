@@ -7,7 +7,11 @@ import ProjectsAssociateSelection from './ProjectsAssociateSelection'
 import ProjectsAssociateConfirmation from './ProjectsAssociateConfirmation'
 import { useGetProjectsAssociation } from '../hooks/useGetProjectsAssociation'
 import { useGetAssociatedProjects } from '../hooks/useGetAssociatedProjects'
-import { ProjectTypeApi, RelatedProjectsType } from '../interfaces'
+import {
+  AssociatedProjectsType,
+  ProjectTypeApi,
+  RelatedProjectsType,
+} from '../interfaces'
 import { initialFilters } from '../constants'
 
 import { Box } from '@mui/material'
@@ -30,17 +34,19 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
   )
   const { loading, loaded } = projectsAssociation
 
-  const [associatedProjects, setAssociatedProjects] = useState<
-    RelatedProjectsType[] | null
-  >([])
-  const [loadedAssociatedProjects, setLoadedAssociatedProjects] =
-    useState<boolean>(false)
+  const [association, setAssociation] = useState<AssociatedProjectsType>({
+    projects: [],
+    loaded: false,
+  })
+  const {
+    projects: associatedProjects = [],
+    loaded: loadedAssociatedProjects,
+  } = association
 
   const debouncedGetAssociatedProjects = debounce(() => {
     useGetAssociatedProjects(
       parseInt(project_id),
-      setAssociatedProjects,
-      setLoadedAssociatedProjects,
+      setAssociation,
       'all',
       false,
       false,

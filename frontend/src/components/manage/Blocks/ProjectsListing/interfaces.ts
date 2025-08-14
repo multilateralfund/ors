@@ -277,10 +277,13 @@ export type RelatedProjectsType = ProjectTypeApi & {
 
 export type RelatedProjectsSectionType = {
   title: string
-  data: RelatedProjectsType[] | null
-  setData: (data: RelatedProjectsType[] | null) => void
-  loaded: boolean
-  setLoaded: (loaded: boolean) => void
+  data: AssociatedProjectsType
+  setData: Dispatch<SetStateAction<AssociatedProjectsType>>
   queryParams: string
   noResultsText: string
+}
+
+export type AssociatedProjectsType = {
+  projects: RelatedProjectsType[] | null
+  loaded: boolean
 }

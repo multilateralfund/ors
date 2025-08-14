@@ -1,49 +1,44 @@
 import { useEffect, useState } from 'react'
 
 import { useGetAssociatedProjects } from './useGetAssociatedProjects'
-import { ProjectTypeApi, RelatedProjectsType } from '../interfaces'
+import { AssociatedProjectsType, ProjectTypeApi } from '../interfaces'
 
 import { debounce } from 'lodash'
 
 const useGetRelatedProjects = (project: ProjectTypeApi, mode: string) => {
-  const [componentProjects, setComponentProjects] = useState<
-    RelatedProjectsType[] | null
-  >([])
-  const [loadedComponentProjects, setLoadedComponentProjects] =
-    useState<boolean>(false)
-  const [associatedProjects, setAssociatedProjects] = useState<
-    RelatedProjectsType[] | null
-  >([])
-  const [loadedAssociatedProjects, setLoadedAssociatedProjects] =
-    useState<boolean>(false)
+  const [componentAssociation, setComponentAssociation] =
+    useState<AssociatedProjectsType>({
+      projects: [],
+      loaded: false,
+    })
+  const [associatedProjectsAssociation, setassociatedProjectsAssociation] =
+    useState<AssociatedProjectsType>({
+      projects: [],
+      loaded: false,
+    })
 
   const relatedProjects = [
     {
       title: 'Components',
-      data: componentProjects,
-      setData: setComponentProjects,
-      loaded: loadedComponentProjects,
-      setLoaded: setLoadedComponentProjects,
+      data: componentAssociation,
+      setData: setComponentAssociation,
       queryParams: 'only_components',
       noResultsText: "This project doesn't have additional components.",
     },
     {
       title: 'Associated projects',
-      data: associatedProjects,
-      setData: setAssociatedProjects,
-      loaded: loadedAssociatedProjects,
-      setLoaded: setLoadedAssociatedProjects,
+      data: associatedProjectsAssociation,
+      setData: setassociatedProjectsAssociation,
       queryParams: 'exclude_components',
       noResultsText: 'No associated projects available.',
     },
   ]
 
   const debouncedGetAssociatedProjects = debounce(() => {
-    relatedProjects.map(({ setData, setLoaded, queryParams }) => {
+    relatedProjects.map(({ setData, queryParams }) => {
       useGetAssociatedProjects(
         project.id,
         setData,
-        setLoaded,
         queryParams,
         false,
         false,
