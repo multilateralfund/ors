@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useGetAssociatedProjects } from './useGetAssociatedProjects'
 import { ProjectTypeApi, RelatedProjectsType } from '../interfaces'
 
-import { debounce } from 'lodash'
+import { debounce, isNull } from 'lodash'
 
 const useGetRelatedProjects = (project: ProjectTypeApi, mode: string) => {
   const [componentProjects, setComponentProjects] = useState<
@@ -53,7 +53,10 @@ const useGetRelatedProjects = (project: ProjectTypeApi, mode: string) => {
   }, 0)
 
   useEffect(() => {
-    if (mode === 'edit' || mode === 'view') {
+    if (
+      (mode === 'edit' || mode === 'view') &&
+      isNull(project.latest_project)
+    ) {
       debouncedGetAssociatedProjects()
     }
   }, [])
