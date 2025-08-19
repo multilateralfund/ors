@@ -52,6 +52,8 @@ const ProjectsCreateWrapper = () => {
   const [specificFields, setSpecificFields] = useState<ProjectSpecificFields[]>(
     [],
   )
+  const [specificFieldsLoaded, setSpecificFieldsLoaded] =
+    useState<boolean>(false)
 
   const groupedFields = groupBy(specificFields, 'table')
   const projectFields = groupedFields['project'] || []
@@ -91,9 +93,21 @@ const ProjectsCreateWrapper = () => {
   const nonFieldsErrors = getNonFieldErrors(errors)
 
   useEffect(() => {
+    setSpecificFieldsLoaded(false)
+
     if (cluster && project_type && sector) {
-      fetchSpecificFields(cluster, project_type, sector, setSpecificFields)
-    } else setSpecificFields([])
+      fetchSpecificFields(
+        cluster,
+        project_type,
+        sector,
+        setSpecificFields,
+        null,
+        setSpecificFieldsLoaded,
+      )
+    } else {
+      setSpecificFields([])
+      setSpecificFieldsLoaded(true)
+    }
   }, [cluster, project_type, sector])
 
   return (
@@ -109,6 +123,7 @@ const ProjectsCreateWrapper = () => {
           setFileErrors,
           setOtherErrors,
           specificFields,
+          specificFieldsLoaded,
         }}
       />
       <ProjectsCreate

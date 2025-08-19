@@ -55,6 +55,7 @@ const EditActionButtons = ({
   specificFields,
   trancheErrors,
   approvalFields = [],
+  specificFieldsLoaded,
 }: SubmitActionButtons & {
   setProjectTitle: (title: string) => void
   project: ProjectTypeApi
@@ -159,14 +160,18 @@ const EditActionButtons = ({
       ? hasSectionErrors(specificErrorsApproval['Impact'] || {})
       : hasSectionErrors(impactErrors))
 
-  const disableSubmit = isSubmitDisabled || hasErrors
+  const disableSubmit = !specificFieldsLoaded || isSubmitDisabled || hasErrors
   const disableUpdate =
-    project.version === 3
+    !specificFieldsLoaded ||
+    (project.version === 3
       ? isAfterApproval
-        ? disableSubmit || hasSectionErrors(approvalErrors)
+        ? disableSubmit ||
+          hasSectionErrors(approvalErrors) ||
+          approvalFields.length === 0
         : disableSubmit
-      : isSaveDisabled
+      : isSaveDisabled)
   const disableApprovalActions =
+    approvalFields.length === 0 ||
     hasOdsOdpErrors ||
     hasSectionErrors(approvalErrors) ||
     crossCuttingErrors['total_fund'].length > 0 ||
@@ -444,6 +449,7 @@ const EditActionButtons = ({
           </Dropdown.Item>
           <Divider className="m-0" />
           <Dropdown.Item
+            disabled={disableUpdate}
             className={cx(dropdownItemClassname, 'text-red-900')}
             onClick={onSendBackToDraftProject}
           >
@@ -451,6 +457,7 @@ const EditActionButtons = ({
           </Dropdown.Item>
           <Divider className="m-0" />
           <Dropdown.Item
+            disabled={disableUpdate}
             className={cx(dropdownItemClassname, 'text-red-900')}
             onClick={onWithdrawProject}
           >

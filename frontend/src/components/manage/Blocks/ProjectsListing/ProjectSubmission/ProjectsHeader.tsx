@@ -17,6 +17,7 @@ import {
   ProjectFilesObject,
   ProjectSpecificFields,
   ProjectTypeApi,
+  SubmitActionButtons,
   TrancheErrorType,
 } from '../interfaces'
 
@@ -33,16 +34,8 @@ const ProjectsHeader = ({
   specificFields,
   approvalFields,
   ...rest
-}: {
-  projectData: ProjectData
+}: SubmitActionButtons & {
   mode: string
-  files: ProjectFilesObject
-  setErrors: (errors: Record<string, []>) => void
-  setHasSubmitted: (value: boolean) => void
-  setFileErrors: (value: string) => void
-  setOtherErrors: (value: string) => void
-  setProjectId: (id: number | null) => void
-  specificFields: ProjectSpecificFields[]
   trancheErrors?: TrancheErrorType
   project?: ProjectTypeApi
   setProjectFiles?: (value: ProjectFile[]) => void

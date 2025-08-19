@@ -22,6 +22,7 @@ const CreateActionButtons = ({
   setFileErrors,
   setOtherErrors,
   specificFields,
+  specificFieldsLoaded,
   mode,
 }: SubmitActionButtons & { mode: string }) => {
   const [_, setLocation] = useLocation()
@@ -99,7 +100,7 @@ const CreateActionButtons = ({
       {canUpdateProjects && (
         <SubmitButton
           title="Create project (draft)"
-          isDisabled={isSaveDisabled}
+          isDisabled={!specificFieldsLoaded || isSaveDisabled}
           onSubmit={createProject}
           className="ml-auto"
         />

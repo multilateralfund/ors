@@ -244,6 +244,7 @@ export interface SubmitActionButtons {
   setFileErrors: (value: string) => void
   setOtherErrors: (value: string) => void
   specificFields: ProjectSpecificFields[]
+  specificFieldsLoaded: boolean
 }
 
 export type ProjectIdentifiersSectionProps = {

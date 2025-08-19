@@ -243,6 +243,8 @@ const ProjectsEdit = ({
   }, [])
 
   useEffect(() => {
+    setSpecificFieldsLoaded(false)
+
     if (cluster && project_type && sector) {
       fetchSpecificFields(
         cluster,
@@ -254,11 +256,10 @@ const ProjectsEdit = ({
       )
     } else {
       setSpecificFields([])
-      setSpecificFieldsLoaded(true)
-    }
 
-    if (mode === 'partial-link') {
-      setSpecificFieldsLoaded(true)
+      if (fieldsValuesLoaded.current) {
+        setSpecificFieldsLoaded(true)
+      }
     }
   }, [cluster, project_type, sector])
 
@@ -405,56 +406,55 @@ const ProjectsEdit = ({
   }, [tranche, project_id, specificFields])
 
   return (
-    specificFieldsLoaded && (
-      <>
-        <ProjectsHeader
-          {...{
-            mode,
-            project,
-            projectData,
-            projectFiles,
-            files,
-            setProjectId,
-            setErrors,
-            setHasSubmitted,
-            setFileErrors,
-            setOtherErrors,
-            setProjectFiles,
-            specificFields,
-            trancheErrors,
-            approvalFields,
-          }}
-        />
-        <ProjectsCreate
-          {...{
-            projectData,
-            setProjectData,
-            mode,
-            specificFields,
-            project,
-            files,
-            setFiles,
-            projectFiles,
-            errors,
-            setErrors,
-            hasSubmitted,
-            fileErrors,
-            trancheErrors,
-            getTrancheErrors,
-            relatedProjects,
-            approvalFields,
-          }}
-        />
-        <ProjectFormFooter
-          successMessage={
-            isEditMode
-              ? 'Updated project successfully.'
-              : 'Submission was successful.'
-          }
-          {...{ projectId, nonFieldsErrors, otherErrors }}
-        />
-      </>
-    )
+    <>
+      <ProjectsHeader
+        {...{
+          mode,
+          project,
+          projectData,
+          projectFiles,
+          files,
+          setProjectId,
+          setErrors,
+          setHasSubmitted,
+          setFileErrors,
+          setOtherErrors,
+          setProjectFiles,
+          specificFields,
+          trancheErrors,
+          approvalFields,
+          specificFieldsLoaded,
+        }}
+      />
+      <ProjectsCreate
+        {...{
+          projectData,
+          setProjectData,
+          mode,
+          specificFields,
+          project,
+          files,
+          setFiles,
+          projectFiles,
+          errors,
+          setErrors,
+          hasSubmitted,
+          fileErrors,
+          trancheErrors,
+          getTrancheErrors,
+          relatedProjects,
+          approvalFields,
+        }}
+      />
+      <ProjectFormFooter
+        successMessage={
+          isEditMode
+            ? 'Updated project successfully.'
+            : 'Submission was successful.'
+        }
+        {...{ projectId, nonFieldsErrors, otherErrors }}
+      />
+    </>
   )
 }
 
