@@ -138,6 +138,7 @@ const ProjectsCreateWrapper = () => {
           setErrors,
           hasSubmitted,
           fileErrors,
+          specificFieldsLoaded,
         }}
       />
       <ProjectFormFooter

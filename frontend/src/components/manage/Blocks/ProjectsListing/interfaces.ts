@@ -233,18 +233,21 @@ export interface ProjectDataProps {
   errors?: { [key: string]: string[] }
 }
 
-export interface SubmitActionButtons {
+export interface ProjectHeader {
   projectData: ProjectData
   files: ProjectFilesObject
   setProjectId: (id: number | null) => void
-  isSaveDisabled: boolean
-  setIsLoading: (value: boolean) => void
   setErrors: (value: { [key: string]: [] }) => void
   setHasSubmitted: (value: boolean) => void
   setFileErrors: (value: string) => void
   setOtherErrors: (value: string) => void
   specificFields: ProjectSpecificFields[]
   specificFieldsLoaded: boolean
+}
+
+export type ActionButtons = ProjectHeader & {
+  isSaveDisabled: boolean
+  setIsLoading: (value: boolean) => void
 }
 
 export type ProjectIdentifiersSectionProps = {

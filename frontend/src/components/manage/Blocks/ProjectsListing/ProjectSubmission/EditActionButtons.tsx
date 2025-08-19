@@ -22,7 +22,7 @@ import {
 import {
   ProjectFile,
   ProjectTypeApi,
-  SubmitActionButtons,
+  ActionButtons,
   RelatedProjectsType,
   TrancheErrorType,
   ProjectSpecificFields,
@@ -56,7 +56,7 @@ const EditActionButtons = ({
   trancheErrors,
   approvalFields = [],
   specificFieldsLoaded,
-}: SubmitActionButtons & {
+}: ActionButtons & {
   setProjectTitle: (title: string) => void
   project: ProjectTypeApi
   isSubmitDisabled: boolean

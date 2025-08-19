@@ -444,6 +444,7 @@ const ProjectsEdit = ({
           getTrancheErrors,
           relatedProjects,
           approvalFields,
+          specificFieldsLoaded,
         }}
       />
       <ProjectFormFooter

@@ -4,7 +4,7 @@ import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { SubmitButton } from '../HelperComponents'
 import { formatSubmitData } from '../utils'
-import { SubmitActionButtons } from '../interfaces'
+import { ActionButtons } from '../interfaces'
 import { api, uploadFiles } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
@@ -24,7 +24,7 @@ const CreateActionButtons = ({
   specificFields,
   specificFieldsLoaded,
   mode,
-}: SubmitActionButtons & { mode: string }) => {
+}: ActionButtons & { mode: string }) => {
   const [_, setLocation] = useLocation()
   const { project_id } = useParams<Record<string, string>>()
 

@@ -37,8 +37,8 @@ import {
 } from '../utils.ts'
 import { useStore } from '@ors/store.tsx'
 
+import { Tabs, Tab, Typography, CircularProgress } from '@mui/material'
 import { groupBy, has, isEmpty, map, mapKeys } from 'lodash'
-import { Tabs, Tab, Typography } from '@mui/material'
 import { useParams } from 'wouter'
 
 export const SectionTitle = ({ children }: { children: ReactNode }) => (
@@ -63,6 +63,7 @@ const ProjectsCreate = ({
   getTrancheErrors,
   relatedProjects,
   approvalFields = [],
+  specificFieldsLoaded,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
@@ -77,6 +78,7 @@ const ProjectsCreate = ({
     projectFiles?: ProjectFile[]
     relatedProjects?: RelatedProjectsSectionType[]
     approvalFields?: ProjectSpecificFields[]
+    specificFieldsLoaded: boolean
   }) => {
   const { project_id } = useParams<Record<string, string>>()
 
@@ -291,14 +293,18 @@ const ProjectsCreate = ({
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Specific Information</div>
-          {!isSpecificInfoTabDisabled &&
+          {!specificFieldsLoaded ? (
+            <CircularProgress color="primary" size="20px" className="mb-0.5" />
+          ) : (
+            !isSpecificInfoTabDisabled &&
             (hasSectionErrors(overviewErrors) ||
               hasSectionErrors(substanceDetailsErrors) ||
               formattedOdsOdpErrors.length > 0 ||
               errorText ||
               (mode === 'edit' && odsOdpData.length === 0)) && (
               <SectionErrorIndicator errors={[]} />
-            )}
+            )
+          )}
         </div>
       ),
       disabled:
@@ -343,8 +349,13 @@ const ProjectsCreate = ({
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Impact</div>
-          {!isImpactTabDisabled && hasSectionErrors(impactErrors) && (
-            <SectionErrorIndicator errors={[]} />
+          {!specificFieldsLoaded ? (
+            <CircularProgress color="primary" size="20px" className="mb-0.5" />
+          ) : (
+            !isImpactTabDisabled &&
+            hasSectionErrors(impactErrors) && (
+              <SectionErrorIndicator errors={[]} />
+            )
           )}
         </div>
       ),
@@ -403,11 +414,18 @@ const ProjectsCreate = ({
             label: (
               <div className="relative flex items-center justify-between gap-x-2">
                 <div className="leading-tight">Approval</div>
-                {!areNextSectionsDisabled &&
-                  approvalFields.length > 0 &&
+                {approvalFields.length === 0 ? (
+                  <CircularProgress
+                    color="primary"
+                    size="20px"
+                    className="mb-0.5"
+                  />
+                ) : (
+                  !areNextSectionsDisabled &&
                   hasSectionErrors(approvalErrors) && (
                     <SectionErrorIndicator errors={[]} />
-                  )}
+                  )
+                )}
               </div>
             ),
             disabled:
@@ -485,6 +503,7 @@ const ProjectsCreate = ({
           />
         ))}
       </Tabs>
+
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {steps
           .filter((_, index) => index === currentTab)
