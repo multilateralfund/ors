@@ -1035,24 +1035,19 @@ class StatisticsExportView(views.APIView):
                         + income["interest_earned"]
                         + income["miscellaneous_income"]
                     ),
-                    # One empty row in between
-                    16: f"{soc['start_year']}-{soc['end_year']}",
-                    17: soc["agreed_contributions_sum"],
-                    18: total_payments,
-                    19: (total_payments / soc["agreed_contributions_sum"]),
+                    # One empty row in between; then most rows calculated
+                    # via existing formulas. `False` used as a marker to not overwrite.
+                    16: False,
+                    17: False,
+                    18: False,
+                    19: False,
                     # Total income
-                    20: (
-                        total_payments
-                        + income["interest_earned"]
-                        + income["miscellaneous_income"]
-                    ),
-                    21: soc["outstanding_contributions_sum"],
-                    22: (
-                        soc["outstanding_contributions_sum"]
-                        / soc["agreed_contributions_sum"]
-                    ),
+                    20: False,
+                    21: False,
+                    22: False,
+                    # Below row uses a formula referencing a missing sheet
                     23: soc["outstanding_ceit"],
-                    24: (soc["outstanding_ceit"] / soc["agreed_contributions_sum"]),
+                    24: False,
                 }
             )
 
