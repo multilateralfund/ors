@@ -202,6 +202,7 @@ export interface ProjectFiles {
 }
 export interface ProjectDocs extends ProjectFiles {
   mode: string
+  loadingFiles?: boolean
   bpFiles?: ProjectFile[]
   project?: ProjectTypeApi
 }

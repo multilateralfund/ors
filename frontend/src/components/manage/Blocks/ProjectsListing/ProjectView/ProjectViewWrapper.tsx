@@ -42,7 +42,9 @@ const ProjectViewWrapper = () => {
     editable,
   } = data || {}
 
-  const projectFiles = useGetProjectFiles(parseInt(project_id))
+  const { files: projectFiles, loadingFiles } = useGetProjectFiles(
+    parseInt(project_id),
+  )
 
   const [specificFields, setSpecificFields] = useState<ProjectSpecificFields[]>(
     [],
@@ -127,7 +129,12 @@ const ProjectViewWrapper = () => {
           </HeaderTitle>
           <ProjectView
             project={data}
-            {...{ projectFiles, specificFields, specificFieldsLoaded }}
+            {...{
+              projectFiles,
+              specificFields,
+              specificFieldsLoaded,
+              loadingFiles,
+            }}
           />
         </>
       )}

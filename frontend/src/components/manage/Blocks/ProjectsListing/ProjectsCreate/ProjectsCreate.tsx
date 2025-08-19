@@ -64,6 +64,7 @@ const ProjectsCreate = ({
   relatedProjects,
   approvalFields = [],
   specificFieldsLoaded,
+  loadingFiles,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
@@ -79,6 +80,7 @@ const ProjectsCreate = ({
     relatedProjects?: RelatedProjectsSectionType[]
     approvalFields?: ProjectSpecificFields[]
     specificFieldsLoaded: boolean
+    loadingFiles?: boolean
   }) => {
   const { project_id } = useParams<Record<string, string>>()
 
@@ -377,7 +379,8 @@ const ProjectsCreate = ({
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Documentation</div>
-          {!areNextSectionsDisabled && (fileErrors || hasNoFiles) ? (
+          {!areNextSectionsDisabled &&
+          (fileErrors || (!loadingFiles && hasNoFiles)) ? (
             <SectionErrorIndicator errors={[]} />
           ) : null}
         </div>
@@ -385,7 +388,7 @@ const ProjectsCreate = ({
       disabled: areNextSectionsDisabled,
       component: (
         <ProjectDocumentation
-          {...{ projectFiles, files, mode, project }}
+          {...{ projectFiles, files, mode, project, loadingFiles }}
           {...rest}
         />
       ),
@@ -397,7 +400,7 @@ const ProjectsCreate = ({
               },
             ]
           : []),
-        ...(hasNoFiles
+        ...(!loadingFiles && hasNoFiles
           ? [
               {
                 message: `At least one file must be attached to this version${errorMessageExtension}.`,

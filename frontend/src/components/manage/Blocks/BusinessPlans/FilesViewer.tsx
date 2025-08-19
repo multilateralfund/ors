@@ -4,13 +4,13 @@ import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { HeaderWithIcon } from '@ors/components/ui/SectionHeader/SectionHeader'
 import { formatApiUrl } from '@ors/helpers'
 import { BpDetails, BpFile } from './types'
-import { ProjectDocs, ProjectFile } from '../ProjectsListing/interfaces'
+import { ProjectFile } from '../ProjectsListing/interfaces'
 
 import { IoDownloadOutline, IoTrash } from 'react-icons/io5'
 import { TbFiles } from 'react-icons/tb'
 import { filter } from 'lodash'
 
-export function FilesViewer(props: BpDetails | ProjectDocs) {
+export function FilesViewer(props: BpDetails) {
   const { bpFiles, files, setFiles } = props
 
   const { canUpdateBp } = useContext(PermissionsContext)

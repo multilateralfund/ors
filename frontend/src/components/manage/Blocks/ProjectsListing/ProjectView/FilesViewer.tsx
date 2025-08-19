@@ -6,12 +6,12 @@ import { ProjectDocs, ProjectFile } from '../interfaces'
 import { formatApiUrl } from '@ors/helpers'
 
 import { IoDownloadOutline, IoTrash } from 'react-icons/io5'
-import { Button, Divider } from '@mui/material'
+import { CircularProgress, Divider } from '@mui/material'
 import { TbFiles } from 'react-icons/tb'
 import { filter } from 'lodash'
 
 export function FilesViewer(props: ProjectDocs) {
-  const { bpFiles, files, setFiles, mode, project } = props
+  const { bpFiles, files, setFiles, mode, project, loadingFiles } = props
 
   const { canUpdateProjects } = useContext(PermissionsContext)
 
@@ -76,45 +76,49 @@ export function FilesViewer(props: ProjectDocs) {
             <Divider className="mt-4" />
           </>
         )}
-      <div className="mt-3 flex flex-col gap-2.5">
-        {currentFiles.length === 0 ? (
-          <p className="m-1 ml-0 text-lg font-normal text-gray-500">
-            No files available
-          </p>
-        ) : (
-          currentFiles.map((file, index: number) => (
-            <div key={index} className="flex items-center gap-2">
-              <a
-                className="m-0 flex items-center gap-2.5 no-underline"
-                href={
-                  (file as ProjectFile).download_url
-                    ? formatApiUrl((file as ProjectFile).download_url)
-                    : URL.createObjectURL(file as File)
-                }
-                {...(!(file as ProjectFile).download_url && {
-                  target: '_blank',
-                  rel: 'noopener noreferrer',
-                })}
-                download={(file as ProjectFile).filename || file.name}
-              >
-                <IoDownloadOutline className="mb-1 min-h-[20px] min-w-[20px] text-secondary" />
-                <span className="text-lg font-medium text-secondary">
-                  {(file as ProjectFile).filename || file.name}
-                </span>
-              </a>
+      {loadingFiles ? (
+        <CircularProgress color="inherit" size="30px" className="mt-2" />
+      ) : (
+        <div className="mt-3 flex flex-col gap-2.5">
+          {currentFiles.length === 0 ? (
+            <p className="m-1 ml-0 text-lg font-normal text-gray-500">
+              No files available
+            </p>
+          ) : (
+            currentFiles.map((file, index: number) => (
+              <div key={index} className="flex items-center gap-2">
+                <a
+                  className="m-0 flex items-center gap-2.5 no-underline"
+                  href={
+                    (file as ProjectFile).download_url
+                      ? formatApiUrl((file as ProjectFile).download_url)
+                      : URL.createObjectURL(file as File)
+                  }
+                  {...(!(file as ProjectFile).download_url && {
+                    target: '_blank',
+                    rel: 'noopener noreferrer',
+                  })}
+                  download={(file as ProjectFile).filename || file.name}
+                >
+                  <IoDownloadOutline className="mb-1 min-h-[20px] min-w-[20px] text-secondary" />
+                  <span className="text-lg font-medium text-secondary">
+                    {(file as ProjectFile).filename || file.name}
+                  </span>
+                </a>
 
-              {setFiles &&
-                canUpdateProjects &&
-                ('editable' in file ? file.editable : true) && (
-                  <IoTrash
-                    className="transition-colors mb-1 min-h-[20px] min-w-[20px] text-[#666] ease-in-out hover:cursor-pointer hover:text-inherit"
-                    onClick={() => handleDelete(file)}
-                  />
-                )}
-            </div>
-          ))
-        )}
-      </div>
+                {setFiles &&
+                  canUpdateProjects &&
+                  ('editable' in file ? file.editable : true) && (
+                    <IoTrash
+                      className="transition-colors mb-1 min-h-[20px] min-w-[20px] text-[#666] ease-in-out hover:cursor-pointer hover:text-inherit"
+                      onClick={() => handleDelete(file)}
+                    />
+                  )}
+              </div>
+            ))
+          )}
+        </div>
+      )}
     </div>
   )
 }

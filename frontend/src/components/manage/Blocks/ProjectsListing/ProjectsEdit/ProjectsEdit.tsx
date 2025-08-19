@@ -96,7 +96,7 @@ const ProjectsEdit = ({
   const fieldsValuesLoaded = useRef<boolean>(false)
   const approvalFieldsValuesLoaded = useRef<boolean>(false)
 
-  const data = useGetProjectFiles(parseInt(project_id))
+  const { files: data, loadingFiles } = useGetProjectFiles(parseInt(project_id))
 
   const {
     fetchProjectFields,
@@ -445,6 +445,7 @@ const ProjectsEdit = ({
           relatedProjects,
           approvalFields,
           specificFieldsLoaded,
+          loadingFiles,
         }}
       />
       <ProjectFormFooter
