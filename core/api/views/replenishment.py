@@ -1016,27 +1016,24 @@ class StatisticsExportView(views.APIView):
             )
             statistics_data.append(
                 {
+                    # Some rows are calculated via existing formulas.
+                    # `False` is used as a marker to not overwrite those with any data.
                     0: f"{soc['start_year']}-{soc['end_year']}",
                     1: soc["agreed_contributions_sum"],
                     2: soc["cash_payments_sum"],
                     3: soc["bilateral_assistance_sum"],
                     4: soc["promissory_notes_sum"],
-                    5: total_payments,
+                    5: False,
                     6: soc["disputed_contributions"],
-                    7: soc["outstanding_contributions_sum"],
-                    8: (total_payments / soc["agreed_contributions_sum"]),
+                    7: False,
+                    8: False,
                     # One empty row in between
                     10: income["interest_earned"],
                     # One empty row in between
                     12: income["miscellaneous_income"],
                     # One empty row in between
-                    14: (
-                        total_payments
-                        + income["interest_earned"]
-                        + income["miscellaneous_income"]
-                    ),
-                    # One empty row in between; then most rows calculated
-                    # via existing formulas. `False` used as a marker to not overwrite.
+                    14: False,
+                    # One empty row in between
                     16: False,
                     17: False,
                     18: False,
