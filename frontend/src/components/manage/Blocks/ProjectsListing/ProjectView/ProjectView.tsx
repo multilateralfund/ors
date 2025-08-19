@@ -23,7 +23,7 @@ import { useStore } from '@ors/store'
 
 import { AiFillFileExcel, AiFillFilePdf } from 'react-icons/ai'
 import { IoDownloadOutline } from 'react-icons/io5'
-import { Tabs, Tab, Tooltip } from '@mui/material'
+import { Tabs, Tab, Tooltip, CircularProgress } from '@mui/material'
 import { debounce, isArray, isNull } from 'lodash'
 
 import cx from 'classnames'
@@ -96,8 +96,10 @@ const ProjectView = ({
   project,
   projectFiles,
   specificFields,
+  specificFieldsLoaded,
 }: ProjectViewProps & {
   projectFiles: ProjectFile[]
+  specificFieldsLoaded: boolean
 }) => {
   const [activeTab, setActiveTab] = useState(0)
 
@@ -159,7 +161,14 @@ const ProjectView = ({
     {
       id: 'project-specific-info',
       ariaControls: 'project-specific-info',
-      label: 'Specific Information',
+      label: (
+        <div className="relative flex items-center justify-between gap-x-2">
+          <div className="leading-tight">Specific Information</div>
+          {!specificFieldsLoaded && (
+            <CircularProgress size="20px" className="mb-0.5 text-gray-400" />
+          )}
+        </div>
+      ),
       disabled:
         (!substanceDetailsFields.length && !overviewFields.length) ||
         (!hasFields(allFields, viewableFields, 'Header') &&
@@ -170,7 +179,14 @@ const ProjectView = ({
     {
       id: 'project-impact',
       ariaControls: 'project-impact',
-      label: 'Impact',
+      label: (
+        <div className="relative flex items-center justify-between gap-x-2">
+          <div className="leading-tight">Impact</div>
+          {!specificFieldsLoaded && (
+            <CircularProgress size="20px" className="mb-0.5 text-gray-400" />
+          )}
+        </div>
+      ),
       disabled:
         !impactFields.length || !hasFields(allFields, viewableFields, 'Impact'),
       classes: classes,
@@ -187,7 +203,17 @@ const ProjectView = ({
           {
             id: 'project-approval',
             ariacontrols: 'project-approval',
-            label: 'Approval',
+            label: (
+              <div className="relative flex items-center justify-between gap-x-2">
+                <div className="leading-tight">Approval</div>
+                {approvalFields.length === 0 && (
+                  <CircularProgress
+                    size="20px"
+                    className="mb-0.5 text-gray-400"
+                  />
+                )}
+              </div>
+            ),
             disabled:
               !approvalFields.length ||
               !hasFields(allFields, viewableFields, 'Approval'),

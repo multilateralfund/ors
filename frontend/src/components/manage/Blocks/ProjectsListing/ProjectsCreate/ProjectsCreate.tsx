@@ -294,7 +294,7 @@ const ProjectsCreate = ({
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Specific Information</div>
           {!specificFieldsLoaded ? (
-            <CircularProgress color="primary" size="20px" className="mb-0.5" />
+            <CircularProgress size="20px" className="mb-0.5 text-gray-400" />
           ) : (
             !isSpecificInfoTabDisabled &&
             (hasSectionErrors(overviewErrors) ||
@@ -350,7 +350,7 @@ const ProjectsCreate = ({
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Impact</div>
           {!specificFieldsLoaded ? (
-            <CircularProgress color="primary" size="20px" className="mb-0.5" />
+            <CircularProgress size="20px" className="mb-0.5 text-gray-400" />
           ) : (
             !isImpactTabDisabled &&
             hasSectionErrors(impactErrors) && (
@@ -416,9 +416,8 @@ const ProjectsCreate = ({
                 <div className="leading-tight">Approval</div>
                 {approvalFields.length === 0 ? (
                   <CircularProgress
-                    color="primary"
                     size="20px"
-                    className="mb-0.5"
+                    className="mb-0.5 text-gray-400"
                   />
                 ) : (
                   !areNextSectionsDisabled &&

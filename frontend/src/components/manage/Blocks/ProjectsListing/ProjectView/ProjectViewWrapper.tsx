@@ -47,9 +47,13 @@ const ProjectViewWrapper = () => {
   const [specificFields, setSpecificFields] = useState<ProjectSpecificFields[]>(
     [],
   )
+  const [specificFieldsLoaded, setSpecificFieldsLoaded] =
+    useState<boolean>(false)
   const [showVersionsMenu, setShowVersionsMenu] = useState<boolean>(false)
 
   useEffect(() => {
+    setSpecificFieldsLoaded(false)
+
     if (cluster_id && project_type_id && sector_id) {
       fetchSpecificFields(
         cluster_id,
@@ -57,8 +61,12 @@ const ProjectViewWrapper = () => {
         sector_id,
         setSpecificFields,
         project_id,
+        setSpecificFieldsLoaded,
       )
-    } else setSpecificFields([])
+    } else {
+      setSpecificFields([])
+      setSpecificFieldsLoaded(true)
+    }
   }, [cluster_id, project_type_id, sector_id])
 
   if (project?.error) {
@@ -117,7 +125,10 @@ const ProjectViewWrapper = () => {
             </div>
             <ProjectStatusInfo project={data} />
           </HeaderTitle>
-          <ProjectView project={data} {...{ projectFiles, specificFields }} />
+          <ProjectView
+            project={data}
+            {...{ projectFiles, specificFields, specificFieldsLoaded }}
+          />
         </>
       )}
     </>
