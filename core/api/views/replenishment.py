@@ -1009,11 +1009,6 @@ class StatisticsExportView(views.APIView):
 
         statistics_data = []
         for soc, income in zip_longest(soc_data, external_income):
-            total_payments = (
-                soc["cash_payments_sum"]
-                + soc["bilateral_assistance_sum"]
-                + soc["promissory_notes_sum"]
-            )
             statistics_data.append(
                 {
                     # Some rows are calculated via existing formulas.
