@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 
 import Loading from '@ors/components/theme/Loading/Loading'
 import { BPTable } from '@ors/components/manage/Blocks/Table/BusinessPlansTable/BusinessPlansTable'
@@ -110,7 +110,7 @@ export type LinkableActivity = ApiBPActivity & {
 }
 
 function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
-  const { activities, yearRanges, projectData, ...rest } = props
+  const { activities, yearRanges, projectData, setProjectData, ...rest } = props
   const { results, ...restActivities } = activities
   const { bpId } = projectData.bpLinking
 
@@ -123,6 +123,26 @@ function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
     [results, bpId],
   )
 
+  const areActivitiesLoaded = restActivities.loaded
+
+  useEffect(() => {
+    const isActivityAvailable = find(results, (result) => result.id === bpId)
+
+    if (areActivitiesLoaded && !isActivityAvailable) {
+      setProjectData((prevData) => {
+        const { bpLinking } = prevData
+
+        return {
+          ...prevData,
+          bpLinking: {
+            ...bpLinking,
+            bpId: null,
+          },
+        }
+      })
+    }
+  }, [areActivitiesLoaded])
+
   const form = useRef<HTMLFormElement>(null)
 
   return (
@@ -132,6 +152,7 @@ function LatestEndorsedBPActivities(props: LatestEndorsedBPActivitiesProps) {
           results={formattedResults}
           yearRanges={yearRanges}
           bpPerPage={ACTIVITIES_PER_PAGE_TABLE}
+          setProjectData={setProjectData}
           isProjectsSection
           {...rest}
           {...restActivities}

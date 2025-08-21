@@ -1,10 +1,18 @@
 'use client'
 
-import { Dispatch, ReactNode, SetStateAction, useMemo, useState } from 'react'
+import {
+  Dispatch,
+  ReactNode,
+  SetStateAction,
+  useContext,
+  useMemo,
+  useState,
+} from 'react'
 
 import ProjectHistory from '@ors/components/manage/Blocks/ProjectsListing/ProjectView/ProjectHistory.tsx'
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert.tsx'
+import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import ProjectIdentifiersSection from './ProjectIdentifiersSection.tsx'
 import ProjectCrossCuttingFields from './ProjectCrossCuttingFields'
 import ProjectSpecificInfoSection from './ProjectSpecificInfoSection.tsx'
@@ -156,6 +164,8 @@ const ProjectsCreate = ({
     [approvalData, approvalFields, errors],
   )
 
+  const { canEditApprovedProjects } = useContext(PermissionsContext)
+
   const specificFieldsErrors = useMemo(
     () =>
       getSpecificFieldsErrors(
@@ -163,6 +173,7 @@ const ProjectsCreate = ({
         specificFields,
         errors,
         mode,
+        canEditApprovedProjects,
         project,
       ),
     [projectSpecificFields, specificFields, errors, mode, project],

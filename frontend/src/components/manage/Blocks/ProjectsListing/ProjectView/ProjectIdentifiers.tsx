@@ -77,6 +77,7 @@ const ProjectIdentifiers = ({ project }: { project: ProjectTypeApi }) => {
               <BPTable
                 yearRanges={[bpYearRange]}
                 results={[bpActivity]}
+                count={1}
                 isProjectsSection={true}
                 loaded={true}
                 loading={false}

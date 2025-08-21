@@ -415,6 +415,7 @@ export const getSpecificFieldsErrors = (
   specificFields: ProjectSpecificFields[],
   errors: { [key: string]: [] },
   mode: string,
+  canEditApprovedProjects: boolean,
   project?: ProjectTypeApi,
 ) => {
   const fieldNames = map(
@@ -424,9 +425,10 @@ export const getSpecificFieldsErrors = (
         table === 'project' &&
         section !== 'MYA' &&
         data_type !== 'boolean' &&
-        editable_in_versions.includes(
-          project && mode === 'edit' ? project.version : 1,
-        ),
+        (canEditApprovedProjects ||
+          editable_in_versions.includes(
+            project && mode === 'edit' ? project.version : 1,
+          )),
     ),
     'write_field_name',
   ) as string[]

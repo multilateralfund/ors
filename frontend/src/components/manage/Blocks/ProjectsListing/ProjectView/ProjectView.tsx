@@ -11,12 +11,8 @@ import ProjectImpact from './ProjectImpact'
 import ProjectDocumentation from './ProjectDocumentation'
 import ProjectRelatedProjects from './ProjectRelatedProjects'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
+import { ProjectFile, ProjectViewProps } from '../interfaces'
 import { getSectionFields, hasFields } from '../utils'
-import {
-  ProjectFile,
-  ProjectViewProps,
-  ProjectSpecificFields,
-} from '../interfaces'
 import useClickOutside from '@ors/hooks/useClickOutside'
 import { formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store'
@@ -132,12 +128,15 @@ const ProjectView = ({
     getSectionFields(specificFields, 'Substance Details'),
     getSectionFields(specificFields, 'Impact'),
   ]
-  const approvalFields =
-    project.version === 3
-      ? ((isArray(allFields) ? allFields : allFields?.data)?.filter(
-          (field) => field.section === 'Approval',
-        ) ?? [])
-      : []
+  const isAfterApproval = ['Approved', 'Not approved'].includes(
+    project.submission_status,
+  )
+
+  const approvalFields = isAfterApproval
+    ? ((isArray(allFields) ? allFields : allFields?.data)?.filter(
+        (field) => field.section === 'Approval',
+      ) ?? [])
+    : []
 
   const relatedProjects = useGetRelatedProjects(project, 'view')
 
@@ -202,7 +201,7 @@ const ProjectView = ({
         <ProjectDocumentation {...{ projectFiles, loadingFiles }} mode="view" />
       ),
     },
-    ...(project.version === 3
+    ...(isAfterApproval
       ? [
           {
             id: 'project-approval',

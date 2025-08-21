@@ -72,6 +72,7 @@ const EditActionButtons = ({
     canSubmitProjects,
     canRecommendProjects,
     canApproveProjects,
+    canEditApprovedProjects,
   } = useContext(PermissionsContext)
 
   const showSubmitTranchesWarningModal = trancheErrors?.tranchesData?.find(
@@ -115,6 +116,7 @@ const EditActionButtons = ({
         specificFields,
         {},
         'edit',
+        canEditApprovedProjects,
         project,
       ),
     [projectSpecificFields, project, specificFields],
@@ -127,6 +129,7 @@ const EditActionButtons = ({
         specificFields.filter(({ is_actual }) => !is_actual),
         {},
         'edit',
+        canEditApprovedProjects,
         project,
       ),
     [projectSpecificFields, project, specificFields],
