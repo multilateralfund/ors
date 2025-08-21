@@ -761,6 +761,7 @@ const CPCreate: React.FC = () => {
                       showCloneDialog={
                         !existingReports.data?.length &&
                         !!currentCountry &&
+                        !!form.country &&
                         !usedRestore
                       }
                       onSectionCheckChange={onSectionCheckChange}

@@ -71,10 +71,12 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
     'can_cp_secretariat_type_comment',
   )
 
-  const isCPCountryUserType = new Set([
-    'can_view_only_own_country',
-    'has_cp_report_view_access',
-  ]).isSubsetOf(user_permissions_as_set)
+  const isCPCountryUserType =
+    new Set([
+      'can_view_only_own_country',
+      'has_cp_report_view_access',
+    ]).isSubsetOf(user_permissions_as_set) &&
+    !user_permissions.includes('can_view_all_countries')
 
   const canViewReplenishment = user_permissions.includes(
     'has_replenishment_view_access',
