@@ -13,7 +13,7 @@ const ProjectsDataProvider = (props: ProjectsDataProviderProps) => {
       params: {
         include_obsoletes: true,
       },
-      withStoreCache: false,
+      withStoreCache: true,
     },
     path: 'api/project-clusters/',
   })
@@ -23,7 +23,7 @@ const ProjectsDataProvider = (props: ProjectsDataProviderProps) => {
       params: {
         include_obsoletes: true,
       },
-      withStoreCache: false,
+      withStoreCache: true,
     },
     path: 'api/project-types/',
   })
@@ -33,7 +33,7 @@ const ProjectsDataProvider = (props: ProjectsDataProviderProps) => {
       params: {
         include_obsoletes: true,
       },
-      withStoreCache: false,
+      withStoreCache: true,
     },
     path: 'api/project-sector/',
   })
@@ -43,7 +43,7 @@ const ProjectsDataProvider = (props: ProjectsDataProviderProps) => {
       params: {
         include_obsoletes: true,
       },
-      withStoreCache: false,
+      withStoreCache: true,
     },
     path: 'api/project-subsector/',
   })

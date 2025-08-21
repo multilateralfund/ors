@@ -20,6 +20,7 @@ import ProjectImpact from './ProjectImpact.tsx'
 import ProjectDocumentation from '../ProjectView/ProjectDocumentation.tsx'
 import ProjectApprovalFields from './ProjectApprovalFields.tsx'
 import ProjectRelatedProjects from '../ProjectView/ProjectRelatedProjects.tsx'
+import useGetProjectFieldsOpts from '../hooks/useGetProjectFieldsOpts.tsx'
 import {
   ProjectFile,
   ProjectSpecificFields,
@@ -104,6 +105,8 @@ const ProjectsCreate = ({
     approvalFields: approvalData,
   } = projectData ?? {}
   const { project_type, sector } = crossCuttingFields
+
+  const fieldsOpts = useGetProjectFieldsOpts(projectData, setProjectData, mode)
 
   const canLinkToBp = canGoToSecondStep(projIdentifiers)
 
@@ -293,7 +296,7 @@ const ProjectsCreate = ({
             projectData,
             setProjectData,
             hasSubmitted,
-            mode,
+            fieldsOpts,
           }}
           errors={crossCuttingErrors}
         />

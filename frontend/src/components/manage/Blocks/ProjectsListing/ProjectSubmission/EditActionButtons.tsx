@@ -173,7 +173,9 @@ const EditActionButtons = ({
           approvalFields.length === 0
         : disableSubmit
       : isSaveDisabled)
+
   const disableApprovalActions =
+    !specificFieldsLoaded ||
     approvalFields.length === 0 ||
     hasOdsOdpErrors ||
     hasSectionErrors(approvalErrors) ||
@@ -232,6 +234,7 @@ const EditActionButtons = ({
       }
 
       const data = formatSubmitData(projectData, specificFields)
+
       const result = await api(`api/projects/v2/${id}`, {
         data: data,
         method: 'PUT',
