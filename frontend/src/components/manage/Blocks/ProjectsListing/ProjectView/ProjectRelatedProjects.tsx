@@ -11,27 +11,31 @@ const ProjectRelatedProjects = ({
   relatedProjects?: RelatedProjectsSectionType[]
 }) => (
   <div className="flex w-full flex-col">
-    {map(relatedProjects, ({ data, title, loaded, noResultsText }, index) => (
-      <>
-        {index !== 0 && <Divider className="mb-4 mt-3" />}
-        <SectionTitle>{title}</SectionTitle>
-        {loaded ? (
-          data && data.length > 0 ? (
-            <RelatedProjects
-              data={data}
-              isLoaded={true}
-              withExtraProjectInfo={true}
-              canRefreshStatus={false}
-              mode="view"
-            />
+    {map(relatedProjects, ({ data, title, noResultsText }, index) => {
+      const { projects: crtData = [], loaded } = data
+
+      return (
+        <>
+          {index !== 0 && <Divider className="mb-4 mt-3" />}
+          <SectionTitle>{title}</SectionTitle>
+          {loaded ? (
+            crtData && crtData.length > 0 ? (
+              <RelatedProjects
+                data={crtData}
+                isLoaded={true}
+                withExtraProjectInfo={true}
+                canRefreshStatus={false}
+                mode="view"
+              />
+            ) : (
+              <div className="mb-3 text-lg italic">{noResultsText}</div>
+            )
           ) : (
-            <div className="mb-3 text-lg italic">{noResultsText}</div>
-          )
-        ) : (
-          <CircularProgress color="inherit" size="24px" className="ml-1.5" />
-        )}
-      </>
-    ))}
+            <CircularProgress color="inherit" size="24px" className="ml-1.5" />
+          )}
+        </>
+      )
+    })}
   </div>
 )
 

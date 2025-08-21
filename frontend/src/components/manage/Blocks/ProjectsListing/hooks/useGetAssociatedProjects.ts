@@ -1,19 +1,23 @@
-import { RelatedProjectsType } from '../interfaces'
+import { Dispatch, SetStateAction } from 'react'
+
+import { AssociatedProjectsType } from '../interfaces'
 import { api } from '@ors/helpers'
 
 import { map } from 'lodash'
 
 export const useGetAssociatedProjects = async (
   id: number,
-  setAssociatedProjects: (projects: RelatedProjectsType[] | null) => void,
-  setLoaded: ((loaded: boolean) => void) | undefined,
+  setAssociatedProjects: Dispatch<SetStateAction<AssociatedProjectsType>>,
   included_entries: string,
   include_validation: boolean = false,
   include_project: boolean = false,
   filter_by_project_status: boolean = true,
 ) => {
   try {
-    setLoaded?.(false)
+    setAssociatedProjects((prev) => ({
+      ...prev,
+      loaded: false,
+    }))
 
     const projects = await api(
       `/api/projects/v2/${id}/list_associated_projects/?included_entries=${included_entries}&include_validation=${include_validation}&include_project=${include_project}&filter_by_project_status=${filter_by_project_status}`,
@@ -32,11 +36,20 @@ export const useGetAssociatedProjects = async (
       }
     })
 
-    setAssociatedProjects(formattedProjects)
+    setAssociatedProjects((prev) => ({
+      ...prev,
+      projects: formattedProjects,
+    }))
   } catch (e) {
     console.error('Error at loading projects for submission')
-    setAssociatedProjects(null)
+    setAssociatedProjects((prev) => ({
+      ...prev,
+      projects: null,
+    }))
   } finally {
-    setLoaded?.(true)
+    setAssociatedProjects((prev) => ({
+      ...prev,
+      loaded: true,
+    }))
   }
 }
