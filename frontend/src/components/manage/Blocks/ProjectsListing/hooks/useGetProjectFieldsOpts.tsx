@@ -54,7 +54,11 @@ const useGetProjectFieldsOpts = (
   const debouncedFetchProjectTypes = debounce(fetchProjectTypes, 0)
 
   useEffect(() => {
-    debouncedFetchProjectTypes()
+    if (cluster) {
+      debouncedFetchProjectTypes()
+    } else {
+      setProjectTypesOpts([])
+    }
   }, [cluster])
 
   const fetchProjectSectors = async () => {
@@ -119,7 +123,7 @@ const useGetProjectFieldsOpts = (
   }, [sector])
 
   useEffect(() => {
-    if (projectTypes.length > 0) {
+    if (!cluster || projectTypes.length > 0) {
       if (!find(projectTypes, { id: project_type })) {
         setProjectData((prevData) => ({
           ...prevData,

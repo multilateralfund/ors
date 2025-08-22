@@ -20,6 +20,7 @@ import ProjectImpact from './ProjectImpact.tsx'
 import ProjectDocumentation from '../ProjectView/ProjectDocumentation.tsx'
 import ProjectApprovalFields from './ProjectApprovalFields.tsx'
 import ProjectRelatedProjects from '../ProjectView/ProjectRelatedProjects.tsx'
+import { DisabledAlert } from '../HelperComponents.tsx'
 import useGetProjectFieldsOpts from '../hooks/useGetProjectFieldsOpts.tsx'
 import {
   ProjectFile,
@@ -73,7 +74,7 @@ const ProjectsCreate = ({
   relatedProjects,
   approvalFields = [],
   specificFieldsLoaded,
-  loadingFiles,
+  loadedFiles,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
@@ -89,7 +90,7 @@ const ProjectsCreate = ({
     relatedProjects?: RelatedProjectsSectionType[]
     approvalFields?: ProjectSpecificFields[]
     specificFieldsLoaded: boolean
-    loadingFiles?: boolean
+    loadedFiles?: boolean
   }) => {
   const { project_id } = useParams<Record<string, string>>()
 
@@ -129,11 +130,29 @@ const ProjectsCreate = ({
     (state) => state.projectFields,
   )
 
+  const isCrossCuttingTabDisabled =
+    areNextSectionsDisabled ||
+    !hasFields(projectFields, viewableFields, 'Cross-Cutting')
+
+  const hasNoSpecificInfoFields =
+    overviewFields.length < 1 && substanceDetailsFields.length < 1
   const isSpecificInfoTabDisabled =
+    !specificFieldsLoaded ||
     areProjectSpecificTabsDisabled ||
-    (overviewFields.length < 1 && substanceDetailsFields.length < 1)
+    hasNoSpecificInfoFields ||
+    (!hasFields(projectFields, viewableFields, 'Header') &&
+      !hasFields(projectFields, viewableFields, 'Substance Details'))
+
   const isImpactTabDisabled =
-    areProjectSpecificTabsDisabled || impactFields.length < 1
+    !specificFieldsLoaded ||
+    areProjectSpecificTabsDisabled ||
+    impactFields.length < 1 ||
+    !hasFields(projectFields, viewableFields, 'Impact')
+
+  const isApprovalTabDisabled =
+    areNextSectionsDisabled ||
+    approvalFields.length < 1 ||
+    !hasFields(projectFields, viewableFields, 'Approval')
 
   const projIdentifiersErrors = useMemo(
     () => getProjIdentifiersErrors(projIdentifiers, errors),
@@ -282,14 +301,15 @@ const ProjectsCreate = ({
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Cross-Cutting</div>
-          {!areNextSectionsDisabled && hasSectionErrors(crossCuttingErrors) && (
-            <SectionErrorIndicator errors={[]} />
-          )}
+          {hasSectionErrors(crossCuttingErrors) &&
+            (isCrossCuttingTabDisabled ? (
+              DisabledAlert
+            ) : (
+              <SectionErrorIndicator errors={[]} />
+            ))}
         </div>
       ),
-      disabled:
-        areNextSectionsDisabled ||
-        !hasFields(projectFields, viewableFields, 'Cross-Cutting'),
+      disabled: isCrossCuttingTabDisabled,
       component: (
         <ProjectCrossCuttingFields
           {...{
@@ -312,21 +332,21 @@ const ProjectsCreate = ({
           {!specificFieldsLoaded ? (
             <CircularProgress size="20px" className="mb-0.5 text-gray-400" />
           ) : (
-            !isSpecificInfoTabDisabled &&
+            !hasNoSpecificInfoFields &&
             (hasSectionErrors(overviewErrors) ||
               hasSectionErrors(substanceDetailsErrors) ||
               formattedOdsOdpErrors.length > 0 ||
               errorText ||
-              (mode === 'edit' && odsOdpData.length === 0)) && (
+              (mode === 'edit' && odsOdpData.length === 0)) &&
+            (isSpecificInfoTabDisabled ? (
+              DisabledAlert
+            ) : (
               <SectionErrorIndicator errors={[]} />
-            )
+            ))
           )}
         </div>
       ),
-      disabled:
-        isSpecificInfoTabDisabled ||
-        (!hasFields(projectFields, viewableFields, 'Header') &&
-          !hasFields(projectFields, viewableFields, 'Substance Details')),
+      disabled: isSpecificInfoTabDisabled,
       component: (
         <ProjectSpecificInfoSection
           {...{
@@ -368,16 +388,17 @@ const ProjectsCreate = ({
           {!specificFieldsLoaded ? (
             <CircularProgress size="20px" className="mb-0.5 text-gray-400" />
           ) : (
-            !isImpactTabDisabled &&
-            hasSectionErrors(impactErrors) && (
+            impactFields.length >= 1 &&
+            hasSectionErrors(impactErrors) &&
+            (isImpactTabDisabled ? (
+              DisabledAlert
+            ) : (
               <SectionErrorIndicator errors={[]} />
-            )
+            ))
           )}
         </div>
       ),
-      disabled:
-        isImpactTabDisabled ||
-        !hasFields(projectFields, viewableFields, 'Impact'),
+      disabled: isImpactTabDisabled,
       component: (
         <ProjectImpact
           sectionFields={impactFields}
@@ -393,16 +414,19 @@ const ProjectsCreate = ({
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Documentation</div>
-          {!areNextSectionsDisabled &&
-          (fileErrors || (!loadingFiles && hasNoFiles)) ? (
-            <SectionErrorIndicator errors={[]} />
+          {fileErrors || (loadedFiles && hasNoFiles) ? (
+            areNextSectionsDisabled ? (
+              DisabledAlert
+            ) : (
+              <SectionErrorIndicator errors={[]} />
+            )
           ) : null}
         </div>
       ),
       disabled: areNextSectionsDisabled,
       component: (
         <ProjectDocumentation
-          {...{ projectFiles, files, mode, project, loadingFiles }}
+          {...{ projectFiles, files, mode, project, loadedFiles }}
           {...rest}
         />
       ),
@@ -414,7 +438,7 @@ const ProjectsCreate = ({
               },
             ]
           : []),
-        ...(!loadingFiles && hasNoFiles
+        ...(loadedFiles && hasNoFiles
           ? [
               {
                 message: `At least one file must be attached to this version${errorMessageExtension}.`,
@@ -437,17 +461,16 @@ const ProjectsCreate = ({
                     className="mb-0.5 text-gray-400"
                   />
                 ) : (
-                  !areNextSectionsDisabled &&
-                  hasSectionErrors(approvalErrors) && (
+                  hasSectionErrors(approvalErrors) &&
+                  (isApprovalTabDisabled ? (
+                    DisabledAlert
+                  ) : (
                     <SectionErrorIndicator errors={[]} />
-                  )
+                  ))
                 )}
               </div>
             ),
-            disabled:
-              areNextSectionsDisabled ||
-              approvalFields.length < 1 ||
-              !hasFields(projectFields, viewableFields, 'Approval'),
+            disabled: isApprovalTabDisabled,
             component: (
               <ProjectApprovalFields
                 sectionFields={approvalFields as ProjectSpecificFields[]}

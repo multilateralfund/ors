@@ -8,10 +8,10 @@ import { formatApiUrl } from '@ors/helpers'
 import { IoDownloadOutline, IoTrash } from 'react-icons/io5'
 import { CircularProgress, Divider } from '@mui/material'
 import { TbFiles } from 'react-icons/tb'
-import { filter } from 'lodash'
+import { filter, isNil } from 'lodash'
 
 export function FilesViewer(props: ProjectDocs) {
-  const { bpFiles, files, setFiles, mode, project, loadingFiles } = props
+  const { bpFiles, files, setFiles, mode, project, loadedFiles } = props
 
   const { canUpdateProjects } = useContext(PermissionsContext)
 
@@ -76,7 +76,7 @@ export function FilesViewer(props: ProjectDocs) {
             <Divider className="mt-4" />
           </>
         )}
-      {loadingFiles ? (
+      {!isNil(loadedFiles) && !loadedFiles ? (
         <CircularProgress color="inherit" size="30px" className="mt-2" />
       ) : (
         <div className="mt-3 flex flex-col gap-2.5">

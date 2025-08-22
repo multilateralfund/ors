@@ -11,12 +11,12 @@ const ProjectDocumentation = ({
   projectFiles = [],
   mode,
   project,
-  loadingFiles,
+  loadedFiles,
 }: ProjectFiles & {
   projectFiles?: ProjectFile[]
   mode: string
   project?: ProjectTypeApi
-  loadingFiles?: boolean
+  loadedFiles?: boolean
 }) => {
   const { canUpdateProjects, canEditApprovedProjects } =
     useContext(PermissionsContext)
@@ -28,7 +28,7 @@ const ProjectDocumentation = ({
   return (
     <div className="flex w-full flex-col gap-4">
       <FilesViewer
-        {...{ files, setFiles, mode, project, loadingFiles }}
+        {...{ files, setFiles, mode, project, loadedFiles }}
         bpFiles={mode === 'edit' || mode === 'view' ? projectFiles : []}
       />
 

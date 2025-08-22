@@ -93,11 +93,11 @@ const ProjectView = ({
   projectFiles,
   specificFields,
   specificFieldsLoaded,
-  loadingFiles,
+  loadedFiles,
 }: ProjectViewProps & {
   projectFiles: ProjectFile[]
   specificFieldsLoaded: boolean
-  loadingFiles: boolean
+  loadedFiles: boolean
 }) => {
   const [activeTab, setActiveTab] = useState(0)
 
@@ -198,7 +198,7 @@ const ProjectView = ({
       ariaControls: 'project-documentation',
       label: 'Documentation',
       component: (
-        <ProjectDocumentation {...{ projectFiles, loadingFiles }} mode="view" />
+        <ProjectDocumentation {...{ projectFiles, loadedFiles }} mode="view" />
       ),
     },
     ...(isAfterApproval

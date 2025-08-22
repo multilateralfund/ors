@@ -42,7 +42,7 @@ const ProjectViewWrapper = () => {
     editable,
   } = data || {}
 
-  const { files: projectFiles, loadingFiles } = useGetProjectFiles(
+  const { files: projectFiles, loadedFiles } = useGetProjectFiles(
     parseInt(project_id),
   )
 
@@ -133,7 +133,7 @@ const ProjectViewWrapper = () => {
               projectFiles,
               specificFields,
               specificFieldsLoaded,
-              loadingFiles,
+              loadedFiles,
             }}
           />
         </>
