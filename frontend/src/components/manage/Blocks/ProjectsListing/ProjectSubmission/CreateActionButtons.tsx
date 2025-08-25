@@ -3,16 +3,17 @@ import { useContext } from 'react'
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { SubmitButton } from '../HelperComponents'
-import { formatSubmitData } from '../utils'
+import { formatProjectFields, formatSubmitData } from '../utils'
 import { ActionButtons } from '../interfaces'
 import { api, uploadFiles } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
-import { enqueueSnackbar } from 'notistack'
 import { useLocation, useParams } from 'wouter'
+import { enqueueSnackbar } from 'notistack'
 
 const CreateActionButtons = ({
   projectData,
+  setProjectData,
   files,
   setProjectId,
   isSaveDisabled,
@@ -30,6 +31,7 @@ const CreateActionButtons = ({
 
   const { canUpdateProjects } = useContext(PermissionsContext)
   const { setWarnings } = useStore((state) => state.projectWarnings)
+  const { projectFields } = useStore((state) => state.projectFields)
 
   const { newFiles = [] } = files || {}
 
@@ -40,7 +42,12 @@ const CreateActionButtons = ({
     setErrors({})
 
     try {
-      const data = formatSubmitData(projectData, specificFields)
+      const data = formatSubmitData(
+        projectData,
+        setProjectData,
+        specificFields,
+        formatProjectFields(projectFields),
+      )
 
       if (newFiles.length > 0) {
         await uploadFiles(

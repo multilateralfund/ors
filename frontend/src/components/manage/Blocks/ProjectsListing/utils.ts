@@ -1,3 +1,5 @@
+import { Dispatch, SetStateAction } from 'react'
+
 import { tableColumns, validationFieldsPairs } from './constants'
 import {
   ProjIdentifiers,
@@ -23,6 +25,7 @@ import {
   isArray,
   isNaN,
   isNil,
+  keys,
   map,
   omit,
   pick,
@@ -135,6 +138,7 @@ const normalizeValues = (data: Record<string, any>) =>
 const normalizeOdsOdp = (
   projectSpecificFields: SpecificFields,
   specificFieldsAvailable: string[],
+  projectFields: ProjectSpecificFields[],
 ) =>
   map(projectSpecificFields.ods_odp, (field, index) => {
     const odsDisplayName = get(field, 'ods_display_name') ?? ''
@@ -143,9 +147,18 @@ const normalizeOdsOdp = (
       ? { ods_substance_id: baselineTechValue, ods_blend_id: undefined }
       : { ods_substance_id: undefined, ods_blend_id: baselineTechValue }
 
+    const oldData = defaultOldFields(
+      field,
+      specificFieldsAvailable,
+      projectFields,
+    )
+
     return {
-      ...omit(pick(field, specificFieldsAvailable), 'ods_display_name'),
-      ...baselineTechObj,
+      ...pick(field, specificFieldsAvailable),
+      ...(specificFieldsAvailable.includes('ods_display_name')
+        ? baselineTechObj
+        : {}),
+      ...oldData,
       sort_order: index + 1,
     }
   })
@@ -157,7 +170,9 @@ const formatActualData = (data: Record<string, any>) =>
 
 export const formatSubmitData = (
   projectData: ProjectData,
+  setProjectData: Dispatch<SetStateAction<ProjectData>>,
   specificFields: ProjectSpecificFields[],
+  projectFields: ProjectSpecificFields[],
 ) => {
   const {
     projIdentifiers,
@@ -173,32 +188,53 @@ export const formatSubmitData = (
     projectSpecificFields,
     specificFieldsAvailable,
   )
-  const crtOdsOdpFields = normalizeOdsOdp(
-    projectSpecificFields,
+  const updatedOldSpecificFieldsValues = defaultOldFields(
+    projectData.projectSpecificFields,
     specificFieldsAvailable,
+    projectFields,
   )
+
+  const hasOdsOdpFields = filteredFields.find(
+    (field) => field.table === 'ods_odp',
+  )
+
+  const updatedOdsOdpValues = hasOdsOdpFields
+    ? normalizeOdsOdp(
+        projectSpecificFields,
+        specificFieldsAvailable,
+        projectFields,
+      )
+    : []
+
+  setProjectData((prevData) => ({
+    ...prevData,
+    projectSpecificFields: {
+      ...prevData.projectSpecificFields,
+      ...updatedOldSpecificFieldsValues,
+      ods_odp: updatedOdsOdpValues,
+    },
+  }))
 
   return {
     ...projIdentifiers,
     bp_activity: bpLinking.bpId,
     ...normalizeValues(crossCuttingFields),
     ...normalizeValues(crtProjectSpecificFields),
-    ods_odp: map(crtOdsOdpFields, (ods_odp) =>
-      omit(normalizeValues(ods_odp), 'id'),
+    ...updatedOldSpecificFieldsValues,
+    ods_odp: map(updatedOdsOdpValues, (ods_odp) =>
+      omit(normalizeValues(ods_odp), ['id', 'ods_display_name']),
     ),
   }
 }
 
 export const formatApprovalData = (
   projectData: ProjectData,
+  setProjectData: Dispatch<SetStateAction<ProjectData>>,
   specificFields: ProjectSpecificFields[],
+  projectFields: ProjectSpecificFields[],
 ) => {
-  const {
-    projIdentifiers,
-    crossCuttingFields,
-    projectSpecificFields,
-    approvalFields,
-  } = projectData
+  const { crossCuttingFields, projectSpecificFields, approvalFields } =
+    projectData
 
   const fields = filter(
     specificFields,
@@ -212,29 +248,42 @@ export const formatApprovalData = (
 
   const crtProjectSpecificFields = pick(
     {
-      ...projIdentifiers,
       ...crossCuttingFields,
-      ...projectSpecificFields,
       ...approvalFields,
     },
     specificFieldsAvailable,
   )
-  const crtOdsOdpFields = normalizeOdsOdp(
-    projectSpecificFields,
-    specificFieldsAvailable,
-  )
+
+  const hasOdsOdpFields = fields.find((field) => field.table === 'ods_odp')
+  const updatedOdsOdpValues = hasOdsOdpFields
+    ? normalizeOdsOdp(
+        projectSpecificFields,
+        specificFieldsAvailable,
+        projectFields,
+      )
+    : []
+
+  setProjectData((prevData) => ({
+    ...prevData,
+    projectSpecificFields: {
+      ...prevData.projectSpecificFields,
+      ods_odp: updatedOdsOdpValues,
+    },
+  }))
 
   return {
     ...normalizeValues(crtProjectSpecificFields),
-    ods_odp: map(crtOdsOdpFields, (ods_odp) =>
-      omit(normalizeValues(ods_odp), 'id'),
+    ods_odp: map(updatedOdsOdpValues, (ods_odp) =>
+      omit(normalizeValues(ods_odp), ['id', 'ods_display_name']),
     ),
   }
 }
 
 export const getActualData = (
   projectData: ProjectData,
+  setProjectData: Dispatch<SetStateAction<ProjectData>>,
   specificFields: ProjectSpecificFields[],
+  projectFields: ProjectSpecificFields[],
 ) => {
   const { projectSpecificFields } = projectData
 
@@ -245,9 +294,25 @@ export const getActualData = (
     projectSpecificFields,
     specificFieldsAvailable,
   )
+  const updatedOldSpecificFieldsValues = defaultOldFields(
+    projectData.projectSpecificFields,
+    specificFieldsAvailable,
+    projectFields,
+  )
+
+  setProjectData((prevData) => ({
+    ...prevData,
+    projectSpecificFields: {
+      ...prevData.projectSpecificFields,
+      ...updatedOldSpecificFieldsValues,
+    },
+  }))
 
   return {
-    ...formatActualData(crtProjectSpecificFields),
+    ...formatActualData({
+      ...crtProjectSpecificFields,
+      ...updatedOldSpecificFieldsValues,
+    }),
   }
 }
 
@@ -614,3 +679,22 @@ export const hasFields = (
 
 export const pluralizeWord = (data: any[] = [], word: string) =>
   data.length > 1 ? word + 's' : word
+
+export const formatProjectFields = (projectFields: any) =>
+  isArray(projectFields) ? projectFields : projectFields?.data
+
+export const defaultOldFields = (
+  data: any,
+  specificFieldsAvailable: string[],
+  projectFields: ProjectSpecificFields[],
+) => {
+  const oldSpecificFieldsValues = omit(data, [
+    ...specificFieldsAvailable,
+    'ods_odp',
+  ])
+  const oldFields = projectFields.filter((field) =>
+    keys(oldSpecificFieldsValues).includes(field.write_field_name),
+  )
+
+  return getDefaultValues<ProjectTypeApi>(oldFields)
+}

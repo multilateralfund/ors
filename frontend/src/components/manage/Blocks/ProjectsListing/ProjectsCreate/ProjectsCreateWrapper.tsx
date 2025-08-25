@@ -124,6 +124,7 @@ const ProjectsCreateWrapper = () => {
           setOtherErrors,
           specificFields,
           specificFieldsLoaded,
+          setProjectData,
         }}
       />
       <ProjectsCreate

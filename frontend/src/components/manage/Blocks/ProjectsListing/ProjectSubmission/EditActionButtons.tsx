@@ -11,6 +11,7 @@ import {
   checkInvalidValue,
   formatApprovalData,
   formatFiles,
+  formatProjectFields,
   formatSubmitData,
   getActualData,
   getApprovalErrors,
@@ -29,6 +30,7 @@ import {
 } from '../interfaces'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { api, uploadFiles } from '@ors/helpers'
+import { useStore } from '@ors/store'
 
 import { Button, ButtonProps, Divider, MenuProps } from '@mui/material'
 import { MdKeyboardArrowDown } from 'react-icons/md'
@@ -39,6 +41,7 @@ import cx from 'classnames'
 
 const EditActionButtons = ({
   projectData,
+  setProjectData,
   project,
   files,
   projectFiles,
@@ -78,6 +81,8 @@ const EditActionButtons = ({
   const showSubmitTranchesWarningModal = trancheErrors?.tranchesData?.find(
     (tranche: RelatedProjectsType) => tranche.warnings.length > 0,
   )
+
+  const { projectFields } = useStore((state) => state.projectFields)
 
   const [isComponentModalOpen, setIsComponentModalOpen] = useState(false)
   const [isTrancheWarningOpen, setIsTrancheWarningOpen] = useState(false)
@@ -233,7 +238,12 @@ const EditActionButtons = ({
         })
       }
 
-      const data = formatSubmitData(projectData, specificFields)
+      const data = formatSubmitData(
+        projectData,
+        setProjectData,
+        specificFields,
+        formatProjectFields(projectFields),
+      )
 
       const result = await api(`api/projects/v2/${id}`, {
         data: data,
@@ -241,7 +251,12 @@ const EditActionButtons = ({
       })
 
       if (isApproved) {
-        const actualData = getActualData(projectData, specificFields)
+        const actualData = getActualData(
+          projectData,
+          setProjectData,
+          specificFields,
+          formatProjectFields(projectFields),
+        )
         await api(`api/projects/v2/${id}/edit_actual_fields/`, {
           data: actualData,
           method: 'PUT',
@@ -352,10 +367,12 @@ const EditActionButtons = ({
     setErrors({})
 
     try {
-      const data = formatApprovalData(projectData, [
-        ...specificFields,
-        ...approvalFields,
-      ])
+      const data = formatApprovalData(
+        projectData,
+        setProjectData,
+        [...specificFields, ...approvalFields],
+        formatProjectFields(projectFields),
+      )
       const result = await api(`api/projects/v2/${id}/edit_approval_fields/`, {
         data: data,
         method: 'PUT',

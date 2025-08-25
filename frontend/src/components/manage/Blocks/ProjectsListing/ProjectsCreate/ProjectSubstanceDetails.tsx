@@ -96,44 +96,45 @@ const ProjectSubstanceDetails = ({
         <>
           <div className="flex flex-col gap-y-2">
             <div className="flex flex-col flex-wrap gap-x-20 gap-y-10">
-              {odsOdpData
-                .sort(
-                  (field1, field2) =>
-                    (field1.sort_order ?? 0) - (field2.sort_order ?? 0),
-                )
-                .map((_, index) => (
-                  <>
-                    <div className="align-center flex flex-row flex-wrap gap-x-7 gap-y-4">
-                      {odsOdpFields.map(
-                        (odsOdpField) =>
-                          canViewField(
-                            viewableFields,
-                            odsOdpField.write_field_name,
-                          ) &&
-                          widgets[odsOdpField.data_type]<ProjectData>(
-                            projectData,
-                            setProjectData,
-                            odsOdpField,
-                            odsOdpErrors,
-                            false,
-                            hasSubmitted,
-                            editableFields,
-                            sectionIdentifier,
-                            field,
-                            index,
-                          ),
-                      )}
-                      <IoTrash
-                        className="mt-12 min-h-[16px] min-w-[16px] cursor-pointer fill-gray-400"
-                        size={16}
-                        onClick={() => {
-                          onRemoveOdsOdp(index)
-                        }}
-                      />
-                    </div>
-                    {index !== odsOdpData.length - 1 && <Divider />}
-                  </>
-                ))}
+              {odsOdpFields.length > 0 &&
+                odsOdpData
+                  .sort(
+                    (field1, field2) =>
+                      (field1.sort_order ?? 0) - (field2.sort_order ?? 0),
+                  )
+                  .map((_, index) => (
+                    <>
+                      <div className="align-center flex flex-row flex-wrap gap-x-7 gap-y-4">
+                        {odsOdpFields.map(
+                          (odsOdpField) =>
+                            canViewField(
+                              viewableFields,
+                              odsOdpField.write_field_name,
+                            ) &&
+                            widgets[odsOdpField.data_type]<ProjectData>(
+                              projectData,
+                              setProjectData,
+                              odsOdpField,
+                              odsOdpErrors,
+                              false,
+                              hasSubmitted,
+                              editableFields,
+                              sectionIdentifier,
+                              field,
+                              index,
+                            ),
+                        )}
+                        <IoTrash
+                          className="mt-12 min-h-[16px] min-w-[16px] cursor-pointer fill-gray-400"
+                          size={16}
+                          onClick={() => {
+                            onRemoveOdsOdp(index)
+                          }}
+                        />
+                      </div>
+                      {index !== odsOdpData.length - 1 && <Divider />}
+                    </>
+                  ))}
             </div>
           </div>
           {odsOdpFields.length > 0 && (

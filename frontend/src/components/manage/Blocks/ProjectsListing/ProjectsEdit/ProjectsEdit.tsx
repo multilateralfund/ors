@@ -439,6 +439,7 @@ const ProjectsEdit = ({
             trancheErrors,
             approvalFields,
             specificFieldsLoaded,
+            setProjectData,
           }}
         />
         <ProjectsCreate
