@@ -1,7 +1,7 @@
 import type { CreateSliceProps } from '@ors/types/store'
 import type { ProjectsSlice } from '@ors/types/store'
 
-import { defaultSliceData } from '@ors/helpers/Store/Store'
+import { defaultSliceData, setSlice } from '@ors/helpers/Store/Store'
 
 export const createProjectSlice = ({
   initialState,
@@ -14,6 +14,13 @@ export const createProjectSlice = ({
     meetings: {
       ...defaultSliceData,
       ...(initialState?.projects?.meetings || {}),
+    },
+    setProjectSettings: (project_settings) => {
+      setSlice('projects.project_settings', project_settings)
+    },
+    project_settings: {
+      ...defaultSliceData,
+      ...(initialState?.projects?.project_settings || {}),
     },
     sectors: {
       ...defaultSliceData,

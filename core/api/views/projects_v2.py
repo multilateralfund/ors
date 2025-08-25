@@ -439,7 +439,7 @@ class ProjectV2ViewSet(
                     associated_project, request.user, HISTORY_DESCRIPTION_SUBMIT_V1
                 )
         # Send email notification to the secretariat team
-        if config.SEND_MAIL:
+        if config.PROJECT_SUBMISSION_NOTIFICATIONS_ENABLED:
             send_project_submission_notification.delay(
                 [project.id for project in associated_projects]
             )
