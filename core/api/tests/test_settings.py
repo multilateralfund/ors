@@ -6,7 +6,7 @@ from core.api.tests.base import BaseTest
 
 
 pytestmark = pytest.mark.django_db
-# pylint: disable=C8008
+# pylint: disable=C8008,R0913
 
 
 class TestSettings(BaseTest):
