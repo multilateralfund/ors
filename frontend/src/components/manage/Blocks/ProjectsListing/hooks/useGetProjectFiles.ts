@@ -4,7 +4,7 @@ import { formatFiles } from '../utils'
 import useApi from '@ors/hooks/useApi'
 
 export function useGetProjectFiles(project_id: number) {
-  const { data } = useApi({
+  const { data, loaded } = useApi({
     options: {
       withStoreCache: false,
     },
@@ -13,5 +13,5 @@ export function useGetProjectFiles(project_id: number) {
 
   const formattedFiles = useMemo(() => formatFiles(data, project_id), [data])
 
-  return formattedFiles
+  return { files: formattedFiles, loadedFiles: loaded }
 }

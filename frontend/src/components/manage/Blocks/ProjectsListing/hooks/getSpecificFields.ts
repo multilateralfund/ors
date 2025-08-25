@@ -8,8 +8,8 @@ export const fetchSpecificFields = async (
   project_type: number,
   sector: number,
   setFields: Dispatch<SetStateAction<ProjectSpecificFields[]>>,
-  project_id?: string | null,
-  setSpecificFieldsLoaded?: (isLoaded: boolean) => void,
+  project_id: string | null,
+  setSpecificFieldsLoaded: (isLoaded: boolean) => void,
 ) => {
   let url = `/api/project-cluster/${cluster}/type/${project_type}/sector/${sector}/fields/?`
 

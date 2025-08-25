@@ -28,6 +28,10 @@ const ProjectIdentifiersSection = ({
     false,
     ['bp_activity'],
   )
+
+  const { country, agency, cluster } = projectData.projIdentifiers
+  const bpKey = country + '-' + agency + '-' + cluster
+
   const canViewBpSection =
     canViewBp && canViewField(viewableFields, 'bp_activity')
 
@@ -42,6 +46,7 @@ const ProjectIdentifiersSection = ({
       {hasIdentifiers && canViewBpSection && <Divider className="my-6" />}
       {canViewBpSection && (
         <ProjectBPLinking
+          key={bpKey}
           {...{
             projectData,
             setProjectData,

@@ -12,11 +12,10 @@ import {
 } from '../HelperComponents'
 import { getDefaultImpactErrors, getIsSaveDisabled } from '../utils'
 import {
-  ProjectData,
   ProjectFile,
-  ProjectFilesObject,
   ProjectSpecificFields,
   ProjectTypeApi,
+  ProjectHeader,
   TrancheErrorType,
 } from '../interfaces'
 
@@ -33,16 +32,8 @@ const ProjectsHeader = ({
   specificFields,
   approvalFields,
   ...rest
-}: {
-  projectData: ProjectData
+}: ProjectHeader & {
   mode: string
-  files: ProjectFilesObject
-  setErrors: (errors: Record<string, []>) => void
-  setHasSubmitted: (value: boolean) => void
-  setFileErrors: (value: string) => void
-  setOtherErrors: (value: string) => void
-  setProjectId: (id: number | null) => void
-  specificFields: ProjectSpecificFields[]
   trancheErrors?: TrancheErrorType
   project?: ProjectTypeApi
   setProjectFiles?: (value: ProjectFile[]) => void

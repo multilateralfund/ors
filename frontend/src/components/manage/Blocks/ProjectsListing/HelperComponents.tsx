@@ -7,7 +7,12 @@ import {
 } from './ProjectVersions/ProjectVersionsComponents'
 import { ProjectTypeApi, RelatedProjectsType } from './interfaces'
 
-import { IoChevronDown, IoChevronUp, IoReturnUpBack } from 'react-icons/io5'
+import {
+  IoAlertCircle,
+  IoChevronDown,
+  IoChevronUp,
+  IoReturnUpBack,
+} from 'react-icons/io5'
 import { Button, CircularProgress, Divider } from '@mui/material'
 import { FaExternalLinkAlt } from 'react-icons/fa'
 import { SlReload } from 'react-icons/sl'
@@ -295,4 +300,11 @@ export const OpenedList = ({
       {...{ data, canRefreshStatus, mode }}
     />
   </div>
+)
+
+export const DisabledAlert = (
+  <IoAlertCircle
+    className="mb-0.5 rounded-full bg-[#002A3C] opacity-20"
+    color="#EBFF00"
+  />
 )
