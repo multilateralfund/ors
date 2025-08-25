@@ -122,7 +122,7 @@ from core.api.views.projects_v2 import (
 from core.api.views.project_associations import ProjectAssociationViewSet
 from core.api.views.rbm_measures import RBMMeasureListView
 from core.api.views.sector_subsector import ProjectSectorView, ProjectSubSectorView
-from core.api.views.settings import SettingsView
+from core.api.views.settings import ProjectSettingsView, SettingsView
 from core.api.views.usages import UsageListView
 from core.api.views.countries import CountryListView, BusinessPlanCountryListView
 
@@ -232,6 +232,11 @@ urlpatterns = [
         "settings/",
         SettingsView.as_view(),
         name="settings",
+    ),
+    path(
+        "project-settings/",
+        ProjectSettingsView.as_view(),
+        name="project-settings",
     ),
     path(
         "agencies/",

@@ -234,9 +234,24 @@ CONSTANCE_CONFIG = {
         "Email addresses that receive email notifications (comma-separated)",
         str,
     ),
-    "PROJECT_SUBMISSION_NOTIFICATION_EMAILS": (
+    "PROJECT_SUBMISSION_NOTIFICATIONS_ENABLED": (
+        False,
+        "Enable project submission notifications",
+        bool,
+    ),
+    "PROJECT_SUBMISSION_NOTIFICATIONS_EMAILS": (
         "",
         "Email addresses that receive project submission notifications (comma-separated)",
+        str,
+    ),
+    "PROJECT_RECOMMENDATION_NOTIFICATIONS_ENABLED": (
+        False,
+        "Enable project recommendation notifications",
+        bool,
+    ),
+    "PROJECT_RECOMMENDATION_NOTIFICATIONS_EMAILS": (
+        "",
+        "Email addresses that receive project recommendation notifications (comma-separated)",
         str,
     ),
     "DEFAULT_REPLENISHMENT_AS_OF_DATE": (

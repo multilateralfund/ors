@@ -208,7 +208,9 @@ def import_project_type(file_path):
                 "name": type_json["TYPE_PRO"],
                 "sort_order": type_json["SORT_TYPE"],
             }
-            ProjectType.objects.update_or_create(name=type_data["name"], defaults=type_data)
+            ProjectType.objects.update_or_create(
+                name=type_data["name"], defaults=type_data
+            )
 
 
 def import_sector(file_path):

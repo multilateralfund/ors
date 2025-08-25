@@ -1057,9 +1057,7 @@ class StatisticsStatusOfContributionsAggregator:
                         year__lte=models.OuterRef("end_year"),
                     )
                     # Group by replenishment start year
-                    .annotate(
-                        start_year_replenishment=models.OuterRef("start_year")
-                    )
+                    .annotate(start_year_replenishment=models.OuterRef("start_year"))
                     .values("start_year_replenishment")
                     .annotate(total=models.Sum("amount"))
                     .values("total")[:1]

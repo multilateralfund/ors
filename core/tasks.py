@@ -31,7 +31,7 @@ User = get_user_model()
 def send_project_submission_notification(project_ids):
     projects = Project.objects.filter(id__in=project_ids)
 
-    recipients = config.PROJECT_SUBMISSION_NOTIFICATION_EMAILS
+    recipients = config.PROJECT_SUBMISSION_NOTIFICATIONS_EMAILS
     if isinstance(recipients, str):
         recipients = recipients.split(",")
     if not recipients:

@@ -111,6 +111,14 @@ class HasProjectV2EditAccess(permissions.BasePermission):
         return request.user.has_perm("core.has_project_v2_edit_access")
 
 
+class HasProjectSettingsAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        """
+        Check if the user has permission to view and edit project settings.
+        """
+        return request.user.has_perm("core.has_project_settings_access")
+
+
 class HasProjectViewAccess(permissions.BasePermission):
     def has_permission(self, request, view):
         """

@@ -164,6 +164,8 @@ export interface ProjectsSlice {
   statuses: SliceData<ProjectStatusType[]>
   submission_statuses: SliceData<ProjectSubmissionStatusType[]>
   subsectors: SliceData<ProjectSubSectorType[]>
+  setProjectSettings: (newProjectSettings: Partial<Settings>) => void
+  project_settings: SliceData<Settings>
   types: SliceData<ProjectTypeType[]>
   substances_groups: SliceData<ProjectSubstancesGroupsType[]>
 }
@@ -324,8 +326,10 @@ export type Settings = {
   business_plan_activity_statuses: [string, string][]
   business_plan_statuses: [string, string][]
   cp_notification_emails: string
-  project_submission_notification_emails: string
-  project_recommendation_notification_emails: string
+  project_submission_notifications_enabled: boolean
+  project_submission_notifications_emails: string
+  project_recommendation_notifications_enabled: boolean
+  project_recommendation_notifications_emails: string
   cp_reports: {
     max_year: number
     min_year: number
@@ -336,8 +340,6 @@ export type Settings = {
   project_submission_categories: [string, string][]
   project_substance_types: [string, string][]
   send_mail: boolean
-  send_submission_email: boolean
-  send_recommendation_email: boolean
   submission_amount_statuses: [string, string][]
   year_section_mapping: { max_year: number; sections: string[] }[]
 }
