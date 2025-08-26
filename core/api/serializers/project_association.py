@@ -4,7 +4,7 @@ from core.models.agency import Agency
 from core.models.project import (
     MetaProject,
 )
-from core.api.serializers.project_v2 import ProjectListSerializer
+from core.api.serializers.project_v2 import ProjectListV2Serializer
 
 
 class MetaProjectSerializer(serializers.ModelSerializer):
@@ -33,4 +33,4 @@ class MetaProjectSerializer(serializers.ModelSerializer):
     def get_projects(self, obj):
         # Use filtered_projects if available, otherwise fallback to all projects
         projects = getattr(obj, "filtered_projects", obj.projects.all())
-        return ProjectListSerializer(projects, many=True).data
+        return ProjectListV2Serializer(projects, many=True).data

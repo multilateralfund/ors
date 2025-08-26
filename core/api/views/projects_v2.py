@@ -270,7 +270,11 @@ class ProjectV2ViewSet(
             )
             .annotate(
                 filtered_code=Case(
-                    When(submission_status__name="Approved", then=F("code")),
+                    When(
+                        submission_status__name="Approved",
+                        code__isnull=False,
+                        then=F("code"),
+                    ),
                     default=Value(""),
                     output_field=CharField(),
                 )
