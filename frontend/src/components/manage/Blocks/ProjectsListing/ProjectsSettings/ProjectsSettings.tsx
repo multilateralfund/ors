@@ -29,18 +29,17 @@ type SetEmailSettingsType = Dispatch<SetStateAction<EmailSettingsType>>
 
 const ProjectsSettings = () => {
   const { enqueueSnackbar } = useSnackbar()
-  const { settings, setSettings } = useStore((state) => state.common)
-
+  const { setProjectSettings, project_settings } = useStore((state) => state.projects)
   const [submissionEmail, setSubmissionEmail] = useState<EmailSettingsType>({
-    withNotifications: settings.data?.send_submission_email || false,
-    emailAddresses: settings.data?.project_submission_notification_emails || '',
+    withNotifications: project_settings.data?.project_submission_notifications_enabled || false,
+    emailAddresses: project_settings.data?.project_submission_notifications_emails || '',
     errors: null,
   })
   const [recommendationEmail, setRecommendationEmail] =
     useState<EmailSettingsType>({
-      withNotifications: settings.data?.send_recommendation_email || false,
+      withNotifications: project_settings.data?.project_recommendation_notifications_enabled || false,
       emailAddresses:
-        settings.data?.project_recommendation_notification_emails || '',
+        project_settings.data?.project_recommendation_notifications_emails || '',
       errors: null,
     })
 
@@ -51,8 +50,8 @@ const ProjectsSettings = () => {
         emailSettings: submissionEmail,
         setEmailSettings: setSubmissionEmail,
         fieldsForUpdate: {
-          send_email: 'send_submission_email',
-          notification_emails: 'project_submission_notification_emails',
+          send_email: 'project_submission_notifications_enabled',
+          notification_emails: 'project_submission_notifications_emails',
         },
       },
       {
@@ -60,8 +59,8 @@ const ProjectsSettings = () => {
         emailSettings: recommendationEmail,
         setEmailSettings: setRecommendationEmail,
         fieldsForUpdate: {
-          send_email: 'send_recommendation_email',
-          notification_emails: 'project_recommendation_notification_emails',
+          send_email: 'project_recommendation_notifications_enabled',
+          notification_emails: 'project_recommendation_notifications_emails',
         },
       },
     ],
@@ -75,11 +74,11 @@ const ProjectsSettings = () => {
   ) => {
     try {
       const newSettings = {
-        ...settings.data,
+        ...project_settings.data,
         [field]: event.target.checked,
       }
 
-      await api(`api/settings`, {
+      await api(`api/project-settings`, {
         data: newSettings,
         method: 'POST',
       })
@@ -89,7 +88,7 @@ const ProjectsSettings = () => {
         withNotifications: newSettings[field as keyof Settings] as boolean,
         errors: null,
       }))
-      setSettings({
+      setProjectSettings({
         // @ts-ignore
         data: newSettings,
       })
@@ -127,11 +126,11 @@ const ProjectsSettings = () => {
   ) => {
     try {
       const newSettings = {
-        ...settings.data,
+        ...project_settings.data,
         [field]: emailAddresses,
       }
 
-      await api(`api/settings`, {
+      await api(`api/project-settings`, {
         data: newSettings,
         method: 'POST',
       })
@@ -141,7 +140,7 @@ const ProjectsSettings = () => {
         emailAddresses: newSettings[field as keyof Settings] as string,
         errors: null,
       }))
-      setSettings({
+      setProjectSettings({
         // @ts-ignore
         data: newSettings,
       })

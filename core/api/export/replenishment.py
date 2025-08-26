@@ -712,6 +712,10 @@ class StatisticsTemplateWriter(BaseTemplateSheetWriter):
         self.write_headers()
         for column_index, triennial_data in enumerate(self.data):
             for row_key in triennial_data.keys():
+                if triennial_data[row_key] is False:
+                    # `False` is a marker to not write data in a formula-driven cell
+                    continue
+
                 row_to_overwrite = self.TEMPLATE_FIRST_DATA_ROW + row_key
                 column_to_overwrite = self.TEMPLATE_FIRST_DATA_COLUMN + column_index
                 cell = self.sheet.cell(row=row_to_overwrite, column=column_to_overwrite)

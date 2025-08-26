@@ -90,7 +90,7 @@ const useInternalNavSections = () => {
       ? [{ label: 'Project submissions', url: '/project-submissions' }]
       : []),
     ...(P.canViewV1Projects ? [{ label: 'Projects', url: '/projects' }] : []),
-    ...(P.canViewProjects || P.canSubmitProjects || P.canRecommendProjects
+    ...(P.canViewProjects || P.canSetProjectSettings
       ? [
           {
             label: 'Projects Listing',
@@ -98,7 +98,7 @@ const useInternalNavSections = () => {
               P.canViewProjects
                 ? { label: 'View projects', url: '/projects-listing/listing' }
                 : null,
-              P.canSubmitProjects || P.canRecommendProjects
+              P.canSetProjectSettings
                 ? {
                     label: 'IA/BA Portal - Settings',
                     url: '/projects-listing/settings',

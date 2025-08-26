@@ -112,6 +112,10 @@ const PListingTable = ({
                     ? 'meta_project__code'
                     : colId.split('.')[0] + '__name'
 
+              if (colId === 'code') {
+                // Ordering by code needs to be sent as 'filtered_code'
+                return (sort === 'asc' ? '' : '-') + 'filtered_code'
+              }
               return (sort === 'asc' ? '' : '-') + field
             })
             .join(',')

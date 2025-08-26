@@ -10,12 +10,11 @@ import usePageTitle from '@ors/hooks/usePageTitle'
 import { Redirect } from 'wouter'
 
 export default function ProjectsSettingsWrapper() {
-  usePageTitle('Settings')
+  usePageTitle('Project settings')
 
-  const { canSubmitProjects, canRecommendProjects } =
-    useContext(PermissionsContext)
+  const { canSetProjectSettings } = useContext(PermissionsContext)
 
-  if (!(canSubmitProjects || canRecommendProjects)) {
+  if (!canSetProjectSettings) {
     return <Redirect to="/projects-listing/listing" />
   }
 

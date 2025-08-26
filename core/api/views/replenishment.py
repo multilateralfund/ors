@@ -1009,50 +1009,37 @@ class StatisticsExportView(views.APIView):
 
         statistics_data = []
         for soc, income in zip_longest(soc_data, external_income):
-            total_payments = (
-                soc["cash_payments_sum"]
-                + soc["bilateral_assistance_sum"]
-                + soc["promissory_notes_sum"]
-            )
             statistics_data.append(
                 {
+                    # Some rows are calculated via existing formulas.
+                    # `False` is used as a marker to not overwrite those with any data.
                     0: f"{soc['start_year']}-{soc['end_year']}",
                     1: soc["agreed_contributions_sum"],
                     2: soc["cash_payments_sum"],
                     3: soc["bilateral_assistance_sum"],
                     4: soc["promissory_notes_sum"],
-                    5: total_payments,
+                    5: False,
                     6: soc["disputed_contributions"],
-                    7: soc["outstanding_contributions_sum"],
-                    8: (total_payments / soc["agreed_contributions_sum"]),
+                    7: False,
+                    8: False,
                     # One empty row in between
                     10: income["interest_earned"],
                     # One empty row in between
                     12: income["miscellaneous_income"],
                     # One empty row in between
-                    14: (
-                        total_payments
-                        + income["interest_earned"]
-                        + income["miscellaneous_income"]
-                    ),
+                    14: False,
                     # One empty row in between
-                    16: f"{soc['start_year']}-{soc['end_year']}",
-                    17: soc["agreed_contributions_sum"],
-                    18: total_payments,
-                    19: (total_payments / soc["agreed_contributions_sum"]),
+                    16: False,
+                    17: False,
+                    18: False,
+                    19: False,
                     # Total income
-                    20: (
-                        total_payments
-                        + income["interest_earned"]
-                        + income["miscellaneous_income"]
-                    ),
-                    21: soc["outstanding_contributions_sum"],
-                    22: (
-                        soc["outstanding_contributions_sum"]
-                        / soc["agreed_contributions_sum"]
-                    ),
+                    20: False,
+                    21: False,
+                    22: False,
+                    # Below row uses a formula referencing a missing sheet
                     23: soc["outstanding_ceit"],
-                    24: (soc["outstanding_ceit"] / soc["agreed_contributions_sum"]),
+                    24: False,
                 }
             )
 

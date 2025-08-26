@@ -4,6 +4,9 @@ from django.db.models import Min
 from rest_framework import status, views
 from rest_framework.response import Response
 
+from core.api.permissions import (
+    HasProjectSettingsAccess,
+)
 from core.api.utils import PROJECT_SECTOR_TYPE_MAPPING
 from core.models import CPReport
 from core.models.blend import Blend
@@ -59,7 +62,6 @@ class SettingsView(views.APIView):
             },
             "send_mail": config.SEND_MAIL,
             "cp_notification_emails": ",".join(config.CP_NOTIFICATION_EMAILS),
-            "project_submission_notification_emails": config.PROJECT_SUBMISSION_NOTIFICATION_EMAILS,
         }
         return Response(settings)
 
@@ -84,6 +86,46 @@ class SettingsView(views.APIView):
             {
                 "send_mail": config.SEND_MAIL,
                 "cp_notification_emails": ",".join(config.CP_NOTIFICATION_EMAILS),
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class ProjectSettingsView(views.APIView):
+    """
+    API endpoint that allows project settings to be viewed and edited.
+    """
+
+    permission_classes = [HasProjectSettingsAccess]
+
+    def get(self, *args, **kwargs):
+        settings = {
+            "project_submission_notifications_enabled": config.PROJECT_SUBMISSION_NOTIFICATIONS_ENABLED,
+            "project_submission_notifications_emails": config.PROJECT_SUBMISSION_NOTIFICATIONS_EMAILS,
+            "project_recommendation_notifications_enabled": config.PROJECT_RECOMMENDATION_NOTIFICATIONS_ENABLED,
+            "project_recommendation_notifications_emails": config.PROJECT_RECOMMENDATION_NOTIFICATIONS_EMAILS,
+        }
+        return Response(settings)
+
+    def post(self, request, *args, **kwargs):
+        config.PROJECT_SUBMISSION_NOTIFICATIONS_EMAILS = request.data.get(
+            "project_submission_notifications_emails", ""
+        )
+        config.PROJECT_SUBMISSION_NOTIFICATIONS_ENABLED = request.data.get(
+            "project_submission_notifications_enabled", False
+        )
+        config.PROJECT_RECOMMENDATION_NOTIFICATIONS_ENABLED = request.data.get(
+            "project_recommendation_notifications_enabled", False
+        )
+        config.PROJECT_RECOMMENDATION_NOTIFICATIONS_EMAILS = request.data.get(
+            "project_recommendation_notifications_emails", ""
+        )
+        return Response(
+            {
+                "project_submission_notifications_emails": config.PROJECT_SUBMISSION_NOTIFICATIONS_EMAILS,
+                "project_submission_notifications_enabled": config.PROJECT_SUBMISSION_NOTIFICATIONS_ENABLED,
+                "project_recommendation_notifications_enabled": config.PROJECT_RECOMMENDATION_NOTIFICATIONS_ENABLED,
+                "project_recommendation_notifications_emails": config.PROJECT_RECOMMENDATION_NOTIFICATIONS_EMAILS,
             },
             status=status.HTTP_200_OK,
         )

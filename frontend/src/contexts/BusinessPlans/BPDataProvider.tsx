@@ -11,6 +11,9 @@ const BPDataProvider = (props: BPDataProviderProps) => {
   const { data: agencies } = useApi({
     options: {
       withStoreCache: false,
+      params: {
+        include_all_agencies_option: 'true',
+      },
     },
     path: 'api/business-plan/agencies/',
   })
