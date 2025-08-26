@@ -12,15 +12,18 @@ import {
   OptionsType,
   ProjectTypeApi,
   ProjectAllVersionsFiles,
+  OdsOdpFields,
 } from './interfaces'
 import { formatApiUrl, formatDecimalValue } from '@ors/helpers'
 import { Cluster } from '@ors/types/store'
 
 import {
   concat,
+  difference,
   filter,
   find,
   flatMap,
+  fromPairs,
   get,
   isArray,
   isNaN,
@@ -184,20 +187,29 @@ export const formatSubmitData = (
   const filteredFields = filter(specificFields, (field) => !field.is_actual)
   const specificFieldsAvailable = map(filteredFields, 'write_field_name')
 
-  const crtProjectSpecificFields = pick(
-    projectSpecificFields,
+  const filteredActualFields = filter(
+    specificFields,
+    (field) => field.is_actual,
+  )
+  const specificActualFieldsAvailable = map(
+    filteredActualFields,
+    'write_field_name',
+  )
+
+  const crtProjectSpecificFields = getCrtProjectSpecificFields(
+    filteredFields,
+    projectData,
     specificFieldsAvailable,
   )
   const updatedOldSpecificFieldsValues = defaultOldFields(
     projectData.projectSpecificFields,
-    specificFieldsAvailable,
+    [...specificFieldsAvailable, ...specificActualFieldsAvailable],
     projectFields,
   )
 
   const hasOdsOdpFields = filteredFields.find(
     (field) => field.table === 'ods_odp',
   )
-
   const updatedOdsOdpValues = hasOdsOdpFields
     ? normalizeOdsOdp(
         projectSpecificFields,
@@ -211,7 +223,9 @@ export const formatSubmitData = (
     projectSpecificFields: {
       ...prevData.projectSpecificFields,
       ...updatedOldSpecificFieldsValues,
-      ods_odp: updatedOdsOdpValues,
+      ods_odp: map(updatedOdsOdpValues, (ods_odp) =>
+        omit(normalizeValues(ods_odp), ['ods_blend_id', 'ods_substance_id']),
+      ),
     },
   }))
 
@@ -267,7 +281,14 @@ export const formatApprovalData = (
     ...prevData,
     projectSpecificFields: {
       ...prevData.projectSpecificFields,
-      ods_odp: updatedOdsOdpValues,
+      ods_odp: map(
+        updatedOdsOdpValues,
+        (ods_odp) =>
+          omit(normalizeValues(ods_odp), [
+            'ods_blend_id',
+            'ods_substance_id',
+          ]) as OdsOdpFields,
+      ),
     },
   }))
 
@@ -285,18 +306,19 @@ export const getActualData = (
   specificFields: ProjectSpecificFields[],
   projectFields: ProjectSpecificFields[],
 ) => {
-  const { projectSpecificFields } = projectData
-
   const filteredFields = filter(specificFields, (field) => field.is_actual)
   const specificFieldsAvailable = map(filteredFields, 'write_field_name')
+  const nonActualFields = filter(specificFields, (field) => !field.is_actual)
+  const nonActualFieldsAvailable = map(nonActualFields, 'write_field_name')
 
-  const crtProjectSpecificFields = pick(
-    projectSpecificFields,
+  const crtProjectSpecificFields = getCrtProjectSpecificFields(
+    filteredFields,
+    projectData,
     specificFieldsAvailable,
   )
   const updatedOldSpecificFieldsValues = defaultOldFields(
     projectData.projectSpecificFields,
-    specificFieldsAvailable,
+    [...specificFieldsAvailable, ...nonActualFieldsAvailable],
     projectFields,
   )
 
@@ -697,4 +719,30 @@ export const defaultOldFields = (
   )
 
   return getDefaultValues<ProjectTypeApi>(oldFields)
+}
+
+const getCrtProjectSpecificFields = (
+  filteredFields: ProjectSpecificFields[],
+  projectData: ProjectData,
+  specificFieldsAvailable: string[],
+) => {
+  const { projectSpecificFields } = projectData
+
+  const booleanFields = filter(
+    filteredFields,
+    (field) => field.data_type === 'boolean',
+  )
+  const booleanFieldsAvailable = map(booleanFields, 'write_field_name')
+  const booleanNullFields = difference(
+    booleanFieldsAvailable,
+    keys(projectSpecificFields),
+  )
+  const booleanNullValues = fromPairs(
+    booleanNullFields.map((field) => [field, false]),
+  )
+
+  return {
+    ...pick(projectSpecificFields, specificFieldsAvailable),
+    ...booleanNullValues,
+  }
 }

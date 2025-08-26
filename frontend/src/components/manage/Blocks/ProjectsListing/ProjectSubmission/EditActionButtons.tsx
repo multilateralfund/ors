@@ -34,8 +34,8 @@ import { useStore } from '@ors/store'
 
 import { Button, ButtonProps, Divider, MenuProps } from '@mui/material'
 import { MdKeyboardArrowDown } from 'react-icons/md'
+import { find, lowerCase, map, pick } from 'lodash'
 import { enqueueSnackbar } from 'notistack'
-import { find, lowerCase } from 'lodash'
 import { useLocation } from 'wouter'
 import cx from 'classnames'
 
@@ -96,7 +96,12 @@ const EditActionButtons = ({
     projectSpecificFields,
     approvalFields: approvalData,
   } = projectData
-  const odsOdpData = projectSpecificFields?.ods_odp ?? []
+
+  const specificFieldsAvailable = map(specificFields, 'write_field_name')
+  const odsOdpData =
+    map(projectSpecificFields?.ods_odp, (field) =>
+      pick(field, specificFieldsAvailable),
+    ) ?? []
 
   const submissionStatus = lowerCase(submission_status)
   const isDraft = submissionStatus === 'draft'
@@ -384,7 +389,7 @@ const EditActionButtons = ({
       setProjectId(null)
     } finally {
       setIsLoading(false)
-      setHasSubmitted(true)
+      setHasSubmitted(false)
     }
   }
 
