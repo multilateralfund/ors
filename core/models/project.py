@@ -788,6 +788,9 @@ class Project(models.Model):
 
             old_project.save()
 
+            # set subsectors M2M field
+            old_project.subsectors.set(self.subsectors.all())
+
             self.version += 1
             self.version_created_by = user
             self.save()

@@ -5,7 +5,7 @@ from constance import config
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Case, CharField, F, Q, Value, When
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -125,7 +125,7 @@ class ProjectV2ViewSet(
         "status__name",
         "date_created",
         "meta_project__code",
-        "code",
+        "filtered_code",  # Code or empty string if project is not approved
         "cluster__code",
         "tranche",
         "total_fund",
@@ -238,33 +238,43 @@ class ProjectV2ViewSet(
         return queryset.none()
 
     def get_queryset(self):
-        if self.action == "retrieve":
+        if self.action in ["export", "retrieve"]:
             queryset = Project.objects.really_all()
         else:
             queryset = Project.objects.all()
         queryset = self.filter_permissions_queryset(queryset)
-        queryset = queryset.select_related(
-            "agency",
-            "cluster",
-            "country",
-            "project_type",
-            "status",
-            "submission_status",
-            "sector",
-            "meeting",
-            "meeting_transf",
-            "meeting_approved",
-            "meta_project",
-        ).prefetch_related(
-            "coop_agencies",
-            "submission_amounts",
-            "subsectors",
-            "funds",
-            "comments",
-            "files",
-            "subsectors__sector",
-            "rbm_measures__measure",
-            "ods_odp",
+        queryset = (
+            queryset.select_related(
+                "agency",
+                "cluster",
+                "country",
+                "project_type",
+                "status",
+                "submission_status",
+                "sector",
+                "meeting",
+                "meeting_transf",
+                "meeting_approved",
+                "meta_project",
+            )
+            .prefetch_related(
+                "coop_agencies",
+                "submission_amounts",
+                "subsectors",
+                "funds",
+                "comments",
+                "files",
+                "subsectors__sector",
+                "rbm_measures__measure",
+                "ods_odp",
+            )
+            .annotate(
+                filtered_code=Case(
+                    When(submission_status__name="Approved", then=F("code")),
+                    default=Value(""),
+                    output_field=CharField(),
+                )
+            )
         )
         return queryset
 
@@ -348,7 +358,6 @@ class ProjectV2ViewSet(
     def export(self, request, *args, **kwargs):
         project_id = request.query_params.get("project_id")
         output_format = request.query_params.get("output_format", "xlsx")
-
         if project_id:
             project = self.get_object()
             if output_format == "xlsx":
