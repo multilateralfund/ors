@@ -924,7 +924,9 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
         subsectors_data = validated_data.pop("subsector_ids", None)
         ods_odp_data = validated_data.pop("ods_odp", None)
         bp_activity = validated_data.get("bp_activity", None)
-        if bp_activity and (instance.bp_activity != bp_activity):
+        if not bp_activity:
+            validated_data["bp_activity_json"] = None
+        elif instance.bp_activity != bp_activity:
             activity_serializer = BPActivityDetailSerializer(bp_activity)
             validated_data["bp_activity_json"] = activity_serializer.data
 
