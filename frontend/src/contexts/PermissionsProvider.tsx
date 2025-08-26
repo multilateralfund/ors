@@ -62,6 +62,16 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   const canEditApprovedProjects = user_permissions.includes(
     'has_project_v2_edit_approved_access',
   )
+  const canEditProjects =
+    canViewProjects &&
+    (canUpdateProjects ||
+      canSubmitProjects ||
+      canRecommendProjects ||
+      canApproveProjects ||
+      canEditApprovedProjects)
+  const canSetProjectSettings = user_permissions.includes(
+    'has_project_settings_access',
+  )
 
   const canCommentCPCountry = user_permissions.includes(
     'can_cp_country_type_comment',
@@ -84,14 +94,6 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   const canEditReplenishment = user_permissions.includes(
     'has_replenishment_edit_access',
   )
-
-  const canEditProjects =
-    canViewProjects &&
-    (canUpdateProjects ||
-      canSubmitProjects ||
-      canRecommendProjects ||
-      canApproveProjects ||
-      canEditApprovedProjects)
 
   return (
     <PermissionsContext.Provider
@@ -116,6 +118,7 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
         canAssociateProjects,
         canEditProjects,
         canEditApprovedProjects,
+        canSetProjectSettings,
         canCommentCPCountry,
         canCommentCPSecretariat,
         isCPCountryUserType,

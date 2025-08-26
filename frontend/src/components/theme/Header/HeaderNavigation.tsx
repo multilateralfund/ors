@@ -90,27 +90,24 @@ const useInternalNavSections = () => {
       ? [{ label: 'Project submissions', url: '/project-submissions' }]
       : []),
     ...(P.canViewV1Projects ? [{ label: 'Projects', url: '/projects' }] : []),
-    // ...(P.canViewProjects || P.canSubmitProjects || P.canRecommendProjects
-    //   ? [
-    //       {
-    //         label: 'Projects Listing',
-    //         menu: [
-    //           P.canViewProjects
-    //             ? { label: 'View projects', url: '/projects-listing/listing' }
-    //             : null,
-    //           P.canSubmitProjects || P.canRecommendProjects
-    //             ? {
-    //                 label: 'IA/BA Portal - Settings',
-    //                 url: '/projects-listing/settings',
-    //               }
-    //             : null,
-    //         ].filter(Boolean),
-    //         url: '/projects-listing/listing',
-    //       },
-    //     ]
-    //   : []),
-    ...(P.canViewProjects
-      ? [{ label: 'Projects Listing', url: '/projects-listing/listing' }]
+    ...(P.canViewProjects || P.canSetProjectSettings
+      ? [
+          {
+            label: 'Projects Listing',
+            menu: [
+              P.canViewProjects
+                ? { label: 'View projects', url: '/projects-listing/listing' }
+                : null,
+              P.canSetProjectSettings
+                ? {
+                    label: 'IA/BA Portal - Settings',
+                    url: '/projects-listing/settings',
+                  }
+                : null,
+            ].filter(Boolean),
+            url: '/projects-listing/listing',
+          },
+        ]
       : []),
     // @ts-ignore
   ].map((item) => nI(item))
