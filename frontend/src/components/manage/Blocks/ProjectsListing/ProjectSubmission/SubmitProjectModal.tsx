@@ -4,7 +4,7 @@ import Loading from '@ors/components/theme/Loading/Loading'
 import CustomLink from '@ors/components/ui/Link/Link'
 import { CancelButton, RelatedProjects } from '../HelperComponents'
 import { useGetAssociatedProjects } from '../hooks/useGetAssociatedProjects'
-import { RelatedProjectsType } from '../interfaces'
+import { AssociatedProjectsType } from '../interfaces'
 import { pluralizeWord } from '../utils'
 
 import { Modal, Typography, Box } from '@mui/material'
@@ -21,21 +21,16 @@ const SubmitProjectModal = ({
   setIsModalOpen: (isOpen: boolean) => void
   editProject: (withNavigation: boolean) => void
 }) => {
-  const [associatedProjects, setAssociatedProjects] = useState<
-    RelatedProjectsType[] | null
-  >([])
-  const [loaded, setLoaded] = useState<boolean>(false)
-
+  const [association, setAssociation] = useState<AssociatedProjectsType>({
+    projects: [],
+    loaded: false,
+  })
+  const { projects: associatedProjects = [], loaded } = association
   const hasAssociatedPojects =
     associatedProjects && associatedProjects.length > 0
 
   const debouncedGetAssociatedProjects = debounce(() => {
-    useGetAssociatedProjects(
-      id,
-      setAssociatedProjects,
-      setLoaded,
-      'only_components',
-    )
+    useGetAssociatedProjects(id, setAssociation, 'only_components')
   }, 0)
 
   useEffect(() => {

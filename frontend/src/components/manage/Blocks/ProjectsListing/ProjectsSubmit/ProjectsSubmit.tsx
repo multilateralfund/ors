@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { Dispatch, SetStateAction, useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
@@ -14,7 +14,7 @@ import {
   SubmitButton,
 } from '../HelperComponents'
 import { useGetAssociatedProjects } from '../hooks/useGetAssociatedProjects'
-import { RelatedProjectsType } from '../interfaces'
+import { AssociatedProjectsType, RelatedProjectsType } from '../interfaces'
 import { pluralizeWord } from '../utils'
 import { api } from '@ors/helpers'
 
@@ -26,13 +26,11 @@ import { find, lowerCase } from 'lodash'
 const ProjectsSubmit = ({
   associatedProjects = [],
   loaded,
-  setLoaded,
-  setAssociatedProjects,
+  setAssociation,
 }: {
   associatedProjects: RelatedProjectsType[] | undefined
   loaded: boolean
-  setLoaded: (loaded: boolean) => void
-  setAssociatedProjects: (projects: RelatedProjectsType[] | null) => void
+  setAssociation: Dispatch<SetStateAction<AssociatedProjectsType>>
 }) => {
   const { project_id } = useParams<Record<string, string>>()
   const parsedProjectId = parseInt(project_id)
@@ -60,8 +58,7 @@ const ProjectsSubmit = ({
   const getErrors = () => {
     useGetAssociatedProjects(
       parsedProjectId,
-      setAssociatedProjects,
-      setLoaded,
+      setAssociation,
       'only_components',
       true,
       true,
