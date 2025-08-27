@@ -19,6 +19,8 @@ export default function SectionDCreate(props: SectionDCreateProps) {
   const gridOptions = useGridOptions()
   const [initialRowData] = useState(form.section_d)
 
+  console.log(gridOptions.columnDefs)
+
   return (
     <>
       <Alert
@@ -27,9 +29,9 @@ export default function SectionDCreate(props: SectionDCreateProps) {
         severity="info"
       >
         <Footnote id="" index="">
-          Data in Section D should be provided (if applicable) even if breakdown
-          in Section E by enterprises are not reported as reporting under
-          Section E is voluntary for the shaded column
+          <strong>*.</strong> Against each substance produced for exempted
+          essential, critical, high-ambient-temperature or other uses, please
+          specify the meeting of the parties decision that approved the use.
         </Footnote>
         <Footnotes />
       </Alert>
