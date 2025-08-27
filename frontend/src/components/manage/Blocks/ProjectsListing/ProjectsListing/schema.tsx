@@ -99,7 +99,7 @@ const getColumnDefs = (
                     <FiEdit size={16} />
                   </Link>
                 ) : (
-                  <div className="w-4" />
+                  <div className="w-4 min-w-4" />
                 )}
                 {projectId !== undefined &&
                   setProjectData &&

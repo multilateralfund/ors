@@ -79,6 +79,7 @@ const ProjectsEdit = ({
   )
   const [specificFieldsLoaded, setSpecificFieldsLoaded] =
     useState<boolean>(false)
+  const [canViewTabs, setCanViewTabs] = useState<boolean>(false)
 
   const { projIdentifiers, crossCuttingFields } = projectData
   const { cluster } = projIdentifiers
@@ -94,9 +95,10 @@ const ProjectsEdit = ({
   )
 
   const fieldsValuesLoaded = useRef<boolean>(false)
+  const filesLoaded = useRef<boolean>(false)
   const approvalFieldsValuesLoaded = useRef<boolean>(false)
 
-  const data = useGetProjectFiles(parseInt(project_id))
+  const { files: data, loadedFiles } = useGetProjectFiles(parseInt(project_id))
 
   const {
     fetchProjectFields,
@@ -128,11 +130,10 @@ const ProjectsEdit = ({
     }
   }, [allFields, setViewableFields, setEditableFields])
 
-  const approvalFields = isVersion3
-    ? ((isArray(allFields) ? allFields : allFields?.data)?.filter(
-        (field) => field.section === 'Approval',
-      ) ?? [])
-    : []
+  const approvalFields =
+    isVersion3 && isArray(allFields)
+      ? allFields.filter((field) => field.section === 'Approval')
+      : []
 
   const [projectFiles, setProjectFiles] = useState<ProjectFile[]>([])
   const [files, setFiles] = useState<ProjectFilesObject>({
@@ -141,7 +142,10 @@ const ProjectsEdit = ({
   })
 
   useEffect(() => {
+    if (!loadedFiles) return
+
     setProjectFiles(data)
+    filesLoaded.current = true
 
     if ((mode === 'copy' || mode === 'full-link') && data?.length > 0) {
       const loadFiles = async () => {
@@ -157,7 +161,7 @@ const ProjectsEdit = ({
 
       loadFiles()
     }
-  }, [data])
+  }, [data, loadedFiles])
 
   useEffect(() => {
     if (isEditMode) {
@@ -243,6 +247,8 @@ const ProjectsEdit = ({
   }, [])
 
   useEffect(() => {
+    setSpecificFieldsLoaded(false)
+
     if (cluster && project_type && sector) {
       fetchSpecificFields(
         cluster,
@@ -254,11 +260,11 @@ const ProjectsEdit = ({
       )
     } else {
       setSpecificFields([])
-      setSpecificFieldsLoaded(true)
-    }
+      if (fieldsValuesLoaded.current) {
+        setSpecificFieldsLoaded(true)
+      }
 
-    if (mode === 'partial-link') {
-      setSpecificFieldsLoaded(true)
+      setCanViewTabs(true)
     }
   }, [cluster, project_type, sector])
 
@@ -306,6 +312,14 @@ const ProjectsEdit = ({
             }),
       }))
 
+      fieldsValuesLoaded.current = true
+    }
+
+    if (
+      !fieldsValuesLoaded.current &&
+      (mode === 'partial-link' ||
+        (specificFieldsLoaded && specificFields.length === 0))
+    ) {
       fieldsValuesLoaded.current = true
     }
   }, [specificFields, fieldsValuesLoaded])
@@ -405,7 +419,7 @@ const ProjectsEdit = ({
   }, [tranche, project_id, specificFields])
 
   return (
-    specificFieldsLoaded && (
+    canViewTabs && (
       <>
         <ProjectsHeader
           {...{
@@ -423,6 +437,8 @@ const ProjectsEdit = ({
             specificFields,
             trancheErrors,
             approvalFields,
+            specificFieldsLoaded,
+            setProjectData,
           }}
         />
         <ProjectsCreate
@@ -444,6 +460,10 @@ const ProjectsEdit = ({
             relatedProjects,
             approvalFields,
           }}
+          specificFieldsLoaded={
+            specificFieldsLoaded && fieldsValuesLoaded.current
+          }
+          loadedFiles={loadedFiles && filesLoaded.current}
         />
         <ProjectFormFooter
           successMessage={

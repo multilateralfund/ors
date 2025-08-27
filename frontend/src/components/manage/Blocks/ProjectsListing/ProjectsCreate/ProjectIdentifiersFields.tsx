@@ -58,6 +58,8 @@ const ProjectIdentifiersFields = ({
   )
   const canEditMeeting = canEditField(editableFields, 'meeting')
 
+  const areNextStepsAvailable = isNextBtnEnabled && areNextSectionsDisabled
+
   const sectionDefaultProps = {
     ...defaultProps,
     FieldProps: {
@@ -276,7 +278,7 @@ const ProjectIdentifiersFields = ({
                 />
               }
               componentsProps={{
-                typography: { fontSize: '1.05rem' },
+                typography: { fontSize: '1.05rem', marginTop: '2px' },
               }}
             />
           )}
@@ -349,12 +351,12 @@ const ProjectIdentifiersFields = ({
         )}
         <div className="flex flex-wrap items-center gap-2.5">
           <NavigationButton
-            isBtnDisabled={!isNextBtnEnabled}
+            isBtnDisabled={!areNextStepsAvailable}
             setCurrentStep={setCurrentStep}
             direction="next"
             classname={
               'h-8 leading-none ' +
-              (isNextBtnEnabled
+              (areNextStepsAvailable
                 ? 'border-secondary !bg-secondary text-white hover:border-primary hover:!bg-primary hover:text-mlfs-hlYellow'
                 : '')
             }
