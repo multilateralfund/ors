@@ -83,7 +83,10 @@ const getColumnDefs = (
         headerName: tableColumns.title,
         field: 'title',
         tooltipField: 'title',
-        minWidth: 300,
+        minWidth:
+          mode === 'association' && !associationIds && !setAssociationIds
+            ? 342
+            : 300,
         cellClass: (props: CellClassParams) =>
           'ag-cell-ellipsed ' +
           (mode === 'association-listing' ? getCellClass(props.data) : ''),
@@ -99,7 +102,9 @@ const getColumnDefs = (
                     <FiEdit size={16} />
                   </Link>
                 ) : (
-                  <div className="w-4 min-w-4" />
+                  mode !== 'association-listing' && (
+                    <div className="w-4 min-w-4" />
+                  )
                 )}
                 {projectId !== undefined &&
                   setProjectData &&
@@ -130,7 +135,7 @@ const getColumnDefs = (
                   'no-underline': !canViewProjects,
                 },
                 {
-                  '!ml-10':
+                  '!ml-12':
                     mode === 'association' &&
                     !associationIds &&
                     !setAssociationIds,
