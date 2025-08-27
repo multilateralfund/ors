@@ -255,6 +255,21 @@ const EditActionButtons = ({
         method: 'PUT',
       })
 
+      try {
+        const res = await api(
+          `/api/project/${id}/files/include_previous_versions/v2/`,
+          {
+            withStoreCache: false,
+          },
+          false,
+        )
+        setProjectFiles(formatFiles(res, id))
+      } catch (error) {
+        enqueueSnackbar(<>Could not fetch updated files.</>, {
+          variant: 'error',
+        })
+      }
+
       if (isApproved) {
         const actualData = getActualData(
           projectData,
@@ -281,20 +296,6 @@ const EditActionButtons = ({
     } catch (error) {
       await handleErrors(error)
     } finally {
-      try {
-        const res = await api(
-          `/api/project/${id}/files/include_previous_versions/v2/`,
-          {
-            withStoreCache: false,
-          },
-          false,
-        )
-        setProjectFiles(formatFiles(res, id))
-      } catch (error) {
-        enqueueSnackbar(<>Could not fetch updated files.</>, {
-          variant: 'error',
-        })
-      }
       setIsLoading(false)
       setHasSubmitted(false)
     }

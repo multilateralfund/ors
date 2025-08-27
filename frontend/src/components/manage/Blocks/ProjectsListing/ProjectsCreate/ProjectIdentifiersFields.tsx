@@ -278,7 +278,7 @@ const ProjectIdentifiersFields = ({
                 />
               }
               componentsProps={{
-                typography: { fontSize: '1.05rem' },
+                typography: { fontSize: '1.05rem', marginTop: '2px' },
               }}
             />
           )}

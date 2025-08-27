@@ -130,11 +130,10 @@ const ProjectsEdit = ({
     }
   }, [allFields, setViewableFields, setEditableFields])
 
-  const approvalFields = isVersion3
-    ? ((isArray(allFields) ? allFields : allFields?.data)?.filter(
-        (field) => field.section === 'Approval',
-      ) ?? [])
-    : []
+  const approvalFields =
+    isVersion3 && isArray(allFields)
+      ? allFields.filter((field) => field.section === 'Approval')
+      : []
 
   const [projectFiles, setProjectFiles] = useState<ProjectFile[]>([])
   const [files, setFiles] = useState<ProjectFilesObject>({
