@@ -745,3 +745,8 @@ const getCrtProjectSpecificFields = (
     ...booleanNullValues,
   }
 }
+
+export const filterClusterOptions = (
+  clusters: Cluster[],
+  canViewProdProjects: boolean,
+) => filter(clusters, (cluster) => canViewProdProjects || !cluster.production)

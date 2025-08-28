@@ -17,9 +17,15 @@ import {
 } from '@ors/components/manage/Utils/utilFunctions'
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { changeHandler } from './SpecificFieldsHelpers'
 import { defaultProps, disabledClassName, tableColumns } from '../constants'
-import { canEditField, canViewField, getProduction } from '../utils'
+import {
+  canEditField,
+  canViewField,
+  filterClusterOptions,
+  getProduction,
+} from '../utils'
 import { ApiAgency } from '@ors/types/api_agencies'
 import { Cluster, Country } from '@ors/types/store'
 import { parseNumber } from '@ors/helpers'
@@ -43,13 +49,21 @@ const ProjectIdentifiersFields = ({
   const sectionIdentifier = 'projIdentifiers'
   const projIdentifiers = projectData[sectionIdentifier]
 
+  const { canViewProductionProjects } = useContext(PermissionsContext)
+
   const commonSlice = useStore((state) => state.common)
   const agencies = commonSlice.agencies.data
 
   const projectSlice = useStore((state) => state.projects)
-  const crtClusters = projectSlice.clusters.data
+  const crtClusters = filterClusterOptions(
+    projectSlice.clusters.data,
+    canViewProductionProjects,
+  )
   const { clusters: allClusters } = useContext(ProjectsDataContext)
-  const clusters = mode === 'edit' ? allClusters : crtClusters
+  const clusters =
+    mode === 'edit'
+      ? filterClusterOptions(allClusters, canViewProductionProjects)
+      : crtClusters
 
   const canUpdateLeadAgency = mode === 'add' || mode === 'copy'
 
@@ -267,6 +281,7 @@ const ProjectIdentifiersFields = ({
                   checked={!!projIdentifiers?.production}
                   disabled={
                     !areNextSectionsDisabled ||
+                    !canViewProductionProjects ||
                     !isNull(getProduction(clusters, projIdentifiers.cluster)) ||
                     !canEditField(editableFields, 'production')
                   }

@@ -21,6 +21,7 @@ interface PermissionsContextProps {
   canAssociateProjects: boolean
   canEditProjects: boolean
   canEditApprovedProjects: boolean
+  canViewProductionProjects: boolean
   canSetProjectSettings: boolean
   canCommentCPCountry: boolean
   canCommentCPSecretariat: boolean

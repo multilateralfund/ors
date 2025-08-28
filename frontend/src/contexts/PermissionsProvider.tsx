@@ -69,6 +69,9 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
       canRecommendProjects ||
       canApproveProjects ||
       canEditApprovedProjects)
+  const canViewProductionProjects = user_permissions.includes(
+    'can_view_production_projects',
+  )
   const canSetProjectSettings = user_permissions.includes(
     'has_project_settings_access',
   )
@@ -118,6 +121,7 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
         canAssociateProjects,
         canEditProjects,
         canEditApprovedProjects,
+        canViewProductionProjects,
         canSetProjectSettings,
         canCommentCPCountry,
         canCommentCPSecretariat,
