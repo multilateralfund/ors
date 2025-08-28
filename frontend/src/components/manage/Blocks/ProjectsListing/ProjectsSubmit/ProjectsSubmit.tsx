@@ -130,7 +130,7 @@ const ProjectsSubmit = ({
           <div className="flex items-center gap-2">
             <SubmitButton
               title="Submit"
-              isDisabled={!!hasErrors}
+              isDisabled={!!hasErrors || associatedProjects.length === 0}
               onSubmit={submitProjects}
               className="h-9 w-fit"
             />

@@ -23,7 +23,8 @@ import { Redirect, useLocation, useParams } from 'wouter'
 import { isNull } from 'lodash'
 
 const ProjectViewWrapper = () => {
-  const { project_id } = useParams<Record<string, string>>()
+  const { project_id, version: paramsVersion } =
+    useParams<Record<string, string>>()
   const [location] = useLocation()
 
   const { canEditProjects, canEditApprovedProjects } =
@@ -74,10 +75,18 @@ const ProjectViewWrapper = () => {
     return <Redirect to="/projects-listing/listing" />
   }
 
-  if (data && latest_project && !location.includes('archive')) {
+  if (
+    data &&
+    latest_project &&
+    (!location.includes('archive') || paramsVersion != version)
+  ) {
     return (
       <Redirect to={`/projects-listing/${project_id}/archive/${version}`} />
     )
+  }
+
+  if (data && !latest_project && location.includes('archive')) {
+    return <Redirect to={`/projects-listing/${project_id}`} />
   }
 
   return (
