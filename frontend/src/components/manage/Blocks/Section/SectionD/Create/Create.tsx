@@ -19,8 +19,6 @@ export default function SectionDCreate(props: SectionDCreateProps) {
   const gridOptions = useGridOptions()
   const [initialRowData] = useState(form.section_d)
 
-  console.log(gridOptions.columnDefs)
-
   return (
     <>
       <Alert
@@ -28,11 +26,6 @@ export default function SectionDCreate(props: SectionDCreateProps) {
         icon={<IoInformationCircleOutline size={24} />}
         severity="info"
       >
-        <Footnote id="" index="">
-          <strong>*.</strong> Against each substance produced for exempted
-          essential, critical, high-ambient-temperature or other uses, please
-          specify the meeting of the parties decision that approved the use.
-        </Footnote>
         <Footnotes />
       </Alert>
       <Table

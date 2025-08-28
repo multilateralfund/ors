@@ -2,8 +2,11 @@ import { useState } from 'react'
 
 import { GridOptions } from 'ag-grid-community'
 
-import { sectionColDefById, sectionDefaultColDef } from '../sectionColumnsDef'
-import { sectionColGroupDefById } from '@ors/components/manage/Blocks/Section/SectionE/sectionColumnsDef.ts'
+import {
+  sectionColDefById,
+  sectionDefaultColDef,
+  sectionColGroupDefById,
+} from '../sectionColumnsDef'
 import { colDefById } from '@ors/config/Table/columnsDef'
 
 function useGridOptions() {
@@ -54,19 +57,10 @@ function useGridOptions() {
         groupId: 'other_uses',
         headerGroupComponent: 'agColumnHeaderGroup',
         headerName:
-          'Production for exempted essential, critical, high-ambient-temperature or other uses within your country*',
+          'Production for exempted essential, critical, high-ambient-temperature or other uses within your country',
         marryChildren: true,
         ...sectionColGroupDefById['other_uses'],
       },
-      // {
-      //   cellDataType: 'number',
-      //   cellEditor: 'agNumberCellEditor',
-      //   dataType: 'number',
-      //   editable: true,
-      //   field: 'destruction',
-      //   headerName: 'Captured for destruction',
-      //   ...sectionColDefById['destruction'],
-      // },
     ],
     defaultColDef: {
       ...sectionDefaultColDef,

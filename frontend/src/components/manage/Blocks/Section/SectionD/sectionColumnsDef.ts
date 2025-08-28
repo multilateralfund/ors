@@ -1,4 +1,4 @@
-import { ColDef } from 'ag-grid-community'
+import { ColDef, ColGroupDef } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
@@ -12,23 +12,6 @@ const sectionColDefById: Record<string, ColDef> = {
     headerClass: 'ag-text-center',
     // initialWidth: 200,
   },
-  other_uses: {
-    headerGroupComponentParams: {
-      ...defaultColGroupDef.headerGroupComponentParams,
-      footnote: {
-        id: '*',
-        content:
-          'Against each substance produced for exempted essential, critical, high-ambient-temperature or other uses, please specify the meeting of the parties decision that approved the use.',
-        icon: false,
-        order: 1,
-      },
-    },
-  },
-  // destruction: {
-  //   ...colDefById['destruction'],
-  //   cellClass: 'ag-text-center',
-  //   headerClass: 'ag-text-center',
-  // },
   display_name: {
     ...colDefById['display_name'],
     cellRendererParams: (props: any) => ({
@@ -56,4 +39,19 @@ const sectionDefaultColDef: ColDef<any, any> = {
   autoHeaderHeight: true,
 }
 
-export { sectionColDefById, sectionDefaultColDef }
+const sectionColGroupDefById: Record<string, Omit<ColGroupDef, 'children'>> = {
+  other_uses: {
+    headerGroupComponentParams: {
+      ...defaultColGroupDef.headerGroupComponentParams,
+      footnote: {
+        id: '*',
+        content:
+          'Against each substance produced for exempted essential, critical, high-ambient-temperature or other uses, please specify the meeting of the parties decision that approved the use.',
+        icon: false,
+        order: 1,
+      },
+    },
+  },
+}
+
+export { sectionColDefById, sectionDefaultColDef, sectionColGroupDefById }
