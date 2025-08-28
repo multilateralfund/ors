@@ -275,7 +275,7 @@ export function getSections(
         allowFullScreen: true,
         component: components[mode].section_d || DefaultComponent,
         label: 'Section D',
-        note: 'NOTE:  Fill in this form only if your country generated HFC-23 from any facility that produced (manufactured) Annex C Group I or Annex F substances',
+        note: 'NOTE:  Fill in this form only if your country generated HFC-23',
         panelId: 'section-D-panel',
         title:
           'SECTION D. ANNEX F, GROUP II - DATA ON HFC-23 GENERATION (METRIC TONNES)',

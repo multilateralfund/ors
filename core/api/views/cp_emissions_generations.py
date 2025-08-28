@@ -28,11 +28,13 @@ class DashboardsCPEmissionsView(generics.GenericAPIView):
         .filter(
             Q(total__gt=0)
             | Q(all_uses__gt=0)
+            | Q(stored_at_start_of_year__gt=0)
             | Q(feedstock_gc__gt=0)
             | Q(destruction__gt=0)
             | Q(feedstock_wpc__gt=0)
             | Q(destruction_wpc__gt=0)
             | Q(generated_emissions__gt=0)
+            | Q(stored_at_end_of_year__gt=0)
         )
         .order_by("-report_year", "country_name", "-report_version", "facility")
     )
@@ -50,7 +52,12 @@ class DashboardsCPEmissionsView(generics.GenericAPIView):
             AllGenerationsView.objects.filter(
                 report_status=CPReport.CPReportStatus.FINAL
             )
-            .filter(Q(all_uses__gt=0) | Q(feedstock__gt=0) | Q(destruction__gt=0))
+            .filter(
+                Q(all_uses__gt=0)
+                | Q(feedstock__gt=0)
+                # | Q(destruction__gt=0)   # deprecated, removed in frontend
+                | Q(other_uses_quantity__gt=0)
+            )
             .order_by("-report_year", "country_name", "-report_version")
         )
         all_generations = self.filter_queryset(all_generations)

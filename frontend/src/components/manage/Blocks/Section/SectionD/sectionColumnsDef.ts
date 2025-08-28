@@ -1,8 +1,8 @@
-import { ColDef } from 'ag-grid-community'
+import { ColDef, ColGroupDef } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
-import { colDefById } from '@ors/config/Table/columnsDef'
+import { colDefById, defaultColGroupDef } from '@ors/config/Table/columnsDef'
 
 const sectionColDefById: Record<string, ColDef> = {
   ...colDefById,
@@ -10,30 +10,7 @@ const sectionColDefById: Record<string, ColDef> = {
     ...colDefById['all_uses'],
     cellClass: 'ag-text-center',
     headerClass: 'ag-text-center',
-    headerComponentParams: {
-      footnote: {
-        id: '1',
-        content:
-          'HFC-23 generation that is captured, whether for destruction, feedstock or any other use, shall be reported in this form',
-        icon: false,
-        order: 1,
-      },
-    },
     // initialWidth: 200,
-  },
-  destruction: {
-    ...colDefById['destruction'],
-    cellClass: 'ag-text-center',
-    headerClass: 'ag-text-center',
-    headerComponentParams: {
-      footnote: {
-        id: '2',
-        content:
-          'Amounts of HFC-23 captured for destruction or feedstock use will not be counted as production as per Article 1 of the Montreal Protocol.',
-        icon: false,
-        order: 2,
-      },
-    },
   },
   display_name: {
     ...colDefById['display_name'],
@@ -46,8 +23,7 @@ const sectionColDefById: Record<string, ColDef> = {
       }),
       footnote: {
         id: '1',
-        content:
-          'HFC-23 generation that is captured, whether for destruction, feedstock or any other use, shall be reported in this form',
+        content: 'Unintentional generation',
         order: 1,
       },
     }),
@@ -56,15 +32,6 @@ const sectionColDefById: Record<string, ColDef> = {
     ...colDefById['feedstock'],
     cellClass: 'ag-text-center',
     headerClass: 'ag-text-center',
-    headerComponentParams: {
-      footnote: {
-        id: '2',
-        content:
-          'Amounts of HFC-23 captured for destruction or feedstock use will not be counted as production as per Article 1 of the Montreal Protocol.',
-        icon: false,
-        order: 2,
-      },
-    },
   },
 }
 
@@ -72,4 +39,19 @@ const sectionDefaultColDef: ColDef<any, any> = {
   autoHeaderHeight: true,
 }
 
-export { sectionColDefById, sectionDefaultColDef }
+const sectionColGroupDefById: Record<string, Omit<ColGroupDef, 'children'>> = {
+  other_uses: {
+    headerGroupComponentParams: {
+      ...defaultColGroupDef.headerGroupComponentParams,
+      footnote: {
+        id: '*',
+        content:
+          'Against each substance produced for exempted essential, critical, high-ambient-temperature or other uses, please specify the meeting of the parties decision that approved the use.',
+        icon: false,
+        order: 1,
+      },
+    },
+  },
+}
+
+export { sectionColDefById, sectionDefaultColDef, sectionColGroupDefById }

@@ -7,20 +7,24 @@ declare global {
 
 export type SectionD = Array<{
   all_uses: number
-  destruction: number
+  // destruction: number // deprecated, removed from form
   display_name: string
   feedstock: number
   id: number
+  other_uses_quantity: number
+  other_uses_remarks: string
 }>
 
 export type SectionE = Array<{
   all_uses: number
+  stored_at_start_of_year: number
   destruction: number
   destruction_wpc: number
   facility: string
   feedstock_gc: number
   feedstock_wpc: number
   generated_emissions: number
+  stored_at_end_of_year: number
   remark: string
   total: number
 }>

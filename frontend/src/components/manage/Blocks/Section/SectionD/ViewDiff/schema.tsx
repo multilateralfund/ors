@@ -4,7 +4,12 @@ import { GridOptions } from 'ag-grid-community'
 import cx from 'classnames'
 import { includes } from 'lodash'
 
-import { sectionColDefById, sectionDefaultColDef } from '../sectionColumnsDef'
+import {
+  sectionColDefById,
+  sectionColGroupDefById,
+  sectionDefaultColDef,
+} from '../sectionColumnsDef'
+import { colDefById } from '@ors/config/Table/columnsDef'
 
 function useGridOptions() {
   const [gridOptions] = useState<GridOptions>({
@@ -29,7 +34,7 @@ function useGridOptions() {
         cellClass: 'ag-text-center px-0',
         dataType: 'number_diff',
         field: 'all_uses',
-        headerName: 'Captured for all uses',
+        headerName: 'Total production for all uses',
         orsAggFunc: 'sumTotal',
       },
       {
@@ -37,16 +42,30 @@ function useGridOptions() {
         cellClass: 'ag-text-center px-0',
         dataType: 'number_diff',
         field: 'feedstock',
-        headerName: 'Captured for feedstock uses within your country',
+        headerName: 'Production for feedstock uses within your country',
         orsAggFunc: 'sumTotal',
       },
       {
-        ...sectionColDefById['destruction'],
-        cellClass: 'ag-text-center px-0',
-        dataType: 'number_diff',
-        field: 'destruction',
-        headerName: 'Captured for destruction',
-        orsAggFunc: 'sumTotal',
+        children: [
+          {
+            dataType: 'number_diff',
+            field: 'other_uses_quantity',
+            headerName: 'Quantity',
+            orsAggFunc: 'sumTotal',
+          },
+          {
+            field: 'other_uses_remarks',
+            headerName: 'Decision / type of use or remarks',
+            ...colDefById['remarks'],
+            dataType: 'text_diff',
+          },
+        ],
+        groupId: 'other_uses',
+        headerGroupComponent: 'agColumnHeaderGroup',
+        headerName:
+          'Production for exempted essential, critical, high-ambient-temperature or other uses within your country',
+        marryChildren: true,
+        ...sectionColGroupDefById['other_uses'],
       },
     ],
     defaultColDef: {
