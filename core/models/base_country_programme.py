@@ -170,14 +170,14 @@ class AbstractCPGeneration(models.Model):
         decimal_places=10,
         null=True,
         blank=True,
-        help_text="Captured for all uses",
+        help_text="Total production for all uses",
     )
     feedstock = models.DecimalField(
         max_digits=25,
         decimal_places=10,
         null=True,
         blank=True,
-        help_text="Captured for feedstock uses within your country",
+        help_text="Production for feedstock uses within your country",
     )
 
     other_uses_quantity = models.DecimalField(

@@ -53,8 +53,8 @@ class DashboardsCPGenerationSerializer(BaseDashboardsEmissionsSerializer):
     facility_name = serializers.SerializerMethodField()
 
     ATTRIBUTE_NAMES_MAPPING = {
-        "all_uses": "Captured for all uses",
-        "feedstock": "Captured for feedstock uses within your country",
+        "all_uses": "Total production for all uses",
+        "feedstock": "Production for feedstock uses within your country",
         "destruction": "Captured for destruction",  # deprecated, removed in frontend
         "other_uses_quantity": "Production for exempted essential, critical, high-ambient-temperature or other uses within your country - Quantity",
         "other_uses_remarks": "Production for exempted essential, critical, high-ambient-temperature or other uses within your country - Decision / type of use or remarks",
