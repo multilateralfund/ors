@@ -26,7 +26,9 @@ class CPGenerationBaseSerializer(BaseCPRowSerializer):
             "display_name",
             "all_uses",
             "feedstock",
-            "destruction",
+            "destruction",  # deprecated, removed in frontend
+            "other_uses_quantity",
+            "other_uses_remarks",
             "country_programme_report_id",
         ]
 
@@ -53,7 +55,9 @@ class DashboardsCPGenerationSerializer(BaseDashboardsEmissionsSerializer):
     ATTRIBUTE_NAMES_MAPPING = {
         "all_uses": "Captured for all uses",
         "feedstock": "Captured for feedstock uses within your country",
-        "destruction": "Captured for destruction",
+        "destruction": "Captured for destruction",  # deprecated, removed in frontend
+        "other_uses_quantity": "Production for exempted essential, critical, high-ambient-temperature or other uses within your country - Quantity",
+        "other_uses_remarks": "Production for exempted essential, critical, high-ambient-temperature or other uses within your country - Decision / type of use or remarks",
     }
 
     class Meta(BaseDashboardsEmissionsSerializer.Meta):
