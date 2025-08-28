@@ -1,4 +1,7 @@
+import { useContext } from 'react'
+
 import { BPTable } from '@ors/components/manage/Blocks/Table/BusinessPlansTable/BusinessPlansTable'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { booleanDetailItem, detailItem } from './ViewHelperComponents'
 import { SectionTitle } from '../ProjectsCreate/ProjectsCreate'
 import { tableColumns, viewColumnsClassName } from '../constants'
@@ -9,6 +12,8 @@ import { useStore } from '@ors/store'
 import { Divider } from '@mui/material'
 
 const ProjectIdentifiers = ({ project }: { project: ProjectTypeApi }) => {
+  const { canViewBp } = useContext(PermissionsContext)
+
   const { viewableFields } = useStore((state) => state.projectFields)
   const canViewBpSection = canViewField(viewableFields, 'bp_activity')
 
@@ -61,7 +66,7 @@ const ProjectIdentifiers = ({ project }: { project: ProjectTypeApi }) => {
         </div>
       </div>
 
-      {canViewBpSection && (
+      {canViewBp && canViewBpSection && (
         <>
           <Divider className="my-6" />
           <SectionTitle>Business Plan</SectionTitle>

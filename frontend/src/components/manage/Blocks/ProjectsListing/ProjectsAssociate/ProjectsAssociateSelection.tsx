@@ -75,8 +75,8 @@ const ProjectsAssociateSelection = ({
       headerHeight={0}
       rowData={crtProjects}
       rowCount={crtProjects.length}
-      rowsVisible={crtProjects.length - 10}
-      rowBuffer={crtProjects.length}
+      rowsVisible={90}
+      rowBuffer={100}
       components={{
         agColumnHeader: undefined,
         agTextCellRenderer: undefined,
