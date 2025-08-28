@@ -20,6 +20,14 @@ const sectionColDefById: Record<string, ColDef> = {
       return VOLUNTARY_CLASS
     },
     headerClass: VOLUNTARY_CLASS,
+    headerComponentParams: {
+      footnote: {
+        id: '1',
+        content: 'This includes amounts transferred to other facilities.',
+        icon: false,
+        order: 1,
+      },
+    },
   },
   destruction_wpc: {
     ...colDefById['destruction_wpc'],
@@ -27,14 +35,6 @@ const sectionColDefById: Record<string, ColDef> = {
       return VOLUNTARY_CLASS
     },
     headerClass: VOLUNTARY_CLASS,
-    headerComponentParams: {
-      footnote: {
-        id: '4',
-        content: 'Amount destroyed in the facility.',
-        icon: false,
-        order: 4,
-      },
-    },
   },
   facility: {
     // flex: 1,
@@ -53,17 +53,16 @@ const sectionColDefById: Record<string, ColDef> = {
       return VOLUNTARY_CLASS
     },
     headerClass: VOLUNTARY_CLASS,
-    headerComponentParams: {
-      footnote: {
-        id: '3',
-        content:
-          'Amount converted to other substances in the facility. The sum of these amounts is not to be reported under Section D.',
-        icon: false,
-        order: 3,
-      },
-    },
   },
   generated_emissions: {
+    cellClass: 'ag-text-center',
+    headerClass: 'ag-text-center',
+  },
+  stored_at_start_of_year: {
+    cellClass: 'ag-text-center',
+    headerClass: 'ag-text-center',
+  },
+  stored_at_end_of_year: {
     cellClass: 'ag-text-center',
     headerClass: 'ag-text-center',
   },
@@ -81,11 +80,11 @@ const sectionColDefById: Record<string, ColDef> = {
     headerClass: VOLUNTARY_CLASS,
     headerComponentParams: {
       footnote: {
-        id: '1',
+        id: '*',
         content:
-          '"Total amount generated" refers to the total amount whether captured or not. The sum of these amounts is not to be reported under Section D.',
+          '"Total amount generated" refers to the total amount whether captured or not.',
         icon: false,
-        order: 1,
+        order: 0,
       },
       info: true,
     },
@@ -96,13 +95,6 @@ const sectionColGroupDefById: Record<string, Omit<ColGroupDef, 'children'>> = {
     headerClass: VOLUNTARY_CLASS,
     headerGroupComponentParams: {
       ...defaultColGroupDef.headerGroupComponentParams,
-      footnote: {
-        id: '2',
-        content:
-          'The sums of these amounts are to be reported under Section D.',
-        icon: false,
-        order: 2,
-      },
     },
   },
 }
