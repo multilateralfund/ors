@@ -46,19 +46,14 @@ export const createProjectFieldsSlice = ({
             section !== 'Impact' || !isAfterApproval || is_actual
           const isDraftEditable =
             submissionStatus !== 'Draft' || editable_in_versions?.includes(1)
-          const isEditableByStatus = !['Recommended', 'Withdrawn'].includes(
-            submissionStatus ?? '',
-          )
-          const canEditApprovalFields =
-            !isAfterApproval || section !== 'Approval'
+          const isEditableByStatus = submissionStatus !== 'Withdrawn'
 
           return (
             canEditAll ||
             (isEditableInVersion &&
               isFieldEditable &&
               isDraftEditable &&
-              isEditableByStatus &&
-              canEditApprovalFields)
+              isEditableByStatus)
           )
         })
         .map((field) => field.write_field_name)

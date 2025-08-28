@@ -653,9 +653,8 @@ export const formatFiles = (
   files: ProjectAllVersionsFiles[] = [],
   project_id: number,
 ) => {
-  const sortedFiles = files.sort(
-    (file1, file2) => file1.version - file2.version,
-  )
+  const sortedFiles =
+    files?.sort((file1, file2) => file1.version - file2.version) ?? []
 
   return flatMap(sortedFiles, (file) =>
     map(file.files, (crtFile) => {

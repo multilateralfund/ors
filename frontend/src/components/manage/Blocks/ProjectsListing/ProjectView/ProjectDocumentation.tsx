@@ -18,12 +18,7 @@ const ProjectDocumentation = ({
   project?: ProjectTypeApi
   loadedFiles?: boolean
 }) => {
-  const { canUpdateProjects, canEditApprovedProjects } =
-    useContext(PermissionsContext)
-  const canUploadFiles =
-    mode !== 'edit' ||
-    (mode === 'edit' &&
-      ((project?.version ?? 1) < 3 || canEditApprovedProjects))
+  const { canUpdateProjects } = useContext(PermissionsContext)
 
   return (
     <div className="flex w-full flex-col gap-4">
@@ -32,7 +27,7 @@ const ProjectDocumentation = ({
         bpFiles={mode === 'edit' || mode === 'view' ? projectFiles : []}
       />
 
-      {mode !== 'view' && canUpdateProjects && canUploadFiles && (
+      {mode !== 'view' && canUpdateProjects && (
         <FileInput
           {...{ files, setFiles }}
           extensionsList="Allowed files extensions: .pdf, .doc, .docx"

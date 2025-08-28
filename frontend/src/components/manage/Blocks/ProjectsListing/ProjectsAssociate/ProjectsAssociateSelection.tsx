@@ -66,15 +66,17 @@ const ProjectsAssociateSelection = ({
 
   const selectedProjectData = (
     <ViewTable
+      key={JSON.stringify(crtProjects)}
       className="projects-table project-association-table"
       columnDefs={columnDefs}
       defaultColDef={defaultColDef}
       alwaysShowHorizontalScroll={false}
       domLayout="normal"
-      rowHeight={50}
       headerHeight={0}
       rowData={crtProjects}
-      rowCount={1}
+      rowCount={crtProjects.length}
+      rowsVisible={crtProjects.length - 10}
+      rowBuffer={crtProjects.length}
       components={{
         agColumnHeader: undefined,
         agTextCellRenderer: undefined,
