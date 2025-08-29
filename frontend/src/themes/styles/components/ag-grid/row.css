@@ -55,6 +55,10 @@
 }
 
 .ag-table.project-association-table {
+  .ag-root.ag-layout-normal {
+    padding-top: 0 !important;
+  }
+
   .ag-center-cols-viewport {
     min-height: unset !important;
   }

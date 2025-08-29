@@ -27,9 +27,11 @@ const ProjectsEditWrapper = ({ mode }: { mode: string }) => {
     ((mode !== 'copy' &&
       ((['Withdrawn', 'Not approved'].includes(data.submission_status) &&
         (mode !== 'edit' || !canEditApprovedProjects)) ||
-        (mode !== 'edit' && data.version === 3))) ||
+        (mode !== 'edit' &&
+          data.version === 3 &&
+          data.submission_status !== 'Recommended'))) ||
       !isNull(data.latest_project) ||
-      (mode === 'edit' && !data.editable))
+      (mode !== 'copy' && !data.editable))
   ) {
     return <Redirect to={`/projects-listing/${project_id}`} />
   }
