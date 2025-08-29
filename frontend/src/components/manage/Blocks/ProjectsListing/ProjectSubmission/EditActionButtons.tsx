@@ -353,10 +353,9 @@ const EditActionButtons = ({
             variant: 'error',
           },
         )
-      } finally {
-        setIsSendToDraftModalOpen(false)
       }
     }
+    setIsSendToDraftModalOpen(false)
   }
 
   const withdrawProject = async () => {
@@ -372,10 +371,9 @@ const EditActionButtons = ({
         enqueueSnackbar(<>Could not withdraw project. Please try again.</>, {
           variant: 'error',
         })
-      } finally {
-        setIsWithdrawModalOpen(false)
       }
     }
+    setIsWithdrawModalOpen(false)
   }
 
   const editApprovalFields = async () => {

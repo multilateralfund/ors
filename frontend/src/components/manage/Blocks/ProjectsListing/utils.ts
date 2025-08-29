@@ -641,8 +641,8 @@ export const getMenus = (
           title: 'Update enterprises',
           url: null,
           // url: `/projects-listing/enterprises${projectId ? `/${projectId}` : ''}`,
-          disabled:
-            !!projectSubmissionStatus && projectSubmissionStatus !== 'Approved',
+          // disabled:
+          //   !!projectSubmissionStatus && projectSubmissionStatus !== 'Approved',
         },
         { title: 'Transfer a project', url: null },
       ],
