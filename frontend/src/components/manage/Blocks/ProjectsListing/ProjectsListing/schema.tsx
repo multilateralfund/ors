@@ -3,6 +3,7 @@ import { useContext } from 'react'
 import Link from '@ors/components/ui/Link/Link'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { tableColumns } from '../constants'
+import { ListingProjectData } from '../interfaces'
 import { formatNumberColumns } from '../utils'
 
 import { Checkbox } from '@mui/material'
@@ -19,10 +20,7 @@ import cx from 'classnames'
 const getColumnDefs = (
   mode: string,
   projectId?: number | null,
-  setProjectData?: (data: {
-    projectId: number | null
-    projectTitle: string
-  }) => void,
+  setProjectData?: (data: ListingProjectData) => void,
   associationIds?: number[],
   setAssociationIds?: (data: number[]) => void,
 ) => {
@@ -117,8 +115,14 @@ const getColumnDefs = (
                             ? {
                                 projectId: props.data.id,
                                 projectTitle: props.data.title,
+                                projectSubmissionStatus:
+                                  props.data.submission_status,
                               }
-                            : { projectId: null, projectTitle: '' },
+                            : {
+                                projectId: null,
+                                projectTitle: '',
+                                projectSubmissionStatus: '',
+                              },
                         )
                       }}
                       sx={{
@@ -171,8 +175,8 @@ const getColumnDefs = (
       },
       {
         headerName: tableColumns.metacode,
-        field: 'metaproject_code',
-        tooltipField: 'metaproject_code',
+        field: 'metaproject_new_code',
+        tooltipField: 'metaproject_new_code',
       },
       {
         headerName: tableColumns.code,

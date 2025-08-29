@@ -293,8 +293,10 @@ const EditActionButtons = ({
       if (canApproveProjects && isAfterApproval) {
         await editApprovalFields()
       }
+      return true
     } catch (error) {
       await handleErrors(error)
+      return false
     } finally {
       setIsLoading(false)
       setHasSubmitted(false)
@@ -318,52 +320,61 @@ const EditActionButtons = ({
   }
 
   const recommendProject = async () => {
-    await editProject()
-    try {
-      await api(`api/projects/v2/${id}/recommend/`, {
-        method: 'POST',
-      })
-      setLocation(`/projects-listing/${id}`)
-    } catch (error) {
-      await handleErrors(error)
-    } finally {
-      setIsLoading(false)
-      setHasSubmitted(true)
+    const canRecommend = await editProject()
+
+    if (canRecommend) {
+      try {
+        await api(`api/projects/v2/${id}/recommend/`, {
+          method: 'POST',
+        })
+        setLocation(`/projects-listing/${id}`)
+      } catch (error) {
+        await handleErrors(error)
+      } finally {
+        setIsLoading(false)
+        setHasSubmitted(true)
+      }
     }
   }
 
   const sendProjectBackToDraft = async () => {
-    await editProject()
-    try {
-      await api(`api/projects/v2/${id}/send_back_to_draft/`, {
-        method: 'POST',
-      })
-      setLocation(`/projects-listing/${id}`)
-    } catch (error) {
-      enqueueSnackbar(
-        <>Could not send project back to draft. Please try again.</>,
-        {
-          variant: 'error',
-        },
-      )
-    } finally {
-      setIsSendToDraftModalOpen(false)
+    const canSendBackToDraft = await editProject()
+
+    if (canSendBackToDraft) {
+      try {
+        await api(`api/projects/v2/${id}/send_back_to_draft/`, {
+          method: 'POST',
+        })
+        setLocation(`/projects-listing/${id}`)
+      } catch (error) {
+        enqueueSnackbar(
+          <>Could not send project back to draft. Please try again.</>,
+          {
+            variant: 'error',
+          },
+        )
+      } finally {
+        setIsSendToDraftModalOpen(false)
+      }
     }
   }
 
   const withdrawProject = async () => {
-    await editProject()
-    try {
-      await api(`api/projects/v2/${id}/withdraw/`, {
-        method: 'POST',
-      })
-      setLocation(`/projects-listing/${id}`)
-    } catch (error) {
-      enqueueSnackbar(<>Could not withdraw project. Please try again.</>, {
-        variant: 'error',
-      })
-    } finally {
-      setIsWithdrawModalOpen(false)
+    const canWithdraw = await editProject()
+
+    if (canWithdraw) {
+      try {
+        await api(`api/projects/v2/${id}/withdraw/`, {
+          method: 'POST',
+        })
+        setLocation(`/projects-listing/${id}`)
+      } catch (error) {
+        enqueueSnackbar(<>Could not withdraw project. Please try again.</>, {
+          variant: 'error',
+        })
+      } finally {
+        setIsWithdrawModalOpen(false)
+      }
     }
   }
 
@@ -385,9 +396,11 @@ const EditActionButtons = ({
       })
 
       setProjectId(result.id)
+      return true
     } catch (error) {
       await handleErrors(error)
       setProjectId(null)
+      return false
     } finally {
       setIsLoading(false)
       setHasSubmitted(false)
@@ -395,17 +408,20 @@ const EditActionButtons = ({
   }
 
   const approveRejectProject = async (action: string) => {
-    await editApprovalFields()
-    try {
-      await api(`api/projects/v2/${id}/${action}/`, {
-        method: 'POST',
-      })
-      setLocation(`/projects-listing/${id}`)
-    } catch (error) {
-      await handleErrors(error)
-    } finally {
-      setIsLoading(false)
-      setHasSubmitted(true)
+    const canApprove = await editApprovalFields()
+
+    if (canApprove) {
+      try {
+        await api(`api/projects/v2/${id}/${action}/`, {
+          method: 'POST',
+        })
+        setLocation(`/projects-listing/${id}`)
+      } catch (error) {
+        await handleErrors(error)
+      } finally {
+        setIsLoading(false)
+        setHasSubmitted(true)
+      }
     }
   }
 

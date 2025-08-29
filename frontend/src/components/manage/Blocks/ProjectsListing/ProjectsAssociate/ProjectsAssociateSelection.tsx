@@ -70,15 +70,14 @@ const ProjectsAssociateSelection = ({
       className="projects-table project-association-table"
       columnDefs={columnDefs}
       defaultColDef={defaultColDef}
-      alwaysShowHorizontalScroll={false}
+      suppressScrollOnNewData={true}
+      resizeGridOnRowUpdate={true}
       domLayout="normal"
       headerHeight={0}
       rowData={crtProjects}
       rowCount={crtProjects.length}
       rowsVisible={Math.min(crtProjects.length, 90)}
-      rowBuffer={crtProjects.length}
-      suppressRowTransform={true}
-      suppressNoRowsOverlay={true}
+      rowBuffer={crtProjects.length + 10}
       components={{
         agColumnHeader: undefined,
         agTextCellRenderer: undefined,
