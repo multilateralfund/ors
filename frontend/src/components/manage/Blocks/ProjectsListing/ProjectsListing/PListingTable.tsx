@@ -4,6 +4,7 @@ import type { useGetProjects } from '@ors/components/manage/Blocks/ProjectsListi
 import type { useGetProjectsAssociation } from '../hooks/useGetProjectsAssociation'
 import ViewTable from '@ors/components/manage/Form/ViewTable'
 import getColumnDefs from './schema'
+import { ListingProjectData } from '../interfaces'
 import { PROJECTS_PER_PAGE } from '../constants'
 
 import cx from 'classnames'
@@ -13,10 +14,7 @@ export type PListingTableProps = {
   filters: Record<string, any>
   mode: string
   projectId?: number | null
-  setProjectData?: (data: {
-    projectId: number | null
-    projectTitle: string
-  }) => void
+  setProjectData?: (data: ListingProjectData) => void
   associationIds?: number[]
   setAssociationIds?: (data: number[]) => void
   enablePagination?: boolean
@@ -108,7 +106,7 @@ const PListingTable = ({
                 ? colId
                 : colId === 'cluster.code'
                   ? colId.split('.')[0] + '__code'
-                  : colId === 'metaproject_code'
+                  : colId === 'metaproject_new_code'
                     ? 'meta_project__code'
                     : colId.split('.')[0] + '__name'
 

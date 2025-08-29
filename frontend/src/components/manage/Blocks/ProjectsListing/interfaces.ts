@@ -1,13 +1,15 @@
 import { Dispatch, ReactNode, SetStateAction } from 'react'
 import { ProjectType } from '@ors/types/api_projects'
 
+export type ListingProjectData = {
+  projectId: number | null
+  projectTitle: string
+  projectSubmissionStatus: string
+}
 export interface PListingProps {
   tableToolbar: ReactNode
   projectId?: number | null
-  setProjectData?: (data: {
-    projectId: number | null
-    projectTitle: string
-  }) => void
+  setProjectData?: (data: ListingProjectData) => void
 }
 export interface ProjIdentifiers {
   country: number | null
@@ -262,6 +264,7 @@ export type ProjectIdentifiersSectionProps = {
   errors: { [key: string]: string[] }
   hasSubmitted: boolean
   mode: string
+  specificFieldsLoaded: boolean
 }
 
 export type TrancheErrorType = {

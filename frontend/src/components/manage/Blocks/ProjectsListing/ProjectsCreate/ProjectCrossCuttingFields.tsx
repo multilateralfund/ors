@@ -38,7 +38,9 @@ const ProjectCrossCuttingFields = ({
   errors = {},
   hasSubmitted,
   fieldsOpts,
+  specificFieldsLoaded,
 }: ProjectDataProps & {
+  specificFieldsLoaded: boolean
   fieldsOpts: {
     crtProjectTypesOpts: ProjectTypeType[]
     projectTypes: ProjectTypeType[]
@@ -239,7 +241,10 @@ const ProjectCrossCuttingFields = ({
                     getOptionLabel={(option: any) =>
                       getOptionLabel(projectTypes, option)
                     }
-                    disabled={!canEditField(editableFields, 'project_type')}
+                    disabled={
+                      !specificFieldsLoaded ||
+                      !canEditField(editableFields, 'project_type')
+                    }
                     Input={{
                       error: getIsInputDisabled('project_type'),
                     }}
@@ -261,7 +266,10 @@ const ProjectCrossCuttingFields = ({
                       >(value, 'sector', setProjectData, sectionIdentifier)
                     }
                     getOptionLabel={(option) => getOptionLabel(sectors, option)}
-                    disabled={!canEditField(editableFields, 'sector')}
+                    disabled={
+                      !specificFieldsLoaded ||
+                      !canEditField(editableFields, 'sector')
+                    }
                     Input={{
                       error: getIsInputDisabled('sector'),
                     }}
