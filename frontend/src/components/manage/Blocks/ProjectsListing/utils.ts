@@ -639,7 +639,8 @@ export const getMenus = (
         { title: 'Update post ExCom fields', url: null },
         {
           title: 'Update enterprises',
-          url: `/projects-listing/enterprises${projectId ? `/${projectId}` : ''}`,
+          url: null,
+          // url: `/projects-listing/enterprises${projectId ? `/${projectId}` : ''}`,
           disabled:
             !!projectSubmissionStatus && projectSubmissionStatus !== 'Approved',
         },
