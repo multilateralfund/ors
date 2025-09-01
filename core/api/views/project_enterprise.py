@@ -1,14 +1,15 @@
 from django.db.models import Q
 
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import mixins, viewsets, filters
 
+from rest_framework import filters, mixins, status, viewsets
+from rest_framework.response import Response
 
 from core.api.permissions import (
     DenyAll,
     HasProjectV2ViewAccess,
-    HasProjectV2EditAccess,
-    HasProjectV2SubmitAccess,
+    HasProjectEnterpriseEditAccess,
+    HasProjectEnterpriseApprovalAccess,
 )
 from core.models.project_enterprise import ProjectEnterprise
 from core.api.serializers.project_enterprise import ProjectEnterpriseSerializer
@@ -18,6 +19,7 @@ from core.api.filters.project import ProjectEnterpriseFilter
 class ProjectEnterpriseViewSet(
     viewsets.GenericViewSet,
     mixins.ListModelMixin,
+    mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
 ):
     filterset_class = ProjectEnterpriseFilter
@@ -46,11 +48,11 @@ class ProjectEnterpriseViewSet(
             "create",
             "update",
         ]:
-            return [HasProjectV2EditAccess]  # TODO: update this permission
+            return [HasProjectEnterpriseEditAccess]
         if self.action in [
-            "submit",
+            "approve",
         ]:
-            return [HasProjectV2SubmitAccess]  # TODO: update this permission
+            return [HasProjectEnterpriseApprovalAccess]
         return [DenyAll]
 
     def filter_permissions_queryset(self, queryset):
@@ -90,3 +92,9 @@ class ProjectEnterpriseViewSet(
     def get_serializer_class(self):
         serializer = ProjectEnterpriseSerializer
         return serializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(request=request)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

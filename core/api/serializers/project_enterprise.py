@@ -5,6 +5,10 @@ from core.models.project_enterprise import ProjectEnterprise, ProjectEnterpriseO
 
 class ProjectEnterpriseOdsOdpSerializer(serializers.ModelSerializer):
 
+    enterprise = serializers.PrimaryKeyRelatedField(
+        queryset=ProjectEnterprise.objects.all(), required=False
+    )
+
     class Meta:
         model = ProjectEnterpriseOdsOdp
         fields = [
@@ -20,7 +24,7 @@ class ProjectEnterpriseOdsOdpSerializer(serializers.ModelSerializer):
 
 class ProjectEnterpriseSerializer(serializers.ModelSerializer):
 
-    ods_odp = ProjectEnterpriseOdsOdpSerializer(many=True, read_only=True)
+    ods_odp = ProjectEnterpriseOdsOdpSerializer(many=True, required=False)
 
     class Meta:
         model = ProjectEnterprise
@@ -42,3 +46,13 @@ class ProjectEnterpriseSerializer(serializers.ModelSerializer):
             "remarks",
             "status",
         ]
+
+    def create(self, validated_data):
+        _ = validated_data.pop("request", None)
+        ods_odp_data = validated_data.pop("ods_odp")
+        project_enterprise = ProjectEnterprise.objects.create(**validated_data)
+        for ods_odp in ods_odp_data:
+            ProjectEnterpriseOdsOdp.objects.create(
+                enterprise=project_enterprise, **ods_odp
+            )
+        return project_enterprise
