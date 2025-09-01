@@ -1,8 +1,11 @@
-from django.db.models import Q
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 
+from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import filters, mixins, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -107,6 +110,30 @@ class ProjectEnterpriseViewSet(
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         serializer.save(request=request)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(methods=["POST"], detail=True)
+    @swagger_auto_schema(
+        operation_description="""
+        Approve a pending Project Enterprise.
+        Only enterprises with 'Pending' status can be approved.
+        """,
+        request_body=openapi.Schema(type=openapi.TYPE_OBJECT, properties=None),
+        responses={
+            status.HTTP_200_OK: ProjectEnterpriseSerializer,
+            status.HTTP_400_BAD_REQUEST: "Bad request",
+        },
+    )
+    def approve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.status != ProjectEnterprise.EnterpriseStatus.PENDING:
+            return Response(
+                {"detail": "Only pending enterprises can be approved."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        instance.status = ProjectEnterprise.EnterpriseStatus.APPROVED
+        instance.save()
+        serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
