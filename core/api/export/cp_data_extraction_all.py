@@ -274,7 +274,7 @@ class HFC23GenerationWriter(BaseWriter):
                 "headerName": (
                     "Production for exempted essential, critical, "
                     "high-ambient-temperature or other uses within your country "
-                    "- Quantity",
+                    "- Quantity"
                 ),
                 "align": "right",
                 "type": "number",
@@ -285,7 +285,7 @@ class HFC23GenerationWriter(BaseWriter):
                 "headerName": (
                     "Production for exempted essential, critical, "
                     "high-ambient-temperature or other uses within your country "
-                    "- Decision / type of use or remarks",
+                    "- Decision / type of use or remarks"
                 ),
             },
             {
