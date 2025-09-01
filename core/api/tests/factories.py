@@ -254,7 +254,9 @@ class CPGenerationFactory(factory.django.DjangoModelFactory):
     country_programme_report = factory.SubFactory(CPReportFactory)
     all_uses = factory.Faker("random_int", min=1, max=100)
     feedstock = factory.Faker("random_int", min=1, max=100)
-    destruction = factory.Faker("random_int", min=1, max=100)  # deprecated, removed in frontend
+    destruction = factory.Faker(
+        "random_int", min=1, max=100
+    )  # deprecated, removed in frontend
     other_uses_quantity = factory.Faker("random_int", min=1, max=100)
     other_uses_remarks = factory.Faker("pystr", max_chars=100)
 

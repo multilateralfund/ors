@@ -212,8 +212,16 @@ class Command(BaseCommand):
                 "Total production for all uses",
                 "Production for feedstock uses within your country",
                 # "Captured for destruction",  # destruction removed in frontend
-                "Production for exempted essential, critical, high-ambient-temperature or other uses within your country - Quantity"
-                "Production for exempted essential, critical, high-ambient-temperature or other uses within your country - Decision / type of use or remarks"
+                (
+                    "Production for exempted essential, critical, "
+                    "high-ambient-temperature or other uses within your country "
+                    "- Quantity"
+                ),
+                (
+                    "Production for exempted essential, critical, "
+                    "high-ambient-temperature or other uses within your country "
+                    "- Decision / type of use or remarks"
+                ),
             ],
         )
 

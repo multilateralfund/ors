@@ -56,7 +56,11 @@ class DashboardsCPGenerationSerializer(BaseDashboardsEmissionsSerializer):
         "all_uses": "Total production for all uses",
         "feedstock": "Production for feedstock uses within your country",
         "destruction": "Captured for destruction",  # deprecated, removed in frontend
-        "other_uses_quantity": "Production for exempted essential, critical, high-ambient-temperature or other uses within your country - Quantity",
+        "other_uses_quantity": (
+            "Production for exempted essential, critical, "
+            "high-ambient-temperature or other uses within your country "
+            "- Quantity"
+        ),
     }
 
     class Meta(BaseDashboardsEmissionsSerializer.Meta):
