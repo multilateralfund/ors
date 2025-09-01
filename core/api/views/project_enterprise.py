@@ -4,6 +4,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from core.api.permissions import (
     DenyAll,
@@ -107,3 +108,13 @@ class ProjectEnterpriseViewSet(
         serializer.is_valid(raise_exception=True)
         serializer.save(request=request)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ProjectEnterpriseStatusView(APIView):
+    """
+    View to return a list of all Project Enterprise Status choices
+    """
+
+    def get(self, request, *args, **kwargs):
+        choices = ProjectEnterprise.EnterpriseStatus.choices
+        return Response(choices)
