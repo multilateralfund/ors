@@ -254,7 +254,11 @@ class CPGenerationFactory(factory.django.DjangoModelFactory):
     country_programme_report = factory.SubFactory(CPReportFactory)
     all_uses = factory.Faker("random_int", min=1, max=100)
     feedstock = factory.Faker("random_int", min=1, max=100)
-    destruction = factory.Faker("random_int", min=1, max=100)
+    destruction = factory.Faker(
+        "random_int", min=1, max=100
+    )  # deprecated, removed in frontend
+    other_uses_quantity = factory.Faker("random_int", min=1, max=100)
+    other_uses_remarks = factory.Faker("pystr", max_chars=100)
 
 
 class CPEmissionFactory(factory.django.DjangoModelFactory):
@@ -265,11 +269,13 @@ class CPEmissionFactory(factory.django.DjangoModelFactory):
     facility = factory.Faker("rpyst", max_chars=100)
     total = factory.Faker("random_int", min=1, max=100)
     all_uses = factory.Faker("random_int", min=1, max=100)
+    stored_at_start_of_year = factory.Faker("random_int", min=1, max=100)
     feedstock_gc = factory.Faker("random_int", min=1, max=100)
     destruction = factory.Faker("random_int", min=1, max=100)
     feedstock_wpc = factory.Faker("random_int", min=1, max=100)
     destruction_wpc = factory.Faker("random_int", min=1, max=100)
     generated_emissions = factory.Faker("random_int", min=1, max=100)
+    stored_at_end_of_year = factory.Faker("random_int", min=1, max=100)
     remarks = factory.Faker("pystr", max_chars=100)
 
 

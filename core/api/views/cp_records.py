@@ -329,15 +329,23 @@ class CPRecordListDiffView(CPRecordListByReportView):
         "remarks",
     ]
     section_c_fields = ["previous_year_price", "current_year_price", "remarks"]
-    section_d_fields = ["all_uses", "feedstock", "destruction"]
+    section_d_fields = [
+        "all_uses",
+        "feedstock",
+        "destruction",  # deprecated, removed in frontend
+        "other_uses_quantity",
+        "other_uses_remarks",
+    ]
     section_e_fields = [
         "total",
         "all_uses",
+        "stored_at_start_of_year",
         "feedstock_gc",
         "destruction",
         "feedstock_wpc",
         "destruction_wpc",
         "generated_emissions",
+        "stored_at_end_of_year",
         "remarks",
     ]
 

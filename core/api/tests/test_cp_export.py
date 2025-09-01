@@ -312,10 +312,10 @@ class TestCPExtractionALLExport(BaseTest):
         # 2019 MT, 2019 CO₂, 2019 Servicing, 2019 Usage Total, notes
         assert wb["HFC-Consumption(MTvsCO₂Equi)"].max_column == 9
         # country, year, substance, all_uses, feedstock, destruction, notes
-        assert wb["HFC-23Generation"].max_column == 7
+        assert wb["HFC-23Generation"].max_column == 8
         # country, year, facility, total, all_uses, feedstock_gc, destruction
         # feedstock_wpc, destruction_wpc, generated_emissions, remarks, notes
-        assert wb["HFC-23Emission"].max_column == 12
+        assert wb["HFC-23Emission"].max_column == 14
         # country, qps, non-qps, total
         assert wb["MbrConsumption"].max_column == 4
 

@@ -68,7 +68,9 @@ class Command(BaseCommand):
                     "HFC-23",
                     cp_generation.all_uses,
                     cp_generation.feedstock,
-                    cp_generation.destruction,
+                    # cp_generation.destruction,  # deprecated, removed in frontend
+                    cp_generation.other_uses_quantity,
+                    cp_generation.other_uses_remarks,
                 ],
             )
 
@@ -82,11 +84,13 @@ class Command(BaseCommand):
                     cp_emission.facility,
                     cp_emission.total,
                     cp_emission.all_uses,
+                    cp_emission.stored_at_start_of_year,
                     cp_emission.feedstock_gc,
                     cp_emission.destruction,
                     cp_emission.feedstock_wpc,
                     cp_emission.destruction_wpc,
                     cp_emission.generated_emissions,
+                    cp_emission.stored_at_end_of_year,
                     cp_emission.remarks,
                 ],
             )
@@ -205,9 +209,19 @@ class Command(BaseCommand):
             report_fields
             + [
                 "Substance",
-                "Captured for all uses",
-                "Captured for feedstock uses",
-                "Captured for destruction",
+                "Total production for all uses",
+                "Production for feedstock uses within your country",
+                # "Captured for destruction",  # destruction removed in frontend
+                (
+                    "Production for exempted essential, critical, "
+                    "high-ambient-temperature or other uses within your country "
+                    "- Quantity"
+                ),
+                (
+                    "Production for exempted essential, critical, "
+                    "high-ambient-temperature or other uses within your country "
+                    "- Decision / type of use or remarks"
+                ),
             ],
         )
 
@@ -216,13 +230,15 @@ class Command(BaseCommand):
             report_fields
             + [
                 "Facility name",
-                "Total amount generated",
-                "Amount generated and captured for all uses",
-                "Amount generated and captured for feedstock use",
-                "Amount generated and captured for destruction",
-                "Amount used for feedstock without prior capture",
-                "Amount destroyed without prior capture",
-                "Amount of generated emissions",
+                "Total amount generated (tonnes)",
+                "Amount stored at the beginning of the year (tonnes)",
+                "Amount generated and captured (tonnes) - For uses excluding feedstocks",
+                "Amount generated and captured (tonnes) - For feedstock use in your country",
+                "Amount generated and captured (tonnes) - For destruction",
+                "Amount used for feedstock without prior capture (tonnes)",
+                "Amount destroyed in the facility without prior capture (tonnes)",
+                "Amount of generated emissions (tonnes)",
+                "Amount stored at the end of the year (tonnes)",
                 "Remarks",
             ],
         )
