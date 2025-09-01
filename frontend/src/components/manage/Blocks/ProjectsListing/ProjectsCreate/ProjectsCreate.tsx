@@ -288,6 +288,7 @@ const ProjectsCreate = ({
             setCurrentTab,
             hasSubmitted,
             mode,
+            specificFieldsLoaded,
           }}
           isNextBtnEnabled={canLinkToBp}
           errors={projIdentifiersErrors}
@@ -317,6 +318,7 @@ const ProjectsCreate = ({
             setProjectData,
             hasSubmitted,
             fieldsOpts,
+            specificFieldsLoaded,
           }}
           errors={crossCuttingErrors}
         />

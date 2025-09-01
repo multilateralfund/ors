@@ -57,6 +57,7 @@ import ProjectsEditPage from '@ors/app/projects_listing/[project_id]/edit/page'
 import ProjectsSubmitPage from '@ors/app/projects_listing/[project_id]/submit/page'
 import ProjectsListingProjectPage from '@ors/app/projects_listing/[project_id]/page'
 import ProjectsListingArchiveProjectPage from '@ors/app/projects_listing/[project_id]/archive/page'
+import ProjectsEnterprises from '@ors/app/projects_listing/enterprises/page'
 
 import ProjectsDataProvider from './contexts/Projects/ProjectsDataProvider'
 import BPDataProvider from './contexts/BusinessPlans/BPDataProvider'
@@ -294,6 +295,12 @@ export default function App() {
           <ProjectsDataProvider>
             <ProjectsSettingsPage />
           </ProjectsDataProvider>
+        </Route>
+        <Route path="/projects-listing/enterprises">
+          <ProjectsEnterprises />
+        </Route>
+        <Route path="/projects-listing/enterprises/:project_id">
+          <ProjectsEnterprises />
         </Route>
         <Route path="/projects-listing/:project_id">
           <ProjectsDataProvider>

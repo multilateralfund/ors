@@ -13,6 +13,7 @@ import {
   ProjectTypeApi,
   ProjectAllVersionsFiles,
   OdsOdpFields,
+  ListingProjectData,
 } from './interfaces'
 import { formatApiUrl, formatDecimalValue } from '@ors/helpers'
 import { Cluster } from '@ors/types/store'
@@ -608,8 +609,12 @@ export const getHasNoFiles = (
   return files?.newFiles?.length === 0 && crtVersionFiles.length === 0
 }
 
-export const getMenus = (permissions: Record<string, boolean>) => {
+export const getMenus = (
+  permissions: Record<string, boolean>,
+  projectData?: ListingProjectData,
+) => {
   const { canViewBp, canUpdateBp } = permissions
+  const { projectId, projectSubmissionStatus } = projectData ?? {}
 
   return [
     {
@@ -632,7 +637,13 @@ export const getMenus = (permissions: Record<string, boolean>) => {
       menuItems: [
         { title: 'Update MYA data', url: null },
         { title: 'Update post ExCom fields', url: null },
-        { title: 'Update enterprises', url: null },
+        {
+          title: 'Update enterprises',
+          url: null,
+          // url: `/projects-listing/enterprises${projectId ? `/${projectId}` : ''}`,
+          // disabled:
+          //   !!projectSubmissionStatus && projectSubmissionStatus !== 'Approved',
+        },
         { title: 'Transfer a project', url: null },
       ],
     },

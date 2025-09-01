@@ -15,6 +15,7 @@ const ExpandableMenu = ({
       title: string
       url: string | null
       permissions?: boolean[]
+      disabled?: boolean
     }[]
   }
 }) => {
@@ -82,25 +83,27 @@ const ExpandableMenu = ({
           },
         }}
       >
-        {filteredMenuItems.map(({ url, title }, index) => (
-          <MenuItem
-            className={cx(
-              'rounded-none py-1.5 pl-3 pr-12 hover:bg-mlfs-hlYellow',
-              {
-                'border-b-[3px] border-solid border-b-[#62BAF2]':
-                  index !== filteredMenuItems.length - 1,
-              },
-            )}
-            onClick={handleClose}
+        {filteredMenuItems.map(({ url, title, disabled }, index) => (
+          <div
+            className={cx({
+              'border-0 border-b-[3px] border-solid border-b-[#62BAF2]':
+                index !== filteredMenuItems.length - 1,
+            })}
           >
-            <CustomLink
-              className="text-nowrap text-lg normal-case tracking-[0.05em] no-underline"
-              href={url}
-              variant="contained"
+            <MenuItem
+              className="rounded-none p-0 hover:bg-mlfs-hlYellow"
+              onClick={handleClose}
+              disabled={disabled}
             >
-              {title}
-            </CustomLink>
-          </MenuItem>
+              <CustomLink
+                className="h-full w-full text-nowrap py-1.5 pl-3 pr-12 text-lg normal-case tracking-[0.05em] no-underline"
+                href={url}
+                variant="contained"
+              >
+                {title}
+              </CustomLink>
+            </MenuItem>
+          </div>
         ))}
       </Menu>
     </>

@@ -45,6 +45,7 @@ const ProjectIdentifiersFields = ({
   errors,
   hasSubmitted,
   mode,
+  specificFieldsLoaded,
 }: ProjectIdentifiersSectionProps) => {
   const sectionIdentifier = 'projIdentifiers'
   const projIdentifiers = projectData[sectionIdentifier]
@@ -260,6 +261,7 @@ const ProjectIdentifiersFields = ({
                 getOptionLabel={(option) => getOptionLabel(clusters, option)}
                 disabled={
                   !areNextSectionsDisabled ||
+                  !specificFieldsLoaded ||
                   !canEditField(editableFields, 'cluster')
                 }
                 Input={{

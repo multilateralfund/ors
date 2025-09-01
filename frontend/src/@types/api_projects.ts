@@ -99,6 +99,7 @@ export type ProjectType = {
   meeting_transf_id: any
   metaproject_category: string
   metaproject_code: string
+  metaproject_new_code: string
   mya_code: string
   mya_subsector: string
   national_agency: any

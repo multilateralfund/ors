@@ -11,9 +11,10 @@ import PListingProjects from './PListingProjects'
 import ExpandableMenu from './ExpandableMenu'
 import GenerateDBMenu from './GenerateDBMenu'
 import { CancelButton } from '../HelperComponents'
+import { ListingProjectData } from '../interfaces'
 import { getMenus } from '../utils'
 
-import { Modal, Typography, Button, Box } from '@mui/material'
+import { Modal, Typography, Box } from '@mui/material'
 import { IoIosLink } from 'react-icons/io'
 import { LuCopy } from 'react-icons/lu'
 import cx from 'classnames'
@@ -23,12 +24,10 @@ export default function PListingWrapper() {
     useContext(PermissionsContext)
 
   const [view, setView] = useState<ViewSelectorValuesType>('list')
-  const [projectData, setProjectData] = useState<{
-    projectId: number | null
-    projectTitle: string
-  }>({
+  const [projectData, setProjectData] = useState<ListingProjectData>({
     projectId: null,
     projectTitle: '',
+    projectSubmissionStatus: '',
   })
   const { projectId, projectTitle } = projectData
   const [isCopyModalOpen, setIsCopyModalOpen] = useState<boolean>(false)
@@ -117,7 +116,7 @@ export default function PListingWrapper() {
     <>
       <div className="mt-5 flex flex-wrap justify-between gap-y-3">
         <div className="mb-2 flex flex-wrap gap-x-2 gap-y-3">
-          {getMenus({ canViewBp, canUpdateBp }).map((menu) => (
+          {getMenus({ canViewBp, canUpdateBp }, projectData).map((menu) => (
             <ExpandableMenu menu={menu} />
           ))}
         </div>
