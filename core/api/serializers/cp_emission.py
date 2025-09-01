@@ -22,12 +22,14 @@ class CPEmissionBaseSerializer(BaseCPRowSerializer):
             "id",
             "facility",
             "total",
+            "stored_at_start_of_year",
             "all_uses",
             "feedstock_gc",
             "destruction",
             "feedstock_wpc",
             "destruction_wpc",
             "generated_emissions",
+            "stored_at_end_of_year",
             "remarks",
             "country_programme_report_id",
         ]
@@ -47,13 +49,15 @@ class DashboardsCPEmissionSerializer(BaseDashboardsEmissionsSerializer):
     facility_name = serializers.CharField(source="facility")
 
     ATTRIBUTE_NAMES_MAPPING = {
-        "total": "Total amount generated",
-        "all_uses": "Amount generated and captured - For all uses",
-        "feedstock_gc": "Amount generated and captured - For feedstock use in your country",
-        "destruction": "Amount generated and captured - For destruction",
-        "feedstock_wpc": "Amount used for feedstock without prior capture",
-        "destruction_wpc": "Amount destroyed without prior capture",
-        "generated_emissions": "Amount of generated emissions",
+        "total": "Total amount generated (tonnes)",
+        "all_uses": "Amount generated and captured (tonnes) - For uses excluding feedstocks",
+        "stored_at_start_of_year": "Amount stored at the beginning of the year (tonnes)",
+        "feedstock_gc": "Amount generated and captured (tonnes) - For feedstock use in your country",
+        "destruction": "Amount generated and captured (tonnes) - For destruction",
+        "feedstock_wpc": "Amount used for feedstock without prior capture (tonnes)",
+        "destruction_wpc": "Amount destroyed in the facility without prior capture (tonnes)",
+        "generated_emissions": "Amount of generated emissions (tonnes)",
+        "stored_at_end_of_year": "Amount stored at the end of the year (tonnes)",
     }
 
     class Meta(BaseDashboardsEmissionsSerializer.Meta):

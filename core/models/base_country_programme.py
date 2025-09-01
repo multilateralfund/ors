@@ -170,15 +170,39 @@ class AbstractCPGeneration(models.Model):
         decimal_places=10,
         null=True,
         blank=True,
-        help_text="Captured for all uses",
+        help_text="Total production for all uses",
     )
     feedstock = models.DecimalField(
         max_digits=25,
         decimal_places=10,
         null=True,
         blank=True,
-        help_text="Captured for feedstock uses within your country",
+        help_text="Production for feedstock uses within your country",
     )
+
+    other_uses_quantity = models.DecimalField(
+        max_digits=25,
+        decimal_places=10,
+        null=True,
+        blank=True,
+        help_text=(
+            "Production for exempted essential, critical, "
+            "high-ambient-temperature or other uses within your country "
+            "- Quantity"
+        ),
+    )
+
+    other_uses_remarks = models.TextField(
+        null=True,
+        blank=True,
+        help_text=(
+            "Production for exempted essential, critical, "
+            "high-ambient-temperature or other uses within your country "
+            "- Decision / type of use or remarks"
+        ),
+    )
+
+    # this is deprecated, was removed in frontend
     destruction = models.DecimalField(
         max_digits=25,
         decimal_places=10,
@@ -201,49 +225,63 @@ class AbstractCPEmission(models.Model):
         decimal_places=10,
         null=True,
         blank=True,
-        help_text="Total amount generated",
+        help_text="Total amount generated (tonnes)",
+    )
+    stored_at_start_of_year = models.DecimalField(
+        max_digits=25,
+        decimal_places=10,
+        null=True,
+        blank=True,
+        help_text="Amount stored at the beginning of the year (tonnes)",
     )
     all_uses = models.DecimalField(
         max_digits=25,
         decimal_places=10,
         null=True,
         blank=True,
-        help_text="Amount generated and captured - For all uses",
+        help_text="Amount generated and captured (tonnes) - For uses excluding feedstocks",
     )
     feedstock_gc = models.DecimalField(
         max_digits=25,
         decimal_places=10,
         null=True,
         blank=True,
-        help_text="Amount generated and captured - For feedstock use in your country",
+        help_text="Amount generated and captured (tonnes) - For feedstock use in your country",
     )
     destruction = models.DecimalField(
         max_digits=25,
         decimal_places=10,
         null=True,
         blank=True,
-        help_text="Amount generated and captured - For destruction",
+        help_text="Amount generated and captured (tonnes) - For destruction",
     )
     feedstock_wpc = models.DecimalField(
         max_digits=25,
         decimal_places=10,
         null=True,
         blank=True,
-        help_text="Captured for feedstock uses within your country",
+        help_text="Amount used for feedstock without prior capture (tonnes)",
     )
     destruction_wpc = models.DecimalField(
         max_digits=25,
         decimal_places=10,
         null=True,
         blank=True,
-        help_text="Amount used for feedstock without prior capture",
+        help_text="Amount destroyed in the facility without prior capture (tonnes)",
     )
     generated_emissions = models.DecimalField(
         max_digits=25,
         decimal_places=10,
         null=True,
         blank=True,
-        help_text="Captured for destruction",
+        help_text="Amount of generated emissions (tonnes)",
+    )
+    stored_at_end_of_year = models.DecimalField(
+        max_digits=25,
+        decimal_places=10,
+        null=True,
+        blank=True,
+        help_text="Amount stored at the end of the year (tonnes)",
     )
 
     remarks = models.TextField(null=True, blank=True)

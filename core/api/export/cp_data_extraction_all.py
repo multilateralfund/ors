@@ -251,22 +251,42 @@ class HFC23GenerationWriter(BaseWriter):
             },
             {
                 "id": "all_uses",
-                "headerName": "Captured for all uses",
+                "headerName": "Total production for all uses",
                 "align": "right",
                 "type": "number",
             },
             {
                 "id": "feedstock",
-                "headerName": "Captured for feedstock uses within your country",
+                "headerName": "Production for feedstock uses within your country",
+                "align": "right",
+                "type": "number",
+                "column_width": self.COLUMN_WIDTH * 2,
+            },
+            # deprecated, removed in frontend
+            # {
+            #     "id": "destruction",
+            #     "headerName": "Captured for destruction",
+            #     "align": "right",
+            #     "type": "number",
+            # },
+            {
+                "id": "other_uses_quantity",
+                "headerName": (
+                    "Production for exempted essential, critical, "
+                    "high-ambient-temperature or other uses within your country "
+                    "- Quantity"
+                ),
                 "align": "right",
                 "type": "number",
                 "column_width": self.COLUMN_WIDTH * 2,
             },
             {
-                "id": "destruction",
-                "headerName": "Captured for destruction",
-                "align": "right",
-                "type": "number",
+                "id": "other_uses_remarks",
+                "headerName": (
+                    "Production for exempted essential, critical, "
+                    "high-ambient-temperature or other uses within your country "
+                    "- Decision / type of use or remarks"
+                ),
             },
             {
                 "id": "notes",
@@ -329,13 +349,20 @@ class HFC23EmissionWriter(BaseWriter):
             },
             {
                 "id": "total",
-                "headerName": "Total amount generated",
+                "headerName": "Total amount generated (tonnes)",
                 "align": "right",
                 "type": "number",
             },
             {
+                "id": "stored_at_start_of_year",
+                "headerName": "Amount stored at the beginning of the year (tonnes)",
+                "align": "right",
+                "type": "number",
+                "column_width": self.COLUMN_WIDTH * 2,
+            },
+            {
                 "id": "all_uses",
-                "headerName": "Amount generated and captured - For all uses",
+                "headerName": "Amount generated and captured (tonnes) - For uses excluding feedstocks",
                 "align": "right",
                 "type": "number",
                 "column_width": self.COLUMN_WIDTH * 2,
@@ -343,7 +370,7 @@ class HFC23EmissionWriter(BaseWriter):
             {
                 "id": "feedstock_gc",
                 "headerName": (
-                    "Amount generated and captured "
+                    "Amount generated and captured (tonnes) "
                     "- For feedstock use in your country"
                 ),
                 "align": "right",
@@ -352,30 +379,37 @@ class HFC23EmissionWriter(BaseWriter):
             },
             {
                 "id": "destruction",
-                "headerName": "Amount generated and captured - For destruction",
+                "headerName": "Amount generated and captured (tonnes) - For destruction",
                 "align": "right",
                 "type": "number",
                 "column_width": self.COLUMN_WIDTH * 2,
             },
             {
                 "id": "feedstock_wpc",
-                "headerName": "Amount used for feedstock without prior capture",
+                "headerName": "Amount used for feedstock without prior capture (tonnes)",
                 "align": "right",
                 "type": "number",
                 "column_width": self.COLUMN_WIDTH * 2,
             },
             {
                 "id": "destruction_wpc",
-                "headerName": "Amount destroyed without prior capture",
+                "headerName": "Amount destroyed in the facility without prior capture (tonnes)",
                 "align": "right",
                 "type": "number",
                 "column_width": self.COLUMN_WIDTH * 2,
             },
             {
                 "id": "generated_emissions",
-                "headerName": "Amount of generated emissions",
+                "headerName": "Amount of generated emissions (tonnes)",
                 "align": "right",
                 "type": "number",
+            },
+            {
+                "id": "stored_at_end_of_year",
+                "headerName": "Amount stored at the end of the year (tonnes)",
+                "align": "right",
+                "type": "number",
+                "column_width": self.COLUMN_WIDTH * 2,
             },
             {
                 "id": "remarks",
