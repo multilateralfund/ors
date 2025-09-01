@@ -109,7 +109,10 @@ from core.api.views.projects import (
     ProjectCommentViewSet,
     ProjectFileView,
 )
-from core.api.views.project_enterprise import ProjectEnterpriseViewSet
+from core.api.views.project_enterprise import (
+    ProjectEnterpriseStatusView,
+    ProjectEnterpriseViewSet,
+)
 from core.api.views.projects_v2 import (
     ProjectDestructionTechnologyView,
     ProjectProductionControlTypeView,
@@ -469,6 +472,11 @@ urlpatterns = [
         "project-destruction-technology/",
         ProjectDestructionTechnologyView.as_view(),
         name="project-destruction-technology",
+    ),
+    path(
+        "project-enterprise-status/",
+        ProjectEnterpriseStatusView.as_view(),
+        name="project-enterprise-status",
     ),
     path(
         "project-production-control-type/",
