@@ -9,6 +9,7 @@ from core.models.project import (
     MetaProject,
     Project,
 )
+from core.models.project_enterprise import ProjectEnterprise
 from core.models.project_metadata import (
     ProjectCluster,
     ProjectSector,
@@ -105,4 +106,33 @@ class ProjectFilter(filters.FilterSet):
             "cluster_id",
             "meeting_id",
             "date_received",
+        ]
+
+
+class ProjectEnterpriseFilter(filters.FilterSet):
+    """
+    Filter for project enterprises
+    """
+
+    project_id = filters.ModelMultipleChoiceFilter(
+        field_name="project",
+        queryset=Project.objects.all(),
+        widget=CSVWidget,
+    )
+    country_id = filters.ModelMultipleChoiceFilter(
+        field_name="project__country",
+        queryset=Country.objects.all(),
+        widget=CSVWidget,
+    )
+    status = filters.MultipleChoiceFilter(
+        choices=ProjectEnterprise.EnterpriseStatus.choices,
+        widget=CSVWidget,
+    )
+
+    class Meta:
+        model = ProjectEnterprise
+        fields = [
+            "project_id",
+            "country_id",
+            "status",
         ]
