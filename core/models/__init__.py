@@ -10,6 +10,7 @@ from .project import *
 from .project_complition_report import *
 from .project_history import *
 from .project_metadata import *
+from .project_enterprise import *
 from .replenishment import *
 from .substance import *
 from .time_frame import *
