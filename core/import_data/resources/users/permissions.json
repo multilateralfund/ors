@@ -180,6 +180,18 @@
         "model_name": "project"
     },
     {
+        "permission_codename": "has_project_enterprise_edit_access",
+        "permission_name": "Has project enterprise edit access",
+        "app_label": "core",
+        "model_name": "projectenterprise"
+    },
+    {
+        "permission_codename": "has_project_enterprise_approval_access",
+        "permission_name": "Has project enterprise approval access",
+        "app_label": "core",
+        "model_name": "projectenterprise"
+    },
+    {
         "permission_codename": "has_project_settings_access",
         "permission_name": "Has project settings view and edit access",
         "app_label": "core",

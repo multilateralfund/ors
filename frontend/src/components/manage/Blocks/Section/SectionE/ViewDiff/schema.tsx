@@ -29,8 +29,16 @@ function useGridOptions() {
         cellClass: 'bg-white ag-text-center px-0',
         dataType: 'number_diff',
         field: 'total',
-        headerName: 'Total amount generated',
+        headerName: 'Total amount generated (tonnes)',
         orsAggFunc: 'sumTotal',
+      },
+      {
+        dataType: 'number_diff',
+        cellClass: 'bg-white ag-text-center px-0',
+        field: 'stored_at_start_of_year',
+        headerName: 'Amount stored at the beginning of the year (tonnes)',
+        orsAggFunc: 'sumTotal',
+        ...sectionColDefById['stored_at_end_of_year'],
       },
       {
         children: [
@@ -39,7 +47,7 @@ function useGridOptions() {
             cellClass: 'bg-white ag-text-center px-0',
             dataType: 'number_diff',
             field: 'all_uses',
-            headerName: 'For all uses',
+            headerName: 'For uses excluding feedstocks',
             orsAggFunc: 'sumTotal',
           },
           {
@@ -61,7 +69,7 @@ function useGridOptions() {
         ],
         groupId: 'amount_generated_and_captured',
         headerGroupComponent: 'agColumnHeaderGroup',
-        headerName: 'Amount generated and captured',
+        headerName: 'Amount generated and captured (tonnes)',
         marryChildren: true,
         ...sectionColGroupDefById['amount_generated_and_captured'],
       },
@@ -70,7 +78,7 @@ function useGridOptions() {
         cellClass: 'bg-white ag-text-center px-0',
         dataType: 'number_diff',
         field: 'feedstock_wpc',
-        headerName: 'Amount used for feedstock without prior capture',
+        headerName: 'Amount used for feedstock without prior capture (tonnes)',
         orsAggFunc: 'sumTotal',
       },
       {
@@ -78,7 +86,8 @@ function useGridOptions() {
         cellClass: 'bg-white ag-text-center px-0',
         dataType: 'number_diff',
         field: 'destruction_wpc',
-        headerName: 'Amount destroyed without prior capture',
+        headerName:
+          'Amount destroyed in the facility without prior capture (tonnes)',
         orsAggFunc: 'sumTotal',
       },
       {
@@ -86,8 +95,16 @@ function useGridOptions() {
         cellClass: 'bg-white ag-text-center px-0',
         dataType: 'number_diff',
         field: 'generated_emissions',
-        headerName: 'Amount of generated emissions',
+        headerName: 'Amount of generated emissions (tonnes)',
         orsAggFunc: 'sumTotal',
+      },
+      {
+        dataType: 'number_diff',
+        cellClass: 'bg-white ag-text-center px-0',
+        field: 'stored_at_end_of_year',
+        headerName: 'Amount stored at the end of the year (tonnes)',
+        orsAggFunc: 'sumTotal',
+        ...sectionColDefById['stored_at_end_of_year'],
       },
       {
         ...sectionColDefById['remarks'],

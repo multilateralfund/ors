@@ -89,7 +89,9 @@ type ApiBase = {
   section_d: {
     all_uses: null | string
     chemical_name: string
-    destruction: string
+    destruction: string // deprecated, removed in frontend
+    other_uses_quantity: string
+    other_uses_remarks: string
     display_name: string
     feedstock: string
     id: number
@@ -97,12 +99,14 @@ type ApiBase = {
   }[]
   section_e: {
     all_uses: null | string
+    stored_at_start_of_year: null | string
     destruction: string
     destruction_wpc: string
     facility: string
     feedstock_gc: string
     feedstock_wpc: string
     generated_emissions: string
+    stored_at_end_of_year: null | string
     id: number
     remarks: null | string
     row_id: string
@@ -196,13 +200,16 @@ type ApiBaseDiff = {
     all_uses: null | string
     change_type: string
     chemical_name: string
-    destruction: string
+    destruction: string // deprecated, removed in frontend
+    other_uses_quantity: string
+    other_uses_remarks: string
     display_name: string
     id: number
     row_id: string
   }[]
   section_e: {
     all_uses: null | string
+    stored_at_start_of_year: null | string
     change_type: string
     destruction: string
     destruction_wpc: string
@@ -210,6 +217,7 @@ type ApiBaseDiff = {
     feedstock_gc: string
     feedstock_wpc: string
     generated_emissions: string
+    stored_at_end_of_year: null | string
     id: number
     remarks: null | string
     remarks_old: null | string
