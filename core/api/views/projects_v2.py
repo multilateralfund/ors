@@ -56,7 +56,10 @@ from core.models.project_metadata import (
     ProjectSubmissionStatus,
     ProjectSpecificFields,
 )
-from core.tasks import send_project_submission_notification
+from core.tasks import (
+    send_project_recomended_notification,
+    send_project_submission_notification,
+)
 from core.api.views.utils import log_project_history
 
 from core.api.views.projects_export import ProjectsV2Export
@@ -492,6 +495,9 @@ class ProjectV2ViewSet(
         project.save()
         project.increase_version(request.user)
         log_project_history(project, request.user, HISTORY_DESCRIPTION_RECOMMEND_V2)
+        # Send email notification to the secretariat team and the creator of the project
+        if config.PROJECT_RECOMMENDATION_NOTIFICATIONS_ENABLED:
+            send_project_recomended_notification.delay(project.id)
         return Response(
             ProjectDetailsV2Serializer(project).data,
             status=status.HTTP_200_OK,

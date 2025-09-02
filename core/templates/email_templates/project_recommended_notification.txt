@@ -1,0 +1,15 @@
+{% load settings_value %}
+
+Dear user,
+
+The following project has been recommended and is now pending approval:
+
+
+Project title: {{ project.title }}
+Country: {{ project.country }}
+Cluster: {{ project.cluster }}
+Project type: {{ project.project_type }}
+Sector: {{ project.sector }}
+Lead agency: {{ project.meta_project.lead_agency }}
+Agency: {{ project.agency }}
+Link: {% frontend_host %}/projects-listing/{{ project.id }}/

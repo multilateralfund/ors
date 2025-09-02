@@ -3,6 +3,7 @@ from rest_framework import serializers
 from core.models.project_enterprise import ProjectEnterprise, ProjectEnterpriseOdsOdp
 from core.utils import get_enterprise_code
 
+
 class ProjectEnterpriseOdsOdpSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     enterprise = serializers.PrimaryKeyRelatedField(
