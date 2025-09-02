@@ -10,7 +10,10 @@ from core.models.project_enterprise import ProjectEnterprise, ProjectEnterpriseO
 
 @admin.register(ProjectEnterprise)
 class ProjectEnterpriseAdmin(admin.ModelAdmin):
-    list_filter = []
+    list_filter = [
+        AutocompleteFilterFactory("project", "project"),
+        "status",
+    ]
     search_fields = [
         "project__title",
     ]

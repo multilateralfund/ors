@@ -308,6 +308,7 @@ class MeetingAdmin(admin.ModelAdmin):
             "decision",
             "projectfund",
             "projects",
+            "projects_approved",
             "transferred_projects",
             "projectcomment",
             "annualcontributionstatus",

@@ -138,6 +138,9 @@
 | projects/v2/{id}/approve/                     |  POST   | has_project_v2_approve_projects_access   |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
 | project-enterprise/                           |  GET    | has_project_v2_view_access               |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
 | project-enterprise/{id}/                      |  GET   | has_project_v2_view_access                |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
+| project-enterprise/{id}/                      |  PUT   | has_project_enterprise_edit_access        |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
+| project-enterprise/{id}/                      |  PATCH | has_project_enterprise_edit_access        |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
+| project-enterprise/{id}/approve               |  POST  | has_project_enterprise_approval_access    |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
 | project-enterprise/                           |  POST  | has_project_enterprise_edit_access        |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
 | project-settings/                             |  GET    | has_project_settings_access              | |
 | project-settings/                             |  POST   | has_project_settings_access              | |
