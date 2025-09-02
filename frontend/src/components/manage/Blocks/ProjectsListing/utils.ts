@@ -639,10 +639,9 @@ export const getMenus = (
         { title: 'Update post ExCom fields', url: null },
         {
           title: 'Update enterprises',
-          url: null,
-          // url: `/projects-listing/enterprises${projectId ? `/${projectId}` : ''}`,
-          // disabled:
-          //   !!projectSubmissionStatus && projectSubmissionStatus !== 'Approved',
+          url: `/projects-listing/enterprises${projectId ? `/${projectId}` : ''}`,
+          disabled:
+            !!projectSubmissionStatus && projectSubmissionStatus !== 'Approved',
         },
         { title: 'Transfer a project', url: null },
       ],
@@ -761,3 +760,22 @@ export const filterClusterOptions = (
   clusters: Cluster[],
   canViewProdProjects: boolean,
 ) => filter(clusters, (cluster) => canViewProdProjects || !cluster.production)
+
+export const getPaginationSelectorOpts = (count: number) => {
+  const nrResultsOpts = [100, 250, 500, 1000]
+  const filteredNrResultsOptions = nrResultsOpts.filter(
+    (option) => option < count,
+  )
+
+  return [...filteredNrResultsOptions, count]
+}
+
+export const getAreFiltersApplied = (filters: Record<string, any>) =>
+  Object.values(filters).find(
+    (filter) => Array.isArray(filter) && filter.length > 0,
+  )
+
+export const formatEntity = (currentEntity: any = [], field: string = 'id') =>
+  new Map<number, any>(
+    currentEntity.map((entity: any) => [entity[field], entity]),
+  )

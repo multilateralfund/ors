@@ -3,7 +3,6 @@ from rest_framework import serializers
 from core.models.project_enterprise import ProjectEnterprise, ProjectEnterpriseOdsOdp
 from core.utils import get_enterprise_code
 
-
 class ProjectEnterpriseOdsOdpSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     enterprise = serializers.PrimaryKeyRelatedField(
@@ -59,6 +58,7 @@ class ProjectEnterpriseOdsOdpSerializer(serializers.ModelSerializer):
 
 
 class ProjectEnterpriseSerializer(serializers.ModelSerializer):
+
     code = serializers.CharField(read_only=True)
     ods_odp = ProjectEnterpriseOdsOdpSerializer(many=True, required=False)
 
@@ -123,7 +123,6 @@ class ProjectEnterpriseSerializer(serializers.ModelSerializer):
         ProjectEnterpriseOdsOdp.objects.filter(enterprise=instance).exclude(
             id__in=remaining_ids
         ).delete()
-
         instance.code = get_enterprise_code(instance.project.country)
         instance.save()
         return instance

@@ -1,18 +1,45 @@
 'use client'
 
+import { useMemo, useRef, useState } from 'react'
+
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
-import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import Loading from '@ors/components/theme/Loading/Loading'
+import { PageHeading } from '@ors/components/ui/Heading/Heading'
+import PEnterprisesFiltersWrapper from './PEnterprisesFiltersWrapper'
+import PEnterprisesTable from './PEnterprisesTable'
 import { PageTitle, RedirectBackButton } from '../HelperComponents'
+import { useGetEnterpriseStatuses } from '../hooks/useGetEnterpriseStatuses'
+import { useGetEnterprises } from '../hooks/useGetEnterprises'
 import { useGetProject } from '../hooks/useGetProject'
 
 import { Redirect, useParams } from 'wouter'
+import { map } from 'lodash'
 
 export default function PEnterprisesWrapper() {
   const { project_id } = useParams<Record<string, string>>()
 
+  const form = useRef<any>()
+
   const project = project_id ? useGetProject(project_id) : undefined
-  const { data, error, loading } = project ?? {}
+  const { data, error, loading: loadingProject } = project ?? {}
+
+  const initialFilters = {
+    offset: 0,
+    limit: 100,
+    project_id: project_id ?? null,
+  }
+  const [filters, setFilters] = useState(initialFilters)
+  const key = useMemo(() => JSON.stringify(filters), [filters])
+
+  const enterprises = useGetEnterprises(initialFilters)
+  const { loading, setParams } = enterprises
+
+  const statuses = useGetEnterpriseStatuses()
+  const enterpriseStatuses = map(statuses, (status) => ({
+    id: status[0],
+    label: status[1],
+    name: status[1],
+  }))
 
   if (project && (error || (data && data.submission_status !== 'Approved'))) {
     return <Redirect to="/projects-listing/listing" />
@@ -22,7 +49,7 @@ export default function PEnterprisesWrapper() {
     <>
       <Loading
         className="!fixed bg-action-disabledBackground"
-        active={!!project_id && loading}
+        active={loading || (!!project_id && loadingProject)}
       />
       <HeaderTitle>
         <div className="flex flex-wrap justify-between gap-3">
@@ -45,6 +72,20 @@ export default function PEnterprisesWrapper() {
           </div>
         </div>
       </HeaderTitle>
+      <form className="flex flex-col gap-6" ref={form} key={key}>
+        <div className="flex flex-wrap justify-between gap-x-10 gap-y-4">
+          <PEnterprisesFiltersWrapper
+            {...{
+              enterpriseStatuses,
+              filters,
+              initialFilters,
+              setFilters,
+              setParams,
+            }}
+          />
+        </div>
+        <PEnterprisesTable {...{ enterprises, filters }} />
+      </form>
     </>
   )
 }

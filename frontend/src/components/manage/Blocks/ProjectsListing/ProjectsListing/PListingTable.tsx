@@ -1,11 +1,12 @@
 'use client'
 
 import type { useGetProjects } from '@ors/components/manage/Blocks/ProjectsListing/hooks/useGetProjects.ts'
-import type { useGetProjectsAssociation } from '../hooks/useGetProjectsAssociation'
 import ViewTable from '@ors/components/manage/Form/ViewTable'
-import getColumnDefs from './schema'
+import type { useGetProjectsAssociation } from '../hooks/useGetProjectsAssociation'
+import { getPaginationSelectorOpts } from '../utils'
 import { ListingProjectData } from '../interfaces'
 import { PROJECTS_PER_PAGE } from '../constants'
+import getColumnDefs from './schema'
 
 import cx from 'classnames'
 
@@ -40,15 +41,7 @@ const PListingTable = ({
     setAssociationIds,
   )
 
-  const getPaginationSelectorOpts = (): number[] => {
-    const nrResultsOpts = [100, 250, 500, 1000]
-    const filteredNrResultsOptions = nrResultsOpts.filter(
-      (option) => option < count,
-    )
-    return [...filteredNrResultsOptions, count]
-  }
-
-  const paginationPageSizeSelectorOpts = getPaginationSelectorOpts()
+  const paginationPageSizeSelectorOpts = getPaginationSelectorOpts(count)
 
   return (
     loaded && (

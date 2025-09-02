@@ -296,3 +296,5 @@ export type AssociatedProjectsType = {
   projects: RelatedProjectsType[] | null
   loaded: boolean
 }
+
+export interface EnterpriseType {}

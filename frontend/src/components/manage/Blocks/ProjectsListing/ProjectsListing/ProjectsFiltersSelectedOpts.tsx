@@ -2,10 +2,12 @@ import { useContext } from 'react'
 
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
+import { displaySelectedOption } from '../HelperComponents'
+import { formatEntity, getAreFiltersApplied } from '../utils'
 
 import { Typography } from '@mui/material'
 import { IoClose } from 'react-icons/io5'
-import { filter } from 'lodash'
+import { map } from 'lodash'
 
 export const initialParams = {
   country_id: [],
@@ -37,14 +39,51 @@ const ProjectsFiltersSelectedOpts = ({
   const { agencies, countries } = commonSlice
   const { submission_statuses, statuses } = projectSlice
 
-  const areFiltersApplied = Object.values(filters).find(
-    (filter) => Array.isArray(filter) && filter.length > 0,
-  )
+  const areFiltersApplied = getAreFiltersApplied(filters)
 
-  const formatEntity = (currentEntity: any = [], field: string = 'id') =>
-    new Map<number, any>(
-      currentEntity.map((entity: any) => [entity[field], entity]),
-    )
+  const filterSelectedOpts = [
+    {
+      entities: formatEntity(countries.data),
+      entityIdentifier: 'country_id',
+      hasPermissions: mode === 'listing',
+    },
+    {
+      entities: formatEntity(agencies.data),
+      entityIdentifier: 'agency_id',
+      hasPermissions: true,
+    },
+    {
+      entities: formatEntity(clusters),
+      entityIdentifier: 'cluster_id',
+      hasPermissions: canViewMetainfoProjects,
+    },
+    {
+      entities: formatEntity(project_types),
+      entityIdentifier: 'project_type_id',
+      hasPermissions: canViewMetainfoProjects,
+    },
+    {
+      entities: formatEntity(sectors),
+      entityIdentifier: 'sector_id',
+      hasPermissions: canViewSectorsSubsectors,
+    },
+    {
+      entities: formatEntity(meetings, 'value'),
+      entityIdentifier: 'meeting_id',
+      hasPermissions: true,
+      field: 'value',
+    },
+    {
+      entities: formatEntity(submission_statuses.data),
+      entityIdentifier: 'submission_status_id',
+      hasPermissions: canViewMetainfoProjects,
+    },
+    {
+      entities: formatEntity(statuses.data),
+      entityIdentifier: 'status_id',
+      hasPermissions: canViewMetainfoProjects,
+    },
+  ]
 
   const displaySearchTerm = () =>
     !!filters.search && (
@@ -67,73 +106,23 @@ const ProjectsFiltersSelectedOpts = ({
       </Typography>
     )
 
-  const displaySelectedOption = (
-    entities: any,
-    entityIdentifier: string,
-    field: string = 'id',
-  ) =>
-    filters?.[entityIdentifier]?.map((entity: any) => {
-      const entityId = entity[field]
-
-      return (
-        <Typography
-          key={entityId}
-          className="inline-flex items-center gap-2 rounded-lg bg-gray-200 px-2 py-1 text-lg font-normal text-black theme-dark:bg-gray-700/20"
-          component="p"
-          variant="h6"
-        >
-          {entities?.get(entityId)?.name || entities?.get(entityId)?.label}
-          <IoClose
-            className="cursor-pointer"
-            size={18}
-            color="#666"
-            onClick={() => {
-              const values = filters[entityIdentifier] || []
-              const newValue = filter(
-                values,
-                (value) => value[field] !== entityId,
-              )
-
-              handleFilterChange({
-                [entityIdentifier]: newValue,
-              })
-              handleParamsChange({
-                [entityIdentifier]: newValue
-                  .map((item: any) => item[field])
-                  .join(','),
-                offset: 0,
-              })
-            }}
-          />
-        </Typography>
-      )
-    })
-
   return (
     (areFiltersApplied || filters?.search) && (
       <div className="mt-[6px] flex flex-wrap gap-2">
         {displaySearchTerm()}
-        {mode === 'listing' &&
-          displaySelectedOption(formatEntity(countries.data), 'country_id')}
-        {displaySelectedOption(formatEntity(agencies.data), 'agency_id')}
-        {canViewMetainfoProjects &&
-          displaySelectedOption(formatEntity(clusters), 'cluster_id')}
-        {canViewMetainfoProjects &&
-          displaySelectedOption(formatEntity(project_types), 'project_type_id')}
-        {canViewSectorsSubsectors &&
-          displaySelectedOption(formatEntity(sectors), 'sector_id')}
-        {displaySelectedOption(
-          formatEntity(meetings, 'value'),
-          'meeting_id',
-          'value',
+        {map(
+          filterSelectedOpts,
+          (selectedOpt) =>
+            selectedOpt.hasPermissions &&
+            displaySelectedOption(
+              filters,
+              selectedOpt.entities,
+              selectedOpt.entityIdentifier,
+              handleFilterChange,
+              handleParamsChange,
+              selectedOpt.field,
+            ),
         )}
-        {canViewMetainfoProjects &&
-          displaySelectedOption(
-            formatEntity(submission_statuses.data),
-            'submission_status_id',
-          )}
-        {canViewMetainfoProjects &&
-          displaySelectedOption(formatEntity(statuses.data), 'status_id')}
 
         <Typography
           className="cursor-pointer content-center text-lg font-medium"
