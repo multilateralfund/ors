@@ -3,7 +3,6 @@
 import PEnterprisesFilters from './PEnteprisesFilters'
 import PEnterprisesFiltersSelectedOpts from './PEnterprisesFiltersSelectedOpts'
 
-import { getMeetingOptions } from '@ors/components/manage/Utils/utilFunctions'
 import { useStore } from '@ors/store'
 
 const PEnterprisesFiltersWrapper = ({
@@ -11,11 +10,7 @@ const PEnterprisesFiltersWrapper = ({
   setParams,
   ...rest
 }: any) => {
-  const [commonSlice, projectSlice] = useStore((state) => [
-    state.common,
-    state.projects,
-  ])
-  const meetings = getMeetingOptions()
+  const commonSlice = useStore((state) => state.common)
 
   const handleParamsChange = (params: { [key: string]: any }) => {
     setParams(params)
@@ -27,8 +22,6 @@ const PEnterprisesFiltersWrapper = ({
 
   const props = {
     commonSlice,
-    projectSlice,
-    meetings,
     handleFilterChange,
     handleParamsChange,
     ...rest,

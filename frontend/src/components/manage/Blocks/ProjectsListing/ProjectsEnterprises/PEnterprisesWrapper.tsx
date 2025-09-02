@@ -6,11 +6,14 @@ import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import PEnterprisesFiltersWrapper from './PEnterprisesFiltersWrapper'
+import PEnterprisesTable from './PEnterprisesTable'
 import { PageTitle, RedirectBackButton } from '../HelperComponents'
+import { useGetEnterpriseStatuses } from '../hooks/useGetEnterpriseStatuses'
 import { useGetEnterprises } from '../hooks/useGetEnterprises'
 import { useGetProject } from '../hooks/useGetProject'
 
 import { Redirect, useParams } from 'wouter'
+import { map } from 'lodash'
 
 export default function PEnterprisesWrapper() {
   const { project_id } = useParams<Record<string, string>>()
@@ -30,6 +33,13 @@ export default function PEnterprisesWrapper() {
 
   const enterprises = useGetEnterprises(initialFilters)
   const { loading, setParams } = enterprises
+
+  const statuses = useGetEnterpriseStatuses()
+  const enterpriseStatuses = map(statuses, (status) => ({
+    id: status[0],
+    label: status[1],
+    name: status[1],
+  }))
 
   if (project && (error || (data && data.submission_status !== 'Approved'))) {
     return <Redirect to="/projects-listing/listing" />
@@ -65,10 +75,16 @@ export default function PEnterprisesWrapper() {
       <form className="flex flex-col gap-6" ref={form} key={key}>
         <div className="flex flex-wrap justify-between gap-x-10 gap-y-4">
           <PEnterprisesFiltersWrapper
-            {...{ form, filters, initialFilters, setFilters, setParams }}
+            {...{
+              enterpriseStatuses,
+              filters,
+              initialFilters,
+              setFilters,
+              setParams,
+            }}
           />
         </div>
-        {/* <PListingTable mode="listing" {...{ projects, filters }} {...rest} /> */}
+        <PEnterprisesTable {...{ enterprises, filters }} />
       </form>
     </>
   )
