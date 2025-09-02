@@ -11,12 +11,13 @@ import {
   IoAlertCircle,
   IoChevronDown,
   IoChevronUp,
+  IoClose,
   IoReturnUpBack,
 } from 'react-icons/io5'
-import { Button, CircularProgress, Divider } from '@mui/material'
+import { Button, CircularProgress, Divider, Typography } from '@mui/material'
 import { FaExternalLinkAlt } from 'react-icons/fa'
+import { filter, lowerCase, map } from 'lodash'
 import { SlReload } from 'react-icons/sl'
-import { lowerCase, map } from 'lodash'
 import cx from 'classnames'
 
 type ButtonProps = {
@@ -308,3 +309,48 @@ export const DisabledAlert = (
     color="#EBFF00"
   />
 )
+
+export const displaySelectedOption = (
+  filters: Record<string, any>,
+  entities: any,
+  entityIdentifier: string,
+  handleFilterChange: any,
+  handleParamsChange: any,
+  field: string = 'id',
+) =>
+  filters?.[entityIdentifier]?.map((entity: any) => {
+    const entityId = entity[field]
+
+    return (
+      <Typography
+        key={entityId}
+        className="inline-flex items-center gap-2 rounded-lg bg-gray-200 px-2 py-1 text-lg font-normal text-black theme-dark:bg-gray-700/20"
+        component="p"
+        variant="h6"
+      >
+        {entities?.get(entityId)?.name || entities?.get(entityId)?.label}
+        <IoClose
+          className="cursor-pointer"
+          size={18}
+          color="#666"
+          onClick={() => {
+            const values = filters[entityIdentifier] || []
+            const newValue = filter(
+              values,
+              (value) => value[field] !== entityId,
+            )
+
+            handleFilterChange({
+              [entityIdentifier]: newValue,
+            })
+            handleParamsChange({
+              [entityIdentifier]: newValue
+                .map((item: any) => item[field])
+                .join(','),
+              offset: 0,
+            })
+          }}
+        />
+      </Typography>
+    )
+  })

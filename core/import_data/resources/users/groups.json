@@ -70,7 +70,9 @@
             "has_project_v2_version3_edit_access",
             "has_project_v2_approve_projects_access",
             "has_project_v2_associate_projects_access",
-            "has_sectors_and_subsectors_view_access"
+            "has_sectors_and_subsectors_view_access",
+            "has_project_enterprise_approval_access",
+            "has_project_enterprise_edit_access"
         ]
 
     },
@@ -100,7 +102,9 @@
             "has_project_v2_version3_edit_access",
             "has_project_v2_approve_projects_access",
             "has_project_v2_associate_projects_access",
-            "has_sectors_and_subsectors_view_access"
+            "has_sectors_and_subsectors_view_access",
+            "has_project_enterprise_approval_access",
+            "has_project_enterprise_edit_access"
         ]
     },
     {
@@ -221,6 +225,8 @@
             "has_project_v2_approve_projects_access",
             "has_project_v2_associate_projects_access",
             "has_project_v2_recommend_projects_access",
+            "has_project_enterprise_approval_access",
+            "has_project_enterprise_edit_access",
             "has_project_settings_access"
         ]
     }

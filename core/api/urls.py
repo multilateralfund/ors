@@ -109,6 +109,10 @@ from core.api.views.projects import (
     ProjectCommentViewSet,
     ProjectFileView,
 )
+from core.api.views.project_enterprise import (
+    ProjectEnterpriseStatusView,
+    ProjectEnterpriseViewSet,
+)
 from core.api.views.projects_v2 import (
     ProjectDestructionTechnologyView,
     ProjectProductionControlTypeView,
@@ -131,6 +135,9 @@ router.register("projects/v2", ProjectV2ViewSet, basename="project-v2")
 router.register("projects", ProjectViewSet, basename="project")
 router.register(
     "project-association", ProjectAssociationViewSet, basename="project-association"
+)
+router.register(
+    "project-enterprise", ProjectEnterpriseViewSet, basename="project-enterprise"
 )
 router.register("project-fund", ProjectFundViewSet)
 router.register("project-ods-odp", ProjectOdsOdpViewSet)
@@ -465,6 +472,11 @@ urlpatterns = [
         "project-destruction-technology/",
         ProjectDestructionTechnologyView.as_view(),
         name="project-destruction-technology",
+    ),
+    path(
+        "project-enterprise-status/",
+        ProjectEnterpriseStatusView.as_view(),
+        name="project-enterprise-status",
     ),
     path(
         "project-production-control-type/",

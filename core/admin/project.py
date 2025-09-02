@@ -119,6 +119,7 @@ class ProjectAdmin(admin.ModelAdmin):
             "progress_reports",
             "projectsubmission",
             "ods_odp",
+            "enterprises",
             "funds",
             "submission",
             "files",

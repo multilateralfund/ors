@@ -358,10 +358,7 @@ const ProjectsEdit = ({
                 replace(warning.field, /_?actual_?/g, ''),
             )
 
-            return (
-              !crtField ||
-              (crtField.section !== 'MYA' && crtField.data_type !== 'boolean')
-            )
+            return crtField && crtField.data_type !== 'boolean'
           })
 
           return {
