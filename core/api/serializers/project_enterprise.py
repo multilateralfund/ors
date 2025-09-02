@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from core.models.project_enterprise import ProjectEnterprise, ProjectEnterpriseOdsOdp
-
+from core.utils import get_enterprise_code
 
 class ProjectEnterpriseOdsOdpSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
@@ -21,9 +21,45 @@ class ProjectEnterpriseOdsOdpSerializer(serializers.ModelSerializer):
             "ods_replacement_phase_in",
         ]
 
+    def validate(self, attrs):
+        if attrs.get("ods_substance") and attrs.get("ods_blend"):
+            raise serializers.ValidationError(
+                "Only one of ods_substance or ods_blend is required"
+            )
+        # validate partial updates
+        instance = self.instance
+        if not instance and attrs.get("id"):
+            try:
+                instance = ProjectEnterpriseOdsOdp.objects.get(id=attrs["id"])
+            except ProjectEnterpriseOdsOdp.DoesNotExist:
+                instance = None
+
+        if instance:
+            # set ods_substance while ods_blend is set
+            if (
+                attrs.get("ods_substance") is not None
+                and instance.ods_blend
+                and not ("ods_blend" in attrs and attrs["ods_blend"] is None)
+            ):
+                raise serializers.ValidationError(
+                    "Cannot update ods_substance when ods_blend is set"
+                )
+            # set ods_blend while ods_substance is set
+            if (
+                attrs.get("ods_blend") is not None
+                and instance.ods_substance
+                and not ("ods_substance" in attrs and attrs["ods_substance"] is None)
+            ):
+                raise serializers.ValidationError(
+                    "Cannot update ods_blend when ods_substance is set"
+                )
+
+        return super().validate(attrs)
+
 
 class ProjectEnterpriseSerializer(serializers.ModelSerializer):
 
+    code = serializers.CharField(read_only=True)
     ods_odp = ProjectEnterpriseOdsOdpSerializer(many=True, required=False)
 
     class Meta:
@@ -55,6 +91,10 @@ class ProjectEnterpriseSerializer(serializers.ModelSerializer):
             ProjectEnterpriseOdsOdp.objects.create(
                 enterprise=project_enterprise, **ods_odp
             )
+        project_enterprise.code = get_enterprise_code(
+            project_enterprise.project.country
+        )
+        project_enterprise.save()
         return project_enterprise
 
     def update(self, instance, validated_data):
@@ -83,4 +123,6 @@ class ProjectEnterpriseSerializer(serializers.ModelSerializer):
         ProjectEnterpriseOdsOdp.objects.filter(enterprise=instance).exclude(
             id__in=remaining_ids
         ).delete()
+        instance.code = get_enterprise_code(instance.project.country)
+        instance.save()
         return instance

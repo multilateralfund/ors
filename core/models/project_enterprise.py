@@ -7,6 +7,13 @@ from core.models.substance import Substance
 # pylint: disable=C0302
 
 
+class ProjectEnterpriseManager(models.Manager):
+    def get_next_serial_number(self, country_id):
+        return (
+            self.select_for_update().filter(project__country_id=country_id).count() + 1
+        )
+
+
 class ProjectEnterprise(models.Model):
 
     class EnterpriseStatus(models.TextChoices):
@@ -93,6 +100,8 @@ class ProjectEnterprise(models.Model):
         Cost-effectiveness as approved (US $/kg)
         """
         return None
+
+    objects = ProjectEnterpriseManager()
 
     def __str__(self):
         return f"Enterprise: {self.enterprise} (Project:{self.project})"

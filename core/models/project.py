@@ -774,6 +774,7 @@ class Project(models.Model):
         ordering = ["-date_actual", "country__name", "serial_number"]
 
     def increase_version(self, user):
+
         def _get_new_file_path(original_file_name, new_project_id):
             # Generate a new file path for the duplicated file
             base_dir, file_name = os.path.split(original_file_name)

@@ -46,6 +46,7 @@ class SubstanceAdmin(admin.ModelAdmin):
             "excluded_usages",
             "admrecord",
             "project_ods",
+            "projectenterprise_ods",
             "bpactivity",
             "cprecordarchive",
             "cppricesarchive",
