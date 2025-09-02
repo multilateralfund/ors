@@ -54,7 +54,50 @@ def send_project_submission_notification(project_ids):
         subject,
         body,
         None,
-        recipients,
+        bcc=recipients,
+    )
+
+    html_email = loader.render_to_string(html_email_template_name, context)
+    email_message.attach_alternative(html_email, "text/html")
+    email_message.send()
+
+
+@app.task()
+def send_project_recomended_notification(project_id):
+    project = Project.objects.filter(id=project_id).first()
+
+    recipients = config.PROJECT_RECOMMENDATION_NOTIFICATIONS_EMAILS
+    if isinstance(recipients, str):
+        recipients = recipients.split(",")
+    if not recipients:
+        return
+
+    if project.version_created_by and getattr(
+        project.version_created_by, "email", None
+    ):
+        recipients.append(project.version_created_by.email)
+        recipients = list(set(recipients))
+
+    context = {
+        "project": project,
+    }
+    subject_template_name = (
+        "email_templates/project_recommended_notification_subject.txt",
+    )
+    email_template_name = ("email_templates/project_recommended_notification.txt",)
+    html_email_template_name = (
+        "email_templates/project_recommended_notification.html",
+    )
+    subject = loader.render_to_string(subject_template_name, context)
+    # Email subject *must not* contain newlines
+    subject = "".join(subject.splitlines())
+    body = loader.render_to_string(email_template_name, context)
+
+    email_message = EmailMultiAlternatives(
+        subject,
+        body,
+        None,
+        bcc=recipients,
     )
 
     html_email = loader.render_to_string(html_email_template_name, context)
