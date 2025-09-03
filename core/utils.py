@@ -54,6 +54,22 @@ def get_meta_project_new_code(projects):
     return f"{code_prefix}/{serial_number}"
 
 
+def regenerate_meta_project_new_code(meta_project):
+    """
+    Regenerate the new_code for a MetaProject based on its projects
+
+    @param meta_project: MetaProject instance
+
+    @return: str
+    """
+    projects = Project.objects.filter(
+        meta_project=meta_project, submission_status__name="Approved"
+    )
+    new_code = get_meta_project_new_code(projects)
+    meta_project.new_code = new_code
+    meta_project.save()
+
+
 def get_project_sub_code(
     country,
     cluster,
