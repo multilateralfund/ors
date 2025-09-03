@@ -146,8 +146,7 @@ class ProjectEnterpriseOdsOdp(models.Model):
         Replacement technology
         """,
     )
-    ods_replacement_phase_in = models.CharField(
-        max_length=256,
+    ods_replacement_phase_in = models.FloatField(
         null=True,
         blank=True,
         help_text="""

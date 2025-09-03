@@ -525,7 +525,7 @@ class ProjectEnterpriseOdsOdpFactory(factory.django.DjangoModelFactory):
     enterprise = factory.SubFactory(ProjectEnterpriseFactory)
     phase_out_mt = factory.Faker("random_int", min=1, max=100)
     ods_replacement = factory.Faker("pystr", max_chars=100)
-    ods_replacement_phase_in = factory.Faker("pystr", max_chars=100)
+    ods_replacement_phase_in = factory.Faker("random_int", min=1, max_chars=100)
 
 
 class SubmissionAmountFactory(factory.django.DjangoModelFactory):

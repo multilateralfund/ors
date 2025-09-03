@@ -210,13 +210,13 @@ class TestCreateProjectEnterprise:
                     "ods_substance": substance.id,
                     "phase_out_mt": 10.0,
                     "ods_replacement": "Alternative Tech 1",
-                    "ods_replacement_phase_in": "Replacement Tech 1",
+                    "ods_replacement_phase_in": 50.0,
                 },
                 {
                     "ods_blend": blend.id,
                     "phase_out_mt": 20.0,
                     "ods_replacement": "Alternative Tech 2",
-                    "ods_replacement_phase_in": "Replacement Tech 2",
+                    "ods_replacement_phase_in": 70.0,
                 },
             ],
         }
@@ -287,11 +287,11 @@ class TestCreateProjectEnterprise:
         ods_odp_1 = enterprise.ods_odp.get(ods_substance=substance)
         assert ods_odp_1.phase_out_mt == 10.0
         assert ods_odp_1.ods_replacement == "Alternative Tech 1"
-        assert ods_odp_1.ods_replacement_phase_in == "Replacement Tech 1"
+        assert ods_odp_1.ods_replacement_phase_in == 50.0
         ods_odp_2 = enterprise.ods_odp.get(ods_blend=blend)
         assert ods_odp_2.phase_out_mt == 20.0
         assert ods_odp_2.ods_replacement == "Alternative Tech 2"
-        assert ods_odp_2.ods_replacement_phase_in == "Replacement Tech 2"
+        assert ods_odp_2.ods_replacement_phase_in == 70.0
 
 
 class TestUpdateProjectEnterprise:
@@ -318,13 +318,13 @@ class TestUpdateProjectEnterprise:
                     "ods_substance": substance.id,
                     "phase_out_mt": 15.0,
                     "ods_replacement": "Updated Alternative Tech 1",
-                    "ods_replacement_phase_in": "Updated Replacement Tech 1",
+                    "ods_replacement_phase_in": 50.0,
                 },
                 {
                     "ods_blend": blend.id,
                     "phase_out_mt": 25.0,
                     "ods_replacement": "New Alternative Tech 2",
-                    "ods_replacement_phase_in": "New Replacement Tech 2",
+                    "ods_replacement_phase_in": 70.0,
                 },
             ],
         }
@@ -402,11 +402,11 @@ class TestUpdateProjectEnterprise:
         ods_odp_1 = enterprise1.ods_odp.get(ods_substance=substance)
         assert ods_odp_1.phase_out_mt == 15.0
         assert ods_odp_1.ods_replacement == "Updated Alternative Tech 1"
-        assert ods_odp_1.ods_replacement_phase_in == "Updated Replacement Tech 1"
+        assert ods_odp_1.ods_replacement_phase_in == 50.0
         ods_odp_2 = enterprise1.ods_odp.get(ods_blend=blend)
         assert ods_odp_2.phase_out_mt == 25.0
         assert ods_odp_2.ods_replacement == "New Alternative Tech 2"
-        assert ods_odp_2.ods_replacement_phase_in == "New Replacement Tech 2"
+        assert ods_odp_2.ods_replacement_phase_in == 70.0
 
 
 class TestProjectEnterpriseApproval:
