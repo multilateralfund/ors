@@ -820,6 +820,8 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
     def get_meta_project(self, project, lead_agency):
         """
         Get the meta project for the project.
+        If no meta project exists, create a new one.
+        If multiple meta projects exist, return the first one and a warning.
         """
         status_codes = ProjectStatus.objects.exclude(code="CLO").values_list(
             "code", flat=True
@@ -830,14 +832,14 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             projects__latest_project__isnull=True,
         ).distinct()
         warnings = []
+        country_code = (
+            project.country.iso3 or project.country.abbr if project.country else "-"
+        )
+        cluster_code = project.cluster.code if project.cluster else "-"
         meta_project_obj = None
         for meta_project in meta_projects:
             countries = meta_project.new_code.split("/")[:1]
             clusters = meta_project.new_code.split("/")[1:-1]
-            country_code = (
-                project.country.iso3 or project.country.abbr if project.country else "-"
-            )
-            cluster_code = project.cluster.code if project.cluster else "-"
 
             if country_code in countries and cluster_code in clusters:
                 if meta_project_obj and len(warnings) == 0:

@@ -5,7 +5,35 @@ from core.admin.utils import get_final_display_list
 from core.models.project import (
     Project,
 )
-from core.models.project_enterprise import ProjectEnterprise, ProjectEnterpriseOdsOdp
+from core.models.project_enterprise import (
+    Enterprise,
+    ProjectEnterprise,
+    ProjectEnterpriseOdsOdp,
+)
+
+
+@admin.register(Enterprise)
+class EnterpriseAdmin(admin.ModelAdmin):
+    search_fields = [
+        "code",
+        "name",
+        "country__name",
+        "location",
+        "application",
+    ]
+    readonly_fields = [
+        "code",
+    ]
+    list_filter = [
+        AutocompleteFilterFactory("country", "country"),
+    ]
+
+    def get_list_display(self, request):
+        exclude = [
+            "project_enterprises",
+        ]
+        data = get_final_display_list(Enterprise, exclude)
+        return data
 
 
 @admin.register(ProjectEnterprise)
@@ -38,11 +66,13 @@ class ProjectEnterpriseAdmin(admin.ModelAdmin):
 @admin.register(ProjectEnterpriseOdsOdp)
 class ProjectEnterpriseOdsOdpAdmin(admin.ModelAdmin):
     search_fields = [
-        "enterprise__project__title",
+        "project_enterprise__project__title",
     ]
     list_filter = [
         AutocompleteFilterFactory("ods_substance", "ods_substance"),
-        AutocompleteFilterFactory("enterprise__project", "enterprise__project"),
+        AutocompleteFilterFactory(
+            "project_enterprise__project", "project_enterprise__project"
+        ),
     ]
 
     def get_list_display(self, request):

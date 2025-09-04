@@ -25,6 +25,7 @@ from core.api.permissions import (
     HasProjectV2ApproveAccess,
     HasProjectV2RecommendAccess,
 )
+from core.utils import regenerate_meta_project_new_code
 from core.api.serializers.project_v2 import (
     ProjectV2SubmitSerializer,
     ProjectV2RecommendSerializer,
@@ -603,6 +604,7 @@ class ProjectV2ViewSet(
         project.status = ProjectStatus.objects.get(code="ONG")
         log_project_history(project, request.user, HISTORY_DESCRIPTION_APPROVE_V3)
         project.save()
+        regenerate_meta_project_new_code(project.meta_project)
         return Response(
             ProjectDetailsV2Serializer(project).data,
             status=status.HTTP_200_OK,
@@ -746,9 +748,10 @@ class ProjectV2ViewSet(
         lead_agency = get_object_or_404(Agency, pk=lead_agency_id)
 
         # Get first meta project that can be found in the project_objs
-        meta_project = next(
-            (p.meta_project for p in project_objs if p.meta_project), None
-        )
+        all_meta_projects = [x.meta_project for x in project_objs if x.meta_project]
+
+        meta_project = all_meta_projects[0] if all_meta_projects else None
+
         if not meta_project:
             # Create a new meta project if none exists
             meta_project = MetaProject.objects.create()
@@ -758,8 +761,11 @@ class ProjectV2ViewSet(
         meta_project.lead_agency = lead_agency
         meta_project.save()
 
-        # Clean up any meta projects that have no projects associated with them
+        # Regenerate the meta project code for all involved meta projects
+        for meta_project in set(all_meta_projects + [meta_project]):
+            regenerate_meta_project_new_code(meta_project)
 
+        # Clean up any meta projects that have no projects associated with them
         count = MetaProject.objects.filter(projects__isnull=True).count()
         MetaProject.objects.filter(projects__isnull=True).delete()
         return Response(
