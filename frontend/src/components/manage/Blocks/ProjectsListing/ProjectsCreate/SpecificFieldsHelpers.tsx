@@ -26,7 +26,7 @@ import { Checkbox, TextareaAutosize } from '@mui/material'
 import cx from 'classnames'
 import dayjs from 'dayjs'
 
-const getIsInputDisabled = (
+export const getIsInputDisabled = (
   hasSubmitted: boolean,
   errors: { [key: string]: string[] } | { [key: string]: string[] }[],
   hasTrancheErrors: boolean,

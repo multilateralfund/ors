@@ -1,25 +1,31 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
+import { useContext, useMemo, useRef, useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
+import Link from '@ors/components/ui/Link/Link'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import PEnterprisesFiltersWrapper from './PEnterprisesFiltersWrapper'
 import PEnterprisesTable from './PEnterprisesTable'
-import { PageTitle, RedirectBackButton } from '../HelperComponents'
-import { useGetEnterpriseStatuses } from '../hooks/useGetEnterpriseStatuses'
-import { useGetEnterprises } from '../hooks/useGetEnterprises'
-import { useGetProject } from '../hooks/useGetProject'
+import { PageTitle, RedirectBackButton } from '../../HelperComponents'
+import { useGetEnterpriseStatuses } from '../../hooks/useGetEnterpriseStatuses'
+import { useGetEnterprises } from '../../hooks/useGetEnterprises'
+import { useGetProject } from '../../hooks/useGetProject'
 
+import { IoAddCircle } from 'react-icons/io5'
 import { Redirect, useParams } from 'wouter'
+import { FiEdit } from 'react-icons/fi'
+import { Button } from '@mui/material'
 import { map } from 'lodash'
 
 export default function PEnterprisesWrapper() {
-  const { project_id } = useParams<Record<string, string>>()
-
   const form = useRef<any>()
 
+  const { canEditEnterprise } = useContext(PermissionsContext)
+
+  const { project_id } = useParams<Record<string, string>>()
   const project = project_id ? useGetProject(project_id) : undefined
   const { data, error, loading: loadingProject } = project ?? {}
 
@@ -33,6 +39,8 @@ export default function PEnterprisesWrapper() {
 
   const enterprises = useGetEnterprises(initialFilters)
   const { loading, setParams } = enterprises
+
+  const [enterpriseId, setEnterpriseId] = useState<number | null>(null)
 
   const statuses = useGetEnterpriseStatuses()
   const enterpriseStatuses = map(statuses, (status) => ({
@@ -83,8 +91,42 @@ export default function PEnterprisesWrapper() {
               setParams,
             }}
           />
+          {project_id && canEditEnterprise && (
+            <div className="flex gap-2">
+              <Link
+                className="no-underline"
+                href={`/projects-listing/enterprises/${project_id}/create`}
+              >
+                <Button
+                  className="h-fit border border-solid border-primary bg-white px-3 py-1 normal-case text-primary shadow-none"
+                  variant="contained"
+                  size="large"
+                >
+                  Add enterprise <IoAddCircle className="ml-1.5" size={20} />
+                </Button>
+              </Link>
+              <Link
+                className="p-0 no-underline"
+                href={`/projects-listing/enterprises/${project_id}/edit/${enterpriseId}`}
+                disabled={!enterpriseId}
+                button
+              >
+                <Button
+                  className="h-fit border border-solid border-primary bg-white px-3 py-1 normal-case text-primary shadow-none disabled:border-gray-300 disabled:bg-gray-100 disabled:text-gray-400"
+                  disabled={!enterpriseId}
+                  variant="contained"
+                  size="large"
+                >
+                  Edit enterprise <FiEdit className="ml-1.5" size={18} />
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
-        <PEnterprisesTable {...{ enterprises, filters }} />
+        <PEnterprisesTable
+          {...{ enterprises, filters }}
+          {...(project_id && { enterpriseId, setEnterpriseId })}
+        />
       </form>
     </>
   )

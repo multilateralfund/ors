@@ -1,8 +1,8 @@
 import { useContext } from 'react'
 
 import PermissionsContext from '@ors/contexts/PermissionsContext'
-import { displaySelectedOption } from '../HelperComponents'
-import { formatEntity, getAreFiltersApplied } from '../utils'
+import { displaySelectedOption } from '../../HelperComponents'
+import { formatEntity, getAreFiltersApplied } from '../../utils'
 
 import { Typography } from '@mui/material'
 import { map } from 'lodash'

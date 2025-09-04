@@ -6,6 +6,7 @@ import {
   VersionsDropdown,
 } from './ProjectVersions/ProjectVersionsComponents'
 import { ProjectTypeApi, RelatedProjectsType } from './interfaces'
+import { enabledButtonClassname } from './constants'
 
 import {
   IoAlertCircle,
@@ -35,8 +36,7 @@ export const SubmitButton = ({
 }: ButtonProps) => (
   <Button
     className={cx(className, 'mr-0 h-10 px-3 py-1', {
-      'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
-        !isDisabled,
+      [enabledButtonClassname]: !isDisabled,
     })}
     size="large"
     variant="contained"

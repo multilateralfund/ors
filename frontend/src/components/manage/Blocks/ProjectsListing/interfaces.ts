@@ -297,4 +297,60 @@ export type AssociatedProjectsType = {
   loaded: boolean
 }
 
-export interface EnterpriseType {}
+export type EnterpriseType = EnterpriseOverview &
+  EnterpriseFundingDetails &
+  EntepriseRemarks & { ods_odp: EnterpriseSubstanceDetails[] } & {
+    funds_approved: string | null
+    cost_effectiveness_approved: string | null
+  }
+
+export interface EnterpriseData {
+  overview: EnterpriseOverview
+  substance_details: EnterpriseSubstanceDetails[]
+  funding_details: EnterpriseFundingDetails
+  remarks: EntepriseRemarks
+}
+
+export interface EnterpriseDataProps {
+  enterpriseData: EnterpriseData
+  setEnterpriseData: Dispatch<SetStateAction<EnterpriseData>>
+  hasSubmitted: boolean
+  errors?: { [key: string]: string[] }
+}
+export interface EnterpriseOverview {
+  enterprise: string
+  location: string
+  application: string
+  local_ownership: string | null
+  export_to_non_a5: string | null
+}
+
+export interface EnterpriseSubstanceDetails {
+  ods_substance: number | null
+  ods_blend: number | null
+  phase_out_mt: string | null
+  ods_replacement: string
+  ods_replacement_phase_in: string | null
+}
+
+export interface EnterpriseFundingDetails {
+  capital_cost_approved: string | null
+  operating_cost_approved: string | null
+  funds_disbursed: string | null
+}
+
+export interface EntepriseRemarks {
+  remarks: string
+}
+
+export interface EnterpriseHeader {
+  enterpriseData: EnterpriseData
+  setEnterpriseId: (id: number | null) => void
+  setHasSubmitted: (value: boolean) => void
+  setErrors: (value: { [key: string]: [] }) => void
+  setOtherErrors: (value: string) => void
+}
+
+export type EnterpriseActionButtons = EnterpriseHeader & {
+  setIsLoading: (value: boolean) => void
+}

@@ -1,5 +1,6 @@
 import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
+import { enabledButtonClassname } from '../../ProjectsListing/constants'
 import { NavigationButton } from './NavigationButton'
 import { getCurrentPeriodOption } from '../utils'
 import { uploadFiles } from '@ors/helpers'
@@ -115,8 +116,7 @@ const BPImport = ({
       <div className="flex items-center gap-2.5">
         <Button
           className={cx('mt-5 h-10 px-3 py-1', {
-            'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
-              file,
+            [enabledButtonClassname]: file,
           })}
           disabled={!file}
           size="large"

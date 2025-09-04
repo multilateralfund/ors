@@ -5,7 +5,7 @@ import { useContext } from 'react'
 import Field from '@ors/components/manage/Form/Field'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
-import { tableColumns } from '../constants'
+import { tableColumns } from '../../constants'
 
 import { IoChevronDown } from 'react-icons/io5'
 import { useParams } from 'wouter'

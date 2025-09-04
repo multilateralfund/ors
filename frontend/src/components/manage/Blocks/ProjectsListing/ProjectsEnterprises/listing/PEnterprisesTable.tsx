@@ -1,27 +1,40 @@
 'use client'
 
+import { useRef } from 'react'
+
 import ViewTable from '@ors/components/manage/Form/ViewTable'
-import { useGetEnterprises } from '../hooks/useGetEnterprises'
-import { getPaginationSelectorOpts } from '../utils'
-import { PROJECTS_PER_PAGE } from '../constants'
+import { useGetEnterprises } from '../../hooks/useGetEnterprises'
+import { getPaginationSelectorOpts } from '../../utils'
+import { PROJECTS_PER_PAGE } from '../../constants'
 import getColumnDefs from './schema'
 
 const PEnterprisesTable = ({
   enterprises,
   filters,
+  enterpriseId,
+  setEnterpriseId,
 }: {
   enterprises: ReturnType<typeof useGetEnterprises>
   filters: Record<string, any>
+  enterpriseId?: number | null
+  setEnterpriseId?: (enterpriseId: number | null) => void
 }) => {
+  const gridApiRef = useRef<any>()
+
   const { count, loaded, loading, results, setParams } = enterprises
 
-  const { columnDefs, defaultColDef } = getColumnDefs()
+  const { columnDefs, defaultColDef } = getColumnDefs(
+    gridApiRef,
+    enterpriseId,
+    setEnterpriseId,
+  )
   const paginationPageSizeSelectorOpts = getPaginationSelectorOpts(count)
 
   return (
     loaded && (
       <ViewTable
         key={JSON.stringify(filters)}
+        getRowId={(props) => props.data.id}
         columnDefs={columnDefs}
         defaultColDef={defaultColDef}
         domLayout="normal"
@@ -37,6 +50,9 @@ const PEnterprisesTable = ({
         rowData={results}
         rowsVisible={90}
         tooltipShowDelay={200}
+        onGridReady={({ api }) => {
+          gridApiRef.current = api
+        }}
         components={{
           agColumnHeader: undefined,
           agTextCellRenderer: undefined,

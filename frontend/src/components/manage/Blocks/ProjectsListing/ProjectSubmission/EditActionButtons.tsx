@@ -7,6 +7,7 @@ import SubmitProjectModal from './SubmitProjectModal'
 import ChangeStatusModal from './ChangeStatusModal'
 import AddComponentModal from './AddComponentModal'
 import { IncreaseVersionButton } from '../HelperComponents'
+import { enabledButtonClassname } from '../constants'
 import {
   checkInvalidValue,
   formatApprovalData,
@@ -423,8 +424,6 @@ const EditActionButtons = ({
     }
   }
 
-  const enabledButtonClassname =
-    'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow'
   const dropDownClassName =
     'bg-primary px-4 py-2 text-white shadow-none hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow'
   const dropdownItemClassname = 'bg-transparent font-medium normal-case'
