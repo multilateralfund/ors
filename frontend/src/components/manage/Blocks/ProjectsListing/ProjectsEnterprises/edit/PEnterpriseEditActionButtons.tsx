@@ -9,7 +9,6 @@ import { api } from '@ors/helpers'
 import { enqueueSnackbar } from 'notistack'
 import { Button } from '@mui/material'
 import { useParams } from 'wouter'
-import { map } from 'lodash'
 import cx from 'classnames'
 
 const PEnterpriseEditActionButtons = ({
@@ -57,10 +56,7 @@ const PEnterpriseEditActionButtons = ({
       const data = {
         project: project_id,
         ...Object.assign({}, ...Object.values(rest)),
-        ods_odp: map(substance_details, (substance) => ({
-          ...substance,
-          enterprise: enterprise_id,
-        })),
+        ods_odp: substance_details,
       }
 
       const result = await api(`api/project-enterprise/${enterprise_id}/`, {

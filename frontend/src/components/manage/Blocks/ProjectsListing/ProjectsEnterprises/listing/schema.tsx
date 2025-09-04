@@ -113,8 +113,8 @@ const getColumnDefs = (
         ? [
             {
               headerName: 'Project',
-              field: 'project',
-              tooltipField: 'project',
+              field: 'project_code',
+              tooltipField: 'project_code',
             },
           ]
         : []),
