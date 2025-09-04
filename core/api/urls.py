@@ -110,6 +110,7 @@ from core.api.views.projects import (
     ProjectFileView,
 )
 from core.api.views.project_enterprise import (
+    EnterpriseViewSet,
     ProjectEnterpriseStatusView,
     ProjectEnterpriseViewSet,
 )
@@ -136,6 +137,7 @@ router.register("projects", ProjectViewSet, basename="project")
 router.register(
     "project-association", ProjectAssociationViewSet, basename="project-association"
 )
+router.register("enterprises", EnterpriseViewSet, basename="enterprise")
 router.register(
     "project-enterprise", ProjectEnterpriseViewSet, basename="project-enterprise"
 )

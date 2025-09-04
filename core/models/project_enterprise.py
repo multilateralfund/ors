@@ -7,35 +7,35 @@ from core.models.substance import Substance
 # pylint: disable=C0302
 
 
-class ProjectEnterpriseManager(models.Manager):
-    def get_next_serial_number(self, country_id):
+class EnterpriseManager(models.Manager):
+    def get_next_serial_number(self, country_id, first3lettersofname):
         return (
-            self.select_for_update().filter(project__country_id=country_id).count() + 1
+            self.filter(
+                country_id=country_id,
+                code__startswith=f"{country_id}/{first3lettersofname}/",
+            ).count()
+            + 1
         )
 
 
-class ProjectEnterprise(models.Model):
-
-    class EnterpriseStatus(models.TextChoices):
-        PENDING = "Pending Approval", "Pending Approval"
-        APPROVED = "Approved", "Approved"
-
+class Enterprise(models.Model):
     code = models.CharField(
         max_length=128,
         null=True,
         blank=True,
         help_text="System-generated set of letters and numbers identifying the enterprise",
     )
-    project = models.ForeignKey(
-        Project,
-        on_delete=models.CASCADE,
-        related_name="enterprises",
-        blank=True,
-        null=True,
-    )
-    enterprise = models.CharField(
+    name = models.CharField(
         max_length=256,
         help_text="Name of the enterprise",
+    )
+    country = models.ForeignKey(
+        "core.Country",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="enterprises",
+        help_text="Country where the enterprise is located",
     )
     location = models.CharField(
         max_length=256,
@@ -59,6 +59,56 @@ class ProjectEnterprise(models.Model):
         blank=True,
         help_text="Percentage of produce exported to non-A5 countries",
     )
+    remarks = models.TextField(
+        null=True,
+        blank=True,
+        help_text="Any remark on the enterprise",
+    )
+
+    objects = EnterpriseManager()
+
+    def __str__(self):
+        return f"{self.name} ({self.code})"
+
+    def generate_code(self):
+        # code has the following format: country_iso3/first3lettersofname/serialnumber
+        if self.country:
+            country_iso3 = self.country.iso3
+        else:
+            country_iso3 = "-"
+        first3lettersofname = (
+            self.name[:3] if len(self.name) >= 3 else self.name
+        ).upper()
+        serial_number = self.__class__.objects.get_next_serial_number(
+            self.country_id, first3lettersofname
+        )
+        self.code = f"{country_iso3}/{first3lettersofname}/{serial_number}"
+
+    def save(self, *args, **kwargs):
+        self.generate_code()
+        result = super().save(*args, **kwargs)
+        return result
+
+
+class ProjectEnterprise(models.Model):
+
+    class EnterpriseStatus(models.TextChoices):
+        PENDING = "Pending Approval", "Pending Approval"
+        APPROVED = "Approved", "Approved"
+
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name="enterprises",
+        blank=True,
+        null=True,
+    )
+    enterprise = models.ForeignKey(
+        Enterprise,
+        on_delete=models.CASCADE,
+        related_name="project_enterprises",
+        help_text="Enterprise linked to this project enterprise entry",
+    )
     capital_cost_approved = models.FloatField(
         null=True,
         blank=True,
@@ -79,11 +129,6 @@ class ProjectEnterprise(models.Model):
         choices=EnterpriseStatus.choices,
         default=EnterpriseStatus.PENDING,
     )
-    remarks = models.TextField(
-        null=True,
-        blank=True,
-        help_text="Any remark on the enterprise",
-    )
 
     @property
     def funds_approved(self):
@@ -101,18 +146,16 @@ class ProjectEnterprise(models.Model):
         """
         return None
 
-    objects = ProjectEnterpriseManager()
-
     def __str__(self):
         return f"Enterprise: {self.enterprise} (Project:{self.project})"
 
 
 class ProjectEnterpriseOdsOdp(models.Model):
-    enterprise = models.ForeignKey(
+    project_enterprise = models.ForeignKey(
         ProjectEnterprise,
         on_delete=models.CASCADE,
         related_name="ods_odp",
-        help_text="Enterprise linked to this ODS/ODP entry",
+        help_text="ProjectEnterprise linked to this ODS/ODP entry",
     )
     ods_substance = models.ForeignKey(
         Substance,

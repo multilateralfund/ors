@@ -110,13 +110,3 @@ def get_project_sub_code(
         f"{country_code}/{cluster_code}/{serial_number}/{agency_code}/{project_type_code}/"
         f"{sector_code}/{meetings_code}"
     )
-
-
-def get_enterprise_code(country, serial_number=None):
-    """
-    Get a new enterprise code for a project
-    """
-    if not serial_number:
-        serial_number = ProjectEnterprise.objects.get_next_serial_number(country.id)
-    country_code = country.iso3 or country.abbr if country else "-"
-    return f"{country_code}/{serial_number}"
