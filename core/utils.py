@@ -30,7 +30,7 @@ def get_meta_project_code(country, cluster, serial_number=None):
     return f"{country_code}/{cluster_code}/{serial_number}"
 
 
-def get_meta_project_new_code(projects):
+def get_meta_project_new_code(projects, meta_project=None):
     """
     Get a new meta project code based on the existing projects
 
@@ -43,8 +43,22 @@ def get_meta_project_new_code(projects):
     clusters_codes = sorted(
         list({getattr(project.cluster, "code", "-") for project in projects})
     )
-
-    new_code_clusters = "/".join(clusters_codes)
+    # If meta_project is provided and has a new_code, preserve existing clusters and update with current ones
+    if meta_project and getattr(meta_project, "new_code", None):
+        # Extract clusters from existing new_code
+        parts = meta_project.new_code.split("/")
+        if len(parts) >= 2:
+            existing_clusters = parts[1].split("-")
+            # Add new clusters and remove missing ones
+            updated_clusters = [
+                code for code in existing_clusters if code in clusters_codes
+            ]
+            # Add any new clusters not present before
+            for code in clusters_codes:
+                if code not in updated_clusters:
+                    updated_clusters.append(code)
+            clusters_codes = updated_clusters
+    new_code_clusters = "-".join(clusters_codes)
     code_prefix = f"{country_code}/{new_code_clusters}"
 
     # Count existing MetaProjects with new_code starting with this prefix
@@ -64,7 +78,7 @@ def regenerate_meta_project_new_code(meta_project):
     projects = Project.objects.filter(
         meta_project=meta_project, submission_status__name="Approved"
     )
-    new_code = get_meta_project_new_code(projects)
+    new_code = get_meta_project_new_code(projects, meta_project)
     meta_project.new_code = new_code
     meta_project.save()
 
