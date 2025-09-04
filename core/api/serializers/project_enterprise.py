@@ -84,6 +84,9 @@ class ProjectEnterpriseSerializer(serializers.ModelSerializer):
 
     ods_odp = ProjectEnterpriseOdsOdpSerializer(many=True, required=False)
     enterprise = EnterpriseSerializer(required=True)
+    project_code = serializers.CharField(
+        source="project.code", read_only=True
+    )  # read-only field to display project code
 
     class Meta:
         model = ProjectEnterprise
@@ -96,6 +99,7 @@ class ProjectEnterpriseSerializer(serializers.ModelSerializer):
             "funds_approved",
             "funds_disbursed",
             "project",
+            "project_code",
             "operating_cost_approved",
             "status",
         ]
