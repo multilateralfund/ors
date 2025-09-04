@@ -23,7 +23,7 @@ import { map } from 'lodash'
 export default function PEnterprisesWrapper() {
   const form = useRef<any>()
 
-  const { canEditEnterprise } = useContext(PermissionsContext)
+  const { canEditEnterprise, canViewProjects } = useContext(PermissionsContext)
 
   const { project_id } = useParams<Record<string, string>>()
   const project = project_id ? useGetProject(project_id) : undefined
@@ -49,7 +49,10 @@ export default function PEnterprisesWrapper() {
     name: status[1],
   }))
 
-  if (project && (error || (data && data.submission_status !== 'Approved'))) {
+  if (
+    !canViewProjects ||
+    (project && (error || (data && data.submission_status !== 'Approved')))
+  ) {
     return <Redirect to="/projects-listing/listing" />
   }
 

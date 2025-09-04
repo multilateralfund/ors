@@ -80,6 +80,12 @@
   }
 }
 
+.ag-table.enteprise-table {
+  .ag-center-cols-viewport {
+    min-height: unset !important;
+  }
+}
+
 .projects-table.projects-association.ag-table {
   .ag-row.is-current-project {
     background-color: #fafce9;

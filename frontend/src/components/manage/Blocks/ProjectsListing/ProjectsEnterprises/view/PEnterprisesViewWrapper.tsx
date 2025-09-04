@@ -2,6 +2,7 @@
 
 import { useContext } from 'react'
 
+import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 import CustomLink from '@ors/components/ui/Link/Link'
@@ -15,7 +16,7 @@ import { useGetProject } from '../../hooks/useGetProject'
 import { Redirect, useParams } from 'wouter'
 
 const PEnterprisesViewWrapper = () => {
-  const { canEditEnterprise } = useContext(PermissionsContext)
+  const { canEditEnterprise, canViewProjects } = useContext(PermissionsContext)
 
   const { project_id, enterprise_id } = useParams<Record<string, string>>()
   const project = project_id ? useGetProject(project_id) : undefined
@@ -25,8 +26,9 @@ const PEnterprisesViewWrapper = () => {
   const { data, loading } = enterprise
 
   if (
-    project &&
-    (error || (projectData && projectData.submission_status !== 'Approved'))
+    !canViewProjects ||
+    (project &&
+      (error || (projectData && projectData.submission_status !== 'Approved')))
   ) {
     return <Redirect to="/projects-listing/listing" />
   }
@@ -54,17 +56,24 @@ const PEnterprisesViewWrapper = () => {
                   />
                 </PageHeading>
               </div>
-              {canEditEnterprise && (
-                <CustomLink
-                  className="ml-auto mt-auto h-10 text-nowrap px-4 py-2 text-lg uppercase"
-                  href={`/projects-listing/enterprises/${project_id}/edit/${enterprise_id}`}
-                  color="secondary"
-                  variant="contained"
-                  button
-                >
-                  Edit
-                </CustomLink>
-              )}
+              <div className="mt-auto flex flex-wrap items-center gap-2.5">
+                <CancelLinkButton
+                  title="Cancel"
+                  href={`/projects-listing/enterprises/${project_id}`}
+                />
+                {canEditEnterprise && (
+                  <CustomLink
+                    className="border border-solid border-secondary px-4 py-2 shadow-none hover:border-primary"
+                    href={`/projects-listing/enterprises/${project_id}/edit/${enterprise_id}`}
+                    color="secondary"
+                    variant="contained"
+                    size="large"
+                    button
+                  >
+                    Edit
+                  </CustomLink>
+                )}
+              </div>
             </div>
           </HeaderTitle>
           <PEnterpriseView enterprise={data} />

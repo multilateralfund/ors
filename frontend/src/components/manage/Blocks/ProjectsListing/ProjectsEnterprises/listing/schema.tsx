@@ -7,12 +7,15 @@ import { api } from '@ors/helpers'
 import { ICellRendererParams } from 'ag-grid-community'
 import { Button, Checkbox } from '@mui/material'
 import { enqueueSnackbar } from 'notistack'
+import { useParams } from 'wouter'
 
 const getColumnDefs = (
   gridApiRef: any,
   enterpriseId?: number | null,
   setEnterpriseId?: (enterpriseId: number | null) => void,
 ) => {
+  const { project_id } = useParams<Record<string, string>>()
+
   const { canEditEnterprise, canApproveEnterprise } =
     useContext(PermissionsContext)
 
@@ -106,6 +109,15 @@ const getColumnDefs = (
         field: 'application',
         tooltipField: 'application',
       },
+      ...(!project_id
+        ? [
+            {
+              headerName: 'Project',
+              field: 'project',
+              tooltipField: 'project',
+            },
+          ]
+        : []),
       ...(canApproveEnterprise
         ? [
             {

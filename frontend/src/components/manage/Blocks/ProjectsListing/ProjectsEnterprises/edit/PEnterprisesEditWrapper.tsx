@@ -11,7 +11,7 @@ import { useGetProject } from '../../hooks/useGetProject'
 import { Redirect, useParams } from 'wouter'
 
 const PEnterprisesEditWrapper = () => {
-  const { canEditEnterprise } = useContext(PermissionsContext)
+  const { canEditEnterprise, canViewProjects } = useContext(PermissionsContext)
 
   const { project_id, enterprise_id } = useParams<Record<string, string>>()
   const project = project_id ? useGetProject(project_id) : undefined
@@ -21,8 +21,9 @@ const PEnterprisesEditWrapper = () => {
   const { data, loading } = enterprise
 
   if (
-    project &&
-    (error || (projectData && projectData.submission_status !== 'Approved'))
+    !canViewProjects ||
+    (project &&
+      (error || (projectData && projectData.submission_status !== 'Approved')))
   ) {
     return <Redirect to="/projects-listing/listing" />
   }

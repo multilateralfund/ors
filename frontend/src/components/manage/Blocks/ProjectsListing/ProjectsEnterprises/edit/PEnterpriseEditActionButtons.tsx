@@ -9,6 +9,7 @@ import { api } from '@ors/helpers'
 import { enqueueSnackbar } from 'notistack'
 import { Button } from '@mui/material'
 import { useParams } from 'wouter'
+import { map } from 'lodash'
 import cx from 'classnames'
 
 const PEnterpriseEditActionButtons = ({
@@ -56,7 +57,10 @@ const PEnterpriseEditActionButtons = ({
       const data = {
         project: project_id,
         ...Object.assign({}, ...Object.values(rest)),
-        ods_odp: substance_details,
+        ods_odp: map(substance_details, (substance) => ({
+          ...substance,
+          enterprise: enterprise_id,
+        })),
       }
 
       const result = await api(`api/project-enterprise/${enterprise_id}/`, {
@@ -77,7 +81,7 @@ const PEnterpriseEditActionButtons = ({
   return (
     <div className="container flex w-full flex-wrap gap-x-3 gap-y-2 px-0">
       <CancelLinkButton
-        title="Close"
+        title="Cancel"
         href={`/projects-listing/enterprises/${project_id}/view/${enterprise_id}`}
       />
       {canEditEnterprise && (

@@ -2,6 +2,8 @@ import { numberDetailItem } from '../../ProjectView/ViewHelperComponents'
 import { tableColumns, viewColumnsClassName } from '../../constants'
 import { EnterpriseType } from '../../interfaces'
 
+import { sumBy } from 'lodash'
+
 const PEnterpriseFundingDetailsSection = ({
   enterprise,
 }: {
@@ -10,7 +12,11 @@ const PEnterpriseFundingDetailsSection = ({
   const funds_approved =
     Number(enterprise.capital_cost_approved ?? 0) +
     Number(enterprise.operating_cost_approved ?? 0)
-  const cost_effectiveness_approved = 0
+  const totalPhaseOut = sumBy(
+    enterprise.ods_odp,
+    ({ phase_out_mt }) => Number(phase_out_mt) || 0,
+  )
+  const cost_effectiveness_approved = funds_approved / (totalPhaseOut * 1000)
 
   return (
     <>

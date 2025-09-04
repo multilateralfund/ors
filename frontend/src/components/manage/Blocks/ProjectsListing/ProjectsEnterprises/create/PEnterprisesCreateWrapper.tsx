@@ -17,7 +17,7 @@ import {
 import { Redirect, useParams } from 'wouter'
 
 const PEnterprisesCreateWrapper = () => {
-  const { canEditEnterprise } = useContext(PermissionsContext)
+  const { canEditEnterprise, canViewProjects } = useContext(PermissionsContext)
 
   const { project_id } = useParams<Record<string, string>>()
   const project = project_id ? useGetProject(project_id) : undefined
@@ -37,7 +37,10 @@ const PEnterprisesCreateWrapper = () => {
   const [otherErrors, setOtherErrors] = useState<string>('')
   const nonFieldsErrors = errors?.['non_field_errors'] || []
 
-  if (project && (error || (data && data.submission_status !== 'Approved'))) {
+  if (
+    !canViewProjects ||
+    (project && (error || (data && data.submission_status !== 'Approved')))
+  ) {
     return <Redirect to="/projects-listing/listing" />
   }
 

@@ -6,8 +6,9 @@ import { ApiSubstance } from '@ors/types/api_substances'
 import { ApiBlend } from '@ors/types/api_blends'
 import { useStore } from '@ors/store'
 
-import { find } from 'lodash'
+import { find, sumBy } from 'lodash'
 import {
+  CellClassParams,
   GetRowIdParams,
   ITooltipParams,
   ValueGetterParams,
@@ -20,7 +21,13 @@ const PEnterprisesSubstanceDetailsSection = ({
 }) => {
   const { substances, blends } = useStore((state) => state.cp_reports)
 
+  const odsOdpData = enterprise.ods_odp ?? []
+
   const getFieldValue = (params: ITooltipParams | ValueGetterParams) => {
+    if (params.node?.rowPinned) {
+      return 'TOTAL'
+    }
+
     const options: (ApiSubstance | ApiBlend)[] = params.data.ods_substance
       ? substances.data
       : blends.data
@@ -28,6 +35,23 @@ const PEnterprisesSubstanceDetailsSection = ({
 
     return find(options, { id: params.data[field] })?.name
   }
+
+  const totalRow =
+    odsOdpData.length > 0
+      ? [
+          {
+            phase_out_mt: sumBy(
+              odsOdpData,
+              (ods_odp) => Number(ods_odp.phase_out_mt) || 0,
+            ),
+            ods_replacement: '-',
+            ods_replacement_phase_in: sumBy(
+              odsOdpData,
+              (ods_odp) => Number(ods_odp.ods_replacement_phase_in) || 0,
+            ),
+          },
+        ]
+      : []
 
   const defaultColDef = {
     headerClass: 'ag-text-center',
@@ -41,6 +65,9 @@ const PEnterprisesSubstanceDetailsSection = ({
       headerName: tableColumns.ods_substance,
       valueGetter: (params: ValueGetterParams) => getFieldValue(params),
       tooltipValueGetter: (params: ITooltipParams) => getFieldValue(params),
+      cellClassRules: {
+        'font-bold': (params: CellClassParams) => !!params.node?.rowPinned,
+      },
     },
     {
       headerName: tableColumns.phase_out_mt,
@@ -72,9 +99,12 @@ const PEnterprisesSubstanceDetailsSection = ({
   return (
     <ViewTable
       getRowId={(props: GetRowIdParams) => props.data.id}
-      rowData={enterprise.ods_odp ?? []}
+      rowData={odsOdpData}
       defaultColDef={defaultColDef}
       columnDefs={columnDefs}
+      pinnedBottomRowData={totalRow}
+      className="enteprise-table"
+      domLayout="autoHeight"
       enablePagination={false}
       suppressCellFocus={true}
       withSeparators={true}
