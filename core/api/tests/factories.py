@@ -44,7 +44,11 @@ from core.models.project import (
     ProjectRBMMeasure,
     SubmissionAmount,
 )
-from core.models.project_enterprise import ProjectEnterprise, ProjectEnterpriseOdsOdp
+from core.models.project_enterprise import (
+    Enterprise,
+    ProjectEnterprise,
+    ProjectEnterpriseOdsOdp,
+)
 from core.models.project_metadata import (
     ProjectCluster,
     ProjectSpecificFields,
@@ -501,12 +505,26 @@ class ProjectRBMMeasureFactory(factory.django.DjangoModelFactory):
     value = factory.Faker("random_int", min=1, max=100)
 
 
+class EnterpriseFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Enterprise
+
+    code = factory.Faker("pystr", max_chars=10)
+    name = factory.Faker("pystr", max_chars=256)
+    country = factory.SubFactory(CountryFactory)
+    location = factory.Faker("pystr", max_chars=256)
+    application = factory.Faker("pystr", max_chars=256)
+    local_ownership = factory.Faker("pydecimal", left_digits=3, right_digits=2)
+    export_to_non_a5 = factory.Faker("pydecimal", left_digits=3, right_digits=2)
+    remarks = factory.Faker("pystr", max_chars=200)
+
+
 class ProjectEnterpriseFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ProjectEnterprise
 
     project = factory.SubFactory(ProjectFactory)
-    enterprise = factory.Faker("pystr", max_chars=256, prefix="Enterprise ")
+    enterprise = factory.SubFactory(EnterpriseFactory)
     location = factory.Faker("pystr", max_chars=256, prefix="Location ")
     application = factory.Faker("pystr", max_chars=256, prefix="Application ")
     local_ownership = factory.Faker("pydecimal", left_digits=3, right_digits=2)
@@ -522,7 +540,7 @@ class ProjectEnterpriseOdsOdpFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = ProjectEnterpriseOdsOdp
 
-    enterprise = factory.SubFactory(ProjectEnterpriseFactory)
+    project_enterprise = factory.SubFactory(ProjectEnterpriseFactory)
     phase_out_mt = factory.Faker("random_int", min=1, max=100)
     ods_replacement = factory.Faker("pystr", max_chars=100)
     ods_replacement_phase_in = factory.Faker("random_int", min=1, max_chars=100)

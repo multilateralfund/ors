@@ -86,8 +86,7 @@ class Enterprise(models.Model):
 
     def save(self, *args, **kwargs):
         self.generate_code()
-        result = super().save(*args, **kwargs)
-        return result
+        return super().save(*args, **kwargs)
 
 
 class ProjectEnterprise(models.Model):
