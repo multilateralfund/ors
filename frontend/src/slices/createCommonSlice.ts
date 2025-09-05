@@ -11,6 +11,10 @@ export const createCommonSlice = ({
       ...defaultSliceData,
       ...(initialState?.common?.agencies || {}),
     },
+    agencies_with_all: {
+      ...defaultSliceData,
+      ...(initialState?.common?.agencies || {}),
+    },
     countries: {
       ...defaultSliceData,
       ...(initialState?.common?.countries || {}),

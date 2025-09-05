@@ -219,6 +219,7 @@ export interface UserSlice
 
 export interface CommonSlice {
   agencies: SliceData<ApiAgency[]>
+  agencies_with_all: SliceData<ApiAgency[]>
   countries: SliceData<Country[]>
   countries_for_create: SliceData<Country[]>
   countries_for_listing: SliceData<Country[]>
