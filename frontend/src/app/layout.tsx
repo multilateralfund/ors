@@ -1,3 +1,4 @@
+import type { ApiAgency } from '@ors/@types/api_agencies'
 import { ApiUser } from '@ors/types/api_auth_user'
 import { ApiBlend } from '@ors/types/api_blends'
 import { ApiSubstance } from '@ors/types/api_substances'
@@ -109,7 +110,7 @@ function useAppState(user: ApiUser | null | undefined) {
 
         const common = {
           agencies: getInitialSliceData(
-            agencies.filter((a) => a.name !== 'All agencies'),
+            agencies.filter((a: ApiAgency) => a.name !== 'All agencies'),
           ),
           agencies_with_all: getInitialSliceData(agencies),
           countries: getInitialSliceData<Country[]>(countries),

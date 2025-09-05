@@ -1,3 +1,6 @@
+import type { ApiAgency } from '@ors/@types/api_agencies'
+import type { Country } from '@ors/@types/store'
+
 import { useEffect, useMemo, useRef } from 'react'
 
 import Loading from '@ors/components/theme/Loading/Loading'
@@ -57,9 +60,9 @@ const LinkedBPTable = ({
   const countries = useStore((state) => state?.common.countries.data)
 
   const allAgenciesAgency =
-    agencies.filter((a) => a.name === 'All agencies')?.[0] ?? null
+    agencies.filter((a: ApiAgency) => a.name === 'All agencies')?.[0] ?? null
   const globalCountry =
-    countries.filter((c) => c.name === 'Global')?.[0] ?? null
+    countries.filter((c: Country) => c.name === 'Global')?.[0] ?? null
 
   const filters = {
     bp_status: 'Endorsed',
