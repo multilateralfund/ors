@@ -95,7 +95,7 @@ export default function PEnterprisesWrapper() {
             }}
           />
           {project_id && canEditEnterprise && (
-            <div className="flex gap-2">
+            <div className="mb-auto flex gap-2">
               <Link
                 className="no-underline"
                 href={`/projects-listing/enterprises/${project_id}/create`}
