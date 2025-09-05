@@ -1,7 +1,8 @@
 'use client'
 
-import { useContext, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 
+import Loading from '@ors/components/theme/Loading/Loading.tsx'
 import PermissionsContext from '@ors/contexts/PermissionsContext.tsx'
 import PEnterpriseHeader from './PEnterpriseHeader.tsx'
 import PEnterpriseCreate from './PEnterpriseCreate.tsx'
@@ -21,7 +22,7 @@ const PEnterprisesCreateWrapper = () => {
 
   const { project_id } = useParams<Record<string, string>>()
   const project = project_id ? useGetProject(project_id) : undefined
-  const { data, error } = project ?? {}
+  const { data, error, loading } = project ?? {}
 
   const [enterpriseData, setEnterpriseData] = useState<EnterpriseData>({
     overview: initialOverviewFields,
@@ -37,7 +38,18 @@ const PEnterprisesCreateWrapper = () => {
   const [otherErrors, setOtherErrors] = useState<string>('')
   const nonFieldsErrors = errors?.['non_field_errors'] || []
 
+  useEffect(() => {
+    setEnterpriseData((prevData) => ({
+      ...prevData,
+      overview: {
+        ...prevData['overview'],
+        country: data?.country_id,
+      },
+    }))
+  }, [data])
+
   if (
+    !project_id ||
     !canViewProjects ||
     (project && (error || (data && data.submission_status !== 'Approved')))
   ) {
@@ -50,31 +62,40 @@ const PEnterprisesCreateWrapper = () => {
 
   return (
     <>
-      <PEnterpriseHeader
-        mode="add"
-        {...{
-          enterpriseData,
-          setEnterpriseId,
-          setErrors,
-          setOtherErrors,
-          setHasSubmitted,
-        }}
+      <Loading
+        className="!fixed bg-action-disabledBackground"
+        active={loading}
       />
-      <PEnterpriseCreate
-        {...{
-          enterpriseData,
-          setEnterpriseData,
-          errors,
-          hasSubmitted,
-        }}
-      />
-      <ProjectFormFooter
-        id={enterpriseId}
-        href={`/projects-listing/enterprises/${project_id}/view/${enterpriseId}`}
-        successMessage="Enterprise was created successfully."
-        successRedirectMessage="View enterprise."
-        {...{ nonFieldsErrors, otherErrors }}
-      />
+      {!loading && data && (
+        <>
+          <PEnterpriseHeader
+            mode="add"
+            {...{
+              enterpriseData,
+              setEnterpriseId,
+              setErrors,
+              setOtherErrors,
+              setHasSubmitted,
+            }}
+          />
+          <PEnterpriseCreate
+            {...{
+              enterpriseData,
+              setEnterpriseData,
+              errors,
+              hasSubmitted,
+            }}
+            countryId={data.country_id}
+          />
+          <ProjectFormFooter
+            id={enterpriseId}
+            href={`/projects-listing/enterprises/${project_id}/view/${enterpriseId}`}
+            successMessage="Enterprise was created successfully."
+            successRedirectMessage="View enterprise."
+            {...{ nonFieldsErrors, otherErrors }}
+          />
+        </>
+      )}
     </>
   )
 }

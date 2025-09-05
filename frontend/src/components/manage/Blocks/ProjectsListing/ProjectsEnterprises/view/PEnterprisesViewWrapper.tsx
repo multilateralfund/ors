@@ -52,7 +52,7 @@ const PEnterprisesViewWrapper = () => {
                 <PageHeading>
                   <PageTitle
                     pageTitle="View enterprise"
-                    projectTitle={data.enterprise}
+                    projectTitle={data.enterprise.name}
                   />
                 </PageHeading>
               </div>

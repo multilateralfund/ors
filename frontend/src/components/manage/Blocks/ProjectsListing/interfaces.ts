@@ -297,18 +297,20 @@ export type AssociatedProjectsType = {
   loaded: boolean
 }
 
-export type EnterpriseType = EnterpriseOverview &
-  EnterpriseFundingDetails &
-  EntepriseRemarks & { ods_odp: EnterpriseSubstanceDetails[] } & {
-    funds_approved: string | null
-    cost_effectiveness_approved: string | null
-  }
+export type EnterpriseType = EnterpriseFundingDetails & {
+  funds_approved: string | null
+  cost_effectiveness_approved: string | null
+} & {
+  ods_odp: EnterpriseSubstanceDetails[]
+} & {
+  enterprise: EnterpriseOverview & EnterpriseRemarks & { id: number | null }
+}
 
 export interface EnterpriseData {
   overview: EnterpriseOverview
   substance_details: EnterpriseSubstanceDetails[]
   funding_details: EnterpriseFundingDetails
-  remarks: EntepriseRemarks
+  remarks: EnterpriseRemarks
 }
 
 export interface EnterpriseDataProps {
@@ -318,7 +320,8 @@ export interface EnterpriseDataProps {
   errors?: { [key: string]: string[] }
 }
 export interface EnterpriseOverview {
-  enterprise: string
+  name: string
+  country: number | null
   location: string
   application: string
   local_ownership: string | null
@@ -339,7 +342,7 @@ export interface EnterpriseFundingDetails {
   funds_disbursed: string | null
 }
 
-export interface EntepriseRemarks {
+export interface EnterpriseRemarks {
   remarks: string
 }
 

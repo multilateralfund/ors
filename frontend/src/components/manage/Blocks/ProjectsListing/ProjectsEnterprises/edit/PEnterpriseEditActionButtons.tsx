@@ -26,7 +26,7 @@ const PEnterpriseEditActionButtons = ({
   const { canEditEnterprise } = useContext(PermissionsContext)
 
   const { overview } = enterpriseData
-  const disableSubmit = !overview.enterprise
+  const disableSubmit = !overview.name
 
   const handleErrors = async (error: any) => {
     const errors = await error.json()
@@ -51,12 +51,13 @@ const PEnterpriseEditActionButtons = ({
     setErrors({})
 
     try {
-      const { substance_details, ...rest } = enterpriseData
+      const { overview, substance_details, remarks, ...rest } = enterpriseData
 
       const data = {
         project: project_id,
         ...Object.assign({}, ...Object.values(rest)),
         ods_odp: substance_details,
+        enterprise: { ...overview, ...remarks },
       }
 
       const result = await api(`api/project-enterprise/${enterprise_id}/`, {
@@ -65,7 +66,7 @@ const PEnterpriseEditActionButtons = ({
       })
 
       setEnterpriseId(result.id)
-      setEnterpriseTitle(result.enterprise)
+      setEnterpriseTitle(result.name)
     } catch (error) {
       await handleErrors(error)
     } finally {

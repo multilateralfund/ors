@@ -4,10 +4,13 @@ import { useState } from 'react'
 
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert.tsx'
+import Loading from '@ors/components/theme/Loading/Loading.tsx'
+import PEnterpriseSearch from '../tabs/PEnterpriseSearch.tsx'
 import PEnterprisesOverviewSection from '../tabs/PEnterprisesOverviewSection.tsx'
 import PEnterprisesSubstanceDetailsSection from '../tabs/PEnterprisesSubstanceDetailsSection.tsx'
 import PEnterprisesFundingDetailsSection from '../tabs/PEnterprisesFundingDetailsSection.tsx'
 import PEnterprisesRemarksSection from '../tabs/PEnterprisesRemarksSection.tsx'
+import { useGetEnterprises } from '../../hooks/useGetEnterprises.ts'
 import { formatErrors, hasSectionErrors } from '../../utils.ts'
 import { getEnterprisesErrors } from '../utils.ts'
 import { tableColumns } from '../../constants.ts'
@@ -21,12 +24,17 @@ import { Tabs, Tab, Typography } from '@mui/material'
 
 const PEnterpriseCreate = ({
   enterpriseData,
+  setEnterpriseData,
+  countryId,
   errors,
   ...rest
 }: EnterpriseDataProps & {
+  countryId: number
   errors: { [key: string]: [] }
 }) => {
   const [currentTab, setCurrentTab] = useState<number>(0)
+
+  const { data, loading } = useGetEnterprises(countryId)
 
   const { overview, funding_details, remarks } = enterpriseData ?? {}
 
@@ -65,6 +73,20 @@ const PEnterpriseCreate = ({
 
   const steps = [
     {
+      id: 'search',
+      ariaControls: 'search',
+      label: 'Search',
+      component: (
+        <PEnterpriseSearch
+          enterprises={data}
+          {...{
+            enterpriseData,
+            setEnterpriseData,
+          }}
+        />
+      ),
+    },
+    {
       id: 'enterprise-overview',
       ariaControls: 'enterprise-overview',
       label: (
@@ -77,7 +99,7 @@ const PEnterpriseCreate = ({
       ),
       component: (
         <PEnterprisesOverviewSection
-          {...{ enterpriseData, ...rest }}
+          {...{ enterpriseData, setEnterpriseData, countryId, ...rest }}
           errors={overviewErrors}
         />
       ),
@@ -97,7 +119,7 @@ const PEnterpriseCreate = ({
       ),
       component: (
         <PEnterprisesSubstanceDetailsSection
-          {...{ enterpriseData, ...rest }}
+          {...{ enterpriseData, setEnterpriseData, ...rest }}
           odsOdpErrors={normalizedOdsOdpErrors}
         />
       ),
@@ -116,7 +138,7 @@ const PEnterpriseCreate = ({
       ),
       component: (
         <PEnterprisesFundingDetailsSection
-          {...{ enterpriseData, ...rest }}
+          {...{ enterpriseData, setEnterpriseData, ...rest }}
           errors={fundingDetailsErrors}
         />
       ),
@@ -135,7 +157,7 @@ const PEnterpriseCreate = ({
       ),
       component: (
         <PEnterprisesRemarksSection
-          {...{ enterpriseData, ...rest }}
+          {...{ enterpriseData, setEnterpriseData, ...rest }}
           errors={remarksErrors}
         />
       ),
@@ -145,61 +167,68 @@ const PEnterpriseCreate = ({
 
   return (
     <>
-      <Tabs
-        aria-label="create-enterprise"
-        value={currentTab}
-        className="sectionsTabs"
-        variant="scrollable"
-        scrollButtons="auto"
-        allowScrollButtonsMobile
-        TabIndicatorProps={{
-          className: 'h-0',
-          style: { transitionDuration: '150ms' },
-        }}
-        onChange={(_, newValue) => {
-          setCurrentTab(newValue)
-        }}
-      >
-        {steps.map(({ id, ariaControls, label }) => (
-          <Tab id={id} aria-controls={ariaControls} label={label} />
-        ))}
-      </Tabs>
-
-      <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
-        {steps
-          .filter((_, index) => index === currentTab)
-          .map(({ component, errors }) => {
-            return (
-              <>
-                {errors && errors.length > 0 && (
-                  <CustomAlert
-                    type="error"
-                    alertClassName="mb-5"
-                    content={
-                      <>
-                        <Typography className="text-lg">
-                          Please make sure all the sections are valid.
-                        </Typography>
-                        <Typography>
-                          <div className="mt-1">
-                            {errors.map((err, idx) =>
-                              err ? (
-                                <div key={idx} className="py-1.5">
-                                  {'\u2022'} {err.message}
-                                </div>
-                              ) : null,
-                            )}
-                          </div>
-                        </Typography>
-                      </>
-                    }
-                  />
-                )}
-                {component}
-              </>
-            )
-          })}
-      </div>
+      <Loading
+        className="!fixed bg-action-disabledBackground"
+        active={loading}
+      />
+      {!loading && data && (
+        <>
+          <Tabs
+            aria-label="create-enterprise"
+            value={currentTab}
+            className="sectionsTabs"
+            variant="scrollable"
+            scrollButtons="auto"
+            allowScrollButtonsMobile
+            TabIndicatorProps={{
+              className: 'h-0',
+              style: { transitionDuration: '150ms' },
+            }}
+            onChange={(_, newValue) => {
+              setCurrentTab(newValue)
+            }}
+          >
+            {steps.map(({ id, ariaControls, label }) => (
+              <Tab id={id} aria-controls={ariaControls} label={label} />
+            ))}
+          </Tabs>
+          <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
+            {steps
+              .filter((_, index) => index === currentTab)
+              .map(({ component, errors }) => {
+                return (
+                  <>
+                    {errors && errors.length > 0 && (
+                      <CustomAlert
+                        type="error"
+                        alertClassName="mb-5"
+                        content={
+                          <>
+                            <Typography className="text-lg">
+                              Please make sure all the sections are valid.
+                            </Typography>
+                            <Typography>
+                              <div className="mt-1">
+                                {errors.map((err, idx) =>
+                                  err ? (
+                                    <div key={idx} className="py-1.5">
+                                      {'\u2022'} {err.message}
+                                    </div>
+                                  ) : null,
+                                )}
+                              </div>
+                            </Typography>
+                          </>
+                        }
+                      />
+                    )}
+                    {component}
+                  </>
+                )
+              })}
+          </div>
+        </>
+      )}
     </>
   )
 }

@@ -1,7 +1,7 @@
 import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
+import { defaultPropsSimpleField, disabledClassName } from '../constants'
 import { EnterpriseData, EnterpriseOverview } from '../interfaces'
-import { defaultPropsSimpleField } from '../constants'
 
 import { keys } from 'lodash'
 import cx from 'classnames'
@@ -46,13 +46,22 @@ export const handleChangeNumericValues = (
 export const getIsInputInvalid = (hasSubmitted: boolean, errors: any) =>
   hasSubmitted && errors?.length > 0
 
-export const getFieldDefaultProps = (hasSubmitted: boolean, errors: any[]) => {
+export const getFieldDefaultProps = (
+  hasSubmitted: boolean,
+  errors: any[],
+  isFieldDisabled: boolean = false,
+) => {
   return {
     ...{
       ...defaultPropsSimpleField,
-      className: cx(defaultPropsSimpleField.className, '!m-0 h-10 !py-1', {
-        'border-red-500': getIsInputInvalid(hasSubmitted, errors),
-      }),
+      className: cx(
+        defaultPropsSimpleField.className,
+        '!m-0 h-10 !py-1',
+        {
+          'border-red-500': getIsInputInvalid(hasSubmitted, errors),
+        },
+        { [disabledClassName]: isFieldDisabled },
+      ),
     },
   }
 }
@@ -61,7 +70,7 @@ export const getEnterprisesErrors = (
   data: any,
   errors: { [key: string]: [] },
 ) => {
-  const requiredFields = ['enterprise']
+  const requiredFields = ['name']
 
   const fields = keys(data)
   const filteredErrors = Object.fromEntries(

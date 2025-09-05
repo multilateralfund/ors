@@ -28,12 +28,13 @@ const PEnterpriseCreateActionButtons = ({
     setErrors({})
 
     try {
-      const { substance_details, ...rest } = enterpriseData
+      const { overview, substance_details, remarks, ...rest } = enterpriseData
 
       const data = {
         project: project_id,
         ...Object.assign({}, ...Object.values(rest)),
         ods_odp: substance_details,
+        enterprise: { ...overview, ...remarks },
       }
 
       const result = await api(`api/project-enterprise/`, {
@@ -71,7 +72,7 @@ const PEnterpriseCreateActionButtons = ({
       {canEditEnterprise && (
         <SubmitButton
           title="Create enterprise"
-          isDisabled={!overview.enterprise}
+          isDisabled={!overview.name}
           onSubmit={createEnterprise}
           className="ml-auto"
         />

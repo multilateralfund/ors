@@ -8,7 +8,11 @@ const PEnterpriseRemarksSection = ({
   enterprise: EnterpriseType
 }) => (
   <div className="max-w-[90%]">
-    {detailItem(tableColumns.remarks, enterprise.remarks, 'self-start')}
+    {detailItem(
+      tableColumns.remarks,
+      enterprise.enterprise.remarks,
+      'self-start',
+    )}
   </div>
 )
 

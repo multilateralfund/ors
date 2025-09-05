@@ -11,7 +11,7 @@ import PEnterprisesFiltersWrapper from './PEnterprisesFiltersWrapper'
 import PEnterprisesTable from './PEnterprisesTable'
 import { PageTitle, RedirectBackButton } from '../../HelperComponents'
 import { useGetEnterpriseStatuses } from '../../hooks/useGetEnterpriseStatuses'
-import { useGetEnterprises } from '../../hooks/useGetEnterprises'
+import { useGetProjectEnterprises } from '../../hooks/useGetProjectEnterprises'
 import { useGetProject } from '../../hooks/useGetProject'
 
 import { IoAddCircle } from 'react-icons/io5'
@@ -37,7 +37,7 @@ export default function PEnterprisesWrapper() {
   const [filters, setFilters] = useState(initialFilters)
   const key = useMemo(() => JSON.stringify(filters), [filters])
 
-  const enterprises = useGetEnterprises(initialFilters)
+  const enterprises = useGetProjectEnterprises(initialFilters)
   const { loading, setParams } = enterprises
 
   const [enterpriseId, setEnterpriseId] = useState<number | null>(null)

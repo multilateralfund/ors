@@ -1,6 +1,6 @@
 'use client'
 
-import PEnterprisesFilters from './PEnteprisesFilters'
+import PEnterprisesFilters from './PEnterprisesFilters'
 import PEnterprisesFiltersSelectedOpts from './PEnterprisesFiltersSelectedOpts'
 
 import { useStore } from '@ors/store'

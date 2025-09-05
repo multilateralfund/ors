@@ -36,7 +36,7 @@ export const tableColumns: { [key: string]: string } = {
   subsector_ids: 'Sub-sector(s)',
   production: 'Production',
   decision: 'Decision',
-  enterprise: 'Enterprise name',
+  name: 'Enterprise name',
   location: 'Enterprise location',
   application: 'Enterprise application',
   local_ownership: 'Percentage of goods exported to non-Article 5 countries',
@@ -167,7 +167,8 @@ export const viewColumnsClassName =
   'flex flex-wrap gap-x-7 gap-y-5 [&>*]:basis-[calc(50%-14px)] md:[&>*]:basis-[calc(33.333%-19px)] lg:[&>*]:basis-[calc(25%-21px)]'
 
 export const initialOverviewFields = {
-  enterprise: '',
+  name: '',
+  country: null,
   location: '',
   application: '',
   local_ownership: null,

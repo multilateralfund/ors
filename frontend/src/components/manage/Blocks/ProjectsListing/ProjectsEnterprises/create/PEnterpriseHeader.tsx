@@ -17,7 +17,7 @@ const PEnterpriseHeader = ({
   mode: string
   enterprise?: EnterpriseType
 }) => {
-  const [enterpriseTitle, setEnterpriseTitle] = useState(enterprise?.enterprise)
+  const [enterpriseTitle, setEnterpriseTitle] = useState(enterprise?.name)
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
   return (

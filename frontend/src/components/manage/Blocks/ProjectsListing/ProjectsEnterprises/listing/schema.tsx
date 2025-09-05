@@ -74,13 +74,13 @@ const getColumnDefs = (
         : []),
       {
         headerName: 'Code',
-        field: 'code',
-        tooltipField: 'code',
+        field: 'enterprise.code',
+        tooltipField: 'enterprise.code',
       },
       {
         headerName: 'Name',
-        field: 'enterprise',
-        tooltipField: 'enterprise',
+        field: 'enterprise.name',
+        tooltipField: 'enterprise.name',
         minWidth: 150,
         cellRenderer: (props: ICellRendererParams) => (
           <div className="flex items-center p-2">
@@ -101,13 +101,13 @@ const getColumnDefs = (
       },
       {
         headerName: 'Location',
-        field: 'location',
-        tooltipField: 'location',
+        field: 'enterprise.location',
+        tooltipField: 'enterprise.location',
       },
       {
         headerName: 'Application',
-        field: 'application',
-        tooltipField: 'application',
+        field: 'enterprise.application',
+        tooltipField: 'enterprise.application',
       },
       ...(!project_id
         ? [

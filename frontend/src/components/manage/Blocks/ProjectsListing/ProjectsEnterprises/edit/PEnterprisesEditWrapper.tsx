@@ -15,12 +15,13 @@ const PEnterprisesEditWrapper = () => {
 
   const { project_id, enterprise_id } = useParams<Record<string, string>>()
   const project = project_id ? useGetProject(project_id) : undefined
-  const { data: projectData, error } = project ?? {}
+  const { data: projectData, error, loading: loadingProject } = project ?? {}
 
   const enterprise = useGetEnterprise(enterprise_id)
   const { data, loading } = enterprise
 
   if (
+    !project_id ||
     !canViewProjects ||
     (project &&
       (error || (projectData && projectData.submission_status !== 'Approved')))
@@ -36,9 +37,14 @@ const PEnterprisesEditWrapper = () => {
     <>
       <Loading
         className="!fixed bg-action-disabledBackground"
-        active={loading}
+        active={loading || loadingProject}
       />
-      {!loading && data && <PEnterprisesEdit enterprise={data} />}
+      {!loading && !loadingProject && data && projectData && (
+        <PEnterprisesEdit
+          enterprise={data}
+          countryId={projectData.country_id}
+        />
+      )}
     </>
   )
 }

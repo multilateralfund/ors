@@ -3,7 +3,7 @@
 import { useRef } from 'react'
 
 import ViewTable from '@ors/components/manage/Form/ViewTable'
-import { useGetEnterprises } from '../../hooks/useGetEnterprises'
+import { useGetProjectEnterprises } from '../../hooks/useGetProjectEnterprises'
 import { getPaginationSelectorOpts } from '../../utils'
 import { PROJECTS_PER_PAGE } from '../../constants'
 import getColumnDefs from './schema'
@@ -14,7 +14,7 @@ const PEnterprisesTable = ({
   enterpriseId,
   setEnterpriseId,
 }: {
-  enterprises: ReturnType<typeof useGetEnterprises>
+  enterprises: ReturnType<typeof useGetProjectEnterprises>
   filters: Record<string, any>
   enterpriseId?: number | null
   setEnterpriseId?: (enterpriseId: number | null) => void

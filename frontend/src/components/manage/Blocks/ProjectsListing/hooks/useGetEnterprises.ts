@@ -1,16 +1,11 @@
 import useApi from '@ors/hooks/useApi'
-import { getResults } from '@ors/helpers'
-import { EnterpriseType } from '../interfaces'
 
-export function useGetEnterprises(filters: Record<string, any>) {
-  const { data, ...rest } = useApi<EnterpriseType[]>({
+export function useGetEnterprises(country_id: number) {
+  return useApi({
     options: {
-      params: filters,
+      params: { country_id },
       withStoreCache: false,
     },
-    path: '/api/project-enterprise',
+    path: 'api/enterprises',
   })
-  const enterprisesResult = getResults(data)
-
-  return { ...rest, ...enterprisesResult }
 }

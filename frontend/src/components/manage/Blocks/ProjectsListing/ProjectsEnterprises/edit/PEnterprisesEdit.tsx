@@ -14,7 +14,13 @@ import {
 
 import { useParams } from 'wouter'
 
-const PEnterprisesEdit = ({ enterprise }: { enterprise: EnterpriseType }) => {
+const PEnterprisesEdit = ({
+  enterprise,
+  countryId,
+}: {
+  enterprise: EnterpriseType
+  countryId: number
+}) => {
   const { project_id } = useParams<Record<string, string>>()
 
   const [enterpriseData, setEnterpriseData] = useState<EnterpriseData>({
@@ -32,14 +38,18 @@ const PEnterprisesEdit = ({ enterprise }: { enterprise: EnterpriseType }) => {
   const nonFieldsErrors = errors?.['non_field_errors'] || []
 
   useEffect(() => {
+    const { enterprise: enterpriseObj } = enterprise
+
     setEnterpriseData((prevData) => ({
       ...prevData,
       overview: {
-        enterprise: enterprise.enterprise,
-        location: enterprise.location,
-        application: enterprise.application,
-        local_ownership: enterprise.local_ownership,
-        export_to_non_a5: enterprise.export_to_non_a5,
+        id: enterpriseObj.id,
+        name: enterpriseObj.name,
+        country: countryId || enterpriseObj.country,
+        location: enterpriseObj.location,
+        application: enterpriseObj.application,
+        local_ownership: enterpriseObj.local_ownership,
+        export_to_non_a5: enterpriseObj.export_to_non_a5,
       },
       substance_details: enterprise.ods_odp,
       funding_details: {
@@ -47,7 +57,7 @@ const PEnterprisesEdit = ({ enterprise }: { enterprise: EnterpriseType }) => {
         operating_cost_approved: enterprise.operating_cost_approved,
         funds_disbursed: enterprise.funds_disbursed,
       },
-      remarks: { remarks: enterprise.remarks },
+      remarks: { remarks: enterpriseObj.remarks },
     }))
   }, [])
 
@@ -69,6 +79,7 @@ const PEnterprisesEdit = ({ enterprise }: { enterprise: EnterpriseType }) => {
           enterpriseData,
           setEnterpriseData,
           enterprise,
+          countryId,
           hasSubmitted,
           errors,
         }}
