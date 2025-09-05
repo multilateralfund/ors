@@ -64,6 +64,7 @@ from core.models.substance import Substance, SubstanceAltName
 from core.models.time_frame import TimeFrame
 from core.models.usage import ExcludedUsage, Usage
 from core.models.blend import Blend, BlendAltName
+from core.models.utils import EnterpriseStatus
 
 User = get_user_model()
 
@@ -532,7 +533,7 @@ class ProjectEnterpriseFactory(factory.django.DjangoModelFactory):
     capital_cost_approved = factory.Faker("pydecimal", left_digits=10, right_digits=2)
     operating_cost_approved = factory.Faker("pydecimal", left_digits=10, right_digits=2)
     funds_disbursed = factory.Faker("pydecimal", left_digits=10, right_digits=2)
-    status = ProjectEnterprise.EnterpriseStatus.PENDING
+    status = EnterpriseStatus.PENDING
     remarks = factory.Faker("pystr", max_chars=200, prefix="Remark ")
 
 

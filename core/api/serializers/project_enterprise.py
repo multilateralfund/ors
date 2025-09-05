@@ -5,24 +5,36 @@ from core.models.project_enterprise import (
     ProjectEnterprise,
     ProjectEnterpriseOdsOdp,
 )
+from core.models.utils import EnterpriseStatus
 
 
 class EnterpriseSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     code = serializers.CharField(read_only=True)
+    pending_enterprises = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    approved_enterprise = serializers.PrimaryKeyRelatedField(
+        queryset=Enterprise.objects.filter(status=EnterpriseStatus.APPROVED),
+        required=False,
+        allow_null=True,
+    )
+    project_enterprises = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta:
         model = Enterprise
         fields = [
             "id",
             "code",
+            "approved_enterprise",
+            "pending_enterprises",
             "name",
             "country",
             "location",
             "application",
             "local_ownership",
             "export_to_non_a5",
+            "project_enterprises",
             "remarks",
+            "status",
         ]
 
 
@@ -87,11 +99,15 @@ class ProjectEnterpriseSerializer(serializers.ModelSerializer):
     project_code = serializers.CharField(
         source="project.code", read_only=True
     )  # read-only field to display project code
+    pending_project_enterprises = serializers.PrimaryKeyRelatedField(
+        many=True, read_only=True
+    )
 
     class Meta:
         model = ProjectEnterprise
         fields = [
             "id",
+            "approved_project_enterprise",
             "capital_cost_approved",
             "cost_effectiveness_approved",
             "enterprise",
@@ -101,23 +117,37 @@ class ProjectEnterpriseSerializer(serializers.ModelSerializer):
             "project",
             "project_code",
             "operating_cost_approved",
+            "pending_project_enterprises",
             "status",
         ]
 
     def create(self, validated_data):
         _ = validated_data.pop("request", None)
+        validated_data.pop("status", None)  # status will be set to PENDING
         ods_odp_data = validated_data.pop("ods_odp")
         enterprise_data = validated_data.pop("enterprise")
+        enterprise_data.pop("status", None)  # status will be set to PENDING
         if "id" in enterprise_data:
-            enterprise = Enterprise.objects.get(id=enterprise_data["id"])
-            for attr, value in enterprise_data.items():
-                setattr(enterprise, attr, value)
-            enterprise.save()
+            enterprise_data_id = enterprise_data.pop("id")
+            try:
+                enterprise = Enterprise.objects.get(
+                    id=enterprise_data_id, status=EnterpriseStatus.APPROVED
+                )
+            except Enterprise.DoesNotExist:
+                raise serializers.ValidationError(
+                    "Enterprise with given ID does not exist."
+                )
+            approved_enterprise = enterprise
         else:
-            enterprise = Enterprise.objects.create(**enterprise_data)
+            approved_enterprise = None
+        enterprise_data["approved_enterprise"] = approved_enterprise
+        enterprise = Enterprise.objects.create(
+            **enterprise_data, status=EnterpriseStatus.PENDING
+        )
         project_enterprise = ProjectEnterprise.objects.create(
             **validated_data,
             enterprise=enterprise,
+            status=EnterpriseStatus.PENDING,
         )
         for ods_odp in ods_odp_data:
             ProjectEnterpriseOdsOdp.objects.create(
@@ -127,8 +157,36 @@ class ProjectEnterpriseSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         _ = validated_data.pop("request", None)
+        if instance.status == EnterpriseStatus.APPROVED:
+            # Create a new pending ProjectEnterprise linked to the approved one
+            validated_data.pop("status", None)  # status will be set to PENDING
+            ods_odp_data = validated_data.pop("ods_odp")
+            enterprise_data = validated_data.pop("enterprise", None)
+            # Duplicate the linked approved enterprise in pending status
+            approved_enterprise = instance.enterprise
+            enterprise_data = enterprise_data or {}
+            enterprise_data.pop("status", None)  # status will be set to PENDING
+            enterprise_data.pop("id", None)  # ID cannot be set for new entry
+            enterprise_data["approved_enterprise"] = approved_enterprise
+            enterprise = Enterprise.objects.create(
+                **enterprise_data,
+                status=EnterpriseStatus.PENDING,
+            )
+            new_project_enterprise = ProjectEnterprise.objects.create(
+                **validated_data,
+                enterprise=enterprise,
+                approved_project_enterprise=instance,
+                status=EnterpriseStatus.PENDING,
+            )
+            for ods_odp in ods_odp_data:
+                ProjectEnterpriseOdsOdp.objects.create(
+                    project_enterprise=new_project_enterprise, **ods_odp
+                )
+            return new_project_enterprise
+
         ods_odp_data = validated_data.pop("ods_odp")
         enterprise_data = validated_data.pop("enterprise", None)
+        enterprise_data.pop("approved_enterprise", None)  # cannot change the link
         if enterprise_data:
             enterprise = instance.enterprise
             for attr, value in enterprise_data.items():
