@@ -2,11 +2,14 @@ import useApi from '@ors/hooks/useApi'
 import { getResults } from '@ors/helpers'
 import { ProjectType } from '@ors/types/api_projects.ts'
 
-export function useGetProjects(filters: Record<string, any>) {
+export function useGetProjects(
+  filters: Record<string, any>,
+  withCache: boolean = false,
+) {
   const { data, ...rest } = useApi<ProjectType[]>({
     options: {
       params: filters,
-      withStoreCache: false,
+      withStoreCache: withCache,
     },
     path: '/api/projects/v2/',
   })

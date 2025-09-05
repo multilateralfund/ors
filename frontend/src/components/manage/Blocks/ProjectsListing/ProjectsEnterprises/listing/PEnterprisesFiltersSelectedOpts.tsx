@@ -1,6 +1,3 @@
-import { useContext } from 'react'
-
-import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { displaySelectedOption } from '../../HelperComponents'
 import { formatEntity, getAreFiltersApplied } from '../../utils'
 
@@ -8,6 +5,7 @@ import { Typography } from '@mui/material'
 import { map } from 'lodash'
 
 export const initialParams = {
+  project_id: [],
   country_id: [],
   status: [],
 }
@@ -20,39 +18,34 @@ const PEnterprisesFiltersSelectedOpts = ({
   handleFilterChange,
   handleParamsChange,
 }: any) => {
-  const { canViewProjects } = useContext(PermissionsContext)
-
   const areFiltersApplied = getAreFiltersApplied(filters)
 
   const filterSelectedOpts = [
     {
+      entities: formatEntity(filters?.['project_id'] ?? []),
+      entityIdentifier: 'project_id',
+    },
+    {
       entities: formatEntity(commonSlice.countries.data),
       entityIdentifier: 'country_id',
-      hasPermissions: true,
     },
     {
       entities: formatEntity(enterpriseStatuses),
       entityIdentifier: 'status',
-      hasPermissions: true,
     },
   ]
 
   return (
-    (areFiltersApplied || filters?.search) && (
+    areFiltersApplied && (
       <div className="mt-[6px] flex flex-wrap gap-2">
-        {/* {canViewProjects &&
-          displaySelectedOption(formatEntity(clusters), 'cluster_id')} */}
-        {map(
-          filterSelectedOpts,
-          (selectedOpt) =>
-            selectedOpt.hasPermissions &&
-            displaySelectedOption(
-              filters,
-              selectedOpt.entities,
-              selectedOpt.entityIdentifier,
-              handleFilterChange,
-              handleParamsChange,
-            ),
+        {map(filterSelectedOpts, (selectedOpt) =>
+          displaySelectedOption(
+            filters,
+            selectedOpt.entities,
+            selectedOpt.entityIdentifier,
+            handleFilterChange,
+            handleParamsChange,
+          ),
         )}
         <Typography
           className="cursor-pointer content-center text-lg font-medium"
