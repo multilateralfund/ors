@@ -22,7 +22,7 @@ const PEnterprisesFilters = ({
     multiple: true,
     value: [],
     getOptionLabel: (option: any) => option?.name,
-    FieldProps: { className: 'mb-0 w-full md:w-[8.5rem] BPList' },
+    FieldProps: { className: 'mb-0 w-[8.5rem] BPList' },
     popupIcon: <IoChevronDown size="18" color="#2F2F38" />,
     componentsProps: {
       popupIndicator: {
@@ -34,7 +34,7 @@ const PEnterprisesFilters = ({
   }
 
   return (
-    <div className="grid h-full grid-cols-2 flex-wrap items-center gap-x-2 gap-y-2 border-0 border-solid md:flex">
+    <div className="flex h-full flex-wrap items-center gap-x-2 gap-y-2 border-0 border-solid">
       {!project_id && (
         <PEnterpriseProjectsFilter
           Input={{ placeholder: 'Project' }}

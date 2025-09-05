@@ -2,6 +2,7 @@
 
 import { useContext, useMemo, useRef, useState } from 'react'
 
+import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
@@ -81,6 +82,14 @@ export default function PEnterprisesWrapper() {
               </PageHeading>
             </div>
           </div>
+          {project_id && (
+            <div className="ml-auto mt-auto flex items-center gap-2.5">
+              <CancelLinkButton
+                title="Cancel"
+                href="/projects-listing/enterprises"
+              />
+            </div>
+          )}
         </div>
       </HeaderTitle>
       <form className="flex flex-col gap-6" ref={form} key={key}>
