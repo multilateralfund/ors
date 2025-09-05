@@ -11,6 +11,7 @@ from core.api.tests.factories import (
     ProjectEnterprise,
     ProjectEnterpriseOdsOdp,
 )
+from core.models.utils import EnterpriseStatus
 
 pytestmark = pytest.mark.django_db
 # pylint: disable=C8008,W0221,R0913
@@ -26,7 +27,7 @@ def setup_enterprises(project, project2, new_country, new_agency):
     enterprise3 = EnterpriseFactory(name="Enterprise 3")
     project_enterprise1 = ProjectEnterprise.objects.create(
         project=project,
-        enterprise=enterprise1,
+        enterprise=enterprise1
     )
     ProjectEnterpriseOdsOdp.objects.create(project_enterprise=project_enterprise1)
     ProjectEnterpriseOdsOdp.objects.create(project_enterprise=project_enterprise1)
@@ -78,15 +79,17 @@ class TestListProjectEnterprise(BaseTest):
         project2.country = new_country
         project2.meta_project.lead_agency = new_agency
         project2.save()
-
+        enterprise1, _,_ = _setup_enterprises
+        enterprise1.status = EnterpriseStatus.APPROVED
+        enterprise1.save()
         # test for different user roles
         _test_user(user, 403)
         _test_user(viewer_user, 200, response_count=1)
         _test_user(agency_user, 200, response_count=1)
         _test_user(agency_inputter_user, 200, response_count=1)
-        _test_user(secretariat_viewer_user, 200, response_count=3)
-        _test_user(secretariat_v1_v2_edit_access_user, 200, response_count=3)
-        _test_user(secretariat_production_v1_v2_edit_access_user, 200, response_count=3)
+        _test_user(secretariat_viewer_user, 200, response_count=1)
+        _test_user(secretariat_v1_v2_edit_access_user, 200, response_count=1)
+        _test_user(secretariat_production_v1_v2_edit_access_user, 200, response_count=1)
         _test_user(secretariat_v3_edit_access_user, 200, response_count=3)
         _test_user(secretariat_production_v3_edit_access_user, 200, response_count=3)
         _test_user(mlfs_admin_user, 200, response_count=3)
@@ -187,6 +190,9 @@ class TestProjectRetrieveProjectEnterprise:
         new_country,
         new_agency,
     ):
+        enterprise1, _, _ = _setup_enterprises
+        enterprise1.status = EnterpriseStatus.APPROVED
+        enterprise1.save()
         project2.agency = new_agency
         project2.country = new_country
         project2.meta_project.lead_agency = new_agency
@@ -222,10 +228,10 @@ class TestProjectRetrieveProjectEnterprise:
             agency_inputter_user, 404, project_enterprise2
         )  # agency_inputter_user has no access to project2
 
-        _test_user(secretariat_viewer_user, 200, project_enterprise2)
-        _test_user(secretariat_v1_v2_edit_access_user, 200, project_enterprise2)
+        _test_user(secretariat_viewer_user, 404, project_enterprise2)
+        _test_user(secretariat_v1_v2_edit_access_user, 404, project_enterprise2)
         _test_user(
-            secretariat_production_v1_v2_edit_access_user, 200, project_enterprise2
+            secretariat_production_v1_v2_edit_access_user, 404, project_enterprise2
         )
         _test_user(secretariat_v3_edit_access_user, 200, project_enterprise2)
         _test_user(secretariat_production_v3_edit_access_user, 200, project_enterprise2)
