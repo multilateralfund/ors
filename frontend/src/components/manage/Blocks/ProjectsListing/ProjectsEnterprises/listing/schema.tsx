@@ -2,12 +2,18 @@ import { useContext } from 'react'
 
 import Link from '@ors/components/ui/Link/Link'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
+import { useStore } from '@ors/store'
 import { api } from '@ors/helpers'
 
-import { ICellRendererParams } from 'ag-grid-community'
 import { Button, Checkbox } from '@mui/material'
 import { enqueueSnackbar } from 'notistack'
 import { useParams } from 'wouter'
+import { find } from 'lodash'
+import {
+  ICellRendererParams,
+  ValueGetterParams,
+  ITooltipParams,
+} from 'ag-grid-community'
 
 const getColumnDefs = (
   gridApiRef: any,
@@ -16,8 +22,15 @@ const getColumnDefs = (
 ) => {
   const { project_id } = useParams<Record<string, string>>()
 
+  const commonSlice = useStore((state) => state.common)
+  const countries = commonSlice.countries.data
+
   const { canEditEnterprise, canApproveEnterprise } =
     useContext(PermissionsContext)
+
+  const getCountryName = (params: ValueGetterParams | ITooltipParams) =>
+    find(countries, (country) => country.id === params.data.enterprise?.country)
+      ?.name
 
   const approveEnterprise = async (enterpriseId: number) => {
     try {
@@ -100,6 +113,11 @@ const getColumnDefs = (
         minWidth: 120,
       },
       {
+        headerName: 'Country',
+        valueGetter: (params: ValueGetterParams) => getCountryName(params),
+        tooltipValueGetter: (params: ITooltipParams) => getCountryName(params),
+      },
+      {
         headerName: 'Location',
         field: 'enterprise.location',
         tooltipField: 'enterprise.location',
@@ -147,7 +165,7 @@ const getColumnDefs = (
       cellClass: 'ag-text-center ag-cell-ellipsed',
       minWidth: 90,
       resizable: true,
-      sortable: true,
+      sortable: false,
     },
   }
 }

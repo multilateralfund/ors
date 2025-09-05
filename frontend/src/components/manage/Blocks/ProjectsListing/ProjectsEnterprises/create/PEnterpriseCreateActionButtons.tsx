@@ -6,8 +6,8 @@ import { SubmitButton } from '../../HelperComponents'
 import { EnterpriseActionButtons } from '../../interfaces'
 import { api } from '@ors/helpers'
 
+import { useLocation, useParams } from 'wouter'
 import { enqueueSnackbar } from 'notistack'
-import { useParams } from 'wouter'
 
 const PEnterpriseCreateActionButtons = ({
   enterpriseData,
@@ -17,6 +17,7 @@ const PEnterpriseCreateActionButtons = ({
   setErrors,
   setOtherErrors,
 }: EnterpriseActionButtons) => {
+  const [_, setLocation] = useLocation()
   const { project_id } = useParams<Record<string, string>>()
   const { canEditEnterprise } = useContext(PermissionsContext)
 
@@ -42,6 +43,9 @@ const PEnterpriseCreateActionButtons = ({
         method: 'POST',
       })
       setEnterpriseId(result.id)
+      setLocation(
+        `/projects-listing/enterprises/${project_id}/edit/${result.id}`,
+      )
     } catch (error) {
       const errors = await error.json()
 

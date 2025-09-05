@@ -1,10 +1,8 @@
 'use client'
 
-import { useContext } from 'react'
-
 import Field from '@ors/components/manage/Form/Field'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions'
-import PermissionsContext from '@ors/contexts/PermissionsContext'
+import PEnterpriseProjectsFilter from './PEnterpriseProjectsFilter'
 import { tableColumns } from '../../constants'
 
 import { IoChevronDown } from 'react-icons/io5'
@@ -19,13 +17,12 @@ const PEnterprisesFilters = ({
   handleParamsChange,
 }: any) => {
   const { project_id } = useParams<Record<string, string>>()
-  const { canViewProjects } = useContext(PermissionsContext)
 
   const defaultProps = {
     multiple: true,
     value: [],
     getOptionLabel: (option: any) => option?.name,
-    FieldProps: { className: 'mb-0 w-full md:w-[8.5rem] BPList' },
+    FieldProps: { className: 'mb-0 w-[8.5rem] BPList' },
     popupIcon: <IoChevronDown size="18" color="#2F2F38" />,
     componentsProps: {
       popupIndicator: {
@@ -37,29 +34,24 @@ const PEnterprisesFilters = ({
   }
 
   return (
-    <div className="grid h-full grid-cols-2 flex-wrap items-center gap-x-2 gap-y-2 border-0 border-solid md:flex">
-      {/* {!project_id && canViewProjects && (
-        <Field
-          Input={{ placeholder: tableColumns.country }}
-          options={getFilterOptions(
-            filters,
-            commonSlice.countries.data,
-            'country_id',
-          )}
-          widget="autocomplete"
+    <div className="flex h-full flex-wrap items-center gap-x-2 gap-y-2 border-0 border-solid">
+      {!project_id && (
+        <PEnterpriseProjectsFilter
+          Input={{ placeholder: 'Project' }}
+          filters={filters}
+          {...defaultProps}
           onChange={(_: any, value: any) => {
-            const country = filters.country_id || []
-            const newValue = union(country, value)
+            const project_id = filters.project_id || []
+            const newValue = union(project_id, value)
 
-            handleFilterChange({ country_id: newValue })
+            handleFilterChange({ project_id: newValue })
             handleParamsChange({
-              country_id: newValue.map((item: any) => item.id).join(','),
+              project_id: newValue.map((item: any) => item.id).join(','),
               offset: 0,
             })
           }}
-          {...defaultProps}
         />
-      )} */}
+      )}
       <Field
         Input={{ placeholder: tableColumns.country }}
         options={getFilterOptions(
