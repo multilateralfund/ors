@@ -20,8 +20,13 @@ import { LuCopy } from 'react-icons/lu'
 import cx from 'classnames'
 
 export default function PListingWrapper() {
-  const { canViewBp, canUpdateBp, canUpdateProjects, canAssociateProjects } =
-    useContext(PermissionsContext)
+  const {
+    canViewBp,
+    canUpdateBp,
+    canViewProjects,
+    canUpdateProjects,
+    canAssociateProjects,
+  } = useContext(PermissionsContext)
 
   const [view, setView] = useState<ViewSelectorValuesType>('list')
   const [projectData, setProjectData] = useState<ListingProjectData>({
@@ -116,7 +121,10 @@ export default function PListingWrapper() {
     <>
       <div className="mt-5 flex flex-wrap justify-between gap-y-3">
         <div className="mb-2 flex flex-wrap gap-x-2 gap-y-3">
-          {getMenus({ canViewBp, canUpdateBp }, projectData).map((menu) => (
+          {getMenus(
+            { canViewBp, canUpdateBp, canViewProjects },
+            projectData,
+          ).map((menu) => (
             <ExpandableMenu menu={menu} />
           ))}
         </div>

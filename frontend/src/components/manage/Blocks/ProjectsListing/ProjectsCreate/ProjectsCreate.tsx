@@ -1,13 +1,6 @@
 'use client'
 
-import {
-  Dispatch,
-  ReactNode,
-  SetStateAction,
-  useContext,
-  useMemo,
-  useState,
-} from 'react'
+import { ReactNode, useContext, useMemo, useState } from 'react'
 
 import ProjectHistory from '@ors/components/manage/Blocks/ProjectsListing/ProjectView/ProjectHistory.tsx'
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
@@ -65,7 +58,6 @@ const ProjectsCreate = ({
   files,
   projectFiles,
   errors,
-  setErrors,
   hasSubmitted,
   project,
   fileErrors,
@@ -82,7 +74,6 @@ const ProjectsCreate = ({
     specificFields: ProjectSpecificFields[]
     mode: string
     errors: { [key: string]: [] }
-    setErrors: Dispatch<SetStateAction<{ [key: string]: [] }>>
     hasSubmitted: boolean
     fileErrors: string
     project?: ProjectTypeApi

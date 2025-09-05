@@ -1,4 +1,4 @@
-import PEnterprisesWrapper from '@ors/components/manage/Blocks/ProjectsListing/ProjectsEnterprises/PEnterprisesWrapper'
+import PEnterprisesWrapper from '@ors/components/manage/Blocks/ProjectsListing/ProjectsEnterprises/listing/PEnterprisesWrapper'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import usePageTitle from '@ors/hooks/usePageTitle'
 

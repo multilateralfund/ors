@@ -29,7 +29,7 @@ const ProjectsAssociate = ({ project }: { project: ProjectTypeApi }) => {
   const [mode, setMode] = useState('selection')
 
   const projectsAssociation = useGetProjectsAssociation(
-    initialFilters,
+    { ...initialFilters, limit: 50 },
     project_id,
   )
   const { loading, loaded } = projectsAssociation

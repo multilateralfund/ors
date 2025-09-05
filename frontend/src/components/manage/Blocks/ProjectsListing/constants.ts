@@ -36,6 +36,22 @@ export const tableColumns: { [key: string]: string } = {
   subsector_ids: 'Sub-sector(s)',
   production: 'Production',
   decision: 'Decision',
+  name: 'Enterprise name',
+  location: 'Enterprise location',
+  application: 'Enterprise application',
+  local_ownership: 'Percentage of goods exported to non-Article 5 countries',
+  export_to_non_a5: 'Percentage of enterprise locally (A5) owned',
+  ods_substance: 'Substance baseline technology',
+  ods_blend: 'Substance baseline technology',
+  phase_out_mt: 'Substance phase out (mt)',
+  ods_replacement: 'Replacement technology(ies)',
+  ods_replacement_phase_in: 'Replacement technology phased in (mt)',
+  capital_cost_approved: 'Capital cost approved',
+  operating_cost_approved: 'Operating cost approved',
+  funds_disbursed: 'Funds disbursed',
+  funds_approved: 'Funds approved',
+  cost_effectiveness_approved: 'Cost effectiveness approved',
+  remarks: 'Remarks',
 }
 
 export const defaultProps = {
@@ -149,3 +165,33 @@ export const disabledClassName =
 
 export const viewColumnsClassName =
   'flex flex-wrap gap-x-7 gap-y-5 [&>*]:basis-[calc(50%-14px)] md:[&>*]:basis-[calc(33.333%-19px)] lg:[&>*]:basis-[calc(25%-21px)]'
+
+export const initialOverviewFields = {
+  name: '',
+  country: null,
+  location: '',
+  application: '',
+  local_ownership: null,
+  export_to_non_a5: null,
+}
+
+export const initialSubstanceDetailsFields = {
+  ods_substance: null,
+  ods_blend: null,
+  phase_out_mt: null,
+  ods_replacement: '',
+  ods_replacement_phase_in: null,
+}
+
+export const initialFundingDetailsFields = {
+  capital_cost_approved: null,
+  operating_cost_approved: null,
+  funds_disbursed: null,
+}
+
+export const initialRemarksFields = {
+  remarks: '',
+}
+
+export const enabledButtonClassname =
+  'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow'

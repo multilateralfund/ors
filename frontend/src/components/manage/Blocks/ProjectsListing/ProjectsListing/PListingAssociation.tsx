@@ -17,10 +17,11 @@ export default function PListingAssociation({
 }: PListingProps) {
   const form = useRef<any>()
 
-  const [filters, setFilters] = useState({ ...initialFilters })
+  const updatedInitialFilters = { ...initialFilters, limit: 50 }
+  const [filters, setFilters] = useState(updatedInitialFilters)
   const key = useMemo(() => JSON.stringify(filters), [filters])
 
-  const projectsAssociation = useGetProjectsAssociation(initialFilters)
+  const projectsAssociation = useGetProjectsAssociation(updatedInitialFilters)
   const { loading, setParams, results = [] } = projectsAssociation
 
   const formattedResults = results.map((result) => {

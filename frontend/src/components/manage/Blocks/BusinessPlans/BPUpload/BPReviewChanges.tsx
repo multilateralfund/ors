@@ -4,6 +4,7 @@ import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { CancelButton } from '@ors/components/ui/Button/Button'
 import { getMeetingNr } from '@ors/components/manage/Utils/utilFunctions'
 import Link from '@ors/components/ui/Link/Link'
+import { enabledButtonClassname } from '../../ProjectsListing/constants'
 import { PeriodSelectorOption } from '../../Replenishment/types'
 import { getCurrentTriennium, getLatestBpYearRange } from '../utils'
 import { uploadFiles } from '@ors/helpers'
@@ -168,8 +169,7 @@ const BPReviewChanges = ({
         <div className="flex flex-wrap items-center gap-2.5">
           <Button
             className={cx('h-10 px-3 py-1', {
-              'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
-                errors.length === 0 && canUpdateBp,
+              [enabledButtonClassname]: errors.length === 0 && canUpdateBp,
             })}
             disabled={errors.length > 0 || !canUpdateBp}
             size="large"

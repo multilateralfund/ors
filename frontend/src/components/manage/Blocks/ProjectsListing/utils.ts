@@ -613,7 +613,7 @@ export const getMenus = (
   permissions: Record<string, boolean>,
   projectData?: ListingProjectData,
 ) => {
-  const { canViewBp, canUpdateBp } = permissions
+  const { canViewBp, canUpdateBp, canViewProjects } = permissions
   const { projectId, projectSubmissionStatus } = projectData ?? {}
 
   return [
@@ -640,6 +640,7 @@ export const getMenus = (
         {
           title: 'Update enterprises',
           url: `/projects-listing/enterprises${projectId ? `/${projectId}` : ''}`,
+          permissions: [canViewProjects],
           disabled:
             !!projectSubmissionStatus && projectSubmissionStatus !== 'Approved',
         },

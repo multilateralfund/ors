@@ -1,11 +1,10 @@
 import useApi from '@ors/hooks/useApi'
 
-export function useGetEnterprises(country_id: number) {
+export function useGetEnterprise(enterprise_id: string) {
   return useApi({
     options: {
-      params: { country_id },
       withStoreCache: false,
     },
-    path: 'api/enterprises',
+    path: `api/project-enterprise/${enterprise_id}/`,
   })
 }

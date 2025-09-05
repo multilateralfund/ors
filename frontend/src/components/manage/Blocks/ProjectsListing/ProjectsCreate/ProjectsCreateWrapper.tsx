@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import ProjectsHeader from '../ProjectSubmission/ProjectsHeader.tsx'
 import ProjectsCreate from './ProjectsCreate.tsx'
-import ProjectFormFooter from '../ProjectSubmission/ProjectFormFooter.tsx'
+import ProjectFormFooter from '../ProjectFormFooter.tsx'
 import { fetchSpecificFields } from '../hooks/getSpecificFields.ts'
 import {
   ProjectData,
@@ -136,15 +136,17 @@ const ProjectsCreateWrapper = () => {
           files,
           setFiles,
           errors,
-          setErrors,
           hasSubmitted,
           fileErrors,
           specificFieldsLoaded,
         }}
       />
       <ProjectFormFooter
+        id={projectId}
+        href={`/projects-listing/${projectId}`}
         successMessage="Submission was successful."
-        {...{ projectId, nonFieldsErrors, fileErrors, otherErrors }}
+        successRedirectMessage="View project."
+        {...{ nonFieldsErrors, otherErrors }}
       />
     </>
   )

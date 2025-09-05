@@ -4,7 +4,7 @@ import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 
 import ProjectsHeader from '../ProjectSubmission/ProjectsHeader'
 import ProjectsCreate from '../ProjectsCreate/ProjectsCreate'
-import ProjectFormFooter from '../ProjectSubmission/ProjectFormFooter'
+import ProjectFormFooter from '../ProjectFormFooter'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
 import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
@@ -449,7 +449,6 @@ const ProjectsEdit = ({
             setFiles,
             projectFiles,
             errors,
-            setErrors,
             hasSubmitted,
             fileErrors,
             trancheErrors,
@@ -463,12 +462,15 @@ const ProjectsEdit = ({
           loadedFiles={loadedFiles && filesLoaded.current}
         />
         <ProjectFormFooter
+          id={projectId}
+          href={`/projects-listing/${projectId}`}
           successMessage={
             isEditMode
               ? 'Updated project successfully.'
               : 'Submission was successful.'
           }
-          {...{ projectId, nonFieldsErrors, otherErrors }}
+          successRedirectMessage="View project."
+          {...{ nonFieldsErrors, otherErrors }}
         />
       </>
     )

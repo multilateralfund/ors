@@ -58,6 +58,9 @@ import ProjectsSubmitPage from '@ors/app/projects_listing/[project_id]/submit/pa
 import ProjectsListingProjectPage from '@ors/app/projects_listing/[project_id]/page'
 import ProjectsListingArchiveProjectPage from '@ors/app/projects_listing/[project_id]/archive/page'
 import ProjectsEnterprises from '@ors/app/projects_listing/enterprises/page'
+import ProjectsEnterprisesCreate from '@ors/app/projects_listing/enterprises/[project_id]/create/page'
+import ProjectsEnterprisesView from '@ors/app/projects_listing/enterprises/[project_id]/view/[enterprise_id]/page'
+import ProjectsEnterprisesEdit from '@ors/app/projects_listing/enterprises/[project_id]/edit/[enterprise_id]/page'
 
 import ProjectsDataProvider from './contexts/Projects/ProjectsDataProvider'
 import BPDataProvider from './contexts/BusinessPlans/BPDataProvider'
@@ -301,6 +304,15 @@ export default function App() {
         </Route>
         <Route path="/projects-listing/enterprises/:project_id">
           <ProjectsEnterprises />
+        </Route>
+        <Route path="/projects-listing/enterprises/:project_id/create">
+          <ProjectsEnterprisesCreate />
+        </Route>
+        <Route path="/projects-listing/enterprises/:project_id/view/:enterprise_id">
+          <ProjectsEnterprisesView />
+        </Route>
+        <Route path="/projects-listing/enterprises/:project_id/edit/:enterprise_id">
+          <ProjectsEnterprisesEdit />
         </Route>
         <Route path="/projects-listing/:project_id">
           <ProjectsDataProvider>
