@@ -324,7 +324,7 @@ const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
     }
   }
 
-  const EditButton = ({ title, disabled = false }: { title: string, disabled: bool }) => (
+  const EditButton = ({ title, disabled = false }: { title: string, disabled?: boolean }) => (
     <Link
       className="px-4 py-2 shadow-none"
       color="secondary"
