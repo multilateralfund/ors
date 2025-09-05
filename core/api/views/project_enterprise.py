@@ -21,6 +21,7 @@ from core.api.serializers.project_enterprise import (
     ProjectEnterpriseSerializer,
 )
 from core.api.filters.project import EnterpriseFilter, ProjectEnterpriseFilter
+from core.models.utils import EnterpriseStatus
 
 
 class EnterpriseViewSet(
@@ -46,7 +47,26 @@ class EnterpriseViewSet(
     model = Enterprise
     search_fields = ["code", "name"]
     serializer_class = EnterpriseSerializer
-    queryset = Enterprise.objects.all().select_related("country")
+
+    def filter_permissions_queryset(self, queryset):
+        """
+        Filter the queryset based on the user's permissions.
+        """
+
+        user = self.request.user
+        if user.is_superuser:
+            return queryset
+
+        if not user.has_perm("core.has_project_enterprise_approval_access"):
+            queryset = queryset.filter(status=EnterpriseStatus.APPROVED)
+
+        return queryset
+
+    def get_queryset(self):
+        queryset = Enterprise.objects.all()
+        queryset = self.filter_permissions_queryset(queryset)
+        queryset = queryset.select_related("country")
+        return queryset
 
     @property
     def permission_classes(self):
@@ -108,6 +128,11 @@ class ProjectEnterpriseViewSet(
         if user.is_superuser:
             return queryset
 
+        if not user.has_perm(
+            "core.has_project_enterprise_approval_access"
+        ) or not user.has_perm("core.has_project_enterprise_edit_access"):
+            queryset = queryset.filter(status=EnterpriseStatus.APPROVED)
+
         if not user.has_perm("core.can_view_production_projects"):
             queryset = queryset.filter(project__production=False)
 
@@ -139,12 +164,30 @@ class ProjectEnterpriseViewSet(
         serializer = ProjectEnterpriseSerializer
         return serializer
 
+    @swagger_auto_schema(
+        operation_description="""
+        Creates a new Pending Project Enterprise.
+        A new pending Enterprise will be created. If an ID is provided for the enterprise,
+        the given ID will be used to link the new pending one to the existing approved enterprise.
+        """,
+        responses={status.HTTP_200_OK: ProjectEnterpriseSerializer(many=True)},
+    )
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save(request=request)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    @swagger_auto_schema(
+        operation_description="""
+        If the Project Enterprise is in 'Pending' status, it is updated as normal.
+        The enterprise entry cannot be changed, so the fields will be applied to already linked enterprise.
+        If the Project Enterprise is in 'Approved' status, a new Project Enterprise entry will be
+        created in 'Pending' status, linked to the approved one. The linked enterprise will also be duplicated
+        in 'Pending' status, with the updated fields.
+        """,
+        responses={status.HTTP_200_OK: ProjectEnterpriseSerializer(many=True)},
+    )
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop("partial", False)
         instance = self.get_object()
@@ -167,12 +210,12 @@ class ProjectEnterpriseViewSet(
     )
     def approve(self, request, *args, **kwargs):
         instance = self.get_object()
-        if instance.status != ProjectEnterprise.EnterpriseStatus.PENDING:
+        if instance.status != EnterpriseStatus.PENDING:
             return Response(
                 {"detail": "Only pending enterprises can be approved."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        instance.status = ProjectEnterprise.EnterpriseStatus.APPROVED
+        instance.status = EnterpriseStatus.APPROVED
         instance.save()
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -184,5 +227,5 @@ class ProjectEnterpriseStatusView(APIView):
     """
 
     def get(self, request, *args, **kwargs):
-        choices = ProjectEnterprise.EnterpriseStatus.choices
+        choices = EnterpriseStatus.choices
         return Response(choices)

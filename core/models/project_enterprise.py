@@ -3,6 +3,7 @@ from django.db import models
 from core.models.blend import Blend
 from core.models.project import Project
 from core.models.substance import Substance
+from core.models.utils import EnterpriseStatus
 
 # pylint: disable=C0302
 
@@ -19,6 +20,20 @@ class EnterpriseManager(models.Manager):
 
 
 class Enterprise(models.Model):
+
+    status = models.CharField(
+        max_length=64,
+        choices=EnterpriseStatus.choices,
+        default=EnterpriseStatus.PENDING,
+    )
+    approved_enterprise = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="pending_enterprises",
+        help_text="If status is 'Pending', link to the approved enterpris (if any)",
+    )
     code = models.CharField(
         max_length=128,
         null=True,
@@ -91,16 +106,20 @@ class Enterprise(models.Model):
 
 class ProjectEnterprise(models.Model):
 
-    class EnterpriseStatus(models.TextChoices):
-        PENDING = "Pending Approval", "Pending Approval"
-        APPROVED = "Approved", "Approved"
-
     project = models.ForeignKey(
         Project,
         on_delete=models.CASCADE,
         related_name="enterprises",
         blank=True,
         null=True,
+    )
+    approved_project_enterprise = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="pending_project_enterprises",
+        help_text="If status is 'Pending', link to the approved project enterprise (if any)",
     )
     enterprise = models.ForeignKey(
         Enterprise,

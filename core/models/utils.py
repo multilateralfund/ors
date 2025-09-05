@@ -2,6 +2,11 @@ from django.core.files.storage import storages
 from django.db import models
 
 
+class EnterpriseStatus(models.TextChoices):
+    PENDING = "Pending Approval", "Pending Approval"
+    APPROVED = "Approved", "Approved"
+
+
 class SubstancesType(models.TextChoices):
     CFC = "CFC", "CFC"
     HCFC = "HCFC", "HCFC"

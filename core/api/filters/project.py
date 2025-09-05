@@ -18,7 +18,7 @@ from core.models.project_metadata import (
     ProjectSubSector,
     ProjectType,
 )
-from core.models.utils import SubstancesType
+from core.models.utils import SubstancesType, EnterpriseStatus
 
 
 class ProjectFilterBackend(DjangoFilterBackend):
@@ -130,7 +130,7 @@ class ProjectEnterpriseFilter(filters.FilterSet):
         widget=CSVWidget,
     )
     status = filters.MultipleChoiceFilter(
-        choices=ProjectEnterprise.EnterpriseStatus.choices,
+        choices=EnterpriseStatus.choices,
         widget=CSVWidget,
     )
 

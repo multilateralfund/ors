@@ -31,6 +31,7 @@ class EnterpriseAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         exclude = [
             "project_enterprises",
+            "pending_enterprises",
         ]
         data = get_final_display_list(Enterprise, exclude)
         return data
@@ -51,8 +52,9 @@ class ProjectEnterpriseAdmin(admin.ModelAdmin):
         exclude = [
             "ods_odp",
             "project",
+            "pending_project_enterprises",
+            "approved_project_enterprise",
         ]
-
         data = get_final_display_list(ProjectEnterprise, exclude)
         return data
 
