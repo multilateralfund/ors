@@ -3,7 +3,6 @@
 # the max year for the cp reports to be imported
 # if the year is greater than this value, the cp report will not be imported
 from core.models.project import MetaProject, Project
-from core.models.project_enterprise import ProjectEnterprise
 
 IMPORT_DB_MAX_YEAR = 2018
 # the records from 95-04 are the oldest records that we have
@@ -31,7 +30,7 @@ def get_meta_project_code(country, cluster, serial_number=None):
     return f"{country_code}/{cluster_code}/{serial_number}"
 
 
-def get_meta_project_new_code(projects):
+def get_meta_project_new_code(projects, meta_project=None):
     """
     Get a new meta project code based on the existing projects
 
@@ -44,14 +43,44 @@ def get_meta_project_new_code(projects):
     clusters_codes = sorted(
         list({getattr(project.cluster, "code", "-") for project in projects})
     )
-
-    new_code_clusters = "/".join(clusters_codes)
+    # If meta_project is provided and has a new_code, preserve existing clusters and update with current ones
+    if meta_project and getattr(meta_project, "new_code", None):
+        # Extract clusters from existing new_code
+        parts = meta_project.new_code.split("/")
+        if len(parts) >= 2:
+            existing_clusters = parts[1].split("-")
+            # Add new clusters and remove missing ones
+            updated_clusters = [
+                code for code in existing_clusters if code in clusters_codes
+            ]
+            # Add any new clusters not present before
+            for code in clusters_codes:
+                if code not in updated_clusters:
+                    updated_clusters.append(code)
+            clusters_codes = updated_clusters
+    new_code_clusters = "-".join(clusters_codes)
     code_prefix = f"{country_code}/{new_code_clusters}"
 
     # Count existing MetaProjects with new_code starting with this prefix
     count = MetaProject.objects.filter(new_code__startswith=code_prefix).count()
     serial_number = count + 1
     return f"{code_prefix}/{serial_number}"
+
+
+def regenerate_meta_project_new_code(meta_project):
+    """
+    Regenerate the new_code for a MetaProject based on its projects
+
+    @param meta_project: MetaProject instance
+
+    @return: str
+    """
+    projects = Project.objects.filter(
+        meta_project=meta_project, submission_status__name="Approved"
+    )
+    new_code = get_meta_project_new_code(projects, meta_project)
+    meta_project.new_code = new_code
+    meta_project.save()
 
 
 def get_project_sub_code(
@@ -94,13 +123,3 @@ def get_project_sub_code(
         f"{country_code}/{cluster_code}/{serial_number}/{agency_code}/{project_type_code}/"
         f"{sector_code}/{meetings_code}"
     )
-
-
-def get_enterprise_code(country, serial_number=None):
-    """
-    Get a new enterprise code for a project
-    """
-    if not serial_number:
-        serial_number = ProjectEnterprise.objects.get_next_serial_number(country.id)
-    country_code = country.iso3 or country.abbr if country else "-"
-    return f"{country_code}/{serial_number}"

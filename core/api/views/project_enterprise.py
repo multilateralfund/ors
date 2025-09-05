@@ -15,9 +15,47 @@ from core.api.permissions import (
     HasProjectEnterpriseEditAccess,
     HasProjectEnterpriseApprovalAccess,
 )
-from core.models.project_enterprise import ProjectEnterprise
-from core.api.serializers.project_enterprise import ProjectEnterpriseSerializer
-from core.api.filters.project import ProjectEnterpriseFilter
+from core.models.project_enterprise import Enterprise, ProjectEnterprise
+from core.api.serializers.project_enterprise import (
+    EnterpriseSerializer,
+    ProjectEnterpriseSerializer,
+)
+from core.api.filters.project import EnterpriseFilter, ProjectEnterpriseFilter
+
+
+class EnterpriseViewSet(
+    viewsets.GenericViewSet,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+):
+    filterset_class = EnterpriseFilter
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.OrderingFilter,
+        filters.SearchFilter,
+    ]
+    ordering_fields = [
+        "code",
+        "name",
+        "country__name",
+        "location",
+        "application",
+        "local_ownership",
+        "export_to_non_a5",
+    ]
+    model = Enterprise
+    search_fields = ["code", "name"]
+    serializer_class = EnterpriseSerializer
+    queryset = Enterprise.objects.all().select_related("country")
+
+    @property
+    def permission_classes(self):
+        if self.action in [
+            "list",
+            "retrieve",
+        ]:
+            return [HasProjectV2ViewAccess]
+        return [DenyAll]
 
 
 class ProjectEnterpriseViewSet(
@@ -26,6 +64,7 @@ class ProjectEnterpriseViewSet(
     mixins.CreateModelMixin,
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
 ):
     filterset_class = ProjectEnterpriseFilter
     filter_backends = [
@@ -35,12 +74,11 @@ class ProjectEnterpriseViewSet(
     ]
     ordering_fields = [
         "code",
-        "enterprise",
+        "enterprise__name",
         "location",
-        "application",
         "status",
     ]
-    search_fields = ["code", "enterprise"]
+    search_fields = ["enterprise__code", "enterprise__name"]
 
     @property
     def permission_classes(self):
@@ -52,6 +90,7 @@ class ProjectEnterpriseViewSet(
         if self.action in [
             "create",
             "update",
+            "destroy",
         ]:
             return [HasProjectEnterpriseEditAccess]
         if self.action in [
@@ -90,6 +129,8 @@ class ProjectEnterpriseViewSet(
         queryset = self.filter_permissions_queryset(queryset)
         queryset = queryset.select_related(
             "project",
+            "enterprise",
+            "enterprise__country",
             "project__country",
         )
         return queryset
