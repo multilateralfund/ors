@@ -173,7 +173,7 @@ const TableProps: CPCreateTableProps = {
 }
 
 const CPCreate: React.FC = () => {
-  const { isCPCountryUserType, canEditCPReports } =
+  const { isCPCountryUserType, canEditCPReports, canSubmitFinalCPReport } =
     useContext(PermissionsContext)
   const tabsEl = React.useRef<HTMLDivElement>(null)
   const [_, setLocation] = useLocation()
@@ -635,6 +635,7 @@ const CPCreate: React.FC = () => {
                 size="large"
                 variant="contained"
                 disabled={
+                  !canSubmitFinalCPReport ||
                   !!existingReports.data?.length || existingReports.loading
                 }
                 onClick={handleShowConfirmation}
