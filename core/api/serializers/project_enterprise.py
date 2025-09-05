@@ -133,10 +133,10 @@ class ProjectEnterpriseSerializer(serializers.ModelSerializer):
                 enterprise = Enterprise.objects.get(
                     id=enterprise_data_id, status=EnterpriseStatus.APPROVED
                 )
-            except Enterprise.DoesNotExist:
+            except Enterprise.DoesNotExist as exc:
                 raise serializers.ValidationError(
                     "Enterprise with given ID does not exist."
-                )
+                ) from exc
             approved_enterprise = enterprise
         else:
             approved_enterprise = None

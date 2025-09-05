@@ -14,7 +14,7 @@ from core.api.tests.factories import (
 from core.models.utils import EnterpriseStatus
 
 pytestmark = pytest.mark.django_db
-# pylint: disable=C8008,W0221,R0913
+# pylint: disable=C8008,W0221,R0913,R0914
 
 
 @pytest.fixture(name="_setup_enterprises")
@@ -26,8 +26,7 @@ def setup_enterprises(project, project2, new_country, new_agency):
     enterprise2 = EnterpriseFactory(name="Enterprise 2")
     enterprise3 = EnterpriseFactory(name="Enterprise 3")
     project_enterprise1 = ProjectEnterprise.objects.create(
-        project=project,
-        enterprise=enterprise1
+        project=project, enterprise=enterprise1
     )
     ProjectEnterpriseOdsOdp.objects.create(project_enterprise=project_enterprise1)
     ProjectEnterpriseOdsOdp.objects.create(project_enterprise=project_enterprise1)
@@ -79,7 +78,7 @@ class TestListProjectEnterprise(BaseTest):
         project2.country = new_country
         project2.meta_project.lead_agency = new_agency
         project2.save()
-        enterprise1, _,_ = _setup_enterprises
+        enterprise1, _, _ = _setup_enterprises
         enterprise1.status = EnterpriseStatus.APPROVED
         enterprise1.save()
         # test for different user roles
