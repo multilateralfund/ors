@@ -20,7 +20,7 @@ const PEnterpriseFundingDetailsSection = ({
 
   return (
     <>
-      <div className="mt-4 flex w-full flex-col gap-4">
+      <div className="flex w-full flex-col gap-4">
         <div className={viewColumnsClassName}>
           {numberDetailItem(
             tableColumns.capital_cost_approved + ' (US $)',

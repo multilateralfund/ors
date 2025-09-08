@@ -1,3 +1,6 @@
+import type { ApiAgency } from '@ors/@types/api_agencies'
+import type { Country } from '@ors/@types/store'
+
 import { useEffect, useMemo, useRef } from 'react'
 
 import Loading from '@ors/components/theme/Loading/Loading'
@@ -7,6 +10,7 @@ import { useGetYearRanges } from '@ors/components/manage/Blocks/BusinessPlans/us
 import { useGetActivities } from '@ors/components/manage/Blocks/BusinessPlans/useGetActivities'
 import { ProjectDataProps } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
 import { ApiBPActivity } from '@ors/types/api_bp_get'
+import { useStore } from '@ors/store'
 
 import { find, map } from 'lodash'
 
@@ -52,12 +56,20 @@ const LinkedBPTable = ({
 }: LinkedBPTableProps) => {
   const projIdentifiers = projectData.projIdentifiers
 
+  const agencies = useStore((state) => state?.common.agencies_with_all.data)
+  const countries = useStore((state) => state?.common.countries.data)
+
+  const allAgenciesAgency =
+    agencies.filter((a: ApiAgency) => a.name === 'All agencies')?.[0] ?? null
+  const globalCountry =
+    countries.filter((c: Country) => c.name === 'Global')?.[0] ?? null
+
   const filters = {
     bp_status: 'Endorsed',
     year_start: period?.year_start,
     year_end: period?.year_start + 2,
-    country_id: projIdentifiers.country,
-    agency_id: projIdentifiers.agency,
+    country_id: [projIdentifiers.country, globalCountry.id],
+    agency_id: [projIdentifiers.agency, allAgenciesAgency.id],
     project_cluster_id: projIdentifiers.cluster,
     limit: ACTIVITIES_PER_PAGE_TABLE,
     offset: 0,

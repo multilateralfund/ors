@@ -324,13 +324,20 @@ const ViewHeaderActions = (props: ViewHeaderActionsProps) => {
     }
   }
 
-  const EditButton = ({ title }: { title: string }) => (
+  const EditButton = ({
+    title,
+    disabled = false,
+  }: {
+    title: string
+    disabled?: boolean
+  }) => (
     <Link
       className="px-4 py-2 shadow-none"
       color="secondary"
       href={`/country-programme/${report.country?.iso3}/${report.data?.year}/edit/`}
       size="large"
       variant="contained"
+      disabled={disabled}
       button
     >
       {title}
@@ -626,7 +633,10 @@ const EditHeaderActions = ({
                 color="secondary"
                 size="large"
                 variant="contained"
-                disabled={!canSubmitFinalCPReport && isDraft}
+                disabled={
+                  !canSubmitFinalCPReport ||
+                  (!canSubmitFinalCPReport && isDraft)
+                }
                 onClick={handleShowConfirmation}
               >
                 {isDraft ? 'Submit final version' : 'Submit new version'}

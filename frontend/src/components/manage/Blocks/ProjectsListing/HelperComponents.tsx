@@ -320,6 +320,7 @@ export const displaySelectedOption = (
 ) =>
   filters?.[entityIdentifier]?.map((entity: any) => {
     const entityId = entity[field]
+    const entityData = entities?.get(entityId)
 
     return (
       <Typography
@@ -328,7 +329,10 @@ export const displaySelectedOption = (
         component="p"
         variant="h6"
       >
-        {entities?.get(entityId)?.name || entities?.get(entityId)?.label}
+        {entityData?.name ||
+          entityData?.label ||
+          entityData?.code ||
+          entityData?.code_legacy}
         <IoClose
           className="cursor-pointer"
           size={18}
