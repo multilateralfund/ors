@@ -99,7 +99,7 @@ const getColumnDefs = (
           <div className="flex items-center p-2">
             <Link
               className="ml-2 overflow-hidden truncate whitespace-nowrap"
-              href={`/projects-listing/enterprises/${props.data.project}/view/${props.data.id}`}
+              href={`/projects-listing/projects-enterprises/${props.data.project}/view/${props.data.id}`}
             >
               {props.value}
             </Link>

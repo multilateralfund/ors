@@ -57,7 +57,9 @@ const PEnterprisesCreateWrapper = () => {
   }
 
   if (!canEditEnterprise) {
-    return <Redirect to={`/projects-listing/enterprises/${project_id}`} />
+    return (
+      <Redirect to={`/projects-listing/projects-enterprises/${project_id}`} />
+    )
   }
 
   return (
@@ -89,9 +91,9 @@ const PEnterprisesCreateWrapper = () => {
           />
           <ProjectFormFooter
             id={enterpriseId}
-            href={`/projects-listing/enterprises/${project_id}/view/${enterpriseId}`}
+            href={`/projects-listing/projects-enterprises/${project_id}/view/${enterpriseId}`}
             successMessage="Enterprise was created successfully."
-            successRedirectMessage="View enterprise."
+            successRedirectMessage="View project enterprise."
             {...{ nonFieldsErrors, otherErrors }}
           />
         </>

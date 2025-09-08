@@ -76,7 +76,7 @@ export default function PEnterprisesWrapper() {
                   />
                 ) : (
                   <span className="font-medium text-[#4D4D4D]">
-                    Enterprises
+                    Projects enterprises
                   </span>
                 )}
               </PageHeading>
@@ -86,7 +86,7 @@ export default function PEnterprisesWrapper() {
             <div className="ml-auto mt-auto flex items-center gap-2.5">
               <CancelLinkButton
                 title="Cancel"
-                href="/projects-listing/enterprises"
+                href="/projects-listing/projects-enterprises"
               />
             </div>
           )}
@@ -107,19 +107,20 @@ export default function PEnterprisesWrapper() {
             <div className="mb-auto flex gap-2">
               <Link
                 className="no-underline"
-                href={`/projects-listing/enterprises/${project_id}/create`}
+                href={`/projects-listing/projects-enterprises/${project_id}/create`}
               >
                 <Button
                   className="h-fit border border-solid border-primary bg-white px-3 py-1 normal-case text-primary shadow-none"
                   variant="contained"
                   size="large"
                 >
-                  Add enterprise <IoAddCircle className="ml-1.5" size={20} />
+                  Add project enterprise
+                  <IoAddCircle className="ml-1.5" size={20} />
                 </Button>
               </Link>
               <Link
                 className="p-0 no-underline"
-                href={`/projects-listing/enterprises/${project_id}/edit/${enterpriseId}`}
+                href={`/projects-listing/projects-enterprises/${project_id}/edit/${enterpriseId}`}
                 disabled={!enterpriseId}
                 button
               >
@@ -129,7 +130,8 @@ export default function PEnterprisesWrapper() {
                   variant="contained"
                   size="large"
                 >
-                  Edit enterprise <FiEdit className="ml-1.5" size={18} />
+                  Edit project enterprise
+                  <FiEdit className="ml-1.5" size={18} />
                 </Button>
               </Link>
             </div>

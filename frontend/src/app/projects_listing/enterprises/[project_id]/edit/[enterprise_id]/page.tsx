@@ -3,7 +3,7 @@ import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import usePageTitle from '@ors/hooks/usePageTitle'
 
 export default function EnterprisesEdit() {
-  usePageTitle('Enterprise edit')
+  usePageTitle('Project enterprise edit')
 
   return (
     <PageWrapper>

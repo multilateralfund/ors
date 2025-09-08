@@ -30,7 +30,9 @@ const PEnterprisesEditWrapper = () => {
   }
 
   if (!canEditEnterprise || enterprise?.error) {
-    return <Redirect to={`/projects-listing/enterprises/${project_id}`} />
+    return (
+      <Redirect to={`/projects-listing/projects-enterprises/${project_id}`} />
+    )
   }
 
   return (

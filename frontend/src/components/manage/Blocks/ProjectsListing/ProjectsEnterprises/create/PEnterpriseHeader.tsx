@@ -31,11 +31,11 @@ const PEnterpriseHeader = ({
             <PageHeading>
               {mode === 'edit' ? (
                 <PageTitle
-                  pageTitle="Edit enterprise"
+                  pageTitle="Edit project enterprise"
                   projectTitle={enterpriseTitle ?? ''}
                 />
               ) : (
-                'New enterprise submission'
+                'New project enterprise submission'
               )}
             </PageHeading>
           </div>

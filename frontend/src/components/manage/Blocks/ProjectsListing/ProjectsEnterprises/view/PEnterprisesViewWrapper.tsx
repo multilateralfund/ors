@@ -34,7 +34,9 @@ const PEnterprisesViewWrapper = () => {
   }
 
   if (enterprise?.error) {
-    return <Redirect to={`/projects-listing/enterprises/${project_id}`} />
+    return (
+      <Redirect to={`/projects-listing/projects-enterprises/${project_id}`} />
+    )
   }
 
   return (
@@ -51,7 +53,7 @@ const PEnterprisesViewWrapper = () => {
                 <RedirectBackButton />
                 <PageHeading>
                   <PageTitle
-                    pageTitle="View enterprise"
+                    pageTitle="View project enterprise"
                     projectTitle={data.enterprise.name}
                   />
                 </PageHeading>
@@ -59,12 +61,12 @@ const PEnterprisesViewWrapper = () => {
               <div className="mt-auto flex flex-wrap items-center gap-2.5">
                 <CancelLinkButton
                   title="Cancel"
-                  href={`/projects-listing/enterprises/${project_id}`}
+                  href={`/projects-listing/projects-enterprises/${project_id}`}
                 />
                 {canEditEnterprise && (
                   <CustomLink
                     className="border border-solid border-secondary px-4 py-2 shadow-none hover:border-primary"
-                    href={`/projects-listing/enterprises/${project_id}/edit/${enterprise_id}`}
+                    href={`/projects-listing/projects-enterprises/${project_id}/edit/${enterprise_id}`}
                     color="secondary"
                     variant="contained"
                     size="large"

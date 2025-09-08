@@ -299,19 +299,19 @@ export default function App() {
             <ProjectsSettingsPage />
           </ProjectsDataProvider>
         </Route>
-        <Route path="/projects-listing/enterprises">
+        <Route path="/projects-listing/projects-enterprises">
           <ProjectsEnterprises />
         </Route>
-        <Route path="/projects-listing/enterprises/:project_id">
+        <Route path="/projects-listing/projects-enterprises/:project_id">
           <ProjectsEnterprises />
         </Route>
-        <Route path="/projects-listing/enterprises/:project_id/create">
+        <Route path="/projects-listing/projects-enterprises/:project_id/create">
           <ProjectsEnterprisesCreate />
         </Route>
-        <Route path="/projects-listing/enterprises/:project_id/view/:enterprise_id">
+        <Route path="/projects-listing/projects-enterprises/:project_id/view/:enterprise_id">
           <ProjectsEnterprisesView />
         </Route>
-        <Route path="/projects-listing/enterprises/:project_id/edit/:enterprise_id">
+        <Route path="/projects-listing/projects-enterprises/:project_id/edit/:enterprise_id">
           <ProjectsEnterprisesEdit />
         </Route>
         <Route path="/projects-listing/:project_id">

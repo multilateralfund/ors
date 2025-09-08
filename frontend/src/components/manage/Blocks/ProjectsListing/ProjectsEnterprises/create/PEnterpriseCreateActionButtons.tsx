@@ -44,7 +44,7 @@ const PEnterpriseCreateActionButtons = ({
       })
       setEnterpriseId(result.id)
       setLocation(
-        `/projects-listing/enterprises/${project_id}/edit/${result.id}`,
+        `/projects-listing/projects-enterprises/${project_id}/edit/${result.id}`,
       )
     } catch (error) {
       const errors = await error.json()
@@ -71,7 +71,7 @@ const PEnterpriseCreateActionButtons = ({
     <div className="flex flex-wrap items-center gap-2.5">
       <CancelLinkButton
         title="Cancel"
-        href={`/projects-listing/enterprises/${project_id}`}
+        href={`/projects-listing/projects-enterprises/${project_id}`}
       />
       {canEditEnterprise && (
         <SubmitButton
