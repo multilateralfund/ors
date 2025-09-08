@@ -1,6 +1,4 @@
-import { useContext } from 'react'
-
-import PermissionsContext from '@ors/contexts/PermissionsContext'
+import { useParams } from 'wouter'
 import { displaySelectedOption } from '../../HelperComponents'
 import { formatEntity, getAreFiltersApplied } from '../../utils'
 
@@ -8,6 +6,7 @@ import { Typography } from '@mui/material'
 import { map } from 'lodash'
 
 export const initialParams = {
+  project_id: [],
   country_id: [],
   status: [],
 }
@@ -20,32 +19,35 @@ const PEnterprisesFiltersSelectedOpts = ({
   handleFilterChange,
   handleParamsChange,
 }: any) => {
-  const { canViewProjects } = useContext(PermissionsContext)
+  const { project_id } = useParams<Record<string, string>>()
 
   const areFiltersApplied = getAreFiltersApplied(filters)
 
   const filterSelectedOpts = [
     {
+      entities: !project_id ? formatEntity(filters?.['project_id'] ?? []) : [],
+      entityIdentifier: 'project_id',
+      isAvailable: !project_id,
+    },
+    {
       entities: formatEntity(commonSlice.countries.data),
       entityIdentifier: 'country_id',
-      hasPermissions: true,
+      isAvailable: true,
     },
     {
       entities: formatEntity(enterpriseStatuses),
       entityIdentifier: 'status',
-      hasPermissions: true,
+      isAvailable: true,
     },
   ]
 
   return (
-    (areFiltersApplied || filters?.search) && (
+    areFiltersApplied && (
       <div className="mt-[6px] flex flex-wrap gap-2">
-        {/* {canViewProjects &&
-          displaySelectedOption(formatEntity(clusters), 'cluster_id')} */}
         {map(
           filterSelectedOpts,
           (selectedOpt) =>
-            selectedOpt.hasPermissions &&
+            selectedOpt.isAvailable &&
             displaySelectedOption(
               filters,
               selectedOpt.entities,
