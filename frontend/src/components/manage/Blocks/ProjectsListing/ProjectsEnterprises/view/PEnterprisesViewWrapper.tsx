@@ -10,7 +10,7 @@ import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import PEnterpriseView from './PEnterpriseView'
 import { RedirectBackButton, PageTitle } from '../../HelperComponents'
-import { useGetEnterprise } from '../../hooks/useGetEnterprise'
+import { useGetProjectEnterprise } from '../../hooks/useGetProjectEnterprise'
 import { useGetProject } from '../../hooks/useGetProject'
 
 import { Redirect, useParams } from 'wouter'
@@ -22,7 +22,7 @@ const PEnterprisesViewWrapper = () => {
   const project = project_id ? useGetProject(project_id) : undefined
   const { data: projectData, error } = project ?? {}
 
-  const enterprise = useGetEnterprise(enterprise_id)
+  const enterprise = useGetProjectEnterprise(enterprise_id)
   const { data, loading } = enterprise
 
   if (

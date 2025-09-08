@@ -5,7 +5,7 @@ import { useContext } from 'react'
 import Loading from '@ors/components/theme/Loading/Loading'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import PEnterprisesEdit from './PEnterprisesEdit'
-import { useGetEnterprise } from '../../hooks/useGetEnterprise'
+import { useGetProjectEnterprise } from '../../hooks/useGetProjectEnterprise'
 import { useGetProject } from '../../hooks/useGetProject'
 
 import { Redirect, useParams } from 'wouter'
@@ -17,7 +17,7 @@ const PEnterprisesEditWrapper = () => {
   const project = project_id ? useGetProject(project_id) : undefined
   const { data: projectData, error, loading: loadingProject } = project ?? {}
 
-  const enterprise = useGetEnterprise(enterprise_id)
+  const enterprise = useGetProjectEnterprise(enterprise_id)
   const { data, loading } = enterprise
 
   if (

@@ -5,13 +5,8 @@ import { formatEntity, getAreFiltersApplied } from '../../utils'
 import { Typography } from '@mui/material'
 import { map } from 'lodash'
 
-export const initialParams = {
-  project_id: [],
-  country_id: [],
-  status: [],
-}
-
 const PEnterprisesFiltersSelectedOpts = ({
+  type,
   enterpriseStatuses,
   commonSlice,
   initialFilters,
@@ -21,13 +16,24 @@ const PEnterprisesFiltersSelectedOpts = ({
 }: any) => {
   const { project_id } = useParams<Record<string, string>>()
 
+  const isEnterprisesType = type === 'project-enterprises'
   const areFiltersApplied = getAreFiltersApplied(filters)
+
+  const initialParams = isEnterprisesType
+    ? {
+        project_id: [],
+        country_id: [],
+        status: [],
+      }
+    : {
+        country_id: [],
+      }
 
   const filterSelectedOpts = [
     {
       entities: !project_id ? formatEntity(filters?.['project_id'] ?? []) : [],
       entityIdentifier: 'project_id',
-      isAvailable: !project_id,
+      isAvailable: !project_id && isEnterprisesType,
     },
     {
       entities: formatEntity(commonSlice.countries.data),
@@ -37,7 +43,7 @@ const PEnterprisesFiltersSelectedOpts = ({
     {
       entities: formatEntity(enterpriseStatuses),
       entityIdentifier: 'status',
-      isAvailable: true,
+      isAvailable: isEnterprisesType,
     },
   ]
 

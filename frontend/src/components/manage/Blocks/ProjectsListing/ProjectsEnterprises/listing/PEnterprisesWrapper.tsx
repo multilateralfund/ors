@@ -5,6 +5,7 @@ import { useContext, useMemo, useRef, useState } from 'react'
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
+import CustomLink from '@ors/components/ui/Link/Link'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import Link from '@ors/components/ui/Link/Link'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
@@ -67,34 +68,44 @@ export default function PEnterprisesWrapper() {
         <div className="flex flex-wrap justify-between gap-3">
           <div className="flex flex-col">
             <RedirectBackButton />
-            <div className="flex flex-wrap gap-2 sm:flex-nowrap">
-              <PageHeading>
-                {project && data ? (
-                  <PageTitle
-                    pageTitle="Enterprises information for"
-                    projectTitle={data.code ?? data.code_legacy}
-                  />
-                ) : (
-                  <span className="font-medium text-[#4D4D4D]">
-                    Projects enterprises
-                  </span>
-                )}
-              </PageHeading>
-            </div>
+            <PageHeading>
+              {project && data ? (
+                <PageTitle
+                  pageTitle="Project enterprises information for"
+                  projectTitle={data.code ?? data.code_legacy}
+                />
+              ) : (
+                <span className="font-medium text-[#4D4D4D]">
+                  Projects enterprises
+                </span>
+              )}
+            </PageHeading>
           </div>
-          {project_id && (
-            <div className="ml-auto mt-auto flex items-center gap-2.5">
+          <div className="ml-auto mt-auto flex items-center gap-2.5">
+            {project_id ? (
               <CancelLinkButton
                 title="Cancel"
                 href="/projects-listing/projects-enterprises"
               />
-            </div>
-          )}
+            ) : (
+              <CustomLink
+                className="border border-solid border-secondary px-4 py-2 shadow-none hover:border-primary"
+                href="/projects-listing/enterprises"
+                color="secondary"
+                variant="contained"
+                size="large"
+                button
+              >
+                View enterprises
+              </CustomLink>
+            )}
+          </div>
         </div>
       </HeaderTitle>
       <form className="flex flex-col gap-6" ref={form} key={key}>
         <div className="flex flex-wrap justify-between gap-x-10 gap-y-4">
           <PEnterprisesFiltersWrapper
+            type="project-enterprises"
             {...{
               enterpriseStatuses,
               filters,

@@ -2,15 +2,17 @@
 
 import { useState } from 'react'
 
-import PEnterpriseOverviewSection from './PEnterpriseOverviewSection'
-import PEnterprisesSubstanceDetailsSection from './PEnterprisesSubstanceDetailsSection'
-import PEnterpriseFundingDetailsSection from './PEnterpriseFundingDetailsSection'
-import PEnterpriseRemarksSection from './PEnterpriseRemarksSection'
-import { EnterpriseType } from '../../interfaces'
+import PEnterpriseOverviewSection from '../../ProjectsEnterprises/view/PEnterpriseOverviewSection'
+import PEnterpriseRemarksSection from '../../ProjectsEnterprises/view/PEnterpriseRemarksSection'
+import { EnterpriseOverview, EnterpriseRemarks } from '../../interfaces'
 
 import { Tabs, Tab } from '@mui/material'
 
-const PEnterpriseView = ({ enterprise }: { enterprise: EnterpriseType }) => {
+const EnterpriseView = ({
+  enterprise,
+}: {
+  enterprise: EnterpriseOverview & EnterpriseRemarks
+}) => {
   const [activeTab, setActiveTab] = useState(0)
 
   const tabs = [
@@ -18,29 +20,13 @@ const PEnterpriseView = ({ enterprise }: { enterprise: EnterpriseType }) => {
       id: 'enterprise-overview',
       ariaControls: 'enterprise-overview',
       label: 'Overview',
-      component: (
-        <PEnterpriseOverviewSection enterprise={enterprise.enterprise} />
-      ),
-    },
-    {
-      id: 'enterprise-substance-details',
-      ariaControls: 'enterprise-substance-details',
-      label: 'Substance details',
-      component: <PEnterprisesSubstanceDetailsSection {...{ enterprise }} />,
-    },
-    {
-      id: 'enterprise-funding-details',
-      ariaControls: 'enterprise-funding-details',
-      label: 'Funding details',
-      component: <PEnterpriseFundingDetailsSection {...{ enterprise }} />,
+      component: <PEnterpriseOverviewSection {...{ enterprise }} />,
     },
     {
       id: 'enterprise-remarks',
       ariaControls: 'enterprise-remarks',
       label: 'Remarks',
-      component: (
-        <PEnterpriseRemarksSection enterprise={enterprise.enterprise} />
-      ),
+      component: <PEnterpriseRemarksSection {...{ enterprise }} />,
     },
   ]
 
@@ -76,4 +62,4 @@ const PEnterpriseView = ({ enterprise }: { enterprise: EnterpriseType }) => {
   )
 }
 
-export default PEnterpriseView
+export default EnterpriseView

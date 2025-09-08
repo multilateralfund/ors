@@ -10,6 +10,7 @@ import { useParams } from 'wouter'
 import { union } from 'lodash'
 
 const PEnterprisesFilters = ({
+  type,
   enterpriseStatuses,
   commonSlice,
   filters,
@@ -17,6 +18,8 @@ const PEnterprisesFilters = ({
   handleParamsChange,
 }: any) => {
   const { project_id } = useParams<Record<string, string>>()
+
+  const isEnterprisesType = type === 'project-enterprises'
 
   const defaultProps = {
     multiple: true,
@@ -35,7 +38,7 @@ const PEnterprisesFilters = ({
 
   return (
     <div className="flex h-full flex-wrap items-center gap-x-2 gap-y-2 border-0 border-solid">
-      {!project_id && (
+      {!project_id && isEnterprisesType && (
         <PEnterpriseProjectsFilter
           Input={{ placeholder: 'Project' }}
           filters={filters}
@@ -72,22 +75,24 @@ const PEnterprisesFilters = ({
         }}
         {...defaultProps}
       />
-      <Field
-        Input={{ placeholder: 'Status' }}
-        options={getFilterOptions(filters, enterpriseStatuses, 'status')}
-        widget="autocomplete"
-        onChange={(_: any, value: any) => {
-          const status = filters.status || []
-          const newValue = union(status, value)
+      {isEnterprisesType && (
+        <Field
+          Input={{ placeholder: 'Status' }}
+          options={getFilterOptions(filters, enterpriseStatuses, 'status')}
+          widget="autocomplete"
+          onChange={(_: any, value: any) => {
+            const status = filters.status || []
+            const newValue = union(status, value)
 
-          handleFilterChange({ status: newValue })
-          handleParamsChange({
-            status: newValue.map((item: any) => item.id).join(','),
-            offset: 0,
-          })
-        }}
-        {...defaultProps}
-      />
+            handleFilterChange({ status: newValue })
+            handleParamsChange({
+              status: newValue.map((item: any) => item.id).join(','),
+              offset: 0,
+            })
+          }}
+          {...defaultProps}
+        />
+      )}
     </div>
   )
 }
