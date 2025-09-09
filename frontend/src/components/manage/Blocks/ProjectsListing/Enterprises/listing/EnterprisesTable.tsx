@@ -21,7 +21,7 @@ const EnterprisesTable = ({
   const { results = [] } = data ?? {}
   const count = results.length
 
-  const { columnDefs, defaultColDef } = getColumnDefs(results)
+  const { columnDefs, defaultColDef } = getColumnDefs(results, 'listing')
   const paginationPageSizeSelectorOpts = getPaginationSelectorOpts(count)
 
   return (

@@ -38,7 +38,7 @@ export default function PListingWrapper() {
   const [isCopyModalOpen, setIsCopyModalOpen] = useState<boolean>(false)
 
   const projectActions = (
-    <div className="mt-1 flex flex-wrap items-center gap-3">
+    <div className="mt-2.5 flex flex-wrap gap-x-3 gap-y-4">
       {canUpdateProjects && (
         <div
           className={cx('flex cursor-pointer gap-1 px-2 no-underline', {

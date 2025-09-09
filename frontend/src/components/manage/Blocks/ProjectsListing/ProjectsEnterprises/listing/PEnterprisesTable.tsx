@@ -24,7 +24,7 @@ const PEnterprisesTable = ({
   const { count, loaded, loading, results, setParams } = enterprises
 
   const { columnDefs, defaultColDef } = getColumnDefs(
-    gridApiRef,
+    results,
     enterpriseId,
     setEnterpriseId,
   )

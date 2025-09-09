@@ -2,7 +2,7 @@ import { numberDetailItem } from '../../ProjectView/ViewHelperComponents'
 import { tableColumns, viewColumnsClassName } from '../../constants'
 import { EnterpriseType } from '../../interfaces'
 
-import { sumBy } from 'lodash'
+import { sumBy, isNaN, isNil } from 'lodash'
 
 const PEnterpriseFundingDetailsSection = ({
   enterprise,
@@ -10,13 +10,20 @@ const PEnterpriseFundingDetailsSection = ({
   enterprise: EnterpriseType
 }) => {
   const funds_approved =
-    Number(enterprise.capital_cost_approved ?? 0) +
-    Number(enterprise.operating_cost_approved ?? 0)
+    isNil(enterprise.capital_cost_approved) &&
+    isNil(enterprise.operating_cost_approved)
+      ? null
+      : Number(enterprise.capital_cost_approved ?? 0) +
+        Number(enterprise.operating_cost_approved ?? 0)
   const totalPhaseOut = sumBy(
     enterprise.ods_odp,
     ({ phase_out_mt }) => Number(phase_out_mt) || 0,
   )
-  const cost_effectiveness_approved = funds_approved / (totalPhaseOut * 1000)
+  const cost_effectiveness_approved =
+    (funds_approved ?? 0) / (totalPhaseOut * 1000)
+  const formattedCostEffectivenessApproved = !isNaN(cost_effectiveness_approved)
+    ? cost_effectiveness_approved
+    : null
 
   return (
     <>
@@ -36,11 +43,11 @@ const PEnterpriseFundingDetailsSection = ({
         <div className={viewColumnsClassName}>
           {numberDetailItem(
             tableColumns.funds_approved + ' (US $)',
-            funds_approved.toString(),
+            funds_approved?.toString() as string,
           )}
           {numberDetailItem(
             tableColumns.cost_effectiveness_approved + ' (US $/kg)',
-            cost_effectiveness_approved.toString(),
+            formattedCostEffectivenessApproved?.toString() as string,
           )}
         </div>
       </div>

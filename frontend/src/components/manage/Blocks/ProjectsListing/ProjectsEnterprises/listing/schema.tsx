@@ -2,11 +2,10 @@ import { useContext } from 'react'
 
 import Link from '@ors/components/ui/Link/Link'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
+import { EnterpriseType } from '../../interfaces'
 import { useStore } from '@ors/store'
-import { api } from '@ors/helpers'
 
-import { Button, Checkbox } from '@mui/material'
-import { enqueueSnackbar } from 'notistack'
+import { Checkbox } from '@mui/material'
 import { useParams } from 'wouter'
 import { find } from 'lodash'
 import {
@@ -16,7 +15,7 @@ import {
 } from 'ag-grid-community'
 
 const getColumnDefs = (
-  gridApiRef: any,
+  projectEnterprises: EnterpriseType[],
   enterpriseId?: number | null,
   setEnterpriseId?: (enterpriseId: number | null) => void,
 ) => {
@@ -25,36 +24,15 @@ const getColumnDefs = (
   const commonSlice = useStore((state) => state.common)
   const countries = commonSlice.countries.data
 
-  const { canEditEnterprise, canApproveEnterprise } =
-    useContext(PermissionsContext)
+  const { canEditEnterprise } = useContext(PermissionsContext)
 
   const getCountryName = (params: ValueGetterParams | ITooltipParams) =>
     find(countries, (country) => country.id === params.data.enterprise?.country)
       ?.name
 
-  const approveEnterprise = async (enterpriseId: number) => {
-    try {
-      const res = await api(`api/project-enterprise/${enterpriseId}/approve/`, {
-        method: 'POST',
-      })
-
-      const rowNode = gridApiRef.current?.getRowNode(enterpriseId.toString())
-      if (rowNode) {
-        rowNode.setData({ ...rowNode.data, status: res.status })
-
-        rowNode.setDataValue('status', res.status)
-        rowNode.setData({ ...rowNode.data })
-      }
-
-      enqueueSnackbar(<>Enterprise was approved successfully.</>, {
-        variant: 'success',
-      })
-    } catch (error) {
-      enqueueSnackbar(<>Could not approve enterprise. Please try again.</>, {
-        variant: 'error',
-      })
-    }
-  }
+  const getProjectEnterpriseName = (enterpriseId: number) =>
+    find(projectEnterprises, (enterprise) => enterprise.id === enterpriseId)
+      ?.enterprise?.code
 
   return {
     columnDefs: [
@@ -89,28 +67,23 @@ const getColumnDefs = (
         headerName: 'Code',
         field: 'enterprise.code',
         tooltipField: 'enterprise.code',
-      },
-      {
-        headerName: 'Name',
-        field: 'enterprise.name',
-        tooltipField: 'enterprise.name',
-        minWidth: 150,
         cellRenderer: (props: ICellRendererParams) => (
-          <div className="flex items-center p-2">
+          <div className="flex items-center justify-center p-2">
             <Link
-              className="ml-2 overflow-hidden truncate whitespace-nowrap"
+              className="overflow-hidden truncate whitespace-nowrap"
               href={`/projects-listing/projects-enterprises/${props.data.project}/view/${props.data.id}`}
             >
-              {props.value}
+              <span>{props.value}</span>
             </Link>
           </div>
         ),
       },
       {
-        headerName: 'Status',
-        field: 'status',
-        tooltipField: 'status',
-        minWidth: 120,
+        headerName: 'Name',
+        field: 'enterprise.name',
+        tooltipField: 'enterprise.name',
+        cellClass: 'ag-cell-ellipsed !pl-2.5',
+        minWidth: 150,
       },
       {
         headerName: 'Country',
@@ -127,6 +100,12 @@ const getColumnDefs = (
         field: 'enterprise.application',
         tooltipField: 'enterprise.application',
       },
+      {
+        headerName: 'Status',
+        field: 'status',
+        tooltipField: 'status',
+        minWidth: 120,
+      },
       ...(!project_id
         ? [
             {
@@ -136,29 +115,23 @@ const getColumnDefs = (
             },
           ]
         : []),
-      ...(canApproveEnterprise
-        ? [
-            {
-              headerName: 'Action',
-              field: '',
-              minWidth: 120,
-              maxWidth: 120,
-              sortable: false,
-              cellClass: 'ag-text-center',
-              cellRenderer: (params: ICellRendererParams) =>
-                params.data.status !== 'Approved' ? (
-                  <Button
-                    className="hover:bg-white hover:text-primary hover:shadow-none"
-                    onClick={() => approveEnterprise(params.data.id)}
-                  >
-                    Approve
-                  </Button>
-                ) : (
-                  <></>
-                ),
-            },
-          ]
-        : []),
+      {
+        headerName: 'Current entry',
+        field: 'approved_project_enterprise',
+        minWidth: 150,
+        cellRenderer: (props: ICellRendererParams) => (
+          <div className="flex items-center justify-center p-2">
+            <Link
+              className="overflow-hidden truncate whitespace-nowrap"
+              href={`/projects-listing/projects-enterprises/${props.data.project}/view/${props.value}`}
+            >
+              <span>{getProjectEnterpriseName(props.value)}</span>
+            </Link>
+          </div>
+        ),
+        tooltipValueGetter: (props: ITooltipParams) =>
+          getProjectEnterpriseName(props.value),
+      },
     ],
     defaultColDef: {
       headerClass: 'ag-text-center',

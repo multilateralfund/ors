@@ -24,7 +24,7 @@ const PEnterpriseOverviewSection = ({
     <>
       <div className="flex w-full flex-col gap-4">
         {detailItem(tableColumns.name, enterprise.name)}
-        {detailItem(tableColumns.country, country ?? '')}
+        {detailItem('Enterprise country', country ?? '')}
         {detailItem(tableColumns.location, enterprise.location)}
         {detailItem(tableColumns.application, enterprise.application)}
       </div>

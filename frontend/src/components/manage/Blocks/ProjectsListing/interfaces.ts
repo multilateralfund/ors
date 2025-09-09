@@ -297,13 +297,26 @@ export type AssociatedProjectsType = {
   loaded: boolean
 }
 
+export type EnterpriseEntityType = EnterpriseOverview &
+  EnterpriseRemarks & {
+    id: number | null
+    code: string
+    status: string
+    approved_enterprise: number | null
+    pending_enterprises: (number | null)[]
+    project_enterprises: (number | null)[]
+  }
+
 export type EnterpriseType = EnterpriseFundingDetails & {
+  id: number | null
+} & {
   funds_approved: string | null
   cost_effectiveness_approved: string | null
 } & {
   ods_odp: EnterpriseSubstanceDetails[]
 } & {
-  enterprise: EnterpriseOverview & EnterpriseRemarks & { id: number | null }
+  enterprise: EnterpriseOverview &
+    EnterpriseRemarks & { id: number | null; code: string }
 }
 
 export interface EnterpriseData {

@@ -4,16 +4,19 @@ import { useState } from 'react'
 
 import PEnterpriseOverviewSection from '../../ProjectsEnterprises/view/PEnterpriseOverviewSection'
 import PEnterpriseRemarksSection from '../../ProjectsEnterprises/view/PEnterpriseRemarksSection'
-import { EnterpriseOverview, EnterpriseRemarks } from '../../interfaces'
+import EnterpriseVersions from './EnterpriseVersions'
+import { EnterpriseEntityType } from '../../interfaces'
 
 import { Tabs, Tab } from '@mui/material'
 
 const EnterpriseView = ({
   enterprise,
 }: {
-  enterprise: EnterpriseOverview & EnterpriseRemarks
+  enterprise: EnterpriseEntityType
 }) => {
   const [activeTab, setActiveTab] = useState(0)
+
+  const isEnterpriseApproved = enterprise.status === 'Approved'
 
   const tabs = [
     {
@@ -27,6 +30,12 @@ const EnterpriseView = ({
       ariaControls: 'enterprise-remarks',
       label: 'Remarks',
       component: <PEnterpriseRemarksSection {...{ enterprise }} />,
+    },
+    {
+      id: 'enterprise-versions',
+      ariaControls: 'enterprise-versions',
+      label: isEnterpriseApproved ? 'Pending versions' : 'Current version',
+      component: <EnterpriseVersions {...{ enterprise }} />,
     },
   ]
 

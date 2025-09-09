@@ -149,7 +149,7 @@ const getColumnDefs = (
                 canViewProjects ? `/projects-listing/${props.data.id}` : null
               }
             >
-              {props.value}
+              <span>{props.value}</span>
             </Link>
           </div>
         ),
