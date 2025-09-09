@@ -1,6 +1,6 @@
 'use client'
 
-import { useContext } from 'react'
+import { useContext, useMemo, useState } from 'react'
 
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
@@ -8,6 +8,7 @@ import Loading from '@ors/components/theme/Loading/Loading'
 import CustomLink from '@ors/components/ui/Link/Link'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
+import PEnterpriseVersionsList from './PEnterpriseVersionsList'
 import PEnterpriseView from './PEnterpriseView'
 import { RedirectBackButton, PageTitle } from '../../HelperComponents'
 import { useGetProjectEnterprise } from '../../hooks/useGetProjectEnterprise'
@@ -24,6 +25,16 @@ const PEnterprisesViewWrapper = () => {
 
   const enterprise = useGetProjectEnterprise(enterprise_id)
   const { data, loading } = enterprise
+
+  const versions = useMemo(() => {
+    if (!data) return []
+
+    return data.status === 'Approved'
+      ? data.pending_project_enterprises
+      : [data.approved_project_enterprise]
+  }, [data])
+
+  const [showVersionsMenu, setShowVersionsMenu] = useState<boolean>(false)
 
   if (
     !canViewProjects ||
@@ -51,12 +62,19 @@ const PEnterprisesViewWrapper = () => {
             <div className="flex flex-wrap justify-between gap-3">
               <div className="flex flex-col">
                 <RedirectBackButton />
-                <PageHeading>
-                  <PageTitle
-                    pageTitle="View project enterprise"
-                    projectTitle={data.enterprise.name}
-                  />
-                </PageHeading>
+                <div className="flex flex-wrap gap-2 sm:flex-nowrap">
+                  <PageHeading>
+                    <PageTitle
+                      pageTitle="View project enterprise"
+                      projectTitle={data.enterprise.name}
+                    />
+                  </PageHeading>
+                  {versions.length > 0 && (
+                    <PEnterpriseVersionsList
+                      {...{ versions, showVersionsMenu, setShowVersionsMenu }}
+                    />
+                  )}
+                </div>
               </div>
               <div className="mt-auto flex flex-wrap items-center gap-2.5">
                 <CancelLinkButton
@@ -76,6 +94,12 @@ const PEnterprisesViewWrapper = () => {
                   </CustomLink>
                 )}
               </div>
+            </div>
+            <div className="mt-4 flex items-center gap-3">
+              <span>Status:</span>
+              <span className="rounded border border-solid border-[#002A3C] px-1 py-0.5 font-medium uppercase leading-tight text-[#002A3C]">
+                {data.status}
+              </span>
             </div>
           </HeaderTitle>
           <PEnterpriseView enterprise={data} />

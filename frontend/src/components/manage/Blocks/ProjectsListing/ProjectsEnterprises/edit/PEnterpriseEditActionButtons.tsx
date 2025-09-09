@@ -6,9 +6,9 @@ import { EnterpriseActionButtons } from '../../interfaces'
 import { enabledButtonClassname } from '../../constants'
 import { api } from '@ors/helpers'
 
+import { useLocation, useParams } from 'wouter'
 import { enqueueSnackbar } from 'notistack'
 import { Button } from '@mui/material'
-import { useParams } from 'wouter'
 import cx from 'classnames'
 
 const PEnterpriseEditActionButtons = ({
@@ -23,7 +23,9 @@ const PEnterpriseEditActionButtons = ({
   setEnterpriseTitle: (title: string) => void
 }) => {
   const { project_id, enterprise_id } = useParams<Record<string, string>>()
-  const { canEditEnterprise } = useContext(PermissionsContext)
+  const { canEditEnterprise, canApproveEnterprise } =
+    useContext(PermissionsContext)
+  const [_, setLocation] = useLocation()
 
   const { overview } = enterpriseData
   const disableSubmit = !overview.name
@@ -66,12 +68,31 @@ const PEnterpriseEditActionButtons = ({
       })
 
       setEnterpriseId(result.id)
-      setEnterpriseTitle(result.name)
+      setEnterpriseTitle(result.enterprise.name)
     } catch (error) {
       await handleErrors(error)
     } finally {
       setIsLoading(false)
       setHasSubmitted(true)
+    }
+  }
+
+  const approveEnterprise = async () => {
+    try {
+      const res = await api(
+        `api/project-enterprise/${enterprise_id}/approve/`,
+        {
+          method: 'POST',
+        },
+      )
+
+      setLocation(
+        `/projects-listing/projects-enterprises/${project_id}/view/${enterprise_id}`,
+      )
+    } catch (error) {
+      enqueueSnackbar(<>Could not approve enterprise. Please try again.</>, {
+        variant: 'error',
+      })
     }
   }
 
@@ -92,6 +113,19 @@ const PEnterpriseEditActionButtons = ({
           size="large"
         >
           Update enterprise
+        </Button>
+      )}
+      {canApproveEnterprise && (
+        <Button
+          className={cx('px-4 py-2 shadow-none', {
+            [enabledButtonClassname]: !disableSubmit,
+          })}
+          onClick={approveEnterprise}
+          disabled={disableSubmit}
+          variant="contained"
+          size="large"
+        >
+          Approve enterprise
         </Button>
       )}
     </div>
