@@ -55,6 +55,7 @@ const ProjectsCreate = ({
   setProjectData,
   specificFields,
   mode,
+  postExComUpdate = false,
   files,
   projectFiles,
   errors,
@@ -73,6 +74,7 @@ const ProjectsCreate = ({
   TrancheErrors & {
     specificFields: ProjectSpecificFields[]
     mode: string
+    postExComUpdate: boolean
     errors: { [key: string]: [] }
     hasSubmitted: boolean
     fileErrors: string
@@ -278,6 +280,7 @@ const ProjectsCreate = ({
             hasSubmitted,
             mode,
             project,
+            postExComUpdate,
             specificFieldsLoaded,
           }}
           isNextBtnEnabled={canLinkToBp}

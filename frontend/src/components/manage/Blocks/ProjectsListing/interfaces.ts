@@ -265,6 +265,7 @@ export type ProjectIdentifiersSectionProps = {
   hasSubmitted: boolean
   mode: string
   project?: ProjectTypeApi
+  postExComUpdate: boolean
   specificFieldsLoaded: boolean
 }
 

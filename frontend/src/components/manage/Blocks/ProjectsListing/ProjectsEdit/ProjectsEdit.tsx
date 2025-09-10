@@ -40,9 +40,11 @@ import { enqueueSnackbar } from 'notistack'
 const ProjectsEdit = ({
   project,
   mode,
+  postExComUpdate = false,
 }: {
   project: ProjectTypeApi
   mode: string
+  postExComUpdate: boolean
 }) => {
   const project_id = project.id.toString()
   const isEditMode = mode === 'edit'
@@ -421,6 +423,7 @@ const ProjectsEdit = ({
         <ProjectsHeader
           {...{
             mode,
+            postExComUpdate,
             project,
             projectData,
             projectFiles,
@@ -443,6 +446,7 @@ const ProjectsEdit = ({
             projectData,
             setProjectData,
             mode,
+            postExComUpdate,
             specificFields,
             project,
             files,
