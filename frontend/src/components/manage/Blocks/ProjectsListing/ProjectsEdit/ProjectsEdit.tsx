@@ -44,7 +44,7 @@ const ProjectsEdit = ({
 }: {
   project: ProjectTypeApi
   mode: string
-  postExComUpdate: boolean
+  postExComUpdate?: boolean
 }) => {
   const project_id = project.id.toString()
   const isEditMode = mode === 'edit'
@@ -198,6 +198,7 @@ const ProjectsEdit = ({
     setProjectData((prevData) => ({
       ...prevData,
       projIdentifiers: {
+        ...prevData.projIdentifiers,
         country: project.country_id,
         meeting: mode !== 'partial-link' ? project.meeting_id : null,
         agency: project.agency_id,
