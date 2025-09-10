@@ -3,18 +3,14 @@ import { Dispatch, SetStateAction } from 'react'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import Field from '@ors/components/manage/Form/Field'
+import { EnterpriseOverview, EnterpriseData } from '../../interfaces'
 import { defaultProps } from '../../constants'
-import {
-  EnterpriseRemarks,
-  EnterpriseOverview,
-  EnterpriseData,
-} from '../../interfaces'
 
 import { useParams } from 'wouter'
 import { find } from 'lodash'
 
 interface EnterpiseSeachProps {
-  enterprises: (EnterpriseOverview & EnterpriseRemarks & { id: number })[]
+  enterprises: (EnterpriseOverview & { id: number })[]
   enterpriseData: EnterpriseData
   setEnterpriseData: Dispatch<SetStateAction<EnterpriseData>>
 }
@@ -50,8 +46,8 @@ const PEnterpriseSearch = ({
             application: crtEnterprise.application,
             local_ownership: crtEnterprise.local_ownership,
             export_to_non_a5: crtEnterprise.export_to_non_a5,
+            remarks: crtEnterprise.remarks,
           },
-          remarks: { remarks: crtEnterprise.remarks },
         }))
       }
     } else {

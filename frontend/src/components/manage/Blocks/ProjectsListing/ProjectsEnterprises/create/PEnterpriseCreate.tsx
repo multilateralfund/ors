@@ -9,7 +9,6 @@ import PEnterpriseSearch from '../tabs/PEnterpriseSearch.tsx'
 import PEnterprisesOverviewSection from '../tabs/PEnterprisesOverviewSection.tsx'
 import PEnterprisesSubstanceDetailsSection from '../tabs/PEnterprisesSubstanceDetailsSection.tsx'
 import PEnterprisesFundingDetailsSection from '../tabs/PEnterprisesFundingDetailsSection.tsx'
-import PEnterprisesRemarksSection from '../tabs/PEnterprisesRemarksSection.tsx'
 import { useGetEnterprises } from '../../hooks/useGetEnterprises.ts'
 import { formatErrors, hasSectionErrors } from '../../utils.ts'
 import { getEnterprisesErrors } from '../utils.ts'
@@ -36,11 +35,10 @@ const PEnterpriseCreate = ({
 
   const { data, loading } = useGetEnterprises(countryId)
 
-  const { overview, funding_details, remarks } = enterpriseData ?? {}
+  const { overview, funding_details } = enterpriseData ?? {}
 
   const overviewErrors = getEnterprisesErrors(overview, errors)
   const fundingDetailsErrors = getEnterprisesErrors(funding_details, errors)
-  const remarksErrors = getEnterprisesErrors(remarks, errors)
   const odsOdpNonFieldErrors = {
     Subtances:
       (errors?.['ods_odp'] as { non_field_errors?: string[] } | undefined)
@@ -143,25 +141,6 @@ const PEnterpriseCreate = ({
         />
       ),
       errors: formatErrors(fundingDetailsErrors),
-    },
-    {
-      id: 'enterprise-remarks',
-      ariaControls: 'enterprise-remarks',
-      label: (
-        <div className="relative flex items-center justify-between gap-x-2">
-          <div className="leading-tight">Remarks</div>
-          {hasSectionErrors(remarksErrors) && (
-            <SectionErrorIndicator errors={[]} />
-          )}
-        </div>
-      ),
-      component: (
-        <PEnterprisesRemarksSection
-          {...{ enterpriseData, setEnterpriseData, ...rest }}
-          errors={remarksErrors}
-        />
-      ),
-      errors: formatErrors(remarksErrors),
     },
   ]
 

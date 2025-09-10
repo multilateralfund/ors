@@ -6,11 +6,13 @@ import { EnterpriseOverview } from '../../interfaces'
 import { tableColumns } from '../../constants'
 import { useStore } from '@ors/store'
 
-import { find } from 'lodash'
+import { find, lowerCase } from 'lodash'
 
 const PEnterpriseOverviewSection = ({
+  type,
   enterprise,
 }: {
+  type: string
   enterprise: EnterpriseOverview
 }) => {
   const commonSlice = useStore((state) => state.common)
@@ -20,15 +22,23 @@ const PEnterpriseOverviewSection = ({
     (country) => country.id === enterprise.country,
   )?.name
 
+  const formatFieldName = (fieldName: string) =>
+    type === 'enterprise' ? fieldName : 'Enterprise ' + lowerCase(fieldName)
+
   return (
     <>
       <div className="flex w-full flex-col gap-4">
-        {detailItem(tableColumns.name, enterprise.name)}
-        {detailItem('Enterprise country', country ?? '')}
-        {detailItem(tableColumns.location, enterprise.location)}
-        {detailItem(tableColumns.application, enterprise.application)}
+        {detailItem(formatFieldName(tableColumns.name), enterprise.name)}
+        {detailItem(formatFieldName(tableColumns.country), country ?? '')}
+        {detailItem(
+          formatFieldName(tableColumns.location),
+          enterprise.location,
+        )}
+        {detailItem(
+          formatFieldName(tableColumns.application),
+          enterprise.application,
+        )}
       </div>
-
       <div className="mt-4 flex w-full flex-col gap-4">
         <div className="flex flex-wrap gap-x-7 gap-y-5">
           {numberDetailItem(
@@ -40,6 +50,9 @@ const PEnterpriseOverviewSection = ({
             enterprise.export_to_non_a5 as string,
           )}
         </div>
+      </div>
+      <div className="mt-10 max-w-[90%]">
+        {detailItem(tableColumns.remarks, enterprise.remarks, 'self-start')}
       </div>
     </>
   )

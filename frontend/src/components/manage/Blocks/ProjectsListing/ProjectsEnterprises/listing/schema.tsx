@@ -2,7 +2,6 @@ import { useContext } from 'react'
 
 import Link from '@ors/components/ui/Link/Link'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
-import { EnterpriseType } from '../../interfaces'
 import { useStore } from '@ors/store'
 
 import { Checkbox } from '@mui/material'
@@ -15,7 +14,6 @@ import {
 } from 'ag-grid-community'
 
 const getColumnDefs = (
-  projectEnterprises: EnterpriseType[],
   enterpriseId?: number | null,
   setEnterpriseId?: (enterpriseId: number | null) => void,
 ) => {
@@ -29,10 +27,6 @@ const getColumnDefs = (
   const getCountryName = (params: ValueGetterParams | ITooltipParams) =>
     find(countries, (country) => country.id === params.data.enterprise?.country)
       ?.name
-
-  const getProjectEnterpriseName = (enterpriseId: number) =>
-    find(projectEnterprises, (enterprise) => enterprise.id === enterpriseId)
-      ?.enterprise?.code
 
   return {
     columnDefs: [
@@ -115,23 +109,6 @@ const getColumnDefs = (
             },
           ]
         : []),
-      {
-        headerName: 'Current entry',
-        field: 'approved_project_enterprise',
-        minWidth: 150,
-        cellRenderer: (props: ICellRendererParams) => (
-          <div className="flex items-center justify-center p-2">
-            <Link
-              className="overflow-hidden truncate whitespace-nowrap"
-              href={`/projects-listing/projects-enterprises/${props.data.project}/view/${props.value}`}
-            >
-              <span>{getProjectEnterpriseName(props.value)}</span>
-            </Link>
-          </div>
-        ),
-        tooltipValueGetter: (props: ITooltipParams) =>
-          getProjectEnterpriseName(props.value),
-      },
     ],
     defaultColDef: {
       headerClass: 'ag-text-center',

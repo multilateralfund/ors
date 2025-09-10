@@ -12,7 +12,6 @@ import { EnterpriseData } from '../../interfaces.ts'
 import {
   initialFundingDetailsFields,
   initialOverviewFields,
-  initialRemarksFields,
 } from '../../constants.ts'
 
 import { Redirect, useParams } from 'wouter'
@@ -28,7 +27,6 @@ const PEnterprisesCreateWrapper = () => {
     overview: initialOverviewFields,
     substance_details: [],
     funding_details: initialFundingDetailsFields,
-    remarks: initialRemarksFields,
   })
 
   const [enterpriseId, setEnterpriseId] = useState<number | null>(null)

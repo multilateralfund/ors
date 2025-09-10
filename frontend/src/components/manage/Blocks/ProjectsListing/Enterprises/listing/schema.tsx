@@ -1,5 +1,4 @@
 import Link from '@ors/components/ui/Link/Link'
-import { EnterpriseEntityType } from '../../interfaces'
 import { useStore } from '@ors/store'
 
 import { find } from 'lodash'
@@ -9,15 +8,12 @@ import {
   ITooltipParams,
 } from 'ag-grid-community'
 
-const getColumnDefs = (enterprises: EnterpriseEntityType[], type: string) => {
+const getColumnDefs = (type: string) => {
   const commonSlice = useStore((state) => state.common)
   const countries = commonSlice.countries.data
 
   const getCountryName = (params: ValueGetterParams | ITooltipParams) =>
     find(countries, (country) => country.id === params.data.country)?.name
-
-  const getEnterpriseName = (enterpriseId: number) =>
-    find(enterprises, (enterprise) => enterprise.id === enterpriseId)?.code
 
   return {
     columnDefs: [
@@ -73,27 +69,6 @@ const getColumnDefs = (enterprises: EnterpriseEntityType[], type: string) => {
         field: 'project_code',
         tooltipField: 'project_code',
       },
-      ...(type === 'listing'
-        ? [
-            {
-              headerName: 'Current enterprise',
-              field: 'approved_enterprise',
-              minWidth: 150,
-              cellRenderer: (props: ICellRendererParams) => (
-                <div className="flex items-center justify-center p-2">
-                  <Link
-                    className="overflow-hidden truncate whitespace-nowrap"
-                    href={`/projects-listing/enterprises/${props.value}`}
-                  >
-                    <span>{getEnterpriseName(props.value)}</span>
-                  </Link>
-                </div>
-              ),
-              tooltipValueGetter: (props: ITooltipParams) =>
-                getEnterpriseName(props.value),
-            },
-          ]
-        : []),
     ],
     defaultColDef: {
       headerClass: 'ag-text-center',

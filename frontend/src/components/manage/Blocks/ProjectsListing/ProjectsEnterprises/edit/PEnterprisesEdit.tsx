@@ -9,7 +9,6 @@ import { EnterpriseData, EnterpriseType } from '../../interfaces'
 import {
   initialFundingDetailsFields,
   initialOverviewFields,
-  initialRemarksFields,
 } from '../../constants'
 
 import { useParams } from 'wouter'
@@ -27,7 +26,6 @@ const PEnterprisesEdit = ({
     overview: initialOverviewFields,
     substance_details: [],
     funding_details: initialFundingDetailsFields,
-    remarks: initialRemarksFields,
   })
 
   const [enterpriseId, setEnterpriseId] = useState<number | null>(null)
@@ -50,6 +48,7 @@ const PEnterprisesEdit = ({
         application: enterpriseObj.application,
         local_ownership: enterpriseObj.local_ownership,
         export_to_non_a5: enterpriseObj.export_to_non_a5,
+        remarks: enterpriseObj.remarks,
       },
       substance_details: enterprise.ods_odp,
       funding_details: {
@@ -57,7 +56,6 @@ const PEnterprisesEdit = ({
         operating_cost_approved: enterprise.operating_cost_approved,
         funds_disbursed: enterprise.funds_disbursed,
       },
-      remarks: { remarks: enterpriseObj.remarks },
     }))
   }, [])
 

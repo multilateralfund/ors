@@ -5,7 +5,6 @@ import { useState } from 'react'
 import PEnterpriseOverviewSection from './PEnterpriseOverviewSection'
 import PEnterprisesSubstanceDetailsSection from './PEnterprisesSubstanceDetailsSection'
 import PEnterpriseFundingDetailsSection from './PEnterpriseFundingDetailsSection'
-import PEnterpriseRemarksSection from './PEnterpriseRemarksSection'
 import { EnterpriseType } from '../../interfaces'
 
 import { Tabs, Tab } from '@mui/material'
@@ -19,7 +18,10 @@ const PEnterpriseView = ({ enterprise }: { enterprise: EnterpriseType }) => {
       ariaControls: 'enterprise-overview',
       label: 'Overview',
       component: (
-        <PEnterpriseOverviewSection enterprise={enterprise.enterprise} />
+        <PEnterpriseOverviewSection
+          type="project-enterprise"
+          enterprise={enterprise.enterprise}
+        />
       ),
     },
     {
@@ -33,14 +35,6 @@ const PEnterpriseView = ({ enterprise }: { enterprise: EnterpriseType }) => {
       ariaControls: 'enterprise-funding-details',
       label: 'Funding details',
       component: <PEnterpriseFundingDetailsSection {...{ enterprise }} />,
-    },
-    {
-      id: 'enterprise-remarks',
-      ariaControls: 'enterprise-remarks',
-      label: 'Remarks',
-      component: (
-        <PEnterpriseRemarksSection enterprise={enterprise.enterprise} />
-      ),
     },
   ]
 

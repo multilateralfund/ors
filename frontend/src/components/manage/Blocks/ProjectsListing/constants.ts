@@ -36,9 +36,9 @@ export const tableColumns: { [key: string]: string } = {
   subsector_ids: 'Sub-sector(s)',
   production: 'Production',
   decision: 'Decision',
-  name: 'Enterprise name',
-  location: 'Enterprise location',
-  application: 'Enterprise application',
+  name: 'Name',
+  location: 'Location',
+  application: 'Application',
   local_ownership: 'Percentage of goods exported to non-Article 5 countries',
   export_to_non_a5: 'Percentage of enterprise locally (A5) owned',
   ods_substance: 'Substance baseline technology',
@@ -173,6 +173,7 @@ export const initialOverviewFields = {
   application: '',
   local_ownership: null,
   export_to_non_a5: null,
+  remarks: '',
 }
 
 export const initialSubstanceDetailsFields = {
@@ -187,10 +188,6 @@ export const initialFundingDetailsFields = {
   capital_cost_approved: null,
   operating_cost_approved: null,
   funds_disbursed: null,
-}
-
-export const initialRemarksFields = {
-  remarks: '',
 }
 
 export const enabledButtonClassname =

@@ -7,15 +7,19 @@ import {
   defaultProps,
   defaultPropsSimpleField,
   tableColumns,
+  textAreaClassname,
 } from '../../constants'
 import {
   getFieldDefaultProps,
   handleChangeNumericValues,
   handleChangeTextValues,
+  getIsInputInvalid,
 } from '../utils'
 import { useStore } from '@ors/store'
 
+import { TextareaAutosize } from '@mui/material'
 import { map } from 'lodash'
+import cx from 'classnames'
 
 const PEnterprisesOverviewSection = ({
   enterpriseData,
@@ -111,6 +115,19 @@ const PEnterprisesOverviewSection = ({
           </div>
         ))}
       </div>
+      <Label>{tableColumns.remarks}</Label>
+      <TextareaAutosize
+        value={sectionData['remarks']}
+        disabled={isFieldDisabled}
+        onChange={(event) =>
+          handleChangeTextValues(sectionId, 'remarks', setEnterpriseData, event)
+        }
+        className={cx(textAreaClassname + ' !min-w-[45rem]', {
+          'border-red-500': getIsInputInvalid(hasSubmitted, errors['remarks']),
+        })}
+        minRows={5}
+        tabIndex={-1}
+      />
     </>
   )
 }
