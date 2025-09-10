@@ -237,6 +237,7 @@ const ProjectIdentifiersFields = ({
                 <Label htmlFor="postExComDecision">Decision</Label>
                 <SimpleInput
                   id="postExComDecision"
+                  label=""
                   value={projIdentifiers?.post_excom_decision ?? ''}
                   onChange={handleChangePostExComDecision}
                   type="text"

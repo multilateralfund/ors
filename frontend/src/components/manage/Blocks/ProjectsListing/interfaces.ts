@@ -19,6 +19,8 @@ export interface ProjIdentifiers {
   lead_agency_submitting_on_behalf: boolean
   cluster: number | null
   production: boolean
+  post_excom_meeting: number | null
+  post_excom_decision: string | null
 }
 export interface CrossCuttingFields {
   project_type: number | null
@@ -89,6 +91,8 @@ export interface SpecificFields {
   meeting_approved: number | null
   decision: string | null
   decision_id: string | null
+  post_excom_meeting: number | null
+  post_excom_decision: string | null
 }
 
 export type OdsOdpFields = {
@@ -265,7 +269,7 @@ export type ProjectIdentifiersSectionProps = {
   hasSubmitted: boolean
   mode: string
   project?: ProjectTypeApi
-  postExComUpdate: boolean
+  postExComUpdate?: boolean
   specificFieldsLoaded: boolean
 }
 

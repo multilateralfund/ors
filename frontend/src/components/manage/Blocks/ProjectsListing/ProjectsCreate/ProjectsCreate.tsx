@@ -74,7 +74,7 @@ const ProjectsCreate = ({
   TrancheErrors & {
     specificFields: ProjectSpecificFields[]
     mode: string
-    postExComUpdate: boolean
+    postExComUpdate?: boolean
     errors: { [key: string]: [] }
     hasSubmitted: boolean
     fileErrors: string

@@ -35,7 +35,7 @@ const ProjectsHeader = ({
   ...rest
 }: ProjectHeader & {
   mode: string
-  postExComUpdate: boolean
+  postExComUpdate?: boolean
   trancheErrors?: TrancheErrorType
   project?: ProjectTypeApi
   setProjectFiles?: (value: ProjectFile[]) => void
