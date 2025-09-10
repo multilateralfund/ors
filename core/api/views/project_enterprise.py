@@ -80,6 +80,10 @@ class EnterpriseViewSet(
             "update",
         ]:
             return [HasProjectEnterpriseEditAccess]
+        if self.action in [
+            "change_status",
+        ]:
+            return [HasProjectEnterpriseApprovalAccess]
         return [DenyAll]
 
     @swagger_auto_schema(
@@ -111,6 +115,33 @@ class EnterpriseViewSet(
         serializer.save(request=request)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(
+        operation_description="""
+        Allows the user to change the status of an enterprise.
+        """,
+        responses={status.HTTP_200_OK: EnterpriseSerializer(many=True)},
+    )
+    @action(methods=["POST"], detail=True)
+    def change_status(self, request, *args, **kwargs):
+        instance = self.get_object()
+        new_status = request.data.get("status")
+        if new_status not in dict(EnterpriseStatus.choices).keys():
+            return Response(
+                {"detail": "Invalid status."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if new_status == EnterpriseStatus.OBSOLETE:
+            # All related project enterprises should be marked as obsolete too
+            related_entries = ProjectEnterprise.objects.filter(
+                enterprise=instance
+            ).exclude(status=EnterpriseStatus.OBSOLETE)
+            related_entries.update(status=EnterpriseStatus.OBSOLETE)
+        instance.status = new_status
+        instance.save()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class ProjectEnterpriseViewSet(
     viewsets.GenericViewSet,
@@ -129,6 +160,9 @@ class ProjectEnterpriseViewSet(
     ordering_fields = [
         "code",
         "enterprise__name",
+        "enterprise__country__name",
+        "enterprise__location",
+        "enterprise__application",
         "location",
         "status",
     ]
