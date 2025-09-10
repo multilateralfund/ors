@@ -5,6 +5,7 @@ from django.db import models
 class EnterpriseStatus(models.TextChoices):
     PENDING = "Pending Approval", "Pending Approval"
     APPROVED = "Approved", "Approved"
+    OBSOLETE = "Obsolete", "Obsolete"
 
 
 class SubstancesType(models.TextChoices):

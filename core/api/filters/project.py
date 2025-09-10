@@ -153,9 +153,14 @@ class EnterpriseFilter(filters.FilterSet):
         queryset=Country.objects.all(),
         widget=CSVWidget,
     )
+    status = filters.MultipleChoiceFilter(
+        choices=EnterpriseStatus.choices,
+        widget=CSVWidget,
+    )
 
     class Meta:
         model = Enterprise
         fields = [
             "country_id",
+            "status",
         ]

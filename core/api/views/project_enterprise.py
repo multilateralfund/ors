@@ -74,8 +74,42 @@ class EnterpriseViewSet(
             "list",
             "retrieve",
         ]:
-            return [HasProjectV2ViewAccess]
+            return [HasProjectV2ViewAccess]  # TODO: enterprise view access
+        if self.action in [
+            "create",
+            "update",
+        ]:
+            return [HasProjectEnterpriseEditAccess]
         return [DenyAll]
+
+    @swagger_auto_schema(
+        operation_description="""
+        Creates a new Pending Enterprise.
+        """,
+        responses={status.HTTP_200_OK: EnterpriseSerializer(many=True)},
+    )
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @swagger_auto_schema(
+        operation_description="""
+        Updates a Project Enterprise.
+        The status of the enterprise cannot be changed via this endpoint.
+        """,
+        responses={status.HTTP_200_OK: EnterpriseSerializer(many=True)},
+    )
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
+        data = request.data.copy()
+        data.pop("status", None)  # status cannot be changed via this endpoint
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(request=request)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class ProjectEnterpriseViewSet(
@@ -167,8 +201,9 @@ class ProjectEnterpriseViewSet(
     @swagger_auto_schema(
         operation_description="""
         Creates a new Pending Project Enterprise.
-        A new pending Enterprise will be created. If an ID is provided for the enterprise,
-        the given ID will be used to link the new pending one to the existing approved enterprise.
+        A new pending Enterprise will be created if the provided enterprise data does not include an ID.
+        If the provided enterprise data includes an ID, the existing enterprise with that ID will be linked
+        to the new pending Project Enterprise without altering any of its data.
         """,
         responses={status.HTTP_200_OK: ProjectEnterpriseSerializer(many=True)},
     )
@@ -181,10 +216,9 @@ class ProjectEnterpriseViewSet(
     @swagger_auto_schema(
         operation_description="""
         If the Project Enterprise is in 'Pending' status, it is updated as normal.
-        The enterprise entry cannot be changed, so the fields will be applied to already linked enterprise.
-        If the Project Enterprise is in 'Approved' status, a new Project Enterprise entry will be
-        created in 'Pending' status, linked to the approved one. The linked enterprise will also be duplicated
-        in 'Pending' status, with the updated fields.
+        The enterprise entry cannot be changed, so the fields will be applied to already linked enterprise
+        and only if it is in 'Pending Approval' status.
+        If the Project Enterprise is in 'Approved' status, no changes are applied and the instance is returned as is.
         """,
         responses={status.HTTP_200_OK: ProjectEnterpriseSerializer(many=True)},
     )
@@ -217,6 +251,72 @@ class ProjectEnterpriseViewSet(
             )
         instance.status = EnterpriseStatus.APPROVED
         instance.save()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(methods=["POST"], detail=True)
+    @swagger_auto_schema(
+        operation_description="""
+        Not approve a Project Enterprise. Will be marked as 'Obsolete'.
+        If the Project Enterprise is already approved, it cannot be marked as obsolete.
+        If the Project Enterprise is pending, but linked to at least one Project Enterprise
+        that is not obsolete, it cannot be marked as obsolete.
+        """,
+        request_body=openapi.Schema(type=openapi.TYPE_OBJECT, properties=None),
+        responses={
+            status.HTTP_200_OK: ProjectEnterpriseSerializer,
+            status.HTTP_400_BAD_REQUEST: "Bad request",
+        },
+    )
+    def not_approve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.status != EnterpriseStatus.PENDING:
+            return Response(
+                {"detail": "Only pending enterprises can be marked as 'obsolete'."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        instance.status = EnterpriseStatus.OBSOLETE
+        instance.save()
+
+        enterprise = instance.enterprise
+
+        # If the enterprise is pending and not linked to any other non-obsolete ProjectEnterprise,
+        # mark it as obsolete too
+        if enterprise.status != EnterpriseStatus.APPROVED:
+            linked_active_entries = ProjectEnterprise.objects.filter(
+                enterprise=enterprise
+            ).exclude(status=EnterpriseStatus.OBSOLETE)
+            if not linked_active_entries.exists():
+                enterprise.status = EnterpriseStatus.OBSOLETE
+                enterprise.save()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(methods=["POST"], detail=True)
+    @swagger_auto_schema(
+        operation_description="""
+        mark as obsolete a Project Enterprise.
+        The linked enterprise will be marked as obsolete too if it is not approved and
+        not linked to any other non-obsolete ProjectEnterprise.
+        """,
+        request_body=openapi.Schema(type=openapi.TYPE_OBJECT, properties=None),
+        responses={
+            status.HTTP_200_OK: ProjectEnterpriseSerializer,
+            status.HTTP_400_BAD_REQUEST: "Bad request",
+        },
+    )
+    def obsolete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.status = EnterpriseStatus.OBSOLETE
+        instance.save()
+        enterprise = instance.enterprise
+        if enterprise.status != EnterpriseStatus.APPROVED:
+            linked_active_entries = ProjectEnterprise.objects.filter(
+                enterprise=enterprise
+            ).exclude(status=EnterpriseStatus.OBSOLETE)
+            if not linked_active_entries.exists():
+                enterprise.status = EnterpriseStatus.OBSOLETE
+                enterprise.save()
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
