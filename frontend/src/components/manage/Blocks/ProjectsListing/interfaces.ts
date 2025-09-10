@@ -93,6 +93,8 @@ export interface SpecificFields {
   decision_id: string | null
   post_excom_meeting: number | null
   post_excom_decision: string | null
+  post_excom_meeting_id: number | null
+  post_excom_decision_id: string | null
 }
 
 export type OdsOdpFields = {
