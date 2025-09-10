@@ -26,14 +26,6 @@ class Enterprise(models.Model):
         choices=EnterpriseStatus.choices,
         default=EnterpriseStatus.PENDING,
     )
-    approved_enterprise = models.ForeignKey(
-        "self",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="pending_enterprises",
-        help_text="If status is 'Pending', link to the approved enterpris (if any)",
-    )
     code = models.CharField(
         max_length=128,
         null=True,
@@ -43,6 +35,12 @@ class Enterprise(models.Model):
     name = models.CharField(
         max_length=256,
         help_text="Name of the enterprise",
+    )
+    agencies = models.ManyToManyField(
+        "core.Agency",
+        related_name="enterprises",
+        blank=True,
+        help_text="Agencies associated with the enterprise",
     )
     country = models.ForeignKey(
         "core.Country",
@@ -112,14 +110,6 @@ class ProjectEnterprise(models.Model):
         related_name="enterprises",
         blank=True,
         null=True,
-    )
-    approved_project_enterprise = models.ForeignKey(
-        "self",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="pending_project_enterprises",
-        help_text="If status is 'Pending', link to the approved project enterprise (if any)",
     )
     enterprise = models.ForeignKey(
         Enterprise,
