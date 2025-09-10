@@ -154,6 +154,16 @@ class ProjectListV2Serializer(ProjectListSerializer):
 
     metaproject_new_code = serializers.SerializerMethodField()
 
+    post_excom_meeting = serializers.SerializerMethodField()
+    post_excom_meeting_id = serializers.PrimaryKeyRelatedField(
+        required=True, queryset=Meeting.objects.all().values_list("id", flat=True)
+    )
+    post_excom_decision = serializers.SlugField(read_only=True)
+    post_excom_decision_id = serializers.PrimaryKeyRelatedField(
+        allow_null=True,
+        queryset=Decision.objects.all().values_list("id", flat=True),
+    )
+
     def get_editable(self, obj):
         """
         Check if the project is editable based on the user's permissions.
@@ -182,6 +192,16 @@ class ProjectListV2Serializer(ProjectListSerializer):
 
     def get_checklist_regulations(self, obj):
         return obj.get_checklist_regulations_display()
+
+    def get_post_excom_meeting(self, obj):
+        if obj.post_excom_meeting:
+            return obj.post_excom_meeting.number
+        return None
+
+    def get_post_excom_decision(self, obj):
+        if obj.post_excom_decision:
+            return obj.post_excom_decision.number
+        return None
 
     class Meta:
         model = Project
@@ -272,6 +292,10 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "meeting_transf_id",
             "meeting_approved",
             "meeting_approved_id",
+            "post_excom_meeting",
+            "post_excom_meeting_id",
+            "post_excom_decision",
+            "post_excom_decision_id",
             "mya_code",
             "mya_subsector",
             "mya_start_date",
@@ -718,6 +742,7 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             "lead_agency_submitting_on_behalf",
             "meeting",
             "meeting_approved",
+            "post_excom_meeting",
             "meps_developed_domestic_refrigeration",
             "meps_developed_domestic_refrigeration_actual",
             "meps_developed_commercial_refrigeration",
