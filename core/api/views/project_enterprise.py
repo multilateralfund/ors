@@ -11,6 +11,9 @@ from rest_framework.views import APIView
 
 from core.api.permissions import (
     DenyAll,
+    HasEnterpriseViewAccess,
+    HasEnterpriseEditAccess,
+    HasEnterpriseApprovalAccess,
     HasProjectV2ViewAccess,
     HasProjectEnterpriseEditAccess,
     HasProjectEnterpriseApprovalAccess,
@@ -57,8 +60,14 @@ class EnterpriseViewSet(
         if user.is_superuser:
             return queryset
 
-        if not user.has_perm("core.has_project_enterprise_approval_access"):
+        if not user.has_perm("core.has_enterprise_approval_access"):
             queryset = queryset.filter(status=EnterpriseStatus.APPROVED)
+
+        if user.has_perm("core.can_view_all_agencies"):
+            return queryset
+
+        if user.has_perm("core.can_view_only_own_agency"):
+            return queryset.filter(agencies=user.agency)
 
         return queryset
 
@@ -74,16 +83,16 @@ class EnterpriseViewSet(
             "list",
             "retrieve",
         ]:
-            return [HasProjectV2ViewAccess]  # TODO: enterprise view access
+            return [HasEnterpriseViewAccess]
         if self.action in [
             "create",
             "update",
         ]:
-            return [HasProjectEnterpriseEditAccess]
+            return [HasEnterpriseEditAccess]
         if self.action in [
             "change_status",
         ]:
-            return [HasProjectEnterpriseApprovalAccess]
+            return [HasEnterpriseApprovalAccess]
         return [DenyAll]
 
     @swagger_auto_schema(

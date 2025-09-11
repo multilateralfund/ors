@@ -157,10 +157,16 @@ class EnterpriseFilter(filters.FilterSet):
         choices=EnterpriseStatus.choices,
         widget=CSVWidget,
     )
+    agencies = filters.ModelMultipleChoiceFilter(
+        field_name="agencies",
+        queryset=Agency.objects.all(),
+        widget=CSVWidget,
+    )
 
     class Meta:
         model = Enterprise
         fields = [
             "country_id",
             "status",
+            "agencies",
         ]
