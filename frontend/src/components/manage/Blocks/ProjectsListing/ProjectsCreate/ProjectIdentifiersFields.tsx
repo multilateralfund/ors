@@ -208,8 +208,6 @@ const ProjectIdentifiersFields = ({
   const getIsInputDisabled = (field: keyof typeof errors) =>
     hasSubmitted && errors[field]?.length > 0
 
-  console.log(projectData)
-
   return (
     <>
       {postExComUpdate ? (

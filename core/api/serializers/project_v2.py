@@ -52,6 +52,7 @@ HISTORY_DESCRIPTION_APPROVE_V3 = "Approve project (Version 3)"
 HISTORY_DESCRIPTION_REJECT_V3 = "Reject project (Version 3)"
 HISTORY_DESCRIPTION_WITHDRAW_V3 = "Withdraw project (Version 3)"
 HISTORY_DESCRIPTION_STATUS_CHANGE = "Project status changed to {}"
+HISTORY_DESCRIPTION_POST_EXCOM_UPDATE = "Post ExCom update (Version 3)"
 
 
 class UpdateOdsOdpEntries:
@@ -742,7 +743,6 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             "lead_agency_submitting_on_behalf",
             "meeting",
             "meeting_approved",
-            "post_excom_meeting",
             "meps_developed_domestic_refrigeration",
             "meps_developed_domestic_refrigeration_actual",
             "meps_developed_commercial_refrigeration",
@@ -782,6 +782,8 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             "operation_of_reclamation_scheme",
             "operation_of_reclamation_scheme_actual",
             "pcr_waived",
+            "post_excom_meeting",
+            "post_excom_decision",
             "production_control_type",
             "products_manufactured",
             "programme_officer",

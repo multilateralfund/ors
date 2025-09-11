@@ -129,6 +129,7 @@ const ProjectsHeader = ({
                 trancheErrors,
                 specificFields,
                 approvalFields,
+                postExComUpdate,
               }}
               {...rest}
             />
