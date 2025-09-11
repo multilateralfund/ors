@@ -2,7 +2,7 @@ import PEnterprisesCreateWrapper from '@ors/components/manage/Blocks/ProjectsLis
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import usePageTitle from '@ors/hooks/usePageTitle'
 
-export default function EnterprisesCreate() {
+export default function PEnterprisesCreate() {
   usePageTitle('Project enterprise create')
 
   return (

@@ -4,7 +4,7 @@ import usePageTitle from '@ors/hooks/usePageTitle'
 
 import { useParams } from 'wouter'
 
-export default function Enterprise() {
+export default function PEnterprise() {
   usePageTitle('Project enterprise')
 
   const { enterprise_id } = useParams<Record<string, string>>()

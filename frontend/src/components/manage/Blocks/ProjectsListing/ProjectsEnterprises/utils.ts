@@ -68,7 +68,7 @@ export const getFieldDefaultProps = (
 
 export const getEnterprisesErrors = (
   data: any,
-  errors: { [key: string]: [] },
+  errors: { [key: string]: string[] },
 ) => {
   const requiredFields = ['name']
 

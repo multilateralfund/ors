@@ -1,8 +1,11 @@
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
-import { EnterpriseDataProps, EnterpriseFundingDetails } from '../../interfaces'
 import { getFieldDefaultProps, handleChangeNumericValues } from '../utils'
 import { tableColumns } from '../../constants'
+import {
+  ProjectEnterpriseDataProps,
+  EnterpriseFundingDetails,
+} from '../../interfaces'
 
 import { keys, map } from 'lodash'
 
@@ -11,7 +14,7 @@ const PEnterprisesFundingDetailsSection = ({
   setEnterpriseData,
   hasSubmitted,
   errors = {},
-}: EnterpriseDataProps) => {
+}: ProjectEnterpriseDataProps) => {
   const sectionId = 'funding_details'
   const sectionData: EnterpriseFundingDetails = enterpriseData[sectionId]
 

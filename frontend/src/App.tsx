@@ -58,7 +58,9 @@ import ProjectsSubmitPage from '@ors/app/projects_listing/[project_id]/submit/pa
 import ProjectsListingProjectPage from '@ors/app/projects_listing/[project_id]/page'
 import ProjectsListingArchiveProjectPage from '@ors/app/projects_listing/[project_id]/archive/page'
 import EnterprisesPage from '@ors/app/projects_listing/enterprises/page'
+import EnterpriseCreatePage from '@ors/app/projects_listing/enterprises/create/page'
 import EnterprisePage from '@ors/app/projects_listing/enterprises/[enterprise_id]/page'
+import EnterpriseEditPage from '@ors/app/projects_listing/enterprises/[enterprise_id]/edit/page'
 import ProjectsEnterprisesPage from '@ors/app/projects_listing/projects_enterprises/page'
 import ProjectsEnterprisesCreatePage from '@ors/app/projects_listing/projects_enterprises/[project_id]/create/page'
 import ProjectsEnterprisesViewPage from '@ors/app/projects_listing/projects_enterprises/[project_id]/view/[enterprise_id]/page'
@@ -304,8 +306,14 @@ export default function App() {
         <Route path="/projects-listing/enterprises">
           <EnterprisesPage />
         </Route>
+        <Route path="/projects-listing/enterprises/create">
+          <EnterpriseCreatePage />
+        </Route>
         <Route path="/projects-listing/enterprises/:enterprise_id">
           <EnterprisePage />
+        </Route>
+        <Route path="/projects-listing/enterprises/:enterprise_id/edit">
+          <EnterpriseEditPage />
         </Route>
         <Route path="/projects-listing/projects-enterprises">
           <ProjectsEnterprisesPage />

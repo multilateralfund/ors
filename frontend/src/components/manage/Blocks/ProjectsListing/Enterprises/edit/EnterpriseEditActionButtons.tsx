@@ -2,7 +2,7 @@ import { useContext } from 'react'
 
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
-import { EnterpriseActionButtons, EnterpriseData } from '../../interfaces'
+import { EnterpriseActionButtons, EnterpriseOverview } from '../../interfaces'
 import { enabledButtonClassname } from '../../constants'
 import { api } from '@ors/helpers'
 
@@ -11,25 +11,24 @@ import { enqueueSnackbar } from 'notistack'
 import { Button } from '@mui/material'
 import cx from 'classnames'
 
-const PEnterpriseEditActionButtons = ({
+const EnterpriseEditActionButtons = ({
   enterpriseData,
   setEnterpriseId,
-  setEnterpriseTitle,
+  setEnterpriseName,
   setIsLoading,
   setHasSubmitted,
   setOtherErrors,
   setErrors,
 }: EnterpriseActionButtons & {
-  enterpriseData: EnterpriseData
-  setEnterpriseTitle: (title: string) => void
+  enterpriseData: EnterpriseOverview
+  setEnterpriseName: (name: string) => void
 }) => {
-  const { project_id, enterprise_id } = useParams<Record<string, string>>()
+  const { enterprise_id } = useParams<Record<string, string>>()
   const { canEditEnterprise, canApproveEnterprise } =
     useContext(PermissionsContext)
   const [_, setLocation] = useLocation()
 
-  const { overview } = enterpriseData
-  const disableSubmit = !overview.name
+  const disableSubmit = !enterpriseData.name
 
   const handleErrors = async (error: any) => {
     const errors = await error.json()
@@ -54,22 +53,13 @@ const PEnterpriseEditActionButtons = ({
     setErrors({})
 
     try {
-      const { overview, substance_details, ...rest } = enterpriseData
-
-      const data = {
-        project: project_id,
-        ...Object.assign({}, ...Object.values(rest)),
-        ods_odp: substance_details,
-        enterprise: overview,
-      }
-
       const result = await api(`api/project-enterprise/${enterprise_id}/`, {
-        data: data,
+        data: enterpriseData,
         method: 'PUT',
       })
 
       setEnterpriseId(result.id)
-      setEnterpriseTitle(result.enterprise.name)
+      setEnterpriseName(result.enterprise.name)
     } catch (error) {
       await handleErrors(error)
     } finally {
@@ -84,16 +74,11 @@ const PEnterpriseEditActionButtons = ({
         method: 'POST',
       })
 
-      setLocation(
-        `/projects-listing/projects-enterprises/${project_id}/view/${enterprise_id}`,
-      )
+      setLocation(`/projects-listing/enterprises/${enterprise_id}`)
     } catch (error) {
-      enqueueSnackbar(
-        <>Could not approve project enterprise. Please try again.</>,
-        {
-          variant: 'error',
-        },
-      )
+      enqueueSnackbar(<>Could not approve enterprise. Please try again.</>, {
+        variant: 'error',
+      })
     }
   }
 
@@ -101,7 +86,7 @@ const PEnterpriseEditActionButtons = ({
     <div className="container flex w-full flex-wrap gap-x-3 gap-y-2 px-0">
       <CancelLinkButton
         title="Cancel"
-        href={`/projects-listing/projects-enterprises/${project_id}/view/${enterprise_id}`}
+        href={`/projects-listing/enterprises/${enterprise_id}`}
       />
       {canEditEnterprise && (
         <Button
@@ -133,4 +118,4 @@ const PEnterpriseEditActionButtons = ({
   )
 }
 
-export default PEnterpriseEditActionButtons
+export default EnterpriseEditActionButtons

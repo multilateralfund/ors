@@ -323,12 +323,26 @@ export interface EnterpriseData {
   funding_details: EnterpriseFundingDetails
 }
 
-export interface EnterpriseDataProps {
+export type ProjectEnterpriseDataType = {
   enterpriseData: EnterpriseData
   setEnterpriseData: Dispatch<SetStateAction<EnterpriseData>>
-  hasSubmitted: boolean
-  errors?: { [key: string]: string[] }
 }
+
+export type EnterpriseDataType = {
+  enterpriseData: EnterpriseOverview
+  setEnterpriseData: Dispatch<SetStateAction<EnterpriseOverview>>
+}
+
+export type EnterprisesCommonProps = {
+  hasSubmitted: boolean
+  errors: { [key: string]: string[] }
+}
+
+export type ProjectEnterpriseDataProps = ProjectEnterpriseDataType &
+  EnterprisesCommonProps
+
+export type EnterpriseDataProps = EnterpriseDataType & EnterprisesCommonProps
+
 export interface EnterpriseOverview {
   name: string
   country: number | null
@@ -353,14 +367,13 @@ export interface EnterpriseFundingDetails {
   funds_disbursed: string | null
 }
 
-export interface EnterpriseHeader {
-  enterpriseData: EnterpriseData
+export interface EnterpriseHeaderProps {
   setEnterpriseId: (id: number | null) => void
   setHasSubmitted: (value: boolean) => void
   setErrors: (value: { [key: string]: [] }) => void
   setOtherErrors: (value: string) => void
 }
 
-export type EnterpriseActionButtons = EnterpriseHeader & {
+export type EnterpriseActionButtons = EnterpriseHeaderProps & {
   setIsLoading: (value: boolean) => void
 }

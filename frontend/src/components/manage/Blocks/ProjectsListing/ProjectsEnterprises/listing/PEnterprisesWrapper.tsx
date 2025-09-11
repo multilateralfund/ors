@@ -5,14 +5,12 @@ import { useContext, useMemo, useRef, useState } from 'react'
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
-import CustomLink from '@ors/components/ui/Link/Link'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import Link from '@ors/components/ui/Link/Link'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import PEnterprisesFiltersWrapper from './PEnterprisesFiltersWrapper'
 import PEnterprisesTable from './PEnterprisesTable'
 import { PageTitle, RedirectBackButton } from '../../HelperComponents'
-import { useGetEnterpriseStatuses } from '../../hooks/useGetEnterpriseStatuses'
 import { useGetProjectEnterprises } from '../../hooks/useGetProjectEnterprises'
 import { useGetProject } from '../../hooks/useGetProject'
 
@@ -20,7 +18,6 @@ import { IoAddCircle } from 'react-icons/io5'
 import { Redirect, useParams } from 'wouter'
 import { FiEdit } from 'react-icons/fi'
 import { Button } from '@mui/material'
-import { map } from 'lodash'
 
 export default function PEnterprisesWrapper() {
   const form = useRef<any>()
@@ -43,13 +40,6 @@ export default function PEnterprisesWrapper() {
   const { loading, setParams } = enterprises
 
   const [enterpriseId, setEnterpriseId] = useState<number | null>(null)
-
-  const statuses = useGetEnterpriseStatuses()
-  const enterpriseStatuses = map(statuses, (status) => ({
-    id: status[0],
-    label: status[1],
-    name: status[1],
-  }))
 
   if (
     !canViewProjects ||
@@ -82,22 +72,11 @@ export default function PEnterprisesWrapper() {
             </PageHeading>
           </div>
           <div className="ml-auto mt-auto flex items-center gap-2.5">
-            {project_id ? (
+            {project_id && (
               <CancelLinkButton
                 title="Cancel"
                 href="/projects-listing/projects-enterprises"
               />
-            ) : (
-              <CustomLink
-                className="border border-solid border-secondary px-4 py-2 shadow-none hover:border-primary"
-                href="/projects-listing/enterprises"
-                color="secondary"
-                variant="contained"
-                size="large"
-                button
-              >
-                View enterprises
-              </CustomLink>
             )}
           </div>
         </div>
@@ -107,7 +86,6 @@ export default function PEnterprisesWrapper() {
           <PEnterprisesFiltersWrapper
             type="project-enterprises"
             {...{
-              enterpriseStatuses,
               filters,
               initialFilters,
               setFilters,

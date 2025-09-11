@@ -2,29 +2,23 @@ import { useState } from 'react'
 
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
-import PEnterpriseEditActionButtons from '../edit/PEnterpriseEditActionButtons'
-import PEnterpriseCreateActionButtons from './PEnterpriseCreateActionButtons'
+import EnterpriseEditActionButtons from '../edit/EnterpriseEditActionButtons'
+import EnterpriseCreateActionButtons from './EnterpriseCreateActionButtons'
 import { RedirectBackButton, PageTitle } from '../../HelperComponents'
-import {
-  EnterpriseData,
-  EnterpriseHeaderProps,
-  EnterpriseType,
-} from '../../interfaces'
+import { EnterpriseHeaderProps, EnterpriseOverview } from '../../interfaces'
 
 import { CircularProgress } from '@mui/material'
 
-const PEnterpriseHeader = ({
+const EnterpriseHeader = ({
   mode,
   enterprise,
   ...rest
 }: EnterpriseHeaderProps & {
-  enterpriseData: EnterpriseData
+  enterpriseData: EnterpriseOverview
   mode: string
-  enterprise?: EnterpriseType
+  enterprise?: EnterpriseOverview
 }) => {
-  const [enterpriseTitle, setEnterpriseTitle] = useState(
-    enterprise?.enterprise?.name,
-  )
+  const [enterpriseName, setEnterpriseName] = useState(enterprise?.name)
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
   return (
@@ -36,21 +30,21 @@ const PEnterpriseHeader = ({
             <PageHeading>
               {mode === 'edit' ? (
                 <PageTitle
-                  pageTitle="Edit project enterprise"
-                  projectTitle={enterpriseTitle ?? ''}
+                  pageTitle="Edit enterprise"
+                  projectTitle={enterpriseName ?? ''}
                 />
               ) : (
-                'New project enterprise submission'
+                'New enterprise submission'
               )}
             </PageHeading>
           </div>
         </div>
         <div className="ml-auto mt-auto flex items-center gap-2.5">
           {mode === 'add' ? (
-            <PEnterpriseCreateActionButtons {...{ setIsLoading, ...rest }} />
+            <EnterpriseCreateActionButtons {...{ setIsLoading, ...rest }} />
           ) : (
-            <PEnterpriseEditActionButtons
-              {...{ setIsLoading, setEnterpriseTitle, ...rest }}
+            <EnterpriseEditActionButtons
+              {...{ setIsLoading, setEnterpriseName, ...rest }}
             />
           )}
           {isLoading && (
@@ -62,4 +56,4 @@ const PEnterpriseHeader = ({
   )
 }
 
-export default PEnterpriseHeader
+export default EnterpriseHeader

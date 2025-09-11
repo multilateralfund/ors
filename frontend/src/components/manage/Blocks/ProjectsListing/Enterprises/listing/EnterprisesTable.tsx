@@ -10,10 +10,8 @@ import getColumnDefs from './schema'
 
 const EnterprisesTable = ({
   enterprises,
-  filters,
 }: {
   enterprises: ReturnType<typeof useGetEnterprises>
-  filters: Record<string, any>
 }) => {
   const gridApiRef = useRef<any>()
 
@@ -27,7 +25,6 @@ const EnterprisesTable = ({
   return (
     loaded && (
       <ViewTable
-        key={JSON.stringify(filters)}
         getRowId={(props) => props.data.id}
         columnDefs={columnDefs}
         defaultColDef={defaultColDef}

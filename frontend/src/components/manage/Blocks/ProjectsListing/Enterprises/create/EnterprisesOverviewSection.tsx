@@ -2,10 +2,7 @@ import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEd
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import Field from '@ors/components/manage/Form/Field'
-import {
-  ProjectEnterpriseDataProps,
-  EnterpriseOverview,
-} from '../../interfaces'
+import { EnterpriseDataProps, EnterpriseOverview } from '../../interfaces'
 import {
   defaultProps,
   defaultPropsSimpleField,
@@ -24,39 +21,29 @@ import { TextareaAutosize } from '@mui/material'
 import { map } from 'lodash'
 import cx from 'classnames'
 
-const PEnterprisesOverviewSection = ({
+const EnterprisesOverviewSection = ({
   enterpriseData,
   setEnterpriseData,
-  countryId,
   hasSubmitted,
   errors = {},
-}: ProjectEnterpriseDataProps & {
-  countryId: number | null
-}) => {
-  const sectionId = 'overview'
-  const sectionData: EnterpriseOverview & { id?: number | null } =
-    enterpriseData[sectionId]
-
+}: EnterpriseDataProps) => {
   const commonSlice = useStore((state) => state.common)
   const countries = commonSlice.countries.data
 
   const textFields = ['name', 'location', 'application']
   const numericFields = ['local_ownership', 'export_to_non_a5']
 
-  const isFieldDisabled = !!sectionData.id
-
   const displayTextField = (field: string) => (
     <div>
       <Label>{tableColumns[field]}</Label>
       <SimpleInput
         id={field}
-        value={sectionData[field as keyof EnterpriseOverview]}
-        disabled={isFieldDisabled}
+        value={enterpriseData[field as keyof EnterpriseOverview]}
         onChange={(event) =>
-          handleChangeTextValues(sectionId, field, setEnterpriseData, event)
+          handleChangeTextValues(field, setEnterpriseData, event)
         }
         type="text"
-        {...getFieldDefaultProps(hasSubmitted, errors[field], isFieldDisabled)}
+        {...getFieldDefaultProps(hasSubmitted, errors[field])}
         containerClassName={
           defaultPropsSimpleField.containerClassName + ' !w-[35rem]'
         }
@@ -67,10 +54,7 @@ const PEnterprisesOverviewSection = ({
   const handleCountryChange = (value: any) => {
     setEnterpriseData((prevData) => ({
       ...prevData,
-      [sectionId]: {
-        ...prevData[sectionId],
-        country: value?.id ?? null,
-      },
+      country: value?.id ?? null,
     }))
   }
 
@@ -82,8 +66,7 @@ const PEnterprisesOverviewSection = ({
         <Field
           widget="autocomplete"
           options={countries}
-          value={sectionData['country']}
-          disabled={!!countryId || isFieldDisabled}
+          value={enterpriseData['country']}
           onChange={(_, value) => {
             handleCountryChange(value)
           }}
@@ -98,22 +81,12 @@ const PEnterprisesOverviewSection = ({
             <Label>{tableColumns[field]} (%)</Label>
             <SimpleInput
               id={field}
-              value={sectionData[field as keyof EnterpriseOverview] ?? ''}
-              disabled={isFieldDisabled}
+              value={enterpriseData[field as keyof EnterpriseOverview] ?? ''}
               onChange={(event) =>
-                handleChangeNumericValues(
-                  sectionId,
-                  field,
-                  setEnterpriseData,
-                  event,
-                )
+                handleChangeNumericValues(field, setEnterpriseData, event)
               }
               type="text"
-              {...getFieldDefaultProps(
-                hasSubmitted,
-                errors[field],
-                isFieldDisabled,
-              )}
+              {...getFieldDefaultProps(hasSubmitted, errors[field])}
             />
           </div>
         ))}
@@ -121,15 +94,9 @@ const PEnterprisesOverviewSection = ({
       <div className="mt-6">
         <Label>{tableColumns.remarks}</Label>
         <TextareaAutosize
-          value={sectionData['remarks']}
-          disabled={isFieldDisabled}
+          value={enterpriseData['remarks']}
           onChange={(event) =>
-            handleChangeTextValues(
-              sectionId,
-              'remarks',
-              setEnterpriseData,
-              event,
-            )
+            handleChangeTextValues('remarks', setEnterpriseData, event)
           }
           className={cx(textAreaClassname + ' !min-w-[45rem]', {
             'border-red-500': getIsInputInvalid(
@@ -145,4 +112,4 @@ const PEnterprisesOverviewSection = ({
   )
 }
 
-export default PEnterprisesOverviewSection
+export default EnterprisesOverviewSection

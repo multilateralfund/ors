@@ -1,30 +1,24 @@
 import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
 import { defaultPropsSimpleField, disabledClassName } from '../constants'
-import { EnterpriseData, EnterpriseOverview } from '../interfaces'
+import { EnterpriseOverview } from '../interfaces'
 
-import { keys } from 'lodash'
 import cx from 'classnames'
 
 export const handleChangeTextValues = (
-  sectionIdentifier: keyof EnterpriseData,
   field: string,
-  setEnterpriseData: Dispatch<SetStateAction<EnterpriseData>>,
+  setEnterpriseData: Dispatch<SetStateAction<EnterpriseOverview>>,
   event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
 ) => {
   setEnterpriseData((prevData) => ({
     ...prevData,
-    [sectionIdentifier]: {
-      ...prevData[sectionIdentifier],
-      [field]: event.target.value,
-    },
+    [field]: event.target.value,
   }))
 }
 
 export const handleChangeNumericValues = (
-  sectionIdentifier: keyof EnterpriseData,
   field: string,
-  setEnterpriseData: Dispatch<SetStateAction<EnterpriseData>>,
+  setEnterpriseData: Dispatch<SetStateAction<EnterpriseOverview>>,
   event: ChangeEvent<HTMLInputElement>,
 ) => {
   const initialValue = event.target.value
@@ -33,10 +27,7 @@ export const handleChangeNumericValues = (
   if (!isNaN(Number(value))) {
     setEnterpriseData((prevData) => ({
       ...prevData,
-      [sectionIdentifier]: {
-        ...prevData[sectionIdentifier],
-        [field]: value,
-      },
+      [field]: value,
     }))
   } else {
     event.preventDefault()
@@ -63,30 +54,5 @@ export const getFieldDefaultProps = (
         { [disabledClassName]: isFieldDisabled },
       ),
     },
-  }
-}
-
-export const getEnterprisesErrors = (
-  data: any,
-  errors: { [key: string]: [] },
-) => {
-  const requiredFields = ['name']
-
-  const fields = keys(data)
-  const filteredErrors = Object.fromEntries(
-    Object.entries(errors).filter(([key]) => fields.includes(key)),
-  )
-
-  return {
-    ...requiredFields
-      .filter((field) => fields.includes(field))
-      .reduce((acc: any, field) => {
-        acc[field] = !data[field as keyof EnterpriseOverview]
-          ? ['This field is required.']
-          : []
-
-        return acc
-      }, {}),
-    ...filteredErrors,
   }
 }

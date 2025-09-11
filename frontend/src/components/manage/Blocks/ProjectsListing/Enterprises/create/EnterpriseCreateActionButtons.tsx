@@ -3,25 +3,22 @@ import { useContext } from 'react'
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { SubmitButton } from '../../HelperComponents'
-import { EnterpriseActionButtons, EnterpriseData } from '../../interfaces'
+import { EnterpriseActionButtons, EnterpriseOverview } from '../../interfaces'
 import { api } from '@ors/helpers'
 
-import { useLocation, useParams } from 'wouter'
 import { enqueueSnackbar } from 'notistack'
+import { useLocation } from 'wouter'
 
-const PEnterpriseCreateActionButtons = ({
+const EnterpriseCreateActionButtons = ({
   enterpriseData,
   setEnterpriseId,
   setIsLoading,
   setHasSubmitted,
   setErrors,
   setOtherErrors,
-}: EnterpriseActionButtons & { enterpriseData: EnterpriseData }) => {
+}: EnterpriseActionButtons & { enterpriseData: EnterpriseOverview }) => {
   const [_, setLocation] = useLocation()
-  const { project_id } = useParams<Record<string, string>>()
   const { canEditEnterprise } = useContext(PermissionsContext)
-
-  const { overview } = enterpriseData
 
   const createEnterprise = async () => {
     setIsLoading(true)
@@ -29,23 +26,12 @@ const PEnterpriseCreateActionButtons = ({
     setErrors({})
 
     try {
-      const { overview, substance_details, ...rest } = enterpriseData
-
-      const data = {
-        project: project_id,
-        ...Object.assign({}, ...Object.values(rest)),
-        ods_odp: substance_details,
-        enterprise: overview,
-      }
-
-      const result = await api(`api/project-enterprise/`, {
-        data: data,
+      const result = await api(`api/enterprises/`, {
+        data: enterpriseData,
         method: 'POST',
       })
       setEnterpriseId(result.id)
-      setLocation(
-        `/projects-listing/projects-enterprises/${project_id}/edit/${result.id}`,
-      )
+      setLocation(`/projects-listing/enterprises/${result.id}/edit`)
     } catch (error) {
       const errors = await error.json()
 
@@ -69,14 +55,11 @@ const PEnterpriseCreateActionButtons = ({
 
   return (
     <div className="flex flex-wrap items-center gap-2.5">
-      <CancelLinkButton
-        title="Cancel"
-        href={`/projects-listing/projects-enterprises/${project_id}`}
-      />
+      <CancelLinkButton title="Cancel" href="/projects-listing/enterprises" />
       {canEditEnterprise && (
         <SubmitButton
-          title="Create project enterprise"
-          isDisabled={!overview.name}
+          title="Create enterprise"
+          isDisabled={!enterpriseData.name}
           onSubmit={createEnterprise}
           className="ml-auto"
         />
@@ -85,4 +68,4 @@ const PEnterpriseCreateActionButtons = ({
   )
 }
 
-export default PEnterpriseCreateActionButtons
+export default EnterpriseCreateActionButtons

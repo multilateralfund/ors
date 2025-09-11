@@ -5,7 +5,7 @@ import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/help
 import Field from '@ors/components/manage/Form/Field'
 import { getIsInputDisabled } from '../../ProjectsCreate/SpecificFieldsHelpers'
 import { SubmitButton } from '../../HelperComponents'
-import { EnterpriseDataProps, OptionsType } from '../../interfaces'
+import { ProjectEnterpriseDataProps, OptionsType } from '../../interfaces'
 import {
   defaultProps,
   defaultPropsSimpleField,
@@ -24,7 +24,7 @@ const PEnterprisesSubstanceDetailsSection = ({
   setEnterpriseData,
   hasSubmitted,
   odsOdpErrors,
-}: EnterpriseDataProps & {
+}: ProjectEnterpriseDataProps & {
   odsOdpErrors: { [key: string]: [] }[]
 }) => {
   const sectionId = 'substance_details'

@@ -638,11 +638,16 @@ export const getMenus = (
         { title: 'Update MYA data', url: null },
         { title: 'Update post ExCom fields', url: null },
         {
-          title: 'Update enterprises',
+          title: 'Update project enterprises',
           url: `/projects-listing/projects-enterprises${projectId ? `/${projectId}` : ''}`,
           permissions: [canViewProjects],
           disabled:
             !!projectSubmissionStatus && projectSubmissionStatus !== 'Approved',
+        },
+        {
+          title: 'Manage enterprises',
+          url: `/projects-listing/enterprises`,
+          permissions: [canViewProjects],
         },
         { title: 'Transfer a project', url: null },
       ],

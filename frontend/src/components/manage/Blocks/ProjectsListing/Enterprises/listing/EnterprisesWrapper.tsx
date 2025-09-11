@@ -2,19 +2,16 @@
 
 import { useContext, useMemo, useRef, useState } from 'react'
 
-import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import PEnterprisesFiltersWrapper from '../../ProjectsEnterprises/listing/PEnterprisesFiltersWrapper'
 import EnterprisesTable from './EnterprisesTable'
-import { RedirectBackButton } from '../../HelperComponents'
-import { useGetEnterpriseStatuses } from '../../hooks/useGetEnterpriseStatuses'
+import { CreateButton, RedirectBackButton } from '../../HelperComponents'
 import { useGetEnterprises } from '../../hooks/useGetEnterprises'
 
 import { Redirect } from 'wouter'
-import { map } from 'lodash'
 
 export default function EnterprisesWrapper() {
   const form = useRef<any>()
@@ -30,13 +27,6 @@ export default function EnterprisesWrapper() {
 
   const enterprises = useGetEnterprises(null, initialFilters)
   const { loading, setParams } = enterprises
-
-  const statuses = useGetEnterpriseStatuses()
-  const enterpriseStatuses = map(statuses, (status) => ({
-    id: status[0],
-    label: status[1],
-    name: status[1],
-  }))
 
   if (!canViewProjects) {
     return <Redirect to="/projects-listing/listing" />
@@ -57,9 +47,9 @@ export default function EnterprisesWrapper() {
             </PageHeading>
           </div>
           <div className="ml-auto mt-auto flex items-center gap-2.5">
-            <CancelLinkButton
-              title="Cancel"
-              href="/projects-listing/projects-enterprises"
+            <CreateButton
+              title="Create enterprise"
+              href="/projects-listing/enterprises/create"
             />
           </div>
         </div>
@@ -68,14 +58,13 @@ export default function EnterprisesWrapper() {
         <PEnterprisesFiltersWrapper
           type="enterprises"
           {...{
-            enterpriseStatuses,
             filters,
             initialFilters,
             setFilters,
             setParams,
           }}
         />
-        <EnterprisesTable {...{ enterprises, filters }} />
+        <EnterprisesTable {...{ enterprises }} />
       </form>
     </>
   )

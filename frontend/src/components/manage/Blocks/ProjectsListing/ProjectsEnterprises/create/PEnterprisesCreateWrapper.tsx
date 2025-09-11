@@ -90,7 +90,7 @@ const PEnterprisesCreateWrapper = () => {
           <ProjectFormFooter
             id={enterpriseId}
             href={`/projects-listing/projects-enterprises/${project_id}/view/${enterpriseId}`}
-            successMessage="Enterprise was created successfully."
+            successMessage="Project enterprise was created successfully."
             successRedirectMessage="View project enterprise."
             {...{ nonFieldsErrors, otherErrors }}
           />

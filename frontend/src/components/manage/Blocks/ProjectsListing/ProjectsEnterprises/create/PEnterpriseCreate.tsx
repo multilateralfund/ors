@@ -14,7 +14,7 @@ import { formatErrors, hasSectionErrors } from '../../utils.ts'
 import { getEnterprisesErrors } from '../utils.ts'
 import { tableColumns } from '../../constants.ts'
 import {
-  EnterpriseDataProps,
+  ProjectEnterpriseDataProps,
   EnterpriseSubstanceDetails,
 } from '../../interfaces.ts'
 
@@ -27,7 +27,7 @@ const PEnterpriseCreate = ({
   countryId,
   errors,
   ...rest
-}: EnterpriseDataProps & {
+}: ProjectEnterpriseDataProps & {
   countryId: number
   errors: { [key: string]: [] }
 }) => {
