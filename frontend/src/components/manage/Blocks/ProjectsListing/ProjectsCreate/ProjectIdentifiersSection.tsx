@@ -13,6 +13,7 @@ const ProjectIdentifiersSection = ({
   projectData,
   setProjectData,
   areNextSectionsDisabled,
+  postExComUpdate,
   ...rest
 }: ProjectIdentifiersSectionProps) => {
   const { canViewBp } = useContext(PermissionsContext)
@@ -39,7 +40,12 @@ const ProjectIdentifiersSection = ({
     <>
       {hasIdentifiers && (
         <ProjectIdentifiersFields
-          {...{ projectData, setProjectData, areNextSectionsDisabled }}
+          {...{
+            projectData,
+            setProjectData,
+            areNextSectionsDisabled,
+            postExComUpdate,
+          }}
           {...rest}
         />
       )}
@@ -52,6 +58,7 @@ const ProjectIdentifiersSection = ({
             setProjectData,
           }}
           isDisabled={
+            postExComUpdate ||
             areNextSectionsDisabled ||
             !canEditField(editableFields, 'bp_activity')
           }

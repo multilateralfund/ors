@@ -55,6 +55,7 @@ const ProjectsCreate = ({
   setProjectData,
   specificFields,
   mode,
+  postExComUpdate = false,
   files,
   projectFiles,
   errors,
@@ -73,6 +74,7 @@ const ProjectsCreate = ({
   TrancheErrors & {
     specificFields: ProjectSpecificFields[]
     mode: string
+    postExComUpdate?: boolean
     errors: { [key: string]: [] }
     hasSubmitted: boolean
     fileErrors: string
@@ -279,6 +281,7 @@ const ProjectsCreate = ({
             setCurrentTab,
             hasSubmitted,
             mode,
+            postExComUpdate,
             specificFieldsLoaded,
           }}
           isNextBtnEnabled={canLinkToBp}
@@ -440,7 +443,7 @@ const ProjectsCreate = ({
           : []),
       ],
     },
-    ...(project && mode === 'edit' && project.version === 3
+    ...(project && mode === 'edit' && project.version >= 3
       ? [
           {
             id: 'project-approval-section',

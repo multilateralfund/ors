@@ -16,12 +16,13 @@ export const createProjectFieldsSlice = ({
     setViewableFields: (version: number, submissionStatus?: string) => {
       const fields = get().projectFields.projectFields?.data ?? []
 
-      const viewableFields = filter(
-        fields,
-        ({ visible_in_versions }) =>
-          visible_in_versions?.includes(version) &&
-          (submissionStatus !== 'Draft' || visible_in_versions.includes(1)),
-      ).map((field) => field.write_field_name)
+      const viewableFields = filter(fields, ({ visible_in_versions }) => {
+        const versionCheck = version >= 3 ? 3 : version
+        return (
+          visible_in_versions?.includes(versionCheck) &&
+          (submissionStatus !== 'Draft' || visible_in_versions.includes(1))
+        )
+      }).map((field) => field.write_field_name)
 
       set(
         produce((state) => {

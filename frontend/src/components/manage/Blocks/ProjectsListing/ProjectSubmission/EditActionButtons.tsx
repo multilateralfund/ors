@@ -60,6 +60,7 @@ const EditActionButtons = ({
   trancheErrors,
   approvalFields = [],
   specificFieldsLoaded,
+  postExComUpdate,
 }: ActionButtons & {
   setProjectTitle: (title: string) => void
   project: ProjectTypeApi
@@ -68,6 +69,7 @@ const EditActionButtons = ({
   setProjectFiles: (value: ProjectFile[]) => void
   trancheErrors?: TrancheErrorType
   approvalFields?: ProjectSpecificFields[]
+  postExComUpdate?: boolean
 }) => {
   const [_, setLocation] = useLocation()
 
@@ -177,7 +179,7 @@ const EditActionButtons = ({
   const disableSubmit = !specificFieldsLoaded || isSubmitDisabled || hasErrors
   const disableUpdate =
     !specificFieldsLoaded ||
-    (project.version === 3
+    (project.version >= 3
       ? isAfterApproval
         ? disableSubmit ||
           hasSectionErrors(approvalErrors) ||
@@ -222,6 +224,10 @@ const EditActionButtons = ({
     setOtherErrors('')
     setErrors({})
 
+    if (postExComUpdate) {
+      console.warn('Post ExCom update does not version files!!!')
+    }
+
     try {
       if (newFiles.length > 0) {
         await uploadFiles(
@@ -250,6 +256,10 @@ const EditActionButtons = ({
         specificFields,
         formatProjectFields(projectFields),
       )
+
+      if (postExComUpdate) {
+        data['post-excom-update'] = true
+      }
 
       const result = await api(`api/projects/v2/${id}`, {
         data: data,

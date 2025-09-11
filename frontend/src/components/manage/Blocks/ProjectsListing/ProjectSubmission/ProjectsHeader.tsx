@@ -25,6 +25,7 @@ import dayjs from 'dayjs'
 const ProjectsHeader = ({
   projectData,
   mode,
+  postExComUpdate = false,
   project,
   files,
   setProjectFiles = () => {},
@@ -34,6 +35,7 @@ const ProjectsHeader = ({
   ...rest
 }: ProjectHeader & {
   mode: string
+  postExComUpdate?: boolean
   trancheErrors?: TrancheErrorType
   project?: ProjectTypeApi
   setProjectFiles?: (value: ProjectFile[]) => void
@@ -83,7 +85,9 @@ const ProjectsHeader = ({
             <PageHeading>
               {mode === 'edit' && (
                 <PageTitle
-                  pageTitle="Edit project"
+                  pageTitle={
+                    postExComUpdate ? 'Post ExCom update' : 'Edit project'
+                  }
                   projectTitle={projectTitle}
                   project={project as ProjectTypeApi}
                 />
@@ -125,6 +129,7 @@ const ProjectsHeader = ({
                 trancheErrors,
                 specificFields,
                 approvalFields,
+                postExComUpdate,
               }}
               {...rest}
             />

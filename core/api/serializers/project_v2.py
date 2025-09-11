@@ -52,6 +52,7 @@ HISTORY_DESCRIPTION_APPROVE_V3 = "Approve project (Version 3)"
 HISTORY_DESCRIPTION_REJECT_V3 = "Reject project (Version 3)"
 HISTORY_DESCRIPTION_WITHDRAW_V3 = "Withdraw project (Version 3)"
 HISTORY_DESCRIPTION_STATUS_CHANGE = "Project status changed to {}"
+HISTORY_DESCRIPTION_POST_EXCOM_UPDATE = "Post ExCom update (Version 3)"
 
 
 class UpdateOdsOdpEntries:
@@ -154,6 +155,16 @@ class ProjectListV2Serializer(ProjectListSerializer):
 
     metaproject_new_code = serializers.SerializerMethodField()
 
+    post_excom_meeting = serializers.SerializerMethodField()
+    post_excom_meeting_id = serializers.PrimaryKeyRelatedField(
+        required=True, queryset=Meeting.objects.all().values_list("id", flat=True)
+    )
+    post_excom_decision = serializers.SlugField(read_only=True)
+    post_excom_decision_id = serializers.PrimaryKeyRelatedField(
+        allow_null=True,
+        queryset=Decision.objects.all().values_list("id", flat=True),
+    )
+
     def get_editable(self, obj):
         """
         Check if the project is editable based on the user's permissions.
@@ -182,6 +193,16 @@ class ProjectListV2Serializer(ProjectListSerializer):
 
     def get_checklist_regulations(self, obj):
         return obj.get_checklist_regulations_display()
+
+    def get_post_excom_meeting(self, obj):
+        if obj.post_excom_meeting:
+            return obj.post_excom_meeting.number
+        return None
+
+    def get_post_excom_decision(self, obj):
+        if obj.post_excom_decision:
+            return obj.post_excom_decision.number
+        return None
 
     class Meta:
         model = Project
@@ -272,6 +293,10 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "meeting_transf_id",
             "meeting_approved",
             "meeting_approved_id",
+            "post_excom_meeting",
+            "post_excom_meeting_id",
+            "post_excom_decision",
+            "post_excom_decision_id",
             "mya_code",
             "mya_subsector",
             "mya_start_date",
@@ -757,6 +782,8 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
             "operation_of_reclamation_scheme",
             "operation_of_reclamation_scheme_actual",
             "pcr_waived",
+            "post_excom_meeting",
+            "post_excom_decision",
             "production_control_type",
             "products_manufactured",
             "programme_officer",

@@ -90,6 +90,8 @@ export const initialProjectIdentifiers = {
   lead_agency: null,
   cluster: null,
   production: false,
+  post_excom_meeting: null,
+  post_excom_decision: null,
 }
 
 export const initialCrossCuttingFields = {
