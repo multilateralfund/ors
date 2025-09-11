@@ -48,7 +48,7 @@ const ProjectsEdit = ({
 }) => {
   const project_id = project.id.toString()
   const isEditMode = mode === 'edit'
-  const isVersion3 = isEditMode && project.version === 3
+  const isVersion3 = isEditMode && project.version >= 3
 
   const { canViewProjects, canEditApprovedProjects } =
     useContext(PermissionsContext)

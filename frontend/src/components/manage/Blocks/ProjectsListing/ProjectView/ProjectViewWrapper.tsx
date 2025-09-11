@@ -47,7 +47,6 @@ const ProjectViewWrapper = () => {
 
   const project = useGetProject(project_id)
   const { data, loading } = project
-  console.log('Project', data)
   const {
     cluster_id,
     project_type_id,

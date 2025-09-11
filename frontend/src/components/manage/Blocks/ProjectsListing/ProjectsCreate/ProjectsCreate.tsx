@@ -442,7 +442,7 @@ const ProjectsCreate = ({
           : []),
       ],
     },
-    ...(project && mode === 'edit' && project.version === 3
+    ...(project && mode === 'edit' && project.version >= 3
       ? [
           {
             id: 'project-approval-section',
