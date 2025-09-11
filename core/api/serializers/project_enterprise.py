@@ -8,10 +8,25 @@ from core.models.project_enterprise import (
 from core.models.utils import EnterpriseStatus
 
 
+class ProjectEnterpriseListSerializer(serializers.ModelSerializer):
+    project_id = serializers.IntegerField(read_only=True, source="project.id")
+    project_code = serializers.CharField(
+        source="project.code", read_only=True
+    )  # read-only field to display project code
+
+    class Meta:
+        model = ProjectEnterprise
+        fields = [
+            "id",
+            "project_id",
+            "project_code",
+        ]
+
+
 class EnterpriseSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     code = serializers.CharField(read_only=True)
-    project_enterprises = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    project_enterprises = ProjectEnterpriseListSerializer(many=True, read_only=True)
 
     class Meta:
         model = Enterprise
@@ -20,6 +35,7 @@ class EnterpriseSerializer(serializers.ModelSerializer):
             "code",
             "name",
             "country",
+            "agencies",
             "location",
             "application",
             "local_ownership",

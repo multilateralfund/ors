@@ -11,6 +11,9 @@ from rest_framework.views import APIView
 
 from core.api.permissions import (
     DenyAll,
+    HasEnterpriseViewAccess,
+    HasEnterpriseEditAccess,
+    HasEnterpriseApprovalAccess,
     HasProjectV2ViewAccess,
     HasProjectEnterpriseEditAccess,
     HasProjectEnterpriseApprovalAccess,
@@ -57,8 +60,14 @@ class EnterpriseViewSet(
         if user.is_superuser:
             return queryset
 
-        if not user.has_perm("core.has_project_enterprise_approval_access"):
+        if not user.has_perm("core.has_enterprise_approval_access"):
             queryset = queryset.filter(status=EnterpriseStatus.APPROVED)
+
+        if user.has_perm("core.can_view_all_agencies"):
+            return queryset
+
+        if user.has_perm("core.can_view_only_own_agency"):
+            return queryset.filter(agencies=user.agency)
 
         return queryset
 
@@ -74,12 +83,16 @@ class EnterpriseViewSet(
             "list",
             "retrieve",
         ]:
-            return [HasProjectV2ViewAccess]  # TODO: enterprise view access
+            return [HasEnterpriseViewAccess]
         if self.action in [
             "create",
             "update",
         ]:
-            return [HasProjectEnterpriseEditAccess]
+            return [HasEnterpriseEditAccess]
+        if self.action in [
+            "change_status",
+        ]:
+            return [HasEnterpriseApprovalAccess]
         return [DenyAll]
 
     @swagger_auto_schema(
@@ -111,6 +124,33 @@ class EnterpriseViewSet(
         serializer.save(request=request)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema(
+        operation_description="""
+        Allows the user to change the status of an enterprise.
+        """,
+        responses={status.HTTP_200_OK: EnterpriseSerializer(many=True)},
+    )
+    @action(methods=["POST"], detail=True)
+    def change_status(self, request, *args, **kwargs):
+        instance = self.get_object()
+        new_status = request.data.get("status")
+        if new_status not in dict(EnterpriseStatus.choices).keys():
+            return Response(
+                {"detail": "Invalid status."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if new_status == EnterpriseStatus.OBSOLETE:
+            # All related project enterprises should be marked as obsolete too
+            related_entries = ProjectEnterprise.objects.filter(
+                enterprise=instance
+            ).exclude(status=EnterpriseStatus.OBSOLETE)
+            related_entries.update(status=EnterpriseStatus.OBSOLETE)
+        instance.status = new_status
+        instance.save()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class ProjectEnterpriseViewSet(
     viewsets.GenericViewSet,
@@ -129,6 +169,9 @@ class ProjectEnterpriseViewSet(
     ordering_fields = [
         "code",
         "enterprise__name",
+        "enterprise__country__name",
+        "enterprise__location",
+        "enterprise__application",
         "location",
         "status",
     ]

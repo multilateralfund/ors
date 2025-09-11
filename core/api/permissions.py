@@ -111,6 +111,30 @@ class HasProjectV2EditAccess(permissions.BasePermission):
         return request.user.has_perm("core.has_project_v2_edit_access")
 
 
+class HasEnterpriseViewAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        """
+        Check if the user has permission to view enterprise data.
+        """
+        return request.user.has_perm("core.has_enterprise_view_access")
+
+
+class HasEnterpriseEditAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        """
+        Check if the user has permission to edit enterprise data.
+        """
+        return request.user.has_perm("core.has_enterprise_edit_access")
+
+
+class HasEnterpriseApprovalAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        """
+        Check if the user has permission to approve(change status) enterprise data.
+        """
+        return request.user.has_perm("core.has_enterprise_approval_access")
+
+
 class HasProjectEnterpriseEditAccess(permissions.BasePermission):
     def has_permission(self, request, view):
         """
