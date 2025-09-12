@@ -50,6 +50,23 @@ class EnterpriseSerializer(serializers.ModelSerializer):
             attrs["status"] = EnterpriseStatus.PENDING
         return super().validate(attrs)
 
+    def create(self, validated_data):
+        # assign m2m agencies after instance is created
+        agencies_data = validated_data.pop("agencies", [])
+        enterprise = Enterprise.objects.create(**validated_data)
+        enterprise.agencies.set(agencies_data)
+        return enterprise
+
+    def update(self, instance, validated_data):
+        # assign m2m agencies after instance is updated
+        agencies_data = validated_data.pop("agencies", None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        if agencies_data is not None:
+            instance.agencies.set(agencies_data)
+        return instance
+
 
 class ProjectEnterpriseOdsOdpSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
@@ -145,9 +162,11 @@ class ProjectEnterpriseSerializer(serializers.ModelSerializer):
                     "Enterprise with given ID does not exist."
                 ) from exc
         else:
+            agencies = enterprise_data.pop("agencies", [])
             enterprise = Enterprise.objects.create(
                 **enterprise_data, status=EnterpriseStatus.PENDING
             )
+            enterprise.agencies.set(agencies)
         project_enterprise = ProjectEnterprise.objects.create(
             **validated_data,
             enterprise=enterprise,
@@ -188,9 +207,11 @@ class ProjectEnterpriseSerializer(serializers.ModelSerializer):
         if enterprise_data and instance.enterprise.status != EnterpriseStatus.APPROVED:
             # Update enterprise data only if its status is not APPROVED
             enterprise = instance.enterprise
+            agencies_data = enterprise_data.pop("agencies", None)
             for attr, value in enterprise_data.items():
                 setattr(enterprise, attr, value)
             enterprise.save()
+            enterprise.agencies.set(agencies_data)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()

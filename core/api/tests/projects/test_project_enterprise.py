@@ -269,7 +269,7 @@ class TestCreateProjectEnterprise:
     client = APIClient()
     url = reverse("project-enterprise-list")
 
-    def get_create_data(self, project, substance, blend):
+    def get_create_data(self, project, substance, blend, agency):
         return {
             "project": project.id,
             "enterprise": {
@@ -277,6 +277,7 @@ class TestCreateProjectEnterprise:
                 "country": project.country.id,
                 "location": "New City",
                 "application": "New Application",
+                "agencies": [agency.id],
                 "local_ownership": 50.0,
                 "export_to_non_a5": 30.0,
                 "remarks": "Some remarks",
@@ -315,10 +316,11 @@ class TestCreateProjectEnterprise:
         mlfs_admin_user,
         admin_user,
         project,
+        agency,
         substance,
         blend,
     ):
-        data = self.get_create_data(project, substance, blend)
+        data = self.get_create_data(project, substance, blend, agency)
 
         def _test_user(user, expected_status, data):
             self.client.force_authenticate(user=user)
@@ -344,9 +346,9 @@ class TestCreateProjectEnterprise:
         _test_user(mlfs_admin_user, 201, data)
         _test_user(admin_user, 201, data)
 
-    def test_create(self, mlfs_admin_user, project, substance, blend):
+    def test_create(self, mlfs_admin_user, project, substance, blend, agency):
         self.client.force_authenticate(user=mlfs_admin_user)
-        data = self.get_create_data(project, substance, blend)
+        data = self.get_create_data(project, substance, blend, agency)
         assert ProjectEnterprise.objects.all().count() == 0
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 201
@@ -377,7 +379,7 @@ class TestUpdateProjectEnterprise:
 
     client = APIClient()
 
-    def get_update_data(self, project, substance, blend, enterprise):
+    def get_update_data(self, project, substance, blend, enterprise, agency):
         ods_odp = enterprise.ods_odp.first()
         return {
             "id": enterprise.id,
@@ -386,6 +388,7 @@ class TestUpdateProjectEnterprise:
                 "name": "Updated Enterprise",
                 "country": project.country.id,
                 "location": "Updated City",
+                "agencies": [agency.id],
                 "application": "Updated Application",
                 "local_ownership": 60.0,
                 "export_to_non_a5": 40.0,
@@ -428,9 +431,10 @@ class TestUpdateProjectEnterprise:
         project,
         substance,
         blend,
+        agency,
     ):
         enterprise1, _, _ = _setup_enterprises
-        data = self.get_update_data(project, substance, blend, enterprise1)
+        data = self.get_update_data(project, substance, blend, enterprise1, agency)
 
         def _test_user(user, expected_status, enterprise, data):
             url = reverse("project-enterprise-detail", args=[enterprise.id])
@@ -461,11 +465,13 @@ class TestUpdateProjectEnterprise:
         _test_user(admin_user, 200, enterprise1, data)
 
     def test_update(
-        self, mlfs_admin_user, _setup_enterprises, project, substance, blend
+        self, mlfs_admin_user, _setup_enterprises, project, substance, blend, agency
     ):
         project_enterprise1, _, _ = _setup_enterprises
         self.client.force_authenticate(user=mlfs_admin_user)
-        data = self.get_update_data(project, substance, blend, project_enterprise1)
+        data = self.get_update_data(
+            project, substance, blend, project_enterprise1, agency
+        )
         url = reverse("project-enterprise-detail", args=[project_enterprise1.id])
         response = self.client.put(url, data, format="json")
         assert response.status_code == 200

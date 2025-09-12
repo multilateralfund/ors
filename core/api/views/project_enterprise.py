@@ -46,6 +46,7 @@ class EnterpriseViewSet(
         "application",
         "local_ownership",
         "export_to_non_a5",
+        "status",
     ]
     model = Enterprise
     search_fields = ["code", "name"]
@@ -192,6 +193,8 @@ class ProjectEnterpriseViewSet(
             return [HasProjectEnterpriseEditAccess]
         if self.action in [
             "approve",
+            "not_approve",
+            "obsolete",
         ]:
             return [HasProjectEnterpriseApprovalAccess]
         return [DenyAll]
