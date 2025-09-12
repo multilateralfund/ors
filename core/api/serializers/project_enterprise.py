@@ -5,11 +5,28 @@ from core.models.project_enterprise import (
     ProjectEnterprise,
     ProjectEnterpriseOdsOdp,
 )
+from core.models.utils import EnterpriseStatus
+
+
+class ProjectEnterpriseListSerializer(serializers.ModelSerializer):
+    project_id = serializers.IntegerField(read_only=True, source="project.id")
+    project_code = serializers.CharField(
+        source="project.code", read_only=True
+    )  # read-only field to display project code
+
+    class Meta:
+        model = ProjectEnterprise
+        fields = [
+            "id",
+            "project_id",
+            "project_code",
+        ]
 
 
 class EnterpriseSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(required=False)
     code = serializers.CharField(read_only=True)
+    project_enterprises = ProjectEnterpriseListSerializer(many=True, read_only=True)
 
     class Meta:
         model = Enterprise
@@ -18,12 +35,37 @@ class EnterpriseSerializer(serializers.ModelSerializer):
             "code",
             "name",
             "country",
+            "agencies",
             "location",
             "application",
             "local_ownership",
             "export_to_non_a5",
+            "project_enterprises",
             "remarks",
+            "status",
         ]
+
+    def validate(self, attrs):
+        if not self.instance:
+            attrs["status"] = EnterpriseStatus.PENDING
+        return super().validate(attrs)
+
+    def create(self, validated_data):
+        # assign m2m agencies after instance is created
+        agencies_data = validated_data.pop("agencies", [])
+        enterprise = Enterprise.objects.create(**validated_data)
+        enterprise.agencies.set(agencies_data)
+        return enterprise
+
+    def update(self, instance, validated_data):
+        # assign m2m agencies after instance is updated
+        agencies_data = validated_data.pop("agencies", None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        if agencies_data is not None:
+            instance.agencies.set(agencies_data)
+        return instance
 
 
 class ProjectEnterpriseOdsOdpSerializer(serializers.ModelSerializer):
@@ -106,18 +148,29 @@ class ProjectEnterpriseSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         _ = validated_data.pop("request", None)
+        validated_data.pop("status", None)  # status will be set to PENDING
         ods_odp_data = validated_data.pop("ods_odp")
         enterprise_data = validated_data.pop("enterprise")
+        enterprise_data.pop("status", None)  # status will be set to PENDING if new
         if "id" in enterprise_data:
-            enterprise = Enterprise.objects.get(id=enterprise_data["id"])
-            for attr, value in enterprise_data.items():
-                setattr(enterprise, attr, value)
-            enterprise.save()
+            # if enterprise exists, use it in linking, but don't alter any of its data
+            enterprise_data_id = enterprise_data.pop("id")
+            try:
+                enterprise = Enterprise.objects.get(id=enterprise_data_id)
+            except Enterprise.DoesNotExist as exc:
+                raise serializers.ValidationError(
+                    "Enterprise with given ID does not exist."
+                ) from exc
         else:
-            enterprise = Enterprise.objects.create(**enterprise_data)
+            agencies = enterprise_data.pop("agencies", [])
+            enterprise = Enterprise.objects.create(
+                **enterprise_data, status=EnterpriseStatus.PENDING
+            )
+            enterprise.agencies.set(agencies)
         project_enterprise = ProjectEnterprise.objects.create(
             **validated_data,
             enterprise=enterprise,
+            status=EnterpriseStatus.PENDING,
         )
         for ods_odp in ods_odp_data:
             ProjectEnterpriseOdsOdp.objects.create(
@@ -125,15 +178,40 @@ class ProjectEnterpriseSerializer(serializers.ModelSerializer):
             )
         return project_enterprise
 
+    def validate(self, attrs):
+        # validate partial updates
+        instance = self.instance
+        if not instance and attrs.get("id"):
+            try:
+                instance = ProjectEnterprise.objects.get(id=attrs["id"])
+            except ProjectEnterprise.DoesNotExist:
+                instance = None
+
+        if instance:
+            # prevent changing project on update
+            if "project" in attrs and attrs["project"] != instance.project:
+                raise serializers.ValidationError("Cannot change project of the entry")
+
+            if instance.status == EnterpriseStatus.APPROVED:
+                # Approved entries cannot be updated directly, only new pending ones can be created
+                raise serializers.ValidationError(
+                    "Cannot update an approved ProjectEnterprise directly. Create a new pending entry instead."
+                )
+        return super().validate(attrs)
+
     def update(self, instance, validated_data):
         _ = validated_data.pop("request", None)
+
         ods_odp_data = validated_data.pop("ods_odp")
         enterprise_data = validated_data.pop("enterprise", None)
-        if enterprise_data:
+        if enterprise_data and instance.enterprise.status != EnterpriseStatus.APPROVED:
+            # Update enterprise data only if its status is not APPROVED
             enterprise = instance.enterprise
+            agencies_data = enterprise_data.pop("agencies", None)
             for attr, value in enterprise_data.items():
                 setattr(enterprise, attr, value)
             enterprise.save()
+            enterprise.agencies.set(agencies_data)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
