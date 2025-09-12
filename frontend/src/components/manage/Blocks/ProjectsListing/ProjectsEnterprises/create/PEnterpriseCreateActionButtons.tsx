@@ -2,12 +2,12 @@ import { useContext } from 'react'
 
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
+import { handleErrors } from '../../Enterprises/FormHelperComponents'
 import { SubmitButton } from '../../HelperComponents'
-import { EnterpriseActionButtons, EnterpriseData } from '../../interfaces'
+import { EnterpriseActionButtons, PEnterpriseData } from '../../interfaces'
 import { api } from '@ors/helpers'
 
 import { useLocation, useParams } from 'wouter'
-import { enqueueSnackbar } from 'notistack'
 
 const PEnterpriseCreateActionButtons = ({
   enterpriseData,
@@ -16,26 +16,25 @@ const PEnterpriseCreateActionButtons = ({
   setHasSubmitted,
   setErrors,
   setOtherErrors,
-}: EnterpriseActionButtons & { enterpriseData: EnterpriseData }) => {
+}: EnterpriseActionButtons & { enterpriseData: PEnterpriseData }) => {
   const [_, setLocation] = useLocation()
-  const { project_id } = useParams<Record<string, string>>()
   const { canEditProjectEnterprise } = useContext(PermissionsContext)
 
-  const { overview } = enterpriseData
+  const { project_id } = useParams<Record<string, string>>()
 
   const createEnterprise = async () => {
     setIsLoading(true)
-    setOtherErrors('')
     setErrors({})
+    setOtherErrors('')
 
     try {
-      const { overview, substance_details, ...rest } = enterpriseData
+      const { overview, substance_details, funding_details } = enterpriseData
 
       const data = {
         project: project_id,
-        ...Object.assign({}, ...Object.values(rest)),
-        ods_odp: substance_details,
         enterprise: overview,
+        ods_odp: substance_details,
+        ...funding_details,
       }
 
       const result = await api(`api/project-enterprise/`, {
@@ -47,20 +46,7 @@ const PEnterpriseCreateActionButtons = ({
         `/projects-listing/projects-enterprises/${project_id}/edit/${result.id}`,
       )
     } catch (error) {
-      const errors = await error.json()
-
-      if (error.status === 400) {
-        setErrors(errors)
-
-        if (errors?.details) {
-          setOtherErrors(errors.details)
-        }
-      }
-
-      setEnterpriseId(null)
-      enqueueSnackbar(<>An error occurred. Please try again.</>, {
-        variant: 'error',
-      })
+      await handleErrors(error, setEnterpriseId, setErrors, setOtherErrors)
     } finally {
       setIsLoading(false)
       setHasSubmitted(true)
@@ -76,7 +62,7 @@ const PEnterpriseCreateActionButtons = ({
       {canEditProjectEnterprise && (
         <SubmitButton
           title="Create project enterprise"
-          isDisabled={!overview.name}
+          isDisabled={!enterpriseData.overview.name}
           onSubmit={createEnterprise}
           className="ml-auto"
         />

@@ -1,66 +1,52 @@
-import { useContext } from 'react'
-
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
-import PermissionsContext from '@ors/contexts/PermissionsContext'
-import { EnterpriseActionButtons, EnterpriseData } from '../../interfaces'
-import { enabledButtonClassname } from '../../constants'
+import EnterpriseCommonEditActionButtons from '../../Enterprises/edit/EnterpriseCommonEditActionButtons'
+import { handleErrors } from '../../Enterprises/FormHelperComponents'
+import {
+  EnterpriseActionButtons,
+  PEnterpriseData,
+  PEnterpriseType,
+} from '../../interfaces'
 import { api } from '@ors/helpers'
 
 import { useLocation, useParams } from 'wouter'
 import { enqueueSnackbar } from 'notistack'
-import { Button } from '@mui/material'
-import cx from 'classnames'
 
 const PEnterpriseEditActionButtons = ({
   enterpriseData,
+  enterprise,
   setEnterpriseId,
-  setEnterpriseTitle,
+  setEnterpriseName,
   setIsLoading,
   setHasSubmitted,
-  setOtherErrors,
   setErrors,
+  setOtherErrors,
 }: EnterpriseActionButtons & {
-  enterpriseData: EnterpriseData
-  setEnterpriseTitle: (title: string) => void
+  enterpriseData: PEnterpriseData
+  enterprise?: PEnterpriseType
+  setEnterpriseName: (name: string) => void
 }) => {
   const { project_id, enterprise_id } = useParams<Record<string, string>>()
-  const { canEditProjectEnterprise, canApproveProjectEnterprise } =
-    useContext(PermissionsContext)
   const [_, setLocation] = useLocation()
 
-  const { overview } = enterpriseData
-  const disableSubmit = !overview.name
+  const { status: enterpriseStatus } = enterprise ?? {}
+  const isPending = enterpriseStatus === 'Pending Approval'
+  const isApproved = enterpriseStatus === 'Approved'
 
-  const handleErrors = async (error: any) => {
-    const errors = await error.json()
-
-    if (error.status === 400) {
-      setErrors(errors)
-
-      if (errors?.details) {
-        setOtherErrors(errors.details)
-      }
-    }
-
-    setEnterpriseId(null)
-    enqueueSnackbar(<>An error occurred. Please try again.</>, {
-      variant: 'error',
-    })
-  }
+  const disableSubmit = !enterpriseData.overview.name
 
   const editEnterprise = async () => {
     setIsLoading(true)
-    setOtherErrors('')
     setErrors({})
+    setOtherErrors('')
 
     try {
-      const { overview, substance_details, ...rest } = enterpriseData
+      const { overview, substance_details, funding_details } = enterpriseData
 
       const data = {
         project: project_id,
-        ...Object.assign({}, ...Object.values(rest)),
-        ods_odp: substance_details,
         enterprise: overview,
+        ods_odp: substance_details,
+        ...funding_details,
       }
 
       const result = await api(`api/project-enterprise/${enterprise_id}/`, {
@@ -69,66 +55,69 @@ const PEnterpriseEditActionButtons = ({
       })
 
       setEnterpriseId(result.id)
-      setEnterpriseTitle(result.enterprise.name)
+      setEnterpriseName(result.enterprise.name)
+
+      return true
     } catch (error) {
-      await handleErrors(error)
+      await handleErrors(error, setEnterpriseId, setErrors, setOtherErrors)
+
+      return false
     } finally {
       setIsLoading(false)
       setHasSubmitted(true)
     }
   }
 
-  const approveEnterprise = async () => {
-    try {
-      await api(`api/project-enterprise/${enterprise_id}/approve/`, {
-        method: 'POST',
-      })
+  const changeEnterpriseStatus = async (status: string) => {
+    const canChangeStatus = isPending ? await editEnterprise() : true
 
-      setLocation(
-        `/projects-listing/projects-enterprises/${project_id}/view/${enterprise_id}`,
-      )
-    } catch (error) {
-      enqueueSnackbar(
-        <>Could not approve project enterprise. Please try again.</>,
-        {
-          variant: 'error',
-        },
-      )
+    if (canChangeStatus) {
+      try {
+        if (status === 'Approved') {
+          await api(`api/project-enterprise/${enterprise_id}/approve/`, {
+            method: 'POST',
+          })
+        }
+
+        if (isPending && status === 'Obsolete') {
+          await api(`api/project-enterprise/${enterprise_id}/not_approve/`, {
+            method: 'POST',
+          })
+        }
+
+        if (isApproved && status === 'Obsolete') {
+          await api(`api/project-enterprise/${enterprise_id}/obsolete/`, {
+            method: 'POST',
+          })
+        }
+
+        setLocation(
+          `/projects-listing/projects-enterprises/${project_id}/view/${enterprise_id}`,
+        )
+      } catch (error) {
+        enqueueSnackbar(
+          <>Could not approve project enterprise. Please try again.</>,
+          {
+            variant: 'error',
+          },
+        )
+      }
     }
   }
 
   return (
-    <div className="container flex w-full flex-wrap gap-x-3 gap-y-2 px-0">
+    <div className="flex flex-wrap items-center gap-2.5">
       <CancelLinkButton
         title="Cancel"
         href={`/projects-listing/projects-enterprises/${project_id}/view/${enterprise_id}`}
       />
-      {canEditProjectEnterprise && (
-        <Button
-          className={cx('px-4 py-2 shadow-none', {
-            [enabledButtonClassname]: !disableSubmit,
-          })}
-          onClick={editEnterprise}
-          disabled={disableSubmit}
-          variant="contained"
-          size="large"
-        >
-          Update enterprise
-        </Button>
-      )}
-      {canApproveProjectEnterprise && (
-        <Button
-          className={cx('px-4 py-2 shadow-none', {
-            [enabledButtonClassname]: !disableSubmit,
-          })}
-          onClick={approveEnterprise}
-          disabled={disableSubmit}
-          variant="contained"
-          size="large"
-        >
-          Approve enterprise
-        </Button>
-      )}
+      <EnterpriseCommonEditActionButtons
+        type="project-enterprise"
+        status={enterprise?.status ?? ''}
+        disableButton={disableSubmit}
+        handleEdit={editEnterprise}
+        handleChangeStatus={changeEnterpriseStatus}
+      />
     </div>
   )
 }

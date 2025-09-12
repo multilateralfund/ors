@@ -8,32 +8,31 @@ import PEnterpriseHeader from './PEnterpriseHeader.tsx'
 import PEnterpriseCreate from './PEnterpriseCreate.tsx'
 import ProjectFormFooter from '../../ProjectFormFooter.tsx'
 import { useGetProject } from '../../hooks/useGetProject.ts'
-import { EnterpriseData } from '../../interfaces.ts'
+import { PEnterpriseData } from '../../interfaces.ts'
 import {
-  initialFundingDetailsFields,
   initialOverviewFields,
+  initialFundingDetailsFields,
 } from '../../constants.ts'
 
 import { Redirect, useParams } from 'wouter'
 
 const PEnterpriseCreateWrapper = () => {
-  const { canEditProjectEnterprise, canViewProjects } =
+  const { canViewProjects, canEditProjectEnterprise } =
     useContext(PermissionsContext)
 
   const { project_id } = useParams<Record<string, string>>()
   const project = project_id ? useGetProject(project_id) : undefined
-  const { data, error, loading } = project ?? {}
+  const { data, loading, error } = project ?? {}
 
-  const [enterpriseData, setEnterpriseData] = useState<EnterpriseData>({
+  const [enterpriseData, setEnterpriseData] = useState<PEnterpriseData>({
     overview: initialOverviewFields,
     substance_details: [],
     funding_details: initialFundingDetailsFields,
   })
-
   const [enterpriseId, setEnterpriseId] = useState<number | null>(null)
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
 
-  const [errors, setErrors] = useState<{ [key: string]: [] }>({})
+  const [errors, setErrors] = useState<{ [key: string]: string[] }>({})
   const [otherErrors, setOtherErrors] = useState<string>('')
   const nonFieldsErrors = errors?.['non_field_errors'] || []
 
@@ -48,8 +47,8 @@ const PEnterpriseCreateWrapper = () => {
   }, [data])
 
   if (
-    !project_id ||
     !canViewProjects ||
+    !project_id ||
     (project && (error || (data && data.submission_status !== 'Approved')))
   ) {
     return <Redirect to="/projects-listing/listing" />
@@ -74,19 +73,19 @@ const PEnterpriseCreateWrapper = () => {
             {...{
               enterpriseData,
               setEnterpriseId,
+              setHasSubmitted,
               setErrors,
               setOtherErrors,
-              setHasSubmitted,
             }}
           />
           <PEnterpriseCreate
+            countryId={data.country_id}
             {...{
               enterpriseData,
               setEnterpriseData,
-              errors,
               hasSubmitted,
+              errors,
             }}
-            countryId={data.country_id}
           />
           <ProjectFormFooter
             id={enterpriseId}

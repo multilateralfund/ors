@@ -4,33 +4,39 @@ import { useContext } from 'react'
 
 import Loading from '@ors/components/theme/Loading/Loading'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
-import PEnterprisesEdit from './PEnterprisesEdit'
+import PEnterpriseEdit from './PEnterpriseEdit'
 import { useGetProjectEnterprise } from '../../hooks/useGetProjectEnterprise'
 import { useGetProject } from '../../hooks/useGetProject'
 
 import { Redirect, useParams } from 'wouter'
 
-const PEnterprisesEditWrapper = () => {
-  const { canEditProjectEnterprise, canViewProjects } =
+const PEnterpriseEditWrapper = () => {
+  const { canViewProjects, canViewEnterprises, canEditProjectEnterprise } =
     useContext(PermissionsContext)
 
   const { project_id, enterprise_id } = useParams<Record<string, string>>()
   const project = project_id ? useGetProject(project_id) : undefined
-  const { data: projectData, error, loading: loadingProject } = project ?? {}
+  const {
+    data: projectData,
+    loading: projectLoading,
+    error: projectError,
+  } = project ?? {}
 
   const enterprise = useGetProjectEnterprise(enterprise_id)
-  const { data, loading } = enterprise
+  const { data, loading, error } = enterprise
 
   if (
-    !project_id ||
+    !canViewEnterprises ||
     !canViewProjects ||
+    !project_id ||
     (project &&
-      (error || (projectData && projectData.submission_status !== 'Approved')))
+      (projectError ||
+        (projectData && projectData.submission_status !== 'Approved')))
   ) {
     return <Redirect to="/projects-listing/listing" />
   }
 
-  if (!canEditProjectEnterprise || enterprise?.error) {
+  if (!canEditProjectEnterprise || data?.status === 'Obsolete' || error) {
     return (
       <Redirect to={`/projects-listing/projects-enterprises/${project_id}`} />
     )
@@ -40,16 +46,13 @@ const PEnterprisesEditWrapper = () => {
     <>
       <Loading
         className="!fixed bg-action-disabledBackground"
-        active={loading || loadingProject}
+        active={loading || projectLoading}
       />
-      {!loading && !loadingProject && data && projectData && (
-        <PEnterprisesEdit
-          enterprise={data}
-          countryId={projectData.country_id}
-        />
+      {!loading && !projectLoading && data && projectData && (
+        <PEnterpriseEdit enterprise={data} countryId={projectData.country_id} />
       )}
     </>
   )
 }
 
-export default PEnterprisesEditWrapper
+export default PEnterpriseEditWrapper

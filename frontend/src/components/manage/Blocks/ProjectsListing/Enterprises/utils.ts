@@ -1,9 +1,6 @@
 import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
-import { defaultPropsSimpleField, disabledClassName } from '../constants'
 import { EnterpriseOverview } from '../interfaces'
-
-import cx from 'classnames'
 
 export const handleChangeSelectValues = (
   field: string,
@@ -45,28 +42,5 @@ export const handleChangeNumericValues = (
     }))
   } else {
     event.preventDefault()
-  }
-}
-
-export const getIsInputInvalid = (hasSubmitted: boolean, errors: any) =>
-  hasSubmitted && errors?.length > 0
-
-export const getFieldDefaultProps = (
-  hasSubmitted: boolean,
-  errors: any[],
-  isFieldDisabled: boolean = false,
-) => {
-  return {
-    ...{
-      ...defaultPropsSimpleField,
-      className: cx(
-        defaultPropsSimpleField.className,
-        '!m-0 h-10 !py-1',
-        {
-          'border-red-500': getIsInputInvalid(hasSubmitted, errors),
-        },
-        { [disabledClassName]: isFieldDisabled },
-      ),
-    },
   }
 }

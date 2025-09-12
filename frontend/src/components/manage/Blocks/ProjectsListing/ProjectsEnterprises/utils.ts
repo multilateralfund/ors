@@ -1,15 +1,33 @@
 import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
 import { defaultPropsSimpleField, disabledClassName } from '../constants'
-import { EnterpriseData, EnterpriseOverview } from '../interfaces'
+import { PEnterpriseData, EnterpriseOverview } from '../interfaces'
 
 import { keys } from 'lodash'
 import cx from 'classnames'
 
-export const handleChangeTextValues = (
-  sectionIdentifier: keyof EnterpriseData,
+export const handleChangeSelectValues = (
+  sectionIdentifier: keyof PEnterpriseData,
   field: string,
-  setEnterpriseData: Dispatch<SetStateAction<EnterpriseData>>,
+  setEnterpriseData: Dispatch<SetStateAction<PEnterpriseData>>,
+  value: any,
+  isMultiple: boolean,
+) => {
+  setEnterpriseData((prevData) => ({
+    ...prevData,
+    [sectionIdentifier]: {
+      ...prevData[sectionIdentifier],
+      [field]: isMultiple
+        ? value.map((val: any) => val.id ?? [])
+        : (value?.id ?? null),
+    },
+  }))
+}
+
+export const handleChangeTextValues = (
+  sectionIdentifier: keyof PEnterpriseData,
+  field: string,
+  setEnterpriseData: Dispatch<SetStateAction<PEnterpriseData>>,
   event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
 ) => {
   setEnterpriseData((prevData) => ({
@@ -22,9 +40,9 @@ export const handleChangeTextValues = (
 }
 
 export const handleChangeNumericValues = (
-  sectionIdentifier: keyof EnterpriseData,
+  sectionIdentifier: keyof PEnterpriseData,
   field: string,
-  setEnterpriseData: Dispatch<SetStateAction<EnterpriseData>>,
+  setEnterpriseData: Dispatch<SetStateAction<PEnterpriseData>>,
   event: ChangeEvent<HTMLInputElement>,
 ) => {
   const initialValue = event.target.value

@@ -5,33 +5,32 @@ import { useEffect, useState } from 'react'
 import PEnterpriseHeader from '../create/PEnterpriseHeader'
 import PEnterpriseCreate from '../create/PEnterpriseCreate'
 import ProjectFormFooter from '../../ProjectFormFooter'
-import { EnterpriseData, ProjectEnterpriseType } from '../../interfaces'
+import { PEnterpriseData, PEnterpriseType } from '../../interfaces'
 import {
-  initialFundingDetailsFields,
   initialOverviewFields,
+  initialFundingDetailsFields,
 } from '../../constants'
 
 import { useParams } from 'wouter'
 
-const PEnterprisesEdit = ({
+const PEnterpriseEdit = ({
   enterprise,
   countryId,
 }: {
-  enterprise: ProjectEnterpriseType
+  enterprise: PEnterpriseType
   countryId: number
 }) => {
   const { project_id } = useParams<Record<string, string>>()
 
-  const [enterpriseData, setEnterpriseData] = useState<EnterpriseData>({
+  const [enterpriseData, setEnterpriseData] = useState<PEnterpriseData>({
     overview: initialOverviewFields,
     substance_details: [],
     funding_details: initialFundingDetailsFields,
   })
-
   const [enterpriseId, setEnterpriseId] = useState<number | null>(null)
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
 
-  const [errors, setErrors] = useState<{ [key: string]: [] }>({})
+  const [errors, setErrors] = useState<{ [key: string]: string[] }>({})
   const [otherErrors, setOtherErrors] = useState<string>('')
   const nonFieldsErrors = errors?.['non_field_errors'] || []
 
@@ -43,7 +42,8 @@ const PEnterprisesEdit = ({
       overview: {
         id: enterpriseObj.id,
         name: enterpriseObj.name,
-        country: countryId || enterpriseObj.country,
+        agencies: enterpriseObj.agencies,
+        country: enterpriseObj.country,
         location: enterpriseObj.location,
         application: enterpriseObj.application,
         local_ownership: enterpriseObj.local_ownership,
@@ -65,8 +65,8 @@ const PEnterprisesEdit = ({
         mode="edit"
         {...{
           enterpriseData,
-          setEnterpriseId,
           enterprise,
+          setEnterpriseId,
           setHasSubmitted,
           setErrors,
           setOtherErrors,
@@ -93,4 +93,4 @@ const PEnterprisesEdit = ({
   )
 }
 
-export default PEnterprisesEdit
+export default PEnterpriseEdit

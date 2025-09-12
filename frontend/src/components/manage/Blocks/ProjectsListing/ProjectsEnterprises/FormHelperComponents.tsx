@@ -2,10 +2,13 @@ import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/Simple
 import Field from '@ors/components/manage/Form/Field'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
-import { EnterpriseDataProps, EnterpriseOverview } from '../interfaces'
+import { EnterpriseOverview, PEnterpriseDataProps } from '../interfaces'
 import {
   getFieldDefaultProps,
   getIsInputInvalid,
+  handleChangeNumericValues,
+  handleChangeSelectValues,
+  handleChangeTextValues,
 } from '../ProjectsEnterprises/utils'
 import {
   defaultProps,
@@ -13,21 +16,17 @@ import {
   tableColumns,
   textAreaClassname,
 } from '../constants'
-import {
-  handleChangeTextValues,
-  handleChangeSelectValues,
-  handleChangeNumericValues,
-} from './utils'
 
 import { TextareaAutosize } from '@mui/material'
-import { enqueueSnackbar } from 'notistack'
 import { filter, includes } from 'lodash'
 import cx from 'classnames'
 
-type EnterpriseFieldsProps = EnterpriseDataProps & {
+type PEnterpriseFieldsProps = PEnterpriseDataProps & {
   field: string
   isDisabled: boolean
 }
+
+const sectionIdentifier = 'overview'
 
 export const EnterpriseTextField = ({
   enterpriseData,
@@ -36,15 +35,22 @@ export const EnterpriseTextField = ({
   isDisabled,
   hasSubmitted,
   errors,
-}: EnterpriseFieldsProps) => (
+}: PEnterpriseFieldsProps) => (
   <div>
     <Label>{tableColumns[field]}</Label>
     <SimpleInput
       id={field}
       disabled={isDisabled}
-      value={enterpriseData[field as keyof EnterpriseOverview]}
+      value={
+        enterpriseData[sectionIdentifier][field as keyof EnterpriseOverview]
+      }
       onChange={(event) =>
-        handleChangeTextValues(field, setEnterpriseData, event)
+        handleChangeTextValues(
+          sectionIdentifier,
+          field,
+          setEnterpriseData,
+          event,
+        )
       }
       type="text"
       {...getFieldDefaultProps(hasSubmitted, errors[field], isDisabled)}
@@ -62,15 +68,23 @@ export const EnterpriseNumberField = ({
   isDisabled,
   hasSubmitted,
   errors,
-}: EnterpriseFieldsProps) => (
+}: PEnterpriseFieldsProps) => (
   <div>
     <Label>{tableColumns[field]} (%)</Label>
     <SimpleInput
       id={field}
       disabled={isDisabled}
-      value={enterpriseData[field as keyof EnterpriseOverview] ?? ''}
+      value={
+        enterpriseData[sectionIdentifier][field as keyof EnterpriseOverview] ??
+        ''
+      }
       onChange={(event) =>
-        handleChangeNumericValues(field, setEnterpriseData, event)
+        handleChangeNumericValues(
+          sectionIdentifier,
+          field,
+          setEnterpriseData,
+          event,
+        )
       }
       type="text"
       {...getFieldDefaultProps(hasSubmitted, errors[field], isDisabled)}
@@ -85,7 +99,7 @@ export const EnterpriseSelectField = ({
   isDisabled,
   hasSubmitted,
   errors,
-}: EnterpriseDataProps & {
+}: PEnterpriseDataProps & {
   field: { fieldName: string; options: any }
   isDisabled: boolean
 }) => {
@@ -94,11 +108,13 @@ export const EnterpriseSelectField = ({
   const value = isMultiple
     ? filter(options, (option) =>
         includes(
-          enterpriseData[fieldName as keyof EnterpriseOverview] as number[],
+          enterpriseData[sectionIdentifier][
+            fieldName as keyof EnterpriseOverview
+          ] as number[],
           option.id,
         ),
       )
-    : enterpriseData[fieldName as keyof EnterpriseOverview]
+    : enterpriseData[sectionIdentifier][fieldName as keyof EnterpriseOverview]
 
   return (
     <div>
@@ -111,6 +127,7 @@ export const EnterpriseSelectField = ({
         value={value}
         onChange={(_, value) =>
           handleChangeSelectValues(
+            sectionIdentifier,
             fieldName,
             setEnterpriseData,
             value,
@@ -137,14 +154,23 @@ export const EnterpriseTextAreaField = ({
   isDisabled,
   hasSubmitted,
   errors,
-}: EnterpriseFieldsProps) => (
+}: PEnterpriseFieldsProps) => (
   <div>
     <Label>{tableColumns[field]}</Label>
     <TextareaAutosize
       disabled={isDisabled}
-      value={enterpriseData[field as keyof EnterpriseOverview] as string}
+      value={
+        enterpriseData[sectionIdentifier][
+          field as keyof EnterpriseOverview
+        ] as string
+      }
       onChange={(event) =>
-        handleChangeTextValues(field, setEnterpriseData, event)
+        handleChangeTextValues(
+          sectionIdentifier,
+          field,
+          setEnterpriseData,
+          event,
+        )
       }
       className={cx(textAreaClassname + ' !min-w-[45rem]', {
         'border-red-500': getIsInputInvalid(hasSubmitted, errors[field]),
@@ -152,36 +178,5 @@ export const EnterpriseTextAreaField = ({
       minRows={5}
       tabIndex={-1}
     />
-  </div>
-)
-
-export const handleErrors = async (
-  error: any,
-  setEnterpriseId: (id: number | null) => void,
-  setErrors: (errors: { [key: string]: string[] }) => void,
-  setOtherErrors: (errors: string) => void,
-) => {
-  const errors = await error.json()
-
-  if (error.status === 400) {
-    setErrors(errors)
-
-    if (errors?.details) {
-      setOtherErrors(errors.details)
-    }
-  }
-
-  setEnterpriseId(null)
-  enqueueSnackbar(<>An error occurred. Please try again.</>, {
-    variant: 'error',
-  })
-}
-
-export const EnterpriseStatus = ({ status }: { status: string }) => (
-  <div className="mt-4 flex items-center gap-3">
-    <span>Status:</span>
-    <span className="rounded border border-solid border-[#002A3C] px-1 py-0.5 font-medium uppercase leading-tight text-[#002A3C]">
-      {status}
-    </span>
   </div>
 )

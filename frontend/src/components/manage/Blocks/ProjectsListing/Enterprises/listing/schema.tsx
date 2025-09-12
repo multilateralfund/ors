@@ -38,7 +38,7 @@ const getColumnDefs = () => {
         sortable: false,
         cellRenderer: (props: ICellRendererParams) => (
           <div className="flex items-center p-2">
-            {canEditEnterprise && (
+            {canEditEnterprise && props.data.status !== 'Obsolete' && (
               <Link
                 className="flex h-4 w-4 justify-center"
                 href={`/projects-listing/enterprises/${props.data.id}/edit`}

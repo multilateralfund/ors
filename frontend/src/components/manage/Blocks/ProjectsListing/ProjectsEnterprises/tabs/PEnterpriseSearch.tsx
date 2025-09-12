@@ -1,30 +1,19 @@
-import { Dispatch, SetStateAction } from 'react'
-
+import Field from '@ors/components/manage/Form/Field'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
-import Field from '@ors/components/manage/Form/Field'
-import { EnterpriseOverview, EnterpriseData } from '../../interfaces'
+import { EnterpriseType, PEnterpriseDataType } from '../../interfaces'
 import { defaultProps } from '../../constants'
 
-import { useParams } from 'wouter'
 import { find } from 'lodash'
-
-interface EnterpiseSeachProps {
-  enterprises: (EnterpriseOverview & { id: number })[]
-  enterpriseData: EnterpriseData
-  setEnterpriseData: Dispatch<SetStateAction<EnterpriseData>>
-}
 
 const PEnterpriseSearch = ({
   enterprises,
   enterpriseData,
   setEnterpriseData,
-}: EnterpiseSeachProps) => {
-  const { enterprise_id } = useParams<Record<string, string>>()
-
-  const overviewData = enterpriseData.overview as EnterpriseOverview & {
-    id?: number | null
-  }
+}: PEnterpriseDataType & {
+  enterprises: EnterpriseType[]
+}) => {
+  const overviewData = enterpriseData.overview as EnterpriseType
 
   const onEnterpriseChange = (value: any) => {
     const enterpriseId = value?.id ?? null
@@ -41,6 +30,7 @@ const PEnterpriseSearch = ({
           overview: {
             id: enterpriseId,
             name: crtEnterprise.name,
+            agencies: crtEnterprise.agencies,
             country: crtEnterprise.country,
             location: crtEnterprise.location,
             application: crtEnterprise.application,
@@ -68,7 +58,6 @@ const PEnterpriseSearch = ({
         widget="autocomplete"
         options={enterprises}
         value={overviewData.id}
-        disabled={!!enterprise_id}
         onChange={(_, value) => {
           onEnterpriseChange(value)
         }}

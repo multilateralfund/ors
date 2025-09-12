@@ -1,56 +1,69 @@
 import {
-  EnterpriseTextField,
-  EnterpriseSelectField,
   EnterpriseNumberField,
+  EnterpriseSelectField,
   EnterpriseTextAreaField,
+  EnterpriseTextField,
 } from '../FormHelperComponents'
-import { EnterpriseDataProps } from '../../interfaces'
+import { PEnterpriseDataProps } from '../../interfaces'
 import { useStore } from '@ors/store'
 
 import { map } from 'lodash'
 
-const EnterpriseForm = (props: EnterpriseDataProps) => {
+const PEnterpriseOverviewSection = ({
+  countryId,
+  ...rest
+}: PEnterpriseDataProps & {
+  countryId: number | null
+}) => {
   const commonSlice = useStore((state) => state.common)
   const countries = commonSlice.countries.data
   const agencies = commonSlice.agencies.data
 
+  const { enterprise } = rest
+  const isDisabled = !!enterprise && enterprise.status !== 'Pending Approval'
+
   const textFields = ['name', 'location', 'application']
   const numericFields = ['local_ownership', 'export_to_non_a5']
   const selectFields = [
-    { fieldName: 'agencies', options: agencies },
-    { fieldName: 'country', options: countries },
+    { fieldName: 'agencies', options: agencies, isDisabled: isDisabled },
+    {
+      fieldName: 'country',
+      options: countries,
+      isDisabled: isDisabled || !!countryId,
+    },
   ]
-
-  const { enterprise } = props
-  const isDisabled = !!enterprise && enterprise.status !== 'Pending Approval'
 
   return (
     <>
       <EnterpriseTextField
         field={textFields[0]}
         {...{ isDisabled }}
-        {...props}
+        {...rest}
       />
       {map(selectFields, (field) => (
-        <EnterpriseSelectField {...{ field, isDisabled }} {...props} />
+        <EnterpriseSelectField
+          {...{ field }}
+          isDisabled={field.isDisabled}
+          {...rest}
+        />
       ))}
       {map(textFields.slice(1), (field) => (
-        <EnterpriseTextField {...{ field, isDisabled }} {...props} />
+        <EnterpriseTextField {...{ field, isDisabled }} {...rest} />
       ))}
       <div className="mt-6 flex flex-wrap gap-x-20 gap-y-3">
         {map(numericFields, (field) => (
-          <EnterpriseNumberField {...{ field, isDisabled }} {...props} />
+          <EnterpriseNumberField {...{ field, isDisabled }} {...rest} />
         ))}
       </div>
       <div className="mt-6">
         <EnterpriseTextAreaField
           field="remarks"
           {...{ isDisabled }}
-          {...props}
+          {...rest}
         />
       </div>
     </>
   )
 }
 
-export default EnterpriseForm
+export default PEnterpriseOverviewSection

@@ -1,4 +1,4 @@
-import PEnterprisesEditWrapper from '@ors/components/manage/Blocks/ProjectsListing/ProjectsEnterprises/edit/PEnterprisesEditWrapper'
+import PEnterpriseEditWrapper from '@ors/components/manage/Blocks/ProjectsListing/ProjectsEnterprises/edit/PEnterpriseEditWrapper'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import usePageTitle from '@ors/hooks/usePageTitle'
 
@@ -7,7 +7,7 @@ export default function PEnterprisesEdit() {
 
   return (
     <PageWrapper>
-      <PEnterprisesEditWrapper />
+      <PEnterpriseEditWrapper />
     </PageWrapper>
   )
 }

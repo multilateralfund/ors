@@ -51,6 +51,10 @@ const EnterpriseWrapper = () => {
                 </PageHeading>
               </div>
               <div className="mt-auto flex flex-wrap items-center gap-2.5">
+                <CancelLinkButton
+                  title="Cancel"
+                  href="/projects-listing/enterprises"
+                />
                 {canEditEnterprise && (
                   <CustomLink
                     href={`/projects-listing/enterprises/${enterprise_id}/edit`}
@@ -63,10 +67,6 @@ const EnterpriseWrapper = () => {
                     Edit enterprise
                   </CustomLink>
                 )}
-                <CancelLinkButton
-                  title="Cancel"
-                  href="/projects-listing/enterprises"
-                />
               </div>
             </div>
             <EnterpriseStatus status={data.status} />

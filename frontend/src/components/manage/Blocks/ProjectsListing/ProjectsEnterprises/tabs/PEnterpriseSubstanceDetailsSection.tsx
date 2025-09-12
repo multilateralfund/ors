@@ -1,11 +1,11 @@
 import { ChangeEvent } from 'react'
 
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
-import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import Field from '@ors/components/manage/Form/Field'
+import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getIsInputDisabled } from '../../ProjectsCreate/SpecificFieldsHelpers'
 import { SubmitButton } from '../../HelperComponents'
-import { ProjectEnterpriseDataProps, OptionsType } from '../../interfaces'
+import { PEnterpriseDataProps, OptionsType } from '../../interfaces'
 import {
   defaultProps,
   defaultPropsSimpleField,
@@ -19,13 +19,13 @@ import { IoTrash } from 'react-icons/io5'
 import { Divider } from '@mui/material'
 import cx from 'classnames'
 
-const PEnterprisesSubstanceDetailsSection = ({
+const PEnterpriseSubstanceDetailsSection = ({
   enterpriseData,
   setEnterpriseData,
   hasSubmitted,
   odsOdpErrors,
-}: ProjectEnterpriseDataProps & {
-  odsOdpErrors: { [key: string]: [] }[]
+}: PEnterpriseDataProps & {
+  odsOdpErrors: { [key: string]: string[] }[]
 }) => {
   const sectionId = 'substance_details'
   const sectionData = enterpriseData[sectionId] || []
@@ -150,6 +150,7 @@ const PEnterprisesSubstanceDetailsSection = ({
       },
     }
   }
+
   return (
     <>
       <div className="flex flex-col flex-wrap gap-x-20 gap-y-10">
@@ -249,4 +250,4 @@ const PEnterprisesSubstanceDetailsSection = ({
   )
 }
 
-export default PEnterprisesSubstanceDetailsSection
+export default PEnterpriseSubstanceDetailsSection

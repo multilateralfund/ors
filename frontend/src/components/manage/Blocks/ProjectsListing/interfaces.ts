@@ -297,26 +297,25 @@ export type AssociatedProjectsType = {
   loaded: boolean
 }
 
-export type ProjectEnterpriseType = EnterpriseFundingDetails & {
+export type PEnterpriseType = EnterpriseFundingDetails & {
   id: number | null
-} & {
+  status: string
+  enterprise: EnterpriseType
+  ods_odp: EnterpriseSubstanceDetails[]
   funds_approved: string | null
   cost_effectiveness_approved: string | null
-} & {
-  ods_odp: EnterpriseSubstanceDetails[]
-} & {
-  enterprise: EnterpriseOverview & { id: number | null; code: string }
 }
 
-export interface EnterpriseData {
+export interface PEnterpriseData {
   overview: EnterpriseOverview
   substance_details: EnterpriseSubstanceDetails[]
   funding_details: EnterpriseFundingDetails
 }
 
-export type ProjectEnterpriseDataType = {
-  enterpriseData: EnterpriseData
-  setEnterpriseData: Dispatch<SetStateAction<EnterpriseData>>
+export type PEnterpriseDataType = {
+  enterpriseData: PEnterpriseData
+  setEnterpriseData: Dispatch<SetStateAction<PEnterpriseData>>
+  enterprise?: PEnterpriseType
 }
 
 export type EnterpriseDataType = {
@@ -330,8 +329,7 @@ export type EnterprisesCommonProps = {
   errors: { [key: string]: string[] }
 }
 
-export type ProjectEnterpriseDataProps = ProjectEnterpriseDataType &
-  EnterprisesCommonProps
+export type PEnterpriseDataProps = PEnterpriseDataType & EnterprisesCommonProps
 
 export type EnterpriseDataProps = EnterpriseDataType & EnterprisesCommonProps
 
@@ -347,7 +345,9 @@ export interface EnterpriseOverview {
 }
 
 export type EnterpriseType = EnterpriseOverview & {
+  id: number
   status: string
+  code: string
 }
 
 export interface EnterpriseSubstanceDetails {
