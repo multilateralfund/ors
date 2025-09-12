@@ -136,11 +136,19 @@
 | projects/v2/{id}/withdraw/                    |  POST   | has_project_v2_recommend_projects_access |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
 | projects/v2/{id}/reject/                      |  POST   | has_project_v2_approve_projects_access   |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
 | projects/v2/{id}/approve/                     |  POST   | has_project_v2_approve_projects_access   |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
+| enterprise/                                   |  GET    | has_enterprise_view_access               |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
+| enterprise/                                   |  POST   | has_enterprise_edit_access               |
+| enterprise/{id}/                              |  GET    | has_enterprise_view_access               |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
+| enterprise/{id}/                              |  PUT    | has_enterprise_edit_access               |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
+| enterprise/{id}/change_status                 |  POST   | has_enterprise_approval_access           |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
 | project-enterprise/                           |  GET    | has_project_v2_view_access               |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
 | project-enterprise/{id}/                      |  GET   | has_project_v2_view_access                |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
 | project-enterprise/{id}/                      |  PUT   | has_project_enterprise_edit_access        |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
 | project-enterprise/{id}/                      |  PATCH | has_project_enterprise_edit_access        |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
+| project-enterprise/{id}/                      | DELETE | has_project_enterprise_edit_access        |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
 | project-enterprise/{id}/approve               |  POST  | has_project_enterprise_approval_access    |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
+| project-enterprise/{id}/not_approve           |  POST  | has_project_enterprise_approval_access    |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
+| project-enterprise/{id}/obsolete              |  POST  | has_project_enterprise_approval_access    |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
 | project-enterprise/                           |  POST  | has_project_enterprise_edit_access        |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
 | project-settings/                             |  GET    | has_project_settings_access              | |
 | project-settings/                             |  POST   | has_project_settings_access              | |

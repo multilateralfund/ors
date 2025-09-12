@@ -2,8 +2,10 @@
 
 import PEnterprisesFilters from './PEnterprisesFilters'
 import PEnterprisesFiltersSelectedOpts from './PEnterprisesFiltersSelectedOpts'
-
+import { useGetEnterpriseStatuses } from '../../hooks/useGetEnterpriseStatuses'
 import { useStore } from '@ors/store'
+
+import { map } from 'lodash'
 
 const PEnterprisesFiltersWrapper = ({
   setFilters,
@@ -11,6 +13,13 @@ const PEnterprisesFiltersWrapper = ({
   ...rest
 }: any) => {
   const commonSlice = useStore((state) => state.common)
+
+  const statuses = useGetEnterpriseStatuses()
+  const enterpriseStatuses = map(statuses, (status) => ({
+    id: status[0],
+    label: status[1],
+    name: status[1],
+  }))
 
   const handleParamsChange = (params: { [key: string]: any }) => {
     setParams(params)
@@ -29,8 +38,8 @@ const PEnterprisesFiltersWrapper = ({
 
   return (
     <div className="flex flex-col gap-2.5">
-      <PEnterprisesFilters {...props} />
-      <PEnterprisesFiltersSelectedOpts {...props} />
+      <PEnterprisesFilters {...{ enterpriseStatuses }} {...props} />
+      <PEnterprisesFiltersSelectedOpts {...{ enterpriseStatuses }} {...props} />
     </div>
   )
 }

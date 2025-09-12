@@ -297,35 +297,57 @@ export type AssociatedProjectsType = {
   loaded: boolean
 }
 
-export type EnterpriseType = EnterpriseFundingDetails & {
+export type PEnterpriseType = EnterpriseFundingDetails & {
+  id: number | null
+  status: string
+  enterprise: EnterpriseType
+  ods_odp: EnterpriseSubstanceDetails[]
   funds_approved: string | null
   cost_effectiveness_approved: string | null
-} & {
-  ods_odp: EnterpriseSubstanceDetails[]
-} & {
-  enterprise: EnterpriseOverview & EnterpriseRemarks & { id: number | null }
 }
 
-export interface EnterpriseData {
+export interface PEnterpriseData {
   overview: EnterpriseOverview
   substance_details: EnterpriseSubstanceDetails[]
   funding_details: EnterpriseFundingDetails
-  remarks: EnterpriseRemarks
 }
 
-export interface EnterpriseDataProps {
-  enterpriseData: EnterpriseData
-  setEnterpriseData: Dispatch<SetStateAction<EnterpriseData>>
-  hasSubmitted: boolean
-  errors?: { [key: string]: string[] }
+export type PEnterpriseDataType = {
+  enterpriseData: PEnterpriseData
+  setEnterpriseData: Dispatch<SetStateAction<PEnterpriseData>>
+  enterprise?: PEnterpriseType
 }
+
+export type EnterpriseDataType = {
+  enterpriseData: EnterpriseOverview
+  setEnterpriseData: Dispatch<SetStateAction<EnterpriseOverview>>
+  enterprise?: EnterpriseType
+}
+
+export type EnterprisesCommonProps = {
+  hasSubmitted: boolean
+  errors: { [key: string]: string[] }
+}
+
+export type PEnterpriseDataProps = PEnterpriseDataType & EnterprisesCommonProps
+
+export type EnterpriseDataProps = EnterpriseDataType & EnterprisesCommonProps
+
 export interface EnterpriseOverview {
   name: string
+  agencies: number[]
   country: number | null
   location: string
   application: string
   local_ownership: string | null
   export_to_non_a5: string | null
+  remarks: string
+}
+
+export type EnterpriseType = EnterpriseOverview & {
+  id: number
+  status: string
+  code: string
 }
 
 export interface EnterpriseSubstanceDetails {
@@ -342,18 +364,13 @@ export interface EnterpriseFundingDetails {
   funds_disbursed: string | null
 }
 
-export interface EnterpriseRemarks {
-  remarks: string
-}
-
-export interface EnterpriseHeader {
-  enterpriseData: EnterpriseData
+export interface EnterpriseHeaderProps {
   setEnterpriseId: (id: number | null) => void
   setHasSubmitted: (value: boolean) => void
-  setErrors: (value: { [key: string]: [] }) => void
+  setErrors: (value: { [key: string]: string[] }) => void
   setOtherErrors: (value: string) => void
 }
 
-export type EnterpriseActionButtons = EnterpriseHeader & {
+export type EnterpriseActionButtons = EnterpriseHeaderProps & {
   setIsLoading: (value: boolean) => void
 }

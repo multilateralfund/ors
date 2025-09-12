@@ -47,6 +47,9 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   const canUpdateProjects = user_permissions.includes(
     'has_project_v2_edit_access',
   )
+  const canUpdateV3Projects = user_permissions.includes(
+    'has_project_v2_version3_edit_access',
+  )
   const canSubmitProjects = user_permissions.includes(
     'has_project_v2_submit_access',
   )
@@ -65,6 +68,7 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   const canEditProjects =
     canViewProjects &&
     (canUpdateProjects ||
+      canUpdateV3Projects ||
       canSubmitProjects ||
       canRecommendProjects ||
       canApproveProjects ||
@@ -72,12 +76,23 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
   const canViewProductionProjects = user_permissions.includes(
     'can_view_production_projects',
   )
+
+  const canViewEnterprises = user_permissions.includes(
+    'has_enterprise_view_access',
+  )
   const canEditEnterprise = user_permissions.includes(
-    'has_project_enterprise_edit_access',
+    'has_enterprise_edit_access',
   )
   const canApproveEnterprise = user_permissions.includes(
+    'has_enterprise_approval_access',
+  )
+  const canEditProjectEnterprise = user_permissions.includes(
+    'has_project_enterprise_edit_access',
+  )
+  const canApproveProjectEnterprise = user_permissions.includes(
     'has_project_enterprise_approval_access',
   )
+
   const canSetProjectSettings = user_permissions.includes(
     'has_project_settings_access',
   )
@@ -121,6 +136,7 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
         canViewMetainfoProjects,
         canViewSectorsSubsectors,
         canUpdateProjects,
+        canUpdateV3Projects,
         canSubmitProjects,
         canRecommendProjects,
         canApproveProjects,
@@ -128,8 +144,11 @@ const PermissionsProvider = (props: PermissionsProviderProps) => {
         canEditProjects,
         canEditApprovedProjects,
         canViewProductionProjects,
+        canViewEnterprises,
         canEditEnterprise,
         canApproveEnterprise,
+        canEditProjectEnterprise,
+        canApproveProjectEnterprise,
         canSetProjectSettings,
         canCommentCPCountry,
         canCommentCPSecretariat,

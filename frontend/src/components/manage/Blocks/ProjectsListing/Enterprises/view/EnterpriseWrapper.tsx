@@ -2,39 +2,33 @@
 
 import { useContext } from 'react'
 
-import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 import CustomLink from '@ors/components/ui/Link/Link'
+import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
-import PEnterpriseView from './PEnterpriseView'
+import EnterpriseView from './EnterpriseView'
 import { RedirectBackButton, PageTitle } from '../../HelperComponents'
+import { EnterpriseStatus } from '../FormHelperComponents'
 import { useGetEnterprise } from '../../hooks/useGetEnterprise'
-import { useGetProject } from '../../hooks/useGetProject'
 
 import { Redirect, useParams } from 'wouter'
 
-const PEnterprisesViewWrapper = () => {
-  const { canEditEnterprise, canViewProjects } = useContext(PermissionsContext)
+const EnterpriseWrapper = () => {
+  const { canViewEnterprises, canEditEnterprise } =
+    useContext(PermissionsContext)
 
-  const { project_id, enterprise_id } = useParams<Record<string, string>>()
-  const project = project_id ? useGetProject(project_id) : undefined
-  const { data: projectData, error } = project ?? {}
-
+  const { enterprise_id } = useParams<Record<string, string>>()
   const enterprise = useGetEnterprise(enterprise_id)
-  const { data, loading } = enterprise
+  const { data, loading, error } = enterprise
 
-  if (
-    !canViewProjects ||
-    (project &&
-      (error || (projectData && projectData.submission_status !== 'Approved')))
-  ) {
+  if (!canViewEnterprises) {
     return <Redirect to="/projects-listing/listing" />
   }
 
-  if (enterprise?.error) {
-    return <Redirect to={`/projects-listing/enterprises/${project_id}`} />
+  if (error) {
+    return <Redirect to="/projects-listing/enterprises" />
   }
 
   return (
@@ -52,35 +46,36 @@ const PEnterprisesViewWrapper = () => {
                 <PageHeading>
                   <PageTitle
                     pageTitle="View enterprise"
-                    projectTitle={data.enterprise.name}
+                    projectTitle={data.name}
                   />
                 </PageHeading>
               </div>
               <div className="mt-auto flex flex-wrap items-center gap-2.5">
                 <CancelLinkButton
                   title="Cancel"
-                  href={`/projects-listing/enterprises/${project_id}`}
+                  href="/projects-listing/enterprises"
                 />
                 {canEditEnterprise && (
                   <CustomLink
-                    className="border border-solid border-secondary px-4 py-2 shadow-none hover:border-primary"
-                    href={`/projects-listing/enterprises/${project_id}/edit/${enterprise_id}`}
-                    color="secondary"
+                    href={`/projects-listing/enterprises/${enterprise_id}/edit`}
+                    className="border border-solid px-4 py-2 hover:border-primary"
                     variant="contained"
+                    color="secondary"
                     size="large"
                     button
                   >
-                    Edit
+                    Edit enterprise
                   </CustomLink>
                 )}
               </div>
             </div>
+            <EnterpriseStatus status={data.status} />
           </HeaderTitle>
-          <PEnterpriseView enterprise={data} />
+          <EnterpriseView enterprise={data} />
         </>
       )}
     </>
   )
 }
 
-export default PEnterprisesViewWrapper
+export default EnterpriseWrapper

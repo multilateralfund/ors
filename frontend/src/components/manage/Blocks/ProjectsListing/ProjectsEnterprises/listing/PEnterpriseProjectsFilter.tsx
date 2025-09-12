@@ -64,7 +64,7 @@ const PEnterpriseProjectsFilter = ({
   }, [results])
 
   return (
-    <div className={cx(FieldProps?.className, 'w-[14rem]')}>
+    <div className={cx(FieldProps?.className, '!w-[14rem]')}>
       <Autocomplete
         {...rest}
         options={getFilterOptions(filters, projects, 'project_id')}

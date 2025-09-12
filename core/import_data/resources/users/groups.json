@@ -43,7 +43,8 @@
             "has_project_metainfo_view_access",
             "can_view_all_agencies",
             "has_project_v2_view_access",
-            "has_sectors_and_subsectors_view_access"
+            "has_sectors_and_subsectors_view_access",
+            "has_enterprise_view_access"
         ]
     },
     {
@@ -58,7 +59,8 @@
             "has_project_v2_submit_access",
             "has_project_v2_associate_projects_access",
             "has_project_v2_recommend_projects_access",
-            "has_sectors_and_subsectors_view_access"
+            "has_sectors_and_subsectors_view_access",
+            "has_enterprise_view_access"
         ]
     },
     {
@@ -72,7 +74,10 @@
             "has_project_v2_associate_projects_access",
             "has_sectors_and_subsectors_view_access",
             "has_project_enterprise_approval_access",
-            "has_project_enterprise_edit_access"
+            "has_project_enterprise_edit_access",
+            "has_enterprise_view_access",
+            "has_enterprise_edit_access",
+            "has_enterprise_approval_access"
         ]
 
     },
@@ -89,7 +94,8 @@
             "has_project_v2_submit_access",
             "has_project_v2_associate_projects_access",
             "has_project_v2_recommend_projects_access",
-            "has_sectors_and_subsectors_view_access"
+            "has_sectors_and_subsectors_view_access",
+            "has_enterprise_view_access"
         ]
     },
     {
@@ -104,7 +110,10 @@
             "has_project_v2_associate_projects_access",
             "has_sectors_and_subsectors_view_access",
             "has_project_enterprise_approval_access",
-            "has_project_enterprise_edit_access"
+            "has_project_enterprise_edit_access",
+            "has_enterprise_view_access",
+            "has_enterprise_edit_access",
+            "has_enterprise_approval_access"
         ]
     },
     {
@@ -227,7 +236,10 @@
             "has_project_v2_recommend_projects_access",
             "has_project_enterprise_approval_access",
             "has_project_enterprise_edit_access",
-            "has_project_settings_access"
+            "has_project_settings_access",
+            "has_enterprise_view_access",
+            "has_enterprise_edit_access",
+            "has_enterprise_approval_access"
         ]
     }
 ]

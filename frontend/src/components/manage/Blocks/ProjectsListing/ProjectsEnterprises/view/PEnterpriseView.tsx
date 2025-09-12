@@ -5,12 +5,11 @@ import { useState } from 'react'
 import PEnterpriseOverviewSection from './PEnterpriseOverviewSection'
 import PEnterprisesSubstanceDetailsSection from './PEnterprisesSubstanceDetailsSection'
 import PEnterpriseFundingDetailsSection from './PEnterpriseFundingDetailsSection'
-import PEnterpriseRemarksSection from './PEnterpriseRemarksSection'
-import { EnterpriseType } from '../../interfaces'
+import { PEnterpriseType } from '../../interfaces'
 
 import { Tabs, Tab } from '@mui/material'
 
-const PEnterpriseView = ({ enterprise }: { enterprise: EnterpriseType }) => {
+const PEnterpriseView = ({ enterprise }: { enterprise: PEnterpriseType }) => {
   const [activeTab, setActiveTab] = useState(0)
 
   const tabs = [
@@ -18,7 +17,12 @@ const PEnterpriseView = ({ enterprise }: { enterprise: EnterpriseType }) => {
       id: 'enterprise-overview',
       ariaControls: 'enterprise-overview',
       label: 'Overview',
-      component: <PEnterpriseOverviewSection {...{ enterprise }} />,
+      component: (
+        <PEnterpriseOverviewSection
+          type="project-enterprise"
+          enterprise={enterprise.enterprise}
+        />
+      ),
     },
     {
       id: 'enterprise-substance-details',
@@ -31,12 +35,6 @@ const PEnterpriseView = ({ enterprise }: { enterprise: EnterpriseType }) => {
       ariaControls: 'enterprise-funding-details',
       label: 'Funding details',
       component: <PEnterpriseFundingDetailsSection {...{ enterprise }} />,
-    },
-    {
-      id: 'enterprise-remarks',
-      ariaControls: 'enterprise-remarks',
-      label: 'Remarks',
-      component: <PEnterpriseRemarksSection {...{ enterprise }} />,
     },
   ]
 

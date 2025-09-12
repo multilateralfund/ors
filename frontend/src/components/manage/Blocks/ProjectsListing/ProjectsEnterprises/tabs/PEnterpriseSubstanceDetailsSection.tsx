@@ -1,11 +1,12 @@
 import { ChangeEvent } from 'react'
 
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
-import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import Field from '@ors/components/manage/Form/Field'
+import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
+import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { getIsInputDisabled } from '../../ProjectsCreate/SpecificFieldsHelpers'
 import { SubmitButton } from '../../HelperComponents'
-import { EnterpriseDataProps, OptionsType } from '../../interfaces'
+import { PEnterpriseDataProps } from '../../interfaces'
 import {
   defaultProps,
   defaultPropsSimpleField,
@@ -14,18 +15,18 @@ import {
 } from '../../constants'
 import { useStore } from '@ors/store'
 
-import { find, get, isObject, map, sortBy, split } from 'lodash'
+import { map, sortBy, split } from 'lodash'
 import { IoTrash } from 'react-icons/io5'
 import { Divider } from '@mui/material'
 import cx from 'classnames'
 
-const PEnterprisesSubstanceDetailsSection = ({
+const PEnterpriseSubstanceDetailsSection = ({
   enterpriseData,
   setEnterpriseData,
   hasSubmitted,
   odsOdpErrors,
-}: EnterpriseDataProps & {
-  odsOdpErrors: { [key: string]: [] }[]
+}: PEnterpriseDataProps & {
+  odsOdpErrors: { [key: string]: string[] }[]
 }) => {
   const sectionId = 'substance_details'
   const sectionData = enterpriseData[sectionId] || []
@@ -150,6 +151,7 @@ const PEnterprisesSubstanceDetailsSection = ({
       },
     }
   }
+
   return (
     <>
       <div className="flex flex-col flex-wrap gap-x-20 gap-y-10">
@@ -172,12 +174,8 @@ const PEnterprisesSubstanceDetailsSection = ({
                     onChange={(_, value) =>
                       handleChangeDropdownValues(value, index)
                     }
-                    getOptionLabel={(option) =>
-                      (isObject(option)
-                        ? get(option, 'name')
-                        : (find(options, { id: option }) as OptionsType)?.[
-                            'name'
-                          ]) || ''
+                    getOptionLabel={(option: any) =>
+                      getOptionLabel(options, option)
                     }
                     Input={{
                       error:
@@ -249,4 +247,4 @@ const PEnterprisesSubstanceDetailsSection = ({
   )
 }
 
-export default PEnterprisesSubstanceDetailsSection
+export default PEnterpriseSubstanceDetailsSection
