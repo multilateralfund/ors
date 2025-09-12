@@ -25,17 +25,28 @@ const EnterpriseCommonEditActionButtons = ({
   handleEdit: () => Promise<boolean>
   handleChangeStatus: (status: string) => void
 }) => {
-  const { canEditEnterprise, canApproveEnterprise } =
-    useContext(PermissionsContext)
-
   const isEnterprise = type === 'Enterprise'
+
+  const {
+    canEditEnterprise,
+    canEditProjectEnterprise,
+    canApproveEnterprise,
+    canApproveProjectEnterprise,
+  } = useContext(PermissionsContext)
+  const canEdit = isEnterprise ? canEditEnterprise : canEditProjectEnterprise
+  const canApprove = isEnterprise
+    ? canApproveEnterprise
+    : canApproveProjectEnterprise
+
   const isPending = status === 'Pending Approval'
   const isApproved = status === 'Approved'
   const isObsolete = status === 'Obsolete'
 
+  const extraText = !isEnterprise ? 'project' : ''
+
   return (
     <>
-      {canEditEnterprise && isPending && (
+      {canEdit && isPending && (
         <Button
           className={cx('px-4 py-2 shadow-none', {
             [enabledButtonClassname]: !disableButton,
@@ -45,10 +56,10 @@ const EnterpriseCommonEditActionButtons = ({
           variant="contained"
           size="large"
         >
-          Update {!isEnterprise ? 'project' : ''} enterprise
+          Update {extraText} enterprise
         </Button>
       )}
-      {canApproveEnterprise &&
+      {canApprove &&
         !isObsolete &&
         (isApproved ? (
           <Button
@@ -58,7 +69,7 @@ const EnterpriseCommonEditActionButtons = ({
             variant="contained"
             size="large"
           >
-            Mark {!isEnterprise ? 'project' : ''} enterprise as obsolete
+            Mark {extraText} enterprise as obsolete
           </Button>
         ) : (
           <Dropdown
@@ -72,7 +83,7 @@ const EnterpriseCommonEditActionButtons = ({
               className={cx(dropdownItemClassname, 'text-primary')}
               onClick={() => handleChangeStatus('Approved')}
             >
-              Approve {!isEnterprise ? 'project' : ''} enterprise
+              Approve {extraText} enterprise
             </Dropdown.Item>
             <Divider className="m-0" />
             <Dropdown.Item
@@ -80,9 +91,9 @@ const EnterpriseCommonEditActionButtons = ({
               className={cx(dropdownItemClassname, 'text-red-900')}
               onClick={() => handleChangeStatus('Obsolete')}
             >
-              {!isEnterprise
-                ? 'Not approve project enterprise'
-                : 'Mark enterprise as obsolete'}
+              {isEnterprise
+                ? 'Mark enterprise as obsolete'
+                : 'Not approve project enterprise'}
             </Dropdown.Item>
           </Dropdown>
         ))}

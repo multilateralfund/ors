@@ -18,7 +18,7 @@ export const tableColumns: { [key: string]: string } = {
   cluster: 'Cluster',
   tranche: 'Tranche number',
   agency: 'Agency',
-  agencies: 'Agency',
+  agencies: 'Agency(ies)',
   lead_agency: 'Lead agency',
   title: 'Title',
   type: 'Type',
@@ -53,6 +53,7 @@ export const tableColumns: { [key: string]: string } = {
   funds_approved: 'Funds approved',
   cost_effectiveness_approved: 'Cost effectiveness approved',
   remarks: 'Remarks',
+  id: 'Enterprise',
 }
 
 export const defaultProps = {

@@ -8,6 +8,7 @@ import { EnterpriseActionButtons, PEnterpriseData } from '../../interfaces'
 import { api } from '@ors/helpers'
 
 import { useLocation, useParams } from 'wouter'
+import { omit } from 'lodash'
 
 const PEnterpriseCreateActionButtons = ({
   enterpriseData,
@@ -32,7 +33,7 @@ const PEnterpriseCreateActionButtons = ({
 
       const data = {
         project: project_id,
-        enterprise: overview,
+        enterprise: omit(overview, 'status'),
         ods_odp: substance_details,
         ...funding_details,
       }

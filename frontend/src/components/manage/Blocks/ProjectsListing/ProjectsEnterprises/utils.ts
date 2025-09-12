@@ -1,9 +1,13 @@
 import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
 import { defaultPropsSimpleField, disabledClassName } from '../constants'
-import { PEnterpriseData, EnterpriseOverview } from '../interfaces'
+import {
+  PEnterpriseData,
+  EnterpriseOverview,
+  EnterpriseType,
+} from '../interfaces'
 
-import { keys } from 'lodash'
+import { find, get, isObject, keys } from 'lodash'
 import cx from 'classnames'
 
 export const handleChangeSelectValues = (
@@ -84,11 +88,12 @@ export const getFieldDefaultProps = (
   }
 }
 
-export const getEnterprisesErrors = (
+export const getFieldErrors = (
   data: any,
   errors: { [key: string]: string[] },
+  isOnlyEditValidation: boolean = false,
 ) => {
-  const requiredFields = ['name']
+  const requiredFields = isOnlyEditValidation ? ['id', 'name'] : ['name']
 
   const fields = keys(data)
   const filteredErrors = Object.fromEntries(
@@ -108,3 +113,16 @@ export const getEnterprisesErrors = (
     ...filteredErrors,
   }
 }
+
+export const getOptionLabel = (
+  data: any,
+  option: any,
+  displayedField: string = 'name',
+  identifierField: string = 'id',
+) =>
+  isObject(option)
+    ? get(option, [displayedField])
+    : find(data, { [identifierField]: option })?.[displayedField] || ''
+
+export const getEntityById = (data: any, id: number | null) =>
+  find(data, (entry) => entry.id === id)

@@ -38,8 +38,8 @@ const PEnterprisesFiltersWrapper = ({
 
   return (
     <div className="flex flex-col gap-2.5">
-      <PEnterprisesFilters {...{ enterpriseStatuses }} {...props} />
-      <PEnterprisesFiltersSelectedOpts {...{ enterpriseStatuses }} {...props} />
+      <PEnterprisesFilters {...{ enterpriseStatuses, ...props }} />
+      <PEnterprisesFiltersSelectedOpts {...{ enterpriseStatuses, ...props }} />
     </div>
   )
 }

@@ -16,10 +16,10 @@ import { useGetProject } from '../../hooks/useGetProject'
 import { Redirect, useParams } from 'wouter'
 
 export default function PEnterprisesWrapper() {
-  const form = useRef<any>()
-
   const { canViewProjects, canViewEnterprises, canEditProjectEnterprise } =
     useContext(PermissionsContext)
+
+  const form = useRef<any>()
 
   const { project_id } = useParams<Record<string, string>>()
   const project = project_id ? useGetProject(project_id) : undefined

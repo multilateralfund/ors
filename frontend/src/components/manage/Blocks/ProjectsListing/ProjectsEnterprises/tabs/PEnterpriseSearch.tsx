@@ -1,30 +1,47 @@
+import { useEffect } from 'react'
+
 import Field from '@ors/components/manage/Form/Field'
-import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
-import { EnterpriseType, PEnterpriseDataType } from '../../interfaces'
+import { EnterpriseType, PEnterpriseDataProps } from '../../interfaces'
+import { getEntityById, getOptionLabel } from '../utils'
 import { defaultProps } from '../../constants'
 
-import { find } from 'lodash'
+import { createFilterOptions } from '@mui/material'
 
 const PEnterpriseSearch = ({
-  enterprises,
   enterpriseData,
   setEnterpriseData,
+  enterprises,
   enterprise,
-}: PEnterpriseDataType & {
+}: PEnterpriseDataProps & {
   enterprises: EnterpriseType[]
 }) => {
   const overviewData = enterpriseData.overview as EnterpriseType
+  const enterpriseId = overviewData.id
   const isDisabled = !!enterprise && enterprise.status !== 'Pending Approval'
+
+  const customFiltering = createFilterOptions({
+    stringify: (option: any) => `${option.name} ${option.code}`,
+  })
+
+  useEffect(() => {
+    if (enterpriseId && !getEntityById(enterprises, enterpriseId)) {
+      setEnterpriseData((prevData) => ({
+        ...prevData,
+        overview: {
+          ...prevData.overview,
+          id: null,
+          status: '',
+        },
+      }))
+    }
+  }, [enterpriseId])
 
   const onEnterpriseChange = (value: any) => {
     const enterpriseId = value?.id ?? null
 
     if (enterpriseId) {
-      const crtEnterprise = find(
-        enterprises,
-        (option) => option.id === enterpriseId,
-      )
+      const crtEnterprise = getEntityById(enterprises, enterpriseId)
 
       if (crtEnterprise) {
         setEnterpriseData((prevData) => ({
@@ -49,6 +66,7 @@ const PEnterpriseSearch = ({
         overview: {
           ...prevData['overview'],
           id: null,
+          status: '',
         },
       }))
     }
@@ -60,12 +78,15 @@ const PEnterpriseSearch = ({
       <Field
         widget="autocomplete"
         options={enterprises}
-        value={overviewData.id}
+        value={enterpriseId}
         disabled={isDisabled}
         onChange={(_, value) => {
           onEnterpriseChange(value)
         }}
-        getOptionLabel={(option: any) => getOptionLabel(enterprises, option)}
+        getOptionLabel={(option: any) =>
+          getOptionLabel(enterprises, option, 'code')
+        }
+        filterOptions={customFiltering}
         {...defaultProps}
       />
     </>

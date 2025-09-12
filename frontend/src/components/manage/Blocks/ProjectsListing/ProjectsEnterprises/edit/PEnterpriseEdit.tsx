@@ -41,6 +41,7 @@ const PEnterpriseEdit = ({
       ...prevData,
       overview: {
         id: enterpriseObj.id,
+        status: enterpriseObj.status,
         name: enterpriseObj.name,
         agencies: enterpriseObj.agencies,
         country: enterpriseObj.country,

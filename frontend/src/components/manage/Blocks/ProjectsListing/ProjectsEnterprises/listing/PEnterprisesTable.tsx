@@ -3,10 +3,10 @@
 import { useRef } from 'react'
 
 import ViewTable from '@ors/components/manage/Form/ViewTable'
+import getColumnDefs from '../../Enterprises/listing/schema'
 import { useGetProjectEnterprises } from '../../hooks/useGetProjectEnterprises'
 import { getPaginationSelectorOpts } from '../../utils'
 import { PROJECTS_PER_PAGE } from '../../constants'
-import getColumnDefs from './schema'
 
 const PEnterprisesTable = ({
   enterprises,
@@ -17,7 +17,7 @@ const PEnterprisesTable = ({
 
   const { count, loaded, loading, results, setParams } = enterprises
 
-  const { columnDefs, defaultColDef } = getColumnDefs()
+  const { columnDefs, defaultColDef } = getColumnDefs('project-enterprise')
   const paginationPageSizeSelectorOpts = getPaginationSelectorOpts(count)
 
   return (

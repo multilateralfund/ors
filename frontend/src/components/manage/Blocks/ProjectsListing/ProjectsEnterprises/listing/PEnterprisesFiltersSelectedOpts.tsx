@@ -52,7 +52,7 @@ const PEnterprisesFiltersSelectedOpts = ({
 
   return (
     areFiltersApplied && (
-      <div className="mt-[6px] flex flex-wrap gap-2">
+      <div className="mt-1.5 flex flex-wrap gap-2">
         {map(
           filterSelectedOpts,
           (selectedOpt) =>

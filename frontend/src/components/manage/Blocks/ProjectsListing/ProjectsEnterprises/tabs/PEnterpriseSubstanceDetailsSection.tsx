@@ -6,7 +6,10 @@ import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/help
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { getIsInputDisabled } from '../../ProjectsCreate/SpecificFieldsHelpers'
 import { SubmitButton } from '../../HelperComponents'
-import { PEnterpriseDataProps } from '../../interfaces'
+import {
+  EnterpriseSubstanceDetails,
+  PEnterpriseDataProps,
+} from '../../interfaces'
 import {
   defaultProps,
   defaultPropsSimpleField,
@@ -30,6 +33,8 @@ const PEnterpriseSubstanceDetailsSection = ({
 }) => {
   const sectionId = 'substance_details'
   const sectionData = enterpriseData[sectionId] || []
+
+  const fields = ['phase_out_mt', 'ods_replacement', 'ods_replacement_phase_in']
 
   const { substances, blends } = useStore((state) => state.cp_reports)
   const substancesOptions = map(
@@ -185,46 +190,25 @@ const PEnterpriseSubstanceDetailsSection = ({
                     {...defaultProps}
                   />
                 </div>
-                <div>
-                  <Label>{tableColumns.phase_out_mt}</Label>
-                  <SimpleInput
-                    id="phase_out_mt"
-                    value={substance.phase_out_mt ?? ''}
-                    onChange={(event) =>
-                      handleChangeNumericValues(event, 'phase_out_mt', index)
-                    }
-                    type="text"
-                    {...getFieldDefaultProps('phase_out_mt', index)}
-                  />
-                </div>
-                <div>
-                  <Label>{tableColumns.ods_replacement}</Label>
-                  <SimpleInput
-                    id="ods_replacement"
-                    value={substance.ods_replacement}
-                    onChange={(event) =>
-                      handleChangeTextValues(event, 'ods_replacement', index)
-                    }
-                    type="text"
-                    {...getFieldDefaultProps('ods_replacement', index)}
-                  />
-                </div>
-                <div>
-                  <Label>{tableColumns.ods_replacement_phase_in}</Label>
-                  <SimpleInput
-                    id="ods_replacement_phase_in"
-                    value={substance.ods_replacement_phase_in ?? ''}
-                    onChange={(event) =>
-                      handleChangeNumericValues(
-                        event,
-                        'ods_replacement_phase_in',
-                        index,
-                      )
-                    }
-                    type="text"
-                    {...getFieldDefaultProps('ods_replacement_phase_in', index)}
-                  />
-                </div>
+                {map(fields, (field) => (
+                  <div>
+                    <Label>{tableColumns[field]}</Label>
+                    <SimpleInput
+                      id={field}
+                      value={
+                        substance[field as keyof EnterpriseSubstanceDetails] ??
+                        ''
+                      }
+                      onChange={(event) =>
+                        field === 'ods_replacement'
+                          ? handleChangeTextValues(event, field, index)
+                          : handleChangeNumericValues(event, field, index)
+                      }
+                      type="text"
+                      {...getFieldDefaultProps(field, index)}
+                    />
+                  </div>
+                ))}
               </>
               <IoTrash
                 className="mt-12 min-h-[16px] min-w-[16px] cursor-pointer fill-gray-400"

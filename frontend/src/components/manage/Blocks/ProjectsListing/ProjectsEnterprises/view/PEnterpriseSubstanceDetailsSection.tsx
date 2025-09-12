@@ -14,7 +14,7 @@ import {
   ValueGetterParams,
 } from 'ag-grid-community'
 
-const PEnterprisesSubstanceDetailsSection = ({
+const PEnterpriseSubstanceDetailsSection = ({
   enterprise,
 }: {
   enterprise: PEnterpriseType
@@ -112,4 +112,4 @@ const PEnterprisesSubstanceDetailsSection = ({
   )
 }
 
-export default PEnterprisesSubstanceDetailsSection
+export default PEnterpriseSubstanceDetailsSection

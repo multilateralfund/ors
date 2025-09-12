@@ -28,8 +28,8 @@ const EnterpriseEditActionButtons = ({
   const { enterprise_id } = useParams<Record<string, string>>()
   const [_, setLocation] = useLocation()
 
-  const { status: enterpriseStatus } = enterprise ?? {}
-  const isPending = enterpriseStatus === 'Pending Approval'
+  const { status } = enterprise ?? {}
+  const isPending = status === 'Pending Approval'
 
   const disableSubmit = !enterpriseData.name
 
@@ -88,7 +88,7 @@ const EnterpriseEditActionButtons = ({
       />
       <EnterpriseCommonEditActionButtons
         type="enterprise"
-        status={enterpriseStatus ?? ''}
+        status={status ?? ''}
         disableButton={disableSubmit}
         handleEdit={editEnterprise}
         handleChangeStatus={changeEnterpriseStatus}

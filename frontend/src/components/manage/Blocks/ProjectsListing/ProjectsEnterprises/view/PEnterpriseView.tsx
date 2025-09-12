@@ -3,7 +3,7 @@
 import { useState } from 'react'
 
 import PEnterpriseOverviewSection from './PEnterpriseOverviewSection'
-import PEnterprisesSubstanceDetailsSection from './PEnterprisesSubstanceDetailsSection'
+import PEnterpriseSubstanceDetailsSection from './PEnterpriseSubstanceDetailsSection'
 import PEnterpriseFundingDetailsSection from './PEnterpriseFundingDetailsSection'
 import { PEnterpriseType } from '../../interfaces'
 
@@ -28,7 +28,7 @@ const PEnterpriseView = ({ enterprise }: { enterprise: PEnterpriseType }) => {
       id: 'enterprise-substance-details',
       ariaControls: 'enterprise-substance-details',
       label: 'Substance details',
-      component: <PEnterprisesSubstanceDetailsSection {...{ enterprise }} />,
+      component: <PEnterpriseSubstanceDetailsSection {...{ enterprise }} />,
     },
     {
       id: 'enterprise-funding-details',
@@ -42,7 +42,7 @@ const PEnterpriseView = ({ enterprise }: { enterprise: PEnterpriseType }) => {
     <>
       <div className="flex items-center justify-between">
         <Tabs
-          aria-label="view-enterprise"
+          aria-label="view-project-enterprise"
           value={activeTab}
           className="sectionsTabs"
           variant="scrollable"

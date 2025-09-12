@@ -13,8 +13,8 @@ import { debounce, find, uniqBy } from 'lodash'
 import cx from 'classnames'
 
 export interface WidgetProps {
-  onChange: (_: any, value: any) => void
   filters: any
+  onChange: (_: any, value: any) => void
   Input?: TextWidgetProps
   FieldProps?: any
 }

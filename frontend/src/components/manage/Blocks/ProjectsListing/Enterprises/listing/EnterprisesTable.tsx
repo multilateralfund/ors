@@ -13,7 +13,7 @@ const EnterprisesTable = ({
 }) => {
   const { results, count, loaded, loading, setParams } = enterprises
 
-  const { columnDefs, defaultColDef } = getColumnDefs()
+  const { columnDefs, defaultColDef } = getColumnDefs('enterprise')
   const paginationPageSizeSelectorOpts = getPaginationSelectorOpts(count)
 
   return (

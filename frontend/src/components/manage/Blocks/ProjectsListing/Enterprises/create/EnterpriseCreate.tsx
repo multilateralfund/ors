@@ -2,7 +2,7 @@
 
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert.tsx'
 import EnterpriseForm from './EnterpriseForm.tsx'
-import { getEnterprisesErrors } from '../../ProjectsEnterprises/utils.ts'
+import { getFieldErrors } from '../../ProjectsEnterprises/utils.ts'
 import { EnterpriseDataProps } from '../../interfaces.ts'
 import { formatErrors } from '../../utils.ts'
 
@@ -11,7 +11,7 @@ const EnterpriseCreate = ({
   errors,
   ...rest
 }: EnterpriseDataProps) => {
-  const enterpriseErrors = getEnterprisesErrors(enterpriseData, errors)
+  const enterpriseErrors = getFieldErrors(enterpriseData, errors)
   const formattedErrors = formatErrors(enterpriseErrors)
 
   return (

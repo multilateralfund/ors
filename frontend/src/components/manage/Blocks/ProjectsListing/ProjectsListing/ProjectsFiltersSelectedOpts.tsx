@@ -108,7 +108,7 @@ const ProjectsFiltersSelectedOpts = ({
 
   return (
     (areFiltersApplied || filters?.search) && (
-      <div className="mt-[6px] flex flex-wrap gap-2">
+      <div className="mt-1.5 flex flex-wrap gap-2">
         {displaySearchTerm()}
         {map(
           filterSelectedOpts,

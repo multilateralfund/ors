@@ -3,6 +3,7 @@ import EnterpriseCommonEditActionButtons from '../../Enterprises/edit/Enterprise
 import { handleErrors } from '../../Enterprises/FormHelperComponents'
 import {
   EnterpriseActionButtons,
+  EnterpriseType,
   PEnterpriseData,
   PEnterpriseType,
 } from '../../interfaces'
@@ -10,6 +11,7 @@ import { api } from '@ors/helpers'
 
 import { useLocation, useParams } from 'wouter'
 import { enqueueSnackbar } from 'notistack'
+import { omit } from 'lodash'
 
 const PEnterpriseEditActionButtons = ({
   enterpriseData,
@@ -28,11 +30,12 @@ const PEnterpriseEditActionButtons = ({
   const { project_id, enterprise_id } = useParams<Record<string, string>>()
   const [_, setLocation] = useLocation()
 
-  const { status: enterpriseStatus } = enterprise ?? {}
-  const isPending = enterpriseStatus === 'Pending Approval'
-  const isApproved = enterpriseStatus === 'Approved'
+  const { status } = enterprise ?? {}
+  const isPending = status === 'Pending Approval'
+  const isApproved = status === 'Approved'
 
-  const disableSubmit = !enterpriseData.overview.name
+  const overview = enterpriseData.overview as EnterpriseType
+  const disableSubmit = !(overview.name && overview.id)
 
   const editEnterprise = async () => {
     setIsLoading(true)
@@ -44,7 +47,7 @@ const PEnterpriseEditActionButtons = ({
 
       const data = {
         project: project_id,
-        enterprise: overview,
+        enterprise: omit(overview, 'status'),
         ods_odp: substance_details,
         ...funding_details,
       }

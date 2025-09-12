@@ -20,9 +20,10 @@ const PEnterpriseOverviewSection = ({
   const agencies = commonSlice.agencies.data
 
   const { enterprise, enterpriseData } = rest
+  const overviewStatus = (enterpriseData.overview as EnterpriseType).status
   const isDisabled =
     (!!enterprise && enterprise.status !== 'Pending Approval') ||
-    (enterpriseData.overview as EnterpriseType).status !== 'Pending Approval'
+    (!!overviewStatus && overviewStatus !== 'Pending Approval')
 
   const textFields = ['name', 'location', 'application']
   const numericFields = ['local_ownership', 'export_to_non_a5']
@@ -37,32 +38,23 @@ const PEnterpriseOverviewSection = ({
 
   return (
     <>
-      <EnterpriseTextField
-        field={textFields[0]}
-        {...{ isDisabled }}
-        {...rest}
-      />
+      <EnterpriseTextField field={textFields[0]} {...{ isDisabled, ...rest }} />
       {map(selectFields, (field) => (
         <EnterpriseSelectField
-          {...{ field }}
           isDisabled={field.isDisabled}
-          {...rest}
+          {...{ field, ...rest }}
         />
       ))}
       {map(textFields.slice(1), (field) => (
-        <EnterpriseTextField {...{ field, isDisabled }} {...rest} />
+        <EnterpriseTextField {...{ field, isDisabled, ...rest }} />
       ))}
       <div className="mt-6 flex flex-wrap gap-x-20 gap-y-3">
         {map(numericFields, (field) => (
-          <EnterpriseNumberField {...{ field, isDisabled }} {...rest} />
+          <EnterpriseNumberField {...{ field, isDisabled, ...rest }} />
         ))}
       </div>
       <div className="mt-6">
-        <EnterpriseTextAreaField
-          field="remarks"
-          {...{ isDisabled }}
-          {...rest}
-        />
+        <EnterpriseTextAreaField field="remarks" {...{ isDisabled, ...rest }} />
       </div>
     </>
   )

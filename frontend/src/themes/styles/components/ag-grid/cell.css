@@ -268,3 +268,7 @@
     }
   }
 }
+
+.ag-table .ag-cell.ag-cell-no-border-r {
+  @apply border-r-0;
+}

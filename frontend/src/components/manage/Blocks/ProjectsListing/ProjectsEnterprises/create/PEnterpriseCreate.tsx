@@ -11,31 +11,44 @@ import PEnterpriseSubstanceDetailsSection from '../tabs/PEnterpriseSubstanceDeta
 import PEnterpriseFundingDetailsSection from '../tabs/PEnterpriseFundingDetailsSection.tsx'
 import { useGetEnterprises } from '../../hooks/useGetEnterprises.ts'
 import { formatErrors, hasSectionErrors } from '../../utils.ts'
-import { getEnterprisesErrors } from '../utils.ts'
 import { tableColumns } from '../../constants.ts'
+import { getFieldErrors } from '../utils.ts'
 import {
   PEnterpriseDataProps,
   EnterpriseSubstanceDetails,
 } from '../../interfaces.ts'
+import { useStore } from '@ors/store.tsx'
 
-import { has, isEmpty, map, omit, uniq, values } from 'lodash'
+import { has, isEmpty, map, omit, pick, uniq, values } from 'lodash'
 import { Tabs, Tab, Typography } from '@mui/material'
 
 const PEnterpriseCreate = ({
-  enterpriseData,
-  setEnterpriseData,
   countryId,
   errors,
   ...rest
 }: PEnterpriseDataProps & { countryId: number }) => {
   const [currentTab, setCurrentTab] = useState<number>(0)
 
-  const filters = { status: ['Pending Approval', 'Approved'] }
+  const userSlice = useStore((state) => state.user)
+  const { agency_id } = userSlice.data
+  const filters = {
+    status: ['Pending Approval', 'Approved'],
+    agencies: agency_id ? [agency_id] : null,
+  }
   const { results, loading } = useGetEnterprises(filters, countryId)
 
-  const { overview, funding_details } = enterpriseData ?? {}
-  const overviewErrors = getEnterprisesErrors(overview, errors)
-  const fundingDetailsErrors = getEnterprisesErrors(funding_details, errors)
+  const { overview, funding_details } = rest.enterpriseData ?? {}
+  const enterpriseErrors =
+    (errors as unknown as { [key: string]: { [key: string]: string[] } })?.[
+      'enterprise'
+    ] ?? {}
+  const searchErrors = getFieldErrors(
+    pick(overview, 'id'),
+    enterpriseErrors,
+    true,
+  )
+  const overviewErrors = getFieldErrors(omit(overview, 'id'), enterpriseErrors)
+  const fundingDetailsErrors = getFieldErrors(funding_details, errors)
 
   const odsOdpNonFieldErrors = {
     Subtances:
@@ -71,17 +84,22 @@ const PEnterpriseCreate = ({
     {
       id: 'enterprise-search',
       ariaControls: 'enterprise-search',
-      label: 'Search',
+      label: (
+        <div className="relative flex items-center justify-between gap-x-2">
+          <div className="leading-tight">Search</div>
+          {hasSectionErrors(searchErrors) && (
+            <SectionErrorIndicator errors={[]} />
+          )}
+        </div>
+      ),
       component: (
         <PEnterpriseSearch
           enterprises={results}
-          enterprise={rest.enterprise}
-          {...{
-            enterpriseData,
-            setEnterpriseData,
-          }}
+          {...rest}
+          errors={searchErrors}
         />
       ),
+      errors: formatErrors(searchErrors),
     },
     {
       id: 'enterprise-overview',
@@ -96,7 +114,7 @@ const PEnterpriseCreate = ({
       ),
       component: (
         <PEnterpriseOverviewSection
-          {...{ enterpriseData, setEnterpriseData, countryId, ...rest }}
+          {...{ countryId, ...rest }}
           errors={overviewErrors}
         />
       ),
@@ -116,7 +134,7 @@ const PEnterpriseCreate = ({
       ),
       component: (
         <PEnterpriseSubstanceDetailsSection
-          {...{ enterpriseData, setEnterpriseData, errors, ...rest }}
+          {...{ errors, ...rest }}
           odsOdpErrors={normalizedOdsOdpErrors}
         />
       ),
@@ -135,7 +153,7 @@ const PEnterpriseCreate = ({
       ),
       component: (
         <PEnterpriseFundingDetailsSection
-          {...{ enterpriseData, setEnterpriseData, ...rest }}
+          {...rest}
           errors={fundingDetailsErrors}
         />
       ),
@@ -152,7 +170,7 @@ const PEnterpriseCreate = ({
       {!loading && results && (
         <>
           <Tabs
-            aria-label="create-enterprise"
+            aria-label="create-project-enterprise"
             value={currentTab}
             className="sectionsTabs"
             variant="scrollable"
