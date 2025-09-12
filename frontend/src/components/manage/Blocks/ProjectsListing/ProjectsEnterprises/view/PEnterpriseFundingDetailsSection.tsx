@@ -1,13 +1,13 @@
 import { numberDetailItem } from '../../ProjectView/ViewHelperComponents'
 import { tableColumns, viewColumnsClassName } from '../../constants'
-import { EnterpriseType } from '../../interfaces'
+import { ProjectEnterpriseType } from '../../interfaces'
 
 import { sumBy, isNaN, isNil } from 'lodash'
 
 const PEnterpriseFundingDetailsSection = ({
   enterprise,
 }: {
-  enterprise: EnterpriseType
+  enterprise: ProjectEnterpriseType
 }) => {
   const funds_approved =
     isNil(enterprise.capital_cost_approved) &&

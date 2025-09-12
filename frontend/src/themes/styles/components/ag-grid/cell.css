@@ -268,3 +268,9 @@
     }
   }
 }
+
+.enterprises-table.ag-table {
+  .ag-row .ag-cell:first-child {
+    border-right: none;
+  }
+}

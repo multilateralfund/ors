@@ -24,7 +24,7 @@ const PEnterpriseEditActionButtons = ({
   setEnterpriseTitle: (title: string) => void
 }) => {
   const { project_id, enterprise_id } = useParams<Record<string, string>>()
-  const { canEditEnterprise, canApproveEnterprise } =
+  const { canEditProjectEnterprise, canApproveProjectEnterprise } =
     useContext(PermissionsContext)
   const [_, setLocation] = useLocation()
 
@@ -103,7 +103,7 @@ const PEnterpriseEditActionButtons = ({
         title="Cancel"
         href={`/projects-listing/projects-enterprises/${project_id}/view/${enterprise_id}`}
       />
-      {canEditEnterprise && (
+      {canEditProjectEnterprise && (
         <Button
           className={cx('px-4 py-2 shadow-none', {
             [enabledButtonClassname]: !disableSubmit,
@@ -116,7 +116,7 @@ const PEnterpriseEditActionButtons = ({
           Update enterprise
         </Button>
       )}
-      {canApproveEnterprise && (
+      {canApproveProjectEnterprise && (
         <Button
           className={cx('px-4 py-2 shadow-none', {
             [enabledButtonClassname]: !disableSubmit,

@@ -9,6 +9,7 @@ import CustomLink from '@ors/components/ui/Link/Link'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import PEnterpriseView from './PEnterpriseView'
+import { EnterpriseStatus } from '../../Enterprises/FormHelperComponents'
 import { RedirectBackButton, PageTitle } from '../../HelperComponents'
 import { useGetProjectEnterprise } from '../../hooks/useGetProjectEnterprise'
 import { useGetProject } from '../../hooks/useGetProject'
@@ -16,7 +17,8 @@ import { useGetProject } from '../../hooks/useGetProject'
 import { Redirect, useParams } from 'wouter'
 
 const PEnterprisesViewWrapper = () => {
-  const { canEditEnterprise, canViewProjects } = useContext(PermissionsContext)
+  const { canEditProjectEnterprise, canViewProjects } =
+    useContext(PermissionsContext)
 
   const { project_id, enterprise_id } = useParams<Record<string, string>>()
   const project = project_id ? useGetProject(project_id) : undefined
@@ -63,7 +65,7 @@ const PEnterprisesViewWrapper = () => {
                   title="Cancel"
                   href={`/projects-listing/projects-enterprises/${project_id}`}
                 />
-                {canEditEnterprise && (
+                {canEditProjectEnterprise && (
                   <CustomLink
                     className="border border-solid border-secondary px-4 py-2 shadow-none hover:border-primary"
                     href={`/projects-listing/projects-enterprises/${project_id}/edit/${enterprise_id}`}
@@ -77,12 +79,7 @@ const PEnterprisesViewWrapper = () => {
                 )}
               </div>
             </div>
-            <div className="mt-4 flex items-center gap-3">
-              <span>Status:</span>
-              <span className="rounded border border-solid border-[#002A3C] px-1 py-0.5 font-medium uppercase leading-tight text-[#002A3C]">
-                {data.status}
-              </span>
-            </div>
+            <EnterpriseStatus status={data.status} />
           </HeaderTitle>
           <PEnterpriseView enterprise={data} />
         </>

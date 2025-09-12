@@ -297,16 +297,7 @@ export type AssociatedProjectsType = {
   loaded: boolean
 }
 
-export type EnterpriseEntityType = EnterpriseOverview & {
-  id: number | null
-  code: string
-  status: string
-  approved_enterprise: number | null
-  pending_enterprises: (number | null)[]
-  project_enterprises: (number | null)[]
-}
-
-export type EnterpriseType = EnterpriseFundingDetails & {
+export type ProjectEnterpriseType = EnterpriseFundingDetails & {
   id: number | null
 } & {
   funds_approved: string | null
@@ -331,6 +322,7 @@ export type ProjectEnterpriseDataType = {
 export type EnterpriseDataType = {
   enterpriseData: EnterpriseOverview
   setEnterpriseData: Dispatch<SetStateAction<EnterpriseOverview>>
+  enterprise?: EnterpriseType
 }
 
 export type EnterprisesCommonProps = {
@@ -345,12 +337,17 @@ export type EnterpriseDataProps = EnterpriseDataType & EnterprisesCommonProps
 
 export interface EnterpriseOverview {
   name: string
+  agencies: number[]
   country: number | null
   location: string
   application: string
   local_ownership: string | null
   export_to_non_a5: string | null
   remarks: string
+}
+
+export type EnterpriseType = EnterpriseOverview & {
+  status: string
 }
 
 export interface EnterpriseSubstanceDetails {
@@ -370,7 +367,7 @@ export interface EnterpriseFundingDetails {
 export interface EnterpriseHeaderProps {
   setEnterpriseId: (id: number | null) => void
   setHasSubmitted: (value: boolean) => void
-  setErrors: (value: { [key: string]: [] }) => void
+  setErrors: (value: { [key: string]: string[] }) => void
   setOtherErrors: (value: string) => void
 }
 

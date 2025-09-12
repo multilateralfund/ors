@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import PEnterpriseHeader from '../create/PEnterpriseHeader'
 import PEnterpriseCreate from '../create/PEnterpriseCreate'
 import ProjectFormFooter from '../../ProjectFormFooter'
-import { EnterpriseData, EnterpriseType } from '../../interfaces'
+import { EnterpriseData, ProjectEnterpriseType } from '../../interfaces'
 import {
   initialFundingDetailsFields,
   initialOverviewFields,
@@ -17,7 +17,7 @@ const PEnterprisesEdit = ({
   enterprise,
   countryId,
 }: {
-  enterprise: EnterpriseType
+  enterprise: ProjectEnterpriseType
   countryId: number
 }) => {
   const { project_id } = useParams<Record<string, string>>()

@@ -8,25 +8,26 @@ import EnterpriseCreate from './EnterpriseCreate.tsx'
 import ProjectFormFooter from '../../ProjectFormFooter.tsx'
 import { initialOverviewFields } from '../../constants.ts'
 import { EnterpriseOverview } from '../../interfaces.ts'
+import { useStore } from '@ors/store.tsx'
 
 import { Redirect } from 'wouter'
 
 const EnterpriseCreateWrapper = () => {
-  const { canEditEnterprise, canViewProjects } = useContext(PermissionsContext)
+  const { canEditEnterprise } = useContext(PermissionsContext)
 
-  const [enterpriseData, setEnterpriseData] = useState<EnterpriseOverview>(
-    initialOverviewFields,
-  )
+  const userSlice = useStore((state) => state.user)
+  const { agency_id } = userSlice.data
+
+  const [enterpriseData, setEnterpriseData] = useState<EnterpriseOverview>({
+    ...initialOverviewFields,
+    agencies: agency_id ? [agency_id] : [],
+  })
   const [enterpriseId, setEnterpriseId] = useState<number | null>(null)
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
 
   const [errors, setErrors] = useState<{ [key: string]: string[] }>({})
   const [otherErrors, setOtherErrors] = useState<string>('')
   const nonFieldsErrors = errors?.['non_field_errors'] || []
-
-  if (!canViewProjects) {
-    return <Redirect to="/projects-listing/listing" />
-  }
 
   if (!canEditEnterprise) {
     return <Redirect to="/projects-listing/enterprises" />

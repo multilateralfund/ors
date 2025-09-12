@@ -5,11 +5,15 @@ import { useState } from 'react'
 import PEnterpriseOverviewSection from './PEnterpriseOverviewSection'
 import PEnterprisesSubstanceDetailsSection from './PEnterprisesSubstanceDetailsSection'
 import PEnterpriseFundingDetailsSection from './PEnterpriseFundingDetailsSection'
-import { EnterpriseType } from '../../interfaces'
+import { ProjectEnterpriseType } from '../../interfaces'
 
 import { Tabs, Tab } from '@mui/material'
 
-const PEnterpriseView = ({ enterprise }: { enterprise: EnterpriseType }) => {
+const PEnterpriseView = ({
+  enterprise,
+}: {
+  enterprise: ProjectEnterpriseType
+}) => {
   const [activeTab, setActiveTab] = useState(0)
 
   const tabs = [

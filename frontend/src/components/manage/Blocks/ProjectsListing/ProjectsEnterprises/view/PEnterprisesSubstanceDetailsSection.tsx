@@ -1,5 +1,5 @@
 import ViewTable from '@ors/components/manage/Form/ViewTable'
-import { EnterpriseType } from '../../interfaces'
+import { ProjectEnterpriseType } from '../../interfaces'
 import { formatNumberColumns } from '../../utils'
 import { tableColumns } from '../../constants'
 import { ApiSubstance } from '@ors/types/api_substances'
@@ -17,7 +17,7 @@ import {
 const PEnterprisesSubstanceDetailsSection = ({
   enterprise,
 }: {
-  enterprise: EnterpriseType
+  enterprise: ProjectEnterpriseType
 }) => {
   const { substances, blends } = useStore((state) => state.cp_reports)
 

@@ -1,7 +1,5 @@
 'use client'
 
-import { useRef } from 'react'
-
 import ViewTable from '@ors/components/manage/Form/ViewTable'
 import { useGetEnterprises } from '../../hooks/useGetEnterprises'
 import { getPaginationSelectorOpts } from '../../utils'
@@ -13,21 +11,17 @@ const EnterprisesTable = ({
 }: {
   enterprises: ReturnType<typeof useGetEnterprises>
 }) => {
-  const gridApiRef = useRef<any>()
+  const { results, count, loaded, loading, setParams } = enterprises
 
-  const { data, loaded, loading, setParams } = enterprises
-  const { results = [] } = data ?? {}
-  const count = results.length
-
-  const { columnDefs, defaultColDef } = getColumnDefs('listing')
+  const { columnDefs, defaultColDef } = getColumnDefs()
   const paginationPageSizeSelectorOpts = getPaginationSelectorOpts(count)
 
   return (
     loaded && (
       <ViewTable
-        getRowId={(props) => props.data.id}
         columnDefs={columnDefs}
         defaultColDef={defaultColDef}
+        className="enterprises-table"
         domLayout="normal"
         suppressScrollOnNewData={true}
         enablePagination={true}
@@ -41,9 +35,6 @@ const EnterprisesTable = ({
         rowData={results}
         rowsVisible={90}
         tooltipShowDelay={200}
-        onGridReady={({ api }) => {
-          gridApiRef.current = api
-        }}
         components={{
           agColumnHeader: undefined,
           agTextCellRenderer: undefined,

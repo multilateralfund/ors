@@ -8,7 +8,7 @@ import { RedirectBackButton, PageTitle } from '../../HelperComponents'
 import {
   EnterpriseData,
   EnterpriseHeaderProps,
-  EnterpriseType,
+  ProjectEnterpriseType,
 } from '../../interfaces'
 
 import { CircularProgress } from '@mui/material'
@@ -20,7 +20,7 @@ const PEnterpriseHeader = ({
 }: EnterpriseHeaderProps & {
   enterpriseData: EnterpriseData
   mode: string
-  enterprise?: EnterpriseType
+  enterprise?: ProjectEnterpriseType
 }) => {
   const [enterpriseTitle, setEnterpriseTitle] = useState(
     enterprise?.enterprise?.name,

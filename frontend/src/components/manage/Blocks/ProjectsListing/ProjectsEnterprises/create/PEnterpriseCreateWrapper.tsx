@@ -16,8 +16,9 @@ import {
 
 import { Redirect, useParams } from 'wouter'
 
-const PEnterprisesCreateWrapper = () => {
-  const { canEditEnterprise, canViewProjects } = useContext(PermissionsContext)
+const PEnterpriseCreateWrapper = () => {
+  const { canEditProjectEnterprise, canViewProjects } =
+    useContext(PermissionsContext)
 
   const { project_id } = useParams<Record<string, string>>()
   const project = project_id ? useGetProject(project_id) : undefined
@@ -54,7 +55,7 @@ const PEnterprisesCreateWrapper = () => {
     return <Redirect to="/projects-listing/listing" />
   }
 
-  if (!canEditEnterprise) {
+  if (!canEditProjectEnterprise) {
     return (
       <Redirect to={`/projects-listing/projects-enterprises/${project_id}`} />
     )
@@ -100,4 +101,4 @@ const PEnterprisesCreateWrapper = () => {
   )
 }
 
-export default PEnterprisesCreateWrapper
+export default PEnterpriseCreateWrapper

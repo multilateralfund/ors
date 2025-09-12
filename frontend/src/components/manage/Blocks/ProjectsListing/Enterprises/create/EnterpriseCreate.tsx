@@ -1,7 +1,7 @@
 'use client'
 
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert.tsx'
-import EnterprisesOverviewSection from './EnterprisesOverviewSection.tsx'
+import EnterpriseForm from './EnterpriseForm.tsx'
 import { getEnterprisesErrors } from '../../ProjectsEnterprises/utils.ts'
 import { EnterpriseDataProps } from '../../interfaces.ts'
 import { formatErrors } from '../../utils.ts'
@@ -31,7 +31,7 @@ const EnterpriseCreate = ({
           }
         />
       )}
-      <EnterprisesOverviewSection
+      <EnterpriseForm
         errors={enterpriseErrors}
         {...{ enterpriseData, ...rest }}
       />

@@ -18,6 +18,7 @@ export const tableColumns: { [key: string]: string } = {
   cluster: 'Cluster',
   tranche: 'Tranche number',
   agency: 'Agency',
+  agencies: 'Agency',
   lead_agency: 'Lead agency',
   title: 'Title',
   type: 'Type',
@@ -168,6 +169,7 @@ export const viewColumnsClassName =
 
 export const initialOverviewFields = {
   name: '',
+  agencies: [],
   country: null,
   location: '',
   application: '',
@@ -192,3 +194,7 @@ export const initialFundingDetailsFields = {
 
 export const enabledButtonClassname =
   'border border-solid border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow'
+
+export const dropDownClassName =
+  'bg-primary px-4 py-2 text-white shadow-none hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow'
+export const dropdownItemClassname = 'bg-transparent font-medium normal-case'

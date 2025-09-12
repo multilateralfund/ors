@@ -5,22 +5,17 @@ import { useEffect, useState } from 'react'
 import EnterpriseHeader from '../create/EnterpriseHeader'
 import EnterpriseCreate from '../create/EnterpriseCreate'
 import ProjectFormFooter from '../../ProjectFormFooter'
-import { EnterpriseOverview } from '../../interfaces'
+import { EnterpriseOverview, EnterpriseType } from '../../interfaces'
 import { initialOverviewFields } from '../../constants'
 
-const EnterprisesEdit = ({
-  enterprise,
-}: {
-  enterprise: EnterpriseOverview
-}) => {
+const EnterpriseEdit = ({ enterprise }: { enterprise: EnterpriseType }) => {
   const [enterpriseData, setEnterpriseData] = useState<EnterpriseOverview>(
     initialOverviewFields,
   )
-
   const [enterpriseId, setEnterpriseId] = useState<number | null>(null)
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
 
-  const [errors, setErrors] = useState<{ [key: string]: [] }>({})
+  const [errors, setErrors] = useState<{ [key: string]: string[] }>({})
   const [otherErrors, setOtherErrors] = useState<string>('')
   const nonFieldsErrors = errors?.['non_field_errors'] || []
 
@@ -28,6 +23,7 @@ const EnterprisesEdit = ({
     setEnterpriseData((prevData) => ({
       ...prevData,
       name: enterprise.name,
+      agencies: enterprise.agencies,
       country: enterprise.country,
       location: enterprise.location,
       application: enterprise.application,
@@ -43,8 +39,8 @@ const EnterprisesEdit = ({
         mode="edit"
         {...{
           enterpriseData,
-          setEnterpriseId,
           enterprise,
+          setEnterpriseId,
           setHasSubmitted,
           setErrors,
           setOtherErrors,
@@ -70,4 +66,4 @@ const EnterprisesEdit = ({
   )
 }
 
-export default EnterprisesEdit
+export default EnterpriseEdit

@@ -14,9 +14,10 @@ import { useGetEnterprises } from '../../hooks/useGetEnterprises'
 import { Redirect } from 'wouter'
 
 export default function EnterprisesWrapper() {
-  const form = useRef<any>()
+  const { canViewEnterprises, canEditEnterprise } =
+    useContext(PermissionsContext)
 
-  const { canViewProjects } = useContext(PermissionsContext)
+  const form = useRef<any>()
 
   const initialFilters = {
     offset: 0,
@@ -25,10 +26,10 @@ export default function EnterprisesWrapper() {
   const [filters, setFilters] = useState(initialFilters)
   const key = useMemo(() => JSON.stringify(filters), [filters])
 
-  const enterprises = useGetEnterprises(null, initialFilters)
+  const enterprises = useGetEnterprises(initialFilters)
   const { loading, setParams } = enterprises
 
-  if (!canViewProjects) {
+  if (!canViewEnterprises) {
     return <Redirect to="/projects-listing/listing" />
   }
 
@@ -46,12 +47,14 @@ export default function EnterprisesWrapper() {
               <span className="font-medium text-[#4D4D4D]">Enterprises</span>
             </PageHeading>
           </div>
-          <div className="ml-auto mt-auto flex items-center gap-2.5">
-            <CreateButton
-              title="Create enterprise"
-              href="/projects-listing/enterprises/create"
-            />
-          </div>
+          {canEditEnterprise && (
+            <div className="ml-auto mt-auto flex items-center gap-2.5">
+              <CreateButton
+                title="Create enterprise"
+                href="/projects-listing/enterprises/create"
+              />
+            </div>
+          )}
         </div>
       </HeaderTitle>
       <form className="flex flex-col gap-6" ref={form} key={key}>

@@ -19,7 +19,7 @@ const PEnterpriseCreateActionButtons = ({
 }: EnterpriseActionButtons & { enterpriseData: EnterpriseData }) => {
   const [_, setLocation] = useLocation()
   const { project_id } = useParams<Record<string, string>>()
-  const { canEditEnterprise } = useContext(PermissionsContext)
+  const { canEditProjectEnterprise } = useContext(PermissionsContext)
 
   const { overview } = enterpriseData
 
@@ -73,7 +73,7 @@ const PEnterpriseCreateActionButtons = ({
         title="Cancel"
         href={`/projects-listing/projects-enterprises/${project_id}`}
       />
-      {canEditEnterprise && (
+      {canEditProjectEnterprise && (
         <SubmitButton
           title="Create project enterprise"
           isDisabled={!overview.name}

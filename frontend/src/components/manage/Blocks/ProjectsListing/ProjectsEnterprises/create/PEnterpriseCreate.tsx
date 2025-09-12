@@ -33,7 +33,7 @@ const PEnterpriseCreate = ({
 }) => {
   const [currentTab, setCurrentTab] = useState<number>(0)
 
-  const { data, loading } = useGetEnterprises(countryId)
+  const { data, loading } = useGetEnterprises({}, countryId)
 
   const { overview, funding_details } = enterpriseData ?? {}
 

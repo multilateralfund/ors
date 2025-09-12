@@ -22,7 +22,7 @@ const getColumnDefs = (
   const commonSlice = useStore((state) => state.common)
   const countries = commonSlice.countries.data
 
-  const { canEditEnterprise } = useContext(PermissionsContext)
+  const { canEditProjectEnterprise } = useContext(PermissionsContext)
 
   const getCountryName = (params: ValueGetterParams | ITooltipParams) =>
     find(countries, (country) => country.id === params.data.enterprise?.country)
@@ -30,7 +30,7 @@ const getColumnDefs = (
 
   return {
     columnDefs: [
-      ...(setEnterpriseId && canEditEnterprise
+      ...(setEnterpriseId && canEditProjectEnterprise
         ? [
             {
               headerName: 'Select',

@@ -9,11 +9,19 @@ import {
 import { ProjectTypeApi, RelatedProjectsType } from './interfaces'
 import { enabledButtonClassname } from './constants'
 
-import { Button, CircularProgress, Divider, Typography } from '@mui/material'
+import { MdKeyboardArrowDown } from 'react-icons/md'
 import { FaExternalLinkAlt } from 'react-icons/fa'
 import { filter, lowerCase, map } from 'lodash'
 import { SlReload } from 'react-icons/sl'
 import cx from 'classnames'
+import {
+  Button,
+  CircularProgress,
+  Divider,
+  Typography,
+  MenuProps,
+  ButtonProps,
+} from '@mui/material'
 import {
   IoAlertCircle,
   IoChevronDown,
@@ -22,7 +30,7 @@ import {
   IoReturnUpBack,
 } from 'react-icons/io5'
 
-type ButtonProps = {
+type CustomButtonProps = {
   title: string
   onSubmit: () => void
   isDisabled?: boolean
@@ -51,7 +59,7 @@ export const SubmitButton = ({
   onSubmit,
   isDisabled = false,
   className,
-}: ButtonProps) => (
+}: CustomButtonProps) => (
   <Button
     className={cx(className, 'mr-0 h-10 px-3 py-1', {
       [enabledButtonClassname]: !isDisabled,
@@ -69,7 +77,7 @@ export const IncreaseVersionButton = ({
   title,
   onSubmit,
   isDisabled = false,
-}: ButtonProps) => (
+}: CustomButtonProps) => (
   <Button
     className={cx('px-4 py-2', {
       'bg-primary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
@@ -376,3 +384,16 @@ export const displaySelectedOption = (
       </Typography>
     )
   })
+
+export const DropDownButtonProps: ButtonProps = {
+  endIcon: <MdKeyboardArrowDown />,
+  size: 'large',
+  variant: 'contained',
+}
+
+export const DropDownMenuProps: Omit<MenuProps, 'open'> = {
+  PaperProps: {
+    className: 'mt-1 border border-solid border-black rounded-lg',
+  },
+  transitionDuration: 0,
+}

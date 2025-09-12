@@ -5,6 +5,20 @@ import { EnterpriseOverview } from '../interfaces'
 
 import cx from 'classnames'
 
+export const handleChangeSelectValues = (
+  field: string,
+  setEnterpriseData: Dispatch<SetStateAction<EnterpriseOverview>>,
+  value: any,
+  isMultiple: boolean,
+) => {
+  setEnterpriseData((prevData) => ({
+    ...prevData,
+    [field]: isMultiple
+      ? value.map((val: any) => val.id ?? [])
+      : (value?.id ?? null),
+  }))
+}
+
 export const handleChangeTextValues = (
   field: string,
   setEnterpriseData: Dispatch<SetStateAction<EnterpriseOverview>>,

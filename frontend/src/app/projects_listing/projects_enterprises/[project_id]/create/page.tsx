@@ -1,4 +1,4 @@
-import PEnterprisesCreateWrapper from '@ors/components/manage/Blocks/ProjectsListing/ProjectsEnterprises/create/PEnterprisesCreateWrapper'
+import PEnterpriseCreateWrapper from '@ors/components/manage/Blocks/ProjectsListing/ProjectsEnterprises/create/PEnterpriseCreateWrapper'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import usePageTitle from '@ors/hooks/usePageTitle'
 
@@ -7,7 +7,7 @@ export default function PEnterprisesCreate() {
 
   return (
     <PageWrapper>
-      <PEnterprisesCreateWrapper />
+      <PEnterpriseCreateWrapper />
     </PageWrapper>
   )
 }

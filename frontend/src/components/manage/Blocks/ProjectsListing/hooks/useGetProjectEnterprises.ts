@@ -1,9 +1,9 @@
 import useApi from '@ors/hooks/useApi'
 import { getResults } from '@ors/helpers'
-import { EnterpriseType } from '../interfaces'
+import { ProjectEnterpriseType } from '../interfaces'
 
 export function useGetProjectEnterprises(filters: Record<string, any>) {
-  const { data, ...rest } = useApi<EnterpriseType[]>({
+  const { data, ...rest } = useApi<ProjectEnterpriseType[]>({
     options: {
       params: filters,
       withStoreCache: false,

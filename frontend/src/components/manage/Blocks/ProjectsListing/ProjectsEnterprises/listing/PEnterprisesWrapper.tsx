@@ -22,7 +22,8 @@ import { Button } from '@mui/material'
 export default function PEnterprisesWrapper() {
   const form = useRef<any>()
 
-  const { canEditEnterprise, canViewProjects } = useContext(PermissionsContext)
+  const { canEditProjectEnterprise, canViewProjects } =
+    useContext(PermissionsContext)
 
   const { project_id } = useParams<Record<string, string>>()
   const project = project_id ? useGetProject(project_id) : undefined
@@ -61,7 +62,7 @@ export default function PEnterprisesWrapper() {
             <PageHeading>
               {project && data ? (
                 <PageTitle
-                  pageTitle="Project enterprises information for"
+                  pageTitle="Project enterprises of"
                   projectTitle={data.code ?? data.code_legacy}
                 />
               ) : (
@@ -92,7 +93,7 @@ export default function PEnterprisesWrapper() {
               setParams,
             }}
           />
-          {project_id && canEditEnterprise && (
+          {project_id && canEditProjectEnterprise && (
             <div className="mb-auto flex gap-2">
               <Link
                 className="no-underline"
