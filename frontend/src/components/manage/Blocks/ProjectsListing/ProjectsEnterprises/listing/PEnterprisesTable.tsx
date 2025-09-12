@@ -10,29 +10,19 @@ import getColumnDefs from './schema'
 
 const PEnterprisesTable = ({
   enterprises,
-  filters,
-  enterpriseId,
-  setEnterpriseId,
 }: {
   enterprises: ReturnType<typeof useGetProjectEnterprises>
-  filters: Record<string, any>
-  enterpriseId?: number | null
-  setEnterpriseId?: (enterpriseId: number | null) => void
 }) => {
   const gridApiRef = useRef<any>()
 
   const { count, loaded, loading, results, setParams } = enterprises
 
-  const { columnDefs, defaultColDef } = getColumnDefs(
-    enterpriseId,
-    setEnterpriseId,
-  )
+  const { columnDefs, defaultColDef } = getColumnDefs()
   const paginationPageSizeSelectorOpts = getPaginationSelectorOpts(count)
 
   return (
     loaded && (
       <ViewTable
-        key={JSON.stringify(filters)}
         getRowId={(props) => props.data.id}
         columnDefs={columnDefs}
         defaultColDef={defaultColDef}
@@ -66,7 +56,13 @@ const PEnterprisesTable = ({
           const ordering = api
             .getColumnState()
             .filter((column) => !!column.sort)
-            .map(({ sort, colId }) => (sort === 'asc' ? '' : '-') + colId)
+            .map(
+              ({ sort, colId }) =>
+                (sort === 'asc' ? '' : '-') +
+                (colId === 'status'
+                  ? colId
+                  : 'enterprise__' + colId.split('.')[1]),
+            )
             .join(',')
           setParams({ offset: 0, ordering })
         }}

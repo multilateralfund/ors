@@ -21,7 +21,6 @@ const EnterprisesTable = ({
       <ViewTable
         columnDefs={columnDefs}
         defaultColDef={defaultColDef}
-        className="enterprises-table"
         domLayout="normal"
         suppressScrollOnNewData={true}
         enablePagination={true}

@@ -32,9 +32,8 @@ const getColumnDefs = () => {
   return {
     columnDefs: [
       {
-        minWidth: 30,
-        maxWidth: 30,
-        resizable: false,
+        minWidth: 40,
+        maxWidth: 40,
         sortable: false,
         cellRenderer: (props: ICellRendererParams) => (
           <div className="flex items-center p-2">
@@ -98,12 +97,6 @@ const getColumnDefs = () => {
         field: 'status',
         tooltipField: 'status',
         minWidth: 120,
-      },
-      {
-        headerName: 'Project',
-        field: 'project_code',
-        tooltipField: 'project_code',
-        sortable: false,
       },
     ],
     defaultColDef: {

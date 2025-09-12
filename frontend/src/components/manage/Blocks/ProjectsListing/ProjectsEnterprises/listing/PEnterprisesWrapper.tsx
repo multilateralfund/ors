@@ -2,11 +2,10 @@
 
 import { useContext, useMemo, useRef, useState } from 'react'
 
-import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
+import CustomLink from '@ors/components/ui/Link/Link'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
-import Link from '@ors/components/ui/Link/Link'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import PEnterprisesFiltersWrapper from './PEnterprisesFiltersWrapper'
 import PEnterprisesTable from './PEnterprisesTable'
@@ -14,15 +13,12 @@ import { PageTitle, RedirectBackButton } from '../../HelperComponents'
 import { useGetProjectEnterprises } from '../../hooks/useGetProjectEnterprises'
 import { useGetProject } from '../../hooks/useGetProject'
 
-import { IoAddCircle } from 'react-icons/io5'
 import { Redirect, useParams } from 'wouter'
-import { FiEdit } from 'react-icons/fi'
-import { Button } from '@mui/material'
 
 export default function PEnterprisesWrapper() {
   const form = useRef<any>()
 
-  const { canEditProjectEnterprise, canViewProjects } =
+  const { canViewProjects, canViewEnterprises, canEditProjectEnterprise } =
     useContext(PermissionsContext)
 
   const { project_id } = useParams<Record<string, string>>()
@@ -40,9 +36,8 @@ export default function PEnterprisesWrapper() {
   const enterprises = useGetProjectEnterprises(initialFilters)
   const { loading, setParams } = enterprises
 
-  const [enterpriseId, setEnterpriseId] = useState<number | null>(null)
-
   if (
+    !canViewEnterprises ||
     !canViewProjects ||
     (project && (error || (data && data.submission_status !== 'Approved')))
   ) {
@@ -74,10 +69,16 @@ export default function PEnterprisesWrapper() {
           </div>
           <div className="ml-auto mt-auto flex items-center gap-2.5">
             {project_id && (
-              <CancelLinkButton
-                title="Cancel"
+              <CustomLink
+                className="border border-solid border-secondary px-4 py-2 shadow-none hover:border-primary"
                 href="/projects-listing/projects-enterprises"
-              />
+                color="secondary"
+                variant="contained"
+                size="large"
+                button
+              >
+                View all project enterprises
+              </CustomLink>
             )}
           </div>
         </div>
@@ -94,43 +95,19 @@ export default function PEnterprisesWrapper() {
             }}
           />
           {project_id && canEditProjectEnterprise && (
-            <div className="mb-auto flex gap-2">
-              <Link
-                className="no-underline"
-                href={`/projects-listing/projects-enterprises/${project_id}/create`}
-              >
-                <Button
-                  className="h-fit border border-solid border-primary bg-white px-3 py-1 normal-case text-primary shadow-none"
-                  variant="contained"
-                  size="large"
-                >
-                  Add project enterprise
-                  <IoAddCircle className="ml-1.5" size={20} />
-                </Button>
-              </Link>
-              <Link
-                className="p-0 no-underline"
-                href={`/projects-listing/projects-enterprises/${project_id}/edit/${enterpriseId}`}
-                disabled={!enterpriseId}
-                button
-              >
-                <Button
-                  className="h-fit border border-solid border-primary bg-white px-3 py-1 normal-case text-primary shadow-none disabled:border-gray-300 disabled:bg-gray-100 disabled:text-gray-400"
-                  disabled={!enterpriseId}
-                  variant="contained"
-                  size="large"
-                >
-                  Edit project enterprise
-                  <FiEdit className="ml-1.5" size={18} />
-                </Button>
-              </Link>
-            </div>
+            <CustomLink
+              className="h-10 border border-solid border-secondary px-4 py-2 shadow-none hover:border-primary"
+              href={`/projects-listing/projects-enterprises/${project_id}/create`}
+              color="secondary"
+              variant="contained"
+              size="large"
+              button
+            >
+              Add project enterprise
+            </CustomLink>
           )}
         </div>
-        <PEnterprisesTable
-          {...{ enterprises, filters }}
-          {...(project_id && { enterpriseId, setEnterpriseId })}
-        />
+        <PEnterprisesTable {...{ enterprises }} />
       </form>
     </>
   )

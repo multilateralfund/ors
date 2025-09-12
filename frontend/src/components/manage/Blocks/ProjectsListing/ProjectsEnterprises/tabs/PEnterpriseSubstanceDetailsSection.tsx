@@ -3,9 +3,10 @@ import { ChangeEvent } from 'react'
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
+import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { getIsInputDisabled } from '../../ProjectsCreate/SpecificFieldsHelpers'
 import { SubmitButton } from '../../HelperComponents'
-import { PEnterpriseDataProps, OptionsType } from '../../interfaces'
+import { PEnterpriseDataProps } from '../../interfaces'
 import {
   defaultProps,
   defaultPropsSimpleField,
@@ -14,7 +15,7 @@ import {
 } from '../../constants'
 import { useStore } from '@ors/store'
 
-import { find, get, isObject, map, sortBy, split } from 'lodash'
+import { map, sortBy, split } from 'lodash'
 import { IoTrash } from 'react-icons/io5'
 import { Divider } from '@mui/material'
 import cx from 'classnames'
@@ -173,12 +174,8 @@ const PEnterpriseSubstanceDetailsSection = ({
                     onChange={(_, value) =>
                       handleChangeDropdownValues(value, index)
                     }
-                    getOptionLabel={(option) =>
-                      (isObject(option)
-                        ? get(option, 'name')
-                        : (find(options, { id: option }) as OptionsType)?.[
-                            'name'
-                          ]) || ''
+                    getOptionLabel={(option: any) =>
+                      getOptionLabel(options, option)
                     }
                     Input={{
                       error:

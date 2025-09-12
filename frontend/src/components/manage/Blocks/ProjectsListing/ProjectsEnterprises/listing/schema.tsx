@@ -4,23 +4,21 @@ import Link from '@ors/components/ui/Link/Link'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { useStore } from '@ors/store'
 
-import { Checkbox } from '@mui/material'
+import { FiEdit } from 'react-icons/fi'
+import { find, map } from 'lodash'
 import { useParams } from 'wouter'
-import { find } from 'lodash'
 import {
   ICellRendererParams,
   ValueGetterParams,
   ITooltipParams,
 } from 'ag-grid-community'
 
-const getColumnDefs = (
-  enterpriseId?: number | null,
-  setEnterpriseId?: (enterpriseId: number | null) => void,
-) => {
+const getColumnDefs = () => {
   const { project_id } = useParams<Record<string, string>>()
 
   const commonSlice = useStore((state) => state.common)
   const countries = commonSlice.countries.data
+  const agencies = commonSlice.agencies.data
 
   const { canEditProjectEnterprise } = useContext(PermissionsContext)
 
@@ -28,31 +26,32 @@ const getColumnDefs = (
     find(countries, (country) => country.id === params.data.enterprise?.country)
       ?.name
 
+  const getAgencyNames = (params: ValueGetterParams | ITooltipParams) =>
+    map(
+      params.data.enterprise?.agencies,
+      (crtAgency) => find(agencies, (agency) => agency.id === crtAgency)?.name,
+    ).join(', ')
+
   return {
     columnDefs: [
-      ...(setEnterpriseId && canEditProjectEnterprise
+      ...(project_id
         ? [
             {
-              headerName: 'Select',
-              field: '',
-              minWidth: 80,
-              maxWidth: 80,
+              minWidth: 40,
+              maxWidth: 40,
               sortable: false,
-              cellClass: 'ag-text-center',
-              cellRenderer: (params: ICellRendererParams) => (
-                <Checkbox
-                  checked={enterpriseId === params.data.id}
-                  onChange={() => {
-                    if (enterpriseId === params.data.id) {
-                      setEnterpriseId(null)
-                    } else {
-                      setEnterpriseId(params.data.id)
-                    }
-                  }}
-                  sx={{
-                    color: 'black',
-                  }}
-                />
+              cellRenderer: (props: ICellRendererParams) => (
+                <div className="flex items-center p-2">
+                  {canEditProjectEnterprise &&
+                    props.data.status !== 'Obsolete' && (
+                      <Link
+                        className="flex h-4 w-4 justify-center"
+                        href={`/projects-listing/projects-enterprises/${project_id}/edit/${props.data.id}`}
+                      >
+                        <FiEdit size={16} />
+                      </Link>
+                    )}
+                </div>
               ),
             },
           ]
@@ -80,7 +79,14 @@ const getColumnDefs = (
         minWidth: 150,
       },
       {
+        headerName: 'Agency(ies)',
+        valueGetter: (params: ValueGetterParams) => getAgencyNames(params),
+        tooltipValueGetter: (params: ITooltipParams) => getAgencyNames(params),
+        sortable: false,
+      },
+      {
         headerName: 'Country',
+        field: 'enterprise.country__name',
         valueGetter: (params: ValueGetterParams) => getCountryName(params),
         tooltipValueGetter: (params: ITooltipParams) => getCountryName(params),
       },
@@ -115,7 +121,7 @@ const getColumnDefs = (
       cellClass: 'ag-text-center ag-cell-ellipsed',
       minWidth: 90,
       resizable: true,
-      sortable: false,
+      sortable: true,
     },
   }
 }

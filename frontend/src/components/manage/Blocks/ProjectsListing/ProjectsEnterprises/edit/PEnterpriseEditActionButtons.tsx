@@ -96,7 +96,7 @@ const PEnterpriseEditActionButtons = ({
         )
       } catch (error) {
         enqueueSnackbar(
-          <>Could not approve project enterprise. Please try again.</>,
+          <>Could not change project enterprise status. Please try again.</>,
           {
             variant: 'error',
           },

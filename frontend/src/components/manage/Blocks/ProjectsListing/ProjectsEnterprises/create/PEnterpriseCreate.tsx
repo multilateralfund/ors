@@ -30,7 +30,8 @@ const PEnterpriseCreate = ({
 }: PEnterpriseDataProps & { countryId: number }) => {
   const [currentTab, setCurrentTab] = useState<number>(0)
 
-  const { results, loading } = useGetEnterprises({}, countryId)
+  const filters = { status: ['Pending Approval', 'Approved'] }
+  const { results, loading } = useGetEnterprises(filters, countryId)
 
   const { overview, funding_details } = enterpriseData ?? {}
   const overviewErrors = getEnterprisesErrors(overview, errors)
@@ -74,6 +75,7 @@ const PEnterpriseCreate = ({
       component: (
         <PEnterpriseSearch
           enterprises={results}
+          enterprise={rest.enterprise}
           {...{
             enterpriseData,
             setEnterpriseData,
