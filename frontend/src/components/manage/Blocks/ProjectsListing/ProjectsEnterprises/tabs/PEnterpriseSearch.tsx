@@ -10,10 +10,12 @@ const PEnterpriseSearch = ({
   enterprises,
   enterpriseData,
   setEnterpriseData,
+  enterprise,
 }: PEnterpriseDataType & {
   enterprises: EnterpriseType[]
 }) => {
   const overviewData = enterpriseData.overview as EnterpriseType
+  const isDisabled = !!enterprise && enterprise.status !== 'Pending Approval'
 
   const onEnterpriseChange = (value: any) => {
     const enterpriseId = value?.id ?? null
@@ -29,6 +31,7 @@ const PEnterpriseSearch = ({
           ...prevData,
           overview: {
             id: enterpriseId,
+            status: crtEnterprise.status,
             name: crtEnterprise.name,
             agencies: crtEnterprise.agencies,
             country: crtEnterprise.country,
@@ -58,6 +61,7 @@ const PEnterpriseSearch = ({
         widget="autocomplete"
         options={enterprises}
         value={overviewData.id}
+        disabled={isDisabled}
         onChange={(_, value) => {
           onEnterpriseChange(value)
         }}

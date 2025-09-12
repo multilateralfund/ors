@@ -4,7 +4,7 @@ import {
   EnterpriseTextAreaField,
   EnterpriseTextField,
 } from '../FormHelperComponents'
-import { PEnterpriseDataProps } from '../../interfaces'
+import { EnterpriseType, PEnterpriseDataProps } from '../../interfaces'
 import { useStore } from '@ors/store'
 
 import { map } from 'lodash'
@@ -19,8 +19,10 @@ const PEnterpriseOverviewSection = ({
   const countries = commonSlice.countries.data
   const agencies = commonSlice.agencies.data
 
-  const { enterprise } = rest
-  const isDisabled = !!enterprise && enterprise.status !== 'Pending Approval'
+  const { enterprise, enterpriseData } = rest
+  const isDisabled =
+    (!!enterprise && enterprise.status !== 'Pending Approval') ||
+    (enterpriseData.overview as EnterpriseType).status !== 'Pending Approval'
 
   const textFields = ['name', 'location', 'application']
   const numericFields = ['local_ownership', 'export_to_non_a5']

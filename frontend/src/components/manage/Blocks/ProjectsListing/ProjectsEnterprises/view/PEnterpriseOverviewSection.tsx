@@ -6,7 +6,7 @@ import { EnterpriseOverview } from '../../interfaces'
 import { tableColumns } from '../../constants'
 import { useStore } from '@ors/store'
 
-import { find, lowerCase } from 'lodash'
+import { find, toLower, map } from 'lodash'
 
 const PEnterpriseOverviewSection = ({
   type,
@@ -17,18 +17,30 @@ const PEnterpriseOverviewSection = ({
 }) => {
   const commonSlice = useStore((state) => state.common)
   const countries = commonSlice.countries.data
+  const agencies = commonSlice.countries.data
+
+  const getAgencyName = (id: number) =>
+    find(agencies, (agency) => agency.id === id)?.name
+
   const country = find(
     countries,
     (country) => country.id === enterprise.country,
   )?.name
+  const crtAgencies =
+    enterprise.agencies.length > 0
+      ? map(enterprise.agencies, (agencyId) => getAgencyName(agencyId)).join(
+          ', ',
+        )
+      : '-'
 
   const formatFieldName = (fieldName: string) =>
-    type === 'enterprise' ? fieldName : 'Enterprise ' + lowerCase(fieldName)
+    type === 'enterprise' ? fieldName : 'Enterprise ' + toLower(fieldName)
 
   return (
     <>
       <div className="flex w-full flex-col gap-4">
         {detailItem(formatFieldName(tableColumns.name), enterprise.name)}
+        {detailItem(formatFieldName('Agency(ies)'), crtAgencies)}
         {detailItem(formatFieldName(tableColumns.country), country ?? '')}
         {detailItem(
           formatFieldName(tableColumns.location),

@@ -2,10 +2,10 @@
 
 import { useContext } from 'react'
 
-import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 import CustomLink from '@ors/components/ui/Link/Link'
+import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import PEnterpriseView from './PEnterpriseView'
@@ -16,26 +16,28 @@ import { useGetProject } from '../../hooks/useGetProject'
 
 import { Redirect, useParams } from 'wouter'
 
-const PEnterprisesViewWrapper = () => {
-  const { canEditProjectEnterprise, canViewProjects } =
+const PEnterpriseViewWrapper = () => {
+  const { canViewProjects, canViewEnterprises, canEditProjectEnterprise } =
     useContext(PermissionsContext)
 
   const { project_id, enterprise_id } = useParams<Record<string, string>>()
   const project = project_id ? useGetProject(project_id) : undefined
-  const { data: projectData, error } = project ?? {}
+  const { data: projectData, error: projectError } = project ?? {}
 
   const enterprise = useGetProjectEnterprise(enterprise_id)
-  const { data, loading } = enterprise
+  const { data, loading, error } = enterprise
 
   if (
+    !canViewEnterprises ||
     !canViewProjects ||
     (project &&
-      (error || (projectData && projectData.submission_status !== 'Approved')))
+      (projectError ||
+        (projectData && projectData.submission_status !== 'Approved')))
   ) {
     return <Redirect to="/projects-listing/listing" />
   }
 
-  if (enterprise?.error) {
+  if (error) {
     return (
       <Redirect to={`/projects-listing/projects-enterprises/${project_id}`} />
     )
@@ -74,7 +76,7 @@ const PEnterprisesViewWrapper = () => {
                     size="large"
                     button
                   >
-                    Edit
+                    Edit project enterprise
                   </CustomLink>
                 )}
               </div>
@@ -88,4 +90,4 @@ const PEnterprisesViewWrapper = () => {
   )
 }
 
-export default PEnterprisesViewWrapper
+export default PEnterpriseViewWrapper

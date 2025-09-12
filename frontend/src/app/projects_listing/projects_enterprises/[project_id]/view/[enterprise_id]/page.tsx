@@ -1,4 +1,4 @@
-import PEnterprisesViewWrapper from '@ors/components/manage/Blocks/ProjectsListing/ProjectsEnterprises/view/PEnterprisesViewWrapper'
+import PEnterpriseViewWrapper from '@ors/components/manage/Blocks/ProjectsListing/ProjectsEnterprises/view/PEnterpriseViewWrapper'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import usePageTitle from '@ors/hooks/usePageTitle'
 
@@ -11,7 +11,7 @@ export default function PEnterprise() {
 
   return (
     <PageWrapper>
-      <PEnterprisesViewWrapper key={enterprise_id} />
+      <PEnterpriseViewWrapper key={enterprise_id} />
     </PageWrapper>
   )
 }
