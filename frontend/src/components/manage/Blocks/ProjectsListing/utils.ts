@@ -613,7 +613,8 @@ export const getMenus = (
   permissions: Record<string, boolean>,
   projectData?: ListingProjectData,
 ) => {
-  const { canViewBp, canUpdateBp, canViewProjects } = permissions
+  const { canViewBp, canUpdateBp, canViewProjects, canViewEnterprises } =
+    permissions
   const { projectId, projectSubmissionStatus } = projectData ?? {}
 
   return [
@@ -640,14 +641,14 @@ export const getMenus = (
         {
           title: 'Update project enterprises',
           url: `/projects-listing/projects-enterprises${projectId ? `/${projectId}` : ''}`,
-          permissions: [canViewProjects],
+          permissions: [canViewProjects, canViewEnterprises],
           disabled:
             !!projectSubmissionStatus && projectSubmissionStatus !== 'Approved',
         },
         {
           title: 'Manage enterprises',
           url: `/projects-listing/enterprises`,
-          permissions: [canViewProjects],
+          permissions: [canViewEnterprises],
         },
         { title: 'Transfer a project', url: null },
       ],

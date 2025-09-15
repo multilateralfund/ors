@@ -16,8 +16,13 @@ import { isNull } from 'lodash'
 const ProjectsAssociateWrapper = () => {
   const { project_id } = useParams<Record<string, string>>()
 
-  const { canViewBp, canUpdateBp, canUpdateProjects, canViewProjects } =
-    useContext(PermissionsContext)
+  const {
+    canViewBp,
+    canUpdateBp,
+    canUpdateProjects,
+    canViewProjects,
+    canViewEnterprises,
+  } = useContext(PermissionsContext)
 
   const project = useGetProject(project_id)
   const { data, loading } = project
@@ -30,7 +35,12 @@ const ProjectsAssociateWrapper = () => {
     <>
       <div className="mt-5 flex flex-wrap justify-between gap-y-3">
         <div className="mb-2 flex flex-wrap gap-x-2 gap-y-3">
-          {getMenus({ canViewBp, canUpdateBp, canViewProjects }).map((menu) => (
+          {getMenus({
+            canViewBp,
+            canUpdateBp,
+            canViewProjects,
+            canViewEnterprises,
+          }).map((menu) => (
             <ExpandableMenu menu={menu} />
           ))}
         </div>
