@@ -13,8 +13,8 @@ import { debounce, find, uniqBy } from 'lodash'
 import cx from 'classnames'
 
 export interface WidgetProps {
-  onChange: (_: any, value: any) => void
   filters: any
+  onChange: (_: any, value: any) => void
   Input?: TextWidgetProps
   FieldProps?: any
 }
@@ -64,7 +64,7 @@ const PEnterpriseProjectsFilter = ({
   }, [results])
 
   return (
-    <div className={cx(FieldProps?.className, 'w-[14rem]')}>
+    <div className={cx(FieldProps?.className, '!w-[14rem]')}>
       <Autocomplete
         {...rest}
         options={getFilterOptions(filters, projects, 'project_id')}

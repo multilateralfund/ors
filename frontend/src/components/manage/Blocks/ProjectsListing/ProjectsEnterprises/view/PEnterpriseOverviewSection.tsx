@@ -2,46 +2,65 @@ import {
   detailItem,
   numberDetailItem,
 } from '../../ProjectView/ViewHelperComponents'
-import { EnterpriseType } from '../../interfaces'
+import { EnterpriseOverview } from '../../interfaces'
 import { tableColumns } from '../../constants'
+import { getEntityById } from '../utils'
 import { useStore } from '@ors/store'
 
-import { find } from 'lodash'
+import { toLower, map } from 'lodash'
 
 const PEnterpriseOverviewSection = ({
+  type,
   enterprise,
 }: {
-  enterprise: EnterpriseType
+  type: string
+  enterprise: EnterpriseOverview
 }) => {
-  const { enterprise: enterpriseObj } = enterprise
-
   const commonSlice = useStore((state) => state.common)
   const countries = commonSlice.countries.data
-  const country = find(
-    countries,
-    (country) => country.id === enterpriseObj.country,
-  )?.name
+  const agencies = commonSlice.agencies.data
+
+  const country = getEntityById(countries, enterprise.country)?.name
+  const crtAgencies =
+    enterprise.agencies.length > 0
+      ? map(
+          enterprise.agencies,
+          (agencyId) => getEntityById(agencies, agencyId)?.name,
+        ).join(', ')
+      : '-'
+
+  const formatFieldName = (fieldName: string) =>
+    type === 'enterprise' ? fieldName : 'Enterprise ' + toLower(fieldName)
 
   return (
     <>
       <div className="flex w-full flex-col gap-4">
-        {detailItem(tableColumns.name, enterpriseObj.name)}
-        {detailItem(tableColumns.country, country ?? '')}
-        {detailItem(tableColumns.location, enterpriseObj.location)}
-        {detailItem(tableColumns.application, enterpriseObj.application)}
+        {detailItem(formatFieldName(tableColumns.name), enterprise.name)}
+        {detailItem(formatFieldName(tableColumns.agencies), crtAgencies)}
+        {detailItem(formatFieldName(tableColumns.country), country ?? '-')}
+        {detailItem(
+          formatFieldName(tableColumns.location),
+          enterprise.location,
+        )}
+        {detailItem(
+          formatFieldName(tableColumns.application),
+          enterprise.application,
+        )}
       </div>
-
       <div className="mt-4 flex w-full flex-col gap-4">
         <div className="flex flex-wrap gap-x-7 gap-y-5">
           {numberDetailItem(
             tableColumns.local_ownership + ' (%)',
-            enterpriseObj.local_ownership as string,
+            enterprise.local_ownership as string,
           )}
           {numberDetailItem(
             tableColumns.export_to_non_a5 + ' (%)',
-            enterpriseObj.export_to_non_a5 as string,
+            enterprise.export_to_non_a5 as string,
           )}
         </div>
+      </div>
+      <div className="mt-10 max-w-[90%]">
+        {detailItem(tableColumns.remarks, enterprise.remarks, 'self-start')}
       </div>
     </>
   )

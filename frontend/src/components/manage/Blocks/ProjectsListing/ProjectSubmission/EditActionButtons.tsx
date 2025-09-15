@@ -6,8 +6,16 @@ import SubmitTranchesWarningModal from './SubmitTranchesWarningModal'
 import SubmitProjectModal from './SubmitProjectModal'
 import ChangeStatusModal from './ChangeStatusModal'
 import AddComponentModal from './AddComponentModal'
-import { IncreaseVersionButton } from '../HelperComponents'
-import { enabledButtonClassname } from '../constants'
+import {
+  DropDownButtonProps,
+  DropDownMenuProps,
+  IncreaseVersionButton,
+} from '../HelperComponents'
+import {
+  dropDownClassName,
+  dropdownItemClassname,
+  enabledButtonClassname,
+} from '../constants'
 import {
   checkInvalidValue,
   formatApprovalData,
@@ -33,9 +41,8 @@ import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { api, uploadFiles } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
-import { Button, ButtonProps, Divider, MenuProps } from '@mui/material'
-import { MdKeyboardArrowDown } from 'react-icons/md'
 import { find, lowerCase, map, pick } from 'lodash'
+import { Button, Divider } from '@mui/material'
 import { enqueueSnackbar } from 'notistack'
 import { useLocation } from 'wouter'
 import cx from 'classnames'
@@ -73,6 +80,7 @@ const EditActionButtons = ({
 
   const {
     canUpdateProjects,
+    canUpdateV3Projects,
     canSubmitProjects,
     canRecommendProjects,
     canApproveProjects,
@@ -91,12 +99,15 @@ const EditActionButtons = ({
   const [isSendToDraftModalOpen, setIsSendToDraftModalOpen] = useState(false)
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false)
 
-  const { id, submission_status } = project
+  const { id, submission_status, version } = project
   const {
     crossCuttingFields,
     projectSpecificFields,
     approvalFields: approvalData,
   } = projectData
+
+  const canEditProject =
+    (version < 3 && canUpdateProjects) || (version === 3 && canUpdateV3Projects)
 
   const specificFieldsAvailable = map(specificFields, 'write_field_name')
   const odsOdpData =
@@ -166,7 +177,7 @@ const EditActionButtons = ({
     hasSectionErrors(headerErrors) ||
     hasSectionErrors(substanceErrors) ||
     hasOdsOdpErrors ||
-    (getHasNoFiles(id, files, projectFiles) && (project?.version ?? 0) < 3)
+    (getHasNoFiles(id, files, projectFiles) && (version ?? 0) < 3)
 
   const hasErrors =
     commonErrors ||
@@ -177,7 +188,7 @@ const EditActionButtons = ({
   const disableSubmit = !specificFieldsLoaded || isSubmitDisabled || hasErrors
   const disableUpdate =
     !specificFieldsLoaded ||
-    (project.version === 3
+    (version === 3
       ? isAfterApproval
         ? disableSubmit ||
           hasSectionErrors(approvalErrors) ||
@@ -424,26 +435,10 @@ const EditActionButtons = ({
     }
   }
 
-  const dropDownClassName =
-    'bg-primary px-4 py-2 text-white shadow-none hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow'
-  const dropdownItemClassname = 'bg-transparent font-medium normal-case'
-
-  const DropDownButtonProps: ButtonProps = {
-    endIcon: <MdKeyboardArrowDown />,
-    size: 'large',
-    variant: 'contained',
-  }
-  const DropDownMenuProps: Omit<MenuProps, 'open'> = {
-    PaperProps: {
-      className: 'mt-1 border border-solid border-black rounded-lg',
-    },
-    transitionDuration: 0,
-  }
-
   return (
     <div className="container flex w-full flex-wrap gap-x-3 gap-y-2 px-0">
       <CancelLinkButton title="Close" href={`/projects-listing/${id}`} />
-      {canUpdateProjects && (
+      {canEditProject && (
         <Button
           className={cx('px-4 py-2 shadow-none', {
             [enabledButtonClassname]: !disableUpdate,
@@ -458,7 +453,7 @@ const EditActionButtons = ({
           Update project
         </Button>
       )}
-      {canUpdateProjects && (isDraft || isSubmitted || isRecommended) && (
+      {canEditProject && (isDraft || isSubmitted || isRecommended) && (
         <Button
           className={cx('px-4 py-2 shadow-none', enabledButtonClassname)}
           size="large"

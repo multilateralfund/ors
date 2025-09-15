@@ -1,17 +1,12 @@
-import { useParams } from 'wouter'
 import { displaySelectedOption } from '../../HelperComponents'
 import { formatEntity, getAreFiltersApplied } from '../../utils'
 
 import { Typography } from '@mui/material'
+import { useParams } from 'wouter'
 import { map } from 'lodash'
 
-export const initialParams = {
-  project_id: [],
-  country_id: [],
-  status: [],
-}
-
 const PEnterprisesFiltersSelectedOpts = ({
+  type,
   enterpriseStatuses,
   commonSlice,
   initialFilters,
@@ -22,12 +17,26 @@ const PEnterprisesFiltersSelectedOpts = ({
   const { project_id } = useParams<Record<string, string>>()
 
   const areFiltersApplied = getAreFiltersApplied(filters)
+  const hasProjectsFilter = !project_id && type === 'project-enterprises'
+
+  const initialParams = hasProjectsFilter
+    ? {
+        project_id: [],
+        country_id: [],
+        status: [],
+      }
+    : {
+        country_id: [],
+        status: [],
+      }
 
   const filterSelectedOpts = [
     {
-      entities: !project_id ? formatEntity(filters?.['project_id'] ?? []) : [],
+      entities: hasProjectsFilter
+        ? formatEntity(filters?.['project_id'] ?? [])
+        : [],
       entityIdentifier: 'project_id',
-      isAvailable: !project_id,
+      isAvailable: hasProjectsFilter,
     },
     {
       entities: formatEntity(commonSlice.countries.data),
@@ -43,7 +52,7 @@ const PEnterprisesFiltersSelectedOpts = ({
 
   return (
     areFiltersApplied && (
-      <div className="mt-[6px] flex flex-wrap gap-2">
+      <div className="mt-1.5 flex flex-wrap gap-2">
         {map(
           filterSelectedOpts,
           (selectedOpt) =>

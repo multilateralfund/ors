@@ -1,5 +1,5 @@
 import ViewTable from '@ors/components/manage/Form/ViewTable'
-import { EnterpriseType } from '../../interfaces'
+import { PEnterpriseType } from '../../interfaces'
 import { formatNumberColumns } from '../../utils'
 import { tableColumns } from '../../constants'
 import { ApiSubstance } from '@ors/types/api_substances'
@@ -14,10 +14,10 @@ import {
   ValueGetterParams,
 } from 'ag-grid-community'
 
-const PEnterprisesSubstanceDetailsSection = ({
+const PEnterpriseSubstanceDetailsSection = ({
   enterprise,
 }: {
-  enterprise: EnterpriseType
+  enterprise: PEnterpriseType
 }) => {
   const { substances, blends } = useStore((state) => state.cp_reports)
 
@@ -112,4 +112,4 @@ const PEnterprisesSubstanceDetailsSection = ({
   )
 }
 
-export default PEnterprisesSubstanceDetailsSection
+export default PEnterpriseSubstanceDetailsSection

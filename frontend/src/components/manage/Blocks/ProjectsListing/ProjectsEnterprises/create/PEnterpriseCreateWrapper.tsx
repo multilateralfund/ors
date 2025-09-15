@@ -8,33 +8,38 @@ import PEnterpriseHeader from './PEnterpriseHeader.tsx'
 import PEnterpriseCreate from './PEnterpriseCreate.tsx'
 import ProjectFormFooter from '../../ProjectFormFooter.tsx'
 import { useGetProject } from '../../hooks/useGetProject.ts'
-import { EnterpriseData } from '../../interfaces.ts'
+import { PEnterpriseData } from '../../interfaces.ts'
 import {
-  initialFundingDetailsFields,
   initialOverviewFields,
-  initialRemarksFields,
+  initialFundingDetailsFields,
 } from '../../constants.ts'
+import { useStore } from '@ors/store.tsx'
 
 import { Redirect, useParams } from 'wouter'
 
-const PEnterprisesCreateWrapper = () => {
-  const { canEditEnterprise, canViewProjects } = useContext(PermissionsContext)
+const PEnterpriseCreateWrapper = () => {
+  const { canViewProjects, canEditProjectEnterprise } =
+    useContext(PermissionsContext)
 
   const { project_id } = useParams<Record<string, string>>()
   const project = project_id ? useGetProject(project_id) : undefined
-  const { data, error, loading } = project ?? {}
+  const { data, loading, error } = project ?? {}
 
-  const [enterpriseData, setEnterpriseData] = useState<EnterpriseData>({
-    overview: initialOverviewFields,
+  const userSlice = useStore((state) => state.user)
+  const { agency_id } = userSlice.data
+
+  const [enterpriseData, setEnterpriseData] = useState<PEnterpriseData>({
+    overview: {
+      ...initialOverviewFields,
+      agencies: agency_id ? [agency_id] : [],
+    },
     substance_details: [],
     funding_details: initialFundingDetailsFields,
-    remarks: initialRemarksFields,
   })
-
   const [enterpriseId, setEnterpriseId] = useState<number | null>(null)
   const [hasSubmitted, setHasSubmitted] = useState<boolean>(false)
 
-  const [errors, setErrors] = useState<{ [key: string]: [] }>({})
+  const [errors, setErrors] = useState<{ [key: string]: string[] }>({})
   const [otherErrors, setOtherErrors] = useState<string>('')
   const nonFieldsErrors = errors?.['non_field_errors'] || []
 
@@ -49,15 +54,17 @@ const PEnterprisesCreateWrapper = () => {
   }, [data])
 
   if (
-    !project_id ||
     !canViewProjects ||
+    !project_id ||
     (project && (error || (data && data.submission_status !== 'Approved')))
   ) {
     return <Redirect to="/projects-listing/listing" />
   }
 
-  if (!canEditEnterprise) {
-    return <Redirect to={`/projects-listing/enterprises/${project_id}`} />
+  if (!canEditProjectEnterprise) {
+    return (
+      <Redirect to={`/projects-listing/projects-enterprises/${project_id}`} />
+    )
   }
 
   return (
@@ -73,25 +80,25 @@ const PEnterprisesCreateWrapper = () => {
             {...{
               enterpriseData,
               setEnterpriseId,
+              setHasSubmitted,
               setErrors,
               setOtherErrors,
-              setHasSubmitted,
             }}
           />
           <PEnterpriseCreate
+            countryId={data.country_id}
             {...{
               enterpriseData,
               setEnterpriseData,
-              errors,
               hasSubmitted,
+              errors,
             }}
-            countryId={data.country_id}
           />
           <ProjectFormFooter
             id={enterpriseId}
-            href={`/projects-listing/enterprises/${project_id}/view/${enterpriseId}`}
-            successMessage="Enterprise was created successfully."
-            successRedirectMessage="View enterprise."
+            href={`/projects-listing/projects-enterprises/${project_id}/view/${enterpriseId}`}
+            successMessage="Project enterprise was created successfully."
+            successRedirectMessage="View project enterprise."
             {...{ nonFieldsErrors, otherErrors }}
           />
         </>
@@ -100,4 +107,4 @@ const PEnterprisesCreateWrapper = () => {
   )
 }
 
-export default PEnterprisesCreateWrapper
+export default PEnterpriseCreateWrapper

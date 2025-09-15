@@ -5,20 +5,27 @@ import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import PEnterpriseEditActionButtons from '../edit/PEnterpriseEditActionButtons'
 import PEnterpriseCreateActionButtons from './PEnterpriseCreateActionButtons'
 import { RedirectBackButton, PageTitle } from '../../HelperComponents'
-import { EnterpriseHeader, EnterpriseType } from '../../interfaces'
+import { EnterpriseStatus } from '../FormHelperComponents'
+import {
+  PEnterpriseData,
+  EnterpriseHeaderProps,
+  PEnterpriseType,
+} from '../../interfaces'
 
 import { CircularProgress } from '@mui/material'
+import cx from 'classnames'
 
 const PEnterpriseHeader = ({
   mode,
   enterprise,
   ...rest
-}: EnterpriseHeader & {
+}: EnterpriseHeaderProps & {
   mode: string
-  enterprise?: EnterpriseType
+  enterpriseData: PEnterpriseData
+  enterprise?: PEnterpriseType
 }) => {
-  const [enterpriseTitle, setEnterpriseTitle] = useState(
-    enterprise?.enterprise?.name,
+  const [enterpriseName, setEnterpriseName] = useState(
+    enterprise?.enterprise?.name ?? '',
   )
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
@@ -27,25 +34,30 @@ const PEnterpriseHeader = ({
       <div className="align-center flex flex-wrap justify-between gap-x-4 gap-y-4">
         <div className="flex flex-col">
           <RedirectBackButton />
-          <div className="flex flex-wrap gap-2 sm:flex-nowrap">
-            <PageHeading>
-              {mode === 'edit' ? (
-                <PageTitle
-                  pageTitle="Edit enterprise"
-                  projectTitle={enterpriseTitle ?? ''}
-                />
-              ) : (
-                'New enterprise submission'
-              )}
-            </PageHeading>
-          </div>
+          <PageHeading>
+            {mode === 'edit' ? (
+              <PageTitle
+                pageTitle="Edit project enterprise"
+                projectTitle={enterpriseName}
+              />
+            ) : (
+              'New project enterprise submission'
+            )}
+          </PageHeading>
+          {mode === 'edit' && (
+            <EnterpriseStatus status={enterprise?.status ?? ''} />
+          )}
         </div>
-        <div className="ml-auto mt-auto flex items-center gap-2.5">
+        <div
+          className={cx('ml-auto flex items-center gap-2.5', {
+            'mt-auto': mode === 'add',
+          })}
+        >
           {mode === 'add' ? (
             <PEnterpriseCreateActionButtons {...{ setIsLoading, ...rest }} />
           ) : (
             <PEnterpriseEditActionButtons
-              {...{ setIsLoading, setEnterpriseTitle, ...rest }}
+              {...{ enterprise, setIsLoading, setEnterpriseName, ...rest }}
             />
           )}
           {isLoading && (

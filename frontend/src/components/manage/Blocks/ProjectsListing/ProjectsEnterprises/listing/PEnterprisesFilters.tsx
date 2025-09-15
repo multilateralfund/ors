@@ -10,6 +10,7 @@ import { useParams } from 'wouter'
 import { union } from 'lodash'
 
 const PEnterprisesFilters = ({
+  type,
   enterpriseStatuses,
   commonSlice,
   filters,
@@ -35,7 +36,7 @@ const PEnterprisesFilters = ({
 
   return (
     <div className="flex h-full flex-wrap items-center gap-x-2 gap-y-2 border-0 border-solid">
-      {!project_id && (
+      {!project_id && type === 'project-enterprises' && (
         <PEnterpriseProjectsFilter
           Input={{ placeholder: 'Project' }}
           filters={filters}

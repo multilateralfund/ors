@@ -1,42 +1,76 @@
 import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
 import { defaultPropsSimpleField, disabledClassName } from '../constants'
-import { EnterpriseData, EnterpriseOverview } from '../interfaces'
+import { EnterpriseOverview } from '../interfaces'
 
-import { keys } from 'lodash'
+import { find, get, isObject, keys } from 'lodash'
 import cx from 'classnames'
 
-export const handleChangeTextValues = (
-  sectionIdentifier: keyof EnterpriseData,
+export const handleChangeSelectValues = <T>(
   field: string,
-  setEnterpriseData: Dispatch<SetStateAction<EnterpriseData>>,
-  event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  setEnterpriseData: Dispatch<SetStateAction<T>>,
+  value: any,
+  isMultiple: boolean,
+  sectionIdentifier?: keyof T | null,
 ) => {
-  setEnterpriseData((prevData) => ({
-    ...prevData,
-    [sectionIdentifier]: {
-      ...prevData[sectionIdentifier],
-      [field]: event.target.value,
-    },
+  const formattedValue = isMultiple
+    ? value.map((val: any) => val.id ?? [])
+    : (value?.id ?? null)
+
+  setEnterpriseData((prev) => ({
+    ...prev,
+    ...(sectionIdentifier
+      ? {
+          [sectionIdentifier]: {
+            ...prev[sectionIdentifier],
+            [field]: formattedValue,
+          },
+        }
+      : {
+          [field]: formattedValue,
+        }),
   }))
 }
 
-export const handleChangeNumericValues = (
-  sectionIdentifier: keyof EnterpriseData,
+export const handleChangeTextValues = <T>(
   field: string,
-  setEnterpriseData: Dispatch<SetStateAction<EnterpriseData>>,
+  setEnterpriseData: Dispatch<SetStateAction<T>>,
+  event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  sectionIdentifier?: keyof T | null,
+) => {
+  setEnterpriseData((prev) => ({
+    ...prev,
+    ...(sectionIdentifier
+      ? {
+          [sectionIdentifier]: {
+            ...prev[sectionIdentifier],
+            [field]: event.target.value,
+          },
+        }
+      : { [field]: event.target.value }),
+  }))
+}
+
+export const handleChangeNumericValues = <T>(
+  field: string,
+  setEnterpriseData: Dispatch<SetStateAction<T>>,
   event: ChangeEvent<HTMLInputElement>,
+  sectionIdentifier?: keyof T | null,
 ) => {
   const initialValue = event.target.value
   const value = initialValue === '' ? null : initialValue
 
   if (!isNaN(Number(value))) {
-    setEnterpriseData((prevData) => ({
-      ...prevData,
-      [sectionIdentifier]: {
-        ...prevData[sectionIdentifier],
-        [field]: value,
-      },
+    setEnterpriseData((prev) => ({
+      ...prev,
+      ...(sectionIdentifier
+        ? {
+            [sectionIdentifier]: {
+              ...prev[sectionIdentifier],
+              [field]: value,
+            },
+          }
+        : { [field]: value }),
     }))
   } else {
     event.preventDefault()
@@ -66,11 +100,12 @@ export const getFieldDefaultProps = (
   }
 }
 
-export const getEnterprisesErrors = (
+export const getFieldErrors = (
   data: any,
-  errors: { [key: string]: [] },
+  errors: { [key: string]: string[] },
+  isOnlyEditValidation: boolean = false,
 ) => {
-  const requiredFields = ['name']
+  const requiredFields = isOnlyEditValidation ? ['id', 'name'] : ['name']
 
   const fields = keys(data)
   const filteredErrors = Object.fromEntries(
@@ -90,3 +125,16 @@ export const getEnterprisesErrors = (
     ...filteredErrors,
   }
 }
+
+export const getOptionLabel = (
+  data: any,
+  option: any,
+  displayedField: string = 'name',
+  identifierField: string = 'id',
+) =>
+  isObject(option)
+    ? get(option, [displayedField])
+    : find(data, { [identifierField]: option })?.[displayedField] || ''
+
+export const getEntityById = (data: any, id: number | null) =>
+  find(data, (entry) => entry.id === id)

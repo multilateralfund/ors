@@ -1,34 +1,44 @@
 import { ChangeEvent } from 'react'
 
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
-import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import Field from '@ors/components/manage/Form/Field'
+import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
+import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { getIsInputDisabled } from '../../ProjectsCreate/SpecificFieldsHelpers'
 import { SubmitButton } from '../../HelperComponents'
-import { EnterpriseDataProps, OptionsType } from '../../interfaces'
+import {
+  EnterpriseSubstanceDetails,
+  PEnterpriseDataProps,
+} from '../../interfaces'
 import {
   defaultProps,
   defaultPropsSimpleField,
+  disabledClassName,
   initialSubstanceDetailsFields,
   tableColumns,
 } from '../../constants'
 import { useStore } from '@ors/store'
 
-import { find, get, isObject, map, sortBy, split } from 'lodash'
+import { map, sortBy, split } from 'lodash'
 import { IoTrash } from 'react-icons/io5'
 import { Divider } from '@mui/material'
 import cx from 'classnames'
 
-const PEnterprisesSubstanceDetailsSection = ({
+const PEnterpriseSubstanceDetailsSection = ({
   enterpriseData,
   setEnterpriseData,
+  enterprise,
   hasSubmitted,
   odsOdpErrors,
-}: EnterpriseDataProps & {
-  odsOdpErrors: { [key: string]: [] }[]
+}: PEnterpriseDataProps & {
+  odsOdpErrors: { [key: string]: string[] }[]
 }) => {
   const sectionId = 'substance_details'
   const sectionData = enterpriseData[sectionId] || []
+
+  const fields = ['phase_out_mt', 'ods_replacement', 'ods_replacement_phase_in']
+
+  const isDisabled = !!enterprise && enterprise.status !== 'Pending Approval'
 
   const { substances, blends } = useStore((state) => state.cp_reports)
   const substancesOptions = map(
@@ -140,16 +150,22 @@ const PEnterprisesSubstanceDetailsSection = ({
   const getErrors = (field: string, index: number) =>
     getIsInputDisabled(hasSubmitted, odsOdpErrors, false, field, index)
 
-  const getFieldDefaultProps = (field: string, index: number) => {
+  const getFieldDefaultProps = (
+    field: string,
+    index: number,
+    isFieldDisabled: boolean,
+  ) => {
     return {
       ...{
         ...defaultPropsSimpleField,
         className: cx(defaultPropsSimpleField.className, '!m-0 h-10 !py-1', {
           'border-red-500': getErrors(field, index),
+          [disabledClassName]: isFieldDisabled,
         }),
       },
     }
   }
+
   return (
     <>
       <div className="flex flex-col flex-wrap gap-x-20 gap-y-10">
@@ -162,6 +178,7 @@ const PEnterprisesSubstanceDetailsSection = ({
                   <Field
                     widget="autocomplete"
                     options={options}
+                    disabled={isDisabled}
                     value={
                       substance.ods_substance
                         ? `substance_${substance.ods_substance}`
@@ -172,12 +189,8 @@ const PEnterprisesSubstanceDetailsSection = ({
                     onChange={(_, value) =>
                       handleChangeDropdownValues(value, index)
                     }
-                    getOptionLabel={(option) =>
-                      (isObject(option)
-                        ? get(option, 'name')
-                        : (find(options, { id: option }) as OptionsType)?.[
-                            'name'
-                          ]) || ''
+                    getOptionLabel={(option: any) =>
+                      getOptionLabel(options, option)
                     }
                     Input={{
                       error:
@@ -187,54 +200,36 @@ const PEnterprisesSubstanceDetailsSection = ({
                     {...defaultProps}
                   />
                 </div>
-                <div>
-                  <Label>{tableColumns.phase_out_mt}</Label>
-                  <SimpleInput
-                    id="phase_out_mt"
-                    value={substance.phase_out_mt ?? ''}
-                    onChange={(event) =>
-                      handleChangeNumericValues(event, 'phase_out_mt', index)
-                    }
-                    type="text"
-                    {...getFieldDefaultProps('phase_out_mt', index)}
-                  />
-                </div>
-                <div>
-                  <Label>{tableColumns.ods_replacement}</Label>
-                  <SimpleInput
-                    id="ods_replacement"
-                    value={substance.ods_replacement}
-                    onChange={(event) =>
-                      handleChangeTextValues(event, 'ods_replacement', index)
-                    }
-                    type="text"
-                    {...getFieldDefaultProps('ods_replacement', index)}
-                  />
-                </div>
-                <div>
-                  <Label>{tableColumns.ods_replacement_phase_in}</Label>
-                  <SimpleInput
-                    id="ods_replacement_phase_in"
-                    value={substance.ods_replacement_phase_in ?? ''}
-                    onChange={(event) =>
-                      handleChangeNumericValues(
-                        event,
-                        'ods_replacement_phase_in',
-                        index,
-                      )
-                    }
-                    type="text"
-                    {...getFieldDefaultProps('ods_replacement_phase_in', index)}
-                  />
-                </div>
+                {map(fields, (field) => (
+                  <div>
+                    <Label>{tableColumns[field]}</Label>
+                    <SimpleInput
+                      id={field}
+                      disabled={isDisabled}
+                      value={
+                        substance[field as keyof EnterpriseSubstanceDetails] ??
+                        ''
+                      }
+                      onChange={(event) =>
+                        field === 'ods_replacement'
+                          ? handleChangeTextValues(event, field, index)
+                          : handleChangeNumericValues(event, field, index)
+                      }
+                      type="text"
+                      {...getFieldDefaultProps(field, index, isDisabled)}
+                    />
+                  </div>
+                ))}
               </>
-              <IoTrash
-                className="mt-12 min-h-[16px] min-w-[16px] cursor-pointer fill-gray-400"
-                size={16}
-                onClick={() => {
-                  onRemoveSubstance(index)
-                }}
-              />
+              {!isDisabled && (
+                <IoTrash
+                  className="mt-12 min-h-[16px] min-w-[16px] cursor-pointer fill-gray-400"
+                  size={16}
+                  onClick={() => {
+                    onRemoveSubstance(index)
+                  }}
+                />
+              )}
             </div>
             {index !== sectionData.length - 1 && <Divider />}
           </>
@@ -242,6 +237,7 @@ const PEnterprisesSubstanceDetailsSection = ({
       </div>
       <SubmitButton
         title="Add substance"
+        isDisabled={isDisabled}
         onSubmit={onAddSubstance}
         className={cx('h-8', { 'mt-6': sectionData.length > 0 })}
       />
@@ -249,4 +245,4 @@ const PEnterprisesSubstanceDetailsSection = ({
   )
 }
 
-export default PEnterprisesSubstanceDetailsSection
+export default PEnterpriseSubstanceDetailsSection
