@@ -58,7 +58,7 @@ export const EnterpriseTextField = <T,>({
       type="text"
       {...getFieldDefaultProps(hasSubmitted, errors[field], isDisabled)}
       containerClassName={
-        defaultPropsSimpleField.containerClassName + ' !w-[35rem]'
+        defaultPropsSimpleField.containerClassName + ' w-full max-w-[35rem]'
       }
     />
   </div>
@@ -143,7 +143,7 @@ export const EnterpriseSelectField = <T,>({
         }}
         {...defaultProps}
         {...(isMultiple
-          ? { FieldProps: { className: 'mb-0 w-[35rem] BPListUpload' } }
+          ? { FieldProps: { className: 'mb-0 max-w-[35rem] BPListUpload' } }
           : {})}
       />
     </div>
@@ -172,7 +172,7 @@ export const EnterpriseTextAreaField = <T,>({
           sectionIdentifier,
         )
       }
-      className={cx(textAreaClassname + ' !min-w-[45rem]', {
+      className={cx(textAreaClassname + ' max-w-[45rem]', {
         'border-red-500': getIsInputInvalid(hasSubmitted, errors[field]),
       })}
       minRows={5}

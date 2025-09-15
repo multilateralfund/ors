@@ -196,7 +196,7 @@ const ProjectCrossCuttingFields = ({
                   )
                 }
                 disabled={!canEditField(editableFields, 'description')}
-                className={cx(textAreaClassname + ' !min-w-[64rem]', {
+                className={cx(textAreaClassname + ' max-w-[64rem]', {
                   'border-red-500': getIsInputDisabled('description'),
                 })}
                 minRows={7}

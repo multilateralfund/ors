@@ -40,11 +40,19 @@ type CustomButtonProps = {
 type NavigationButtonProps = {
   title: string
   href: string
+  className?: string
 }
 
-export const CreateButton = ({ title, href }: NavigationButtonProps) => (
+export const CreateButton = ({
+  title,
+  href,
+  className,
+}: NavigationButtonProps) => (
   <CustomLink
-    className="mb-4 h-10 min-w-[6.25rem] text-nowrap px-4 py-2 text-lg uppercase"
+    className={cx(
+      'mb-4 h-10 min-w-[6.25rem] text-nowrap px-4 py-2 text-lg uppercase',
+      className,
+    )}
     href={href}
     color="secondary"
     variant="contained"
@@ -119,17 +127,19 @@ export const PageTitle = ({
   pageTitle,
   projectTitle,
   project,
+  className,
 }: {
   pageTitle: string
   projectTitle: string
   project?: ProjectTypeApi
+  className?: string
 }) => {
   const { submission_status = '', code, code_legacy } = project || {}
 
   return (
     <>
       <span className="font-medium text-[#4D4D4D]">{pageTitle}: </span>
-      <span>
+      <span className={className}>
         {projectTitle ?? 'New project'}
         {submission_status === 'Approved' ? `, ${code ?? code_legacy}` : ''}
       </span>

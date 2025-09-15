@@ -67,8 +67,7 @@ export const defaultPropsSimpleField = {
   containerClassName: '!h-fit w-40',
 }
 
-export const textFieldClassName =
-  ' min-h-[20px] w-full max-w-[320px] md:max-w-full md:w-[415px] md:min-w-[350px]'
+export const textFieldClassName = ' min-h-[20px] w-full'
 
 export const textAreaClassname =
   'rounded-lg border bg-white p-2 pb-10 shadow-none' + textFieldClassName

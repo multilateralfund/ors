@@ -59,6 +59,7 @@ export default function PEnterprisesWrapper() {
                 <PageTitle
                   pageTitle="Project enterprises of"
                   projectTitle={data.code ?? data.code_legacy}
+                  className="break-all"
                 />
               ) : (
                 <span className="font-medium text-[#4D4D4D]">

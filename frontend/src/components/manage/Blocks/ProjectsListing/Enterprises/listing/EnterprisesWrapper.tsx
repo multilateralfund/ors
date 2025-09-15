@@ -52,6 +52,7 @@ export default function EnterprisesWrapper() {
               <CreateButton
                 title="Create enterprise"
                 href="/projects-listing/enterprises/create"
+                className="!mb-1"
               />
             </div>
           )}
