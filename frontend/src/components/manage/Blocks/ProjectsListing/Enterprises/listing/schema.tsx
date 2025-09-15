@@ -69,7 +69,7 @@ const getColumnDefs = (type: string) => {
               maxWidth: 40,
               resizable: false,
               sortable: false,
-              cellClass: 'ag-text-center ag-cell-no-border-r',
+              cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-no-border-r',
               cellRenderer: (props: ICellRendererParams) => (
                 <div className="flex items-center p-2">
                   {canAccessEditPage && props.data.status !== 'Obsolete' && (
