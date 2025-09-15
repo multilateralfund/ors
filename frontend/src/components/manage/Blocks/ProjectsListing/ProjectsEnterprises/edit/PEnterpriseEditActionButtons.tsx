@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import EnterpriseCommonEditActionButtons from '../../Enterprises/edit/EnterpriseCommonEditActionButtons'
 import { handleErrors } from '../FormHelperComponents'
@@ -29,6 +31,8 @@ const PEnterpriseEditActionButtons = ({
 }) => {
   const { project_id, enterprise_id } = useParams<Record<string, string>>()
   const [_, setLocation] = useLocation()
+
+  const [isObsoleteWarningOpen, setIsObsoleteWarningOpen] = useState(false)
 
   const { status } = enterprise ?? {}
   const isPending = status === 'Pending Approval'
@@ -106,6 +110,8 @@ const PEnterpriseEditActionButtons = ({
         )
       }
     }
+
+    setIsObsoleteWarningOpen(false)
   }
 
   return (
@@ -120,6 +126,7 @@ const PEnterpriseEditActionButtons = ({
         disableButton={disableSubmit}
         handleEdit={editEnterprise}
         handleChangeStatus={changeEnterpriseStatus}
+        {...{ isObsoleteWarningOpen, setIsObsoleteWarningOpen }}
       />
     </div>
   )
