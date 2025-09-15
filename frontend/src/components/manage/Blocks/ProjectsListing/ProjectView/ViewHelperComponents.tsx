@@ -20,7 +20,7 @@ export const detailItem = (
   return (
     <span className={cx('flex items-center gap-2', containerClassName)}>
       <span className={cx(detailClassname, className)}>{fieldName}</span>
-      <h4 className={cx('m-0', fieldClassName)}>{fieldValue ?? '-'}</h4>
+      <h4 className={cx('m-0', fieldClassName)}>{fieldValue || '-'}</h4>
     </span>
   )
 }

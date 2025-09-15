@@ -141,6 +141,7 @@ const getColumnDefs = (type: string) => {
               headerName: 'Project',
               field: 'project_code',
               tooltipField: 'project_code',
+              sortable: false,
             },
           ]
         : []),

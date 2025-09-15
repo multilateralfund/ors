@@ -5,6 +5,7 @@ import { tableColumns } from '../../constants'
 import {
   PEnterpriseDataProps,
   EnterpriseFundingDetails,
+  PEnterpriseData,
 } from '../../interfaces'
 
 import { keys, map } from 'lodash'
@@ -12,11 +13,14 @@ import { keys, map } from 'lodash'
 const PEnterpriseFundingDetailsSection = ({
   enterpriseData,
   setEnterpriseData,
+  enterprise,
   hasSubmitted,
   errors = {},
 }: PEnterpriseDataProps) => {
   const sectionId = 'funding_details'
   const sectionData: EnterpriseFundingDetails = enterpriseData[sectionId]
+
+  const isDisabled = !!enterprise && enterprise.status !== 'Pending Approval'
 
   return (
     <div className="flex flex-wrap gap-x-20 gap-y-3">
@@ -25,17 +29,18 @@ const PEnterpriseFundingDetailsSection = ({
           <Label>{tableColumns[field]} (US $)</Label>
           <SimpleInput
             id={field}
+            disabled={isDisabled}
             value={sectionData[field as keyof EnterpriseFundingDetails] ?? ''}
             onChange={(event) =>
-              handleChangeNumericValues(
-                sectionId,
+              handleChangeNumericValues<PEnterpriseData>(
                 field,
                 setEnterpriseData,
                 event,
+                sectionId,
               )
             }
             type="text"
-            {...getFieldDefaultProps(hasSubmitted, errors[field])}
+            {...getFieldDefaultProps(hasSubmitted, errors[field], isDisabled)}
           />
         </div>
       ))}

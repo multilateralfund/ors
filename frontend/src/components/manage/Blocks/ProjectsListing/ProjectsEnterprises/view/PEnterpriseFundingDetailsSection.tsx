@@ -20,7 +20,9 @@ const PEnterpriseFundingDetailsSection = ({
     ({ phase_out_mt }) => Number(phase_out_mt) || 0,
   )
   const cost_effectiveness_approved =
-    (funds_approved ?? 0) / (totalPhaseOut * 1000)
+    !isNil(funds_approved) && totalPhaseOut
+      ? (funds_approved ?? 0) / (totalPhaseOut * 1000)
+      : null
   const formattedCostEffectivenessApproved = !isNaN(cost_effectiveness_approved)
     ? cost_effectiveness_approved
     : null

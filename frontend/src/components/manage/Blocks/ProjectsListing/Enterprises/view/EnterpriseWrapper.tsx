@@ -8,9 +8,9 @@ import CustomLink from '@ors/components/ui/Link/Link'
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
+import { EnterpriseStatus } from '../../ProjectsEnterprises/FormHelperComponents'
 import EnterpriseView from './EnterpriseView'
 import { RedirectBackButton, PageTitle } from '../../HelperComponents'
-import { EnterpriseStatus } from '../FormHelperComponents'
 import { useGetEnterprise } from '../../hooks/useGetEnterprise'
 
 import { Redirect, useParams } from 'wouter'
@@ -55,7 +55,7 @@ const EnterpriseWrapper = () => {
                   title="Cancel"
                   href="/projects-listing/enterprises"
                 />
-                {canEditEnterprise && (
+                {canEditEnterprise && data.status !== 'Obsolete' && (
                   <CustomLink
                     href={`/projects-listing/enterprises/${enterprise_id}/edit`}
                     className="border border-solid px-4 py-2 hover:border-primary"

@@ -4,8 +4,8 @@ import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import PEnterpriseEditActionButtons from '../edit/PEnterpriseEditActionButtons'
 import PEnterpriseCreateActionButtons from './PEnterpriseCreateActionButtons'
-import { EnterpriseStatus } from '../../Enterprises/FormHelperComponents'
 import { RedirectBackButton, PageTitle } from '../../HelperComponents'
+import { EnterpriseStatus } from '../FormHelperComponents'
 import {
   PEnterpriseData,
   EnterpriseHeaderProps,

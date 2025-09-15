@@ -1,5 +1,3 @@
-import { useEffect } from 'react'
-
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { EnterpriseType, PEnterpriseDataProps } from '../../interfaces'
@@ -18,24 +16,10 @@ const PEnterpriseSearch = ({
 }) => {
   const overviewData = enterpriseData.overview as EnterpriseType
   const enterpriseId = overviewData.id
-  const isDisabled = !!enterprise && enterprise.status !== 'Pending Approval'
 
   const customFiltering = createFilterOptions({
     stringify: (option: any) => `${option.name} ${option.code}`,
   })
-
-  useEffect(() => {
-    if (enterpriseId && !getEntityById(enterprises, enterpriseId)) {
-      setEnterpriseData((prevData) => ({
-        ...prevData,
-        overview: {
-          ...prevData.overview,
-          id: null,
-          status: '',
-        },
-      }))
-    }
-  }, [enterpriseId])
 
   const onEnterpriseChange = (value: any) => {
     const enterpriseId = value?.id ?? null
@@ -79,7 +63,7 @@ const PEnterpriseSearch = ({
         widget="autocomplete"
         options={enterprises}
         value={enterpriseId}
-        disabled={isDisabled}
+        disabled={!!enterprise}
         onChange={(_, value) => {
           onEnterpriseChange(value)
         }}

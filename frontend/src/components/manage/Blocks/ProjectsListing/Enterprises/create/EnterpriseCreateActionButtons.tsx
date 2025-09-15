@@ -2,7 +2,7 @@ import { useContext } from 'react'
 
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
-import { handleErrors } from '../FormHelperComponents'
+import { handleErrors } from '../../ProjectsEnterprises/FormHelperComponents'
 import { SubmitButton } from '../../HelperComponents'
 import { EnterpriseActionButtons, EnterpriseOverview } from '../../interfaces'
 import { api } from '@ors/helpers'

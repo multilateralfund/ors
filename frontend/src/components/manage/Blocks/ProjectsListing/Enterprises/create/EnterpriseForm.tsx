@@ -1,10 +1,10 @@
 import {
   EnterpriseTextField,
-  EnterpriseSelectField,
   EnterpriseNumberField,
+  EnterpriseSelectField,
   EnterpriseTextAreaField,
-} from '../FormHelperComponents'
-import { EnterpriseDataProps } from '../../interfaces'
+} from '../../ProjectsEnterprises/FormHelperComponents'
+import { EnterpriseDataProps, EnterpriseOverview } from '../../interfaces'
 import { useStore } from '@ors/store'
 
 import { map } from 'lodash'
@@ -26,24 +26,35 @@ const EnterpriseForm = (props: EnterpriseDataProps) => {
 
   return (
     <>
-      <EnterpriseTextField
+      <EnterpriseTextField<EnterpriseOverview>
         field={textFields[0]}
+        isEnterprise={true}
         {...{ isDisabled, ...props }}
       />
       {map(selectFields, (field) => (
-        <EnterpriseSelectField {...{ field, isDisabled, ...props }} />
+        <EnterpriseSelectField<EnterpriseOverview>
+          isEnterprise={true}
+          {...{ field, isDisabled, ...props }}
+        />
       ))}
       {map(textFields.slice(1), (field) => (
-        <EnterpriseTextField {...{ field, isDisabled, ...props }} />
+        <EnterpriseTextField<EnterpriseOverview>
+          isEnterprise={true}
+          {...{ field, isDisabled, ...props }}
+        />
       ))}
       <div className="mt-6 flex flex-wrap gap-x-20 gap-y-3">
         {map(numericFields, (field) => (
-          <EnterpriseNumberField {...{ field, isDisabled, ...props }} />
+          <EnterpriseNumberField<EnterpriseOverview>
+            isEnterprise={true}
+            {...{ field, isDisabled, ...props }}
+          />
         ))}
       </div>
       <div className="mt-6">
-        <EnterpriseTextAreaField
+        <EnterpriseTextAreaField<EnterpriseOverview>
           field="remarks"
+          isEnterprise={true}
           {...{ isDisabled, ...props }}
         />
       </div>

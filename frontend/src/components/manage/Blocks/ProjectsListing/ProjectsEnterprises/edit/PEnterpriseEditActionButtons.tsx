@@ -1,6 +1,6 @@
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import EnterpriseCommonEditActionButtons from '../../Enterprises/edit/EnterpriseCommonEditActionButtons'
-import { handleErrors } from '../../Enterprises/FormHelperComponents'
+import { handleErrors } from '../FormHelperComponents'
 import {
   EnterpriseActionButtons,
   EnterpriseType,

@@ -13,6 +13,7 @@ import {
   initialOverviewFields,
   initialFundingDetailsFields,
 } from '../../constants.ts'
+import { useStore } from '@ors/store.tsx'
 
 import { Redirect, useParams } from 'wouter'
 
@@ -24,8 +25,14 @@ const PEnterpriseCreateWrapper = () => {
   const project = project_id ? useGetProject(project_id) : undefined
   const { data, loading, error } = project ?? {}
 
+  const userSlice = useStore((state) => state.user)
+  const { agency_id } = userSlice.data
+
   const [enterpriseData, setEnterpriseData] = useState<PEnterpriseData>({
-    overview: initialOverviewFields,
+    overview: {
+      ...initialOverviewFields,
+      agencies: agency_id ? [agency_id] : [],
+    },
     substance_details: [],
     funding_details: initialFundingDetailsFields,
   })

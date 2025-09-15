@@ -18,7 +18,7 @@ const PEnterpriseOverviewSection = ({
 }) => {
   const commonSlice = useStore((state) => state.common)
   const countries = commonSlice.countries.data
-  const agencies = commonSlice.countries.data
+  const agencies = commonSlice.agencies.data
 
   const country = getEntityById(countries, enterprise.country)?.name
   const crtAgencies =

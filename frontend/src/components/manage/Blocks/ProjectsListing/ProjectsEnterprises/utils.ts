@@ -1,64 +1,76 @@
 import { ChangeEvent, Dispatch, SetStateAction } from 'react'
 
 import { defaultPropsSimpleField, disabledClassName } from '../constants'
-import {
-  PEnterpriseData,
-  EnterpriseOverview,
-  EnterpriseType,
-} from '../interfaces'
+import { EnterpriseOverview } from '../interfaces'
 
 import { find, get, isObject, keys } from 'lodash'
 import cx from 'classnames'
 
-export const handleChangeSelectValues = (
-  sectionIdentifier: keyof PEnterpriseData,
+export const handleChangeSelectValues = <T>(
   field: string,
-  setEnterpriseData: Dispatch<SetStateAction<PEnterpriseData>>,
+  setEnterpriseData: Dispatch<SetStateAction<T>>,
   value: any,
   isMultiple: boolean,
+  sectionIdentifier?: keyof T | null,
 ) => {
-  setEnterpriseData((prevData) => ({
-    ...prevData,
-    [sectionIdentifier]: {
-      ...prevData[sectionIdentifier],
-      [field]: isMultiple
-        ? value.map((val: any) => val.id ?? [])
-        : (value?.id ?? null),
-    },
+  const formattedValue = isMultiple
+    ? value.map((val: any) => val.id ?? [])
+    : (value?.id ?? null)
+
+  setEnterpriseData((prev) => ({
+    ...prev,
+    ...(sectionIdentifier
+      ? {
+          [sectionIdentifier]: {
+            ...prev[sectionIdentifier],
+            [field]: formattedValue,
+          },
+        }
+      : {
+          [field]: formattedValue,
+        }),
   }))
 }
 
-export const handleChangeTextValues = (
-  sectionIdentifier: keyof PEnterpriseData,
+export const handleChangeTextValues = <T>(
   field: string,
-  setEnterpriseData: Dispatch<SetStateAction<PEnterpriseData>>,
+  setEnterpriseData: Dispatch<SetStateAction<T>>,
   event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  sectionIdentifier?: keyof T | null,
 ) => {
-  setEnterpriseData((prevData) => ({
-    ...prevData,
-    [sectionIdentifier]: {
-      ...prevData[sectionIdentifier],
-      [field]: event.target.value,
-    },
+  setEnterpriseData((prev) => ({
+    ...prev,
+    ...(sectionIdentifier
+      ? {
+          [sectionIdentifier]: {
+            ...prev[sectionIdentifier],
+            [field]: event.target.value,
+          },
+        }
+      : { [field]: event.target.value }),
   }))
 }
 
-export const handleChangeNumericValues = (
-  sectionIdentifier: keyof PEnterpriseData,
+export const handleChangeNumericValues = <T>(
   field: string,
-  setEnterpriseData: Dispatch<SetStateAction<PEnterpriseData>>,
+  setEnterpriseData: Dispatch<SetStateAction<T>>,
   event: ChangeEvent<HTMLInputElement>,
+  sectionIdentifier?: keyof T | null,
 ) => {
   const initialValue = event.target.value
   const value = initialValue === '' ? null : initialValue
 
   if (!isNaN(Number(value))) {
-    setEnterpriseData((prevData) => ({
-      ...prevData,
-      [sectionIdentifier]: {
-        ...prevData[sectionIdentifier],
-        [field]: value,
-      },
+    setEnterpriseData((prev) => ({
+      ...prev,
+      ...(sectionIdentifier
+        ? {
+            [sectionIdentifier]: {
+              ...prev[sectionIdentifier],
+              [field]: value,
+            },
+          }
+        : { [field]: value }),
     }))
   } else {
     event.preventDefault()

@@ -25,7 +25,7 @@ const EnterpriseCommonEditActionButtons = ({
   handleEdit: () => Promise<boolean>
   handleChangeStatus: (status: string) => void
 }) => {
-  const isEnterprise = type === 'Enterprise'
+  const isEnterprise = type === 'enterprise'
 
   const {
     canEditEnterprise,

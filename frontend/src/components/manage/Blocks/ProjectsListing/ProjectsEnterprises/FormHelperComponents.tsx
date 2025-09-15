@@ -1,8 +1,10 @@
+import { Dispatch, SetStateAction } from 'react'
+
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import Field from '@ors/components/manage/Form/Field'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
-import { EnterpriseOverview, PEnterpriseDataProps } from '../interfaces'
+import { EnterpriseOverview, EnterprisesCommonProps } from '../interfaces'
 import {
   getFieldDefaultProps,
   getIsInputInvalid,
@@ -18,38 +20,41 @@ import {
 } from '../constants'
 
 import { TextareaAutosize } from '@mui/material'
+import { enqueueSnackbar } from 'notistack'
 import { filter, includes } from 'lodash'
 import cx from 'classnames'
 
-type PEnterpriseFieldsProps = PEnterpriseDataProps & {
+type PEnterpriseFieldsProps<T> = EnterprisesCommonProps & {
+  enterpriseData: EnterpriseOverview
+  setEnterpriseData: Dispatch<SetStateAction<T>>
   field: string
+  isEnterprise?: boolean
   isDisabled: boolean
 }
 
 const sectionIdentifier = 'overview'
 
-export const EnterpriseTextField = ({
+export const EnterpriseTextField = <T,>({
   enterpriseData,
   setEnterpriseData,
   field,
+  isEnterprise = false,
   isDisabled,
   hasSubmitted,
   errors,
-}: PEnterpriseFieldsProps) => (
+}: PEnterpriseFieldsProps<T>) => (
   <div>
     <Label>{tableColumns[field]}</Label>
     <SimpleInput
       id={field}
       disabled={isDisabled}
-      value={
-        enterpriseData[sectionIdentifier][field as keyof EnterpriseOverview]
-      }
+      value={enterpriseData[field as keyof EnterpriseOverview]}
       onChange={(event) =>
-        handleChangeTextValues(
-          sectionIdentifier,
+        handleChangeTextValues<T>(
           field,
           setEnterpriseData,
           event,
+          !isEnterprise ? (sectionIdentifier as keyof T) : null,
         )
       }
       type="text"
@@ -61,29 +66,27 @@ export const EnterpriseTextField = ({
   </div>
 )
 
-export const EnterpriseNumberField = ({
+export const EnterpriseNumberField = <T,>({
   enterpriseData,
   setEnterpriseData,
   field,
+  isEnterprise = false,
   isDisabled,
   hasSubmitted,
   errors,
-}: PEnterpriseFieldsProps) => (
+}: PEnterpriseFieldsProps<T>) => (
   <div>
     <Label>{tableColumns[field]} (%)</Label>
     <SimpleInput
       id={field}
       disabled={isDisabled}
-      value={
-        enterpriseData[sectionIdentifier][field as keyof EnterpriseOverview] ??
-        ''
-      }
+      value={enterpriseData[field as keyof EnterpriseOverview] ?? ''}
       onChange={(event) =>
-        handleChangeNumericValues(
-          sectionIdentifier,
+        handleChangeNumericValues<T>(
           field,
           setEnterpriseData,
           event,
+          !isEnterprise ? (sectionIdentifier as keyof T) : null,
         )
       }
       type="text"
@@ -92,15 +95,19 @@ export const EnterpriseNumberField = ({
   </div>
 )
 
-export const EnterpriseSelectField = ({
+export const EnterpriseSelectField = <T,>({
   enterpriseData,
   setEnterpriseData,
   field,
+  isEnterprise = false,
   isDisabled,
   hasSubmitted,
   errors,
-}: PEnterpriseDataProps & {
+}: EnterprisesCommonProps & {
+  enterpriseData: EnterpriseOverview
+  setEnterpriseData: Dispatch<SetStateAction<T>>
   field: { fieldName: string; options: any }
+  isEnterprise?: boolean
   isDisabled: boolean
 }) => {
   const { fieldName, options } = field
@@ -108,13 +115,11 @@ export const EnterpriseSelectField = ({
   const value = isMultiple
     ? filter(options, (option) =>
         includes(
-          enterpriseData[sectionIdentifier][
-            fieldName as keyof EnterpriseOverview
-          ] as number[],
+          enterpriseData[fieldName as keyof EnterpriseOverview] as number[],
           option.id,
         ),
       )
-    : enterpriseData[sectionIdentifier][fieldName as keyof EnterpriseOverview]
+    : enterpriseData[fieldName as keyof EnterpriseOverview]
 
   return (
     <div>
@@ -126,12 +131,12 @@ export const EnterpriseSelectField = ({
         options={options}
         value={value}
         onChange={(_, value) =>
-          handleChangeSelectValues(
-            sectionIdentifier,
+          handleChangeSelectValues<T>(
             fieldName,
             setEnterpriseData,
             value,
             isMultiple,
+            !isEnterprise ? (sectionIdentifier as keyof T) : null,
           )
         }
         getOptionLabel={(option) => getOptionLabel(options, option)}
@@ -147,29 +152,26 @@ export const EnterpriseSelectField = ({
   )
 }
 
-export const EnterpriseTextAreaField = ({
+export const EnterpriseTextAreaField = <T,>({
   enterpriseData,
   setEnterpriseData,
   field,
+  isEnterprise,
   isDisabled,
   hasSubmitted,
   errors,
-}: PEnterpriseFieldsProps) => (
+}: PEnterpriseFieldsProps<T>) => (
   <div>
     <Label>{tableColumns[field]}</Label>
     <TextareaAutosize
       disabled={isDisabled}
-      value={
-        enterpriseData[sectionIdentifier][
-          field as keyof EnterpriseOverview
-        ] as string
-      }
+      value={enterpriseData[field as keyof EnterpriseOverview] as string}
       onChange={(event) =>
-        handleChangeTextValues(
-          sectionIdentifier,
+        handleChangeTextValues<T>(
           field,
           setEnterpriseData,
           event,
+          !isEnterprise ? (sectionIdentifier as keyof T) : null,
         )
       }
       className={cx(textAreaClassname + ' !min-w-[45rem]', {
@@ -178,5 +180,36 @@ export const EnterpriseTextAreaField = ({
       minRows={5}
       tabIndex={-1}
     />
+  </div>
+)
+
+export const handleErrors = async (
+  error: any,
+  setEnterpriseId: (id: number | null) => void,
+  setErrors: (errors: { [key: string]: string[] }) => void,
+  setOtherErrors: (errors: string) => void,
+) => {
+  const errors = await error.json()
+
+  if (error.status === 400) {
+    setErrors(errors)
+
+    if (errors?.details) {
+      setOtherErrors(errors.details)
+    }
+  }
+
+  setEnterpriseId(null)
+  enqueueSnackbar(<>An error occurred. Please try again.</>, {
+    variant: 'error',
+  })
+}
+
+export const EnterpriseStatus = ({ status }: { status: string }) => (
+  <div className="mt-4 flex items-center gap-3">
+    <span>Status:</span>
+    <span className="rounded border border-solid border-[#002A3C] px-1 py-0.5 font-medium uppercase leading-tight text-[#002A3C]">
+      {status}
+    </span>
   </div>
 )

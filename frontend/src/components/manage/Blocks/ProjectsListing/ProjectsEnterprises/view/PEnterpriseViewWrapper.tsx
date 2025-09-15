@@ -9,8 +9,8 @@ import { CancelLinkButton } from '@ors/components/ui/Button/Button'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import PEnterpriseView from './PEnterpriseView'
-import { EnterpriseStatus } from '../../Enterprises/FormHelperComponents'
 import { RedirectBackButton, PageTitle } from '../../HelperComponents'
+import { EnterpriseStatus } from '../FormHelperComponents'
 import { useGetProjectEnterprise } from '../../hooks/useGetProjectEnterprise'
 import { useGetProject } from '../../hooks/useGetProject'
 
@@ -67,7 +67,7 @@ const PEnterpriseViewWrapper = () => {
                   title="Cancel"
                   href={`/projects-listing/projects-enterprises/${project_id}`}
                 />
-                {canEditProjectEnterprise && (
+                {canEditProjectEnterprise && data.status !== 'Obsolete' && (
                   <CustomLink
                     className="border border-solid border-secondary px-4 py-2 shadow-none hover:border-primary"
                     href={`/projects-listing/projects-enterprises/${project_id}/edit/${enterprise_id}`}

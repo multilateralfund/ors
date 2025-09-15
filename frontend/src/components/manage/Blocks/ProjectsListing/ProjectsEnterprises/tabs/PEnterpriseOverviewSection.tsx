@@ -4,7 +4,11 @@ import {
   EnterpriseTextAreaField,
   EnterpriseTextField,
 } from '../FormHelperComponents'
-import { EnterpriseType, PEnterpriseDataProps } from '../../interfaces'
+import {
+  EnterpriseType,
+  PEnterpriseData,
+  PEnterpriseDataProps,
+} from '../../interfaces'
 import { useStore } from '@ors/store'
 
 import { map } from 'lodash'
@@ -20,7 +24,8 @@ const PEnterpriseOverviewSection = ({
   const agencies = commonSlice.agencies.data
 
   const { enterprise, enterpriseData } = rest
-  const overviewStatus = (enterpriseData.overview as EnterpriseType).status
+  const { overview } = enterpriseData
+  const overviewStatus = (overview as EnterpriseType).status
   const isDisabled =
     (!!enterprise && enterprise.status !== 'Pending Approval') ||
     (!!overviewStatus && overviewStatus !== 'Pending Approval')
@@ -38,23 +43,38 @@ const PEnterpriseOverviewSection = ({
 
   return (
     <>
-      <EnterpriseTextField field={textFields[0]} {...{ isDisabled, ...rest }} />
+      <EnterpriseTextField<PEnterpriseData>
+        field={textFields[0]}
+        {...{ isDisabled, ...rest }}
+        enterpriseData={overview}
+      />
       {map(selectFields, (field) => (
-        <EnterpriseSelectField
+        <EnterpriseSelectField<PEnterpriseData>
           isDisabled={field.isDisabled}
           {...{ field, ...rest }}
+          enterpriseData={overview}
         />
       ))}
       {map(textFields.slice(1), (field) => (
-        <EnterpriseTextField {...{ field, isDisabled, ...rest }} />
+        <EnterpriseTextField<PEnterpriseData>
+          {...{ field, isDisabled, ...rest }}
+          enterpriseData={overview}
+        />
       ))}
       <div className="mt-6 flex flex-wrap gap-x-20 gap-y-3">
         {map(numericFields, (field) => (
-          <EnterpriseNumberField {...{ field, isDisabled, ...rest }} />
+          <EnterpriseNumberField<PEnterpriseData>
+            {...{ field, isDisabled, ...rest }}
+            enterpriseData={overview}
+          />
         ))}
       </div>
       <div className="mt-6">
-        <EnterpriseTextAreaField field="remarks" {...{ isDisabled, ...rest }} />
+        <EnterpriseTextAreaField<PEnterpriseData>
+          field="remarks"
+          {...{ isDisabled, ...rest }}
+          enterpriseData={overview}
+        />
       </div>
     </>
   )
