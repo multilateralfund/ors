@@ -168,7 +168,7 @@ class ProjectEnterpriseViewSet(
         filters.SearchFilter,
     ]
     ordering_fields = [
-        "code",
+        "enterprise__code",
         "enterprise__name",
         "enterprise__country__name",
         "enterprise__location",
