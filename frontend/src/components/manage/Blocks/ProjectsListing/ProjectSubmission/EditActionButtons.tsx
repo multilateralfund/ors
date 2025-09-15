@@ -235,32 +235,21 @@ const EditActionButtons = ({
     setOtherErrors('')
     setErrors({})
 
-    if (postExComUpdate) {
-      console.warn('Post ExCom update does not version files!!!')
-    }
-
     try {
+      // Validate files
       if (newFiles.length > 0) {
         await uploadFiles(
-          `/api/project/${id}/files/v2/`,
+          `/api/project/files/validate/`,
           newFiles,
           false,
           'list',
         )
       }
 
-      if (deletedFilesIds.length > 0) {
-        await api(`/api/project/${id}/files/v2`, {
-          data: {
-            file_ids: deletedFilesIds,
-          },
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          method: 'DELETE',
-        })
-      }
-
+      // Update project data, this may create a new version
+      // so it's important to run before uploading any files
+      // or other modifications.
+      // The Project ID is preserved.
       const data = formatSubmitData(
         projectData,
         setProjectData,
@@ -276,6 +265,29 @@ const EditActionButtons = ({
         data: data,
         method: 'PUT',
       })
+
+      // Upload files
+      if (newFiles.length > 0) {
+        await uploadFiles(
+          `/api/project/${id}/files/v2/`,
+          newFiles,
+          false,
+          'list',
+        )
+      }
+
+      // Delete files
+      if (deletedFilesIds.length > 0) {
+        await api(`/api/project/${id}/files/v2`, {
+          data: {
+            file_ids: deletedFilesIds,
+          },
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          method: 'DELETE',
+        })
+      }
 
       try {
         const res = await api(

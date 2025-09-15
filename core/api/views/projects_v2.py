@@ -158,6 +158,7 @@ class ProjectV2ViewSet(
             "export",
             "list_previous_tranches",
             "list_associated_projects",
+            "field_history",
         ]:
             return [HasProjectV2ViewAccess]
         if self.action in [
@@ -535,6 +536,15 @@ class ProjectV2ViewSet(
             send_project_recomended_notification.delay(project.id)
         return Response(
             ProjectDetailsV2Serializer(project).data,
+            status=status.HTTP_200_OK,
+        )
+
+    @action(methods=["GET"], detail=True)
+    def field_history(self, request, *args, **kwargs):
+        project = self.get_object()
+        serializer = ProjectDetailsV2Serializer(project)
+        return Response(
+            serializer.get_field_history(project),
             status=status.HTTP_200_OK,
         )
 

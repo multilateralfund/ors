@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from django.db import transaction
 from django.urls import reverse
 from rest_framework import serializers
@@ -542,7 +544,21 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
         serializer = ProjectHistorySerializer(queryset, many=True)
         return serializer.data
 
-    def get_versions(self, obj):
+    def get_field_history(self, obj):
+        result = defaultdict(list)
+        for version in self.get_versions(obj, with_field_data=True):
+            for field, value in version["field_data"].items():
+                result[field].append(
+                    {
+                        "version": version["version"],
+                        "value": value,
+                        "post_excom_meeting": version.get("post_excom_meeting", None),
+                    }
+                )
+
+        return result
+
+    def get_versions(self, obj, with_field_data=False):
         """
         Get the versions of the project
         """
@@ -558,8 +574,15 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
                     "final_version_id": obj.latest_project.id,
                     "created_by": getattr(obj.version_created_by, "username", None),
                     "date_created": obj.latest_project.date_created,
+                    "post_excom_meeting": getattr(
+                        obj.latest_project.post_excom_meeting, "number", None
+                    ),
                 }
             )
+            if with_field_data:
+                versions[-1]["field_data"] = ProjectDetailsV2Serializer(
+                    obj.latest_project
+                ).data
             latest_project = obj.latest_project
         else:
             versions.append(
@@ -570,14 +593,24 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
                     "final_version_id": obj.id,
                     "created_by": getattr(obj.version_created_by, "username", None),
                     "date_created": obj.date_created,
+                    "post_excom_meeting": getattr(
+                        obj.post_excom_meeting, "number", None
+                    ),
                 }
             )
+            if with_field_data:
+                versions[-1]["field_data"] = ProjectDetailsV2Serializer(obj).data
             latest_project = obj
         previous_versions = (
             Project.objects.really_all()
             .filter(latest_project__id=latest_project.id)
             .values(
-                "id", "title", "version", "version_created_by__username", "date_created"
+                "id",
+                "title",
+                "version",
+                "version_created_by__username",
+                "date_created",
+                "post_excom_meeting__number",
             )
             .order_by("-version")
         )
@@ -590,8 +623,22 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
                     "final_version_id": latest_project.id,
                     "created_by": version["version_created_by__username"],
                     "date_created": version["date_created"],
+                    "post_excom_meeting": version["post_excom_meeting__number"],
                 }
             )
+            if with_field_data:
+                version_obj = (
+                    Project.objects.really_all()
+                    .filter(
+                        latest_project__id=latest_project.id,
+                        id=version["id"],
+                        version=version["version"],
+                    )
+                    .get()
+                )
+                versions[-1]["field_data"] = ProjectDetailsV2Serializer(
+                    version_obj
+                ).data
         return versions
 
 
