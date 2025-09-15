@@ -128,16 +128,19 @@ const ProjectApprovalFields = ({
             : field.data_type
 
           return (
-            canViewField(viewableFields, field.write_field_name) &&
-            widgets[dataType]<ProjectData>(
-              projectData,
-              setProjectData,
-              field,
-              errors,
-              false,
-              hasSubmitted,
-              editableFields,
-              sectionIdentifier,
+            canViewField(viewableFields, field.write_field_name) && (
+              <span key={field.write_field_name}>
+                {widgets[dataType]<ProjectData>(
+                  projectData,
+                  setProjectData,
+                  field,
+                  errors,
+                  false,
+                  hasSubmitted,
+                  editableFields,
+                  sectionIdentifier,
+                )}
+              </span>
             )
           )
         })}

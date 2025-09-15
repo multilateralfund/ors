@@ -15,7 +15,7 @@ const ProjectRelatedProjects = ({
       const { projects: crtData = [], loaded } = data
 
       return (
-        <>
+        <span key={index}>
           {index !== 0 && <Divider className="mb-4 mt-3" />}
           <SectionTitle>{title}</SectionTitle>
           {loaded ? (
@@ -33,7 +33,7 @@ const ProjectRelatedProjects = ({
           ) : (
             <CircularProgress color="inherit" size="24px" className="ml-1.5" />
           )}
-        </>
+        </span>
       )
     })}
   </div>

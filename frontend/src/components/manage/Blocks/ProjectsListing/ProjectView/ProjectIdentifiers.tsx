@@ -1,4 +1,4 @@
-import { useContext } from 'react'
+import { useContext, useCallback } from 'react'
 
 import { BPTable } from '@ors/components/manage/Blocks/Table/BusinessPlansTable/BusinessPlansTable'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
@@ -11,7 +11,13 @@ import { useStore } from '@ors/store'
 
 import { Divider } from '@mui/material'
 
-const ProjectIdentifiers = ({ project }: { project: ProjectTypeApi }) => {
+const ProjectIdentifiers = ({
+  project,
+  fieldHistory,
+}: {
+  project: ProjectTypeApi
+  fieldHistory: any
+}) => {
   const { canViewBp } = useContext(PermissionsContext)
 
   const { viewableFields } = useStore((state) => state.projectFields)
@@ -42,26 +48,50 @@ const ProjectIdentifiers = ({ project }: { project: ProjectTypeApi }) => {
       }
     : {}
 
+  const getFieldHistory = useCallback(
+    (name: string) => {
+      return fieldHistory?.[name] ?? []
+    },
+    [fieldHistory],
+  )
+
   return (
     <>
       <SectionTitle>Identifiers</SectionTitle>
       <div className="flex w-full flex-col gap-4">
         <div className={viewColumnsClassName}>
           {canViewField(viewableFields, 'country') &&
-            detailItem(tableColumns.country, project.country)}
+            detailItem(tableColumns.country, project.country, {
+              fieldHistory: getFieldHistory('country'),
+            })}
           {canViewField(viewableFields, 'meeting') &&
-            detailItem(tableColumns.meeting, project.meeting)}
+            detailItem(tableColumns.meeting, project.meeting, {
+              fieldHistory: getFieldHistory('meeting'),
+            })}
           {canViewField(viewableFields, 'agency') &&
-            detailItem(tableColumns.agency, project.agency)}
+            detailItem(tableColumns.agency, project.agency, {
+              fieldHistory: getFieldHistory('agency'),
+            })}
           {canViewField(viewableFields, 'lead_agency') &&
-            detailItem(tableColumns.lead_agency, leadAgency)}
+            detailItem(tableColumns.lead_agency, leadAgency, {
+              fieldHistory: getFieldHistory('lead_agency'),
+            })}
           {canViewField(viewableFields, 'cluster') &&
-            detailItem(tableColumns.cluster, project.cluster?.name)}
+            detailItem(tableColumns.cluster, project.cluster?.name, {
+              fieldHistory: getFieldHistory('cluster'),
+            })}
           {canViewField(viewableFields, 'production') &&
-            booleanDetailItem(tableColumns.production, project.production)}
+            booleanDetailItem(
+              tableColumns.production,
+              project.production,
+              getFieldHistory('production'),
+            )}
           {detailItem(
             tableColumns.submission_status,
             project.submission_status,
+            {
+              fieldHistory: getFieldHistory('submission_status'),
+            },
           )}
         </div>
       </div>

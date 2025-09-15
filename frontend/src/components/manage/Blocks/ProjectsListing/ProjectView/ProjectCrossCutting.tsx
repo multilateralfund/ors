@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import { SectionTitle } from '../ProjectsCreate/ProjectsCreate'
 import {
   dateDetailItem,
@@ -17,7 +18,13 @@ import { useStore } from '@ors/store'
 import { Divider } from '@mui/material'
 import { find, map } from 'lodash'
 
-const ProjectCrossCutting = ({ project }: { project: ProjectTypeApi }) => {
+const ProjectCrossCutting = ({
+  project,
+  fieldHistory,
+}: {
+  project: ProjectTypeApi
+  fieldHistory: any
+}) => {
   const { projectFields, viewableFields } = useStore(
     (state) => state.projectFields,
   )
@@ -45,6 +52,13 @@ const ProjectCrossCutting = ({ project }: { project: ProjectTypeApi }) => {
       ? map(project.subsectors, 'name').join(', ')
       : '-'
 
+  const getFieldHistory = useCallback(
+    (name: string) => {
+      return fieldHistory?.[name] ?? []
+    },
+    [fieldHistory],
+  )
+
   return (
     <>
       {canViewAboutSection && (
@@ -52,13 +66,14 @@ const ProjectCrossCutting = ({ project }: { project: ProjectTypeApi }) => {
           <SectionTitle>About</SectionTitle>
           <div className="flex w-full flex-col gap-4">
             {canViewField(viewableFields, 'title') &&
-              detailItem(tableColumns.title, project.title)}
+              detailItem(tableColumns.title, project.title, {
+                fieldHistory: getFieldHistory('title'),
+              })}
             {canViewField(viewableFields, 'description') &&
-              detailItem(
-                tableColumns.description,
-                project.description,
-                'self-start',
-              )}
+              detailItem(tableColumns.description, project.description, {
+                detailClassname: 'self-start',
+                fieldHistory: getFieldHistory('description'),
+              })}
           </div>
         </>
       )}
@@ -75,13 +90,21 @@ const ProjectCrossCutting = ({ project }: { project: ProjectTypeApi }) => {
             <div className="flex w-full flex-col gap-4">
               <div className={viewColumnsClassName}>
                 {canViewField(viewableFields, 'project_type') &&
-                  detailItem(tableColumns.type, project.project_type?.name)}
+                  detailItem(tableColumns.type, project.project_type?.name, {
+                    fieldHistory: getFieldHistory('project_type'),
+                  })}
                 {canViewField(viewableFields, 'sector') &&
-                  detailItem(tableColumns.sector, project.sector?.name)}
+                  detailItem(tableColumns.sector, project.sector?.name, {
+                    fieldHistory: getFieldHistory('sector'),
+                  })}
                 {canViewField(viewableFields, 'subsectors') &&
-                  detailItem(tableColumns.subsectors, subsectors)}
+                  detailItem(tableColumns.subsectors, subsectors, {
+                    fieldHistory: getFieldHistory('subsectors'),
+                  })}
                 {canViewField(viewableFields, 'is_lvc') &&
-                  detailItem(tableColumns.is_lvc, is_lvc?.name)}
+                  detailItem(tableColumns.is_lvc, is_lvc?.name, {
+                    fieldHistory: getFieldHistory('is_lvc'),
+                  })}
               </div>
             </div>
             <div className="flex w-full flex-col gap-4">
@@ -90,11 +113,13 @@ const ProjectCrossCutting = ({ project }: { project: ProjectTypeApi }) => {
                   numberDetailItem(
                     tableColumns.total_fund,
                     project.total_fund as string,
+                    getFieldHistory('total_fund'),
                   )}
                 {canViewField(viewableFields, 'support_cost_psc') &&
                   numberDetailItem(
                     tableColumns.support_cost_psc,
                     project.support_cost_psc as string,
+                    getFieldHistory('support_cost_psc'),
                   )}
               </div>
             </div>
@@ -104,11 +129,13 @@ const ProjectCrossCutting = ({ project }: { project: ProjectTypeApi }) => {
                   dateDetailItem(
                     tableColumns.project_start_date,
                     project.project_start_date as string,
+                    getFieldHistory('project_start_date'),
                   )}
                 {canViewField(viewableFields, 'project_end_date') &&
                   dateDetailItem(
                     tableColumns.project_end_date,
                     project.project_end_date as string,
+                    getFieldHistory('project_end_date'),
                   )}
               </div>
             </div>
@@ -116,6 +143,9 @@ const ProjectCrossCutting = ({ project }: { project: ProjectTypeApi }) => {
               detailItem(
                 tableColumns.individual_consideration,
                 individual_consideration?.name,
+                {
+                  fieldHistory: getFieldHistory('individual_consideration'),
+                },
               )}
           </div>
         </>

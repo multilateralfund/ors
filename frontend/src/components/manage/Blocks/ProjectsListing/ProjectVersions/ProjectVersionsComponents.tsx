@@ -18,7 +18,6 @@ export const VersionsDropdown = ({
 }) => {
   const formattedVersions = versions.map((version, idx) => {
     let label
-    console.log(version)
     if (version.version > 3) {
       label = `Version ExCom ${version.post_excom_meeting}`
     } else {
@@ -86,7 +85,7 @@ export const HeaderTag = ({
   version,
 }: {
   latest_project: number | null
-  version: number
+  version: number | string
 }) => (
   <span className="self-baseline whitespace-nowrap rounded bg-mlfs-hlYellow p-1 font-medium uppercase leading-none">
     {latest_project ? `Version ${version}` : 'Latest'}

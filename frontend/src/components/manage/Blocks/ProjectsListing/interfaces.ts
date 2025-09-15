@@ -1,3 +1,4 @@
+import type { ProjectFieldHistoryValue } from '@ors/types/store'
 import { Dispatch, ReactNode, SetStateAction } from 'react'
 import { ProjectType } from '@ors/types/api_projects'
 
@@ -197,6 +198,7 @@ export type ViewModesHandler = (
   data: ProjectTypeApi,
   field: ProjectSpecificFields,
   classNames?: DetailItemClassname | undefined,
+  fieldHistory?: ProjectFieldHistoryValue[],
 ) => ReactNode
 
 export type ProjectFilesObject = {
@@ -222,6 +224,7 @@ export interface ProjectVersions {
   final_version_id: number
   created_by: string
   date_created: string
+  post_excom_meeting: number | null
 }
 
 export interface ProjectData {
