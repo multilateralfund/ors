@@ -149,7 +149,7 @@ class ProjectEnterpriseSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         _ = validated_data.pop("request", None)
         validated_data.pop("status", None)  # status will be set to PENDING
-        ods_odp_data = validated_data.pop("ods_odp")
+        ods_odp_data = validated_data.pop("ods_odp", [])
         enterprise_data = validated_data.pop("enterprise")
         enterprise_data.pop("status", None)  # status will be set to PENDING if new
         if "id" in enterprise_data:
@@ -157,6 +157,14 @@ class ProjectEnterpriseSerializer(serializers.ModelSerializer):
             enterprise_data_id = enterprise_data.pop("id")
             try:
                 enterprise = Enterprise.objects.get(id=enterprise_data_id)
+                if enterprise.status == EnterpriseStatus.PENDING:
+                    # allow updating enterprise data only if its status is not APPROVED
+                    agencies_data = enterprise_data.pop("agencies", None)
+                    for attr, value in enterprise_data.items():
+                        setattr(enterprise, attr, value)
+                    enterprise.save()
+                    if agencies_data is not None:
+                        enterprise.agencies.set(agencies_data)
             except Enterprise.DoesNotExist as exc:
                 raise serializers.ValidationError(
                     "Enterprise with given ID does not exist."
