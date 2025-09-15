@@ -11,9 +11,10 @@ from core.api.tests.factories import (
     ProjectEnterprise,
     ProjectEnterpriseOdsOdp,
 )
+from core.models.utils import EnterpriseStatus
 
 pytestmark = pytest.mark.django_db
-# pylint: disable=C8008,W0221,R0913
+# pylint: disable=C8008,W0221,R0913,R0914
 
 
 @pytest.fixture(name="_setup_enterprises")
@@ -25,8 +26,7 @@ def setup_enterprises(project, project2, new_country, new_agency):
     enterprise2 = EnterpriseFactory(name="Enterprise 2")
     enterprise3 = EnterpriseFactory(name="Enterprise 3")
     project_enterprise1 = ProjectEnterprise.objects.create(
-        project=project,
-        enterprise=enterprise1,
+        project=project, enterprise=enterprise1
     )
     ProjectEnterpriseOdsOdp.objects.create(project_enterprise=project_enterprise1)
     ProjectEnterpriseOdsOdp.objects.create(project_enterprise=project_enterprise1)
@@ -78,15 +78,17 @@ class TestListProjectEnterprise(BaseTest):
         project2.country = new_country
         project2.meta_project.lead_agency = new_agency
         project2.save()
-
+        enterprise1, _, _ = _setup_enterprises
+        enterprise1.status = EnterpriseStatus.APPROVED
+        enterprise1.save()
         # test for different user roles
         _test_user(user, 403)
         _test_user(viewer_user, 200, response_count=1)
         _test_user(agency_user, 200, response_count=1)
         _test_user(agency_inputter_user, 200, response_count=1)
-        _test_user(secretariat_viewer_user, 200, response_count=3)
-        _test_user(secretariat_v1_v2_edit_access_user, 200, response_count=3)
-        _test_user(secretariat_production_v1_v2_edit_access_user, 200, response_count=3)
+        _test_user(secretariat_viewer_user, 200, response_count=1)
+        _test_user(secretariat_v1_v2_edit_access_user, 200, response_count=1)
+        _test_user(secretariat_production_v1_v2_edit_access_user, 200, response_count=1)
         _test_user(secretariat_v3_edit_access_user, 200, response_count=3)
         _test_user(secretariat_production_v3_edit_access_user, 200, response_count=3)
         _test_user(mlfs_admin_user, 200, response_count=3)
@@ -187,6 +189,9 @@ class TestProjectRetrieveProjectEnterprise:
         new_country,
         new_agency,
     ):
+        enterprise1, _, _ = _setup_enterprises
+        enterprise1.status = EnterpriseStatus.APPROVED
+        enterprise1.save()
         project2.agency = new_agency
         project2.country = new_country
         project2.meta_project.lead_agency = new_agency
@@ -222,10 +227,10 @@ class TestProjectRetrieveProjectEnterprise:
             agency_inputter_user, 404, project_enterprise2
         )  # agency_inputter_user has no access to project2
 
-        _test_user(secretariat_viewer_user, 200, project_enterprise2)
-        _test_user(secretariat_v1_v2_edit_access_user, 200, project_enterprise2)
+        _test_user(secretariat_viewer_user, 404, project_enterprise2)
+        _test_user(secretariat_v1_v2_edit_access_user, 404, project_enterprise2)
         _test_user(
-            secretariat_production_v1_v2_edit_access_user, 200, project_enterprise2
+            secretariat_production_v1_v2_edit_access_user, 404, project_enterprise2
         )
         _test_user(secretariat_v3_edit_access_user, 200, project_enterprise2)
         _test_user(secretariat_production_v3_edit_access_user, 200, project_enterprise2)
@@ -264,7 +269,7 @@ class TestCreateProjectEnterprise:
     client = APIClient()
     url = reverse("project-enterprise-list")
 
-    def get_create_data(self, project, substance, blend):
+    def get_create_data(self, project, substance, blend, agency):
         return {
             "project": project.id,
             "enterprise": {
@@ -272,6 +277,7 @@ class TestCreateProjectEnterprise:
                 "country": project.country.id,
                 "location": "New City",
                 "application": "New Application",
+                "agencies": [agency.id],
                 "local_ownership": 50.0,
                 "export_to_non_a5": 30.0,
                 "remarks": "Some remarks",
@@ -310,10 +316,11 @@ class TestCreateProjectEnterprise:
         mlfs_admin_user,
         admin_user,
         project,
+        agency,
         substance,
         blend,
     ):
-        data = self.get_create_data(project, substance, blend)
+        data = self.get_create_data(project, substance, blend, agency)
 
         def _test_user(user, expected_status, data):
             self.client.force_authenticate(user=user)
@@ -339,9 +346,9 @@ class TestCreateProjectEnterprise:
         _test_user(mlfs_admin_user, 201, data)
         _test_user(admin_user, 201, data)
 
-    def test_create(self, mlfs_admin_user, project, substance, blend):
+    def test_create(self, mlfs_admin_user, project, substance, blend, agency):
         self.client.force_authenticate(user=mlfs_admin_user)
-        data = self.get_create_data(project, substance, blend)
+        data = self.get_create_data(project, substance, blend, agency)
         assert ProjectEnterprise.objects.all().count() == 0
         response = self.client.post(self.url, data, format="json")
         assert response.status_code == 201
@@ -372,7 +379,7 @@ class TestUpdateProjectEnterprise:
 
     client = APIClient()
 
-    def get_update_data(self, project, substance, blend, enterprise):
+    def get_update_data(self, project, substance, blend, enterprise, agency):
         ods_odp = enterprise.ods_odp.first()
         return {
             "id": enterprise.id,
@@ -381,6 +388,7 @@ class TestUpdateProjectEnterprise:
                 "name": "Updated Enterprise",
                 "country": project.country.id,
                 "location": "Updated City",
+                "agencies": [agency.id],
                 "application": "Updated Application",
                 "local_ownership": 60.0,
                 "export_to_non_a5": 40.0,
@@ -423,9 +431,10 @@ class TestUpdateProjectEnterprise:
         project,
         substance,
         blend,
+        agency,
     ):
         enterprise1, _, _ = _setup_enterprises
-        data = self.get_update_data(project, substance, blend, enterprise1)
+        data = self.get_update_data(project, substance, blend, enterprise1, agency)
 
         def _test_user(user, expected_status, enterprise, data):
             url = reverse("project-enterprise-detail", args=[enterprise.id])
@@ -456,11 +465,13 @@ class TestUpdateProjectEnterprise:
         _test_user(admin_user, 200, enterprise1, data)
 
     def test_update(
-        self, mlfs_admin_user, _setup_enterprises, project, substance, blend
+        self, mlfs_admin_user, _setup_enterprises, project, substance, blend, agency
     ):
         project_enterprise1, _, _ = _setup_enterprises
         self.client.force_authenticate(user=mlfs_admin_user)
-        data = self.get_update_data(project, substance, blend, project_enterprise1)
+        data = self.get_update_data(
+            project, substance, blend, project_enterprise1, agency
+        )
         url = reverse("project-enterprise-detail", args=[project_enterprise1.id])
         response = self.client.put(url, data, format="json")
         assert response.status_code == 200
