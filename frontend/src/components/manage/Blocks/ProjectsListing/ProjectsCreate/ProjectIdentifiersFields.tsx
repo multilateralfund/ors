@@ -9,7 +9,6 @@ import { SectionTitle } from './ProjectsCreate'
 import {
   ProjectData,
   ProjectIdentifiersSectionProps,
-  ProjectTypeApi,
   ProjIdentifiers,
 } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
 import {
@@ -48,7 +47,7 @@ const ProjectIdentifiersFields = ({
   mode,
   project,
   specificFieldsLoaded,
-}: ProjectIdentifiersSectionProps & { project: ProjectTypeApi }) => {
+}: ProjectIdentifiersSectionProps) => {
   const sectionIdentifier = 'projIdentifiers'
   const projIdentifiers = projectData[sectionIdentifier]
 
