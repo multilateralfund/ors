@@ -24,6 +24,7 @@ const EnterpriseEditWrapper = () => {
   if (
     (!canEditEnterprise && !canApproveEnterprise) ||
     data?.status === 'Obsolete' ||
+    (data?.status === 'Approved' && !canApproveEnterprise) ||
     error
   ) {
     return <Redirect to={`/projects-listing/enterprises/${enterprise_id}`} />

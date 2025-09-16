@@ -1,9 +1,10 @@
-import { ChangeEvent } from 'react'
+import { ChangeEvent, useContext } from 'react'
 
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { getIsInputDisabled } from '../../ProjectsCreate/SpecificFieldsHelpers'
 import { SubmitButton } from '../../HelperComponents'
 import {
@@ -33,12 +34,16 @@ const PEnterpriseSubstanceDetailsSection = ({
 }: PEnterpriseDataProps & {
   odsOdpErrors: { [key: string]: string[] }[]
 }) => {
+  const { canEditProjectEnterprise } = useContext(PermissionsContext)
+
   const sectionId = 'substance_details'
   const sectionData = enterpriseData[sectionId] || []
 
   const fields = ['phase_out_mt', 'ods_replacement', 'ods_replacement_phase_in']
 
-  const isDisabled = !!enterprise && enterprise.status !== 'Pending Approval'
+  const isDisabled =
+    !!enterprise &&
+    (enterprise.status !== 'Pending Approval' || !canEditProjectEnterprise)
 
   const { substances, blends } = useStore((state) => state.cp_reports)
   const substancesOptions = map(

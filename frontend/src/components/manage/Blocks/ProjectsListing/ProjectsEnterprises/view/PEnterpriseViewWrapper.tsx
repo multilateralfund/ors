@@ -75,7 +75,10 @@ const PEnterpriseViewWrapper = () => {
                   href={`/projects-listing/projects-enterprises/${project_id}`}
                 />
                 {(canEditProjectEnterprise || canApproveProjectEnterprise) &&
-                  data.status !== 'Obsolete' && (
+                  data.status !== 'Obsolete' &&
+                  !(
+                    data.status === 'Approved' && !canApproveProjectEnterprise
+                  ) && (
                     <CustomLink
                       className="border border-solid border-secondary px-4 py-2 shadow-none hover:border-primary"
                       href={`/projects-listing/projects-enterprises/${project_id}/edit/${enterprise_id}`}

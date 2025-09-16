@@ -56,7 +56,8 @@ const EnterpriseWrapper = () => {
                   href="/projects-listing/enterprises"
                 />
                 {(canEditEnterprise || canApproveEnterprise) &&
-                  data.status !== 'Obsolete' && (
+                  data.status !== 'Obsolete' &&
+                  !(data.status === 'Approved' && !canApproveEnterprise) && (
                     <CustomLink
                       href={`/projects-listing/enterprises/${enterprise_id}/edit`}
                       className="border border-solid px-4 py-2 hover:border-primary"

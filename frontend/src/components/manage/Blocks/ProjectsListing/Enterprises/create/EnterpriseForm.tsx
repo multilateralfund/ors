@@ -1,3 +1,6 @@
+import { useContext } from 'react'
+
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import {
   EnterpriseTextField,
   EnterpriseNumberField,
@@ -10,6 +13,8 @@ import { useStore } from '@ors/store'
 import { map } from 'lodash'
 
 const EnterpriseForm = (props: EnterpriseDataProps) => {
+  const { canEditEnterprise } = useContext(PermissionsContext)
+
   const commonSlice = useStore((state) => state.common)
   const countries = commonSlice.countries.data
   const agencies = commonSlice.agencies.data
@@ -22,7 +27,9 @@ const EnterpriseForm = (props: EnterpriseDataProps) => {
   ]
 
   const { enterprise } = props
-  const isDisabled = !!enterprise && enterprise.status !== 'Pending Approval'
+  const isDisabled =
+    !!enterprise &&
+    (enterprise.status !== 'Pending Approval' || !canEditEnterprise)
 
   return (
     <>

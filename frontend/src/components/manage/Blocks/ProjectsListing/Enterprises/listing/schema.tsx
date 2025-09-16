@@ -34,6 +34,9 @@ const getColumnDefs = (type: string) => {
   const canAccessEditPage = isEnterprise
     ? canEditEnterprise || canApproveEnterprise
     : canEditProjectEnterprise || canApproveProjectEnterprise
+  const approvalPermissions = isEnterprise
+    ? canApproveEnterprise
+    : canApproveProjectEnterprise
 
   const getViewUrl = (enterpriseId: number, project_id: number) =>
     isEnterprise
@@ -76,14 +79,17 @@ const getColumnDefs = (type: string) => {
               cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-no-border-r',
               cellRenderer: (props: ICellRendererParams) => (
                 <div className="flex items-center p-2">
-                  {props.data.status !== 'Obsolete' && (
-                    <Link
-                      className="flex h-4 w-4 justify-center"
-                      href={getEditUrl(props.data.id)}
-                    >
-                      <FiEdit size={16} />
-                    </Link>
-                  )}
+                  {props.data.status !== 'Obsolete' &&
+                    !(
+                      props.data.status === 'Approved' && !approvalPermissions
+                    ) && (
+                      <Link
+                        className="flex h-4 w-4 justify-center"
+                        href={getEditUrl(props.data.id)}
+                      >
+                        <FiEdit size={16} />
+                      </Link>
+                    )}
                 </div>
               ),
             },
