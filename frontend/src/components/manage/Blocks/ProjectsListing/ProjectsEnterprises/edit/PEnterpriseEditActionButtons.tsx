@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import EnterpriseCommonEditActionButtons from '../../Enterprises/edit/EnterpriseCommonEditActionButtons'
 import { handleErrors } from '../FormHelperComponents'
 import {
@@ -31,6 +32,8 @@ const PEnterpriseEditActionButtons = ({
 }) => {
   const { project_id, enterprise_id } = useParams<Record<string, string>>()
   const [_, setLocation] = useLocation()
+
+  const { canEditProjectEnterprise } = useContext(PermissionsContext)
 
   const [isObsoleteWarningOpen, setIsObsoleteWarningOpen] = useState(false)
 
@@ -76,7 +79,8 @@ const PEnterpriseEditActionButtons = ({
   }
 
   const changeEnterpriseStatus = async (status: string) => {
-    const canChangeStatus = isPending ? await editEnterprise() : true
+    const canChangeStatus =
+      isPending && canEditProjectEnterprise ? await editEnterprise() : true
 
     if (canChangeStatus) {
       try {

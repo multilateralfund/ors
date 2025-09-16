@@ -17,8 +17,12 @@ import {
 const getColumnDefs = (type: string) => {
   const { project_id } = useParams<Record<string, string>>()
 
-  const { canEditEnterprise, canEditProjectEnterprise } =
-    useContext(PermissionsContext)
+  const {
+    canEditEnterprise,
+    canEditProjectEnterprise,
+    canApproveEnterprise,
+    canApproveProjectEnterprise,
+  } = useContext(PermissionsContext)
 
   const { countries, agencies } = useStore((state) => ({
     countries: state.common.countries.data,
@@ -28,8 +32,8 @@ const getColumnDefs = (type: string) => {
   const isEnterprise = type === 'enterprise'
 
   const canAccessEditPage = isEnterprise
-    ? canEditEnterprise
-    : canEditProjectEnterprise
+    ? canEditEnterprise || canApproveEnterprise
+    : canEditProjectEnterprise || canApproveProjectEnterprise
 
   const getViewUrl = (enterpriseId: number, project_id: number) =>
     isEnterprise
@@ -62,7 +66,7 @@ const getColumnDefs = (type: string) => {
 
   return {
     columnDefs: [
-      ...(project_id || isEnterprise
+      ...(canAccessEditPage && (project_id || isEnterprise)
         ? [
             {
               minWidth: 40,
@@ -72,7 +76,7 @@ const getColumnDefs = (type: string) => {
               cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-no-border-r',
               cellRenderer: (props: ICellRendererParams) => (
                 <div className="flex items-center p-2">
-                  {canAccessEditPage && props.data.status !== 'Obsolete' && (
+                  {props.data.status !== 'Obsolete' && (
                     <Link
                       className="flex h-4 w-4 justify-center"
                       href={getEditUrl(props.data.id)}
@@ -144,6 +148,16 @@ const getColumnDefs = (type: string) => {
               field: 'project_code',
               tooltipField: 'project_code',
               sortable: false,
+              cellRenderer: (props: ICellRendererParams) => (
+                <div className="flex items-center justify-center p-2">
+                  <Link
+                    className="overflow-hidden truncate whitespace-nowrap"
+                    href={`/projects-listing/${props.data.project}`}
+                  >
+                    <span>{props.value}</span>
+                  </Link>
+                </div>
+              ),
             },
           ]
         : []),

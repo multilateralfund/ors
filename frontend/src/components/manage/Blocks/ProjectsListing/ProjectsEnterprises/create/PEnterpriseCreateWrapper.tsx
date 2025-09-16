@@ -53,17 +53,22 @@ const PEnterpriseCreateWrapper = () => {
     }))
   }, [data])
 
+  if (!canViewProjects) {
+    return <Redirect to="/projects-listing/listing" />
+  }
+
   if (
-    !canViewProjects ||
     !project_id ||
     (project && (error || (data && data.submission_status !== 'Approved')))
   ) {
-    return <Redirect to="/projects-listing/listing" />
+    return <Redirect to="/projects-listing/projects-enterprises" />
   }
 
   if (!canEditProjectEnterprise) {
     return (
-      <Redirect to={`/projects-listing/projects-enterprises/${project_id}`} />
+      <Redirect
+        to={`/projects-listing/projects-enterprises${project_id ? '/' + project_id : ''}`}
+      />
     )
   }
 

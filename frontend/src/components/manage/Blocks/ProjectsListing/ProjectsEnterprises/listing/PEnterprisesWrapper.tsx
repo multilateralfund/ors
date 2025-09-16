@@ -36,12 +36,12 @@ export default function PEnterprisesWrapper() {
   const enterprises = useGetProjectEnterprises(initialFilters)
   const { loading, setParams } = enterprises
 
-  if (
-    !canViewEnterprises ||
-    !canViewProjects ||
-    (project && (error || (data && data.submission_status !== 'Approved')))
-  ) {
+  if (!canViewEnterprises || !canViewProjects) {
     return <Redirect to="/projects-listing/listing" />
+  }
+
+  if (project && (error || (data && data.submission_status !== 'Approved'))) {
+    return <Redirect to="/projects-listing/projects-enterprises" />
   }
 
   return (
