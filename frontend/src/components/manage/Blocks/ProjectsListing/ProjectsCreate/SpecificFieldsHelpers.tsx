@@ -290,7 +290,9 @@ export const TextWidget = <T,>(
         )}
         containerClassName={
           defaultPropsSimpleField.containerClassName +
-          (fieldName === 'programme_officer' ? textFieldClassName : '')
+          (fieldName === 'programme_officer'
+            ? textFieldClassName + ' max-w-[370px]'
+            : '')
         }
       />
     </div>
@@ -313,7 +315,7 @@ export const TextAreaWidget = <T,>(
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
 
   return (
-    <div className="w-full md:w-auto">
+    <div className={cx('w-full', { 'md:w-auto': field.table === 'ods_odp' })}>
       <Label>{field.label}</Label>
       <TextareaAutosize
         value={value as string}

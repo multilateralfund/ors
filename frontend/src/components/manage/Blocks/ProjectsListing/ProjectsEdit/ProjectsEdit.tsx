@@ -457,7 +457,8 @@ const ProjectsEdit = ({
             approvalFields,
           }}
           specificFieldsLoaded={
-            specificFieldsLoaded && fieldsValuesLoaded.current
+            (specificFieldsLoaded && fieldsValuesLoaded.current) ||
+            !(cluster && project_type && sector)
           }
           loadedFiles={loadedFiles && filesLoaded.current}
         />
