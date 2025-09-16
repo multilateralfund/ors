@@ -9,6 +9,7 @@ import { SectionTitle } from './ProjectsCreate'
 import {
   ProjectData,
   ProjectIdentifiersSectionProps,
+  ProjectTypeApi,
   ProjIdentifiers,
 } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
 import {
@@ -45,8 +46,9 @@ const ProjectIdentifiersFields = ({
   errors,
   hasSubmitted,
   mode,
+  project,
   specificFieldsLoaded,
-}: ProjectIdentifiersSectionProps) => {
+}: ProjectIdentifiersSectionProps & { project: ProjectTypeApi }) => {
   const sectionIdentifier = 'projIdentifiers'
   const projIdentifiers = projectData[sectionIdentifier]
 
@@ -66,7 +68,8 @@ const ProjectIdentifiersFields = ({
       ? filterClusterOptions(allClusters, canViewProductionProjects)
       : crtClusters
 
-  const canUpdateLeadAgency = mode === 'add' || mode === 'copy'
+  const canUpdateLeadAgency =
+    mode === 'add' || mode === 'copy' || !project?.meta_project?.lead_agency
 
   const { viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
@@ -188,8 +191,7 @@ const ProjectIdentifiersFields = ({
                 }
                 disabled={
                   !areNextSectionsDisabled ||
-                  mode === 'partial-link' ||
-                  mode === 'full-link' ||
+                  (mode !== 'copy' && !!project?.country_id) ||
                   !canEditField(editableFields, 'country')
                 }
                 Input={{

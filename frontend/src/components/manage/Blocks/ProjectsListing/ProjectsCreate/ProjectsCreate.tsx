@@ -85,11 +85,6 @@ const ProjectsCreate = ({
   }) => {
   const { project_id } = useParams<Record<string, string>>()
 
-  const [currentStep, setCurrentStep] = useState<number>(
-    mode !== 'add' && mode !== 'partial-link' ? 1 : 0,
-  )
-  const [currentTab, setCurrentTab] = useState<number>(0)
-
   const {
     projIdentifiers,
     crossCuttingFields,
@@ -101,6 +96,9 @@ const ProjectsCreate = ({
   const fieldsOpts = useGetProjectFieldsOpts(projectData, setProjectData, mode)
 
   const canLinkToBp = canGoToSecondStep(projIdentifiers)
+
+  const [currentStep, setCurrentStep] = useState<number>(canLinkToBp ? 1 : 0)
+  const [currentTab, setCurrentTab] = useState<number>(0)
 
   const areNextSectionsDisabled = !canLinkToBp || currentStep < 1
   const areProjectSpecificTabsDisabled =
@@ -279,6 +277,7 @@ const ProjectsCreate = ({
             setCurrentTab,
             hasSubmitted,
             mode,
+            project,
             specificFieldsLoaded,
           }}
           isNextBtnEnabled={canLinkToBp}
