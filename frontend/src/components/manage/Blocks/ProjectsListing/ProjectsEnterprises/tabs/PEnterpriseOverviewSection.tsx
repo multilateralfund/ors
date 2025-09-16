@@ -30,6 +30,7 @@ const PEnterpriseOverviewSection = ({
     (!!enterprise && enterprise.status !== 'Pending Approval') ||
     (!!overviewStatus && overviewStatus !== 'Pending Approval')
 
+  const sectionIdentifier = 'overview'
   const textFields = ['name', 'location', 'application']
   const numericFields = ['local_ownership', 'export_to_non_a5']
   const selectFields = [
@@ -45,11 +46,13 @@ const PEnterpriseOverviewSection = ({
     <>
       <EnterpriseTextField<PEnterpriseData>
         field={textFields[0]}
+        sectionIdentifier={sectionIdentifier}
         {...{ isDisabled, ...rest }}
         enterpriseData={overview}
       />
       {map(selectFields, (field) => (
         <EnterpriseSelectField<PEnterpriseData>
+          sectionIdentifier={sectionIdentifier}
           isDisabled={field.isDisabled}
           {...{ field, ...rest }}
           enterpriseData={overview}
@@ -57,6 +60,7 @@ const PEnterpriseOverviewSection = ({
       ))}
       {map(textFields.slice(1), (field) => (
         <EnterpriseTextField<PEnterpriseData>
+          sectionIdentifier={sectionIdentifier}
           {...{ field, isDisabled, ...rest }}
           enterpriseData={overview}
         />
@@ -64,6 +68,7 @@ const PEnterpriseOverviewSection = ({
       <div className="mt-6 flex flex-wrap gap-x-20 gap-y-3">
         {map(numericFields, (field) => (
           <EnterpriseNumberField<PEnterpriseData>
+            sectionIdentifier={sectionIdentifier}
             {...{ field, isDisabled, ...rest }}
             enterpriseData={overview}
           />
@@ -72,6 +77,7 @@ const PEnterpriseOverviewSection = ({
       <div className="mt-6">
         <EnterpriseTextAreaField<PEnterpriseData>
           field="remarks"
+          sectionIdentifier={sectionIdentifier}
           {...{ isDisabled, ...rest }}
           enterpriseData={overview}
         />

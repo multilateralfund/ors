@@ -1,4 +1,7 @@
+import { useContext, useState } from 'react'
+
 import { CancelLinkButton } from '@ors/components/ui/Button/Button'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import EnterpriseCommonEditActionButtons from './EnterpriseCommonEditActionButtons'
 import { handleErrors } from '../../ProjectsEnterprises/FormHelperComponents'
 import {
@@ -27,6 +30,10 @@ const EnterpriseEditActionButtons = ({
 }) => {
   const { enterprise_id } = useParams<Record<string, string>>()
   const [_, setLocation] = useLocation()
+
+  const { canEditEnterprise } = useContext(PermissionsContext)
+
+  const [isObsoleteWarningOpen, setIsObsoleteWarningOpen] = useState(false)
 
   const { status } = enterprise ?? {}
   const isPending = status === 'Pending Approval'
@@ -59,7 +66,8 @@ const EnterpriseEditActionButtons = ({
   }
 
   const changeEnterpriseStatus = async (status: string) => {
-    const canChangeStatus = isPending ? await editEnterprise() : true
+    const canChangeStatus =
+      isPending && canEditEnterprise ? await editEnterprise() : true
 
     if (canChangeStatus) {
       try {
@@ -78,6 +86,8 @@ const EnterpriseEditActionButtons = ({
         )
       }
     }
+
+    setIsObsoleteWarningOpen(false)
   }
 
   return (
@@ -92,6 +102,7 @@ const EnterpriseEditActionButtons = ({
         disableButton={disableSubmit}
         handleEdit={editEnterprise}
         handleChangeStatus={changeEnterpriseStatus}
+        {...{ isObsoleteWarningOpen, setIsObsoleteWarningOpen }}
       />
     </div>
   )

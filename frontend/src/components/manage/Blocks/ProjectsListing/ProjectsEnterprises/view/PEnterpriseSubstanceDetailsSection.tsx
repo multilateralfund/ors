@@ -57,7 +57,7 @@ const PEnterpriseSubstanceDetailsSection = ({
     headerClass: 'ag-text-center',
     cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-not-inline',
     resizable: true,
-    minWidth: 90,
+    minWidth: 210,
   }
 
   const columnDefs = [

@@ -28,17 +28,15 @@ type PEnterpriseFieldsProps<T> = EnterprisesCommonProps & {
   enterpriseData: EnterpriseOverview
   setEnterpriseData: Dispatch<SetStateAction<T>>
   field: string
-  isEnterprise?: boolean
+  sectionIdentifier?: keyof T
   isDisabled: boolean
 }
-
-const sectionIdentifier = 'overview'
 
 export const EnterpriseTextField = <T,>({
   enterpriseData,
   setEnterpriseData,
   field,
-  isEnterprise = false,
+  sectionIdentifier,
   isDisabled,
   hasSubmitted,
   errors,
@@ -54,13 +52,13 @@ export const EnterpriseTextField = <T,>({
           field,
           setEnterpriseData,
           event,
-          !isEnterprise ? (sectionIdentifier as keyof T) : null,
+          sectionIdentifier,
         )
       }
       type="text"
       {...getFieldDefaultProps(hasSubmitted, errors[field], isDisabled)}
       containerClassName={
-        defaultPropsSimpleField.containerClassName + ' !w-[35rem]'
+        defaultPropsSimpleField.containerClassName + ' w-full max-w-[35rem]'
       }
     />
   </div>
@@ -70,7 +68,7 @@ export const EnterpriseNumberField = <T,>({
   enterpriseData,
   setEnterpriseData,
   field,
-  isEnterprise = false,
+  sectionIdentifier,
   isDisabled,
   hasSubmitted,
   errors,
@@ -86,7 +84,7 @@ export const EnterpriseNumberField = <T,>({
           field,
           setEnterpriseData,
           event,
-          !isEnterprise ? (sectionIdentifier as keyof T) : null,
+          sectionIdentifier,
         )
       }
       type="text"
@@ -99,7 +97,7 @@ export const EnterpriseSelectField = <T,>({
   enterpriseData,
   setEnterpriseData,
   field,
-  isEnterprise = false,
+  sectionIdentifier,
   isDisabled,
   hasSubmitted,
   errors,
@@ -107,7 +105,7 @@ export const EnterpriseSelectField = <T,>({
   enterpriseData: EnterpriseOverview
   setEnterpriseData: Dispatch<SetStateAction<T>>
   field: { fieldName: string; options: any }
-  isEnterprise?: boolean
+  sectionIdentifier?: keyof T
   isDisabled: boolean
 }) => {
   const { fieldName, options } = field
@@ -136,7 +134,7 @@ export const EnterpriseSelectField = <T,>({
             setEnterpriseData,
             value,
             isMultiple,
-            !isEnterprise ? (sectionIdentifier as keyof T) : null,
+            sectionIdentifier,
           )
         }
         getOptionLabel={(option) => getOptionLabel(options, option)}
@@ -145,7 +143,7 @@ export const EnterpriseSelectField = <T,>({
         }}
         {...defaultProps}
         {...(isMultiple
-          ? { FieldProps: { className: 'mb-0 w-[35rem] BPListUpload' } }
+          ? { FieldProps: { className: 'mb-0 max-w-[35rem] BPListUpload' } }
           : {})}
       />
     </div>
@@ -156,7 +154,7 @@ export const EnterpriseTextAreaField = <T,>({
   enterpriseData,
   setEnterpriseData,
   field,
-  isEnterprise,
+  sectionIdentifier,
   isDisabled,
   hasSubmitted,
   errors,
@@ -171,10 +169,10 @@ export const EnterpriseTextAreaField = <T,>({
           field,
           setEnterpriseData,
           event,
-          !isEnterprise ? (sectionIdentifier as keyof T) : null,
+          sectionIdentifier,
         )
       }
-      className={cx(textAreaClassname + ' !min-w-[45rem]', {
+      className={cx(textAreaClassname + ' max-w-[45rem]', {
         'border-red-500': getIsInputInvalid(hasSubmitted, errors[field]),
       })}
       minRows={5}

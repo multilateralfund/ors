@@ -4,7 +4,6 @@ import { useState } from 'react'
 
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
 import CustomAlert from '@ors/components/theme/Alerts/CustomAlert.tsx'
-import Loading from '@ors/components/theme/Loading/Loading.tsx'
 import PEnterpriseSearch from '../tabs/PEnterpriseSearch.tsx'
 import PEnterpriseOverviewSection from '../tabs/PEnterpriseOverviewSection.tsx'
 import PEnterpriseSubstanceDetailsSection from '../tabs/PEnterpriseSubstanceDetailsSection.tsx'
@@ -35,7 +34,7 @@ const PEnterpriseCreate = ({
     status: ['Pending Approval', 'Approved'],
     agencies: agency_id ? [agency_id] : null,
   }
-  const { results, loading } = useGetEnterprises(filters, countryId)
+  const { results } = useGetEnterprises(filters, countryId)
 
   const { overview, funding_details } = rest.enterpriseData ?? {}
   const enterpriseErrors =
@@ -94,6 +93,7 @@ const PEnterpriseCreate = ({
       ),
       component: (
         <PEnterpriseSearch
+          key={JSON.stringify(results)}
           enterprises={results}
           {...rest}
           errors={searchErrors}
@@ -163,64 +163,56 @@ const PEnterpriseCreate = ({
 
   return (
     <>
-      <Loading
-        className="!fixed bg-action-disabledBackground"
-        active={loading}
-      />
-      {!loading && results && (
-        <>
-          <Tabs
-            aria-label="create-project-enterprise"
-            value={currentTab}
-            className="sectionsTabs"
-            variant="scrollable"
-            scrollButtons="auto"
-            allowScrollButtonsMobile
-            TabIndicatorProps={{
-              className: 'h-0',
-              style: { transitionDuration: '150ms' },
-            }}
-            onChange={(_, newValue) => {
-              setCurrentTab(newValue)
-            }}
-          >
-            {steps.map(({ id, ariaControls, label }) => (
-              <Tab id={id} aria-controls={ariaControls} label={label} />
-            ))}
-          </Tabs>
-          <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
-            {steps
-              .filter((_, index) => index === currentTab)
-              .map(({ component, errors }) => (
-                <>
-                  {errors && errors.length > 0 && (
-                    <CustomAlert
-                      type="error"
-                      alertClassName="mb-5"
-                      content={
-                        <>
-                          <Typography className="text-lg">
-                            Please make sure all the sections are valid.
-                          </Typography>
-                          <div className="mt-1 flex flex-col gap-1.5 text-base">
-                            {errors.map((err, idx) =>
-                              err ? (
-                                <div key={idx}>
-                                  {'\u2022'} {err.message}
-                                </div>
-                              ) : null,
-                            )}
-                          </div>
-                        </>
-                      }
-                    />
-                  )}
-                  {component}
-                </>
-              ))}
-          </div>
-        </>
-      )}
+      <Tabs
+        aria-label="create-project-enterprise"
+        value={currentTab}
+        className="sectionsTabs"
+        variant="scrollable"
+        scrollButtons="auto"
+        allowScrollButtonsMobile
+        TabIndicatorProps={{
+          className: 'h-0',
+          style: { transitionDuration: '150ms' },
+        }}
+        onChange={(_, newValue) => {
+          setCurrentTab(newValue)
+        }}
+      >
+        {steps.map(({ id, ariaControls, label }) => (
+          <Tab id={id} aria-controls={ariaControls} label={label} />
+        ))}
+      </Tabs>
+      <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
+        {steps
+          .filter((_, index) => index === currentTab)
+          .map(({ component, errors }) => (
+            <>
+              {errors && errors.length > 0 && (
+                <CustomAlert
+                  type="error"
+                  alertClassName="mb-5"
+                  content={
+                    <>
+                      <Typography className="text-lg">
+                        Please make sure all the sections are valid.
+                      </Typography>
+                      <div className="mt-1 flex flex-col gap-1.5 text-base">
+                        {errors.map((err, idx) =>
+                          err ? (
+                            <div key={idx}>
+                              {'\u2022'} {err.message}
+                            </div>
+                          ) : null,
+                        )}
+                      </div>
+                    </>
+                  }
+                />
+              )}
+              {component}
+            </>
+          ))}
+      </div>
     </>
   )
 }

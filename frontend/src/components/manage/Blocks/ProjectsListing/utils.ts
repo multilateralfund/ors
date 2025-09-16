@@ -641,7 +641,7 @@ export const getMenus = (
         {
           title: 'Update project enterprises',
           url: `/projects-listing/projects-enterprises${projectId ? `/${projectId}` : ''}`,
-          permissions: [canViewProjects, canViewEnterprises],
+          permissions: [canViewProjects && canViewEnterprises],
           disabled:
             !!projectSubmissionStatus && projectSubmissionStatus !== 'Approved',
         },

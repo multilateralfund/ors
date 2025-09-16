@@ -28,25 +28,21 @@ const EnterpriseForm = (props: EnterpriseDataProps) => {
     <>
       <EnterpriseTextField<EnterpriseOverview>
         field={textFields[0]}
-        isEnterprise={true}
         {...{ isDisabled, ...props }}
       />
       {map(selectFields, (field) => (
         <EnterpriseSelectField<EnterpriseOverview>
-          isEnterprise={true}
           {...{ field, isDisabled, ...props }}
         />
       ))}
       {map(textFields.slice(1), (field) => (
         <EnterpriseTextField<EnterpriseOverview>
-          isEnterprise={true}
           {...{ field, isDisabled, ...props }}
         />
       ))}
       <div className="mt-6 flex flex-wrap gap-x-20 gap-y-3">
         {map(numericFields, (field) => (
           <EnterpriseNumberField<EnterpriseOverview>
-            isEnterprise={true}
             {...{ field, isDisabled, ...props }}
           />
         ))}
@@ -54,7 +50,6 @@ const EnterpriseForm = (props: EnterpriseDataProps) => {
       <div className="mt-6">
         <EnterpriseTextAreaField<EnterpriseOverview>
           field="remarks"
-          isEnterprise={true}
           {...{ isDisabled, ...props }}
         />
       </div>

@@ -17,8 +17,12 @@ import {
 const getColumnDefs = (type: string) => {
   const { project_id } = useParams<Record<string, string>>()
 
-  const { canEditEnterprise, canEditProjectEnterprise } =
-    useContext(PermissionsContext)
+  const {
+    canEditEnterprise,
+    canEditProjectEnterprise,
+    canApproveEnterprise,
+    canApproveProjectEnterprise,
+  } = useContext(PermissionsContext)
 
   const { countries, agencies } = useStore((state) => ({
     countries: state.common.countries.data,
@@ -28,10 +32,10 @@ const getColumnDefs = (type: string) => {
   const isEnterprise = type === 'enterprise'
 
   const canAccessEditPage = isEnterprise
-    ? canEditEnterprise
-    : canEditProjectEnterprise
+    ? canEditEnterprise || canApproveEnterprise
+    : canEditProjectEnterprise || canApproveProjectEnterprise
 
-  const getViewUrl = (enterpriseId: number) =>
+  const getViewUrl = (enterpriseId: number, project_id: number) =>
     isEnterprise
       ? `/projects-listing/enterprises/${enterpriseId}`
       : `/projects-listing/projects-enterprises/${project_id}/view/${enterpriseId}`
@@ -62,7 +66,7 @@ const getColumnDefs = (type: string) => {
 
   return {
     columnDefs: [
-      ...(project_id || isEnterprise
+      ...(canAccessEditPage && (project_id || isEnterprise)
         ? [
             {
               minWidth: 40,
@@ -72,7 +76,7 @@ const getColumnDefs = (type: string) => {
               cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-no-border-r',
               cellRenderer: (props: ICellRendererParams) => (
                 <div className="flex items-center p-2">
-                  {canAccessEditPage && props.data.status !== 'Obsolete' && (
+                  {props.data.status !== 'Obsolete' && (
                     <Link
                       className="flex h-4 w-4 justify-center"
                       href={getEditUrl(props.data.id)}
@@ -89,11 +93,12 @@ const getColumnDefs = (type: string) => {
         headerName: tableColumns.code,
         field: isEnterprise ? 'code' : 'enterprise.code',
         tooltipField: isEnterprise ? 'code' : 'enterprise.code',
+        minWidth: 100,
         cellRenderer: (props: ICellRendererParams) => (
           <div className="flex items-center justify-center p-2">
             <Link
               className="overflow-hidden truncate whitespace-nowrap"
-              href={getViewUrl(props.data.id)}
+              href={getViewUrl(props.data.id, props.data.project)}
             >
               <span>{props.value}</span>
             </Link>
@@ -105,13 +110,14 @@ const getColumnDefs = (type: string) => {
         field: isEnterprise ? 'name' : 'enterprise.name',
         tooltipField: isEnterprise ? 'name' : 'enterprise.name',
         cellClass: 'ag-cell-ellipsed !pl-2.5',
-        minWidth: 150,
+        minWidth: 200,
       },
       {
         headerName: tableColumns.agencies,
         valueGetter: (params: ValueGetterParams) => getAgencyNames(params),
         tooltipValueGetter: (params: ITooltipParams) => getAgencyNames(params),
         sortable: false,
+        minWidth: 200,
       },
       {
         headerName: tableColumns.country,
@@ -142,6 +148,16 @@ const getColumnDefs = (type: string) => {
               field: 'project_code',
               tooltipField: 'project_code',
               sortable: false,
+              cellRenderer: (props: ICellRendererParams) => (
+                <div className="flex items-center justify-center p-2">
+                  <Link
+                    className="overflow-hidden truncate whitespace-nowrap"
+                    href={`/projects-listing/${props.data.project}`}
+                  >
+                    <span>{props.value}</span>
+                  </Link>
+                </div>
+              ),
             },
           ]
         : []),
@@ -149,7 +165,7 @@ const getColumnDefs = (type: string) => {
     defaultColDef: {
       headerClass: 'ag-text-center',
       cellClass: 'ag-text-center ag-cell-ellipsed',
-      minWidth: 90,
+      minWidth: 150,
       resizable: true,
       sortable: true,
     },

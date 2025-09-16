@@ -328,8 +328,8 @@ export const TextAreaWidget = <T,>(
             index,
           )
         }
-        className={cx(textAreaClassname, {
-          'md:w-[255px] md:min-w-[255px]': field.table === 'ods_odp',
+        className={cx(textAreaClassname, 'max-w-[415px]', {
+          'md:min-w-[415px]': field.table === 'ods_odp',
           'border-red-500': getIsInputDisabled(
             hasSubmitted,
             errors,

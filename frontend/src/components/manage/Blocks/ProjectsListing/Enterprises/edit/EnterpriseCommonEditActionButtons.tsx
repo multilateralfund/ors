@@ -2,6 +2,7 @@ import { useContext } from 'react'
 
 import Dropdown from '@ors/components/ui/Dropdown/Dropdown'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
+import ChangeStatusModal from './ChangeStatusModal'
 import { DropDownButtonProps, DropDownMenuProps } from '../../HelperComponents'
 import {
   dropDownClassName,
@@ -15,24 +16,29 @@ import cx from 'classnames'
 const EnterpriseCommonEditActionButtons = ({
   type,
   status,
+  isObsoleteWarningOpen,
+  setIsObsoleteWarningOpen,
   disableButton,
   handleEdit,
   handleChangeStatus,
 }: {
   type: string
   status: string
+  isObsoleteWarningOpen: boolean
+  setIsObsoleteWarningOpen: (isOpen: boolean) => void
   disableButton: boolean
   handleEdit: () => Promise<boolean>
-  handleChangeStatus: (status: string) => void
+  handleChangeStatus: (status: string) => Promise<void>
 }) => {
-  const isEnterprise = type === 'enterprise'
-
   const {
     canEditEnterprise,
     canEditProjectEnterprise,
     canApproveEnterprise,
     canApproveProjectEnterprise,
   } = useContext(PermissionsContext)
+
+  const isEnterprise = type === 'enterprise'
+  const extraText = !isEnterprise ? 'project' : ''
   const canEdit = isEnterprise ? canEditEnterprise : canEditProjectEnterprise
   const canApprove = isEnterprise
     ? canApproveEnterprise
@@ -42,7 +48,13 @@ const EnterpriseCommonEditActionButtons = ({
   const isApproved = status === 'Approved'
   const isObsolete = status === 'Obsolete'
 
-  const extraText = !isEnterprise ? 'project' : ''
+  const handleChangeEnterpriseStatus = (status: string) => {
+    if (status === 'Obsolete') {
+      setIsObsoleteWarningOpen(true)
+    } else {
+      handleChangeStatus(status)
+    }
+  }
 
   return (
     <>
@@ -64,7 +76,7 @@ const EnterpriseCommonEditActionButtons = ({
         (isApproved ? (
           <Button
             className={cx({ [dropDownClassName]: !disableButton })}
-            onClick={() => handleChangeStatus('Obsolete')}
+            onClick={() => handleChangeEnterpriseStatus('Obsolete')}
             disabled={disableButton}
             variant="contained"
             size="large"
@@ -81,7 +93,7 @@ const EnterpriseCommonEditActionButtons = ({
             <Dropdown.Item
               disabled={disableButton}
               className={cx(dropdownItemClassname, 'text-primary')}
-              onClick={() => handleChangeStatus('Approved')}
+              onClick={() => handleChangeEnterpriseStatus('Approved')}
             >
               Approve {extraText} enterprise
             </Dropdown.Item>
@@ -89,7 +101,7 @@ const EnterpriseCommonEditActionButtons = ({
             <Dropdown.Item
               disabled={disableButton}
               className={cx(dropdownItemClassname, 'text-red-900')}
-              onClick={() => handleChangeStatus('Obsolete')}
+              onClick={() => handleChangeEnterpriseStatus('Obsolete')}
             >
               {isEnterprise
                 ? 'Mark enterprise as obsolete'
@@ -97,6 +109,14 @@ const EnterpriseCommonEditActionButtons = ({
             </Dropdown.Item>
           </Dropdown>
         ))}
+      {isObsoleteWarningOpen && (
+        <ChangeStatusModal
+          {...{ type, status }}
+          isModalOpen={isObsoleteWarningOpen}
+          setIsModalOpen={setIsObsoleteWarningOpen}
+          onAction={handleChangeStatus}
+        />
+      )}
     </>
   )
 }

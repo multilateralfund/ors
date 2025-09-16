@@ -10,7 +10,7 @@ import { useGetEnterprise } from '../../hooks/useGetEnterprise'
 import { Redirect, useParams } from 'wouter'
 
 const EnterpriseEditWrapper = () => {
-  const { canViewEnterprises, canEditEnterprise } =
+  const { canViewEnterprises, canEditEnterprise, canApproveEnterprise } =
     useContext(PermissionsContext)
 
   const { enterprise_id } = useParams<Record<string, string>>()
@@ -21,8 +21,12 @@ const EnterpriseEditWrapper = () => {
     return <Redirect to="/projects-listing/listing" />
   }
 
-  if (!canEditEnterprise || data?.status === 'Obsolete' || error) {
-    return <Redirect to="/projects-listing/enterprises" />
+  if (
+    (!canEditEnterprise && !canApproveEnterprise) ||
+    data?.status === 'Obsolete' ||
+    error
+  ) {
+    return <Redirect to={`/projects-listing/enterprises/${enterprise_id}`} />
   }
 
   return (
