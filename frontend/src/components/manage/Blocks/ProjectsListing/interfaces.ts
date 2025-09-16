@@ -264,7 +264,7 @@ export type ProjectIdentifiersSectionProps = {
   errors: { [key: string]: string[] }
   hasSubmitted: boolean
   mode: string
-  project: ProjectTypeApi
+  project?: ProjectTypeApi
   specificFieldsLoaded: boolean
 }
 
