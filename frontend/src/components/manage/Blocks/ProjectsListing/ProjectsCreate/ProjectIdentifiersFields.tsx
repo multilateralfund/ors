@@ -45,6 +45,7 @@ const ProjectIdentifiersFields = ({
   errors,
   hasSubmitted,
   mode,
+  project,
   specificFieldsLoaded,
 }: ProjectIdentifiersSectionProps) => {
   const sectionIdentifier = 'projIdentifiers'
@@ -66,7 +67,8 @@ const ProjectIdentifiersFields = ({
       ? filterClusterOptions(allClusters, canViewProductionProjects)
       : crtClusters
 
-  const canUpdateLeadAgency = mode === 'add' || mode === 'copy'
+  const canUpdateLeadAgency =
+    mode === 'add' || mode === 'copy' || !project?.meta_project?.lead_agency
 
   const { viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
@@ -188,8 +190,7 @@ const ProjectIdentifiersFields = ({
                 }
                 disabled={
                   !areNextSectionsDisabled ||
-                  mode === 'partial-link' ||
-                  mode === 'full-link' ||
+                  (mode !== 'copy' && !!project?.country_id) ||
                   !canEditField(editableFields, 'country')
                 }
                 Input={{
