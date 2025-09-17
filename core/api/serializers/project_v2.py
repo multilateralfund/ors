@@ -445,6 +445,28 @@ class ProjectV2OdsOdpListSerializer(ProjectOdsOdpListSerializer):
         return obj.get_ods_type_display()
 
 
+class ProjectFieldHistorySerializer(serializers.Serializer):
+    def to_representation(self, project_instance):
+        result = defaultdict(list)
+
+        versions = ProjectDetailsV2Serializer().get_versions(
+            project_instance,
+            with_field_data=True,
+        )
+
+        for version in versions:
+            for field, value in version["field_data"].items():
+                result[field].append(
+                    {
+                        "version": version["version"],
+                        "value": value,
+                        "post_excom_meeting": version.get("post_excom_meeting", None),
+                    }
+                )
+
+        return result
+
+
 class ProjectDetailsV2Serializer(ProjectListV2Serializer):
     """
     ProjectSerializer class
@@ -543,20 +565,6 @@ class ProjectDetailsV2Serializer(ProjectListV2Serializer):
         queryset = obj.project_history.all().select_related("project", "user")
         serializer = ProjectHistorySerializer(queryset, many=True)
         return serializer.data
-
-    def get_field_history(self, obj):
-        result = defaultdict(list)
-        for version in self.get_versions(obj, with_field_data=True):
-            for field, value in version["field_data"].items():
-                result[field].append(
-                    {
-                        "version": version["version"],
-                        "value": value,
-                        "post_excom_meeting": version.get("post_excom_meeting", None),
-                    }
-                )
-
-        return result
 
     def get_versions(self, obj, with_field_data=False):
         """

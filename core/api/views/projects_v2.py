@@ -37,6 +37,7 @@ from core.api.serializers.project_v2 import (
     ProjectV2CreateUpdateSerializer,
     ProjectV2EditActualFieldsSerializer,
     ProjectV2EditApprovalFieldsSerializer,
+    ProjectFieldHistorySerializer,
     HISTORY_DESCRIPTION_UPDATE_ACTUAL_FIELDS,
     HISTORY_DESCRIPTION_RECOMMEND_V2,
     HISTORY_DESCRIPTION_REJECT_V3,
@@ -542,9 +543,9 @@ class ProjectV2ViewSet(
     @action(methods=["GET"], detail=True)
     def field_history(self, request, *args, **kwargs):
         project = self.get_object()
-        serializer = ProjectDetailsV2Serializer(project)
+        serializer = ProjectFieldHistorySerializer(project)
         return Response(
-            serializer.get_field_history(project),
+            serializer.data,
             status=status.HTTP_200_OK,
         )
 
