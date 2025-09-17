@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("core", "0232_remove_projectenterprise_application_and_more"),
+        ("core", "0234_remove_enterprise_approved_enterprise_and_more"),
     ]
 
     operations = [
