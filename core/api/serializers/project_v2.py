@@ -445,8 +445,9 @@ class ProjectV2OdsOdpListSerializer(ProjectOdsOdpListSerializer):
         return obj.get_ods_type_display()
 
 
-class ProjectFieldHistorySerializer(serializers.Serializer):
-    def to_representation(self, project_instance):
+class SerializeProjectFieldHistory:
+    @staticmethod
+    def serialize(project_instance):
         result = defaultdict(list)
 
         versions = ProjectDetailsV2Serializer().get_versions(
