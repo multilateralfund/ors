@@ -45,6 +45,7 @@ const PEnterpriseEditWrapper = () => {
   if (
     (!canEditProjectEnterprise && !canApproveProjectEnterprise) ||
     data?.status === 'Obsolete' ||
+    (data?.status === 'Approved' && !canApproveProjectEnterprise) ||
     error
   ) {
     return (

@@ -30,10 +30,13 @@ const getColumnDefs = (type: string) => {
   }))
 
   const isEnterprise = type === 'enterprise'
-
-  const canAccessEditPage = isEnterprise
-    ? canEditEnterprise || canApproveEnterprise
-    : canEditProjectEnterprise || canApproveProjectEnterprise
+  const editPermissions = isEnterprise
+    ? canEditEnterprise
+    : canEditProjectEnterprise
+  const approvalPermissions = isEnterprise
+    ? canApproveEnterprise
+    : canApproveProjectEnterprise
+  const canAccessEditPage = editPermissions || approvalPermissions
 
   const getViewUrl = (enterpriseId: number, project_id: number) =>
     isEnterprise
@@ -66,7 +69,9 @@ const getColumnDefs = (type: string) => {
 
   return {
     columnDefs: [
-      ...(canAccessEditPage && (project_id || isEnterprise)
+      ...(canAccessEditPage &&
+      (project_id || isEnterprise) &&
+      !(editPermissions && !approvalPermissions)
         ? [
             {
               minWidth: 40,
@@ -76,14 +81,17 @@ const getColumnDefs = (type: string) => {
               cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-no-border-r',
               cellRenderer: (props: ICellRendererParams) => (
                 <div className="flex items-center p-2">
-                  {props.data.status !== 'Obsolete' && (
-                    <Link
-                      className="flex h-4 w-4 justify-center"
-                      href={getEditUrl(props.data.id)}
-                    >
-                      <FiEdit size={16} />
-                    </Link>
-                  )}
+                  {props.data.status !== 'Obsolete' &&
+                    !(
+                      props.data.status === 'Approved' && !approvalPermissions
+                    ) && (
+                      <Link
+                        className="flex h-4 w-4 justify-center"
+                        href={getEditUrl(props.data.id)}
+                      >
+                        <FiEdit size={16} />
+                      </Link>
+                    )}
                 </div>
               ),
             },

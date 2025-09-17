@@ -1,3 +1,6 @@
+import { useContext } from 'react'
+
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import {
   EnterpriseNumberField,
   EnterpriseSelectField,
@@ -19,6 +22,8 @@ const PEnterpriseOverviewSection = ({
 }: PEnterpriseDataProps & {
   countryId: number | null
 }) => {
+  const { canEditProjectEnterprise } = useContext(PermissionsContext)
+
   const commonSlice = useStore((state) => state.common)
   const countries = commonSlice.countries.data
   const agencies = commonSlice.agencies.data
@@ -27,7 +32,9 @@ const PEnterpriseOverviewSection = ({
   const { overview } = enterpriseData
   const overviewStatus = (overview as EnterpriseType).status
   const isDisabled =
-    (!!enterprise && enterprise.status !== 'Pending Approval') ||
+    (!!enterprise &&
+      (enterprise.status !== 'Pending Approval' ||
+        !canEditProjectEnterprise)) ||
     (!!overviewStatus && overviewStatus !== 'Pending Approval')
 
   const sectionIdentifier = 'overview'
