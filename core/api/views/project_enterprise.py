@@ -210,7 +210,7 @@ class ProjectEnterpriseViewSet(
 
         if not user.has_perm(
             "core.has_project_enterprise_approval_access"
-        ) or not user.has_perm("core.has_project_enterprise_edit_access"):
+        ) and not user.has_perm("core.has_project_enterprise_edit_access"):
             queryset = queryset.filter(status=EnterpriseStatus.APPROVED)
 
         if not user.has_perm("core.can_view_production_projects"):

@@ -24,6 +24,7 @@ from core.api.permissions import (
     HasProjectV2AssociateProjectsAccess,
     HasProjectV2ApproveAccess,
     HasProjectV2RecommendAccess,
+    HasProjectV2EditPlusV3Access,
 )
 from core.utils import regenerate_meta_project_new_code
 from core.api.serializers.project_v2 import (
@@ -160,11 +161,14 @@ class ProjectV2ViewSet(
             return [HasProjectV2ViewAccess]
         if self.action in [
             "create",
+        ]:
+            return [HasProjectV2EditAccess]
+        if self.action in [
             "update",
             "partial_update",
             "edit_actual_fields",
         ]:
-            return [HasProjectV2EditAccess]
+            return [HasProjectV2EditPlusV3Access]
         if self.action in [
             "submit",
         ]:
@@ -1081,7 +1085,7 @@ class ProjectV2FileView(
         if self.request.method in ["GET"]:
             return [HasProjectV2ViewAccess]
         if self.request.method in ["POST", "DELETE"]:
-            return [HasProjectV2EditAccess]
+            return [HasProjectV2EditPlusV3Access]
         return [DenyAll]
 
     def get_serializer_context(self):
