@@ -209,18 +209,18 @@ class ProjectV2ViewSet(
                 return queryset.none()
 
             allowed_versions = set()
-            include_drafts = False
+            limit_to_draft = False
 
             if user.has_perm("core.has_project_v2_draft_edit_access"):
-                include_drafts = True
+                limit_to_draft = True
                 allowed_versions.update([1, 2])
 
             if user.has_perm("core.has_project_v2_version1_version2_edit_access"):
-                include_drafts = False
+                limit_to_draft = False
                 allowed_versions.update([1, 2])
 
             if user.has_perm("core.has_project_v2_version3_edit_access"):
-                include_drafts = False
+                limit_to_draft = False
                 allowed_versions.add(3)
 
             if not user.has_perm("core.has_project_v2_edit_approved_access"):
@@ -234,7 +234,7 @@ class ProjectV2ViewSet(
 
             queryset_filters = Q()
 
-            if include_drafts:
+            if limit_to_draft:
                 queryset_filters &= Q(submission_status__name="Draft")
 
             version_filters = Q()
@@ -1162,16 +1162,16 @@ class ProjectV2FileView(
                 return queryset.none()
 
             allowed_versions = set()
-            include_drafts = False
+            limit_to_draft = False
 
             if user.has_perm("core.has_project_v2_draft_edit_access"):
-                include_drafts = True
+                limit_to_draft = True
                 allowed_versions.update([1, 2])
             if user.has_perm("core.has_project_v2_version1_version2_edit_access"):
-                include_drafts = False
+                limit_to_draft = False
                 allowed_versions.update([1, 2])
             if user.has_perm("core.has_project_v2_version3_edit_access"):
-                include_drafts = False
+                limit_to_draft = False
                 allowed_versions.add(3)
 
             if not user.has_perm("core.has_project_v2_edit_approved_access"):
@@ -1185,7 +1185,7 @@ class ProjectV2FileView(
 
             queryset_filters = Q()
 
-            if include_drafts:
+            if limit_to_draft:
                 queryset_filters &= Q(submission_status__name="Draft")
 
             version_filters = Q()
@@ -1334,16 +1334,16 @@ class ProjectV2FileIncludePreviousVersionsView(
                 return queryset.none()
 
             allowed_versions = set()
-            include_drafts = False
+            limit_to_draft = False
 
             if user.has_perm("core.has_project_v2_draft_edit_access"):
-                include_drafts = True
+                limit_to_draft = True
                 allowed_versions.update([1, 2])
             if user.has_perm("core.has_project_v2_version1_version2_edit_access"):
-                include_drafts = False
+                limit_to_draft = False
                 allowed_versions.update([1, 2])
             if user.has_perm("core.has_project_v2_version3_edit_access"):
-                include_drafts = False
+                limit_to_draft = False
                 allowed_versions.add(3)
 
             if not user.has_perm("core.has_project_v2_edit_approved_access"):
@@ -1357,7 +1357,7 @@ class ProjectV2FileIncludePreviousVersionsView(
 
             queryset_filters = Q()
 
-            if include_drafts:
+            if limit_to_draft:
                 queryset_filters &= Q(submission_status__name="Draft")
 
             version_filters = Q()
