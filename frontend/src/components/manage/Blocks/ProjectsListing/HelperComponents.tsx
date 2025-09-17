@@ -183,6 +183,12 @@ export const VersionsList = ({
     submission_status,
   } = project
   const isDraft = lowerCase(submission_status) === 'draft'
+  let versionLabel
+  if (version > 3) {
+    versionLabel = `ExCom ${project.post_excom_meeting}`
+  } else {
+    versionLabel = version
+  }
 
   return (
     (!isDraft || (isDraft && version === 2)) && (
@@ -190,7 +196,7 @@ export const VersionsList = ({
         <VersionsDropdown
           {...{ versions, showVersionsMenu, setShowVersionsMenu }}
         />
-        <HeaderTag {...{ latest_project, version }} />
+        <HeaderTag {...{ latest_project, version: versionLabel }} />
       </>
     )
   )

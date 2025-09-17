@@ -37,6 +37,7 @@ from core.api.serializers.project_v2 import (
     ProjectV2CreateUpdateSerializer,
     ProjectV2EditActualFieldsSerializer,
     ProjectV2EditApprovalFieldsSerializer,
+    SerializeProjectFieldHistory,
     HISTORY_DESCRIPTION_UPDATE_ACTUAL_FIELDS,
     HISTORY_DESCRIPTION_RECOMMEND_V2,
     HISTORY_DESCRIPTION_REJECT_V3,
@@ -44,6 +45,7 @@ from core.api.serializers.project_v2 import (
     HISTORY_DESCRIPTION_SUBMIT_V1,
     HISTORY_DESCRIPTION_WITHDRAW_V3,
     HISTORY_DESCRIPTION_STATUS_CHANGE,
+    HISTORY_DESCRIPTION_POST_EXCOM_UPDATE,
 )
 from core.api.swagger import FileUploadAutoSchema
 from core.models.agency import Agency
@@ -157,6 +159,7 @@ class ProjectV2ViewSet(
             "export",
             "list_previous_tranches",
             "list_associated_projects",
+            "field_history",
         ]:
             return [HasProjectV2ViewAccess]
         if self.action in [
@@ -204,18 +207,22 @@ class ProjectV2ViewSet(
             user_has_any_edit_access = _check_if_user_has_edit_access(user)
             if not user_has_any_edit_access:
                 return queryset.none()
-            allowed_versions = set()
-            queryset_filters = {}
-            if user.has_perm("core.has_project_v2_draft_edit_access"):
-                queryset_filters["submission_status__name"] = "Draft"
-                allowed_versions.update([1, 2])
-            if user.has_perm("core.has_project_v2_version1_version2_edit_access"):
-                queryset_filters.pop("submission_status__name", None)
-                allowed_versions.update([1, 2])
-            if user.has_perm("core.has_project_v2_version3_edit_access"):
 
-                queryset_filters.pop("submission_status__name", None)
+            allowed_versions = set()
+            limit_to_draft = False
+
+            if user.has_perm("core.has_project_v2_draft_edit_access"):
+                limit_to_draft = True
+                allowed_versions.update([1, 2])
+
+            if user.has_perm("core.has_project_v2_version1_version2_edit_access"):
+                limit_to_draft = False
+                allowed_versions.update([1, 2])
+
+            if user.has_perm("core.has_project_v2_version3_edit_access"):
+                limit_to_draft = False
                 allowed_versions.add(3)
+
             if not user.has_perm("core.has_project_v2_edit_approved_access"):
                 queryset = queryset.exclude(
                     submission_status__name__in=[
@@ -225,9 +232,22 @@ class ProjectV2ViewSet(
                     ]
                 )
 
-            if allowed_versions:
-                queryset_filters["version__in"] = list(allowed_versions)
-            queryset = queryset.filter(**queryset_filters)
+            queryset_filters = Q()
+
+            if limit_to_draft:
+                queryset_filters &= Q(submission_status__name="Draft")
+
+            version_filters = Q()
+
+            if allowed_versions and 3 in allowed_versions:
+                version_filters = Q(version__in=allowed_versions) | Q(version__gte=3)
+
+            elif allowed_versions:
+                version_filters = Q(version__in=allowed_versions)
+
+            queryset_filters &= version_filters
+
+            queryset = queryset.filter(queryset_filters)
 
         if not user.has_perm("core.can_view_production_projects"):
             queryset = queryset.filter(production=False)
@@ -470,6 +490,18 @@ class ProjectV2ViewSet(
             status=status.HTTP_200_OK,
         )
 
+    def update(self, request, *args, **kwargs):
+        post_excom_update = request.data.get("post-excom-update", False)
+        if post_excom_update:
+            project = self.get_object()
+            project.increase_version(request.user)
+            log_project_history(
+                project,
+                request.user,
+                HISTORY_DESCRIPTION_POST_EXCOM_UPDATE,
+            )
+        return super().update(request, *args, **kwargs)
+
     @action(methods=["POST"], detail=True)
     @swagger_auto_schema(
         operation_description="""
@@ -505,6 +537,14 @@ class ProjectV2ViewSet(
             send_project_recomended_notification.delay(project.id)
         return Response(
             ProjectDetailsV2Serializer(project).data,
+            status=status.HTTP_200_OK,
+        )
+
+    @action(methods=["GET"], detail=True)
+    def field_history(self, request, *args, **kwargs):
+        project = self.get_object()
+        return Response(
+            SerializeProjectFieldHistory.serialize(project),
             status=status.HTTP_200_OK,
         )
 
@@ -1119,17 +1159,18 @@ class ProjectV2FileView(
             user_has_any_edit_access = _check_if_user_has_edit_access(user)
             if not user_has_any_edit_access:
                 return queryset.none()
+
             allowed_versions = set()
-            queryset_filters = {}
+            limit_to_draft = False
 
             if user.has_perm("core.has_project_v2_draft_edit_access"):
-                queryset_filters["submission_status__name"] = "Draft"
+                limit_to_draft = True
                 allowed_versions.update([1, 2])
             if user.has_perm("core.has_project_v2_version1_version2_edit_access"):
-                queryset_filters.pop("submission_status__name", None)
+                limit_to_draft = False
                 allowed_versions.update([1, 2])
             if user.has_perm("core.has_project_v2_version3_edit_access"):
-                queryset_filters.pop("submission_status__name", None)
+                limit_to_draft = False
                 allowed_versions.add(3)
 
             if not user.has_perm("core.has_project_v2_edit_approved_access"):
@@ -1141,9 +1182,22 @@ class ProjectV2FileView(
                     ]
                 )
 
-            if allowed_versions:
-                queryset_filters["version__in"] = list(allowed_versions)
-            queryset = queryset.filter(**queryset_filters)
+            queryset_filters = Q()
+
+            if limit_to_draft:
+                queryset_filters &= Q(submission_status__name="Draft")
+
+            version_filters = Q()
+
+            if allowed_versions and 3 in allowed_versions:
+                version_filters = Q(version__in=allowed_versions) | Q(version__gte=3)
+
+            elif allowed_versions:
+                version_filters = Q(version__in=allowed_versions)
+
+            queryset_filters &= version_filters
+
+            queryset = queryset.filter(queryset_filters)
 
         if not user.has_perm("core.can_view_production_projects"):
             queryset = queryset.filter(production=False)
@@ -1277,17 +1331,18 @@ class ProjectV2FileIncludePreviousVersionsView(
             user_has_any_edit_access = _check_if_user_has_edit_access(user)
             if not user_has_any_edit_access:
                 return queryset.none()
+
             allowed_versions = set()
-            queryset_filters = {}
+            limit_to_draft = False
 
             if user.has_perm("core.has_project_v2_draft_edit_access"):
-                queryset_filters["submission_status__name"] = "Draft"
+                limit_to_draft = True
                 allowed_versions.update([1, 2])
             if user.has_perm("core.has_project_v2_version1_version2_edit_access"):
-                queryset_filters.pop("submission_status__name", None)
+                limit_to_draft = False
                 allowed_versions.update([1, 2])
             if user.has_perm("core.has_project_v2_version3_edit_access"):
-                queryset_filters.pop("submission_status__name", None)
+                limit_to_draft = False
                 allowed_versions.add(3)
 
             if not user.has_perm("core.has_project_v2_edit_approved_access"):
@@ -1299,9 +1354,22 @@ class ProjectV2FileIncludePreviousVersionsView(
                     ]
                 )
 
-            if allowed_versions:
-                queryset_filters["version__in"] = list(allowed_versions)
-            queryset = queryset.filter(**queryset_filters)
+            queryset_filters = Q()
+
+            if limit_to_draft:
+                queryset_filters &= Q(submission_status__name="Draft")
+
+            version_filters = Q()
+
+            if allowed_versions and 3 in allowed_versions:
+                version_filters = Q(version__in=allowed_versions) | Q(version__gte=3)
+
+            elif allowed_versions:
+                version_filters = Q(version__in=allowed_versions)
+
+            queryset_filters &= version_filters
+
+            queryset = queryset.filter(queryset_filters)
 
         if not user.has_perm("core.can_view_production_projects"):
             queryset = queryset.filter(production=False)

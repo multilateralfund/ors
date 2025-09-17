@@ -21,7 +21,7 @@ import {
   textFieldClassName,
 } from '../constants'
 
-import { find, get, isObject, isBoolean, isNil, isArray } from 'lodash'
+import { find, get, isObject, isBoolean, isNil, isArray, omit } from 'lodash'
 import { Checkbox, TextareaAutosize } from '@mui/material'
 import cx from 'classnames'
 import dayjs from 'dayjs'
@@ -477,16 +477,19 @@ const DateWidget = <T,>(
             index,
           )
         }
-        {...getFieldDefaultProps(
-          getIsInputDisabled(
-            hasSubmitted,
-            errors,
-            hasTrancheErrors,
-            field.label,
-            index,
+        {...omit(
+          getFieldDefaultProps(
+            getIsInputDisabled(
+              hasSubmitted,
+              errors,
+              hasTrancheErrors,
+              field.label,
+              index,
+            ),
+            editableFields,
+            field,
           ),
-          editableFields,
-          field,
+          ['containerClassName'],
         )}
       />
     </div>

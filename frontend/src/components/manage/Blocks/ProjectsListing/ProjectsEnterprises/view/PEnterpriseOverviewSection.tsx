@@ -60,7 +60,9 @@ const PEnterpriseOverviewSection = ({
         </div>
       </div>
       <div className="mt-10 max-w-[90%]">
-        {detailItem(tableColumns.remarks, enterprise.remarks, 'self-start')}
+        {detailItem(tableColumns.remarks, enterprise.remarks, {
+          detailClassname: 'self-start',
+        })}
       </div>
     </>
   )

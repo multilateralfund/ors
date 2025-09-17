@@ -1,3 +1,4 @@
+import type { ProjectFieldHistoryValue } from '@ors/types/store'
 import { Dispatch, ReactNode, SetStateAction } from 'react'
 import { ProjectType } from '@ors/types/api_projects'
 
@@ -19,6 +20,8 @@ export interface ProjIdentifiers {
   lead_agency_submitting_on_behalf: boolean
   cluster: number | null
   production: boolean
+  post_excom_meeting: number | null
+  post_excom_decision: string | null
 }
 export interface CrossCuttingFields {
   project_type: number | null
@@ -89,6 +92,10 @@ export interface SpecificFields {
   meeting_approved: number | null
   decision: string | null
   decision_id: string | null
+  post_excom_meeting: number | null
+  post_excom_decision: string | null
+  post_excom_meeting_id: number | null
+  post_excom_decision_id: string | null
 }
 
 export type OdsOdpFields = {
@@ -191,6 +198,7 @@ export type ViewModesHandler = (
   data: ProjectTypeApi,
   field: ProjectSpecificFields,
   classNames?: DetailItemClassname | undefined,
+  fieldHistory?: ProjectFieldHistoryValue[],
 ) => ReactNode
 
 export type ProjectFilesObject = {
@@ -216,6 +224,7 @@ export interface ProjectVersions {
   final_version_id: number
   created_by: string
   date_created: string
+  post_excom_meeting: number | null
 }
 
 export interface ProjectData {
@@ -265,6 +274,7 @@ export type ProjectIdentifiersSectionProps = {
   hasSubmitted: boolean
   mode: string
   project?: ProjectTypeApi
+  postExComUpdate?: boolean
   specificFieldsLoaded: boolean
 }
 

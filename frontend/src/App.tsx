@@ -54,6 +54,7 @@ import ProjectsExportPage from '@ors/app/projects_listing/export/page'
 import ProjectsSettingsPage from '@ors/app/projects_listing/settings/page'
 import ProjectsCreatePage from '@ors/app/projects_listing/create/page'
 import ProjectsEditPage from '@ors/app/projects_listing/[project_id]/edit/page'
+import ProjectsPostExComUpdatePage from '@ors/app/projects_listing/[project_id]/post-excom-update/page'
 import ProjectsSubmitPage from '@ors/app/projects_listing/[project_id]/submit/page'
 import ProjectsListingProjectPage from '@ors/app/projects_listing/[project_id]/page'
 import ProjectsListingArchiveProjectPage from '@ors/app/projects_listing/[project_id]/archive/page'
@@ -343,6 +344,11 @@ export default function App() {
         <Route path="/projects-listing/:project_id/edit">
           <ProjectsDataProvider>
             <ProjectsEditPage mode="edit" />
+          </ProjectsDataProvider>
+        </Route>
+        <Route path="/projects-listing/:project_id/post-excom-update">
+          <ProjectsDataProvider>
+            <ProjectsPostExComUpdatePage />
           </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/:project_id/submit">

@@ -36,15 +36,18 @@ const ProjectOverview = ({
       <div className="flex flex-wrap gap-x-20 gap-y-5">
         {sectionFields.map(
           (field) =>
-            canViewField(viewableFields, field.write_field_name) &&
-            widgets[field.data_type]<ProjectData>(
-              projectData,
-              setProjectData,
-              field,
-              errors,
-              !!errorText,
-              hasSubmitted,
-              editableFields,
+            canViewField(viewableFields, field.write_field_name) && (
+              <span key={field.write_field_name}>
+                {widgets[field.data_type]<ProjectData>(
+                  projectData,
+                  setProjectData,
+                  field,
+                  errors,
+                  !!errorText,
+                  hasSubmitted,
+                  editableFields,
+                )}
+              </span>
             ),
         )}
       </div>

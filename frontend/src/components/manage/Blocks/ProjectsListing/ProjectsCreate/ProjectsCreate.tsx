@@ -55,6 +55,7 @@ const ProjectsCreate = ({
   setProjectData,
   specificFields,
   mode,
+  postExComUpdate = false,
   files,
   projectFiles,
   errors,
@@ -73,6 +74,7 @@ const ProjectsCreate = ({
   TrancheErrors & {
     specificFields: ProjectSpecificFields[]
     mode: string
+    postExComUpdate?: boolean
     errors: { [key: string]: [] }
     hasSubmitted: boolean
     fileErrors: string
@@ -278,6 +280,7 @@ const ProjectsCreate = ({
             hasSubmitted,
             mode,
             project,
+            postExComUpdate,
             specificFieldsLoaded,
           }}
           isNextBtnEnabled={canLinkToBp}
@@ -439,7 +442,7 @@ const ProjectsCreate = ({
           : []),
       ],
     },
-    ...(project && mode === 'edit' && project.version === 3
+    ...(project && mode === 'edit' && project.version >= 3
       ? [
           {
             id: 'project-approval-section',
@@ -524,6 +527,7 @@ const ProjectsCreate = ({
       >
         {steps.map(({ id, ariaControls, label, disabled }) => (
           <Tab
+            key={id}
             id={id}
             aria-controls={ariaControls}
             label={label}
@@ -538,9 +542,9 @@ const ProjectsCreate = ({
       <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
         {steps
           .filter((_, index) => index === currentTab)
-          .map(({ component, errors }) => {
+          .map(({ id, component, errors }) => {
             return (
-              <>
+              <span key={id}>
                 {mode === 'edit' &&
                   project?.submission_status === 'Draft' &&
                   warnings.id === parseInt(project_id) &&
@@ -580,7 +584,7 @@ const ProjectsCreate = ({
                   />
                 )}
                 {component}
-              </>
+              </span>
             )
           })}
       </div>

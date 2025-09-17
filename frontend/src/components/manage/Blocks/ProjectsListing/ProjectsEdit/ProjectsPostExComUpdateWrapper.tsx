@@ -8,10 +8,8 @@ import { useGetProject } from '../hooks/useGetProject'
 import { Redirect, useParams } from 'wouter'
 import { isNull } from 'lodash'
 
-const ProjectsEditWrapper = ({ mode }: { mode: string }) => {
+const ProjectsPostExComUpdateWrapper = () => {
   const { project_id } = useParams<Record<string, string>>()
-
-  const { canEditApprovedProjects } = useContext(PermissionsContext)
 
   const project = useGetProject(project_id)
   const { data, loading } = project
@@ -20,29 +18,17 @@ const ProjectsEditWrapper = ({ mode }: { mode: string }) => {
     return <Redirect to="/projects-listing/listing" />
   }
 
-  if (
-    data &&
-    ((mode !== 'copy' &&
-      ((['Withdrawn', 'Not approved'].includes(data.submission_status) &&
-        (mode !== 'edit' || !canEditApprovedProjects)) ||
-        (mode !== 'edit' &&
-          data.version >= 3 &&
-          data.submission_status !== 'Recommended'))) ||
-      !isNull(data.latest_project) ||
-      (mode !== 'copy' && !data.editable))
-  ) {
-    return <Redirect to={`/projects-listing/${project_id}`} />
-  }
-
   return (
     <>
       <Loading
         className="!fixed bg-action-disabledBackground"
         active={loading}
       />
-      {!loading && data && <ProjectsEdit project={data} mode={mode} />}
+      {!loading && data && (
+        <ProjectsEdit project={data} mode={'edit'} postExComUpdate={true} />
+      )}
     </>
   )
 }
 
-export default ProjectsEditWrapper
+export default ProjectsPostExComUpdateWrapper
