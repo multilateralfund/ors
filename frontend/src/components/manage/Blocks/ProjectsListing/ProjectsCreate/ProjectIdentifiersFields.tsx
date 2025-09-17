@@ -1,6 +1,7 @@
 import { ChangeEvent, useContext } from 'react'
 
 import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
+import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { NavigationButton } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/NavigationButton'
@@ -19,7 +20,12 @@ import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { changeHandler } from './SpecificFieldsHelpers'
-import { defaultProps, disabledClassName, tableColumns } from '../constants'
+import {
+  defaultProps,
+  defaultPropsSimpleField,
+  disabledClassName,
+  tableColumns,
+} from '../constants'
 import {
   canEditField,
   canViewField,
@@ -46,6 +52,7 @@ const ProjectIdentifiersFields = ({
   hasSubmitted,
   mode,
   project,
+  postExComUpdate,
   specificFieldsLoaded,
 }: ProjectIdentifiersSectionProps) => {
   const sectionIdentifier = 'projIdentifiers'
@@ -73,7 +80,8 @@ const ProjectIdentifiersFields = ({
   const { viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
   )
-  const canEditMeeting = canEditField(editableFields, 'meeting')
+  const canEditMeeting =
+    !postExComUpdate && canEditField(editableFields, 'meeting')
 
   const areNextStepsAvailable = isNextBtnEnabled && areNextSectionsDisabled
 
@@ -159,6 +167,36 @@ const ProjectIdentifiersFields = ({
     }))
   }
 
+  const handleChangePostExComMeeting = (meeting?: string) => {
+    setProjectData((prevData) => ({
+      ...prevData,
+      [sectionIdentifier]: {
+        ...prevData[sectionIdentifier],
+        post_excom_meeting: parseNumber(meeting),
+      },
+    }))
+  }
+
+  const handleChangePostExComDecision = (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
+    const initialValue = event.target.value
+
+    if (initialValue === '' || !isNaN(parseInt(initialValue))) {
+      const finalVal = initialValue ? parseInt(initialValue).toString() : null
+
+      setProjectData((prevData) => ({
+        ...prevData,
+        [sectionIdentifier]: {
+          ...prevData[sectionIdentifier],
+          post_excom_decision: finalVal,
+        },
+      }))
+    } else {
+      event.preventDefault()
+    }
+  }
+
   const handleChangeSubmitOnBehalf = (event: ChangeEvent<HTMLInputElement>) => {
     setProjectData((prevData) => ({
       ...prevData,
@@ -174,7 +212,63 @@ const ProjectIdentifiersFields = ({
 
   return (
     <>
-      <SectionTitle>Identifiers</SectionTitle>
+      {postExComUpdate ? (
+        <div>
+          <SectionTitle>
+            Update Project fields following Executive Committee
+          </SectionTitle>
+          <div className="flex flex-col gap-y-2">
+            <div className="flex flex-wrap gap-x-20 gap-y-3">
+              <div className="w-32">
+                <Label>Meeting</Label>
+                <PopoverInput
+                  label={getMeetingNr(
+                    projIdentifiers?.post_excom_meeting ?? undefined,
+                  )?.toString()}
+                  options={getMeetingOptions()}
+                  onChange={handleChangePostExComMeeting}
+                  onClear={() => handleChangePostExComMeeting()}
+                  clearBtnClassName="right-1"
+                  withClear={true}
+                  className="!m-0 h-10 !py-1"
+                />
+              </div>
+              <div className="w-32">
+                <Label htmlFor="postExComDecision">Decision</Label>
+                <SimpleInput
+                  id="postExComDecision"
+                  label=""
+                  value={projIdentifiers?.post_excom_decision ?? ''}
+                  onChange={handleChangePostExComDecision}
+                  type="text"
+                  className={defaultPropsSimpleField.className}
+                  containerClassName={
+                    defaultPropsSimpleField.containerClassName
+                  }
+                />
+              </div>
+              <div className="flex items-end">
+                <div className="flex h-10 items-center">
+                  <CustomAlert
+                    type="error"
+                    content={
+                      <>
+                        <Typography className="text-lg">
+                          These fields are mandatory.
+                        </Typography>
+                      </>
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <br />
+        </div>
+      ) : null}
+      <SectionTitle>
+        {postExComUpdate ? 'Main attributes' : 'Identifiers'}
+      </SectionTitle>
       <div className="flex flex-col gap-y-2">
         <div className="flex flex-wrap gap-x-20 gap-y-3">
           {canViewField(viewableFields, 'country') && (
@@ -382,9 +476,15 @@ const ProjectIdentifiersFields = ({
           {!areNextSectionsDisabled && (
             <div className="mt-5">
               <Button
-                className="h-8 border border-solid border-primary bg-white px-3 py-1 leading-none text-primary"
+                className={cx(
+                  'h-8 border border-solid border-primary bg-white px-3 py-1 leading-none text-primary',
+                  {
+                    [disabledClassName]: postExComUpdate,
+                  },
+                )}
                 size="large"
                 variant="contained"
+                disabled={postExComUpdate}
                 onClick={() => {
                   setCurrentStep(0)
                   setCurrentTab(0)

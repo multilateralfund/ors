@@ -81,15 +81,18 @@ const ProjectSubstanceDetails = ({
     <div className="flex flex-col gap-y-6">
       {projectFields.map(
         (field) =>
-          canViewField(viewableFields, field.write_field_name) &&
-          widgets[field.data_type]<ProjectData>(
-            projectData,
-            setProjectData,
-            field,
-            errors,
-            false,
-            hasSubmitted,
-            editableFields,
+          canViewField(viewableFields, field.write_field_name) && (
+            <span key={field.write_field_name}>
+              {widgets[field.data_type]<ProjectData>(
+                projectData,
+                setProjectData,
+                field,
+                errors,
+                false,
+                hasSubmitted,
+                editableFields,
+              )}
+            </span>
           ),
       )}
       {canViewSubstanceSection && (
@@ -103,25 +106,28 @@ const ProjectSubstanceDetails = ({
                       (field1.sort_order ?? 0) - (field2.sort_order ?? 0),
                   )
                   .map((_, index) => (
-                    <>
+                    <span key={index}>
                       <div className="align-center flex flex-row flex-wrap gap-x-7 gap-y-4">
                         {odsOdpFields.map(
                           (odsOdpField) =>
                             canViewField(
                               viewableFields,
                               odsOdpField.write_field_name,
-                            ) &&
-                            widgets[odsOdpField.data_type]<ProjectData>(
-                              projectData,
-                              setProjectData,
-                              odsOdpField,
-                              odsOdpErrors,
-                              false,
-                              hasSubmitted,
-                              editableFields,
-                              sectionIdentifier,
-                              field,
-                              index,
+                            ) && (
+                              <span key={odsOdpField.write_field_name}>
+                                {widgets[odsOdpField.data_type]<ProjectData>(
+                                  projectData,
+                                  setProjectData,
+                                  odsOdpField,
+                                  odsOdpErrors,
+                                  false,
+                                  hasSubmitted,
+                                  editableFields,
+                                  sectionIdentifier,
+                                  field,
+                                  index,
+                                )}
+                              </span>
                             ),
                         )}
                         <IoTrash
@@ -133,7 +139,7 @@ const ProjectSubstanceDetails = ({
                         />
                       </div>
                       {index !== odsOdpData.length - 1 && <Divider />}
-                    </>
+                    </span>
                   ))}
             </div>
           </div>

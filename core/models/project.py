@@ -197,6 +197,23 @@ class Project(models.Model):
     meeting = models.ForeignKey(
         Meeting, on_delete=models.CASCADE, related_name="projects"
     )
+
+    post_excom_meeting = models.ForeignKey(
+        Meeting,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="post_excom_projects",
+    )
+
+    post_excom_decision = models.ForeignKey(
+        Decision,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="post_excom_projects",
+    )
+
     meeting_transf = models.ForeignKey(
         Meeting,
         on_delete=models.CASCADE,

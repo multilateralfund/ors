@@ -198,6 +198,27 @@ export interface ProjectWarningsTypeSlice {
   setWarnings: (warnings: ProjectWarningsType) => void
 }
 
+export interface ProjectFieldHistoryValue {
+  version: number
+  value: any
+  post_excom_meeting: number | null
+}
+
+export type ProjectFieldHistoryEntry = Record<
+  string,
+  ProjectFieldHistoryValue[]
+>
+
+export interface ProjectFieldHistorySlice {
+  fieldHistory: {
+    loading: boolean
+    loaded: boolean
+    data: ProjectFieldHistoryEntry
+    error: any
+  }
+  fetchFieldHistory: (projectId: number) => Promise<void>
+}
+
 export interface BusinessPlanSlice {
   sectors: SliceData
   subsectors: SliceData
@@ -277,6 +298,7 @@ export type StoreState = {
   projects: ProjectsSlice
   projectFields: ProjectsFieldsSlice
   projectWarnings: ProjectWarningsTypeSlice
+  projectFieldHistory: ProjectFieldHistorySlice
   settings: SettingsSlice
   theme: ThemeSlice
   user: UserSlice

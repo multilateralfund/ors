@@ -22,6 +22,21 @@ import { ProjectSpecificFields } from '../interfaces'
 import { Redirect, useLocation, useParams } from 'wouter'
 import { isNull } from 'lodash'
 
+const EditLink = (props: any) => {
+  const { children, ...rest } = props
+  return (
+    <CustomLink
+      className={'ml-auto mt-auto h-10 text-nowrap text-lg uppercase'}
+      color="secondary"
+      variant="contained"
+      {...rest}
+      button
+    >
+      {children}
+    </CustomLink>
+  )
+}
+
 const ProjectViewWrapper = () => {
   const { project_id, version: paramsVersion } =
     useParams<Record<string, string>>()
@@ -37,6 +52,7 @@ const ProjectViewWrapper = () => {
     project_type_id,
     sector_id,
     submission_status,
+    status: project_status,
     latest_project,
     version,
     editable,
@@ -117,21 +133,26 @@ const ProjectViewWrapper = () => {
                   )}
                 </div>
               </div>
-              {canEditProjects &&
-                editable &&
-                isNull(latest_project) &&
-                (!['Withdrawn', 'Not approved'].includes(submission_status) ||
-                  canEditApprovedProjects) && (
-                  <CustomLink
-                    className="ml-auto mt-auto h-10 text-nowrap px-4 py-2 text-lg uppercase"
-                    href={`/projects-listing/${project_id}/edit`}
-                    color="secondary"
-                    variant="contained"
-                    button
+              <div className="flex gap-3">
+                {canEditProjects &&
+                  editable &&
+                  isNull(latest_project) &&
+                  (!['Withdrawn', 'Not approved'].includes(submission_status) ||
+                    canEditApprovedProjects) && (
+                    <EditLink href={`/projects-listing/${project_id}/edit`}>
+                      Edit
+                    </EditLink>
+                  )}
+                {canEditProjects &&
+                submission_status === 'Approved' &&
+                project_status !== 'Completed' ? (
+                  <EditLink
+                    href={`/projects-listing/${project_id}/post-excom-update`}
                   >
-                    Edit
-                  </CustomLink>
-                )}
+                    Update post ExCom
+                  </EditLink>
+                ) : null}
+              </div>
             </div>
             <ProjectStatusInfo project={data} />
           </HeaderTitle>

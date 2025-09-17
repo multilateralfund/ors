@@ -40,13 +40,15 @@ import { enqueueSnackbar } from 'notistack'
 const ProjectsEdit = ({
   project,
   mode,
+  postExComUpdate = false,
 }: {
   project: ProjectTypeApi
   mode: string
+  postExComUpdate?: boolean
 }) => {
   const project_id = project.id.toString()
   const isEditMode = mode === 'edit'
-  const isVersion3 = isEditMode && project.version === 3
+  const isVersion3 = isEditMode && project.version >= 3
 
   const { canViewProjects, canEditApprovedProjects } =
     useContext(PermissionsContext)
@@ -196,6 +198,7 @@ const ProjectsEdit = ({
     setProjectData((prevData) => ({
       ...prevData,
       projIdentifiers: {
+        ...prevData.projIdentifiers,
         country: project.country_id,
         meeting: mode !== 'partial-link' ? project.meeting_id : null,
         agency: project.agency_id,
@@ -204,6 +207,8 @@ const ProjectsEdit = ({
           project.lead_agency_submitting_on_behalf,
         cluster: !shouldEmptyCluster ? project.cluster_id : null,
         production: !shouldEmptyCluster ? project.production : false,
+        post_excom_meeting: project.post_excom_meeting_id,
+        post_excom_decision: project.post_excom_decision_id,
       },
       ...(mode !== 'partial-link'
         ? {
@@ -422,6 +427,7 @@ const ProjectsEdit = ({
         <ProjectsHeader
           {...{
             mode,
+            postExComUpdate,
             project,
             projectData,
             projectFiles,
@@ -444,6 +450,7 @@ const ProjectsEdit = ({
             projectData,
             setProjectData,
             mode,
+            postExComUpdate,
             specificFields,
             project,
             files,

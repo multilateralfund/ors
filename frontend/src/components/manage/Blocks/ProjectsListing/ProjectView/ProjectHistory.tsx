@@ -61,7 +61,7 @@ const ProjectHistory = ({ project, mode }: ProjectHistoryProps) => {
 
   const renderCollection = (items: typeof historyItems) => {
     return items.map((item, index) => (
-      <div>
+      <div key={index}>
         <HistoryItem key={item.created_at} item={item} />{' '}
         <hr className={'mx-0 my-0 h-px !w-[98%] border-0 bg-gray-200'} />
       </div>

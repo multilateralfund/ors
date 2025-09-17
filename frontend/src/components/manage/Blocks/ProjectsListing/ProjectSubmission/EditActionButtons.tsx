@@ -67,6 +67,7 @@ const EditActionButtons = ({
   trancheErrors,
   approvalFields = [],
   specificFieldsLoaded,
+  postExComUpdate,
 }: ActionButtons & {
   setProjectTitle: (title: string) => void
   project: ProjectTypeApi
@@ -75,6 +76,7 @@ const EditActionButtons = ({
   setProjectFiles: (value: ProjectFile[]) => void
   trancheErrors?: TrancheErrorType
   approvalFields?: ProjectSpecificFields[]
+  postExComUpdate?: boolean
 }) => {
   const [_, setLocation] = useLocation()
 
@@ -107,7 +109,7 @@ const EditActionButtons = ({
   } = projectData
 
   const canEditProject =
-    (version < 3 && canUpdateProjects) || (version === 3 && canUpdateV3Projects)
+    (version < 3 && canUpdateProjects) || (version >= 3 && canUpdateV3Projects)
 
   const specificFieldsAvailable = map(specificFields, 'write_field_name')
   const odsOdpData =
@@ -188,7 +190,7 @@ const EditActionButtons = ({
   const disableSubmit = !specificFieldsLoaded || isSubmitDisabled || hasErrors
   const disableUpdate =
     !specificFieldsLoaded ||
-    (version === 3
+    (project.version >= 3
       ? isAfterApproval
         ? disableSubmit ||
           hasSectionErrors(approvalErrors) ||
@@ -234,6 +236,37 @@ const EditActionButtons = ({
     setErrors({})
 
     try {
+      // Validate files
+      if (newFiles.length > 0) {
+        await uploadFiles(
+          `/api/project/files/validate/`,
+          newFiles,
+          false,
+          'list',
+        )
+      }
+
+      // Update project data, this may create a new version
+      // so it's important to run before uploading any files
+      // or other modifications.
+      // The Project ID is preserved.
+      const data = formatSubmitData(
+        projectData,
+        setProjectData,
+        specificFields,
+        formatProjectFields(projectFields),
+      )
+
+      if (postExComUpdate) {
+        data['post-excom-update'] = true
+      }
+
+      const result = await api(`api/projects/v2/${id}`, {
+        data: data,
+        method: 'PUT',
+      })
+
+      // Upload files
       if (newFiles.length > 0) {
         await uploadFiles(
           `/api/project/${id}/files/v2/`,
@@ -243,6 +276,7 @@ const EditActionButtons = ({
         )
       }
 
+      // Delete files
       if (deletedFilesIds.length > 0) {
         await api(`/api/project/${id}/files/v2`, {
           data: {
@@ -254,18 +288,6 @@ const EditActionButtons = ({
           method: 'DELETE',
         })
       }
-
-      const data = formatSubmitData(
-        projectData,
-        setProjectData,
-        specificFields,
-        formatProjectFields(projectFields),
-      )
-
-      const result = await api(`api/projects/v2/${id}`, {
-        data: data,
-        method: 'PUT',
-      })
 
       try {
         const res = await api(
