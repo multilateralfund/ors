@@ -198,7 +198,11 @@ export const AutocompleteWidget = <T,>(
     : value
 
   return (
-    <div className="flex h-full flex-col justify-between">
+    <div
+      className={cx('flex h-full flex-col', {
+        'justify-between': field.table !== 'ods_odp',
+      })}
+    >
       <Label>{field.label}</Label>
       <Field
         widget="autocomplete"
@@ -363,7 +367,11 @@ const NumberWidget = <T,>(
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
 
   return (
-    <div className="flex h-full flex-col justify-between">
+    <div
+      className={cx('flex h-full flex-col', {
+        'justify-between': field.table !== 'ods_odp',
+      })}
+    >
       <Label>{field.label}</Label>
       <SimpleInput
         id={fieldName}

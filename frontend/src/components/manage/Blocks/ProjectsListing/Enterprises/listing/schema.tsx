@@ -30,13 +30,13 @@ const getColumnDefs = (type: string) => {
   }))
 
   const isEnterprise = type === 'enterprise'
-
-  const canAccessEditPage = isEnterprise
-    ? canEditEnterprise || canApproveEnterprise
-    : canEditProjectEnterprise || canApproveProjectEnterprise
+  const editPermissions = isEnterprise
+    ? canEditEnterprise
+    : canEditProjectEnterprise
   const approvalPermissions = isEnterprise
     ? canApproveEnterprise
     : canApproveProjectEnterprise
+  const canAccessEditPage = editPermissions || approvalPermissions
 
   const getViewUrl = (enterpriseId: number, project_id: number) =>
     isEnterprise
@@ -69,7 +69,9 @@ const getColumnDefs = (type: string) => {
 
   return {
     columnDefs: [
-      ...(canAccessEditPage && (project_id || isEnterprise)
+      ...(canAccessEditPage &&
+      (project_id || isEnterprise) &&
+      !(editPermissions && !approvalPermissions)
         ? [
             {
               minWidth: 40,
