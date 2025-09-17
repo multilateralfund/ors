@@ -1,4 +1,4 @@
-import { ChangeEvent } from 'react'
+import React, { ChangeEvent } from 'react'
 
 import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
@@ -129,7 +129,7 @@ const ProjectApprovalFields = ({
 
           return (
             canViewField(viewableFields, field.write_field_name) && (
-              <span key={field.write_field_name}>
+              <React.Fragment key={field.write_field_name}>
                 {widgets[dataType]<ProjectData>(
                   projectData,
                   setProjectData,
@@ -140,7 +140,7 @@ const ProjectApprovalFields = ({
                   editableFields,
                   sectionIdentifier,
                 )}
-              </span>
+              </React.Fragment>
             )
           )
         })}
