@@ -3,6 +3,9 @@ import type { ProjectFieldHistoryValue } from '@ors/types/store'
 import { useState } from 'react'
 
 import Popover from '@mui/material/Popover/Popover'
+
+import { FaClockRotateLeft } from 'react-icons/fa6'
+
 import cx from 'classnames'
 
 export default function FieldHistoryIndicator({
@@ -62,9 +65,9 @@ export default function FieldHistoryIndicator({
           setShowTooltip(false)
         }}
       >
-        <span className="rounded border border-solid border-gray-400 bg-gray-200 px-0.5 px-1">
-          {firstDifferentValue}
-        </span>
+        <div className="rounded border border-solid border-gray-400 bg-gray-200 px-0.5 py-1">
+          <FaClockRotateLeft />
+        </div>
       </div>
       <Popover
         anchorEl={anchorEl}

@@ -89,12 +89,19 @@ const ProjectIdentifiers = ({
           {detailItem(
             tableColumns.submission_status,
             project.submission_status,
-            {
-              fieldHistory: getFieldHistory('submission_status'),
-            },
           )}
         </div>
       </div>
+      {project.version > 3 ? (
+        <div>
+          <Divider className="my-6" />
+          <SectionTitle>Post ExCom updates</SectionTitle>
+          <div>
+            {detailItem('Meeting', project.post_excom_meeting?.toString() ?? '-')}
+            {detailItem('Decision', project.post_excom_decision_id?.toString() ?? '-')}
+          </div>
+        </div>
+      ) : null}
 
       {canViewBp && canViewBpSection && (
         <>
