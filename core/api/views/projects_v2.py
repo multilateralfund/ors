@@ -490,7 +490,7 @@ class ProjectV2ViewSet(
         )
 
     def update(self, request, *args, **kwargs):
-        post_excom_update = request.data.pop("post-excom-update", False)
+        post_excom_update = request.data.get("post-excom-update", False)
         if post_excom_update:
             project = self.get_object()
             project.increase_version(request.user)
