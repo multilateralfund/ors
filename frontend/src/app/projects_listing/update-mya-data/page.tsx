@@ -1,0 +1,26 @@
+import { useContext } from 'react'
+
+// import PListingWrapper from '@ors/components/manage/Blocks/ProjectsListing/ProjectsListing/PListingWrapper'
+import { PageHeading } from '@ors/components/ui/Heading/Heading'
+import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
+import usePageTitle from '@ors/hooks/usePageTitle'
+import NotFoundPage from '@ors/app/not-found'
+
+export default function ProjectsUpdateMyaDataPage() {
+  usePageTitle('Projects - Update MYA data')
+
+  const { canViewProjects } = useContext(PermissionsContext)
+
+  if (!canViewProjects) {
+    return <NotFoundPage />
+  }
+
+  return (
+    <PageWrapper>
+      <PageHeading className="min-w-fit">IA/BA Portal - Update MYA data</PageHeading>
+      <div>UPDATE ALL THE THINGS!</div>
+    </PageWrapper>
+  )
+}
+

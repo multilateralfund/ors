@@ -636,7 +636,7 @@ export const getMenus = (
     {
       title: 'Approved Projects',
       menuItems: [
-        { title: 'Update MYA data', url: null },
+        { title: 'Update MYA data', url: '/projects-listing/update-mya-data' },
         { title: 'Update post ExCom fields', url: null },
         {
           title: 'Update project enterprises',
