@@ -475,7 +475,7 @@ const EditActionButtons = ({
           Update project
         </Button>
       )}
-      {canEditProject && (isDraft || isSubmitted || isRecommended) && (
+      {canUpdateProjects && (isDraft || isSubmitted || isRecommended) && (
         <Button
           className={cx('px-4 py-2 shadow-none', enabledButtonClassname)}
           size="large"
