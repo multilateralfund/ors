@@ -14,6 +14,8 @@ from rest_framework.views import APIView
 from rest_framework import status
 
 from core.api.filters.project import MetaProjectFilter, ProjectFilter
+from core.api.filters.project import MetaProjectMyaFilter
+
 from core.api.permissions import (
     HasMetaProjectsViewAccess,
     HasProjectMetaInfoViewAccess,
@@ -71,6 +73,26 @@ class MetaProjectListView(generics.ListAPIView):
     queryset = MetaProject.objects.order_by("code", "type")
     filterset_class = MetaProjectFilter
     serializer_class = MetaProjectSerializer
+
+
+class MetaProjectMyaListView(generics.ListAPIView):
+    """
+    List meta projects available for MYA update.
+    """
+
+    permission_classes = [HasMetaProjectsViewAccess]
+    filterset_class = MetaProjectMyaFilter
+    serializer_class = MetaProjectSerializer
+
+
+    def get_queryset(self):
+        result = MetaProject.objects.filter(
+            type=MetaProject.MetaProjectType.MYA,
+            projects__submission_status__name="Approved",
+        ).exclude(
+            projects__status__name="Completed",
+        ).distinct()
+        return result
 
 
 class ProjectStatusListView(generics.ListAPIView):

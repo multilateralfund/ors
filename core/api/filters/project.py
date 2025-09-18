@@ -36,6 +36,16 @@ class MetaProjectFilter(filters.FilterSet):
         fields = ["code", "type"]
 
 
+class MetaProjectMyaFilter(filters.FilterSet):
+    """
+    Filter for MYA meta projects
+    """
+
+    class Meta:
+        model = MetaProject
+        fields = ["code"]
+
+
 class ProjectFilter(filters.FilterSet):
     """
     Filter for projects
