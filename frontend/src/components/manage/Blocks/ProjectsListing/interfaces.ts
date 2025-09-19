@@ -263,13 +263,16 @@ export type ActionButtons = ProjectHeader & {
   setIsLoading: (value: boolean) => void
 }
 
-export type ProjectIdentifiersSectionProps = {
+export type ProjectTabSetters = {
+  setCurrentStep?: Dispatch<SetStateAction<number>>
+  setCurrentTab?: Dispatch<SetStateAction<number>>
+}
+
+export type ProjectIdentifiersSectionProps = ProjectTabSetters & {
   projectData: ProjectData
   setProjectData: Dispatch<SetStateAction<ProjectData>>
   isNextBtnEnabled: boolean
   areNextSectionsDisabled: boolean
-  setCurrentStep: Dispatch<SetStateAction<number>>
-  setCurrentTab: Dispatch<SetStateAction<number>>
   errors: { [key: string]: string[] }
   hasSubmitted: boolean
   mode: string

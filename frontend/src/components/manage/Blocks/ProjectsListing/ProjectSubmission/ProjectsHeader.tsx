@@ -20,7 +20,6 @@ import {
 } from '../interfaces'
 
 import { CircularProgress } from '@mui/material'
-import dayjs from 'dayjs'
 
 const ProjectsHeader = ({
   projectData,
@@ -43,7 +42,6 @@ const ProjectsHeader = ({
 }) => {
   const { projIdentifiers, crossCuttingFields, projectSpecificFields } =
     projectData
-  const { project_start_date, project_end_date } = crossCuttingFields
 
   const defaultImpactErrors = getDefaultImpactErrors(
     projectSpecificFields,
@@ -56,10 +54,7 @@ const ProjectsHeader = ({
     projIdentifiers,
     crossCuttingFields,
   )
-  const isSaveDisabled =
-    hasMissingRequiredFields ||
-    dayjs(project_start_date).isAfter(dayjs(project_end_date)) ||
-    hasValidationErrors
+  const isSaveDisabled = hasMissingRequiredFields || hasValidationErrors
 
   const isSubmitDisabled = isSaveDisabled || !!trancheErrors?.errorText
 

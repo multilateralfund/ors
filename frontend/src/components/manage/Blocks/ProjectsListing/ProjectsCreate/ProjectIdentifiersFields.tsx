@@ -4,7 +4,6 @@ import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTh
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
-import { NavigationButton } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/NavigationButton'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import { SectionTitle } from './ProjectsCreate'
 import {
@@ -20,6 +19,7 @@ import CustomAlert from '@ors/components/theme/Alerts/CustomAlert'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { changeHandler } from './SpecificFieldsHelpers'
+import { NextButton } from '../HelperComponents'
 import {
   defaultProps,
   defaultPropsSimpleField,
@@ -461,38 +461,30 @@ const ProjectIdentifiersFields = ({
             )}
           </>
         )}
-        <div className="flex flex-wrap items-center gap-2.5">
-          <NavigationButton
-            isBtnDisabled={!areNextStepsAvailable}
+        <div className="mt-5 flex flex-wrap items-center gap-2.5">
+          <NextButton
+            nextStep={2}
             setCurrentStep={setCurrentStep}
-            direction="next"
-            classname={
-              'h-8 leading-none ' +
-              (areNextStepsAvailable
-                ? 'border-secondary !bg-secondary text-white hover:border-primary hover:!bg-primary hover:text-mlfs-hlYellow'
-                : '')
-            }
+            isBtnDisabled={!areNextStepsAvailable}
           />
           {!areNextSectionsDisabled && (
-            <div className="mt-5">
-              <Button
-                className={cx(
-                  'h-8 border border-solid border-primary bg-white px-3 py-1 leading-none text-primary',
-                  {
-                    [disabledClassName]: postExComUpdate,
-                  },
-                )}
-                size="large"
-                variant="contained"
-                disabled={postExComUpdate}
-                onClick={() => {
-                  setCurrentStep(0)
-                  setCurrentTab(0)
-                }}
-              >
-                Update fields
-              </Button>
-            </div>
+            <Button
+              className={cx(
+                'h-8 border border-solid border-primary bg-white px-3 py-1 leading-none text-primary',
+                {
+                  [disabledClassName]: postExComUpdate,
+                },
+              )}
+              size="large"
+              variant="contained"
+              disabled={postExComUpdate}
+              onClick={() => {
+                setCurrentStep?.(0)
+                setCurrentTab?.(0)
+              }}
+            >
+              Update fields
+            </Button>
           )}
         </div>
       </div>

@@ -14,6 +14,8 @@ const ProjectIdentifiersSection = ({
   setProjectData,
   areNextSectionsDisabled,
   postExComUpdate,
+  setCurrentStep,
+  setCurrentTab,
   ...rest
 }: ProjectIdentifiersSectionProps) => {
   const { canViewBp } = useContext(PermissionsContext)
@@ -45,6 +47,8 @@ const ProjectIdentifiersSection = ({
             setProjectData,
             areNextSectionsDisabled,
             postExComUpdate,
+            setCurrentStep,
+            setCurrentTab,
           }}
           {...rest}
         />
@@ -56,6 +60,7 @@ const ProjectIdentifiersSection = ({
           {...{
             projectData,
             setProjectData,
+            setCurrentTab,
           }}
           isDisabled={
             postExComUpdate ||
