@@ -59,6 +59,12 @@ class MetaProject(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
 
+    workflow_state = "Draft"
+
+    # total_funding = models.DecimalField()
+    #    draft_date_created
+    #    draft_
+    #
     def __str__(self):
         return f"{self.type} {self.pcr_project_id}"
 
