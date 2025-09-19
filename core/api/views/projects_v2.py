@@ -1416,7 +1416,7 @@ class ProjectV2FileIncludePreviousVersionsView(
 
 
 class ProjectFilesValidationView(FileCreateMixin, APIView):
-    permission_classes = [HasProjectV2EditAccess]
+    permission_classes = [HasProjectV2EditPlusV3Access]
 
     @swagger_auto_schema(
         operation_description="""
