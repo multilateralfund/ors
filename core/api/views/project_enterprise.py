@@ -61,7 +61,12 @@ class EnterpriseViewSet(
         if user.is_superuser:
             return queryset
 
-        if not user.has_perm("core.has_enterprise_approval_access"):
+        if (
+            not user.has_perm("core.has_enterprise_edit_access")
+            and not user.has_perm("core.has_enterprise_approval_access")
+            and not user.has_perm("core.has_project_enterprise_approval_access")
+            and not user.has_perm("core.has_project_enterprise_edit_access")
+        ):
             queryset = queryset.filter(status=EnterpriseStatus.APPROVED)
 
         if user.has_perm("core.can_view_all_agencies"):
