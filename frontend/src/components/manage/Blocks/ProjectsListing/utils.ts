@@ -90,9 +90,14 @@ export const getIsSaveDisabled = (
   crossCuttingFields: CrossCuttingFields,
 ) => {
   const canLinkToBp = canGoToSecondStep(projIdentifiers)
-  const { project_type, sector, title } = crossCuttingFields
+  const { project_type, sector, title, project_start_date, project_end_date } =
+    crossCuttingFields
 
-  return !canLinkToBp || !(project_type && sector && title)
+  return (
+    !canLinkToBp ||
+    !(project_type && sector && title) ||
+    dayjs(project_start_date).isAfter(dayjs(project_end_date))
+  )
 }
 
 export const formatOptions = (field: ProjectSpecificFields): OptionsType[] => {

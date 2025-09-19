@@ -1,10 +1,12 @@
 import {
   ProjectDataProps,
   ProjectSpecificFields,
+  ProjectTabSetters,
   TrancheErrors,
 } from '@ors/components/manage/Blocks/ProjectsListing/interfaces.ts'
 import ProjectOverview from './ProjectOverview'
 import ProjectSubstanceDetails from './ProjectSubstanceDetails'
+import { NextButton } from '../HelperComponents'
 import { SectionTitle } from './ProjectsCreate'
 import { hasFields } from '../utils'
 import { useStore } from '@ors/store'
@@ -19,14 +21,19 @@ const ProjectSpecificInfoSection = ({
   odsOdpErrors,
   trancheErrors,
   getTrancheErrors,
+  nextStep,
+  setCurrentStep,
+  setCurrentTab,
   ...rest
 }: ProjectDataProps &
+  ProjectTabSetters &
   TrancheErrors & {
     overviewFields: ProjectSpecificFields[]
     substanceDetailsFields: ProjectSpecificFields[]
     overviewErrors?: { [key: string]: string[] }
     substanceDetailsErrors?: { [key: string]: string[] }
     odsOdpErrors: { [key: string]: [] }[]
+    nextStep: number
   }) => {
   const { projectFields, viewableFields } = useStore(
     (state) => state.projectFields,
@@ -69,6 +76,14 @@ const ProjectSpecificInfoSection = ({
           />
         </>
       )}
+      <div className="mt-5 flex flex-wrap items-center gap-2.5">
+        <NextButton
+          nextStep={nextStep}
+          nextTab={nextStep - 1}
+          setCurrentStep={setCurrentStep}
+          setCurrentTab={setCurrentTab}
+        />
+      </div>
     </>
   )
 }
