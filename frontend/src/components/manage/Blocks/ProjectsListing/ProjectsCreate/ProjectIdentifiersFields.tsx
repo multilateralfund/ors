@@ -346,7 +346,7 @@ const ProjectIdentifiersFields = ({
         </div>
         <div className="flex flex-wrap gap-x-20 gap-y-3">
           {canViewField(viewableFields, 'cluster') && (
-            <div>
+            <div className="w-full max-w-[20rem] flex-shrink">
               <Label>{tableColumns.cluster}</Label>
               <Field
                 widget="autocomplete"
@@ -364,7 +364,7 @@ const ProjectIdentifiersFields = ({
                 }}
                 {...defaultProps}
                 FieldProps={{
-                  className: defaultProps.FieldProps.className + ' w-[20rem]',
+                  className: defaultProps.FieldProps.className + ' w-full',
                 }}
               />
             </div>
@@ -451,7 +451,7 @@ const ProjectIdentifiersFields = ({
                 type="info"
                 alertClassName="mt-2 px-2 py-0"
                 content={
-                  <Typography className="pt-0.5 text-lg leading-none">
+                  <Typography className="text-lg leading-5">
                     Unless submitting on behalf of a cooperating agency,
                     selecting either the agency or the lead agency will
                     automatically update the other.

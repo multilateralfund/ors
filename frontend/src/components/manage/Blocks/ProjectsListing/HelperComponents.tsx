@@ -69,9 +69,13 @@ export const SubmitButton = ({
   className,
 }: CustomButtonProps) => (
   <Button
-    className={cx(className, 'mr-0 h-10 px-3 py-1', {
-      [enabledButtonClassname]: !isDisabled,
-    })}
+    className={cx(
+      className,
+      'mr-0 border border-solid border-current px-3 py-1',
+      {
+        [enabledButtonClassname]: !isDisabled,
+      },
+    )}
     size="large"
     variant="contained"
     onClick={onSubmit}
