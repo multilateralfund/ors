@@ -106,7 +106,7 @@ export default function useApi<DT = DataType>(
     error,
     loaded,
     loading,
-    params: options.params || {},
+    params: options?.params || {},
     setApiSettings,
     setParams,
   }
