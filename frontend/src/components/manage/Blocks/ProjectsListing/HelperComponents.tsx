@@ -145,6 +145,7 @@ export const NextButton = ({
 
     if (setCurrentTab) {
       setCurrentTab((tab) => nextTab ?? tab + 1)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     }
   }
 
