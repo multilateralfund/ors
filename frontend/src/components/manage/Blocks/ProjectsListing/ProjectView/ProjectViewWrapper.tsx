@@ -145,7 +145,8 @@ const ProjectViewWrapper = () => {
                   )}
                 {canEditProjects &&
                 submission_status === 'Approved' &&
-                project_status !== 'Completed' ? (
+                project_status !== 'Closed' &&
+                project_status !== 'Transferred' ? (
                   <EditLink
                     href={`/projects-listing/${project_id}/post-excom-update`}
                   >

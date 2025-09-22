@@ -6,6 +6,7 @@ export type ListingProjectData = {
   projectId: number | null
   projectTitle: string
   projectSubmissionStatus: string
+  projectStatus: string
 }
 export interface PListingProps {
   tableToolbar: ReactNode
