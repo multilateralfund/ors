@@ -22,6 +22,7 @@ const ProjectsAssociateWrapper = () => {
     canUpdateProjects,
     canViewProjects,
     canViewEnterprises,
+    canEditProjects,
   } = useContext(PermissionsContext)
 
   const project = useGetProject(project_id)
@@ -40,6 +41,7 @@ const ProjectsAssociateWrapper = () => {
             canUpdateBp,
             canViewProjects,
             canViewEnterprises,
+            canEditProjects,
           }).map((menu) => (
             <ExpandableMenu menu={menu} />
           ))}
