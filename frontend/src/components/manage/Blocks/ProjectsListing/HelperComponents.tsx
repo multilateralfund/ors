@@ -6,7 +6,11 @@ import {
   HeaderTag,
   VersionsDropdown,
 } from './ProjectVersions/ProjectVersionsComponents'
-import { ProjectTypeApi, RelatedProjectsType } from './interfaces'
+import {
+  ProjectTabSetters,
+  ProjectTypeApi,
+  RelatedProjectsType,
+} from './interfaces'
 import { enabledButtonClassname } from './constants'
 
 import { MdKeyboardArrowDown } from 'react-icons/md'
@@ -126,6 +130,44 @@ export const CancelButton = ({ onClick }: { onClick: any }) => (
     Cancel
   </Button>
 )
+
+export const NextButton = ({
+  nextStep,
+  nextTab,
+  setCurrentStep,
+  setCurrentTab,
+  isBtnDisabled = false,
+}: ProjectTabSetters & {
+  nextStep: number
+  nextTab?: number
+  isBtnDisabled?: boolean
+}) => {
+  const moveToNextStep = () => {
+    if (setCurrentStep) {
+      setCurrentStep(nextStep)
+    }
+
+    if (setCurrentTab) {
+      setCurrentTab((tab) => nextTab ?? tab + 1)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
+
+  return (
+    <Button
+      className={cx('h-8 px-3 py-1 leading-none', {
+        'border border-secondary bg-secondary text-white hover:border-primary hover:bg-primary hover:text-mlfs-hlYellow':
+          !isBtnDisabled,
+      })}
+      disabled={isBtnDisabled}
+      size="large"
+      variant="contained"
+      onClick={moveToNextStep}
+    >
+      Next
+    </Button>
+  )
+}
 
 export const PageTitle = ({
   pageTitle,

@@ -19,14 +19,14 @@ export default function FieldHistoryIndicator({
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
 
   const getItemValue = (value: any): any => {
-    if (value && typeof value === 'object' && value.hasOwnProperty('title')) {
-      return value.title
+    if (value && typeof value === 'object' && value?.hasOwnProperty('title')) {
+      return value?.title
     } else if (
       value &&
       typeof value === 'object' &&
-      value.hasOwnProperty('name')
+      value?.hasOwnProperty('name')
     ) {
-      return value.name
+      return value?.name
     } else if (typeof value === 'boolean') {
       return value ? 'Yes' : 'No'
     } else if (Array.isArray(value)) {
