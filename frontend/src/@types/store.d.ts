@@ -123,6 +123,7 @@ type UpdatedBusinessPlan = {
   status: string
   year_end: number
   year_start: number
+  updated_at: string
 }
 
 export interface BPSlice {
