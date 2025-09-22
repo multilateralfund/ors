@@ -148,6 +148,8 @@ class BPActivityExportSerializer(serializers.ModelSerializer):
             "reason_for_exceeding",
             "remarks",
             "values",
+            "date_created",
+            "date_updated",
         ]
 
     def get_agency(self, obj):
@@ -240,6 +242,8 @@ class BPActivityDetailSerializer(serializers.ModelSerializer):
             "values",
             "is_multi_year_display",
             "status_display",
+            "date_created",
+            "date_updated",
         ]
 
     def get_is_multi_year_display(self, obj):
