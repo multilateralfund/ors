@@ -2,6 +2,7 @@ import { useContext, useState, useEffect } from 'react'
 
 import styles from './page.module.css'
 import { useStore } from '@ors/store'
+import { formatApiUrl } from '@ors/helpers/Api/utils'
 
 import { Box } from '@mui/material'
 
@@ -10,6 +11,7 @@ import useApi from '@ors/hooks/useApi'
 import { getResults } from '@ors/helpers'
 
 import PListingTable from '@ors/components/manage/Blocks/ProjectsListing/ProjectsListing/PListingTable'
+import { detailItem } from '@ors/components/manage/Blocks/ProjectsListing/ProjectView/ViewHelperComponents'
 
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
@@ -29,22 +31,56 @@ const useGetMetaProjects = (withCache: boolean = false) => {
   return { ...rest, ...results }
 }
 
-const useGetMetaProjectProjects = (
-  code: string,
-  withCache: boolean = false,
-) => {
-  const { data, ...rest } = useApi<MetaProjectType[]>({
-    options: {
-      params: {
-        code,
-      },
-      withStoreCache: withCache,
-    },
-    path: 'api/meta-projects/',
-  })
-  const results = getResults(data?.[0]?.projects ?? [])
+type MetaProjectFieldData = Record<
+  string,
+  { value: number | string | null; label: string; order: number }
+>
 
-  return { ...rest, ...results }
+type MetaProjectDetailType = {
+  projects: ProjectType[]
+  field_data: MetaProjectFieldData
+} & MetaProjectType
+
+const useGetMetaProjectDetails = (pk?: number) => {
+  const [data, setData] = useState<MetaProjectDetailType | null>(null)
+
+  const fetchData = (pk: number) => {
+    fetch(formatApiUrl(`/api/meta-projects/${pk}`), { credentials: 'include' })
+      .then((resp) => resp.json())
+      .then((data) => setData(data))
+  }
+
+  useEffect(() => {
+    if (pk) {
+      fetchData(pk)
+    }
+  }, [pk])
+
+  return { ...data }
+}
+
+const MetaProjectView = (props: { mp: MetaProjectDetailType }) => {
+  const { mp } = props
+
+  const fieldData = mp?.field_data ?? {}
+
+  const orderedFieldData = []
+
+  for (let key of Object.keys(fieldData)) {
+    orderedFieldData.push({ name: key, ...fieldData[key] })
+  }
+  orderedFieldData.sort((a, b) => a.order - b.order)
+
+  return (
+    <div>
+      {orderedFieldData.map((fd) => (
+        <div key={fd.name}>
+          {' '}
+          {detailItem(fd.label, fd?.value?.toString() ?? '-')}{' '}
+        </div>
+      ))}
+    </div>
+  )
 }
 
 const COLUMNS = [
@@ -65,19 +101,14 @@ export default function ProjectsUpdateMyaDataPage() {
   const { canViewProjects } = useContext(PermissionsContext)
 
   const metaprojects = useGetMetaProjects()
-  const projects = useGetMetaProjectProjects(selected?.code)
-
-  useEffect(() => {
-    if (selected?.code) {
-      projects.setParams({ code: selected.code })
-    }
-  }, [selected])
+  const metaproject = useGetMetaProjectDetails(selected?.id)
+  const projects = getResults<ProjectType>(metaproject?.projects ?? [])
 
   const onToggleExpand = (mp: MetaProjectType) => {
     setSelected((prev) => {
-      let newValue = mp
-      if (prev && prev.id === mp.id) {
-        newValue = null
+      let newValue = null
+      if (prev?.id !== mp.id) {
+        newValue = mp
       }
       return newValue
     })
@@ -105,20 +136,21 @@ export default function ProjectsUpdateMyaDataPage() {
           <tbody>
             {metaprojects.results.map((r) => [
               <tr key={r.id} onClick={() => onToggleExpand(r)}>
-                {COLUMNS.map((c) => (
-                  <td key={c.field}>{r[c.field]}</td>
+                {COLUMNS.map((c: any) => (
+                  <td key={c.field}>{r[c.field as unknown as keyof typeof r]}</td>
                 ))}
                 <td>{countriesByIso3.get(r.new_code.split('/')[0])?.name}</td>
               </tr>,
               selected?.id === r.id ? (
                 <tr key={`${r.id}-expanded`}>
-                  <td colSpan={COLUMNS.length}>
+                  <td colSpan={COLUMNS.length + 1}>
                     Expanded: {r.id}
                     <PListingTable
                       mode="listing"
                       projects={projects}
                       filters={{}}
                     />
+                    <MetaProjectView mp={metaproject} />
                   </td>
                 </tr>
               ) : null,

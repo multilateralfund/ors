@@ -178,6 +178,7 @@ export type ProjectAssociationType = {
 export type MetaProjectType = {
   id: number
   code: string
+  new_code: string
   lead_agency: string | null
   lead_agency_id: number | null
   pcr_project_id: string

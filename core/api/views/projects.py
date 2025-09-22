@@ -42,7 +42,8 @@ from core.api.serializers.project import (
     ProjectDetailsSerializer,
     ProjectListSerializer,
 )
-from core.api.serializers.project import MetaProjecMyaSerializer
+from core.api.serializers.meta_project import MetaProjecMyaSerializer
+from core.api.serializers.meta_project import MetaProjecMyaDetailsSerializer
 from core.api.serializers.project_association import MetaProjectSerializer
 from core.api.views.projects_export import ProjectsExport
 from core.models.project import (
@@ -95,6 +96,12 @@ class MetaProjectMyaListView(generics.ListAPIView):
             .distinct()
         )
         return result
+
+
+class MetaProjectMyaDetailsView(generics.RetrieveAPIView):
+    permission_classes = [HasMetaProjectsViewAccess]
+    serializer_class = MetaProjecMyaDetailsSerializer
+    queryset = MetaProject.objects.all()
 
 
 class ProjectStatusListView(generics.ListAPIView):

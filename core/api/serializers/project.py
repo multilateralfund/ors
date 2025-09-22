@@ -3,7 +3,6 @@ from django.db import transaction
 from rest_framework import serializers
 from rest_framework.fields import empty
 
-from core.api.serializers.country import CountrySerializer
 from core.api.serializers.agency import AgencySerializer
 from core.api.serializers.base import BaseProjectUtilityCreateSerializer
 from core.api.serializers.project_metadata import (
@@ -55,13 +54,6 @@ class MetaProjectSerializer(serializers.ModelSerializer):
             "new_code",
             "pcr_project_id",
         ]
-
-
-class MetaProjecMyaSerializer(MetaProjectSerializer):
-
-    class Meta:
-        model = MetaProjectSerializer.Meta.model
-        fields = [f for f in MetaProjectSerializer.Meta.fields if f != "projects"]
 
 
 class ProjectFundListSerializer(serializers.ModelSerializer):
