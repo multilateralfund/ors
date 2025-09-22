@@ -208,7 +208,7 @@
     padding-left: 2px;
   }
 
-  .ag-row .ag-cell:first-child {
+  .ag-row .ag-cell.remove-activity-col {
     border: none;
   }
 }
