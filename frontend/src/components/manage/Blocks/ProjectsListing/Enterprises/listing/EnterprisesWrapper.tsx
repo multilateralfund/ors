@@ -6,7 +6,7 @@ import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
 import Loading from '@ors/components/theme/Loading/Loading'
 import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
-import PEnterprisesFiltersWrapper from '../../ProjectsEnterprises/listing/PEnterprisesFiltersWrapper'
+import EnterprisesFiltersWrapper from './EnterprisesFiltersWrapper'
 import EnterprisesTable from './EnterprisesTable'
 import { CreateButton, RedirectBackButton } from '../../HelperComponents'
 import { useGetEnterprises } from '../../hooks/useGetEnterprises'
@@ -52,15 +52,14 @@ export default function EnterprisesWrapper() {
               <CreateButton
                 title="Create enterprise"
                 href="/projects-listing/enterprises/create"
-                className="!mb-1"
+                className="!mb-0"
               />
             </div>
           )}
         </div>
       </HeaderTitle>
       <form className="flex flex-col gap-6" ref={form} key={key}>
-        <PEnterprisesFiltersWrapper
-          type="enterprises"
+        <EnterprisesFiltersWrapper
           {...{
             filters,
             initialFilters,

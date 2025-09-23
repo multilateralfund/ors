@@ -69,9 +69,7 @@ const getColumnDefs = (type: string) => {
 
   return {
     columnDefs: [
-      ...(canAccessEditPage &&
-      (project_id || isEnterprise) &&
-      !(editPermissions && !approvalPermissions)
+      ...(canAccessEditPage && !(editPermissions && !approvalPermissions)
         ? [
             {
               minWidth: 40,
@@ -149,26 +147,6 @@ const getColumnDefs = (type: string) => {
         tooltipField: 'status',
         minWidth: 120,
       },
-      ...(!project_id && !isEnterprise
-        ? [
-            {
-              headerName: 'Project',
-              field: 'project_code',
-              tooltipField: 'project_code',
-              sortable: false,
-              cellRenderer: (props: ICellRendererParams) => (
-                <div className="flex items-center justify-center p-2">
-                  <Link
-                    className="overflow-hidden truncate whitespace-nowrap"
-                    href={`/projects-listing/${props.data.project}`}
-                  >
-                    <span>{props.value}</span>
-                  </Link>
-                </div>
-              ),
-            },
-          ]
-        : []),
     ],
     defaultColDef: {
       headerClass: 'ag-text-center',

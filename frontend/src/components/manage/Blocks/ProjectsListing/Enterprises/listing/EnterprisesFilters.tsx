@@ -2,23 +2,18 @@
 
 import Field from '@ors/components/manage/Form/Field'
 import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions'
-import PEnterpriseProjectsFilter from './PEnterpriseProjectsFilter'
 import { tableColumns } from '../../constants'
 
 import { IoChevronDown } from 'react-icons/io5'
-import { useParams } from 'wouter'
 import { union } from 'lodash'
 
-const PEnterprisesFilters = ({
-  type,
+const EnterprisesFilters = ({
   enterpriseStatuses,
   commonSlice,
   filters,
   handleFilterChange,
   handleParamsChange,
 }: any) => {
-  const { project_id } = useParams<Record<string, string>>()
-
   const defaultProps = {
     multiple: true,
     value: [],
@@ -36,23 +31,6 @@ const PEnterprisesFilters = ({
 
   return (
     <div className="flex h-full flex-wrap items-center gap-x-2 gap-y-2 border-0 border-solid">
-      {!project_id && type === 'project-enterprises' && (
-        <PEnterpriseProjectsFilter
-          Input={{ placeholder: 'Project' }}
-          filters={filters}
-          {...defaultProps}
-          onChange={(_: any, value: any) => {
-            const project_id = filters.project_id || []
-            const newValue = union(project_id, value)
-
-            handleFilterChange({ project_id: newValue })
-            handleParamsChange({
-              project_id: newValue.map((item: any) => item.id).join(','),
-              offset: 0,
-            })
-          }}
-        />
-      )}
       <Field
         Input={{ placeholder: tableColumns.country }}
         options={getFilterOptions(
@@ -93,4 +71,4 @@ const PEnterprisesFilters = ({
   )
 }
 
-export default PEnterprisesFilters
+export default EnterprisesFilters

@@ -316,9 +316,6 @@ export default function App() {
         <Route path="/projects-listing/enterprises/:enterprise_id/edit">
           <EnterpriseEditPage />
         </Route>
-        <Route path="/projects-listing/projects-enterprises">
-          <ProjectsEnterprisesPage />
-        </Route>
         <Route path="/projects-listing/projects-enterprises/:project_id">
           <ProjectsEnterprisesPage />
         </Route>

@@ -674,7 +674,7 @@ export const getMenus = (
             !!projectSubmissionStatus && projectSubmissionStatus !== 'Approved',
         },
         {
-          title: 'Manage enterprises',
+          title: 'Update enterprises',
           url: `/projects-listing/enterprises`,
           permissions: [canViewEnterprises],
         },
