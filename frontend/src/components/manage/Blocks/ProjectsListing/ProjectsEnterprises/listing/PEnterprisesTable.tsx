@@ -18,7 +18,7 @@ const PEnterprisesTable = ({
   const { count, loaded, loading, results, setParams } = enterprises
 
   const { columnDefs, defaultColDef } = getColumnDefs('project-enterprise')
-  const paginationPageSizeSelectorOpts = getPaginationSelectorOpts(count)
+  const paginationPageSizeSelectorOpts = getPaginationSelectorOpts(count, 500)
 
   return (
     loaded && (

@@ -64,27 +64,35 @@ const useInternalNavSections = () => {
   const [pathname] = useLocation()
   const nI = makeInternalNavItem.bind(null, pathname)
 
-  return [
-    {
-      label: 'Online CP Reporting',
-      menu: [
-        P.canViewCPReports
-          ? { label: 'View reports', url: '/country-programme/reports' }
-          : null,
-        P.canEditCPReports
-          ? { label: 'Add new report', url: '/country-programme/create' }
-          : null,
-        P.canExportCPReports
-          ? { label: 'Export data', url: '/country-programme/export-data' }
-          : null,
-        P.canExportCPReports
-          ? { label: 'Settings', url: '/country-programme/settings' }
-          : null,
-      ].filter(Boolean),
-      url: '/country-programme/reports',
-    },
-    // @ts-ignore
-  ].map((item) => nI(item))
+  return P.canViewCPReports || P.canEditCPReports || P.canExportCPReports
+    ? [
+        {
+          label: 'Online CP Reporting',
+          menu: [
+            ...(P.canViewCPReports
+              ? [{ label: 'View reports', url: '/country-programme/reports' }]
+              : []),
+            ...(P.canEditCPReports
+              ? [{ label: 'Add new report', url: '/country-programme/create' }]
+              : []),
+            ...(P.canExportCPReports
+              ? [
+                  {
+                    label: 'Export data',
+                    url: '/country-programme/export-data',
+                  },
+                ]
+              : []),
+            ...(P.canExportCPReports
+              ? [{ label: 'Settings', url: '/country-programme/settings' }]
+              : []),
+          ].filter(Boolean),
+          url: '/country-programme/reports',
+        },
+      ]
+    : []
+        // @ts-ignore
+        .map((item) => nI(item))
 }
 
 const useInternalNavSectionsReplenishment = () => {
@@ -337,22 +345,24 @@ const DesktopHeaderNavigation = ({
             >
               {item.menu?.map((menuItem, menuItemIdx) => {
                 const Component = menuItem?.internal ? Link : 'a'
-                const regularSubMenuLink = !menuItem.menu ? (
-                  <Component
-                    key={menuItem.label + menuItemIdx}
-                    className={cx(
-                      'flex flex-nowrap items-center gap-1 text-nowrap border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-sky-400 px-4 py-2 text-primary no-underline transition-all first:rounded-t-lg last:rounded-b-lg last:border-b-0 hover:bg-mlfs-hlYellow',
-                      {
-                        'bg-mlfs-hlYellow': menuItem.current,
-                      },
-                    )}
-                    href={menuItem.url}
-                    onClick={() => toggleCollapseOpen(menuItem.label)}
-                  >
-                    {menuItem.label}
-                  </Component>
-                ) : null
-                const isExternalWithMenu = menuItem.external && menuItem.menu
+                const regularSubMenuLink =
+                  !menuItem.menu || menuItem.menu.length === 0 ? (
+                    <Component
+                      key={menuItem.label + menuItemIdx}
+                      className={cx(
+                        'flex flex-nowrap items-center gap-1 text-nowrap border-2 border-l-0 border-r-0 border-t-0 border-solid border-b-sky-400 px-4 py-2 text-primary no-underline transition-all first:rounded-t-lg last:rounded-b-lg last:border-b-0 hover:bg-mlfs-hlYellow',
+                        {
+                          'bg-mlfs-hlYellow': menuItem.current,
+                        },
+                      )}
+                      href={menuItem.url}
+                      onClick={() => toggleCollapseOpen(menuItem.label)}
+                    >
+                      {menuItem.label}
+                    </Component>
+                  ) : null
+                const isExternalWithMenu =
+                  menuItem.external && menuItem.menu && menuItem.menu.length > 0
 
                 return (
                   regularSubMenuLink || (
@@ -536,25 +546,28 @@ const MobileHeaderNavigation = ({
                     <List component="div">
                       {item.menu &&
                         item.menu.map((menuItem) => {
-                          const regularSubMenuLink = !menuItem.menu ? (
-                            <ListItem
-                              key={menuItem.label}
-                              className={cx(styling, 'pl-10')}
-                              component={'a'}
-                              href={menuItem.url}
-                            >
-                              {menuItem.label}
-                            </ListItem>
-                          ) : null
+                          const regularSubMenuLink =
+                            !menuItem.menu || menuItem.menu.length === 0 ? (
+                              <ListItem
+                                key={menuItem.label}
+                                className={cx(styling, 'pl-10')}
+                                component={'a'}
+                                href={menuItem.url}
+                              >
+                                {menuItem.label}
+                              </ListItem>
+                            ) : null
                           const isExternalWithMenu =
-                            menuItem.external && menuItem.menu
+                            menuItem.external &&
+                            menuItem.menu &&
+                            menuItem.menu.length > 0
 
                           return (
                             regularSubMenuLink || (
                               <div key={menuItem.label}>
                                 <ListItemButton
                                   className={cx(
-                                    'flex items-center justify-between rounded-none',
+                                    'flex items-center justify-between rounded-none pl-10',
                                     styling,
                                   )}
                                   {...(isExternalWithMenu

@@ -789,8 +789,10 @@ export const filterClusterOptions = (
   canViewProdProjects: boolean,
 ) => filter(clusters, (cluster) => canViewProdProjects || !cluster.production)
 
-export const getPaginationSelectorOpts = (count: number) => {
-  const maxResults = 200
+export const getPaginationSelectorOpts = (
+  count: number,
+  maxResults: number,
+) => {
   const actualMaxResults = min([count, maxResults]) ?? maxResults
 
   const nrResultsOpts = [100, 150, 200, 250, 500, 1000]
