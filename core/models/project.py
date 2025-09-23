@@ -1,4 +1,5 @@
 import os
+import shutil
 
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -220,6 +221,7 @@ class Project(models.Model):
         null=True,
         blank=True,
         related_name="transferred_projects",
+        help_text="Old meeting field used for transferred projects.Should be removed in the future.",
     )
     decision = models.ForeignKey(
         Decision, on_delete=models.CASCADE, null=True, blank=True
@@ -260,8 +262,16 @@ class Project(models.Model):
     contingency_cost = models.FloatField(null=True, blank=True)
     effectiveness_cost = models.FloatField(null=True, blank=True)
     total_fund = models.FloatField(null=True, blank=True)
-    total_fund_transferred = models.FloatField(null=True, blank=True)
-    total_psc_transferred = models.FloatField(null=True, blank=True)
+    total_fund_transferred = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Old field used for transferred projects. Should be removed in the future.",
+    )
+    total_psc_transferred = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Old field used for transferred projects. Should be removed in the future.",
+    )
     total_fund_approved = models.FloatField(null=True, blank=True)
     total_psc_cost = models.FloatField(null=True, blank=True)
     total_grant = models.FloatField(null=True, blank=True)
@@ -778,6 +788,31 @@ class Project(models.Model):
         help_text="Quantity of HFC-23 by-product (Emitted) (actual)",
     )
 
+    # fields used in transfering projects
+    transfer_meeting = models.ForeignKey(
+        Meeting,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="transfer_meeting_projects",
+        help_text="The meeting at which the project is transferred",
+    )
+    transfer_decision = models.ForeignKey(
+        Decision,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="transfer_decision_projects",
+        help_text="The decision to transfer the project",
+    )
+    transfer_excom_provision = models.TextField(null=True, blank=True)
+    fund_transferred = models.FloatField(
+        null=True, blank=True, help_text="Fund transferred"
+    )
+    psc_transferred = models.FloatField(
+        null=True, blank=True, help_text="Project support cost transferred"
+    )
+
     objects = ProjectManager()
 
     class Meta:
@@ -790,8 +825,7 @@ class Project(models.Model):
         ]
         ordering = ["-date_actual", "country__name", "serial_number"]
 
-    def increase_version(self, user):
-
+    def copy_project(self, duplicate_files=False, remove_legacy_data=False):
         def _get_new_file_path(original_file_name, new_project_id):
             # Generate a new file path for the duplicated file
             base_dir, file_name = os.path.split(original_file_name)
@@ -800,63 +834,87 @@ class Project(models.Model):
 
         with transaction.atomic():
             # Duplicate the project
-            old_project = Project.objects.get(pk=self.pk)
-            old_project.pk = None
-            old_project.latest_project = self
-
-            old_project.save()
+            new_project = Project.objects.get(pk=self.pk)
+            new_project.pk = None
+            if remove_legacy_data:
+                new_project.legacy_code = None
+            new_project.save()
 
             # set subsectors M2M field
-            old_project.subsectors.set(self.subsectors.all())
-
-            self.version += 1
-            self.version_created_by = user
-            self.save()
+            new_project.subsectors.set(self.subsectors.all())
 
             # Duplicate the linked ProjectOdsOdp entries
             ods_odp_entries = ProjectOdsOdp.objects.filter(project=self)
             for entry in ods_odp_entries:
                 entry.pk = None
-                entry.project = old_project
+                entry.project = new_project
                 entry.save()
 
             # Duplicate the linked ProjectFund entries
             fund_entries = ProjectFund.objects.filter(project=self)
             for entry in fund_entries:
                 entry.pk = None
-                entry.project = old_project
+                entry.project = new_project
                 entry.save()
 
             # Duplicate the linked ProjectRBMMeasure entries
             rbm_entries = ProjectRBMMeasure.objects.filter(project=self)
             for entry in rbm_entries:
                 entry.pk = None
-                entry.project = old_project
+                entry.project = new_project
                 entry.save()
 
             # Duplicate the linked ProjectProgressReport entries
             progress_report_entries = ProjectProgressReport.objects.filter(project=self)
             for entry in progress_report_entries:
                 entry.pk = None
-                entry.project = old_project
+                entry.project = new_project
                 entry.save()
 
             # Duplicate the linked SubmissionAmount entries
             submission_amount_entries = SubmissionAmount.objects.filter(project=self)
             for entry in submission_amount_entries:
                 entry.pk = None
-                entry.project = old_project
+                entry.project = new_project
                 entry.save()
 
             # Duplicate the ProjectComment entries
             comment_entries = ProjectComment.objects.filter(project=self)
             for entry in comment_entries:
                 entry.pk = None
-                entry.project = old_project
+                entry.project = new_project
                 entry.save()
 
-            # Transfer files to the archive project
-            ProjectFile.objects.filter(project=self).update(project=old_project)
+            if duplicate_files:
+                file_entries = ProjectFile.objects.filter(project=self)
+                for entry in file_entries:
+                    original_file_path = entry.file.path
+                    new_file_path = _get_new_file_path(entry.file.name, new_project.id)
+                    storage = get_protected_storage()
+                    with storage.open(original_file_path, "rb") as original_file:
+                        with storage.open(new_file_path, "wb") as new_file:
+                            shutil.copyfileobj(original_file, new_file)
+                    entry.pk = None
+                    entry.project = new_project
+                    entry.file.name = (
+                        new_file_path  # Update the file field to point to the new file
+                    )
+                    entry.save()
+        return new_project
+
+    def increase_version(self, user):
+
+        # Create an archived copy of the current project. The archived project will have
+        # the same code as the current project.
+        archieved_project = self.copy_project(duplicate_files=False)
+        archieved_project.latest_project = self
+        archieved_project.save()
+
+        self.version += 1
+        self.version_created_by = user
+        self.save()
+
+        ProjectFile.objects.filter(project=self).update(project=archieved_project)
 
     def __str__(self):
         return self.title

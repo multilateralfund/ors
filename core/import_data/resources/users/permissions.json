@@ -180,6 +180,12 @@
         "model_name": "project"
     },
     {
+        "permission_codename": "has_project_v2_transfer_projects_access",
+        "permission_name": "Has project v2 transfer projects access",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
         "permission_codename": "has_enterprise_view_access",
         "permission_name": "Has enterprise view access",
         "app_label": "core",
