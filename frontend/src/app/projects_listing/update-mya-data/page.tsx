@@ -1,10 +1,13 @@
-import { useContext, useState, useEffect } from 'react'
+import { useContext, useState, useEffect, useCallback } from 'react'
 
 import styles from './page.module.css'
 import { useStore } from '@ors/store'
 import { formatApiUrl } from '@ors/helpers/Api/utils'
+import { api } from '@ors/helpers'
 
 import { Box } from '@mui/material'
+import { Tabs, Tab } from '@mui/material'
+import { Button, Divider } from '@mui/material'
 
 import { MetaProjectType, ProjectType } from '@ors/types/api_projects.ts'
 import useApi from '@ors/hooks/useApi'
@@ -18,6 +21,13 @@ import PageWrapper from '@ors/components/theme/PageWrapper/PageWrapper'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import usePageTitle from '@ors/hooks/usePageTitle'
 import NotFoundPage from '@ors/app/not-found'
+
+import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
+import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
+import Field from '@ors/components/manage/Form/Field'
+import { DateInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
+
+import dayjs from 'dayjs'
 
 const useGetMetaProjects = (withCache: boolean = false) => {
   const { data, ...rest } = useApi<MetaProjectType[]>({
@@ -50,36 +60,159 @@ const useGetMetaProjectDetails = (pk?: number) => {
       .then((data) => setData(data))
   }
 
+  const refresh = useCallback(() => {
+    if (pk) {
+      fetchData(pk)
+    }
+  }, [pk])
+
   useEffect(() => {
     if (pk) {
       fetchData(pk)
     }
   }, [pk])
 
-  return { ...data }
+  return { data, refresh }
+}
+
+const orderFieldData = (fd: MetaProjectFieldData) => {
+  const orderedFieldData = []
+
+  for (let key of Object.keys(fd)) {
+    orderedFieldData.push({ name: key, ...fd[key] })
+  }
+  orderedFieldData.sort((a, b) => a.order - b.order)
+
+  return orderedFieldData
 }
 
 const MetaProjectView = (props: { mp: MetaProjectDetailType }) => {
   const { mp } = props
 
-  const fieldData = mp?.field_data ?? {}
-
-  const orderedFieldData = []
-
-  for (let key of Object.keys(fieldData)) {
-    orderedFieldData.push({ name: key, ...fieldData[key] })
-  }
-  orderedFieldData.sort((a, b) => a.order - b.order)
+  const fieldData = orderFieldData(mp?.field_data ?? {})
 
   return (
     <div>
-      {orderedFieldData.map((fd) => (
+      {fieldData.map((fd) => (
         <div key={fd.name}>
-          {' '}
-          {detailItem(fd.label, fd?.value?.toString() ?? '-')}{' '}
+          {detailItem(fd.label, fd?.value?.toString() ?? '-')}
         </div>
       ))}
     </div>
+  )
+}
+
+const MetaProjectEdit = (props: {
+  mp: MetaProjectDetailType
+  refreshMetaProjectDetails: () => void
+}) => {
+  const { mp, refreshMetaProjectDetails } = props
+
+  const loadInitialState = useCallback(() => {
+    const result = {} as Record<string, any>
+    const fd = mp?.field_data ?? ({} as MetaProjectFieldData)
+
+    for (let key of Object.keys(fd)) {
+      result[key] = fd[key as keyof MetaProjectFieldData].value
+    }
+
+    return result
+  }, [mp])
+
+  const [form, setForm] = useState(loadInitialState)
+
+  useEffect(() => {
+    setForm(loadInitialState)
+  }, [mp])
+
+  const fieldData = orderFieldData(mp?.field_data ?? {})
+
+  const handleSave = async () => {
+    const result = await api(`api/meta-projects/${mp.id}/`, {
+      data: form,
+      method: 'PUT',
+    })
+    refreshMetaProjectDetails()
+  }
+
+  const changeSimpleInput = useCallback(
+    (name: string, opts?: { numeric?: boolean }) => {
+      return (evt: any) => {
+        setForm((prev) => {
+          let newValue = evt.target.value || null
+          if (opts?.numeric && isNaN(Number(newValue))) {
+            newValue = prev[name]
+          }
+          return { ...prev, [name]: newValue }
+        })
+      }
+    },
+    [setForm],
+  )
+
+  const renderFieldData = (fieldData: any) => {
+    return fieldData.map((fd: any) => (
+      <div key={fd.name}>
+        <Label htmlFor={fd.name}>{fd.label}</Label>
+        {fd.type === 'DateTimeField' ? (
+          <DateInput
+            id={fd.name}
+            className="BPListUpload !ml-0 h-10 w-40"
+            value={form[fd.name] ?? ''}
+            formatValue={(value) => dayjs(value).format('MM/DD/YYYY')}
+            onChange={changeSimpleInput(fd.name)}
+          />
+        ) : null}
+        {fd.type !== 'DateTimeField' ? (
+          <SimpleInput
+            id={fd.name}
+            label=""
+            type="text"
+            value={form[fd.name] ?? ''}
+            onChange={changeSimpleInput(fd.name, {
+              numeric: fd.type === 'DecimalField',
+            })}
+          />
+        ) : null}
+      </div>
+    ))
+  }
+
+  return (
+    <div>
+      <div>{renderFieldData(fieldData)}</div>
+      <Divider className="my-4" />
+      <div>
+        <Button onClick={handleSave}>Save</Button>
+      </div>
+    </div>
+  )
+}
+
+const MetaProjectTabs = (props: any) => {
+  const { mp, refreshMetaProjectDetails } = props
+  const [mode, setMode] = useState('view')
+
+  return (
+    <>
+      <Tabs
+        value={mode}
+        onChange={(_evt, value) => {
+          setMode(value)
+        }}
+      >
+        <Tab value={'view'} label="View" />
+        <Tab value={'edit'} label="Edit" />
+      </Tabs>
+      {mode === 'edit' ? (
+        <MetaProjectEdit
+          mp={mp}
+          refreshMetaProjectDetails={refreshMetaProjectDetails}
+        />
+      ) : (
+        <MetaProjectView mp={mp} />
+      )}
+    </>
   )
 }
 
@@ -101,7 +234,8 @@ export default function ProjectsUpdateMyaDataPage() {
   const { canViewProjects } = useContext(PermissionsContext)
 
   const metaprojects = useGetMetaProjects()
-  const metaproject = useGetMetaProjectDetails(selected?.id)
+  const { data: metaproject, refresh: refreshMetaProjectDetails } =
+    useGetMetaProjectDetails(selected?.id)
   const projects = getResults<ProjectType>(metaproject?.projects ?? [])
 
   const onToggleExpand = (mp: MetaProjectType) => {
@@ -137,20 +271,28 @@ export default function ProjectsUpdateMyaDataPage() {
             {metaprojects.results.map((r) => [
               <tr key={r.id} onClick={() => onToggleExpand(r)}>
                 {COLUMNS.map((c: any) => (
-                  <td key={c.field}>{r[c.field as unknown as keyof typeof r]}</td>
+                  <td key={c.field}>
+                    {r[c.field as unknown as keyof typeof r]}
+                  </td>
                 ))}
                 <td>{countriesByIso3.get(r.new_code.split('/')[0])?.name}</td>
               </tr>,
               selected?.id === r.id ? (
                 <tr key={`${r.id}-expanded`}>
                   <td colSpan={COLUMNS.length + 1}>
-                    Expanded: {r.id}
-                    <PListingTable
-                      mode="listing"
-                      projects={projects}
-                      filters={{}}
-                    />
-                    <MetaProjectView mp={metaproject} />
+                    <Box>
+                      <PListingTable
+                        mode="listing"
+                        projects={projects as any}
+                        filters={{}}
+                      />
+                      {metaproject?.field_data ? (
+                        <MetaProjectTabs
+                          mp={metaproject}
+                          refreshMetaProjectDetails={refreshMetaProjectDetails}
+                        />
+                      ) : null}
+                    </Box>
                   </td>
                 </tr>
               ) : null,

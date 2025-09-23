@@ -97,7 +97,7 @@ from core.api.views.meetings import DecisionListView, MeetingListView
 from core.api.views.projects import (
     MetaProjectListView,
     MetaProjectMyaListView,
-    MetaProjectMyaDetailsView,
+    MetaProjectMyaDetailsViewSet,
     ProjectClusterListView,
     ProjectSpecificFieldsListView,
     ProjectOdsOdpViewSet,
@@ -449,7 +449,7 @@ urlpatterns = [
     ),
     path(
         "meta-projects/<int:pk>/",
-        MetaProjectMyaDetailsView.as_view(),
+        MetaProjectMyaDetailsViewSet.as_view({"get": "retrieve", "put": "update"}),
         name="meta-project_view",
     ),
     path(

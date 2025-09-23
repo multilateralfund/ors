@@ -44,6 +44,7 @@ from core.api.serializers.project import (
 )
 from core.api.serializers.meta_project import MetaProjecMyaSerializer
 from core.api.serializers.meta_project import MetaProjecMyaDetailsSerializer
+from core.api.serializers.meta_project import MetaProjectFieldSerializer
 from core.api.serializers.project_association import MetaProjectSerializer
 from core.api.views.projects_export import ProjectsExport
 from core.models.project import (
@@ -98,10 +99,28 @@ class MetaProjectMyaListView(generics.ListAPIView):
         return result
 
 
-class MetaProjectMyaDetailsView(generics.RetrieveAPIView):
+class MetaProjectMyaDetailsViewSet(
+    viewsets.GenericViewSet,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+):
     permission_classes = [HasMetaProjectsViewAccess]
     serializer_class = MetaProjecMyaDetailsSerializer
     queryset = MetaProject.objects.all()
+
+    def update(self, request, *args, **kwargs):
+        mp = self.get_object()
+
+        serializer = MetaProjectFieldSerializer(mp, data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer.save()
+
+        return Response(
+            MetaProjectFieldSerializer(mp).data,
+            status=status.HTTP_200_OK,
+        )
 
 
 class ProjectStatusListView(generics.ListAPIView):
