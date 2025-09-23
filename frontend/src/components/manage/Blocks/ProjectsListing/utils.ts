@@ -31,6 +31,7 @@ import {
   isNil,
   keys,
   map,
+  min,
   omit,
   pick,
   reduce,
@@ -789,12 +790,17 @@ export const filterClusterOptions = (
 ) => filter(clusters, (cluster) => canViewProdProjects || !cluster.production)
 
 export const getPaginationSelectorOpts = (count: number) => {
-  const nrResultsOpts = [100, 250, 500, 1000]
+  const maxResults = 200
+  const actualMaxResults = min([count, maxResults]) ?? maxResults
+
+  const nrResultsOpts = [100, 150, 200, 250, 500, 1000]
   const filteredNrResultsOptions = nrResultsOpts.filter(
-    (option) => option < count,
+    (option) => option <= actualMaxResults,
   )
 
-  return [...filteredNrResultsOptions, count]
+  return count < maxResults
+    ? [...filteredNrResultsOptions, count]
+    : filteredNrResultsOptions
 }
 
 export const getAreFiltersApplied = (filters: Record<string, any>) =>

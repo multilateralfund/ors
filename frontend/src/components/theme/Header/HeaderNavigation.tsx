@@ -511,8 +511,6 @@ const MobileHeaderNavigation = ({
                 {item.label}
               </ListItem>
             ) : null
-            const isExternalWithMenu = item.external && item.menu
-
             return (
               regularMenuLink || (
                 <div key={item.label}>
@@ -521,32 +519,13 @@ const MobileHeaderNavigation = ({
                       'flex items-center justify-between rounded-none',
                       styling,
                     )}
-                    {...(isExternalWithMenu ? { href: item.url } : {})}
-                    onClick={() => {
-                      if (!isExternalWithMenu) {
-                        toggleOpenMenu(item.label)
-                      }
-                    }}
+                    onClick={() => toggleOpenMenu(item.label)}
                   >
                     {item.label}
                     {openMenus[item.label] ? (
-                      <IoChevronUp
-                        onClick={(e) => {
-                          if (isExternalWithMenu) {
-                            e.preventDefault()
-                            toggleOpenMenu(item.label)
-                          }
-                        }}
-                      />
+                      <IoChevronUp />
                     ) : (
-                      <IoChevronDown
-                        onClick={(e) => {
-                          if (isExternalWithMenu) {
-                            e.preventDefault()
-                            toggleOpenMenu(item.label)
-                          }
-                        }}
-                      />
+                      <IoChevronDown />
                     )}
                   </ListItemButton>
                   <Collapse
@@ -567,6 +546,8 @@ const MobileHeaderNavigation = ({
                               {menuItem.label}
                             </ListItem>
                           ) : null
+                          const isExternalWithMenu =
+                            menuItem.external && menuItem.menu
 
                           return (
                             regularSubMenuLink || (
@@ -576,13 +557,34 @@ const MobileHeaderNavigation = ({
                                     'flex items-center justify-between rounded-none',
                                     styling,
                                   )}
-                                  onClick={() => toggleOpenMenu(menuItem.label)}
+                                  {...(isExternalWithMenu
+                                    ? { href: menuItem.url }
+                                    : {})}
+                                  onClick={() => {
+                                    if (!isExternalWithMenu) {
+                                      toggleOpenMenu(menuItem.label)
+                                    }
+                                  }}
                                 >
                                   {menuItem.label}
                                   {openMenus[menuItem.label] ? (
-                                    <IoChevronUp />
+                                    <IoChevronUp
+                                      onClick={(e) => {
+                                        if (isExternalWithMenu) {
+                                          e.preventDefault()
+                                          toggleOpenMenu(menuItem.label)
+                                        }
+                                      }}
+                                    />
                                   ) : (
-                                    <IoChevronDown />
+                                    <IoChevronDown
+                                      onClick={(e) => {
+                                        if (isExternalWithMenu) {
+                                          e.preventDefault()
+                                          toggleOpenMenu(menuItem.label)
+                                        }
+                                      }}
+                                    />
                                   )}
                                 </ListItemButton>
                                 <Collapse
