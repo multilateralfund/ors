@@ -40,13 +40,13 @@ import BPListActivitiesPeriodPage from '@ors/app/business-plans/list/activities/
 import BPListActivitiesPeriodTypeEditPage from '@ors/app/business-plans/list/[period]/[type]/edit/page'
 import BPUpload from '@ors/app/business-plans/upload/page'
 
-import ProjectsPage from '@ors/app/projects/page'
-import ProjectsProjectPage from '@ors/app/projects/[project_id]/page'
+// import ProjectsPage from '@ors/app/projects/page'
+// import ProjectsProjectPage from '@ors/app/projects/[project_id]/page'
 
-import ProjectSubmissionsPage from '@ors/app/project-submissions/page'
-import ProjectSubmissionsSubmissionPage from '@ors/app/project-submissions/[submission_id]/page'
-import ProjectSubmissionsCreatePage from '@ors/app/project-submissions/create/page'
-import ProjectSubmissionsEditPage from '@ors/app/project-submissions/edit/page'
+// import ProjectSubmissionsPage from '@ors/app/project-submissions/page'
+// import ProjectSubmissionsSubmissionPage from '@ors/app/project-submissions/[submission_id]/page'
+// import ProjectSubmissionsCreatePage from '@ors/app/project-submissions/create/page'
+// import ProjectSubmissionsEditPage from '@ors/app/project-submissions/edit/page'
 
 import ProjectsListingPage from '@ors/app/projects_listing/page'
 import ProjectsAssociationPage from '@ors/app/projects_listing/associate/page'
@@ -258,7 +258,7 @@ export default function App() {
             </Route>
           </ReplenishmentLayout>
         </Route>
-        <Route path="/project-submissions/create">
+        {/* <Route path="/project-submissions/create">
           <ProjectSubmissionsCreatePage />
         </Route>
         <Route path="/project-submissions/edit">
@@ -269,13 +269,13 @@ export default function App() {
         </Route>
         <Route path="/project-submissions/">
           <ProjectSubmissionsPage />
-        </Route>
-        <Route path="/projects/:project_id">
+        </Route> */}
+        {/* <Route path="/projects/:project_id">
           <ProjectsProjectPage />
         </Route>
         <Route path="/projects">
           <ProjectsPage />
-        </Route>
+        </Route> */}
         <Route path="/projects-listing">
           <Redirect to="/projects-listing/listing" replace />
         </Route>
