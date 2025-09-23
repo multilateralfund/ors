@@ -104,11 +104,18 @@ export const getIsSaveDisabled = (
 export const formatOptions = (field: ProjectSpecificFields): OptionsType[] => {
   const options = field.options as
     | OptionsType[]
-    | Record<'substances' | 'blends', OptionsType[]>
+    | Record<'substances' | 'blends', (OptionsType & { composition: string })[]>
 
   return field.write_field_name === 'ods_display_name' && !isArray(options)
     ? concat(options.substances, options.blends).map((option) => {
-        return { ...option, id: `${option.baseline_type}-${option.id}` }
+        return {
+          ...option,
+          id: `${option.baseline_type}-${option.id}`,
+          name:
+            option.baseline_type === 'blend'
+              ? option.name + ' (' + option.composition + ')'
+              : option.name,
+        }
       })
     : map(options, (option) =>
         isArray(option) ? { id: option[0], name: option[1] } : option,
