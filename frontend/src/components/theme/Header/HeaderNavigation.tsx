@@ -64,62 +64,63 @@ const useInternalNavSections = () => {
   const [pathname] = useLocation()
   const nI = makeInternalNavItem.bind(null, pathname)
 
-  return P.canViewCPReports || P.canEditCPReports || P.canExportCPReports
-    ? [
-        {
-          label: 'Online CP Reporting',
-          menu: [
-            ...(P.canViewCPReports
-              ? [{ label: 'View reports', url: '/country-programme/reports' }]
-              : []),
-            ...(P.canEditCPReports
-              ? [{ label: 'Add new report', url: '/country-programme/create' }]
-              : []),
-            ...(P.canExportCPReports
-              ? [
-                  {
-                    label: 'Export data',
-                    url: '/country-programme/export-data',
-                  },
-                ]
-              : []),
-            ...(P.canExportCPReports
-              ? [{ label: 'Settings', url: '/country-programme/settings' }]
-              : []),
-          ].filter(Boolean),
-          url: '/country-programme/reports',
-        },
-      ]
-    : []
-        // @ts-ignore
-        .map((item) => nI(item))
+  if (!(P.canViewCPReports || P.canEditCPReports || P.canExportCPReports)) {
+    return []
+  }
+
+  return [
+    {
+      label: 'Online CP Reporting',
+      menu: [
+        ...(P.canViewCPReports
+          ? [{ label: 'View reports', url: '/country-programme/reports' }]
+          : []),
+        ...(P.canEditCPReports
+          ? [{ label: 'Add new report', url: '/country-programme/create' }]
+          : []),
+        ...(P.canExportCPReports
+          ? [{ label: 'Export data', url: '/country-programme/export-data' }]
+          : []),
+        ...(P.canExportCPReports
+          ? [{ label: 'Settings', url: '/country-programme/settings' }]
+          : []),
+      ].filter(Boolean),
+      url: '/country-programme/reports',
+    },
+    // @ts-ignore
+  ].map((item) => nI(item))
 }
 
 const useInternalNavSectionsReplenishment = () => {
   const { canViewReplenishment } = useContext(PermissionsContext)
   const [pathname] = useLocation()
   const nI = makeInternalNavItem.bind(null, pathname)
-  return canViewReplenishment
-    ? [
-        {
-          label: 'Scale of assessment',
-          url: '/replenishment/scale-of-assessment',
-        },
-        {
-          label: 'Status of the fund',
-          url: '/replenishment/status-of-the-fund',
-        },
-        { label: 'Statistics', url: '/replenishment/statistics' },
-        {
-          label: 'Status of contributions',
-          url: '/replenishment/status-of-contributions',
-        },
-        { label: 'In/out flows', url: '/replenishment/in-out-flows' },
-        { label: 'Dashboard', url: '/replenishment/dashboard' },
-      ]
-    : []
-        // @ts-ignore
-        .map((item) => nI(item))
+
+  if (!canViewReplenishment) {
+    return []
+  }
+
+  return (
+    [
+      {
+        label: 'Scale of assessment',
+        url: '/replenishment/scale-of-assessment',
+      },
+      {
+        label: 'Status of the fund',
+        url: '/replenishment/status-of-the-fund',
+      },
+      { label: 'Statistics', url: '/replenishment/statistics' },
+      {
+        label: 'Status of contributions',
+        url: '/replenishment/status-of-contributions',
+      },
+      { label: 'In/out flows', url: '/replenishment/in-out-flows' },
+      { label: 'Dashboard', url: '/replenishment/dashboard' },
+    ]
+      // @ts-ignore
+      .map((item) => nI(item))
+  )
 }
 
 const useInternalNavSectionsIaBaPortal = () => {
@@ -127,37 +128,42 @@ const useInternalNavSectionsIaBaPortal = () => {
     useContext(PermissionsContext)
   const [pathname] = useLocation()
   const nI = makeInternalNavItem.bind(null, pathname)
-  return canViewBp || canViewProjects || canSetProjectSettings
-    ? [
-        {
-          label: 'IA/BA Portal',
-          menu: [
-            ...(canViewBp
-              ? [{ label: 'Business plans', url: '/business-plans' }]
-              : []),
-            ...(canViewProjects
-              ? [
-                  {
-                    label: 'Projects Listing',
-                    url: '/projects-listing/listing',
-                  },
-                ]
-              : []),
-            ...(canSetProjectSettings
-              ? [
-                  {
-                    label: 'IA/BA portal settings',
-                    url: '/projects-listing/settings',
-                  },
-                ]
-              : []),
-          ],
-          url: '/projects-listing/listing',
-        },
-      ]
-    : []
-        // @ts-ignore
-        .map((item) => nI(item))
+
+  if (!(canViewBp || canViewProjects || canSetProjectSettings)) {
+    return []
+  }
+
+  return (
+    [
+      {
+        label: 'IA/BA Portal',
+        menu: [
+          ...(canViewBp
+            ? [{ label: 'Business plans', url: '/business-plans' }]
+            : []),
+          ...(canViewProjects
+            ? [
+                {
+                  label: 'Projects Listing',
+                  url: '/projects-listing/listing',
+                },
+              ]
+            : []),
+          ...(canSetProjectSettings
+            ? [
+                {
+                  label: 'IA/BA portal settings',
+                  url: '/projects-listing/settings',
+                },
+              ]
+            : []),
+        ],
+        url: '/projects-listing/listing',
+      },
+    ]
+      // @ts-ignore
+      .map((item) => nI(item))
+  )
 }
 
 interface navItem {
@@ -180,8 +186,6 @@ const makeExternalNavItem = (label: string, url: string, menu?: navItem[]) => {
 }
 
 const useMenuItems = () => {
-  const { canViewReplenishment } = useContext(PermissionsContext)
-
   return [
     makeExternalNavItem('About MLF', '/about', [
       makeExternalNavItem('Mission', '/about/mission'),
