@@ -83,32 +83,6 @@ const useInternalNavSections = () => {
       ].filter(Boolean),
       url: '/country-programme/reports',
     },
-    ...(P.canViewBp
-      ? [{ label: 'Business plans', url: '/business-plans' }]
-      : []),
-    ...(P.canViewV1Projects
-      ? [{ label: 'Project submissions', url: '/project-submissions' }]
-      : []),
-    ...(P.canViewV1Projects ? [{ label: 'Projects', url: '/projects' }] : []),
-    ...(P.canViewProjects || P.canSetProjectSettings
-      ? [
-          {
-            label: 'Projects Listing',
-            menu: [
-              P.canViewProjects
-                ? { label: 'View projects', url: '/projects-listing/listing' }
-                : null,
-              P.canSetProjectSettings
-                ? {
-                    label: 'IA/BA Portal - Settings',
-                    url: '/projects-listing/settings',
-                  }
-                : null,
-            ].filter(Boolean),
-            url: '/projects-listing/listing',
-          },
-        ]
-      : []),
     // @ts-ignore
   ].map((item) => nI(item))
 }
@@ -120,25 +94,57 @@ const useInternalNavSectionsReplenishment = () => {
   return canViewReplenishment
     ? [
         {
-          label: 'Contributions',
+          label: 'Scale of assessment',
+          url: '/replenishment/scale-of-assessment',
+        },
+        {
+          label: 'Status of the fund',
+          url: '/replenishment/status-of-the-fund',
+        },
+        { label: 'Statistics', url: '/replenishment/statistics' },
+        {
+          label: 'Status of contributions',
+          url: '/replenishment/status-of-contributions',
+        },
+        { label: 'In/out flows', url: '/replenishment/in-out-flows' },
+        { label: 'Dashboard', url: '/replenishment/dashboard' },
+      ]
+    : []
+        // @ts-ignore
+        .map((item) => nI(item))
+}
+
+const useInternalNavSectionsIaBaPortal = () => {
+  const { canViewBp, canViewProjects, canSetProjectSettings } =
+    useContext(PermissionsContext)
+  const [pathname] = useLocation()
+  const nI = makeInternalNavItem.bind(null, pathname)
+  return canViewBp || canViewProjects || canSetProjectSettings
+    ? [
+        {
+          label: 'IA/BA Portal',
           menu: [
-            {
-              label: 'Scale of assessment',
-              url: '/replenishment/scale-of-assessment',
-            },
-            {
-              label: 'Status of the fund',
-              url: '/replenishment/status-of-the-fund',
-            },
-            { label: 'Statistics', url: '/replenishment/statistics' },
-            {
-              label: 'Status of contributions',
-              url: '/replenishment/status-of-contributions',
-            },
-            { label: 'In/out flows', url: '/replenishment/in-out-flows' },
-            { label: 'Dashboard', url: '/replenishment/dashboard' },
+            ...(canViewBp
+              ? [{ label: 'Business plans', url: '/business-plans' }]
+              : []),
+            ...(canViewProjects
+              ? [
+                  {
+                    label: 'Projects Listing',
+                    url: '/projects-listing/listing',
+                  },
+                ]
+              : []),
+            ...(canSetProjectSettings
+              ? [
+                  {
+                    label: 'IA/BA portal settings',
+                    url: '/projects-listing/settings',
+                  },
+                ]
+              : []),
           ],
-          url: '/replenishment',
+          url: '/projects-listing/listing',
         },
       ]
     : []
@@ -166,6 +172,8 @@ const makeExternalNavItem = (label: string, url: string, menu?: navItem[]) => {
 }
 
 const useMenuItems = () => {
+  const { canViewReplenishment } = useContext(PermissionsContext)
+
   return [
     makeExternalNavItem('About MLF', '/about', [
       makeExternalNavItem('Mission', '/about/mission'),
@@ -184,15 +192,20 @@ const useMenuItems = () => {
     ]),
     makeExternalNavItem('Our impact', '/our-impact'),
     makeExternalNavItem('Projects & Data', '/projects-data', [
-      makeExternalNavItem('Projects', '/projects-data/dashboards'),
-      ...useInternalNavSectionsReplenishment(),
-      makeExternalNavItem('Countries', '/projects-data/funding-dashboard'),
-      makeExternalNavItem('Our impact', '/projects-data/people-environment'),
       makeExternalNavItem(
-        'CP Data Center',
-        '/projects-data/projects-dashboard',
+        'Projects and impact',
+        '/projects-data/projects-impacts',
       ),
+      makeExternalNavItem('Countries', '/projects-data/countries'),
+      makeExternalNavItem('CP Data Center', '/projects-data/cp-data-center'),
       ...useInternalNavSections(),
+      makeExternalNavItem(
+        'Contributions',
+        '/projects-data/contributions',
+        useInternalNavSectionsReplenishment(),
+      ),
+      makeExternalNavItem('Portals', '/projects-data/portals'),
+      ...useInternalNavSectionsIaBaPortal(),
     ]),
     makeExternalNavItem('Resources', '/resources', [
       makeExternalNavItem('Decisions', '/resources/decisions'),
@@ -339,6 +352,8 @@ const DesktopHeaderNavigation = ({
                     {menuItem.label}
                   </Component>
                 ) : null
+                const isExternalWithMenu = menuItem.external && menuItem.menu
+
                 return (
                   regularSubMenuLink || (
                     <List
@@ -354,13 +369,32 @@ const DesktopHeaderNavigation = ({
                               menuItem.current && !menuItem.menu,
                           },
                         )}
-                        onClick={() => toggleCollapseOpen(menuItem.label)}
+                        {...(isExternalWithMenu ? { href: menuItem.url } : {})}
+                        onClick={() => {
+                          if (!isExternalWithMenu) {
+                            toggleCollapseOpen(menuItem.label)
+                          }
+                        }}
                       >
                         {menuItem.label}
                         {openMenus[menuItem.label] ? (
-                          <IoChevronUp />
+                          <IoChevronUp
+                            onClick={(e) => {
+                              if (isExternalWithMenu) {
+                                e.preventDefault()
+                                toggleCollapseOpen(menuItem.label)
+                              }
+                            }}
+                          />
                         ) : (
-                          <IoChevronDown />
+                          <IoChevronDown
+                            onClick={(e) => {
+                              if (isExternalWithMenu) {
+                                e.preventDefault()
+                                toggleCollapseOpen(menuItem.label)
+                              }
+                            }}
+                          />
                         )}
                       </ListItemButton>
                       <Collapse
@@ -477,6 +511,7 @@ const MobileHeaderNavigation = ({
                 {item.label}
               </ListItem>
             ) : null
+            const isExternalWithMenu = item.external && item.menu
 
             return (
               regularMenuLink || (
@@ -486,13 +521,32 @@ const MobileHeaderNavigation = ({
                       'flex items-center justify-between rounded-none',
                       styling,
                     )}
-                    onClick={() => toggleOpenMenu(item.label)}
+                    {...(isExternalWithMenu ? { href: item.url } : {})}
+                    onClick={() => {
+                      if (!isExternalWithMenu) {
+                        toggleOpenMenu(item.label)
+                      }
+                    }}
                   >
                     {item.label}
                     {openMenus[item.label] ? (
-                      <IoChevronUp />
+                      <IoChevronUp
+                        onClick={(e) => {
+                          if (isExternalWithMenu) {
+                            e.preventDefault()
+                            toggleOpenMenu(item.label)
+                          }
+                        }}
+                      />
                     ) : (
-                      <IoChevronDown />
+                      <IoChevronDown
+                        onClick={(e) => {
+                          if (isExternalWithMenu) {
+                            e.preventDefault()
+                            toggleOpenMenu(item.label)
+                          }
+                        }}
+                      />
                     )}
                   </ListItemButton>
                   <Collapse
