@@ -96,7 +96,6 @@ def setup_project_list(
             ProjectFactory.create(
                 title=f"Project {i}",
                 serial_number=i + 1,
-                date_received=f"2020-01-{i + 1}",
                 **project_data,
             )
 
@@ -116,7 +115,6 @@ def setup_project_list(
     projects.append(
         ProjectFactory.create(
             title="Project 25",
-            date_received="2020-01-30",
             **proj_data,
         )
     )
@@ -139,7 +137,6 @@ def setup_project_list(
         ProjectFactory.create(
             title="Project 26",
             serial_number=26,
-            date_received="2020-01-30",
             **proj_data,
         )
     )
@@ -151,7 +148,6 @@ def setup_project_list(
         ProjectFactory.create(
             title="Project 27",
             serial_number=27,
-            date_received="2020-01-30",
             **proj_data,
         )
     )
@@ -163,7 +159,6 @@ def setup_project_list(
         ProjectFactory.create(
             title="Project 28",
             serial_number=28,
-            date_received="2020-01-30",
             **proj_data,
         )
     )
@@ -174,7 +169,6 @@ def setup_project_list(
         ProjectFactory.create(
             title="Project 29",
             serial_number=29,
-            date_received="2020-01-30",
             **proj_data,
         )
     )
@@ -298,7 +292,6 @@ def setup_project_create(
         "quantity_hfc_23_by_product_emitted": 23.32,
         "production": True,
         "production_control_type": "reduction",
-        "products_manufactured": "test products manufactured",
         "programme_officer": "Officer",
         "project_end_date": "2024-09-30",
         "project_start_date": "2023-10-01",
@@ -585,26 +578,6 @@ class TestProjectV2List(BaseTest):
         for project in response.data:
             assert project["country"] == country_ro.name
 
-    def test_project_list_date_received_filter(
-        self, secretariat_viewer_user, _setup_project_list
-    ):
-        self.client.force_authenticate(user=secretariat_viewer_user)
-
-        response = self.client.get(self.url, {"date_received_after": "2020-01-03"})
-        assert response.status_code == 200
-        assert len(response.data) == 8
-        for project in response.data:
-            assert project["date_received"] in [
-                "2020-01-03",
-                "2020-01-04",
-                "2020-01-30",
-            ]
-
-        response = self.client.get(self.url, {"date_received_before": "2020-01-01"})
-        assert response.status_code == 200
-        assert len(response.data) == 2
-        assert response.data[0]["date_received"] == "2020-01-01"
-
     def test_project_list_search_filter(
         self, secretariat_viewer_user, _setup_project_list
     ):
@@ -782,7 +755,6 @@ class TestCreateProjects(BaseTest):
             "quantity_hfc_23_by_product_generation_rate",
             "quantity_hfc_23_by_product_destroyed",
             "quantity_hfc_23_by_product_emitted",
-            "products_manufactured",
             "programme_officer",
             "project_end_date",
             "project_start_date",
