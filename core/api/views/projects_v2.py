@@ -352,7 +352,6 @@ class ProjectV2ViewSet(
                 "meta_project",
             )
             .prefetch_related(
-                "coop_agencies",
                 "submission_amounts",
                 "subsectors",
                 "funds",

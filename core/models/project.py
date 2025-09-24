@@ -24,6 +24,11 @@ from core.models.utils import SubstancesType, get_protected_storage
 
 # pylint: disable=C0302
 
+OLD_FIELD_HELP_TEXT = """
+    Old field from the initial imported data/implementation of projects.
+    TBD if the information can be transferred to the new structure.
+"""
+
 
 class MetaProject(models.Model):
     class MetaProjectType(models.TextChoices):
@@ -34,7 +39,12 @@ class MetaProject(models.Model):
         Agency, on_delete=models.PROTECT, null=True, blank=True
     )
     type = models.CharField(max_length=255, choices=MetaProjectType.choices)
-    code = models.CharField(max_length=255, null=True, blank=True)
+    code = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text="Obsolete. Replaced by the new 'new_code' field.",
+    )
     new_code = models.CharField(
         max_length=255,
         null=True,
@@ -171,23 +181,65 @@ class Project(models.Model):
         help_text="True if the user is the lead agency submitting on behalf of a cooperating agency.",
     )
     agency = models.ForeignKey(Agency, on_delete=models.CASCADE)
-    national_agency = models.CharField(max_length=255, null=True, blank=True)
+    national_agency = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
     coop_agencies = models.ManyToManyField(
-        Agency, related_name="coop_projects", blank=True
+        Agency,
+        related_name="coop_projects",
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    legacy_code = models.CharField(
+        max_length=128,
+        null=True,
+        blank=True,
+        help_text="""
+            Old field from the initial imported data/implementation of projects.
+            Still relevant in the export/filtering?! of the projects.
+        """,
     )
 
-    legacy_code = models.CharField(max_length=128, null=True, blank=True)
-
     code = models.CharField(max_length=128, null=True, blank=True)
-    serial_number_legacy = models.IntegerField(null=True, blank=True)  # number
-    serial_number = models.IntegerField(null=True, blank=True)
-    additional_funding = models.BooleanField(default=False)
-    mya_code = models.CharField(max_length=128, null=True, blank=True)
+    serial_number_legacy = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="""
+            Old field from the initial imported data/implementation of projects.
+            Still relevant in the generation of the meta project code?!
+        """,
+    )  # number
+    serial_number = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="""
+            Old field from the initial imported data/implementation of projects.
+            Still relevant in the generation of the project code?!
+        """,
+    )
+    additional_funding = models.BooleanField(
+        default=False,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    mya_code = models.CharField(
+        max_length=128,
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
     title = models.CharField(max_length=256)
     description = models.TextField(null=True, blank=True)
     excom_provision = models.TextField(null=True, blank=True)
     project_type = models.ForeignKey(ProjectType, on_delete=models.CASCADE)
-    project_type_legacy = models.CharField(max_length=256, null=True, blank=True)
+    project_type_legacy = models.CharField(
+        max_length=256,
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
     cluster = models.ForeignKey(
         ProjectCluster, on_delete=models.CASCADE, null=True, blank=True
     )
@@ -222,59 +274,152 @@ class Project(models.Model):
         blank=True,
         related_name="transferred_projects",
         help_text="Old meeting field used for transferred projects.Should be removed in the future.",
-    )
+    )  # obsolete
+
     decision = models.ForeignKey(
         Decision, on_delete=models.CASCADE, null=True, blank=True
     )
-    project_duration = models.IntegerField(null=True, blank=True)
-    stage = models.IntegerField(null=True, blank=True)
+    project_duration = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    stage = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
     tranche = models.IntegerField(
         null=True,
         blank=True,
         validators=[MinValueValidator(1), MaxValueValidator(10)],
     )
     compliance = models.CharField(
-        max_length=256, choices=ProjectCompliance.choices, null=True, blank=True
-    )
+        max_length=256,
+        choices=ProjectCompliance.choices,
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
 
     sector = models.ForeignKey(
         ProjectSector, on_delete=models.CASCADE, null=True, blank=True
     )
-    sector_legacy = models.CharField(max_length=256, null=True, blank=True)
+    sector_legacy = models.CharField(
+        max_length=256,
+        null=True,
+        blank=True,
+        help_text="""
+            Old field from the initial imported data/implementation of projects.
+            TBD if the information can be transferred to the new structure.
+            Still in use in the export.
+        """,
+    )
     subsectors = models.ManyToManyField(
         ProjectSubSector, related_name="projects", blank=True
     )
-    subsector_legacy = models.CharField(max_length=256, null=True, blank=True)
-    mya_subsector = models.CharField(max_length=256, null=True, blank=True)
+    subsector_legacy = models.CharField(
+        max_length=256,
+        null=True,
+        blank=True,
+        help_text="""
+            Old field from the initial imported data/implementation of projects.
+            TBD if the information can be transferred to the new structure.
+            Still in use in the export.
+        """,
+    )
+    mya_subsector = models.CharField(
+        max_length=256,
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
 
     substance_type = models.CharField(
-        max_length=256, choices=SubstancesType.choices, null=True, blank=True
+        max_length=256,
+        choices=SubstancesType.choices,
+        null=True,
+        blank=True,
+        help_text="""
+            Old field from the initial imported data/implementation of projects.
+            TBD if the information can be transferred to the new structure.
+            Still in use in the export.
+        """,
     )
 
-    impact = models.FloatField(null=True, blank=True)
-    impact_production = models.FloatField(null=True, blank=True)
-    substance_phasedout = models.FloatField(null=True, blank=True)  # ods_phasedout
+    impact = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    impact_production = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    substance_phasedout = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # ods_phasedout # obsolete
 
-    fund_disbursed = models.FloatField(null=True, blank=True)
-    fund_disbursed_psc = models.FloatField(null=True, blank=True)  # fund_disbursed_13
-    capital_cost = models.FloatField(null=True, blank=True)
-    operating_cost = models.FloatField(null=True, blank=True)
-    contingency_cost = models.FloatField(null=True, blank=True)
-    effectiveness_cost = models.FloatField(null=True, blank=True)
+    fund_disbursed = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    fund_disbursed_psc = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # fund_disbursed_13 # obsolete
+    capital_cost = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    operating_cost = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    contingency_cost = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    effectiveness_cost = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
     total_fund = models.FloatField(null=True, blank=True)
     total_fund_transferred = models.FloatField(
         null=True,
         blank=True,
         help_text="Old field used for transferred projects. Should be removed in the future.",
-    )
+    )  # obsolete
     total_psc_transferred = models.FloatField(
         null=True,
         blank=True,
         help_text="Old field used for transferred projects. Should be removed in the future.",
-    )
-    total_fund_approved = models.FloatField(null=True, blank=True)
-    total_psc_cost = models.FloatField(null=True, blank=True)
-    total_grant = models.FloatField(null=True, blank=True)
+    )  # obsolete
+    total_fund_approved = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    total_psc_cost = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+
+    total_grant = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
 
     date_approved = models.DateField(null=True, blank=True)
     meeting_approved = models.ForeignKey(
@@ -285,48 +430,180 @@ class Project(models.Model):
         blank=True,
     )
     date_completion = models.DateField(null=True, blank=True)
-    date_actual = models.DateField(null=True, blank=True)
-    date_per_agreement = models.DateField(null=True, blank=True)
+    date_actual = models.DateField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    date_per_agreement = models.DateField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
     remarks = models.TextField(null=True, blank=True)
 
     # other fields
-    umbrella_project = models.BooleanField(default=False)
-    loan = models.BooleanField(default=False)
-    intersessional_approval = models.BooleanField(default=False)
-    retroactive_finance = models.BooleanField(default=False)
-    withdrawn = models.BooleanField(default=False)
-    incomplete = models.BooleanField(default=False)
-    issue = models.BooleanField(default=False)
-    issue_description = models.TextField(null=True, blank=True)
-    application = models.CharField(max_length=256, null=True, blank=True)
-    products_manufactured = models.TextField(null=True, blank=True)
-    plan = models.TextField(null=True, blank=True)
-    technology = models.CharField(max_length=256, null=True, blank=True)
-    impact_co2mt = models.FloatField(null=True, blank=True)
-    impact_prod_co2mt = models.FloatField(null=True, blank=True)
-    ods_phasedout_co2mt = models.FloatField(null=True, blank=True)
-    hcfc_stage = models.FloatField(null=True, blank=True)
-    date_comp_revised = models.DateField(null=True, blank=True)
-    date_per_decision = models.DateField(null=True, blank=True)
-    local_ownership = models.FloatField(null=True, blank=True)
-    export_to = models.FloatField(null=True, blank=True)
+    umbrella_project = models.BooleanField(
+        default=False,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    loan = models.BooleanField(
+        default=False,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    intersessional_approval = models.BooleanField(
+        default=False,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    retroactive_finance = models.BooleanField(
+        default=False,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    withdrawn = models.BooleanField(
+        default=False,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    incomplete = models.BooleanField(
+        default=False,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    issue = models.BooleanField(
+        default=False,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    issue_description = models.TextField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    application = models.CharField(
+        max_length=256,
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    products_manufactured = models.TextField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    plan = models.TextField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    technology = models.CharField(
+        max_length=256,
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    impact_co2mt = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    impact_prod_co2mt = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    ods_phasedout_co2mt = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    hcfc_stage = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    date_comp_revised = models.DateField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    date_per_decision = models.DateField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    local_ownership = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    export_to = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
     submission_category = models.CharField(
-        max_length=164, choices=SubmissionCategory.choices, null=True, blank=True
-    )
-    submission_number = models.IntegerField(null=True, blank=True)
+        max_length=164,
+        choices=SubmissionCategory.choices,
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    submission_number = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
     programme_officer = models.CharField(max_length=255, null=True, blank=True)
-    funds_allocated = models.FloatField(null=True, blank=True)
+    funds_allocated = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
     support_cost_psc = models.FloatField(null=True, blank=True)
-    project_cost = models.FloatField(null=True, blank=True)
-    date_received = models.DateField(null=True, blank=True)
-    revision_number = models.TextField(null=True, blank=True)
-    date_of_revision = models.DateField(null=True, blank=True)
-    agency_remarks = models.TextField(null=True, blank=True)
-    submission_comments = models.TextField(null=True, blank=True)  # comments
-    reviewed_mfs = models.BooleanField(default=False)
-    correspondance_no = models.IntegerField(null=True, blank=True)
-    plus = models.BooleanField(default=False)
-    source_file = models.CharField(max_length=255, null=True, blank=True)
+    project_cost = models.FloatField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    date_received = models.DateField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    revision_number = models.TextField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    date_of_revision = models.DateField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    agency_remarks = models.TextField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    submission_comments = models.TextField(
+        null=True, blank=True, help_text=OLD_FIELD_HELP_TEXT
+    )  # obsolete # comments
+    reviewed_mfs = models.BooleanField(
+        default=False,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    correspondance_no = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    plus = models.BooleanField(
+        default=False,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
+    source_file = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text=OLD_FIELD_HELP_TEXT,
+    )  # obsolete
 
     # new fields
     is_lvc = models.BooleanField(
@@ -365,7 +642,7 @@ class Project(models.Model):
     )
     is_sme = models.BooleanField(null=True, blank=True)
 
-    # new MYA fields
+    # new MYA fields #TODO: those might need to be removed if they are to be defined in the metaproject
     mya_start_date = models.DateField(
         null=True, blank=True, help_text="Start date (MYA)"
     )
