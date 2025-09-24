@@ -1,12 +1,19 @@
-import { useContext, useState, useEffect, useCallback, useMemo } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 
 import { useStore } from '@ors/store'
 import { formatApiUrl } from '@ors/helpers/Api/utils'
-import { api } from '@ors/helpers'
+import { api, getResults } from '@ors/helpers'
 
-import { Box, Modal, Typography } from '@mui/material'
-import { Tabs, Tab } from '@mui/material'
-import { Button, Divider } from '@mui/material'
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  Typography,
+} from '@mui/material'
 
 import {
   MetaProjectType,
@@ -14,7 +21,6 @@ import {
   ProjectType,
 } from '@ors/types/api_projects.ts'
 import useApi from '@ors/hooks/useApi'
-import { getResults } from '@ors/helpers'
 
 import PListingTable from '@ors/components/manage/Blocks/ProjectsListing/ProjectsListing/PListingTable'
 import { detailItem } from '@ors/components/manage/Blocks/ProjectsListing/ProjectView/ViewHelperComponents'
@@ -282,8 +288,11 @@ const MetaProjectView = (props: { mp: MetaProjectDetailType }) => {
 const MetaProjectEdit = (props: {
   mp: MetaProjectDetailType
   refreshMetaProjectDetails: () => void
+  onCancel: () => void
 }) => {
-  const { mp, refreshMetaProjectDetails } = props
+  const { mp, refreshMetaProjectDetails, onCancel } = props
+
+  const projects = getResults<ProjectType>(mp?.projects ?? [])
 
   const loadInitialState = useCallback(() => {
     const result = {} as Record<string, any>
@@ -356,45 +365,44 @@ const MetaProjectEdit = (props: {
   }
 
   return (
-    <div>
-      <div>{renderFieldData(fieldData)}</div>
-      <Divider className="my-4" />
-      <div>
-        <Button onClick={handleSave}>Save</Button>
-      </div>
-    </div>
-  )
-}
-
-const MetaProjectTabs = (props: any) => {
-  const { mp, refreshMetaProjectDetails } = props
-  const [mode, setMode] = useState('view')
-
-  return (
-    <>
-      <Tabs
-        value={mode}
-        onChange={(_evt, value) => {
-          setMode(value)
-        }}
-      >
-        <Tab value={'view'} label="View" />
-        <Tab value={'edit'} label="Edit" />
-      </Tabs>
-      {mode === 'edit' ? (
-        <MetaProjectEdit
-          mp={mp}
-          refreshMetaProjectDetails={refreshMetaProjectDetails}
+    <Dialog open={!!mp?.id} onClose={onCancel} fullWidth={true} maxWidth={'xl'}>
+      <DialogTitle>MYA: {mp?.new_code}</DialogTitle>
+      <DialogContent>
+        <Typography variant="h6">Projects</Typography>
+        <PListingTable
+          mode="listing"
+          projects={projects as any}
+          filters={{}}
+          enablePagination={false}
         />
-      ) : (
-        <MetaProjectView mp={mp} />
-      )}
-    </>
+        <Typography variant="h6">Details</Typography>
+        <div className="flex gap-2">
+          <div className="flex-grow">
+            {renderFieldData(
+              fieldData.slice(0, Math.ceil(fieldData.length / 2)),
+            )}
+          </div>
+          <div className="flex-grow">
+            {renderFieldData(fieldData.slice(Math.ceil(fieldData.length / 2)))}
+          </div>
+        </div>
+      </DialogContent>
+      <DialogActions>
+        <Button
+          className="hover:bg-white hover:text-primary"
+          onClick={onCancel}
+        >
+          Close
+        </Button>
+        <Button
+          className="bg-primary text-white hover:text-mlfs-hlYellow"
+          onClick={handleSave}
+        >
+          Save
+        </Button>
+      </DialogActions>
+    </Dialog>
   )
-}
-
-const metaCodeToIso3 = (code?: string | null) => {
-  return code?.split('/')?.[0] ?? ''
 }
 
 const initialFilters = {
@@ -429,7 +437,6 @@ export default function ProjectsUpdateMyaDataPage() {
 
   const { data: metaproject, refresh: refreshMetaProjectDetails } =
     useGetMetaProjectDetails(selected?.id)
-  const projects = getResults<ProjectType>(metaproject?.projects ?? [])
 
   const onToggleExpand = (mp: MetaProjectType) => {
     setSelected((prev) => {
@@ -559,24 +566,13 @@ export default function ProjectsUpdateMyaDataPage() {
           }}
         />
       </Box>
-      <Modal open={!!selected?.id}>
-        <Box className="max-h-[90vh] min-w-[90vw] overflow-auto absolute-center">
-          <PListingTable
-            mode="listing"
-            projects={projects as any}
-            filters={filters}
-          />
-          {metaproject?.field_data ? (
-            <MetaProjectTabs
-              mp={metaproject}
-              refreshMetaProjectDetails={refreshMetaProjectDetails}
-            />
-          ) : null}
-          <Typography className="text-right">
-            <Button onClick={() => setSelected(null)}>Close</Button>
-          </Typography>
-        </Box>
-      </Modal>
+      {selected?.id && metaproject?.field_data ? (
+        <MetaProjectEdit
+          mp={metaproject}
+          refreshMetaProjectDetails={refreshMetaProjectDetails}
+          onCancel={() => setSelected(null)}
+        />
+      ) : null}
     </PageWrapper>
   )
 }
