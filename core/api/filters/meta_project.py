@@ -1,8 +1,12 @@
 from django_filters import rest_framework as filters
 
 from core.models import Agency
+from core.models import Country
 from core.models import MetaProject
 from django_filters.fields import CSVWidget
+
+from core.models import ProjectCluster
+
 
 class MetaProjectMyaFilter(filters.FilterSet):
     """
@@ -15,6 +19,24 @@ class MetaProjectMyaFilter(filters.FilterSet):
         widget=CSVWidget,
     )
 
+    country_id = filters.ModelMultipleChoiceFilter(
+        field_name="projects__country",
+        queryset=Country.objects.all(),
+        widget=CSVWidget,
+    )
+
+    cluster_id = filters.ModelMultipleChoiceFilter(
+        field_name="projects__cluster",
+        queryset=ProjectCluster.objects.all(),
+        widget=CSVWidget,
+    )
+
     class Meta:
         model = MetaProject
-        fields = ["code", "type", "lead_agency_id"]
+        fields = [
+            "code",
+            "type",
+            "country_id",
+            "lead_agency_id",
+            "cluster_id",
+        ]

@@ -1,6 +1,7 @@
 import { ApiUser } from '@ors/types/api_auth_user.ts'
 import { ApiBPActivity } from './api_bp_get'
 import { ApiAgency } from '@ors/types/api_agencies.ts'
+import { Country } from '@ors/types/store'
 
 export type ProjectSubSectorType = {
   id: number
@@ -176,9 +177,21 @@ export type ProjectAssociationType = {
   projects: ProjectType[]
 }
 
+export type ProjectCluster = {
+  category: string
+  code: string
+  id: number
+  name: string
+  sort_order: number
+  obsolete: boolean
+  production: boolean
+}
+
 export type MetaProjectType = {
   id: number
   new_code: string
   lead_agency: ApiAgency
+  country: Country
+  cluster: ProjectCluster
   type: string
 }

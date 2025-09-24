@@ -8,7 +8,11 @@ import { Box, Modal, Typography } from '@mui/material'
 import { Tabs, Tab } from '@mui/material'
 import { Button, Divider } from '@mui/material'
 
-import { MetaProjectType, ProjectType } from '@ors/types/api_projects.ts'
+import {
+  MetaProjectType,
+  ProjectCluster,
+  ProjectType,
+} from '@ors/types/api_projects.ts'
 import useApi from '@ors/hooks/useApi'
 import { getResults } from '@ors/helpers'
 
@@ -111,6 +115,7 @@ export type MetaProjectFiltersProps = {
   filters: typeof initialFilters
   countries: Country[]
   agencies: ApiAgency[]
+  clusters: ProjectCluster[]
   handleFilterChange: (params: Record<string, any>) => void
   handleParamsChange: (params: Record<string, any>) => void
 }
@@ -120,6 +125,7 @@ const MetaProjectFilters = (props: MetaProjectFiltersProps) => {
     filters,
     countries,
     agencies,
+    clusters,
     handleFilterChange,
     handleParamsChange,
   } = props
@@ -173,6 +179,22 @@ const MetaProjectFilters = (props: MetaProjectFiltersProps) => {
         }}
         {...defaultProps}
       />
+      <Field
+        Input={{ placeholder: 'Cluster' }}
+        options={getFilterOptions(filters, clusters, 'cluster_id')}
+        widget="autocomplete"
+        onChange={(_: any, value: any) => {
+          const cluster = filters.cluster_id || []
+          const newValue = union(cluster, value)
+
+          handleFilterChange({ cluster_id: newValue })
+          handleParamsChange({
+            cluster_id: newValue.map((item: any) => item.id).join(','),
+            offset: 0,
+          })
+        }}
+        {...defaultProps}
+      />
     </div>
   )
 }
@@ -186,6 +208,7 @@ const MetaProjectFiltersSelectedOptions = (
   const {
     countries,
     agencies,
+    clusters,
     filters,
     handleFilterChange,
     handleParamsChange,
@@ -204,11 +227,11 @@ const MetaProjectFiltersSelectedOptions = (
       entityIdentifier: 'lead_agency_id',
       hasPermissions: true,
     },
-    // {
-    //   entities: formatEntity(clusters),
-    //   entityIdentifier: 'cluster_id',
-    //   hasPermissions: true,
-    // },
+    {
+      entities: formatEntity(clusters),
+      entityIdentifier: 'cluster_id',
+      hasPermissions: true,
+    },
   ]
 
   return areFiltersApplied ? (
@@ -395,23 +418,14 @@ export default function ProjectsUpdateMyaDataPage() {
 
   const countries = useStore((state) => state.common.countries_for_listing.data)
   const agencies = useStore((state) => state.common.agencies.data)
-
-  const countriesByIso3 = new Map<string, any>(
-    countries.map((country: any) => [country.iso3, country]),
-  )
+  const clusters = useStore((state) => state.projects.clusters.data)
 
   const [selected, setSelected] = useState<MetaProjectType | null>(null)
 
   const { canViewProjects } = useContext(PermissionsContext)
 
-  const {
-    loaded,
-    loading,
-    results,
-    count,
-    setParams,
-    params: currentParams,
-  } = useGetMetaProjects(initialParams)
+  const { loaded, loading, results, count, setParams } =
+    useGetMetaProjects(initialParams)
 
   const { data: metaproject, refresh: refreshMetaProjectDetails } =
     useGetMetaProjectDetails(selected?.id)
@@ -444,14 +458,8 @@ export default function ProjectsUpdateMyaDataPage() {
     },
     {
       headerName: 'Country',
-      valueGetter: (params) => {
-        const code = params?.data?.new_code
-        const iso3 = metaCodeToIso3(code)
-        return iso3 ? countriesByIso3.get(iso3)?.name : '-'
-      },
-      tooltipValueGetter: (params) => {
-        return params.value
-      },
+      field: 'country.name',
+      tooltipField: 'country.name',
     },
     {
       headerName: 'Lead agency',
@@ -460,6 +468,11 @@ export default function ProjectsUpdateMyaDataPage() {
       valueGetter: (params) => {
         return params?.data?.lead_agency?.name ?? '-'
       },
+    },
+    {
+      headerName: 'Cluster',
+      field: 'cluster.code',
+      tooltipField: 'cluster.name',
     },
   ]
 
@@ -489,6 +502,7 @@ export default function ProjectsUpdateMyaDataPage() {
           filters={filters}
           countries={countries}
           agencies={agencies}
+          clusters={clusters}
           handleFilterChange={handleFilterChange}
           handleParamsChange={handleParamsChange}
         />
@@ -496,6 +510,7 @@ export default function ProjectsUpdateMyaDataPage() {
           filters={filters}
           countries={countries}
           agencies={agencies}
+          clusters={clusters}
           handleFilterChange={handleFilterChange}
           handleParamsChange={handleParamsChange}
         />
