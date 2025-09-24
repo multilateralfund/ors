@@ -1,5 +1,6 @@
 import { ApiUser } from '@ors/types/api_auth_user.ts'
 import { ApiBPActivity } from './api_bp_get'
+import { ApiAgency } from '@ors/types/api_agencies.ts'
 
 export type ProjectSubSectorType = {
   id: number
@@ -177,10 +178,7 @@ export type ProjectAssociationType = {
 
 export type MetaProjectType = {
   id: number
-  code: string
   new_code: string
-  lead_agency: string | null
-  lead_agency_id: number | null
-  pcr_project_id: string
+  lead_agency: ApiAgency
   type: string
 }

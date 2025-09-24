@@ -1,4 +1,6 @@
 from rest_framework import serializers
+
+from core.api.serializers.agency import AgencySerializer
 from core.api.serializers.project_v2 import ProjectListV2Serializer
 from core.models.project import MetaProject
 from core.models.agency import Agency
@@ -63,10 +65,12 @@ class MetaProjecMyaDetailsSerializer(serializers.ModelSerializer):
 
 class MetaProjecMyaSerializer(serializers.ModelSerializer):
 
-    lead_agency = serializers.SlugRelatedField("name", read_only=True)
-    lead_agency_id = serializers.PrimaryKeyRelatedField(
-        required=True, queryset=Agency.objects.all().values_list("id", flat=True)
-    )
+    # lead_agency = serializers.SlugRelatedField("name", read_only=True)
+    # lead_agency_id = serializers.PrimaryKeyRelatedField(
+    #     required=True, queryset=Agency.objects.all().values_list("id", flat=True)
+    # )
+
+    lead_agency = AgencySerializer(read_only=True)
 
     class Meta:
         model = MetaProject
@@ -74,6 +78,6 @@ class MetaProjecMyaSerializer(serializers.ModelSerializer):
             "id",
             "type",
             "lead_agency",
-            "lead_agency_id",
+            # "lead_agency_id",
             "new_code",
         ]

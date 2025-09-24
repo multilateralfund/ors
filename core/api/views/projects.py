@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
+from core.api.filters.meta_project import MetaProjectMyaFilter
 from core.api.filters.project import MetaProjectFilter, ProjectFilter
 
 from core.api.permissions import (
@@ -84,6 +85,7 @@ class MetaProjectMyaListView(generics.ListAPIView):
 
     permission_classes = [HasMetaProjectsViewAccess]
     serializer_class = MetaProjecMyaSerializer
+    filterset_class = MetaProjectMyaFilter
 
     def get_queryset(self):
         result = (

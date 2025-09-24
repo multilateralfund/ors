@@ -1,11 +1,10 @@
-import { useContext, useState, useEffect, useCallback } from 'react'
+import { useContext, useState, useEffect, useCallback, useMemo } from 'react'
 
-import styles from './page.module.css'
 import { useStore } from '@ors/store'
 import { formatApiUrl } from '@ors/helpers/Api/utils'
 import { api } from '@ors/helpers'
 
-import { Box } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import { Tabs, Tab } from '@mui/material'
 import { Button, Divider } from '@mui/material'
 
@@ -24,15 +23,37 @@ import NotFoundPage from '@ors/app/not-found'
 
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
-import Field from '@ors/components/manage/Form/Field'
 import { DateInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 
 import dayjs from 'dayjs'
+import ViewTable from '@ors/components/manage/Form/ViewTable.tsx'
+import { GridOptions } from 'ag-grid-community'
+import Field from '@ors/components/manage/Form/Field.tsx'
+import { getFilterOptions } from '@ors/components/manage/Utils/utilFunctions.ts'
+import { map, union } from 'lodash'
+import { Country } from '@ors/types/store'
+import { IoChevronDown } from 'react-icons/io5'
+import { ApiAgency } from '@ors/types/api_agencies.ts'
+import HeaderTitle from '@ors/components/theme/Header/HeaderTitle.tsx'
+import {
+  displaySelectedOption,
+  RedirectBackButton,
+} from '@ors/components/manage/Blocks/ProjectsListing/HelperComponents.tsx'
+import {
+  formatEntity,
+  getAreFiltersApplied,
+} from '@ors/components/manage/Blocks/ProjectsListing/utils.ts'
 
-const useGetMetaProjects = (withCache: boolean = false) => {
+const MT_PER_PAGE = 10
+
+const useGetMetaProjects = (
+  params: typeof initialParams,
+  withCache: boolean = false,
+) => {
   const { data, ...rest } = useApi<MetaProjectType[]>({
     options: {
       withStoreCache: withCache,
+      params: params,
     },
     path: 'api/meta-projects-for-mya-update/',
   })
@@ -78,7 +99,7 @@ const useGetMetaProjectDetails = (pk?: number) => {
 const orderFieldData = (fd: MetaProjectFieldData) => {
   const orderedFieldData = []
 
-  for (let key of Object.keys(fd)) {
+  for (const key of Object.keys(fd)) {
     orderedFieldData.push({ name: key, ...fd[key] })
   }
   orderedFieldData.sort((a, b) => a.order - b.order)
@@ -86,6 +107,139 @@ const orderFieldData = (fd: MetaProjectFieldData) => {
   return orderedFieldData
 }
 
+export type MetaProjectFiltersProps = {
+  filters: typeof initialFilters
+  countries: Country[]
+  agencies: ApiAgency[]
+  handleFilterChange: (params: Record<string, any>) => void
+  handleParamsChange: (params: Record<string, any>) => void
+}
+
+const MetaProjectFilters = (props: MetaProjectFiltersProps) => {
+  const {
+    filters,
+    countries,
+    agencies,
+    handleFilterChange,
+    handleParamsChange,
+  } = props
+
+  const defaultProps = {
+    multiple: true,
+    value: [],
+    getOptionLabel: (option: any) => option?.name,
+    FieldProps: { className: 'mb-0 w-full md:w-[7.76rem] BPList' },
+    popupIcon: <IoChevronDown size="18" color="#2F2F38" />,
+    componentsProps: {
+      popupIndicator: {
+        sx: {
+          transform: 'none !important',
+        },
+      },
+    },
+  }
+
+  return (
+    <div className="grid h-full grid-cols-2 flex-wrap items-center gap-x-2 gap-y-2 border-0 border-solid md:flex">
+      <Field
+        Input={{ placeholder: 'Country' }}
+        options={getFilterOptions(filters, countries, 'country_id')}
+        widget="autocomplete"
+        onChange={(_: any, value: any) => {
+          const country = filters.country_id || []
+          const newValue = union(country, value)
+
+          handleFilterChange({ country_id: newValue })
+          handleParamsChange({
+            country_id: newValue.map((item: any) => item.id).join(','),
+            offset: 0,
+          })
+        }}
+        {...defaultProps}
+      />
+      <Field
+        Input={{ placeholder: 'Lead agency' }}
+        options={getFilterOptions(filters, agencies, 'lead_agency_id')}
+        widget="autocomplete"
+        onChange={(_: any, value: any) => {
+          const agency = filters.lead_agency_id || []
+          const newValue = union(agency, value)
+
+          handleFilterChange({ lead_agency_id: newValue })
+          handleParamsChange({
+            lead_agency_id: newValue.map((item: any) => item.id).join(','),
+            offset: 0,
+          })
+        }}
+        {...defaultProps}
+      />
+    </div>
+  )
+}
+
+export type MetaProjectFiltersSelectedOptionsProps =
+  {} & MetaProjectFiltersProps
+
+const MetaProjectFiltersSelectedOptions = (
+  props: MetaProjectFiltersSelectedOptionsProps,
+) => {
+  const {
+    countries,
+    agencies,
+    filters,
+    handleFilterChange,
+    handleParamsChange,
+  } = props
+
+  const areFiltersApplied = getAreFiltersApplied(filters)
+
+  const filterSelectedOpts = [
+    {
+      entities: formatEntity(countries),
+      entityIdentifier: 'country_id',
+      hasPermissions: true,
+    },
+    {
+      entities: formatEntity(agencies),
+      entityIdentifier: 'lead_agency_id',
+      hasPermissions: true,
+    },
+    // {
+    //   entities: formatEntity(clusters),
+    //   entityIdentifier: 'cluster_id',
+    //   hasPermissions: true,
+    // },
+  ]
+
+  return areFiltersApplied ? (
+    <div className="mt-1.5 flex flex-wrap gap-2">
+      {map(
+        filterSelectedOpts,
+        (selectedOpt) =>
+          selectedOpt.hasPermissions &&
+          displaySelectedOption(
+            filters,
+            selectedOpt.entities,
+            selectedOpt.entityIdentifier,
+            handleFilterChange,
+            handleParamsChange,
+          ),
+      )}
+
+      <Typography
+        className="cursor-pointer content-center text-lg font-medium"
+        color="secondary"
+        component="span"
+        onClick={() => {
+          handleParamsChange({ ...initialParams })
+          handleFilterChange({ ...initialFilters })
+        }}
+      >
+        Clear All
+      </Typography>
+    </div>
+  ) : null
+}
 const MetaProjectView = (props: { mp: MetaProjectDetailType }) => {
   const { mp } = props
 
@@ -112,7 +266,7 @@ const MetaProjectEdit = (props: {
     const result = {} as Record<string, any>
     const fd = mp?.field_data ?? ({} as MetaProjectFieldData)
 
-    for (let key of Object.keys(fd)) {
+    for (const key of Object.keys(fd)) {
       result[key] = fd[key as keyof MetaProjectFieldData].value
     }
 
@@ -123,7 +277,7 @@ const MetaProjectEdit = (props: {
 
   useEffect(() => {
     setForm(loadInitialState)
-  }, [mp])
+  }, [loadInitialState, mp])
 
   const fieldData = orderFieldData(mp?.field_data ?? {})
 
@@ -216,15 +370,32 @@ const MetaProjectTabs = (props: any) => {
   )
 }
 
-const COLUMNS = [
-  { field: 'new_code', label: 'Code' },
-  { field: 'type', label: 'Type' },
-]
+const metaCodeToIso3 = (code?: string | null) => {
+  return code?.split('/')?.[0] ?? ''
+}
+
+const initialFilters = {
+  country_id: [],
+  lead_agency_id: [],
+  cluster_id: [],
+}
+
+const initialParams = {
+  country_id: [],
+  lead_agency_id: [],
+  cluster_id: [],
+  limit: MT_PER_PAGE,
+  offset: 0,
+}
 
 export default function ProjectsUpdateMyaDataPage() {
   usePageTitle('Projects - Update MYA data')
 
+  const [filters, setFilters] = useState(() => initialFilters)
+
   const countries = useStore((state) => state.common.countries_for_listing.data)
+  const agencies = useStore((state) => state.common.agencies.data)
+
   const countriesByIso3 = new Map<string, any>(
     countries.map((country: any) => [country.iso3, country]),
   )
@@ -233,7 +404,9 @@ export default function ProjectsUpdateMyaDataPage() {
 
   const { canViewProjects } = useContext(PermissionsContext)
 
-  const metaprojects = useGetMetaProjects()
+  const { loaded, loading, results, count, setParams } =
+    useGetMetaProjects(initialParams)
+
   const { data: metaproject, refresh: refreshMetaProjectDetails } =
     useGetMetaProjectDetails(selected?.id)
   const projects = getResults<ProjectType>(metaproject?.projects ?? [])
@@ -252,53 +425,136 @@ export default function ProjectsUpdateMyaDataPage() {
     return <NotFoundPage />
   }
 
+  const columnDefs: GridOptions<MetaProjectType>['columnDefs'] = [
+    {
+      headerName: 'Code',
+      field: 'new_code',
+      tooltipField: 'new_code',
+    },
+    {
+      headerName: 'Type',
+      field: 'type',
+      tooltipField: 'type',
+    },
+    {
+      headerName: 'Country',
+      valueGetter: (params) => {
+        const code = params?.data?.new_code
+        const iso3 = metaCodeToIso3(code)
+        return iso3 ? countriesByIso3.get(iso3)?.name : '-'
+      },
+      tooltipValueGetter: (params) => {
+        return params.value
+      },
+    },
+    {
+      headerName: 'Lead agency',
+      field: 'lead_agency.name',
+      tooltipField: 'lead_agency.name',
+      valueGetter: (params) => {
+        return params?.data?.lead_agency?.name ?? '-'
+      },
+    },
+  ]
+
+  const handleParamsChange = (params: Record<string, any>) => {
+    setParams(params)
+  }
+
+  const handleFilterChange = (newFilters: Record<string, any>) => {
+    setFilters((filters) => ({ ...filters, ...newFilters }))
+  }
+
   return (
     <PageWrapper>
-      <PageHeading className="min-w-fit">
-        IA/BA Portal - Update MYA data
-      </PageHeading>
+      <HeaderTitle>
+        <div className="flex flex-col">
+          <RedirectBackButton />
+          <div className="flex flex-wrap gap-2 sm:flex-nowrap">
+            <PageHeading className="min-w-fit">
+              IA/BA Portal - Update MYA data
+            </PageHeading>
+          </div>
+        </div>
+      </HeaderTitle>
+
       <Box className="shadow-none">
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              {COLUMNS.map((c) => (
-                <th key={c.field}>{c.label}</th>
-              ))}
-              <th key={'country'}>Country</th>
-            </tr>
-          </thead>
-          <tbody>
-            {metaprojects.results.map((r) => [
-              <tr key={r.id} onClick={() => onToggleExpand(r)}>
-                {COLUMNS.map((c: any) => (
-                  <td key={c.field}>
-                    {r[c.field as unknown as keyof typeof r]}
-                  </td>
-                ))}
-                <td>{countriesByIso3.get(r.new_code.split('/')[0])?.name}</td>
-              </tr>,
-              selected?.id === r.id ? (
-                <tr key={`${r.id}-expanded`}>
-                  <td colSpan={COLUMNS.length + 1}>
-                    <Box>
-                      <PListingTable
-                        mode="listing"
-                        projects={projects as any}
-                        filters={{}}
-                      />
-                      {metaproject?.field_data ? (
-                        <MetaProjectTabs
-                          mp={metaproject}
-                          refreshMetaProjectDetails={refreshMetaProjectDetails}
-                        />
-                      ) : null}
-                    </Box>
-                  </td>
-                </tr>
-              ) : null,
-            ])}
-          </tbody>
-        </table>
+        <MetaProjectFilters
+          filters={filters}
+          countries={countries}
+          agencies={agencies}
+          handleFilterChange={handleFilterChange}
+          handleParamsChange={handleParamsChange}
+        />
+        <MetaProjectFiltersSelectedOptions
+          filters={filters}
+          countries={countries}
+          agencies={agencies}
+          handleFilterChange={handleFilterChange}
+          handleParamsChange={handleParamsChange}
+        />
+        <Divider className="my-2" />
+        <ViewTable
+          columnDefs={[...columnDefs]}
+          domLayout="normal"
+          enablePagination={true}
+          alwaysShowHorizontalScroll={false}
+          loaded={loaded}
+          loading={loading}
+          paginationPageSize={MT_PER_PAGE}
+          paginationPageSizeSelector={[10, 20, 50, 80, 100].filter(
+            (nr) => nr < count,
+          )}
+          resizeGridOnRowUpdate={true}
+          rowCount={count}
+          rowData={results}
+          rowBuffer={120}
+          rowsVisible={90}
+          tooltipShowDelay={200}
+          context={{ disableValidation: true }}
+          components={{
+            agColumnHeader: undefined,
+            agTextCellRenderer: undefined,
+          }}
+          onPaginationChanged={({ page, rowsPerPage }) => {
+            setParams({
+              limit: rowsPerPage,
+              offset: page * rowsPerPage,
+            })
+          }}
+          onSortChanged={({ api }) => {
+            const ordering = api
+              .getColumnState()
+              .filter((column) => !!column.sort)
+              .map(
+                (column) =>
+                  (column.sort === 'asc' ? '' : '-') +
+                  column.colId.replaceAll('.', '__'),
+              )
+              .join(',')
+            setParams({ offset: 0, ordering })
+          }}
+        />
+
+        <div>
+          {selected?.id ? (
+            <div key={`${selected.id}-expanded`}>
+              <Box>
+                <PListingTable
+                  mode="listing"
+                  projects={projects as any}
+                  filters={{}}
+                />
+                {metaproject?.field_data ? (
+                  <MetaProjectTabs
+                    mp={metaproject}
+                    refreshMetaProjectDetails={refreshMetaProjectDetails}
+                  />
+                ) : null}
+              </Box>
+            </div>
+          ) : null}
+        </div>
       </Box>
     </PageWrapper>
   )
