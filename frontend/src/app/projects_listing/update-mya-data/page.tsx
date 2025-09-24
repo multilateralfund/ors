@@ -4,7 +4,7 @@ import { useStore } from '@ors/store'
 import { formatApiUrl } from '@ors/helpers/Api/utils'
 import { api } from '@ors/helpers'
 
-import { Box, Typography } from '@mui/material'
+import { Box, Modal, Typography } from '@mui/material'
 import { Tabs, Tab } from '@mui/material'
 import { Button, Divider } from '@mui/material'
 
@@ -404,8 +404,14 @@ export default function ProjectsUpdateMyaDataPage() {
 
   const { canViewProjects } = useContext(PermissionsContext)
 
-  const { loaded, loading, results, count, setParams } =
-    useGetMetaProjects(initialParams)
+  const {
+    loaded,
+    loading,
+    results,
+    count,
+    setParams,
+    params: currentParams,
+  } = useGetMetaProjects(initialParams)
 
   const { data: metaproject, refresh: refreshMetaProjectDetails } =
     useGetMetaProjectDetails(selected?.id)
@@ -494,8 +500,10 @@ export default function ProjectsUpdateMyaDataPage() {
           handleParamsChange={handleParamsChange}
         />
         <Divider className="my-2" />
-        <ViewTable
+        <ViewTable<MetaProjectType>
+          key={JSON.stringify(filters)}
           columnDefs={[...columnDefs]}
+          onRowClicked={(event) => onToggleExpand(event.data!)}
           domLayout="normal"
           enablePagination={true}
           alwaysShowHorizontalScroll={false}
@@ -535,27 +543,25 @@ export default function ProjectsUpdateMyaDataPage() {
             setParams({ offset: 0, ordering })
           }}
         />
-
-        <div>
-          {selected?.id ? (
-            <div key={`${selected.id}-expanded`}>
-              <Box>
-                <PListingTable
-                  mode="listing"
-                  projects={projects as any}
-                  filters={{}}
-                />
-                {metaproject?.field_data ? (
-                  <MetaProjectTabs
-                    mp={metaproject}
-                    refreshMetaProjectDetails={refreshMetaProjectDetails}
-                  />
-                ) : null}
-              </Box>
-            </div>
-          ) : null}
-        </div>
       </Box>
+      <Modal open={!!selected?.id}>
+        <Box className="max-h-[90vh] min-w-[90vw] overflow-auto absolute-center">
+          <PListingTable
+            mode="listing"
+            projects={projects as any}
+            filters={filters}
+          />
+          {metaproject?.field_data ? (
+            <MetaProjectTabs
+              mp={metaproject}
+              refreshMetaProjectDetails={refreshMetaProjectDetails}
+            />
+          ) : null}
+          <Typography className="text-right">
+            <Button onClick={() => setSelected(null)}>Close</Button>
+          </Typography>
+        </Box>
+      </Modal>
     </PageWrapper>
   )
 }
