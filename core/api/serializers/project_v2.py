@@ -45,6 +45,7 @@ from core.api.views.utils import log_project_history
 
 
 HISTORY_DESCRIPTION_CREATE = "Create project"
+HISTORY_DESCRIPTION_CREATE_TRANSFER = "Create project (Transferred)"
 HISTORY_DESCRIPTION_UPDATE = "Save project details"
 HISTORY_DESCRIPTION_UPDATE_APPROVAL_FIELDS = "Save project details (Approval fields)"
 HISTORY_DESCRIPTION_UPDATE_ACTUAL_FIELDS = "Save project details (Actual fields)"
@@ -55,6 +56,7 @@ HISTORY_DESCRIPTION_REJECT_V3 = "Reject project (Version 3)"
 HISTORY_DESCRIPTION_WITHDRAW_V3 = "Withdraw project (Version 3)"
 HISTORY_DESCRIPTION_STATUS_CHANGE = "Project status changed to {}"
 HISTORY_DESCRIPTION_POST_EXCOM_UPDATE = "Post ExCom update (Version 3)"
+HISTORY_DESCRIPTION_TRANSFER = "Project transferred"
 
 
 class UpdateOdsOdpEntries:
@@ -301,6 +303,7 @@ class ProjectListV2Serializer(ProjectListSerializer):
             "programme_officer",
             "pcr_waived",
             "production",
+            "psc_transferred",
             "rbm_measures",
             "remarks",
             "revision_number",
@@ -1273,3 +1276,64 @@ class ProjectV2RecommendSerializer(ProjectV2SubmitSerializer):
         if errors:
             raise serializers.ValidationError(errors)
         return attrs
+
+
+class ProjectV2TransferSerializer(serializers.ModelSerializer):
+    """
+    ProjectSerializer class for transferring a project
+    """
+
+    psc_received = serializers.DecimalField(max_digits=20, decimal_places=2)
+
+    class Meta:
+        model = Project
+        fields = [
+            "agency",
+            "transfer_meeting",
+            "transfer_decision",
+            "transfer_excom_provision",
+            "fund_transferred",
+            "psc_transferred",
+            "psc_received",
+        ]
+
+    def save(self, **kwargs):
+        """
+        Save the project transfer
+        """
+        user = kwargs.get("user")
+        project = self.instance
+        new_transfer_project = project.copy_project(user, remove_legacy_data=True)
+        new_transfer_project.version_created_by = user
+        new_transfer_project.submission_status = ProjectSubmissionStatus.objects.get(
+            name="Approved"
+        )
+        new_transfer_project.status = ProjectStatus.objects.get(code="ONG")
+        new_transfer_project.agency = self.validated_data.get("agency")
+        new_transfer_project.meeting = self.validated_data.get("transfer_meeting")
+        new_transfer_project.decision = self.validated_data.get("transfer_decision")
+        new_transfer_project.total_fund = self.validated_data.get("fund_transferred")
+        new_transfer_project.support_cost_psc = self.validated_data.get("psc_received")
+        new_transfer_project.code = get_project_sub_code(
+            new_transfer_project.country,
+            new_transfer_project.cluster,
+            new_transfer_project.agency,
+            new_transfer_project.project_type,
+            new_transfer_project.sector,
+            new_transfer_project.meeting,
+            new_transfer_project.meeting_transf,
+            new_transfer_project.serial_number,
+        )
+        new_transfer_project.save()
+
+        project.transfer_meeting = self.validated_data.get("transfer_meeting")
+        project.transfer_decision = self.validated_data.get("transfer_decision")
+        project.transfer_excom_provision = self.validated_data.get(
+            "transfer_excom_provision"
+        )
+        project.fund_transferred = self.validated_data.get("fund_transferred")
+        project.psc_transferred = self.validated_data.get("psc_transferred")
+        project.status = ProjectStatus.objects.get(code="TRF")
+        project.save()
+
+        return new_transfer_project

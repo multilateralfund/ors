@@ -136,6 +136,7 @@
 | projects/v2/{id}/withdraw/                    |  POST   | has_project_v2_recommend_projects_access |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
 | projects/v2/{id}/reject/                      |  POST   | has_project_v2_approve_projects_access   |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
 | projects/v2/{id}/approve/                     |  POST   | has_project_v2_approve_projects_access   |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
+| projects/v2/{id}/transfer/                    |  POST   | has_project_v2_transfer_projects_access  |  Available only for approved, not closed/transfered projects.
 | enterprise/                                   |  GET    | has_enterprise_view_access               |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
 | enterprise/                                   |  POST   | has_enterprise_edit_access               |
 | enterprise/{id}/                              |  GET    | has_enterprise_view_access               |  Entries filtered for `can_view_only_own_agency` and `can_view_production_projects`.
