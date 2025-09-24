@@ -32,7 +32,10 @@ const ProjectDocumentation = ({
 
   const { version = 0 } = project ?? {}
   const canEditProject =
-    (version < 3 && canUpdateProjects) || (version === 3 && canUpdateV3Projects)
+    (mode !== 'edit' && canUpdateProjects) ||
+    (mode === 'edit' &&
+      ((version < 3 && canUpdateProjects) ||
+        (version === 3 && canUpdateV3Projects)))
 
   return (
     <>
