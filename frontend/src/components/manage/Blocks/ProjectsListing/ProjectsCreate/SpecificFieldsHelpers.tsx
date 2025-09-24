@@ -474,7 +474,7 @@ const DateWidget = <T,>(
         id={fieldName}
         value={value}
         disabled={!canEditField(editableFields, fieldName)}
-        formatValue={(value) => dayjs(value).format('MM/DD/YYYY')}
+        formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
         onChange={(value) =>
           changeHandler[field.data_type]<T, SpecificFields>(
             value,

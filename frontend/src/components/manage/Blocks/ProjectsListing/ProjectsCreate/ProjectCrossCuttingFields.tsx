@@ -50,11 +50,13 @@ const ProjectCrossCuttingFields = ({
   setCurrentTab,
   fieldsOpts,
   specificFieldsLoaded,
+  postExComUpdate,
 }: ProjectDataProps &
   ProjectTabSetters & {
     currentStep: number
     nextStep: number
     specificFieldsLoaded: boolean
+    postExComUpdate: boolean
     fieldsOpts: {
       crtProjectTypesOpts: ProjectTypeType[]
       projectTypes: ProjectTypeType[]
@@ -274,6 +276,7 @@ const ProjectCrossCuttingFields = ({
                       getOptionLabel(projectTypes, option)
                     }
                     disabled={
+                      postExComUpdate ||
                       currentStep > 2 ||
                       !specificFieldsLoaded ||
                       !canEditField(editableFields, 'project_type')
@@ -300,6 +303,7 @@ const ProjectCrossCuttingFields = ({
                     }
                     getOptionLabel={(option) => getOptionLabel(sectors, option)}
                     disabled={
+                      postExComUpdate ||
                       currentStep > 2 ||
                       !specificFieldsLoaded ||
                       !canEditField(editableFields, 'sector')
@@ -415,16 +419,16 @@ const ProjectCrossCuttingFields = ({
                       )
                     }
                     disabled={
+                      postExComUpdate ||
                       !canEditField(editableFields, 'project_start_date')
                     }
-                    formatValue={(value) => dayjs(value).format('MM/DD/YYYY')}
+                    formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
                     className={cx(defaultPropsDateInput.className, {
                       'border-red-500':
                         getIsInputDisabled('project_start_date'),
-                      [disabledClassName]: !canEditField(
-                        editableFields,
-                        'project_start_date',
-                      ),
+                      [disabledClassName]:
+                        postExComUpdate ||
+                        !canEditField(editableFields, 'project_start_date'),
                     })}
                   />
                 </div>
@@ -444,7 +448,7 @@ const ProjectCrossCuttingFields = ({
                       )
                     }
                     disabled={!canEditField(editableFields, 'project_end_date')}
-                    formatValue={(value) => dayjs(value).format('MM/DD/YYYY')}
+                    formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
                     className={cx(defaultPropsDateInput.className, {
                       'border-red-500': getIsInputDisabled('project_end_date'),
                       [disabledClassName]: !canEditField(

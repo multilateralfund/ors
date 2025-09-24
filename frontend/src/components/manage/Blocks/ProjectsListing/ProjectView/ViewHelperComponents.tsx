@@ -30,7 +30,7 @@ export const detailItem = (
     <span className={cx('flex items-center gap-2', containerClassName)}>
       <span className={cx(detailClassname, className)}>{fieldName}</span>
       <h4 className={cx('m-0', fieldClassName)}>{fieldValue ?? '-'}</h4>
-      <FieldHistoryIndicator history={fieldHistory} />
+      <FieldHistoryIndicator history={fieldHistory} fieldName={fieldName} />
     </span>
   )
 }
@@ -50,7 +50,7 @@ export const numberDetailItem = (
           })
         : '-'}
     </h4>
-    <FieldHistoryIndicator history={fieldHistory} />
+    <FieldHistoryIndicator history={fieldHistory} fieldName={fieldName} />
   </span>
 )
 
@@ -62,7 +62,7 @@ export const booleanDetailItem = (
   <span className="flex items-center gap-2">
     <span>{fieldName}</span>
     <h4 className="m-0">{fieldValue ? 'Yes' : 'No'}</h4>
-    <FieldHistoryIndicator history={fieldHistory} />
+    <FieldHistoryIndicator history={fieldHistory} fieldName={fieldName} />
   </span>
 )
 
@@ -74,9 +74,9 @@ export const dateDetailItem = (
   <span className="flex items-center gap-2">
     <span>{fieldName}</span>
     <h4 className="m-0">
-      {(fieldValue && dayjs(fieldValue).format('MM/DD/YYYY')) || '-'}
+      {(fieldValue && dayjs(fieldValue).format('DD/MM/YYYY')) || '-'}
     </h4>
-    <FieldHistoryIndicator history={fieldHistory} />
+    <FieldHistoryIndicator history={fieldHistory} fieldName={fieldName} />
   </span>
 )
 

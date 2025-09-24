@@ -9,9 +9,11 @@ import { FaClockRotateLeft } from 'react-icons/fa6'
 import cx from 'classnames'
 
 export default function FieldHistoryIndicator({
+  fieldName,
   className,
   history = [],
 }: {
+  fieldName: string
   className?: string
   history?: ProjectFieldHistoryValue[]
 }) {
@@ -35,8 +37,12 @@ export default function FieldHistoryIndicator({
     return value
   }
 
+  const filteredHistory = history.filter(
+    ({ version, post_excom_meeting }) => version === 3 || !!post_excom_meeting,
+  )
+
   const historicValues =
-    history.reduce((acc, item) => {
+    filteredHistory.reduce((acc, item) => {
       acc.add(getItemValue(item.value))
       return acc
     }, new Set()) ?? new Set()
@@ -44,11 +50,11 @@ export default function FieldHistoryIndicator({
   // At least two different values in history.
   const hasHistory = historicValues.size > 1
 
-  const currentValue = getItemValue(history?.[0]?.value)
+  const currentValue = getItemValue(filteredHistory?.[0]?.value)
   let firstDifferentValue = -1
   let firstDifferentIndex = -1
-  for (let i = 0; i < history.length; i++) {
-    const itemValue = getItemValue(history?.[i].value)
+  for (let i = 0; i < filteredHistory.length; i++) {
+    const itemValue = getItemValue(filteredHistory?.[i].value)
     if (itemValue !== currentValue) {
       firstDifferentValue = itemValue
       firstDifferentIndex = i
@@ -95,12 +101,12 @@ export default function FieldHistoryIndicator({
         disableRestoreFocus
       >
         <div className="bg-primary text-white">
-          {history.map((item, idx) => {
+          {filteredHistory.map((item, idx) => {
             let label
             if (item.version > 3) {
-              label = `Version ExCom ${item.post_excom_meeting}`
+              label = `${fieldName} (updated ExCom ${item.post_excom_meeting})`
             } else {
-              label = `Version ${item.version}`
+              label = `${fieldName} (planned)`
             }
             return (
               <div
@@ -114,7 +120,7 @@ export default function FieldHistoryIndicator({
                   },
                 )}
               >
-                <div>{label}</div>
+                <div>{label}:</div>
                 <div>{getItemValue(item.value) ?? '-'}</div>
               </div>
             )

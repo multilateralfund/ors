@@ -62,6 +62,7 @@ const ProjectIdentifiersSection = ({
             setProjectData,
             setCurrentTab,
           }}
+          postExComUpdate={!!postExComUpdate}
           isDisabled={
             postExComUpdate ||
             areNextSectionsDisabled ||

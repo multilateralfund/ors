@@ -41,7 +41,7 @@ const ProjectOdsOdpTable = ({
 
     const initialOdsDisplayNameField: ProjectSpecificFields = {
       ...cloneDeep(fields[index]),
-      label: 'Ods display name',
+      label: 'ODS display name',
       data_type: 'text',
     }
 

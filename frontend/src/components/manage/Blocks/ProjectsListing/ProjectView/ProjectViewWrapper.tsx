@@ -137,13 +137,17 @@ const ProjectViewWrapper = () => {
                 {canEditProjects &&
                   editable &&
                   isNull(latest_project) &&
-                  (!['Withdrawn', 'Not approved'].includes(submission_status) ||
+                  (!['Withdrawn', 'Not approved', 'Approved'].includes(
+                    submission_status,
+                  ) ||
                     canEditApprovedProjects) && (
                     <EditLink href={`/projects-listing/${project_id}/edit`}>
                       Edit
                     </EditLink>
                   )}
-                {canEditProjects &&
+                {canEditApprovedProjects &&
+                editable &&
+                isNull(latest_project) &&
                 submission_status === 'Approved' &&
                 project_status !== 'Closed' &&
                 project_status !== 'Transferred' ? (

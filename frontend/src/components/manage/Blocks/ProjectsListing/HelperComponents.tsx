@@ -223,13 +223,14 @@ export const VersionsList = ({
     version = 0,
     latest_project = null,
     submission_status,
+    post_excom_meeting,
   } = project
   const isDraft = lowerCase(submission_status) === 'draft'
   let versionLabel
   if (version > 3) {
-    versionLabel = `ExCom ${project.post_excom_meeting}`
+    versionLabel = `${version}: Updated after ExCom ${post_excom_meeting}`
   } else {
-    versionLabel = version
+    versionLabel = `${version}: ${submission_status}`
   }
 
   return (

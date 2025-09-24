@@ -9,6 +9,8 @@ import {
 } from '../interfaces'
 import { useStore } from '@ors/store'
 
+import { isArray } from 'lodash'
+
 const ProjectImpact = ({
   projectData,
   setProjectData,
@@ -18,11 +20,30 @@ const ProjectImpact = ({
   specificFields,
   setCurrentStep,
   setCurrentTab,
+  postExComUpdate,
 }: SpecificFieldsSectionProps &
-  ProjectTabSetters & { specificFields: ProjectSpecificFields[] }) => {
-  const { viewableFields, editableFields } = useStore(
+  ProjectTabSetters & {
+    specificFields: ProjectSpecificFields[]
+    postExComUpdate: boolean
+  }) => {
+  const { viewableFields, editableFields, projectFields } = useStore(
     (state) => state.projectFields,
   )
+  const filteredEditableFields = editableFields.filter((field) => {
+    if (!postExComUpdate) {
+      return true
+    }
+
+    const allFields = isArray(projectFields)
+      ? projectFields
+      : projectFields?.data
+
+    const fieldData = allFields.find(
+      (projField) => projField.write_field_name === field,
+    )
+
+    return fieldData && (fieldData.section !== 'Impact' || fieldData.is_actual)
+  })
 
   const { projectSpecificFields } = projectData
   const defaultImpactErrors = getDefaultImpactErrors(
@@ -47,7 +68,7 @@ const ProjectImpact = ({
               errors,
               false,
               hasSubmitted,
-              editableFields,
+              filteredEditableFields,
             ),
         )}
       </div>

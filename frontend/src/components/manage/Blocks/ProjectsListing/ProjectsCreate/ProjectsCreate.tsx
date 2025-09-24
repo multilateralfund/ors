@@ -317,6 +317,7 @@ const ProjectsCreate = ({
             setCurrentTab,
             fieldsOpts,
             specificFieldsLoaded,
+            postExComUpdate,
           }}
           nextStep={
             !isSpecificInfoTabDisabled ? 3 : !isImpactTabDisabled ? 4 : 5
@@ -416,6 +417,7 @@ const ProjectsCreate = ({
             specificFields,
             setCurrentStep,
             setCurrentTab,
+            postExComUpdate,
           }}
         />
       ),

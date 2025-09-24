@@ -461,32 +461,28 @@ const ProjectIdentifiersFields = ({
             )}
           </>
         )}
-        <div className="mt-5 flex flex-wrap items-center gap-2.5">
-          <NextButton
-            nextStep={2}
-            setCurrentStep={setCurrentStep}
-            isBtnDisabled={!areNextStepsAvailable}
-          />
-          {!areNextSectionsDisabled && (
-            <Button
-              className={cx(
-                'h-8 border border-solid border-primary bg-white px-3 py-1 leading-none text-primary',
-                {
-                  [disabledClassName]: postExComUpdate,
-                },
-              )}
-              size="large"
-              variant="contained"
-              disabled={postExComUpdate}
-              onClick={() => {
-                setCurrentStep?.(0)
-                setCurrentTab?.(0)
-              }}
-            >
-              Update fields
-            </Button>
-          )}
-        </div>
+        {!postExComUpdate && (
+          <div className="mt-5 flex flex-wrap items-center gap-2.5">
+            <NextButton
+              nextStep={2}
+              setCurrentStep={setCurrentStep}
+              isBtnDisabled={!areNextStepsAvailable}
+            />
+            {!areNextSectionsDisabled && (
+              <Button
+                className="h-8 border border-solid border-primary bg-white px-3 py-1 leading-none text-primary"
+                size="large"
+                variant="contained"
+                onClick={() => {
+                  setCurrentStep?.(0)
+                  setCurrentTab?.(0)
+                }}
+              >
+                Update fields
+              </Button>
+            )}
+          </div>
+        )}
       </div>
     </>
   )

@@ -23,7 +23,9 @@ const ProjectsEditWrapper = ({ mode }: { mode: string }) => {
   if (
     data &&
     ((mode !== 'copy' &&
-      ((['Withdrawn', 'Not approved'].includes(data.submission_status) &&
+      ((['Withdrawn', 'Not approved', 'Approved'].includes(
+        data.submission_status,
+      ) &&
         (mode !== 'edit' || !canEditApprovedProjects)) ||
         (mode !== 'edit' &&
           data.version >= 3 &&
