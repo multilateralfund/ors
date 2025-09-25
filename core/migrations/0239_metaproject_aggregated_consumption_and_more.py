@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("core", "0236_bpactivity_date_created_bpactivity_date_updated"),
+        ("core", "0238_alter_metaproject_code_and_more"),
     ]
 
     operations = [
