@@ -231,7 +231,9 @@ class BlendsListView(ChemicalBaseListView):
             openapi.Parameter(
                 "filter_for_projects",
                 openapi.IN_QUERY,
-                description=f"Include only blends that have at least one substance in their composition of {PROJECT_SUBSTANCES_ACCEPTED_ANNEXES} groups",
+                description=f"""
+                    Include only blends that have at least one
+                    substance in their composition of {PROJECT_SUBSTANCES_ACCEPTED_ANNEXES} groups""",
                 type=openapi.TYPE_BOOLEAN,
             ),
             openapi.Parameter(
