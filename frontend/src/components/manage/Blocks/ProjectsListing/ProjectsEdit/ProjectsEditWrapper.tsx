@@ -11,7 +11,7 @@ import { isNull } from 'lodash'
 const ProjectsEditWrapper = ({ mode }: { mode: string }) => {
   const { project_id } = useParams<Record<string, string>>()
 
-  const { canEditApprovedProjects } = useContext(PermissionsContext)
+  const { canUpdateProjects } = useContext(PermissionsContext)
 
   const project = useGetProject(project_id)
   const { data, loading } = project
@@ -26,12 +26,13 @@ const ProjectsEditWrapper = ({ mode }: { mode: string }) => {
       ((['Withdrawn', 'Not approved', 'Approved'].includes(
         data.submission_status,
       ) &&
-        (mode !== 'edit' || !canEditApprovedProjects)) ||
+        mode !== 'edit') ||
         (mode !== 'edit' &&
           data.version >= 3 &&
           data.submission_status !== 'Recommended'))) ||
       !isNull(data.latest_project) ||
-      (mode !== 'copy' && !data.editable))
+      (mode !== 'copy' && !data.editable) ||
+      (mode !== 'edit' && !canUpdateProjects))
   ) {
     return <Redirect to={`/projects-listing/${project_id}`} />
   }

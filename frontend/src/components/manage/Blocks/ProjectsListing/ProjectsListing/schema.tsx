@@ -29,6 +29,7 @@ const getColumnDefs = (
     canAssociateProjects,
     canUpdateProjects,
     canEditProjects,
+    canEditApprovedProjects,
   } = useContext(PermissionsContext)
 
   const getCellClass = (data: any) => {
@@ -106,7 +107,9 @@ const getColumnDefs = (
                 )}
                 {projectId !== undefined &&
                   setProjectData &&
-                  (canAssociateProjects || canUpdateProjects) && (
+                  (canAssociateProjects ||
+                    canUpdateProjects ||
+                    canEditApprovedProjects) && (
                     <Checkbox
                       checked={projectId == props.data.id}
                       onChange={(event) => {

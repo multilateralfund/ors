@@ -134,17 +134,11 @@ const ProjectViewWrapper = () => {
                 </div>
               </div>
               <div className="flex gap-3">
-                {canEditProjects &&
-                  editable &&
-                  isNull(latest_project) &&
-                  (!['Withdrawn', 'Not approved', 'Approved'].includes(
-                    submission_status,
-                  ) ||
-                    canEditApprovedProjects) && (
-                    <EditLink href={`/projects-listing/${project_id}/edit`}>
-                      Edit
-                    </EditLink>
-                  )}
+                {canEditProjects && editable && isNull(latest_project) && (
+                  <EditLink href={`/projects-listing/${project_id}/edit`}>
+                    Edit
+                  </EditLink>
+                )}
                 {canEditApprovedProjects &&
                 editable &&
                 isNull(latest_project) &&
