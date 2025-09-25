@@ -80,6 +80,7 @@ type MetaProjectFieldData = Record<
 type MetaProjectDetailType = {
   projects: ProjectType[]
   field_data: MetaProjectFieldData
+  computed_field_data: Record<string, number | string | null>
 } & MetaProjectType
 
 const useGetMetaProjectDetails = (pk?: number) => {
@@ -336,32 +337,62 @@ const MetaProjectEdit = (props: {
     [setForm],
   )
 
+  const getFieldValue = (name: string, missing?: string) => {
+    const formValue = form[name]
+    const computedValue = mp.computed_field_data[name]
+    const value = formValue === null ? computedValue : formValue
+    return value || (missing ?? '')
+  }
+
+  const valueIsComputed = (name: string) => {
+    const formValue = form[name]
+    const computedValue = mp.computed_field_data[name]
+
+    return formValue === null && computedValue !== undefined
+  }
+
   const renderFieldData = (fieldData: any) => {
-    return fieldData.map((fd: any) => (
-      <div key={fd.name}>
-        <Label htmlFor={fd.name}>{fd.label}</Label>
-        {fd.type === 'DateTimeField' ? (
-          <DateInput
-            id={fd.name}
-            className="BPListUpload !ml-0 h-10 w-40"
-            value={form[fd.name] ?? ''}
-            formatValue={(value) => dayjs(value).format('MM/DD/YYYY')}
-            onChange={changeSimpleInput(fd.name)}
-          />
-        ) : null}
-        {fd.type !== 'DateTimeField' ? (
-          <SimpleInput
-            id={fd.name}
-            label=""
-            type="text"
-            value={form[fd.name] ?? ''}
-            onChange={changeSimpleInput(fd.name, {
-              numeric: fd.type === 'DecimalField',
-            })}
-          />
-        ) : null}
-      </div>
-    ))
+    return fieldData.map((fd: any) => {
+      const fieldValue = getFieldValue(fd.name)
+      const isComputed = valueIsComputed(fd.name)
+      return (
+        <div key={fd.name} className="py-2">
+          <Label htmlFor={fd.name}>
+            <span className="mt-2 flex justify-between">
+              {fd.label}
+              {isComputed ? (
+                <span
+                  className="border-1 rounded-xl border border-solid px-1 text-primary"
+                  title="Based on contained projects."
+                >
+                  Computed
+                </span>
+              ) : null}
+            </span>
+          </Label>
+          {fd.type === 'DateTimeField' ? (
+            <DateInput
+              id={fd.name}
+              className="BPListUpload !ml-0 h-10 w-40"
+              value={fieldValue.toString()}
+              formatValue={(value) => dayjs(value).format('MM/DD/YYYY')}
+              onChange={changeSimpleInput(fd.name)}
+            />
+          ) : null}
+          {fd.type !== 'DateTimeField' ? (
+            <SimpleInput
+              id={fd.name}
+              label=""
+              type="text"
+              value={fieldValue}
+              onChange={changeSimpleInput(fd.name, {
+                numeric: fd.type === 'DecimalField',
+              })}
+            />
+          ) : null}
+        </div>
+      )
+    })
   }
 
   return (
@@ -376,7 +407,7 @@ const MetaProjectEdit = (props: {
           enablePagination={false}
         />
         <Typography variant="h6">Details</Typography>
-        <div className="flex gap-2">
+        <div className="flex gap-x-8">
           <div className="flex-grow">
             {renderFieldData(
               fieldData.slice(0, Math.ceil(fieldData.length / 2)),

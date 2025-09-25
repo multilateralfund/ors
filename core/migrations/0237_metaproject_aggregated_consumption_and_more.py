@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("core", "0235_project_post_excom_decision_and_more"),
+        ("core", "0236_bpactivity_date_created_bpactivity_date_updated"),
     ]
 
     operations = [

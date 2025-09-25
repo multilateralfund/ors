@@ -1,3 +1,6 @@
+from django.db.models import Max
+from django.db.models import Min
+from django.db.models import Sum
 from rest_framework import serializers
 
 from core.api.serializers import CountrySerializer
@@ -5,7 +8,6 @@ from core.api.serializers.agency import AgencySerializer
 from core.api.serializers.project_metadata import ProjectClusterSerializer
 from core.api.serializers.project_v2 import ProjectListV2Serializer
 from core.models.project import MetaProject
-from core.models.agency import Agency
 
 
 class MetaProjectFieldSerializer(serializers.ModelSerializer):
@@ -30,8 +32,50 @@ class MetaProjectFieldSerializer(serializers.ModelSerializer):
         ]
 
 
+class MetaProjectComputedFieldsSerializer(serializers.ModelSerializer):
+    start_date = serializers.SerializerMethodField()
+    end_date = serializers.SerializerMethodField()
+    project_funding = serializers.SerializerMethodField()
+    support_cost = serializers.SerializerMethodField()
+
+    class Meta:
+        model = MetaProject
+        fields = [
+            "project_funding",
+            "support_cost",
+            "start_date",
+            "end_date",
+            "phase_out_odp",
+            "pahse_out_mt",
+        ]
+
+    def _get_projects_aggregate(self, obj):
+        """Cache the aggregation to avoid multiple queries"""
+        if not hasattr(self, "_projects_agg"):
+            self._projects_agg = obj.projects.aggregate(
+                min_start=Min("project_start_date"),
+                max_end=Max("project_end_date"),
+                total_funding=Sum("total_fund"),
+                total_support=Sum("support_cost_psc"),
+            )
+        return self._projects_agg
+
+    def get_start_date(self, obj):
+        return self._get_projects_aggregate(obj)["min_start"]
+
+    def get_end_date(self, obj):
+        return self._get_projects_aggregate(obj)["max_end"]
+
+    def get_project_funding(self, obj):
+        return self._get_projects_aggregate(obj)["total_funding"]
+
+    def get_support_cost(self, obj):
+        return self._get_projects_aggregate(obj)["total_support"]
+
+
 class MetaProjecMyaDetailsSerializer(serializers.ModelSerializer):
 
+    computed_field_data = serializers.SerializerMethodField()
     field_data = serializers.SerializerMethodField()
     projects = serializers.SerializerMethodField()
 
@@ -44,15 +88,16 @@ class MetaProjecMyaDetailsSerializer(serializers.ModelSerializer):
             "new_code",
             "projects",
             "field_data",
+            "computed_field_data",
         ]
 
     def get_projects(self, obj):
         return ProjectListV2Serializer(obj.projects.all(), many=True).data
 
-    def get_field_data(self, obj):
-        data = MetaProjectFieldSerializer(obj).data
+    def _get_field_data(self, obj, serializer):
+        data = serializer(obj).data
         result = {}
-        for order, field_name in enumerate(MetaProjectFieldSerializer.Meta.fields):
+        for order, field_name in enumerate(serializer.Meta.fields):
             value = data[field_name]
             field = getattr(MetaProject, field_name).field
             label = getattr(field, "help_text")
@@ -63,6 +108,12 @@ class MetaProjecMyaDetailsSerializer(serializers.ModelSerializer):
                 "type": field.__class__.__name__,
             }
         return result
+
+    def get_field_data(self, obj):
+        return self._get_field_data(obj, MetaProjectFieldSerializer)
+
+    def get_computed_field_data(self, obj):
+        return MetaProjectComputedFieldsSerializer(obj).data
 
 
 class MetaProjecMyaSerializer(serializers.ModelSerializer):
