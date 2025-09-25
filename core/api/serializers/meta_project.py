@@ -37,6 +37,8 @@ class MetaProjectComputedFieldsSerializer(serializers.ModelSerializer):
     end_date = serializers.SerializerMethodField()
     project_funding = serializers.SerializerMethodField()
     support_cost = serializers.SerializerMethodField()
+    phase_out_odp = serializers.SerializerMethodField()
+    pahse_out_mt = serializers.SerializerMethodField()
 
     _cache_computed = None
 
@@ -58,6 +60,8 @@ class MetaProjectComputedFieldsSerializer(serializers.ModelSerializer):
                 max_end=Max("project_end_date"),
                 total_funding=Sum("total_fund"),
                 total_support=Sum("support_cost_psc"),
+                phase_out_odp=Sum("ods_odp__odp"),
+                pahse_out_mt=Sum("ods_odp__phase_out_mt"),
             )
         return self._cache_computed
 
@@ -72,6 +76,12 @@ class MetaProjectComputedFieldsSerializer(serializers.ModelSerializer):
 
     def get_support_cost(self, obj):
         return self._get_computed_values(obj)["total_support"]
+
+    def get_phase_out_odp(self, obj):
+        return self._get_computed_values(obj)["phase_out_odp"]
+
+    def get_pahse_out_mt(self, obj):
+        return self._get_computed_values(obj)["pahse_out_mt"]
 
 
 class MetaProjecMyaDetailsSerializer(serializers.ModelSerializer):
