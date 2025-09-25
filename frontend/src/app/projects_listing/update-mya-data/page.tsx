@@ -53,6 +53,7 @@ import {
   formatEntity,
   getAreFiltersApplied,
 } from '@ors/components/manage/Blocks/ProjectsListing/utils.ts'
+import { useSnackbar } from 'notistack'
 
 const MT_PER_PAGE = 10
 
@@ -293,6 +294,8 @@ const MetaProjectEdit = (props: {
 }) => {
   const { mp, refreshMetaProjectDetails, onCancel } = props
 
+  const { enqueueSnackbar } = useSnackbar()
+
   const projects = getResults<ProjectType>(mp?.projects ?? [])
 
   const loadInitialState = useCallback(() => {
@@ -320,6 +323,7 @@ const MetaProjectEdit = (props: {
       method: 'PUT',
     })
     refreshMetaProjectDetails()
+    enqueueSnackbar('Saved!', { variant: 'success' })
   }
 
   const changeSimpleInput = useCallback(

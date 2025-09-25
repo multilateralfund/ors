@@ -227,12 +227,7 @@ def setup_project_create(
     return {
         "ad_hoc_pcr": True,
         "agency": agency.id,
-        "aggregated_consumption": 943.3,
-        "baseline": 43.4,
         "bp_activity": bp_activity.id,
-        "cost_effectiveness": 43.3,
-        "cost_effectiveness_co2": 54.3,
-        "number_of_production_lines_assisted": 3,
         "cluster": project_cluster_kip.id,
         "country": country_ro.id,
         "description": "Description",
@@ -247,14 +242,6 @@ def setup_project_create(
         "is_sme": False,
         "lead_agency": new_agency.id,
         "meeting": meeting.id,
-        "mya_start_date": "2023-10-01",
-        "mya_end_date": "2024-09-30",
-        "mya_project_funding": 1234.4,
-        "mya_support_cost": 434.2,
-        "number_of_enterprises": 2,
-        "mya_phase_out_co2_eq_t": 948.3,
-        "mya_phase_out_odp_t": 23.2,
-        "mya_phase_out_mt": 3.53,
         "pcr_waived": False,
         "total_number_of_technicians_trained": 32,
         "number_of_female_technicians_trained": 12,
@@ -298,11 +285,9 @@ def setup_project_create(
         "project_start_date": "2023-10-01",
         "project_type": project_type.id,
         "sector": subsector.sectors.first().id,
-        "starting_point": 543.4,
         "subsector_ids": [subsector.id],
         "support_cost_psc": 23,
         "tranche": 2,
-        "targets": 543.4,
         "title": "test title",
         "total_fund": 2340000,
         "ods_odp": [
@@ -701,12 +686,7 @@ class TestCreateProjects(BaseTest):
     def _test_response_data(self, response, data):
         fields = [
             "ad_hoc_pcr",
-            "aggregated_consumption",
-            "baseline",
             "bp_activity",
-            "cost_effectiveness",
-            "cost_effectiveness_co2",
-            "number_of_production_lines_assisted",
             "description",
             "date_completion",
             "destruction_technology",
@@ -714,14 +694,6 @@ class TestCreateProjects(BaseTest):
             "funding_window",
             "individual_consideration",
             "is_lvc",
-            "mya_start_date",
-            "mya_end_date",
-            "mya_project_funding",
-            "mya_support_cost",
-            "number_of_enterprises",
-            "mya_phase_out_co2_eq_t",
-            "mya_phase_out_odp_t",
-            "mya_phase_out_mt",
             "pcr_waived",
             "total_number_of_technicians_trained",
             "number_of_female_technicians_trained",
@@ -760,10 +732,8 @@ class TestCreateProjects(BaseTest):
             "programme_officer",
             "project_end_date",
             "project_start_date",
-            "starting_point",
             "support_cost_psc",
             "tranche",
-            "targets",
             "title",
             "total_fund",
         ]
@@ -824,7 +794,6 @@ class TestCreateProjects(BaseTest):
         ]
         assert response.data["support_cost_psc"] == data["support_cost_psc"]
         assert response.data["tranche"] == data["tranche"]
-        assert response.data["targets"] == data["targets"]
         assert response.data["title"] == data["title"]
         assert response.data["total_fund"] == data["total_fund"]
         assert (
