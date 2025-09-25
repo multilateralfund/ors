@@ -128,7 +128,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name="metaproject",
-            name="draft_pahse_out_mt",
+            name="draft_phase_out_mt",
             field=models.DecimalField(
                 blank=True,
                 decimal_places=15,
@@ -229,7 +229,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name="metaproject",
-            name="pahse_out_mt",
+            name="phase_out_mt",
             field=models.DecimalField(
                 blank=True,
                 decimal_places=15,
