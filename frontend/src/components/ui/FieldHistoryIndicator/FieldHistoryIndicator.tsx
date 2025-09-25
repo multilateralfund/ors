@@ -1,11 +1,9 @@
-import type { ProjectFieldHistoryValue } from '@ors/types/store'
-
 import { useState } from 'react'
 
+import type { ProjectFieldHistoryValue } from '@ors/types/store'
+
 import Popover from '@mui/material/Popover/Popover'
-
 import { FaClockRotateLeft } from 'react-icons/fa6'
-
 import cx from 'classnames'
 
 export default function FieldHistoryIndicator({
@@ -41,8 +39,21 @@ export default function FieldHistoryIndicator({
     ({ version, post_excom_meeting }) => version === 3 || !!post_excom_meeting,
   )
 
+  const latestByMeeting = Object.values(
+    filteredHistory.reduce(
+      (acc, item) => {
+        const key = item.post_excom_meeting ?? '-'
+        if (!acc[key] || item.version > acc[key].version) {
+          acc[key] = item
+        }
+        return acc
+      },
+      {} as Record<string, any>,
+    ),
+  )
+
   const historicValues =
-    filteredHistory.reduce((acc, item) => {
+    latestByMeeting.reduce((acc, item) => {
       acc.add(getItemValue(item.value))
       return acc
     }, new Set()) ?? new Set()
@@ -50,11 +61,11 @@ export default function FieldHistoryIndicator({
   // At least two different values in history.
   const hasHistory = historicValues.size > 1
 
-  const currentValue = getItemValue(filteredHistory?.[0]?.value)
+  const currentValue = getItemValue(latestByMeeting?.[0]?.value)
   let firstDifferentValue = -1
   let firstDifferentIndex = -1
-  for (let i = 0; i < filteredHistory.length; i++) {
-    const itemValue = getItemValue(filteredHistory?.[i].value)
+  for (let i = 0; i < latestByMeeting.length; i++) {
+    const itemValue = getItemValue(latestByMeeting?.[i].value)
     if (itemValue !== currentValue) {
       firstDifferentValue = itemValue
       firstDifferentIndex = i
@@ -101,7 +112,7 @@ export default function FieldHistoryIndicator({
         disableRestoreFocus
       >
         <div className="bg-primary text-white">
-          {filteredHistory.map((item, idx) => {
+          {latestByMeeting.map((item, idx) => {
             let label
             if (item.version > 3) {
               label = `${fieldName} (updated ExCom ${item.post_excom_meeting})`

@@ -75,7 +75,8 @@ const ProjectIdentifiersFields = ({
       : crtClusters
 
   const canUpdateLeadAgency =
-    mode === 'add' || mode === 'copy' || !project?.meta_project?.lead_agency
+    !postExComUpdate &&
+    (mode === 'add' || mode === 'copy' || !project?.meta_project?.lead_agency)
 
   const { viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
@@ -283,6 +284,7 @@ const ProjectIdentifiersFields = ({
                   getOptionLabel(commonSlice.countries.data, option)
                 }
                 disabled={
+                  postExComUpdate ||
                   !areNextSectionsDisabled ||
                   (mode !== 'copy' && !!project?.country_id) ||
                   !canEditField(editableFields, 'country')
@@ -333,6 +335,7 @@ const ProjectIdentifiersFields = ({
                 }}
                 getOptionLabel={(option) => getOptionLabel(agencies, option)}
                 disabled={
+                  postExComUpdate ||
                   !areNextSectionsDisabled ||
                   !canEditField(editableFields, 'agency')
                 }
@@ -355,6 +358,7 @@ const ProjectIdentifiersFields = ({
                 onChange={(_, value) => handleChangeCluster(value)}
                 getOptionLabel={(option) => getOptionLabel(clusters, option)}
                 disabled={
+                  postExComUpdate ||
                   !areNextSectionsDisabled ||
                   !specificFieldsLoaded ||
                   !canEditField(editableFields, 'cluster')
@@ -377,6 +381,7 @@ const ProjectIdentifiersFields = ({
                 <Checkbox
                   checked={!!projIdentifiers?.production}
                   disabled={
+                    postExComUpdate ||
                     !areNextSectionsDisabled ||
                     !canViewProductionProjects ||
                     !isNull(getProduction(clusters, projIdentifiers.cluster)) ||
@@ -461,7 +466,9 @@ const ProjectIdentifiersFields = ({
             )}
           </>
         )}
-        {!postExComUpdate && (
+        {(mode === 'copy' ||
+          areNextSectionsDisabled ||
+          !(postExComUpdate || project?.submission_status === 'Approved')) && (
           <div className="mt-5 flex flex-wrap items-center gap-2.5">
             <NextButton
               nextStep={2}

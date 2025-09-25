@@ -62,7 +62,10 @@ const ProjectIdentifiersSection = ({
             setProjectData,
             setCurrentTab,
           }}
-          postExComUpdate={!!postExComUpdate}
+          canEditApprovedProj={
+            rest.mode === 'copy' ||
+            !(postExComUpdate || rest.project?.submission_status === 'Approved')
+          }
           isDisabled={
             postExComUpdate ||
             areNextSectionsDisabled ||

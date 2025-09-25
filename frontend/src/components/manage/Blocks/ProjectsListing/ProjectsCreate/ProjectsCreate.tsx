@@ -180,6 +180,10 @@ const ProjectsCreate = ({
   )
 
   const { canEditApprovedProjects } = useContext(PermissionsContext)
+  const canEditApprovedProj =
+    postExComUpdate ||
+    mode === 'copy' ||
+    project?.submission_status !== 'Approved'
 
   const specificFieldsErrors = useMemo(
     () =>
@@ -318,6 +322,7 @@ const ProjectsCreate = ({
             fieldsOpts,
             specificFieldsLoaded,
             postExComUpdate,
+            canEditApprovedProj,
           }}
           nextStep={
             !isSpecificInfoTabDisabled ? 3 : !isImpactTabDisabled ? 4 : 5
@@ -366,6 +371,7 @@ const ProjectsCreate = ({
             getTrancheErrors,
             setCurrentStep,
             setCurrentTab,
+            canEditApprovedProj,
           }}
           nextStep={!isImpactTabDisabled ? 4 : 5}
         />
@@ -574,6 +580,21 @@ const ProjectsCreate = ({
           .map(({ id, component, errors }) => {
             return (
               <span key={id}>
+                {mode === 'edit' &&
+                  project?.submission_status === 'Approved' &&
+                  !postExComUpdate && (
+                    <CustomAlert
+                      type="info"
+                      alertClassName="mb-3"
+                      content={
+                        <Typography className="pt-0.5 text-lg leading-none">
+                          You are editing the approved version of the project
+                          (version 3). Any other updates can be brought only by
+                          adding post ExCom updates.
+                        </Typography>
+                      }
+                    />
+                  )}
                 {mode === 'edit' &&
                   project?.submission_status === 'Draft' &&
                   warnings.id === parseInt(project_id) &&

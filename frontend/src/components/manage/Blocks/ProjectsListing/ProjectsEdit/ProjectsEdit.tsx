@@ -128,7 +128,13 @@ const ProjectsEdit = ({
         : undefined
 
       setViewableFields?.(version, submissionStatus)
-      setEditableFields?.(version, submissionStatus, canEditApprovedProjects)
+      setEditableFields?.(
+        version,
+        submissionStatus,
+        canEditApprovedProjects,
+        postExComUpdate,
+        mode,
+      )
     }
   }, [allFields, setViewableFields, setEditableFields])
 

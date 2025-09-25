@@ -114,7 +114,7 @@ const ProjectView = ({
 
   useEffect(() => {
     fetchFieldHistory(project.id)
-  }, [fetchFieldHistory])
+  }, [fetchFieldHistory, JSON.stringify(project)])
 
   const debouncedFetchProjectFields = useMemo(
     () => debounce(() => fetchProjectFields?.(), 0),

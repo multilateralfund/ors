@@ -185,6 +185,8 @@ export interface ProjectsFieldsSlice {
     version: number,
     submissionStatus?: string,
     canEditAll?: boolean,
+    isPostExcom?: boolean,
+    mode?: string,
   ) => void
   fetchProjectFields: () => Promise<void>
 }

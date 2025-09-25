@@ -13,10 +13,10 @@ const ProjectBPLinking = ({
   setProjectData,
   isDisabled,
   setCurrentTab,
-  postExComUpdate,
+  canEditApprovedProj,
 }: Omit<ProjectDataProps, 'hasSubmitted'> &
   ProjectTabSetters & {
-    postExComUpdate: boolean
+    canEditApprovedProj: boolean
     isDisabled: boolean
   }) => {
   const { isLinkedToBP } = projectData.bpLinking
@@ -59,7 +59,7 @@ const ProjectBPLinking = ({
       {isLinkedToBP && (
         <LinkedBPTableWrapper {...{ projectData, setProjectData }} />
       )}
-      {!postExComUpdate && (
+      {canEditApprovedProj && (
         <div className="mt-5">
           <NextButton
             nextStep={2}

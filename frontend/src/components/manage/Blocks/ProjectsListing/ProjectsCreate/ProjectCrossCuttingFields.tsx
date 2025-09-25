@@ -51,12 +51,14 @@ const ProjectCrossCuttingFields = ({
   fieldsOpts,
   specificFieldsLoaded,
   postExComUpdate,
+  canEditApprovedProj,
 }: ProjectDataProps &
   ProjectTabSetters & {
     currentStep: number
     nextStep: number
     specificFieldsLoaded: boolean
     postExComUpdate: boolean
+    canEditApprovedProj: boolean
     fieldsOpts: {
       crtProjectTypesOpts: ProjectTypeType[]
       projectTypes: ProjectTypeType[]
@@ -481,28 +483,30 @@ const ProjectCrossCuttingFields = ({
           </div>
         </>
       )}
-      <div className="mt-5 flex flex-wrap items-center gap-2.5">
-        <NextButton
-          nextStep={nextStep}
-          nextTab={nextStep - 1}
-          setCurrentStep={setCurrentStep}
-          setCurrentTab={setCurrentTab}
-          isBtnDisabled={isNextDisabled}
-        />
-        {currentStep > 2 && (
-          <Button
-            className="h-8 border border-solid border-primary bg-white px-3 py-1 leading-none text-primary"
-            size="large"
-            variant="contained"
-            onClick={() => {
-              setCurrentStep?.(2)
-              setCurrentTab?.(1)
-            }}
-          >
-            Update fields
-          </Button>
-        )}
-      </div>
+      {canEditApprovedProj && (
+        <div className="mt-5 flex flex-wrap items-center gap-2.5">
+          <NextButton
+            nextStep={nextStep}
+            nextTab={nextStep - 1}
+            setCurrentStep={setCurrentStep}
+            setCurrentTab={setCurrentTab}
+            isBtnDisabled={isNextDisabled}
+          />
+          {currentStep > 2 && (
+            <Button
+              className="h-8 border border-solid border-primary bg-white px-3 py-1 leading-none text-primary"
+              size="large"
+              variant="contained"
+              onClick={() => {
+                setCurrentStep?.(2)
+                setCurrentTab?.(1)
+              }}
+            >
+              Update fields
+            </Button>
+          )}
+        </div>
+      )}
     </>
   )
 }
