@@ -38,6 +38,8 @@ class MetaProjectComputedFieldsSerializer(serializers.ModelSerializer):
     project_funding = serializers.SerializerMethodField()
     support_cost = serializers.SerializerMethodField()
 
+    _cache_computed = None
+
     class Meta:
         model = MetaProject
         fields = [
@@ -49,28 +51,27 @@ class MetaProjectComputedFieldsSerializer(serializers.ModelSerializer):
             "pahse_out_mt",
         ]
 
-    def _get_projects_aggregate(self, obj):
-        """Cache the aggregation to avoid multiple queries"""
-        if not hasattr(self, "_projects_agg"):
-            self._projects_agg = obj.projects.aggregate(
+    def _get_computed_values(self, obj):
+        if self._cache_computed is None:
+            self._cache_computed = obj.projects.aggregate(
                 min_start=Min("project_start_date"),
                 max_end=Max("project_end_date"),
                 total_funding=Sum("total_fund"),
                 total_support=Sum("support_cost_psc"),
             )
-        return self._projects_agg
+        return self._cache_computed
 
     def get_start_date(self, obj):
-        return self._get_projects_aggregate(obj)["min_start"]
+        return self._get_computed_values(obj)["min_start"]
 
     def get_end_date(self, obj):
-        return self._get_projects_aggregate(obj)["max_end"]
+        return self._get_computed_values(obj)["max_end"]
 
     def get_project_funding(self, obj):
-        return self._get_projects_aggregate(obj)["total_funding"]
+        return self._get_computed_values(obj)["total_funding"]
 
     def get_support_cost(self, obj):
-        return self._get_projects_aggregate(obj)["total_support"]
+        return self._get_computed_values(obj)["total_support"]
 
 
 class MetaProjecMyaDetailsSerializer(serializers.ModelSerializer):

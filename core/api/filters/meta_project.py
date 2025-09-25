@@ -1,10 +1,9 @@
 from django_filters import rest_framework as filters
+from django_filters.fields import CSVWidget
 
 from core.models import Agency
 from core.models import Country
 from core.models import MetaProject
-from django_filters.fields import CSVWidget
-
 from core.models import ProjectCluster
 
 
