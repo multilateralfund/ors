@@ -44,6 +44,11 @@ PROJECT_SECTOR_TYPE_MAPPING = {
     "TAS": ["TAS"],
 }
 
+PROJECT_SUBSTANCES_ACCEPTED_ANNEXES = [
+    "Annex C, Group I",
+    "Annex F",
+]
+
 
 class RelatedExistsFilter(filters.BooleanFilter):
     """Filter query based on whether it has at least one row in the specified related field."""

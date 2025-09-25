@@ -190,7 +190,7 @@ def setup_project_create(
     meeting,
     subsector,
     project_cluster_kip,
-    groupA,
+    groupHCFC,
     decision,
 ):
     statuses_dict = [
@@ -217,13 +217,13 @@ def setup_project_create(
     )
 
     substA = SubstanceFactory.create(
-        name="SubstanceA", odp=0.02, gwp=0.05, group=groupA
+        name="SubstanceA", odp=0.02, gwp=0.05, group=groupHCFC
     )
     blend = BlendFactory.create(
         name="Blend 1",
+        composition=f"{substA.name}= 0.5",
         sort_order=1,
     )
-
     return {
         "ad_hoc_pcr": True,
         "agency": agency.id,
@@ -241,7 +241,7 @@ def setup_project_create(
         "destruction_technology": "D1",
         "excom_provision": "test excom provision",
         "funding_window": "test funding window",
-        "group": groupA.id,
+        "group": groupHCFC.id,
         "individual_consideration": False,
         "is_lvc": True,
         "is_sme": False,
@@ -1149,16 +1149,15 @@ class TestProjectsV2Update:
         project_url,
         project,
         project_ods_odp_subst,
-        substance,
+        substance_hcfc,
     ):
         ods_odp_to_delete = ProjectOdsOdpFactory.create(
             project=project,
-            ods_substance_id=substance.id,
+            ods_substance_id=substance_hcfc.id,
             odp=0.02,
         )
         blend = BlendFactory.create(
-            name="test blend",
-            sort_order=1,
+            name="test blend", sort_order=1, composition=f"{substance_hcfc.name}=100"
         )
         self.client.force_authenticate(user=agency_user)
         update_data = {
