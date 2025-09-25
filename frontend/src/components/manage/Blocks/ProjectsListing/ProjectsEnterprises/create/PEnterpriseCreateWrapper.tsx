@@ -22,7 +22,7 @@ const PEnterpriseCreateWrapper = () => {
     useContext(PermissionsContext)
 
   const { project_id } = useParams<Record<string, string>>()
-  const project = project_id ? useGetProject(project_id) : undefined
+  const project = useGetProject(project_id)
   const { data, loading, error } = project ?? {}
 
   const userSlice = useStore((state) => state.user)
@@ -53,22 +53,16 @@ const PEnterpriseCreateWrapper = () => {
     }))
   }, [data])
 
-  if (!canViewProjects) {
-    return <Redirect to="/projects-listing/listing" />
-  }
-
   if (
-    !project_id ||
+    !canViewProjects ||
     (project && (error || (data && data.submission_status !== 'Approved')))
   ) {
-    return <Redirect to="/projects-listing/projects-enterprises" />
+    return <Redirect to="/projects-listing/listing" />
   }
 
   if (!canEditProjectEnterprise) {
     return (
-      <Redirect
-        to={`/projects-listing/projects-enterprises${project_id ? '/' + project_id : ''}`}
-      />
+      <Redirect to={`/projects-listing/projects-enterprises/${project_id}`} />
     )
   }
 

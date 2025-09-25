@@ -1,17 +1,13 @@
 'use client'
 
-import PEnterprisesFilters from './PEnterprisesFilters'
-import PEnterprisesFiltersSelectedOpts from './PEnterprisesFiltersSelectedOpts'
+import EnterprisesFilters from './EnterprisesFilters'
+import EnterprisesFiltersSelectedOpts from './EnterprisesFiltersSelectedOpts'
 import { useGetEnterpriseStatuses } from '../../hooks/useGetEnterpriseStatuses'
 import { useStore } from '@ors/store'
 
 import { map } from 'lodash'
 
-const PEnterprisesFiltersWrapper = ({
-  setFilters,
-  setParams,
-  ...rest
-}: any) => {
+const EnterprisesFiltersWrapper = ({ setFilters, setParams, ...rest }: any) => {
   const commonSlice = useStore((state) => state.common)
 
   const statuses = useGetEnterpriseStatuses()
@@ -38,10 +34,10 @@ const PEnterprisesFiltersWrapper = ({
 
   return (
     <div className="flex flex-col gap-2.5">
-      <PEnterprisesFilters {...{ enterpriseStatuses, ...props }} />
-      <PEnterprisesFiltersSelectedOpts {...{ enterpriseStatuses, ...props }} />
+      <EnterprisesFilters {...{ enterpriseStatuses, ...props }} />
+      <EnterprisesFiltersSelectedOpts {...{ enterpriseStatuses, ...props }} />
     </div>
   )
 }
 
-export default PEnterprisesFiltersWrapper
+export default EnterprisesFiltersWrapper
