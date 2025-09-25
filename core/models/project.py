@@ -485,8 +485,7 @@ class Project(models.Model):
     products_manufactured = models.TextField(
         null=True,
         blank=True,
-        help_text=OLD_FIELD_HELP_TEXT,
-    )  # obsolete
+    )
     plan = models.TextField(
         null=True,
         blank=True,
