@@ -74,15 +74,19 @@ const ProjectIdentifiersFields = ({
       ? filterClusterOptions(allClusters, canViewProductionProjects)
       : crtClusters
 
+  const isAddOrCopy = mode === 'add' || mode === 'copy'
+  const hasNoLeadAgency = !project?.meta_project?.lead_agency
+  const isApproved = project?.submission_status === 'Approved'
   const canUpdateLeadAgency =
-    !postExComUpdate &&
-    (mode === 'add' || mode === 'copy' || !project?.meta_project?.lead_agency)
+    (!postExComUpdate && (isAddOrCopy || (!isApproved && hasNoLeadAgency))) ||
+    (postExComUpdate && hasNoLeadAgency)
 
   const { viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
   )
   const canEditMeeting =
-    !postExComUpdate && canEditField(editableFields, 'meeting')
+    !(postExComUpdate && projIdentifiers?.meeting) &&
+    canEditField(editableFields, 'meeting')
 
   const areNextStepsAvailable = isNextBtnEnabled && areNextSectionsDisabled
 
@@ -284,7 +288,7 @@ const ProjectIdentifiersFields = ({
                   getOptionLabel(commonSlice.countries.data, option)
                 }
                 disabled={
-                  postExComUpdate ||
+                  (postExComUpdate && !!projIdentifiers?.country) ||
                   !areNextSectionsDisabled ||
                   (mode !== 'copy' && !!project?.country_id) ||
                   !canEditField(editableFields, 'country')
@@ -335,7 +339,7 @@ const ProjectIdentifiersFields = ({
                 }}
                 getOptionLabel={(option) => getOptionLabel(agencies, option)}
                 disabled={
-                  postExComUpdate ||
+                  (postExComUpdate && !!projIdentifiers?.agency) ||
                   !areNextSectionsDisabled ||
                   !canEditField(editableFields, 'agency')
                 }
@@ -358,7 +362,7 @@ const ProjectIdentifiersFields = ({
                 onChange={(_, value) => handleChangeCluster(value)}
                 getOptionLabel={(option) => getOptionLabel(clusters, option)}
                 disabled={
-                  postExComUpdate ||
+                  (postExComUpdate && !!projIdentifiers?.cluster) ||
                   !areNextSectionsDisabled ||
                   !specificFieldsLoaded ||
                   !canEditField(editableFields, 'cluster')
@@ -381,7 +385,7 @@ const ProjectIdentifiersFields = ({
                 <Checkbox
                   checked={!!projIdentifiers?.production}
                   disabled={
-                    postExComUpdate ||
+                    (postExComUpdate && !!projIdentifiers?.cluster) ||
                     !areNextSectionsDisabled ||
                     !canViewProductionProjects ||
                     !isNull(getProduction(clusters, projIdentifiers.cluster)) ||

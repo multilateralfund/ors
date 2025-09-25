@@ -278,7 +278,7 @@ const ProjectCrossCuttingFields = ({
                       getOptionLabel(projectTypes, option)
                     }
                     disabled={
-                      postExComUpdate ||
+                      (postExComUpdate && !!project_type) ||
                       currentStep > 2 ||
                       !specificFieldsLoaded ||
                       !canEditField(editableFields, 'project_type')
@@ -305,7 +305,7 @@ const ProjectCrossCuttingFields = ({
                     }
                     getOptionLabel={(option) => getOptionLabel(sectors, option)}
                     disabled={
-                      postExComUpdate ||
+                      (postExComUpdate && !!sector) ||
                       currentStep > 2 ||
                       !specificFieldsLoaded ||
                       !canEditField(editableFields, 'sector')
@@ -421,7 +421,7 @@ const ProjectCrossCuttingFields = ({
                       )
                     }
                     disabled={
-                      postExComUpdate ||
+                      (postExComUpdate && !!project_start_date) ||
                       !canEditField(editableFields, 'project_start_date')
                     }
                     formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
@@ -429,7 +429,7 @@ const ProjectCrossCuttingFields = ({
                       'border-red-500':
                         getIsInputDisabled('project_start_date'),
                       [disabledClassName]:
-                        postExComUpdate ||
+                        (postExComUpdate && !!project_start_date) ||
                         !canEditField(editableFields, 'project_start_date'),
                     })}
                   />
