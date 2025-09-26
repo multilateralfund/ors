@@ -109,11 +109,11 @@ class SubstancesListView(ChemicalBaseListView):
         if not include_user_substances:
             queryset = queryset.filter(created_by__isnull=True)
 
-        filter_for_projects = self.request.query_params.get("filter_for_projects", None)
-        if filter_for_projects:
-            queryset = queryset.filter(
-                group__name_alt__in=PROJECT_SUBSTANCES_ACCEPTED_ANNEXES
-            )
+        if (
+            self.request.query_params.get("filter_for_projects", "false").lower()
+            == "true"
+        ):
+            queryset = queryset.filter_project_accepted_substances()
         return queryset.order_by("group__name", "sort_order")
 
     @swagger_auto_schema(
@@ -252,24 +252,17 @@ class BlendsListView(ChemicalBaseListView):
         if request.query_params.get("limit", None):
             return super().get(request, *args, **kwargs)
 
-        # we need to corectly sort the blends
-        blend_list = list(self.filter_queryset(self.get_queryset()).all())
-
         # if filter_for_projects is true, filter blends that have at least one substance in their composition
-        filter_for_projects = self.request.query_params.get("filter_for_projects", None)
-        if filter_for_projects:
-            accepted_substance_names = Substance.objects.filter(
-                group__name_alt__in=PROJECT_SUBSTANCES_ACCEPTED_ANNEXES
-            ).values_list("name", flat=True)
-            blend_list = [
-                b
-                for b in blend_list
-                if any(
-                    f"{subst_name}=" in b.composition
-                    for subst_name in accepted_substance_names
-                )
-            ]
+        if (
+            self.request.query_params.get("filter_for_projects", "false").lower()
+            == "true"
+        ):
+            blends_queryset = Blend.objects.all().filter_project_accepted_blends()
+        else:
+            blends_queryset = self.get_queryset()
 
+        # we need to corectly sort the blends
+        blend_list = list(self.filter_queryset(blends_queryset).all())
         blend_list.sort(
             key=lambda x: (
                 ("aaa", float("inf") if x.sort_order is None else x.sort_order)
