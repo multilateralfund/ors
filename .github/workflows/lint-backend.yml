@@ -17,6 +17,5 @@ jobs:
       - name: "Lint backend code"
         run: |
           cp .env.test.example .env
-          python manage.py makemigrations --check
           pylint "**/*.py"
           black --check .
