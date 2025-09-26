@@ -163,10 +163,23 @@ const EditActionButtons = ({
     specificFields,
     (field) => field.table === 'ods_odp',
   )
+
+  const phaseOutFieldNames = ['co2_mt', 'odp', 'phase_out_mt']
+  const areFieldsMissing = odsOdpData.some((data) =>
+    Object.entries(data).some(
+      ([field, value]) =>
+        !phaseOutFieldNames.includes(field) && checkInvalidValue(value),
+    ),
+  )
+  const hasPhaseOutErrors = odsOdpData.some(
+    (data) =>
+      phaseOutFieldNames.filter(
+        (field) => !checkInvalidValue(data[field as keyof typeof data]),
+      ).length < 2,
+  )
   const hasOdsOdpErrors =
     hasOdsOdpFields &&
-    (odsOdpData.some((data) => Object.values(data).some(checkInvalidValue)) ||
-      odsOdpData.length === 0)
+    (areFieldsMissing || hasPhaseOutErrors || odsOdpData.length === 0)
 
   const {
     Header: headerErrors = {},

@@ -108,7 +108,11 @@ const ProjectSpecificInfo = ({
               )}
             </div>
             {canViewSubstanceSection && odsOdpFields.length > 0 && (
-              <ProjectOdsOdpTable data={data} fields={odsOdpFields} />
+              <ProjectOdsOdpTable
+                data={data}
+                fields={odsOdpFields}
+                history={getFieldHistory('ods_odp')}
+              />
             )}
           </div>
         </>
