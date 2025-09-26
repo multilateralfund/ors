@@ -1,5 +1,10 @@
 from rest_framework import serializers
 
+from core.api.utils import PROJECT_SUBSTANCES_ACCEPTED_ANNEXES
+from core.models import (
+    Blend,
+    Substance,
+)
 from core.models.project_enterprise import (
     Enterprise,
     ProjectEnterprise,
@@ -119,6 +124,21 @@ class ProjectEnterpriseOdsOdpSerializer(serializers.ModelSerializer):
                     "Cannot update ods_blend when ods_substance is set"
                 )
 
+        if attrs.get("ods_substance"):
+            accepted_substances = (
+                Substance.objects.all().filter_project_accepted_substances()
+            )
+            if not accepted_substances.filter(id=attrs["ods_substance"].id).exists():
+                raise serializers.ValidationError(
+                    f"Substance must be one of {PROJECT_SUBSTANCES_ACCEPTED_ANNEXES} groups"
+                )
+
+        if attrs.get("ods_blend"):
+            accepted_blends = Blend.objects.all().filter_project_accepted_blends()
+            if not accepted_blends.filter(id=attrs["ods_blend"].id).exists():
+                raise serializers.ValidationError(
+                    f"Blend must have at least one substance in {PROJECT_SUBSTANCES_ACCEPTED_ANNEXES} groups"
+                )
         return super().validate(attrs)
 
 

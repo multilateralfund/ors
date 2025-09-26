@@ -260,15 +260,19 @@ class ProjectFieldSerializer(ProjectFieldListSerializer):
         if obj.read_field_name == "ods_display_name":
             data = {}
 
-            data["substances"] = SubstanceSerializer(
-                Substance.objects.all().order_by("name"), many=True
-            ).data
+            substances = (
+                Substance.objects.all()
+                .filter_project_accepted_substances()
+                .order_by("name")
+            )
+            data["substances"] = SubstanceSerializer(substances, many=True).data
             for entry in data["substances"]:
                 entry["baseline_type"] = "substance"
 
-            data["blends"] = BlendSerializer(
-                Blend.objects.all().order_by("name"), many=True
-            ).data
+            blends = (
+                Blend.objects.all().filter_project_accepted_blends().order_by("name")
+            )
+            data["blends"] = BlendSerializer(blends, many=True).data
             for entry in data["blends"]:
                 entry["baseline_type"] = "blend"
 
