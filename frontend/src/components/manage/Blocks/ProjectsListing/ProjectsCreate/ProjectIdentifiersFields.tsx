@@ -471,7 +471,7 @@ const ProjectIdentifiersFields = ({
           </>
         )}
         {(mode === 'copy' ||
-          areNextSectionsDisabled ||
+          (postExComUpdate && areNextSectionsDisabled) ||
           !(postExComUpdate || project?.submission_status === 'Approved')) && (
           <div className="mt-5 flex flex-wrap items-center gap-2.5">
             <NextButton
