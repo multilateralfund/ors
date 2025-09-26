@@ -94,9 +94,14 @@ class MetaProjectMyaListView(generics.ListAPIView):
                 type=MetaProject.MetaProjectType.MYA,
                 projects__submission_status__name="Approved",
             )
-            .exclude(
-                projects__status__name="Completed",
-            )
+            # Maybe exclude if ALL sub-projects Completed OR Transfered.
+            # .filter(
+            #     Exists(
+            #         Project.objects.filter(metaproject=OuterRef("pk")).exclude(
+            #             status__name=["Completed", "Transferred"]
+            #         )
+            #     )
+            # )
             .distinct()
         )
         return result
