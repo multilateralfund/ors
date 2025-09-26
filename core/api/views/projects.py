@@ -15,6 +15,7 @@ from rest_framework import status
 
 from core.api.filters.meta_project import MetaProjectMyaFilter
 from core.api.filters.project import MetaProjectFilter, ProjectFilter
+from core.api.permissions import HasMetaProjectsEditAccess
 
 from core.api.permissions import (
     HasMetaProjectsViewAccess,
@@ -106,9 +107,15 @@ class MetaProjectMyaDetailsViewSet(
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
 ):
-    permission_classes = [HasMetaProjectsViewAccess]
     serializer_class = MetaProjecMyaDetailsSerializer
     queryset = MetaProject.objects.all()
+
+    @property
+    def permission_classes(self):
+        if self.action in ["retrieve"]:
+            return [HasMetaProjectsViewAccess]
+        else:
+            return [HasMetaProjectsEditAccess]
 
     def update(self, request, *args, **kwargs):
         mp = self.get_object()
