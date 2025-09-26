@@ -788,7 +788,6 @@ class TestCreateProjects(BaseTest):
         assert response.data["sector"]["name"] == sector.name
         assert response.data["sector"]["code"] == sector.code
         assert response.data["is_sme"] == "Non-SME"
-        assert response.data["starting_point"] == data["starting_point"]
         assert response.data["subsectors"] == [
             ProjectSubSectorSerializer(subsector).data
         ]

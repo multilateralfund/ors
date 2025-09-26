@@ -119,8 +119,8 @@ class MetaProjectMyaDetailsViewSet(
     def permission_classes(self):
         if self.action in ["retrieve"]:
             return [HasMetaProjectsViewAccess]
-        else:
-            return [HasMetaProjectsEditAccess]
+
+        return [HasMetaProjectsEditAccess]
 
     def update(self, request, *args, **kwargs):
         mp = self.get_object()
