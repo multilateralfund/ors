@@ -1,9 +1,10 @@
-import { ChangeEvent, useContext } from 'react'
+import { ChangeEvent, useContext, useEffect } from 'react'
 
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { getIsInputDisabled } from '../../ProjectsCreate/SpecificFieldsHelpers'
 import { SubmitButton } from '../../HelperComponents'
@@ -18,9 +19,8 @@ import {
   initialSubstanceDetailsFields,
   tableColumns,
 } from '../../constants'
-import { useStore } from '@ors/store'
 
-import { map, sortBy, split } from 'lodash'
+import { find, map, sortBy, split } from 'lodash'
 import { IoTrash } from 'react-icons/io5'
 import { Divider } from '@mui/material'
 import cx from 'classnames'
@@ -35,6 +35,7 @@ const PEnterpriseSubstanceDetailsSection = ({
   odsOdpErrors: { [key: string]: string[] }[]
 }) => {
   const { canEditProjectEnterprise } = useContext(PermissionsContext)
+  const { substances, blends } = useContext(ProjectsDataContext)
 
   const sectionId = 'substance_details'
   const sectionData = enterpriseData[sectionId] || []
@@ -45,18 +46,15 @@ const PEnterpriseSubstanceDetailsSection = ({
     !!enterprise &&
     (enterprise.status !== 'Pending Approval' || !canEditProjectEnterprise)
 
-  const { substances, blends } = useStore((state) => state.cp_reports)
-  const substancesOptions = map(
-    sortBy(substances.data, 'name'),
-    (substance) => ({
-      ...substance,
-      id: 'substance_' + substance.id,
-      is_substance: true,
-    }),
-  )
-  const blendOptions = map(sortBy(blends.data, 'name'), (blend) => ({
+  const substancesOptions = map(sortBy(substances, 'name'), (substance) => ({
+    ...substance,
+    id: 'substance_' + substance.id,
+    is_substance: true,
+  }))
+  const blendOptions = map(sortBy(blends, 'name'), (blend) => ({
     ...blend,
     id: 'blend_' + blend.id,
+    name: blend.name + ' (' + blend.composition + ')',
     is_substance: false,
   }))
   const options = [...substancesOptions, ...blendOptions]
@@ -171,6 +169,30 @@ const PEnterpriseSubstanceDetailsSection = ({
     }
   }
 
+  const getSubstanceValue = (substance: EnterpriseSubstanceDetails) =>
+    substance.ods_substance
+      ? `substance_${substance.ods_substance}`
+      : substance.ods_blend
+        ? `blend_${substance.ods_blend}`
+        : null
+
+  useEffect(() => {
+    const updatedSectionData = map(sectionData, (data) => {
+      const crtValue = getSubstanceValue(data)
+
+      return !find(options, (option) => option.id === crtValue)
+        ? { ...data, ods_substance: null, ods_blend: null }
+        : data
+    })
+
+    setEnterpriseData((prevData) => {
+      return {
+        ...prevData,
+        [sectionId]: updatedSectionData,
+      }
+    })
+  }, [])
+
   return (
     <>
       <div className="flex flex-col flex-wrap gap-x-20 gap-y-10">
@@ -184,13 +206,7 @@ const PEnterpriseSubstanceDetailsSection = ({
                     widget="autocomplete"
                     options={options}
                     disabled={isDisabled}
-                    value={
-                      substance.ods_substance
-                        ? `substance_${substance.ods_substance}`
-                        : substance.ods_blend
-                          ? `blend_${substance.ods_blend}`
-                          : null
-                    }
+                    value={getSubstanceValue(substance)}
                     onChange={(_, value) =>
                       handleChangeDropdownValues(value, index)
                     }
@@ -203,6 +219,10 @@ const PEnterpriseSubstanceDetailsSection = ({
                         getErrors('ods_blend', index),
                     }}
                     {...defaultProps}
+                    FieldProps={{
+                      className:
+                        defaultProps.FieldProps.className + ' w-full min-w-64',
+                    }}
                   />
                 </div>
                 {map(fields, (field) => (
