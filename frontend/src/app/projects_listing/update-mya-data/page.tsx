@@ -560,6 +560,13 @@ export default function ProjectsUpdateMyaDataPage() {
         <ViewTable<MetaProjectType>
           key={JSON.stringify(filters)}
           columnDefs={[...columnDefs]}
+          defaultColDef={{
+            headerClass: 'ag-text-center',
+            cellClass: 'ag-text-center ag-cell-ellipsed',
+            minWidth: 90,
+            resizable: true,
+            sortable: true,
+          }}
           onRowClicked={(event) => onToggleExpand(event.data!)}
           domLayout="normal"
           enablePagination={true}

@@ -39,3 +39,20 @@ class MetaProjectMyaFilter(filters.FilterSet):
             "lead_agency_id",
             "cluster_id",
         ]
+
+    ordering = filters.OrderingFilter(
+        fields=(
+            ('projects__country__name', 'country__name'),
+            ('projects__cluster__code', 'cluster__code'),
+            'lead_agency__name',
+            'new_code',
+            'type',
+        ),
+        field_labels={
+            'country__name': 'Country',
+            'cluster__code': 'Cluster code',
+            'lead_agency__name': 'Lead agency',
+            'new_code': 'Code',
+            'type': 'Type',
+        }
+    )
