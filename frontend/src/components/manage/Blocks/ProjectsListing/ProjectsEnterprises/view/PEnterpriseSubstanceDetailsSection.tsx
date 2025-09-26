@@ -1,10 +1,12 @@
+import { useContext } from 'react'
+
 import ViewTable from '@ors/components/manage/Form/ViewTable'
+import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import { PEnterpriseType } from '../../interfaces'
 import { formatNumberColumns } from '../../utils'
 import { tableColumns } from '../../constants'
 import { ApiSubstance } from '@ors/types/api_substances'
 import { ApiBlend } from '@ors/types/api_blends'
-import { useStore } from '@ors/store'
 
 import { find, sumBy } from 'lodash'
 import {
@@ -19,7 +21,7 @@ const PEnterpriseSubstanceDetailsSection = ({
 }: {
   enterprise: PEnterpriseType
 }) => {
-  const { substances, blends } = useStore((state) => state.cp_reports)
+  const { substances, blends } = useContext(ProjectsDataContext)
 
   const odsOdpData = enterprise.ods_odp ?? []
 
@@ -29,8 +31,8 @@ const PEnterpriseSubstanceDetailsSection = ({
     }
 
     const options: (ApiSubstance | ApiBlend)[] = params.data.ods_substance
-      ? substances.data
-      : blends.data
+      ? substances
+      : blends
     const field = params.data.ods_substance ? 'ods_substance' : 'ods_blend'
 
     return find(options, { id: params.data[field] })?.name
