@@ -445,12 +445,12 @@ urlpatterns = [
     path(
         "meta-projects-for-mya-update/",
         MetaProjectMyaListView.as_view(),
-        name="mya-update-list",
+        name="meta-projects-for-mya-update",
     ),
     path(
         "meta-projects/<int:pk>/",
         MetaProjectMyaDetailsViewSet.as_view({"get": "retrieve", "put": "update"}),
-        name="meta-project_view",
+        name="meta-project-view",
     ),
     path(
         "project-statuses/",
