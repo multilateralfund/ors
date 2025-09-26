@@ -4,6 +4,7 @@ import shutil
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models, transaction
+from functools import cached_property
 
 from core.models.agency import Agency
 from core.models.blend import Blend
@@ -1101,6 +1102,43 @@ class Project(models.Model):
         ]
         ordering = ["-date_actual", "country__name", "serial_number"]
 
+    @cached_property
+    def phase_out_data(self):
+        data = {
+            "consumption_odp": 0,
+            "consumption_co2": 0,
+            "production_odp": 0,
+            "production_co2": 0,
+        }
+
+        for substance in self.ods_odp.all():
+            substance_odp = substance.odp or 0
+            substance_co2_mt = substance.co2_mt or 0
+            if substance.ods_type == ProjectOdsOdp.ProjectOdsOdpType.PRODUCTION:
+                data["production_odp"] += substance_odp
+                data["production_co2"] += substance_co2_mt
+            else:
+                data["consumption_odp"] += substance_odp
+                data["consumption_co2"] += substance_co2_mt
+
+        return data
+
+    @property
+    def consumption_odp(self):
+        return self.phase_out_data["consumption_odp"]
+
+    @property
+    def consumption_co2(self):
+        return self.phase_out_data["consumption_co2"]
+
+    @property
+    def production_odp(self):
+        return self.phase_out_data["production_odp"]
+
+    @property
+    def production_co2(self):
+        return self.phase_out_data["production_co2"]
+
     def copy_project(self, duplicate_files=False, remove_legacy_data=False):
         def _get_new_file_path(original_file_name, new_project_id):
             # Generate a new file path for the duplicated file
@@ -1434,4 +1472,77 @@ class ProjectComment(models.Model):
     )
     agency_response = models.TextField(
         null=True, blank=True, verbose_name="Agency's Response"
+    )
+
+
+class AnnualProjectReport(models.Model):
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name="annual_reports",
+        verbose_name="Project",
+    )
+
+    # Date data fields
+    date_first_disbursement = models.DateField(
+        null=True, blank=True, verbose_name="First Disbursement Date"
+    )
+    date_planned_completion = models.DateField(
+        null=True, blank=True, verbose_name="Planned Date of Completion"
+    )
+    date_actual_completion = models.DateField(
+        null=True, blank=True, verbose_name="Date completed (Actual)"
+    )
+    date_financial_completion = models.DateField(
+        null=True, blank=True, verbose_name="Date of Financial Completion"
+    )
+
+    # Phaseout data fields
+    consumption_phased_out_odp = models.FloatField(
+        null=True, blank=True, verbose_name="Consumption ODP/MT Phased Out"
+    )
+    consumption_phased_out_co2 = models.FloatField(
+        null=True, blank=True, verbose_name="Consumption Phased Out in CO2-eq Tonnes"
+    )
+    production_phased_out_odp = models.FloatField(
+        null=True, blank=True, verbose_name="Production ODP/MT Phased Out"
+    )
+    production_phased_out_co2 = models.FloatField(
+        null=True, blank=True, verbose_name="Production Phased Out in CO2-eq Tonnes"
+    )
+
+    # Financial data fields
+    funds_disbursed = models.FloatField(
+        null=True, blank=True, verbose_name="Funds Disbursed (US$)"
+    )
+    funds_committed = models.FloatField(
+        null=True, blank=True, verbose_name="Funds Committed (US$)"
+    )
+    estimated_disbursement_current_year = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="Estimated Disbursement in Current Year (US$)",
+    )
+    support_cost_disbursed = models.FloatField(
+        null=True, blank=True, verbose_name="Support Cost Disbursed (US$)"
+    )
+    support_cost_committed = models.FloatField(
+        null=True, blank=True, verbose_name="Support Cost Committed (US$)"
+    )
+    disbursements_made_to_final_beneficiaries = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="Disbursements made to final beneficiaries from FECO/MEP",
+    )
+    funds_advanced = models.FloatField(
+        null=True, blank=True, verbose_name="Funds advanced (US$)"
+    )
+
+    # Narrative & Indicators Data Fields
+    last_year_remarks = models.TextField(blank=True)
+    current_year_remarks = models.TextField(blank=True)
+    gender_policy = models.BooleanField(
+        default=False,
+        blank=True,
+        verbose_name="Gender Policy for All Projects Approved from 85th Mtg",
     )
