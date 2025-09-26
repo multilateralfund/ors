@@ -218,6 +218,7 @@
         "name": "Projects - MLFS Admin",
         "permissions": [
             "has_meta_projects_view_access",
+            "has_meta_projects_edit_access",
             "has_project_metainfo_view_access",
             "has_project_statistics_view_access",
             "has_project_v2_view_access",
