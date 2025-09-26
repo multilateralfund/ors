@@ -34,6 +34,8 @@ export const createProjectFieldsSlice = ({
       version: number,
       submissionStatus?: string,
       canEditAll?: boolean,
+      isPostExcom?: boolean,
+      mode?: string,
     ) => {
       const fields = get().projectFields.projectFields?.data ?? []
       const isAfterApproval = ['Approved', 'Not approved'].includes(
@@ -42,6 +44,14 @@ export const createProjectFieldsSlice = ({
 
       const editableFields = fields
         .filter(({ editable_in_versions, is_actual, section }) => {
+          if (
+            !isPostExcom &&
+            mode !== 'copy' &&
+            submissionStatus === 'Approved'
+          ) {
+            return is_actual || section === 'Approval'
+          }
+
           const isEditableInVersion = editable_in_versions?.includes(version)
           const isFieldEditable =
             section !== 'Impact' || !isAfterApproval || is_actual

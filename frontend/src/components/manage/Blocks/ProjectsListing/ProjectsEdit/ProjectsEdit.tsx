@@ -55,6 +55,8 @@ const ProjectsEdit = ({
   const { clusters, project_types, sectors, subsectors } =
     useContext(ProjectsDataContext)
 
+  const commonSlice = useStore((state) => state.common)
+
   const shouldEmptyField = (data: any, crtDataId: number) => {
     const isObsoleteField = find(
       data,
@@ -128,7 +130,13 @@ const ProjectsEdit = ({
         : undefined
 
       setViewableFields?.(version, submissionStatus)
-      setEditableFields?.(version, submissionStatus, canEditApprovedProjects)
+      setEditableFields?.(
+        version,
+        submissionStatus,
+        canEditApprovedProjects,
+        postExComUpdate,
+        mode,
+      )
     }
   }, [allFields, setViewableFields, setEditableFields])
 
@@ -245,7 +253,9 @@ const ProjectsEdit = ({
             bpLinking: { isLinkedToBP: false, bpId: null },
             crossCuttingFields: {
               ...initialCrossCuttingFields,
-              is_lvc: project.is_lvc,
+              is_lvc:
+                find(commonSlice.countries.data, { id: project.country_id })
+                  ?.is_lvc ?? null,
             },
           }),
     }))

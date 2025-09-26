@@ -114,7 +114,7 @@ const ProjectView = ({
 
   useEffect(() => {
     fetchFieldHistory(project.id)
-  }, [fetchFieldHistory])
+  }, [fetchFieldHistory, JSON.stringify(project)])
 
   const debouncedFetchProjectFields = useMemo(
     () => debounce(() => fetchProjectFields?.(), 0),
@@ -192,7 +192,10 @@ const ProjectView = ({
           !hasFields(allFields, viewableFields, 'Substance Details')),
       classes: classes,
       component: (
-        <ProjectSpecificInfo {...{ project, specificFields, fieldHistory }} />
+        <ProjectSpecificInfo
+          {...{ project, specificFields }}
+          fieldHistory={fieldHistory.data}
+        />
       ),
     },
     {
@@ -209,7 +212,12 @@ const ProjectView = ({
       disabled:
         !impactFields.length || !hasFields(allFields, viewableFields, 'Impact'),
       classes: classes,
-      component: <ProjectImpact {...{ project, specificFields }} />,
+      component: (
+        <ProjectImpact
+          {...{ project, specificFields }}
+          fieldHistory={fieldHistory.data}
+        />
+      ),
     },
     {
       id: 'project-documentation',
@@ -242,7 +250,8 @@ const ProjectView = ({
             component: (
               <ProjectApproval
                 specificFields={approvalFields}
-                {...{ project, fieldHistory }}
+                {...{ project }}
+                fieldHistory={fieldHistory.data}
               />
             ),
           },

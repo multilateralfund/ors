@@ -1,7 +1,4 @@
-import { useContext } from 'react'
-
 import Loading from '@ors/components/theme/Loading/Loading'
-import PermissionsContext from '@ors/contexts/PermissionsContext'
 import ProjectsEdit from './ProjectsEdit'
 import { useGetProject } from '../hooks/useGetProject'
 
@@ -14,7 +11,15 @@ const ProjectsPostExComUpdateWrapper = () => {
   const project = useGetProject(project_id)
   const { data, loading } = project
 
-  if (project?.error) {
+  if (
+    project?.error ||
+    (data &&
+      (!data.editable ||
+        !isNull(data.latest_project) ||
+        data.submission_status !== 'Approved' ||
+        data.status === 'Closed' ||
+        data.status === 'Transferred'))
+  ) {
     return <Redirect to="/projects-listing/listing" />
   }
 

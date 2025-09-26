@@ -16,20 +16,23 @@ export const VersionsDropdown = ({
   showVersionsMenu: boolean
   setShowVersionsMenu: Dispatch<SetStateAction<boolean>>
 }) => {
-  const formattedVersions = versions.map((version, idx) => {
+  const formattedVersions = versions.map((crtVersion, idx) => {
+    const { id, version, submission_status, post_excom_meeting } = crtVersion
+
     let label
-    if (version.version > 3) {
-      label = `Version ExCom ${version.post_excom_meeting}`
+    if (version > 3) {
+      label = `Version ${version}: Updated after ExCom ${post_excom_meeting}`
     } else {
-      label = `Version ${version.version}`
+      label = `Version ${version}: ${submission_status}`
     }
+
     return {
-      id: version.id,
+      id: id,
       label: label,
       url:
         idx == 0
-          ? `/projects-listing/${version.id}`
-          : `/projects-listing/${version.id}/archive/${version.version}`,
+          ? `/projects-listing/${id}`
+          : `/projects-listing/${id}/archive/${version}`,
     }
   })
 
@@ -50,7 +53,7 @@ export const VersionsDropdown = ({
       </div>
       <div
         className={cx(
-          'absolute right-0 z-10 max-h-[200px] origin-top overflow-y-auto rounded-none border border-solid border-primary bg-gray-A100 opacity-0 transition-all',
+          'absolute left-0 z-10 max-h-[200px] origin-top overflow-y-auto rounded-none border border-solid border-primary bg-gray-A100 opacity-0 transition-all',
           {
             'collapse scale-y-0': !showVersionsMenu,
             'scale-y-100 opacity-100': showVersionsMenu,
@@ -63,7 +66,7 @@ export const VersionsDropdown = ({
             href={info.url}
             className="flex items-center gap-x-2 rounded-none px-2 py-2 text-black no-underline hover:bg-primary hover:text-white"
           >
-            <div className="flex w-40 items-center justify-between hover:text-white">
+            <div className="flex items-center justify-between gap-2 whitespace-nowrap hover:text-white">
               <div className="ml-1">{info.label}</div>
               <div className="flex items-center">
                 {idx == 0 && (
