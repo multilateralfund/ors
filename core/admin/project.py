@@ -4,6 +4,7 @@ from django.contrib.admin import SimpleListFilter
 from django.utils.html import format_html_join
 
 from core.admin.utils import get_final_display_list
+from core.models import AnnualProjectReport
 from core.models.meeting import Decision, Meeting
 from core.models.project_history import ProjectHistory
 from core.models.project import (
@@ -169,6 +170,17 @@ class ProjectAdmin(admin.ModelAdmin):
         return fields
 
     readonly_fields = ["other_projects_in_component"]
+
+
+@admin.register(AnnualProjectReport)
+class AnnualProjectReportAdmin(admin.ModelAdmin):
+    list_filter = [AutocompleteFilterFactory("Project", "project")]
+    search_fields = ["project__title"]
+    list_per_page = 20
+
+    def get_list_display(self, request):
+        exclude = ["last_year_remarks", "current_year_remarks"]
+        return get_final_display_list(AnnualProjectReport, exclude)
 
 
 @admin.register(ProjectProgressReport)
