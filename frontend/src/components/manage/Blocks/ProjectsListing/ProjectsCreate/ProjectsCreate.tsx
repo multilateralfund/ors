@@ -12,8 +12,10 @@ import ProjectSpecificInfoSection from './ProjectSpecificInfoSection.tsx'
 import ProjectImpact from './ProjectImpact.tsx'
 import ProjectDocumentation from '../ProjectView/ProjectDocumentation.tsx'
 import ProjectApprovalFields from './ProjectApprovalFields.tsx'
+import PEnterprisesWrapper from '../ProjectsEnterprises/listing/PEnterprisesWrapper.tsx'
 import ProjectRelatedProjects from '../ProjectView/ProjectRelatedProjects.tsx'
-import { DisabledAlert } from '../HelperComponents.tsx'
+import { DisabledAlert, LoadingTab } from '../HelperComponents.tsx'
+import { useGetProjectEnterprises } from '../hooks/useGetProjectEnterprises.ts'
 import useGetProjectFieldsOpts from '../hooks/useGetProjectFieldsOpts.tsx'
 import {
   ProjectFile,
@@ -40,8 +42,8 @@ import {
 } from '../utils.ts'
 import { useStore } from '@ors/store.tsx'
 
-import { Tabs, Tab, Typography, CircularProgress } from '@mui/material'
 import { filter, groupBy, has, isEmpty, map, mapKeys } from 'lodash'
+import { Tabs, Tab, Typography } from '@mui/material'
 import { useParams } from 'wouter'
 
 export const SectionTitle = ({ children }: { children: ReactNode }) => (
@@ -68,6 +70,7 @@ const ProjectsCreate = ({
   approvalFields = [],
   specificFieldsLoaded,
   loadedFiles,
+  enterprises,
   ...rest
 }: ProjectDataProps &
   ProjectFiles &
@@ -84,6 +87,7 @@ const ProjectsCreate = ({
     approvalFields?: ProjectSpecificFields[]
     specificFieldsLoaded: boolean
     loadedFiles?: boolean
+    enterprises?: ReturnType<typeof useGetProjectEnterprises> | null
   }) => {
   const { project_id } = useParams<Record<string, string>>()
 
@@ -144,8 +148,9 @@ const ProjectsCreate = ({
     areNextSectionsDisabled ||
     approvalFields.length < 1 ||
     !hasFields(projectFields, viewableFields, 'Approval')
-  const isApprovalTabAvailable =
-    project && mode === 'edit' && project.version >= 3
+
+  const isEditMode = project && mode === 'edit'
+  const isApprovalTabAvailable = isEditMode && project.version >= 3
 
   const projIdentifiersErrors = useMemo(
     () => getProjIdentifiersErrors(projIdentifiers, errors),
@@ -366,21 +371,19 @@ const ProjectsCreate = ({
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Specific Information</div>
-          {!specificFieldsLoaded ? (
-            <CircularProgress size="20px" className="mb-0.5 text-gray-400" />
-          ) : (
-            !hasNoSpecificInfoFields &&
-            (hasSectionErrors(overviewErrors) ||
-              hasSectionErrors(substanceDetailsErrors) ||
-              formattedOdsOdpErrors.length > 0 ||
-              errorText ||
-              (mode === 'edit' && odsOdpData.length === 0)) &&
-            (isSpecificInfoTabDisabled ? (
-              DisabledAlert
-            ) : (
-              <SectionErrorIndicator errors={[]} />
-            ))
-          )}
+          {!specificFieldsLoaded
+            ? LoadingTab
+            : !hasNoSpecificInfoFields &&
+              (hasSectionErrors(overviewErrors) ||
+                hasSectionErrors(substanceDetailsErrors) ||
+                formattedOdsOdpErrors.length > 0 ||
+                errorText ||
+                (mode === 'edit' && odsOdpData.length === 0)) &&
+              (isSpecificInfoTabDisabled ? (
+                DisabledAlert
+              ) : (
+                <SectionErrorIndicator errors={[]} />
+              ))}
         </div>
       ),
       disabled: isSpecificInfoTabDisabled || currentStep < 3,
@@ -426,17 +429,15 @@ const ProjectsCreate = ({
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Impact</div>
-          {!specificFieldsLoaded ? (
-            <CircularProgress size="20px" className="mb-0.5 text-gray-400" />
-          ) : (
-            impactFields.length >= 1 &&
-            hasSectionErrors(impactErrors) &&
-            (isImpactTabDisabled ? (
-              DisabledAlert
-            ) : (
-              <SectionErrorIndicator errors={[]} />
-            ))
-          )}
+          {!specificFieldsLoaded
+            ? LoadingTab
+            : impactFields.length >= 1 &&
+              hasSectionErrors(impactErrors) &&
+              (isImpactTabDisabled ? (
+                DisabledAlert
+              ) : (
+                <SectionErrorIndicator errors={[]} />
+              ))}
         </div>
       ),
       disabled: isImpactTabDisabled || currentStep < 4,
@@ -513,19 +514,14 @@ const ProjectsCreate = ({
             label: (
               <div className="relative flex items-center justify-between gap-x-2">
                 <div className="leading-tight">Approval</div>
-                {approvalFields.length === 0 ? (
-                  <CircularProgress
-                    size="20px"
-                    className="mb-0.5 text-gray-400"
-                  />
-                ) : (
-                  hasSectionErrors(approvalErrors) &&
-                  (isApprovalTabDisabled ? (
-                    DisabledAlert
-                  ) : (
-                    <SectionErrorIndicator errors={[]} />
-                  ))
-                )}
+                {approvalFields.length === 0
+                  ? LoadingTab
+                  : hasSectionErrors(approvalErrors) &&
+                    (isApprovalTabDisabled ? (
+                      DisabledAlert
+                    ) : (
+                      <SectionErrorIndicator errors={[]} />
+                    ))}
               </div>
             ),
             disabled: isApprovalTabDisabled,
@@ -544,7 +540,23 @@ const ProjectsCreate = ({
           },
         ]
       : []),
-    ...(project && mode === 'edit'
+    ...(isEditMode && enterprises
+      ? [
+          {
+            id: 'project-enterprises-section',
+            ariaControls: 'project-enterprises-section',
+            label: (
+              <div className="relative flex items-center justify-between gap-x-2">
+                <div className="leading-tight">Enterprises</div>
+                {enterprises?.loading && LoadingTab}
+              </div>
+            ),
+            disabled: enterprises?.loading,
+            component: <PEnterprisesWrapper {...{ enterprises, mode }} />,
+          },
+        ]
+      : []),
+    ...(isEditMode
       ? [
           {
             id: 'project-related-projects-section',
@@ -554,7 +566,7 @@ const ProjectsCreate = ({
           },
         ]
       : []),
-    ...(project && mode === 'edit'
+    ...(isEditMode
       ? [
           {
             id: 'project-history-section',
@@ -615,7 +627,7 @@ const ProjectsCreate = ({
                       type="info"
                       alertClassName="mb-3"
                       content={
-                        <Typography className="pt-0.5 text-lg leading-none">
+                        <Typography className="text-lg leading-5">
                           You are editing the approved version of the project
                           (version 3). Any other updates can be brought only by
                           adding post ExCom updates.

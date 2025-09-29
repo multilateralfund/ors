@@ -5,6 +5,7 @@ import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import ProjectsHeader from '../ProjectSubmission/ProjectsHeader'
 import ProjectsCreate from '../ProjectsCreate/ProjectsCreate'
 import ProjectFormFooter from '../ProjectFormFooter'
+import { useGetProjectEnterprises } from '../hooks/useGetProjectEnterprises'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
 import { useGetProjectFiles } from '../hooks/useGetProjectFiles'
 import { fetchSpecificFields } from '../hooks/getSpecificFields'
@@ -50,7 +51,7 @@ const ProjectsEdit = ({
   const isEditMode = mode === 'edit'
   const isVersion3 = isEditMode && project.version >= 3
 
-  const { canViewProjects, canEditApprovedProjects } =
+  const { canViewProjects, canEditApprovedProjects, canViewEnterprises } =
     useContext(PermissionsContext)
   const { clusters, project_types, sectors, subsectors } =
     useContext(ProjectsDataContext)
@@ -183,6 +184,10 @@ const ProjectsEdit = ({
   }, [projectFiles])
 
   const relatedProjects = useGetRelatedProjects(project, mode)
+  const enterprises =
+    project.submission_status === 'Approved' && canViewEnterprises
+      ? useGetProjectEnterprises(project_id)
+      : null
 
   const defaultTrancheErrors = {
     errorText: '',
@@ -473,6 +478,7 @@ const ProjectsEdit = ({
             getTrancheErrors,
             relatedProjects,
             approvalFields,
+            enterprises,
           }}
           specificFieldsLoaded={
             (specificFieldsLoaded && fieldsValuesLoaded.current) ||

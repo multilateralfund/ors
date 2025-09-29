@@ -264,7 +264,7 @@ const PEnterpriseSubstanceDetailsSection = ({
         title="Add substance"
         isDisabled={isDisabled}
         onSubmit={onAddSubstance}
-        className={cx('h-8', { 'mt-6': sectionData.length > 0 })}
+        className={cx('h-8 w-fit', { 'mt-6': sectionData.length > 0 })}
       />
     </>
   )

@@ -1,9 +1,6 @@
 'use client'
 
-import { useState } from 'react'
-
 import SectionErrorIndicator from '@ors/components/ui/SectionTab/SectionErrorIndicator.tsx'
-import CustomAlert from '@ors/components/theme/Alerts/CustomAlert.tsx'
 import PEnterpriseSearch from '../tabs/PEnterpriseSearch.tsx'
 import PEnterpriseOverviewSection from '../tabs/PEnterpriseOverviewSection.tsx'
 import PEnterpriseSubstanceDetailsSection from '../tabs/PEnterpriseSubstanceDetailsSection.tsx'
@@ -19,15 +16,13 @@ import {
 import { useStore } from '@ors/store.tsx'
 
 import { has, isEmpty, map, omit, pick, uniq, values } from 'lodash'
-import { Tabs, Tab, Typography } from '@mui/material'
+import { Divider } from '@mui/material'
 
 const PEnterpriseCreate = ({
   countryId,
   errors,
   ...rest
 }: PEnterpriseDataProps & { countryId: number }) => {
-  const [currentTab, setCurrentTab] = useState<number>(0)
-
   const userSlice = useStore((state) => state.user)
   const { agency_id } = userSlice.data
   const filters = {
@@ -162,58 +157,29 @@ const PEnterpriseCreate = ({
   ]
 
   return (
-    <>
-      <Tabs
-        aria-label="create-project-enterprise"
-        value={currentTab}
-        className="sectionsTabs"
-        variant="scrollable"
-        scrollButtons="auto"
-        allowScrollButtonsMobile
-        TabIndicatorProps={{
-          className: 'h-0',
-          style: { transitionDuration: '150ms' },
-        }}
-        onChange={(_, newValue) => {
-          setCurrentTab(newValue)
-        }}
-      >
-        {steps.map(({ id, ariaControls, label }) => (
-          <Tab id={id} aria-controls={ariaControls} label={label} />
-        ))}
-      </Tabs>
-      <div className="relative rounded-b-lg rounded-r-lg border border-solid border-primary p-6">
-        {steps
-          .filter((_, index) => index === currentTab)
-          .map(({ component, errors }) => (
-            <>
-              {errors && errors.length > 0 && (
-                <CustomAlert
-                  type="error"
-                  alertClassName="mb-5"
-                  content={
-                    <>
-                      <Typography className="text-lg">
-                        Please make sure all the sections are valid.
-                      </Typography>
-                      <div className="mt-1 flex flex-col gap-1.5 text-base">
-                        {errors.map((err, idx) =>
-                          err ? (
-                            <div key={idx}>
-                              {'\u2022'} {err.message}
-                            </div>
-                          ) : null,
-                        )}
-                      </div>
-                    </>
-                  }
-                />
-              )}
-              {component}
-            </>
-          ))}
-      </div>
-    </>
+    <div className="flex flex-col gap-2">
+      <PEnterpriseSearch
+        key={JSON.stringify(results)}
+        enterprises={results}
+        {...rest}
+        errors={searchErrors}
+      />
+      <Divider className="py-2" />
+      <PEnterpriseOverviewSection
+        {...{ countryId, ...rest }}
+        errors={overviewErrors}
+      />
+      <Divider className="py-2" />
+      <PEnterpriseSubstanceDetailsSection
+        {...{ errors, ...rest }}
+        odsOdpErrors={normalizedOdsOdpErrors}
+      />
+      <Divider className="py-2" />
+      <PEnterpriseFundingDetailsSection
+        {...rest}
+        errors={fundingDetailsErrors}
+      />
+    </div>
   )
 }
 

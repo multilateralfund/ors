@@ -1,80 +1,80 @@
 'use client'
 
-import { useContext, useRef } from 'react'
+import { useContext, useRef, useState } from 'react'
 
-import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
-import Loading from '@ors/components/theme/Loading/Loading'
-import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
+import PEnterpriseCreateWrapper from '../create/PEnterpriseCreateWrapper'
 import PEnterprisesTable from './PEnterprisesTable'
-import {
-  CreateButton,
-  PageTitle,
-  RedirectBackButton,
-} from '../../HelperComponents'
 import { useGetProjectEnterprises } from '../../hooks/useGetProjectEnterprises'
-import { useGetProject } from '../../hooks/useGetProject'
 
-import { Redirect, useParams } from 'wouter'
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+} from '@mui/material'
 
-export default function PEnterprisesWrapper() {
-  const { canViewProjects, canViewEnterprises, canEditProjectEnterprise } =
-    useContext(PermissionsContext)
-
+export default function PEnterprisesWrapper({
+  enterprises,
+  mode,
+}: {
+  enterprises: ReturnType<typeof useGetProjectEnterprises>
+  mode: string
+}) {
   const form = useRef<any>()
 
-  const { project_id } = useParams<Record<string, string>>()
-  const project = useGetProject(project_id)
-  const { data, error, loading: loadingProject } = project ?? {}
+  const { canEditProjectEnterprise } = useContext(PermissionsContext)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
 
-  const params = {
-    offset: 0,
-    limit: 100,
-    project_id: project_id,
-  }
-  const enterprises = useGetProjectEnterprises(params)
-  const { loading } = enterprises
-
-  if (
-    !canViewEnterprises ||
-    !canViewProjects ||
-    (project && (error || (data && data.submission_status !== 'Approved')))
-  ) {
-    return <Redirect to="/projects-listing/listing" />
+  const onClose = () => {
+    setIsDialogOpen(false)
   }
 
   return (
     <>
-      <Loading
-        className="!fixed bg-action-disabledBackground"
-        active={loading || loadingProject}
-      />
-      <HeaderTitle>
-        <div className="flex flex-wrap justify-between gap-3">
-          <div className="flex flex-col">
-            <RedirectBackButton />
-            <PageHeading>
-              <PageTitle
-                pageTitle="Project enterprises of"
-                projectTitle={data?.code ?? data?.code_legacy}
-                className="break-all"
-              />
-            </PageHeading>
-          </div>
-          {canEditProjectEnterprise && (
-            <div className="ml-auto mt-auto flex items-center gap-2.5">
-              <CreateButton
-                title="Add project enterprise"
-                href={`/projects-listing/projects-enterprises/${project_id}/create`}
-                className="!mb-0"
-              />
-            </div>
-          )}
+      {canEditProjectEnterprise && mode === 'edit' && (
+        <div className="flex">
+          <Button
+            className="mb-5 ml-auto mt-2 h-10 px-4 py-2 shadow-none"
+            size="large"
+            variant="contained"
+            onClick={() => {
+              setIsDialogOpen(true)
+            }}
+          >
+            Add enterprise
+          </Button>
         </div>
-      </HeaderTitle>
+      )}
       <form ref={form}>
         <PEnterprisesTable {...{ enterprises }} />
       </form>
+      <Dialog
+        open={isDialogOpen}
+        onClose={onClose}
+        fullWidth={true}
+        maxWidth="xl"
+      >
+        <DialogTitle>Add enterprise</DialogTitle>
+        <DialogContent>
+          <PEnterpriseCreateWrapper />
+        </DialogContent>
+        <DialogActions>
+          <Button
+            className="hover:bg-white hover:text-primary"
+            onClick={onClose}
+          >
+            Close
+          </Button>
+          <Button
+            className="bg-primary text-white hover:text-mlfs-hlYellow"
+            // onClick={handleSave}
+          >
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   )
 }
