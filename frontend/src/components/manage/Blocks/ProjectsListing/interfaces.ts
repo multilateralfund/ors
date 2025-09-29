@@ -223,6 +223,7 @@ export interface ProjectVersions {
   title: string
   version: number
   final_version_id: number
+  submission_status: string
   created_by: string
   date_created: string
   post_excom_meeting: number | null

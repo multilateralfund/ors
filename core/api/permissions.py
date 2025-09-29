@@ -79,6 +79,14 @@ class HasMetaProjectsViewAccess(permissions.BasePermission):
         return request.user.has_perm("core.has_meta_projects_view_access")
 
 
+class HasMetaProjectsEditAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        """
+        Check if the user has permission to edit meta projects.
+        """
+        return request.user.has_perm("core.has_meta_projects_edit_access")
+
+
 class HasProjectMetaInfoViewAccess(permissions.BasePermission):
     def has_permission(self, request, view):
         """

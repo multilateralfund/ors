@@ -631,7 +631,7 @@ export const getMenus = (
     canUpdateBp,
     canViewProjects,
     canViewEnterprises,
-    canEditProjects,
+    canEditApprovedProjects,
   } = permissions
   const { projectId, projectSubmissionStatus, projectStatus } =
     projectData ?? {}
@@ -655,11 +655,11 @@ export const getMenus = (
     {
       title: 'Approved Projects',
       menuItems: [
-        { title: 'Update MYA data', url: null },
+        { title: 'Update MYA data', url: '/projects-listing/update-mya-data' },
         {
           title: 'Update post ExCom fields',
           url: `/projects-listing/${projectId}/post-excom-update`,
-          permissions: [canEditProjects],
+          permissions: [canEditApprovedProjects],
           disabled:
             !projectId ||
             projectSubmissionStatus !== 'Approved' ||
