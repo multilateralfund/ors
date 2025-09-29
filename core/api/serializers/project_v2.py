@@ -40,6 +40,7 @@ from core.models.project_metadata import (
 )
 from core.utils import get_project_sub_code
 from core.api.views.utils import log_project_history
+from core.api.utils import PROJECT_SUBSTANCES_ACCEPTED_ANNEXES
 
 # pylint: disable=C0302,R1702,W0707
 
@@ -644,6 +645,21 @@ class ProjectV2OdsOdpCreateUpdateSerializer(ProjectOdsOdpCreateSerializer):
                     "Cannot update ods_blend_id when ods_substance_id is set"
                 )
 
+        if attrs.get("ods_substance_id"):
+            accepted_substances = (
+                Substance.objects.all().filter_project_accepted_substances()
+            )
+            if not accepted_substances.filter(id=attrs["ods_substance_id"]).exists():
+                raise serializers.ValidationError(
+                    f"Substance must be one of {PROJECT_SUBSTANCES_ACCEPTED_ANNEXES} groups"
+                )
+
+        if attrs.get("ods_blend_id"):
+            accepted_blends = Blend.objects.all().filter_project_accepted_blends()
+            if not accepted_blends.filter(id=attrs["ods_blend_id"]).exists():
+                raise serializers.ValidationError(
+                    f"Blend must have at least one substance in {PROJECT_SUBSTANCES_ACCEPTED_ANNEXES} groups"
+                )
         return super(ProjectOdsOdpListSerializer, self).validate(attrs)
 
 

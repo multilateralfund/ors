@@ -1,6 +1,15 @@
 from django.conf import settings
 from django.db import models
 
+# pylint: disable=C0415
+
+
+class SubstanceQuerySet(models.QuerySet):
+    def filter_project_accepted_substances(self):
+        from core.api.utils import PROJECT_SUBSTANCES_ACCEPTED_ANNEXES
+
+        return self.filter(group__name_alt__in=PROJECT_SUBSTANCES_ACCEPTED_ANNEXES)
+
 
 class SubstanceManager(models.Manager):
     def find_by_name(self, name):
@@ -22,6 +31,9 @@ class SubstanceManager(models.Manager):
             return substance_alt_name.substance
 
         return None
+
+    def get_queryset(self):
+        return SubstanceQuerySet(self.model, using=self._db)
 
 
 # substance model
