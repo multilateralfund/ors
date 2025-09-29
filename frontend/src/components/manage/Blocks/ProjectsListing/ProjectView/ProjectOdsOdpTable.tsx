@@ -91,9 +91,13 @@ const ProjectOdsOdpTable = ({
         headerName: fieldObj.label,
         field: field,
         valueGetter: (params: ValueGetterParams<OdsOdpFields>) =>
-          getFieldName(params, options, field),
+          field === 'ods_display_name'
+            ? params.data?.ods_display_name
+            : getFieldName(params, options, field),
         tooltipValueGetter: (params: ITooltipParams) =>
-          getFieldName(params, options, field),
+          field === 'ods_display_name'
+            ? params.data?.ods_display_name
+            : getFieldName(params, options, field),
         initialWidth: 140,
         minWidth: 140,
         ...defaultColDef,
