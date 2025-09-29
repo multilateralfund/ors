@@ -843,15 +843,15 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
                 )
         return value
 
-    def validate(self, data):
-        post_excom_meeting = data["post_excom_meeting"]
-        post_excom_decision = data["post_excom_decision"]
+    def validate(self, attrs):
+        post_excom_meeting = attrs["post_excom_meeting"]
+        post_excom_decision = attrs["post_excom_decision"]
         if post_excom_meeting and post_excom_decision:
             if post_excom_decision.meeting != post_excom_meeting:
                 raise serializers.ValidationError(
                     "The decision number is invalid for the selected meeting."
                 )
-        return data
+        return attrs
 
     def get_meta_project(self, project, lead_agency):
         """
