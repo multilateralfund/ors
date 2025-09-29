@@ -659,25 +659,19 @@ class ProjectV2OdsOdpCreateUpdateSerializer(ProjectOdsOdpCreateSerializer):
                 raise serializers.ValidationError(
                     "Cannot update ods_blend_id when ods_substance_id is set"
                 )
-        if attrs.get("ods_substance_id"):
-            accepted_substances = Substance.objects.filter(
-                group__name_alt__in=PROJECT_SUBSTANCES_ACCEPTED_ANNEXES
-            )
 
+        if attrs.get("ods_substance_id"):
+            accepted_substances = (
+                Substance.objects.all().filter_project_accepted_substances()
+            )
             if not accepted_substances.filter(id=attrs["ods_substance_id"]).exists():
                 raise serializers.ValidationError(
                     f"Substance must be one of {PROJECT_SUBSTANCES_ACCEPTED_ANNEXES} groups"
                 )
 
         if attrs.get("ods_blend_id"):
-            accepted_substances = Substance.objects.filter(
-                group__name_alt__in=PROJECT_SUBSTANCES_ACCEPTED_ANNEXES
-            )
-            blend = Blend.objects.get(id=attrs["ods_blend_id"])
-            composition = blend.composition or ""
-            if not any(
-                f"{subst.name}=" in composition for subst in accepted_substances
-            ):
+            accepted_blends = Blend.objects.all().filter_project_accepted_blends()
+            if not accepted_blends.filter(id=attrs["ods_blend_id"]).exists():
                 raise serializers.ValidationError(
                     f"Blend must have at least one substance in {PROJECT_SUBSTANCES_ACCEPTED_ANNEXES} groups"
                 )
