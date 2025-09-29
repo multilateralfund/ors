@@ -250,5 +250,23 @@
         "permission_name": "Has sectors and subsectors edit access",
         "app_label": "core",
         "model_name": "projectsector"
+    },
+    {
+        "permission_codename": "has_apr_view_access",
+        "permission_name": "Has APR view access",
+        "app_label": "core",
+        "model_name": "annualprojectreport"
+    },
+    {
+        "permission_codename": "has_apr_edit_access",
+        "permission_name": "Has APR edit access",
+        "app_label": "core",
+        "model_name": "annualprojectreport"
+    },
+    {
+        "permission_codename": "has_apr_submit_access",
+        "permission_name": "Has APR submit access",
+        "app_label": "core",
+        "model_name": "annualprojectreport"
     }
 ]
