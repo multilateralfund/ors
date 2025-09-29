@@ -844,8 +844,8 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
         return value
 
     def validate(self, attrs):
-        post_excom_meeting = attrs["post_excom_meeting"]
-        post_excom_decision = attrs["post_excom_decision"]
+        post_excom_meeting = attrs.get("post_excom_meeting", None)
+        post_excom_decision = attrs.get("post_excom_decision", None)
         if post_excom_meeting and post_excom_decision:
             if post_excom_decision.meeting != post_excom_meeting:
                 raise serializers.ValidationError(
