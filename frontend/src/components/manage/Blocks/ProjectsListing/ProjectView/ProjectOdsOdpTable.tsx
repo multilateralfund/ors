@@ -29,6 +29,8 @@ const ProjectOdsOdpTable = ({
     resizable: true,
   }
 
+  const hasExcomUpdates = find(history, (item) => item.post_excom_meeting)
+
   const plannedHistoricalValues =
     find(history, (item) => !item.post_excom_meeting)?.value ?? []
 
@@ -41,12 +43,13 @@ const ProjectOdsOdpTable = ({
       ),
     )
 
-  const dataToDisplay = arraysAreEqual
-    ? [{ titleHelper: '', data: data }]
-    : [
-        { titleHelper: '(actual)', data: data },
-        { titleHelper: '(planned)', data: plannedHistoricalValues },
-      ]
+  const dataToDisplay =
+    arraysAreEqual || !hasExcomUpdates
+      ? [{ titleHelper: '', data: data }]
+      : [
+          { titleHelper: '(actual)', data: data },
+          { titleHelper: '(planned)', data: plannedHistoricalValues },
+        ]
 
   const hasCfc = data.some(
     (entry) => entry.ods_display_name?.toLowerCase() === 'cfc',
@@ -160,9 +163,11 @@ const ProjectOdsOdpTable = ({
 
   return map(dataToDisplay, (item) => (
     <>
-      <div className="text-base font-semibold">
-        Substances {item.titleHelper}
-      </div>
+      {hasExcomUpdates && (
+        <div className="text-base font-semibold">
+          Substances {item.titleHelper}
+        </div>
+      )}
       <ViewTable
         rowData={item.data ?? []}
         enablePagination={false}
