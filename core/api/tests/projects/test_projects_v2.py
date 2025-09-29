@@ -96,7 +96,6 @@ def setup_project_list(
             ProjectFactory.create(
                 title=f"Project {i}",
                 serial_number=i + 1,
-                date_received=f"2020-01-{i + 1}",
                 **project_data,
             )
 
@@ -116,7 +115,6 @@ def setup_project_list(
     projects.append(
         ProjectFactory.create(
             title="Project 25",
-            date_received="2020-01-30",
             **proj_data,
         )
     )
@@ -139,7 +137,6 @@ def setup_project_list(
         ProjectFactory.create(
             title="Project 26",
             serial_number=26,
-            date_received="2020-01-30",
             **proj_data,
         )
     )
@@ -151,7 +148,6 @@ def setup_project_list(
         ProjectFactory.create(
             title="Project 27",
             serial_number=27,
-            date_received="2020-01-30",
             **proj_data,
         )
     )
@@ -163,7 +159,6 @@ def setup_project_list(
         ProjectFactory.create(
             title="Project 28",
             serial_number=28,
-            date_received="2020-01-30",
             **proj_data,
         )
     )
@@ -174,7 +169,6 @@ def setup_project_list(
         ProjectFactory.create(
             title="Project 29",
             serial_number=29,
-            date_received="2020-01-30",
             **proj_data,
         )
     )
@@ -196,7 +190,7 @@ def setup_project_create(
     meeting,
     subsector,
     project_cluster_kip,
-    groupA,
+    groupHCFC,
     decision,
 ):
     statuses_dict = [
@@ -223,22 +217,17 @@ def setup_project_create(
     )
 
     substA = SubstanceFactory.create(
-        name="SubstanceA", odp=0.02, gwp=0.05, group=groupA
+        name="SubstanceA", odp=0.02, gwp=0.05, group=groupHCFC
     )
     blend = BlendFactory.create(
         name="Blend 1",
+        composition=f"{substA.name}= 0.5",
         sort_order=1,
     )
-
     return {
         "ad_hoc_pcr": True,
         "agency": agency.id,
-        "aggregated_consumption": 943.3,
-        "baseline": 43.4,
         "bp_activity": bp_activity.id,
-        "cost_effectiveness": 43.3,
-        "cost_effectiveness_co2": 54.3,
-        "number_of_production_lines_assisted": 3,
         "cluster": project_cluster_kip.id,
         "country": country_ro.id,
         "description": "Description",
@@ -247,20 +236,12 @@ def setup_project_create(
         "destruction_technology": "D1",
         "excom_provision": "test excom provision",
         "funding_window": "test funding window",
-        "group": groupA.id,
+        "group": groupHCFC.id,
         "individual_consideration": False,
         "is_lvc": True,
         "is_sme": False,
         "lead_agency": new_agency.id,
         "meeting": meeting.id,
-        "mya_start_date": "2023-10-01",
-        "mya_end_date": "2024-09-30",
-        "mya_project_funding": 1234.4,
-        "mya_support_cost": 434.2,
-        "number_of_enterprises": 2,
-        "mya_phase_out_co2_eq_t": 948.3,
-        "mya_phase_out_odp_t": 23.2,
-        "mya_phase_out_mt": 3.53,
         "pcr_waived": False,
         "total_number_of_technicians_trained": 32,
         "number_of_female_technicians_trained": 12,
@@ -304,11 +285,9 @@ def setup_project_create(
         "project_start_date": "2023-10-01",
         "project_type": project_type.id,
         "sector": subsector.sectors.first().id,
-        "starting_point": 543.4,
         "subsector_ids": [subsector.id],
         "support_cost_psc": 23,
         "tranche": 2,
-        "targets": 543.4,
         "title": "test title",
         "total_fund": 2340000,
         "ods_odp": [
@@ -585,26 +564,6 @@ class TestProjectV2List(BaseTest):
         for project in response.data:
             assert project["country"] == country_ro.name
 
-    def test_project_list_date_received_filter(
-        self, secretariat_viewer_user, _setup_project_list
-    ):
-        self.client.force_authenticate(user=secretariat_viewer_user)
-
-        response = self.client.get(self.url, {"date_received_after": "2020-01-03"})
-        assert response.status_code == 200
-        assert len(response.data) == 8
-        for project in response.data:
-            assert project["date_received"] in [
-                "2020-01-03",
-                "2020-01-04",
-                "2020-01-30",
-            ]
-
-        response = self.client.get(self.url, {"date_received_before": "2020-01-01"})
-        assert response.status_code == 200
-        assert len(response.data) == 2
-        assert response.data[0]["date_received"] == "2020-01-01"
-
     def test_project_list_search_filter(
         self, secretariat_viewer_user, _setup_project_list
     ):
@@ -727,12 +686,7 @@ class TestCreateProjects(BaseTest):
     def _test_response_data(self, response, data):
         fields = [
             "ad_hoc_pcr",
-            "aggregated_consumption",
-            "baseline",
             "bp_activity",
-            "cost_effectiveness",
-            "cost_effectiveness_co2",
-            "number_of_production_lines_assisted",
             "description",
             "date_completion",
             "destruction_technology",
@@ -740,14 +694,6 @@ class TestCreateProjects(BaseTest):
             "funding_window",
             "individual_consideration",
             "is_lvc",
-            "mya_start_date",
-            "mya_end_date",
-            "mya_project_funding",
-            "mya_support_cost",
-            "number_of_enterprises",
-            "mya_phase_out_co2_eq_t",
-            "mya_phase_out_odp_t",
-            "mya_phase_out_mt",
             "pcr_waived",
             "total_number_of_technicians_trained",
             "number_of_female_technicians_trained",
@@ -786,10 +732,8 @@ class TestCreateProjects(BaseTest):
             "programme_officer",
             "project_end_date",
             "project_start_date",
-            "starting_point",
             "support_cost_psc",
             "tranche",
-            "targets",
             "title",
             "total_fund",
         ]
@@ -844,13 +788,11 @@ class TestCreateProjects(BaseTest):
         assert response.data["sector"]["name"] == sector.name
         assert response.data["sector"]["code"] == sector.code
         assert response.data["is_sme"] == "Non-SME"
-        assert response.data["starting_point"] == data["starting_point"]
         assert response.data["subsectors"] == [
             ProjectSubSectorSerializer(subsector).data
         ]
         assert response.data["support_cost_psc"] == data["support_cost_psc"]
         assert response.data["tranche"] == data["tranche"]
-        assert response.data["targets"] == data["targets"]
         assert response.data["title"] == data["title"]
         assert response.data["total_fund"] == data["total_fund"]
         assert (
@@ -1175,16 +1117,15 @@ class TestProjectsV2Update:
         project_url,
         project,
         project_ods_odp_subst,
-        substance,
+        substance_hcfc,
     ):
         ods_odp_to_delete = ProjectOdsOdpFactory.create(
             project=project,
-            ods_substance_id=substance.id,
+            ods_substance_id=substance_hcfc.id,
             odp=0.02,
         )
         blend = BlendFactory.create(
-            name="test blend",
-            sort_order=1,
+            name="test blend", sort_order=1, composition=f"{substance_hcfc.name}=100"
         )
         self.client.force_authenticate(user=agency_user)
         update_data = {

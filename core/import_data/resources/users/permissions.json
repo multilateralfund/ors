@@ -96,6 +96,12 @@
         "model_name": "metaproject"
     },
     {
+        "permission_codename": "has_meta_projects_edit_access",
+        "permission_name": "Has meta projects edit access",
+        "app_label": "core",
+        "model_name": "metaproject"
+    },
+    {
         "permission_codename": "has_project_metainfo_view_access",
         "permission_name": "Has project metadata view access",
         "app_label": "core",
@@ -176,6 +182,12 @@
     {
         "permission_codename": "has_project_v2_approve_projects_access",
         "permission_name": "Has project v2 approve projects access",
+        "app_label": "core",
+        "model_name": "project"
+    },
+    {
+        "permission_codename": "has_project_v2_transfer_projects_access",
+        "permission_name": "Has project v2 transfer projects access",
         "app_label": "core",
         "model_name": "project"
     },

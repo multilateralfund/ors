@@ -13,7 +13,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 
+from core.api.filters.meta_project import MetaProjectMyaFilter
 from core.api.filters.project import MetaProjectFilter, ProjectFilter
+from core.api.permissions import HasMetaProjectsEditAccess
+
 from core.api.permissions import (
     HasMetaProjectsViewAccess,
     HasProjectMetaInfoViewAccess,
@@ -41,6 +44,9 @@ from core.api.serializers.project import (
     ProjectDetailsSerializer,
     ProjectListSerializer,
 )
+from core.api.serializers.meta_project import MetaProjecMyaSerializer
+from core.api.serializers.meta_project import MetaProjecMyaDetailsSerializer
+from core.api.serializers.meta_project import MetaProjectFieldSerializer
 from core.api.serializers.project_association import MetaProjectSerializer
 from core.api.views.projects_export import ProjectsExport
 from core.models.project import (
@@ -71,6 +77,64 @@ class MetaProjectListView(generics.ListAPIView):
     queryset = MetaProject.objects.order_by("code", "type")
     filterset_class = MetaProjectFilter
     serializer_class = MetaProjectSerializer
+
+
+class MetaProjectMyaListView(generics.ListAPIView):
+    """
+    List meta projects available for MYA update.
+    """
+
+    permission_classes = [HasMetaProjectsViewAccess]
+    serializer_class = MetaProjecMyaSerializer
+    filterset_class = MetaProjectMyaFilter
+
+    def get_queryset(self):
+        result = (
+            MetaProject.objects.filter(
+                type=MetaProject.MetaProjectType.MYA,
+                projects__submission_status__name="Approved",
+            )
+            # Maybe exclude if ALL sub-projects Completed OR Transfered.
+            # .filter(
+            #     Exists(
+            #         Project.objects.filter(metaproject=OuterRef("pk")).exclude(
+            #             status__name=["Completed", "Transferred"]
+            #         )
+            #     )
+            # )
+            .distinct()
+        )
+        return result
+
+
+class MetaProjectMyaDetailsViewSet(
+    viewsets.GenericViewSet,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+):
+    serializer_class = MetaProjecMyaDetailsSerializer
+    queryset = MetaProject.objects.all()
+
+    @property
+    def permission_classes(self):
+        if self.action in ["retrieve"]:
+            return [HasMetaProjectsViewAccess]
+
+        return [HasMetaProjectsEditAccess]
+
+    def update(self, request, *args, **kwargs):
+        mp = self.get_object()
+
+        serializer = MetaProjectFieldSerializer(mp, data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer.save()
+
+        return Response(
+            MetaProjectFieldSerializer(mp).data,
+            status=status.HTTP_200_OK,
+        )
 
 
 class ProjectStatusListView(generics.ListAPIView):

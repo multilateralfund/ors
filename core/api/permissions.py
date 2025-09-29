@@ -79,6 +79,14 @@ class HasMetaProjectsViewAccess(permissions.BasePermission):
         return request.user.has_perm("core.has_meta_projects_view_access")
 
 
+class HasMetaProjectsEditAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        """
+        Check if the user has permission to edit meta projects.
+        """
+        return request.user.has_perm("core.has_meta_projects_edit_access")
+
+
 class HasProjectMetaInfoViewAccess(permissions.BasePermission):
     def has_permission(self, request, view):
         """
@@ -218,6 +226,14 @@ class HasProjectV2RecommendAccess(permissions.BasePermission):
         Check if the user has permission to recommend projects in Project V2.
         """
         return request.user.has_perm("core.has_project_v2_recommend_projects_access")
+
+
+class HasProjectV2TransferAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        """
+        Check if the user has permission to transfer projects in Project V2.
+        """
+        return request.user.has_perm("core.has_project_v2_transfer_projects_access")
 
 
 class HasProjectV2ApproveAccess(permissions.BasePermission):

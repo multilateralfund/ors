@@ -58,6 +58,7 @@ import ProjectsPostExComUpdatePage from '@ors/app/projects_listing/[project_id]/
 import ProjectsSubmitPage from '@ors/app/projects_listing/[project_id]/submit/page'
 import ProjectsListingProjectPage from '@ors/app/projects_listing/[project_id]/page'
 import ProjectsListingArchiveProjectPage from '@ors/app/projects_listing/[project_id]/archive/page'
+import ProjectsUpdateMyaDataPage from '@ors/app/projects_listing/update-mya-data/page'
 import EnterprisesPage from '@ors/app/projects_listing/enterprises/page'
 import EnterpriseCreatePage from '@ors/app/projects_listing/enterprises/create/page'
 import EnterprisePage from '@ors/app/projects_listing/enterprises/[enterprise_id]/page'
@@ -304,29 +305,50 @@ export default function App() {
             <ProjectsSettingsPage />
           </ProjectsDataProvider>
         </Route>
+        <Route path="/projects-listing/update-mya-data">
+          <ProjectsDataProvider>
+            <ProjectsUpdateMyaDataPage />
+          </ProjectsDataProvider>
+        </Route>
         <Route path="/projects-listing/enterprises">
-          <EnterprisesPage />
+          <ProjectsDataProvider>
+            <EnterprisesPage />
+          </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/enterprises/create">
-          <EnterpriseCreatePage />
+          <ProjectsDataProvider>
+            <EnterpriseCreatePage />
+          </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/enterprises/:enterprise_id">
-          <EnterprisePage />
+          <ProjectsDataProvider>
+            <EnterprisePage />
+          </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/enterprises/:enterprise_id/edit">
-          <EnterpriseEditPage />
+          <ProjectsDataProvider>
+            <EnterpriseEditPage />
+          </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/projects-enterprises/:project_id">
-          <ProjectsEnterprisesPage />
+          <ProjectsDataProvider>
+            <ProjectsEnterprisesPage />
+          </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/projects-enterprises/:project_id/create">
-          <ProjectsEnterprisesCreatePage />
+          <ProjectsDataProvider>
+            <ProjectsEnterprisesCreatePage />
+          </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/projects-enterprises/:project_id/view/:enterprise_id">
-          <ProjectsEnterprisesViewPage />
+          <ProjectsDataProvider>
+            <ProjectsEnterprisesViewPage />
+          </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/projects-enterprises/:project_id/edit/:enterprise_id">
-          <ProjectsEnterprisesEditPage />
+          <ProjectsDataProvider>
+            <ProjectsEnterprisesEditPage />
+          </ProjectsDataProvider>
         </Route>
         <Route path="/projects-listing/:project_id">
           <ProjectsDataProvider>

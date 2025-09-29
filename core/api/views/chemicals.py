@@ -14,7 +14,7 @@ from core.api.serializers.chemicals import (
     GroupSerializer,
     SubstanceSerializer,
 )
-from core.api.utils import SECTION_ANNEX_MAPPING
+from core.api.utils import PROJECT_SUBSTANCES_ACCEPTED_ANNEXES, SECTION_ANNEX_MAPPING
 from core.models.blend import Blend, BlendComponents
 from core.models.group import Group
 from core.models.substance import Substance
@@ -109,6 +109,11 @@ class SubstancesListView(ChemicalBaseListView):
         if not include_user_substances:
             queryset = queryset.filter(created_by__isnull=True)
 
+        if (
+            self.request.query_params.get("filter_for_projects", "false").lower()
+            == "true"
+        ):
+            queryset = queryset.filter_project_accepted_substances()
         return queryset.order_by("group__name", "sort_order")
 
     @swagger_auto_schema(
@@ -136,6 +141,12 @@ class SubstancesListView(ChemicalBaseListView):
                 "with_usages",
                 openapi.IN_QUERY,
                 description="Add excluded usages ids list to the substances",
+                type=openapi.TYPE_BOOLEAN,
+            ),
+            openapi.Parameter(
+                "filter_for_projects",
+                openapi.IN_QUERY,
+                description=f"Include only substances of {PROJECT_SUBSTANCES_ACCEPTED_ANNEXES} groups",
                 type=openapi.TYPE_BOOLEAN,
             ),
             openapi.Parameter(
@@ -218,6 +229,14 @@ class BlendsListView(ChemicalBaseListView):
                 type=openapi.TYPE_BOOLEAN,
             ),
             openapi.Parameter(
+                "filter_for_projects",
+                openapi.IN_QUERY,
+                description=f"""
+                    Include only blends that have at least one
+                    substance in their composition of {PROJECT_SUBSTANCES_ACCEPTED_ANNEXES} groups""",
+                type=openapi.TYPE_BOOLEAN,
+            ),
+            openapi.Parameter(
                 "for_year",
                 openapi.IN_QUERY,
                 description=(
@@ -233,9 +252,17 @@ class BlendsListView(ChemicalBaseListView):
         if request.query_params.get("limit", None):
             return super().get(request, *args, **kwargs)
 
-        # we need to corectly sort the blends
-        blend_list = list(self.filter_queryset(self.get_queryset()).all())
+        # if filter_for_projects is true, filter blends that have at least one substance in their composition
+        if (
+            self.request.query_params.get("filter_for_projects", "false").lower()
+            == "true"
+        ):
+            blends_queryset = Blend.objects.all().filter_project_accepted_blends()
+        else:
+            blends_queryset = self.get_queryset()
 
+        # we need to corectly sort the blends
+        blend_list = list(self.filter_queryset(blends_queryset).all())
         blend_list.sort(
             key=lambda x: (
                 ("aaa", float("inf") if x.sort_order is None else x.sort_order)

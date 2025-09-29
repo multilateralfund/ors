@@ -459,7 +459,7 @@
     },
     {
         "IMPORT_NAME": "Ods type",
-        "LABEL": "Ods type",
+        "LABEL": "ODS type",
         "WRITE_FIELD_NAME": "ods_type",
         "READ_FIELD_NAME": "ods_type",
         "TABLE": "ods_odp",

@@ -24,10 +24,12 @@ const ProjectSpecificInfoSection = ({
   nextStep,
   setCurrentStep,
   setCurrentTab,
+  canEditApprovedProj,
   ...rest
 }: ProjectDataProps &
   ProjectTabSetters &
   TrancheErrors & {
+    canEditApprovedProj: boolean
     overviewFields: ProjectSpecificFields[]
     substanceDetailsFields: ProjectSpecificFields[]
     overviewErrors?: { [key: string]: string[] }
@@ -71,19 +73,21 @@ const ProjectSpecificInfoSection = ({
           <ProjectSubstanceDetails
             sectionFields={substanceDetailsFields}
             errors={substanceDetailsErrors}
-            odsOdpErrors={odsOdpErrors}
+            {...{ odsOdpErrors, canEditApprovedProj }}
             {...rest}
           />
         </>
       )}
-      <div className="mt-5 flex flex-wrap items-center gap-2.5">
-        <NextButton
-          nextStep={nextStep}
-          nextTab={nextStep - 1}
-          setCurrentStep={setCurrentStep}
-          setCurrentTab={setCurrentTab}
-        />
-      </div>
+      {canEditApprovedProj && (
+        <div className="mt-5 flex flex-wrap items-center gap-2.5">
+          <NextButton
+            nextStep={nextStep}
+            nextTab={nextStep - 1}
+            setCurrentStep={setCurrentStep}
+            setCurrentTab={setCurrentTab}
+          />
+        </div>
+      )}
     </>
   )
 }
