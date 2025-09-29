@@ -317,6 +317,7 @@ export const TextAreaWidget = <T,>(
 ) => {
   const fieldName = field.write_field_name
   const value = getValue(fields, sectionIdentifier, fieldName, subField, index)
+  const isOdsReplacement = fieldName === 'ods_replacement'
 
   return (
     <div className={cx('w-full', { 'md:w-auto': field.table === 'ods_odp' })}>
@@ -335,7 +336,7 @@ export const TextAreaWidget = <T,>(
           )
         }
         className={cx(textAreaClassname, 'max-w-[415px]', {
-          'md:min-w-[415px]': field.table === 'ods_odp',
+          '!min-h-[27px] !min-w-64 !pb-1.5': isOdsReplacement,
           'border-red-500': getIsInputDisabled(
             hasSubmitted,
             errors,
@@ -344,7 +345,7 @@ export const TextAreaWidget = <T,>(
             index,
           ),
         })}
-        minRows={2}
+        minRows={isOdsReplacement ? 1 : 2}
         tabIndex={-1}
       />
     </div>

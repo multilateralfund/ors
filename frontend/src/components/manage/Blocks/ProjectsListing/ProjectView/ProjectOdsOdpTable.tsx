@@ -7,7 +7,7 @@ import {
 } from '../interfaces'
 import { formatNumberColumns, formatOptions } from '../utils'
 
-import { cloneDeep, find, map } from 'lodash'
+import { cloneDeep, find, isEqual, map, omit } from 'lodash'
 import {
   ValueGetterParams,
   ITooltipParams,
@@ -17,15 +17,39 @@ import {
 const ProjectOdsOdpTable = ({
   data,
   fields = [],
+  history,
 }: {
   data: OdsOdpFields[]
   fields: ProjectSpecificFields[]
+  history: any
 }) => {
   const defaultColDef = {
     headerClass: 'ag-text-center',
     cellClass: 'ag-text-center ag-cell-ellipsed ag-cell-not-inline',
     resizable: true,
   }
+
+  const hasExcomUpdates = find(history, (item) => item.post_excom_meeting)
+
+  const plannedHistoricalValues =
+    find(history, (item) => !item.post_excom_meeting)?.value ?? []
+
+  const arraysAreEqual =
+    data.length === plannedHistoricalValues.length &&
+    data.every((item, index) =>
+      isEqual(
+        omit(item, ['id', 'project_id']),
+        omit(plannedHistoricalValues[index], ['id', 'project_id']),
+      ),
+    )
+
+  const dataToDisplay =
+    arraysAreEqual || !hasExcomUpdates
+      ? [{ titleHelper: '', data: data }]
+      : [
+          { titleHelper: '(actual)', data: data },
+          { titleHelper: '(planned)', data: plannedHistoricalValues },
+        ]
 
   const hasCfc = data.some(
     (entry) => entry.ods_display_name?.toLowerCase() === 'cfc',
@@ -137,24 +161,32 @@ const ProjectOdsOdpTable = ({
     },
   }
 
-  return (
-    <ViewTable
-      rowData={data ?? []}
-      enablePagination={false}
-      suppressCellFocus={true}
-      withSeparators={true}
-      className="mb-4"
-      columnDefs={[
-        ...map(getFormattedFields(), (field) =>
-          (
-            fieldColumnMapping[field.data_type as Exclude<FieldType, 'date'>] ??
-            fieldColumnMapping['text']
-          )(field),
-        ),
-      ]}
-      getRowId={(props: GetRowIdParams) => props.data.id}
-    />
-  )
+  return map(dataToDisplay, (item) => (
+    <>
+      {hasExcomUpdates && (
+        <div className="text-base font-semibold">
+          Substances {item.titleHelper}
+        </div>
+      )}
+      <ViewTable
+        rowData={item.data ?? []}
+        enablePagination={false}
+        suppressCellFocus={true}
+        withSeparators={true}
+        className="mb-4"
+        columnDefs={[
+          ...map(getFormattedFields(), (field) =>
+            (
+              fieldColumnMapping[
+                field.data_type as Exclude<FieldType, 'date'>
+              ] ?? fieldColumnMapping['text']
+            )(field),
+          ),
+        ]}
+        getRowId={(props: GetRowIdParams) => props.data.id}
+      />
+    </>
+  ))
 }
 
 export default ProjectOdsOdpTable

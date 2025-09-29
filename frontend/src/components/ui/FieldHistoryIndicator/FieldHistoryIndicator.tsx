@@ -4,7 +4,9 @@ import type { ProjectFieldHistoryValue } from '@ors/types/store'
 
 import Popover from '@mui/material/Popover/Popover'
 import { FaClockRotateLeft } from 'react-icons/fa6'
+import { lowerCase } from 'lodash'
 import cx from 'classnames'
+import dayjs from 'dayjs'
 
 export default function FieldHistoryIndicator({
   fieldName,
@@ -19,7 +21,13 @@ export default function FieldHistoryIndicator({
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
 
   const getItemValue = (value: any): any => {
-    if (value && typeof value === 'object' && value?.hasOwnProperty('title')) {
+    if (lowerCase(fieldName).includes('date') && dayjs(value).isValid()) {
+      return dayjs(value).format('DD/MM/YYYY')
+    } else if (
+      value &&
+      typeof value === 'object' &&
+      value?.hasOwnProperty('title')
+    ) {
       return value?.title
     } else if (
       value &&
