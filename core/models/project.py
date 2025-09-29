@@ -36,6 +36,10 @@ class MetaProject(models.Model):
         MYA = "Multi-year agreement", "Multi-year agreement"
         IND = "Individual", "Individual"
 
+    class MetaProjectState(models.TextChoices):
+        DRAFT = "Draft", "Draft"
+        FINAL = "Final", "Final"
+
     lead_agency = models.ForeignKey(
         Agency, on_delete=models.PROTECT, null=True, blank=True
     )
@@ -59,6 +63,173 @@ class MetaProject(models.Model):
     pcr_project_id = models.CharField(max_length=255, null=True, blank=True)
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
+
+    # START: Task #32217 fields.
+
+    workflow_state = models.CharField(
+        max_length=255, choices=MetaProjectState.choices, default="Final"
+    )
+
+    # START: auto calculated from projects
+    project_funding = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Project Funding (MYA)",
+    )
+    support_cost = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Support Cost (MYA)",
+    )
+
+    start_date = models.DateTimeField(
+        null=True, blank=True, help_text="Start date (MYA)"
+    )
+    end_date = models.DateTimeField(null=True, blank=True, help_text="End date (MYA)")
+
+    phase_out_odp = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Phase out (ODP t) (MYA)",
+    )
+    phase_out_mt = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Phase out (Mt) (MYA)",
+    )
+    # END: auto calculated from projects
+
+    targets = models.DecimalField(
+        max_digits=30, decimal_places=15, null=True, blank=True, help_text="Targets"
+    )
+    starting_point = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Starting point",
+    )
+    baseline = models.DecimalField(
+        max_digits=30, decimal_places=15, null=True, blank=True, help_text="Baseline"
+    )
+    number_of_enterprises_assisted = models.IntegerField(
+        null=True, blank=True, help_text="Number of enterprises assisted"
+    )
+    number_of_enterprises = models.IntegerField(
+        null=True, blank=True, help_text="Number of enterprises"
+    )
+    aggregated_consumption = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Aggregated consumption",
+    )
+    number_of_production_lines_assisted = models.IntegerField(
+        null=True, blank=True, help_text="Number of Production Lines assisted"
+    )
+    cost_effectiveness_kg = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Cost effectiveness (US$/ Kg)",
+    )
+    cost_effectiveness_co2 = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Cost effectiveness (US$/ CO2-ep)",
+    )
+
+    draft_project_funding = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Project Funding (MYA)",
+    )
+    draft_support_cost = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Support Cost (MYA)",
+    )
+    draft_start_date = models.DateTimeField(
+        null=True, blank=True, help_text="Start date (MYA)"
+    )
+    draft_end_date = models.DateTimeField(
+        null=True, blank=True, help_text="End date (MYA)"
+    )
+    draft_phase_out_odp = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Phase out (ODP t) (MYA)",
+    )
+    draft_phase_out_mt = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Phase out (Mt) (MYA)",
+    )
+    draft_targets = models.DecimalField(
+        max_digits=30, decimal_places=15, null=True, blank=True, help_text="Targets"
+    )
+    draft_starting_point = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Starting point",
+    )
+    draft_baseline = models.DecimalField(
+        max_digits=30, decimal_places=15, null=True, blank=True, help_text="Baseline"
+    )
+    draft_number_of_enterprises_assisted = models.IntegerField(
+        null=True, blank=True, help_text="Number of enterprises assisted"
+    )
+    draft_number_of_enterprises = models.IntegerField(
+        null=True, blank=True, help_text="Number of enterprises"
+    )
+    draft_aggregated_consumption = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Aggregated consumption",
+    )
+    draft_number_of_production_lines_assisted = models.IntegerField(
+        null=True, blank=True, help_text="Number of Production Lines assisted"
+    )
+    draft_cost_effectiveness_kg = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Cost effectiveness (US$/ Kg)",
+    )
+    draft_cost_effectiveness_co2 = models.DecimalField(
+        max_digits=30,
+        decimal_places=15,
+        null=True,
+        blank=True,
+        help_text="Cost effectiveness (US$/ CO2-ep)",
+    )
+
+    # END: Task #32217 fields.
 
     def __str__(self):
         return f"{self.type} {self.pcr_project_id}"
@@ -641,59 +812,6 @@ class Project(models.Model):
         blank=True,
     )
     is_sme = models.BooleanField(null=True, blank=True)
-
-    # new MYA fields #TODO: those might need to be removed if they are to be defined in the metaproject
-    mya_start_date = models.DateField(
-        null=True, blank=True, help_text="Start date (MYA)"
-    )
-    mya_end_date = models.DateField(null=True, blank=True, help_text="End date (MYA)")
-    mya_project_funding = models.FloatField(
-        null=True, blank=True, help_text="Project Funding (MYA)"
-    )
-    mya_support_cost = models.FloatField(
-        null=True, blank=True, help_text="Support Cost (MYA)"
-    )
-    number_of_enterprises = models.IntegerField(
-        null=True,
-        blank=True,
-        help_text="Number of enterprises (MYA)",
-    )
-    aggregated_consumption = models.FloatField(
-        null=True,
-        blank=True,
-        help_text="The field is the aggregated consumption of all enterprises",
-    )
-    targets = models.FloatField(
-        null=True,
-        blank=True,
-        help_text="Targets for the MYA project. The field is the aggregated consumption of all enterprises",
-    )
-    starting_point = models.FloatField(null=True, blank=True)
-    baseline = models.FloatField(null=True, blank=True)
-    mya_phase_out_co2_eq_t = models.FloatField(
-        null=True, blank=True, help_text="Phase out (CO2-eq t) (MYA)"
-    )
-    mya_phase_out_odp_t = models.FloatField(
-        null=True, blank=True, help_text="Phase out (ODP t) (MYA)"
-    )
-    mya_phase_out_mt = models.FloatField(
-        null=True, blank=True, help_text="Phase out (Mt) (MYA)"
-    )
-    cost_effectiveness = models.FloatField(
-        null=True,
-        blank=True,
-        help_text="Cost effectiveness (US$/ Kg) (MYA)",
-    )
-    cost_effectiveness_co2 = models.FloatField(
-        null=True,
-        blank=True,
-        help_text="Cost effectiveness (US$/ CO2-eq) (MYA)",
-    )
-    number_of_production_lines_assisted = models.IntegerField(
-        null=True,
-        blank=True,
-        help_text="Number of production lines assisted (MYA)",
-    )
 
     # new approval fields
     funding_window = models.CharField(
