@@ -122,6 +122,7 @@ export type FieldType =
 export type OptionsType = {
   id: number | string
   name: string
+  label?: string
   name_alt?: string
   baseline_type?: string
 }

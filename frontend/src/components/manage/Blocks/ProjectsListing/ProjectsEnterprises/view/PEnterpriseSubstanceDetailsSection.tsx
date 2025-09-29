@@ -34,8 +34,12 @@ const PEnterpriseSubstanceDetailsSection = ({
       ? substances
       : blends
     const field = params.data.ods_substance ? 'ods_substance' : 'ods_blend'
+    const currentValueObj = find(options, { id: params.data[field] })
 
-    return find(options, { id: params.data[field] })?.name
+    return (
+      currentValueObj?.name +
+      (field === 'ods_blend' ? (currentValueObj as ApiBlend)?.composition : '')
+    )
   }
 
   const totalRow =
