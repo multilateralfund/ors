@@ -3,7 +3,9 @@ from django.urls import reverse
 
 from core.api.tests.base import BaseTest
 from core.api.tests.factories import MetaProjectFactory
-from core.api.tests.projects.test_projects_v2 import setup_project_list  # pylint: disable=unused-import
+from core.api.tests.projects.test_projects_v2 import (
+    setup_project_list,
+)  # pylint: disable=unused-import
 from core.models.project import MetaProject
 from core.models.project import Project
 from core.utils import get_meta_project_code
@@ -98,7 +100,6 @@ class TestProjectV2List(BaseTest):
         mp = _setup_metaprojects_list[0]
         mp_url = reverse("meta-project-view", args=(mp.id,))
 
-
         self.client.force_authenticate(user=mlfs_admin_user)
         data = {"project_funding": 20.20}
         response = self.client.put(mp_url, data=data, format="json")
@@ -118,7 +119,6 @@ class TestProjectV2List(BaseTest):
     ):
         mp = _setup_metaprojects_list[0]
         mp_url = reverse("meta-project-view", args=(mp.id,))
-
 
         self.client.force_authenticate(user=viewer_user)
         data = {"project_funding": 20.20}
