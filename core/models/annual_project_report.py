@@ -1,6 +1,6 @@
 from django.db import models
 
-from core.models import Project
+from core.models.project import Project
 
 
 class AnnualProjectReport(models.Model):
