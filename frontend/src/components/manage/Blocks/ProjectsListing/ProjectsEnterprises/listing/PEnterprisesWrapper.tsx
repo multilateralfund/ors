@@ -18,9 +18,11 @@ import {
 export default function PEnterprisesWrapper({
   enterprises,
   mode,
+  countryId,
 }: {
   enterprises: ReturnType<typeof useGetProjectEnterprises>
   mode: string
+  countryId?: number
 }) {
   const form = useRef<any>()
 
@@ -58,7 +60,7 @@ export default function PEnterprisesWrapper({
       >
         <DialogTitle>Add enterprise</DialogTitle>
         <DialogContent>
-          <PEnterpriseCreateWrapper />
+          {countryId && <PEnterpriseCreateWrapper {...{ countryId }} />}
         </DialogContent>
         <DialogActions>
           <Button

@@ -552,7 +552,12 @@ const ProjectsCreate = ({
               </div>
             ),
             disabled: enterprises?.loading,
-            component: <PEnterprisesWrapper {...{ enterprises, mode }} />,
+            component: (
+              <PEnterprisesWrapper
+                {...{ enterprises, mode }}
+                countryId={project.country_id}
+              />
+            ),
           },
         ]
       : []),
