@@ -212,6 +212,33 @@ class HasProjectEditAccess(permissions.BasePermission):
         return False
 
 
+class HasAPRViewAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        """
+        Check if the user has permission to view Annual Project Reports.
+        """
+
+        return request.user.has_perm("core.has_apr_view_access")
+
+
+class HasAPREditAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        """
+        Check if the user has permission to edit Annual Project Reports.
+        """
+
+        return request.user.has_perm("core.has_apr_edit_access")
+
+
+class HasAPRSubmitAccess(permissions.BasePermission):
+    def has_permission(self, request, view):
+        """
+        Check if the user has permission to submit Annual Project Reports.
+        """
+
+        return request.user.has_perm("core.has_apr_submit_access")
+
+
 class HasProjectV2SubmitAccess(permissions.BasePermission):
     def has_permission(self, request, view):
         """
