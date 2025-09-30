@@ -1,3 +1,4 @@
+from functools import partial
 from typing import Iterable
 
 from datetime import datetime
@@ -33,6 +34,13 @@ from core.api.export.business_plan import BPActivitiesWriter
 from core.api.utils import workbook_response
 
 logger = logging.getLogger(__name__)
+
+
+def format_iso_date(isodate=None):
+    if isodate:
+        date = datetime.fromisoformat(isodate)
+        return date.strftime("%d/%m/%Y")
+    return ""
 
 
 def get_headers_identifiers():
@@ -109,10 +117,12 @@ def get_headers_cross_cutting():
         {
             "id": "project_start_date",
             "headerName": "Project start date",
+            "method": lambda r, h: format_iso_date(r[h["id"]]),
         },
         {
             "id": "project_end_date",
             "headerName": "Project end date",
+            "method": lambda r, h: format_iso_date(r[h["id"]]),
         },
         {
             "id": "individual_consideration",
@@ -129,7 +139,7 @@ def field_value(data, header):
     return f"{value}" if value else "-"
 
 
-def field_value_or_computed(data, header):
+def field_value_or_computed(data, header, is_date=False):
     name = header["id"]
 
     field_data = data["field_data"]
@@ -137,11 +147,21 @@ def field_value_or_computed(data, header):
 
     value = field_data.get(name, {}).get("value")
 
-    if value is None:
-        computed_value = computed_field_data.get(name, "-") or "-"
-        value = f"{computed_value} (computed)"
+    is_computed = False
 
-    return f"{value}" if value else ""
+    if value is None:
+        value = computed_field_data.get(name, None)
+        is_computed = True
+
+    if value and is_date:
+        value = format_iso_date(value)
+
+    value = value if value else "-"
+
+    if is_computed:
+        value = f"{value} (computed)"
+
+    return value
 
 
 def get_headers_metaproject():
@@ -159,12 +179,12 @@ def get_headers_metaproject():
         {
             "id": "start_date",
             "headerName": "Start date (MYA)",
-            "method": field_value_or_computed,
+            "method": partial(field_value_or_computed, is_date=True),
         },
         {
             "id": "end_date",
             "headerName": "End date (MYA)",
-            "method": field_value_or_computed,
+            "method": partial(field_value_or_computed, is_date=True),
         },
         {
             "id": "phase_out_odp",
