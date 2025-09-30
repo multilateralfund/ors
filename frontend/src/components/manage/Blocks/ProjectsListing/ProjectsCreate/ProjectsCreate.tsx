@@ -350,7 +350,6 @@ const ProjectsCreate = ({
             projectData,
             setProjectData,
             hasSubmitted,
-            currentStep,
             setCurrentStep,
             setCurrentTab,
             fieldsOpts,
@@ -446,7 +445,7 @@ const ProjectsCreate = ({
           )}
         </div>
       ),
-      disabled: isImpactTabDisabled || currentStep < 4,
+      disabled: isImpactTabDisabled || currentStep < 3,
       component: (
         <ProjectImpact
           sectionFields={impactFields}
@@ -455,7 +454,6 @@ const ProjectsCreate = ({
             projectData,
             setProjectData,
             hasSubmitted,
-            specificFields,
             setCurrentStep,
             setCurrentTab,
             postExComUpdate,

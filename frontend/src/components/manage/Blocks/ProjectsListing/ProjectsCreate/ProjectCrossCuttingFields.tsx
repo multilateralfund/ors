@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect } from 'react'
+import { ChangeEvent } from 'react'
 
 import Field from '@ors/components/manage/Form/Field'
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
@@ -10,8 +10,8 @@ import { changeField, changeHandler } from './SpecificFieldsHelpers'
 import { NextButton } from '../HelperComponents'
 import {
   canEditField,
+  canGoToSecondStep,
   canViewField,
-  getIsSaveDisabled,
   hasFields,
 } from '../utils'
 import {
@@ -34,7 +34,7 @@ import { ProjectSectorType } from '@ors/types/api_project_sector'
 import { ProjectSubSectorType } from '@ors/types/api_project_subsector.ts'
 import { useStore } from '@ors/store'
 
-import { TextareaAutosize, Divider, Checkbox, Button } from '@mui/material'
+import { TextareaAutosize, Divider, Checkbox } from '@mui/material'
 import { filter, find, includes, some } from 'lodash'
 import cx from 'classnames'
 import dayjs from 'dayjs'
@@ -44,7 +44,6 @@ const ProjectCrossCuttingFields = ({
   setProjectData,
   errors = {},
   hasSubmitted,
-  currentStep,
   nextStep,
   setCurrentStep,
   setCurrentTab,
@@ -55,7 +54,6 @@ const ProjectCrossCuttingFields = ({
   isV3ProjectEditable,
 }: ProjectDataProps &
   ProjectTabSetters & {
-    currentStep: number
     nextStep: number
     specificFieldsLoaded: boolean
     postExComUpdate: boolean
@@ -121,18 +119,12 @@ const ProjectCrossCuttingFields = ({
     className: 'BPListUpload !ml-0 h-10 w-40',
   }
 
-  const areInvalidFields = getIsSaveDisabled(
-    projIdentifiers,
-    crossCuttingFields,
+  const areInvalidFields = !(
+    canGoToSecondStep(projIdentifiers) &&
+    project_type &&
+    sector
   )
-  const isNextDisabled =
-    areInvalidFields || !specificFieldsLoaded || currentStep > 2
-
-  useEffect(() => {
-    if (currentStep > 2 && areInvalidFields) {
-      setCurrentStep?.(2)
-    }
-  }, [areInvalidFields])
+  const isNextDisabled = areInvalidFields || !specificFieldsLoaded
 
   const handleChangeSubSector = (subsectors: ProjectSubSectorType[]) => {
     setProjectData((prevData) => ({
@@ -183,9 +175,7 @@ const ProjectCrossCuttingFields = ({
         ...defaultPropsSimpleField,
         className: cx(defaultPropsSimpleField.className, '!m-0 h-10 !py-1', {
           'border-red-500': getIsInputDisabled(field),
-          [disabledClassName]:
-            !canEditField(editableFields, field) ||
-            (field === 'title' && currentStep > 2),
+          [disabledClassName]: !canEditField(editableFields, field),
         }),
       },
     }
@@ -210,9 +200,7 @@ const ProjectCrossCuttingFields = ({
                     sectionIdentifier,
                   )
                 }
-                disabled={
-                  currentStep > 2 || !canEditField(editableFields, 'title')
-                }
+                disabled={!canEditField(editableFields, 'title')}
                 type="text"
                 {...getFieldDefaultProps('title')}
                 containerClassName={
@@ -282,7 +270,6 @@ const ProjectCrossCuttingFields = ({
                     }
                     disabled={
                       (isV3Project && !!project_type) ||
-                      currentStep > 2 ||
                       !specificFieldsLoaded ||
                       !canEditField(editableFields, 'project_type')
                     }
@@ -309,7 +296,6 @@ const ProjectCrossCuttingFields = ({
                     getOptionLabel={(option) => getOptionLabel(sectors, option)}
                     disabled={
                       (isV3Project && !!sector) ||
-                      currentStep > 2 ||
                       !specificFieldsLoaded ||
                       !canEditField(editableFields, 'sector')
                     }
@@ -495,19 +481,6 @@ const ProjectCrossCuttingFields = ({
             setCurrentTab={setCurrentTab}
             isBtnDisabled={isNextDisabled}
           />
-          {currentStep > 2 && (
-            <Button
-              className="h-8 border border-solid border-primary bg-white px-3 py-1 leading-none text-primary"
-              size="large"
-              variant="contained"
-              onClick={() => {
-                setCurrentStep?.(2)
-                setCurrentTab?.(1)
-              }}
-            >
-              Update fields
-            </Button>
-          )}
         </div>
       )}
     </>

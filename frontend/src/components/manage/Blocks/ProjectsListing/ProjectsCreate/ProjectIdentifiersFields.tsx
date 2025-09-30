@@ -58,6 +58,7 @@ const ProjectIdentifiersFields = ({
 }: ProjectIdentifiersSectionProps) => {
   const sectionIdentifier = 'projIdentifiers'
   const projIdentifiers = projectData[sectionIdentifier]
+  const { project_type, sector } = projectData.crossCuttingFields
 
   const { canViewProductionProjects } = useContext(PermissionsContext)
 
@@ -254,20 +255,25 @@ const ProjectIdentifiersFields = ({
                   }
                 />
               </div>
-              <div className="flex items-end">
-                <div className="flex h-10 items-center">
-                  <CustomAlert
-                    type="error"
-                    content={
-                      <>
-                        <Typography className="text-lg">
-                          These fields are mandatory.
-                        </Typography>
-                      </>
-                    }
-                  />
+              {!(
+                projIdentifiers?.post_excom_meeting &&
+                projIdentifiers?.post_excom_decision
+              ) && (
+                <div className="flex items-end">
+                  <div className="flex h-10 items-center">
+                    <CustomAlert
+                      type="error"
+                      content={
+                        <>
+                          <Typography className="text-lg">
+                            These fields are mandatory.
+                          </Typography>
+                        </>
+                      }
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
           <br />
@@ -477,7 +483,7 @@ const ProjectIdentifiersFields = ({
           !(isV3Project || project?.submission_status === 'Approved')) && (
           <div className="mt-5 flex flex-wrap items-center gap-2.5">
             <NextButton
-              nextStep={2}
+              nextStep={project_type && sector ? 5 : 2}
               setCurrentStep={setCurrentStep}
               isBtnDisabled={!areNextStepsAvailable}
             />
