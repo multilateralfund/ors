@@ -14,6 +14,7 @@ const ProjectIdentifiersSection = ({
   setProjectData,
   areNextSectionsDisabled,
   postExComUpdate,
+  isV3ProjectEditable,
   setCurrentStep,
   setCurrentTab,
   ...rest
@@ -47,6 +48,7 @@ const ProjectIdentifiersSection = ({
             setProjectData,
             areNextSectionsDisabled,
             postExComUpdate,
+            isV3ProjectEditable,
             setCurrentStep,
             setCurrentTab,
           }}
@@ -64,10 +66,15 @@ const ProjectIdentifiersSection = ({
           }}
           canEditApprovedProj={
             rest.mode === 'copy' ||
-            !(postExComUpdate || rest.project?.submission_status === 'Approved')
+            !(
+              postExComUpdate ||
+              isV3ProjectEditable ||
+              rest.project?.submission_status === 'Approved'
+            )
           }
           isDisabled={
             postExComUpdate ||
+            isV3ProjectEditable ||
             areNextSectionsDisabled ||
             !canEditField(editableFields, 'bp_activity')
           }

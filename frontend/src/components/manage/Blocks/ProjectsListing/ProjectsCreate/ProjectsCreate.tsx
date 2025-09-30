@@ -184,6 +184,11 @@ const ProjectsCreate = ({
     postExComUpdate ||
     mode === 'copy' ||
     project?.submission_status !== 'Approved'
+  const isV3ProjectEditable =
+    !!project &&
+    mode === 'edit' &&
+    canEditApprovedProjects &&
+    ['Withdrawn', 'Not approved'].includes(project.submission_status)
 
   const specificFieldsErrors = useMemo(
     () =>
@@ -315,6 +320,7 @@ const ProjectsCreate = ({
             mode,
             project,
             postExComUpdate,
+            isV3ProjectEditable,
             specificFieldsLoaded,
           }}
           isNextBtnEnabled={canLinkToBp}
@@ -351,6 +357,7 @@ const ProjectsCreate = ({
             specificFieldsLoaded,
             postExComUpdate,
             canEditApprovedProj,
+            isV3ProjectEditable,
           }}
           nextStep={
             !isSpecificInfoTabDisabled ? 3 : !isImpactTabDisabled ? 4 : 5
