@@ -66,6 +66,7 @@ export default function DateInput(props: IDateInputProps) {
         id={`${id}_mask`}
         className={cx(CLASSESS, className, {
           [CSS_MASKED]: inputMode && !formatValue,
+          'z-10': formatValue,
         })}
         ref={maskInput}
         style={STYLE}
