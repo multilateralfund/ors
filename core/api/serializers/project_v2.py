@@ -42,7 +42,7 @@ from core.utils import get_project_sub_code
 from core.api.views.utils import log_project_history
 from core.api.utils import PROJECT_SUBSTANCES_ACCEPTED_ANNEXES
 
-# pylint: disable=C0302,R1702,W0707
+# pylint: disable=C0302,R1702,W0707,R0912
 
 
 HISTORY_DESCRIPTION_CREATE = "Create project"
@@ -843,6 +843,16 @@ class ProjectV2CreateUpdateSerializer(UpdateOdsOdpEntries, serializers.ModelSeri
                 )
         return value
 
+    def validate(self, attrs):
+        post_excom_meeting = attrs.get("post_excom_meeting", None)
+        post_excom_decision = attrs.get("post_excom_decision", None)
+        if post_excom_meeting and post_excom_decision:
+            if post_excom_decision.meeting != post_excom_meeting:
+                raise serializers.ValidationError(
+                    "The decision number is invalid for the selected meeting."
+                )
+        return attrs
+
     def get_meta_project(self, project, lead_agency):
         """
         Get the meta project for the project.
@@ -1168,6 +1178,21 @@ class ProjectV2SubmitSerializer(serializers.ModelSerializer):
                                 ):
                                     errors["ods_display_name"] = (
                                         "Ods name is required for submission."
+                                    )
+                            elif field.write_field_name in [
+                                "co2_mt",
+                                "odp",
+                                "phase_out_mt",
+                            ]:
+                                # at least two of the three fields must be filled
+                                ods_value_fields = ["co2_mt", "odp", "phase_out_mt"]
+                                count_filled = 0
+                                for field_name in ods_value_fields:
+                                    if getattr(ods_odp, field_name) is not None:
+                                        count_filled += 1
+                                if count_filled < 2:
+                                    errors[f"{field.write_field_name}_ods_odp"] = (
+                                        "At least two of CO2 (t), ODP (t) and Phase-out (t) must be filled."
                                     )
 
                             elif getattr(ods_odp, field.write_field_name) is None:

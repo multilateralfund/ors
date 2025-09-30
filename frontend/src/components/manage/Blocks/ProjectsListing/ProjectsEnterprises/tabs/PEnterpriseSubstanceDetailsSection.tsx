@@ -3,7 +3,6 @@ import { ChangeEvent, useContext, useEffect } from 'react'
 import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
-import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
 import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { getIsInputDisabled } from '../../ProjectsCreate/SpecificFieldsHelpers'
@@ -11,6 +10,7 @@ import { SubmitButton } from '../../HelperComponents'
 import {
   EnterpriseSubstanceDetails,
   PEnterpriseDataProps,
+  OptionsType,
 } from '../../interfaces'
 import {
   defaultProps,
@@ -20,7 +20,7 @@ import {
   tableColumns,
 } from '../../constants'
 
-import { find, map, sortBy, split } from 'lodash'
+import { find, get, isObject, map, sortBy, split } from 'lodash'
 import { IoTrash } from 'react-icons/io5'
 import { Divider } from '@mui/material'
 import cx from 'classnames'
@@ -49,12 +49,13 @@ const PEnterpriseSubstanceDetailsSection = ({
   const substancesOptions = map(sortBy(substances, 'name'), (substance) => ({
     ...substance,
     id: 'substance_' + substance.id,
+    label: substance.name,
     is_substance: true,
   }))
   const blendOptions = map(sortBy(blends, 'name'), (blend) => ({
     ...blend,
     id: 'blend_' + blend.id,
-    name: blend.name + ' (' + blend.composition + ')',
+    label: blend.name + ' (' + blend.composition + ')',
     is_substance: false,
   }))
   const options = [...substancesOptions, ...blendOptions]
@@ -211,7 +212,10 @@ const PEnterpriseSubstanceDetailsSection = ({
                       handleChangeDropdownValues(value, index)
                     }
                     getOptionLabel={(option: any) =>
-                      getOptionLabel(options, option)
+                      (isObject(option)
+                        ? get(option, 'label')
+                        : (find(options, { id: option }) as OptionsType)
+                            ?.label) || ''
                     }
                     Input={{
                       error:

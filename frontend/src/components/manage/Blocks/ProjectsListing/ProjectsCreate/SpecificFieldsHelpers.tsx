@@ -220,7 +220,12 @@ export const AutocompleteWidget = <T,>(
           )
         }
         getOptionLabel={(option) => {
-          const field = fieldName === 'group' ? 'name_alt' : 'name'
+          const field =
+            fieldName === 'group'
+              ? 'name_alt'
+              : fieldName === 'ods_display_name'
+                ? 'label'
+                : 'name'
 
           return (
             (isObject(option)

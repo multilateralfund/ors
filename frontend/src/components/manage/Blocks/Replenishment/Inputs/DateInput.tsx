@@ -51,7 +51,7 @@ export default function DateInput(props: IDateInputProps) {
         name={name || id}
         className={cx(CLASSESS, className, {
           [CSS_MASKED]: !inputMode && !formatValue,
-          'pointer-events-auto absolute bottom-0 left-0 h-10 w-10 opacity-0':
+          'pointer-events-auto absolute bottom-0 left-0 h-1 w-1 pb-[30px] opacity-0':
             formatValue,
         })}
         ref={realInput}
