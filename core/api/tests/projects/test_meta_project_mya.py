@@ -5,7 +5,9 @@ from core.api.tests.base import BaseTest
 from core.api.tests.factories import MetaProjectFactory
 
 # pylint: disable=unused-import
-from core.api.tests.projects.test_projects_v2 import setup_project_list
+from core.api.tests.projects.test_projects_v2 import (
+    setup_project_list,
+)
 from core.models.project import MetaProject
 from core.models.project import Project
 from core.utils import get_meta_project_code

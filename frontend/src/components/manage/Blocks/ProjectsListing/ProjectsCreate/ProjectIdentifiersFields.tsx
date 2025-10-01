@@ -53,6 +53,7 @@ const ProjectIdentifiersFields = ({
   mode,
   project,
   postExComUpdate,
+  isV3ProjectEditable,
   specificFieldsLoaded,
 }: ProjectIdentifiersSectionProps) => {
   const sectionIdentifier = 'projIdentifiers'
@@ -74,18 +75,19 @@ const ProjectIdentifiersFields = ({
       ? filterClusterOptions(allClusters, canViewProductionProjects)
       : crtClusters
 
+  const isV3Project = postExComUpdate || isV3ProjectEditable
   const isAddOrCopy = mode === 'add' || mode === 'copy'
   const hasNoLeadAgency = !project?.meta_project?.lead_agency
   const isApproved = project?.submission_status === 'Approved'
   const canUpdateLeadAgency =
-    (!postExComUpdate && (isAddOrCopy || (!isApproved && hasNoLeadAgency))) ||
-    (postExComUpdate && hasNoLeadAgency)
+    (!isV3Project && (isAddOrCopy || (!isApproved && hasNoLeadAgency))) ||
+    (isV3Project && hasNoLeadAgency)
 
   const { viewableFields, editableFields } = useStore(
     (state) => state.projectFields,
   )
   const canEditMeeting =
-    !(postExComUpdate && projIdentifiers?.meeting) &&
+    !(isV3Project && projIdentifiers?.meeting) &&
     canEditField(editableFields, 'meeting')
 
   const areNextStepsAvailable = isNextBtnEnabled && areNextSectionsDisabled
@@ -288,7 +290,7 @@ const ProjectIdentifiersFields = ({
                   getOptionLabel(commonSlice.countries.data, option)
                 }
                 disabled={
-                  (postExComUpdate && !!projIdentifiers?.country) ||
+                  (isV3Project && !!projIdentifiers?.country) ||
                   !areNextSectionsDisabled ||
                   (mode !== 'copy' && !!project?.country_id) ||
                   !canEditField(editableFields, 'country')
@@ -339,7 +341,7 @@ const ProjectIdentifiersFields = ({
                 }}
                 getOptionLabel={(option) => getOptionLabel(agencies, option)}
                 disabled={
-                  (postExComUpdate && !!projIdentifiers?.agency) ||
+                  (isV3Project && !!projIdentifiers?.agency) ||
                   !areNextSectionsDisabled ||
                   !canEditField(editableFields, 'agency')
                 }
@@ -362,7 +364,7 @@ const ProjectIdentifiersFields = ({
                 onChange={(_, value) => handleChangeCluster(value)}
                 getOptionLabel={(option) => getOptionLabel(clusters, option)}
                 disabled={
-                  (postExComUpdate && !!projIdentifiers?.cluster) ||
+                  (isV3Project && !!projIdentifiers?.cluster) ||
                   !areNextSectionsDisabled ||
                   !specificFieldsLoaded ||
                   !canEditField(editableFields, 'cluster')
@@ -385,7 +387,7 @@ const ProjectIdentifiersFields = ({
                 <Checkbox
                   checked={!!projIdentifiers?.production}
                   disabled={
-                    (postExComUpdate && !!projIdentifiers?.cluster) ||
+                    (isV3Project && !!projIdentifiers?.cluster) ||
                     !areNextSectionsDisabled ||
                     !canViewProductionProjects ||
                     !isNull(getProduction(clusters, projIdentifiers.cluster)) ||
@@ -471,8 +473,8 @@ const ProjectIdentifiersFields = ({
           </>
         )}
         {(mode === 'copy' ||
-          (postExComUpdate && areNextSectionsDisabled) ||
-          !(postExComUpdate || project?.submission_status === 'Approved')) && (
+          (isV3Project && areNextSectionsDisabled) ||
+          !(isV3Project || project?.submission_status === 'Approved')) && (
           <div className="mt-5 flex flex-wrap items-center gap-2.5">
             <NextButton
               nextStep={2}

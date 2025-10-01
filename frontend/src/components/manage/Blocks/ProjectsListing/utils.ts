@@ -111,7 +111,7 @@ export const formatOptions = (field: ProjectSpecificFields): OptionsType[] => {
         return {
           ...option,
           id: `${option.baseline_type}-${option.id}`,
-          name:
+          label:
             option.baseline_type === 'blend'
               ? option.name + ' (' + option.composition + ')'
               : option.name,

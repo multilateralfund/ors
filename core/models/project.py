@@ -4,6 +4,7 @@ import shutil
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models, transaction
+from functools import cached_property
 
 from core.models.agency import Agency
 from core.models.blend import Blend
@@ -1218,6 +1219,43 @@ class Project(models.Model):
             )
         ]
         ordering = ["-date_actual", "country__name", "serial_number"]
+
+    @cached_property
+    def phase_out_data(self):
+        data = {
+            "consumption_odp": 0,
+            "consumption_co2": 0,
+            "production_odp": 0,
+            "production_co2": 0,
+        }
+
+        for substance in self.ods_odp.all():
+            substance_odp = substance.odp or 0
+            substance_co2_mt = substance.co2_mt or 0
+            if substance.ods_type == ProjectOdsOdp.ProjectOdsOdpType.PRODUCTION:
+                data["production_odp"] += substance_odp
+                data["production_co2"] += substance_co2_mt
+            else:
+                data["consumption_odp"] += substance_odp
+                data["consumption_co2"] += substance_co2_mt
+
+        return data
+
+    @property
+    def consumption_odp(self):
+        return self.phase_out_data["consumption_odp"]
+
+    @property
+    def consumption_co2(self):
+        return self.phase_out_data["consumption_co2"]
+
+    @property
+    def production_odp(self):
+        return self.phase_out_data["production_odp"]
+
+    @property
+    def production_co2(self):
+        return self.phase_out_data["production_co2"]
 
     def copy_project(self, duplicate_files=False, remove_legacy_data=False):
         def _get_new_file_path(original_file_name, new_project_id):
