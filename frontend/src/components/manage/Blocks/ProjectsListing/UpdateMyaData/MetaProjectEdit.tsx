@@ -5,7 +5,7 @@ import {
 import { useSnackbar } from 'notistack'
 import { api, getResults } from '@ors/helpers'
 import { ProjectType } from '@ors/types/api_projects.ts'
-import { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers.tsx'
 import { DateInput } from '@ors/components/manage/Blocks/Replenishment/Inputs'
 import dayjs from 'dayjs'
@@ -19,6 +19,10 @@ import {
   Typography,
 } from '@mui/material'
 import PListingTable from '@ors/components/manage/Blocks/ProjectsListing/ProjectsListing/PListingTable.tsx'
+import { entries, find, indexOf, isEmpty, values } from 'lodash'
+import { tableColumns } from '@ors/components/manage/Blocks/BusinessPlans/constants.ts'
+
+import cx from 'classnames'
 
 const orderFieldData = (fd: MetaProjectFieldData) => {
   const orderedFieldData = []
@@ -60,13 +64,33 @@ export const MetaProjectEdit = (props: {
 
   const fieldData = orderFieldData(mp?.field_data ?? {})
 
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
+
   const handleSave = async () => {
-    const result = await api(`api/meta-projects/${mp.id}/`, {
-      data: form,
-      method: 'PUT',
-    })
-    refreshMetaProjectDetails()
-    enqueueSnackbar('Saved!', { variant: 'success' })
+    try {
+      const result = await api(`api/meta-projects/${mp.id}/`, {
+        data: form,
+        method: 'PUT',
+      })
+      refreshMetaProjectDetails()
+      enqueueSnackbar('Saved!', { variant: 'success' })
+    } catch (error) {
+      if (error.status === 400) {
+        const errors = await error.json()
+
+        console.log(errors)
+
+        setFieldErrors(errors)
+
+        enqueueSnackbar(<>{values(errors)[0]}</>, {
+          variant: 'error',
+        })
+      } else {
+        enqueueSnackbar(<>An error occurred. Please try again.</>, {
+          variant: 'error',
+        })
+      }
+    }
   }
 
   const changeSimpleInput = useCallback(
@@ -105,7 +129,11 @@ export const MetaProjectEdit = (props: {
       return (
         <div key={fd.name} className="py-2">
           <Label htmlFor={fd.name}>
-            <span className="mt-2 flex justify-between">
+            <span
+              className={cx('mt-2 flex justify-between', {
+                'text-red-500': fieldErrors[fd.name],
+              })}
+            >
               {fd.label}
               {isComputed ? (
                 <span
@@ -136,6 +164,11 @@ export const MetaProjectEdit = (props: {
                 numeric: ['DecimalField', 'IntegerField'].includes(fd.type),
               })}
             />
+          ) : null}
+          {fieldErrors[fd.name] ? (
+            <Typography variant={'subtitle1'} className={'text-red-500'}>
+              {fieldErrors[fd.name]}
+            </Typography>
           ) : null}
         </div>
       )
