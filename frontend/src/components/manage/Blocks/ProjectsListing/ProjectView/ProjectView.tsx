@@ -1,27 +1,31 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
 
 import ProjectHistory from '@ors/components/manage/Blocks/ProjectsListing/ProjectView/ProjectHistory.tsx'
+import PermissionsContext from '@ors/contexts/PermissionsContext'
 import ProjectIdentifiers from './ProjectIdentifiers'
 import ProjectCrossCutting from './ProjectCrossCutting'
 import ProjectSpecificInfo from './ProjectSpecificInfo'
 import ProjectApproval from './ProjectApproval'
 import ProjectImpact from './ProjectImpact'
 import ProjectDocumentation from './ProjectDocumentation'
+import PEnterprisesWrapper from '../ProjectsEnterprises/listing/PEnterprisesWrapper'
 import ProjectRelatedProjects from './ProjectRelatedProjects'
+import { LoadingTab } from '../HelperComponents'
 import useGetRelatedProjects from '../hooks/useGetRelatedProjects'
 import { ProjectFile, ProjectViewProps } from '../interfaces'
 import { getSectionFields, hasFields } from '../utils'
+import { useGetProjectEnterprises } from '../hooks/useGetProjectEnterprises'
 import useClickOutside from '@ors/hooks/useClickOutside'
 import { formatApiUrl } from '@ors/helpers'
 import { useStore } from '@ors/store'
 
 import { AiFillFileExcel, AiFillFilePdf } from 'react-icons/ai'
 import { IoDownloadOutline } from 'react-icons/io5'
-import { Tabs, Tab, Tooltip, CircularProgress } from '@mui/material'
 import { debounce, isArray, isNull } from 'lodash'
-
+import { Tabs, Tab, Tooltip } from '@mui/material'
+import { useParams } from 'wouter'
 import cx from 'classnames'
 
 const ProjectDownloads = ({
@@ -99,6 +103,10 @@ const ProjectView = ({
   specificFieldsLoaded: boolean
   loadedFiles: boolean
 }) => {
+  const { project_id } = useParams<Record<string, string>>()
+
+  const { canViewEnterprises } = useContext(PermissionsContext)
+
   const [activeTab, setActiveTab] = useState(0)
 
   const {
@@ -148,9 +156,10 @@ const ProjectView = ({
 
   const relatedProjects = useGetRelatedProjects(project, 'view')
 
-  const classes = {
-    disabled: 'text-gray-200',
-  }
+  const enterprises =
+    project.submission_status === 'Approved' && canViewEnterprises
+      ? useGetProjectEnterprises(project_id)
+      : null
 
   const tabs = [
     {
@@ -168,7 +177,6 @@ const ProjectView = ({
       ariaControls: 'project-cross-cutting',
       label: 'Cross-Cutting',
       disabled: !hasFields(allFields, viewableFields, 'Cross-Cutting'),
-      classes: classes,
       component: (
         <ProjectCrossCutting
           {...{ project, fieldHistory: fieldHistory.data }}
@@ -181,16 +189,13 @@ const ProjectView = ({
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Specific Information</div>
-          {!specificFieldsLoaded && (
-            <CircularProgress size="20px" className="mb-0.5 text-gray-400" />
-          )}
+          {!specificFieldsLoaded && LoadingTab}
         </div>
       ),
       disabled:
         (!substanceDetailsFields.length && !overviewFields.length) ||
         (!hasFields(allFields, viewableFields, 'Header') &&
           !hasFields(allFields, viewableFields, 'Substance Details')),
-      classes: classes,
       component: (
         <ProjectSpecificInfo
           {...{ project, specificFields }}
@@ -204,14 +209,11 @@ const ProjectView = ({
       label: (
         <div className="relative flex items-center justify-between gap-x-2">
           <div className="leading-tight">Impact</div>
-          {!specificFieldsLoaded && (
-            <CircularProgress size="20px" className="mb-0.5 text-gray-400" />
-          )}
+          {!specificFieldsLoaded && LoadingTab}
         </div>
       ),
       disabled:
         !impactFields.length || !hasFields(allFields, viewableFields, 'Impact'),
-      classes: classes,
       component: (
         <ProjectImpact
           {...{ project, specificFields }}
@@ -235,24 +237,36 @@ const ProjectView = ({
             label: (
               <div className="relative flex items-center justify-between gap-x-2">
                 <div className="leading-tight">Approval</div>
-                {approvalFields.length === 0 && (
-                  <CircularProgress
-                    size="20px"
-                    className="mb-0.5 text-gray-400"
-                  />
-                )}
+                {approvalFields.length === 0 && LoadingTab}
               </div>
             ),
             disabled:
               !approvalFields.length ||
               !hasFields(allFields, viewableFields, 'Approval'),
-            classes: classes,
             component: (
               <ProjectApproval
                 specificFields={approvalFields}
                 {...{ project }}
                 fieldHistory={fieldHistory.data}
               />
+            ),
+          },
+        ]
+      : []),
+    ...(enterprises
+      ? [
+          {
+            id: 'project-enterprises',
+            ariacontrols: 'project-enterprises',
+            label: (
+              <div className="relative flex items-center justify-between gap-x-2">
+                <div className="leading-tight">Enterprises</div>
+                {enterprises?.loading && LoadingTab}
+              </div>
+            ),
+            disabled: enterprises?.loading,
+            component: (
+              <PEnterprisesWrapper mode="view" enterprises={enterprises} />
             ),
           },
         ]
@@ -297,14 +311,16 @@ const ProjectView = ({
             setActiveTab(newValue)
           }}
         >
-          {tabs.map(({ id, ariaControls, label, disabled, classes }) => (
+          {tabs.map(({ id, ariaControls, label, disabled }) => (
             <Tab
               key={id}
               id={id}
               aria-controls={ariaControls}
               label={label}
               disabled={disabled}
-              classes={classes}
+              classes={{
+                disabled: 'text-gray-200',
+              }}
             />
           ))}
         </Tabs>

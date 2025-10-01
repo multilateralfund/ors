@@ -456,3 +456,7 @@ export const DropDownMenuProps: Omit<MenuProps, 'open'> = {
   },
   transitionDuration: 0,
 }
+
+export const LoadingTab = (
+  <CircularProgress size="20px" className="mb-0.5 text-gray-400" />
+)

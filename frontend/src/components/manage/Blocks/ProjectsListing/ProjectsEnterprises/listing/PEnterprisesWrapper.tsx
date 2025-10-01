@@ -1,115 +1,82 @@
 'use client'
 
-import { useContext, useMemo, useRef, useState } from 'react'
+import { useContext, useRef, useState } from 'react'
 
-import HeaderTitle from '@ors/components/theme/Header/HeaderTitle'
-import Loading from '@ors/components/theme/Loading/Loading'
-import CustomLink from '@ors/components/ui/Link/Link'
-import { PageHeading } from '@ors/components/ui/Heading/Heading'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
-import PEnterprisesFiltersWrapper from './PEnterprisesFiltersWrapper'
+import PEnterpriseCreateWrapper from '../create/PEnterpriseCreateWrapper'
 import PEnterprisesTable from './PEnterprisesTable'
-import { PageTitle, RedirectBackButton } from '../../HelperComponents'
 import { useGetProjectEnterprises } from '../../hooks/useGetProjectEnterprises'
-import { useGetProject } from '../../hooks/useGetProject'
 
-import { Redirect, useParams } from 'wouter'
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+} from '@mui/material'
 
-export default function PEnterprisesWrapper() {
-  const { canViewProjects, canViewEnterprises, canEditProjectEnterprise } =
-    useContext(PermissionsContext)
-
+export default function PEnterprisesWrapper({
+  enterprises,
+  mode,
+  countryId,
+}: {
+  enterprises: ReturnType<typeof useGetProjectEnterprises>
+  mode: string
+  countryId?: number
+}) {
   const form = useRef<any>()
 
-  const { project_id } = useParams<Record<string, string>>()
-  const project = project_id ? useGetProject(project_id) : undefined
-  const { data, error, loading: loadingProject } = project ?? {}
+  const { canEditProjectEnterprise } = useContext(PermissionsContext)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
 
-  const initialFilters = {
-    offset: 0,
-    limit: 100,
-    project_id: project_id ?? null,
-  }
-  const [filters, setFilters] = useState(initialFilters)
-  const key = useMemo(() => JSON.stringify(filters), [filters])
-
-  const enterprises = useGetProjectEnterprises(initialFilters)
-  const { loading, setParams } = enterprises
-
-  if (!canViewEnterprises || !canViewProjects) {
-    return <Redirect to="/projects-listing/listing" />
-  }
-
-  if (project && (error || (data && data.submission_status !== 'Approved'))) {
-    return <Redirect to="/projects-listing/projects-enterprises" />
+  const onClose = () => {
+    setIsDialogOpen(false)
   }
 
   return (
     <>
-      <Loading
-        className="!fixed bg-action-disabledBackground"
-        active={loading || (!!project_id && loadingProject)}
-      />
-      <HeaderTitle>
-        <div className="flex flex-wrap justify-between gap-3">
-          <div className="flex flex-col">
-            <RedirectBackButton />
-            <PageHeading>
-              {project && data ? (
-                <PageTitle
-                  pageTitle="Project enterprises of"
-                  projectTitle={data.code ?? data.code_legacy}
-                  className="break-all"
-                />
-              ) : (
-                <span className="font-medium text-[#4D4D4D]">
-                  Projects enterprises
-                </span>
-              )}
-            </PageHeading>
-          </div>
-          <div className="ml-auto mt-auto flex items-center gap-2.5">
-            {project_id && (
-              <CustomLink
-                className="border border-solid border-secondary px-4 py-2 shadow-none hover:border-primary"
-                href="/projects-listing/projects-enterprises"
-                color="secondary"
-                variant="contained"
-                size="large"
-                button
-              >
-                View all project enterprises
-              </CustomLink>
-            )}
-          </div>
-        </div>
-      </HeaderTitle>
-      <form className="flex flex-col gap-6" ref={form} key={key}>
-        <div className="flex flex-wrap justify-between gap-x-10 gap-y-4">
-          <PEnterprisesFiltersWrapper
-            type="project-enterprises"
-            {...{
-              filters,
-              initialFilters,
-              setFilters,
-              setParams,
+      {canEditProjectEnterprise && mode === 'edit' && (
+        <div className="flex">
+          <Button
+            className="mb-5 ml-auto mt-2 h-10 px-4 py-2 shadow-none"
+            size="large"
+            variant="contained"
+            onClick={() => {
+              setIsDialogOpen(true)
             }}
-          />
-          {project_id && canEditProjectEnterprise && (
-            <CustomLink
-              className="h-10 border border-solid border-secondary px-4 py-2 shadow-none hover:border-primary"
-              href={`/projects-listing/projects-enterprises/${project_id}/create`}
-              color="secondary"
-              variant="contained"
-              size="large"
-              button
-            >
-              Add project enterprise
-            </CustomLink>
-          )}
+          >
+            Add enterprise
+          </Button>
         </div>
+      )}
+      <form ref={form}>
         <PEnterprisesTable {...{ enterprises }} />
       </form>
+      <Dialog
+        open={isDialogOpen}
+        onClose={onClose}
+        fullWidth={true}
+        maxWidth="xl"
+      >
+        <DialogTitle>Add enterprise</DialogTitle>
+        <DialogContent>
+          {countryId && <PEnterpriseCreateWrapper {...{ countryId }} />}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            className="hover:bg-white hover:text-primary"
+            onClick={onClose}
+          >
+            Close
+          </Button>
+          <Button
+            className="bg-primary text-white hover:text-mlfs-hlYellow"
+            // onClick={handleSave}
+          >
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   )
 }

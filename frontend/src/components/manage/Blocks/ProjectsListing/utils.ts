@@ -668,13 +668,12 @@ export const getMenus = (
         },
         {
           title: 'Update project enterprises',
-          url: `/projects-listing/projects-enterprises${projectId ? `/${projectId}` : ''}`,
+          url: `/projects-listing/projects-enterprises/${projectId}`,
           permissions: [canViewProjects && canViewEnterprises],
-          disabled:
-            !!projectSubmissionStatus && projectSubmissionStatus !== 'Approved',
+          disabled: !projectId || projectSubmissionStatus !== 'Approved',
         },
         {
-          title: 'Manage enterprises',
+          title: 'Update enterprises',
           url: `/projects-listing/enterprises`,
           permissions: [canViewEnterprises],
         },

@@ -25,23 +25,20 @@ const PEnterpriseViewWrapper = () => {
   } = useContext(PermissionsContext)
 
   const { project_id, enterprise_id } = useParams<Record<string, string>>()
-  const project = project_id ? useGetProject(project_id) : undefined
+  const project = useGetProject(project_id)
   const { data: projectData, error: projectError } = project ?? {}
 
   const enterprise = useGetProjectEnterprise(enterprise_id)
   const { data, loading, error } = enterprise
 
-  if (!canViewEnterprises || !canViewProjects) {
-    return <Redirect to="/projects-listing/listing" />
-  }
-
   if (
-    !project_id ||
+    !canViewEnterprises ||
+    !canViewProjects ||
     (project &&
       (projectError ||
         (projectData && projectData.submission_status !== 'Approved')))
   ) {
-    return <Redirect to="/projects-listing/projects-enterprises" />
+    return <Redirect to="/projects-listing/listing" />
   }
 
   if (error) {
