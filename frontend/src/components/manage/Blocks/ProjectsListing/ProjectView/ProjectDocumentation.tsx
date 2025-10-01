@@ -17,10 +17,12 @@ const ProjectDocumentation = ({
   loadedFiles,
   setCurrentStep,
   setCurrentTab,
+  hasNextButton,
 }: ProjectFiles &
   ProjectTabSetters & {
     projectFiles?: ProjectFile[]
     mode: string
+    hasNextButton: boolean
     project?: ProjectTypeApi
     loadedFiles?: boolean
   }) => {
@@ -44,15 +46,21 @@ const ProjectDocumentation = ({
           />
         )}
       </div>
-      {setCurrentStep && setCurrentTab && (
-        <div className="mt-5 flex flex-wrap items-center gap-2.5">
+      <div className="mt-5 flex flex-wrap items-center gap-2.5">
+        {hasNextButton && (
           <NextButton
             nextStep={6}
             setCurrentStep={setCurrentStep}
             setCurrentTab={setCurrentTab}
           />
-        </div>
-      )}
+        )}
+        <NextButton
+          nextStep={4}
+          type="previous"
+          setCurrentStep={setCurrentStep}
+          setCurrentTab={setCurrentTab}
+        />
+      </div>
     </>
   )
 }

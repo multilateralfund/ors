@@ -65,6 +65,12 @@ const ProjectImpact = ({
           setCurrentStep={setCurrentStep}
           setCurrentTab={setCurrentTab}
         />
+        <NextButton
+          nextStep={3}
+          type="previous"
+          setCurrentStep={setCurrentStep}
+          setCurrentTab={setCurrentTab}
+        />
       </div>
     </>
   )

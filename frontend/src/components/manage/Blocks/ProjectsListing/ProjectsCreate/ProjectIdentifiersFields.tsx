@@ -480,7 +480,6 @@ const ProjectIdentifiersFields = ({
             )}
           </>
         )}
-
         {(mode === 'copy' ||
           (isV3Project && areNextSectionsDisabled) ||
           !(isV3Project || project?.submission_status === 'Approved')) && (

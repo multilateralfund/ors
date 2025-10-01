@@ -479,6 +479,12 @@ const ProjectCrossCuttingFields = ({
           setCurrentTab={setCurrentTab}
           isBtnDisabled={isNextDisabled}
         />
+        <NextButton
+          nextStep={1}
+          type="previous"
+          setCurrentStep={setCurrentStep}
+          setCurrentTab={setCurrentTab}
+        />
       </div>
     </>
   )
