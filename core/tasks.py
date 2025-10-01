@@ -232,8 +232,6 @@ def synchronize_meetings():
         Extract start/end dates and other attrs for all node--events in the
         meetings API JSON data.
         """
-        meetings = []
-
         for item in json_data.get("data", []):
             if item.get("type") == "node--event":
                 attributes = item.get("attributes", {})
@@ -247,24 +245,30 @@ def synchronize_meetings():
                     if start_date and end_date:
                         start_date = parse_date(start_date)
                         end_date = parse_date(end_date)
-                        meetings.append(
-                            Meeting(
-                                date=start_date,
-                                end_date=end_date,
-                                number=number,
-                                title=title,
-                                internal_api_id=internal_api_id,
-                            )
+                        yield Meeting(
+                            date=start_date,
+                            end_date=end_date,
+                            number=number,
+                            title=title,
+                            internal_api_id=internal_api_id,
                         )
-        return meetings
 
     logger.info("Synchronizing meetings...")
-    meetings_response = requests.get(
-        settings.DRUPAL_MEETINGS_API, timeout=settings.DRUPAL_API_TIMEOUT
-    )
-    meetings_response.raise_for_status()
-    meetings_json = meetings_response.json()
-    meeting_objects = get_meetings(meetings_json)
+
+    session = requests.sessions.Session()
+
+    def fetch_meetings(url):
+        logger.info("Fetching from %s...", url)
+
+        meetings_response = session.get(url, timeout=settings.DRUPAL_API_TIMEOUT)
+        meetings_response.raise_for_status()
+        meetings_json = meetings_response.json()
+        yield from get_meetings(meetings_json)
+        next_url = meetings_json.get("links", {}).get("next", {}).get("href", "")
+        if next_url:
+            yield from fetch_meetings(next_url)
+
+    meeting_objects = fetch_meetings(settings.DRUPAL_MEETINGS_API)
 
     Meeting.objects.bulk_create(
         meeting_objects,
@@ -280,54 +284,60 @@ def synchronize_decisions():
     if not settings.DRUPAL_DECISIONS_API:
         return
 
+    meetings = {m.internal_api_id: m.id for m in Meeting.objects.all()}
+
     def get_decisions(json_data):
         """
         Extract Decisions attributes for all node--decision items in the JSON data.
         """
-        decisions = []
-
         for item in json_data.get("data", []):
             if item.get("type") == "node--decision":
                 attributes = item.get("attributes", {})
                 title = attributes.get("title")
                 number = attributes.get("field_decision_number")
-                title = attributes.get("field_decision_number")
-
+                internal_api_id = attributes.get("drupal_internal__nid")
                 relationships = item.get("relationships", {})
-                meeting_internal_api_id = (
-                    relationships.get("field_event", {})
-                    .get("data", {})
-                    .get("meta", {})
-                    .get("drupal_internal__target_id")
-                )
-                meeting_id = None
-                if meeting_internal_api_id:
-                    meeting = Meeting.objects.filter(
-                        internal_api_id=meeting_internal_api_id
-                    ).first()
-                    meeting_id = meeting.id if meeting else None
-                if number and title:
-                    decisions.append(
-                        Decision(
-                            number=number,
-                            title=title,
-                            meeting_id=meeting_id,
-                        )
+                try:
+                    meeting_internal_api_id = (
+                        relationships.get("field_event", {})
+                        .get("data", {})
+                        .get("meta", {})
+                        .get("drupal_internal__target_id")
                     )
-        return decisions
+                except AttributeError:
+                    logger.info(
+                        "Skipping decision without meeting: %s",
+                        (title, number, internal_api_id),
+                    )
+                    continue
+                meeting_id = meetings.get(meeting_internal_api_id, None)
+                yield Decision(
+                    number=number,
+                    title=title,
+                    meeting_id=meeting_id,
+                    internal_api_id=internal_api_id,
+                )
 
     logger.info("Synchronizing decisions...")
-    decisions_response = requests.get(
-        settings.DRUPAL_DECISIONS_API, timeout=settings.DRUPAL_API_TIMEOUT
-    )
-    decisions_response.raise_for_status()
-    decisions_json = decisions_response.json()
-    decisions_objects = get_decisions(decisions_json)
+
+    session = requests.sessions.Session()
+
+    def fetch_decisions(url):
+        logger.info("Fetching from %s...", url)
+        decisions_response = session.get(url, timeout=settings.DRUPAL_API_TIMEOUT)
+        decisions_response.raise_for_status()
+        decisions_json = decisions_response.json()
+        yield from get_decisions(decisions_json)
+        next_url = decisions_json.get("links", {}).get("next", {}).get("href", "")
+        if next_url:
+            yield from fetch_decisions(next_url)
+
+    decisions_objects = fetch_decisions(settings.DRUPAL_DECISIONS_API)
 
     Decision.objects.bulk_create(
         decisions_objects,
         update_conflicts=True,
-        unique_fields=["number"],
-        update_fields=["title"],
+        unique_fields=["internal_api_id"],
+        update_fields=["title", "number", "meeting_id"],
     )
     logger.info("Decisions synchronized successfully")
