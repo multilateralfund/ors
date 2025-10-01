@@ -32,5 +32,4 @@ class DecisionSerializer(serializers.ModelSerializer):
             "meeting_id",
             "title",
             "number",
-            "description",
         ]

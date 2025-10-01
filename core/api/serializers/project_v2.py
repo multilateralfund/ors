@@ -4,6 +4,7 @@ from django.db import transaction
 from django.urls import reverse
 from rest_framework import serializers
 
+from core.api.serializers.meeting import DecisionSerializer
 from core.api.serializers.project import (
     ProjectListSerializer,
     ProjectOdsOdpListSerializer,
@@ -164,7 +165,7 @@ class ProjectListV2Serializer(ProjectListSerializer):
     post_excom_meeting_id = serializers.PrimaryKeyRelatedField(
         required=True, queryset=Meeting.objects.all().values_list("id", flat=True)
     )
-    post_excom_decision = serializers.SlugField(read_only=True)
+    post_excom_decision = DecisionSerializer(read_only=True)
     post_excom_decision_id = serializers.PrimaryKeyRelatedField(
         allow_null=True,
         queryset=Decision.objects.all().values_list("id", flat=True),

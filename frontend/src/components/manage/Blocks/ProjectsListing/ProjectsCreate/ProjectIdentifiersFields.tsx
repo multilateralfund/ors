@@ -1,7 +1,6 @@
-import { ChangeEvent, useContext } from 'react'
+import { ChangeEvent, useContext, useMemo } from 'react'
 
 import PopoverInput from '@ors/components/manage/Blocks/Replenishment/StatusOfTheFund/editDialogs/PopoverInput'
-import SimpleInput from '@ors/components/manage/Blocks/Section/ReportInfo/SimpleInput'
 import Field from '@ors/components/manage/Form/Field'
 import { Label } from '@ors/components/manage/Blocks/BusinessPlans/BPUpload/helpers'
 import { getOptionLabel } from '@ors/components/manage/Blocks/BusinessPlans/BPEdit/editSchemaHelpers'
@@ -20,12 +19,7 @@ import ProjectsDataContext from '@ors/contexts/Projects/ProjectsDataContext'
 import PermissionsContext from '@ors/contexts/PermissionsContext'
 import { changeHandler } from './SpecificFieldsHelpers'
 import { NextButton } from '../HelperComponents'
-import {
-  defaultProps,
-  defaultPropsSimpleField,
-  disabledClassName,
-  tableColumns,
-} from '../constants'
+import { defaultProps, disabledClassName, tableColumns } from '../constants'
 import {
   canEditField,
   canViewField,
@@ -40,6 +34,13 @@ import { useStore } from '@ors/store'
 import { Button, Checkbox, FormControlLabel, Typography } from '@mui/material'
 import { find, isNil, isNull } from 'lodash'
 import cx from 'classnames'
+import useApi from '@ors/hooks/useApi.ts'
+import { ApiDecision } from '@ors/types/api_meetings.ts'
+
+type DecisionOption = {
+  name: string
+  value: number
+}
 
 const ProjectIdentifiersFields = ({
   projectData,
@@ -89,6 +90,22 @@ const ProjectIdentifiersFields = ({
   const canEditMeeting =
     !(isV3Project && projIdentifiers?.meeting) &&
     canEditField(editableFields, 'meeting')
+
+  const decisionsApi = useApi<ApiDecision[]>({
+    path: projIdentifiers?.post_excom_meeting ? 'api/decisions' : '',
+    options: {
+      params: {
+        meeting_id: projIdentifiers?.post_excom_meeting,
+      },
+    },
+  })
+
+  const decisions = useMemo(() => {
+    const data = decisionsApi.data ?? ([] as ApiDecision[])
+    return data.map((d) => ({ name: d.number, value: d.id }))
+  }, [decisionsApi.data])
+
+  console.log(decisions)
 
   const areNextStepsAvailable = isNextBtnEnabled && areNextSectionsDisabled
 
@@ -182,15 +199,17 @@ const ProjectIdentifiersFields = ({
         post_excom_meeting: parseNumber(meeting),
       },
     }))
+    decisionsApi.setParams({ meeting_id: meeting })
   }
 
   const handleChangePostExComDecision = (
-    event: ChangeEvent<HTMLInputElement>,
+    option: DecisionOption | string | null,
   ) => {
-    const initialValue = event.target.value
+    const initialValue =
+      typeof option === 'string' ? option : (option?.value.toString() ?? '')
 
     if (initialValue === '' || !isNaN(parseInt(initialValue))) {
-      const finalVal = initialValue ? parseInt(initialValue).toString() : null
+      const finalVal = initialValue ? parseInt(initialValue) : null
 
       setProjectData((prevData) => ({
         ...prevData,
@@ -199,8 +218,6 @@ const ProjectIdentifiersFields = ({
           post_excom_decision: finalVal,
         },
       }))
-    } else {
-      event.preventDefault()
     }
   }
 
@@ -240,18 +257,19 @@ const ProjectIdentifiersFields = ({
                   className="!m-0 h-10 !py-1"
                 />
               </div>
-              <div className="w-32">
+              <div className="w-[16rem]">
                 <Label htmlFor="postExComDecision">Decision</Label>
-                <SimpleInput
-                  id="postExComDecision"
-                  label=""
+                <Field<any>
+                  widget="autocomplete"
+                  options={decisions}
                   value={projIdentifiers?.post_excom_decision ?? ''}
-                  onChange={handleChangePostExComDecision}
-                  type="text"
-                  className={defaultPropsSimpleField.className}
-                  containerClassName={
-                    defaultPropsSimpleField.containerClassName
+                  onChange={(_, value) =>
+                    handleChangePostExComDecision(value as DecisionOption)
                   }
+                  getOptionLabel={(option) => {
+                    return getOptionLabel(decisions, option, 'value')
+                  }}
+                  {...sectionDefaultProps}
                 />
               </div>
               <div className="flex items-end">
