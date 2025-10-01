@@ -285,6 +285,18 @@ class ProjectEnterpriseViewSet(
         serializer.save(request=request)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.status == EnterpriseStatus.APPROVED and not request.user.has_perm(
+            "core.has_project_enterprise_approval_access"
+        ):
+            return Response(
+                {"detail": "No access to delete approved project enterprises."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
     @action(methods=["POST"], detail=True)
     @swagger_auto_schema(
         operation_description="""
