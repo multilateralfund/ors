@@ -69,9 +69,7 @@ const getColumnDefs = (type: string) => {
 
   return {
     columnDefs: [
-      ...(canAccessEditPage &&
-      (project_id || isEnterprise) &&
-      !(editPermissions && !approvalPermissions)
+      ...(canAccessEditPage && (project_id || isEnterprise)
         ? [
             {
               minWidth: 40,

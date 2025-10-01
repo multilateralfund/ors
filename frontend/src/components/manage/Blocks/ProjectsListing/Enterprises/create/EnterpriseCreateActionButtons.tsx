@@ -49,7 +49,7 @@ const EnterpriseCreateActionButtons = ({
           title="Create enterprise"
           isDisabled={!enterpriseData.name}
           onSubmit={createEnterprise}
-          className="ml-auto"
+          className="!py-2"
         />
       )}
     </div>

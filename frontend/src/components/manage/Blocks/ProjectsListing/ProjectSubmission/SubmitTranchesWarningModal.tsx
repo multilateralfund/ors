@@ -32,7 +32,7 @@ const SubmitTranchesWarningModal = ({
           with the submission of the current tranche?
         </Typography>
         <div className="ml-auto flex gap-1">
-          <SubmitButton title="Continue" onSubmit={onSubmit} />
+          <SubmitButton title="Continue" onSubmit={onSubmit} className="h-10" />
           <Button
             className="border border-solid border-[#F2F2F2] bg-[#F2F2F2] text-base leading-none text-[#4D4D4D] hover:border-primary hover:bg-[#F2F2F2] hover:text-[#4D4D4D]"
             onClick={() => setIsTrancheWarningOpen(false)}
