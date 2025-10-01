@@ -54,6 +54,7 @@ const ProjectIdentifiersFields = ({
   project,
   postExComUpdate,
   isV3ProjectEditable,
+  isProjectEditableByAdmin,
   specificFieldsLoaded,
 }: ProjectIdentifiersSectionProps) => {
   const sectionIdentifier = 'projIdentifiers'
@@ -77,6 +78,7 @@ const ProjectIdentifiersFields = ({
       : crtClusters
 
   const isV3Project = postExComUpdate || isV3ProjectEditable
+  const canUpdateFields = postExComUpdate || isProjectEditableByAdmin
   const isAddOrCopy = mode === 'add' || mode === 'copy'
   const hasNoLeadAgency = !project?.meta_project?.lead_agency
   const isApproved = project?.submission_status === 'Approved'
@@ -88,7 +90,7 @@ const ProjectIdentifiersFields = ({
     (state) => state.projectFields,
   )
   const canEditMeeting =
-    !(isV3Project && projIdentifiers?.meeting) &&
+    !(canUpdateFields && projIdentifiers?.meeting) &&
     canEditField(editableFields, 'meeting')
 
   const areNextStepsAvailable = isNextBtnEnabled && areNextSectionsDisabled
@@ -478,6 +480,7 @@ const ProjectIdentifiersFields = ({
             )}
           </>
         )}
+
         {(mode === 'copy' ||
           (isV3Project && areNextSectionsDisabled) ||
           !(isV3Project || project?.submission_status === 'Approved')) && (

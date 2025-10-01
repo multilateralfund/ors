@@ -50,14 +50,12 @@ const ProjectCrossCuttingFields = ({
   fieldsOpts,
   specificFieldsLoaded,
   postExComUpdate,
-  canEditApprovedProj,
   isV3ProjectEditable,
 }: ProjectDataProps &
   ProjectTabSetters & {
     nextStep: number
     specificFieldsLoaded: boolean
     postExComUpdate: boolean
-    canEditApprovedProj: boolean
     isV3ProjectEditable: boolean
     fieldsOpts: {
       crtProjectTypesOpts: ProjectTypeType[]
@@ -410,7 +408,7 @@ const ProjectCrossCuttingFields = ({
                       )
                     }
                     disabled={
-                      (isV3Project && !!project_start_date) ||
+                      (postExComUpdate && !!project_start_date) ||
                       !canEditField(editableFields, 'project_start_date')
                     }
                     formatValue={(value) => dayjs(value).format('DD/MM/YYYY')}
@@ -418,7 +416,7 @@ const ProjectCrossCuttingFields = ({
                       'border-red-500':
                         getIsInputDisabled('project_start_date'),
                       [disabledClassName]:
-                        (isV3Project && !!project_start_date) ||
+                        (postExComUpdate && !!project_start_date) ||
                         !canEditField(editableFields, 'project_start_date'),
                     })}
                   />
@@ -461,6 +459,7 @@ const ProjectCrossCuttingFields = ({
                     handleChangeBlanketConsideration(value)
                   }
                   disabled={
+                    isV3Project ||
                     !canEditField(editableFields, 'individual_consideration')
                   }
                   sx={{
@@ -472,17 +471,15 @@ const ProjectCrossCuttingFields = ({
           </div>
         </>
       )}
-      {canEditApprovedProj && (
-        <div className="mt-5 flex flex-wrap items-center gap-2.5">
-          <NextButton
-            nextStep={nextStep}
-            nextTab={nextStep - 1}
-            setCurrentStep={setCurrentStep}
-            setCurrentTab={setCurrentTab}
-            isBtnDisabled={isNextDisabled}
-          />
-        </div>
-      )}
+      <div className="mt-5 flex flex-wrap items-center gap-2.5">
+        <NextButton
+          nextStep={nextStep}
+          nextTab={nextStep - 1}
+          setCurrentStep={setCurrentStep}
+          setCurrentTab={setCurrentTab}
+          isBtnDisabled={isNextDisabled}
+        />
+      </div>
     </>
   )
 }

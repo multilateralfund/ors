@@ -57,7 +57,7 @@ export default function PEnterprisesWrapper() {
             <PageHeading>
               {project && data ? (
                 <PageTitle
-                  pageTitle="Project enterprises of"
+                  pageTitle="Enterprises for project:"
                   projectTitle={data.code ?? data.code_legacy}
                   className="break-all"
                 />

@@ -282,6 +282,7 @@ export type ProjectIdentifiersSectionProps = ProjectTabSetters & {
   project?: ProjectTypeApi
   postExComUpdate?: boolean
   isV3ProjectEditable: boolean
+  isProjectEditableByAdmin: boolean
   specificFieldsLoaded: boolean
 }
 

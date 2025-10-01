@@ -19,10 +19,10 @@ const ProjectSubstanceDetails = ({
   errors = {},
   hasSubmitted,
   odsOdpErrors,
-  canEditApprovedProj,
+  canEditSubstances,
 }: SpecificFieldsSectionProps & {
   odsOdpErrors: { [key: string]: [] }[]
-  canEditApprovedProj: boolean
+  canEditSubstances: boolean
 }) => {
   const sectionIdentifier = 'projectSpecificFields'
   const field = 'ods_odp'
@@ -132,7 +132,7 @@ const ProjectSubstanceDetails = ({
                               </span>
                             ),
                         )}
-                        {canEditApprovedProj && (
+                        {canEditSubstances && (
                           <IoTrash
                             className="mt-12 min-h-[16px] min-w-[16px] cursor-pointer fill-gray-400"
                             size={16}
@@ -147,7 +147,7 @@ const ProjectSubstanceDetails = ({
                   ))}
             </div>
           </div>
-          {canEditApprovedProj && odsOdpFields.length > 0 && (
+          {canEditSubstances && odsOdpFields.length > 0 && (
             <SubmitButton
               title="Add substance"
               onSubmit={onAddSubstance}

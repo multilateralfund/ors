@@ -49,7 +49,14 @@ export const createProjectFieldsSlice = ({
             mode !== 'copy' &&
             submissionStatus === 'Approved'
           ) {
-            return is_actual || section === 'Approval'
+            return is_actual
+          }
+
+          if (
+            isPostExcom ||
+            (mode !== 'copy' && submissionStatus === 'Not approved')
+          ) {
+            return section !== 'Approval'
           }
 
           const isEditableInVersion = editable_in_versions?.includes(version)
