@@ -405,7 +405,6 @@ class DecisionFactory(factory.django.DjangoModelFactory):
 
     meeting = factory.SubFactory(MeetingFactory)
     number = factory.Faker("random_int", min=1, max=100)
-    description = factory.Faker("pystr", max_chars=100)
 
 
 class ProjectComponentsFactory(factory.django.DjangoModelFactory):
