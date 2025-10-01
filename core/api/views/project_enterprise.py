@@ -393,6 +393,28 @@ class ProjectEnterpriseStatusView(APIView):
     View to return a list of all Project Enterprise Status choices
     """
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "include_obsolete",
+                openapi.IN_QUERY,
+                description="""
+                    Include 'Obsolete' status in the response.
+                    Obsolete status is used only for enterprises, not for project enterprises.
+                """,
+                type=openapi.TYPE_BOOLEAN,
+            ),
+        ],
+        operation_description="List previous tranches of the project.",
+    )
     def get(self, request, *args, **kwargs):
         choices = EnterpriseStatus.choices
+        if not request.query_params.get("include_obsolete", "false").lower() in [
+            "true",
+            "1",
+            "yes",
+        ]:
+            choices = [
+                choice for choice in choices if choice[0] != EnterpriseStatus.OBSOLETE
+            ]
         return Response(choices)
